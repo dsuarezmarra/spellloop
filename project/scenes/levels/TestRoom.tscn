@@ -1,0 +1,93 @@
+[gd_scene load_steps=2 format=3 uid="uid://b7jyqy65yc7kt"]
+
+[ext_resource type="Script" path="res://scripts/scenes/MinimalTestRoom.gd" id="1_n3eq7"]
+
+[node name="TestRoom" type="Node2D"]
+script = ExtResource("1_n3eq7")
+
+[node name="TestRoom" type="Node2D"]
+script = ExtResource("1_n3eq7")
+
+[node name="Player" parent="." instance=ExtResource("1_75hq6")]
+position = Vector2(0, 0)
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+position_smoothing_enabled = true
+position_smoothing_speed = 5.0
+
+[node name="Walls" type="StaticBody2D" parent="."]
+collision_layer = 4
+collision_mask = 0
+
+[node name="WallLeft" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-400, 0)
+shape = SubResource("RectangleShape2D_1")
+
+[node name="WallRight" type="CollisionShape2D" parent="Walls"]
+position = Vector2(400, 0)
+shape = SubResource("RectangleShape2D_1")
+
+[node name="WallTop" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -300)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_1")
+
+[node name="WallBottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 300)
+rotation = 1.5708
+shape = SubResource("RectangleShape2D_1")
+
+[node name="VisualWalls" type="Node2D" parent="."]
+
+[node name="WallLeftVisual" type="ColorRect" parent="VisualWalls"]
+offset_left = -425.0
+offset_top = -300.0
+offset_right = -375.0
+offset_bottom = 300.0
+color = Color(0.5, 0.3, 0.2, 1)
+
+[node name="WallRightVisual" type="ColorRect" parent="VisualWalls"]
+offset_left = 375.0
+offset_top = -300.0
+offset_right = 425.0
+offset_bottom = 300.0
+color = Color(0.5, 0.3, 0.2, 1)
+
+[node name="WallTopVisual" type="ColorRect" parent="VisualWalls"]
+offset_left = -400.0
+offset_top = -325.0
+offset_right = 400.0
+offset_bottom = -275.0
+color = Color(0.5, 0.3, 0.2, 1)
+
+[node name="WallBottomVisual" type="ColorRect" parent="VisualWalls"]
+offset_left = -400.0
+offset_top = 275.0
+offset_right = 400.0
+offset_bottom = 325.0
+color = Color(0.5, 0.3, 0.2, 1)
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="GameHUD" parent="UI" instance=ExtResource("2_8k3vn")]
+
+[node name="LevelUpScreen" parent="UI" instance=ExtResource("3_5k8vn")]
+visible = false
+
+[node name="TestInstructions" type="Label" parent="UI"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -400.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 120.0
+text = "TEST ROOM - SPELLLOOP
+WASD: Move | Mouse: Aim
+Left Click: Cast Primary Spell
+Right Click: Cast Secondary
+Space: Dash | Enter: Restart
+Tab: Progress Screen | ESC: Main Menu"
+offset_bottom = 200.0
+text = "Primary: Fireball
+Secondary: Ice Shard"

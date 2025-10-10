@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3 uid="uid://cqk6xovbh3dfm"]
+
+[ext_resource type="Script" path="res://scripts/entities/Projectile.gd" id="1_x7vhn"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1"]
+radius = 8.0
+
+[node name="Projectile" type="CharacterBody2D"]
+collision_layer = 8
+collision_mask = 6
+script = ExtResource("1_x7vhn")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(1, 0.5, 0, 1)
+scale = Vector2(16, 16)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_1")
+
+[node name="AreaDetector" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 3
+
+[node name="AreaShape" type="CollisionShape2D" parent="AreaDetector"]
+shape = SubResource("CircleShape2D_1")
+
+[node name="VisibilityNotifier2D" type="VisibilityNotifier2D" parent="."]
+
+[connection signal="screen_exited" from="VisibilityNotifier2D" to="." method="_destroy_projectile" binds= ["screen_exit"]]

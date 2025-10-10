@@ -1,0 +1,67 @@
+[gd_scene load_steps=6 format=3 uid="uid://c8n4m1xrhp0qx"]
+
+[ext_resource type="PackedScene" uid="uid://bkn3y8dfuw1r8" path="res://scenes/characters/Player.tscn" id="1_j8k9v"]
+[ext_resource type="Script" path="res://scripts/levels/ProceduralLevel.gd" id="1_k2p4l"]
+[ext_resource type="PackedScene" uid="uid://c2n8vr7ftj5qd" path="res://scenes/ui/GameHUD.tscn" id="2_m8n3q"]
+[ext_resource type="PackedScene" uid="uid://bwjm8n2qplco7" path="res://scenes/ui/LevelUpScreen.tscn" id="3_n4r5s"]
+[ext_resource type="Script" path="res://scripts/ui/Minimap.gd" id="4_k8m2p"]
+
+[node name="ProceduralLevel" type="Node2D"]
+script = ExtResource("1_k2p4l")
+
+[node name="Player" parent="." instance=ExtResource("1_j8k9v")]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="GameHUD" parent="UI" instance=ExtResource("2_m8n3q")]
+
+[node name="LevelUpScreen" parent="UI" instance=ExtResource("3_n4r5s")]
+visible = false
+
+[node name="Minimap" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -220.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 220.0
+script = ExtResource("4_k8m2p")
+
+[node name="MinimapBackground" type="ColorRect" parent="UI/Minimap"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.8)
+
+[node name="MinimapTitle" type="Label" parent="UI/Minimap"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -30.0
+offset_right = 30.0
+offset_bottom = 20.0
+text = "MINIMAP"
+horizontal_alignment = 1
+add_theme_color_override("font_color", Color(1, 1, 1, 1))
+
+[node name="Instructions" type="Label" parent="UI"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -150.0
+offset_right = -10.0
+offset_bottom = -10.0
+text = "PROCEDURAL SPELLLOOP
+WASD: Move | Mouse: Aim
+Left/Right Click: Cast Spells
+Space: Dash | Tab: Progress
+M: Minimap | A: Achievements
+ESC: Menu | Enter: Restart (if dead)"
+vertical_alignment = 2
