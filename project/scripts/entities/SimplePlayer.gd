@@ -1,5 +1,8 @@
 extends CharacterBody2D
 
+# Preload the FunkoPopWizard system
+const FunkoPopWizard = preload("res://scripts/player/FunkoPopWizard.gd")
+
 # Simple player implementation without complex dependencies
 var health: int = 100
 var max_health: int = 100
@@ -19,8 +22,8 @@ var last_movement_direction: Vector2 = Vector2.RIGHT  # Remember last direction 
 var shoot_timer: float = 0.0
 
 # Animation system variables
-var current_direction: FunkoPopWizard.Direction = FunkoPopWizard.Direction.DOWN
-var current_frame: FunkoPopWizard.AnimFrame = FunkoPopWizard.AnimFrame.IDLE
+var current_direction = FunkoPopWizard.Direction.DOWN
+var current_frame = FunkoPopWizard.AnimFrame.IDLE
 var animation_timer: float = 0.0
 var animation_speed: float = 4.0  # Frames per second
 var sprite_node: Sprite2D

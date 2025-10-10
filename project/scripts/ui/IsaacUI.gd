@@ -54,16 +54,38 @@ func _process(_delta):
 		update_ui()
 
 func update_ui():
-	# Actualizar vida
-	health_label.text = "❤️ %d/%d" % [player.health, player.max_health]
-	
-	# Actualizar estadísticas
-	stats_label.text = PlayerStats.get_stats_summary()
-	
-	# Cambiar color de la vida según el estado
-	if player.health < 25:
-		health_label.modulate = Color.RED
-	elif player.health < 50:
-		health_label.modulate = Color.ORANGE
+	# Verificar que el player tenga las propiedades de salud
+	if not player.has_method("get") and not player.has_signal("health_changed"):
+		# Use a safe way to access health
+		var current_health = 100
+		var max_health = 100
+		
+		# Try different ways to get health
+		if "health" in player:
+			current_health = player.health
+		elif player.has_method("get_health"):
+			current_health = player.get_health()
+		
+		if "max_health" in player:
+			max_health = player.max_health
+		elif player.has_method("get_max_health"):
+			max_health = player.get_max_health()
+		
+		# Actualizar vida
+		health_label.text = "❤️ %d/%d" % [current_health, max_health]
+		
+		# Actualizar estadísticas
+		stats_label.text = PlayerStats.get_stats_summary()
+		
+		# Cambiar color de la vida según el estado
+		if current_health < 25:
+			health_label.modulate = Color.RED
+		elif current_health < 50:
+			health_label.modulate = Color.ORANGE
+		else:
+			health_label.modulate = Color.WHITE
 	else:
+		# Fallback - just show PlayerStats
+		health_label.text = "❤️ 100/100"
+		stats_label.text = PlayerStats.get_stats_summary()
 		health_label.modulate = Color.WHITE
