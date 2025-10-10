@@ -1,8 +1,5 @@
 extends CharacterBody2D
 
-# Preload the FunkoPopWizard system
-const FunkoPopWizard = preload("res://scripts/player/FunkoPopWizard.gd")
-
 # Simple player implementation without complex dependencies
 var health: int = 100
 var max_health: int = 100
@@ -22,8 +19,8 @@ var last_movement_direction: Vector2 = Vector2.RIGHT  # Remember last direction 
 var shoot_timer: float = 0.0
 
 # Animation system variables
-var current_direction = FunkoPopWizard.Direction.DOWN
-var current_frame = FunkoPopWizard.AnimFrame.IDLE
+var current_direction = WizardSpriteLoader.Direction.DOWN
+var current_frame = WizardSpriteLoader.AnimFrame.IDLE
 var animation_timer: float = 0.0
 var animation_speed: float = 4.0  # Frames per second
 var sprite_node: Sprite2D
@@ -65,7 +62,7 @@ func _ready():
 func update_sprite():
 	"""Actualizar el sprite con la dirección y frame actuales"""
 	if sprite_node:
-		var texture = FunkoPopWizard.create_wizard_sprite(current_direction, current_frame)
+		var texture = WizardSpriteLoader.load_wizard_sprite(current_direction, current_frame)
 		sprite_node.texture = texture
 		sprite_node.scale = Vector2(0.6, 0.6)  # Escala para el juego
 
@@ -76,15 +73,15 @@ func update_direction_from_movement(movement: Vector2):
 		if abs(movement.x) > abs(movement.y):
 			# Movimiento horizontal dominante
 			if movement.x > 0:
-				current_direction = FunkoPopWizard.Direction.RIGHT
+				current_direction = WizardSpriteLoader.Direction.RIGHT
 			else:
-				current_direction = FunkoPopWizard.Direction.LEFT
+				current_direction = WizardSpriteLoader.Direction.LEFT
 		else:
 			# Movimiento vertical dominante
 			if movement.y > 0:
-				current_direction = FunkoPopWizard.Direction.DOWN
+				current_direction = WizardSpriteLoader.Direction.DOWN
 			else:
-				current_direction = FunkoPopWizard.Direction.UP
+				current_direction = WizardSpriteLoader.Direction.UP
 
 func update_animation(delta: float, is_moving: bool):
 	"""Actualizar la animación"""
@@ -94,13 +91,13 @@ func update_animation(delta: float, is_moving: bool):
 		# Alternar entre WALK1 y WALK2
 		if animation_timer >= 1.0 / animation_speed:
 			animation_timer = 0.0
-			if current_frame == FunkoPopWizard.AnimFrame.WALK1:
-				current_frame = FunkoPopWizard.AnimFrame.WALK2
+			if current_frame == WizardSpriteLoader.AnimFrame.WALK1:
+				current_frame = WizardSpriteLoader.AnimFrame.WALK2
 			else:
-				current_frame = FunkoPopWizard.AnimFrame.WALK1
+				current_frame = WizardSpriteLoader.AnimFrame.WALK1
 	else:
 		# Estado idle
-		current_frame = FunkoPopWizard.AnimFrame.IDLE
+		current_frame = WizardSpriteLoader.AnimFrame.IDLE
 		animation_timer = 0.0
 	
 	update_sprite()

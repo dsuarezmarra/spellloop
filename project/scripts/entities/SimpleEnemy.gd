@@ -11,9 +11,9 @@ var attack_cooldown: float = 1.5
 var attack_timer: float = 0.0
 
 # Animation system variables
-var enemy_type: FunkoPopEnemy.EnemyType
-var current_direction: FunkoPopEnemy.Direction = FunkoPopEnemy.Direction.DOWN
-var current_frame: FunkoPopEnemy.AnimFrame = FunkoPopEnemy.AnimFrame.IDLE
+var enemy_type
+var current_direction = FunkoPopEnemy.Direction.DOWN
+var current_frame = FunkoPopEnemy.AnimFrame.IDLE
 var animation_timer: float = 0.0
 var animation_speed: float = 3.0  # Frames per second
 var sprite_node: Sprite2D
