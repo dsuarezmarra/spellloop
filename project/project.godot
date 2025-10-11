@@ -11,19 +11,9 @@ config_version=5
 [application]
 
 config/name="Spellloop"
-run/main_scene="res://scenes/Main.tscn"
+run/main_scene="res://scenes/characters/Player.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
-
-[autoload]
-
-SpellSystem="*res://scripts/magic/SpellSystem.gd"
-GameManager="*res://scripts/core/GameManager.gd"
-SaveManager="*res://scripts/core/SaveManager.gd"
-AudioManager="*res://scripts/core/AudioManagerSimple.gd"
-InputManager="*res://scripts/core/InputManager.gd"
-UIManager="*res://scripts/core/UIManager.gd"
-LocalizationManager="*res://scripts/core/LocalizationManager.gd"
 
 [display]
 
