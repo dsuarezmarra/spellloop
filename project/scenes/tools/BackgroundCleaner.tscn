@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://cleansprites123"]
+[gd_scene load_steps=2 format=3 uid="uid://p25hrib2vnu"]
 
 [sub_resource type="GDScript" id="BackgroundCleaner"]
 script/source = "extends Node
