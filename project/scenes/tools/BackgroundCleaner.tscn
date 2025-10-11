@@ -1,0 +1,107 @@
+[gd_scene load_steps=2 format=3 uid="uid://cleansprites123"]
+
+[sub_resource type="GDScript" id="BackgroundCleaner"]
+script/source = "extends Node
+
+func _ready():
+	print('🎯 LIMPIADOR DE FONDO INTELIGENTE')
+	print('================================')
+	
+	# Procesar cada sprite wizard
+	var sprites = ['wizard_down.png', 'wizard_up.png', 'wizard_left.png', 'wizard_right.png']
+	
+	for sprite_name in sprites:
+		clean_sprite(sprite_name)
+	
+	print('🎉 ¡Procesamiento completo!')
+	print('💡 Los sprites han sido limpiados de fondo blanco')
+	get_tree().quit()
+
+func clean_sprite(sprite_name: String):
+	var path = 'res://sprites/wizard/' + sprite_name
+	print('🧙‍♂️ Limpiando: ', sprite_name)
+	
+	if not ResourceLoader.exists(path):
+		print('❌ No encontrado: ', path)
+		return
+	
+	var texture = load(path) as Texture2D
+	if not texture:
+		print('❌ Error cargando: ', path)
+		return
+	
+	var image = texture.get_image()
+	var width = image.get_width()
+	var height = image.get_height()
+	
+	print('  📐 Tamaño: ', width, 'x', height)
+	
+	# Crear imagen limpia
+	var clean_image = Image.create(width, height, false, Image.FORMAT_RGBA8)
+	
+	var pixels_removed = 0
+	
+	for y in range(height):
+		for x in range(width):
+			var pixel = image.get_pixel(x, y)
+			var should_remove = false
+			
+			# Detectar fondo blanco puro
+			if pixel.r > 0.98 and pixel.g > 0.98 and pixel.b > 0.98:
+				# Distancia al borde más cercano
+				var edge_dist = min(min(x, width-1-x), min(y, height-1-y))
+				
+				# Si está cerca del borde, es probable que sea fondo
+				if edge_dist < 6:
+					should_remove = true
+				elif edge_dist < 12:
+					# Verificar si está en una región homogénea de blancos
+					var white_neighbors = 0
+					var total_neighbors = 0
+					
+					for dy in range(-1, 2):
+						for dx in range(-1, 2):
+							var nx = x + dx
+							var ny = y + dy
+							if nx >= 0 and nx < width and ny >= 0 and ny < height:
+								var neighbor = image.get_pixel(nx, ny)
+								if neighbor.r > 0.96 and neighbor.g > 0.96 and neighbor.b > 0.96:
+									white_neighbors += 1
+								total_neighbors += 1
+					
+					# Si más del 85% de vecinos son blancos, es fondo
+					if total_neighbors > 0 and float(white_neighbors) / float(total_neighbors) > 0.85:
+						should_remove = true
+			
+			if should_remove:
+				clean_image.set_pixel(x, y, Color.TRANSPARENT)
+				pixels_removed += 1
+			else:
+				clean_image.set_pixel(x, y, pixel)
+	
+	print('  ✨ Píxeles de fondo removidos: ', pixels_removed)
+	
+	# Guardar imagen procesada
+	var save_path = 'user://clean_' + sprite_name
+	var error = clean_image.save_png(save_path)
+	
+	if error == OK:
+		print('  ✅ Guardado en: ', save_path)
+		
+		# Copiar de vuelta al proyecto
+		var file = FileAccess.open(save_path, FileAccess.READ)
+		if file:
+			var data = file.get_buffer(file.get_length())
+			file.close()
+			
+			var project_file = FileAccess.open(path.replace('res://', 'user://'), FileAccess.WRITE)
+			if project_file:
+				project_file.store_buffer(data)
+				project_file.close()
+				print('  💾 Reemplazado archivo original')
+	else:
+		print('  ❌ Error guardando: ', error)
+"
+
+[node name="BackgroundCleaner" type="Node"]
+script = SubResource("BackgroundCleaner")

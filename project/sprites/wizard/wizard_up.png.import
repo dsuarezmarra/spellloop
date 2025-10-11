@@ -2,12 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cpetx0wy6j734"
-valid=false
+uid="uid://b8s2hnaiafhjo"
+path="res://.godot/imported/wizard_up.png-7a795f9683db0c8acc57a4ce77790ab9.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://sprites/wizard/wizard_up.png"
+dest_files=["res://.godot/imported/wizard_up.png-7a795f9683db0c8acc57a4ce77790ab9.ctex"]
 
 [params]
 

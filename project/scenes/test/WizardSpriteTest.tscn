@@ -1,0 +1,70 @@
+[gd_scene load_steps=3 format=3 uid="uid://biblma3iit0rm"]
+
+[ext_resource type="Texture2D" uid="uid://d3mcxcanl8rp4" path="res://sprites/wizard/wizard_down.png" id="1_sprite"]
+
+[sub_resource type="GDScript" id="SimpleWizardTest"]
+script/source = "extends Node2D
+
+@onready var sprite = $WizardSprite
+var speed = 200.0
+var current_direction = Vector2.ZERO
+
+var sprite_textures = {}
+
+func _ready():
+	print('🧙‍♂️ Wizard Sprite Test Scene Started!')
+	
+	# Cargar todos los sprites wizard
+	sprite_textures['down'] = load('res://sprites/wizard/wizard_down.png')
+	sprite_textures['up'] = load('res://sprites/wizard/wizard_up.png')
+	sprite_textures['left'] = load('res://sprites/wizard/wizard_left.png')
+	sprite_textures['right'] = load('res://sprites/wizard/wizard_right.png')
+	
+	# Configurar sprite inicial
+	sprite.texture = sprite_textures['down']
+	print('✅ Sprites wizard cargados!')
+	print('🎮 Usa WASD para mover y probar los sprites')
+
+func _process(delta):
+	# Input de movimiento
+	var input_dir = Input.get_vector('ui_left', 'ui_right', 'ui_up', 'ui_down')
+	
+	# También WASD
+	if Input.is_action_pressed('ui_left') or Input.is_key_pressed(KEY_A):
+		input_dir.x = -1
+		sprite.texture = sprite_textures['left']
+	elif Input.is_action_pressed('ui_right') or Input.is_key_pressed(KEY_D):
+		input_dir.x = 1
+		sprite.texture = sprite_textures['right']
+		
+	if Input.is_action_pressed('ui_up') or Input.is_key_pressed(KEY_W):
+		input_dir.y = -1
+		sprite.texture = sprite_textures['up']
+	elif Input.is_action_pressed('ui_down') or Input.is_key_pressed(KEY_S):
+		input_dir.y = 1
+		sprite.texture = sprite_textures['down']
+	
+	# Mover
+	if input_dir != Vector2.ZERO:
+		position += input_dir * speed * delta
+"
+
+[node name="WizardTest" type="Node2D"]
+script = SubResource("SimpleWizardTest")
+
+[node name="WizardSprite" type="Sprite2D" parent="."]
+position = Vector2(400, 300)
+texture = ExtResource("1_sprite")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(400, 300)
+
+[node name="Label" type="Label" parent="."]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 500.0
+offset_bottom = 100.0
+text = "🧙‍♂️ WIZARD SPRITE TEST
+🎮 Usa WASD para mover
+✨ Sprites optimizados 64x64
+🎯 Transparencia inteligente"

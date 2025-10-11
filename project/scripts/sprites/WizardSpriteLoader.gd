@@ -84,8 +84,26 @@ static func load_sprite_from_file(direction: Direction) -> ImageTexture:
 	return generate_fallback_sprite(direction)
 
 static func generate_fallback_sprite(direction: Direction) -> ImageTexture:
-	"""Genera sprite de fallback usando datos basados en las imágenes del usuario"""
-	print("[WizardSpriteLoader] Generando sprite desde datos del usuario...")
+	"""Genera sprite de fallback usando el sistema en memoria primero"""
+	print("[WizardSpriteLoader] 🔧 Generando sprite fallback...")
+	
+	# NUEVO: Intentar el sistema en memoria primero
+	var direction_name = Direction.keys()[direction]
+	print("[WizardSpriteLoader] 🧠 Probando sistema en memoria para: ", direction_name)
+	
+	# Verificar si el cargador en memoria está disponible
+	if SpriteLoaderInMemory and SpriteLoaderInMemory.is_memory_mode_enabled():
+		var memory_texture = SpriteLoaderInMemory.get_sprite_for_direction(direction_name)
+		if memory_texture:
+			print("[WizardSpriteLoader] ✅ Fallback exitoso desde memoria para: ", direction_name)
+			return memory_texture
+		else:
+			print("[WizardSpriteLoader] ❌ Sistema en memoria falló para: ", direction_name)
+	else:
+		print("[WizardSpriteLoader] ❌ Sistema en memoria no disponible")
+	
+	# Fallback tradicional: usar datos hardcodeados
+	print("[WizardSpriteLoader] 🔧 Usando sprite procedural tradicional como último recurso")
 	
 	var data: PackedByteArray
 	match direction:

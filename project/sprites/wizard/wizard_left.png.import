@@ -2,12 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://divqt8pquba2n"
-valid=false
+uid="uid://djyi8x4uj2oko"
+path="res://.godot/imported/wizard_left.png-ec27cf6ffd6f2621dc734ccfc73a00b8.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://sprites/wizard/wizard_left.png"
+dest_files=["res://.godot/imported/wizard_left.png-ec27cf6ffd6f2621dc734ccfc73a00b8.ctex"]
 
 [params]
 
