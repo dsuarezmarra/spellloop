@@ -11,14 +11,13 @@ config_version=5
 [application]
 
 config/name="Spellloop"
-run/main_scene="res://scenes/test/WizardSpriteTest.tscn"
+run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
 
 SpellSystem="*res://scripts/magic/SpellSystem.gd"
-PlayerStats="*res://scripts/player/PlayerStats.gd"
 GameManager="*res://scripts/core/GameManager.gd"
 SaveManager="*res://scripts/core/SaveManager.gd"
 AudioManager="*res://scripts/core/AudioManagerSimple.gd"
