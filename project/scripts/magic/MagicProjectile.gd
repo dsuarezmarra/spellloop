@@ -1,115 +1,163 @@
 # MagicProjectile.gd
-# Proyectil mágico con diferentes elementos y efectos
+# Magic projectile for SpellLoop
 extends CharacterBody2D
 
 var direction: Vector2 = Vector2.RIGHT
 var speed: float = 500
 var damage: int = 10
 var lifetime: float = 3.0
-var spell_type: SpellSystem.SpellType = SpellSystem.SpellType.BASIC
 var effect_type: String = "none"
 
-# Variables de efectos especiales
-var piercing: bool = false  # Para rayos que atraviesan
-var burn_duration: float = 2.0  # Duración del daño continuo
-var slow_factor: float = 0.5  # Factor de ralentización
-var slow_duration: float = 1.5  # Duración de ralentización
+# Visual components
+@onready var sprite_node: Sprite2D
+@onready var collision_shape: CollisionShape2D
+
+# Special effects
+var piercing: bool = false
+var burn_duration: float = 2.0
+var slow_factor: float = 0.5
+var slow_duration: float = 1.5
+
+# Internal
+var life_timer: float = 0.0
 
 func _ready():
-	# Configurar propiedades según el tipo de hechizo
-	var spell_data = SpellSystem.get_spell_data(spell_type)
-	speed = spell_data["speed"]
-	damage = spell_data["damage"]
-	effect_type = spell_data["effect"]
+	_setup_visuals()
+	_setup_collision()
+	print("[MagicProjectile] Projectile created with damage: ", damage)
+
+func _setup_visuals():
+	"""Setup projectile visual representation"""
+	sprite_node = Sprite2D.new()
+	add_child(sprite_node)
 	
-	# Configurar efectos especiales
-	match effect_type:
-		"pierce":
-			piercing = true
-		"burn", "slow":
-			pass  # Se manejan en la colisión
-	
-	# Crear sprite visual
-	var sprite = Sprite2D.new()
-	var texture = ImageTexture.new()
+	# Create a yellow projectile
 	var image = Image.create(8, 8, false, Image.FORMAT_RGB8)
-	image.fill(SpellSystem.get_spell_color(spell_type))
+	image.fill(Color.YELLOW)
+	var texture = ImageTexture.new()
 	texture.set_image(image)
-	sprite.texture = texture
-	add_child(sprite)
+	sprite_node.texture = texture
+
+func _setup_collision():
+	"""Setup collision detection"""
+	collision_shape = CollisionShape2D.new()
+	var circle_shape = CircleShape2D.new()
+	circle_shape.radius = 4
+	collision_shape.shape = circle_shape
+	add_child(collision_shape)
 	
-	# Crear colisión
-	var collision = CollisionShape2D.new()
-	var shape = RectangleShape2D.new()
-	shape.size = Vector2(6, 6)
-	collision.shape = shape
-	add_child(collision)
-	
-	# Configurar capas de colisión
+	# Set collision layers
 	collision_layer = 4  # Projectile layer
-	collision_mask = 10  # Walls (2) + Enemies (8)
-	
-	print("Magic projectile created - Type: ", SpellSystem.get_spell_name(spell_type), ", Effect: ", effect_type)
-
-func set_direction(new_direction: Vector2):
-	direction = new_direction.normalized()
-
-func set_spell_type(new_spell_type: SpellSystem.SpellType):
-	spell_type = new_spell_type
+	collision_mask = 2 | 8  # Can hit walls (layer 2) and enemies (layer 8)
 
 func _physics_process(delta):
-	# Movimiento
+	# Update lifetime
+	life_timer += delta
+	if life_timer >= lifetime:
+		_destroy()
+		return
+	
+	# Move projectile
 	velocity = direction * speed
-	var collision = move_and_collide(velocity * delta)
+	move_and_slide()
 	
-	# Manejar colisiones
-	if collision:
+	# Check for collisions
+	_check_collisions()
+
+func _check_collisions():
+	"""Check for collisions with enemies or walls"""
+	for i in get_slide_collision_count():
+		var collision = get_slide_collision(i)
 		var collider = collision.get_collider()
-		handle_collision(collider)
-	
-	# Reducir tiempo de vida
-	lifetime -= delta
-	if lifetime <= 0:
-		queue_free()
-
-func handle_collision(collider):
-	"""Manejar colisión con diferentes tipos de objetos"""
-	print("Magic projectile hit: ", collider.name)
-	
-	if collider.has_method("take_damage"):
-		# Es un enemigo, aplicar daño y efectos
-		apply_spell_effect(collider)
 		
-		# Solo destruir el proyectil si no es perforante
-		if not piercing:
-			queue_free()
-	else:
-		# Es una pared u otro obstáculo
-		queue_free()
+		if collider:
+			_handle_collision(collider)
 
-func apply_spell_effect(target):
-	"""Aplicar el efecto del hechizo al objetivo"""
-	# Aplicar daño base
-	target.take_damage(damage)
+func _handle_collision(collider: Node):
+	"""Handle collision with an object"""
+	print("[MagicProjectile] Hit: ", collider.name)
 	
-	# Aplicar efectos especiales según el tipo
+	# Check if it's an enemy
+	if collider.collision_layer & 8:  # Enemy layer
+		_hit_enemy(collider)
+	
+	# Check if it's a wall
+	elif collider.collision_layer & 2:  # Wall layer
+		_hit_wall()
+
+func _hit_enemy(enemy: Node):
+	"""Handle hitting an enemy"""
+	print("[MagicProjectile] Hit enemy for ", damage, " damage")
+	
+	# Deal damage if enemy has take_damage method
+	if enemy.has_method("take_damage"):
+		enemy.take_damage(damage)
+	
+	# Apply special effects
+	_apply_effects(enemy)
+	
+	# Destroy projectile unless it's piercing
+	if not piercing:
+		_destroy()
+
+func _hit_wall():
+	"""Handle hitting a wall"""
+	print("[MagicProjectile] Hit wall")
+	_destroy()
+
+func _apply_effects(target: Node):
+	"""Apply special effects to target"""
 	match effect_type:
 		"burn":
-			apply_burn_effect(target)
+			_apply_burn_effect(target)
 		"slow":
-			apply_slow_effect(target)
+			_apply_slow_effect(target)
 		"pierce":
-			# El rayo ya se configuró para no destruirse
-			pass
+			piercing = true
+		_:
+			pass  # No special effect
 
-func apply_burn_effect(target):
-	"""Aplicar efecto de quemadura (daño continuo)"""
-	if target.has_method("apply_burn"):
-		target.apply_burn(damage / 2, burn_duration)
-		print("Applied burn effect to ", target.name)
+func _apply_burn_effect(target: Node):
+	"""Apply burn damage over time"""
+	print("[MagicProjectile] Applied burn effect")
+	# TODO: Implement burn damage over time
 
-func apply_slow_effect(target):
-	"""Aplicar efecto de ralentización"""
-	if target.has_method("apply_slow"):
-		target.apply_slow(slow_factor, slow_duration)
-		print("Applied slow effect to ", target.name)
+func _apply_slow_effect(target: Node):
+	"""Apply slow effect"""
+	print("[MagicProjectile] Applied slow effect")
+	# TODO: Implement slow effect
+
+func _destroy():
+	"""Destroy the projectile"""
+	queue_free()
+
+func set_spell_properties(spell_damage: int, spell_speed: float, spell_effect: String):
+	"""Set projectile properties from spell data"""
+	damage = spell_damage
+	speed = spell_speed
+	effect_type = spell_effect
+	
+	# Update visual based on effect
+	_update_visual_for_effect()
+
+func _update_visual_for_effect():
+	"""Update projectile appearance based on effect type"""
+	if not sprite_node:
+		return
+	
+	var color = Color.YELLOW
+	match effect_type:
+		"burn":
+			color = Color.RED
+		"slow":
+			color = Color.CYAN
+		"pierce":
+			color = Color.PURPLE
+		_:
+			color = Color.YELLOW
+	
+	var image = Image.create(8, 8, false, Image.FORMAT_RGB8)
+	image.fill(color)
+	var texture = ImageTexture.new()
+	texture.set_image(image)
+	sprite_node.texture = texture

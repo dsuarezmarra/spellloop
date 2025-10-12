@@ -64,10 +64,11 @@ func _setup_ui_canvas() -> void:
 
 func _connect_game_signals() -> void:
 	"""Connect to game manager signals"""
-	if GameManager:
-		GameManager.game_state_changed.connect(_on_game_state_changed)
-		GameManager.game_paused.connect(_on_game_paused)
-		GameManager.game_resumed.connect(_on_game_resumed)
+	var game_manager = get_node("/root/GameManager")
+	if game_manager:
+		game_manager.game_state_changed.connect(_on_game_state_changed)
+		game_manager.game_paused.connect(_on_game_paused)
+		game_manager.game_resumed.connect(_on_game_resumed)
 
 func show_main_menu() -> void:
 	"""Show the main menu"""
@@ -201,19 +202,24 @@ func update_loading_progress(progress: float, message: String = "") -> void:
 	print("[UIManager] Loading progress: ", progress * 100, "% - ", message)
 
 # Signal handlers
-func _on_game_state_changed(_old_state: GameManager.GameState, new_state: GameManager.GameState) -> void:
+func _on_game_state_changed(_old_state, new_state) -> void:
 	"""Handle game state changes"""
+	# Get GameState enum from GameManager
+	var game_manager = get_node("/root/GameManager")
+	if not game_manager:
+		return
+	
 	match new_state:
-		GameManager.GameState.MAIN_MENU:
+		0: # MAIN_MENU
 			close_all_modals()
 			show_main_menu()
-		GameManager.GameState.IN_RUN:
+		1: # IN_RUN
 			close_all_modals()
 			show_game_hud()
-		GameManager.GameState.GAME_OVER:
+		3: # GAME_OVER
 			# Game over modal will be shown by the game scene
 			pass
-		GameManager.GameState.SETTINGS:
+		5: # SETTINGS
 			show_settings_menu()
 
 func _on_game_paused() -> void:

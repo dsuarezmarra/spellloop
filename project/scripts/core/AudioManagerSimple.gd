@@ -171,5 +171,6 @@ func _save_volume_settings() -> void:
 		"ambient_volume": ambient_volume
 	}
 	
-	if SaveManager:
-		SaveManager.save_settings(settings)
+	var save_manager = get_node("/root/SaveManager")
+	if save_manager:
+		save_manager.save_settings(settings)

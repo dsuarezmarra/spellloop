@@ -73,6 +73,18 @@ func _setup_manager_connections() -> void:
 	# Connect to InputManager signals
 	if InputManager:
 		InputManager.pause_requested.connect(_on_pause_requested)
+	
+	# Initialize dungeon system
+	_initialize_dungeon_system()
+
+func _initialize_dungeon_system() -> void:
+	"""Initialize the dungeon system"""
+	# Note: DungeonSystem is now an autoload, so we don't need to preload it
+	# Just reference the global DungeonSystem autoload
+	if DungeonSystem:
+		print("[GameManager] DungeonSystem autoload found and ready")
+	else:
+		print("[GameManager] Warning: DungeonSystem autoload not found")
 
 func start_new_run() -> void:
 	"""Start a new game run"""
@@ -96,6 +108,10 @@ func start_new_run() -> void:
 	
 	game_state_changed.emit(old_state, current_state)
 	run_started.emit()
+	
+	# Start the dungeon using the global autoload
+	if DungeonSystem:
+		DungeonSystem.start_new_dungeon()
 
 func end_current_run(reason: String) -> void:
 	"""End the current game run with a given reason"""

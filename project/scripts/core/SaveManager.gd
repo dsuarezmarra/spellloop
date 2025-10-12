@@ -330,6 +330,20 @@ func spend_meta_currency(amount: int) -> bool:
 		return true
 	return false
 
+func save_dungeon_completion(dungeon_seed: int, rewards: Dictionary) -> void:
+	"""Save dungeon completion data"""
+	print("[SaveManager] Saving dungeon completion...")
+	
+	var run_data = {
+		"type": "dungeon",
+		"seed": dungeon_seed,
+		"rewards": rewards,
+		"timestamp": Time.get_unix_time_from_system(),
+		"duration": 0  # Placeholder
+	}
+	
+	save_run_data(run_data)
+
 func _validate_save_data(data: Dictionary) -> Dictionary:
 	"""Validate loaded save data and merge with defaults"""
 	var validated_data = DEFAULT_SAVE_DATA.duplicate(true)

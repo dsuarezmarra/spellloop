@@ -14,6 +14,7 @@ var wizard_sprites = {}
 
 func _ready():
 	print("Player inicializado")
+	z_index = 10  # Asegurar que el wizard esté por encima de las paredes
 	load_wizard_sprites()
 
 func load_wizard_sprites():
@@ -30,10 +31,16 @@ func load_wizard_sprites():
 		else:
 			print("Error cargando sprite: ", direction)
 	
-	# Establecer sprite inicial
+	# Establecer sprite inicial y escalar
 	if sprite:
 		sprite.texture = wizard_sprites["down"]
-		print("Sprites del wizard cargados")
+		sprite.z_index = 15  # Sprite del wizard por encima de todo
+		# Escalar sprite: de 500x500 a 64x64 píxeles (tamaño actualizado)
+		var target_size = 64.0
+		var original_size = sprite.texture.get_size().x  # Asumiendo sprite cuadrado
+		var scale_factor = target_size / original_size
+		sprite.scale = Vector2(scale_factor, scale_factor)
+		print("Sprites del wizard cargados y escalados a ", target_size, "x", target_size, " píxeles")
 
 func _physics_process(delta):
 	handle_movement(delta)
@@ -43,13 +50,13 @@ func handle_movement(delta):
 	# Obtener dirección de movimiento con WASD
 	var input_vector = Vector2()
 	
-	if Input.is_key_pressed(KEY_A):
+	if Input.is_action_pressed("move_left") or Input.is_key_pressed(KEY_A):
 		input_vector.x -= 1
-	if Input.is_key_pressed(KEY_D):
+	if Input.is_action_pressed("move_right") or Input.is_key_pressed(KEY_D):
 		input_vector.x += 1
-	if Input.is_key_pressed(KEY_W):
+	if Input.is_action_pressed("move_up") or Input.is_key_pressed(KEY_W):
 		input_vector.y -= 1
-	if Input.is_key_pressed(KEY_S):
+	if Input.is_action_pressed("move_down") or Input.is_key_pressed(KEY_S):
 		input_vector.y += 1
 	
 	# Normalizar y aplicar velocidad
@@ -59,6 +66,7 @@ func handle_movement(delta):
 	else:
 		velocity = velocity.move_toward(Vector2.ZERO, speed * delta * 3)
 	
+	# Mover con colisiones
 	move_and_slide()
 
 func update_sprite_direction():

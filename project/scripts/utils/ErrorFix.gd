@@ -38,7 +38,7 @@ func disable_problematic_autoloads():
 	]
 	
 	for autoload in problematic_autoloads:
-		var line_pattern = autoload + '="*res://scripts/systems/' + autoload + '.gd"'
+		var line_pattern = autoload + '="*res://scripts/core/' + autoload + '.gd"'
 		var commented_line = "#" + line_pattern
 		content = content.replace(line_pattern, commented_line)
 	
