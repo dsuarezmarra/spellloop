@@ -75,11 +75,11 @@ func test_dungeon_generation() -> bool:
 		print("  Error: No se pudo generar dungeon")
 		return false
 	
-	if dungeon_data.rooms.size() == 0:
+	if dungeon_data["rooms"].size() == 0:
 		print("  Error: Dungeon generado sin rooms")
 		return false
 	
-	var rooms_text = "  Dungeon generado con " + str(dungeon_data.rooms.size()) + " rooms"
+	var rooms_text = "  Dungeon generado con " + str(dungeon_data["rooms"].size()) + " rooms"
 	print(rooms_text)
 	return true
 

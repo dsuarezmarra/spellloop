@@ -13,12 +13,12 @@ func setup_dungeon(data: Dictionary):
 	dungeon_data = data
 
 func enter_room(position: Vector2):
-	if not dungeon_data or not position in dungeon_data.rooms:
+	if not dungeon_data or not position in dungeon_data["rooms"]:
 		print("❌ Room inválida: %s" % str(position))
 		return
 	
 	current_room_position = position
-	current_room = dungeon_data.rooms[position]
+	current_room = dungeon_data["rooms"][position]
 	current_room.is_visited = true
 	
 	print("🚪 Entrando a room en %s (tipo: %s)" % [str(position), current_room.room_type])
@@ -36,7 +36,7 @@ func clear_current_room():
 func try_move_to_room(direction: Vector2) -> bool:
 	var new_position = current_room_position + direction
 	
-	if new_position in dungeon_data.connections.get(current_room_position, []):
+	if new_position in dungeon_data["connections"].get(current_room_position, []):
 		enter_room(new_position)
 		return true
 	

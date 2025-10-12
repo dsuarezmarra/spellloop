@@ -30,12 +30,12 @@ func initialize(dungeon_data_ref: Dictionary, player_ref: CharacterBody2D, camer
 	main_scene = scene_ref
 	
 	# Posicionar en room inicial
-	current_room_position = dungeon_data.start_room_pos
+	current_room_position = dungeon_data["start_room_pos"]
 	load_current_room()
 
 func load_current_room():
 	"""Cargar la room actual"""
-	if not dungeon_data or not current_room_position in dungeon_data.rooms:
+	if not dungeon_data or not current_room_position in dungeon_data["rooms"]:
 		print("❌ Error: Room no encontrada en posición %s" % current_room_position)
 		return
 	
@@ -50,7 +50,7 @@ func load_current_room():
 	main_scene.add_child(current_room_scene)
 	
 	# Inicializar con datos de la room
-	var room_data = dungeon_data.rooms[current_room_position]
+	var room_data = dungeon_data["rooms"][current_room_position]
 	current_room_scene.initialize_room(room_data, player)
 	
 	# Conectar señales
@@ -70,12 +70,12 @@ func _on_player_exit_room(direction: Vector2):
 	var new_room_position = current_room_position + direction
 	
 	# Verificar que la nueva room existe
-	if not new_room_position in dungeon_data.rooms:
+	if not new_room_position in dungeon_data["rooms"]:
 		print("⚠️ No hay room en dirección %s desde %s" % [direction, current_room_position])
 		return
 	
 	# Verificar que la room está conectada
-	var current_room_data = dungeon_data.rooms[current_room_position]
+	var current_room_data = dungeon_data["rooms"][current_room_position]
 	if not direction in current_room_data.connections:
 		print("⚠️ Room no conectada en dirección %s" % direction)
 		return
@@ -151,8 +151,8 @@ func setup_camera():
 
 func get_current_room_data() -> RoomData:
 	"""Obtener datos de la room actual"""
-	if dungeon_data and current_room_position in dungeon_data.rooms:
-		return dungeon_data.rooms[current_room_position]
+	if dungeon_data and current_room_position in dungeon_data["rooms"]:
+		return dungeon_data["rooms"][current_room_position]
 	return null
 
 func is_room_cleared() -> bool:
@@ -172,6 +172,6 @@ func get_minimap_data() -> Dictionary:
 	"""Obtener datos para el minimap"""
 	return {
 		"current_position": current_room_position,
-		"rooms": dungeon_data.rooms,
-		"connections": dungeon_data.connections
+		"rooms": dungeon_data["rooms"],
+		"connections": dungeon_data["connections"]
 	}
