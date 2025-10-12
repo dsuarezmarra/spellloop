@@ -108,7 +108,7 @@ func create_magic_doors():
 	# DIMENSIONES EXACTAS de las paredes según create_optimized_wall
 	var wall_thickness = 32.0  # Mismo grosor exacto que visual_size de paredes
 	var door_base_width = wall_thickness    # 32px - coincidencia exacta
-	var door_base_height = wall_thickness * 1.5  # 48px - proporcionado
+	var door_base_height = wall_thickness  # 32px - coincidencia exacta con grosor de pared
 	
 	# TODAS las puertas usan las mismas dimensiones base
 	var door_size = Vector2(door_base_width, door_base_height)
@@ -139,18 +139,23 @@ func create_magic_doors():
 func create_single_door(direction: String, pos: Vector2, size: Vector2, rotation_deg: float):
 	"""Crear una puerta individual - TODAS IGUALES, solo rotadas"""
 	var door = Node2D.new()
-	var door_visual = TextureRect.new()
+	var door_visual = Sprite2D.new()  # CAMBIAR A Sprite2D para control exacto de tamaño
 	
 	# Crear textura de puerta cerrada inicialmente - MISMA TEXTURA PARA TODAS
 	var door_texture = MagicWallTextures.create_magic_door_texture(false, size)
 	
-	# Configurar visual de la puerta
+	# Configurar visual de la puerta con Sprite2D
 	door_visual.texture = door_texture
-	door_visual.size = size
-	door_visual.position = Vector2(-size.x/2, -size.y/2)  # Centrar en el pivot
+	# Calcular escala para que coincida exactamente con el tamaño deseado
+	var texture_size = door_texture.get_size()
+	var scale_x = size.x / texture_size.x
+	var scale_y = size.y / texture_size.y
+	door_visual.scale = Vector2(scale_x, scale_y)
 	door_visual.z_index = 15  # Por encima de paredes
 	
-	print("🚪 DEBUG VISUAL: size=", size, " texture_size=", door_texture.get_size(), " visual_size=", door_visual.size)
+	print("🚪 DEBUG VISUAL: size=", size, " texture_size=", texture_size, " scale=", door_visual.scale)
+	print("🚪 DEBUG POSICIÓN: pos=", pos, " door.position será=", pos)
+	print("🚪 DEBUG COMPARACIÓN: Pared grosor=32px, Puerta ancho=", size.x, "px, Escala=", scale_x)
 	
 	# Configurar rotación - SIMPLE, sin cálculos complicados
 	door.rotation_degrees = rotation_deg
@@ -201,6 +206,13 @@ func open_all_doors():
 			# Crear nueva textura de puerta abierta
 			var open_texture = MagicWallTextures.create_magic_door_texture(true, door_data.size)
 			door_data.visual.texture = open_texture
+			
+			# Actualizar escala para Sprite2D
+			var texture_size = open_texture.get_size()
+			var scale_x = door_data.size.x / texture_size.x
+			var scale_y = door_data.size.y / texture_size.y
+			door_data.visual.scale = Vector2(scale_x, scale_y)
+			
 			door_data.is_open = true
 			
 			print("✨ Puerta ", door_data.direction, " abierta!")
@@ -212,6 +224,13 @@ func close_all_doors():
 			# Crear nueva textura de puerta cerrada
 			var closed_texture = MagicWallTextures.create_magic_door_texture(false, door_data.size)
 			door_data.visual.texture = closed_texture
+			
+			# Actualizar escala para Sprite2D
+			var texture_size = closed_texture.get_size()
+			var scale_x = door_data.size.x / texture_size.x
+			var scale_y = door_data.size.y / texture_size.y
+			door_data.visual.scale = Vector2(scale_x, scale_y)
+			
 			door_data.is_open = false
 			
 			print("🚪 Puerta ", door_data.direction, " cerrada!")

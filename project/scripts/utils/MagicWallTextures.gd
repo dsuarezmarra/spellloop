@@ -87,7 +87,8 @@ static func create_closed_door_texture(image: Image, size: Vector2) -> ImageText
 	
 	var center_x = width / 2.0
 	var arch_radius = width / 2.0  # USAR TODO EL ANCHO - Sin restar
-	var arch_height = int(height * 0.4)  # Hacer el arco más pequeño para que la parte rectangular sea mayor
+	# Para puertas cuadradas (32x32), hacer arco más pequeño
+	var arch_height = int(height * 0.5) if width == height else int(height * 0.4)
 	
 	print("🚪 DEBUG PUERTA CERRADA: width=", width, " height=", height, " arch_radius=", arch_radius, " arch_height=", arch_height)
 	
@@ -182,7 +183,7 @@ static func create_open_door_texture(image: Image, size: Vector2) -> ImageTextur
 	var width = int(size.x)
 	var height = int(size.y)
 	var center_x = width / 2.0
-	var arch_height = int(height * 0.4)    # MISMA proporción que puerta cerrada
+	var arch_height = int(height * 0.5) if width == height else int(height * 0.4)    # Ajuste para puertas cuadradas
 	var arch_radius = width / 2.0  # USAR TODO EL ANCHO - Igual que puerta cerrada
 	
 	# Inicializar con transparente
