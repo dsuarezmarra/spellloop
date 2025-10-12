@@ -60,16 +60,20 @@ static func create_sand_floor_texture(size: Vector2) -> ImageTexture:
 
 static func create_magic_door_texture(is_open: bool, size: Vector2) -> ImageTexture:
 	"""Crear textura de puerta mágica estilo castillo"""
+	print("🚪 DEBUG: Creando textura de puerta - Tamaño: ", size, " - Abierta: ", is_open)
 	var image = Image.create(int(size.x), int(size.y), false, Image.FORMAT_RGBA8)
 	
 	if is_open:
 		return create_open_door_texture(image, size)
 	else:
-		return create_closed_door_texture(int(size.x), int(size.y))
+		return create_closed_door_texture(image, size)  # USAR LA MISMA LÓGICA
 
-static func create_closed_door_texture(width: int, height: int) -> ImageTexture:
+static func create_closed_door_texture(image: Image, size: Vector2) -> ImageTexture:
 	"""Crear textura de puerta cerrada con forma de arco - MEJORADA"""
-	var image = Image.create(width, height, false, Image.FORMAT_RGBA8)
+	
+	var width = int(size.x)
+	var height = int(size.y)
+	
 	image.fill(Color.TRANSPARENT)
 	
 	# Colores mejorados para puerta medieval mágica
@@ -83,7 +87,9 @@ static func create_closed_door_texture(width: int, height: int) -> ImageTexture:
 	
 	var center_x = width / 2.0
 	var arch_radius = width / 2.0  # USAR TODO EL ANCHO - Sin restar
-	var arch_height = int(arch_radius)
+	var arch_height = int(height * 0.4)  # Hacer el arco más pequeño para que la parte rectangular sea mayor
+	
+	print("🚪 DEBUG PUERTA CERRADA: width=", width, " height=", height, " arch_radius=", arch_radius, " arch_height=", arch_height)
 	
 	# Crear forma de arco con mejor definición
 	for y in range(height):
@@ -176,7 +182,7 @@ static func create_open_door_texture(image: Image, size: Vector2) -> ImageTextur
 	var width = int(size.x)
 	var height = int(size.y)
 	var center_x = width / 2.0
-	var arch_height = int(height * 0.7)    # Misma proporción que puerta cerrada convertida a entero
+	var arch_height = int(height * 0.4)    # MISMA proporción que puerta cerrada
 	var arch_radius = width / 2.0  # USAR TODO EL ANCHO - Igual que puerta cerrada
 	
 	# Inicializar con transparente

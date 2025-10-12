@@ -150,6 +150,8 @@ func create_single_door(direction: String, pos: Vector2, size: Vector2, rotation
 	door_visual.position = Vector2(-size.x/2, -size.y/2)  # Centrar en el pivot
 	door_visual.z_index = 15  # Por encima de paredes
 	
+	print("🚪 DEBUG VISUAL: size=", size, " texture_size=", door_texture.get_size(), " visual_size=", door_visual.size)
+	
 	# Configurar rotación - SIMPLE, sin cálculos complicados
 	door.rotation_degrees = rotation_deg
 	
