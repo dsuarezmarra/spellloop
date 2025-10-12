@@ -1,14 +1,53 @@
 extends Node2D
 
+# Sistema de dimensiones dinámicas - Se adapta automáticamente a cualquier resolución
+var ROOM_WIDTH: float
+var ROOM_HEIGHT: float
+const WALL_THICKNESS = 32
+
 var player: CharacterBody2D
 var doors: Array = []  # Array para almacenar las puertas
 var enemies_remaining: int = 3  # Número de enemigos simulados
 
 func _ready():
-	print("=== TEST SIMPLE ROOM SYSTEM ===")
+	print("=== SISTEMA DE SALA ESCALABLE ===")
+	# Obtener dimensiones reales del viewport
+	update_room_dimensions()
 	create_simple_test()
+	
+	# Conectar señal para reescalar si cambia el tamaño de ventana
+	get_viewport().size_changed.connect(_on_viewport_size_changed)
+
+func update_room_dimensions():
+	"""Actualizar dimensiones de la sala basándose en el viewport actual"""
+	var viewport_size = get_viewport().get_visible_rect().size
+	ROOM_WIDTH = viewport_size.x
+	ROOM_HEIGHT = viewport_size.y
+	
+	print("🖥️ Viewport: ", viewport_size)
+	print("🏠 Sala escalada a: ", ROOM_WIDTH, "x", ROOM_HEIGHT)
+
+func _on_viewport_size_changed():
+	"""Reescalar sala cuando cambia el tamaño de la ventana"""
+	print("🔄 Tamaño de ventana cambió - Reescalando sala...")
+	update_room_dimensions()
+	# Aquí podrías recrear la sala si fuera necesario
+	# Por ahora solo actualizamos las dimensiones
 
 func create_simple_test():
+	"""
+	🎯 SISTEMA DE SALA ESCALABLE
+	
+	Este sistema se adapta automáticamente a CUALQUIER resolución:
+	• 720p (1280x720)
+	• 1080p (1920x1080) 
+	• 1440p (2560x1440)
+	• 4K (3840x2160)
+	• O cualquier tamaño personalizado
+	
+	Las paredes siempre estarán en los bordes exactos de la ventana.
+	"""
+	print("🎮 Creando sala escalable...")
 	# Crear Player
 	player = CharacterBody2D.new()
 	player.script = preload("res://scripts/entities/Player.gd")
@@ -16,6 +55,8 @@ func create_simple_test():
 	# Sprite del player
 	var sprite = Sprite2D.new()
 	sprite.name = "Sprite2D"
+	sprite.texture = preload("res://sprites/wizard/wizard_down.png")
+	# NO establecer escala aquí - Player.gd se encarga automáticamente
 	player.add_child(sprite)
 	
 	# Colisión del player (circular como el original)
@@ -27,9 +68,10 @@ func create_simple_test():
 	
 	add_child(player)
 	
-	# Posicionar jugador
-	player.position = Vector2(512, 288)
-	player.z_index = 20  # Por encima de todo
+		# Posicionar player en centro de la habitación
+	player.position = Vector2(ROOM_WIDTH/2, ROOM_HEIGHT/2)
+	player.z_index = 100  # Por encima de TODO (paredes=20, puertas=15, suelo=0)
+	add_child(player)
 	
 	# Crear room simple
 	create_simple_room()
@@ -69,8 +111,8 @@ func create_sand_floor():
 	var floor_visual = TextureRect.new()
 	
 	# Área del suelo (toda el área de juego interior)
-	var floor_pos = Vector2(32, 32)  # Después de las paredes
-	var floor_size = Vector2(960, 512)  # Área interior sin paredes
+	var floor_pos = Vector2(WALL_THICKNESS, WALL_THICKNESS)  # Después de las paredes
+	var floor_size = Vector2(ROOM_WIDTH - WALL_THICKNESS*2, ROOM_HEIGHT - WALL_THICKNESS*2)  # Área interior sin paredes
 	
 	# Crear textura de arena
 	var sand_texture = MagicWallTextures.create_sand_floor_texture(floor_size)
@@ -84,7 +126,7 @@ func create_sand_floor():
 	floor_visual.texture = sand_texture
 	floor_visual.size = floor_size
 	floor_visual.position = Vector2(0, 0)  # Relativo al sand_floor node
-	floor_visual.z_index = 1  # Por encima del fondo pero debajo de paredes
+	floor_visual.z_index = 0  # Suelo en el fondo
 	floor_visual.stretch_mode = TextureRect.STRETCH_KEEP  # No repetir, mantener textura única
 	
 	# Debug: verificar que la textura se creó
@@ -96,7 +138,7 @@ func create_sand_floor():
 	# Ensamblar suelo
 	sand_floor.add_child(floor_visual)
 	sand_floor.position = floor_pos
-	sand_floor.z_index = 1  # Por encima del fondo
+	sand_floor.z_index = 0  # Suelo en el fondo
 	
 	add_child(sand_floor)
 	print("✅ Suelo de arena creado - Área: ", floor_size, " en posición ", floor_pos)
@@ -116,22 +158,22 @@ func create_magic_doors():
 	# POSICIONES EXACTAS - Coinciden con las posiciones visuales reales de las paredes
 	# Puerta superior - Pared visual: Y=0 a Y=32, centro en Y=16
 	create_single_door("top", 
-		Vector2(512, 16),  # Centro horizontal de pantalla, centro vertical de pared superior
+		Vector2(ROOM_WIDTH/2, WALL_THICKNESS/2),  # Centro horizontal de pantalla, centro vertical de pared superior
 		door_size, 0)
 	
-	# Puerta derecha - Pared visual: X=992 a X=1024, centro en X=1008  
+	# Puerta derecha - Pared visual centro en X=(ROOM_WIDTH - WALL_THICKNESS/2)
 	create_single_door("right", 
-		Vector2(1008, 288),  # Centro de pared derecha, centro vertical de pantalla
+		Vector2(ROOM_WIDTH - WALL_THICKNESS/2, ROOM_HEIGHT/2),  # Centro de pared derecha, centro vertical de pantalla
 		door_size, 90)
 	
-	# Puerta inferior - Pared visual: Y=544 a Y=576, centro en Y=560
+	# Puerta inferior - Pared visual centro en Y=(ROOM_HEIGHT - WALL_THICKNESS/2)
 	create_single_door("bottom", 
-		Vector2(512, 560),  # Centro horizontal de pantalla, centro vertical de pared inferior
+		Vector2(ROOM_WIDTH/2, ROOM_HEIGHT - WALL_THICKNESS/2),  # Centro horizontal de pantalla, centro vertical de pared inferior
 		door_size, 180)
 	
 	# Puerta izquierda - Pared visual: X=0 a X=32, centro en X=16
 	create_single_door("left", 
-		Vector2(16, 288),  # Centro de pared izquierda, centro vertical de pantalla
+		Vector2(WALL_THICKNESS/2, ROOM_HEIGHT/2),  # Centro de pared izquierda, centro vertical de pantalla
 		door_size, 270)
 	
 	print("✅ Puertas con coincidencia EXACTA de grosor creadas: ", doors.size())
@@ -239,91 +281,69 @@ func close_all_doors():
 	enemies_remaining = 3
 	print("🔄 Enemigos reiniciados: ", enemies_remaining)
 
-func create_optimized_wall(wall_type: String):
-	"""Crear pared con colisión solo en borde exterior y texturas de ladrillos de castillo"""
-	var wall = StaticBody2D.new()
-	var collision = CollisionShape2D.new()
-	var rect_shape = RectangleShape2D.new()
-	var visual = TextureRect.new()  # TextureRect para texturas de ladrillos
+func create_optimized_wall(wall_name: String):
+	"""Crear pared optimizada con textura de ladrillos de castillo - SIMPLIFICADO"""
 	
-	# Grosor de colisión ultra-fino
-	var collision_thickness = 1.0
-	
-	# Configurar según el tipo de pared
-	var collision_pos: Vector2
-	var collision_size: Vector2
-	var visual_pos: Vector2
+	# Calcular posición y tamaño según el tipo de pared
+	var position: Vector2
 	var visual_size: Vector2
-	var wall_pos: Vector2
 	
-	match wall_type:
+	match wall_name:
 		"top":
-			# Colisión en el borde superior absoluto (y=0)
-			wall_pos = Vector2(0, 0)
-			collision_pos = Vector2(512, 0.5)  # Centro en x, borde en y
-			collision_size = Vector2(1024, collision_thickness)
-			# Visual con grosor reducido a la mitad (32 píxeles)
-			visual_pos = Vector2(0, 0)  # Desde el borde mismo
-			visual_size = Vector2(1024, 32)  # Grosor reducido a la mitad
-			
+			position = Vector2(0, 0)  # Borde superior de la pantalla
+			visual_size = Vector2(ROOM_WIDTH, WALL_THICKNESS)  # 1920x32
 		"bottom":
-			# Colisión en el borde inferior absoluto (y=575)
-			wall_pos = Vector2(0, 575)
-			collision_pos = Vector2(512, 0.5)
-			collision_size = Vector2(1024, collision_thickness)
-			# Visual con grosor reducido a la mitad
-			visual_pos = Vector2(0, -31)  # Ajustado para grosor reducido
-			visual_size = Vector2(1024, 32)  # Grosor reducido a la mitad
-			
+			position = Vector2(0, ROOM_HEIGHT - WALL_THICKNESS)  # Borde inferior de la pantalla
+			visual_size = Vector2(ROOM_WIDTH, WALL_THICKNESS)  # 1920x32
 		"left":
-			# Colisión en el borde izquierdo absoluto (x=0)
-			wall_pos = Vector2(0, 0)
-			collision_pos = Vector2(0.5, 288)  # Borde en x, centro en y
-			collision_size = Vector2(collision_thickness, 576)
-			# Visual con grosor reducido a la mitad
-			visual_pos = Vector2(0, 0)  # Desde el borde mismo
-			visual_size = Vector2(32, 576)  # Grosor reducido a la mitad
-			
+			position = Vector2(0, 0)  # Borde izquierdo de la pantalla
+			visual_size = Vector2(WALL_THICKNESS, ROOM_HEIGHT)  # 32x1080
 		"right":
-			# Colisión en el borde derecho absoluto (x=1023)
-			wall_pos = Vector2(1023, 0)
-			collision_pos = Vector2(0.5, 288)
-			collision_size = Vector2(collision_thickness, 576)
-			# Visual con grosor reducido a la mitad
-			visual_pos = Vector2(-31, 0)  # Ajustado para grosor reducido
-			visual_size = Vector2(32, 576)  # Grosor reducido a la mitad
+			position = Vector2(ROOM_WIDTH - WALL_THICKNESS, 0)  # Borde derecho de la pantalla
+			visual_size = Vector2(WALL_THICKNESS, ROOM_HEIGHT)  # 32x1080
 	
-	# Configurar colisión
-	rect_shape.size = collision_size
-	collision.shape = rect_shape
-	collision.position = collision_pos
+	# Crear textura de ladrillos para la pared
+	var brick_texture = MagicWallTextures.create_magic_wall_texture(wall_name, visual_size)
 	
-	# Crear textura de ladrillos de castillo
-	var brick_texture = MagicWallTextures.create_magic_wall_texture(wall_type, visual_size)
+	print("🧱 Textura de ladrillos creada para ", wall_name, " - Tamaño: ", visual_size)
 	
-	# Debug: verificar que la textura se creó correctamente
-	if brick_texture:
-		print("🧱 Textura de ladrillos creada para ", wall_type, " - Tamaño: ", brick_texture.get_size())
+	# Crear nodo visual (Sprite2D para mejor control de renderizado)
+	var wall_sprite = Sprite2D.new()
+	wall_sprite.texture = brick_texture  # USAR texturas de ladrillos normales
+	wall_sprite.position = position + visual_size / 2  # Sprite2D se posiciona por el centro
+	wall_sprite.z_index = 20  # Paredes MUY por encima del suelo (z_index 0)
+	
+	# Calcular escala para que el sprite coincida exactamente con el tamaño deseado
+	var texture_size = brick_texture.get_size()  # USAR textura de ladrillos
+	var scale_x = visual_size.x / texture_size.x
+	var scale_y = visual_size.y / texture_size.y
+	wall_sprite.scale = Vector2(scale_x, scale_y)
+	
+	add_child(wall_sprite)
+	
+	# Crear colisión ultra-fina (1px) en el borde exterior
+	var collision_body = StaticBody2D.new()
+	var collision_shape = CollisionShape2D.new()
+	var rect_shape = RectangleShape2D.new()
+	
+	# Configurar colisión de 1px en el borde
+	if wall_name in ["top", "bottom"]:
+		# Paredes horizontales: 1px de alto, ancho completo
+		rect_shape.size = Vector2(visual_size.x, 1)
+		collision_body.position = Vector2(position.x + visual_size.x/2, 
+										 position.y + (1 if wall_name == "top" else visual_size.y - 1))
 	else:
-		print("❌ ERROR: No se pudo crear textura para ", wall_type)
-		# Crear textura de fallback sólida
-		brick_texture = create_fallback_texture(visual_size)
+		# Paredes verticales: 1px de ancho, alto completo  
+		rect_shape.size = Vector2(1, visual_size.y)
+		collision_body.position = Vector2(position.x + (1 if wall_name == "left" else visual_size.x - 1),
+										 position.y + visual_size.y/2)
 	
-	# Configurar visual con textura de ladrillos
-	visual.texture = brick_texture
-	visual.size = visual_size
-	visual.position = visual_pos
-	visual.z_index = 10  # Por encima del suelo
-	visual.stretch_mode = TextureRect.STRETCH_TILE  # Repetir textura si es necesario
+	collision_shape.shape = rect_shape
+	collision_body.add_child(collision_shape)
+	add_child(collision_body)
 	
-	# Ensamblar pared
-	wall.add_child(visual)
-	wall.add_child(collision)
-	wall.position = wall_pos
-	wall.z_index = 10  # Por encima del suelo
-	
-	add_child(wall)
-	print("✅ Pared de ladrillos ", wall_type, " creada - Grosor reducido: ", visual_size, " en posición ", visual_pos)
+	print("✅ Pared de ladrillos ", wall_name, " creada - Tamaño: ", visual_size, " en posición ", position)
+	print("🔍 DEBUG ", wall_name, ": pos=", position, " size=", visual_size, " z_index=", wall_sprite.z_index)
 
 func create_fallback_texture(size: Vector2) -> ImageTexture:
 	"""Crear textura de fallback simple"""
@@ -347,7 +367,7 @@ func create_test_door(pos: Vector2, label: String):
 	door.size = Vector2(64, 64)
 	door.color = Color.GREEN
 	door.position = pos
-	door.z_index = -5  # Encima de paredes pero debajo del wizard
+	door.z_index = 10  # Por debajo de paredes (z_index=20) pero encima del suelo (z_index=0)
 	add_child(door)
 	
 	# Label para la puerta

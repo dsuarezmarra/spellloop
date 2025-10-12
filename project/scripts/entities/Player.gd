@@ -35,8 +35,8 @@ func load_wizard_sprites():
 	if sprite:
 		sprite.texture = wizard_sprites["down"]
 		sprite.z_index = 15  # Sprite del wizard por encima de todo
-		# Escalar sprite: de 500x500 a 64x64 píxeles (tamaño actualizado)
-		var target_size = 64.0
+		# Escalar sprite: de 500x500 a 128x128 píxeles (doble del tamaño anterior)
+		var target_size = 128.0
 		var original_size = sprite.texture.get_size().x  # Asumiendo sprite cuadrado
 		var scale_factor = target_size / original_size
 		sprite.scale = Vector2(scale_factor, scale_factor)

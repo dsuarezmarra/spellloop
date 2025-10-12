@@ -30,11 +30,13 @@ func setup_minimap():
 	background.color = Color(0, 0, 0, 0.7)  # Fondo semi-transparente
 	add_child(background)
 
-func update_minimap_data():
-	if not DungeonSystem:
-		return
+func update_minimap():
+	"""Update the minimap display"""
+	clear_minimap()
 	
-	dungeon_data = DungeonSystem.get_minimap_data()
+	# Sistema de mazmorra desactivado temporalmente
+	print("[MinimapUI] Minimapa desactivado")
+	return
 	if dungeon_data.is_empty():
 		return
 	
