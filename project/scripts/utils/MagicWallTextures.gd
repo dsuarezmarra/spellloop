@@ -82,8 +82,8 @@ static func create_closed_door_texture(width: int, height: int) -> ImageTexture:
 	var shadow_color = Color(0.2, 0.15, 0.1, 1.0)   # Sombra profunda
 	
 	var center_x = width / 2.0
-	var arch_radius = width / 2.0 - 1
-	var arch_height = arch_radius
+	var arch_radius = width / 2.0  # USAR TODO EL ANCHO - Sin restar
+	var arch_height = int(arch_radius)
 	
 	# Crear forma de arco con mejor definición
 	for y in range(height):
@@ -94,20 +94,16 @@ static func create_closed_door_texture(width: int, height: int) -> ImageTexture:
 			var is_door = false
 			var is_border = false
 			
-			if y >= arch_height and y < height - 1:
-				# Parte rectangular de la puerta
-				if x >= 1 and x < width - 1:
+			if y >= arch_height and y < height:
+				# Parte rectangular de la puerta - USAR TODO EL ANCHO SIN BORDES
+				if x >= 0 and x < width:
 					is_door = true
-				if x == 1 or x == width - 2:
-					is_border = true
 			else:
-				# Parte del arco
+				# Parte del arco - USAR TODO EL RADIO HASTA LOS BORDES
 				var dy = arch_height - y
 				var distance = sqrt(dx * dx + dy * dy)
-				if distance <= arch_radius - 1 and y >= 1:
+				if distance <= arch_radius and y >= 0:  # Usar TODO el radio disponible
 					is_door = true
-				elif distance <= arch_radius and y >= 1:
-					is_border = true
 			
 			if is_door:
 				# Textura de madera mejorada con paneles
@@ -136,7 +132,7 @@ static func create_closed_door_texture(width: int, height: int) -> ImageTexture:
 					base_color = base_color.lerp(wood_dark, 0.3)
 				
 				# Bandas metálicas decorativas horizontales
-				var metal_band_spacing = max(8, height / 6.0)
+				var metal_band_spacing = int(max(8, height / 6.0))
 				if (y - arch_height) % metal_band_spacing < 2 and y >= arch_height + 4:
 					var metal_shine = sin(x * 0.7) * 0.3 + 0.7
 					base_color = metal_bronze.lerp(metal_iron, metal_shine)
@@ -175,41 +171,18 @@ static func create_open_door_texture(image: Image, size: Vector2) -> ImageTextur
 	var portal_center = Color(0.8, 0.9, 1.0, 1.0)    # Centro brillante
 	var portal_mid = Color(0.4, 0.6, 1.0, 1.0)       # Medio azul
 	var portal_edge = Color(0.2, 0.3, 0.8, 1.0)      # Borde azul oscuro
-	var frame_color = Color(0.3, 0.2, 0.1, 1.0)      # Marco de madera
 	var transparent = Color(0, 0, 0, 0)               # Transparente
 	
 	var width = int(size.x)
 	var height = int(size.y)
 	var center_x = width / 2.0
-	var arch_height = height * 0.7    # Misma proporción que puerta cerrada
-	var arch_radius = width / 2.0 - 2  # Radio ligeramente menor para el marco
+	var arch_height = int(height * 0.7)    # Misma proporción que puerta cerrada convertida a entero
+	var arch_radius = width / 2.0  # USAR TODO EL ANCHO - Igual que puerta cerrada
 	
 	# Inicializar con transparente
 	image.fill(transparent)
 	
-	# Crear marco de madera en forma de arco
-	for y in range(height):
-		for x in range(width):
-			var is_frame = false
-			
-			if y >= arch_height:
-				# Parte rectangular inferior - solo los bordes
-				if x < 2 or x >= width - 2 or y >= height - 2:
-					is_frame = true
-			else:
-				# Parte del arco - crear marco
-				var dx = x - center_x
-				var dy = arch_height - y
-				var distance = sqrt(dx * dx + dy * dy)
-				
-				# Marco: está dentro del radio exterior pero fuera del radio interior
-				if distance <= arch_radius + 2 and distance >= arch_radius - 1:
-					is_frame = true
-			
-			if is_frame:
-				image.set_pixel(x, y, frame_color)
-	
-	# Portal mágico con forma de arco
+	# Portal mágico con forma de arco - SIN MARCO para usar todo el espacio
 	for y in range(height):
 		for x in range(width):
 			var dx = x - center_x
@@ -217,21 +190,21 @@ static func create_open_door_texture(image: Image, size: Vector2) -> ImageTextur
 			# Determinar si está dentro del área del portal
 			var is_in_portal = false
 			
-			if y >= arch_height + 2 and y < height - 2:
-				# Parte rectangular del portal
-				if x >= 2 and x < width - 2:
+			if y >= arch_height and y < height:
+				# Parte rectangular del portal - USAR TODO EL ANCHO COMPLETO
+				if x >= 0 and x < width:
 					is_in_portal = true
 			else:
-				# Parte del arco del portal
+				# Parte del arco del portal - USAR TODO EL RADIO
 				var dy = arch_height - y
 				var distance = sqrt(dx * dx + dy * dy)
-				if distance < arch_radius - 1:
+				if distance <= arch_radius:  # Usar TODO el radio disponible
 					is_in_portal = true
 			
 			if is_in_portal:
 				# Crear gradiente radial múltiple desde el centro
 				var center_distance = sqrt(dx * dx + (y - height * 0.6) * (y - height * 0.6))
-				var max_distance = min(width, height) / 2.0 - 4
+				var max_distance = min(width, height) / 2.0  # USAR TODO EL ESPACIO SIN REDUCIR
 				var factor = clamp(center_distance / max_distance, 0.0, 1.0)
 				
 				var portal_color

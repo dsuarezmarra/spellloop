@@ -58,9 +58,7 @@ func create_simple_room():
 	create_optimized_wall("left")
 	create_optimized_wall("right")
 	
-	# Crear puertas (aberturas en las paredes)
-	create_test_door(Vector2(480, 0), "ARRIBA")
-	create_test_door(Vector2(480, 512), "ABAJO")
+	print("✅ Sala básica creada")
 
 func create_sand_floor():
 	"""Crear suelo de arena clara para toda el área de juego"""
@@ -104,43 +102,46 @@ func create_sand_floor():
 	print("✅ Suelo de arena creado - Área: ", floor_size, " en posición ", floor_pos)
 
 func create_magic_doors():
-	"""Crear puertas mágicas perfectamente alineadas con el grosor de pared (32px)"""
-	print("🚪 Creando puertas mágicas perfectamente dimensionadas")
+	"""Crear puertas mágicas perfectamente alineadas - COINCIDENCIA EXACTA con paredes"""
+	print("🚪 Creando puertas con dimensiones EXACTAS de paredes")
 	
-	# DIMENSIONES EXACTAS: Las puertas deben tener el EXACTO grosor de pared
-	var wall_thickness = 32.0
-	var door_width = wall_thickness        # Ancho = grosor de pared exacto
-	var door_height = wall_thickness * 1.5 # Alto proporcionado (48px)
+	# DIMENSIONES EXACTAS de las paredes según create_optimized_wall
+	var wall_thickness = 32.0  # Mismo grosor exacto que visual_size de paredes
+	var door_base_width = wall_thickness    # 32px - coincidencia exacta
+	var door_base_height = wall_thickness * 1.5  # 48px - proporcionado
 	
-	# POSICIONES EXACTAS alineadas a los bordes exteriores
-	# Puerta superior - en el borde superior (y=0) centrada horizontalmente
+	# TODAS las puertas usan las mismas dimensiones base
+	var door_size = Vector2(door_base_width, door_base_height)
+	
+	# POSICIONES EXACTAS - Coinciden con las posiciones visuales reales de las paredes
+	# Puerta superior - Pared visual: Y=0 a Y=32, centro en Y=16
 	create_single_door("top", 
-		Vector2(512 - door_width/2, 0),  # Centrada en X, pegada arriba
-		Vector2(door_width, door_height), 0)
+		Vector2(512, 16),  # Centro horizontal de pantalla, centro vertical de pared superior
+		door_size, 0)
 	
-	# Puerta derecha - en el borde derecho (x=1024-32) centrada verticalmente  
+	# Puerta derecha - Pared visual: X=992 a X=1024, centro en X=1008  
 	create_single_door("right", 
-		Vector2(1024 - wall_thickness, 288 - door_width/2),  # Pegada a la derecha, centrada en Y
-		Vector2(door_height, door_width), 90)  # Rotada 90°
+		Vector2(1008, 288),  # Centro de pared derecha, centro vertical de pantalla
+		door_size, 90)
 	
-	# Puerta inferior - en el borde inferior (y=576-32) centrada horizontalmente
+	# Puerta inferior - Pared visual: Y=544 a Y=576, centro en Y=560
 	create_single_door("bottom", 
-		Vector2(512 - door_width/2, 576 - wall_thickness),  # Centrada en X, pegada abajo
-		Vector2(door_width, door_height), 180)  # Rotada 180°
+		Vector2(512, 560),  # Centro horizontal de pantalla, centro vertical de pared inferior
+		door_size, 180)
 	
-	# Puerta izquierda - en el borde izquierdo (x=0) centrada verticalmente
+	# Puerta izquierda - Pared visual: X=0 a X=32, centro en X=16
 	create_single_door("left", 
-		Vector2(0, 288 - door_width/2),  # Pegada a la izquierda, centrada en Y
-		Vector2(door_height, door_width), 270)  # Rotada 270°
+		Vector2(16, 288),  # Centro de pared izquierda, centro vertical de pantalla
+		door_size, 270)
 	
-	print("✅ Puertas mágicas perfectamente alineadas creadas: ", doors.size())
+	print("✅ Puertas con coincidencia EXACTA de grosor creadas: ", doors.size())
 
 func create_single_door(direction: String, pos: Vector2, size: Vector2, rotation_deg: float):
-	"""Crear una puerta individual perfectamente posicionada"""
+	"""Crear una puerta individual - TODAS IGUALES, solo rotadas"""
 	var door = Node2D.new()
 	var door_visual = TextureRect.new()
 	
-	# Crear textura de puerta cerrada inicialmente
+	# Crear textura de puerta cerrada inicialmente - MISMA TEXTURA PARA TODAS
 	var door_texture = MagicWallTextures.create_magic_door_texture(false, size)
 	
 	# Configurar visual de la puerta
@@ -149,30 +150,12 @@ func create_single_door(direction: String, pos: Vector2, size: Vector2, rotation
 	door_visual.position = Vector2(-size.x/2, -size.y/2)  # Centrar en el pivot
 	door_visual.z_index = 15  # Por encima de paredes
 	
-	# Configurar rotación
+	# Configurar rotación - SIMPLE, sin cálculos complicados
 	door.rotation_degrees = rotation_deg
 	
-	# POSICIONAMIENTO PRECISO: El pivot debe estar en el centro de la puerta
-	# pero la puerta debe estar perfectamente alineada en el borde
-	var pivot_pos = pos
-	
-	match direction:
-		"top":
-			# Puerta superior: pivot en el centro inferior de la puerta
-			pivot_pos = Vector2(pos.x + size.x/2, pos.y + size.y/2)
-		"bottom":
-			# Puerta inferior: pivot en el centro superior de la puerta  
-			pivot_pos = Vector2(pos.x + size.x/2, pos.y + size.y/2)
-		"left":
-			# Puerta izquierda: pivot en el centro derecho de la puerta
-			pivot_pos = Vector2(pos.x + size.x/2, pos.y + size.y/2)
-		"right":
-			# Puerta derecha: pivot en el centro izquierdo de la puerta
-			pivot_pos = Vector2(pos.x + size.x/2, pos.y + size.y/2)
-	
-	# Ensamblar puerta
+	# Ensamblar puerta - POSICIÓN DIRECTA
 	door.add_child(door_visual)
-	door.position = pivot_pos
+	door.position = pos  # Usar posición directamente
 	door.z_index = 15
 	
 	# Datos de la puerta para control
