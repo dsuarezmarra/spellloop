@@ -80,6 +80,12 @@ func create_weapon_manager():
 	weapon_manager.name = "WeaponManager"
 	add_child(weapon_manager)
 
+func create_experience_manager():
+	"""Crear gestor de experiencia"""
+	experience_manager = ExperienceManager.new()
+	experience_manager.name = "ExperienceManager"
+	add_child(experience_manager)
+
 func create_item_manager():
 	"""Crear gestor de items"""
 	item_manager = ItemManager.new()
