@@ -20,6 +20,8 @@ Gestiona el juego completo estilo roguelike top-down:
 @onready var weapon_manager: WeaponManager
 @onready var experience_manager: ExperienceManager
 @onready var item_manager: ItemManager
+@onready var minimap: MinimapSystem
+@onready var ui_layer: CanvasLayer
 
 # Configuración
 var game_running: bool = false
@@ -40,6 +42,8 @@ func setup_game():
 	create_weapon_manager()
 	create_experience_manager()
 	create_item_manager()
+	create_ui_layer()
+	create_minimap()
 	
 	# Inicializar sistemas
 	initialize_systems()
@@ -92,6 +96,19 @@ func create_item_manager():
 	item_manager.name = "ItemManager"
 	add_child(item_manager)
 
+func create_ui_layer():
+	"""Crear capa de UI"""
+	ui_layer = CanvasLayer.new()
+	ui_layer.name = "UILayer"
+	ui_layer.layer = 100  # Encima de todo
+	add_child(ui_layer)
+
+func create_minimap():
+	"""Crear sistema de minimapa"""
+	minimap = MinimapSystem.new()
+	minimap.name = "MinimapSystem"
+	ui_layer.add_child(minimap)
+
 func initialize_systems():
 	"""Inicializar todos los sistemas"""
 	
@@ -106,6 +123,9 @@ func initialize_systems():
 	
 	# Inicializar experiencia
 	experience_manager.initialize(player)
+	
+	# Inicializar minimapa
+	minimap.setup_references(player, enemy_manager, item_manager)
 	
 	# Conectar señales entre sistemas
 	connect_systems()
@@ -176,3 +196,13 @@ func get_game_stats() -> Dictionary:
 		stats.chunks_loaded = world_manager.get_loaded_chunks_count()
 	
 	return stats
+
+func _input(event):
+	"""Manejar input del juego"""
+	if event is InputEventKey and event.pressed:
+		match event.keycode:
+			KEY_M:
+				# Toggle minimapa
+				if minimap:
+					minimap.toggle_visibility()
+					print("🗺️ Minimapa: ", "ON" if minimap.visible else "OFF")

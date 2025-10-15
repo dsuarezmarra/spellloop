@@ -310,8 +310,8 @@ class ExpOrb extends Node2D:
 	
 	func start_floating_effect():
 		"""Iniciar efecto de flotación"""
-		var tween = Tween.new()
-		add_child(tween)
+		var tween = create_tween()
+		# add_child(tween)  # Ya no es necesario con create_tween()
 		
 		tween.tween_property(sprite, "position", Vector2(0, -5), 1.0)
 		tween.tween_property(sprite, "position", Vector2(0, 5), 1.0)

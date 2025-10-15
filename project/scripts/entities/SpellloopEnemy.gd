@@ -42,7 +42,7 @@ var enemy_size: float = 32.0
 func _ready():
 	setup_enemy()
 
-func initialize(enemy_type: EnemyManager.EnemyType, player_ref: CharacterBody2D):
+func initialize(enemy_type: EnemyType, player_ref: CharacterBody2D):
 	"""Inicializar enemigo con tipo específico"""
 	enemy_type_id = enemy_type.id
 	enemy_name = enemy_type.name
@@ -216,10 +216,10 @@ func flash_damage_effect():
 		var original_modulate = sprite.modulate
 		sprite.modulate = Color.WHITE
 		
-		var tween = Tween.new()
-		add_child(tween)
+		var tween = create_tween()
+		# add_child(tween)  # Ya no es necesario con create_tween()
 		tween.tween_property(sprite, "modulate", original_modulate, 0.1)
-		tween.tween_callback(func(): tween.queue_free())
+		# tween.tween_callback(func(): tween.queue_free())  # Se libera automáticamente
 
 func die():
 	"""Muerte del enemigo"""
@@ -248,8 +248,8 @@ func create_death_effect():
 	"""Crear efecto visual de muerte"""
 	if sprite:
 		# Efecto de desvanecimiento
-		var death_tween = Tween.new()
-		add_child(death_tween)
+		var death_tween = create_tween()
+		# add_child(death_tween)  # Ya no es necesario con create_tween()
 		
 		# Hacer el enemigo más grande y transparente
 		death_tween.parallel().tween_property(sprite, "scale", sprite.scale * 1.5, 0.2)

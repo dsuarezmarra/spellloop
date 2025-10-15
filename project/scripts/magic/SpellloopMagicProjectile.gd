@@ -34,7 +34,7 @@ var hits_made: int = 0
 @onready var trail_particles: GPUParticles2D
 
 # Efectos
-var glow_tween: Tween
+var glow_tween
 
 func _ready():
 	setup_projectile()
@@ -117,8 +117,8 @@ func setup_collision():
 func setup_effects():
 	"""Configurar efectos visuales"""
 	# Efecto de brillo pulsante
-	glow_tween = Tween.new()
-	add_child(glow_tween)
+	glow_tween = create_tween()
+	# add_child(glow_tween)  # Ya no es necesario con create_tween()
 	
 	start_glow_effect()
 	
@@ -210,8 +210,8 @@ func create_destruction_effect():
 	"""Crear efecto visual de destrucción"""
 	# Efecto simple de parpadeo
 	if sprite:
-		var destroy_tween = Tween.new()
-		add_child(destroy_tween)
+		var destroy_tween = create_tween()
+		# add_child(destroy_tween)  # Ya no es necesario con create_tween()
 		
 		destroy_tween.tween_property(sprite, "modulate", Color(2.0, 2.0, 2.0, 0.0), 0.2)
 		destroy_tween.tween_callback(func(): queue_free())

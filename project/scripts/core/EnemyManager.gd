@@ -249,14 +249,13 @@ func clear_all_enemies():
 			enemy.queue_free()
 	active_enemies.clear()
 
-# Clase para definir tipos de enemigos
-class EnemyType:
-	var id: String
-	var name: String
-	var health: int
-	var speed: float
-	var damage: int
-	var exp_value: int
-	var size: float
-	var color: Color
-	var special_abilities: Array = []
+# Funciones para el minimapa
+func get_active_enemies() -> Array[Vector2]:
+	"""Obtener posiciones de enemigos activos para el minimapa"""
+	var enemy_positions: Array[Vector2] = []
+	
+	for enemy in active_enemies:
+		if is_instance_valid(enemy):
+			enemy_positions.append(enemy.global_position)
+	
+	return enemy_positions
