@@ -23,6 +23,7 @@ AudioManager="*res://scripts/core/AudioManagerSimple.gd"
 InputManager="*res://scripts/core/InputManager.gd"
 UIManager="*res://scripts/core/UIManager.gd"
 Localization="*res://scripts/core/Localization.gd"
+ScaleManager="*res://scripts/core/ScaleManager.gd"
 
 [display]
 

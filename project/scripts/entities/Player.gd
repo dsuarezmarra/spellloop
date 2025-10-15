@@ -17,7 +17,7 @@ func _ready():
 	z_index = 10  # Asegurar que el wizard esté por encima de las paredes
 	load_wizard_sprites()
 
-func load_wizard_sprites():
+func load_wizard_sprites(custom_scale_factor: float = 0.0):
 	# Cargar los sprites del wizard
 	wizard_sprites["down"] = load("res://sprites/wizard/wizard_down.png")
 	wizard_sprites["up"] = load("res://sprites/wizard/wizard_up.png")
@@ -35,12 +35,18 @@ func load_wizard_sprites():
 	if sprite:
 		sprite.texture = wizard_sprites["down"]
 		sprite.z_index = 15  # Sprite del wizard por encima de todo
-		# Escalar sprite: de 500x500 a 128x128 píxeles (doble del tamaño anterior)
-		var target_size = 128.0
-		var original_size = sprite.texture.get_size().x  # Asumiendo sprite cuadrado
-		var scale_factor = target_size / original_size
-		sprite.scale = Vector2(scale_factor, scale_factor)
-		print("Sprites del wizard cargados y escalados a ", target_size, "x", target_size, " píxeles")
+		
+		# Usar escalado personalizado si se proporciona, sino usar el escalado predeterminado
+		if custom_scale_factor > 0.0:
+			sprite.scale = Vector2(custom_scale_factor, custom_scale_factor)
+			print("Sprites del wizard escalados con factor personalizado: ", custom_scale_factor)
+		else:
+			# Escalado predeterminado: de 500x500 a 128x128 píxeles
+			var target_size = 128.0
+			var original_size = sprite.texture.get_size().x  # Asumiendo sprite cuadrado
+			var scale_factor = target_size / original_size
+			sprite.scale = Vector2(scale_factor, scale_factor)
+			print("Sprites del wizard cargados y escalados a ", target_size, "x", target_size, " píxeles")
 
 func _physics_process(delta):
 	handle_movement(delta)
@@ -91,3 +97,9 @@ func update_sprite_direction():
 
 func get_facing_direction():
 	return current_direction
+
+# Función para actualizar la escala del wizard desde el sistema de habitaciones
+func update_scale(scale_factor: float):
+	if sprite:
+		sprite.scale = Vector2(scale_factor, scale_factor)
+		print("Escala del wizard actualizada a: ", scale_factor)

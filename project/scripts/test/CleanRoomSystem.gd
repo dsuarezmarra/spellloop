@@ -5,18 +5,17 @@ class_name CleanRoomSystem
 🏗️ SISTEMA DE SALA LIMPIO Y ESCALABLE
 ====================================
 
-Este es el nuevo sistema unificado que reemplaza todos los sistemas anteriores:
-- Se adapta automáticamente a CUALQUIER resolución
-- Sin elementos duplicados ni conflictivos
-- Z-index correctamente gestionado
-- Sin background fijo
-- Sin elementos innecesarios
+Este sistema usa ScaleManager para escalado uniforme:
+- Todos los elementos usan el mismo patrón de escalado
+- Escalado automático y proporcional
+- Mantenimiento centralizado
 """
 
 # Variables dinámicas que se adaptan al viewport
 var room_width: float
 var room_height: float
-const WALL_THICKNESS = 32
+
+# Z-indexes
 const WALL_Z_INDEX = 10
 const FLOOR_Z_INDEX = 5
 const PLAYER_Z_INDEX = 20
@@ -28,10 +27,19 @@ var doors: Array = []
 
 func _ready():
 	print("🏗️ === SISTEMA DE SALA LIMPIO ===")
+	
+	# Conectar señal de cambio de escala del singleton
+	ScaleManager.scale_changed.connect(_on_scale_changed)
+	
 	setup_room()
 	
 	# Conectar señal para reescalar automáticamente cuando cambie el tamaño
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
+
+func _on_scale_changed(new_scale: float):
+	"""Responder a cambios de escala del ScaleManager"""
+	print("🔄 Escala cambiada a: ", new_scale)
+	_on_viewport_size_changed()
 
 func _on_viewport_size_changed():
 	"""Reescalar sala automáticamente cuando cambia el tamaño de ventana"""
@@ -39,6 +47,9 @@ func _on_viewport_size_changed():
 	
 	# Esperar un frame para que el viewport se actualice
 	await get_tree().process_frame
+	
+	# Actualizar escala en el manager
+	ScaleManager.update_scale()
 	
 	# Limpiar elementos existentes (excepto jugador)
 	clear_room()
@@ -60,16 +71,20 @@ func clear_room():
 	print("🧹 Sala limpiada (jugador preservado)")
 
 func setup_room():
-	"""Configurar la sala adaptándose al viewport actual"""
+	"""Configurar la sala usando ScaleManager singleton para escalado uniforme"""
 	# Obtener dimensiones reales del viewport
 	var viewport_size = get_viewport().get_visible_rect().size
 	room_width = viewport_size.x
 	room_height = viewport_size.y
 	
-	print("🖥️ Viewport detectado: ", viewport_size)
-	print("🏠 Sala configurada para: ", room_width, "x", room_height)
+	# Actualizar escala en el manager
+	ScaleManager.calculate_scale()
 	
-	# Crear componentes en orden correcto
+	print("🖥️ Viewport detectado: ", viewport_size)
+	print("📐 Usando ScaleManager - Escala: ", ScaleManager.get_scale())
+	print("🔧 Debug: ", ScaleManager.debug_info())
+	
+	# Crear componentes en orden correcto con escalado uniforme
 	create_floor()
 	create_walls()
 	
@@ -82,7 +97,7 @@ func setup_room():
 	
 	create_doors()
 	
-	print("✅ Sistema de sala limpio creado exitosamente")
+	print("✅ Sala configurada con escalado uniforme")
 	print("🎮 CONTROLES DE TEST:")
 	print("   • ESPACIO: Abrir/Cerrar todas las puertas")
 	print("   • R/ESC: Reescalar sala manualmente")
@@ -90,12 +105,12 @@ func setup_room():
 	print("   • WASD: Mover jugador")
 
 func create_floor():
-	"""Crear suelo de arena que llena exactamente el área interior"""
+	"""Crear suelo de arena usando ScaleManager"""
 	print("🏖️ Creando suelo de arena...")
 	
-	# El suelo va dentro de las paredes
-	var floor_pos = Vector2(WALL_THICKNESS, WALL_THICKNESS)
-	var floor_size = Vector2(room_width - WALL_THICKNESS*2, room_height - WALL_THICKNESS*2)
+	# Usar ScaleManager para obtener posición y tamaño del suelo
+	var floor_pos = ScaleManager.get_room_floor_offset()
+	var floor_size = ScaleManager.get_room_floor_size(Vector2(room_width, room_height))
 	
 	# Usar TextureRect para mostrar la textura de arena
 	var floor_rect = TextureRect.new()
@@ -124,20 +139,23 @@ func create_floor():
 	print("✅ Suelo creado - Tamaño: ", floor_rect.size)
 
 func create_walls():
-	"""Crear paredes en los bordes exactos de la pantalla"""
+	"""Crear paredes usando ScaleManager"""
 	print("🧱 Creando paredes...")
 	
+	# Obtener grosor de pared del ScaleManager
+	var wall_thickness = ScaleManager.get_wall_thickness()
+	
 	# Pared superior
-	create_single_wall("top", Vector2(0, 0), Vector2(room_width, WALL_THICKNESS))
+	create_single_wall("top", Vector2(0, 0), Vector2(room_width, wall_thickness))
 	
 	# Pared inferior
-	create_single_wall("bottom", Vector2(0, room_height - WALL_THICKNESS), Vector2(room_width, WALL_THICKNESS))
+	create_single_wall("bottom", Vector2(0, room_height - wall_thickness), Vector2(room_width, wall_thickness))
 	
 	# Pared izquierda
-	create_single_wall("left", Vector2(0, 0), Vector2(WALL_THICKNESS, room_height))
+	create_single_wall("left", Vector2(0, 0), Vector2(wall_thickness, room_height))
 	
 	# Pared derecha
-	create_single_wall("right", Vector2(room_width - WALL_THICKNESS, 0), Vector2(WALL_THICKNESS, room_height))
+	create_single_wall("right", Vector2(room_width - wall_thickness, 0), Vector2(wall_thickness, room_height))
 	
 	print("✅ Paredes creadas: ", walls.size())
 
@@ -219,34 +237,35 @@ func update_player_position():
 		print("🏃 Jugador reposicionado en: ", player.position)
 
 func update_player_scale():
-	"""Reescalar el jugador proporcionalmente al tamaño de la sala"""
+	"""Reescalar el jugador usando ScaleManager"""
 	if not player:
 		return
 		
-	# Calcular factor de escala basado en el tamaño de la sala
-	# A MAYOR tamaño de sala = MAYOR jugador
-	# A MENOR tamaño de sala = MENOR jugador
-	var base_size = min(room_width, room_height)
-	var scale_factor = base_size / 1000.0  # Escala base para sala de 1000px
-	scale_factor = clamp(scale_factor, 0.3, 2.0)  # Limitar escala entre 0.3x y 2.0x
+	# Obtener escala del jugador del ScaleManager
+	var player_scale = ScaleManager.get_player_scale()
 	
-	# La escala base es 4.0, así que el factor se aplica a esa base
-	var final_scale = scale_factor * 4.0
+	# Usar la nueva función update_scale del player para aplicar el escalado
+	if player.has_method("update_scale"):
+		player.update_scale(player_scale)
+		print("🧙‍♂️ JUGADOR ESCALADO VIA FUNCIÓN: ", player_scale)
+	else:
+		# Fallback si el player no tiene la función update_scale
+		if player.has_node("Sprite2D"):
+			var sprite = player.get_node("Sprite2D")
+			sprite.scale = Vector2(player_scale, player_scale)
+			print("🧙‍♂️ JUGADOR ESCALADO DIRECTAMENTE: ", player_scale)
 	
-	# Aplicar escala al sprite del jugador
-	if player.has_node("Sprite2D"):
-		var sprite = player.get_node("Sprite2D")
-		sprite.scale = Vector2(final_scale, final_scale)
-		print("🔄 Jugador reescalado: sala=", base_size, "px -> escala=", final_scale, " (factor:", scale_factor, ")")
+	print("🔍 DEBUG: ", ScaleManager.debug_info())
 	
 	# Reposicionar al centro
 	player.position = Vector2(room_width/2, room_height/2)
 
 func create_doors():
-	"""Crear puertas centradas en cada pared con rotaciones correctas"""
+	"""Crear puertas usando ScaleManager"""
 	print("🚪 Creando puertas...")
 	
-	var door_size = Vector2(32, 32)
+	# Obtener tamaño de puerta del ScaleManager
+	var door_size = ScaleManager.get_door_size()
 	
 	# Puerta superior (sin rotación)
 	create_single_door("top", Vector2(room_width/2 - door_size.x/2, 0), door_size, 0)
@@ -294,14 +313,16 @@ func create_single_door(name: String, pos: Vector2, size: Vector2, rotation_degr
 	print("🚪 Puerta '", name, "' creada en ", pos, " (rotación: ", rotation_degrees, "°)")
 
 func get_room_info() -> Dictionary:
-	"""Obtener información de la sala"""
+	"""Obtener información de la sala usando ScaleManager"""
 	return {
 		"width": room_width,
 		"height": room_height,
-		"wall_thickness": WALL_THICKNESS,
+		"wall_thickness": ScaleManager.get_wall_thickness(),
+		"scale_factor": ScaleManager.get_scale(),
 		"walls_count": walls.size(),
 		"doors_count": doors.size(),
-		"player_position": player.position if player else Vector2.ZERO
+		"player_position": player.position if player else Vector2.ZERO,
+		"scale_debug": ScaleManager.debug_info()
 	}
 
 func _input(event):
