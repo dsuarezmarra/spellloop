@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://bf8jqkxcw1234"]
+
+[ext_resource type="Script" path="res://scripts/effects/XPOrb.gd" id="1"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1"]
+radius = 12.0
+
+[node name="XPOrb" type="Area2D" groups=["xp_orbs"]]
+script = ExtResource("1")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 0, 1)
+scale = Vector2(24, 24)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_1")

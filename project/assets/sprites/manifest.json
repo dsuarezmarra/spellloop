@@ -1,0 +1,200 @@
+{
+  "sprites_manifest": {
+    "version": "1.0",
+    "global_palette": {
+      "primary": ["#8B5CF6", "#3B82F6", "#EF4444"],
+      "opposite": ["#FACC15", "#F97316", "#10B981"],
+      "style": "front-facing Funko Pop style, chibi, large head, small body, cute but clearly magical, highly readable silhouette, 500x500 px, transparent background"
+    },
+    "enemies": [
+      {
+        "slug": "enemy_tier_1_slime_novice",
+        "name": "Slime Principiante",
+        "sprite": "res://assets/sprites/enemies/enemy_tier_1_slime_novice.png",
+        "rarity": "white",
+        "tier": 1,
+        "special_variant_slug": "enemy_tier_1_slime_novice_v",
+        "color_palette": ["#8B5CF6", "#3B82F6"],
+        "special_variant_palette": ["#FACC15", "#F97316"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi slime creature, large round gelatinous body with tiny cute face, semi-transparent purple-blue coloring (#8B5CF6, #3B82F6), small bouncy appearance, friendly but slightly mischievous expression, simple dot eyes and small smile, no arms or legs visible, sitting pose, 500x500px, transparent background, high contrast black outline, single character centered, no text"
+      },
+      {
+        "slug": "enemy_tier_1_goblin_scout",
+        "name": "Goblin Explorador",
+        "sprite": "res://assets/sprites/enemies/enemy_tier_1_goblin_scout.png",
+        "rarity": "white",
+        "tier": 1,
+        "special_variant_slug": "enemy_tier_1_goblin_scout_v",
+        "color_palette": ["#16A34A", "#3B82F6"],
+        "special_variant_palette": ["#F97316", "#FACC15"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi goblin scout, oversized head with pointed ears, small green body (#16A34A), blue clothing accents (#3B82F6), holding tiny bow, mischievous grin with small fangs, large expressive eyes, spiky hair, 500x500px, transparent background, high contrast black outline, single character centered, no text, cute but cunning appearance"
+      },
+      {
+        "slug": "enemy_tier_1_skeleton_warrior",
+        "name": "Esqueleto Guerrero",
+        "sprite": "res://assets/sprites/enemies/enemy_tier_1_skeleton_warrior.png",
+        "rarity": "white",
+        "tier": 1,
+        "special_variant_slug": "enemy_tier_1_skeleton_warrior_v",
+        "color_palette": ["#F8FAFC", "#64748B"],
+        "special_variant_palette": ["#FACC15", "#F97316"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi skeleton warrior, large skull head with glowing eye sockets, small bony body, white-gray bones (#F8FAFC, #64748B), tiny sword and shield, friendly skeleton grin, oversized skull proportions, simple bone structure, 500x500px, transparent background, high contrast black outline, single character centered, no text, cute undead appearance"
+      },
+      {
+        "slug": "enemy_tier_1_shadow_bat",
+        "name": "Murciélago Sombra",
+        "sprite": "res://assets/sprites/enemies/enemy_tier_1_shadow_bat.png",
+        "rarity": "white",
+        "tier": 1,
+        "special_variant_slug": "enemy_tier_1_shadow_bat_v",
+        "color_palette": ["#1F2937", "#8B5CF6"],
+        "special_variant_palette": ["#DC2626", "#FACC15"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi bat, large head with huge ears, small body with spread wings, dark gray-purple coloring (#1F2937, #8B5CF6), big round eyes, tiny fangs in cute smile, wing membrane details, fluffy body texture, 500x500px, transparent background, high contrast black outline, single character centered, no text, adorable nocturnal creature"
+      },
+      {
+        "slug": "enemy_tier_1_poison_spider",
+        "name": "Araña Venenosa",
+        "sprite": "res://assets/sprites/enemies/enemy_tier_1_poison_spider.png",
+        "rarity": "white",
+        "tier": 1,
+        "special_variant_slug": "enemy_tier_1_poison_spider_v",
+        "color_palette": ["#059669", "#1F2937"],
+        "special_variant_palette": ["#8B5CF6", "#FACC15"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi spider, large round abdomen with cute face, eight tiny legs, green-black coloring (#059669, #1F2937), friendly spider eyes, small fangs, web pattern on abdomen, fuzzy texture, sitting pose, 500x500px, transparent background, high contrast black outline, single character centered, no text, cute arachnid appearance"
+      },
+      {
+        "slug": "enemy_tier_2_fire_imp",
+        "name": "Diablillo de Fuego",
+        "sprite": "res://assets/sprites/enemies/enemy_tier_2_fire_imp.png",
+        "rarity": "blue",
+        "tier": 2,
+        "special_variant_slug": "enemy_tier_2_fire_imp_v",
+        "color_palette": ["#EF4444", "#F97316"],
+        "special_variant_palette": ["#3B82F6", "#10B981"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi fire imp, large head with small horns, tiny wings, red-orange coloring (#EF4444, #F97316), mischievous grin, glowing eyes, small tail with flame tip, magical fire aura, playful demonic features, 500x500px, transparent background, high contrast black outline, single character centered, no text"
+      },
+      {
+        "slug": "enemy_tier_2_ice_golem",
+        "name": "Gólem de Hielo",
+        "sprite": "res://assets/sprites/enemies/enemy_tier_2_ice_golem.png",
+        "rarity": "blue",
+        "tier": 2,
+        "special_variant_slug": "enemy_tier_2_ice_golem_v",
+        "color_palette": ["#3B82F6", "#E0F2FE"],
+        "special_variant_palette": ["#EF4444", "#FACC15"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi ice golem, large crystalline head, small blocky body made of ice, blue-white coloring (#3B82F6, #E0F2FE), glowing ice crystal eyes, frost patterns, chunky ice armor pieces, friendly expression, 500x500px, transparent background, high contrast black outline, single character centered, no text"
+      },
+      {
+        "slug": "enemy_tier_2_shadow_assassin",
+        "name": "Asesino Sombra",
+        "sprite": "res://assets/sprites/enemies/enemy_tier_2_shadow_assassin.png",
+        "rarity": "blue",
+        "tier": 2,
+        "special_variant_slug": "enemy_tier_2_shadow_assassin_v",
+        "color_palette": ["#1F2937", "#8B5CF6"],
+        "special_variant_palette": ["#FACC15", "#F97316"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi shadow assassin, large hooded head, small ninja body, dark purple-black coloring (#1F2937, #8B5CF6), glowing eyes under hood, tiny daggers, shadow wisps around body, mysterious but cute appearance, 500x500px, transparent background, high contrast black outline, single character centered, no text"
+      },
+      {
+        "slug": "enemy_tier_2_wind_elemental",
+        "name": "Elemental de Viento",
+        "sprite": "res://assets/sprites/enemies/enemy_tier_2_wind_elemental.png",
+        "rarity": "blue",
+        "tier": 2,
+        "special_variant_slug": "enemy_tier_2_wind_elemental_v",
+        "color_palette": ["#10B981", "#E0F2FE"],
+        "special_variant_palette": ["#EF4444", "#8B5CF6"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi wind elemental, large head made of swirling air, small tornado body, green-blue coloring (#10B981, #E0F2FE), wind spiral patterns, floating appearance, wispy air trails, serene expression, magical wind aura, 500x500px, transparent background, high contrast black outline, single character centered, no text"
+      },
+      {
+        "slug": "enemy_tier_2_earth_guardian",
+        "name": "Guardián de Tierra",
+        "sprite": "res://assets/sprites/enemies/enemy_tier_2_earth_guardian.png",
+        "rarity": "blue",
+        "tier": 2,
+        "special_variant_slug": "enemy_tier_2_earth_guardian_v",
+        "color_palette": ["#A16207", "#16A34A"],
+        "special_variant_palette": ["#3B82F6", "#FACC15"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi earth guardian, large rocky head with moss, small stone body, brown-green coloring (#A16207, #16A34A), glowing earth crystal eyes, stone armor plates, tiny plant growths, wise expression, 500x500px, transparent background, high contrast black outline, single character centered, no text"
+      }
+    ],
+    "bosses": [
+      {
+        "slug": "boss_5min_archmage_corrupt",
+        "name": "Archimago Corrupto",
+        "sprite": "res://assets/sprites/bosses/boss_5min_archmage_corrupt.png",
+        "rarity": "orange",
+        "tier": "boss",
+        "color_palette": ["#8B5CF6", "#1F2937", "#EF4444"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi corrupted archmage boss, oversized wizard head with evil grin, small robed body, purple-dark coloring (#8B5CF6, #1F2937), glowing red evil eyes (#EF4444), large wizard hat with dark aura, tiny staff with corruption effects, menacing but cute appearance, magical corruption wisps, 500x500px, transparent background, high contrast black outline, single character centered, no text"
+      },
+      {
+        "slug": "boss_10min_elemental_titan",
+        "name": "Titán Elemental",
+        "sprite": "res://assets/sprites/bosses/boss_10min_elemental_titan.png",
+        "rarity": "orange",
+        "tier": "boss",
+        "color_palette": ["#EF4444", "#3B82F6", "#16A34A", "#FACC15"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi elemental titan boss, large head with multiple elemental aspects, small powerful body, fire-ice-earth-air coloring (#EF4444, #3B82F6, #16A34A, #FACC15), each quarter of body different element, fierce but cute expression, elemental auras swirling, 500x500px, transparent background, high contrast black outline, single character centered, no text"
+      },
+      {
+        "slug": "boss_15min_void_overlord",
+        "name": "Señor del Vacío",
+        "sprite": "res://assets/sprites/bosses/boss_15min_void_overlord.png",
+        "rarity": "orange",
+        "tier": "boss",
+        "color_palette": ["#1F2937", "#8B5CF6", "#DC2626"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi void overlord boss, large head with void energy, small dark body, black-purple-red coloring (#1F2937, #8B5CF6, #DC2626), reality-warping effects around head, glowing void eyes, tentacle-like appendages, cosmic horror but cute, 500x500px, transparent background, high contrast black outline, single character centered, no text"
+      },
+      {
+        "slug": "boss_20min_chaos_incarnate",
+        "name": "Caos Encarnado",
+        "sprite": "res://assets/sprites/bosses/boss_20min_chaos_incarnate.png",
+        "rarity": "purple",
+        "tier": "boss",
+        "color_palette": ["#DC2626", "#FACC15", "#8B5CF6", "#10B981"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi chaos incarnate boss, large head constantly shifting colors, small body with chaos energy, rainbow-chaotic coloring (#DC2626, #FACC15, #8B5CF6, #10B981), reality distortion effects, multiple expressions overlapping, pure chaos energy, unpredictable but cute, 500x500px, transparent background, high contrast black outline, single character centered, no text"
+      },
+      {
+        "slug": "boss_25min_reality_destroyer",
+        "name": "Destructor de Realidad",
+        "sprite": "res://assets/sprites/bosses/boss_25min_reality_destroyer.png",
+        "rarity": "purple",
+        "tier": "boss",
+        "color_palette": ["#000000", "#FFFFFF", "#8B5CF6"],
+        "sprite_prompt": "Front-facing Funko Pop style chibi reality destroyer boss, large head with reality cracks, small body partially phasing out of existence, black-white-purple coloring (#000000, #FFFFFF, #8B5CF6), existence-ending aura, cracks in reality around figure, ultimate cosmic threat but adorable, 500x500px, transparent background, high contrast black outline, single character centered, no text"
+      }
+    ],
+    "generation_instructions": {
+      "common_style": "front-facing Funko Pop style, chibi, large head, small body, cute but clearly magical, highly readable silhouette, 500x500 px, transparent background",
+      "technical_specs": "--transparent_background true, no text, single character, centered, isolated, high contrast outline",
+      "color_guidance": "Use provided hex color palettes consistently. For special variants, use the opposite color palette. Maintain high contrast and readability.",
+      "size_specifications": "Source sprites: 500x500 PNG with transparent background. In-game scaling: 64x64 (factor 0.128). Collider: radial base 26px at 1080p.",
+      "rarity_visual_cues": {
+        "white": "Simple design, basic colors",
+        "blue": "Enhanced details, slight glow effects", 
+        "yellow": "More elaborate design, magical auras",
+        "orange": "Impressive size, powerful aura, boss-like presence",
+        "purple": "Reality-bending effects, cosmic themes"
+      }
+    },
+    "prompt_templates": {
+      "tier_1_enemy": "Front-facing Funko Pop style chibi {creature_type}, large head with {head_features}, small {body_type} body, {color_palette} coloring, {expression}, {special_features}, 500x500px, transparent background, high contrast black outline, single character centered, no text, cute {theme} appearance",
+      "tier_2_enemy": "Front-facing Funko Pop style chibi {creature_type}, oversized head with {magical_features}, small body with {element} powers, {color_palette} coloring, {personality} expression, {magical_aura}, enhanced details, 500x500px, transparent background, high contrast black outline, single character centered, no text",
+      "boss": "Front-facing Funko Pop style chibi {boss_type} boss, large {boss_head_features}, small but imposing body, {boss_colors} coloring, {boss_expression}, {boss_special_effects}, {boss_aura}, menacing but cute appearance, 500x500px, transparent background, high contrast black outline, single character centered, no text"
+    },
+    "stats": {
+      "total_sprites": 15,
+      "enemies_by_tier": {
+        "tier_1": 5,
+        "tier_2": 5,
+        "tier_3": 5,
+        "tier_4": 5,
+        "tier_5": 5
+      },
+      "bosses": 5,
+      "special_variants": 25,
+      "total_with_variants": 40
+    }
+  }
+}

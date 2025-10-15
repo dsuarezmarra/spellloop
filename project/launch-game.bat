@@ -6,7 +6,7 @@ echo Ejecutando Spellloop con Godot 4.5...
 echo.
 
 REM Ruta al ejecutable de Godot
-set GODOT_PATH="C:\Users\dsuarez1\Downloads\Godot_v4.5-stable_win64.exe\Godot_v4.5-stable_win64.exe"
+set GODOT_PATH="C:\Users\dsuarez1\Downloads\Godot\Godot_v4.5-stable_win64.exe"
 
 REM Verificar si existe el ejecutable
 if exist %GODOT_PATH% (

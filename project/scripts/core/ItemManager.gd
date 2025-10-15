@@ -108,12 +108,27 @@ func _on_chunk_generated(chunk_pos: Vector2i):
 	"""Manejar generación de nuevo chunk"""
 	print("📦 Chunk generado: ", chunk_pos, " - Evaluando spawn de cofre...")
 	
+	# Verificar que no esté muy cerca del player (evitar spawn inmediato)
+	var player_chunk = Vector2i(
+		int(player.global_position.x / world_manager.CHUNK_SIZE),
+		int(player.global_position.y / world_manager.CHUNK_SIZE)
+	)
+	
+	var distance_to_player_chunk = chunk_pos.distance_to(player_chunk)
+	if distance_to_player_chunk < 1.5:  # Al menos 1.5 chunks de distancia
+		print("📦 Chunk muy cerca del player, no generando cofre")
+		return
+	
+	# Probabilidad ajustada según distancia
+	var distance_factor = min(distance_to_player_chunk / 3.0, 1.0)  # Máximo factor a distancia 3
+	var adjusted_chance = chest_spawn_chance * distance_factor
+	
 	# Posibilidad de generar cofre en el chunk
-	if randf() < chest_spawn_chance:
-		print("📦 ¡Generando cofre en chunk ", chunk_pos, "!")
+	if randf() < adjusted_chance:
+		print("📦 ¡Generando cofre en chunk ", chunk_pos, "! (probabilidad: ", adjusted_chance, ")")
 		spawn_chest_in_chunk(chunk_pos)
 	else:
-		print("📦 No se genera cofre en chunk ", chunk_pos, " (probabilidad: ", chest_spawn_chance, ")")
+		print("📦 No se genera cofre en chunk ", chunk_pos, " (probabilidad: ", adjusted_chance, ")")
 
 func spawn_chest_in_chunk(chunk_pos: Vector2i):
 	"""Generar cofre en un chunk específico"""
@@ -141,14 +156,17 @@ func spawn_chest(position: Vector2, chest_type: String = "normal"):
 	chest.initialize(position, chest_type, player, rarity)
 	chest.chest_opened.connect(_on_chest_opened)
 	
-	# Añadir al árbol
-	get_tree().current_scene.add_child(chest)
+	# Añadir al mundo fijo, no al current_scene que podría moverse
+	if world_manager:
+		world_manager.add_child(chest)
+	else:
+		get_tree().current_scene.add_child(chest)
 	active_chests.append(chest)
 	
 	# Emitir señal
 	chest_spawned.emit(chest)
 	
-		print("📦 Cofre ", ItemRarity.get_rarity_name(rarity), " generado en: ", position)
+	print("📦 Cofre ", ItemRarity.get_rarity_name(rarity), " generado en: ", position)
 
 func _on_chest_opened(chest: Node2D, items: Array):
 	"""Manejar apertura de cofre"""
@@ -218,7 +236,11 @@ func create_boss_drop(position: Vector2, boss_type: String):
 	item_drop.initialize(position, selected_type, player, rarity)
 	item_drop.item_collected.connect(_on_item_drop_collected)
 	
-	get_tree().current_scene.add_child(item_drop)
+	# Añadir al mundo fijo, no al current_scene que podría moverse
+	if world_manager:
+		world_manager.add_child(item_drop)
+	else:
+		get_tree().current_scene.add_child(item_drop)
 	
 	print("👑 Drop de boss creado: ", selected_type)
 
@@ -266,283 +288,6 @@ func cleanup_distant_chests():
 func get_chest_count() -> int:
 	"""Obtener número de cofres activos"""
 	return active_chests.size()
-
-# Clase para cofres del tesoro
-class TreasureChest extends Node2D:
-	
-	signal chest_opened(chest: Node2D, items: Array)
-	
-	var chest_type: String = "normal"
-	var chest_rarity: ItemRarity.Type = ItemRarity.Type.NORMAL
-	var is_opened: bool = false
-	var interaction_range: float = 60.0
-	
-	var sprite: Sprite2D
-	var player_ref: CharacterBody2D
-	var items_inside: Array = []
-	
-	func initialize(position: Vector2, type: String, player: CharacterBody2D, rarity: ItemRarity.Type = ItemRarity.Type.NORMAL):
-		global_position = position
-		chest_type = type
-		chest_rarity = rarity
-		player_ref = player
-		z_index = 35
-		
-		setup_visual()
-		generate_contents()
-	
-	func setup_visual():
-		"""Configurar apariencia del cofre"""
-		sprite = Sprite2D.new()
-		add_child(sprite)
-		
-		create_chest_texture()
-		
-		var scale_factor = 1.0
-		if ScaleManager:
-			scale_factor = ScaleManager.get_scale()
-		sprite.scale = Vector2(scale_factor, scale_factor)
-	
-	func create_chest_texture():
-		"""Crear textura del cofre con color de rareza"""
-		var size = 32
-		var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
-		
-		# Color base del cofre según rareza
-		var chest_color = Color(0.6, 0.3, 0.1, 1.0)  # Marrón base
-		var rarity_color = ItemRarity.get_color(chest_rarity)
-		var lock_color = rarity_color
-		
-		# Cuerpo del cofre
-		for x in range(4, size - 4):
-			for y in range(8, size - 4):
-				image.set_pixel(x, y, chest_color)
-		
-		# Borde de rareza
-		for x in range(3, size - 3):
-			for y in range(7, 9):  # Borde superior
-				image.set_pixel(x, y, rarity_color)
-			for y in range(size - 5, size - 3):  # Borde inferior
-				image.set_pixel(x, y, rarity_color)
-		
-		# Bordes laterales
-		for y in range(7, size - 3):
-			image.set_pixel(3, y, rarity_color)  # Izquierda
-			image.set_pixel(size - 4, y, rarity_color)  # Derecha
-		
-		# Detalle central (cerradura) con color de rareza
-		for x in range(size/2 - 2, size/2 + 2):
-			for y in range(size/2 - 1, size/2 + 1):
-				image.set_pixel(x, y, lock_color)
-		
-		var texture = ImageTexture.new()
-		texture.set_image(image)
-		sprite.texture = texture
-	
-	func generate_contents():
-		"""Generar contenido del cofre basado en rareza"""
-		# Más items en cofres de mayor rareza
-		var item_count = 1
-		match chest_rarity:
-			ItemRarity.Type.NORMAL:
-				item_count = randi_range(1, 2)
-			ItemRarity.Type.COMMON:
-				item_count = randi_range(2, 3)
-			ItemRarity.Type.RARE:
-				item_count = randi_range(3, 4)
-			ItemRarity.Type.LEGENDARY:
-				item_count = randi_range(4, 5)
-		
-		for i in range(item_count):
-			var item_type = get_random_chest_item()
-			var item_rarity = get_item_rarity_for_chest()
-			items_inside.append({
-				"type": item_type,
-				"rarity": item_rarity,
-				"source": "chest"
-			})
-	
-	func get_item_rarity_for_chest() -> ItemRarity.Type:
-		"""Obtener rareza de item basada en rareza del cofre"""
-		match chest_rarity:
-			ItemRarity.Type.NORMAL:
-				return ItemRarity.Type.NORMAL if randf() < 0.8 else ItemRarity.Type.COMMON
-			ItemRarity.Type.COMMON:
-				return ItemRarity.Type.COMMON if randf() < 0.7 else ItemRarity.Type.RARE
-			ItemRarity.Type.RARE:
-				return ItemRarity.Type.RARE if randf() < 0.6 else ItemRarity.Type.LEGENDARY
-			ItemRarity.Type.LEGENDARY:
-				return ItemRarity.Type.LEGENDARY  # Siempre legendario
-		
-		return ItemRarity.Type.NORMAL
-	
-	func get_random_chest_item() -> String:
-		"""Obtener item aleatorio para cofre"""
-		var item_types = [
-			"weapon_damage", "weapon_speed", "health_boost", 
-			"speed_boost", "new_weapon", "heal_full",
-			"shield_boost", "crit_chance", "mana_boost"
-		]
-		return item_types[randi() % item_types.size()]
-	
-	func _process(delta):
-		if is_opened or not player_ref:
-			return
-		
-		# Verificar si el player está cerca para abrir
-		var distance = global_position.distance_to(player_ref.global_position)
-		if distance <= interaction_range:
-			open_chest()
-	
-	func open_chest():
-		"""Abrir cofre"""
-		if is_opened:
-			return
-		
-		is_opened = true
-		
-		# Efecto visual de apertura
-		create_opening_effect()
-		
-		# Emitir señal con items
-		chest_opened.emit(self, items_inside)
-		
-		# Remover después de un delay
-		var timer = Timer.new()
-		add_child(timer)
-		timer.wait_time = 1.0
-		timer.one_shot = true
-		timer.timeout.connect(func(): queue_free())
-		timer.start()
-	
-	func create_opening_effect():
-		"""Efecto visual de apertura"""
-		if sprite:
-			var tween = create_tween()
-			# add_child(tween)  # Ya no es necesario con create_tween()
-			
-			# Efecto de brillo y escala
-			tween.parallel().tween_property(sprite, "modulate", Color(2, 2, 2, 1), 0.3)
-			tween.parallel().tween_property(sprite, "scale", sprite.scale * 1.2, 0.3)
-			tween.tween_property(sprite, "modulate", Color(1, 1, 1, 0.5), 0.7)
-
-# Clase para drops de items individuales
-class ItemDrop extends Node2D:
-	
-	signal item_collected(item_drop: Node2D, item_type: String)
-	
-	var item_type: String
-	var item_rarity: ItemRarity.Type = ItemRarity.Type.NORMAL
-	var collection_range: float = 40.0
-	var lifetime: float = 60.0
-	var life_timer: float = 0.0
-	
-	var sprite: Sprite2D
-	var player_ref: CharacterBody2D
-	
-	func initialize(position: Vector2, type: String, player: CharacterBody2D, rarity: ItemRarity.Type = ItemRarity.Type.NORMAL):
-		global_position = position
-		item_type = type
-		item_rarity = rarity
-		player_ref = player
-		z_index = 45
-		
-		setup_visual()
-	
-	func setup_visual():
-		"""Configurar apariencia del item"""
-		sprite = Sprite2D.new()
-		add_child(sprite)
-		
-		create_item_texture()
-		
-		var scale_factor = 0.8
-		if ScaleManager:
-			scale_factor *= ScaleManager.get_scale()
-		sprite.scale = Vector2(scale_factor, scale_factor)
-		
-		# Efecto de flotación
-		start_floating_effect()
-	
-	func create_item_texture():
-		"""Crear textura del item como estrella con color de rareza"""
-		var size = 16
-		var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
-		
-		# Color basado en rareza
-		var rarity_color = ItemRarity.get_color(item_rarity)
-		
-		# Crear forma de estrella
-		var center = Vector2(size / 2, size / 2)
-		
-		# Puntos de la estrella (5 puntas)
-		var star_points = []
-		for i in range(10):  # 5 puntas exteriores + 5 interiores
-			var angle = (i * PI / 5) - PI / 2  # Empezar desde arriba
-			var radius = 6 if i % 2 == 0 else 3  # Alternar radio grande/pequeño
-			var point = center + Vector2(cos(angle) * radius, sin(angle) * radius)
-			star_points.append(point)
-		
-		# Rellenar la estrella
-		for x in range(size):
-			for y in range(size):
-				var point = Vector2(x, y)
-				if is_point_in_star(point, star_points):
-					# Efecto de degradado desde el centro
-					var distance_from_center = point.distance_to(center)
-					var intensity = 1.0 - (distance_from_center / 7.0)
-					intensity = max(0.3, intensity)
-					
-					var color = rarity_color * intensity
-					color.a = 0.9
-					image.set_pixel(x, y, color)
-		
-		var texture = ImageTexture.new()
-		texture.set_image(image)
-		sprite.texture = texture
-	
-	func is_point_in_star(point: Vector2, star_points: Array) -> bool:
-		"""Verificar si un punto está dentro de la estrella"""
-		# Algoritmo simple de ray casting para polígono
-		var intersections = 0
-		var n = star_points.size()
-		
-		for i in range(n):
-			var p1 = star_points[i]
-			var p2 = star_points[(i + 1) % n]
-			
-			if ((p1.y > point.y) != (p2.y > point.y)) and \
-			   (point.x < (p2.x - p1.x) * (point.y - p1.y) / (p2.y - p1.y) + p1.x):
-				intersections += 1
-		
-		return intersections % 2 == 1
-	
-	func start_floating_effect():
-		"""Efecto de flotación"""
-		var tween = create_tween()
-		# add_child(tween)  # Ya no es necesario con create_tween()
-		
-		tween.tween_property(sprite, "position", Vector2(0, -8), 1.5)
-		tween.tween_property(sprite, "position", Vector2(0, 8), 1.5)
-		tween.set_loops()
-	
-	func _process(delta):
-		life_timer += delta
-		
-		# Verificar recolección
-		if player_ref:
-			var distance = global_position.distance_to(player_ref.global_position)
-			if distance <= collection_range:
-				collect_item()
-		
-		# Desaparecer después del tiempo de vida
-		if life_timer >= lifetime:
-			queue_free()
-	
-	func collect_item():
-		"""Recolectar item"""
-		item_collected.emit(self, item_type)
-		queue_free()
 
 # Funciones para el minimapa
 func get_active_chests() -> Array[Dictionary]:
@@ -605,6 +350,10 @@ func create_test_item_drop(position: Vector2, type: String, rarity: ItemRarity.T
 	item_drop.initialize(position, type, player, rarity)
 	item_drop.item_collected.connect(_on_item_drop_collected)
 	
-	get_tree().current_scene.add_child(item_drop)
+	# Añadir al mundo fijo, no al current_scene que podría moverse
+	if world_manager:
+		world_manager.add_child(item_drop)
+	else:
+		get_tree().current_scene.add_child(item_drop)
 	
 	print("⭐ Item de prueba creado exitosamente")

@@ -40,6 +40,7 @@ var is_run_active: bool = false
 # Current run data
 var current_run_data: Dictionary = {}
 var run_start_time: float = 0.0
+var game_start_time: float = 0.0  # Para tracking de tiempo de juego
 
 # Steam integration placeholders
 const STEAM_APP_ID = "PLACEHOLDER_STEAM_APPID"  # Replace with real Steam AppID
@@ -90,6 +91,7 @@ func start_new_run() -> void:
 	current_state = GameState.IN_RUN
 	is_run_active = true
 	run_start_time = Time.get_time_dict_from_system()["unix"]
+	game_start_time = Time.get_time_dict_from_system()["unix"]  # Inicializar tiempo de juego
 	
 	# Initialize run data
 	current_run_data = {
@@ -198,3 +200,32 @@ func _on_pause_requested() -> void:
 		pause_game()
 	elif current_state == GameState.PAUSED:
 		resume_game()
+
+# ========== MÉTODOS PARA SISTEMA DE ENEMIGOS ==========
+
+func get_elapsed_minutes() -> int:
+	"""Obtener minutos transcurridos desde el inicio de la partida"""
+	if not is_run_active or game_start_time == 0.0:
+		return 0
+	
+	var current_time = Time.get_time_dict_from_system()["unix"]
+	var elapsed_seconds = current_time - game_start_time
+	var elapsed_minutes = int(elapsed_seconds / 60.0)
+	
+	return elapsed_minutes
+
+func get_elapsed_seconds() -> float:
+	"""Obtener segundos transcurridos desde el inicio de la partida"""
+	if not is_run_active or game_start_time == 0.0:
+		return 0.0
+	
+	var current_time = Time.get_time_dict_from_system()["unix"]
+	return current_time - game_start_time
+
+func get_game_time_formatted() -> String:
+	"""Obtener tiempo de juego formateado como MM:SS"""
+	var total_seconds = int(get_elapsed_seconds())
+	var minutes = total_seconds / 60
+	var seconds = total_seconds % 60
+	
+	return "%02d:%02d" % [minutes, seconds]
