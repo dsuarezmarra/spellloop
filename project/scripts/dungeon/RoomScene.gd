@@ -282,7 +282,7 @@ func spawn_enemy():
 	"""Spawnar un enemigo individual"""
 	# Crear enemigo simple para test
 	var enemy = CharacterBody2D.new()
-	var EnemyScript = preload("res://scripts/entities/SimpleEnemy.gd")
+	var EnemyScript = preload("res://scripts/entities/SpellloopEnemy.gd")
 	enemy.script = EnemyScript
 	
 	# Añadir visual simple

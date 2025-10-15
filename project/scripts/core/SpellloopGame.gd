@@ -124,6 +124,9 @@ func initialize_systems():
 	# Inicializar experiencia
 	experience_manager.initialize(player)
 	
+	# Inicializar items
+	item_manager.initialize(player, world_manager)
+	
 	# Inicializar minimapa
 	minimap.setup_references(player, enemy_manager, item_manager)
 	

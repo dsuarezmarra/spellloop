@@ -32,12 +32,16 @@ func _ready():
 
 func initialize(player_ref: CharacterBody2D, world_ref: InfiniteWorldManager):
 	"""Inicializar sistema de items"""
+	print("📦 Inicializando ItemManager...")
 	player = player_ref
 	world_manager = world_ref
 	
 	# Conectar señales del mundo
 	if world_manager.has_signal("chunk_generated"):
 		world_manager.chunk_generated.connect(_on_chunk_generated)
+		print("📦 Señal chunk_generated conectada")
+	else:
+		print("❌ Error: chunk_generated signal no encontrada")
 	
 	# Crear algunos items de prueba cerca del player para testing
 	create_test_items()
@@ -144,7 +148,7 @@ func spawn_chest(position: Vector2, chest_type: String = "normal"):
 	# Emitir señal
 	chest_spawned.emit(chest)
 	
-	print("📦 Cofre ", ItemRarity.get_name(rarity), " generado en: ", position)
+		print("📦 Cofre ", ItemRarity.get_rarity_name(rarity), " generado en: ", position)
 
 func _on_chest_opened(chest: Node2D, items: Array):
 	"""Manejar apertura de cofre"""
@@ -569,17 +573,23 @@ func get_active_items() -> Array[Dictionary]:
 
 func create_test_items():
 	"""Crear items y cofres de prueba para testing"""
+	print("📦 Iniciando creación de items de prueba...")
+	
 	if not player:
+		print("❌ Error: Player no disponible para crear items de prueba")
 		return
 	
 	var player_pos = player.global_position
+	print("📦 Posición del player: ", player_pos)
 	
 	# Crear algunos cofres de prueba con diferentes rarezas
+	print("📦 Creando cofres de prueba...")
 	spawn_chest(player_pos + Vector2(200, 100), "normal")  # Cofre normal
 	spawn_chest(player_pos + Vector2(-200, 150), "normal")  # Cofre común  
 	spawn_chest(player_pos + Vector2(150, -200), "normal")  # Cofre raro
 	
 	# Crear algunos items de prueba
+	print("📦 Creando items de prueba...")
 	create_test_item_drop(player_pos + Vector2(100, 50), "weapon_damage", ItemRarity.Type.NORMAL)
 	create_test_item_drop(player_pos + Vector2(-100, 75), "health_boost", ItemRarity.Type.COMMON)
 	create_test_item_drop(player_pos + Vector2(75, -100), "speed_boost", ItemRarity.Type.RARE)
@@ -589,10 +599,12 @@ func create_test_items():
 
 func create_test_item_drop(position: Vector2, type: String, rarity: ItemRarity.Type):
 	"""Crear un item drop de prueba"""
+	print("⭐ Creando item de prueba: ", ItemRarity.get_rarity_name(rarity), " ", type, " en ", position)
+	
 	var item_drop = ItemDrop.new()
 	item_drop.initialize(position, type, player, rarity)
 	item_drop.item_collected.connect(_on_item_drop_collected)
 	
 	get_tree().current_scene.add_child(item_drop)
 	
-	print("⭐ Item de prueba creado: ", ItemRarity.get_name(rarity), " ", type, " en ", position)
+	print("⭐ Item de prueba creado exitosamente")

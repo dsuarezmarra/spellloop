@@ -42,7 +42,7 @@ static func get_color(rarity: Type) -> Color:
 	"""Obtener color para una rareza"""
 	return colors.get(rarity, colors[Type.NORMAL])
 
-static func get_name(rarity: Type) -> String:
+static func get_rarity_name(rarity: Type) -> String:
 	"""Obtener nombre para una rareza"""
 	return names.get(rarity, names[Type.NORMAL])
 

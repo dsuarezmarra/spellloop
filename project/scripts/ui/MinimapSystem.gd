@@ -101,7 +101,7 @@ func apply_circular_mask():
 	# Aplicar estilo circular al Control principal
 	var radius = minimap_size.x / 2
 	var style = StyleBoxFlat.new()
-	style.bg_color = bg_color
+	style.bg_color = Color(bg_color.r, bg_color.g, bg_color.b, 0.7)  # 70% transparencia
 	style.corner_radius_top_left = radius
 	style.corner_radius_top_right = radius
 	style.corner_radius_bottom_left = radius
