@@ -211,20 +211,21 @@ func create_player():
 	var sprite = Sprite2D.new()
 	sprite.name = "Sprite2D"
 	sprite.texture = preload("res://sprites/wizard/wizard_down.png")
-	sprite.scale = Vector2(4.0, 4.0)  # Tamaño fijo adecuado
+	# NO establecer escala aquí - se establecerá automáticamente por ScaleManager
 	player.add_child(sprite)
 	
 	# Colisión del jugador
 	var collision = CollisionShape2D.new()
+	collision.name = "CollisionShape2D"  # Nombre necesario para que Player.gd lo encuentre
 	var circle = CircleShape2D.new()
-	circle.radius = 26
+	circle.radius = 26  # Radio base que será escalado por ScaleManager
 	collision.shape = circle
 	player.add_child(collision)
 	
 	# Posicionar en el centro
 	player.position = Vector2(room_width/2, room_height/2)
 	
-	# Script básico de movimiento
+	# Script básico de movimiento (esto llamará automáticamente a apply_correct_scale)
 	player.script = load("res://scripts/entities/Player.gd")
 	
 	add_child(player)
