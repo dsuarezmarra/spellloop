@@ -98,7 +98,7 @@ func create_circular_border_style() -> StyleBoxFlat:
 
 func apply_circular_mask():
 	"""Aplicar máscara circular al minimapa"""
-	# Crear fondo circular con StyleBoxFlat
+	# Aplicar estilo circular al Control principal
 	var radius = minimap_size.x / 2
 	var style = StyleBoxFlat.new()
 	style.bg_color = bg_color
@@ -107,8 +107,11 @@ func apply_circular_mask():
 	style.corner_radius_bottom_left = radius
 	style.corner_radius_bottom_right = radius
 	
-	# Aplicar estilo al fondo
-	background.add_theme_stylebox_override("normal", style)
+	# Aplicar estilo al Control principal (self)
+	add_theme_stylebox_override("panel", style)
+	
+	# Hacer el background transparente ya que el Control maneja el fondo
+	background.color = Color.TRANSPARENT
 	
 	# Habilitar recorte para elementos hijos
 	clip_contents = true

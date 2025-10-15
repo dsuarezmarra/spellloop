@@ -21,7 +21,7 @@ var world_manager: InfiniteWorldManager
 
 # Cofres activos
 var active_chests: Array[Node2D] = []
-var chest_spawn_chance: float = 0.02  # 2% por chunk
+var chest_spawn_chance: float = 0.3  # Aumentado temporalmente para testing (30%)
 
 # Configuración de items
 var item_types: Dictionary = {}
@@ -38,6 +38,9 @@ func initialize(player_ref: CharacterBody2D, world_ref: InfiniteWorldManager):
 	# Conectar señales del mundo
 	if world_manager.has_signal("chunk_generated"):
 		world_manager.chunk_generated.connect(_on_chunk_generated)
+	
+	# Crear algunos items de prueba cerca del player para testing
+	create_test_items()
 	
 	print("📦 Sistema de items inicializado")
 
@@ -99,9 +102,14 @@ func setup_item_types():
 
 func _on_chunk_generated(chunk_pos: Vector2i):
 	"""Manejar generación de nuevo chunk"""
+	print("📦 Chunk generado: ", chunk_pos, " - Evaluando spawn de cofre...")
+	
 	# Posibilidad de generar cofre en el chunk
 	if randf() < chest_spawn_chance:
+		print("📦 ¡Generando cofre en chunk ", chunk_pos, "!")
 		spawn_chest_in_chunk(chunk_pos)
+	else:
+		print("📦 No se genera cofre en chunk ", chunk_pos, " (probabilidad: ", chest_spawn_chance, ")")
 
 func spawn_chest_in_chunk(chunk_pos: Vector2i):
 	"""Generar cofre en un chunk específico"""
@@ -558,3 +566,33 @@ func get_active_items() -> Array[Dictionary]:
 			})
 	
 	return item_data
+
+func create_test_items():
+	"""Crear items y cofres de prueba para testing"""
+	if not player:
+		return
+	
+	var player_pos = player.global_position
+	
+	# Crear algunos cofres de prueba con diferentes rarezas
+	spawn_chest(player_pos + Vector2(200, 100), "normal")  # Cofre normal
+	spawn_chest(player_pos + Vector2(-200, 150), "normal")  # Cofre común  
+	spawn_chest(player_pos + Vector2(150, -200), "normal")  # Cofre raro
+	
+	# Crear algunos items de prueba
+	create_test_item_drop(player_pos + Vector2(100, 50), "weapon_damage", ItemRarity.Type.NORMAL)
+	create_test_item_drop(player_pos + Vector2(-100, 75), "health_boost", ItemRarity.Type.COMMON)
+	create_test_item_drop(player_pos + Vector2(75, -100), "speed_boost", ItemRarity.Type.RARE)
+	create_test_item_drop(player_pos + Vector2(-75, -125), "new_weapon", ItemRarity.Type.LEGENDARY)
+	
+	print("📦 Items y cofres de prueba creados cerca del player")
+
+func create_test_item_drop(position: Vector2, type: String, rarity: ItemRarity.Type):
+	"""Crear un item drop de prueba"""
+	var item_drop = ItemDrop.new()
+	item_drop.initialize(position, type, player, rarity)
+	item_drop.item_collected.connect(_on_item_drop_collected)
+	
+	get_tree().current_scene.add_child(item_drop)
+	
+	print("⭐ Item de prueba creado: ", ItemRarity.get_name(rarity), " ", type, " en ", position)
