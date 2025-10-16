@@ -18,10 +18,18 @@ signal item_collected(item_type: String, item_data: Dictionary)
 # Referencias
 var player: CharacterBody2D
 var world_manager: InfiniteWorldManager
+var static_objects_container: Node2D  # Contenedor para objetos estáticos (no se mueve)
 
 # Cofres activos
 var active_chests: Array[Node2D] = []
-var chest_spawn_chance: float = 0.3  # Aumentado temporalmente para testing (30%)
+var fixed_chests: Array[Node2D] = []  # Cofres fijos iniciales cerca del player
+var chest_spawn_chance: float = 0.15  # Reducida para evitar spam (15%)
+
+# Sistema de spawn dinámico
+var last_player_position: Vector2
+var distance_for_new_chest: float = 500.0  # Distancia que debe recorrer el player para spawns
+var max_active_chests: int = 8  # Máximo de cofres activos en el mundo
+var min_chest_distance: float = 300.0  # Distancia mínima entre cofres
 
 # Configuración de items
 var item_types: Dictionary = {}
@@ -35,6 +43,10 @@ func initialize(player_ref: CharacterBody2D, world_ref: InfiniteWorldManager):
 	print("📦 Inicializando ItemManager...")
 	player = player_ref
 	world_manager = world_ref
+	last_player_position = player.global_position
+	
+	# Crear contenedor para objetos estáticos (cofres, items)
+	create_static_container()
 	
 	# Conectar señales del mundo
 	if world_manager.has_signal("chunk_generated"):
@@ -43,8 +55,8 @@ func initialize(player_ref: CharacterBody2D, world_ref: InfiniteWorldManager):
 	else:
 		print("❌ Error: chunk_generated signal no encontrada")
 	
-	# Crear algunos items de prueba cerca del player para testing
-	create_test_items()
+	# Crear cofres fijos iniciales y sistema dinámico
+	create_initial_setup()
 	
 	print("📦 Sistema de items inicializado")
 
@@ -104,8 +116,54 @@ func setup_item_types():
 	
 	print("📦 ", item_types.size(), " tipos de items configurados")
 
+func _process(_delta):
+	"""Actualizar sistema dinámico de cofres"""
+	if not player:
+		return
+	
+	# Verificar si el player se ha movido lo suficiente para spawnar un nuevo cofre
+	var current_pos = player.global_position
+	var distance_moved = current_pos.distance_to(last_player_position)
+	
+	if distance_moved >= distance_for_new_chest:
+		consider_spawning_dynamic_chest()
+		last_player_position = current_pos
+	
+	# Limpiar cofres muy lejanos para optimizar
+	cleanup_distant_chests()
+
+func create_static_container():
+	"""Crear contenedor para objetos estáticos que NO se mueven con el mundo"""
+	static_objects_container = Node2D.new()
+	static_objects_container.name = "StaticObjectsContainer"
+	
+	# Añadir al nodo raíz de la escena, NO al world_manager que se mueve
+	var scene_root = get_tree().current_scene
+	scene_root.add_child(static_objects_container)
+	
+	print("📦 Contenedor estático creado para cofres e items")
+
+func convert_world_to_static_position(world_position: Vector2) -> Vector2:
+	"""Convertir posición del mundo móvil a posición estática"""
+	if not world_manager:
+		return world_position
+	
+	# Compensar el offset del mundo que se mueve
+	# Si el mundo se mueve hacia la izquierda, los objetos estáticos deben estar más a la derecha
+	var static_position = world_position - world_manager.world_offset
+	return static_position
+
+func convert_static_to_world_position(static_position: Vector2) -> Vector2:
+	"""Convertir posición estática a posición del mundo móvil"""
+	if not world_manager:
+		return static_position
+	
+	# Aplicar el offset del mundo que se mueve
+	var world_position = static_position + world_manager.world_offset
+	return world_position
+
 func _on_chunk_generated(chunk_pos: Vector2i):
-	"""Manejar generación de nuevo chunk"""
+	"""Manejar generación de nuevo chunk - Sistema dinámico mejorado"""
 	print("📦 Chunk generado: ", chunk_pos, " - Evaluando spawn de cofre...")
 	
 	# Verificar que no esté muy cerca del player (evitar spawn inmediato)
@@ -115,20 +173,21 @@ func _on_chunk_generated(chunk_pos: Vector2i):
 	)
 	
 	var distance_to_player_chunk = chunk_pos.distance_to(player_chunk)
-	if distance_to_player_chunk < 1.5:  # Al menos 1.5 chunks de distancia
+	if distance_to_player_chunk < 2.0:  # Al menos 2 chunks de distancia
 		print("📦 Chunk muy cerca del player, no generando cofre")
 		return
 	
-	# Probabilidad ajustada según distancia
-	var distance_factor = min(distance_to_player_chunk / 3.0, 1.0)  # Máximo factor a distancia 3
-	var adjusted_chance = chest_spawn_chance * distance_factor
+	# Verificar límite de cofres activos
+	if active_chests.size() >= max_active_chests:
+		print("📦 Máximo de cofres activos alcanzado (", max_active_chests, ")")
+		return
 	
-	# Posibilidad de generar cofre en el chunk
-	if randf() < adjusted_chance:
-		print("📦 ¡Generando cofre en chunk ", chunk_pos, "! (probabilidad: ", adjusted_chance, ")")
+	# Probabilidad muy baja para evitar spam
+	if randf() < chest_spawn_chance:
+		print("📦 ¡Generando cofre dinámico en chunk ", chunk_pos, "!")
 		spawn_chest_in_chunk(chunk_pos)
 	else:
-		print("📦 No se genera cofre en chunk ", chunk_pos, " (probabilidad: ", adjusted_chance, ")")
+		print("📦 No se genera cofre en chunk ", chunk_pos)
 
 func spawn_chest_in_chunk(chunk_pos: Vector2i):
 	"""Generar cofre en un chunk específico"""
@@ -147,7 +206,14 @@ func spawn_chest_in_chunk(chunk_pos: Vector2i):
 	spawn_chest(chest_pos)
 
 func spawn_chest(position: Vector2, chest_type: String = "normal"):
-	"""Crear cofre en posición específica"""
+	"""Crear cofre en posición específica del mundo"""
+	# Verificar que no esté muy cerca de otros cofres
+	for existing_chest in active_chests:
+		if is_instance_valid(existing_chest):
+			if existing_chest.global_position.distance_to(position) < min_chest_distance:
+				print("📦 Posición muy cerca de otro cofre, cancelando spawn")
+				return
+	
 	var chest = TreasureChest.new()
 	
 	# Determinar rareza del cofre usando nivel del jugador
@@ -159,17 +225,24 @@ func spawn_chest(position: Vector2, chest_type: String = "normal"):
 	chest.initialize(position, chest_type, player, 0)  # Usar rareza básica por ahora
 	chest.chest_opened.connect(_on_chest_opened)
 	
-	# Añadir al mundo fijo, no al current_scene que podría moverse
-	if world_manager:
-		world_manager.add_child(chest)
+	# CLAVE: Añadir al contenedor estático, NO al world_manager que se mueve
+	if static_objects_container:
+		static_objects_container.add_child(chest)
+		print("📦 Cofre añadido al contenedor estático")
 	else:
-		get_tree().current_scene.add_child(chest)
+		print("❌ Error: Contenedor estático no disponible")
+		return
+	
+	# Calcular posición relativa al mundo que se mueve
+	var world_adjusted_position = convert_world_to_static_position(position)
+	chest.global_position = world_adjusted_position
+	
 	active_chests.append(chest)
 	
 	# Emitir señal
 	chest_spawned.emit(chest)
 	
-	print("📦 Cofre generado en: ", position)
+	print("📦 Cofre generado ESTÁTICO en posición: ", world_adjusted_position)
 
 func _on_chest_opened(chest: Node2D, items: Array):
 	"""Manejar apertura de cofre"""
@@ -267,24 +340,6 @@ func get_random_item_type(rarity_bias: String = "common") -> String:
 	
 	return filtered_items[randi() % filtered_items.size()]
 
-func cleanup_distant_chests():
-	"""Limpiar cofres muy lejanos del player"""
-	var max_distance = 1000.0
-	var chests_to_remove = []
-	
-	for chest in active_chests:
-		if not is_instance_valid(chest):
-			chests_to_remove.append(chest)
-			continue
-		
-		var distance = chest.global_position.distance_to(player.global_position)
-		if distance > max_distance:
-			chests_to_remove.append(chest)
-			chest.queue_free()
-	
-	for chest in chests_to_remove:
-		active_chests.erase(chest)
-
 func get_chest_count() -> int:
 	"""Obtener número de cofres activos"""
 	return active_chests.size()
@@ -317,32 +372,135 @@ func get_active_items() -> Array[Dictionary]:
 	return item_data
 
 func create_test_items():
-	"""Crear items y cofres de prueba para testing"""
-	print("📦 Iniciando creación de items de prueba...")
+	"""Crear items y cofres de prueba para testing - REEMPLAZADO por create_initial_setup"""
+	print("📦 create_test_items() ha sido reemplazado por create_initial_setup()")
+
+func create_initial_setup():
+	"""Crear configuración inicial: 3 cofres fijos cerca del player + items de prueba"""
+	print("📦 Iniciando configuración inicial del sistema...")
 	
 	if not player:
-		print("❌ Error: Player no disponible para crear items de prueba")
+		print("❌ Error: Player no disponible para crear configuración inicial")
 		return
 	
 	var player_pos = player.global_position
 	print("📦 Posición del player: ", player_pos)
 	
-	# Crear algunos cofres de prueba en posiciones absolutas del mundo
-	print("📦 Creando cofres de prueba...")
-	spawn_chest(Vector2(1200, 300), "normal")  # Cofre fijo en posición absoluta
-	spawn_chest(Vector2(600, 700), "normal")   # Cofre fijo en posición absoluta
-	spawn_chest(Vector2(1500, 800), "normal")  # Cofre fijo en posición absoluta
-	spawn_chest(Vector2(300, 200), "normal")   # Cofre fijo en posición absoluta
-	spawn_chest(Vector2(1800, 500), "normal")  # Cofre fijo en posición absoluta
+	# CREAR 3 COFRES FIJOS ALCANZABLES CERCA DEL PLAYER
+	print("📦 Creando 3 cofres fijos cerca del player...")
 	
-	# Crear algunos items de prueba en posiciones absolutas
+	# Cofres fijos en posiciones calculadas alrededor del player (alcanzables)
+	var fixed_positions = [
+		player_pos + Vector2(200, 150),   # Cofre 1: derecha-abajo del player
+		player_pos + Vector2(-180, 120),  # Cofre 2: izquierda-abajo del player  
+		player_pos + Vector2(50, -200)    # Cofre 3: arriba del player
+	]
+	
+	for i in range(fixed_positions.size()):
+		var chest_pos = fixed_positions[i]
+		spawn_fixed_chest(chest_pos, "fixed")
+		print("📦 Cofre fijo ", i + 1, " creado en: ", chest_pos)
+	
+	# CREAR ALGUNOS COFRES LEJANOS PARA EXPLORACIÓN
+	print("📦 Creando cofres de exploración...")
+	var exploration_positions = [
+		Vector2(1400, 300),   # Cofre de exploración lejano
+		Vector2(600, 800),    # Cofre de exploración lejano
+	]
+	
+	for pos in exploration_positions:
+		spawn_chest(pos, "exploration")
+	
+	# Crear algunos items de prueba
 	print("📦 Creando items de prueba...")
-	create_test_item_drop(Vector2(1100, 400), "weapon_damage", ItemsDefinitions.ItemRarity.WHITE)
-	create_test_item_drop(Vector2(700, 600), "health_boost", ItemsDefinitions.ItemRarity.BLUE)
-	create_test_item_drop(Vector2(1400, 200), "speed_boost", ItemsDefinitions.ItemRarity.YELLOW)
-	create_test_item_drop(Vector2(500, 900), "new_weapon", ItemsDefinitions.ItemRarity.ORANGE)
+	create_test_item_drop(player_pos + Vector2(100, 80), "weapon_damage", ItemsDefinitions.ItemRarity.WHITE)
+	create_test_item_drop(player_pos + Vector2(-120, 90), "health_boost", ItemsDefinitions.ItemRarity.BLUE)
+	create_test_item_drop(player_pos + Vector2(150, -100), "speed_boost", ItemsDefinitions.ItemRarity.YELLOW)
 	
-	print("📦 Items y cofres de prueba creados en posiciones fijas del mundo")
+	print("📦 Configuración inicial completada: 3 cofres fijos + 2 exploración + 3 items")
+
+func spawn_fixed_chest(position: Vector2, chest_type: String = "fixed"):
+	"""Crear cofre fijo inicial (no se cuenta para límites dinámicos)"""
+	var chest = TreasureChest.new()
+	
+	chest.initialize(position, chest_type, player, 0)
+	chest.chest_opened.connect(_on_chest_opened)
+	
+	# CLAVE: Añadir al contenedor estático, NO al world_manager que se mueve
+	if static_objects_container:
+		static_objects_container.add_child(chest)
+	else:
+		print("❌ Error: Contenedor estático no disponible")
+		return
+	
+	# Calcular posición relativa al mundo que se mueve
+	var world_adjusted_position = convert_world_to_static_position(position)
+	chest.global_position = world_adjusted_position
+	
+	fixed_chests.append(chest)
+	
+	print("📦 Cofre FIJO ESTÁTICO generado en posición: ", world_adjusted_position)
+
+func consider_spawning_dynamic_chest():
+	"""Considerar spawnar un cofre dinámico basado en el movimiento del player"""
+	# Verificar límites
+	if active_chests.size() >= max_active_chests:
+		return
+	
+	# Probabilidad de spawn dinámico (cuando el player se mueve)
+	if randf() < 0.4:  # 40% chance cuando se cumple la distancia
+		spawn_dynamic_chest()
+
+func spawn_dynamic_chest():
+	"""Spawnar cofre dinámico en posición aleatoria alrededor del player"""
+	if not player:
+		return
+	
+	var player_pos = player.global_position
+	
+	# Generar posición aleatoria en un rango moderado del player
+	var angle = randf() * 2 * PI
+	var distance = randf_range(400.0, 800.0)  # Entre 400 y 800 pixels del player
+	
+	var spawn_pos = player_pos + Vector2(
+		cos(angle) * distance,
+		sin(angle) * distance
+	)
+	
+	# Verificar que no esté muy cerca de otros cofres
+	var too_close = false
+	for existing_chest in active_chests + fixed_chests:
+		if is_instance_valid(existing_chest):
+			# Convertir posición estática del cofre a posición de mundo para comparar
+			var chest_world_pos = convert_static_to_world_position(existing_chest.global_position)
+			if chest_world_pos.distance_to(spawn_pos) < min_chest_distance:
+				too_close = true
+				break
+	
+	if not too_close:
+		spawn_chest(spawn_pos, "dynamic")
+		print("📦 Cofre dinámico spawneado en: ", spawn_pos)
+
+func cleanup_distant_chests():
+	"""Limpiar cofres dinámicos muy lejanos para optimizar"""
+	if not player:
+		return
+	
+	var player_pos = player.global_position
+	var max_distance = 1500.0  # Distancia máxima para mantener cofres
+	
+	for i in range(active_chests.size() - 1, -1, -1):
+		var chest = active_chests[i]
+		if is_instance_valid(chest):
+			# Convertir posición estática del cofre a posición de mundo para comparar
+			var chest_world_pos = convert_static_to_world_position(chest.global_position)
+			if chest_world_pos.distance_to(player_pos) > max_distance:
+				print("📦 Removiendo cofre dinámico lejano en: ", chest_world_pos)
+				active_chests.remove_at(i)
+				chest.queue_free()
+		else:
+			# Remover referencias inválidas
+			active_chests.remove_at(i)
 
 func create_test_item_drop(position: Vector2, type: String, rarity: int):
 	"""Crear un item drop de prueba"""
@@ -352,10 +510,15 @@ func create_test_item_drop(position: Vector2, type: String, rarity: int):
 	item_drop.initialize(position, type, player, rarity)
 	item_drop.item_collected.connect(_on_item_drop_collected)
 	
-	# Añadir al mundo fijo, no al current_scene que podría moverse
-	if world_manager:
-		world_manager.add_child(item_drop)
+	# CLAVE: Añadir al contenedor estático, NO al world_manager que se mueve
+	if static_objects_container:
+		static_objects_container.add_child(item_drop)
 	else:
-		get_tree().current_scene.add_child(item_drop)
+		print("❌ Error: Contenedor estático no disponible")
+		return
 	
-	print("⭐ Item de prueba creado exitosamente")
+	# Calcular posición relativa al mundo que se mueve
+	var world_adjusted_position = convert_world_to_static_position(position)
+	item_drop.global_position = world_adjusted_position
+	
+	print("⭐ Item de prueba ESTÁTICO creado en: ", world_adjusted_position)
