@@ -115,17 +115,9 @@ func setup_item_types():
 	print("📦 ", item_types.size(), " tipos de items configurados")
 
 func _process(_delta):
-	"""Actualizar sistema dinámico de cofres"""
+	"""Actualizar sistema de cofres"""
 	if not player:
 		return
-	
-	# Verificar si el player se ha movido lo suficiente para spawnar un nuevo cofre
-	var current_pos = player.global_position
-	var distance_moved = current_pos.distance_to(last_player_position)
-	
-	if distance_moved >= distance_for_new_chest:
-		consider_spawning_dynamic_chest()
-		last_player_position = current_pos
 	
 	# Limpiar cofres muy lejanos para optimizar
 	cleanup_distant_chests()
@@ -242,7 +234,7 @@ func process_item_collected(item_data: Dictionary):
 	# Emitir señal
 	item_collected.emit(item_type, item_data)
 
-func apply_item_effect(item_type: String, item_data: Dictionary):
+func apply_item_effect(item_type: String, _item_data: Dictionary):
 	"""Aplicar efecto de un item"""
 	match item_type:
 		"weapon_damage":
@@ -273,7 +265,7 @@ func apply_item_effect(item_type: String, item_data: Dictionary):
 			# Desbloquear nueva arma (se conectará con WeaponManager)
 			print("⚔️ Nueva arma desbloqueada")
 
-func create_boss_drop(position: Vector2, boss_type: String):
+func create_boss_drop(position: Vector2, _boss_type: String):
 	"""Crear drop especial de boss"""
 	var item_types_boss = ["new_weapon", "weapon_damage", "health_boost"]
 	var selected_type = item_types_boss[randi() % item_types_boss.size()]
@@ -293,7 +285,7 @@ func create_boss_drop(position: Vector2, boss_type: String):
 	
 	print("👑 Drop de boss creado: ", selected_type)
 
-func _on_item_drop_collected(item_drop: Node2D, item_type: String):
+func _on_item_drop_collected(_item_drop: Node2D, item_type: String):
 	"""Manejar recolección de item drop"""
 	var item_data = {
 		"type": item_type,
@@ -307,29 +299,28 @@ func get_random_item_type(rarity_bias: String = "common") -> String:
 	var filtered_items = []
 	
 	for item_id in item_types.keys():
-		var item = item_types[item_id]
-		if item.rarity == rarity_bias or rarity_bias == "any":
+		var _item = item_types[item_id]
+		if _item.rarity == rarity_bias or rarity_bias == "any":
 			filtered_items.append(item_id)
 	
 	if filtered_items.is_empty():
 		return item_types.keys()[0]  # Fallback al primer item
 	
 	return filtered_items[randi() % filtered_items.size()]
-
 func get_chest_count() -> int:
 	"""Obtener número de cofres activos"""
-	return active_chests.size()
+	return all_chests.size()
 
 # Funciones para el minimapa
 func get_active_chests() -> Array[Dictionary]:
 	"""Obtener cofres activos con información de rareza para el minimapa"""
 	var chest_data: Array[Dictionary] = []
 	
-	for child in get_children():
-		if child is TreasureChest and not child.is_opened:
+	for chest in all_chests:
+		if is_instance_valid(chest):
 			chest_data.append({
-				"position": child.global_position,
-				"rarity": child.chest_rarity
+				"position": chest.global_position,
+				"rarity": 0  # Rareza básica por defecto
 			})
 	
 	return chest_data
@@ -371,27 +362,6 @@ func cleanup_distant_chests():
 	for chest in chests_to_remove:
 		if chest in all_chests:
 			all_chests.erase(chest)
-		print("📦 Cofre dinámico spawneado en: ", spawn_pos)
-
-func cleanup_distant_chests():
-	"""Limpiar cofres dinámicos muy lejanos para optimizar"""
-	if not player:
-		return
-	
-	var player_pos = player.global_position
-	var max_distance = 1500.0  # Distancia máxima para mantener cofres
-	
-	for i in range(active_chests.size() - 1, -1, -1):
-		var chest = active_chests[i]
-		if is_instance_valid(chest):
-			# Comparación directa ya que el contenedor compensa automáticamente
-			if chest.global_position.distance_to(player_pos) > max_distance:
-				print("📦 Removiendo cofre dinámico lejano en: ", chest.global_position)
-				active_chests.remove_at(i)
-				chest.queue_free()
-		else:
-			# Remover referencias inválidas
-			active_chests.remove_at(i)
 
 func create_test_item_drop(position: Vector2, type: String, rarity: int):
 	"""Crear un item drop de prueba (obsoleto - items ahora se crean al abrir cofres)"""
