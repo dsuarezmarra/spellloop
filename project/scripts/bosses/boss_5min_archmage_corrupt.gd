@@ -142,7 +142,7 @@ func handle_attacks(delta):
 func fire_basic_projectile():
 	var projectile_scene = preload("res://scenes/bosses/BossProjectile.tscn")
 	if projectile_scene:
-		var projectile = projectile_scene.instance()
+		var projectile = projectile_scene.instantiate()
 		get_parent().add_child(projectile)
 		projectile.global_position = global_position
 		var direction = (player_reference.global_position - global_position).normalized()
@@ -153,7 +153,7 @@ func fire_projectile_burst():
 	for i in range(5):
 		var projectile_scene = preload("res://scenes/bosses/BossProjectile.tscn")
 		if projectile_scene:
-			var projectile = projectile_scene.instance()
+			var projectile = projectile_scene.instantiate()
 			get_parent().add_child(projectile)
 			projectile.global_position = global_position
 			
@@ -166,7 +166,7 @@ func fire_chaos_spell():
 	# Proyectil que cambia el terreno
 	var chaos_scene = preload("res://scenes/bosses/ChaosProjectile.tscn")
 	if chaos_scene:
-		var chaos_proj = chaos_scene.instance()
+		var chaos_proj = chaos_scene.instantiate()
 		get_parent().add_child(chaos_proj)
 		chaos_proj.global_position = global_position
 		var direction = (player_reference.global_position - global_position).normalized()
@@ -218,7 +218,7 @@ func alter_terrain():
 	# Crear zona de daño en el suelo
 	var terrain_scene = preload("res://scenes/bosses/TerrainDamage.tscn")
 	if terrain_scene:
-		var terrain = terrain_scene.instance()
+		var terrain = terrain_scene.instantiate()
 		get_parent().add_child(terrain)
 		terrain.global_position = player_reference.global_position
 		terrain.setup(5.0, calculate_scaled_damage() / 2)  # 5 segundos de duración
@@ -256,7 +256,7 @@ func _on_death():
 	# Efecto de muerte épico
 	var death_effect_scene = preload("res://scenes/effects/BossDeathEffect.tscn")
 	if death_effect_scene:
-		var effect = death_effect_scene.instance()
+		var effect = death_effect_scene.instantiate()
 		get_parent().add_child(effect)
 		effect.global_position = global_position
 	
@@ -281,7 +281,7 @@ func drop_xp(amount: int):
 	for i in range(5):
 		var xp_scene = preload("res://scenes/effects/XPOrb.tscn")
 		if xp_scene:
-			var xp_orb = xp_scene.instance()
+			var xp_orb = xp_scene.instantiate()
 			get_parent().add_child(xp_orb)
 			var offset = Vector2(randf_range(-50, 50), randf_range(-50, 50))
 			xp_orb.global_position = global_position + offset

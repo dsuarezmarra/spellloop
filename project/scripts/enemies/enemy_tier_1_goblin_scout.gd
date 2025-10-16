@@ -81,7 +81,7 @@ func perform_ranged_attack():
 	# Crear proyectil simple
 	var projectile_scene = preload("res://scenes/enemies/EnemyProjectile.tscn")
 	if projectile_scene:
-		var projectile = projectile_scene.instance()
+		var projectile = projectile_scene.instantiate()
 		get_parent().add_child(projectile)
 		projectile.global_position = global_position
 		
@@ -105,7 +105,7 @@ func _on_death():
 func drop_xp(amount: int):
 	var xp_scene = preload("res://scenes/effects/XPOrb.tscn")
 	if xp_scene:
-		var xp_orb = xp_scene.instance()
+		var xp_orb = xp_scene.instantiate()
 		get_parent().add_child(xp_orb)
 		xp_orb.global_position = global_position
 		xp_orb.xp_value = amount

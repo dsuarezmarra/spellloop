@@ -99,7 +99,7 @@ func _on_death():
 func drop_xp(amount: int):
 	var xp_scene = preload("res://scenes/effects/XPOrb.tscn")
 	if xp_scene:
-		var xp_orb = xp_scene.instance()
+		var xp_orb = xp_scene.instantiate()
 		get_parent().add_child(xp_orb)
 		xp_orb.global_position = global_position
 		xp_orb.xp_value = amount

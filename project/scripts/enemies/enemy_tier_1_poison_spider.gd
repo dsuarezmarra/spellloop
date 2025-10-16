@@ -103,7 +103,7 @@ func shoot_web():
 	# Crear proyectil de telaraña que ralentiza
 	var web_scene = preload("res://scenes/enemies/WebProjectile.tscn")
 	if web_scene:
-		var web = web_scene.instance()
+		var web = web_scene.instantiate()
 		get_parent().add_child(web)
 		web.global_position = global_position
 		var direction = (player_reference.global_position - global_position).normalized()
@@ -127,7 +127,7 @@ func _on_death():
 func drop_xp(amount: int):
 	var xp_scene = preload("res://scenes/effects/XPOrb.tscn")
 	if xp_scene:
-		var xp_orb = xp_scene.instance()
+		var xp_orb = xp_scene.instantiate()
 		get_parent().add_child(xp_orb)
 		xp_orb.global_position = global_position
 		xp_orb.xp_value = amount

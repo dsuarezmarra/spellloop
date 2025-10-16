@@ -211,7 +211,7 @@ func spawn_enemy_wave():
 
 func get_spawn_pack(tier: int):
 	var packs = tier_spawn_packs.get(tier, [])
-	if packs.empty():
+	if packs.is_empty():
 		return null
 	
 	var total_weight = 0.0
