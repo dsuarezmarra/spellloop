@@ -72,18 +72,9 @@ func create_chest_texture():
 	sprite.texture = texture
 
 func generate_contents():
-	"""Generar contenido del cofre basado en rareza"""
-	# Más items en cofres de mayor rareza
-	var item_count = 1
-	match chest_rarity:
-		ItemsDefinitions.ItemRarity.WHITE:
-			item_count = randi_range(1, 2)
-		ItemsDefinitions.ItemRarity.BLUE:
-			item_count = randi_range(2, 3)
-		ItemsDefinitions.ItemRarity.YELLOW:
-			item_count = randi_range(3, 4)
-		ItemsDefinitions.ItemRarity.ORANGE:
-			item_count = randi_range(4, 5)
+	"""Generar contenido del cofre basado en rareza - SOLO 3 ITEMS PARA POPUP"""
+	# SIEMPRE generar exactamente 3 items para el popup
+	var item_count = 3
 	
 	for i in range(item_count):
 		var item_type = get_random_chest_item()
@@ -93,20 +84,78 @@ func generate_contents():
 			"rarity": item_rarity,
 			"source": "chest"
 		})
+	
+	print("[TreasureChest] Contenido del cofre generado: ", items_inside.size(), " items")
 
 func get_item_rarity_for_chest() -> int:
-	"""Obtener rareza de item basada en rareza del cofre"""
-	match chest_rarity:
-		ItemsDefinitions.ItemRarity.WHITE:
-			return ItemsDefinitions.ItemRarity.WHITE if randf() < 0.8 else ItemsDefinitions.ItemRarity.BLUE
-		ItemsDefinitions.ItemRarity.BLUE:
-			return ItemsDefinitions.ItemRarity.BLUE if randf() < 0.7 else ItemsDefinitions.ItemRarity.YELLOW
-		ItemsDefinitions.ItemRarity.YELLOW:
-			return ItemsDefinitions.ItemRarity.YELLOW if randf() < 0.6 else ItemsDefinitions.ItemRarity.ORANGE
-		ItemsDefinitions.ItemRarity.ORANGE:
-			return ItemsDefinitions.ItemRarity.ORANGE  # Siempre legendario
+	"""Obtener rareza de item con progresión temporal (cada 5 minutos)"""
+	# Obtener minutos transcurridos desde GameManager
+	var minutes_elapsed = 0
+	var game_manager = GameManager
+	if game_manager and game_manager.has_method("get_elapsed_minutes"):
+		minutes_elapsed = game_manager.get_elapsed_minutes()
 	
-	return ItemsDefinitions.ItemRarity.WHITE
+	# Calcular "ronda" de dificultad (cada 5 minutos = 1 ronda)
+	var difficulty_round = minutes_elapsed / 5
+	
+	print("[TreasureChest] Rareza calculada - Minutos: ", minutes_elapsed, " Ronda: ", difficulty_round)
+	
+	# TABLA DE PROGRESIÓN DE RAREZA POR RONDA (cada 5 minutos)
+	#
+	# Ronda 0 (0-4 min):   80% Blanco,      20% Azul
+	# Ronda 1 (5-9 min):   60% Blanco,      30% Azul,       10% Amarillo
+	# Ronda 2 (10-14 min): 40% Blanco,      40% Azul,       20% Amarillo
+	# Ronda 3 (15-19 min): 20% Blanco,      50% Azul,       25% Amarillo, 5% Naranja
+	# Ronda 4+ (20+ min):  10% Blanco,      40% Azul,       40% Amarillo, 10% Naranja
+	
+	var rand_value = randf()
+	var rarity = ItemsDefinitions.ItemRarity.WHITE
+	
+	match difficulty_round:
+		0:  # 0-4 minutos
+			if rand_value < 0.80:
+				rarity = ItemsDefinitions.ItemRarity.WHITE
+			else:
+				rarity = ItemsDefinitions.ItemRarity.BLUE
+		
+		1:  # 5-9 minutos
+			if rand_value < 0.60:
+				rarity = ItemsDefinitions.ItemRarity.WHITE
+			elif rand_value < 0.90:
+				rarity = ItemsDefinitions.ItemRarity.BLUE
+			else:
+				rarity = ItemsDefinitions.ItemRarity.YELLOW
+		
+		2:  # 10-14 minutos
+			if rand_value < 0.40:
+				rarity = ItemsDefinitions.ItemRarity.WHITE
+			elif rand_value < 0.80:
+				rarity = ItemsDefinitions.ItemRarity.BLUE
+			else:
+				rarity = ItemsDefinitions.ItemRarity.YELLOW
+		
+		3:  # 15-19 minutos
+			if rand_value < 0.20:
+				rarity = ItemsDefinitions.ItemRarity.WHITE
+			elif rand_value < 0.70:
+				rarity = ItemsDefinitions.ItemRarity.BLUE
+			elif rand_value < 0.95:
+				rarity = ItemsDefinitions.ItemRarity.YELLOW
+			else:
+				rarity = ItemsDefinitions.ItemRarity.ORANGE
+		
+		_:  # 20+ minutos
+			if rand_value < 0.10:
+				rarity = ItemsDefinitions.ItemRarity.WHITE
+			elif rand_value < 0.50:
+				rarity = ItemsDefinitions.ItemRarity.BLUE
+			elif rand_value < 0.90:
+				rarity = ItemsDefinitions.ItemRarity.YELLOW
+			else:
+				rarity = ItemsDefinitions.ItemRarity.ORANGE
+	
+	print("[TreasureChest] Rareza seleccionada: ", rarity, " (Ronda: ", difficulty_round, ")")
+	return rarity
 
 func get_random_chest_item() -> String:
 	"""Obtener item aleatorio para cofre"""
@@ -140,7 +189,7 @@ func trigger_chest_interaction():
 	create_chest_popup()
 
 func create_chest_popup():
-	"""Crear popup de selección de mejoras"""
+	"""Crear popup de selección de mejoras - CON 3 ITEMS ALEATORIOS"""
 	print("[TreasureChest] Intentando crear popup...")
 	
 	# Usar popup simple directo en lugar de escena
@@ -148,20 +197,51 @@ func create_chest_popup():
 	print("[TreasureChest] SimpleChestPopup instanciado")
 	
 	get_tree().current_scene.add_child(popup_instance)
-	print("[TreasureChest] Popup añadido a escena")
+	print("[TreasureChest] Popup añadido a escena - layer 100")
 	
-	# Preparar items con información completa
+	# Preparar items con información completa (los 3 items del cofre)
 	var items_with_names = []
-	for item in items_inside:
+	for i in range(items_inside.size()):
+		var item = items_inside[i]
 		var item_display = item.duplicate()
-		if not item_display.has("name"):
-			item_display["name"] = item.get("type", "Unknown Item")
+		
+		# Obtener nombre legible del item
+		var item_type = item.get("type", "Unknown")
+		var item_name = get_item_display_name(item_type)
+		var rarity_name = get_rarity_name(item.get("rarity", 0))
+		
+		item_display["name"] = "%s (%s)" % [item_name, rarity_name]
 		items_with_names.append(item_display)
+		
+		print("[TreasureChest] Item %d - Type: %s, Name: %s, Rarity: %s" % [i + 1, item_type, item_name, rarity_name])
 	
 	popup_instance.setup_items(items_with_names)
-	print("[TreasureChest] Items configurados en popup")
+	print("[TreasureChest] Items configurados en popup (%d items)" % items_with_names.size())
 	popup_instance.item_selected.connect(_on_popup_item_selected)
 	print("[TreasureChest] Señal conectada a _on_popup_item_selected")
+
+func get_item_display_name(item_type: String) -> String:
+	"""Obtener nombre legible del item"""
+	match item_type:
+		"weapon_damage": return "⚡ Poder de Arma"
+		"weapon_speed": return "💫 Velocidad de Ataque"
+		"health_boost": return "❤️ Poción de Vida"
+		"speed_boost": return "🏃 Rapidez"
+		"new_weapon": return "🗡️ Nueva Arma"
+		"heal_full": return "💚 Curación Total"
+		"shield_boost": return "🛡️ Escudo"
+		"crit_chance": return "💥 Golpe Crítico"
+		"mana_boost": return "🔮 Maná"
+		_: return "🎁 %s" % item_type
+
+func get_rarity_name(rarity: int) -> String:
+	"""Obtener nombre legible de la rareza"""
+	match rarity:
+		ItemsDefinitions.ItemRarity.WHITE: return "Normal"
+		ItemsDefinitions.ItemRarity.BLUE: return "Raro"
+		ItemsDefinitions.ItemRarity.YELLOW: return "Épico"
+		ItemsDefinitions.ItemRarity.ORANGE: return "Legendario"
+		_: return "?"
 
 func _on_popup_item_selected(selected_item: Dictionary):
 	"""Manejar selección de item del popup"""
