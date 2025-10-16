@@ -129,6 +129,12 @@ func get_room_color(room_data, pos: Vector2) -> Color:
 	
 	return base_color
 
+func update_minimap_data():
+	"""Update minimap with current dungeon data"""
+	# Sistema de mazmorra desactivado temporalmente
+	print("[MinimapUI] update_minimap_data() llamado - sistema desactivado")
+	return
+
 func _on_room_entered(room_data):
 	# Actualizar posición actual y redibujar
 	update_minimap_data()

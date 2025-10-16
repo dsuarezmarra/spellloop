@@ -18,7 +18,7 @@ signal item_collected(item_type: String, item_data: Dictionary)
 # Referencias
 var player: CharacterBody2D
 var world_manager: InfiniteWorldManager
-var static_objects_container: Node2D  # Contenedor para objetos estáticos (no se mueve)
+var static_objects_container: Node2D  # Contenedor para objetos del mundo (se mueve CON el mundo)
 
 # Cofres activos
 var active_chests: Array[Node2D] = []
@@ -45,7 +45,7 @@ func initialize(player_ref: CharacterBody2D, world_ref: InfiniteWorldManager):
 	world_manager = world_ref
 	last_player_position = player.global_position
 	
-	# Crear contenedor para objetos estáticos (cofres, items)
+	# Crear contenedor para objetos del mundo (cofres, items)
 	create_static_container()
 	
 	# Conectar señales del mundo
@@ -133,46 +133,17 @@ func _process(_delta):
 	cleanup_distant_chests()
 
 func create_static_container():
-	"""Crear contenedor para objetos estáticos que NO se mueven con el mundo"""
+	"""Crear contenedor para objetos del mundo que se mueven CON el mundo"""
 	static_objects_container = Node2D.new()
-	static_objects_container.name = "StaticObjectsContainer"
+	static_objects_container.name = "WorldObjectsContainer"
 	
-	# Añadir al nodo raíz de la escena, NO al world_manager que se mueve
-	var scene_root = get_tree().current_scene
-	scene_root.add_child(static_objects_container)
-	
-	# CLAVE: Conectar al sistema de movimiento del mundo para compensar automáticamente
-	if world_manager and world_manager.has_signal("world_moved"):
-		world_manager.world_moved.connect(_on_world_moved)
-		print("📦 Contenedor estático conectado al sistema de compensación de movimiento")
-	
-	print("📦 Contenedor estático creado para cofres e items")
-
-func _on_world_moved(movement_delta: Vector2):
-	"""Compensar automáticamente el movimiento del mundo"""
-	if static_objects_container:
-		# Mover el contenedor en dirección opuesta al mundo para mantenerlo fijo
-		static_objects_container.position += movement_delta
-		print("📦 Compensando movimiento del mundo: ", movement_delta)
-
-func convert_world_to_static_position(world_position: Vector2) -> Vector2:
-	"""Convertir posición del mundo móvil a posición estática"""
-	if not world_manager:
-		return world_position
-	
-	# Compensar el offset del mundo que se mueve
-	# Si el mundo se mueve hacia la izquierda, los objetos estáticos deben estar más a la derecha
-	var static_position = world_position - world_manager.world_offset
-	return static_position
-
-func convert_static_to_world_position(static_position: Vector2) -> Vector2:
-	"""Convertir posición estática a posición del mundo móvil"""
-	if not world_manager:
-		return static_position
-	
-	# Aplicar el offset del mundo que se mueve
-	var world_position = static_position + world_manager.world_offset
-	return world_position
+	# CLAVE: Añadir al world_manager para que se mueva CON el mundo
+	if world_manager:
+		world_manager.add_child(static_objects_container)
+		print("📦 Contenedor de objetos del mundo creado - se mueve CON el mundo")
+	else:
+		print("❌ Error: world_manager no disponible")
+		return
 
 func _on_chunk_generated(chunk_pos: Vector2i):
 	"""Manejar generación de nuevo chunk - Sistema dinámico mejorado"""
@@ -237,13 +208,13 @@ func spawn_chest(position: Vector2, chest_type: String = "normal"):
 	chest.initialize(position, chest_type, player, 0)  # Usar rareza básica por ahora
 	chest.chest_opened.connect(_on_chest_opened)
 	
-	# CLAVE: Añadir al contenedor estático que compensa automáticamente el movimiento
+	# CLAVE: Añadir al contenedor del mundo - se mueve CON el mundo
 	if static_objects_container:
 		static_objects_container.add_child(chest)
-		chest.global_position = position  # Posición directa
-		print("📦 Cofre añadido al contenedor estático autocompensado")
+		chest.global_position = position  # Posición en el mundo
+		print("📦 Cofre generado en el MUNDO en posición: ", position)
 	else:
-		print("❌ Error: Contenedor estático no disponible")
+		print("❌ Error: Contenedor del mundo no disponible")
 		return
 	
 	active_chests.append(chest)
@@ -435,17 +406,17 @@ func spawn_fixed_chest(position: Vector2, chest_type: String = "fixed"):
 	chest.initialize(position, chest_type, player, 0)
 	chest.chest_opened.connect(_on_chest_opened)
 	
-	# CLAVE: Añadir al contenedor estático que compensa automáticamente el movimiento
+	# CLAVE: Añadir al contenedor del mundo - se mueve CON el mundo
 	if static_objects_container:
 		static_objects_container.add_child(chest)
-		chest.global_position = position  # Posición directa
+		chest.global_position = position  # Posición en el mundo
 	else:
-		print("❌ Error: Contenedor estático no disponible")
+		print("❌ Error: Contenedor del mundo no disponible")
 		return
 	
 	fixed_chests.append(chest)
 	
-	print("📦 Cofre FIJO AUTOCOMPENSADO generado en posición: ", position)
+	print("📦 Cofre FIJO del mundo generado en posición: ", position)
 
 func consider_spawning_dynamic_chest():
 	"""Considerar spawnar un cofre dinámico basado en el movimiento del player"""
@@ -514,12 +485,12 @@ func create_test_item_drop(position: Vector2, type: String, rarity: int):
 	item_drop.initialize(position, type, player, rarity)
 	item_drop.item_collected.connect(_on_item_drop_collected)
 	
-	# CLAVE: Añadir al contenedor estático que compensa automáticamente el movimiento
+	# CLAVE: Añadir al contenedor del mundo - se mueve CON el mundo
 	if static_objects_container:
 		static_objects_container.add_child(item_drop)
-		item_drop.global_position = position  # Posición directa
+		item_drop.global_position = position  # Posición en el mundo
 	else:
-		print("❌ Error: Contenedor estático no disponible")
+		print("❌ Error: Contenedor del mundo no disponible")
 		return
 	
-	print("⭐ Item de prueba AUTOCOMPENSADO creado en: ", position)
+	print("⭐ Item de prueba creado en el mundo: ", position)
