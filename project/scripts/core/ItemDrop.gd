@@ -12,8 +12,8 @@ var life_timer: float = 0.0
 var sprite: Sprite2D
 var player_ref: CharacterBody2D
 
-func initialize(position: Vector2, type: String, player: CharacterBody2D, rarity: int = 0):
-	global_position = position
+func initialize(drop_position: Vector2, type: String, player: CharacterBody2D, rarity: int = 0):
+	global_position = drop_position
 	item_type = type
 	item_rarity = rarity
 	player_ref = player
@@ -45,7 +45,7 @@ func create_item_texture():
 	var rarity_color = ItemsDefinitions.get_rarity_color(item_rarity)
 	
 	# Crear forma de estrella
-	var center = Vector2(size / 2, size / 2)
+	var center = Vector2(int(size / 2.0), int(size / 2.0))
 	
 	# Puntos de la estrella (5 puntas)
 	var star_points = []

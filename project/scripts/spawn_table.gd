@@ -132,7 +132,12 @@ var world_manager: Node
 
 func _ready():
 	game_manager = get_node("/root/GameManager")
-	world_manager = get_node("/root/World")
+	# Buscar world_manager con más flexibilidad
+	world_manager = get_tree().current_scene.get_node_or_null("InfiniteWorldManager")
+	if not world_manager:
+		world_manager = get_tree().current_scene.get_node_or_null("WorldManager")
+	if not world_manager:
+		push_warning("[SpawnTable] No se encontró InfiniteWorldManager o WorldManager")
 
 func _process(delta):
 	spawn_timer += delta

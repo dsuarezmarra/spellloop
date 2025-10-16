@@ -67,9 +67,9 @@ func collect_xp():
 	await tween.finished
 	queue_free()
 
-func setup(value: int, position: Vector2):
+func setup(value: int, orb_position: Vector2):
 	xp_value = value
-	global_position = position
+	global_position = orb_position
 	
 	# Escalar visualmente según valor
 	var size_multiplier = 1.0 + (value / 20.0)  # Más grande = más XP

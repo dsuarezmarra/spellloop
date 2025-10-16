@@ -259,8 +259,8 @@ class ExpOrb extends Node2D:
 	var sprite: Sprite2D
 	var player_ref: CharacterBody2D
 	
-	func initialize(position: Vector2, exp_val: int, player: CharacterBody2D):
-		global_position = position
+	func initialize(orb_position: Vector2, exp_val: int, player: CharacterBody2D):
+		global_position = orb_position
 		exp_value = exp_val
 		player_ref = player
 		
@@ -289,8 +289,8 @@ class ExpOrb extends Node2D:
 		var size = 12
 		var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
 		
-		var center = Vector2(size / 2, size / 2)
-		var radius = size / 2 - 1
+		var center = Vector2(int(size / 2.0), int(size / 2.0))
+		var radius = int(size / 2.0) - 1
 		
 		for x in range(size):
 			for y in range(size):

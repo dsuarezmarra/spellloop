@@ -7,13 +7,14 @@ var chest_type: String = "normal"
 var chest_rarity: int = 0  # ItemsDefinitions.ItemRarity.WHITE
 var is_opened: bool = false
 var interaction_range: float = 60.0
+var popup_shown: bool = false  # Control para evitar múltiples popups
 
 var sprite: Sprite2D
 var player_ref: CharacterBody2D
 var items_inside: Array = []
 
-func initialize(position: Vector2, type: String, player: CharacterBody2D, rarity: int = 0):
-	global_position = position
+func initialize(chest_position: Vector2, type: String, player: CharacterBody2D, rarity: int = 0):
+	global_position = chest_position
 	chest_type = type
 	chest_rarity = rarity
 	player_ref = player
@@ -62,8 +63,8 @@ func create_chest_texture():
 		image.set_pixel(size - 4, y, rarity_color)  # Derecha
 	
 	# Detalle central (cerradura) con color de rareza
-	for x in range(size/2 - 2, size/2 + 2):
-		for y in range(size/2 - 1, size/2 + 1):
+	for x in range(int(size/2.0) - 2, int(size/2.0) + 2):
+		for y in range(int(size/2.0) - 1, int(size/2.0) + 1):
 			image.set_pixel(x, y, lock_color)
 	
 	var texture = ImageTexture.new()
@@ -116,13 +117,15 @@ func get_random_chest_item() -> String:
 	]
 	return item_types[randi() % item_types.size()]
 
-func _process(delta):
-	if is_opened or not player_ref:
+func _process(_delta):
+	if is_opened or not player_ref or popup_shown:
 		return
 	
 	# Verificar si el player está cerca para activar el popup
 	var distance = global_position.distance_to(player_ref.global_position)
 	if distance <= interaction_range:
+		print("[TreasureChest] ¡COFRE TOCADO! Distancia: ", distance)
+		popup_shown = true  # Marcar que ya se mostró el popup
 		trigger_chest_interaction()
 
 func trigger_chest_interaction():
@@ -138,36 +141,39 @@ func trigger_chest_interaction():
 
 func create_chest_popup():
 	"""Crear popup de selección de mejoras"""
-	var popup = preload("res://scenes/ui/ChestPopup.tscn")
-	if not popup:
-		# Si no existe la escena, crear popup dinámicamente
-		create_dynamic_popup()
-		return
+	print("[TreasureChest] Intentando crear popup...")
 	
-	var popup_instance = popup.instantiate()
+	# Usar popup simple directo en lugar de escena
+	var popup_instance = SimpleChestPopup.new()
+	print("[TreasureChest] SimpleChestPopup instanciado")
+	
 	get_tree().current_scene.add_child(popup_instance)
-	popup_instance.setup_items(items_inside)
+	print("[TreasureChest] Popup añadido a escena")
+	
+	# Preparar items con información completa
+	var items_with_names = []
+	for item in items_inside:
+		var item_display = item.duplicate()
+		if not item_display.has("name"):
+			item_display["name"] = item.get("type", "Unknown Item")
+		items_with_names.append(item_display)
+	
+	popup_instance.setup_items(items_with_names)
+	print("[TreasureChest] Items configurados en popup")
 	popup_instance.item_selected.connect(_on_popup_item_selected)
-
-func create_dynamic_popup():
-	"""Crear popup dinámicamente si no existe la escena"""
-	var popup = ChestSelectionPopup.new()
-	get_tree().current_scene.add_child(popup)
-	popup.setup_chest(self, items_inside)
-	popup.item_selected.connect(_on_popup_item_selected)
+	print("[TreasureChest] Señal conectada a _on_popup_item_selected")
 
 func _on_popup_item_selected(selected_item: Dictionary):
 	"""Manejar selección de item del popup"""
+	print("[TreasureChest] ¡¡¡ CALLBACK RECIBIDO !!! Item: ", selected_item)
 	is_opened = true
-	
-	# Reanudar el juego
-	get_tree().paused = false
 	
 	# Efecto visual de apertura
 	create_opening_effect()
 	
 	# Emitir señal solo con el item seleccionado
 	chest_opened.emit(self, [selected_item])
+	print("[TreasureChest] Señal chest_opened emitida")
 	
 	# Remover después de un delay
 	var timer = Timer.new()
