@@ -11,6 +11,7 @@ El player permanece fijo en el centro, el mundo se mueve.
 
 signal chunk_generated(chunk_pos: Vector2i)
 signal chunk_removed(chunk_pos: Vector2i)
+signal world_moved(movement_delta: Vector2)  # Nueva señal para objetos estáticos
 
 # Configuración de chunks
 const CHUNK_SIZE = 1024  # Tamaño de cada chunk en píxeles
@@ -66,6 +67,9 @@ func update_world(movement_delta: Vector2):
 	"""Actualizar mundo basándose en el movimiento del player"""
 	# Mover todo el mundo en dirección opuesta al movimiento
 	world_offset += movement_delta
+	
+	# Emitir señal para objetos estáticos ANTES de aplicar el offset
+	world_moved.emit(movement_delta)
 	
 	# Aplicar offset a todos los nodos del mundo
 	apply_world_offset(-movement_delta)
