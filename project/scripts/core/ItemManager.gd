@@ -6,7 +6,7 @@ class_name ItemManager
 ==========================================
 
 Gestiona cofres, items y mejoras:
-- Cofres aleatorios en el mundo
+- Cofres generados en chunks (pegados al suelo)
 - Items de mejora
 - Drops especiales de bosses
 - Sistema de recolección
@@ -18,12 +18,13 @@ signal item_collected(item_type: String, item_data: Dictionary)
 # Referencias
 var player: CharacterBody2D
 var world_manager: InfiniteWorldManager
-var static_objects_container: Node2D  # Contenedor para objetos del mundo (se mueve CON el mundo)
 
-# Cofres activos
-var active_chests: Array[Node2D] = []
-var fixed_chests: Array[Node2D] = []  # Cofres fijos iniciales cerca del player
-var chest_spawn_chance: float = 0.15  # Reducida para evitar spam (15%)
+# Configuración de spawn en chunks
+var chest_spawn_chance: float = 0.3  # Probabilidad de que un chunk tenga cofre (30%)
+
+# Tracking de cofres por chunk
+var chests_by_chunk: Dictionary = {}  # Vector2i (chunk_pos) -> Array[Node2D] (cofres en ese chunk)
+var all_chests: Array[Node2D] = []  # Todos los cofres generados
 
 # Sistema de spawn dinámico
 var last_player_position: Vector2
@@ -45,18 +46,15 @@ func initialize(player_ref: CharacterBody2D, world_ref: InfiniteWorldManager):
 	world_manager = world_ref
 	last_player_position = player.global_position
 	
-	# Crear contenedor para objetos del mundo (cofres, items)
-	create_static_container()
-	
-	# Conectar señales del mundo
+	# Conectar a la señal de generación de chunks
 	if world_manager.has_signal("chunk_generated"):
 		world_manager.chunk_generated.connect(_on_chunk_generated)
-		print("📦 Señal chunk_generated conectada")
+		print("📦 Conectado a señal chunk_generated")
 	else:
 		print("❌ Error: chunk_generated signal no encontrada")
 	
-	# Crear cofres fijos iniciales y sistema dinámico
-	create_initial_setup()
+	# Crear cofres iniciales de prueba en el chunk inicial (0, 0)
+	create_initial_test_chests()
 	
 	print("📦 Sistema de items inicializado")
 
@@ -132,103 +130,101 @@ func _process(_delta):
 	# Limpiar cofres muy lejanos para optimizar
 	cleanup_distant_chests()
 
-func create_static_container():
-	"""Crear contenedor para objetos del mundo que se mueven CON el mundo"""
-	static_objects_container = Node2D.new()
-	static_objects_container.name = "WorldObjectsContainer"
+func create_initial_test_chests():
+	"""Crear cofres de prueba en el chunk inicial (0, 0)"""
+	print("📦 Creando cofres de prueba en chunk (0, 0)...")
 	
-	# CLAVE: Añadir al world_manager para que se mueva CON el mundo
-	if world_manager:
-		world_manager.add_child(static_objects_container)
-		print("📦 Contenedor de objetos del mundo creado - se mueve CON el mundo")
-	else:
-		print("❌ Error: world_manager no disponible")
-		return
-
-func _on_chunk_generated(chunk_pos: Vector2i):
-	"""Manejar generación de nuevo chunk - Sistema dinámico mejorado"""
-	print("📦 Chunk generado: ", chunk_pos, " - Evaluando spawn de cofre...")
-	
-	# Verificar que no esté muy cerca del player (evitar spawn inmediato)
-	var player_chunk = Vector2i(
-		int(player.global_position.x / world_manager.CHUNK_SIZE),
-		int(player.global_position.y / world_manager.CHUNK_SIZE)
-	)
-	
-	var distance_to_player_chunk = chunk_pos.distance_to(player_chunk)
-	if distance_to_player_chunk < 2.0:  # Al menos 2 chunks de distancia
-		print("📦 Chunk muy cerca del player, no generando cofre")
-		return
-	
-	# Verificar límite de cofres activos
-	if active_chests.size() >= max_active_chests:
-		print("📦 Máximo de cofres activos alcanzado (", max_active_chests, ")")
-		return
-	
-	# Probabilidad muy baja para evitar spam
-	if randf() < chest_spawn_chance:
-		print("📦 ¡Generando cofre dinámico en chunk ", chunk_pos, "!")
-		spawn_chest_in_chunk(chunk_pos)
-	else:
-		print("📦 No se genera cofre en chunk ", chunk_pos)
-
-func spawn_chest_in_chunk(chunk_pos: Vector2i):
-	"""Generar cofre en un chunk específico"""
-	if not world_manager:
-		return
-	
-	# Calcular posición aleatoria dentro del chunk
+	# Crear 3 cofres de prueba en posiciones específicas dentro del chunk inicial
+	var chunk_pos = Vector2i(0, 0)
 	var chunk_world_pos = world_manager.chunk_to_world(chunk_pos)
 	var chunk_size = world_manager.CHUNK_SIZE
 	
-	var chest_pos = Vector2(
-		chunk_world_pos.x + randf_range(100, chunk_size - 100),
-		chunk_world_pos.y + randf_range(100, chunk_size - 100)
-	)
+	# Posiciones relativas dentro del chunk
+	var test_positions = [
+		chunk_world_pos + Vector2(200, 200),
+		chunk_world_pos + Vector2(500, 300),
+		chunk_world_pos + Vector2(300, 600)
+	]
 	
-	spawn_chest(chest_pos)
+	for pos in test_positions:
+		spawn_chest_in_chunk_at_position(chunk_pos, pos)
+	
+	print("📦 Cofres de prueba creados: ", test_positions.size())
 
-func spawn_chest(position: Vector2, chest_type: String = "normal"):
-	"""Crear cofre en posición específica del mundo"""
-	# Verificar que no esté muy cerca de otros cofres
-	for existing_chest in active_chests:
-		if is_instance_valid(existing_chest):
-			if existing_chest.global_position.distance_to(position) < min_chest_distance:
-				print("📦 Posición muy cerca de otro cofre, cancelando spawn")
-				return
-	
-	var chest = TreasureChest.new()
-	
-	# Determinar rareza del cofre usando nivel del jugador
-	var player_level = 1  # Nivel base por defecto
-	if player and player.has_method("get_level"):
-		player_level = player.get_level()
-	var item = ItemsDefinitions.get_weighted_random_item(player_level)
-	
-	chest.initialize(position, chest_type, player, 0)  # Usar rareza básica por ahora
-	chest.chest_opened.connect(_on_chest_opened)
-	
-	# CLAVE: Añadir al contenedor del mundo - se mueve CON el mundo
-	if static_objects_container:
-		static_objects_container.add_child(chest)
-		chest.global_position = position  # Posición en el mundo
-		print("📦 Cofre generado en el MUNDO en posición: ", position)
+func _on_chunk_generated(chunk_pos: Vector2i):
+	"""Manejar generación de nuevo chunk - Generar cofre si toca"""
+	# Probabilidad de generar un cofre en este chunk
+	if randf() < chest_spawn_chance:
+		print("📦 ¡Generando cofre aleatorio en chunk ", chunk_pos, "!")
+		spawn_random_chest_in_chunk(chunk_pos)
 	else:
-		print("❌ Error: Contenedor del mundo no disponible")
+		print("📦 Sin cofre en chunk ", chunk_pos)
+
+func spawn_random_chest_in_chunk(chunk_pos: Vector2i):
+	"""Generar un cofre aleatorio en una posición aleatoria del chunk"""
+	if not world_manager or not world_manager.loaded_chunks.has(chunk_pos):
+		print("❌ Chunk no cargado: ", chunk_pos)
 		return
 	
-	active_chests.append(chest)
+	# Obtener el nodo del chunk
+	var chunk_data = world_manager.loaded_chunks[chunk_pos]
+	var chunk_node = chunk_data.node
+	if not chunk_node:
+		print("❌ Chunk node no disponible")
+		return
+	
+	# Posición aleatoria dentro del chunk
+	var chunk_size = world_manager.CHUNK_SIZE
+	var local_pos = Vector2(
+		randf_range(100, chunk_size - 100),
+		randf_range(100, chunk_size - 100)
+	)
+	
+	spawn_chest_in_chunk_at_position(chunk_pos, chunk_node.global_position + local_pos)
+
+func spawn_chest_in_chunk_at_position(chunk_pos: Vector2i, world_position: Vector2):
+	"""Generar un cofre en una posición específica dentro de un chunk"""
+	if not world_manager or not world_manager.loaded_chunks.has(chunk_pos):
+		print("❌ Chunk no disponible")
+		return
+	
+	# Obtener el nodo del chunk
+	var chunk_data = world_manager.loaded_chunks[chunk_pos]
+	var chunk_node = chunk_data.node
+	if not chunk_node:
+		print("❌ Chunk node no disponible")
+		return
+	
+	# Crear el cofre
+	var chest = TreasureChest.new()
+	chest.initialize(world_position, "normal", player, 0)
+	chest.chest_opened.connect(_on_chest_opened)
+	
+	# CLAVE: Añadir el cofre como HIJO del chunk
+	# Así se mueve automáticamente cuando el chunk se mueve
+	chunk_node.add_child(chest)
+	chest.global_position = world_position
+	
+	# Registrar en tracking
+	if not chests_by_chunk.has(chunk_pos):
+		chests_by_chunk[chunk_pos] = []
+	chests_by_chunk[chunk_pos].append(chest)
+	all_chests.append(chest)
 	
 	# Emitir señal
 	chest_spawned.emit(chest)
 	
-	print("📦 Cofre generado ESTÁTICO AUTOCOMPENSADO en posición: ", position)
+	print("📦 Cofre generado en chunk ", chunk_pos, " en posición: ", world_position)
 
 func _on_chest_opened(chest: Node2D, items: Array):
 	"""Manejar apertura de cofre"""
-	# Remover de lista activos
-	if chest in active_chests:
-		active_chests.erase(chest)
+	# Remover de tracking
+	for chunk_pos in chests_by_chunk.keys():
+		if chest in chests_by_chunk[chunk_pos]:
+			chests_by_chunk[chunk_pos].erase(chest)
+	
+	if chest in all_chests:
+		all_chests.erase(chest)
 	
 	# Procesar items obtenidos
 	for item_data in items:
@@ -352,109 +348,29 @@ func get_active_items() -> Array[Dictionary]:
 	return item_data
 
 func create_test_items():
-	"""Crear items y cofres de prueba para testing - REEMPLAZADO por create_initial_setup"""
-	print("📦 create_test_items() ha sido reemplazado por create_initial_setup()")
+	"""Obsoleto - Reemplazado por create_initial_test_chests()"""
+	pass
 
-func create_initial_setup():
-	"""Crear configuración inicial: 3 cofres fijos cerca del player + items de prueba"""
-	print("📦 Iniciando configuración inicial del sistema...")
-	
-	if not player:
-		print("❌ Error: Player no disponible para crear configuración inicial")
-		return
-	
-	var player_pos = player.global_position
-	print("📦 Posición del player: ", player_pos)
-	
-	# CREAR 3 COFRES FIJOS ALCANZABLES CERCA DEL PLAYER
-	print("📦 Creando 3 cofres fijos cerca del player...")
-	
-	# Cofres fijos en posiciones calculadas alrededor del player (alcanzables)
-	var fixed_positions = [
-		player_pos + Vector2(200, 150),   # Cofre 1: derecha-abajo del player
-		player_pos + Vector2(-180, 120),  # Cofre 2: izquierda-abajo del player  
-		player_pos + Vector2(50, -200)    # Cofre 3: arriba del player
-	]
-	
-	for i in range(fixed_positions.size()):
-		var chest_pos = fixed_positions[i]
-		spawn_fixed_chest(chest_pos, "fixed")
-		print("📦 Cofre fijo ", i + 1, " creado en: ", chest_pos)
-	
-	# CREAR ALGUNOS COFRES LEJANOS PARA EXPLORACIÓN
-	print("📦 Creando cofres de exploración...")
-	var exploration_positions = [
-		Vector2(1400, 300),   # Cofre de exploración lejano
-		Vector2(600, 800),    # Cofre de exploración lejano
-	]
-	
-	for pos in exploration_positions:
-		spawn_chest(pos, "exploration")
-	
-	# Crear algunos items de prueba
-	print("📦 Creando items de prueba...")
-	create_test_item_drop(player_pos + Vector2(100, 80), "weapon_damage", ItemsDefinitions.ItemRarity.WHITE)
-	create_test_item_drop(player_pos + Vector2(-120, 90), "health_boost", ItemsDefinitions.ItemRarity.BLUE)
-	create_test_item_drop(player_pos + Vector2(150, -100), "speed_boost", ItemsDefinitions.ItemRarity.YELLOW)
-	
-	print("📦 Configuración inicial completada: 3 cofres fijos + 2 exploración + 3 items")
+# Funciones de cleanup y management
 
-func spawn_fixed_chest(position: Vector2, chest_type: String = "fixed"):
-	"""Crear cofre fijo inicial (no se cuenta para límites dinámicos)"""
-	var chest = TreasureChest.new()
+func cleanup_distant_chests():
+	"""Limpiar cofres que están muy lejos del player"""
+	var chests_to_remove = []
+	var max_distance = 2000.0  # Distancia máxima antes de remover
 	
-	chest.initialize(position, chest_type, player, 0)
-	chest.chest_opened.connect(_on_chest_opened)
+	for chest in all_chests:
+		if not is_instance_valid(chest):
+			chests_to_remove.append(chest)
+			continue
+		
+		var distance = chest.global_position.distance_to(player.global_position)
+		if distance > max_distance:
+			# Marcar para remover (el cofre ya está en un chunk que se descargará)
+			chests_to_remove.append(chest)
 	
-	# CLAVE: Añadir al contenedor del mundo - se mueve CON el mundo
-	if static_objects_container:
-		static_objects_container.add_child(chest)
-		chest.global_position = position  # Posición en el mundo
-	else:
-		print("❌ Error: Contenedor del mundo no disponible")
-		return
-	
-	fixed_chests.append(chest)
-	
-	print("📦 Cofre FIJO del mundo generado en posición: ", position)
-
-func consider_spawning_dynamic_chest():
-	"""Considerar spawnar un cofre dinámico basado en el movimiento del player"""
-	# Verificar límites
-	if active_chests.size() >= max_active_chests:
-		return
-	
-	# Probabilidad de spawn dinámico (cuando el player se mueve)
-	if randf() < 0.4:  # 40% chance cuando se cumple la distancia
-		spawn_dynamic_chest()
-
-func spawn_dynamic_chest():
-	"""Spawnar cofre dinámico en posición aleatoria alrededor del player"""
-	if not player:
-		return
-	
-	var player_pos = player.global_position
-	
-	# Generar posición aleatoria en un rango moderado del player
-	var angle = randf() * 2 * PI
-	var distance = randf_range(400.0, 800.0)  # Entre 400 y 800 pixels del player
-	
-	var spawn_pos = player_pos + Vector2(
-		cos(angle) * distance,
-		sin(angle) * distance
-	)
-	
-	# Verificar que no esté muy cerca de otros cofres
-	var too_close = false
-	for existing_chest in active_chests + fixed_chests:
-		if is_instance_valid(existing_chest):
-			# Comparación directa ya que el contenedor compensa automáticamente
-			if existing_chest.global_position.distance_to(spawn_pos) < min_chest_distance:
-				too_close = true
-				break
-	
-	if not too_close:
-		spawn_chest(spawn_pos, "dynamic")
+	for chest in chests_to_remove:
+		if chest in all_chests:
+			all_chests.erase(chest)
 		print("📦 Cofre dinámico spawneado en: ", spawn_pos)
 
 func cleanup_distant_chests():
@@ -478,19 +394,5 @@ func cleanup_distant_chests():
 			active_chests.remove_at(i)
 
 func create_test_item_drop(position: Vector2, type: String, rarity: int):
-	"""Crear un item drop de prueba"""
-	print("⭐ Creando item de prueba: ", type, " en ", position)
-	
-	var item_drop = ItemDrop.new()
-	item_drop.initialize(position, type, player, rarity)
-	item_drop.item_collected.connect(_on_item_drop_collected)
-	
-	# CLAVE: Añadir al contenedor del mundo - se mueve CON el mundo
-	if static_objects_container:
-		static_objects_container.add_child(item_drop)
-		item_drop.global_position = position  # Posición en el mundo
-	else:
-		print("❌ Error: Contenedor del mundo no disponible")
-		return
-	
-	print("⭐ Item de prueba creado en el mundo: ", position)
+	"""Crear un item drop de prueba (obsoleto - items ahora se crean al abrir cofres)"""
+	print("⭐ Item drop - Los items ahora se generan al abrir cofres")
