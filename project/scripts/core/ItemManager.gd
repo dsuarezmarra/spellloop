@@ -327,20 +327,22 @@ func create_test_items():
 	var player_pos = player.global_position
 	print("📦 Posición del player: ", player_pos)
 	
-	# Crear algunos cofres de prueba con diferentes rarezas
+	# Crear algunos cofres de prueba en posiciones absolutas del mundo
 	print("📦 Creando cofres de prueba...")
-	spawn_chest(player_pos + Vector2(200, 100), "normal")  # Cofre normal
-	spawn_chest(player_pos + Vector2(-200, 150), "normal")  # Cofre común  
-	spawn_chest(player_pos + Vector2(150, -200), "normal")  # Cofre raro
+	spawn_chest(Vector2(1200, 300), "normal")  # Cofre fijo en posición absoluta
+	spawn_chest(Vector2(600, 700), "normal")   # Cofre fijo en posición absoluta
+	spawn_chest(Vector2(1500, 800), "normal")  # Cofre fijo en posición absoluta
+	spawn_chest(Vector2(300, 200), "normal")   # Cofre fijo en posición absoluta
+	spawn_chest(Vector2(1800, 500), "normal")  # Cofre fijo en posición absoluta
 	
-	# Crear algunos items de prueba
+	# Crear algunos items de prueba en posiciones absolutas
 	print("📦 Creando items de prueba...")
-	create_test_item_drop(player_pos + Vector2(100, 50), "weapon_damage", ItemsDefinitions.ItemRarity.WHITE)
-	create_test_item_drop(player_pos + Vector2(-100, 75), "health_boost", ItemsDefinitions.ItemRarity.BLUE)
-	create_test_item_drop(player_pos + Vector2(75, -100), "speed_boost", ItemsDefinitions.ItemRarity.YELLOW)
-	create_test_item_drop(player_pos + Vector2(-75, -125), "new_weapon", ItemsDefinitions.ItemRarity.ORANGE)
+	create_test_item_drop(Vector2(1100, 400), "weapon_damage", ItemsDefinitions.ItemRarity.WHITE)
+	create_test_item_drop(Vector2(700, 600), "health_boost", ItemsDefinitions.ItemRarity.BLUE)
+	create_test_item_drop(Vector2(1400, 200), "speed_boost", ItemsDefinitions.ItemRarity.YELLOW)
+	create_test_item_drop(Vector2(500, 900), "new_weapon", ItemsDefinitions.ItemRarity.ORANGE)
 	
-	print("📦 Items y cofres de prueba creados cerca del player")
+	print("📦 Items y cofres de prueba creados en posiciones fijas del mundo")
 
 func create_test_item_drop(position: Vector2, type: String, rarity: int):
 	"""Crear un item drop de prueba"""
