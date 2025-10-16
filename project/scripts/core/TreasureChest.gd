@@ -4,7 +4,7 @@ class_name TreasureChest
 signal chest_opened(chest: Node2D, items: Array)
 
 var chest_type: String = "normal"
-var chest_rarity: ItemRarity.Type = ItemRarity.Type.NORMAL
+var chest_rarity: int = 0  # ItemsDefinitions.ItemRarity.WHITE
 var is_opened: bool = false
 var interaction_range: float = 60.0
 
@@ -12,7 +12,7 @@ var sprite: Sprite2D
 var player_ref: CharacterBody2D
 var items_inside: Array = []
 
-func initialize(position: Vector2, type: String, player: CharacterBody2D, rarity: ItemRarity.Type = ItemRarity.Type.NORMAL):
+func initialize(position: Vector2, type: String, player: CharacterBody2D, rarity: int = 0):
 	global_position = position
 	chest_type = type
 	chest_rarity = rarity
@@ -41,7 +41,7 @@ func create_chest_texture():
 	
 	# Color base del cofre según rareza
 	var chest_color = Color(0.6, 0.3, 0.1, 1.0)  # Marrón base
-	var rarity_color = ItemRarity.get_color(chest_rarity)
+	var rarity_color = ItemsDefinitions.get_rarity_color(chest_rarity)
 	var lock_color = rarity_color
 	
 	# Cuerpo del cofre
@@ -75,13 +75,13 @@ func generate_contents():
 	# Más items en cofres de mayor rareza
 	var item_count = 1
 	match chest_rarity:
-		ItemRarity.Type.NORMAL:
+		ItemsDefinitions.ItemRarity.WHITE:
 			item_count = randi_range(1, 2)
-		ItemRarity.Type.COMMON:
+		ItemsDefinitions.ItemRarity.BLUE:
 			item_count = randi_range(2, 3)
-		ItemRarity.Type.RARE:
+		ItemsDefinitions.ItemRarity.YELLOW:
 			item_count = randi_range(3, 4)
-		ItemRarity.Type.LEGENDARY:
+		ItemsDefinitions.ItemRarity.ORANGE:
 			item_count = randi_range(4, 5)
 	
 	for i in range(item_count):
@@ -93,19 +93,19 @@ func generate_contents():
 			"source": "chest"
 		})
 
-func get_item_rarity_for_chest() -> ItemRarity.Type:
+func get_item_rarity_for_chest() -> int:
 	"""Obtener rareza de item basada en rareza del cofre"""
 	match chest_rarity:
-		ItemRarity.Type.NORMAL:
-			return ItemRarity.Type.NORMAL if randf() < 0.8 else ItemRarity.Type.COMMON
-		ItemRarity.Type.COMMON:
-			return ItemRarity.Type.COMMON if randf() < 0.7 else ItemRarity.Type.RARE
-		ItemRarity.Type.RARE:
-			return ItemRarity.Type.RARE if randf() < 0.6 else ItemRarity.Type.LEGENDARY
-		ItemRarity.Type.LEGENDARY:
-			return ItemRarity.Type.LEGENDARY  # Siempre legendario
+		ItemsDefinitions.ItemRarity.WHITE:
+			return ItemsDefinitions.ItemRarity.WHITE if randf() < 0.8 else ItemsDefinitions.ItemRarity.BLUE
+		ItemsDefinitions.ItemRarity.BLUE:
+			return ItemsDefinitions.ItemRarity.BLUE if randf() < 0.7 else ItemsDefinitions.ItemRarity.YELLOW
+		ItemsDefinitions.ItemRarity.YELLOW:
+			return ItemsDefinitions.ItemRarity.YELLOW if randf() < 0.6 else ItemsDefinitions.ItemRarity.ORANGE
+		ItemsDefinitions.ItemRarity.ORANGE:
+			return ItemsDefinitions.ItemRarity.ORANGE  # Siempre legendario
 	
-	return ItemRarity.Type.NORMAL
+	return ItemsDefinitions.ItemRarity.WHITE
 
 func get_random_chest_item() -> String:
 	"""Obtener item aleatorio para cofre"""

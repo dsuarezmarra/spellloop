@@ -9,8 +9,9 @@ func generate_temp_sprites():
 	print("Generando sprites temporales para testing...")
 	
 	# Crear directorio si no existe
-	var dir = Directory.new()
-	dir.make_dir_recursive("res://assets/sprites/temp")
+	var dir = DirAccess.open("res://")
+	if dir:
+		dir.make_dir_recursive("assets/sprites/temp")
 	
 	# Generar sprites de enemigos Tier 1
 	create_simple_sprite("enemy_tier_1_slime_novice", Color.PURPLE, 64)

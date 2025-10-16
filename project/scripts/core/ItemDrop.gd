@@ -4,7 +4,7 @@ class_name ItemDrop
 signal item_collected(item_drop: Node2D, item_type: String)
 
 var item_type: String
-var item_rarity: ItemRarity.Type = ItemRarity.Type.NORMAL
+var item_rarity: int = 0  # ItemsDefinitions.ItemRarity.WHITE
 var collection_range: float = 40.0
 var lifetime: float = 60.0
 var life_timer: float = 0.0
@@ -12,7 +12,7 @@ var life_timer: float = 0.0
 var sprite: Sprite2D
 var player_ref: CharacterBody2D
 
-func initialize(position: Vector2, type: String, player: CharacterBody2D, rarity: ItemRarity.Type = ItemRarity.Type.NORMAL):
+func initialize(position: Vector2, type: String, player: CharacterBody2D, rarity: int = 0):
 	global_position = position
 	item_type = type
 	item_rarity = rarity
@@ -42,7 +42,7 @@ func create_item_texture():
 	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
 	
 	# Color basado en rareza
-	var rarity_color = ItemRarity.get_color(item_rarity)
+	var rarity_color = ItemsDefinitions.get_rarity_color(item_rarity)
 	
 	# Crear forma de estrella
 	var center = Vector2(size / 2, size / 2)

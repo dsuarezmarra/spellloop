@@ -111,8 +111,8 @@ func create_item_button(item: Dictionary, index: int) -> Button:
 	var style_pressed = StyleBoxFlat.new()
 	
 	# Colores basados en rareza
-	var rarity = item.get("rarity", ItemRarity.Type.NORMAL)
-	var rarity_color = ItemRarity.get_color(rarity)
+	var rarity = item.get("rarity", ItemsDefinitions.ItemRarity.WHITE)
+	var rarity_color = ItemsDefinitions.get_rarity_color(rarity)
 	
 	style_normal.bg_color = Color(0.3, 0.3, 0.3, 0.8)
 	style_hover.bg_color = rarity_color * 0.3
@@ -136,7 +136,7 @@ func create_item_button(item: Dictionary, index: int) -> Button:
 	
 	# Texto del botón
 	var item_name = get_item_display_name(item.get("type", "unknown"))
-	var rarity_name = ItemRarity.get_rarity_name(rarity)
+	var rarity_name = ItemsDefinitions.get_rarity_name(rarity)
 	button.text = "%s\n%s" % [item_name, rarity_name]
 	button.add_theme_font_size_override("font_size", 14)
 	

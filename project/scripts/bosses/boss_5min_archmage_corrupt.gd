@@ -270,11 +270,11 @@ func drop_boss_rewards():
 	var item_manager = get_node("/root/ItemManager")
 	if item_manager:
 		# Siempre dropea un item azul o mejor
-		item_manager.spawn_item_drop(global_position, ItemManager.ItemRarity.BLUE)
+		item_manager.spawn_item_drop(global_position, ItemsDefinitions.ItemRarity.BLUE)
 		
 		# 30% probabilidad de item amarillo
 		if randf() < 0.3:
-			item_manager.spawn_item_drop(global_position + Vector2(50, 0), ItemManager.ItemRarity.YELLOW)
+			item_manager.spawn_item_drop(global_position + Vector2(50, 0), ItemsDefinitions.ItemRarity.YELLOW)
 
 func drop_xp(amount: int):
 	# Crear múltiples orbes de XP

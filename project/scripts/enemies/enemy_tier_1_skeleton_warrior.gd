@@ -2,7 +2,7 @@ extends Node2D
 # Enemy: Esqueleto Guerrero
 # Tier 1 (0-5 minutos) - Enemigo melee agresivo
 
-@export var name = "Esqueleto Guerrero"
+@export var enemy_name = "Esqueleto Guerrero"
 @export var slug = "enemy_tier_1_skeleton_warrior"
 @export var difficulty_tier = 1
 @export var base_hp = 42
@@ -108,9 +108,9 @@ func maybe_drop_item():
 	if randf() < drop_chance:
 		var item_manager = get_node("/root/ItemManager")
 		if item_manager and item_manager.has_method("spawn_item_drop"):
-			var rarity = ItemManager.ItemRarity.WHITE
+			var rarity = ItemsDefinitions.ItemRarity.WHITE
 			if is_special_variant:
-				rarity = ItemManager.ItemRarity.BLUE
+				rarity = ItemsDefinitions.ItemRarity.BLUE
 			item_manager.spawn_item_drop(global_position, rarity)
 
 func calculate_scaled_hp() -> int:

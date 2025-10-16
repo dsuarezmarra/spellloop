@@ -107,9 +107,9 @@ func maybe_drop_item():
 	if randf() < drop_chance:
 		var item_manager = get_node("/root/ItemManager")
 		if item_manager and item_manager.has_method("spawn_item_drop"):
-			var rarity = ItemManager.ItemRarity.WHITE
+			var rarity = 0  # ItemsDefinitions.ItemRarity.WHITE
 			if is_special_variant:
-				rarity = ItemManager.ItemRarity.BLUE
+				rarity = 1  # ItemsDefinitions.ItemRarity.BLUE
 			item_manager.spawn_item_drop(global_position, rarity)
 
 # Funciones de cálculo de escalado

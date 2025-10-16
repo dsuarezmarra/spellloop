@@ -162,9 +162,9 @@ func test_spawn_system():
 
 func print_test_results():
 	"""Mostrar resumen de todos los tests"""
-	print("\n" + "="*50)
+	print("\n" + "=".repeat(50))
 	print("🧪 RESUMEN DE TESTS")
-	print("="*50)
+	print("=".repeat(50))
 	
 	var total_tests = test_results.size()
 	var passed_tests = 0
@@ -180,7 +180,7 @@ func print_test_results():
 		
 		print("%s: %s" % [test_name, status])
 	
-	print("-" * 50)
+	print("-".repeat(50))
 	print("Resultado: %d/%d tests pasaron" % [passed_tests, total_tests])
 	
 	if passed_tests == total_tests:
@@ -188,7 +188,7 @@ func print_test_results():
 	else:
 		print("⚠️  Algunos tests fallaron. Revisar configuración.")
 	
-	print("="*50)
+	print("=".repeat(50))
 
 # Funciones para testing manual
 func spawn_test_enemy():
@@ -250,9 +250,9 @@ func _input(event):
 
 func print_debug_info():
 	"""Mostrar información de debug del estado actual"""
-	print("\n" + "="*40)
+	print("\n" + "=".repeat(40))
 	print("🔍 DEBUG INFO")
-	print("="*40)
+	print("=".repeat(40))
 	
 	if GameManager:
 		print("GameManager - Estado: ", GameManager.current_state)
@@ -268,4 +268,4 @@ func print_debug_info():
 		print("Player - Nivel: ", player.level)
 		print("Player - XP: ", player.experience)
 	
-	print("="*40)
+	print("=".repeat(40))

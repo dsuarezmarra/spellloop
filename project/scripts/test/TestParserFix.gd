@@ -16,15 +16,15 @@ func test_item_rarity_functions():
 	print("🧪 Testeando ItemRarity...")
 	
 	# Test función renombrada
-	var normal_name = ItemRarity.get_rarity_name(ItemRarity.Type.NORMAL)
-	var legendary_name = ItemRarity.get_rarity_name(ItemRarity.Type.LEGENDARY)
+	var normal_name = ItemsDefinitions.get_rarity_name(ItemsDefinitions.ItemRarity.WHITE)
+	var legendary_name = ItemsDefinitions.get_rarity_name(ItemsDefinitions.ItemRarity.ORANGE)
 	
 	print("✅ Normal: %s" % normal_name)
 	print("✅ Legendario: %s" % legendary_name)
 	
 	# Test colores
-	var normal_color = ItemRarity.get_color(ItemRarity.Type.NORMAL)
-	var legendary_color = ItemRarity.get_color(ItemRarity.Type.LEGENDARY)
+	var normal_color = ItemsDefinitions.get_rarity_color(ItemsDefinitions.ItemRarity.WHITE)
+	var legendary_color = ItemsDefinitions.get_rarity_color(ItemsDefinitions.ItemRarity.ORANGE)
 	
 	print("✅ Color normal: %s" % normal_color)
 	print("✅ Color legendario: %s" % legendary_color)

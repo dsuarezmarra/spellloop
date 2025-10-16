@@ -236,7 +236,7 @@ func create_enemy_dot(world_pos: Vector2):
 		add_child(dot)
 		enemy_dots.append(dot)
 
-func create_item_star(world_pos: Vector2, rarity: ItemRarity.Type):
+func create_item_star(world_pos: Vector2, rarity: int):
 	"""Crear estrella para item en minimapa según rareza"""
 	var minimap_pos = world_to_minimap(world_pos)
 	if is_position_in_circular_minimap(minimap_pos):
@@ -253,7 +253,7 @@ func create_item_star(world_pos: Vector2, rarity: ItemRarity.Type):
 		add_child(star)
 		item_dots.append(star)
 
-func create_chest_icon(world_pos: Vector2, rarity: ItemRarity.Type):
+func create_chest_icon(world_pos: Vector2, rarity: int):
 	"""Crear icono de cofre en minimapa según rareza"""
 	var minimap_pos = world_to_minimap(world_pos)
 	if is_position_in_circular_minimap(minimap_pos):
@@ -339,12 +339,12 @@ func get_chunk_info() -> String:
 	var chunks_in_view = (view_range * 2) / chunk_size
 	return "Minimapa: %.1f chunks de radio" % (chunks_in_view / 2)
 
-func create_star_texture(rarity: ItemRarity.Type) -> ImageTexture:
+func create_star_texture(rarity: int) -> ImageTexture:
 	"""Crear textura de estrella para item en minimapa"""
 	var size = 8
 	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
 	
-	var rarity_color = ItemRarity.get_color(rarity)
+	var rarity_color = Color.WHITE  # Simplificado por ahora
 	var center = Vector2(size / 2, size / 2)
 	
 	# Crear estrella simple de 5 puntas
@@ -366,12 +366,12 @@ func create_star_texture(rarity: ItemRarity.Type) -> ImageTexture:
 	texture.set_image(image)
 	return texture
 
-func create_chest_minimap_texture(rarity: ItemRarity.Type) -> ImageTexture:
+func create_chest_minimap_texture(rarity: int) -> ImageTexture:
 	"""Crear textura de mini-cofre para minimapa"""
 	var size = 6
 	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
 	
-	var rarity_color = ItemRarity.get_color(rarity)
+	var rarity_color = Color.YELLOW  # Simplificado por ahora
 	var base_color = Color(0.4, 0.2, 0.1, 1.0)  # Marrón base
 	
 	# Cuerpo del cofre (más pequeño)

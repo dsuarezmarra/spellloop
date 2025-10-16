@@ -150,10 +150,13 @@ func spawn_chest(position: Vector2, chest_type: String = "normal"):
 	"""Crear cofre en posición específica"""
 	var chest = TreasureChest.new()
 	
-	# Determinar rareza del cofre
-	var rarity = ItemRarity.get_random_rarity()
+	# Determinar rareza del cofre usando nivel del jugador
+	var player_level = 1  # Nivel base por defecto
+	if player and player.has_method("get_level"):
+		player_level = player.get_level()
+	var item = ItemsDefinitions.get_weighted_random_item(player_level)
 	
-	chest.initialize(position, chest_type, player, rarity)
+	chest.initialize(position, chest_type, player, 0)  # Usar rareza básica por ahora
 	chest.chest_opened.connect(_on_chest_opened)
 	
 	# Añadir al mundo fijo, no al current_scene que podría moverse
@@ -166,7 +169,7 @@ func spawn_chest(position: Vector2, chest_type: String = "normal"):
 	# Emitir señal
 	chest_spawned.emit(chest)
 	
-	print("📦 Cofre ", ItemRarity.get_rarity_name(rarity), " generado en: ", position)
+	print("📦 Cofre generado en: ", position)
 
 func _on_chest_opened(chest: Node2D, items: Array):
 	"""Manejar apertura de cofre"""
@@ -227,10 +230,7 @@ func create_boss_drop(position: Vector2, boss_type: String):
 	var selected_type = item_types_boss[randi() % item_types_boss.size()]
 	
 	# Boss drops tienen mejor rareza
-	var rarity = ItemRarity.get_random_rarity()
-	# Aumentar probabilidad de rareza alta para bosses
-	if rarity == ItemRarity.Type.NORMAL:
-		rarity = ItemRarity.Type.COMMON  # Mínimo común para bosses
+	var rarity = ItemsDefinitions.ItemRarity.BLUE  # Común para bosses
 	
 	var item_drop = ItemDrop.new()
 	item_drop.initialize(position, selected_type, player, rarity)
@@ -335,16 +335,16 @@ func create_test_items():
 	
 	# Crear algunos items de prueba
 	print("📦 Creando items de prueba...")
-	create_test_item_drop(player_pos + Vector2(100, 50), "weapon_damage", ItemRarity.Type.NORMAL)
-	create_test_item_drop(player_pos + Vector2(-100, 75), "health_boost", ItemRarity.Type.COMMON)
-	create_test_item_drop(player_pos + Vector2(75, -100), "speed_boost", ItemRarity.Type.RARE)
-	create_test_item_drop(player_pos + Vector2(-75, -125), "new_weapon", ItemRarity.Type.LEGENDARY)
+	create_test_item_drop(player_pos + Vector2(100, 50), "weapon_damage", ItemsDefinitions.ItemRarity.WHITE)
+	create_test_item_drop(player_pos + Vector2(-100, 75), "health_boost", ItemsDefinitions.ItemRarity.BLUE)
+	create_test_item_drop(player_pos + Vector2(75, -100), "speed_boost", ItemsDefinitions.ItemRarity.YELLOW)
+	create_test_item_drop(player_pos + Vector2(-75, -125), "new_weapon", ItemsDefinitions.ItemRarity.ORANGE)
 	
 	print("📦 Items y cofres de prueba creados cerca del player")
 
-func create_test_item_drop(position: Vector2, type: String, rarity: ItemRarity.Type):
+func create_test_item_drop(position: Vector2, type: String, rarity: int):
 	"""Crear un item drop de prueba"""
-	print("⭐ Creando item de prueba: ", ItemRarity.get_rarity_name(rarity), " ", type, " en ", position)
+	print("⭐ Creando item de prueba: ", type, " en ", position)
 	
 	var item_drop = ItemDrop.new()
 	item_drop.initialize(position, type, player, rarity)
