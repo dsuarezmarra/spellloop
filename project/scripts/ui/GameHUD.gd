@@ -63,6 +63,12 @@ func _ready():
 
 	# Initialize meta display
 	refresh_meta_display()
+
+	# Connect SaveManager meta change signal for live updates
+	if get_tree() and get_tree().root and get_tree().root.has_node("SaveManager"):
+		var sm_node = get_tree().root.get_node("SaveManager")
+		if sm_node and sm_node.has_signal("meta_changed"):
+			sm_node.connect("meta_changed", Callable(self, "_on_meta_changed"))
 	levelup_popup = get_node_or_null("LevelUpPopup")
 	upgrade_buttons = []
 	if levelup_popup:
@@ -250,4 +256,12 @@ func refresh_meta_display():
 
 func add_gold(_amount: int):
 	# Update gold display after collection (best-effort, authoritative value read from SaveManager)
+	refresh_meta_display()
+
+func _on_meta_changed(key: String, _value) -> void:
+	# Update HUD elements based on meta changes
+	if key == "luck_points":
+		# Optionally reflect luck in HUD tooltip later
+		return
+	# Full meta update or currency change
 	refresh_meta_display()

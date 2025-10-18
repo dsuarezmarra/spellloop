@@ -72,6 +72,14 @@ func _connect_game_signals() -> void:
 		# Nothing to connect in headless or partial startup
 		return
 
+	# Connect SaveManager signals if present so UI can update HUD
+	if get_tree() and get_tree().root and get_tree().root.has_node("SaveManager"):
+		var sm = get_tree().root.get_node("SaveManager")
+		if sm and sm.has_signal("player_data_changed"):
+			sm.connect("player_data_changed", Callable(self, "_on_player_data_changed"))
+		if sm and sm.has_signal("meta_changed"):
+			sm.connect("meta_changed", Callable(self, "_on_meta_changed"))
+
 	# Connect only if the signals exist on the object (safe in tests)
 	if game_manager.has_signal("game_state_changed"):
 		game_manager.connect("game_state_changed", Callable(self, "_on_game_state_changed"))
@@ -297,6 +305,16 @@ func _on_game_paused() -> void:
 func _on_game_resumed() -> void:
 	"""Handle game resume"""
 	close_current_modal()
+
+func _on_player_data_changed(_data: Dictionary) -> void:
+	# Propagate authoritative player data changes to the active HUD
+	if game_hud and game_hud.has_method("refresh_meta_display"):
+		game_hud.refresh_meta_display()
+
+func _on_meta_changed(_key: String, _value) -> void:
+	# Meta changed (luck, shop purchases, etc.) -> refresh HUD
+	if game_hud and game_hud.has_method("refresh_meta_display"):
+		game_hud.refresh_meta_display()
 
 func _on_modal_closed() -> void:
 	"""Handle modal closed signal from modal instance"""

@@ -22,6 +22,8 @@ signal save_completed()
 signal save_failed(error: String)
 signal load_completed(data: Dictionary)
 signal load_failed(error: String)
+signal meta_changed(key: String, value)
+signal player_data_changed(data: Dictionary)
 
 # File paths
 const SAVE_DIR = "user://saves/"
@@ -134,6 +136,9 @@ func save_game_data() -> bool:
 	
 	print("[SaveManager] Game data saved successfully")
 	save_completed.emit()
+	# Emit player data changed so UI can sync authoritative values
+	if current_save_data.has("player_data"):
+		player_data_changed.emit(current_save_data["player_data"].duplicate(true))
 	
 	# TODO: Sync with Steam Cloud if available
 	_sync_steam_cloud()
@@ -166,6 +171,8 @@ func _save_meta() -> bool:
 		return false
 	f.store_string(JSON.stringify(meta_data))
 	f.close()
+	# Notify listeners that meta data was updated
+	meta_changed.emit("__meta_full_update__", meta_data.duplicate(true))
 	return true
 
 func get_meta_data() -> Dictionary:
@@ -179,10 +186,14 @@ func add_meta_luck(points: int) -> void:
 		meta_data["luck_points"] = 0
 	meta_data["luck_points"] += points
 	_save_meta()
+	# Emit specific meta change for luck points
+	meta_changed.emit("luck_points", meta_data["luck_points"])
 
 func set_meta_value(key: String, value) -> void:
 	meta_data[key] = value
 	_save_meta()
+	# Emit change for this meta key
+	meta_changed.emit(key, meta_data[key])
 
 func spend_meta_currency_from_meta(amount: int) -> bool:
 	# Spend from meta_currency in save data
@@ -275,6 +286,9 @@ func _process_run_progression(run_data: Dictionary) -> void:
 	# Add playtime
 	if run_data.has("duration"):
 		player_data["total_playtime"] += run_data["duration"]
+
+	# Emit player data changed so UI can update immediately
+	player_data_changed.emit(player_data.duplicate(true))
 
 func _calculate_meta_currency(run_data: Dictionary) -> int:
 	"""Calculate meta currency gained from a run"""
