@@ -1,12 +1,13 @@
-extends Node
+extends SceneTree
 
 func _safe_quit(_code: int = 0):
-	if get_tree() != null:
-		get_tree().quit()
+	# When running as SceneTree, call quit on self
+	if self:
+		self.quit()
 
 var _report: Array = []
 
-func _init():
+func _enter_tree():
 	# Ejecutar automáticamente cuando se usa con --script para generar salida en terminal
 	# Escribir un marcador temprano para confirmar que el script se ha iniciado
 	var start_marker = "C:/git/spellloop/project/verify_started.txt"
@@ -107,10 +108,11 @@ func run_checks() -> void:
 			var pinst = pres.instantiate()
 			if pinst.has_node("AnimatedSprite2D"):
 				var anim = pinst.get_node("AnimatedSprite2D")
-				if anim and anim.frames:
+				if anim and (anim.sprite_frames or anim.frames):
 					# check any animation has at least one frame
-					for name in anim.frames.get_animation_names():
-						if anim.frames.get_frame_count(name) > 0:
+					var sf = anim.sprite_frames if anim.sprite_frames else anim.frames
+					for anim_name in sf.get_animation_names():
+						if sf.get_frame_count(anim_name) > 0:
 							player_has_texture = true
 							break
 	_report.append({"scene": "res://scenes/player/SpellloopPlayer.tscn:has_texture", "ok": player_has_texture})
@@ -123,9 +125,10 @@ func run_checks() -> void:
 			# check AnimatedSprite2D or Sprite2D nodes
 			if einst.has_node("AnimatedSprite2D"):
 				var a = einst.get_node("AnimatedSprite2D")
-				if a and a.frames:
-					for n in a.frames.get_animation_names():
-						if a.frames.get_frame_count(n) > 0:
+				var sf = a.sprite_frames if a.sprite_frames else a.frames
+				if a and sf:
+					for n in sf.get_animation_names():
+						if sf.get_frame_count(n) > 0:
 							enemy_with_texture = true
 							break
 			if einst.has_node("Sprite2D") and not enemy_with_texture:

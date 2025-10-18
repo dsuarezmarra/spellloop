@@ -313,14 +313,14 @@ func spawn_enemy(enemy_type: EnemyType, position: Vector2):
 			if enemy.has_node("AnimatedSprite2D"):
 				var anim = enemy.get_node("AnimatedSprite2D")
 				if anim and anim is AnimatedSprite2D:
-					if anim.frames == null or anim.frames.get_frame_count(anim.animation) == 0:
-						var frames = AnimatedSprite2D.new().frames
-						# Simple single-frame assignment
-						var sf = SpriteFrames.new()
-						sf.add_animation("idle_down")
-						sf.add_frame("idle_down", tex)
-						anim.frames = sf
+					var sf = anim.sprite_frames if anim.sprite_frames else anim.frames
+					if sf == null or sf.get_frame_count(anim.animation) == 0:
+						# Create a blank SpriteFrames as fallback
+						var new_sf = SpriteFrames.new()
+						anim.sprite_frames = new_sf
 						anim.animation = "idle_down"
+						anim.sprite_frames.add_animation("idle_down")
+						anim.sprite_frames.add_frame("idle_down", tex)
 			# Sprite2D
 			elif enemy.has_node("Sprite2D"):
 				var spr = enemy.get_node("Sprite2D")

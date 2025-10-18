@@ -39,7 +39,7 @@ func get_player_sprites() -> Dictionary:
 
 	# Fallback: si no hay entradas en el index, buscar archivos en disco
 	# bajo res://assets/sprites/players/wizard/ y mapear convenciones wizard_up/down/left/right
-	if out.empty():
+	if out.is_empty():
 		var dir_path = "res://assets/sprites/players/wizard"
 		var da = DirAccess.open(dir_path)
 		if da:

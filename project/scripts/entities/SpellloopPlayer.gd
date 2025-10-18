@@ -63,7 +63,8 @@ func _ready():
 	if animated_sprite:
 		animated_sprite.play()
 		# Set a sensible animation speed
-		if animated_sprite.frames:
+		var sf = animated_sprite.sprite_frames if animated_sprite.sprite_frames else animated_sprite.frames
+		if sf:
 			animated_sprite.animation_speed = 6.0
 	set_physics_process(true)
 	# Configurar capas/máscaras
@@ -126,7 +127,8 @@ func setup_animations():
 	if not animated_sprite:
 		animated_sprite = get_node_or_null("AnimatedSprite2D")
 	if animated_sprite:
-		animated_sprite.frames = frames
+		# Assign SpriteFrames to sprite_frames property (Godot 4)
+		animated_sprite.sprite_frames = frames
 		# Set a sensible default animation if present
 		if frames.has_animation("idle_down"):
 			animated_sprite.animation = "idle_down"
