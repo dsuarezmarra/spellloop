@@ -35,7 +35,6 @@ scale = Vector2(1, 1)
 [node name="Camera2D" type="Camera2D" parent="WorldRoot"]
 current = true
 position = Vector2(0, 0)
-transform = Transform2D( 0, 0, 0 )
 
 [node name="DebugLabel" type="Label" parent="UI"]
 anchors_preset = 2
