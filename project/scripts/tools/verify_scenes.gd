@@ -108,13 +108,18 @@ func run_checks() -> void:
 			var pinst = pres.instantiate()
 			if pinst.has_node("AnimatedSprite2D"):
 				var anim = pinst.get_node("AnimatedSprite2D")
-				if anim and (anim.sprite_frames or anim.frames):
-					# check any animation has at least one frame
-					var sf = anim.sprite_frames if anim.sprite_frames else anim.frames
-					for anim_name in sf.get_animation_names():
-						if sf.get_frame_count(anim_name) > 0:
-							player_has_texture = true
-							break
+				if anim:
+					# Prefer sprite_frames (Godot 4). If not present, try safe fallback via get("frames").
+					var sf = null
+					if anim.has_method("get_animation_names") and anim.sprite_frames:
+						sf = anim.sprite_frames
+					elif anim.has_method("get") and anim.has_property("frames"):
+						sf = anim.get("frames")
+					if sf:
+						for anim_name in sf.get_animation_names():
+							if sf.get_frame_count(anim_name) > 0:
+								player_has_texture = true
+								break
 	_report.append({"scene": "res://scenes/player/SpellloopPlayer.tscn:has_texture", "ok": player_has_texture})
 
 	var enemy_with_texture = false
@@ -125,11 +130,16 @@ func run_checks() -> void:
 			# check AnimatedSprite2D or Sprite2D nodes
 			if einst.has_node("AnimatedSprite2D"):
 				var a = einst.get_node("AnimatedSprite2D")
-				var sf = a.sprite_frames if a.sprite_frames else a.frames
-				if a and sf:
-					for n in sf.get_animation_names():
-						if sf.get_frame_count(n) > 0:
-							enemy_with_texture = true
+				if a:
+					var sf = null
+					if a.has_method("get_animation_names") and a.sprite_frames:
+						sf = a.sprite_frames
+					elif a.has_method("get") and a.has_property("frames"):
+						sf = a.get("frames")
+					if sf:
+						for n in sf.get_animation_names():
+							if sf.get_frame_count(n) > 0:
+								enemy_with_texture = true
 							break
 			if einst.has_node("Sprite2D") and not enemy_with_texture:
 				var s = einst.get_node("Sprite2D")

@@ -63,7 +63,11 @@ func _ready():
 	if animated_sprite:
 		animated_sprite.play()
 		# Set a sensible animation speed
-		var sf = animated_sprite.sprite_frames if animated_sprite.sprite_frames else animated_sprite.frames
+		var sf = null
+		if animated_sprite.has_method("get_animation_names") and animated_sprite.sprite_frames:
+			sf = animated_sprite.sprite_frames
+		elif animated_sprite.has_method("get") and animated_sprite.has_property("frames"):
+			sf = animated_sprite.get("frames")
 		if sf:
 			# Godot 4: AnimatedSprite2D uses speed_scale for playback speed
 			animated_sprite.speed_scale = 6.0
