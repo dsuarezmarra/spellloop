@@ -10,6 +10,10 @@ var upgrade_buttons: Array
 var streak_label: Label
 var shop_button: Button
 var meta_label: Label
+var boss_bar: ProgressBar
+var boss_name_label: Label
+var boss_target: Node = null
+var boss_update_timer: Timer = null
 
 # Señales
 signal upgrade_selected(upgrade: Dictionary)
@@ -60,6 +64,98 @@ func _ready():
 			if upgrade_buttons[i]:
 				upgrade_buttons[i].pressed.connect(_on_upgrade_button_pressed.bind(i))
 	levelup_popup.visible = false
+
+	# Setup boss bar UI (dynamic safe fallback)
+	_setup_boss_bar()
+
+	set_process(true)
+
+func _setup_boss_bar():
+	# Create boss name label and progress bar under HUDPanel if not present
+	var panel = get_node_or_null("HUDPanel")
+	if not panel:
+		panel = self
+	# Boss name label
+	if not panel.has_node("BossNameLabel"):
+		boss_name_label = Label.new()
+		boss_name_label.name = "BossNameLabel"
+		boss_name_label.text = ""
+		boss_name_label.visible = false
+		boss_name_label.anchor_left = 0.25
+		boss_name_label.anchor_right = 0.75
+		boss_name_label.anchor_top = 0.0
+		boss_name_label.anchor_bottom = 0.0
+		boss_name_label.offset_top = 4
+		panel.add_child(boss_name_label)
+	else:
+		boss_name_label = panel.get_node("BossNameLabel")
+
+	# Boss progress bar
+	if not panel.has_node("BossHPBar"):
+		boss_bar = ProgressBar.new()
+		boss_bar.name = "BossHPBar"
+		boss_bar.min_value = 0
+		boss_bar.max_value = 100
+		boss_bar.value = 100
+		boss_bar.visible = false
+		boss_bar.anchor_left = 0.25
+		boss_bar.anchor_right = 0.75
+		boss_bar.anchor_top = 0.03
+		boss_bar.anchor_bottom = 0.08
+		boss_bar.offset_top = 24
+		boss_bar.offset_bottom = 44
+		panel.add_child(boss_bar)
+	else:
+		boss_bar = panel.get_node("BossHPBar")
+
+func show_boss_bar(boss_node: Node, display_name: String = "BOSS") -> void:
+	# Start showing boss HP bar and polling
+	if not boss_node:
+		return
+	boss_target = boss_node
+	boss_name_label.text = str(display_name)
+	boss_name_label.visible = true
+	boss_bar.visible = true
+	# Initialize values if possible
+	if boss_target.has_method("get_info"):
+		var info = boss_target.get_info()
+		boss_bar.max_value = int(info.get("max_hp", boss_bar.max_value))
+		boss_bar.value = int(info.get("hp", boss_bar.max_value))
+
+	# Connect to death signal if available
+	if boss_target.has_signal("enemy_died"):
+		# connect to hide the bar on death
+		boss_target.connect("enemy_died", Callable(self, "_on_boss_died"))
+
+	# Start or create update timer
+	if not boss_update_timer:
+		boss_update_timer = Timer.new()
+		boss_update_timer.name = "BossUpdateTimer"
+		boss_update_timer.wait_time = 0.15
+		boss_update_timer.one_shot = false
+		add_child(boss_update_timer)
+		boss_update_timer.timeout.connect(Callable(self, "_update_boss_bar"))
+	boss_update_timer.start()
+
+func hide_boss_bar() -> void:
+	if boss_update_timer and boss_update_timer.is_stopped() == false:
+		boss_update_timer.stop()
+	boss_target = null
+	boss_name_label.visible = false
+	boss_bar.visible = false
+
+func _update_boss_bar() -> void:
+	if not boss_target or not is_instance_valid(boss_target):
+		hide_boss_bar()
+		return
+	if boss_target.has_method("get_info"):
+		var info = boss_target.get_info()
+		boss_bar.max_value = int(info.get("max_hp", boss_bar.max_value))
+		boss_bar.value = int(info.get("hp", boss_bar.max_value))
+
+func _on_boss_died(_enemy_node = null, _enemy_type = "", _exp_value = 0) -> void:
+	# Boss died; hide UI
+	hide_boss_bar()
 
 func update_stats(hp: int, max_hp: int, xp: int, xp_to_level: int, level: int):
 	player_stats.text = "HP: %d/%d  XP: %d/%d  LVL: %d" % [hp, max_hp, xp, xp_to_level, level]
