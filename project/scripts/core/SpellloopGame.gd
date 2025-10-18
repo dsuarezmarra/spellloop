@@ -24,6 +24,8 @@ var ui_layer
 var world_camera: Camera2D = null
 var waves_manager: Node = null
 var hud_timer: Timer = null
+var run_start_time: int = 0
+var _boss_spawned_at_5s: bool = false
 
 # Configuración
 var game_running: bool = false
@@ -96,6 +98,43 @@ func setup_game():
 	create_item_manager()
 	create_ui_layer()
 	create_minimap()
+
+	# Intentar asignar textura de suelo runtime (si existe)
+	var ground_tex_path = "res://assets/environment/ground_sand.png"
+	if has_node("WorldRoot/Ground"):
+		var ground_node = get_node("WorldRoot/Ground")
+		if ResourceLoader.exists(ground_tex_path):
+			# Try to load as Image then create ImageTexture with nearest sampling
+			var img = Image.new()
+			var load_err = img.load(ground_tex_path)
+			if load_err == OK:
+				var it = ImageTexture.create_from_image(img)
+				# Try to set flags to disable filtering (nearest) if API present
+				if it and it.has_method("set_flags"):
+					it.set_flags(0)
+				ground_node.texture = it
+			else:
+				print("[SpellloopGame] ground_sand.png exists but failed to load image")
+		else:
+			# Procedural fallback: generar una textura de 'arena' del tamaño del viewport (limitada)
+			var viewport_size = get_viewport().get_visible_rect().size
+			var tex_w = int(clamp(viewport_size.x, 256, 2048))
+			var tex_h = int(clamp(viewport_size.y, 256, 2048))
+			var sand_img = Image.create(tex_w, tex_h, false, Image.FORMAT_RGBA8)
+			# Base sand color
+			var base = Color(0.87, 0.78, 0.6, 1.0)
+			for x in range(tex_w):
+				for y in range(tex_h):
+					# Small random variation per pixel
+					var variance = (randf() - 0.5) * 0.06
+					var c = Color(base.r + variance, base.g + variance * 0.8, base.b + variance * 0.6, 1.0)
+					sand_img.set_pixel(x, y, c)
+			# Create ImageTexture
+			var sand_tex = ImageTexture.create_from_image(sand_img)
+			if sand_tex and sand_tex.has_method("set_flags"):
+				sand_tex.set_flags(0) # nearest, no mipmap
+			ground_node.texture = sand_tex
+			print("[SpellloopGame] Procedural ground texture assigned (", tex_w, "x", tex_h, ")")
 	# Ensure Camera2D follows player if present in scene
 	if has_node("WorldRoot/Camera2D"):
 		world_camera = get_node("WorldRoot/Camera2D")
@@ -238,6 +277,10 @@ func initialize_systems():
 	# Inicializar minimapa
 	if minimap and minimap.has_method("setup_references"):
 		minimap.setup_references(player, enemy_manager, item_manager)
+
+	# Connect experience gold_collected signal to HUD if available
+	if experience_manager and experience_manager.has_signal("gold_collected"):
+		experience_manager.gold_collected.connect(Callable(self, "_on_gold_collected"))
 	# Setup debug overlay references if present
 	if ui_layer and ui_layer.has_node("DebugOverlay"):
 		var dbg = ui_layer.get_node("DebugOverlay")
@@ -259,6 +302,11 @@ func initialize_systems():
 		hud_timer.name = "HUDTimer"
 		add_child(hud_timer)
 		hud_timer.timeout.connect(_on_hud_tick)
+
+func _on_gold_collected(amount: int) -> void:
+	var ui_local = _get_ui()
+	if ui_local and ui_local.game_hud and ui_local.game_hud.has_method("add_gold"):
+		ui_local.game_hud.add_gold(amount)
 
 func connect_systems():
 	# Player muerte -> Game Over
@@ -311,6 +359,9 @@ func start_game():
 		var gm = get_tree().root.get_node("GameManager")
 		if gm and not gm.is_run_active and gm.has_method("start_new_run"):
 			gm.start_new_run()
+	# Local fallback start time for HUD if GameManager not present
+	if run_start_time == 0:
+		run_start_time = int(Time.get_time_dict_from_system()["unix"])
 	# Start HUD timer
 	if hud_timer and not hud_timer.is_stopped():
 		hud_timer.start()
@@ -338,23 +389,72 @@ func _on_enemy_died(enemy_position: Vector2, _enemy_type: String, exp_value: int
 	if experience_manager and experience_manager.has_method("create_gold_orb"):
 		experience_manager.create_gold_orb(enemy_position + Vector2(8, 0), gold_amount)
 
+	# Si el enemigo era un boss/elite (mejor heurística: _enemy_type contiene 'boss' o el nodo tiene flag), crear drop garantizado
+	var was_boss = false
+	if _enemy_type.findn("boss") != -1:
+		was_boss = true
+	# también intentar inspeccionar la escena en la posición para buscar nodos que sean clase Boss*
+	if not was_boss:
+		# Try best-effort: see if any in enemy_manager.get_enemies_in_range is non-null and has exported 'boss_name' or 'slug'
+		if enemy_manager:
+			for e in enemy_manager.get_enemies_in_range(enemy_position, 8.0):
+				if is_instance_valid(e) and (e.has_meta("is_boss") or e.has("boss_name") or e.has("slug")):
+					was_boss = true
+					break
+
+	if was_boss:
+		# Create guaranteed boss chest at enemy position
+		if item_manager and item_manager.has_method("create_boss_drop"):
+			item_manager.create_boss_drop(enemy_position, _enemy_type)
+		# Try play boss death music or revert
+		if get_tree() and get_tree().root and get_tree().root.has_node("AudioManager"):
+			var am = get_tree().root.get_node("AudioManager")
+			if am and am.has_method("play_boss_music"):
+				am.play_boss_music()
+
+		# Update SaveManager statistics for bosses defeated
+		if get_tree() and get_tree().root and get_tree().root.has_node("SaveManager"):
+			var sm = get_tree().root.get_node("SaveManager")
+			if sm and sm.has("current_save_data") and sm.current_save_data.has("statistics"):
+				sm.current_save_data["statistics"]["bosses_defeated"] = sm.current_save_data["statistics"].get("bosses_defeated", 0) + 1
+				# Persist updated save
+				if sm.has_method("save_game_data"):
+					sm.save_game_data()
+
 
 func _on_hud_tick() -> void:
 	# Update HUD timer every second using GameManager's formatted time
 	var ui = _get_ui()
 	if not ui:
 		return
+	var updated = false
 	if get_tree() and get_tree().root and get_tree().root.has_node("GameManager"):
 		var gm = get_tree().root.get_node("GameManager")
 		if gm and gm.has_method("get_game_time_formatted"):
 			var timestr = gm.get_game_time_formatted()
-			# Convert MM:SS to seconds for GameHUD.update_timer which expects int seconds
 			var parts = timestr.split(":")
 			if parts.size() == 2:
 				var mins = int(parts[0])
 				var secs = int(parts[1])
 				var total = mins * 60 + secs
-				ui.update_timer(total)
+				ui.update_hud_timer(total)
+				# Check for boss spawn at 5:00 (300s)
+				if total >= 300 and not _boss_spawned_at_5s:
+					_boss_spawned_at_5s = true
+					if enemy_manager and enemy_manager.has_method("spawn_elite"):
+						enemy_manager.spawn_elite()
+				updated = true
+	# Fallback: calcular tiempo desde run_start_time si GameManager no disponible
+	if not updated:
+		if run_start_time == 0:
+			run_start_time = int(Time.get_time_dict_from_system()["unix"])
+		var total_secs = int(int(Time.get_time_dict_from_system()["unix"]) - run_start_time)
+		ui.update_hud_timer(total_secs)
+		# Local fallback boss spawn check
+		if total_secs >= 300 and not _boss_spawned_at_5s:
+			_boss_spawned_at_5s = true
+			if enemy_manager and enemy_manager.has_method("spawn_elite"):
+				enemy_manager.spawn_elite()
 
 func _on_input_action_pressed(action: String) -> void:
 	if action == "toggle_minimap":
@@ -444,6 +544,23 @@ func _process(_delta):
 			world_camera.position = player.get_global_position()
 		else:
 			world_camera.position = player.position
+
+	# Backup: ensure boss spawn at 5:00 if EnemyManager didn't trigger
+	# Calculate total run seconds via GameManager or fallback
+	var total_seconds = 0
+	if get_tree() and get_tree().root and get_tree().root.has_node("GameManager"):
+		var gm = get_tree().root.get_node("GameManager")
+		if gm and gm.has_method("get_elapsed_seconds"):
+			total_seconds = int(gm.get_elapsed_seconds())
+	else:
+		if run_start_time != 0:
+			total_seconds = int(int(Time.get_time_dict_from_system()["unix"]) - run_start_time)
+
+	if total_seconds >= 300 and not _boss_spawned_at_5s:
+		_boss_spawned_at_5s = true
+		if enemy_manager and enemy_manager.has_method("spawn_elite"):
+			enemy_manager.spawn_elite()
+			print("[SpellloopGame] Backup boss spawn requested at 5:00")
 
 func get_game_stats() -> Dictionary:
 	"""Obtener estadísticas del juego"""

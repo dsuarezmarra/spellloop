@@ -136,13 +136,51 @@ func spawn_elite():
 		if et.id == elite_id:
 			enemy_type = et
 			break
-	if enemy_type:
-		var spawn_position = get_spawn_position()
-		var e = spawn_enemy(enemy_type, spawn_position)
-		# spawn_elite is used for high-tier spawns; if spawn succeeded, emit boss_spawned
-		if e:
-			boss_spawned.emit(e)
-			print("[EnemyManager] Elite/boss spawned: ", enemy_type.id if enemy_type and enemy_type.has_method("get") == false else str(enemy_type))
+	if not enemy_type:
+		return
+	
+	var spawn_position = get_spawn_position()
+	# Telegráfico visual previo al spawn (si existe escena o efecto telegraph)
+	var telegraph_scene_path = "res://scenes/effects/BossTelegraph.tscn"
+	if ResourceLoader.exists(telegraph_scene_path):
+		var packed = ResourceLoader.load(telegraph_scene_path)
+		if packed and packed is PackedScene:
+			var tele = packed.instantiate()
+			tele.global_position = spawn_position
+			# Add to world so it moves with chunks if possible
+			var root_scene = get_tree().current_scene
+			if root_scene and root_scene.has_node("WorldRoot/ChunksRoot"):
+				root_scene.add_child(tele)
+			else:
+				add_child(tele)
+			# Let telegraph play for a short delay then spawn
+			var t = Timer.new()
+			t.wait_time = 1.25
+			t.one_shot = true
+			add_child(t)
+			t.timeout.connect(Callable(self, "_on_elite_telegraph_timeout").bind(tele, enemy_type, spawn_position))
+			t.start()
+			return
+	# Fallback: spawn inmediatamente
+	var spawned_enemy = spawn_enemy(enemy_type, spawn_position)
+	if spawned_enemy:
+		# Mark as boss for downstream logic
+		if is_instance_valid(spawned_enemy):
+			spawned_enemy.set_meta("is_boss", true)
+		boss_spawned.emit(spawned_enemy)
+		print("[EnemyManager] Elite/boss spawned: ", enemy_type.id if enemy_type and enemy_type.has_method("get") == false else str(enemy_type))
+
+func _on_elite_telegraph_timeout(tele: Node, enemy_type: EnemyType, spawn_position: Vector2) -> void:
+	# Called after telegraph delay: remove telegraph and spawn the enemy
+	if tele and is_instance_valid(tele):
+		tele.queue_free()
+	# Spawn the enemy now
+	var spawned_enemy = spawn_enemy(enemy_type, spawn_position)
+	if spawned_enemy:
+		if is_instance_valid(spawned_enemy):
+			spawned_enemy.set_meta("is_boss", true)
+			boss_spawned.emit(spawned_enemy)
+			print("[EnemyManager] Elite/boss spawned (post-telegraph): ", enemy_type.id if enemy_type and enemy_type.has_method("get") == false else str(enemy_type))
 
 func update_spawn_timer(delta):
 	"""Actualizar timer de spawn"""

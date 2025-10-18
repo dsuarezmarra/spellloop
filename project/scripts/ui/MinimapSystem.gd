@@ -37,6 +37,12 @@ var enemy_dots: Array[ColorRect] = []
 var item_dots: Array[Control] = []  # Cambiar a Control para estrellas
 var chest_dots: Array[Control] = []  # Cambiar a Control para cofres
 
+# Pools para reutilizar nodos y evitar creación/destrucción cada frame
+var _pool_enemy: Array[ColorRect] = []
+var _pool_item: Array[Control] = []
+var _pool_chest: Array[Control] = []
+var _max_pool_size: int = 64
+
 # Colors
 var bg_color: Color = Color(0.1, 0.1, 0.1, 0.8)
 var player_color: Color = Color(0.2, 0.8, 0.2, 1.0)
@@ -44,6 +50,10 @@ var enemy_color: Color = Color(0.8, 0.2, 0.2, 1.0)
 var pulse_time: float = 0.0
 @export var pulse_frequency: float = 1.5  # Hz
 @export var pulse_max_radius: float = 40.0
+
+# Cache de texturas por rarity para evitar regenerarlas cada frame
+var _cached_star_textures: Dictionary = {}
+var _cached_chest_textures: Dictionary = {}
 
 func _ready():
 	setup_minimap()
@@ -163,8 +173,10 @@ func setup_references(player: Node2D, enemies: EnemyManager, items: ItemManager)
 
 func _process(_delta):
 	"""Actualizar minimapa cada frame"""
-	if player_reference and enemy_manager:
-		update_minimap()
+	if not player_reference or not enemy_manager or not item_manager:
+		return
+
+	update_minimap()
 	# Update pulse timer and request redraw if necessary
 	pulse_time += _delta
 	if pulse_time > 1.0 / pulse_frequency:
@@ -180,103 +192,150 @@ func update_minimap():
 
 func update_enemies():
 	"""Actualizar posiciones de enemigos en minimapa"""
-	if not enemy_manager:
-		return
-	
-	# Limpiar dots antiguos
+	# Reutilizar dots: devolver a pool
 	for dot in enemy_dots:
 		if dot and is_instance_valid(dot):
-			dot.queue_free()
+			if _pool_enemy.size() < _max_pool_size:
+				dot.visible = false
+				_pool_enemy.append(dot)
+			else:
+				dot.queue_free()
 	enemy_dots.clear()
-	
-	# Obtener posiciones de enemigos activos
-	var enemy_positions = enemy_manager.get_active_enemies()
-	for enemy_pos in enemy_positions:
-		var distance = player_reference.global_position.distance_to(enemy_pos)
-		if distance <= view_range:
-			create_enemy_dot(enemy_pos)
+
+	# Obtener posiciones de enemigos activos (si la API existe)
+	if enemy_manager.has_method("get_active_enemies"):
+		var enemy_positions = enemy_manager.get_active_enemies()
+		for enemy_pos in enemy_positions:
+			var distance = player_reference.global_position.distance_to(enemy_pos)
+			if distance <= view_range:
+				create_enemy_dot(enemy_pos)
 
 func update_items():
 	"""Actualizar items en minimapa"""
-	if not item_manager:
-		return
-	
-	# Limpiar dots antiguos
+	# Reutilizar dots: devolver a pool
 	for dot in item_dots:
 		if dot and is_instance_valid(dot):
-			dot.queue_free()
+			if _pool_item.size() < _max_pool_size:
+				dot.visible = false
+				_pool_item.append(dot)
+			else:
+				dot.queue_free()
 	item_dots.clear()
-	
+
 	# Obtener data de items activos con rareza
-	var item_data = item_manager.get_active_items()
+	var item_data = []
+	if item_manager.has_method("get_active_items"):
+		item_data = item_manager.get_active_items()
 	for item_info in item_data:
-		var item_pos = item_info.position
+		var item_pos = item_info["position"] if typeof(item_info) == TYPE_DICTIONARY else item_info.position
+		var rarity = item_info["rarity"] if typeof(item_info) == TYPE_DICTIONARY else (item_info.item_rarity if item_info.has_meta and item_info.has_meta("item_rarity") else 0)
 		var distance = player_reference.global_position.distance_to(item_pos)
 		if distance <= view_range:
-			create_item_star(item_pos, item_info.rarity)
+			create_item_star(item_pos, rarity)
 
 func update_chests():
 	"""Actualizar cofres en minimapa"""
-	if not item_manager:
-		return
-	
-	# Limpiar dots antiguos
+	# Reutilizar dots: devolver a pool
 	for dot in chest_dots:
 		if dot and is_instance_valid(dot):
-			dot.queue_free()
+			if _pool_chest.size() < _max_pool_size:
+				dot.visible = false
+				_pool_chest.append(dot)
+			else:
+				dot.queue_free()
 	chest_dots.clear()
-	
+
 	# Obtener data de cofres activos con rareza
-	var chest_data = item_manager.get_active_chests()
+	var chest_data = []
+	if item_manager.has_method("get_active_chests"):
+		chest_data = item_manager.get_active_chests()
 	for chest_info in chest_data:
-		var chest_pos = chest_info.position
+		var chest_pos = chest_info["position"] if typeof(chest_info) == TYPE_DICTIONARY else chest_info.position
+		var rarity = chest_info["rarity"] if typeof(chest_info) == TYPE_DICTIONARY else (chest_info.get_meta("rarity") if chest_info.has_meta and chest_info.has_meta("rarity") else 0)
 		var distance = player_reference.global_position.distance_to(chest_pos)
 		if distance <= view_range:
-			create_chest_icon(chest_pos, chest_info.rarity)
+			create_chest_icon(chest_pos, rarity)
 
 func create_enemy_dot(world_pos: Vector2):
 	"""Crear dot para enemigo en minimapa"""
 	var minimap_pos = world_to_minimap(world_pos)
 	if is_position_in_circular_minimap(minimap_pos):
-		var dot = ColorRect.new()
-		dot.color = enemy_color
-		dot.size = Vector2(3, 3)
+		var dot: ColorRect = null
+		# Reutilizar desde pool si hay
+		if _pool_enemy.size() > 0:
+			dot = _pool_enemy.pop_back()
+			dot.visible = true
+		else:
+			dot = ColorRect.new()
+			dot.color = enemy_color
+			dot.size = Vector2(3, 3)
+			add_child(dot)
+
 		dot.position = minimap_pos - Vector2(1.5, 1.5)
-		add_child(dot)
 		enemy_dots.append(dot)
 
 func create_item_star(world_pos: Vector2, rarity: int):
 	"""Crear estrella para item en minimapa según rareza"""
 	var minimap_pos = world_to_minimap(world_pos)
 	if is_position_in_circular_minimap(minimap_pos):
-		var star = Control.new()
-		star.size = Vector2(12, 12)  # Aumentado de 8x8 a 12x12
-		star.position = minimap_pos - Vector2(6, 6)  # Centrado correctamente
-		
-		# Crear textura de estrella
-		var sprite = Sprite2D.new()
-		sprite.texture = create_star_texture(rarity)
-		sprite.position = Vector2(6, 6)  # Centrar en el control
-		star.add_child(sprite)
-		
-		add_child(star)
+		var star: Control = null
+		if _pool_item.size() > 0:
+			star = _pool_item.pop_back()
+			star.visible = true
+		else:
+			star = Control.new()
+			star.size = Vector2(12, 12)
+			add_child(star)
+
+		# Reusar sprite hijo o crearlo si no existe
+		var sprite: Sprite2D = null
+		if star.get_child_count() > 0:
+			sprite = star.get_child(0) as Sprite2D
+		else:
+			sprite = Sprite2D.new()
+			star.add_child(sprite)
+
+		# Obtener textura cacheada o crear y guardarla
+		if _cached_star_textures.has(rarity):
+			sprite.texture = _cached_star_textures[rarity]
+		else:
+			var tex = create_star_texture(rarity)
+			_cached_star_textures[rarity] = tex
+			sprite.texture = tex
+		sprite.position = Vector2(6, 6)
+		star.position = minimap_pos - Vector2(6, 6)
 		item_dots.append(star)
 
 func create_chest_icon(world_pos: Vector2, rarity: int):
 	"""Crear icono de cofre en minimapa según rareza"""
 	var minimap_pos = world_to_minimap(world_pos)
 	if is_position_in_circular_minimap(minimap_pos):
-		var chest = Control.new()
-		chest.size = Vector2(10, 10)  # Aumentado de 6x6 a 10x10
-		chest.position = minimap_pos - Vector2(5, 5)  # Centrado correctamente
-		
-		# Crear textura de cofre
-		var sprite = Sprite2D.new()
-		sprite.texture = create_chest_minimap_texture(rarity)
-		sprite.position = Vector2(5, 5)  # Centrar en el control
-		chest.add_child(sprite)
-		
-		add_child(chest)
+		var chest: Control = null
+		if _pool_chest.size() > 0:
+			chest = _pool_chest.pop_back()
+			chest.visible = true
+		else:
+			chest = Control.new()
+			chest.size = Vector2(10, 10)
+			add_child(chest)
+
+		# Reusar sprite hijo o crearlo si no existe
+		var sprite: Sprite2D = null
+		if chest.get_child_count() > 0:
+			sprite = chest.get_child(0) as Sprite2D
+		else:
+			sprite = Sprite2D.new()
+			chest.add_child(sprite)
+
+		# Obtener textura cacheada o crear y guardarla
+		if _cached_chest_textures.has(rarity):
+			sprite.texture = _cached_chest_textures[rarity]
+		else:
+			var ctex = create_chest_minimap_texture(rarity)
+			_cached_chest_textures[rarity] = ctex
+			sprite.texture = ctex
+		sprite.position = Vector2(5, 5)
+		chest.position = minimap_pos - Vector2(5, 5)
 		chest_dots.append(chest)
 
 

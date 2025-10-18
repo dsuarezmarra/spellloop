@@ -10,6 +10,7 @@ var upgrade_buttons: Array
 var streak_label: Label
 var shop_button: Button
 var meta_label: Label
+var gold_label: Label
 var boss_bar: ProgressBar
 var boss_name_label: Label
 var boss_target: Node = null
@@ -50,6 +51,15 @@ func _ready():
 			right_box.add_child(meta_label)
 		else:
 			meta_label = right_box.get_node("MetaLabel")
+
+			# Gold label
+			if not right_box.has_node("GoldLabel"):
+				gold_label = Label.new()
+				gold_label.name = "GoldLabel"
+				gold_label.text = "Gold: 0"
+				right_box.add_child(gold_label)
+			else:
+				gold_label = right_box.get_node("GoldLabel")
 
 	# Initialize meta display
 	refresh_meta_display()
@@ -227,3 +237,17 @@ func refresh_meta_display():
 			currency = int(pd.get("meta_currency", 0))
 	if meta_label:
 		meta_label.text = "Meta: %d" % [currency]
+
+ 	# Refresh gold display from SaveManager (authoritative)
+	var gold_val = 0
+	if get_tree() and get_tree().root and get_tree().root.has_node("SaveManager"):
+		var sm2 = get_tree().root.get_node("SaveManager")
+		if sm2 and sm2.has_method("get_player_progression"):
+			var pd2 = sm2.get_player_progression()
+			gold_val = int(pd2.get("meta_currency", 0))
+	if gold_label:
+		gold_label.text = "Gold: %d" % [gold_val]
+
+func add_gold(_amount: int):
+	# Update gold display after collection (best-effort, authoritative value read from SaveManager)
+	refresh_meta_display()

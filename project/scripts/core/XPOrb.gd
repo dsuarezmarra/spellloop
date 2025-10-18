@@ -1,7 +1,7 @@
 extends Area2D
 class_name XPOrbEffect
 
-signal orb_collected(exp_value: int)
+signal orb_collected(orb: Node, exp_value: int)
 
 @export var exp_value: int = 1
 @export var speed: float = 0.0

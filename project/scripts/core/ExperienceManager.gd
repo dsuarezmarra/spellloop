@@ -14,6 +14,7 @@ Gestiona el sistema de experiencia:
 
 signal exp_orb_created(orb: Node2D)
 signal gold_orb_created(orb: Node2D)
+signal gold_collected(amount: int)
 signal exp_gained(amount: int, total_exp: int)
 signal level_up(new_level: int, available_upgrades: Array)
 signal streak_updated(count: int)
@@ -141,9 +142,12 @@ func update_orbs(delta):
 		# Recolección automática
 		var player_pickup = orb_collection_range
 		var player_magnet = 1.0
-		if player and player.has_method("get_hp"):
-			player_pickup = player.pickup_radius if player.has("pickup_radius") else player_pickup
-			player_magnet = player.magnet if player.has("magnet") else player_magnet
+		# Acceder a propiedades del player de forma defensiva
+		if player:
+			if _has_property(player, "pickup_radius"):
+				player_pickup = player.pickup_radius
+			if _has_property(player, "magnet"):
+				player_magnet = player.magnet
 		if distance_to_player <= player_pickup:
 			collect_orb(orb)
 			orbs_to_remove.append(orb)
@@ -205,7 +209,9 @@ func collect_orb(orb: Node2D):
 						var ui = get_tree().root.get_node("UIManager")
 						if ui and ui.has_method("show_notification"):
 							ui.show_notification("+" + str(gold) + " gold")
-				orb.queue_free()
+						# Emit signal to notify gold collected (amount awarded)
+						emit_signal("gold_collected", gold_awarded)
+						orb.queue_free()
 	else:
 		orb.queue_free()
 
@@ -286,6 +292,22 @@ func generate_upgrade_options() -> Array:
 func _on_exp_orb_collected(_orb: Node2D, exp_value: int):
 	"""Manejar recolección de orbe (señal desde el orbe)"""
 	gain_experience(exp_value)
+
+
+func _has_property(obj: Object, prop_name: String) -> bool:
+	"""Helper: comprobar si un objeto expone una propiedad con nombre prop_name.
+	Usa get_property_list() para evitar accesos directos que provoquen excepciones.
+	"""
+	if not obj:
+		return false
+	# Algunos objetos pueden no exponer get_property_list; comprobar existencia
+	if not obj.get_property_list:
+		return false
+	var plist = obj.get_property_list()
+	for p in plist:
+		if typeof(p) == TYPE_DICTIONARY and p.has("name") and p.name == prop_name:
+			return true
+	return false
 
 func get_level_progress() -> float:
 	"""Obtener progreso hacia el siguiente nivel (0.0 - 1.0)"""

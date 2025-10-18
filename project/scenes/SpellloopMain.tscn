@@ -27,6 +27,11 @@ visible_layers = 1
 modulate = Color(1, 1, 1, 1)
 scale = Vector2(1, 1)
 
+[node name="Ground" type="Sprite2D" parent="WorldRoot"]
+z_index = -10
+region_enabled = false
+scale = Vector2(1, 1)
+
 [node name="Camera2D" type="Camera2D" parent="WorldRoot"]
 current = true
 position = Vector2(0, 0)

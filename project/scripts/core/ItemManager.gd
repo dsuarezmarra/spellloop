@@ -188,8 +188,9 @@ func spawn_chest_in_chunk_at_position(chunk_pos: Vector2i, world_position: Vecto
 		return
 	
 	# Crear el cofre
+	var rarity = compute_normal_chest_rarity()
 	var chest = TreasureChest.new()
-	chest.initialize(world_position, "normal", player, 0)
+	chest.initialize(world_position, "normal", player, rarity)
 	chest.chest_opened.connect(_on_chest_opened)
 	
 	# CLAVE: Añadir el cofre como HIJO del chunk
@@ -242,21 +243,23 @@ func apply_item_effect(item_type: String, _item_data: Dictionary):
 			var _cs = get_tree() and get_tree().current_scene
 			if _cs and _cs.has_node("WeaponManager"):
 				var wm = _cs.get_node("WeaponManager")
-				wm.upgrade_weapon("magic_wand", {"damage": 5})
+				if wm and wm.has_method("upgrade_weapon"):
+					wm.upgrade_weapon("magic_wand", {"damage": 5})
 		"weapon_speed":
 			print("⚡ Velocidad de ataque aumentada")
 			var _cs = get_tree() and get_tree().current_scene
 			if _cs and _cs.has_node("WeaponManager"):
 				var wm = _cs.get_node("WeaponManager")
-				wm.upgrade_weapon("magic_wand", {"cooldown_reduction": 0.2})
+				if wm and wm.has_method("upgrade_weapon"):
+					wm.upgrade_weapon("magic_wand", {"cooldown_reduction": 0.2})
 		"health_boost":
-			if player.has_method("increase_max_health"):
+			if player and player.has_method("increase_max_health"):
 				player.increase_max_health(20)
 			print("❤️ Vida máxima aumentada")
 		"speed_boost":
 			print("👢 Velocidad de movimiento aumentada")
 		"heal_full":
-			if player.has_method("heal"):
+			if player and player.has_method("heal"):
 				player.heal(999)
 			print("🧪 Vida completamente restaurada")
 		"new_weapon":
@@ -264,37 +267,116 @@ func apply_item_effect(item_type: String, _item_data: Dictionary):
 			var _cs = get_tree() and get_tree().current_scene
 			if _cs and _cs.has_node("WeaponManager"):
 				var wm = _cs.get_node("WeaponManager")
-				var new_w = WeaponManager.WeaponData.new()
-				new_w.id = "fire_staff"
-				new_w.name = "Bastón de Fuego"
-				new_w.damage = 15
-				new_w.cooldown = 1.2
-				new_w.weapon_range = 400.0
-				new_w.projectile_speed = 350.0
-				new_w.weapon_type = WeaponManager.WeaponData.WeaponType.PROJECTILE
-				new_w.targeting = WeaponManager.WeaponData.TargetingType.NEAREST_ENEMY
-				wm.add_weapon(new_w)
+				# Prefer calling add_weapon with a WeaponData instance if available
+				if wm and wm.has_method("add_weapon"):
+					var created = false
+					# Try to construct WeaponManager.WeaponData if symbol is available
+					if typeof(WeaponManager) != TYPE_NIL:
+						var wd = WeaponManager.WeaponData.new()
+						wd.id = "fire_staff"
+						wd.name = "Bastón de Fuego"
+						wd.damage = 15
+						wd.cooldown = 1.2
+						wd.weapon_range = 400.0
+						wd.projectile_speed = 350.0
+						wd.weapon_type = WeaponManager.WeaponData.WeaponType.PROJECTILE
+						wd.targeting = WeaponManager.WeaponData.TargetingType.NEAREST_ENEMY
+						wm.add_weapon(wd)
+						created = true
+					# Fallback: pass a simple dictionary if object construction failed
+					if not created:
+						var new_w = {
+							"id": "fire_staff",
+							"name": "Bastón de Fuego",
+							"damage": 15,
+							"cooldown": 1.2,
+							"weapon_range": 400.0,
+							"projectile_speed": 350.0,
+							"weapon_type": "projectile",
+							"targeting": "nearest"
+						}
+						wm.add_weapon(new_w)
+
+
 
 func create_boss_drop(position: Vector2, _boss_type: String):
 	"""Crear drop especial de boss"""
-	var item_types_boss = ["new_weapon", "weapon_damage", "health_boost"]
-	var selected_type = item_types_boss[randi() % item_types_boss.size()]
-	
-	# Boss drops tienen mejor rareza
-	# Use numeric fallback for rarity enum to avoid parse-time ItemsDefinitions dependency
-	var rarity = 1  # ItemsDefinitions.ItemRarity.BLUE
-	
-	var item_drop = ItemDrop.new()
-	item_drop.initialize(position, selected_type, player, rarity)
-	item_drop.item_collected.connect(_on_item_drop_collected)
-	
-	# Añadir al mundo fijo, no al current_scene que podría moverse
-	if world_manager:
-		world_manager.add_child(item_drop)
+	# Determine chest rarity influenced by meta luck
+	var chest_rarity = compute_boss_chest_rarity()
+	var chest = TreasureChest.new()
+	# Use type 'big' so UI/popup can adapt (TreasureChest handles visuals itself)
+	chest.initialize(position, "big", player, chest_rarity)
+	chest.chest_opened.connect(_on_chest_opened)
+
+	# Añadir al mundo (ponerlo en world_manager para que se mueva con chunks si es posible)
+	if world_manager and world_manager.has_method("add_child"):
+		world_manager.add_child(chest)
+		# Ajustar posición global en caso de parent cambiado
+		chest.global_position = position
 	else:
-		get_tree().current_scene.add_child(item_drop)
-	
-	print("👑 Drop de boss creado: ", selected_type)
+		get_tree().current_scene.add_child(chest)
+		chest.global_position = position
+
+	# Registrar en tracking global de cofres para minimizar/cleanup
+	all_chests.append(chest)
+
+	# Emitir señal para que otros sistemas (minimap/UI) sepan del cofre
+	chest_spawned.emit(chest)
+
+	print("👑 Cofre de boss creado en: ", position, " rarity:", chest_rarity)
+
+func compute_boss_chest_rarity() -> int:
+	"""Compute boss chest rarity influenced by SaveManager luck points.
+	Return value is an int where higher means rarer (0..4)
+	"""
+	var luck = 0
+	if get_tree() and get_tree().root and get_tree().root.has_node("SaveManager"):
+		var sm = get_tree().root.get_node("SaveManager")
+		if sm and sm.has_method("get_meta_data"):
+			var meta = sm.get_meta_data()
+			luck = int(meta.get("luck_points", 0))
+
+	# Simple probabilistic boost: luck increases chance of higher rarity
+	var roll = randi() % 100
+	var threshold_common = max(50 - luck, 10)
+	var threshold_uncommon = max(75 - int(luck * 0.8), 30)
+	var threshold_rare = max(90 - int(luck * 0.6), 50)
+	var threshold_epic = max(97 - int(luck * 0.4), 80)
+
+	if roll < threshold_common:
+		return 0
+	elif roll < threshold_uncommon:
+		return 1
+	elif roll < threshold_rare:
+		return 2
+	elif roll < threshold_epic:
+		return 3
+	else:
+		return 4
+
+func compute_normal_chest_rarity() -> int:
+	"""Compute rarity for normal chests, influenced by luck but with lower ceilings than boss chests."""
+	var luck = 0
+	if get_tree() and get_tree().root and get_tree().root.has_node("SaveManager"):
+		var sm = get_tree().root.get_node("SaveManager")
+		if sm and sm.has_method("get_meta_data"):
+			var meta = sm.get_meta_data()
+			luck = int(meta.get("luck_points", 0))
+
+	# Simpler roll: normal chests are mostly common/uncommon
+	var roll = randi() % 100
+	var threshold_common = max(60 - luck, 30)
+	var threshold_uncommon = max(85 - int(luck * 0.5), 50)
+	var threshold_rare = max(95 - int(luck * 0.3), 70)
+
+	if roll < threshold_common:
+		return 0
+	elif roll < threshold_uncommon:
+		return 1
+	elif roll < threshold_rare:
+		return 2
+	else:
+		return 3
 
 func _on_item_drop_collected(_item_drop: Node2D, item_type: String):
 	"""Manejar recolección de item drop"""
