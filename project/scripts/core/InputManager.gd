@@ -24,7 +24,7 @@ signal input_device_changed(device_type: String)
 
 # Input actions
 const MOVEMENT_ACTIONS = ["move_up", "move_down", "move_left", "move_right"]
-const GAME_ACTIONS = ["dash", "cast_spell", "pause"]
+const GAME_ACTIONS = ["dash", "cast_spell", "pause", "toggle_minimap"]
 
 # Input state
 var current_device_type: String = "keyboard"  # "keyboard" or "gamepad"
@@ -42,6 +42,14 @@ func _ready() -> void:
 	
 	# Store default bindings
 	_store_default_bindings()
+
+	# Ensure toggle_minimap action exists (default to M)
+	if not InputMap.has_action("toggle_minimap"):
+		InputMap.add_action("toggle_minimap")
+		var ev = InputEventKey.new()
+		ev.physical_keycode = KEY_M
+		ev.pressed = false
+		InputMap.action_add_event("toggle_minimap", ev)
 	
 	# Load custom bindings
 	_load_custom_bindings()

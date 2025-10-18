@@ -117,14 +117,6 @@ func setup_game():
 	
 	# Inicializar sistemas
 	initialize_systems()
-
-	# Add runtime input action for toggling minimap if not present
-	if not InputMap.has_action("toggle_minimap"):
-		InputMap.add_action("toggle_minimap")
-		# Bind default key: M
-		var ev = InputEventKey.new()
-		ev.physical_keycode = KEY_M
-		InputMap.action_add_event("toggle_minimap", ev)
 	
 	# Comenzar juego
 	start_game()
@@ -285,9 +277,6 @@ func _on_player_died():
 	# Enemigos muertos -> EXP
 	if enemy_manager.has_signal("enemy_died"):
 		enemy_manager.enemy_died.connect(_on_enemy_died)
-	# Boss spawn -> HUD
-	if enemy_manager.has_signal("boss_spawned"):
-		enemy_manager.boss_spawned.connect(_on_boss_spawned)
 	# EXP -> Level up
 	if experience_manager.has_signal("level_up"):
 		experience_manager.level_up.connect(_on_level_up)
@@ -300,6 +289,18 @@ func _on_player_died():
 	# Conectar WeaponManager con EnemyManager para targeting
 	if weapon_manager and weapon_manager.has_method("set_enemy_manager"):
 		weapon_manager.set_enemy_manager(enemy_manager)
+
+	# Connect boss spawned signal to HUD
+	if enemy_manager and enemy_manager.has_signal("boss_spawned"):
+		enemy_manager.boss_spawned.connect(_on_boss_spawned)
+
+	# Bind minimap toggle to InputManager action if available
+	if get_tree() and get_tree().root and get_tree().root.has_node("InputManager"):
+		var im = get_tree().root.get_node("InputManager")
+		# InputManager exposes is_action_just_pressed wrapper; we'll poll in _process for toggle
+		# Alternatively connect to action_pressed signal
+		if im and im.has_signal("action_pressed"):
+				im.action_pressed.connect(Callable(self, "_on_input_action_pressed"))
 
 func start_game():
 	"""Iniciar el juego"""
@@ -355,34 +356,26 @@ func _on_hud_tick() -> void:
 				var total = mins * 60 + secs
 				ui.update_timer(total)
 
-	func _on_boss_spawned(boss: Node) -> void:
-		"""Handler when a boss is spawned so UI can show boss HP bar / telegraph"""
-		print("[SpellloopGame] Boss spawned handler invoked: ", boss)
-		var ui = _get_ui()
-		if ui and ui.has_method("show_boss_hp"):
-			# Try to read boss hp if possible
-			var hp = 0
-			var maxhp = 1
-			if boss and boss.has_method("get_info"):
-				var info = boss.get_info()
-				hp = info.get("hp", 0)
-				maxhp = info.get("max_hp", 1)
-			ui.show_boss_hp(hp, maxhp, boss.name)
-		else:
-			# Fallback: create or update a simple Label under root UI
-			var root_scene = get_tree().current_scene
-			var ui_node = null
-			if root_scene and root_scene.has_node("UI"):
-				ui_node = root_scene.get_node("UI")
-			if ui_node:
-				var lbl = ui_node.get_node_or_null("BossHP")
-				if not lbl:
-					lbl = Label.new()
-					lbl.name = "BossHP"
-					lbl.z_index = 999
-					lbl.position = Vector2(120, 10)
-					ui_node.add_child(lbl)
-				lbl.text = "%s: %d/%d" % [boss.name, hp, maxhp]
+func _on_input_action_pressed(action: String) -> void:
+	if action == "toggle_minimap":
+		if minimap and minimap.has_method("toggle_visibility"):
+			minimap.toggle_visibility()
+
+func _on_boss_spawned(boss_node: Node2D) -> void:
+	# Notify HUD to show boss HP bar and telegraph
+	var ui = _get_ui()
+	if ui and ui.has_method("show_boss_bar"):
+		# Best-effort: pass boss_node and a display name if present
+		var bname: String = "BOSS"
+		if boss_node:
+			if boss_node.has_method("get_name"):
+				bname = boss_node.get_name()
+			elif "name" in boss_node:
+				bname = str(boss_node.name)
+		ui.show_boss_bar(boss_node, bname)
+	else:
+		print("[SpellloopGame] Boss spawned but no UIManager.show_boss_bar available")
+
 
 func _on_level_up(new_level: int, upgrades: Array):
 	"""Manejar subida de nivel"""

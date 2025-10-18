@@ -2,6 +2,8 @@
 extends Node
 class_name EnemyManager
 
+signal boss_spawned(boss_node: Node2D)
+
 var wave_manager: Node = null
 var last_minute_checked: int = -1
 var current_wave_pool: Dictionary = {}
@@ -136,7 +138,11 @@ func spawn_elite():
 			break
 	if enemy_type:
 		var spawn_position = get_spawn_position()
-		spawn_enemy(enemy_type, spawn_position)
+		var e = spawn_enemy(enemy_type, spawn_position)
+		# spawn_elite is used for high-tier spawns; if spawn succeeded, emit boss_spawned
+		if e:
+			boss_spawned.emit(e)
+			print("[EnemyManager] Elite/boss spawned: ", enemy_type.id if enemy_type and enemy_type.has_method("get") == false else str(enemy_type))
 
 func update_spawn_timer(delta):
 	"""Actualizar timer de spawn"""
@@ -313,7 +319,9 @@ func spawn_enemy(enemy_type: EnemyType, position: Vector2):
 	
 	# Emitir señal
 	enemy_spawned.emit(enemy)
+	
 	#print("👹 Enemigo spawneado: ", enemy_type.name, " en ", position)
+
 	return enemy
 
 func _on_enemy_died(enemy: Node2D, enemy_type_id: String, exp_value: int):

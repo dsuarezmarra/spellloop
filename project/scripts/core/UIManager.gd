@@ -104,6 +104,38 @@ func update_hud_timer(seconds: int):
 	if game_hud:
 		game_hud.update_timer(seconds)
 
+func show_boss_bar(boss_node: Node, display_name: String = "BOSS") -> void:
+	"""Show a boss HP bar in the HUD or fallback to a simple label if HUD doesn't support it."""
+	if game_hud and game_hud.has_method("show_boss_bar"):
+		game_hud.show_boss_bar(boss_node, display_name)
+		return
+
+	# Fallback: create a temporary label at top of screen
+	var existing = ui_canvas.get_node_or_null("BossLabel")
+	if existing:
+		existing.queue_free()
+	var lbl = Label.new()
+	lbl.name = "BossLabel"
+	lbl.text = "BOSS: %s" % display_name
+	lbl.anchor_left = 0.5
+	lbl.anchor_right = 0.5
+	lbl.anchor_top = 0.0
+	lbl.anchor_bottom = 0.0
+	lbl.offset_left = -150
+	lbl.offset_right = 150
+	lbl.offset_top = 10
+	lbl.offset_bottom = 40
+	lbl.add_theme_color_override("font_color", Color(1,0.2,0.2))
+	ui_canvas.add_child(lbl)
+
+func hide_boss_bar() -> void:
+	if game_hud and game_hud.has_method("hide_boss_bar"):
+		game_hud.hide_boss_bar()
+		return
+	var existing = ui_canvas.get_node_or_null("BossLabel")
+	if existing:
+		existing.queue_free()
+
 func show_levelup_popup(upgrades: Array):
 	if game_hud:
 		game_hud.show_levelup_popup(upgrades)
