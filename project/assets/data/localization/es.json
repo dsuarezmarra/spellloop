@@ -1,0 +1,85 @@
+{
+	"ui": {
+		"main_menu": {
+			"title": "SPELLLOOP",
+			"new_run": "Nueva Partida",
+			"continue": "Continuar",
+			"settings": "Configuración",
+			"quit": "Salir"
+		},
+		"pause_menu": {
+			"title": "PAUSADO",
+			"resume": "Reanudar",
+			"settings": "Configuración",
+			"main_menu": "Menú Principal",
+			"quit": "Salir del Juego"
+		},
+		"settings": {
+			"title": "Configuración",
+			"audio": "Audio",
+			"video": "Video",
+			"controls": "Controles",
+			"language": "Idioma",
+			"back": "Atrás",
+			"reset": "Restablecer"
+		},
+		"game_over": {
+			"title": "Partida Completada",
+			"score": "Puntuación",
+			"time": "Tiempo",
+			"rooms": "Salas Completadas",
+			"enemies": "Enemigos Derrotados",
+			"continue": "Continuar",
+			"retry": "Intentar de Nuevo"
+		}
+	},
+	"gameplay": {
+		"spells": {
+			"fireball": "Bola de Fuego",
+			"ice_shard": "Fragmento de Hielo",
+			"lightning_bolt": "Rayo",
+			"healing_light": "Luz Curativa",
+			"shadow_blast": "Explosión Sombría",
+			"earth_spike": "Pico de Tierra",
+			"wind_slash": "Corte de Viento",
+			"frost_nova": "Nova de Escarcha",
+			"flame_wave": "Onda de Llamas",
+			"thunder_storm": "Tormenta de Truenos"
+		},
+		"enemies": {
+			"basic_slime": "Slime",
+			"fire_imp": "Diablillo de Fuego",
+			"ice_golem": "Gólem de Hielo",
+			"shadow_wraith": "Espectro Sombra",
+			"crystal_spider": "Araña de Cristal",
+			"lava_beast": "Bestia de Lava",
+			"frost_wolf": "Lobo de Escarcha",
+			"void_crawler": "Rastreador del Vacío"
+		},
+		"biomes": {
+			"fire_caverns": "Cavernas de Fuego",
+			"ice_peaks": "Picos Helados",
+			"shadow_realm": "Reino de las Sombras",
+			"crystal_gardens": "Jardines de Cristal"
+		},
+		"mages": {
+			"fire_mage": "Tejedor de Llamas",
+			"ice_mage": "Invocador de Escarcha",
+			"shadow_mage": "Caminante del Vacío",
+			"earth_mage": "Moldeador de Piedra",
+			"lightning_mage": "Portador de Tormentas"
+		}
+	},
+	"messages": {
+		"game_saved": "Juego guardado exitosamente",
+		"game_loaded": "Juego cargado exitosamente",
+		"spell_unlocked": "Nuevo hechizo desbloqueado: {0}",
+		"mage_unlocked": "Nuevo mago desbloqueado: {0}",
+		"achievement_unlocked": "Logro desbloqueado: {0}",
+		"room_cleared": "¡Sala completada!",
+		"boss_defeated": "¡Jefe derrotado!",
+		"level_up": "¡Subida de nivel!",
+		"health_low": "¡Vida baja!",
+		"out_of_mana": "¡Sin maná!"
+	}
+}

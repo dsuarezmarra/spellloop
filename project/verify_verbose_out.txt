@@ -1,0 +1,25 @@
+--- VERIFY VERBOSE ---
+Checking: res://scenes/player/SpellloopPlayer.tscn
+  exists: true
+  load: OK -> <PackedScene#-9223372011370183291>
+
+Checking: res://scenes/pickups/XPOrb.tscn
+  exists: true
+  load: OK -> <PackedScene#-9223372011219188350>
+
+Checking: res://scenes/items/TreasureChest.tscn
+  exists: true
+  load: OK -> <PackedScene#-9223372011068193404>
+
+Checking: res://scenes/projectiles/chaos_wave.tscn
+  exists: true
+  load: OK -> <PackedScene#-9223372010615208575>
+
+Checking: res://scenes/ui/LevelUpPanel.tscn
+  exists: true
+  load: OK -> <PackedScene#-9223372010162223739>
+
+Checking: res://scenes/ui/SimpleChestPopup.tscn
+  exists: true
+  load: OK -> <PackedScene#-9223372009709238910>
+

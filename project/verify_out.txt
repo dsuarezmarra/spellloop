@@ -1,0 +1,8 @@
+--- VERIFY SCENES REPORT ---
+res://scenes/player/SpellloopPlayer.tscn : OK
+res://scenes/pickups/XPOrb.tscn : OK
+res://scenes/items/TreasureChest.tscn : OK
+res://scenes/projectiles/chaos_wave.tscn : OK
+res://scenes/ui/LevelUpPanel.tscn : OK
+res://scenes/ui/SimpleChestPopup.tscn : OK
+res://scenes/enemies/* : OK

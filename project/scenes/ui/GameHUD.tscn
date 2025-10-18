@@ -1,0 +1,67 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource path="res://scripts/ui/GameHUD.gd" type="Script" id=1]
+
+[node name="GameHUD" type="CanvasLayer"]
+script = ExtResource( 1 )
+layer = 100
+
+[node name="HUDPanel" type="PanelContainer" parent="."]
+anchor_left = 0.02
+anchor_top = 0.02
+anchor_right = 0.98
+anchor_bottom = 0.18
+
+[node name="HBox" type="HBoxContainer" parent="HUDPanel"]
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxLeft" type="VBoxContainer" parent="HUDPanel/HBox"]
+custom_minimum_size = Vector2(220, 0)
+
+[node name="PlayerStats" type="Label" parent="HUDPanel/HBox/VBoxLeft"]
+text = "HP: 100/100  XP: 0/10  LVL: 1"
+
+[node name="WeaponList" type="Label" parent="HUDPanel/HBox/VBoxLeft"]
+text = "Armas: Ice Wand, Fire Wand"
+
+[node name="VBoxRight" type="VBoxContainer" parent="HUDPanel/HBox"]
+custom_minimum_size = Vector2(220, 0)
+
+[node name="TimerLabel" type="Label" parent="HUDPanel/HBox/VBoxRight"]
+text = "Tiempo: 00:00"
+
+[node name="LevelUpPopup" type="Control" parent="."]
+visible = false
+anchor_left = 0.25
+anchor_top = 0.25
+anchor_right = 0.75
+anchor_bottom = 0.75
+
+[node name="LevelUpPanel" type="PanelContainer" parent="LevelUpPopup"]
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="LevelUpVBox" type="VBoxContainer" parent="LevelUpPopup/LevelUpPanel"]
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="LevelUpTitle" type="Label" parent="LevelUpPopup/LevelUpPanel/LevelUpVBox"]
+text = "¡Subiste de nivel!"
+
+[node name="UpgradeOptions" type="VBoxContainer" parent="LevelUpPopup/LevelUpPanel/LevelUpVBox"]
+
+[node name="UpgradeButton1" type="Button" parent="LevelUpPopup/LevelUpPanel/LevelUpVBox/UpgradeOptions"]
+text = "Mejora 1"
+
+[node name="UpgradeButton2" type="Button" parent="LevelUpPopup/LevelUpPanel/LevelUpVBox/UpgradeOptions"]
+text = "Mejora 2"
+
+[node name="UpgradeButton3" type="Button" parent="LevelUpPopup/LevelUpPanel/LevelUpVBox/UpgradeOptions"]
+text = "Mejora 3"

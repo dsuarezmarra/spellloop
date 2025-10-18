@@ -1,0 +1,208 @@
+{
+	"fireball": {
+		"id": "fireball",
+		"elements": ["fire"],
+		"name": {
+			"en": "Fireball",
+			"es": "Bola de Fuego"
+		},
+		"description": {
+			"en": "A blazing projectile that explodes on impact",
+			"es": "Un proyectil ardiente que explota al impactar"
+		},
+		"damage": 15,
+		"speed": 350,
+		"range": 400,
+		"cooldown": 0.8,
+		"cost": 10,
+		"projectile_type": "fireball",
+		"effects": ["explosion", "burn"],
+		"unlock_cost": 0
+	},
+	"ice_shard": {
+		"id": "ice_shard",
+		"elements": ["ice"],
+		"name": {
+			"en": "Ice Shard",
+			"es": "Fragmento de Hielo"
+		},
+		"description": {
+			"en": "A sharp ice projectile that can pierce through enemies",
+			"es": "Un proyectil de hielo filoso que puede atravesar enemigos"
+		},
+		"damage": 12,
+		"speed": 450,
+		"range": 350,
+		"cooldown": 0.6,
+		"cost": 8,
+		"projectile_type": "ice_shard",
+		"effects": ["pierce", "slow"],
+		"unlock_cost": 0
+	},
+	"lightning_bolt": {
+		"id": "lightning_bolt",
+		"elements": ["lightning"],
+		"name": {
+			"en": "Lightning Bolt",
+			"es": "Rayo"
+		},
+		"description": {
+			"en": "An instant lightning strike with high damage",
+			"es": "Un rayo instantáneo con alto daño"
+		},
+		"damage": 20,
+		"speed": 600,
+		"range": 300,
+		"cooldown": 1.0,
+		"cost": 15,
+		"projectile_type": "lightning_bolt",
+		"effects": ["instant", "stun"],
+		"unlock_cost": 50
+	},
+	"shadow_blast": {
+		"id": "shadow_blast",
+		"elements": ["shadow"],
+		"name": {
+			"en": "Shadow Blast",
+			"es": "Explosión Sombría"
+		},
+		"description": {
+			"en": "A dark energy blast that phases through obstacles",
+			"es": "Una explosión de energía oscura que atraviesa obstáculos"
+		},
+		"damage": 18,
+		"speed": 300,
+		"range": 250,
+		"cooldown": 1.2,
+		"cost": 12,
+		"projectile_type": "shadow_blast",
+		"effects": ["phase", "fear"],
+		"unlock_cost": 75
+	},
+	"healing_light": {
+		"id": "healing_light",
+		"elements": ["light"],
+		"name": {
+			"en": "Healing Light",
+			"es": "Luz Curativa"
+		},
+		"description": {
+			"en": "Restores health to the caster",
+			"es": "Restaura salud al lanzador"
+		},
+		"damage": -25,
+		"speed": 200,
+		"range": 150,
+		"cooldown": 2.0,
+		"cost": 20,
+		"projectile_type": "healing_light",
+		"effects": ["heal", "purify"],
+		"unlock_cost": 100
+	},
+	"earth_spike": {
+		"id": "earth_spike",
+		"elements": ["earth"],
+		"name": {
+			"en": "Earth Spike",
+			"es": "Pico de Tierra"
+		},
+		"description": {
+			"en": "Erupts earth spikes from the ground",
+			"es": "Hace brotar picos de tierra del suelo"
+		},
+		"damage": 22,
+		"speed": 200,
+		"range": 200,
+		"cooldown": 1.5,
+		"cost": 18,
+		"projectile_type": "earth_spike",
+		"effects": ["ground", "knockback"],
+		"unlock_cost": 60
+	},
+	"wind_slash": {
+		"id": "wind_slash",
+		"elements": ["wind"],
+		"name": {
+			"en": "Wind Slash",
+			"es": "Corte de Viento"
+		},
+		"description": {
+			"en": "A fast wind blade that cuts through multiple enemies",
+			"es": "Una hoja de viento rápida que corta múltiples enemigos"
+		},
+		"damage": 14,
+		"speed": 500,
+		"range": 400,
+		"cooldown": 0.7,
+		"cost": 12,
+		"projectile_type": "wind_slash",
+		"effects": ["pierce", "knockback"],
+		"unlock_cost": 40
+	},
+	"frost_nova": {
+		"id": "frost_nova",
+		"elements": ["ice", "wind"],
+		"name": {
+			"en": "Frost Nova",
+			"es": "Nova de Escarcha"
+		},
+		"description": {
+			"en": "Combination spell: Ice + Wind creates an area freeze",
+			"es": "Hechizo combinado: Hielo + Viento crea congelación en área"
+		},
+		"damage": 16,
+		"speed": 0,
+		"range": 200,
+		"cooldown": 2.5,
+		"cost": 25,
+		"projectile_type": "frost_nova",
+		"effects": ["area", "freeze", "slow"],
+		"unlock_cost": 150,
+		"is_combination": true,
+		"required_elements": ["ice", "wind"]
+	},
+	"flame_wave": {
+		"id": "flame_wave",
+		"elements": ["fire", "earth"],
+		"name": {
+			"en": "Flame Wave",
+			"es": "Onda de Llamas"
+		},
+		"description": {
+			"en": "Combination spell: Fire + Earth creates a spreading flame",
+			"es": "Hechizo combinado: Fuego + Tierra crea llamas que se extienden"
+		},
+		"damage": 20,
+		"speed": 250,
+		"range": 350,
+		"cooldown": 2.0,
+		"cost": 22,
+		"projectile_type": "flame_wave",
+		"effects": ["area", "burn", "spread"],
+		"unlock_cost": 175,
+		"is_combination": true,
+		"required_elements": ["fire", "earth"]
+	},
+	"thunder_storm": {
+		"id": "thunder_storm",
+		"elements": ["lightning", "wind"],
+		"name": {
+			"en": "Thunder Storm",
+			"es": "Tormenta de Truenos"
+		},
+		"description": {
+			"en": "Combination spell: Lightning + Wind creates multiple lightning strikes",
+			"es": "Hechizo combinado: Rayo + Viento crea múltiples rayos"
+		},
+		"damage": 25,
+		"speed": 400,
+		"range": 300,
+		"cooldown": 3.0,
+		"cost": 30,
+		"projectile_type": "thunder_storm",
+		"effects": ["multiple", "stun", "chain"],
+		"unlock_cost": 200,
+		"is_combination": true,
+		"required_elements": ["lightning", "wind"]
+	}
+}

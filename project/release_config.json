@@ -1,0 +1,65 @@
+{
+	"version": "1.0.0",
+	"build_number": 1,
+	"release_name": "Spellloop",
+	"release_codename": "Arcane Ascension",
+	"platforms": ["windows", "linux", "steam_deck"],
+	"distribution": "steam",
+	"target_audience": "everyone",
+	"content_rating": "E10+",
+	"genre": "Rogue-lite Action RPG",
+	"features": [
+		"Procedural spell system with dynamic combinations",
+		"Adaptive enemy AI with behavioral patterns",
+		"Procedural level generation with multiple biomes",
+		"Comprehensive achievement and progression system",
+		"Complete procedural asset generation",
+		"Multiple difficulty modes and accessibility options",
+		"Steam integration with achievements and cloud saves",
+		"Controller and keyboard support"
+	],
+	"technical_specs": {
+		"engine": "Godot 4.3+",
+		"language": "GDScript",
+		"platforms": {
+			"windows": {
+				"min_os": "Windows 10",
+				"architecture": ["x64"],
+				"ram": "4 GB",
+				"storage": "500 MB"
+			},
+			"linux": {
+				"min_os": "Ubuntu 18.04 LTS",
+				"architecture": ["x64"],
+				"ram": "4 GB", 
+				"storage": "500 MB"
+			},
+			"steam_deck": {
+				"verified": true,
+				"compatibility": "Full",
+				"performance": "60 FPS @ 720p"
+			}
+		}
+	},
+	"quality_targets": {
+		"system_health": 95.0,
+		"qa_score": 85.0,
+		"performance_score": 80.0,
+		"integration_score": 90.0,
+		"polish_completion": 80.0,
+		"final_validation": 95.0
+	},
+	"release_schedule": {
+		"alpha": "2025-08-01",
+		"beta": "2025-09-15", 
+		"release_candidate": "2025-10-01",
+		"gold_master": "2025-10-09",
+		"public_release": "2025-10-15"
+	},
+	"contact": {
+		"developer": "Spellloop Dev Team",
+		"publisher": "Independent",
+		"support_email": "support@spellloop.game",
+		"website": "https://spellloop.game"
+	}
+}
