@@ -65,7 +65,8 @@ func _ready():
 		# Set a sensible animation speed
 		var sf = animated_sprite.sprite_frames if animated_sprite.sprite_frames else animated_sprite.frames
 		if sf:
-			animated_sprite.animation_speed = 6.0
+			# Godot 4: AnimatedSprite2D uses speed_scale for playback speed
+			animated_sprite.speed_scale = 6.0
 	set_physics_process(true)
 	# Configurar capas/máscaras
 	set_collision_layer_value(1, true) # Player

@@ -96,8 +96,9 @@ func start_new_run() -> void:
 	var old_state = current_state
 	current_state = GameState.IN_RUN
 	is_run_active = true
-	run_start_time = Time.get_time_dict_from_system()["unix"]
-	game_start_time = Time.get_time_dict_from_system()["unix"]  # Inicializar tiempo de juego
+	# Use a safe accessor for system unix time (handles API differences and missing keys)
+	run_start_time = get_unix_time_safe()
+	game_start_time = get_unix_time_safe()  # Inicializar tiempo de juego
 	
 	# Initialize run data
 	current_run_data = {
@@ -129,7 +130,7 @@ func end_current_run(reason: String) -> void:
 	is_run_active = false
 	
 	# Calculate final stats
-	var end_time = Time.get_time_dict_from_system()["unix"]
+	var end_time = get_unix_time_safe()
 	current_run_data["end_time"] = end_time
 	current_run_data["duration"] = end_time - run_start_time
 	current_run_data["end_reason"] = reason
@@ -218,7 +219,7 @@ func get_elapsed_minutes() -> int:
 	if not is_run_active or game_start_time == 0.0:
 		return 0
 	
-	var current_time = Time.get_time_dict_from_system()["unix"]
+	var current_time = get_unix_time_safe()
 	var elapsed_seconds = current_time - game_start_time
 	var elapsed_minutes = int(elapsed_seconds / 60.0)
 	
@@ -229,8 +230,29 @@ func get_elapsed_seconds() -> float:
 	if not is_run_active or game_start_time == 0.0:
 		return 0.0
 	
-	var current_time = Time.get_time_dict_from_system()["unix"]
+	var current_time = get_unix_time_safe()
 	return current_time - game_start_time
+
+
+func get_unix_time_safe() -> float:
+	"""Return a unix timestamp (float) using Time.get_time_dict_from_system() if available,
+	otherwise fallback to available OS/Time API. Defensive: ensures a number is returned.
+	"""
+	# Prefer Time.get_time_dict_from_system() if available
+	if Time and Time.has_method("get_time_dict_from_system"):
+		var tdict = Time.get_time_dict_from_system()
+		if typeof(tdict) == TYPE_DICTIONARY and tdict.has("unix"):
+			return float(tdict["unix"])
+
+	# Fallback to OS.get_unix_time_from_system() if available
+	if OS and OS.has_method("get_unix_time_from_system"):
+		# Call dynamically to avoid parse-time errors on builds missing this API
+		var val = OS.call("get_unix_time_from_system")
+		if typeof(val) in [TYPE_INT, TYPE_FLOAT]:
+			return float(val)
+
+	# As last resort, use engine frame count as a monotonic fallback
+	return float(Engine.get_physics_frames())
 
 func get_game_time_formatted() -> String:
 	"""Obtener tiempo de juego formateado como MM:SS"""

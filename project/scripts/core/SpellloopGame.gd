@@ -39,9 +39,16 @@ func _ready():
 		var vs_script = load("res://scripts/tools/verify_scenes.gd")
 		if vs_script:
 			var verifier = vs_script.new()
-			add_child(verifier)
-			verifier.run_checks()
-			var report = verifier.get_report()
+			# verifier might extend SceneTree (when intended to run with --script).
+			# add_child expects a Node; only add if verifier is a Node.
+			if verifier is Node:
+				add_child(verifier)
+			# run checks regardless of whether it was parented
+			if verifier and verifier.has_method("run_checks"):
+				verifier.run_checks()
+			var report = ""
+			if verifier and verifier.has_method("get_report"):
+				report = verifier.get_report()
 			if report.find("MISSING/ERROR") != -1:
 				print("[VERIFY] Errors found in scene verification:\n", report)
 				# Show simple label in UI
@@ -141,12 +148,23 @@ func setup_game():
 	elif has_node("Camera2D"):
 		world_camera = get_node("Camera2D")
 	if world_camera:
-		world_camera.current = true
+		# Godot 4: Camera2D.current is not assignable; use make_current()
+		if world_camera.has_method("make_current"):
+			world_camera.make_current()
+		else:
+			# Fallback: try setting property if available (defensive)
+			if world_camera.has_property("current"):
+				world_camera.current = true
 	else:
 		# If there's no Camera2D in the scene, create one and parent it to WorldRoot (or to root)
 		var cam = Camera2D.new()
 		cam.name = "Camera2D"
-		cam.current = true
+		# Use Godot 4 API to make camera current
+		if cam.has_method("make_current"):
+			cam.make_current()
+		else:
+			if cam.has_property("current"):
+				cam.current = true
 		# Try to parent under WorldRoot so it moves with world transforms if available
 		if has_node("WorldRoot"):
 			get_node("WorldRoot").add_child(cam)
@@ -361,7 +379,7 @@ func start_game():
 			gm.start_new_run()
 	# Local fallback start time for HUD if GameManager not present
 	if run_start_time == 0:
-		run_start_time = int(Time.get_time_dict_from_system()["unix"])
+		run_start_time = int(get_unix_time_safe())
 	# Start HUD timer
 	if hud_timer and not hud_timer.is_stopped():
 		hud_timer.start()
@@ -447,8 +465,8 @@ func _on_hud_tick() -> void:
 	# Fallback: calcular tiempo desde run_start_time si GameManager no disponible
 	if not updated:
 		if run_start_time == 0:
-			run_start_time = int(Time.get_time_dict_from_system()["unix"])
-		var total_secs = int(int(Time.get_time_dict_from_system()["unix"]) - run_start_time)
+			run_start_time = int(get_unix_time_safe())
+		var total_secs = int(int(get_unix_time_safe()) - run_start_time)
 		ui.update_hud_timer(total_secs)
 		# Local fallback boss spawn check
 		if total_secs >= 300 and not _boss_spawned_at_5s:
@@ -554,13 +572,26 @@ func _process(_delta):
 			total_seconds = int(gm.get_elapsed_seconds())
 	else:
 		if run_start_time != 0:
-			total_seconds = int(int(Time.get_time_dict_from_system()["unix"]) - run_start_time)
+			total_seconds = int(int(get_unix_time_safe()) - run_start_time)
 
-	if total_seconds >= 300 and not _boss_spawned_at_5s:
-		_boss_spawned_at_5s = true
-		if enemy_manager and enemy_manager.has_method("spawn_elite"):
-			enemy_manager.spawn_elite()
-			print("[SpellloopGame] Backup boss spawn requested at 5:00")
+
+func get_unix_time_safe() -> float:
+	"""Devuelve un timestamp unix (float). Intenta usar Time.get_time_dict_from_system() y si falla, usa fallbacks conocidos.
+	"""
+	# Prefer Time.get_time_dict_from_system() if present
+	if Time and Time.has_method("get_time_dict_from_system"):
+		var tdict = Time.get_time_dict_from_system()
+		if typeof(tdict) == TYPE_DICTIONARY and tdict.has("unix"):
+			return float(tdict["unix"])
+
+	# Fallback a OS.get_unix_time_from_system() si existe
+	if OS and OS.has_method("get_unix_time_from_system"):
+		var val = OS.call("get_unix_time_from_system")
+		if typeof(val) in [TYPE_INT, TYPE_FLOAT]:
+			return float(val)
+
+	# Último recurso: usar ticks del engine como número monotónico
+	return float(Engine.get_physics_frames())
 
 func get_game_stats() -> Dictionary:
 	"""Obtener estadísticas del juego"""

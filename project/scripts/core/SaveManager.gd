@@ -420,11 +420,25 @@ func save_dungeon_completion(dungeon_seed: int, rewards: Dictionary) -> void:
 	"""Save dungeon completion data"""
 	print("[SaveManager] Saving dungeon completion...")
 	
+	var ts = null
+	# Try dynamic Time.get_unix_time_from_system() if available
+	if Time and Time.has_method("get_unix_time_from_system"):
+		var val = Time.call("get_unix_time_from_system")
+		if typeof(val) in [TYPE_INT, TYPE_FLOAT]:
+			ts = float(val)
+	# Fallback to GameManager/SpellloopGame helper if available
+	if ts == null and get_tree() and get_tree().root and get_tree().root.has_node("GameManager"):
+		var gm = get_tree().root.get_node("GameManager")
+		if gm and gm.has_method("get_unix_time_safe"):
+			ts = float(gm.get_unix_time_safe())
+	if ts == null:
+		ts = float(Engine.get_physics_frames())
+
 	var run_data = {
 		"type": "dungeon",
 		"seed": dungeon_seed,
 		"rewards": rewards,
-		"timestamp": Time.get_unix_time_from_system(),
+		"timestamp": ts,
 		"duration": 0  # Placeholder
 	}
 	
