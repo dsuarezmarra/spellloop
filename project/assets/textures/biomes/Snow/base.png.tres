@@ -1,0 +1,8 @@
+[gd_resource type="CompressedTexture2D" format=3 uid="uid://6ba75684b5bf"]
+
+[resource]
+resource_name = "base"
+image = SubResource("Image_b6be44fcabc0")
+
+[sub_resource type="Image" id="Image_b6be44fcabc0"]
+resource_name = "Image_b6be44fcabc0"
