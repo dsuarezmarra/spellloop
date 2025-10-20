@@ -79,6 +79,14 @@ func _run_combat_diagnostics() -> void:
 			var diagnostics = diag_script.new()
 			diagnostics.name = "CombatDiagnostics"
 			add_child(diagnostics)
+	
+	# Add WorldMovementDiagnostics for continuous monitoring
+	if ResourceLoader.exists("res://scripts/tools/WorldMovementDiagnostics.gd"):
+		var wmd_script = load("res://scripts/tools/WorldMovementDiagnostics.gd")
+		if wmd_script:
+			var wmd = wmd_script.new()
+			wmd.name = "WorldMovementDiagnostics"
+			add_child(wmd)
 
 func setup_game():
 	"""Configurar todos los sistemas del juego"""

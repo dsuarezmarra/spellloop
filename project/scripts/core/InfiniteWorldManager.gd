@@ -171,7 +171,13 @@ func _generate_new_chunk(chunk_pos: Vector2i) -> void:
 	var chunk_node = Node2D.new()
 	chunk_node.name = "Chunk_%d_%d" % [chunk_pos.x, chunk_pos.y]
 	chunk_node.global_position = _chunk_index_to_world_pos(chunk_pos.x, chunk_pos.y)
-	add_child(chunk_node)
+	
+	# IMPORTANT: Add to chunks_root, not to self
+	if chunks_root and is_instance_valid(chunks_root):
+		chunks_root.add_child(chunk_node)
+	else:
+		add_child(chunk_node)
+		print("[InfiniteWorldManager] ⚠️  chunks_root not available, adding chunk to self")
 	
 	# Generar bioma y decoraciones
 	if biome_generator:
@@ -193,7 +199,13 @@ func _instantiate_chunk_from_cache(chunk_pos: Vector2i, chunk_data: Dictionary) 
 	var chunk_node = Node2D.new()
 	chunk_node.name = "Chunk_%d_%d" % [chunk_pos.x, chunk_pos.y]
 	chunk_node.global_position = _chunk_index_to_world_pos(chunk_pos.x, chunk_pos.y)
-	add_child(chunk_node)
+	
+	# IMPORTANT: Add to chunks_root, not to self
+	if chunks_root and is_instance_valid(chunks_root):
+		chunks_root.add_child(chunk_node)
+	else:
+		add_child(chunk_node)
+		print("[InfiniteWorldManager] ⚠️  chunks_root not available, adding chunk to self")
 	
 	# Recrear bioma y decoraciones desde caché (sin await necesario aquí)
 	if biome_generator:
