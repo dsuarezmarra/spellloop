@@ -55,23 +55,25 @@ func _load_config() -> void:
 	{
 	  "biomes": [
 	    {
-	      "id": 0,
 	      "name": "Grassland",
-	      "base_texture_path": "res://...",
-	      "decorations": ["res://...", ...],
-	      ...
+	      "textures": {
+	        "base": "Grassland/base.png",
+	        "decor": ["Grassland/decor1.png", ...]
+	      }
 	    },
 	    ...
 	  ]
 	}
 	"""
-	if not ResourceLoader.exists(config_path):
-		printerr("[BiomeChunkApplier] ✗ Config NO encontrado: %s" % config_path)
+	var config_file_path = "res://assets/textures/biomes/biome_textures_config.json"
+	
+	if not ResourceLoader.exists(config_file_path):
+		printerr("[BiomeChunkApplier] ✗ Config NO encontrado: %s" % config_file_path)
 		return
 	
-	var file = FileAccess.open(config_path, FileAccess.READ)
+	var file = FileAccess.open(config_file_path, FileAccess.READ)
 	if file == null:
-		printerr("[BiomeChunkApplier] ✗ No se pudo abrir: %s" % config_path)
+		printerr("[BiomeChunkApplier] ✗ No se pudo abrir: %s" % config_file_path)
 		return
 	
 	var json_string = file.get_as_text()
@@ -89,12 +91,13 @@ func _load_config() -> void:
 func get_biome_for_position(cx: int, cy: int) -> Dictionary:
 	"""
 	Determinar bioma basado en coordenadas de chunk usando RNG determinístico.
+	Construye rutas completas desde la estructura del JSON.
 	
 	Args:
-	  cx, cy: coordenadas del chunk en grid (ej: chunk (0,0), (1,0), etc.)
+	  cx, cy: coordenadas del chunk en grid
 	
 	Returns:
-	  Dictionary con datos del bioma seleccionado
+	  Dictionary con datos del bioma seleccionado (con rutas res:// completas)
 	"""
 	if _config.get("biomes", []).is_empty():
 		printerr("[BiomeChunkApplier] ✗ No hay biomas en config")
@@ -107,7 +110,32 @@ func get_biome_for_position(cx: int, cy: int) -> Dictionary:
 	
 	var biomas = _config.get("biomes", [])
 	var bioma_index = rng_local.randi_range(0, biomas.size() - 1)
-	var bioma_data = biomas[bioma_index]
+	var bioma_config = biomas[bioma_index] as Dictionary
+	
+	# Construir bioma_data con rutas completas
+	var bioma_data = {}
+	bioma_data["name"] = bioma_config.get("name", "Unknown")
+	bioma_data["id"] = bioma_config.get("id", "")
+	
+	# Construir rutas completas para texturas
+	var textures_config = bioma_config.get("textures", {}) as Dictionary
+	var base_relative = textures_config.get("base", "")
+	
+	if not base_relative.is_empty():
+		bioma_data["base_texture_path"] = "res://assets/textures/biomes/" + base_relative
+	else:
+		bioma_data["base_texture_path"] = ""
+	
+	# Procesar decoraciones
+	var decor_relative = textures_config.get("decor", []) as Array
+	var decorations = []
+	for decor_path in decor_relative:
+		if not decor_path.is_empty():
+			decorations.append("res://assets/textures/biomes/" + decor_path)
+	
+	bioma_data["decorations"] = decorations
+	bioma_data["decor_scale"] = 1.0
+	bioma_data["decor_opacity"] = 0.8
 	
 	if debug_mode:
 		print("[BiomeChunkApplier] Chunk (%d, %d) → Bioma: %s (seed: %d)" % [cx, cy, bioma_data.get("name", "?"), seed_val])
@@ -158,12 +186,23 @@ func _apply_base_texture(parent: Node, bioma_data: Dictionary, _cx: int, _cy: in
 	
 	Crea una Sprite2D con la textura base, escalada para cubrir
 	el área del chunk (5760×3240 px).
-	
-	La textura se asume que es seamless/tileable (512×512 px típicamente).
 	"""
+	if not bioma_data.has("base_texture_path"):
+		printerr("[BiomeChunkApplier] ✗ No hay base_texture_path en bioma_data")
+		return
+	
 	var base_texture_path = bioma_data.get("base_texture_path", "")
 	
-	if base_texture_path.is_empty() or not ResourceLoader.exists(base_texture_path):
+	# Validar que sea string
+	if not base_texture_path is String:
+		printerr("[BiomeChunkApplier] ✗ base_texture_path no es String: %s (tipo: %s)" % [base_texture_path, typeof(base_texture_path)])
+		return
+	
+	if base_texture_path.is_empty():
+		printerr("[BiomeChunkApplier] ✗ base_texture_path está vacío")
+		return
+	
+	if not ResourceLoader.exists(base_texture_path):
 		printerr("[BiomeChunkApplier] ✗ Textura base NO encontrada: %s" % base_texture_path)
 		return
 	
@@ -194,7 +233,7 @@ func _apply_base_texture(parent: Node, bioma_data: Dictionary, _cx: int, _cy: in
 	parent.add_child(sprite)
 	
 	if debug_mode:
-		print("[BiomeChunkApplier] Base texture aplicada: %s (scale: %.2f, %.2f)" % [base_texture_path, scale_x, scale_y])
+		print("[BiomeChunkApplier] ✓ Base texture aplicada: %s (scale: %.2f, %.2f)" % [base_texture_path, scale_x, scale_y])
 
 # ========== APLICAR DECORACIONES ==========
 func _apply_decorations(parent: Node, bioma_data: Dictionary, _cx: int, _cy: int) -> void:
@@ -204,14 +243,24 @@ func _apply_decorations(parent: Node, bioma_data: Dictionary, _cx: int, _cy: int
 	Decoraciones: plantas, rocas, cactus, cristales, runas, etc.
 	Cada decoración se tilea automáticamente para cubrir el chunk.
 	"""
-	var decorations = bioma_data.get("decorations", [])
+	var decorations = bioma_data.get("decorations", []) as Array
 	var decor_scale = bioma_data.get("decor_scale", 1.0)
 	var decor_opacity = bioma_data.get("decor_opacity", 0.8)
 	
 	for i in range(decorations.size()):
 		var decor_path = decorations[i]
 		
-		if decor_path.is_empty() or not ResourceLoader.exists(decor_path):
+		# Validar que sea string
+		if not decor_path is String:
+			printerr("[BiomeChunkApplier] ✗ decor_path[%d] no es String: tipo %s" % [i, typeof(decor_path)])
+			continue
+		
+		if decor_path.is_empty():
+			if debug_mode:
+				print("[BiomeChunkApplier] ⚠️  Decoración %d está vacía" % (i+1))
+			continue
+		
+		if not ResourceLoader.exists(decor_path):
 			if debug_mode:
 				print("[BiomeChunkApplier] ⚠️  Decoración %d NO encontrada: %s" % [i+1, decor_path])
 			continue
@@ -244,7 +293,7 @@ func _apply_decorations(parent: Node, bioma_data: Dictionary, _cx: int, _cy: int
 		parent.add_child(decor_sprite)
 		
 		if debug_mode:
-			print("[BiomeChunkApplier] Decoración %d aplicada: %s" % [i+1, decor_path])
+			print("[BiomeChunkApplier] ✓ Decoración %d aplicada: %s" % [i+1, decor_path])
 
 # ========== INTERFAZ PÚBLICA: ACTUALIZAR POSICIÓN ==========
 func on_player_position_changed(new_position: Vector2) -> void:
