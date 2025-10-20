@@ -3,16 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b7xd7fdkqi42v"
-path.s3tc="res://.godot/imported/base.png-fbc37b5971b29db512a1f946b6287626.s3tc.ctex"
-metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
-}
+valid=false
 
 [deps]
 
 source_file="res://assets/textures/biomes/Grassland/base.png"
-dest_files=["res://.godot/imported/base.png-fbc37b5971b29db512a1f946b6287626.s3tc.ctex"]
 
 [params]
 

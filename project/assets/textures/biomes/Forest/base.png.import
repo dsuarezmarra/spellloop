@@ -3,16 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bx68pm2oj21w7"
-path.s3tc="res://.godot/imported/base.png-2927fedef09c0a301389ac14080c5b12.s3tc.ctex"
-metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
-}
+valid=false
 
 [deps]
 
 source_file="res://assets/textures/biomes/Forest/base.png"
-dest_files=["res://.godot/imported/base.png-2927fedef09c0a301389ac14080c5b12.s3tc.ctex"]
 
 [params]
 

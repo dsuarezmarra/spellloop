@@ -3,16 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dxduwg5bx531r"
-path.s3tc="res://.godot/imported/base.png-fbd1517f0c7f1ddef748ff2c586fcf64.s3tc.ctex"
-metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
-}
+valid=false
 
 [deps]
 
 source_file="res://assets/textures/biomes/Lava/base.png"
-dest_files=["res://.godot/imported/base.png-fbd1517f0c7f1ddef748ff2c586fcf64.s3tc.ctex"]
 
 [params]
 

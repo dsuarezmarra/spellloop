@@ -3,16 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://3iqwx4iggnpc"
-path.s3tc="res://.godot/imported/base.png-7291a204a285348dd8051baa87a36e77.s3tc.ctex"
-metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
-}
+valid=false
 
 [deps]
 
 source_file="res://assets/textures/biomes/ArcaneWastes/base.png"
-dest_files=["res://.godot/imported/base.png-7291a204a285348dd8051baa87a36e77.s3tc.ctex"]
 
 [params]
 

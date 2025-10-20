@@ -3,16 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ckbqvuivxdrro"
-path.s3tc="res://.godot/imported/base.png-3487b8f37f04d71d855570f8a8673c44.s3tc.ctex"
-metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
-}
+valid=false
 
 [deps]
 
 source_file="res://assets/textures/biomes/Desert/base.png"
-dest_files=["res://.godot/imported/base.png-3487b8f37f04d71d855570f8a8673c44.s3tc.ctex"]
 
 [params]
 
