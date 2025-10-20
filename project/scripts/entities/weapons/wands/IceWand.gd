@@ -85,14 +85,18 @@ func perform_attack(owner: Node2D) -> void:
 			projectile.set_meta("slow_percentage", slow_percentage)
 		
 		# Agregar a la escena
-		var world = owner.get_tree().root.get_node_or_null("SpellloopGame")
-		if not world:
-			world = owner.get_parent()
-		
-		if world:
-			world.add_child(projectile)
+		# CRÍTICO: Agregar a ChunksRoot (que se mueve con el mundo), NO a la raíz global
+		var chunks_root = owner.get_tree().root.get_node_or_null("SpellloopGame/ChunksRoot")
+		if chunks_root:
+			chunks_root.add_child(projectile)
 		else:
-			owner.get_tree().root.add_child(projectile)
+			# Fallback: Buscar WorldRoot
+			var world_root = owner.get_tree().root.get_node_or_null("SpellloopGame/WorldRoot")
+			if world_root:
+				world_root.add_child(projectile)
+			else:
+				# Último recurso: Agregar a owner.parent (probablemente InfiniteWorldManager)
+				owner.add_sibling(projectile)
 		
 		print("[IceWand] ❄️ Proyectil de hielo disparado")
 
