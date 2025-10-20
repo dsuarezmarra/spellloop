@@ -187,7 +187,6 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 	"""
 	var chunk_size = Vector2(5760, 3240)
 	var tile_size = Vector2(1920, 1080)  # Cada cuadrante del chunk
-	var texture_size = Vector2(512, 512)  # Tamaño real de las texturas
 	var grid_cols = 3
 	var grid_rows = 3
 
@@ -197,17 +196,21 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 	if not base_texture_path.is_empty() and ResourceLoader.exists(base_texture_path):
 		var texture = load(base_texture_path) as Texture2D
 		if texture:
-			# Las texturas son 512×512 (hardcoded del JSON)
-			# Cada cuadrante es 1920×1080
-			# Escala necesaria: 1920/512 = 3.75, 1080/512 = 2.1
-			# Esto hace que cada textura 512×512 llene APROXIMADAMENTE un cuadrante
+			# OBTENER TAMAÑO REAL DE LA TEXTURA
+			var actual_texture_size = texture.get_size()
+			
+			if debug_mode:
+				print("[TEXTURE_SIZE_DEBUG] Base texture actual size: %s" % actual_texture_size)
+			
+			# Escala para llenar CADA cuadrante (1920×1080) con la textura REAL
+			# Sin asumir nada sobre el tamaño
 			var tile_scale = Vector2(
-				tile_size.x / texture_size.x,  # 1920 / 512 = 3.75
-				tile_size.y / texture_size.y   # 1080 / 512 = 2.1
+				tile_size.x / actual_texture_size.x,
+				tile_size.y / actual_texture_size.y
 			)
 			
 			if debug_mode:
-				print("[BASE] Textura 512×512 → Escala (%.2f, %.2f) para llenar cuadrante 1920×1080" % [tile_scale.x, tile_scale.y])
+				print("[BASE] Tamaño real: %s → Escala (%.4f, %.4f) para llenar 1920×1080" % [actual_texture_size, tile_scale.x, tile_scale.y])
 			
 			# Crear 3×3 grid (9 sprites, uno por cuadrante)
 			for row in range(grid_rows):
@@ -249,13 +252,17 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 			if decor_path is String and not decor_path.is_empty() and ResourceLoader.exists(decor_path):
 				var texture = load(decor_path) as Texture2D
 				if texture:
-					# Decoraciones también 512×512
-					# Pero más pequeñas para no tapar completamente la base
-					# Usar 50% de la escala de base = 50% de (3.75, 2.1) ≈ (1.875, 1.05)
+					# OBTENER TAMAÑO REAL de la decoración
+					var decor_actual_size = texture.get_size()
+					
+					# Escalar para llenar 50% de cuadrante (0.5 × 0.5 = 25% del área)
 					var decor_scale = Vector2(
-						(tile_size.x / texture_size.x) * 0.5,  # 50% de escala base
-						(tile_size.y / texture_size.y) * 0.5
+						(tile_size.x / decor_actual_size.x) * 0.5,  # 50% de escala base
+						(tile_size.y / decor_actual_size.y) * 0.5
 					)
+					
+					if debug_mode:
+						print("[DECOR %d] Tamaño real: %s → Escala (%.4f, %.4f) × 0.5" % [pos_idx, decor_actual_size, tile_size.x / decor_actual_size.x, tile_size.y / decor_actual_size.y])
 					
 					var sprite = Sprite2D.new()
 					sprite.name = "BiomeDecor_%d" % pos_idx
