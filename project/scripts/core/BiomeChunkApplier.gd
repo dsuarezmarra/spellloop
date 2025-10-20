@@ -175,44 +175,43 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 # ========== APLICAR TEXTURAS OPTIMIZADAS ==========
 func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy: int) -> void:
 	"""
-	ESTRATEGIA CORRECTA:
+	ARQUITECTURA OPCIÓN C:
 	- Chunk: 5760×3240
 	- Grid: 3×3 = 9 cuadrantes
 	- Cada cuadrante: 1920×1080
-	- Textura base: 512×512
-	- Cómo llenar cada cuadrante: Replicar la textura 512×512 en un grid 4×2.1 ≈ 4×3 (para cubrir 1920×1080)
 	
-	Simplificación: Crear 9 posiciones (una por cuadrante) y poner 1 textura 512×512 escalada
-	a 1920×1080 en cada una.
+	BASE (suelo):
+	- Tamaño esperado: 1920×1080 (llena exactamente 1 cuadrante)
+	- Escala: 1.0 (sin distorsión)
+	
+	DECORACIONES:
+	- Principales: 256×256 → Escala (7.5, 4.2) × 0.5 = (3.75, 2.1)
+	- Secundarias: 128×128 → Escala (15, 8.4) × 0.25 = (3.75, 2.1)
+	- Ambas ocupan ~28% del área del cuadrante
 	"""
 	var chunk_size = Vector2(5760, 3240)
 	var tile_size = Vector2(1920, 1080)  # Cada cuadrante del chunk
 	var grid_cols = 3
 	var grid_rows = 3
 
-	# ============ 1. TEXTURAS BASE (1/9 escala × 3×3) ============
+	# ============ 1. TEXTURAS BASE (1920×1080 cada una, sin escala) ============
 	var base_texture_path = bioma_data.get("base_texture_path", "")
 
 	if not base_texture_path.is_empty() and ResourceLoader.exists(base_texture_path):
 		var texture = load(base_texture_path) as Texture2D
 		if texture:
-			# OBTENER TAMAÑO REAL DE LA TEXTURA
 			var actual_texture_size = texture.get_size()
 			
 			if debug_mode:
-				print("[TEXTURE_SIZE_DEBUG] Base texture actual size: %s" % actual_texture_size)
+				print("[BASE_TEXTURE] Tamaño: %s" % actual_texture_size)
 			
-			# Escala para llenar CADA cuadrante (1920×1080) con la textura REAL
-			# Sin asumir nada sobre el tamaño
+			# Escala para llenar exactamente 1920×1080
 			var tile_scale = Vector2(
 				tile_size.x / actual_texture_size.x,
 				tile_size.y / actual_texture_size.y
 			)
 			
-			if debug_mode:
-				print("[BASE] Tamaño real: %s → Escala (%.4f, %.4f) para llenar 1920×1080" % [actual_texture_size, tile_scale.x, tile_scale.y])
-			
-			# Crear 3×3 grid (9 sprites, uno por cuadrante)
+			# Crear 3×3 grid (9 sprites base, uno por cuadrante)
 			for row in range(grid_rows):
 				for col in range(grid_cols):
 					var sprite = Sprite2D.new()
@@ -229,7 +228,7 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 					parent.add_child(sprite)
 			
 			if debug_mode:
-				print("[BiomeChunkApplier] ✓ Base 1/9 escala × 3×3: %s" % base_texture_path)
+				print("[✓] Base: 9 sprites × 1920×1080 (escala: %.2f, %.2f)" % [tile_scale.x, tile_scale.y])
 
 	# ============ 2. DECORACIONES (1 POR POSICIÓN, distribución aleatoria SIN superponer) ============
 	var decorations = bioma_data.get("decorations", []) as Array
@@ -252,19 +251,26 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 			if decor_path is String and not decor_path.is_empty() and ResourceLoader.exists(decor_path):
 				var texture = load(decor_path) as Texture2D
 				if texture:
-					# NORMALIZAR tamaño visual: todas las decoraciones tendrán MISMO tamaño visual
-					# Sin importar si PNG es 512×512 o 1024×1024
-					# Escala normalizada: 50% de lo que sería la base (1024×1024)
-					var normalized_base_size = Vector2(1024.0, 1024.0)
-					var decor_scale = Vector2(
-						(tile_size.x / normalized_base_size.x) * 0.5,
-						(tile_size.y / normalized_base_size.y) * 0.5
-					)
-					# Resultado final: (0.9375, 0.5273) para TODAS las decoraciones
+					var decor_size = texture.get_size()
+					var decor_scale: Vector2
 					
-					if debug_mode:
-						var actual_size = texture.get_size()
-						print("[DECOR %d] Tamaño PNG: %s → Escala NORMALIZADA: (%.4f, %.4f)" % [pos_idx, actual_size, decor_scale.x, decor_scale.y])
+					# Detectar tipo de decoración por tamaño PNG y calcular escala apropiada
+					if decor_size.x >= 200:  # Principales: 256×256
+						# Escala: (1920/256, 1080/256) × 0.5 = (7.5, 4.2) × 0.5 = (3.75, 2.1)
+						decor_scale = Vector2(
+							(tile_size.x / decor_size.x) * 0.5,
+							(tile_size.y / decor_size.y) * 0.5
+						)
+						if debug_mode:
+							print("[DECOR_MAIN %d] %s → Escala (%.2f, %.2f)" % [pos_idx, decor_size, decor_scale.x, decor_scale.y])
+					else:  # Secundarias: 128×128
+						# Escala: (1920/128, 1080/128) × 0.25 = (15, 8.4) × 0.25 = (3.75, 2.1)
+						decor_scale = Vector2(
+							(tile_size.x / decor_size.x) * 0.25,
+							(tile_size.y / decor_size.y) * 0.25
+						)
+						if debug_mode:
+							print("[DECOR_SEC %d] %s → Escala (%.2f, %.2f)" % [pos_idx, decor_size, decor_scale.x, decor_scale.y])
 					
 					var sprite = Sprite2D.new()
 					sprite.name = "BiomeDecor_%d" % pos_idx
@@ -277,7 +283,7 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 					parent.add_child(sprite)
 		
 		if debug_mode:
-			print("[BiomeChunkApplier] ✓ Decoraciones: 9 instancias (1 decor aleatoria por posición, sin superponer)")
+			print("[✓] Decoraciones: 9 instancias (1 decor aleatoria por posición, escaladas según tipo)")
 	
 	# ============ BORDES SUAVIZADOS ============
 	# POR AHORA DESHABILITADO - necesita revisión
