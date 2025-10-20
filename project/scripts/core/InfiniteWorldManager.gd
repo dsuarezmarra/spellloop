@@ -227,6 +227,10 @@ func _instantiate_chunk_from_cache(chunk_pos: Vector2i, chunk_data: Dictionary) 
 	if biome_generator:
 		biome_generator.generate_chunk_from_cache(chunk_node, chunk_data)
 	
+	# Aplicar texturas desde caché
+	if biome_applier:
+		biome_applier.apply_biome_to_chunk(chunk_node, chunk_pos.x, chunk_pos.y)
+	
 	return chunk_node
 
 func _extract_chunk_data(chunk_node: Node2D, chunk_pos: Vector2i) -> Dictionary:
