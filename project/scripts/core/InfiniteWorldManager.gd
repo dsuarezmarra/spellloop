@@ -233,7 +233,10 @@ func get_active_chunks() -> Array:
 func move_world(direction: Vector2, delta: float) -> void:
 	"""Mover el mundo (chunks) en la dirección especificada"""
 	if chunks_root == null:
-		print("[InfiniteWorldManager] ⚠️ chunks_root es null, no se puede mover el mundo")
+		# Solo log una vez para no saturar
+		if not has_meta("logged_null_chunks_root"):
+			print("[InfiniteWorldManager] ⚠️ chunks_root es null, no se puede mover el mundo")
+			set_meta("logged_null_chunks_root", true)
 		return
 	
 	if not is_instance_valid(chunks_root):
@@ -247,8 +250,13 @@ func move_world(direction: Vector2, delta: float) -> void:
 	# Mover el nodo raíz de chunks
 	chunks_root.position -= movement
 	
-	# Debug log (descomentar si es necesario)
-	# print("[InfiniteWorldManager] 🔄 chunks_root.position: %s" % chunks_root.position)
+	# Log cada 60 fotogramas para no saturar
+	if not has_meta("frame_count"):
+		set_meta("frame_count", 0)
+	var frame_count = get_meta("frame_count") + 1
+	if frame_count % 60 == 0:
+		print("[InfiniteWorldManager] 🔄 chunks_root.position: %s (dir: %s)" % [chunks_root.position, direction])
+	set_meta("frame_count", frame_count)
 
 func toggle_debug_visualization() -> void:
 	"""Alternar visualización de límites de chunks"""

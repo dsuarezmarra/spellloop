@@ -93,15 +93,148 @@ func _biome_name_to_type(name: String) -> int:
 	return BiomeType.GRASSLAND
 
 func _create_biome_background(chunk_node: Node2D, biome_type: int) -> void:
-	"""Crear fondo visual del bioma (ColorRect simple)"""
+	"""Crear fondo visual del bioma con patrón procedural"""
 	var bg = ColorRect.new()
 	bg.name = "BiomeBackground"
 	bg.color = BIOME_COLORS[biome_type]
 	bg.size = Vector2(5760, 3240)
 	bg.z_index = -10
 	chunk_node.add_child(bg)
+	
+	# Crear nodo de patrón procedural
+	var pattern = _create_biome_pattern(biome_type)
+	if pattern:
+		pattern.z_index = -9
+		chunk_node.add_child(pattern)
 
-func _generate_decorations_async(chunk_node: Node2D, chunk_pos: Vector2i, biome_type: int, rng: RandomNumberGenerator):
+func _create_biome_pattern(biome_type: int) -> Node2D:
+	"""Crear patrón visual procedural para cada bioma"""
+	var pattern_node = Node2D.new()
+	pattern_node.name = "BiomePattern"
+	
+	var base_color = BIOME_COLORS[biome_type]
+	var pattern_color = base_color.darkened(0.15)
+	
+	match biome_type:
+		BiomeType.GRASSLAND:
+			# Patrón de hierba - pequeños rectángulos
+			_add_grass_pattern(pattern_node, base_color, pattern_color)
+		
+		BiomeType.DESERT:
+			# Patrón de arena - círculos/puntos
+			_add_sand_pattern(pattern_node, base_color, pattern_color)
+		
+		BiomeType.SNOW:
+			# Patrón de nieve - copos/puntos
+			_add_snow_pattern(pattern_node, base_color, pattern_color)
+		
+		BiomeType.LAVA:
+			# Patrón de lava - líneas/grietas
+			_add_lava_pattern(pattern_node, base_color, pattern_color)
+		
+		BiomeType.ARCANE_WASTES:
+			# Patrón mágico - runas/símbolos
+			_add_arcane_pattern(pattern_node, base_color, pattern_color)
+		
+		BiomeType.FOREST:
+			# Patrón de bosque - líneas/marcas
+			_add_forest_pattern(pattern_node, base_color, pattern_color)
+	
+	return pattern_node
+
+func _add_grass_pattern(parent: Node2D, base_color: Color, pattern_color: Color) -> void:
+	"""Patrón de hierba: pequeños rectángulos"""
+	var rng = RandomNumberGenerator.new()
+	for y in range(0, 3240, 60):
+		for x in range(0, 5760, 60):
+			var rect = ColorRect.new()
+			rect.color = pattern_color if rng.randf() > 0.5 else base_color.lightened(0.1)
+			rect.position = Vector2(x, y)
+			rect.size = Vector2(60, 60)
+			rect.modulate.a = 0.3  # Semi-transparente
+			parent.add_child(rect)
+
+func _add_sand_pattern(parent: Node2D, _base_color: Color, pattern_color: Color) -> void:
+	"""Patrón de arena: puntos/círculos"""
+	var rng = RandomNumberGenerator.new()
+	for i in range(200):
+		var pos = Vector2(rng.randf() * 5760, rng.randf() * 3240)
+		var circle = Polygon2D.new()
+		circle.position = pos
+		# Círculo usando polígono
+		var radius = rng.randf() * 30 + 10
+		for j in range(8):
+			var angle = (TAU / 8) * j
+			circle.polygon.append(Vector2(cos(angle) * radius, sin(angle) * radius))
+		circle.color = pattern_color
+		circle.modulate.a = 0.4
+		parent.add_child(circle)
+
+func _add_snow_pattern(parent: Node2D, _base_color: Color, pattern_color: Color) -> void:
+	"""Patrón de nieve: copos/puntitos"""
+	var rng = RandomNumberGenerator.new()
+	for i in range(300):
+		var pos = Vector2(rng.randf() * 5760, rng.randf() * 3240)
+		var snowflake = Polygon2D.new()
+		snowflake.position = pos
+		# Pequeño hexágono
+		var size = 5.0
+		for j in range(6):
+			var angle = (TAU / 6) * j
+			snowflake.polygon.append(Vector2(cos(angle) * size, sin(angle) * size))
+		snowflake.color = pattern_color.lightened(0.3)
+		snowflake.modulate.a = 0.6
+		parent.add_child(snowflake)
+
+func _add_lava_pattern(parent: Node2D, _base_color: Color, pattern_color: Color) -> void:
+	"""Patrón de lava: líneas/grietas"""
+	var rng = RandomNumberGenerator.new()
+	for i in range(15):
+		var line = Line2D.new()
+		line.default_color = pattern_color.lightened(0.2)
+		line.width = rng.randf() * 3 + 1
+		# Línea sinusoidal
+		var start_y = rng.randf() * 3240
+		for x in range(0, 5760, 100):
+			var y = start_y + sin(float(x) / 500) * 200 + rng.randf() * 50
+			line.add_point(Vector2(x, y))
+		line.modulate.a = 0.5
+		parent.add_child(line)
+
+func _add_arcane_pattern(parent: Node2D, _base_color: Color, pattern_color: Color) -> void:
+	"""Patrón mágico: runas"""
+	var rng = RandomNumberGenerator.new()
+	for i in range(50):
+		var rune = Polygon2D.new()
+		rune.position = Vector2(rng.randf() * 5760, rng.randf() * 3240)
+		# Estrella con 6 puntas
+		var size = rng.randf() * 15 + 10
+		for j in range(12):
+			var angle = (TAU / 12) * j
+			var radius = size if j % 2 == 0 else size / 2
+			rune.polygon.append(Vector2(cos(angle) * radius, sin(angle) * radius))
+		rune.color = pattern_color
+		rune.modulate.a = 0.4
+		parent.add_child(rune)
+
+func _add_forest_pattern(parent: Node2D, _base_color: Color, pattern_color: Color) -> void:
+	"""Patrón de bosque: líneas/ramas"""
+	var rng = RandomNumberGenerator.new()
+	for i in range(100):
+		var line = Line2D.new()
+		line.default_color = pattern_color
+		line.width = rng.randf() * 2 + 1
+		var start_x = rng.randf() * 5760
+		var start_y = rng.randf() * 3240
+		line.add_point(Vector2(start_x, start_y))
+		# Línea ramificada
+		var end_x = start_x + (rng.randf() - 0.5) * 200
+		var end_y = start_y + (rng.randf() - 0.5) * 200
+		line.add_point(Vector2(end_x, end_y))
+		line.modulate.a = 0.5
+		parent.add_child(line)
+
+func _generate_decorations_async(chunk_node: Node2D, _chunk_pos: Vector2i, biome_type: int, rng: RandomNumberGenerator):
 	"""Generar decoraciones asincronamente"""
 	var decorations = DECORATIONS_PER_BIOME.get(biome_type, [])
 	if decorations.is_empty():
