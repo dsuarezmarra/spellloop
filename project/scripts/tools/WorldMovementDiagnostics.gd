@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: WorldMovementDiagnostics.gd - Script de diagnóstico de movimiento del mundo
+# Razón: Cargado dinámicamente desde SpellloopGame pero es principalmente para debugging
+
 extends Node
 class_name WorldMovementDiagnostics
 

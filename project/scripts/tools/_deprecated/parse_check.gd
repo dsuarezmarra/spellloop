@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: parse_check.gd - Script de verificación de parsing
+# Razón: Script de desarrollo para auditoría de parseo (nunca ejecutado en game loop)
+
 extends SceneTree
 
 # Script de ayuda para verificar parseo de scripts críticos.

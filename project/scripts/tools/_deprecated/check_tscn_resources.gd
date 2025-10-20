@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: check_tscn_resources.gd - Script de verificación de recursos TSCN
+# Razón: Script de desarrollo para auditoría de escenas (nunca ejecutado en game loop)
+
 extends Node
 
 func _safe_quit(_code: int = 0):

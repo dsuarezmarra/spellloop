@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: test_resource_load.gd - Script de testing de carga de recursos
+# Razón: Script de desarrollo (nunca ejecutado en game loop)
+
 extends Node
 
 func _safe_quit(_code: int = 0):

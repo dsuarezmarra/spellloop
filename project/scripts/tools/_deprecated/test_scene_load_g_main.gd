@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: test_scene_load_g_main.gd - Script de testing de carga de escena principal
+# Razón: Script de desarrollo (nunca ejecutado en game loop)
+
 extends Node
 
 var SCENE_PATH := "res://scenes/SpellloopMain.tscn"

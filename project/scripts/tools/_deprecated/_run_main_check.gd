@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: _run_main_check.gd - Script para verificar escena principal
+# Razón: Script de desarrollo (nunca ejecutado en game loop; testing manual)
+
 extends SceneTree
 
 func _enter_tree():

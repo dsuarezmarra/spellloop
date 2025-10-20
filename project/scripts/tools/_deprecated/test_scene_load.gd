@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: test_scene_load.gd - Script de testing de carga de escenas
+# Razón: Script de desarrollo (nunca ejecutado en game loop)
+
 extends Node
 
 func _safe_quit(_code: int = 0):

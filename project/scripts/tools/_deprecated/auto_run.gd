@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: auto_run.gd - Script para ejecutar automáticamente main scene
+# Razón: Script de desarrollo (testing manual via --script flag)
+
 extends SceneTree
 
 # Carga la escena principal, espera N segundos y sale.

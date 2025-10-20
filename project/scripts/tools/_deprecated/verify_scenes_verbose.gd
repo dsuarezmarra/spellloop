@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: verify_scenes_verbose.gd - Script de verificación verbose de escenas
+# Razón: Script de desarrollo (nunca ejecutado en game loop; versión verbose deprecated)
+
 extends Node
 
 func _safe_quit(_code: int = 0):
