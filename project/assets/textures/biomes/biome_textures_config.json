@@ -1,0 +1,292 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "author": "Spellloop Biome System",
+    "created": "2025-10-20",
+    "description": "Configuration for procedurally generated biome textures"
+  },
+  "biomes": [
+    {
+      "id": "grassland",
+      "name": "Grassland",
+      "color_base": "#7ED957",
+      "description": "C\u00e9sped liso con flores, arbustos y rocas",
+      "textures": {
+        "base": "Grassland/base.png",
+        "decor": [
+          "Grassland/decor1.png",
+          "Grassland/decor2.png",
+          "Grassland/decor3.png"
+        ]
+      },
+      "tile_size": [
+        512,
+        512
+      ],
+      "decorations": [
+        {
+          "type": "decor1",
+          "scale": 1.0,
+          "opacity": 0.8,
+          "offset": [
+            0,
+            0
+          ]
+        },
+        {
+          "type": "decor2",
+          "scale": 1.0,
+          "opacity": 0.75,
+          "offset": [
+            256,
+            128
+          ]
+        },
+        {
+          "type": "decor3",
+          "scale": 1.0,
+          "opacity": 0.6,
+          "offset": [
+            128,
+            256
+          ]
+        }
+      ]
+    },
+    {
+      "id": "desert",
+      "name": "Desert",
+      "color_base": "#E8C27B",
+      "description": "Arena con cactus, rocas y dunas",
+      "textures": {
+        "base": "Desert/base.png",
+        "decor": [
+          "Desert/decor1.png",
+          "Desert/decor2.png",
+          "Desert/decor3.png"
+        ]
+      },
+      "tile_size": [
+        512,
+        512
+      ],
+      "decorations": [
+        {
+          "type": "decor1",
+          "scale": 1.0,
+          "opacity": 0.8,
+          "offset": [
+            0,
+            0
+          ]
+        },
+        {
+          "type": "decor2",
+          "scale": 1.0,
+          "opacity": 0.75,
+          "offset": [
+            256,
+            128
+          ]
+        },
+        {
+          "type": "decor3",
+          "scale": 1.0,
+          "opacity": 0.6,
+          "offset": [
+            128,
+            256
+          ]
+        }
+      ]
+    },
+    {
+      "id": "snow",
+      "name": "Snow",
+      "color_base": "#EAF6FF",
+      "description": "Nieve blanca con cristales, mont\u00edculos y car\u00e1mbanos",
+      "textures": {
+        "base": "Snow/base.png",
+        "decor": [
+          "Snow/decor1.png",
+          "Snow/decor2.png",
+          "Snow/decor3.png"
+        ]
+      },
+      "tile_size": [
+        512,
+        512
+      ],
+      "decorations": [
+        {
+          "type": "decor1",
+          "scale": 1.0,
+          "opacity": 0.8,
+          "offset": [
+            0,
+            0
+          ]
+        },
+        {
+          "type": "decor2",
+          "scale": 1.0,
+          "opacity": 0.75,
+          "offset": [
+            256,
+            128
+          ]
+        },
+        {
+          "type": "decor3",
+          "scale": 1.0,
+          "opacity": 0.6,
+          "offset": [
+            128,
+            256
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lava",
+      "name": "Lava",
+      "color_base": "#F55A33",
+      "description": "Lava con grietas, rocas volc\u00e1nicas y vapor",
+      "textures": {
+        "base": "Lava/base.png",
+        "decor": [
+          "Lava/decor1.png",
+          "Lava/decor2.png",
+          "Lava/decor3.png"
+        ]
+      },
+      "tile_size": [
+        512,
+        512
+      ],
+      "decorations": [
+        {
+          "type": "decor1",
+          "scale": 1.0,
+          "opacity": 0.8,
+          "offset": [
+            0,
+            0
+          ]
+        },
+        {
+          "type": "decor2",
+          "scale": 1.0,
+          "opacity": 0.75,
+          "offset": [
+            256,
+            128
+          ]
+        },
+        {
+          "type": "decor3",
+          "scale": 1.0,
+          "opacity": 0.6,
+          "offset": [
+            128,
+            256
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arcanewastes",
+      "name": "ArcaneWastes",
+      "color_base": "#B56DDC",
+      "description": "Suelo violeta con runas, cristales y energ\u00eda",
+      "textures": {
+        "base": "ArcaneWastes/base.png",
+        "decor": [
+          "ArcaneWastes/decor1.png",
+          "ArcaneWastes/decor2.png",
+          "ArcaneWastes/decor3.png"
+        ]
+      },
+      "tile_size": [
+        512,
+        512
+      ],
+      "decorations": [
+        {
+          "type": "decor1",
+          "scale": 1.0,
+          "opacity": 0.8,
+          "offset": [
+            0,
+            0
+          ]
+        },
+        {
+          "type": "decor2",
+          "scale": 1.0,
+          "opacity": 0.75,
+          "offset": [
+            256,
+            128
+          ]
+        },
+        {
+          "type": "decor3",
+          "scale": 1.0,
+          "opacity": 0.6,
+          "offset": [
+            128,
+            256
+          ]
+        }
+      ]
+    },
+    {
+      "id": "forest",
+      "name": "Forest",
+      "color_base": "#306030",
+      "description": "Hojas oscuras con plantas, troncos y hongos",
+      "textures": {
+        "base": "Forest/base.png",
+        "decor": [
+          "Forest/decor1.png",
+          "Forest/decor2.png",
+          "Forest/decor3.png"
+        ]
+      },
+      "tile_size": [
+        512,
+        512
+      ],
+      "decorations": [
+        {
+          "type": "decor1",
+          "scale": 1.0,
+          "opacity": 0.8,
+          "offset": [
+            0,
+            0
+          ]
+        },
+        {
+          "type": "decor2",
+          "scale": 1.0,
+          "opacity": 0.75,
+          "offset": [
+            256,
+            128
+          ]
+        },
+        {
+          "type": "decor3",
+          "scale": 1.0,
+          "opacity": 0.6,
+          "offset": [
+            128,
+            256
+          ]
+        }
+      ]
+    }
+  ]
+}
