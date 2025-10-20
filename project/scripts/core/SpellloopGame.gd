@@ -167,73 +167,28 @@ func setup_game():
 	create_ui_layer()
 	create_minimap()
 
-	# Intentar asignar textura de suelo runtime (si existe)
-	var ground_tex_path = "res://assets/environment/ground_sand.png"
-	if has_node("WorldRoot/Ground"):
-		var ground_node = get_node("WorldRoot/Ground")
-		
-		# IMPORTANTE: Reparentar Ground a ChunksRoot para que se mueva con los chunks
-		if has_node("WorldRoot/ChunksRoot"):
-			var chunks_root = get_node("WorldRoot/ChunksRoot")
-			if ground_node.get_parent() != chunks_root:
-				ground_node.get_parent().remove_child(ground_node)
-				chunks_root.add_child(ground_node)
-				chunks_root.move_child(ground_node, 0)  # Ponerlo al inicio (atrás de todo)
-		
-		if ResourceLoader.exists(ground_tex_path):
-			# Try to load as Image then create ImageTexture with nearest sampling
-			var img = Image.new()
-			var load_err = img.load(ground_tex_path)
-			if load_err == OK:
-				var it = ImageTexture.create_from_image(img)
-				# Try to set flags to disable filtering (nearest) if API present
-				if it and it.has_method("set_flags"):
-					it.set_flags(0)
-				ground_node.texture = it
-			else:
-				print("[SpellloopGame] ground_sand.png exists but failed to load image")
-		else:
-			# Procedural fallback: generar una textura de 'arena' del tamaño del viewport (limitada)
-			var viewport_size = get_viewport().get_visible_rect().size
-			var tex_w = int(clamp(viewport_size.x, 256, 2048))
-			var tex_h = int(clamp(viewport_size.y, 256, 2048))
-			var sand_img = Image.create(tex_w, tex_h, false, Image.FORMAT_RGBA8)
-			# Base sand color
-			var base = Color(0.87, 0.78, 0.6, 1.0)
-			for x in range(tex_w):
-				for y in range(tex_h):
-					# Small random variation per pixel
-					var variance = (randf() - 0.5) * 0.06
-					var c = Color(base.r + variance, base.g + variance * 0.8, base.b + variance * 0.6, 1.0)
-					sand_img.set_pixel(x, y, c)
-			# Create ImageTexture
-			var sand_tex = ImageTexture.create_from_image(sand_img)
-			if sand_tex and sand_tex.has_method("set_flags"):
-				sand_tex.set_flags(0) # nearest, no mipmap
-			ground_node.texture = sand_tex
-			print("[SpellloopGame] Procedural ground texture assigned (", tex_w, "x", tex_h, ")")
-		# Ensure Camera2D exists and is parented to the root (fixed camera)
-		if has_node("WorldRoot/Camera2D"):
-			var cam_candidate = get_node("WorldRoot/Camera2D")
-			# Reparent to root so camera stays fixed and the world moves under it
-			if cam_candidate and cam_candidate.get_parent() and cam_candidate.get_parent().name == "WorldRoot":
-				remove_child(cam_candidate)
-				add_child(cam_candidate)
-			world_camera = cam_candidate
-		elif has_node("Camera2D"):
-			world_camera = get_node("Camera2D")
+	# Ensure Camera2D exists and is parented to the root (fixed camera)
+	if has_node("WorldRoot/Camera2D"):
+		var cam_candidate = get_node("WorldRoot/Camera2D")
+		# Reparent to root so camera stays fixed and the world moves under it
+		if cam_candidate and cam_candidate.get_parent() and cam_candidate.get_parent().name == "WorldRoot":
+			remove_child(cam_candidate)
+			add_child(cam_candidate)
+		world_camera = cam_candidate
+	elif has_node("Camera2D"):
+		world_camera = get_node("Camera2D")
 
-		if not world_camera:
-			var cam = Camera2D.new()
-			cam.name = "Camera2D"
-			add_child(cam)
-			world_camera = cam
+	if not world_camera:
+		var cam = Camera2D.new()
+		cam.name = "Camera2D"
+		add_child(cam)
+		world_camera = cam
 
-		# Make camera current (safe checks)
-		if world_camera and world_camera.has_method("make_current"):
-			world_camera.make_current()
-		elif world_camera and "current" in world_camera:
-			world_camera.current = true
+	# Make camera current (safe checks)
+	if world_camera and world_camera.has_method("make_current"):
+		world_camera.make_current()
+	elif world_camera and "current" in world_camera:
+		world_camera.current = true
 	
 	# Inicializar sistemas
 	initialize_systems()
