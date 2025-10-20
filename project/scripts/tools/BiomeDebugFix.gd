@@ -5,7 +5,7 @@ Reporta: JSON loading, bioma selection, texture paths, sprite creation
 """
 
 func _ready() -> void:
-	print("\n" + "="*80)
+	print("\n" + ("="*80))
 	print("🔧 BIOME SYSTEM DEBUG - Iniciando verificaciones...")
 	print("="*80)
 	
@@ -50,7 +50,7 @@ func _ready() -> void:
 					var decor_full = "res://assets/textures/biomes/" + decor_rel[j]
 					print("        [%d] %s → existe: %s" % [j, decor_full, ResourceLoader.exists(decor_full)])
 	
-	print("\n" + "="*80)
+	print("\n" + ("="*80))
 	print("✅ DEBUG COMPLETADO")
 	print("="*80 + "\n")
 	
