@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: BiomeTextureGeneratorMosaic.gd - Generador tipo mosaico
+# Razón: Reemplazado por BiomeTextureGeneratorV2.gd (selección final)
+
 # BiomeTextureGeneratorMosaic.gd
 # Genera texturas tipo MOSAICO para biomas
 # Reemplaza el patrón de bandas con texturas más visuales

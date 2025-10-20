@@ -2,6 +2,10 @@
 # Monitorea el sistema de combate en tiempo real
 # Muestra información de armas, proyectiles, etc.
 
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: CombatSystemMonitor.gd - Monitor del sistema de combate en UI
+# Razón: Cargado dinámicamente desde SpellloopGame pero es principalmente para debugging
+
 extends CanvasLayer
 class_name CombatSystemMonitor
 

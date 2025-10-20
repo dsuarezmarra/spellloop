@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: Testing script para verificar has_node() en SceneTree
+# Razón: Script de testing/debugging, nunca instanciado en game loop
+
 extends Node
 
 func _ready():

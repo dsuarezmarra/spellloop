@@ -2,6 +2,10 @@
 # Diagnóstico del sistema de combate para debugging
 # Se ejecuta automáticamente al iniciar el juego
 
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: CombatDiagnostics.gd - Script de diagnóstico del sistema de combate
+# Razón: Cargado dinámicamente desde SpellloopGame pero es principalmente para debugging
+
 extends Node
 
 func _ready() -> void:

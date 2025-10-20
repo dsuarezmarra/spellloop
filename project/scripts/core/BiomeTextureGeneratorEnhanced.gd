@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: BiomeTextureGeneratorEnhanced.gd - Generador mejorado
+# Razón: Reemplazado por BiomeTextureGeneratorV2.gd (versión final seleccionada)
+
 # BiomeTextureGeneratorEnhanced.gd
 extends Node
 

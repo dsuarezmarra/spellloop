@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: BiomeTextureGenerator.gd - Generador de texturas procedurales v1
+# Razón: Reemplazado por BiomeTextureGeneratorV2.gd (versión mejorada)
+
 # BiomeTextureGenerator.gd
 # Generador de texturas/tonos procedurales para biomas
 # Utiliza ruido Perlin/simplex para asignación de biomas

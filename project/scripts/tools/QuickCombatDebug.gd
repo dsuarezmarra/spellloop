@@ -2,6 +2,10 @@
 # Script rápido para debuggear problema de proyectiles
 # Añade acciones de debug al menú de entrada
 
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: QuickCombatDebug.gd - Debug rápido para sistema de combate
+# Razón: Cargado dinámicamente desde SpellloopGame pero es principalmente para debugging (presionar D/P/L)
+
 extends Node
 
 var debug_enabled: bool = false

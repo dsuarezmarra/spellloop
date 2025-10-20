@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: verify_scenes.gd - Script de verificación de escenas (cargado dinámicamente)
+# Razón: Cargado dinámicamente desde SpellloopGame._run_verification() pero no es crítico para gameplay
+
 extends SceneTree
 
 func _safe_quit(_code: int = 0):

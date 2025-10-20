@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: QuickTest.gd - Script de testing/debugging vía --headless
+# Razón: Script de desarrollo para testing manual de sistemas core (nunca ejecutado en game loop)
+
 """
 ⚡ QUICK TEST - Verificación rápida de sistemas
 Ejecutar: godot --headless --script QuickTest.gd

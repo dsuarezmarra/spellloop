@@ -1,3 +1,7 @@
+# OBSOLETE-SCRIPT: este script parece no usarse actualmente. Verificar antes de eliminar.
+# Originalmente: smoke_test.gd - Script de testing/debugging (smoke testing)
+# Razón: Script de desarrollo para verificar carga de scripts core (nunca ejecutado en game loop)
+
 extends Node
 
 func _safe_quit(_code: int = 0):
