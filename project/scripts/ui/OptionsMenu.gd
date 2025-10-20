@@ -22,4 +22,3 @@ func _on_sfx_volume_changed(v: float) -> void:
 		var am = get_tree().root.get_node("AudioManager")
 		am.set_sfx_volume(v)
 		am.save_volume_settings()
-
