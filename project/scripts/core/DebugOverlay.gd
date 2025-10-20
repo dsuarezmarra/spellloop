@@ -52,9 +52,10 @@ func _unhandled_input(event):
 				for c in player_ref.get_children():
 					print(" - ", c.name, " (", c.get_class(), ")")
 			if world_manager:
-				print("[DEBUG F4] world_offset: ", world_manager.world_offset)
 				if world_manager.has_method("get_loaded_chunks_count"):
 					print("[DEBUG F4] chunks_loaded: ", world_manager.get_loaded_chunks_count())
+				if world_manager.has_method("get_info"):
+					print("[DEBUG F4] world_manager info: ", world_manager.get_info())
 		elif event.keycode == KEY_F5:
 			# Spawn test enemies
 			if enemy_manager and player_ref:
@@ -74,8 +75,8 @@ func _unhandled_input(event):
 				telemetry_visible = not telemetry_visible
 				print("[QA] Telemetry: ", telemetry_visible)
 			elif event.keycode == KEY_2:
-				if world_manager:
-					print("[QA] world_offset = ", world_manager.world_offset)
+				if world_manager and world_manager.has_method("get_info"):
+					print("[QA] world_manager info: ", world_manager.get_info())
 			elif event.keycode == KEY_3:
 				var root_scene = get_tree().current_scene
 				if root_scene and root_scene.has_node("WorldRoot/EnemiesRoot"):
@@ -101,7 +102,8 @@ func _process(delta):
 	if _world_print_timer >= _world_print_interval:
 		_world_print_timer = 0.0
 		if visible_debug and world_manager:
-			print("[DEBUG] world_offset=", world_manager.world_offset)
+			if world_manager.has_method("get_info"):
+				print("[DEBUG] world_manager info: ", world_manager.get_info())
 
 func _update_debug_label() -> void:
 	"""Actualizar etiqueta de debug con información actual"""

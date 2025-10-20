@@ -9,7 +9,6 @@ class_name BasePlayer
 # ========== SEÑALES ==========
 signal player_damaged(amount: int, current_hp: int)
 signal player_died
-signal movement_input(direction: Vector2, delta: float)
 signal weapon_equipped(weapon)
 signal weapon_unequipped(weapon)
 
@@ -219,9 +218,6 @@ func _physics_process(delta: float) -> void:
 	"""Actualizar física y movimiento"""
 	if not is_instance_valid(self):
 		return
-	
-	# Emitir señal de movimiento para que el mundo se mueva en sentido opuesto
-	movement_input.emit(Vector2.ZERO, delta)
 	
 	# El mundo se mueve, el player queda centrado
 	velocity = Vector2.ZERO

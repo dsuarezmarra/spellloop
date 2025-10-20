@@ -436,10 +436,8 @@ func connect_systems():
 	"""Conectar señales entre sistemas"""
 	print("[SpellloopGame] Conectando sistemas...")
 	
-	# Player movimiento -> World movement
-	if player and player.has_signal("movement_input"):
-		if not player.movement_input.is_connected(Callable(self, "_on_player_movement")):
-			player.movement_input.connect(_on_player_movement)
+	# NOTE: Player movement is now handled directly in _process() via InputManager.get_movement_vector()
+	# The old movement_input signal-based approach is deprecated
 	
 	# Player muerte -> Game Over
 	if player and player.has_signal("player_died"):
@@ -508,18 +506,7 @@ func start_game():
 		enemy_manager.wave_manager = waves_manager
 
 
-func _on_player_movement(movement_dir: Vector2, delta: float = 0.0) -> void:
-	"""Manejar movimiento del player (mover mundo).
 
-	Recibe el vector de dirección normalizado y opcionalmente el delta en segundos.
-	"""
-	if movement_dir == null:
-		return
-	var dir: Vector2 = movement_dir
-	var dt: float = delta if delta > 0.0 else 1.0 / 60.0
-
-	if dir.length() > 0 and world_manager:
-		world_manager.move_world(dir.normalized(), dt)
 
 func _on_enemy_died(enemy_position: Vector2, _enemy_type: String, exp_value: int):
 	"""Manejar muerte de enemigo"""

@@ -8,7 +8,6 @@ var wizard_player = null
 
 signal player_damaged(amount: int, hp: int)
 signal player_died
-signal movement_input(movement_dir: Vector2, delta: float)
 
 var hp: int = 100
 var max_hp: int = 100
@@ -55,8 +54,6 @@ func _ready() -> void:
 		wizard_player.player_damaged.connect(_on_wizard_damaged)
 	if wizard_player.has_signal("player_died"):
 		wizard_player.player_died.connect(_on_wizard_died)
-	if wizard_player.has_signal("movement_input"):
-		wizard_player.movement_input.connect(_on_wizard_movement)
 	
 	# Actualizar referencias después de que WizardPlayer ya fue inicializado
 	animated_sprite = wizard_player.animated_sprite
@@ -81,9 +78,6 @@ func _on_wizard_damaged(amount: int, current_hp: int) -> void:
 
 func _on_wizard_died() -> void:
 	player_died.emit()
-
-func _on_wizard_movement(direction: Vector2, delta: float) -> void:
-	movement_input.emit(direction, delta)
 
 func take_damage(amount: int) -> void:
 	if wizard_player:
