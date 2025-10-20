@@ -60,5 +60,3 @@ horizontal_alignment = 2
 
 [node name="BiomeSystem" type="Node2D" parent="."]
 script = ExtResource( 2 )
-
-[ext_resource type="Script" path="res://scripts/core/BiomeIntegration.gd" id="2"]

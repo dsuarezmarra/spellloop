@@ -1,0 +1,361 @@
+extends Node
+class_name BiomeChunkApplier
+
+"""
+🌍 BIOME CHUNK APPLIER - Sistema de Gestión de Biomas
+======================================================
+
+Responsabilidades:
+- Cargar configuración JSON de biomas desde res://assets/textures/biomes/
+- Aplicar texturas base y decorativas a chunks según bioma asignado
+- Mantener caché de chunks activos para rendimiento
+- Usar RNG determinístico basado en posición para biomas consistentes
+- Limpiar chunks inactivos automáticamente
+
+Arquitectura:
+- Cada chunk (5760×3240 px = ~3 pantallas) recibe:
+  * Textura base tileable (512×512 px repetida)
+  * 3 decoraciones tileables adicionales (plantas, rocas, etc.)
+- Máximo 9 chunks activos simultáneamente (3×3 grid)
+- Caché: guardar estado para restaurar rápidamente
+
+Integridad: asume que BiomeGenerator.gd ya genera la geometría del chunk
+Este script solo gestiona texturas visuales (sin colisión).
+"""
+
+# ========== EXPORTABLES ==========
+@export var config_path: String = "res://assets/textures/biomes/biome_textures_config.json"
+@export var max_active_chunks: int = 9
+@export var debug_mode: bool = true
+
+# ========== PRIVADAS ==========
+var _config: Dictionary = {}
+var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+var _chunk_cache: Dictionary = {}  # key: "cx_cy" → cached chunk data
+var _active_chunks: Dictionary = {}  # key: "cx_cy" → active chunk node
+var _player_position: Vector2 = Vector2.ZERO
+var _current_chunk_coords: Vector2i = Vector2i.ZERO
+
+# ========== SEÑALES ==========
+signal biome_changed(biome_name: String)
+signal chunk_loaded(chunk_coords: Vector2i)
+
+func _ready() -> void:
+	print("[BiomeChunkApplier] ✓ Inicializando...")
+	_rng.randomize()
+	_load_config()
+	print("[BiomeChunkApplier] ✓ Configuración cargada. Biomas disponibles: %d" % _config.get("biomes", []).size())
+
+# ========== CARGAR CONFIGURACIÓN ==========
+func _load_config() -> void:
+	"""
+	Cargar JSON de configuración de biomas desde res://assets/textures/biomes/biome_textures_config.json
+	
+	Estructura esperada:
+	{
+	  "biomes": [
+	    {
+	      "id": 0,
+	      "name": "Grassland",
+	      "base_texture_path": "res://...",
+	      "decorations": ["res://...", ...],
+	      ...
+	    },
+	    ...
+	  ]
+	}
+	"""
+	if not ResourceLoader.exists(config_path):
+		printerr("[BiomeChunkApplier] ✗ Config NO encontrado: %s" % config_path)
+		return
+	
+	var file = FileAccess.open(config_path, FileAccess.READ)
+	if file == null:
+		printerr("[BiomeChunkApplier] ✗ No se pudo abrir: %s" % config_path)
+		return
+	
+	var json_string = file.get_as_text()
+	var json = JSON.new()
+	var parse_error = json.parse(json_string)
+	
+	if parse_error != OK:
+		printerr("[BiomeChunkApplier] ✗ JSON parse error: %s" % json.get_error_message())
+		return
+	
+	_config = json.get_data()
+	print("[BiomeChunkApplier] ✓ Config cargado exitosamente")
+
+# ========== OBTENER BIOMA PARA POSICIÓN ==========
+func get_biome_for_position(cx: int, cy: int) -> Dictionary:
+	"""
+	Determinar bioma basado en coordenadas de chunk usando RNG determinístico.
+	
+	Args:
+	  cx, cy: coordenadas del chunk en grid (ej: chunk (0,0), (1,0), etc.)
+	
+	Returns:
+	  Dictionary con datos del bioma seleccionado
+	"""
+	if _config.get("biomes", []).is_empty():
+		printerr("[BiomeChunkApplier] ✗ No hay biomas en config")
+		return {}
+	
+	# Usar coordenadas como seed para determinismo
+	var seed_val = hash(Vector2i(cx, cy))
+	var rng_local = RandomNumberGenerator.new()
+	rng_local.seed = seed_val
+	
+	var biomas = _config.get("biomes", [])
+	var bioma_index = rng_local.randi_range(0, biomas.size() - 1)
+	var bioma_data = biomas[bioma_index]
+	
+	if debug_mode:
+		print("[BiomeChunkApplier] Chunk (%d, %d) → Bioma: %s (seed: %d)" % [cx, cy, bioma_data.get("name", "?"), seed_val])
+	
+	return bioma_data
+
+# ========== APLICAR BIOMA A CHUNK ==========
+func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
+	"""
+	Aplicar textura base y decoraciones a un chunk existente.
+	
+	Asume que chunk_node ya existe y tiene estructura base.
+	Añade CanvasLayer con Sprite2D para textura base + decoraciones.
+	
+	Args:
+	  chunk_node: Node2D que representa el chunk
+	  cx, cy: coordenadas del chunk
+	"""
+	var bioma_data = get_biome_for_position(cx, cy)
+	
+	if bioma_data.is_empty():
+		printerr("[BiomeChunkApplier] ✗ No se pudo obtener bioma para (%d, %d)" % [cx, cy])
+		return
+	
+	# Crear CanvasLayer para la textura de suelo
+	var canvas_layer = CanvasLayer.new()
+	canvas_layer.name = "BiomeBaseLayer"
+	canvas_layer.layer = -1  # detrás de enemigos, etc.
+	chunk_node.add_child(canvas_layer)
+	
+	# Aplicar textura base como sprite tileable
+	_apply_base_texture(canvas_layer, bioma_data, cx, cy)
+	
+	# Aplicar decoraciones
+	_apply_decorations(canvas_layer, bioma_data, cx, cy)
+	
+	# Guardar metadatos
+	chunk_node.set_meta("biome_name", bioma_data.get("name", "Unknown"))
+	chunk_node.set_meta("biome_id", bioma_data.get("id", -1))
+	
+	print("[BiomeChunkApplier] ✓ Bioma '%s' aplicado a chunk (%d, %d)" % [bioma_data.get("name"), cx, cy])
+	biome_changed.emit(bioma_data.get("name", ""))
+
+# ========== APLICAR TEXTURA BASE ==========
+func _apply_base_texture(parent: Node, bioma_data: Dictionary, _cx: int, _cy: int) -> void:
+	"""
+	Aplicar textura base tileable al chunk.
+	
+	Crea una Sprite2D con la textura base, escalada para cubrir
+	el área del chunk (5760×3240 px).
+	
+	La textura se asume que es seamless/tileable (512×512 px típicamente).
+	"""
+	var base_texture_path = bioma_data.get("base_texture_path", "")
+	
+	if base_texture_path.is_empty() or not ResourceLoader.exists(base_texture_path):
+		printerr("[BiomeChunkApplier] ✗ Textura base NO encontrada: %s" % base_texture_path)
+		return
+	
+	var texture = load(base_texture_path) as Texture2D
+	if texture == null:
+		printerr("[BiomeChunkApplier] ✗ Error cargando textura: %s" % base_texture_path)
+		return
+	
+	# Crear Sprite2D con la textura
+	var sprite = Sprite2D.new()
+	sprite.name = "BiomeBaseSprite"
+	sprite.texture = texture
+	sprite.centered = true
+	
+	# Posicionar en centro del chunk
+	var chunk_size = Vector2(5760, 3240)
+	sprite.position = chunk_size / 2
+	
+	# Escalar textura para cubrir chunk
+	var texture_size = texture.get_size()
+	var scale_x = chunk_size.x / texture_size.x
+	var scale_y = chunk_size.y / texture_size.y
+	sprite.scale = Vector2(scale_x, scale_y)
+	
+	# Configuración de rendering
+	sprite.self_modulate = Color.WHITE
+	
+	parent.add_child(sprite)
+	
+	if debug_mode:
+		print("[BiomeChunkApplier] Base texture aplicada: %s (scale: %.2f, %.2f)" % [base_texture_path, scale_x, scale_y])
+
+# ========== APLICAR DECORACIONES ==========
+func _apply_decorations(parent: Node, bioma_data: Dictionary, _cx: int, _cy: int) -> void:
+	"""
+	Aplicar 3 capas de decoración tileable al chunk.
+	
+	Decoraciones: plantas, rocas, cactus, cristales, runas, etc.
+	Cada decoración se tilea automáticamente para cubrir el chunk.
+	"""
+	var decorations = bioma_data.get("decorations", [])
+	var decor_scale = bioma_data.get("decor_scale", 1.0)
+	var decor_opacity = bioma_data.get("decor_opacity", 0.8)
+	
+	for i in range(decorations.size()):
+		var decor_path = decorations[i]
+		
+		if decor_path.is_empty() or not ResourceLoader.exists(decor_path):
+			if debug_mode:
+				print("[BiomeChunkApplier] ⚠️  Decoración %d NO encontrada: %s" % [i+1, decor_path])
+			continue
+		
+		var decor_texture = load(decor_path) as Texture2D
+		if decor_texture == null:
+			printerr("[BiomeChunkApplier] ✗ Error cargando decoración: %s" % decor_path)
+			continue
+		
+		# Crear sprite para esta capa de decoración
+		var decor_sprite = Sprite2D.new()
+		decor_sprite.name = "BiomeDecor%d" % (i + 1)
+		decor_sprite.texture = decor_texture
+		decor_sprite.centered = true
+		
+		# Posicionar en centro del chunk
+		var chunk_size = Vector2(5760, 3240)
+		decor_sprite.position = chunk_size / 2
+		
+		# Escalar para cubrir chunk
+		var texture_size = decor_texture.get_size()
+		var scale_x = (chunk_size.x / texture_size.x) * decor_scale
+		var scale_y = (chunk_size.y / texture_size.y) * decor_scale
+		decor_sprite.scale = Vector2(scale_x, scale_y)
+		
+		# Configuración de rendering
+		decor_sprite.self_modulate = Color(1.0, 1.0, 1.0, decor_opacity)
+		decor_sprite.z_index = i + 1  # Layering
+		
+		parent.add_child(decor_sprite)
+		
+		if debug_mode:
+			print("[BiomeChunkApplier] Decoración %d aplicada: %s" % [i+1, decor_path])
+
+# ========== INTERFAZ PÚBLICA: ACTUALIZAR POSICIÓN ==========
+func on_player_position_changed(new_position: Vector2) -> void:
+	"""
+	Llamar cuando el jugador se mueve a un nuevo chunk.
+	Cargar/descargar chunks según necesario.
+	
+	Args:
+	  new_position: posición global del jugador en el mundo
+	"""
+	_player_position = new_position
+	
+	# Convertir posición a coordenadas de chunk (asume chunk de 5760×3240)
+	var chunk_size = Vector2(5760, 3240)
+	var new_chunk = Vector2i(
+		int(new_position.x / chunk_size.x),
+		int(new_position.y / chunk_size.y)
+	)
+	
+	if new_chunk != _current_chunk_coords:
+		_current_chunk_coords = new_chunk
+		_load_surrounding_chunks(new_chunk)
+
+# ========== CARGAR CHUNKS ALREDEDOR DEL JUGADOR ==========
+func _load_surrounding_chunks(center_chunk: Vector2i) -> void:
+	"""
+	Cargar chunks en grid 3×3 alrededor del centro.
+	Descargar chunks lejanos.
+	"""
+	var chunks_to_load = []
+	
+	# Grid 3×3 alrededor del jugador
+	for dx in range(-1, 2):
+		for dy in range(-1, 2):
+			var cx = center_chunk.x + dx
+			var cy = center_chunk.y + dy
+			chunks_to_load.append(Vector2i(cx, cy))
+	
+	# Cargar nuevos chunks
+	for chunk_coords in chunks_to_load:
+		var key = "%d_%d" % [chunk_coords.x, chunk_coords.y]
+		if not _active_chunks.has(key):
+			_create_chunk(chunk_coords)
+	
+	# Limpiar chunks lejanos
+	_cleanup_distant_chunks(center_chunk)
+
+# ========== CREAR NUEVO CHUNK ==========
+func _create_chunk(chunk_coords: Vector2i) -> void:
+	"""
+	Crear un nuevo chunk y aplicar bioma.
+	"""
+	var key = "%d_%d" % [chunk_coords.x, chunk_coords.y]
+	
+	# Crear nodo raíz para el chunk
+	var chunk_node = Node2D.new()
+	chunk_node.name = "Chunk_%d_%d" % [chunk_coords.x, chunk_coords.y]
+	chunk_node.position = Vector2(chunk_coords.x * 5760, chunk_coords.y * 3240)
+	
+	# Aplicar bioma
+	apply_biome_to_chunk(chunk_node, chunk_coords.x, chunk_coords.y)
+	
+	# Añadir a escena
+	add_child(chunk_node)
+	_active_chunks[key] = chunk_node
+	
+	chunk_loaded.emit(chunk_coords)
+	
+	if debug_mode:
+		print("[BiomeChunkApplier] Chunk creado: (%d, %d)" % [chunk_coords.x, chunk_coords.y])
+
+# ========== LIMPIAR CHUNKS LEJANOS ==========
+func _cleanup_distant_chunks(center_chunk: Vector2i) -> void:
+	"""
+	Eliminar chunks que estén demasiado lejos del jugador.
+	Mantener máximo max_active_chunks activos.
+	"""
+	var keys_to_remove = []
+	
+	for key in _active_chunks.keys():
+		var parts = key.split("_")
+		var cx = int(parts[0])
+		var cy = int(parts[1])
+		
+		# Si está fuera del rango 3×3, marcarlo para borrar
+		if abs(cx - center_chunk.x) > 1 or abs(cy - center_chunk.y) > 1:
+			keys_to_remove.append(key)
+	
+	# Borrar chunks lejanos
+	for key in keys_to_remove:
+		if _active_chunks.has(key):
+			var chunk = _active_chunks[key]
+			chunk.queue_free()
+			_active_chunks.erase(key)
+			_chunk_cache[key] = {}  # Guardar estado mínimo en caché
+			
+			if debug_mode:
+				print("[BiomeChunkApplier] Chunk descargado: %s" % key)
+
+# ========== DEBUGGING ==========
+func print_active_chunks() -> void:
+	"""Imprimir lista de chunks activos (útil para debugging)"""
+	print("\n[BiomeChunkApplier] === CHUNKS ACTIVOS ===")
+	for key in _active_chunks.keys():
+		var chunk = _active_chunks[key]
+		var biome = chunk.get_meta("biome_name", "?")
+		print("  - %s (Bioma: %s)" % [key, biome])
+	print("[BiomeChunkApplier] Total: %d activos, %d cacheados" % [_active_chunks.size(), _chunk_cache.size()])
+
+func print_config() -> void:
+	"""Imprimir configuración de biomas cargada"""
+	print("\n[BiomeChunkApplier] === BIOMAS CONFIGURADOS ===")
+	for bioma in _config.get("biomes", []):
+		print("  - %s (#%s) - %s" % [bioma.get("name"), bioma.get("id"), bioma.get("description")])

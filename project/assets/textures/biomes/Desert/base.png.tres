@@ -1,8 +1,0 @@
-[gd_resource type="CompressedTexture2D" format=3 uid="uid://7fe2a0d4fb3b"]
-
-[resource]
-resource_name = "base"
-image = SubResource("Image_ce7c0cca4a64")
-
-[sub_resource type="Image" id="Image_ce7c0cca4a64"]
-resource_name = "Image_ce7c0cca4a64"

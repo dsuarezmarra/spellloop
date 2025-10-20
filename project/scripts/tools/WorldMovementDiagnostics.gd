@@ -69,7 +69,7 @@ func _check_node_structure() -> void:
 			var child_names = []
 			for child in world_root.get_children():
 				child_names.append(child.name)
-			print("    Children: %s" % child_names)
+			print("    Children: %s" % [child_names])
 			
 			# Buscar ChunksRoot
 			var chunks_root = world_root.get_node_or_null("ChunksRoot")
@@ -90,7 +90,12 @@ func _check_node_structure() -> void:
 	if camera:
 		print("  ✓ Camera2D found")
 		print("    Position: %s" % camera.position)
-		print("    Current: %s" % camera.current)
+		if camera.has_method("is_current"):
+			print("    Current: %s" % camera.is_current())
+		elif "current" in camera:
+			print("    Current: %s" % camera.get("current"))
+		else:
+			print("    Current: (property not accessible)")
 	else:
 		print("  ❌ Camera2D NOT found")
 
@@ -134,7 +139,12 @@ func _check_references() -> void:
 		if spellloop_main.get("world_camera"):
 			var cam = spellloop_main.get("world_camera")
 			if cam:
-				print("  ✓ world_camera: Camera2D (current: %s)" % cam.current)
+				var current_status = "unknown"
+				if cam.has_method("is_current"):
+					current_status = str(cam.is_current())
+				elif "current" in cam:
+					current_status = str(cam.get("current"))
+				print("  ✓ world_camera: Camera2D (current: %s)" % current_status)
 			else:
 				print("  ❌ world_camera is null")
 		else:
