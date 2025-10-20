@@ -175,40 +175,59 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 # ========== APLICAR TEXTURAS OPTIMIZADAS ==========
 func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, _cx: int, _cy: int) -> void:
 	"""
-	OPTIMIZACIÓN: Aplicar textura base + todas las decoraciones.
-	Crea apenas 4 sprites (1 base + 3 decor) con z_index para layering.
+	OPTIMIZACIÓN: Aplicar textura base (1/9 escala, replicada 9 veces) + decoraciones.
+	
+	Sistema de tiling:
+	- Textura base: 1920×1080 (FullHD)
+	- Chunk: 5760×3240 = 3×3 grid de pantallas
+	- Solución: Textura 1/9 escala replicada 3×3 para cubrir chunk
 	"""
 	var chunk_size = Vector2(5760, 3240)
-	var chunk_center = chunk_size / 2
-	
-	# 1. APLICAR TEXTURA BASE
+	var tile_size = Vector2(1920, 1080)  # Tamaño de cada cuadrante
+	var grid_cols = 3
+	var grid_rows = 3
+
+	# 1. APLICAR TEXTURA BASE (1/9 escala, replicada 3×3)
 	var base_texture_path = bioma_data.get("base_texture_path", "")
-	
+
 	if not base_texture_path.is_empty() and ResourceLoader.exists(base_texture_path):
 		var texture = load(base_texture_path) as Texture2D
 		if texture:
-			var sprite = Sprite2D.new()
-			sprite.name = "BiomeBase"
-			sprite.texture = texture
-			sprite.centered = true
-			sprite.position = chunk_center
-			
 			var texture_size = texture.get_size()
-			sprite.scale = Vector2(chunk_size.x / texture_size.x, chunk_size.y / texture_size.y)
-			sprite.z_index = 0
+			# Escala para UN cuadrante (1920×1080)
+			var tile_scale = Vector2(
+				tile_size.x / texture_size.x,
+				tile_size.y / texture_size.y
+			)
 			
-			parent.add_child(sprite)
+			# Crear 3×3 grid de sprites con la misma textura
+			for row in range(grid_rows):
+				for col in range(grid_cols):
+					var sprite = Sprite2D.new()
+					sprite.name = "BiomeBase_%d_%d" % [col, row]
+					sprite.texture = texture
+					sprite.centered = true
+					# Posición del centro del cuadrante
+					sprite.position = Vector2(
+						(col + 0.5) * tile_size.x,
+						(row + 0.5) * tile_size.y
+					)
+					sprite.scale = tile_scale
+					sprite.z_index = 0
+
+					parent.add_child(sprite)
+			
 			if debug_mode:
-				print("[BiomeChunkApplier] ✓ Base aplicada: %s" % base_texture_path)
-	
+				print("[BiomeChunkApplier] ✓ Base aplicada (3×3 tiling, 1/9 escala): %s" % base_texture_path)
+
 	# 2. APLICAR DECORACIONES (máximo 3)
 	var decorations = bioma_data.get("decorations", []) as Array
 	var decor_scale = bioma_data.get("decor_scale", 1.0)
 	var decor_opacity = bioma_data.get("decor_opacity", 0.8)
-	
+
 	for i in range(min(decorations.size(), 3)):  # Máximo 3 decoraciones
 		var decor_path = decorations[i]
-		
+
 		if decor_path is String and not decor_path.is_empty() and ResourceLoader.exists(decor_path):
 			var texture = load(decor_path) as Texture2D
 			if texture:
@@ -216,8 +235,8 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, _cx: int, _
 				sprite.name = "BiomeDecor%d" % (i + 1)
 				sprite.texture = texture
 				sprite.centered = true
-				sprite.position = chunk_center
-				
+				sprite.position = Vector2(chunk_size.x / 2, chunk_size.y / 2)
+
 				var texture_size = texture.get_size()
 				var scale_factor = decor_scale
 				sprite.scale = Vector2(
@@ -226,12 +245,10 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, _cx: int, _
 				)
 				sprite.self_modulate = Color(1.0, 1.0, 1.0, decor_opacity)
 				sprite.z_index = i + 1  # Layering: base=0, decor1=1, decor2=2, decor3=3
-				
+
 				parent.add_child(sprite)
 				if debug_mode:
-					print("[BiomeChunkApplier] ✓ Decor %d: %s" % [i+1, decor_path])
-
-# ========== INTERFAZ PÚBLICA: APLICAR TEXTURAS ==========
+					print("[BiomeChunkApplier] ✓ Decor %d: %s" % [i+1, decor_path])# ========== INTERFAZ PÚBLICA: APLICAR TEXTURAS ==========
 func on_player_position_changed(new_position: Vector2) -> void:
 	"""
 	DEPRECATED: Este método ya no se utiliza.
