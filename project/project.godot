@@ -1,0 +1,26 @@
+﻿; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are just too many and too complex
+; to adequately describe in a human-readable format.
+
+config_version=5
+
+[application]
+config/name="Spellloop"
+config/version="0.1.0"
+run/main_scene="res://scenes/SpellloopMain.tscn"
+config/features=PackedStringArray("4.5", "Forward Plus")
+config/icon="res://icon.svg"
+
+[debug]
+gdscript/warnings/unused_variable=1
+
+[display]
+window/size/viewport_width=3840
+window/size/viewport_height=2160
+window/stretch/mode="viewport"
+window/stretch/aspect="keep"
+
+[rendering]
+textures/vram_compression/import_s3tc_bptc=true
+renderer/rendering_method="forward_plus"
