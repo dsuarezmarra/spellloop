@@ -220,46 +220,110 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 			if debug_mode:
 				print("[BiomeChunkApplier] ✓ Base 1/9 escala × 3×3: %s" % base_texture_path)
 
-	# ============ 2. DECORACIONES (1/9 escala + Distribución aleatoria) ============
+	# ============ 2. DECORACIONES (1 POR POSICIÓN, distribución aleatoria SIN superponer) ============
 	var decorations = bioma_data.get("decorations", []) as Array
 	
 	if not decorations.is_empty():
-		# RNG determinístico por chunk (mismo seed = reproducible)
+		# RNG determinístico por chunk
 		var chunk_rng = RandomNumberGenerator.new()
 		var chunk_seed = hash(Vector2i(cx, cy)) & 0xFFFFFFFF
 		chunk_rng.seed = chunk_seed
 		
-		# Generar posiciones aleatorias (1 por cada tile)
+		# Generar posiciones (9 = 3×3)
 		var decor_positions = _generate_decoration_positions(chunk_rng, tile_size)
 		
-		# Aplicar cada tipo de decoración
-		for decor_idx in range(min(decorations.size(), 3)):
+		# Para CADA posición: elegir 1 decor aleatoria (no superponer 27 sprites)
+		for pos_idx in range(decor_positions.size()):
+			# Seleccionar decoración aleatoria (una sola por posición)
+			var decor_idx = chunk_rng.randi_range(0, decorations.size() - 1)
 			var decor_path = decorations[decor_idx]
 			
 			if decor_path is String and not decor_path.is_empty() and ResourceLoader.exists(decor_path):
 				var texture = load(decor_path) as Texture2D
 				if texture:
 					var texture_size = texture.get_size()
-					# Escala 1/9 (igual que base)
+					# Escala 1/9 (como base)
 					var decor_scale = Vector2(
 						tile_size.x / texture_size.x,
 						tile_size.y / texture_size.y
-					) * 0.6  # 60% de tamaño (no tape completamente la base)
+					) * 0.5  # 50% para ser visible sin tapar la base
 					
-					# Crear instancia en CADA posición
-					for pos_idx in range(decor_positions.size()):
-						var sprite = Sprite2D.new()
-						sprite.name = "BiomeDecor_%d_%d" % [decor_idx, pos_idx]
-						sprite.texture = texture
-						sprite.centered = true
-						sprite.position = decor_positions[pos_idx]
-						sprite.scale = decor_scale
-						sprite.z_index = -99 + decor_idx  # ENCIMA de base pero DEBAJO de enemigos
-						sprite.modulate = Color(1.0, 1.0, 1.0, 0.85)  # Ligeramente transparente
-						parent.add_child(sprite)
-					
-					if debug_mode:
-						print("[BiomeChunkApplier] ✓ Decor %d × 9 posiciones (1/9 escala): %s" % [decor_idx+1, decor_path])
+					var sprite = Sprite2D.new()
+					sprite.name = "BiomeDecor_%d" % pos_idx
+					sprite.texture = texture
+					sprite.centered = true
+					sprite.position = decor_positions[pos_idx]
+					sprite.scale = decor_scale
+					sprite.z_index = -99  # ENCIMA de base (-100) pero DEBAJO de enemigos
+					sprite.modulate = Color(1.0, 1.0, 1.0, 0.9)
+					parent.add_child(sprite)
+		
+		if debug_mode:
+			print("[BiomeChunkApplier] ✓ Decoraciones: 9 instancias (1 decor aleatoria por posición, sin superponer)")
+	
+	# ============ 3. SUAVIZAR BORDES CON CHUNKS ADYACENTES ============
+	_apply_border_smoothing(parent, bioma_data, cx, cy, tile_size)
+
+# ============ FUNCIÓN: Suavizar bordes con chunks adyacentes ============
+func _apply_border_smoothing(parent: Node, bioma_data: Dictionary, cx: int, cy: int, tile_size: Vector2) -> void:
+	"""
+	Agregar overlay semitransparente en los bordes para suavizar/difuminar los cortes.
+	
+	Se crea overlay de ~80px en bordes derecho e inferior para blendear
+	con chunks adyacentes.
+	"""
+	var chunk_size = Vector2(5760, 3240)
+	var blend_width = 80.0  # Ancho del overlay en píxeles
+	
+	var base_texture_path = bioma_data.get("base_texture_path", "")
+	if base_texture_path.is_empty() or not ResourceLoader.exists(base_texture_path):
+		return
+	
+	var texture = load(base_texture_path) as Texture2D
+	if not texture:
+		return
+	
+	var texture_size = texture.get_size()
+	var tile_scale = Vector2(
+		tile_size.x / texture_size.x,
+		tile_size.y / texture_size.y
+	)
+	
+	# BORDE DERECHO (x ≈ 5760, para blendear con chunk de la derecha)
+	var right_blend = Sprite2D.new()
+	right_blend.name = "BlendRight"
+	right_blend.texture = texture
+	right_blend.centered = true
+	right_blend.position = Vector2(5760 - blend_width / 2, chunk_size.y / 2)
+	right_blend.scale = tile_scale
+	right_blend.z_index = -98
+	right_blend.modulate = Color(1.0, 1.0, 1.0, 0.4)  # 40% opacidad = difumina el corte
+	parent.add_child(right_blend)
+	
+	# BORDE INFERIOR (y ≈ 3240, para blendear con chunk de abajo)
+	var bottom_blend = Sprite2D.new()
+	bottom_blend.name = "BlendBottom"
+	bottom_blend.texture = texture
+	bottom_blend.centered = true
+	bottom_blend.position = Vector2(chunk_size.x / 2, 3240 - blend_width / 2)
+	bottom_blend.scale = tile_scale
+	bottom_blend.z_index = -98
+	bottom_blend.modulate = Color(1.0, 1.0, 1.0, 0.4)
+	parent.add_child(bottom_blend)
+	
+	# ESQUINA INFERIOR-DERECHA (para suavizar la esquina también)
+	var corner_blend = Sprite2D.new()
+	corner_blend.name = "BlendCorner"
+	corner_blend.texture = texture
+	corner_blend.centered = true
+	corner_blend.position = Vector2(5760 - blend_width / 2, 3240 - blend_width / 2)
+	corner_blend.scale = tile_scale
+	corner_blend.z_index = -98
+	corner_blend.modulate = Color(1.0, 1.0, 1.0, 0.3)  # Más transparente en esquina
+	parent.add_child(corner_blend)
+	
+	if debug_mode:
+		print("[BiomeChunkApplier] ✓ Bordes suavizados (blend width: %.0f px)" % blend_width)
 
 # ============ FUNCIÓN AUXILIAR: Generar posiciones aleatorias ============
 func _generate_decoration_positions(rng: RandomNumberGenerator, tile_size: Vector2) -> Array:
