@@ -195,13 +195,13 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 		var texture = load(base_texture_path) as Texture2D
 		if texture:
 			var texture_size = texture.get_size()
-			# Escala 1/9: para que UN sprite ocupe exactamente 1 cuadrante
 			var tile_scale = Vector2(
 				tile_size.x / texture_size.x,
 				tile_size.y / texture_size.y
 			)
 			
-			# Crear 3×3 grid (9 sprites idénticos)
+			if debug_mode:
+				print("[BASE] texture_size=%s, tile_size=%s, scale_factor=(%.4f, %.4f)" % [texture_size, tile_size, tile_scale.x, tile_scale.y])
 			for row in range(grid_rows):
 				for col in range(grid_cols):
 					var sprite = Sprite2D.new()
@@ -246,7 +246,7 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 					var decor_scale = Vector2(
 						tile_size.x / texture_size.x,
 						tile_size.y / texture_size.y
-					) * 0.5  # 50% para ser visible sin tapar la base
+					) * 0.15  # 15% del tamaño de base (MUCHO más pequeño que 50%)
 					
 					var sprite = Sprite2D.new()
 					sprite.name = "BiomeDecor_%d" % pos_idx
@@ -262,7 +262,9 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 			print("[BiomeChunkApplier] ✓ Decoraciones: 9 instancias (1 decor aleatoria por posición, sin superponer)")
 	
 	# ============ 3. SUAVIZAR BORDES CON CHUNKS ADYACENTES ============
-	_apply_border_smoothing(parent, bioma_data, cx, cy, tile_size)
+	# POR AHORA DESHABILITADO: Los overlays no funcionan bien
+	# Se revisará la estrategia en próxima iteración
+	# _apply_border_smoothing(parent, bioma_data, cx, cy, tile_size)
 
 # ============ FUNCIÓN: Suavizar bordes con chunks adyacentes ============
 func _apply_border_smoothing(parent: Node, bioma_data: Dictionary, cx: int, cy: int, tile_size: Vector2) -> void:
