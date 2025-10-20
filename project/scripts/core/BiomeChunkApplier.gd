@@ -157,7 +157,7 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 	# Crear UNA SOLA CanvasLayer para todo el bioma
 	var canvas_layer = CanvasLayer.new()
 	canvas_layer.name = "BiomeLayer"
-	canvas_layer.layer = -10  # Detrás de todo
+	canvas_layer.layer = 0  # Capa visible (0 se muestra normalmente)
 	chunk_node.add_child(canvas_layer)
 	
 	# Aplicar base + decoraciones en la misma capa
