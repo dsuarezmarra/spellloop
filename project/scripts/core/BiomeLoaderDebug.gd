@@ -57,9 +57,7 @@ func _load_and_print_config() -> void:
 	
 	print("[BiomeLoader] ✅ Available biomes:")
 	for biome in biomes:
-		var biome_name = biome.get("name", "Unknown")
-		var biome_id = biome.get("id", -1)
-		print("    - %s (ID: %d)" % [biome_name, biome_id])
+		print("    - %s (ID: %d)" % [biome.get("name", "Unknown"), biome.get("id", -1)])
 
 func _process(_delta: float) -> void:
 	if _player == null:

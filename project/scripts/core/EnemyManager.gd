@@ -39,10 +39,7 @@ func _setup_enemy_types() -> void:
 		{"id":"slime","name":"Slime","health":25,"speed":30.0,"exp_value":2,"tier":1}
 	]
 	if debug_spawns:
-		var types_str = ""
-		for et in enemy_types:
-			types_str += et.get("name", "Unknown") + ", "
-		print("[EnemyManager] enemy_types: [%s]" % types_str.trim_suffix(", "))
+		print("[EnemyManager] enemy_types: %s" % enemy_types)
 
 func initialize(player_ref: Node2D, world_ref: Node) -> void:
 	player = player_ref

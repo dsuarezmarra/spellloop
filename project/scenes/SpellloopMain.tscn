@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://bqxaxhkpj8pas"]
+[gd_scene load_steps=4 format=3 uid="uid://bqxaxhkpj8pas"]
 
 [ext_resource type="Script" path="res://scripts/core/SpellloopGame.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/core/BiomeIntegration.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/tools/AutoTestBiomes.gd" id="3"]
 
 [node name="SpellloopMain" type="Node2D"]
 script = ExtResource( 1 )
@@ -60,3 +61,6 @@ horizontal_alignment = 2
 
 [node name="BiomeSystem" type="Node2D" parent="."]
 script = ExtResource( 2 )
+
+[node name="BiomeTester" type="Node" parent="."]
+script = ExtResource( 3 )
