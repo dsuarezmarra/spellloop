@@ -157,7 +157,7 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 	# Crear contenedor para texturas (Node2D simple, no CanvasLayer)
 	var biome_layer = Node2D.new()
 	biome_layer.name = "BiomeLayer"
-	biome_layer.z_index = -1  # Renderizar DEBAJO de jugador/enemigos
+	biome_layer.z_index = -100  # MUY ATRÁS: debajo de TODO (enemigos, player, etc siempre visible)
 	chunk_node.add_child(biome_layer)
 	
 	# Aplicar base + decoraciones
@@ -173,82 +173,131 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 	biome_changed.emit(bioma_data.get("name", ""))
 
 # ========== APLICAR TEXTURAS OPTIMIZADAS ==========
-func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, _cx: int, _cy: int) -> void:
+func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy: int) -> void:
 	"""
-	OPTIMIZACIÓN: Aplicar textura base (1/9 escala, replicada 9 veces) + decoraciones.
+	SOLUCIÓN CORRECTA: Texturas base 1/9 escala × 3×3 + Decoraciones distribuidas aleatorias
 	
-	Sistema de tiling:
-	- Textura base: 1920×1080 (FullHD)
-	- Chunk: 5760×3240 = 3×3 grid de pantallas
-	- Solución: Textura 1/9 escala replicada 3×3 para cubrir chunk
+	Especificaciones:
+	- Chunk: 5760×3240 px = 3×3 pantallas FullHD (1920×1080 cada una)
+	- Textura base: 1920×1080 original → escalada 1/9 → replicada 3×3 = chunk completo
+	- Decoraciones: TAMBIÉN escaladas 1/9 + DISTRIBUIDAS ALEATORIAMENTE por el chunk
+	- Z-index: Base -100 (abajo de todo) < Decor -99 (arriba de base) < Enemigos 0 (siempre visible)
 	"""
 	var chunk_size = Vector2(5760, 3240)
 	var tile_size = Vector2(1920, 1080)  # Tamaño de cada cuadrante
 	var grid_cols = 3
 	var grid_rows = 3
 
-	# 1. APLICAR TEXTURA BASE (1/9 escala, replicada 3×3)
+	# ============ 1. TEXTURAS BASE (1/9 escala × 3×3) ============
 	var base_texture_path = bioma_data.get("base_texture_path", "")
 
 	if not base_texture_path.is_empty() and ResourceLoader.exists(base_texture_path):
 		var texture = load(base_texture_path) as Texture2D
 		if texture:
 			var texture_size = texture.get_size()
-			# Escala para UN cuadrante (1920×1080)
+			# Escala 1/9: para que UN sprite ocupe exactamente 1 cuadrante
 			var tile_scale = Vector2(
 				tile_size.x / texture_size.x,
 				tile_size.y / texture_size.y
 			)
 			
-			# Crear 3×3 grid de sprites con la misma textura
+			# Crear 3×3 grid (9 sprites idénticos)
 			for row in range(grid_rows):
 				for col in range(grid_cols):
 					var sprite = Sprite2D.new()
 					sprite.name = "BiomeBase_%d_%d" % [col, row]
 					sprite.texture = texture
 					sprite.centered = true
-					# Posición del centro del cuadrante
+					# Centro de cada cuadrante
 					sprite.position = Vector2(
 						(col + 0.5) * tile_size.x,
 						(row + 0.5) * tile_size.y
 					)
 					sprite.scale = tile_scale
-					sprite.z_index = 0
-
+					sprite.z_index = -100  # ATRÁS: debajo de enemigos, proyectiles, etc
 					parent.add_child(sprite)
 			
 			if debug_mode:
-				print("[BiomeChunkApplier] ✓ Base aplicada (3×3 tiling, 1/9 escala): %s" % base_texture_path)
+				print("[BiomeChunkApplier] ✓ Base 1/9 escala × 3×3: %s" % base_texture_path)
 
-	# 2. APLICAR DECORACIONES (máximo 3)
+	# ============ 2. DECORACIONES (1/9 escala + Distribución aleatoria) ============
 	var decorations = bioma_data.get("decorations", []) as Array
-	var decor_scale = bioma_data.get("decor_scale", 1.0)
-	var decor_opacity = bioma_data.get("decor_opacity", 0.8)
+	
+	if not decorations.is_empty():
+		# RNG determinístico por chunk (mismo seed = reproducible)
+		var chunk_rng = RandomNumberGenerator.new()
+		var chunk_seed = hash(Vector2i(cx, cy)) & 0xFFFFFFFF
+		chunk_rng.seed = chunk_seed
+		
+		# Generar posiciones aleatorias (1 por cada tile)
+		var decor_positions = _generate_decoration_positions(chunk_rng, tile_size)
+		
+		# Aplicar cada tipo de decoración
+		for decor_idx in range(min(decorations.size(), 3)):
+			var decor_path = decorations[decor_idx]
+			
+			if decor_path is String and not decor_path.is_empty() and ResourceLoader.exists(decor_path):
+				var texture = load(decor_path) as Texture2D
+				if texture:
+					var texture_size = texture.get_size()
+					# Escala 1/9 (igual que base)
+					var decor_scale = Vector2(
+						tile_size.x / texture_size.x,
+						tile_size.y / texture_size.y
+					) * 0.6  # 60% de tamaño (no tape completamente la base)
+					
+					# Crear instancia en CADA posición
+					for pos_idx in range(decor_positions.size()):
+						var sprite = Sprite2D.new()
+						sprite.name = "BiomeDecor_%d_%d" % [decor_idx, pos_idx]
+						sprite.texture = texture
+						sprite.centered = true
+						sprite.position = decor_positions[pos_idx]
+						sprite.scale = decor_scale
+						sprite.z_index = -99 + decor_idx  # ENCIMA de base pero DEBAJO de enemigos
+						sprite.modulate = Color(1.0, 1.0, 1.0, 0.85)  # Ligeramente transparente
+						parent.add_child(sprite)
+					
+					if debug_mode:
+						print("[BiomeChunkApplier] ✓ Decor %d × 9 posiciones (1/9 escala): %s" % [decor_idx+1, decor_path])
 
-	for i in range(min(decorations.size(), 3)):  # Máximo 3 decoraciones
-		var decor_path = decorations[i]
+# ============ FUNCIÓN AUXILIAR: Generar posiciones aleatorias ============
+func _generate_decoration_positions(rng: RandomNumberGenerator, tile_size: Vector2) -> Array:
+	"""
+	Generar 9 posiciones aleatorias (una por tile) sin salir del chunk.
+	
+	Garantías:
+	- 1 decoración por tile (9 total)
+	- Posición aleatoria dentro del tile
+	- No sale del chunk
+	- Determinístico (RNG seeded)
+	"""
+	var positions: Array = []
+	
+	# Iterar 3×3 grid
+	for row in range(3):
+		for col in range(3):
+			# Centro del tile
+			var tile_center_x = (col + 0.5) * tile_size.x
+			var tile_center_y = (row + 0.5) * tile_size.y
+			
+			# Offset aleatorio dentro del tile (30% de rango = seguro sin salir)
+			var offset_range_x = tile_size.x * 0.3
+			var offset_range_y = tile_size.y * 0.3
+			
+			var random_offset_x = rng.randf_range(-offset_range_x, offset_range_x)
+			var random_offset_y = rng.randf_range(-offset_range_y, offset_range_y)
+			
+			var final_pos = Vector2(
+				tile_center_x + random_offset_x,
+				tile_center_y + random_offset_y
+			)
+			
+			positions.append(final_pos)
+	
+	return positions
 
-		if decor_path is String and not decor_path.is_empty() and ResourceLoader.exists(decor_path):
-			var texture = load(decor_path) as Texture2D
-			if texture:
-				var sprite = Sprite2D.new()
-				sprite.name = "BiomeDecor%d" % (i + 1)
-				sprite.texture = texture
-				sprite.centered = true
-				sprite.position = Vector2(chunk_size.x / 2, chunk_size.y / 2)
-
-				var texture_size = texture.get_size()
-				var scale_factor = decor_scale
-				sprite.scale = Vector2(
-					(chunk_size.x / texture_size.x) * scale_factor,
-					(chunk_size.y / texture_size.y) * scale_factor
-				)
-				sprite.self_modulate = Color(1.0, 1.0, 1.0, decor_opacity)
-				sprite.z_index = i + 1  # Layering: base=0, decor1=1, decor2=2, decor3=3
-
-				parent.add_child(sprite)
-				if debug_mode:
-					print("[BiomeChunkApplier] ✓ Decor %d: %s" % [i+1, decor_path])# ========== INTERFAZ PÚBLICA: APLICAR TEXTURAS ==========
+# ========== INTERFAZ PÚBLICA: APLICAR TEXTURAS ==========
 func on_player_position_changed(new_position: Vector2) -> void:
 	"""
 	DEPRECATED: Este método ya no se utiliza.

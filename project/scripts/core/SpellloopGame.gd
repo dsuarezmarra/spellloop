@@ -218,7 +218,7 @@ func create_player():
 			player = CharacterBody2D.new()
 
 	player.name = "Player"
-	player.position = Vector2.ZERO  # Centro del mundo
+	player.position = Vector2(2880, 1620)  # Centro del chunk (0,0) - cuadrante 5 de 3×3
 
 	# Parentear bajo WorldRoot si existe
 	if has_node("WorldRoot"):
