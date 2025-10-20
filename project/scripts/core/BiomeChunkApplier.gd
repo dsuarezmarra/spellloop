@@ -212,15 +212,20 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 				print("[BASE] texture_size=(%.0f, %.0f), tile_size=(%.0f, %.0f), scaled_tile=(%.0f, %.0f), scale=(%.4f, %.4f)" % [texture_size.x, texture_size.y, tile_size.x, tile_size.y, scaled_tile_size.x, scaled_tile_size.y, tile_scale.x, tile_scale.y])
 			
 			# Crear 3×3 grid de sprites
+			# IMPORTANTE: Cada sprite necesita ocupar TODO su tile sin dejar huecos
+			# scaled_tile_size es el tamaño que ocupa CADA sprite después de escalar
+			# Posicionamos en (scaled_tile_size / 2) para que centren correctamente
 			for row in range(grid_rows):
 				for col in range(grid_cols):
 					var sprite = Sprite2D.new()
 					sprite.name = "BiomeBase_%d_%d" % [col, row]
 					sprite.texture = texture
 					sprite.centered = true
+					# Posicionar en el centro de cada scaled tile
+					# Así cada sprite (escalada) llena exactamente su parte sin dejar huecos
 					sprite.position = Vector2(
-						(col + 0.5) * tile_size.x,
-						(row + 0.5) * tile_size.y
+						col * scaled_tile_size.x + scaled_tile_size.x / 2.0,
+						row * scaled_tile_size.y + scaled_tile_size.y / 2.0
 					)
 					sprite.scale = tile_scale
 					sprite.z_index = -100
