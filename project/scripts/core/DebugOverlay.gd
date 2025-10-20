@@ -165,7 +165,6 @@ func _draw():
 				# Try to draw approximate bounding circle
 				var lp = to_local(e.global_position)
 				draw_circle(lp, 12, Color(1,0.2,0.2,0.25))
-	# Note: world_offset logging moved to _process() and is rate-limited.
 	# Draw telemetry overlay (console fallback)
 	if telemetry_visible:
 		var box_pos = Vector2(8, 8)
