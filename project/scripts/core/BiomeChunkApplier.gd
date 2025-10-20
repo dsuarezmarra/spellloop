@@ -175,14 +175,6 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 # ========== APLICAR TEXTURAS OPTIMIZADAS ==========
 func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy: int) -> void:
 	"""
-	SOLUCIÓN CORRECTA: Texturas base 1/9 escala × 3×3 + Decoraciones distribuidas aleatorias
-	
-	Especificaciones:
-	- Chunk: 5760×3240 px = 3×3 pantallas FullHD (1920×1080 cada una)
-	- Textura base: 1920×1080 original → escalada 1/9 → replicada 3×3 = chunk completo
-	- Decoraciones: TAMBIÉN escaladas 1/9 + DISTRIBUIDAS ALEATORIAMENTE por el chunk
-	- Z-index: Base -100 (abajo de todo) < Decor -99 (arriba de base) < Enemigos 0 (siempre visible)
-	"""
 	ESTRATEGIA CORRECTA:
 	- Chunk: 5760×3240
 	- Grid: 3×3 = 9 cuadrantes
