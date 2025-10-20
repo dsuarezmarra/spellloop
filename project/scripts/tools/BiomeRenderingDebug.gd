@@ -4,6 +4,7 @@
 extends Node
 
 var frame_count: int = 0
+var separator: String = "======================================================================"
 
 func _ready() -> void:
 	set_process(true)
@@ -17,9 +18,9 @@ func _process(_delta: float) -> void:
 		_debug_dump()
 
 func _debug_dump() -> void:
-	print("\n" + ("="*70))
+	print("\n" + separator)
 	print("[FRAME %d] 🔍 BIOME RENDERING DEBUG" % frame_count)
-	print(("="*70))
+	print(separator)
 	
 	var spellloop = get_tree().root.get_child(0)
 	if not spellloop:
@@ -74,4 +75,4 @@ func _debug_dump() -> void:
 		else:
 			print("\n❌ BiomeChunkApplier NOT found in hierarchy")
 	
-	print(("="*70) + "\n")
+	print(separator + "\n")
