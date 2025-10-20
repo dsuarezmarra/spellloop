@@ -15,7 +15,7 @@ func _ready() -> void:
 func _ensure_cache_dir_exists() -> void:
 	"""Asegurar que existe el directorio de caché"""
 	if not DirAccess.dir_exists_absolute(CACHE_DIR):
-		DirAccess.make_absolute(CACHE_DIR)
+		DirAccess.make_dir_absolute(CACHE_DIR)
 		print("[ChunkCacheManager] 📁 Directorio de caché creado")
 
 func save_chunk(chunk_pos: Vector2i, chunk_data: Dictionary) -> bool:

@@ -6,7 +6,7 @@
 # - Biomas decorativos con transiciones suaves
 # - Generación asíncrona sin lag
 
-extends Node
+extends Node2D
 class_name InfiniteWorldManager
 
 signal chunk_generated(chunk_pos: Vector2i)

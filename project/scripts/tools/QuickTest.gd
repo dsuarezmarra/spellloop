@@ -64,17 +64,17 @@ func test_class_names():
 		"IceProjectile"
 	]
 	
-	for class_name in classes:
-		var cls = ClassDB.class_exists(class_name)
+	for cls_name in classes:
+		var cls = ClassDB.class_exists(cls_name)
 		if cls:
 			results.append({
-				"name": "class_name:" + class_name,
+				"name": "class_name:" + cls_name,
 				"status": "✅ EXISTE",
 				"error": ""
 			})
 		else:
 			results.append({
-				"name": "class_name:" + class_name,
+				"name": "class_name:" + cls_name,
 				"status": "⚠️ NO REGISTRADO",
 				"error": "No está en ClassDB (normal si es script personalizado)"
 			})
