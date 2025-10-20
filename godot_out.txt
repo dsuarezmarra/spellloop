@@ -1,0 +1,24 @@
+Godot Engine v4.5.stable.official.876b29033 - https://godotengine.org
+OpenGL API 3.3.0 - Build 32.0.101.6647 - Compatibility - Using Device: Intel - Intel(R) Iris(R) Xe Graphics
+
+[GameManager] Initializing GameManager...
+[GameManager] Steam initialization placeholder - AppID: PLACEHOLDER_STEAM_APPID
+[GameManager] Sistema básico inicializado
+[GameManager] GameManager initialized successfully
+[SaveManager] Initializing SaveManager...
+[SaveManager] Loading game data...
+[SaveManager] Game data loaded successfully
+[SaveManager] Loading settings...
+[SaveManager] Settings loaded successfully
+[SaveManager] SaveManager initialized successfully
+[InputManager] Initializing InputManager...
+[InputManager] set_process(true) called - will update movement_vector each frame
+[InputManager] InputManager initialized successfully
+[UIManager] Initializing UIManager...
+[UIManager] UIManager initialized successfully
+[Localization] Initializing Localization...
+[Localization] Loaded translations for: en
+[Localization] Loaded translations for: es
+[Localization] Localization initialized with language: en
+📐 ScaleManager: (1920.0, 991.0) → escala=0.91759259259259
+[SpriteDB] sprites_index cargado, llaves: ["tier_1", "tier_2", "tier_3", "tier_4", "bosses", "xp_orbs/blue_orb", "xp_orbs/red_orb", "chests/chest_closed", "chests/chest_open", "projectiles/fireball", "projectiles/ice_shard", "projectiles/arcane_bolt", "projectiles/dark_missile", "effects/lightning_strike", "effects/frost_nova", "effects/meteor_impact", "effects/arcane_burst", "auras/white", "auras/blue", "auras/yellow", "auras/orange", "auras/purple"]

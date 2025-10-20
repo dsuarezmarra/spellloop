@@ -1,0 +1,57 @@
+{
+  "tier_1": [
+    "res://assets/sprites/enemies/tier_1/slime_arcano.png",
+    "res://assets/sprites/enemies/tier_1/murcielago_etereo.png",
+    "res://assets/sprites/enemies/tier_1/esqueleto_aprendiz.png",
+    "res://assets/sprites/enemies/tier_1/arana_venenosa.png",
+    "res://assets/sprites/enemies/tier_1/duende_sombrio.png"
+  ],
+  "tier_2": [
+    "res://assets/sprites/enemies/tier_2/guerrero_espectral.png",
+    "res://assets/sprites/enemies/tier_2/lobo_de_cristal.png",
+    "res://assets/sprites/enemies/tier_2/golem_runico.png",
+    "res://assets/sprites/enemies/tier_2/hechicero_desgastado.png",
+    "res://assets/sprites/enemies/tier_2/sombra_flotante.png"
+  ],
+  "tier_3": [
+    "res://assets/sprites/enemies/tier_3/caballero_del_vacio.png",
+    "res://assets/sprites/enemies/tier_3/serpiente_de_fuego.png",
+    "res://assets/sprites/enemies/tier_3/elemental_de_hielo.png",
+    "res://assets/sprites/enemies/tier_3/mago_abismal.png",
+    "res://assets/sprites/enemies/tier_3/corruptor_alado.png"
+  ],
+  "tier_4": [
+    "res://assets/sprites/enemies/tier_4/titan_arcano.png",
+    "res://assets/sprites/enemies/tier_4/senor_de_las_llamas.png",
+    "res://assets/sprites/enemies/tier_4/reina_del_hielo.png",
+    "res://assets/sprites/enemies/tier_4/archimago_perdido.png",
+    "res://assets/sprites/enemies/tier_4/dragon_etereo.png"
+  ],
+  "bosses": [
+    "res://assets/sprites/enemies/bosses/el_conjurador_primigenio.png",
+    "res://assets/sprites/enemies/bosses/el_corazon_del_vacio.png",
+    "res://assets/sprites/enemies/bosses/el_guardian_de_runas.png",
+    "res://assets/sprites/enemies/bosses/minotauro_de_fuego.png"
+  ],
+  "xp_orbs/blue_orb": "res://assets/sprites/xp_orbs/blue_orb/blue_orb.png",
+  "xp_orbs/red_orb": "res://assets/sprites/xp_orbs/red_orb/red_orb.png",
+  "chests/chest_closed": "res://assets/sprites/chests/chest_closed/chest_closed.png",
+  "chests/chest_open": "res://assets/sprites/chests/chest_open/chest_open.png",
+  "projectiles/fireball": "res://assets/sprites/projectiles/fireball/fireball.png",
+  "projectiles/ice_shard": "res://assets/sprites/projectiles/ice_shard/ice_shard.png",
+  "projectiles/arcane_bolt": "res://assets/sprites/projectiles/arcane_bolt/arcane_bolt.png",
+  "projectiles/dark_missile": "res://assets/sprites/projectiles/dark_missile/dark_missile.png",
+  "effects/lightning_strike": "res://assets/sprites/effects/lightning_strike/lightning_strike.png",
+  "effects/frost_nova": "res://assets/sprites/effects/frost_nova/frost_nova.png",
+  "effects/meteor_impact": "res://assets/sprites/effects/meteor_impact/meteor_impact.png",
+  "effects/arcane_burst": "res://assets/sprites/effects/arcane_burst/arcane_burst.png",
+  "auras/white": "res://assets/sprites/auras/white/white.png",
+  "auras/blue": "res://assets/sprites/auras/blue/blue.png",
+  "auras/yellow": "res://assets/sprites/auras/yellow/yellow.png",
+  "auras/orange": "res://assets/sprites/auras/orange/orange.png",
+  "auras/purple": "res://assets/sprites/auras/purple/purple.png",
+  "players/wizard/down": "res://assets/sprites/players/wizard/wizard_down.png",
+  "players/wizard/up": "res://assets/sprites/players/wizard/wizard_up.png",
+  "players/wizard/left": "res://assets/sprites/players/wizard/wizard_left.png",
+  "players/wizard/right": "res://assets/sprites/players/wizard/wizard_right.png"
+}

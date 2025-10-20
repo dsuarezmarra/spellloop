@@ -1,0 +1,85 @@
+{
+	"ui": {
+		"main_menu": {
+			"title": "SPELLLOOP",
+			"new_run": "New Run",
+			"continue": "Continue",
+			"settings": "Settings",
+			"quit": "Quit"
+		},
+		"pause_menu": {
+			"title": "PAUSED",
+			"resume": "Resume",
+			"settings": "Settings",
+			"main_menu": "Main Menu",
+			"quit": "Quit Game"
+		},
+		"settings": {
+			"title": "Settings",
+			"audio": "Audio",
+			"video": "Video",
+			"controls": "Controls",
+			"language": "Language",
+			"back": "Back",
+			"reset": "Reset to Defaults"
+		},
+		"game_over": {
+			"title": "Run Complete",
+			"score": "Score",
+			"time": "Time",
+			"rooms": "Rooms Cleared",
+			"enemies": "Enemies Defeated",
+			"continue": "Continue",
+			"retry": "Try Again"
+		}
+	},
+	"gameplay": {
+		"spells": {
+			"fireball": "Fireball",
+			"ice_shard": "Ice Shard",
+			"lightning_bolt": "Lightning Bolt",
+			"healing_light": "Healing Light",
+			"shadow_blast": "Shadow Blast",
+			"earth_spike": "Earth Spike",
+			"wind_slash": "Wind Slash",
+			"frost_nova": "Frost Nova",
+			"flame_wave": "Flame Wave",
+			"thunder_storm": "Thunder Storm"
+		},
+		"enemies": {
+			"basic_slime": "Slime",
+			"fire_imp": "Fire Imp",
+			"ice_golem": "Ice Golem",
+			"shadow_wraith": "Shadow Wraith",
+			"crystal_spider": "Crystal Spider",
+			"lava_beast": "Lava Beast",
+			"frost_wolf": "Frost Wolf",
+			"void_crawler": "Void Crawler"
+		},
+		"biomes": {
+			"fire_caverns": "Fire Caverns",
+			"ice_peaks": "Frozen Peaks",
+			"shadow_realm": "Shadow Realm",
+			"crystal_gardens": "Crystal Gardens"
+		},
+		"mages": {
+			"fire_mage": "Flame Weaver",
+			"ice_mage": "Frost Caller",
+			"shadow_mage": "Void Walker",
+			"earth_mage": "Stone Shaper",
+			"lightning_mage": "Storm Bringer"
+		}
+	},
+	"messages": {
+		"game_saved": "Game saved successfully",
+		"game_loaded": "Game loaded successfully",
+		"spell_unlocked": "New spell unlocked: {0}",
+		"mage_unlocked": "New mage unlocked: {0}",
+		"achievement_unlocked": "Achievement unlocked: {0}",
+		"room_cleared": "Room cleared!",
+		"boss_defeated": "Boss defeated!",
+		"level_up": "Level up!",
+		"health_low": "Health is low!",
+		"out_of_mana": "Out of mana!"
+	}
+}

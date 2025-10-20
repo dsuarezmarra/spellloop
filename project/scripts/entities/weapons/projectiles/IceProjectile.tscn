@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b0icx3ry44qal"]
+
+[ext_resource type="Script" path="res://scripts/entities/weapons/projectiles/IceProjectile.gd" id="1_script"]
+
+[node name="IceProjectile" type="Area2D"]
+script = ExtResource("1_script")

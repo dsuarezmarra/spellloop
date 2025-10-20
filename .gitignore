@@ -1,0 +1,44 @@
+# Godot
+.godot/
+.import/
+
+# Builds
+builds/
+*.tmp
+*.exe
+*.pck
+*.x86_64
+*.dmg
+*.zip
+
+# Operating System
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Steam credentials (NEVER commit these!)
+steam_appid.txt
+steam_api.dll
+steam_api64.dll
+libsteam_api.so
+libsteam_api.dylib
+steamclient.dll
+tier0_s.dll
+vstdlib_s.dll
+
+# Logs
+logs/
+*.log
+
+# Editor
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Node modules (if using any web tools)
+node_modules/
+
+# Custom
+/build/
+/dist/

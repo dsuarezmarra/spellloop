@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3]
+
+[node name="MetaShop" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 200.0
+margin_top = 120.0
+margin_right = -200.0
+margin_bottom = -120.0
+
+[node name="VBox" type="VBoxContainer" parent="."]
+margin_left = 8.0
+margin_top = 8.0
+margin_right = -8.0
+margin_bottom = -8.0
+
+[node name="InfoLabel" type="Label" parent="VBox"]
+text = "Meta Currency: 0\nBuy +1 Luck for 50"
+
+[node name="BuyButton" type="Button" parent="VBox"]
+text = "Buy +1 Luck (50)"

@@ -1,0 +1,6 @@
+SCRIPT ERROR: Parse Error: Could not resolve class "EnemyManager", because of a parser error.
+   at: GDScript::reload (res://scripts/core/SpellloopGame.gd:231)
+ERROR: Failed to load script "res://scripts/core/SpellloopGame.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:3041)
+ERROR: Error opening file 'res://icon.svg'.
+   at: load_image (core/io/image_loader.cpp:89)

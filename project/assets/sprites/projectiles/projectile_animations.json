@@ -1,0 +1,152 @@
+{
+  "projectiles": [
+    {
+      "name": "arcane_bolt",
+      "element": "arcane",
+      "color_primary": "#9B59B6",
+      "color_accent": "#D7BDE2",
+      "path": "res://assets/sprites/projectiles/arcane_bolt/",
+      "size": [64, 64],
+      "animations": [
+        {
+          "type": "Launch",
+          "frames": 10,
+          "file_prefix": "Launch_arcane_bolt_",
+          "pivot": "center",
+          "speed": 12,
+          "loop": true,
+          "notes": "chispa violeta, rayo radial expandiéndose"
+        },
+        {
+          "type": "InFlight",
+          "frames": 10,
+          "file_prefix": "InFlight_arcane_bolt_",
+          "pivot": "center",
+          "speed": 12,
+          "loop": true,
+          "notes": "rastro energético violeta, bola de energía"
+        },
+        {
+          "type": "Impact",
+          "frames": 10,
+          "file_prefix": "Impact_arcane_bolt_",
+          "pivot": "center",
+          "speed": 12,
+          "loop": false,
+          "notes": "explosión motas violeta, contorno brillante"
+        }
+      ]
+    },
+    {
+      "name": "dark_missile",
+      "element": "dark",
+      "color_primary": "#2C3E50",
+      "color_accent": "#566573",
+      "path": "res://assets/sprites/projectiles/dark_missile/",
+      "size": [64, 64],
+      "animations": [
+        {
+          "type": "Launch",
+          "frames": 10,
+          "file_prefix": "Launch_dark_missile_",
+          "pivot": "center",
+          "speed": 12,
+          "loop": true,
+          "notes": "aura oscura creciente, anillos de energía"
+        },
+        {
+          "type": "InFlight",
+          "frames": 10,
+          "file_prefix": "InFlight_dark_missile_",
+          "pivot": "center",
+          "speed": 12,
+          "loop": true,
+          "notes": "misil azul-negro con estela oscura"
+        },
+        {
+          "type": "Impact",
+          "frames": 10,
+          "file_prefix": "Impact_dark_missile_",
+          "pivot": "center",
+          "speed": 12,
+          "loop": false,
+          "notes": "explosión motas azul-gris"
+        }
+      ]
+    },
+    {
+      "name": "fireball",
+      "element": "fire",
+      "color_primary": "#E74C3C",
+      "color_accent": "#F8B88B",
+      "path": "res://assets/sprites/projectiles/fireball/",
+      "size": [64, 64],
+      "animations": [
+        {
+          "type": "Launch",
+          "frames": 10,
+          "file_prefix": "Launch_fireball_",
+          "pivot": "center",
+          "speed": 12,
+          "loop": true,
+          "notes": "bola de fuego que crece y se expande"
+        },
+        {
+          "type": "InFlight",
+          "frames": 10,
+          "file_prefix": "InFlight_fireball_",
+          "pivot": "center",
+          "speed": 12,
+          "loop": true,
+          "notes": "fuego volador con estela naranja, interior brillante"
+        },
+        {
+          "type": "Impact",
+          "frames": 10,
+          "file_prefix": "Impact_fireball_",
+          "pivot": "center",
+          "speed": 12,
+          "loop": false,
+          "notes": "explosión de chispas y humo rojo-naranja"
+        }
+      ]
+    },
+    {
+      "name": "ice_shard",
+      "element": "ice",
+      "color_primary": "#5DADE2",
+      "color_accent": "#AED6F1",
+      "path": "res://assets/sprites/projectiles/ice_shard/",
+      "size": [64, 64],
+      "animations": [
+        {
+          "type": "Launch",
+          "frames": 10,
+          "file_prefix": "Launch_ice_shard_",
+          "pivot": "center",
+          "speed": 12,
+          "loop": true,
+          "notes": "fragmento de hielo cristalino formándose"
+        },
+        {
+          "type": "InFlight",
+          "frames": 10,
+          "file_prefix": "InFlight_ice_shard_",
+          "pivot": "center",
+          "speed": 12,
+          "loop": true,
+          "notes": "cristal de hielo con estela de bruma azul"
+        },
+        {
+          "type": "Impact",
+          "frames": 10,
+          "file_prefix": "Impact_ice_shard_",
+          "pivot": "center",
+          "speed": 12,
+          "loop": false,
+          "notes": "explosión de cristales de hielo azul-gris"
+        }
+      ]
+    }
+  ]
+}
