@@ -65,15 +65,13 @@ func _load_config() -> void:
 	  ]
 	}
 	"""
-	var config_file_path = "res://assets/textures/biomes/biome_textures_config.json"
-	
-	if not ResourceLoader.exists(config_file_path):
-		printerr("[BiomeChunkApplier] ✗ Config NO encontrado: %s" % config_file_path)
+	if not ResourceLoader.exists(config_path):
+		printerr("[BiomeChunkApplier] ✗ Config NO encontrado: %s" % config_path)
 		return
 	
-	var file = FileAccess.open(config_file_path, FileAccess.READ)
+	var file = FileAccess.open(config_path, FileAccess.READ)
 	if file == null:
-		printerr("[BiomeChunkApplier] ✗ No se pudo abrir: %s" % config_file_path)
+		printerr("[BiomeChunkApplier] ✗ No se pudo abrir: %s" % config_path)
 		return
 	
 	var json_string = file.get_as_text()
