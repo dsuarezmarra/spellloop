@@ -48,6 +48,9 @@ func _ready() -> void:
 	enemies_hit.clear()
 	seek_check_timer = 0.0
 	
+	# Z-INDEX: Proyectiles deben estar ARRIBA de biomas
+	z_index = 5  # Arriba de enemigos, decoraciones, etc
+	
 	# CONFIGURACIÓN DE CAPAS CRÍTICA
 	set_collision_layer_value(3, true)   # Este nodo está en layer 3
 	set_collision_layer_value(1, false)
@@ -110,14 +113,14 @@ func _create_animated_visual() -> void:
 	animated_sprite.play()
 
 func _create_fallback_sprite(sprite_frames: SpriteFrames) -> void:
-	"""Crear sprite fallback (carámbano de hielo)"""
-	var image = Image.create(16, 32, false, Image.FORMAT_RGBA8)
+	"""Crear sprite fallback (carámbano de hielo) - MÁS GRANDE para ser visible"""
+	var image = Image.create(32, 64, false, Image.FORMAT_RGBA8)  # Duplicado de tamaño
 	
 	for y in range(image.get_height()):
 		for x in range(image.get_width()):
 			var progress = float(y) / float(image.get_height())
-			var left_bound = int(lerp(4.0, 7.0, progress))
-			var right_bound = int(lerp(12.0, 9.0, progress))
+			var left_bound = int(lerp(8.0, 14.0, progress))
+			var right_bound = int(lerp(24.0, 18.0, progress))
 			
 			if x >= left_bound and x < right_bound:
 				if progress < 0.3:

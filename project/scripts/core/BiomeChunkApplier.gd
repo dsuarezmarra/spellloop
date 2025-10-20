@@ -188,7 +188,7 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 	var grid_cols = 3
 	var grid_rows = 3
 
-	# ============ 1. TEXTURAS BASE (1/9 escala × 3×3 con bordes suavizados) ============
+	# ============ 1. TEXTURAS BASE (1/9 escala × 3×3) ============
 	var base_texture_path = bioma_data.get("base_texture_path", "")
 
 	if not base_texture_path.is_empty() and ResourceLoader.exists(base_texture_path):
@@ -196,26 +196,14 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 		if texture:
 			var texture_size = texture.get_size()
 			
-			# LÓGICA: Si texture es 5760×3240 (chunk completo), escalar a 1/3 para que quepa en 1920×1080
-			# Si texture es 1920×1080 (cuadrante), escalar a 1.0 (sin cambios)
-			var tile_scale: Vector2
-			var use_atlas: bool = false
+			# Escala simple: tile_size / texture_size
+			var tile_scale = Vector2(
+				tile_size.x / texture_size.x,
+				tile_size.y / texture_size.y
+			)
 			
-			# Detectar si es una textura de chunk completo (5760×3240) o de cuadrante (1920×1080)
-			if texture_size.x > 3000 and texture_size.y > 2000:  # Probablemente chunk completo
-				# Escalar a 1/3 para que quepa en el cuadrante
-				tile_scale = Vector2(
-					tile_size.x / texture_size.x,
-					tile_size.y / texture_size.y
-				)
-				use_atlas = true  # Usar different regions for each sprite
-				if debug_mode:
-					print("[BASE] ✓ Detectada textura CHUNK (%.0fx%.0f) → escalada a 1/3 (%.4f, %.4f)" % [texture_size.x, texture_size.y, tile_scale.x, tile_scale.y])
-			else:
-				# Textura pequeña, usar como está
-				tile_scale = Vector2.ONE
-				if debug_mode:
-					print("[BASE] ✓ Detectada textura CUADRANTE (%.0fx%.0f) → sin escalar" % [texture_size.x, texture_size.y])
+			if debug_mode:
+				print("[BASE] texture_size=(%d, %d), tile_size=(%.0f, %.0f), scale=(%.4f, %.4f)" % [int(texture_size.x), int(texture_size.y), tile_size.x, tile_size.y, tile_scale.x, tile_scale.y])
 			
 			# Crear 3×3 grid de sprites
 			for row in range(grid_rows):
@@ -230,31 +218,10 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 					)
 					sprite.scale = tile_scale
 					sprite.z_index = -100
-					
-					# Si es atlas (chunk completo), usar región diferente para cada sprite
-					if use_atlas and texture is Texture2D:
-						# Calcular región (Rect2) para este cuadrante
-						var region_width = texture_size.x / 3.0
-						var region_height = texture_size.y / 3.0
-						var region = Rect2(
-							col * region_width,
-							row * region_height,
-							region_width,
-							region_height
-						)
-						# Usar AtlasTexture para recortar
-						var atlas = AtlasTexture.new()
-						atlas.atlas = texture
-						atlas.region = region
-						sprite.texture = atlas
-					
 					parent.add_child(sprite)
 			
 			if debug_mode:
-				print("[BiomeChunkApplier] ✓ Base 1/9 escala × 3×3 con atlas: %s" % base_texture_path)
-
-	# ============ AGREGAR BORDES SUAVIZADOS (blend entre chunks) ============
-	_apply_edge_smoothing(parent, bioma_data, cx, cy, chunk_size, tile_size)
+				print("[BiomeChunkApplier] ✓ Base 1/9 escala × 3×3: %s" % base_texture_path)
 
 	# ============ 2. DECORACIONES (1 POR POSICIÓN, distribución aleatoria SIN superponer) ============
 	var decorations = bioma_data.get("decorations", []) as Array
@@ -297,8 +264,9 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 		if debug_mode:
 			print("[BiomeChunkApplier] ✓ Decoraciones: 9 instancias (1 decor aleatoria por posición, sin superponer)")
 	
-	# ============ AGREGAR BORDES SUAVIZADOS (blend entre chunks) ============
-	_apply_edge_smoothing(parent, bioma_data, cx, cy, chunk_size, tile_size)
+	# ============ BORDES SUAVIZADOS ============
+	# POR AHORA DESHABILITADO - necesita revisión
+	# _apply_edge_smoothing(parent, bioma_data, cx, cy, chunk_size, tile_size)
 
 # ============ FUNCIÓN: Suavizar bordes entre chunks ============
 func _apply_edge_smoothing(parent: Node, bioma_data: Dictionary, cx: int, cy: int, chunk_size: Vector2, tile_size: Vector2) -> void:
