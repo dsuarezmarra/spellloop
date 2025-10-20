@@ -57,12 +57,9 @@ func generate_chunk_async(chunk_node: Node2D, chunk_pos: Vector2i, rng: RandomNu
 	# Generar fondo (placeholder simple)
 	_create_biome_background(chunk_node, biome_type)
 	
-	# Generar decoraciones (asincronamente)
-	if biome_type >= 0 and biome_type < DECORATIONS_PER_BIOME.keys().size():
-		await _generate_decorations_async(chunk_node, chunk_pos, biome_type, rng)
-	
-	# Generar transiciones con biomas vecinos
-	_generate_biome_transitions(chunk_node, chunk_pos, biome_type, rng)
+	# NOTA: Decorativos procedurales y transiciones deshabilitadas
+	# BiomeChunkApplier proporciona texturas reales (PNG) y decorativos auténticos
+	# Los decorativos Polygon2D/Line2D procedurales bloqueaban la visualización
 
 func generate_chunk_from_cache(chunk_node: Node2D, chunk_data: Dictionary) -> void:
 	"""Recrear un chunk desde datos en caché"""
@@ -203,28 +200,12 @@ func _add_forest_pattern(parent: Node2D, _base_color: Color, pattern_color: Colo
 		parent.add_child(line)
 
 func _generate_decorations_async(chunk_node: Node2D, _chunk_pos: Vector2i, biome_type: int, rng: RandomNumberGenerator):
-	"""Generar decoraciones asincronamente"""
-	var decorations = DECORATIONS_PER_BIOME.get(biome_type, [])
-	if decorations.is_empty():
-		return
-	
-	var chunk_area = 5760 * 3240
-	var target_count = int(chunk_area * DECORATION_DENSITY / (32 * 32))  # Asumiendo ~32x32 por decoración
-	
-	var decorations_root = Node2D.new()
-	decorations_root.name = "Decorations"
-	chunk_node.add_child(decorations_root)
-	
-	for i in range(target_count):
-		# Diferir la creación cada pocas decoraciones para no bloquear
-		if i % 10 == 0:
-			await get_tree().process_frame
-		
-		var deco_type = decorations[rng.randi() % decorations.size()]
-		var pos_x = rng.randf() * 5760
-		var pos_y = rng.randf() * 3240
-		
-		_create_decoration(decorations_root, deco_type, Vector2(pos_x, pos_y), biome_type)
+	"""
+	DESHABILITADO: Los decorativos procedurales (Polygon2D, Line2D) bloqueaban la visualización.
+	BiomeChunkApplier proporciona texturas PNG auténticas y decorativos reales en CanvasLayer.
+	"""
+	# Los decorativos ahora vienen de BiomeChunkApplier
+	pass
 
 func _create_decoration(parent: Node2D, deco_type: String, pos: Vector2, biome_type: int) -> void:
 	"""Crear una decoración individual (solo visual, sin colisión)"""
@@ -336,14 +317,12 @@ func _get_decoration_shape(deco_type: String, scale: float) -> PackedVector2Arra
 	return points
 
 func _generate_biome_transitions(chunk_node: Node2D, _chunk_pos: Vector2i, _biome_type: int, _rng: RandomNumberGenerator) -> void:
-	"""Generar transiciones visuales con biomas vecinos (bordes suavizados)"""
-	# TODO: Implementar gradientes en bordes para suavizar transiciones
-	# Por ahora, solo una implementación simple
-	
-	# Crear overlay de transición en bordes (opcional)
-	var transition_root = Node2D.new()
-	transition_root.name = "Transitions"
-	chunk_node.add_child(transition_root)
+	"""
+	DESHABILITADO: Las transiciones procedurales se movían incorrectamente.
+	Ahora solo BiomeChunkApplier (texturas PNG) maneja la visualización de bordes.
+	"""
+	# Las transiciones de bordes vienen incluidas en las texturas PNG
+	pass
 
 func get_biome_info(biome_type: int) -> Dictionary:
 	"""Obtener información de un bioma"""
