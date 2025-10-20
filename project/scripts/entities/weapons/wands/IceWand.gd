@@ -69,7 +69,6 @@ func perform_attack(owner: Node2D) -> void:
 			direction = direction.rotated(spread_angle)
 		
 		# Configurar proyectil
-		projectile.global_position = owner.global_position
 		projectile.direction = direction
 		projectile.speed = projectile_speed
 		projectile.damage = damage
@@ -84,7 +83,7 @@ func perform_attack(owner: Node2D) -> void:
 			projectile.set_meta("slow_duration", slow_duration)
 			projectile.set_meta("slow_percentage", slow_percentage)
 		
-		# Agregar a la escena
+		# Agregar a la escena PRIMERO
 		# CRÍTICO: Agregar a ChunksRoot (que se mueve con el mundo), NO a la raíz global
 		var chunks_root = owner.get_tree().root.get_node_or_null("SpellloopGame/ChunksRoot")
 		if chunks_root:
@@ -95,8 +94,12 @@ func perform_attack(owner: Node2D) -> void:
 			if world_root:
 				world_root.add_child(projectile)
 			else:
-				# Último recurso: Agregar a owner.parent (probablemente InfiniteWorldManager)
+				# Último recurso: Agregar a owner.parent
 				owner.add_sibling(projectile)
+		
+		# DESPUÉS DE AGREGAR AL ÁRBOL: establecer posición global
+		# Así se convierte correctamente al espacio local de ChunksRoot
+		projectile.global_position = owner.global_position
 		
 		print("[IceWand] ❄️ Proyectil de hielo disparado")
 

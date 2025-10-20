@@ -196,14 +196,20 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 		if texture:
 			var texture_size = texture.get_size()
 			
-			# Escala simple: tile_size / texture_size
+			# CÁLCULO CORRECTO: Escala 1/9 en area = 1/3 en cada eje
+			# Para que cada sprite ocupe EXACTAMENTE 1 cuadrante (1920×1080)
+			# pero la textura se vea a escala 1/9
+			# Necesitamos: textura_escala = (tile_size / 3) / texture_size
+			# Eso da: (640 / 1024, 360 / 1024) = (0.625, 0.352) para textura 1024×1024
+			
+			var scaled_tile_size = Vector2(tile_size.x / 3.0, tile_size.y / 3.0)  # 1/9 del chunk = 1/3 por eje
 			var tile_scale = Vector2(
-				tile_size.x / texture_size.x,
-				tile_size.y / texture_size.y
+				scaled_tile_size.x / texture_size.x,
+				scaled_tile_size.y / texture_size.y
 			)
 			
 			if debug_mode:
-				print("[BASE] texture_size=(%d, %d), tile_size=(%.0f, %.0f), scale=(%.4f, %.4f)" % [int(texture_size.x), int(texture_size.y), tile_size.x, tile_size.y, tile_scale.x, tile_scale.y])
+				print("[BASE] texture_size=(%.0f, %.0f), tile_size=(%.0f, %.0f), scaled_tile=(%.0f, %.0f), scale=(%.4f, %.4f)" % [texture_size.x, texture_size.y, tile_size.x, tile_size.y, scaled_tile_size.x, scaled_tile_size.y, tile_scale.x, tile_scale.y])
 			
 			# Crear 3×3 grid de sprites
 			for row in range(grid_rows):
