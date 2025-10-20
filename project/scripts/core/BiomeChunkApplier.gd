@@ -31,10 +31,10 @@ Este script solo gestiona texturas visuales (sin colisión).
 # ========== PRIVADAS ==========
 var _config: Dictionary = {}
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
-var _chunk_cache: Dictionary = {}  # key: "cx_cy" → cached chunk data
-var _active_chunks: Dictionary = {}  # key: "cx_cy" → active chunk node
-var _player_position: Vector2 = Vector2.ZERO
-var _current_chunk_coords: Vector2i = Vector2i.ZERO
+
+# NOTE: _chunk_cache, _active_chunks, _player_position, _current_chunk_coords
+# ya no se utilizan aquí (InfiniteWorldManager es responsable)
+# Se mantienen comentadas por legibilidad histórica
 
 # ========== SEÑALES ==========
 signal biome_changed(biome_name: String)
@@ -231,113 +231,24 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, _cx: int, _
 				if debug_mode:
 					print("[BiomeChunkApplier] ✓ Decor %d: %s" % [i+1, decor_path])
 
-# ========== INTERFAZ PÚBLICA: ACTUALIZAR POSICIÓN ==========
+# ========== INTERFAZ PÚBLICA: APLICAR TEXTURAS ==========
 func on_player_position_changed(new_position: Vector2) -> void:
 	"""
-	Llamar cuando el jugador se mueve a un nuevo chunk.
-	Cargar/descargar chunks según necesario.
-	
-	Args:
-	  new_position: posición global del jugador en el mundo
+	DEPRECATED: Este método ya no se utiliza.
+	BiomeChunkApplier es un componente pasivo que solo aplica texturas.
+	InfiniteWorldManager es responsable de la orquestación.
 	"""
-	_player_position = new_position
-	
-	# Convertir posición a coordenadas de chunk (asume chunk de 5760×3240)
-	var chunk_size = Vector2(5760, 3240)
-	var new_chunk = Vector2i(
-		int(new_position.x / chunk_size.x),
-		int(new_position.y / chunk_size.y)
-	)
-	
-	if new_chunk != _current_chunk_coords:
-		_current_chunk_coords = new_chunk
-		_load_surrounding_chunks(new_chunk)
-
-# ========== CARGAR CHUNKS ALREDEDOR DEL JUGADOR ==========
-func _load_surrounding_chunks(center_chunk: Vector2i) -> void:
-	"""
-	Cargar chunks en grid 3×3 alrededor del centro.
-	Descargar chunks lejanos.
-	"""
-	var chunks_to_load = []
-	
-	# Grid 3×3 alrededor del jugador
-	for dx in range(-1, 2):
-		for dy in range(-1, 2):
-			var cx = center_chunk.x + dx
-			var cy = center_chunk.y + dy
-			chunks_to_load.append(Vector2i(cx, cy))
-	
-	# Cargar nuevos chunks
-	for chunk_coords in chunks_to_load:
-		var key = "%d_%d" % [chunk_coords.x, chunk_coords.y]
-		if not _active_chunks.has(key):
-			_create_chunk(chunk_coords)
-	
-	# Limpiar chunks lejanos
-	_cleanup_distant_chunks(center_chunk)
-
-# ========== CREAR NUEVO CHUNK ==========
-func _create_chunk(chunk_coords: Vector2i) -> void:
-	"""
-	Crear un nuevo chunk y aplicar bioma.
-	"""
-	var key = "%d_%d" % [chunk_coords.x, chunk_coords.y]
-	
-	# Crear nodo raíz para el chunk
-	var chunk_node = Node2D.new()
-	chunk_node.name = "Chunk_%d_%d" % [chunk_coords.x, chunk_coords.y]
-	chunk_node.position = Vector2(chunk_coords.x * 5760, chunk_coords.y * 3240)
-	
-	# Aplicar bioma
-	apply_biome_to_chunk(chunk_node, chunk_coords.x, chunk_coords.y)
-	
-	# Añadir a escena
-	add_child(chunk_node)
-	_active_chunks[key] = chunk_node
-	
-	chunk_loaded.emit(chunk_coords)
-	
-	if debug_mode:
-		print("[BiomeChunkApplier] Chunk creado: (%d, %d)" % [chunk_coords.x, chunk_coords.y])
-
-# ========== LIMPIAR CHUNKS LEJANOS ==========
-func _cleanup_distant_chunks(center_chunk: Vector2i) -> void:
-	"""
-	Eliminar chunks que estén demasiado lejos del jugador.
-	Mantener máximo max_active_chunks activos.
-	"""
-	var keys_to_remove = []
-	
-	for key in _active_chunks.keys():
-		var parts = key.split("_")
-		var cx = int(parts[0])
-		var cy = int(parts[1])
-		
-		# Si está fuera del rango 3×3, marcarlo para borrar
-		if abs(cx - center_chunk.x) > 1 or abs(cy - center_chunk.y) > 1:
-			keys_to_remove.append(key)
-	
-	# Borrar chunks lejanos
-	for key in keys_to_remove:
-		if _active_chunks.has(key):
-			var chunk = _active_chunks[key]
-			chunk.queue_free()
-			_active_chunks.erase(key)
-			_chunk_cache[key] = {}  # Guardar estado mínimo en caché
-			
-			if debug_mode:
-				print("[BiomeChunkApplier] Chunk descargado: %s" % key)
+	pass
 
 # ========== DEBUGGING ==========
 func print_active_chunks() -> void:
-	"""Imprimir lista de chunks activos (útil para debugging)"""
-	print("\n[BiomeChunkApplier] === CHUNKS ACTIVOS ===")
-	for key in _active_chunks.keys():
-		var chunk = _active_chunks[key]
-		var biome = chunk.get_meta("biome_name", "?")
-		print("  - %s (Bioma: %s)" % [key, biome])
-	print("[BiomeChunkApplier] Total: %d activos, %d cacheados" % [_active_chunks.size(), _chunk_cache.size()])
+	"""
+	DEPRECATED: Este método ya no es relevante.
+	BiomeChunkApplier no gestiona chunks activos.
+	Ver InfiniteWorldManager.get_info() para información de chunks.
+	"""
+	print("[BiomeChunkApplier] Este sistema ahora solo aplica texturas.")
+	print("[BiomeChunkApplier] Ver InfiniteWorldManager para información de chunks.")
 
 func print_config() -> void:
 	"""Imprimir configuración de biomas cargada"""

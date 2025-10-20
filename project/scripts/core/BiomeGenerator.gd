@@ -93,54 +93,22 @@ func _biome_name_to_type(name: String) -> int:
 	return BiomeType.GRASSLAND
 
 func _create_biome_background(chunk_node: Node2D, biome_type: int) -> void:
-	"""Crear fondo visual del bioma con patrón procedural"""
-	var bg = ColorRect.new()
-	bg.name = "BiomeBackground"
-	bg.color = BIOME_COLORS[biome_type]
-	bg.size = Vector2(5760, 3240)
-	bg.z_index = -10
-	chunk_node.add_child(bg)
-	
-	# Crear nodo de patrón procedural
-	var pattern = _create_biome_pattern(biome_type)
-	if pattern:
-		pattern.z_index = -9
-		chunk_node.add_child(pattern)
+	"""
+	DEPRECATED: Esta función ya no crea fondos visuales.
+	Los biomas visuales ahora vienen de BiomeChunkApplier (texturas reales).
+	Este método se mantiene vacío por compatibilidad.
+	"""
+	# Las texturas reales se aplican en BiomeChunkApplier.apply_biome_to_chunk()
+	# NO crear ColorRect aquí - bloqueaba toda la visualización
+	pass
 
 func _create_biome_pattern(biome_type: int) -> Node2D:
-	"""Crear patrón visual procedural para cada bioma"""
-	var pattern_node = Node2D.new()
-	pattern_node.name = "BiomePattern"
-	
-	var base_color = BIOME_COLORS[biome_type]
-	var pattern_color = base_color.darkened(0.15)
-	
-	match biome_type:
-		BiomeType.GRASSLAND:
-			# Patrón de hierba - pequeños rectángulos
-			_add_grass_pattern(pattern_node, base_color, pattern_color)
-		
-		BiomeType.DESERT:
-			# Patrón de arena - círculos/puntos
-			_add_sand_pattern(pattern_node, base_color, pattern_color)
-		
-		BiomeType.SNOW:
-			# Patrón de nieve - copos/puntos
-			_add_snow_pattern(pattern_node, base_color, pattern_color)
-		
-		BiomeType.LAVA:
-			# Patrón de lava - líneas/grietas
-			_add_lava_pattern(pattern_node, base_color, pattern_color)
-		
-		BiomeType.ARCANE_WASTES:
-			# Patrón mágico - runas/símbolos
-			_add_arcane_pattern(pattern_node, base_color, pattern_color)
-		
-		BiomeType.FOREST:
-			# Patrón de bosque - líneas/marcas
-			_add_forest_pattern(pattern_node, base_color, pattern_color)
-	
-	return pattern_node
+	"""
+	DEPRECATED: Los patrones procedurales ya no son necesarios.
+	BiomeChunkApplier proporciona texturas reales de PNG.
+	Este método devuelve null por compatibilidad.
+	"""
+	return null
 
 func _add_grass_pattern(parent: Node2D, base_color: Color, pattern_color: Color) -> void:
 	"""Patrón de hierba: pequeños rectángulos"""
