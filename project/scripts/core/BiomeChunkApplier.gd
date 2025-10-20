@@ -188,37 +188,73 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 	var grid_cols = 3
 	var grid_rows = 3
 
-	# ============ 1. TEXTURAS BASE (1/9 escala × 3×3) ============
+	# ============ 1. TEXTURAS BASE (1/9 escala × 3×3 con bordes suavizados) ============
 	var base_texture_path = bioma_data.get("base_texture_path", "")
 
 	if not base_texture_path.is_empty() and ResourceLoader.exists(base_texture_path):
 		var texture = load(base_texture_path) as Texture2D
 		if texture:
 			var texture_size = texture.get_size()
-			var tile_scale = Vector2(
-				tile_size.x / texture_size.x,
-				tile_size.y / texture_size.y
-			)
 			
-			if debug_mode:
-				print("[BASE] texture_size=%s, tile_size=%s, scale_factor=(%.4f, %.4f)" % [texture_size, tile_size, tile_scale.x, tile_scale.y])
+			# LÓGICA: Si texture es 5760×3240 (chunk completo), escalar a 1/3 para que quepa en 1920×1080
+			# Si texture es 1920×1080 (cuadrante), escalar a 1.0 (sin cambios)
+			var tile_scale: Vector2
+			var use_atlas: bool = false
+			
+			# Detectar si es una textura de chunk completo (5760×3240) o de cuadrante (1920×1080)
+			if texture_size.x > 3000 and texture_size.y > 2000:  # Probablemente chunk completo
+				# Escalar a 1/3 para que quepa en el cuadrante
+				tile_scale = Vector2(
+					tile_size.x / texture_size.x,
+					tile_size.y / texture_size.y
+				)
+				use_atlas = true  # Usar different regions for each sprite
+				if debug_mode:
+					print("[BASE] ✓ Detectada textura CHUNK (%.0fx%.0f) → escalada a 1/3 (%.4f, %.4f)" % [texture_size.x, texture_size.y, tile_scale.x, tile_scale.y])
+			else:
+				# Textura pequeña, usar como está
+				tile_scale = Vector2.ONE
+				if debug_mode:
+					print("[BASE] ✓ Detectada textura CUADRANTE (%.0fx%.0f) → sin escalar" % [texture_size.x, texture_size.y])
+			
+			# Crear 3×3 grid de sprites
 			for row in range(grid_rows):
 				for col in range(grid_cols):
 					var sprite = Sprite2D.new()
 					sprite.name = "BiomeBase_%d_%d" % [col, row]
 					sprite.texture = texture
 					sprite.centered = true
-					# Centro de cada cuadrante
 					sprite.position = Vector2(
 						(col + 0.5) * tile_size.x,
 						(row + 0.5) * tile_size.y
 					)
 					sprite.scale = tile_scale
-					sprite.z_index = -100  # ATRÁS: debajo de enemigos, proyectiles, etc
+					sprite.z_index = -100
+					
+					# Si es atlas (chunk completo), usar región diferente para cada sprite
+					if use_atlas and texture is Texture2D:
+						# Calcular región (Rect2) para este cuadrante
+						var region_width = texture_size.x / 3.0
+						var region_height = texture_size.y / 3.0
+						var region = Rect2(
+							col * region_width,
+							row * region_height,
+							region_width,
+							region_height
+						)
+						# Usar AtlasTexture para recortar
+						var atlas = AtlasTexture.new()
+						atlas.atlas = texture
+						atlas.region = region
+						sprite.texture = atlas
+					
 					parent.add_child(sprite)
 			
 			if debug_mode:
-				print("[BiomeChunkApplier] ✓ Base 1/9 escala × 3×3: %s" % base_texture_path)
+				print("[BiomeChunkApplier] ✓ Base 1/9 escala × 3×3 con atlas: %s" % base_texture_path)
+
+	# ============ AGREGAR BORDES SUAVIZADOS (blend entre chunks) ============
+	_apply_edge_smoothing(parent, bioma_data, cx, cy, chunk_size, tile_size)
 
 	# ============ 2. DECORACIONES (1 POR POSICIÓN, distribución aleatoria SIN superponer) ============
 	var decorations = bioma_data.get("decorations", []) as Array
@@ -261,22 +297,19 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 		if debug_mode:
 			print("[BiomeChunkApplier] ✓ Decoraciones: 9 instancias (1 decor aleatoria por posición, sin superponer)")
 	
-	# ============ 3. SUAVIZAR BORDES CON CHUNKS ADYACENTES ============
-	# POR AHORA DESHABILITADO: Los overlays no funcionan bien
-	# Se revisará la estrategia en próxima iteración
-	# _apply_border_smoothing(parent, bioma_data, cx, cy, tile_size)
+	# ============ AGREGAR BORDES SUAVIZADOS (blend entre chunks) ============
+	_apply_edge_smoothing(parent, bioma_data, cx, cy, chunk_size, tile_size)
 
-# ============ FUNCIÓN: Suavizar bordes con chunks adyacentes ============
-func _apply_border_smoothing(parent: Node, bioma_data: Dictionary, cx: int, cy: int, tile_size: Vector2) -> void:
+# ============ FUNCIÓN: Suavizar bordes entre chunks ============
+func _apply_edge_smoothing(parent: Node, bioma_data: Dictionary, cx: int, cy: int, chunk_size: Vector2, tile_size: Vector2) -> void:
 	"""
-	Agregar overlay semitransparente en los bordes para suavizar/difuminar los cortes.
+	Agregar overlays semitransparentes en los bordes para suavizar transiciones.
 	
-	Se crea overlay de ~80px en bordes derecho e inferior para blendear
-	con chunks adyacentes.
+	Estrategia:
+	- Crear 4 overlays de baja opacidad en los bordes del chunk
+	- Se sobrelapan ligeramente con chunks adyacentes para crear transición suave
+	- Usa la MISMA textura base con opacidad 20-40%
 	"""
-	var chunk_size = Vector2(5760, 3240)
-	var blend_width = 80.0  # Ancho del overlay en píxeles
-	
 	var base_texture_path = bioma_data.get("base_texture_path", "")
 	if base_texture_path.is_empty() or not ResourceLoader.exists(base_texture_path):
 		return
@@ -291,37 +324,47 @@ func _apply_border_smoothing(parent: Node, bioma_data: Dictionary, cx: int, cy: 
 		tile_size.y / texture_size.y
 	)
 	
-	# BORDE DERECHO (x ≈ 5760, para blendear con chunk de la derecha)
+	# Detectar si es textura de chunk
+	if texture_size.x > 3000:
+		tile_scale = Vector2(tile_size.x / texture_size.x, tile_size.y / texture_size.y)
+	
+	var blend_width = 120.0  # Ancho del blend en píxeles
+	var blend_height = 120.0
+	
+	# ============ BORDE DERECHO (x ≈ 5760) ============
 	var right_blend = Sprite2D.new()
-	right_blend.name = "BlendRight"
+	right_blend.name = "EdgeRight"
 	right_blend.texture = texture
 	right_blend.centered = true
-	right_blend.position = Vector2(5760 - blend_width / 2, chunk_size.y / 2)
+	right_blend.position = Vector2(chunk_size.x - blend_width / 2, chunk_size.y / 2)
 	right_blend.scale = tile_scale
-	right_blend.z_index = -98
-	right_blend.modulate = Color(1.0, 1.0, 1.0, 0.4)  # 40% opacidad = difumina el corte
+	right_blend.z_index = -98  # Encima de base pero abajo de decor
+	right_blend.modulate = Color(1.0, 1.0, 1.0, 0.25)  # 25% opacidad para suavizar
+	right_blend.self_modulate = Color(1.0, 1.0, 1.0, 0.25)
 	parent.add_child(right_blend)
 	
-	# BORDE INFERIOR (y ≈ 3240, para blendear con chunk de abajo)
+	# ============ BORDE INFERIOR (y ≈ 3240) ============
 	var bottom_blend = Sprite2D.new()
-	bottom_blend.name = "BlendBottom"
+	bottom_blend.name = "EdgeBottom"
 	bottom_blend.texture = texture
 	bottom_blend.centered = true
-	bottom_blend.position = Vector2(chunk_size.x / 2, 3240 - blend_width / 2)
+	bottom_blend.position = Vector2(chunk_size.x / 2, chunk_size.y - blend_height / 2)
 	bottom_blend.scale = tile_scale
 	bottom_blend.z_index = -98
-	bottom_blend.modulate = Color(1.0, 1.0, 1.0, 0.4)
+	bottom_blend.modulate = Color(1.0, 1.0, 1.0, 0.25)
+	bottom_blend.self_modulate = Color(1.0, 1.0, 1.0, 0.25)
 	parent.add_child(bottom_blend)
 	
-	# ESQUINA INFERIOR-DERECHA (para suavizar la esquina también)
+	# ============ ESQUINA INFERIOR-DERECHA ============
 	var corner_blend = Sprite2D.new()
-	corner_blend.name = "BlendCorner"
+	corner_blend.name = "EdgeCorner"
 	corner_blend.texture = texture
 	corner_blend.centered = true
-	corner_blend.position = Vector2(5760 - blend_width / 2, 3240 - blend_width / 2)
+	corner_blend.position = Vector2(chunk_size.x - blend_width / 2, chunk_size.y - blend_height / 2)
 	corner_blend.scale = tile_scale
 	corner_blend.z_index = -98
-	corner_blend.modulate = Color(1.0, 1.0, 1.0, 0.3)  # Más transparente en esquina
+	corner_blend.modulate = Color(1.0, 1.0, 1.0, 0.15)  # Más transparente en esquina
+	corner_blend.self_modulate = Color(1.0, 1.0, 1.0, 0.15)
 	parent.add_child(corner_blend)
 	
 	if debug_mode:
