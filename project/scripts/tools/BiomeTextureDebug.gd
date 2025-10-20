@@ -26,17 +26,17 @@ func _ready() -> void:
 	var all_valid = true
 	
 	for biome in BIOMES:
-		print(f"📁 {biome}")
+		print("📁 %s" % biome)
 		print("  " + "-"*60)
 		
 		# Check base
-		var base_path = f"res://assets/textures/biomes/{biome}/base.png"
+		var base_path = "res://assets/textures/biomes/%s/base.png" % biome
 		if not _check_texture(base_path, "base", EXPECTED_SIZES["base"]):
 			all_valid = false
 		
 		# Check decorations (assuming up to 3 decor files)
 		for i in range(1, 4):
-			var decor_path = f"res://assets/textures/biomes/{biome}/decor{i}.png"
+			var decor_path = "res://assets/textures/biomes/%s/decor%d.png" % [biome, i]
 			if ResourceLoader.exists(decor_path):
 				var texture = load(decor_path) as Texture2D
 				var size = texture.get_size() if texture else Vector2.ZERO
@@ -53,7 +53,7 @@ func _ready() -> void:
 					decor_type = "SECONDARY"
 				else:
 					# Unknown size
-					print(f"  ⚠️  decor{i}.png: {size} (UNKNOWN TYPE - expected 256×256 or 128×128)")
+					print("  ⚠️  decor%d.png: %s (UNKNOWN TYPE - expected 256×256 or 128×128)" % [i, size])
 					all_valid = false
 					continue
 				
@@ -78,20 +78,20 @@ func _ready() -> void:
 func _check_texture(path: String, name: String, expected_size: Vector2) -> bool:
 	"""Check if texture exists and has correct size"""
 	if not ResourceLoader.exists(path):
-		print(f"  ❌ {name}: NO ENCONTRADO")
+		print("  ❌ %s: NO ENCONTRADO" % name)
 		return false
 	
 	var texture = load(path) as Texture2D
 	if not texture:
-		print(f"  ❌ {name}: ERROR AL CARGAR")
+		print("  ❌ %s: ERROR AL CARGAR" % name)
 		return false
 	
 	var actual_size = texture.get_size()
 	var is_correct = actual_size == expected_size
 	
 	if is_correct:
-		print(f"  ✅ {name}: {actual_size}")
+		print("  ✅ %s: %s" % [name, actual_size])
 	else:
-		print(f"  ❌ {name}: {actual_size} (esperado: {expected_size})")
+		print("  ❌ %s: %s (esperado: %s)" % [name, actual_size, expected_size])
 	
 	return is_correct
