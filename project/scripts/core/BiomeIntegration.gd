@@ -1,26 +1,20 @@
 extends Node
-## Script de Integración Automática de Biomas
-## Se ejecuta al iniciar la escena y configura todo
-
-@onready var game_manager = get_tree().root.find_child("GameManager", true, false)
-@onready var player = get_tree().root.find_child("SpellloopPlayer", true, false)
-
-var _biome_loader: Node = null
+## 🌍 Biome Integration Entry Point
+## Minimal wrapper that loads and initializes the biome system
 
 func _ready():
-	print("[BiomeIntegration] Inicializando sistema de biomas...")
+	print("[BiomeIntegration] Loading biome system...")
 	
-	# Cargar script de biomas
-	var loader_script = load("res://scripts/core/BiomeLoaderDebug.gd")
-	if loader_script == null:
-		print("[BiomeIntegration] ERROR: No se pudo cargar BiomeLoaderDebug.gd")
+	# Load the biome system script
+	var biome_system_script = load("res://scripts/core/BiomeSystemFinal.gd")
+	if biome_system_script == null:
+		print("[BiomeIntegration] ❌ ERROR: Could not load BiomeSystemFinal.gd")
 		return
 	
-	# Crear nodo cargador de biomas
-	_biome_loader = loader_script.new()
-	_biome_loader.enable_debug = true
-	_biome_loader.player_node_name = "SpellloopPlayer"
-	add_child(_biome_loader)
+	# Create instance and add to scene
+	var biome_system = biome_system_script.new()
+	biome_system.enable_debug = true
+	biome_system.player_node_name = "SpellloopPlayer"
+	add_child(biome_system)
 	
-	print("[BiomeIntegration] ✅ Sistema de biomas listo")
-	print("[BiomeIntegration] Los biomas se actualizarán automáticamente")
+	print("[BiomeIntegration] ✅ Biome system initialized")
