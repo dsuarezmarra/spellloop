@@ -37,7 +37,7 @@ const DECORATIONS_PER_BIOME = {
 }
 
 # Configuración de densidad de decoraciones
-const DECORATION_DENSITY = 0.15  # 15% de cobertura aproximadamente
+const DECORATION_DENSITY = 0.25  # 25% de cobertura (aumentado de 15%)
 
 # Ruido perlin para variaciones (si se genera proceduralmente)
 var noise: FastNoiseLite = FastNoiseLite.new()
@@ -132,12 +132,9 @@ func _create_decoration(parent: Node2D, deco_type: String, pos: Vector2, biome_t
 	deco.position = pos
 	deco.z_index = -5  # Atrás de enemigos/jugador
 	
-	# Crear sprite simple/placeholder
-	var sprite = Sprite2D.new()
-	sprite.modulate = BIOME_COLORS[biome_type].lightened(0.3)
-	
 	# Tamaño según tipo
 	var scale_val = 1.0
+	var color = BIOME_COLORS[biome_type]
 	match deco_type:
 		"bush", "bush_dense", "cactus":
 			scale_val = 0.5
@@ -148,16 +145,96 @@ func _create_decoration(parent: Node2D, deco_type: String, pos: Vector2, biome_t
 		_:
 			scale_val = 0.4
 	
-	sprite.scale = Vector2(scale_val, scale_val)
+	# Crear polígono visual (decoración dibujada)
+	var polygon = Polygon2D.new()
+	polygon.color = color.lightened(0.2)
+	polygon.z_index = 0  # Asegurar que tenga z_index
 	
-	# Crear forma simple (círculo o rectángulo)
-	var shape = CircleShape2D.new()
-	shape.radius = 8 * scale_val
+	# Generar puntos según el tipo de decoración
+	var points = _get_decoration_shape(deco_type, scale_val)
+	polygon.polygon = points
 	
-	deco.add_child(sprite)
+	# Agregar un borde para mayor visibilidad
+	var outline_color = color.darkened(0.3)
+	
+	# Crear línea alrededor del polígono
+	var line = Line2D.new()
+	line.default_color = outline_color
+	line.width = 1.0
+	line.z_index = 1  # Encima del polígono
+	
+	# Copiar puntos para la línea
+	for point in points:
+		line.add_point(point)
+	line.add_point(points[0])  # Cerrar la línea
+	
+	deco.add_child(polygon)
+	deco.add_child(line)
 	parent.add_child(deco)
 
-func _generate_biome_transitions(chunk_node: Node2D, chunk_pos: Vector2i, biome_type: int, rng: RandomNumberGenerator) -> void:
+func _get_decoration_shape(deco_type: String, scale: float) -> PackedVector2Array:
+	"""Generar puntos para forma de decoración"""
+	var size = 16.0 * scale
+	var points = PackedVector2Array()
+	
+	match deco_type:
+		"bush", "bush_dense", "cactus":
+			# Forma de rombo
+			points.append(Vector2(0, -size))
+			points.append(Vector2(size, 0))
+			points.append(Vector2(0, size))
+			points.append(Vector2(-size, 0))
+		
+		"tree", "tree_small":
+			# Triángulo (árbol)
+			points.append(Vector2(0, -size))
+			points.append(Vector2(size/2, size/2))
+			points.append(Vector2(-size/2, size/2))
+		
+		"rock", "rune_stone", "lava_rock":
+			# Forma irregular (roca)
+			points.append(Vector2(size/2, -size/2))
+			points.append(Vector2(size, 0))
+			points.append(Vector2(size/2, size))
+			points.append(Vector2(-size/2, size))
+			points.append(Vector2(-size, 0))
+			points.append(Vector2(-size/2, -size/2))
+		
+		"ice_crystal", "arcane_crystal":
+			# Forma de estrella
+			for i in range(8):
+				var angle = (TAU / 8) * i
+				var radius = size if i % 2 == 0 else size / 2
+				points.append(Vector2(cos(angle) * radius, sin(angle) * radius))
+		
+		"flower":
+			# Forma de flor (pequeño círculo)
+			for i in range(6):
+				var angle = (TAU / 6) * i
+				points.append(Vector2(cos(angle) * size, sin(angle) * size))
+		
+		"sand_spike", "fire_spike", "void_spike":
+			# Forma puntiaguda
+			points.append(Vector2(0, -size))
+			points.append(Vector2(size/3, size))
+			points.append(Vector2(-size/3, size))
+		
+		"snow_mound", "frozen_rock":
+			# Montículo
+			points.append(Vector2(-size, 0))
+			points.append(Vector2(0, -size/2))
+			points.append(Vector2(size, 0))
+			points.append(Vector2(0, size/2))
+		
+		_:
+			# Círculo por defecto
+			for i in range(8):
+				var angle = (TAU / 8) * i
+				points.append(Vector2(cos(angle) * size, sin(angle) * size))
+	
+	return points
+
+func _generate_biome_transitions(chunk_node: Node2D, _chunk_pos: Vector2i, _biome_type: int, _rng: RandomNumberGenerator) -> void:
 	"""Generar transiciones visuales con biomas vecinos (bordes suavizados)"""
 	# TODO: Implementar gradientes en bordes para suavizar transiciones
 	# Por ahora, solo una implementación simple

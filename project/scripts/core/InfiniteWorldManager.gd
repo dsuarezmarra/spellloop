@@ -25,6 +25,7 @@ const MAX_ACTIVE_CHUNKS: int = 9
 var active_chunks: Dictionary = {}  # Key: Vector2i (cx, cy), Value: Node (chunk root)
 var current_chunk_index: Vector2i = Vector2i(0, 0)
 var player_ref: Node = null
+var chunks_root: Node2D = null  # Referencia al nodo raíz de chunks
 
 # Generación y renderizado
 var biome_generator: Node = null
@@ -228,6 +229,26 @@ func get_chunk_at_pos(world_pos: Vector2) -> Node2D:
 func get_active_chunks() -> Array:
 	"""Obtener lista de chunks activos"""
 	return active_chunks.values()
+
+func move_world(direction: Vector2, delta: float) -> void:
+	"""Mover el mundo (chunks) en la dirección especificada"""
+	if chunks_root == null:
+		print("[InfiniteWorldManager] ⚠️ chunks_root es null, no se puede mover el mundo")
+		return
+	
+	if not is_instance_valid(chunks_root):
+		print("[InfiniteWorldManager] ❌ chunks_root no es válido")
+		return
+	
+	# Velocidad de movimiento del mundo (contrarresta el movimiento del jugador)
+	var movement_speed = 300.0  # píxeles/segundo
+	var movement = direction * movement_speed * delta
+	
+	# Mover el nodo raíz de chunks
+	chunks_root.position -= movement
+	
+	# Debug log (descomentar si es necesario)
+	# print("[InfiniteWorldManager] 🔄 chunks_root.position: %s" % chunks_root.position)
 
 func toggle_debug_visualization() -> void:
 	"""Alternar visualización de límites de chunks"""
