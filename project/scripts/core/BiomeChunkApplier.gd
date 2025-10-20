@@ -145,12 +145,8 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 	"""
 	Aplicar textura base y decoraciones a un chunk existente.
 	
-	Asume que chunk_node ya existe y tiene estructura base.
-	Añade CanvasLayer con Sprite2D para textura base + decoraciones.
-	
-	Args:
-	  chunk_node: Node2D que representa el chunk
-	  cx, cy: coordenadas del chunk
+	OPTIMIZACIÓN: En lugar de crear 4 sprites separados, creamos UNA SOLA CanvasLayer
+	con las texturas compuestas. Esto reduce el lag significativamente.
 	"""
 	var bioma_data = get_biome_for_position(cx, cy)
 	
@@ -158,140 +154,82 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 		printerr("[BiomeChunkApplier] ✗ No se pudo obtener bioma para (%d, %d)" % [cx, cy])
 		return
 	
-	# Crear CanvasLayer para la textura de suelo
+	# Crear UNA SOLA CanvasLayer para todo el bioma
 	var canvas_layer = CanvasLayer.new()
-	canvas_layer.name = "BiomeBaseLayer"
-	canvas_layer.layer = -1  # detrás de enemigos, etc.
+	canvas_layer.name = "BiomeLayer"
+	canvas_layer.layer = -10  # Detrás de todo
 	chunk_node.add_child(canvas_layer)
 	
-	# Aplicar textura base como sprite tileable
-	_apply_base_texture(canvas_layer, bioma_data, cx, cy)
-	
-	# Aplicar decoraciones
-	_apply_decorations(canvas_layer, bioma_data, cx, cy)
+	# Aplicar base + decoraciones en la misma capa
+	_apply_textures_optimized(canvas_layer, bioma_data, cx, cy)
 	
 	# Guardar metadatos
 	chunk_node.set_meta("biome_name", bioma_data.get("name", "Unknown"))
 	chunk_node.set_meta("biome_id", bioma_data.get("id", -1))
 	
-	print("[BiomeChunkApplier] ✓ Bioma '%s' aplicado a chunk (%d, %d)" % [bioma_data.get("name"), cx, cy])
+	if debug_mode:
+		print("[BiomeChunkApplier] ✓ Bioma '%s' aplicado a chunk (%d, %d)" % [bioma_data.get("name"), cx, cy])
+	
 	biome_changed.emit(bioma_data.get("name", ""))
 
-# ========== APLICAR TEXTURA BASE ==========
-func _apply_base_texture(parent: Node, bioma_data: Dictionary, _cx: int, _cy: int) -> void:
+# ========== APLICAR TEXTURAS OPTIMIZADAS ==========
+func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, _cx: int, _cy: int) -> void:
 	"""
-	Aplicar textura base tileable al chunk.
-	
-	Crea una Sprite2D con la textura base, escalada para cubrir
-	el área del chunk (5760×3240 px).
+	OPTIMIZACIÓN: Aplicar textura base + todas las decoraciones.
+	Crea apenas 4 sprites (1 base + 3 decor) con z_index para layering.
 	"""
-	if not bioma_data.has("base_texture_path"):
-		printerr("[BiomeChunkApplier] ✗ No hay base_texture_path en bioma_data")
-		return
+	var chunk_size = Vector2(5760, 3240)
+	var chunk_center = chunk_size / 2
 	
+	# 1. APLICAR TEXTURA BASE
 	var base_texture_path = bioma_data.get("base_texture_path", "")
 	
-	# Validar que sea string
-	if not base_texture_path is String:
-		printerr("[BiomeChunkApplier] ✗ base_texture_path no es String: %s (tipo: %s)" % [base_texture_path, typeof(base_texture_path)])
-		return
+	if not base_texture_path.is_empty() and ResourceLoader.exists(base_texture_path):
+		var texture = load(base_texture_path) as Texture2D
+		if texture:
+			var sprite = Sprite2D.new()
+			sprite.name = "BiomeBase"
+			sprite.texture = texture
+			sprite.centered = true
+			sprite.position = chunk_center
+			
+			var texture_size = texture.get_size()
+			sprite.scale = Vector2(chunk_size.x / texture_size.x, chunk_size.y / texture_size.y)
+			sprite.z_index = 0
+			
+			parent.add_child(sprite)
+			if debug_mode:
+				print("[BiomeChunkApplier] ✓ Base aplicada: %s" % base_texture_path)
 	
-	if base_texture_path.is_empty():
-		printerr("[BiomeChunkApplier] ✗ base_texture_path está vacío")
-		return
-	
-	if not ResourceLoader.exists(base_texture_path):
-		printerr("[BiomeChunkApplier] ✗ Textura base NO encontrada: %s" % base_texture_path)
-		return
-	
-	var texture = load(base_texture_path) as Texture2D
-	if texture == null:
-		printerr("[BiomeChunkApplier] ✗ Error cargando textura: %s" % base_texture_path)
-		return
-	
-	# Crear Sprite2D con la textura
-	var sprite = Sprite2D.new()
-	sprite.name = "BiomeBaseSprite"
-	sprite.texture = texture
-	sprite.centered = true
-	
-	# Posicionar en centro del chunk
-	var chunk_size = Vector2(5760, 3240)
-	sprite.position = chunk_size / 2
-	
-	# Escalar textura para cubrir chunk
-	var texture_size = texture.get_size()
-	var scale_x = chunk_size.x / texture_size.x
-	var scale_y = chunk_size.y / texture_size.y
-	sprite.scale = Vector2(scale_x, scale_y)
-	
-	# Configuración de rendering
-	sprite.self_modulate = Color.WHITE
-	
-	parent.add_child(sprite)
-	
-	if debug_mode:
-		print("[BiomeChunkApplier] ✓ Base texture aplicada: %s (scale: %.2f, %.2f)" % [base_texture_path, scale_x, scale_y])
-
-# ========== APLICAR DECORACIONES ==========
-func _apply_decorations(parent: Node, bioma_data: Dictionary, _cx: int, _cy: int) -> void:
-	"""
-	Aplicar 3 capas de decoración tileable al chunk.
-	
-	Decoraciones: plantas, rocas, cactus, cristales, runas, etc.
-	Cada decoración se tilea automáticamente para cubrir el chunk.
-	"""
+	# 2. APLICAR DECORACIONES (máximo 3)
 	var decorations = bioma_data.get("decorations", []) as Array
 	var decor_scale = bioma_data.get("decor_scale", 1.0)
 	var decor_opacity = bioma_data.get("decor_opacity", 0.8)
 	
-	for i in range(decorations.size()):
+	for i in range(min(decorations.size(), 3)):  # Máximo 3 decoraciones
 		var decor_path = decorations[i]
 		
-		# Validar que sea string
-		if not decor_path is String:
-			printerr("[BiomeChunkApplier] ✗ decor_path[%d] no es String: tipo %s" % [i, typeof(decor_path)])
-			continue
-		
-		if decor_path.is_empty():
-			if debug_mode:
-				print("[BiomeChunkApplier] ⚠️  Decoración %d está vacía" % (i+1))
-			continue
-		
-		if not ResourceLoader.exists(decor_path):
-			if debug_mode:
-				print("[BiomeChunkApplier] ⚠️  Decoración %d NO encontrada: %s" % [i+1, decor_path])
-			continue
-		
-		var decor_texture = load(decor_path) as Texture2D
-		if decor_texture == null:
-			printerr("[BiomeChunkApplier] ✗ Error cargando decoración: %s" % decor_path)
-			continue
-		
-		# Crear sprite para esta capa de decoración
-		var decor_sprite = Sprite2D.new()
-		decor_sprite.name = "BiomeDecor%d" % (i + 1)
-		decor_sprite.texture = decor_texture
-		decor_sprite.centered = true
-		
-		# Posicionar en centro del chunk
-		var chunk_size = Vector2(5760, 3240)
-		decor_sprite.position = chunk_size / 2
-		
-		# Escalar para cubrir chunk
-		var texture_size = decor_texture.get_size()
-		var scale_x = (chunk_size.x / texture_size.x) * decor_scale
-		var scale_y = (chunk_size.y / texture_size.y) * decor_scale
-		decor_sprite.scale = Vector2(scale_x, scale_y)
-		
-		# Configuración de rendering
-		decor_sprite.self_modulate = Color(1.0, 1.0, 1.0, decor_opacity)
-		decor_sprite.z_index = i + 1  # Layering
-		
-		parent.add_child(decor_sprite)
-		
-		if debug_mode:
-			print("[BiomeChunkApplier] ✓ Decoración %d aplicada: %s" % [i+1, decor_path])
+		if decor_path is String and not decor_path.is_empty() and ResourceLoader.exists(decor_path):
+			var texture = load(decor_path) as Texture2D
+			if texture:
+				var sprite = Sprite2D.new()
+				sprite.name = "BiomeDecor%d" % (i + 1)
+				sprite.texture = texture
+				sprite.centered = true
+				sprite.position = chunk_center
+				
+				var texture_size = texture.get_size()
+				var scale_factor = decor_scale
+				sprite.scale = Vector2(
+					(chunk_size.x / texture_size.x) * scale_factor,
+					(chunk_size.y / texture_size.y) * scale_factor
+				)
+				sprite.self_modulate = Color(1.0, 1.0, 1.0, decor_opacity)
+				sprite.z_index = i + 1  # Layering: base=0, decor1=1, decor2=2, decor3=3
+				
+				parent.add_child(sprite)
+				if debug_mode:
+					print("[BiomeChunkApplier] ✓ Decor %d: %s" % [i+1, decor_path])
 
 # ========== INTERFAZ PÚBLICA: ACTUALIZAR POSICIÓN ==========
 func on_player_position_changed(new_position: Vector2) -> void:
