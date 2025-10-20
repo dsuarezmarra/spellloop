@@ -252,17 +252,19 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 			if decor_path is String and not decor_path.is_empty() and ResourceLoader.exists(decor_path):
 				var texture = load(decor_path) as Texture2D
 				if texture:
-					# OBTENER TAMAÑO REAL de la decoración
-					var decor_actual_size = texture.get_size()
-					
-					# Escalar para llenar 50% de cuadrante (0.5 × 0.5 = 25% del área)
+					# NORMALIZAR tamaño visual: todas las decoraciones tendrán MISMO tamaño visual
+					# Sin importar si PNG es 512×512 o 1024×1024
+					# Escala normalizada: 50% de lo que sería la base (1024×1024)
+					var normalized_base_size = Vector2(1024.0, 1024.0)
 					var decor_scale = Vector2(
-						(tile_size.x / decor_actual_size.x) * 0.5,  # 50% de escala base
-						(tile_size.y / decor_actual_size.y) * 0.5
+						(tile_size.x / normalized_base_size.x) * 0.5,
+						(tile_size.y / normalized_base_size.y) * 0.5
 					)
+					# Resultado final: (0.9375, 0.5273) para TODAS las decoraciones
 					
 					if debug_mode:
-						print("[DECOR %d] Tamaño real: %s → Escala (%.4f, %.4f) × 0.5" % [pos_idx, decor_actual_size, tile_size.x / decor_actual_size.x, tile_size.y / decor_actual_size.y])
+						var actual_size = texture.get_size()
+						print("[DECOR %d] Tamaño PNG: %s → Escala NORMALIZADA: (%.4f, %.4f)" % [pos_idx, actual_size, decor_scale.x, decor_scale.y])
 					
 					var sprite = Sprite2D.new()
 					sprite.name = "BiomeDecor_%d" % pos_idx
