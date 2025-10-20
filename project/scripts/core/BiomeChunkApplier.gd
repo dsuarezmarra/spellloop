@@ -183,8 +183,19 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 	- Decoraciones: TAMBIÉN escaladas 1/9 + DISTRIBUIDAS ALEATORIAMENTE por el chunk
 	- Z-index: Base -100 (abajo de todo) < Decor -99 (arriba de base) < Enemigos 0 (siempre visible)
 	"""
+	ESTRATEGIA CORRECTA:
+	- Chunk: 5760×3240
+	- Grid: 3×3 = 9 cuadrantes
+	- Cada cuadrante: 1920×1080
+	- Textura base: 512×512
+	- Cómo llenar cada cuadrante: Replicar la textura 512×512 en un grid 4×2.1 ≈ 4×3 (para cubrir 1920×1080)
+	
+	Simplificación: Crear 9 posiciones (una por cuadrante) y poner 1 textura 512×512 escalada
+	a 1920×1080 en cada una.
+	"""
 	var chunk_size = Vector2(5760, 3240)
-	var tile_size = Vector2(1920, 1080)  # Tamaño de cada cuadrante
+	var tile_size = Vector2(1920, 1080)  # Cada cuadrante del chunk
+	var texture_size = Vector2(512, 512)  # Tamaño real de las texturas
 	var grid_cols = 3
 	var grid_rows = 3
 
@@ -194,38 +205,29 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 	if not base_texture_path.is_empty() and ResourceLoader.exists(base_texture_path):
 		var texture = load(base_texture_path) as Texture2D
 		if texture:
-			var texture_size = texture.get_size()
-			
-			# CÁLCULO CORRECTO: Escala 1/9 en area = 1/3 en cada eje
-			# Para que cada sprite ocupe EXACTAMENTE 1 cuadrante (1920×1080)
-			# pero la textura se vea a escala 1/9
-			# Necesitamos: textura_escala = (tile_size / 3) / texture_size
-			# Eso da: (640 / 1024, 360 / 1024) = (0.625, 0.352) para textura 1024×1024
-			
-			var scaled_tile_size = Vector2(tile_size.x / 3.0, tile_size.y / 3.0)  # 1/9 del chunk = 1/3 por eje
+			# Las texturas son 512×512 (hardcoded del JSON)
+			# Cada cuadrante es 1920×1080
+			# Escala necesaria: 1920/512 = 3.75, 1080/512 = 2.1
+			# Esto hace que cada textura 512×512 llene APROXIMADAMENTE un cuadrante
 			var tile_scale = Vector2(
-				scaled_tile_size.x / texture_size.x,
-				scaled_tile_size.y / texture_size.y
+				tile_size.x / texture_size.x,  # 1920 / 512 = 3.75
+				tile_size.y / texture_size.y   # 1080 / 512 = 2.1
 			)
 			
 			if debug_mode:
-				print("[BASE] texture_size=(%.0f, %.0f), tile_size=(%.0f, %.0f), scaled_tile=(%.0f, %.0f), scale=(%.4f, %.4f)" % [texture_size.x, texture_size.y, tile_size.x, tile_size.y, scaled_tile_size.x, scaled_tile_size.y, tile_scale.x, tile_scale.y])
+				print("[BASE] Textura 512×512 → Escala (%.2f, %.2f) para llenar cuadrante 1920×1080" % [tile_scale.x, tile_scale.y])
 			
-			# Crear 3×3 grid de sprites
-			# IMPORTANTE: Cada sprite necesita ocupar TODO su tile sin dejar huecos
-			# scaled_tile_size es el tamaño que ocupa CADA sprite después de escalar
-			# Posicionamos en (scaled_tile_size / 2) para que centren correctamente
+			# Crear 3×3 grid (9 sprites, uno por cuadrante)
 			for row in range(grid_rows):
 				for col in range(grid_cols):
 					var sprite = Sprite2D.new()
 					sprite.name = "BiomeBase_%d_%d" % [col, row]
 					sprite.texture = texture
 					sprite.centered = true
-					# Posicionar en el centro de cada scaled tile
-					# Así cada sprite (escalada) llena exactamente su parte sin dejar huecos
+					# Centro de cada cuadrante
 					sprite.position = Vector2(
-						col * scaled_tile_size.x + scaled_tile_size.x / 2.0,
-						row * scaled_tile_size.y + scaled_tile_size.y / 2.0
+						(col + 0.5) * tile_size.x,
+						(row + 0.5) * tile_size.y
 					)
 					sprite.scale = tile_scale
 					sprite.z_index = -100
@@ -255,12 +257,13 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 			if decor_path is String and not decor_path.is_empty() and ResourceLoader.exists(decor_path):
 				var texture = load(decor_path) as Texture2D
 				if texture:
-					var texture_size = texture.get_size()
-					# Escala 1/9 (como base)
+					# Decoraciones también 512×512
+					# Pero más pequeñas para no tapar completamente la base
+					# Usar 50% de la escala de base = 50% de (3.75, 2.1) ≈ (1.875, 1.05)
 					var decor_scale = Vector2(
-						tile_size.x / texture_size.x,
-						tile_size.y / texture_size.y
-					) * 0.15  # 15% del tamaño de base (MUCHO más pequeño que 50%)
+						(tile_size.x / texture_size.x) * 0.5,  # 50% de escala base
+						(tile_size.y / texture_size.y) * 0.5
+					)
 					
 					var sprite = Sprite2D.new()
 					sprite.name = "BiomeDecor_%d" % pos_idx
