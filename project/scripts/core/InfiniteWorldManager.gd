@@ -30,6 +30,7 @@ var chunks_root: Node2D = null  # Referencia al nodo raíz de chunks
 # Generación y renderizado
 var biome_generator: Node = null
 var chunk_cache_manager: Node = null
+var biome_applier: Node = null
 var is_generating: bool = false
 
 # Semilla para reproducibilidad
@@ -50,6 +51,7 @@ func _ready() -> void:
 	# Cargar componentes
 	_load_biome_generator()
 	_load_chunk_cache_manager()
+	_load_biome_applier()
 	
 	# Configurar para procesamiento
 	set_process(true)
@@ -75,6 +77,16 @@ func _load_chunk_cache_manager() -> void:
 			chunk_cache_manager.name = "ChunkCacheManager"
 			add_child(chunk_cache_manager)
 			print("[InfiniteWorldManager] ChunkCacheManager cargado")
+
+func _load_biome_applier() -> void:
+	"""Cargar el aplicador de biomas y texturas"""
+	if ResourceLoader.exists("res://scripts/core/BiomeChunkApplier.gd"):
+		var ba_script = load("res://scripts/core/BiomeChunkApplier.gd")
+		if ba_script:
+			biome_applier = ba_script.new()
+			biome_applier.name = "BiomeChunkApplier"
+			add_child(biome_applier)
+			print("[InfiniteWorldManager] BiomeChunkApplier cargado")
 
 func initialize(player: Node) -> void:
 	"""Inicializar con referencia al jugador"""
@@ -182,6 +194,10 @@ func _generate_new_chunk(chunk_pos: Vector2i) -> void:
 	# Generar bioma y decoraciones
 	if biome_generator:
 		await biome_generator.generate_chunk_async(chunk_node, chunk_pos, rng)
+	
+	# Aplicar texturas y biomas visuales
+	if biome_applier:
+		biome_applier.apply_biome_to_chunk(chunk_node, chunk_pos.x, chunk_pos.y)
 	
 	# Guardar en caché
 	if chunk_cache_manager:
