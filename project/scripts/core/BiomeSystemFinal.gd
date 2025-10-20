@@ -72,7 +72,6 @@ func _print_biome_list() -> void:
 	for biome in biomes:
 		var name = biome.get("name", "Unknown")
 		var id = biome.get("id", -1)
-		var color = biome.get("color_base", "N/A")
 		print("    • %s (ID: %d)" % [name, id])
 
 func _process(_delta: float) -> void:
