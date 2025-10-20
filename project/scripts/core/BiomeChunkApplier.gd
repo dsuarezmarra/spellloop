@@ -395,25 +395,7 @@ func _generate_decoration_positions(rng: RandomNumberGenerator, tile_size: Vecto
 	
 	return positions
 
-# ========== INTERFAZ PÚBLICA: APLICAR TEXTURAS ==========
-func on_player_position_changed(new_position: Vector2) -> void:
-	"""
-	DEPRECATED: Este método ya no se utiliza.
-	BiomeChunkApplier es un componente pasivo que solo aplica texturas.
-	InfiniteWorldManager es responsable de la orquestación.
-	"""
-	pass
-
 # ========== DEBUGGING ==========
-func print_active_chunks() -> void:
-	"""
-	DEPRECATED: Este método ya no es relevante.
-	BiomeChunkApplier no gestiona chunks activos.
-	Ver InfiniteWorldManager.get_info() para información de chunks.
-	"""
-	print("[BiomeChunkApplier] Este sistema ahora solo aplica texturas.")
-	print("[BiomeChunkApplier] Ver InfiniteWorldManager para información de chunks.")
-
 func print_config() -> void:
 	"""Imprimir configuración de biomas cargada"""
 	print("\n[BiomeChunkApplier] === BIOMAS CONFIGURADOS ===")
