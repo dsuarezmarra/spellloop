@@ -145,8 +145,8 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 	"""
 	Aplicar textura base y decoraciones a un chunk existente.
 	
-	OPTIMIZACIÓN: En lugar de crear 4 sprites separados, creamos UNA SOLA CanvasLayer
-	con las texturas compuestas. Esto reduce el lag significativamente.
+	OPTIMIZACIÓN: Los sprites de textura ahora son Node2D Sprite2D normales,
+	NO CanvasLayer. Esto permite que respeten z_index y visible_layers correctamente.
 	"""
 	var bioma_data = get_biome_for_position(cx, cy)
 	
@@ -154,14 +154,14 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 		printerr("[BiomeChunkApplier] ✗ No se pudo obtener bioma para (%d, %d)" % [cx, cy])
 		return
 	
-	# Crear UNA SOLA CanvasLayer para todo el bioma
-	var canvas_layer = CanvasLayer.new()
-	canvas_layer.name = "BiomeLayer"
-	canvas_layer.layer = 0  # Capa visible (0 se muestra normalmente)
-	chunk_node.add_child(canvas_layer)
+	# Crear contenedor para texturas (Node2D simple, no CanvasLayer)
+	var biome_layer = Node2D.new()
+	biome_layer.name = "BiomeLayer"
+	biome_layer.z_index = -1  # Renderizar DEBAJO de jugador/enemigos
+	chunk_node.add_child(biome_layer)
 	
-	# Aplicar base + decoraciones en la misma capa
-	_apply_textures_optimized(canvas_layer, bioma_data, cx, cy)
+	# Aplicar base + decoraciones
+	_apply_textures_optimized(biome_layer, bioma_data, cx, cy)
 	
 	# Guardar metadatos
 	chunk_node.set_meta("biome_name", bioma_data.get("name", "Unknown"))
