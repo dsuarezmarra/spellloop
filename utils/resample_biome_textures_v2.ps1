@@ -147,7 +147,7 @@ function Resize-With-Native-PNG {
 # Diccionario de tamaños objetivo
 $textureSizes = @{
     "base" = @(1920, 1080)
-    "decor" = @(256, 256)
+    "decor" = @(128, 128)
 }
 
 $processedCount = 0
