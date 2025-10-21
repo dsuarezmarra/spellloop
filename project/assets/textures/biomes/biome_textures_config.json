@@ -12,11 +12,11 @@
       "color_base": "#7ED957",
       "description": "Césped liso con flores, arbustos y rocas",
       "textures": {
-        "base": "Grassland/base.jpg",
+        "base": "Grassland/base.png",
         "decor": [
-          "Grassland/decor1.jpg",
-          "Grassland/decor2.jpg",
-          "Grassland/decor3.jpg"
+          "Grassland/decor1.png",
+          "Grassland/decor2.png",
+          "Grassland/decor3.png"
         ]
       },
       "tile_size": [
@@ -59,11 +59,11 @@
       "color_base": "#E8C27B",
       "description": "Arena con cactus, rocas y dunas",
       "textures": {
-        "base": "Desert/base.jpg",
+        "base": "Desert/base.png",
         "decor": [
-          "Desert/decor1.jpg",
-          "Desert/decor2.jpg",
-          "Desert/decor3.jpg"
+          "Desert/decor1.png",
+          "Desert/decor2.png",
+          "Desert/decor3.png"
         ]
       },
       "tile_size": [
@@ -106,11 +106,11 @@
       "color_base": "#EAF6FF",
       "description": "Nieve blanca con cristales, montículos y carámbanos",
       "textures": {
-        "base": "Snow/base.jpg",
+        "base": "Snow/base.png",
         "decor": [
-          "Snow/decor1.jpg",
-          "Snow/decor2.jpg",
-          "Snow/decor3.jpg"
+          "Snow/decor1.png",
+          "Snow/decor2.png",
+          "Snow/decor3.png"
         ]
       },
       "tile_size": [
@@ -153,11 +153,11 @@
       "color_base": "#F55A33",
       "description": "Lava con grietas, rocas volcánicas y vapor",
       "textures": {
-        "base": "Lava/base.jpg",
+        "base": "Lava/base.png",
         "decor": [
-          "Lava/decor1.jpg",
-          "Lava/decor2.jpg",
-          "Lava/decor3.jpg"
+          "Lava/decor1.png",
+          "Lava/decor2.png",
+          "Lava/decor3.png"
         ]
       },
       "tile_size": [
@@ -200,11 +200,11 @@
       "color_base": "#B56DDC",
       "description": "Suelo violeta con runas, cristales y energía",
       "textures": {
-        "base": "ArcaneWastes/base.jpg",
+        "base": "ArcaneWastes/base.png",
         "decor": [
-          "ArcaneWastes/decor1.jpg",
-          "ArcaneWastes/decor2.jpg",
-          "ArcaneWastes/decor3.jpg"
+          "ArcaneWastes/decor1.png",
+          "ArcaneWastes/decor2.png",
+          "ArcaneWastes/decor3.png"
         ]
       },
       "tile_size": [
@@ -247,11 +247,11 @@
       "color_base": "#306030",
       "description": "Hojas oscuras con plantas, troncos y hongos",
       "textures": {
-        "base": "Forest/base.jpg",
+        "base": "Forest/base.png",
         "decor": [
-          "Forest/decor1.jpg",
-          "Forest/decor2.jpg",
-          "Forest/decor3.jpg"
+          "Forest/decor1.png",
+          "Forest/decor2.png",
+          "Forest/decor3.png"
         ]
       },
       "tile_size": [
