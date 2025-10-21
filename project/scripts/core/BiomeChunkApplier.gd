@@ -31,6 +31,7 @@ Este script solo gestiona texturas visuales (sin colisión).
 # ========== PRIVADAS ==========
 var _config: Dictionary = {}
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+var organic_transition: Node = null  # Sistema de transiciones orgánicas
 
 # NOTE: _chunk_cache, _active_chunks, _player_position, _current_chunk_coords
 # ya no se utilizan aquí (InfiniteWorldManager es responsable)
@@ -44,7 +45,24 @@ func _ready() -> void:
 	print("[BiomeChunkApplier] ✓ Inicializando...")
 	_rng.randomize()
 	_load_config()
+	_setup_organic_transitions()
 	print("[BiomeChunkApplier] ✓ Configuración cargada. Biomas disponibles: %d" % _config.get("biomes", []).size())
+
+func _setup_organic_transitions() -> void:
+	"""Configurar sistema de transiciones orgánicas"""
+	if ResourceLoader.exists("res://scripts/core/OrganicBiomeTransition.gd"):
+		var ot_script = load("res://scripts/core/OrganicBiomeTransition.gd")
+		if ot_script:
+			organic_transition = ot_script.new()
+			organic_transition.name = "OrganicBiomeTransition"
+			add_child(organic_transition)
+			print("[BiomeChunkApplier] ✅ Sistema de transiciones orgánicas inicializado")
+
+func set_world_seed(world_seed: int) -> void:
+	"""Establecer semilla mundial para reproducibilidad"""
+	if organic_transition and organic_transition.has_method("set_world_seed"):
+		organic_transition.set_world_seed(world_seed)
+		print("[BiomeChunkApplier] 🌱 Semilla establecida: %d" % world_seed)
 
 # ========== CARGAR CONFIGURACIÓN ==========
 func _load_config() -> void:
@@ -146,20 +164,29 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 	"""
 	Aplicar textura base y decoraciones a un chunk existente.
 	
-	OPTIMIZACIÓN: Los sprites de textura ahora son Node2D Sprite2D normales,
-	NO CanvasLayer. Esto permite que respeten z_index y visible_layers correctamente.
+	NUEVA FUNCIONALIDAD: Soporte para transiciones orgánicas entre biomas.
+	Si está habilitado, detecta transiciones y aplica blending de texturas.
 	"""
-	var bioma_data = get_biome_for_position(cx, cy)
-	
-	if bioma_data.is_empty():
-		printerr("[BiomeChunkApplier] ✗ No se pudo obtener bioma para (%d, %d)" % [cx, cy])
-		return
-	
 	# Crear contenedor para texturas (Node2D simple, no CanvasLayer)
 	var biome_layer = Node2D.new()
 	biome_layer.name = "BiomeLayer"
 	biome_layer.z_index = -100  # MUY ATRÁS: debajo de TODO (enemigos, player, etc siempre visible)
 	chunk_node.add_child(biome_layer)
+	
+	# Verificar si usar transiciones orgánicas o bioma tradicional por chunk
+	if organic_transition and organic_transition.has_method("get_biome_transition_data"):
+		_apply_organic_biome_transitions(biome_layer, chunk_node, cx, cy)
+	else:
+		# Fallback al sistema tradicional (un bioma por chunk)
+		_apply_traditional_biome(biome_layer, chunk_node, cx, cy)
+
+func _apply_traditional_biome(biome_layer: Node2D, chunk_node: Node2D, cx: int, cy: int) -> void:
+	"""Aplicar bioma tradicional (un bioma por chunk completo)"""
+	var bioma_data = get_biome_for_position(cx, cy)
+	
+	if bioma_data.is_empty():
+		printerr("[BiomeChunkApplier] ✗ No se pudo obtener bioma para (%d, %d)" % [cx, cy])
+		return
 	
 	# Aplicar base + decoraciones
 	_apply_textures_optimized(biome_layer, bioma_data, cx, cy)
@@ -169,11 +196,110 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 	chunk_node.set_meta("biome_id", bioma_data.get("id", -1))
 	
 	if debug_mode:
-		print("[BiomeChunkApplier] ✓ Bioma '%s' aplicado a chunk (%d, %d)" % [bioma_data.get("name"), cx, cy])
+		print("[BiomeChunkApplier] ✓ Bioma tradicional '%s' aplicado a chunk (%d, %d)" % [bioma_data.get("name"), cx, cy])
 	
 	biome_changed.emit(bioma_data.get("name", ""))
 
+func _apply_organic_biome_transitions(biome_layer: Node2D, chunk_node: Node2D, cx: int, cy: int) -> void:
+	"""Aplicar transiciones orgánicas de biomas dentro del chunk"""
+	var chunk_world_pos = Vector2(cx * 5760, cy * 3240)
+	var chunk_size = Vector2(5760, 3240)
+	
+	# Analizar el chunk para determinar biomas presentes y sus transiciones
+	var biome_analysis = _analyze_chunk_biomes(chunk_world_pos, chunk_size)
+	
+	# Si solo hay un bioma dominante (>90%), usar aplicación tradicional optimizada
+	if biome_analysis.is_uniform:
+		var dominant_biome_data = _get_biome_data_by_name(biome_analysis.primary_biome)
+		if not dominant_biome_data.is_empty():
+			_apply_textures_optimized(biome_layer, dominant_biome_data, cx, cy)
+			chunk_node.set_meta("biome_name", biome_analysis.primary_biome)
+			if debug_mode:
+				print("[BiomeChunkApplier] ✓ Bioma orgánico uniforme '%s' aplicado a chunk (%d, %d)" % [biome_analysis.primary_biome, cx, cy])
+	else:
+		# Chunk con transiciones: aplicar blending complejo
+		_apply_transition_blending(biome_layer, chunk_world_pos, chunk_size, biome_analysis)
+		chunk_node.set_meta("biome_name", "%s→%s" % [biome_analysis.primary_biome, biome_analysis.secondary_biome])
+		if debug_mode:
+			print("[BiomeChunkApplier] ✓ Transición orgánica '%s' aplicada a chunk (%d, %d)" % [chunk_node.get_meta("biome_name"), cx, cy])
+	
+	biome_changed.emit(chunk_node.get_meta("biome_name", "transition"))
+
 # ========== APLICAR TEXTURAS OPTIMIZADAS ==========
+func _analyze_chunk_biomes(chunk_world_pos: Vector2, chunk_size: Vector2) -> Dictionary:
+	"""Analizar qué biomas están presentes en un chunk y sus proporciones"""
+	if not organic_transition or not organic_transition.has_method("get_biome_transition_data"):
+		return {"is_uniform": true, "primary_biome": "grassland", "secondary_biome": "grassland", "transition_factor": 0.0}
+	
+	# Tomar muestras en varios puntos del chunk para determinar composición
+	var sample_points = [
+		chunk_world_pos + Vector2(chunk_size.x * 0.2, chunk_size.y * 0.2),  # Top-left
+		chunk_world_pos + Vector2(chunk_size.x * 0.8, chunk_size.y * 0.2),  # Top-right  
+		chunk_world_pos + Vector2(chunk_size.x * 0.2, chunk_size.y * 0.8),  # Bottom-left
+		chunk_world_pos + Vector2(chunk_size.x * 0.8, chunk_size.y * 0.8),  # Bottom-right
+		chunk_world_pos + Vector2(chunk_size.x * 0.5, chunk_size.y * 0.5),  # Center
+	]
+	
+	var biome_counts = {}
+	var total_transition_factor = 0.0
+	
+	for point in sample_points:
+		var transition_data = organic_transition.get_biome_transition_data(point)
+		var primary_biome = transition_data.primary_biome
+		var secondary_biome = transition_data.secondary_biome
+		
+		biome_counts[primary_biome] = biome_counts.get(primary_biome, 0) + 1
+		if secondary_biome != primary_biome:
+			biome_counts[secondary_biome] = biome_counts.get(secondary_biome, 0) + transition_data.blend_factor
+		
+		total_transition_factor += transition_data.blend_factor
+	
+	# Encontrar biomas dominantes
+	var sorted_biomes = []
+	for biome in biome_counts.keys():
+		sorted_biomes.append({"name": biome, "count": biome_counts[biome]})
+	sorted_biomes.sort_custom(func(a, b): return a.count > b.count)
+	
+	var primary = sorted_biomes[0].name if sorted_biomes.size() > 0 else "grassland"
+	var secondary = sorted_biomes[1].name if sorted_biomes.size() > 1 else primary
+	var avg_transition = total_transition_factor / sample_points.size()
+	
+	return {
+		"is_uniform": avg_transition < 0.1,  # Menos del 10% de transición
+		"primary_biome": primary,
+		"secondary_biome": secondary, 
+		"transition_factor": avg_transition
+	}
+
+func _get_biome_data_by_name(biome_name: String) -> Dictionary:
+	"""Obtener datos de configuración de un bioma por nombre"""
+	var biomes = _config.get("biomes", [])
+	for biome in biomes:
+		if biome.get("name", "") == biome_name:
+			return biome
+	
+	# Fallback a grassland si no se encuentra
+	for biome in biomes:
+		if biome.get("name", "") == "grassland":
+			return biome
+	
+	return {}
+
+func _apply_transition_blending(biome_layer: Node2D, chunk_world_pos: Vector2, _chunk_size: Vector2, biome_analysis: Dictionary) -> void:
+	"""Aplicar blending de texturas para transiciones suaves entre biomas"""
+	# Por ahora, simplificar aplicando el bioma primario
+	# En una implementación completa, esto crearía múltiples capas con máscaras alpha
+	var primary_biome_data = _get_biome_data_by_name(biome_analysis.primary_biome)
+	if not primary_biome_data.is_empty():
+		# Convertir posición mundial de vuelta a coordenadas de chunk
+		var cx = int(chunk_world_pos.x / 5760)
+		var cy = int(chunk_world_pos.y / 3240)
+		_apply_textures_optimized(biome_layer, primary_biome_data, cx, cy)
+		
+		# TODO: Implementar blending real con secondary_biome usando máscaras
+		if debug_mode:
+			print("[BiomeChunkApplier] 🌊 Transición aplicada: %s (factor: %.2f)" % [biome_analysis.primary_biome, biome_analysis.transition_factor])
+
 func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy: int) -> void:
 	"""
 	ARQUITECTURA OPCIÓN C:
@@ -190,7 +316,7 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 	- Secundarias: 128×128 → Escala (15, 8.4) × 0.25 = (3.75, 2.1)
 	- Ambas ocupan ~28% del área del cuadrante
 	"""
-	var chunk_size = Vector2(5760, 3240)
+	var _chunk_size = Vector2(5760, 3240)
 	var tile_size = Vector2(1920, 1080)  # Cada cuadrante del chunk
 	var grid_cols = 3
 	var grid_rows = 3

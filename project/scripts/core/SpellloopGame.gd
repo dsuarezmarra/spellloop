@@ -338,7 +338,7 @@ func initialize_systems():
 	
 	# Inicializar mundo infinito
 	if has_node("WorldRoot/ChunksRoot"):
-		world_manager.chunks_root = get_node("WorldRoot/ChunksRoot")
+		world_manager.set_chunks_root(get_node("WorldRoot/ChunksRoot"))
 		print("[SpellloopGame] ✅ chunks_root asignado: %s" % world_manager.chunks_root.name)
 	else:
 		print("[SpellloopGame] ❌ ERROR: ChunksRoot no encontrado en escena")
