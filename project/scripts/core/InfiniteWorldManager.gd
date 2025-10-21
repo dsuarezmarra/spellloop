@@ -120,6 +120,7 @@ func _chunk_index_to_world_pos(cx: int, cy: int) -> Vector2:
 func _update_chunks_around_player() -> void:
 	"""Actualizar chunks: generar nuevos, destruir lejanos, mantener 3×3 activos"""
 	if is_generating:
+		print("[InfiniteWorldManager] ⏸️ Generación en progreso, esperando...")
 		return
 	
 	# Calcular rango de chunks a mantener activos (3×3 centrado)
@@ -136,8 +137,8 @@ func _update_chunks_around_player() -> void:
 			chunks_to_keep.append(chunk_pos)
 			
 			if not active_chunks.has(chunk_pos):
-				# Generar o cargar del caché
-				_generate_or_load_chunk(chunk_pos)
+				# Generar o cargar del caché de forma asíncrona
+				_generate_or_load_chunk.call_deferred(chunk_pos)
 	
 	# Destruir chunks fuera de rango
 	var chunks_to_remove: Array[Vector2i] = []
@@ -168,7 +169,7 @@ func _generate_or_load_chunk(chunk_pos: Vector2i) -> void:
 		is_generating = false
 		return
 	
-	# Generar nuevo
+	# Generar nuevo con reseteo garantizado
 	await get_tree().process_frame  # Diferir para no bloquear
 	_generate_new_chunk(chunk_pos)
 	is_generating = false
