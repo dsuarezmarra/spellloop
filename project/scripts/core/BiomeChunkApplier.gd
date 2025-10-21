@@ -114,6 +114,7 @@ func get_biome_for_position(cx: int, cy: int) -> Dictionary:
 	var bioma_data = {}
 	bioma_data["name"] = bioma_config.get("name", "Unknown")
 	bioma_data["id"] = bioma_config.get("id", "")
+	bioma_data["color_base"] = bioma_config.get("color_base", "#7ED957")
 	
 	# Construir rutas completas para texturas
 	var textures_config = bioma_config.get("textures", {}) as Dictionary
@@ -197,13 +198,16 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 	# ============ 1. TEXTURAS BASE (1920×1080 cada una, sin escala) ============
 	var base_texture_path = bioma_data.get("base_texture_path", "")
 
-	if not base_texture_path.is_empty() and ResourceLoader.exists(base_texture_path):
+	if not base_texture_path.is_empty():
+		if debug_mode:
+			print("[BASE_TEXTURE] 📂 Intentando cargar desde: %s" % base_texture_path)
+		
 		var texture = load(base_texture_path) as Texture2D
 		if texture:
 			var actual_texture_size = texture.get_size()
 			
 			if debug_mode:
-				print("[BASE_TEXTURE] Tamaño: %s" % actual_texture_size)
+				print("[BASE_TEXTURE] ✓ Cargada exitosamente - Tamaño: %s" % actual_texture_size)
 			
 			# Escala para llenar exactamente 1920×1080
 			var tile_scale = Vector2(
@@ -229,6 +233,12 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 			
 			if debug_mode:
 				print("[✓] Base: 9 sprites × 1920×1080 (escala: %.2f, %.2f)" % [tile_scale.x, tile_scale.y])
+		else:
+			printerr("[BASE_TEXTURE] ✗ NO se pudo cargar: %s" % base_texture_path)
+			# FALLBACK: Crear fondo de color sólido basado en bioma
+			_create_solid_color_fallback(parent, bioma_data, grid_rows, grid_cols, tile_size)
+	else:
+		printerr("[BASE_TEXTURE] ✗ Ruta vacía para textura base")
 
 	# ============ 2. DECORACIONES (1 POR POSICIÓN, distribución aleatoria SIN superponer) ============
 	var decorations = bioma_data.get("decorations", []) as Array
@@ -248,7 +258,7 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 			var decor_idx = chunk_rng.randi_range(0, decorations.size() - 1)
 			var decor_path = decorations[decor_idx]
 			
-			if decor_path is String and not decor_path.is_empty() and ResourceLoader.exists(decor_path):
+			if decor_path is String and not decor_path.is_empty():
 				var texture = load(decor_path) as Texture2D
 				if texture:
 					var decor_size = texture.get_size()
@@ -289,8 +299,36 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 	# POR AHORA DESHABILITADO - necesita revisión
 	# _apply_edge_smoothing(parent, bioma_data, cx, cy, chunk_size, tile_size)
 
+# ============ FUNCIÓN: Fallback - Color sólido si no se carga textura ============
+func _create_solid_color_fallback(parent: Node, bioma_data: Dictionary, grid_rows: int, grid_cols: int, tile_size: Vector2) -> void:
+	"""
+	Si la textura base no se puede cargar, crear un fondo de color sólido.
+	Extrae el color_base del JSON de configuración.
+	"""
+	var color_hex = bioma_data.get("color_base", "#7ED957")
+	var color = Color.from_string(color_hex, Color.WHITE)
+	
+	print("[FALLBACK] Usando color de bioma: %s" % color_hex)
+	
+	# Crear 3×3 grid de ColorRects
+	for row in range(grid_rows):
+		for col in range(grid_cols):
+			var color_rect = ColorRect.new()
+			color_rect.name = "BiomaFallback_%d_%d" % [col, row]
+			color_rect.color = color
+			color_rect.z_index = -100
+			
+			# Tamaño: llenar exactamente 1 tile
+			color_rect.custom_minimum_size = tile_size
+			color_rect.position = Vector2(col * tile_size.x, row * tile_size.y)
+			color_rect.size = tile_size
+			
+			parent.add_child(color_rect)
+	
+	print("[✓] Fallback: 9 ColorRects aplicados (color: %s)" % color_hex)
+
 # ============ FUNCIÓN: Suavizar bordes entre chunks ============
-func _apply_edge_smoothing(parent: Node, bioma_data: Dictionary, cx: int, cy: int, chunk_size: Vector2, tile_size: Vector2) -> void:
+func _apply_edge_smoothing(parent: Node, bioma_data: Dictionary, _cx: int, _cy: int, chunk_size: Vector2, tile_size: Vector2) -> void:
 	"""
 	Agregar overlays semitransparentes en los bordes para suavizar transiciones.
 	
