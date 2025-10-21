@@ -343,46 +343,22 @@ func _apply_transition_blending(biome_layer: Node2D, chunk_world_pos: Vector2, c
 	_apply_organic_blending_by_sections(biome_layer, chunk_world_pos, chunk_size, primary_biome_data, secondary_biome_data, biome_analysis)
 	
 	if debug_mode:
-		print("[BiomeChunkApplier] 🌊 Transición orgánica aplicada: %s→%s (factor: %.2f)" % [biome_analysis.primary_biome, biome_analysis.secondary_biome, biome_analysis.transition_factor])
+		print("[BiomeChunkApplier] � MÁSCARA ORGÁNICA aplicada: %s→%s (factor: %.2f)" % [biome_analysis.primary_biome, biome_analysis.secondary_biome, biome_analysis.transition_factor])
 
 func _apply_organic_blending_by_sections(biome_layer: Node2D, chunk_world_pos: Vector2, chunk_size: Vector2, primary_data: Dictionary, secondary_data: Dictionary, _biome_analysis: Dictionary) -> void:
-	"""Aplicar texturas con blending orgánico dividiendo el chunk en secciones 3x3"""
-	# Dimensiones de cada sección
-	var section_width = chunk_size.x / 3.0  # 1920
-	var section_height = chunk_size.y / 3.0 # 1080
+	"""Aplicar texturas con blending orgánico usando máscaras generadas proceduralmente"""
 	
-	# Procesar cada sección de la grid 3x3
-	for section_y in range(3):
-		for section_x in range(3):
-			# Calcular posición mundial del centro de esta sección
-			var section_center = chunk_world_pos + Vector2(
-				(section_x + 0.5) * section_width,
-				(section_y + 0.5) * section_height
-			)
-			
-			# Obtener datos de transición para esta sección específica
-			var transition_data = organic_transition.get_biome_transition_data(section_center)
-			var primary_influence = 1.0 - transition_data.blend_factor
-			var secondary_influence = transition_data.blend_factor
-			
-			# Determinar qué bioma domina en esta sección
-			var dominant_biome_data = primary_data
-			var blend_alpha = secondary_influence
-			
-			if secondary_influence > primary_influence:
-				dominant_biome_data = secondary_data
-				blend_alpha = primary_influence
-			
-			# Crear sprites para esta sección con el bioma dominante
-			_create_section_sprites(biome_layer, section_x, section_y, dominant_biome_data, section_width, section_height)
-			
-			# Si hay suficiente influencia del segundo bioma, crear capa de blending
-			if blend_alpha > 0.2:  # Solo aplicar blending si la influencia es significativa
-				_create_blend_section(biome_layer, section_x, section_y, secondary_data if dominant_biome_data == primary_data else primary_data, section_width, section_height, blend_alpha)
+	# Crear base layer con bioma primario
+	_create_base_layer(biome_layer, primary_data, chunk_size)
+	
+	# Crear mask layer orgánica para el bioma secundario
+	_create_organic_mask_layer(biome_layer, chunk_world_pos, chunk_size, secondary_data)
+	
+	# Añadir decoraciones mezcladas
+	_add_organic_decorations(biome_layer, chunk_world_pos, chunk_size, primary_data, secondary_data)
 
-func _create_section_sprites(parent: Node2D, section_x: int, section_y: int, biome_data: Dictionary, section_width: float, section_height: float) -> void:
-	"""Crear sprites base para una sección específica"""
-	# Cargar textura base
+func _create_base_layer(parent: Node2D, biome_data: Dictionary, chunk_size: Vector2) -> void:
+	"""Crear la capa base del chunk con el bioma primario usando grid 3x3"""
 	var base_texture_path = biome_data.get("base_texture_path", "")
 	if base_texture_path.is_empty():
 		return
@@ -391,83 +367,150 @@ func _create_section_sprites(parent: Node2D, section_x: int, section_y: int, bio
 	if not base_texture:
 		return
 	
-	# Crear sprite base para esta sección
-	var sprite = Sprite2D.new()
-	sprite.texture = base_texture
-	sprite.name = "BaseSprite_%d_%d" % [section_x, section_y]
+	# Grid 3x3 para cubrir todo el chunk
+	var section_width = chunk_size.x / 3.0  # 1920
+	var section_height = chunk_size.y / 3.0 # 1080
 	
-	# Posicionar en el centro de la sección
-	sprite.position = Vector2(
-		(section_x + 0.5) * section_width,
-		(section_y + 0.5) * section_height
-	)
-	
-	parent.add_child(sprite)
-	
-	# Añadir decoración aleatoria para esta sección
-	_add_section_decoration(parent, section_x, section_y, biome_data, section_width, section_height)
+	for row in range(3):
+		for col in range(3):
+			var sprite = Sprite2D.new()
+			sprite.texture = base_texture
+			sprite.name = "BaseLayer_%d_%d" % [col, row]
+			
+			# Posicionar en el centro de cada sección
+			sprite.position = Vector2(
+				(col + 0.5) * section_width,
+				(row + 0.5) * section_height
+			)
+			
+			parent.add_child(sprite)
 
-func _create_blend_section(parent: Node2D, section_x: int, section_y: int, blend_biome_data: Dictionary, section_width: float, section_height: float, alpha: float) -> void:
-	"""Crear capa de blending para mezclar biomas en una sección"""
-	var blend_texture_path = blend_biome_data.get("base_texture_path", "")
-	if blend_texture_path.is_empty():
+func _create_organic_mask_layer(parent: Node2D, chunk_world_pos: Vector2, chunk_size: Vector2, secondary_biome_data: Dictionary) -> void:
+	"""Crear capa de máscara orgánica para el bioma secundario"""
+	var secondary_texture_path = secondary_biome_data.get("base_texture_path", "")
+	if secondary_texture_path.is_empty():
 		return
 	
-	var blend_texture = load(blend_texture_path)
-	if not blend_texture:
+	var secondary_texture = load(secondary_texture_path)
+	if not secondary_texture:
 		return
 	
-	# Crear sprite de blending
-	var blend_sprite = Sprite2D.new()
-	blend_sprite.texture = blend_texture
-	blend_sprite.name = "BlendSprite_%d_%d" % [section_x, section_y]
-	blend_sprite.modulate.a = alpha  # Aplicar transparencia para el blending
+	# Crear múltiples sprites con diferentes alphas para simular bordes orgánicos
+	var mask_samples = 6  # Número de muestras para el gradiente orgánico
+	var section_width = chunk_size.x / 3.0
+	var section_height = chunk_size.y / 3.0
 	
-	# Posicionar igual que el sprite base
-	blend_sprite.position = Vector2(
-		(section_x + 0.5) * section_width,
-		(section_y + 0.5) * section_height
-	)
-	
-	parent.add_child(blend_sprite)
+	for row in range(3):
+		for col in range(3):
+			# Calcular posición mundial del centro de esta sección
+			var section_center = chunk_world_pos + Vector2(
+				(col + 0.5) * section_width,
+				(row + 0.5) * section_height
+			)
+			
+			# Obtener datos de transición para esta posición
+			var transition_data = organic_transition.get_biome_transition_data(section_center)
+			var blend_strength = transition_data.blend_factor
+			
+			# Solo crear máscaras donde hay suficiente influencia del bioma secundario
+			if blend_strength > 0.1:
+				# Muestrear múltiples puntos dentro de la sección para crear formas irregulares
+				var subsample_count = 4  # 2x2 submuestreo dentro de cada sección
+				var subsection_size = Vector2(section_width / 2.0, section_height / 2.0)
+				
+				for sub_y in range(2):
+					for sub_x in range(2):
+						# Posición del centro de la subsección
+						var subsection_center = chunk_world_pos + Vector2(
+							col * section_width + (sub_x + 0.5) * subsection_size.x,
+							row * section_height + (sub_y + 0.5) * subsection_size.y
+						)
+						
+						# Obtener influencia específica para esta subsección
+						var sub_transition_data = organic_transition.get_biome_transition_data(subsection_center)
+						var sub_blend_strength = sub_transition_data.blend_factor
+						
+						# Crear sprite de máscara solo si hay suficiente influencia local
+						if sub_blend_strength > 0.15:
+							var sprite = Sprite2D.new()
+							sprite.texture = secondary_texture
+							sprite.name = "OrganicMask_%d_%d_%d_%d" % [col, row, sub_x, sub_y]
+							
+							# Posición de la subsección con variación orgánica
+							var organic_offset = Vector2(
+								randf_range(-subsection_size.x * 0.3, subsection_size.x * 0.3),
+								randf_range(-subsection_size.y * 0.3, subsection_size.y * 0.3)
+							)
+							
+							sprite.position = Vector2(
+								col * section_width + (sub_x + 0.5) * subsection_size.x + organic_offset.x,
+								row * section_height + (sub_y + 0.5) * subsection_size.y + organic_offset.y
+							)
+							
+							# Alpha variable según influencia local
+							sprite.modulate.a = clamp(sub_blend_strength * 0.7, 0.1, 0.8)
+							
+							# Escala variable para crear bordes irregulares
+							var scale_factor = 0.4 + sub_blend_strength * 0.4  # Escala entre 0.4 y 0.8
+							sprite.scale = Vector2(scale_factor, scale_factor)
+							
+							parent.add_child(sprite)
 
-func _add_section_decoration(parent: Node2D, section_x: int, section_y: int, biome_data: Dictionary, section_width: float, section_height: float) -> void:
-	"""Añadir decoración a una sección específica"""
-	var decorations = biome_data.get("decorations", [])
-	if decorations.is_empty():
-		return
+func _add_organic_decorations(parent: Node2D, chunk_world_pos: Vector2, chunk_size: Vector2, primary_data: Dictionary, secondary_data: Dictionary) -> void:
+	"""Añadir decoraciones orgánicas mezcladas según influencias de biomas"""
+	var section_width = chunk_size.x / 3.0
+	var section_height = chunk_size.y / 3.0
 	
-	# Seleccionar decoración aleatoria
-	var random_decor_path = decorations[randi() % decorations.size()]
-	var decor_texture = load(random_decor_path)
-	if not decor_texture:
-		return
-	
-	var decor_sprite = Sprite2D.new()
-	decor_sprite.texture = decor_texture
-	decor_sprite.name = "DecorSprite_%d_%d" % [section_x, section_y]
-	
-	# Posicionar con ligera variación aleatoria dentro de la sección
-	var random_offset = Vector2(
-		randf_range(-section_width * 0.3, section_width * 0.3),
-		randf_range(-section_height * 0.3, section_height * 0.3)
-	)
-	decor_sprite.position = Vector2(
-		(section_x + 0.5) * section_width + random_offset.x,
-		(section_y + 0.5) * section_height + random_offset.y
-	)
-	
-	# Escalar decoración según configuración del bioma
-	var decor_scale = biome_data.get("decor_scale", 1.0)
-	var texture_size = decor_texture.get_size()
-	var scale_factor_x = (section_width / texture_size.x) * decor_scale * 0.8  # Escalar para encajar en sección
-	var scale_factor_y = (section_height / texture_size.y) * decor_scale * 0.8
-	decor_sprite.scale = Vector2(scale_factor_x, scale_factor_y)
-	
-	# Aplicar opacidad
-	decor_sprite.modulate.a = biome_data.get("decor_opacity", 0.8)
-	
-	parent.add_child(decor_sprite)
+	for row in range(3):
+		for col in range(3):
+			# Calcular posición de la sección
+			var section_center = chunk_world_pos + Vector2(
+				(col + 0.5) * section_width,
+				(row + 0.5) * section_height
+			)
+			
+			# Obtener influencias de biomas
+			var transition_data = organic_transition.get_biome_transition_data(section_center)
+			var primary_influence = 1.0 - transition_data.blend_factor
+			var secondary_influence = transition_data.blend_factor
+			
+			# Decidir qué decoración usar basado en las influencias
+			var chosen_biome_data = primary_data if primary_influence > secondary_influence else secondary_data
+			var decorations = chosen_biome_data.get("decorations", [])
+			
+			if not decorations.is_empty():
+				# Añadir decoración con posición aleatoria dentro de la sección
+				var random_decor_path = decorations[randi() % decorations.size()]
+				var decor_texture = load(random_decor_path)
+				
+				if decor_texture:
+					var decor_sprite = Sprite2D.new()
+					decor_sprite.texture = decor_texture
+					decor_sprite.name = "OrganicDecor_%d_%d" % [col, row]
+					
+					# Posición aleatoria dentro de la sección
+					var random_offset = Vector2(
+						randf_range(-section_width * 0.4, section_width * 0.4),
+						randf_range(-section_height * 0.4, section_height * 0.4)
+					)
+					decor_sprite.position = Vector2(
+						(col + 0.5) * section_width + random_offset.x,
+						(row + 0.5) * section_height + random_offset.y
+					)
+					
+					# Escalar decoración
+					var decor_scale = chosen_biome_data.get("decor_scale", 1.0)
+					var texture_size = decor_texture.get_size()
+					var scale_factor_x = (section_width / texture_size.x) * decor_scale * 0.6
+					var scale_factor_y = (section_height / texture_size.y) * decor_scale * 0.6
+					decor_sprite.scale = Vector2(scale_factor_x, scale_factor_y)
+					
+					# Aplicar opacidad con variación orgánica
+					var base_opacity = chosen_biome_data.get("decor_opacity", 0.8)
+					var influence_factor = primary_influence if chosen_biome_data == primary_data else secondary_influence
+					decor_sprite.modulate.a = base_opacity * influence_factor
+					
+					parent.add_child(decor_sprite)
 
 func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy: int) -> void:
 	"""
