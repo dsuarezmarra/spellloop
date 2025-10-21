@@ -167,18 +167,31 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 	NUEVA FUNCIONALIDAD: Soporte para transiciones orgánicas entre biomas.
 	Si está habilitado, detecta transiciones y aplica blending de texturas.
 	"""
+	# FORZAR DEBUG PARA DIAGNÓSTICO
+	var original_debug = debug_mode
+	debug_mode = true
+	
+	print("[BiomeChunkApplier] 🎨 INICIANDO aplicación de bioma a chunk (%d, %d)" % [cx, cy])
+	
 	# Crear contenedor para texturas (Node2D simple, no CanvasLayer)
 	var biome_layer = Node2D.new()
 	biome_layer.name = "BiomeLayer"
 	biome_layer.z_index = -100  # MUY ATRÁS: debajo de TODO (enemigos, player, etc siempre visible)
 	chunk_node.add_child(biome_layer)
 	
+	print("[BiomeChunkApplier] ✓ BiomeLayer creado y añadido a chunk")
+	
 	# Verificar si usar transiciones orgánicas o bioma tradicional por chunk
 	if organic_transition and organic_transition.has_method("get_biome_transition_data"):
+		print("[BiomeChunkApplier] 🌊 Usando sistema de transiciones orgánicas")
 		_apply_organic_biome_transitions(biome_layer, chunk_node, cx, cy)
 	else:
+		print("[BiomeChunkApplier] 📦 Usando sistema tradicional (fallback)")
 		# Fallback al sistema tradicional (un bioma por chunk)
 		_apply_traditional_biome(biome_layer, chunk_node, cx, cy)
+	
+	# Restaurar debug original
+	debug_mode = original_debug
 
 func _apply_traditional_biome(biome_layer: Node2D, chunk_node: Node2D, cx: int, cy: int) -> void:
 	"""Aplicar bioma tradicional (un bioma por chunk completo)"""
@@ -208,20 +221,22 @@ func _apply_organic_biome_transitions(biome_layer: Node2D, chunk_node: Node2D, c
 	# Analizar el chunk para determinar biomas presentes y sus transiciones
 	var biome_analysis = _analyze_chunk_biomes(chunk_world_pos, chunk_size)
 	
-	# Si solo hay un bioma dominante (>90%), usar aplicación tradicional optimizada
+	# Si solo hay un bioma dominante, usar aplicación tradicional optimizada
 	if biome_analysis.is_uniform:
 		var dominant_biome_data = _get_biome_data_by_name(biome_analysis.primary_biome)
 		if not dominant_biome_data.is_empty():
 			_apply_textures_optimized(biome_layer, dominant_biome_data, cx, cy)
 			chunk_node.set_meta("biome_name", biome_analysis.primary_biome)
 			if debug_mode:
-				print("[BiomeChunkApplier] ✓ Bioma orgánico uniforme '%s' aplicado a chunk (%d, %d)" % [biome_analysis.primary_biome, cx, cy])
+				print("[BiomeChunkApplier] ✓ Bioma orgánico uniforme '%s' aplicado a chunk (%d, %d) - Texturas: %s" % [biome_analysis.primary_biome, cx, cy, dominant_biome_data.get("base_texture_path", "NO_PATH")])
+		else:
+			print("[BiomeChunkApplier] ❌ No se pudo obtener datos para bioma '%s'" % biome_analysis.primary_biome)
 	else:
 		# Chunk con transiciones: aplicar blending complejo
 		_apply_transition_blending(biome_layer, chunk_world_pos, chunk_size, biome_analysis)
 		chunk_node.set_meta("biome_name", "%s→%s" % [biome_analysis.primary_biome, biome_analysis.secondary_biome])
 		if debug_mode:
-			print("[BiomeChunkApplier] ✓ Transición orgánica '%s' aplicada a chunk (%d, %d)" % [chunk_node.get_meta("biome_name"), cx, cy])
+			print("[BiomeChunkApplier] ✓ Transición orgánica '%s' aplicada a chunk (%d, %d) - Factor: %.2f" % [chunk_node.get_meta("biome_name"), cx, cy, biome_analysis.transition_factor])
 	
 	biome_changed.emit(chunk_node.get_meta("biome_name", "transition"))
 
@@ -265,23 +280,49 @@ func _analyze_chunk_biomes(chunk_world_pos: Vector2, chunk_size: Vector2) -> Dic
 	var avg_transition = total_transition_factor / sample_points.size()
 	
 	return {
-		"is_uniform": avg_transition < 0.05,  # Menos del 5% de transición para mejor detección
+		"is_uniform": avg_transition < 0.3,  # Menos del 30% de transición - más permisivo para texturas
 		"primary_biome": primary,
 		"secondary_biome": secondary, 
 		"transition_factor": avg_transition
 	}
 
 func _get_biome_data_by_name(biome_name: String) -> Dictionary:
-	"""Obtener datos de configuración de un bioma por nombre"""
+	"""Obtener datos de configuración de un bioma por nombre (procesados con rutas completas)"""
 	var biomes = _config.get("biomes", [])
 	for biome in biomes:
-		if biome.get("name", "") == biome_name:
-			return biome
+		if biome.get("name", "").to_lower() == biome_name.to_lower():
+			# Procesar los datos igual que en get_biome_for_position
+			var bioma_data = {}
+			bioma_data["name"] = biome.get("name", "Unknown")
+			bioma_data["id"] = biome.get("id", "")
+			bioma_data["color_base"] = biome.get("color_base", "#7ED957")
+			
+			# Construir rutas completas para texturas
+			var textures_config = biome.get("textures", {}) as Dictionary
+			var base_relative = textures_config.get("base", "")
+			
+			if not base_relative.is_empty():
+				bioma_data["base_texture_path"] = "res://assets/textures/biomes/" + base_relative
+			else:
+				bioma_data["base_texture_path"] = ""
+			
+			# Procesar decoraciones
+			var decor_relative = textures_config.get("decor", []) as Array
+			var decorations = []
+			for decor_path in decor_relative:
+				if not decor_path.is_empty():
+					decorations.append("res://assets/textures/biomes/" + decor_path)
+			
+			bioma_data["decorations"] = decorations
+			bioma_data["decor_scale"] = 1.0
+			bioma_data["decor_opacity"] = 0.8
+			
+			return bioma_data
 	
 	# Fallback a grassland si no se encuentra
 	for biome in biomes:
-		if biome.get("name", "") == "grassland":
-			return biome
+		if biome.get("name", "").to_lower() == "grassland":
+			return _get_biome_data_by_name("grassland")  # Recursión controlada
 	
 	return {}
 
@@ -323,10 +364,12 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 
 	# ============ 1. TEXTURAS BASE (1920×1080 cada una, sin escala) ============
 	var base_texture_path = bioma_data.get("base_texture_path", "")
+	
+	print("[_apply_textures_optimized] 🎨 Iniciando para chunk (%d, %d)" % [cx, cy])
+	print("[_apply_textures_optimized] 📊 Datos del bioma: %s" % bioma_data)
 
 	if not base_texture_path.is_empty():
-		if debug_mode:
-			print("[BASE_TEXTURE] 📂 Intentando cargar desde: %s" % base_texture_path)
+		print("[BASE_TEXTURE] 📂 Intentando cargar desde: %s" % base_texture_path)
 		
 		var texture = load(base_texture_path) as Texture2D
 		if texture:
@@ -356,9 +399,9 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 					sprite.scale = tile_scale
 					sprite.z_index = -100
 					parent.add_child(sprite)
+					print("[BASE_TEXTURE] ✓ Sprite %d_%d creado en posición %s" % [col, row, sprite.position])
 			
-			if debug_mode:
-				print("[✓] Base: 9 sprites × 1920×1080 (escala: %.2f, %.2f)" % [tile_scale.x, tile_scale.y])
+			print("[✓] Base: 9 sprites × 1920×1080 creados exitosamente (escala: %.2f, %.2f)" % [tile_scale.x, tile_scale.y])
 		else:
 			printerr("[BASE_TEXTURE] ✗ NO se pudo cargar: %s" % base_texture_path)
 			# FALLBACK: Crear fondo de color sólido basado en bioma
