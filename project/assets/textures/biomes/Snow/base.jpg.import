@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c14jyugeki2t4"
-path="res://.godot/imported/decor1.png-49297a41fda82143604e44f1bc1c40e1.ctex"
+uid="uid://bppduoh86x7mm"
+path="res://.godot/imported/base.jpg-69e063ecb1580450a59aa8ac5f973b4d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/biomes/Lava/decor1.png"
-dest_files=["res://.godot/imported/decor1.png-49297a41fda82143604e44f1bc1c40e1.ctex"]
+source_file="res://assets/textures/biomes/Snow/base.jpg"
+dest_files=["res://.godot/imported/base.jpg-69e063ecb1580450a59aa8ac5f973b4d.ctex"]
 
 [params]
 

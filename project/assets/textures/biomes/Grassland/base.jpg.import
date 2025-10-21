@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c14jyugeki2t4"
-path="res://.godot/imported/decor1.png-49297a41fda82143604e44f1bc1c40e1.ctex"
+uid="uid://ce25x2ka0baii"
+path="res://.godot/imported/base.jpg-01fee49972b6a11accba9902999a0ecc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/biomes/Lava/decor1.png"
-dest_files=["res://.godot/imported/decor1.png-49297a41fda82143604e44f1bc1c40e1.ctex"]
+source_file="res://assets/textures/biomes/Grassland/base.jpg"
+dest_files=["res://.godot/imported/base.jpg-01fee49972b6a11accba9902999a0ecc.ctex"]
 
 [params]
 

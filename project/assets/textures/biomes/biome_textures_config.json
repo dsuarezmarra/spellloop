@@ -10,13 +10,13 @@
       "id": "grassland",
       "name": "Grassland",
       "color_base": "#7ED957",
-      "description": "C\u00e9sped liso con flores, arbustos y rocas",
+      "description": "Césped liso con flores, arbustos y rocas",
       "textures": {
-        "base": "Grassland/base.png",
+        "base": "Grassland/base.jpg",
         "decor": [
-          "Grassland/decor1.png",
-          "Grassland/decor2.png",
-          "Grassland/decor3.png"
+          "Grassland/decor1.jpg",
+          "Grassland/decor2.jpg",
+          "Grassland/decor3.jpg"
         ]
       },
       "tile_size": [
@@ -59,11 +59,11 @@
       "color_base": "#E8C27B",
       "description": "Arena con cactus, rocas y dunas",
       "textures": {
-        "base": "Desert/base.png",
+        "base": "Desert/base.jpg",
         "decor": [
-          "Desert/decor1.png",
-          "Desert/decor2.png",
-          "Desert/decor3.png"
+          "Desert/decor1.jpg",
+          "Desert/decor2.jpg",
+          "Desert/decor3.jpg"
         ]
       },
       "tile_size": [
@@ -104,13 +104,13 @@
       "id": "snow",
       "name": "Snow",
       "color_base": "#EAF6FF",
-      "description": "Nieve blanca con cristales, mont\u00edculos y car\u00e1mbanos",
+      "description": "Nieve blanca con cristales, montículos y carámbanos",
       "textures": {
-        "base": "Snow/base.png",
+        "base": "Snow/base.jpg",
         "decor": [
-          "Snow/decor1.png",
-          "Snow/decor2.png",
-          "Snow/decor3.png"
+          "Snow/decor1.jpg",
+          "Snow/decor2.jpg",
+          "Snow/decor3.jpg"
         ]
       },
       "tile_size": [
@@ -151,13 +151,13 @@
       "id": "lava",
       "name": "Lava",
       "color_base": "#F55A33",
-      "description": "Lava con grietas, rocas volc\u00e1nicas y vapor",
+      "description": "Lava con grietas, rocas volcánicas y vapor",
       "textures": {
-        "base": "Lava/base.png",
+        "base": "Lava/base.jpg",
         "decor": [
-          "Lava/decor1.png",
-          "Lava/decor2.png",
-          "Lava/decor3.png"
+          "Lava/decor1.jpg",
+          "Lava/decor2.jpg",
+          "Lava/decor3.jpg"
         ]
       },
       "tile_size": [
@@ -198,13 +198,13 @@
       "id": "arcanewastes",
       "name": "ArcaneWastes",
       "color_base": "#B56DDC",
-      "description": "Suelo violeta con runas, cristales y energ\u00eda",
+      "description": "Suelo violeta con runas, cristales y energía",
       "textures": {
-        "base": "ArcaneWastes/base.png",
+        "base": "ArcaneWastes/base.jpg",
         "decor": [
-          "ArcaneWastes/decor1.png",
-          "ArcaneWastes/decor2.png",
-          "ArcaneWastes/decor3.png"
+          "ArcaneWastes/decor1.jpg",
+          "ArcaneWastes/decor2.jpg",
+          "ArcaneWastes/decor3.jpg"
         ]
       },
       "tile_size": [
@@ -247,11 +247,11 @@
       "color_base": "#306030",
       "description": "Hojas oscuras con plantas, troncos y hongos",
       "textures": {
-        "base": "Forest/base.png",
+        "base": "Forest/base.jpg",
         "decor": [
-          "Forest/decor1.png",
-          "Forest/decor2.png",
-          "Forest/decor3.png"
+          "Forest/decor1.jpg",
+          "Forest/decor2.jpg",
+          "Forest/decor3.jpg"
         ]
       },
       "tile_size": [
