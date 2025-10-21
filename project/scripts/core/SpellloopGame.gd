@@ -688,13 +688,9 @@ func _process(_delta):
 		if run_start_time != 0:
 			_total_seconds = int(int(get_unix_time_safe()) - run_start_time)
 
-	# Poll InputManager for movement vector and move world accordingly so WASD moves the world
-	if get_tree() and get_tree().root and world_manager:
-		var im = get_tree().root.get_node_or_null("InputManager")
-		if im and im.has_method("get_movement_vector"):
-			var dir = im.get_movement_vector()
-			if dir.length() > 0:
-				world_manager.move_world(dir, _delta)
+	# El jugador ahora se mueve directamente, no necesitamos mover el mundo
+	# Los chunks se mantienen en sus posiciones absolutas y el InfiniteWorldManager
+	# detecta automáticamente cuando el jugador cambia de chunk
 
 
 func get_unix_time_safe() -> float:

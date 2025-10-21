@@ -219,9 +219,21 @@ func _physics_process(delta: float) -> void:
 	if not is_instance_valid(self):
 		return
 	
-	# El mundo se mueve, el player queda centrado
-	velocity = Vector2.ZERO
-	move_and_slide()
+	# Obtener input del jugador para movimiento real
+	var input_manager = get_tree().root.get_node_or_null("InputManager")
+	if input_manager:
+		var movement_input_vec = input_manager.get_movement_vector()
+		
+		# Aplicar movimiento al jugador
+		if movement_input_vec.length() > 0:
+			velocity = movement_input_vec.normalized() * move_speed
+		else:
+			velocity = Vector2.ZERO
+			
+		move_and_slide()
+	else:
+		velocity = Vector2.ZERO
+		move_and_slide()
 
 # ========== SALUD Y DAÑO ==========
 
