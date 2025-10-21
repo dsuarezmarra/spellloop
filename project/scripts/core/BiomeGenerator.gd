@@ -42,28 +42,11 @@ const DECORATION_DENSITY = 0.25  # 25% de cobertura (aumentado de 15%)
 # Ruido perlin para variaciones (si se genera proceduralmente)
 var noise: FastNoiseLite = FastNoiseLite.new()
 
-# Sistema de transiciones orgánicas
-var organic_transition: Node = null
-
 func _ready() -> void:
 	"""Inicializar generador de biomas"""
 	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
 	noise.frequency = 0.01
-	
-	# Inicializar sistema de transiciones orgánicas
-	_setup_organic_transitions()
-	
-	print("[BiomeGenerator] ✅ Inicializado con transiciones orgánicas")
-
-func _setup_organic_transitions() -> void:
-	"""Configurar sistema de transiciones orgánicas"""
-	if ResourceLoader.exists("res://scripts/core/OrganicBiomeTransition.gd"):
-		var ot_script = load("res://scripts/core/OrganicBiomeTransition.gd")
-		if ot_script:
-			organic_transition = ot_script.new()
-			organic_transition.name = "OrganicBiomeTransition"
-			add_child(organic_transition)
-			print("[BiomeGenerator] ✅ Sistema de transiciones orgánicas inicializado")
+	print("[BiomeGenerator] ✅ Inicializado")
 
 func generate_chunk_async(chunk_node: Node2D, chunk_pos: Vector2i, rng: RandomNumberGenerator):
 	"""Generar un chunk de forma asíncrona (sin bloquear)"""
@@ -86,29 +69,27 @@ func generate_chunk_from_cache(chunk_node: Node2D, chunk_data: Dictionary) -> vo
 	var biome_type = _biome_name_to_type(biome_name)
 	_create_biome_background(chunk_node, biome_type)
 
-func _select_biome(chunk_pos: Vector2i, _rng: RandomNumberGenerator) -> int:
-	"""Seleccionar bioma según posición usando sistema de transiciones orgánicas"""
-	if organic_transition and organic_transition.has_method("get_biome_at_position"):
-		# Usar sistema orgánico para obtener bioma
-		var chunk_world_pos = Vector2(chunk_pos.x * 5760, chunk_pos.y * 3240)  # Convertir a posición mundial
-		var biome_name = organic_transition.get_biome_at_position(chunk_world_pos)
-		return _biome_name_to_type(biome_name)
-	else:
-		# Fallback al sistema anterior si el sistema orgánico no está disponible
-		var noise_val = noise.get_noise_2d(chunk_pos.x, chunk_pos.y)
-		noise_val = (noise_val + 1.0) / 2.0
-		noise_val = clamp(noise_val, 0.0, 1.0)
-		var biome_index = int(noise_val * BiomeType.size())
-		return clamp(biome_index, 0, BiomeType.size() - 1)
+func _select_biome(chunk_pos: Vector2i, rng: RandomNumberGenerator) -> int:
+	"""Seleccionar bioma según posición (determinístico con semilla)"""
+	# Usar ruido perlin para que biomas sean contiguos y no aleatorios puro
+	var noise_val = noise.get_noise_2d(chunk_pos.x, chunk_pos.y)
+	
+	# Normalizar ruido a 0-1
+	noise_val = (noise_val + 1.0) / 2.0
+	noise_val = clamp(noise_val, 0.0, 1.0)
+	
+	# Mapear a bioma
+	var biome_index = int(noise_val * BiomeType.size())
+	return clamp(biome_index, 0, BiomeType.size() - 1)
 
-func _biome_name_to_type(biome_name: String) -> int:
+func _biome_name_to_type(name: String) -> int:
 	"""Convertir nombre de bioma a tipo"""
 	for biome_type in BIOME_NAMES.keys():
-		if BIOME_NAMES[biome_type] == biome_name:
+		if BIOME_NAMES[biome_type] == name:
 			return biome_type
 	return BiomeType.GRASSLAND
 
-func _create_biome_background(_chunk_node: Node2D, _biome_type: int) -> void:
+func _create_biome_background(chunk_node: Node2D, biome_type: int) -> void:
 	"""
 	DEPRECATED: Esta función ya no crea fondos visuales.
 	Los biomas visuales ahora vienen de BiomeChunkApplier (texturas reales).
@@ -118,7 +99,7 @@ func _create_biome_background(_chunk_node: Node2D, _biome_type: int) -> void:
 	# NO crear ColorRect aquí - bloqueaba toda la visualización
 	pass
 
-func _create_biome_pattern(_biome_type: int) -> Node2D:
+func _create_biome_pattern(biome_type: int) -> Node2D:
 	"""
 	DEPRECATED: Los patrones procedurales ya no son necesarios.
 	BiomeChunkApplier proporciona texturas reales de PNG.
@@ -218,7 +199,7 @@ func _add_forest_pattern(parent: Node2D, _base_color: Color, pattern_color: Colo
 		line.modulate.a = 0.5
 		parent.add_child(line)
 
-func _generate_decorations_async(_chunk_node: Node2D, _chunk_pos: Vector2i, _biome_type: int, _rng: RandomNumberGenerator):
+func _generate_decorations_async(chunk_node: Node2D, _chunk_pos: Vector2i, biome_type: int, rng: RandomNumberGenerator):
 	"""
 	DESHABILITADO: Los decorativos procedurales (Polygon2D, Line2D) bloqueaban la visualización.
 	BiomeChunkApplier proporciona texturas PNG auténticas y decorativos reales en CanvasLayer.
@@ -335,19 +316,13 @@ func _get_decoration_shape(deco_type: String, scale: float) -> PackedVector2Arra
 	
 	return points
 
-func _generate_biome_transitions(_chunk_node: Node2D, _chunk_pos: Vector2i, _biome_type: int, _rng: RandomNumberGenerator) -> void:
+func _generate_biome_transitions(chunk_node: Node2D, _chunk_pos: Vector2i, _biome_type: int, _rng: RandomNumberGenerator) -> void:
 	"""
 	DESHABILITADO: Las transiciones procedurales se movían incorrectamente.
 	Ahora solo BiomeChunkApplier (texturas PNG) maneja la visualización de bordes.
 	"""
 	# Las transiciones de bordes vienen incluidas en las texturas PNG
 	pass
-
-func set_world_seed(world_seed: int) -> void:
-	"""Establecer semilla mundial para reproducibilidad"""
-	if organic_transition and organic_transition.has_method("set_world_seed"):
-		organic_transition.set_world_seed(world_seed)
-		print("[BiomeGenerator] 🌱 Semilla establecida: %d" % world_seed)
 
 func get_biome_info(biome_type: int) -> Dictionary:
 	"""Obtener información de un bioma"""

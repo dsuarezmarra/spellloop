@@ -100,13 +100,6 @@ func initialize(player: Node) -> void:
 	player_virtual_position = Vector2.ZERO
 	world_offset = Vector2.ZERO
 	
-	# Inicializar semilla en el generador de biomas y aplicador para transiciones orgánicas
-	if biome_generator and biome_generator.has_method("set_world_seed"):
-		biome_generator.set_world_seed(world_seed)
-	
-	if biome_applier and biome_applier.has_method("set_world_seed"):
-		biome_applier.set_world_seed(world_seed)
-	
 	# Generar chunk inicial
 	_update_chunks_around_player()
 	print("[InfiniteWorldManager] 🎮 Sistema de chunks inicializado (pos virtual inicial: %s)" % player_virtual_position)
