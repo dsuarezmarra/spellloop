@@ -265,7 +265,7 @@ func _analyze_chunk_biomes(chunk_world_pos: Vector2, chunk_size: Vector2) -> Dic
 	var avg_transition = total_transition_factor / sample_points.size()
 	
 	return {
-		"is_uniform": avg_transition < 0.1,  # Menos del 10% de transición
+		"is_uniform": avg_transition < 0.05,  # Menos del 5% de transición para mejor detección
 		"primary_biome": primary,
 		"secondary_biome": secondary, 
 		"transition_factor": avg_transition

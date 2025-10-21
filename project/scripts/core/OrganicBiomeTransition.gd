@@ -10,47 +10,26 @@ class_name OrganicBiomeTransition
 =============================================================
 
 Este sistema reemplaza las divisiones cuadriculadas de chunks por:
-- Transiciones suaves basadas en ruido Perlin
+- Transiciones suaves y graduales basadas en ruido Perlin
 - Bordes orgánicos que se entremezclan naturalmente  
-- Máscaras de transición para blending de texturas
-- Generación continua por posición mundial
+- Zonas de transición del 15% del chunk (864 píxeles)
+- Generación completamente aleatoria sin restricciones
 
-Técnicas:
-1. Multi-octave Perlin noise para formas complejas
-2. Distance fields para transiciones graduales
-3. Texture blending en zonas de borde
-4. Biome affinity system para transiciones realistas
+Configuración:
+- Transiciones suaves usando smoothstep y Simplex Smooth
+- Sin sistema de afinidades - todos los biomas pueden conectarse
+- Edge roughness reducido para bordes más fluidos
+- Fractal octaves optimizado para suavidad
 """
 
 # Configuración de ruido
 @export var transition_noise: FastNoiseLite = FastNoiseLite.new()
 @export var detail_noise: FastNoiseLite = FastNoiseLite.new() 
 @export var biome_scale: float = 0.002  # Escala del ruido principal (más pequeño = biomas más grandes)
-@export var transition_width: float = 800.0  # Ancho de zona de transición en píxeles
-@export var edge_roughness: float = 0.5  # 0.0 = suave, 1.0 = muy irregular
+@export var transition_width: float = 864.0  # 15% del chunk (5760 * 0.15) - zona de transición suave
+@export var edge_roughness: float = 0.3  # Transiciones más suaves (reducido de 0.5)
 
-# Afinidades entre biomas (0.0 = incompatible, 1.0 = muy compatible)
-const BIOME_AFFINITY = {
-	["grassland", "forest"]: 0.9,
-	["grassland", "desert"]: 0.3,
-	["grassland", "snow"]: 0.4,
-	["grassland", "lava"]: 0.1,
-	["grassland", "arcane_wastes"]: 0.2,
-	
-	["forest", "snow"]: 0.6,
-	["forest", "desert"]: 0.2,
-	["forest", "lava"]: 0.1,
-	["forest", "arcane_wastes"]: 0.3,
-	
-	["desert", "lava"]: 0.7,
-	["desert", "snow"]: 0.1,
-	["desert", "arcane_wastes"]: 0.4,
-	
-	["snow", "lava"]: 0.1,
-	["snow", "arcane_wastes"]: 0.3,
-	
-	["lava", "arcane_wastes"]: 0.8,
-}
+# Sin sistema de afinidades - generación completamente aleatoria
 
 func _ready() -> void:
 	"""Inicializar sistema de transiciones orgánicas"""
@@ -58,20 +37,20 @@ func _ready() -> void:
 	print("[OrganicBiomeTransition] ✅ Sistema inicializado")
 
 func _setup_noise() -> void:
-	"""Configurar ruido Perlin para transiciones orgánicas"""
-	# Ruido principal para forma general de biomas
-	transition_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	"""Configurar ruido Perlin para transiciones orgánicas suaves"""
+	# Ruido principal para forma general de biomas - más suave
+	transition_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
 	transition_noise.frequency = biome_scale
-	transition_noise.fractal_octaves = 4
-	transition_noise.fractal_lacunarity = 2.0
-	transition_noise.fractal_gain = 0.5
+	transition_noise.fractal_octaves = 3  # Reducido para transiciones más suaves
+	transition_noise.fractal_lacunarity = 1.8  # Menos agresivo
+	transition_noise.fractal_gain = 0.4  # Más suave
 	
-	# Ruido de detalle para bordes irregulares
-	detail_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX  
-	detail_noise.frequency = biome_scale * 8.0  # 8x más detallado
-	detail_noise.fractal_octaves = 3
-	detail_noise.fractal_lacunarity = 2.0
-	detail_noise.fractal_gain = 0.3
+	# Ruido de detalle para bordes suaves con variación sutil
+	detail_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH  
+	detail_noise.frequency = biome_scale * 6.0  # Menos detalle agresivo
+	detail_noise.fractal_octaves = 2  # Simplificado
+	detail_noise.fractal_lacunarity = 1.5  # Más suave
+	detail_noise.fractal_gain = 0.2  # Muy sutil
 
 func get_biome_at_position(world_pos: Vector2) -> String:
 	"""Obtener el bioma predominante en una posición mundial"""
@@ -105,15 +84,17 @@ func get_biome_transition_data(world_pos: Vector2) -> Dictionary:
 	var primary = sorted_biomes[0]
 	var secondary = sorted_biomes[1] if sorted_biomes.size() > 1 else primary
 	
-	# Calcular factor de blend basado en la diferencia de influencias
+	# Calcular factor de blend más suave y gradual
 	var influence_diff = primary.influence - secondary.influence
-	var blend_factor = 1.0 - clamp(influence_diff, 0.0, 1.0)
+	
+	# Usar función smoothstep para transiciones más graduales
+	var blend_factor = 1.0 - smoothstep(0.0, 0.8, influence_diff)  # Transición más extendida
 	
 	return {
 		"primary_biome": primary.name,
 		"secondary_biome": secondary.name, 
 		"blend_factor": blend_factor,
-		"is_transition": blend_factor > 0.1  # Umbral para considerar transición
+		"is_transition": blend_factor > 0.05  # Umbral más bajo para transiciones más extensas
 	}
 
 func _calculate_biome_influences(world_pos: Vector2) -> Dictionary:
@@ -145,40 +126,8 @@ func _calculate_biome_influences(world_pos: Vector2) -> Dictionary:
 		# Normalizar a 0-1
 		influences[biome] = (combined + 1.0) / 2.0
 	
-	# Aplicar afinidades para suavizar transiciones no realistas
-	influences = _apply_biome_affinities(influences, world_pos)
-	
+	# Sin sistema de afinidades - todas las combinaciones son válidas
 	return influences
-
-func _apply_biome_affinities(influences: Dictionary, _world_pos: Vector2) -> Dictionary:
-	"""Aplicar sistema de afinidades para hacer transiciones más realistas"""
-	var adjusted = influences.duplicate()
-	
-	# Para cada bioma, reducir influencia de biomas incompatibles cercanos
-	for biome_a in influences.keys():
-		for biome_b in influences.keys():
-			if biome_a == biome_b:
-				continue
-				
-			var affinity = _get_biome_affinity(biome_a, biome_b)
-			if affinity < 0.5:  # Biomas incompatibles
-				# Reducir influencia mutua
-				var reduction = (0.5 - affinity) * 0.3
-				adjusted[biome_a] *= (1.0 - reduction)
-	
-	return adjusted
-
-func _get_biome_affinity(biome_a: String, biome_b: String) -> float:
-	"""Obtener afinidad entre dos biomas"""
-	var key1 = [biome_a, biome_b]
-	var key2 = [biome_b, biome_a]
-	
-	if BIOME_AFFINITY.has(key1):
-		return BIOME_AFFINITY[key1]
-	elif BIOME_AFFINITY.has(key2):
-		return BIOME_AFFINITY[key2]
-	else:
-		return 0.5  # Afinidad neutra por defecto
 
 func generate_transition_mask(world_pos: Vector2, size: Vector2) -> ImageTexture:
 	"""Generar máscara de transición para blending de texturas en un área"""
