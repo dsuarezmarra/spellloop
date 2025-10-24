@@ -24,15 +24,15 @@ Mejoras vs sistema anterior:
 """
 
 # ========== DEFINICIÓN DE BIOMAS (CONSERVADO) ==========
-enum BiomeType { GRASSLAND, DESERT, SNOW, LAVA, ARCANE_WASTES, FOREST }
+enum BiomeType {GRASSLAND, DESERT, SNOW, LAVA, ARCANE_WASTES, FOREST}
 
 const BIOME_COLORS = {
-	BiomeType.GRASSLAND: Color(0.34, 0.68, 0.35, 1.0),      # Verde prado
-	BiomeType.DESERT: Color(0.87, 0.78, 0.6, 1.0),          # Arena amarilla
-	BiomeType.SNOW: Color(0.95, 0.95, 1.0, 1.0),            # Nieve blanca/azul
-	BiomeType.LAVA: Color(0.4, 0.1, 0.05, 1.0),             # Rojo oscuro/incandescente
-	BiomeType.ARCANE_WASTES: Color(0.6, 0.3, 0.8, 1.0),     # Violeta mágico
-	BiomeType.FOREST: Color(0.15, 0.35, 0.15, 1.0),         # Verde oscuro
+	BiomeType.GRASSLAND: Color(0.34, 0.68, 0.35, 1.0), # Verde prado
+	BiomeType.DESERT: Color(0.87, 0.78, 0.6, 1.0), # Arena amarilla
+	BiomeType.SNOW: Color(0.95, 0.95, 1.0, 1.0), # Nieve blanca/azul
+	BiomeType.LAVA: Color(0.4, 0.1, 0.05, 1.0), # Rojo oscuro/incandescente
+	BiomeType.ARCANE_WASTES: Color(0.6, 0.3, 0.8, 1.0), # Violeta mágico
+	BiomeType.FOREST: Color(0.15, 0.35, 0.15, 1.0), # Verde oscuro
 }
 
 const BIOME_NAMES = {
@@ -79,9 +79,9 @@ const ORGANIC_DECORATIONS = {
 }
 
 # ========== GENERADORES DE RUIDO ==========
-var distribution_noise: FastNoiseLite = FastNoiseLite.new()  # Para distribución orgánica
-var density_noise: FastNoiseLite = FastNoiseLite.new()      # Para variación de densidad
-var cluster_noise: FastNoiseLite = FastNoiseLite.new()     # Para clustering natural
+var distribution_noise: FastNoiseLite = FastNoiseLite.new() # Para distribución orgánica
+var density_noise: FastNoiseLite = FastNoiseLite.new() # Para variación de densidad
+var cluster_noise: FastNoiseLite = FastNoiseLite.new() # Para clustering natural
 
 # ========== ESTADO ==========
 var world_seed: int = 12345
@@ -97,12 +97,12 @@ func _setup_noise_generators() -> void:
 	distribution_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
 	distribution_noise.frequency = 0.008
 	distribution_noise.seed = world_seed
-	
+
 	# Ruido para variación de densidad
 	density_noise.noise_type = FastNoiseLite.TYPE_PERLIN
 	density_noise.frequency = 0.003
 	density_noise.seed = world_seed + 1000
-	
+
 	# Ruido para clustering natural
 	cluster_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
 	cluster_noise.frequency = 0.02
@@ -112,39 +112,39 @@ func _setup_noise_generators() -> void:
 func generate_region_async(organic_region) -> Dictionary:
 	"""
 	Generar contenido de bioma para región orgánica irregular
-	
+
 	Args:
 		organic_region: OrganicRegion - región con geometría y bioma definidos
-	
+
 	Returns:
 		Dictionary con datos de terreno, decoraciones y metadatos
 	"""
-	
+
 	await get_tree().process_frame
-	
+
 	var start_time = Time.get_ticks_msec()
 	var region_center = organic_region.center_position
 	var biome_type = _get_biome_type_from_id(organic_region.biome_id)
 	var boundary_points = organic_region.boundary_points
-	
+
 	# Configurar semilla determinística para esta región
 	var region_seed = _calculate_region_seed(region_center)
 	_update_noise_seeds(region_seed)
-	
+
 	print("[BiomeGenerator] 🌿 Generando región orgánica | Centro:", region_center, " | Bioma:", BIOME_NAMES.get(biome_type))
-	
+
 	# Generar geometría base orgánica
 	var base_geometry = _generate_organic_base_geometry(organic_region)
-	
+
 	# Distribuir decoraciones orgánicamente dentro del contorno
 	var decorations = _distribute_organic_decorations(organic_region)
-	
+
 	# Generar datos de textura base
 	var texture_data = _generate_texture_data(organic_region)
-	
+
 	var generation_time = Time.get_ticks_msec() - start_time
 	print("[BiomeGenerator] ⚡ Región orgánica generada | Tiempo:", generation_time, "ms | Decoraciones:", decorations.size())
-	
+
 	return {
 		"region_id": organic_region.region_id,
 		"biome_type": biome_type,
@@ -166,7 +166,7 @@ func _add_grass_pattern(parent: Node2D, base_color: Color, pattern_color: Color)
 			rect.color = pattern_color if rng.randf() > 0.5 else base_color.lightened(0.1)
 			rect.position = Vector2(x, y)
 			rect.size = Vector2(60, 60)
-			rect.modulate.a = 0.3  # Semi-transparente
+			rect.modulate.a = 0.3 # Semi-transparente
 			parent.add_child(rect)
 
 func _add_sand_pattern(parent: Node2D, _base_color: Color, pattern_color: Color) -> void:
@@ -275,43 +275,43 @@ func _distribute_organic_decorations(organic_region) -> Array:
 	var biome_type = _get_biome_type_from_id(organic_region.biome_id)
 	var biome_config = ORGANIC_DECORATIONS.get(biome_type, ORGANIC_DECORATIONS[BiomeType.GRASSLAND])
 	var boundary_points = organic_region.boundary_points
-	
+
 	# Calcular área aproximada y número de decoraciones
 	var area = _calculate_polygon_area(boundary_points)
-	var target_count = int(area * biome_config.density / 10000.0)  # Normalizar por área
-	
+	var target_count = int(area * biome_config.density / 10000.0) # Normalizar por área
+
 	print("[BiomeGenerator] 🌸 Distribuyendo ", target_count, " decoraciones en área ", int(area))
-	
+
 	var attempts = 0
-	var max_attempts = target_count * 3  # Evitar bucle infinito
-	
+	var max_attempts = target_count * 3 # Evitar bucle infinito
+
 	while decorations.size() < target_count and attempts < max_attempts:
 		attempts += 1
-		
+
 		# Generar posición candidata dentro del bounding rectangle
 		var bounding_rect = _calculate_bounding_rect(boundary_points)
 		var candidate_pos = Vector2(
 			randf_range(bounding_rect.position.x, bounding_rect.position.x + bounding_rect.size.x),
 			randf_range(bounding_rect.position.y, bounding_rect.position.y + bounding_rect.size.y)
 		)
-		
+
 		# Verificar si está dentro del polígono irregular
 		if not _point_in_polygon(candidate_pos, boundary_points):
 			continue
-		
+
 		# Verificar densidad usando ruido
 		var density_value = density_noise.get_noise_2d(candidate_pos.x, candidate_pos.y)
-		if density_value < 0.2:  # Solo colocar en 20% de las posiciones más densas
+		if density_value < 0.2: # Solo colocar en 20% de las posiciones más densas
 			continue
-		
+
 		# Seleccionar tipo de decoración
 		var decoration_types = biome_config.types
 		var decoration_type = decoration_types[randi() % decoration_types.size()]
-		
+
 		# Aplicar clustering natural
 		var cluster_value = cluster_noise.get_noise_2d(candidate_pos.x, candidate_pos.y)
-		var cluster_scale = 1.0 + (cluster_value * 0.5)  # Variación ±50%
-		
+		var cluster_scale = 1.0 + (cluster_value * 0.5) # Variación ±50%
+
 		decorations.append({
 			"type": decoration_type,
 			"position": candidate_pos,
@@ -319,7 +319,7 @@ func _distribute_organic_decorations(organic_region) -> Array:
 			"rotation": randf() * TAU,
 			"cluster_strength": cluster_value
 		})
-	
+
 	return decorations
 
 func _generate_texture_data(organic_region) -> Dictionary:
@@ -336,31 +336,31 @@ func _calculate_polygon_area(points: PackedVector2Array) -> float:
 	"""Calcular área de polígono usando fórmula del cordón de zapatos"""
 	if points.size() < 3:
 		return 0.0
-	
+
 	var area = 0.0
 	var n = points.size()
-	
+
 	for i in range(n):
 		var j = (i + 1) % n
 		area += points[i].x * points[j].y
 		area -= points[j].x * points[i].y
-	
+
 	return abs(area) / 2.0
 
 func _calculate_bounding_rect(points: PackedVector2Array) -> Rect2:
 	"""Calcular rectángulo delimitador de un conjunto de puntos"""
 	if points.size() == 0:
 		return Rect2()
-	
+
 	var min_pos = points[0]
 	var max_pos = points[0]
-	
+
 	for point in points:
 		min_pos.x = min(min_pos.x, point.x)
 		min_pos.y = min(min_pos.y, point.y)
 		max_pos.x = max(max_pos.x, point.x)
 		max_pos.y = max(max_pos.y, point.y)
-	
+
 	return Rect2(min_pos, max_pos - min_pos)
 
 func _point_in_polygon(point: Vector2, polygon: PackedVector2Array) -> bool:
@@ -368,20 +368,20 @@ func _point_in_polygon(point: Vector2, polygon: PackedVector2Array) -> bool:
 	var n = polygon.size()
 	if n < 3:
 		return false
-	
+
 	var inside = false
 	var j = n - 1
-	
+
 	for i in range(n):
 		var pi = polygon[i]
 		var pj = polygon[j]
-		
+
 		if ((pi.y > point.y) != (pj.y > point.y)) and \
 		   (point.x < (pj.x - pi.x) * (point.y - pi.y) / (pj.y - pi.y) + pi.x):
 			inside = !inside
-		
+
 		j = i
-	
+
 	return inside
 
 # ========== FUNCIONES DE UTILIDAD (CONSERVADAS) ==========
@@ -406,4 +406,4 @@ func _get_biome_type_from_id(biome_id: String) -> int:
 	for biome_type in BIOME_NAMES:
 		if BIOME_NAMES[biome_type] == biome_id:
 			return biome_type
-	return BiomeType.GRASSLAND  # Default fallback
+	return BiomeType.GRASSLAND # Default fallback
