@@ -2,19 +2,19 @@ extends Node
 
 func _ready():
 	print("=== DIAGNOSTICO DE TEXTURAS ===")
-	
+
 	# 1. Verificar que las texturas existen
 	print("\n1. VERIFICANDO EXISTENCIA DE TEXTURAS:")
 	var base_path = "res://assets/textures/biomes/"
 	var biomes = ["Snow", "Lava", "Forest", "Grassland", "Desert", "ArcaneWastes"]
-	
+
 	for biome in biomes:
 		var texture_path = base_path + biome + "/base.png"
 		if ResourceLoader.exists(texture_path):
 			print("  ✅ ", biome, ": ", texture_path)
 		else:
 			print("  ❌ ", biome, ": NO EXISTE - ", texture_path)
-	
+
 	# 2. Verificar BiomeRegionApplier
 	print("\n2. VERIFICANDO BiomeRegionApplier:")
 	var bra_path = "res://scripts/core/BiomeRegionApplier.gd"
@@ -35,7 +35,7 @@ func _ready():
 			print("  ❌ No se pudo cargar el script")
 	else:
 		print("  ❌ Script no encontrado: ", bra_path)
-	
+
 	# 3. Verificar carga de textura
 	print("\n3. CARGANDO TEXTURA DE PRUEBA:")
 	var test_texture_path = base_path + "Snow/base.png"
@@ -47,7 +47,7 @@ func _ready():
 			print("  ❌ Error cargando textura")
 	else:
 		print("  ❌ Ruta no existe: ", test_texture_path)
-	
+
 	# 4. Verificar OrganicTextureBlender
 	print("\n4. VERIFICANDO OrganicTextureBlender:")
 	var otb_path = "res://scripts/core/OrganicTextureBlender.gd"
@@ -55,7 +55,7 @@ func _ready():
 		print("  ✅ Script encontrado")
 	else:
 		print("  ❌ Script no encontrado")
-	
+
 	# 5. Verificar shader
 	print("\n5. VERIFICANDO SHADER:")
 	var shader_path = "res://scripts/core/shaders/biome_blend.gdshader"
@@ -63,7 +63,7 @@ func _ready():
 		print("  ✅ Shader encontrado: ", shader_path)
 	else:
 		print("  ❌ Shader no encontrado: ", shader_path)
-	
+
 	print("\n=== FIN DIAGNOSTICO ===")
 	await get_tree().process_frame
 	get_tree().quit()

@@ -86,12 +86,12 @@ func _setup_noise_generators() -> void:
 	size_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
 	size_noise.frequency = 0.001
 	
-func initialize(seed: int) -> void:
+func initialize(seed_value: int) -> void:
 	"""Inicializar con semilla del mundo para determinismo"""
-	world_seed = seed
-	primary_noise.seed = seed
-	secondary_noise.seed = seed + 1000
-	size_noise.seed = seed + 2000
+	world_seed = seed_value
+	primary_noise.seed = seed_value
+	secondary_noise.seed = seed_value + 1000
+	size_noise.seed = seed_value + 2000
 	
 	print("[OrganicShapeGenerator] 🎲 Semilla configurada: %d" % world_seed)
 
@@ -150,7 +150,7 @@ func _calculate_region_center(region_id: Vector2i) -> Vector2:
 	
 	return Vector2(base_x + offset_x, base_y + offset_y)
 
-func _determine_biome_for_region(region_id: Vector2i, center_pos: Vector2) -> String:
+func _determine_biome_for_region(_region_id: Vector2i, center_pos: Vector2) -> String:
 	"""Determinar bioma usando ruido determinístico"""
 	var biome_noise = primary_noise.get_noise_2d(center_pos.x * 0.0001, center_pos.y * 0.0001)
 	biome_noise = (biome_noise + 1.0) / 2.0  # Normalizar a [0,1]

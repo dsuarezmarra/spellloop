@@ -232,7 +232,7 @@ func _add_arcane_pattern(parent: Node2D, _base_color: Color, pattern_color: Colo
 		rune.modulate.a = 0.4
 		parent.add_child(rune)
 
-func _add_forest_pattern(parent: Node2D, _base_color: Color, pattern_color: Color) -> void:
+func _add_forest_pattern(_parent: Node2D, _base_color: Color, pattern_color: Color) -> void:
 	"""Patrón de bosque: líneas/ramas"""
 	var rng = RandomNumberGenerator.new()
 	for i in range(100):

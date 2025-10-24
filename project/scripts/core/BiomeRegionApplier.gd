@@ -87,7 +87,7 @@ func _initialize_system() -> void:
 	"""Configurar dependencias y cargar texturas base"""
 	# Cargar configuración JSON si está disponible
 	_load_biome_config_json()
-	
+
 	# Buscar OrganicTextureBlender en el árbol de nodos
 	organic_texture_blender = _find_organic_texture_blender()
 	if not organic_texture_blender:
@@ -224,7 +224,7 @@ func _create_organic_geometry(parent: Node2D, boundary_points: PackedVector2Arra
 	var region_polygon = Polygon2D.new()
 	region_polygon.name = "RegionShape"
 	region_polygon.polygon = boundary_points
-	region_polygon.color = Color.WHITE  # Base neutra para texturas
+	region_polygon.color = Color.WHITE # Base neutra para texturas
 	region_polygon.z_index = 0
 	region_polygon.use_parent_material = false
 	region_polygon.antialiased = true
@@ -244,7 +244,7 @@ func _apply_base_texture(geometry_container: Node2D, biome_name: String, _region
 		return
 
 	var region_polygon = geometry_container.get_node("RegionShape")
-	
+
 	if not region_polygon:
 		print("[BiomeRegionApplier] ❌ No se encontró RegionShape")
 		return
@@ -256,7 +256,7 @@ func _apply_base_texture(geometry_container: Node2D, biome_name: String, _region
 	region_polygon.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	region_polygon.modulate = texture_config.tint
 	region_polygon.show()
-	
+
 	print("[BiomeRegionApplier] ✅ Textura base aplicada: ", biome_name, " - Size: ", base_texture.get_size())
 
 func _apply_detail_overlay(geometry_container: Node2D, biome_name: String, _region_data: Dictionary) -> void:
@@ -264,7 +264,7 @@ func _apply_detail_overlay(geometry_container: Node2D, biome_name: String, _regi
 	var texture_config = BIOME_TEXTURES.get(biome_name, BIOME_TEXTURES[DEFAULT_BIOME])
 
 	if not texture_config.has("decor"):
-		return  # No hay decor definido
+		return # No hay decor definido
 
 	var overlay_texture = _load_biome_texture(texture_config.decor[0])
 	if not overlay_texture:
@@ -276,8 +276,8 @@ func _apply_detail_overlay(geometry_container: Node2D, biome_name: String, _regi
 	overlay_polygon.polygon = geometry_container.get_node("RegionShape").polygon
 	overlay_polygon.texture = overlay_texture
 	overlay_polygon.texture_scale = Vector2(texture_config.scale * 0.7, texture_config.scale * 0.7)
-	overlay_polygon.modulate = Color(1.0, 1.0, 1.0, 0.6)  # Semi-transparente
-	overlay_polygon.z_index = 1  # Por encima de la textura base
+	overlay_polygon.modulate = Color(1.0, 1.0, 1.0, 0.6) # Semi-transparente
+	overlay_polygon.z_index = 1 # Por encima de la textura base
 
 	geometry_container.add_child(overlay_polygon)
 
@@ -312,7 +312,7 @@ func _apply_blended_result(region_node: Node2D, blended_material: ShaderMaterial
 	blended_polygon.name = "BlendedTexture"
 	blended_polygon.polygon = geometry_container.get_node("RegionShape").polygon
 	blended_polygon.material = blended_material
-	blended_polygon.z_index = 2  # Por encima de todo
+	blended_polygon.z_index = 2 # Por encima de todo
 
 	geometry_container.add_child(blended_polygon)
 

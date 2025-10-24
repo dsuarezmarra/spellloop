@@ -4,9 +4,10 @@
 extends Node
 
 func _ready():
-	print("=" * 60)
+	var separator = "=".repeat(60)
+	print(separator)
 	print("🔍 VERIFICACIÓN RÁPIDA DEL SISTEMA ORGÁNICO")
-	print("=" * 60)
+	print(separator)
 	
 	var results = verify_system()
 	
@@ -28,7 +29,7 @@ func _ready():
 	else:
 		print("⚠️ SISTEMA ORGÁNICO NECESITA ATENCIÓN")
 	
-	print("=" * 60)
+	print(separator)
 
 func verify_system() -> Dictionary:
 	var results = {}

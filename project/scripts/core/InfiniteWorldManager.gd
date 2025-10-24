@@ -11,42 +11,42 @@ class_name InfiniteWorldManager
 
 signal region_generated(region_id: Vector2i)
 signal region_loaded_from_cache(region_id: Vector2i)
-signal biome_transition_detected(from_biome: String, to_biome: String)
+signal _biome_transition_detected(from_biome: String, to_biome: String)
 
 # ========== CONFIGURACIÓN DE REGIONES ==========
-@export var base_region_size: float = 2000.0  # Tamaño base (aprox 1x pantalla)
-@export var region_size_variance: float = 0.5  # Variación de tamaño (±50%)
-@export var max_active_regions: int = 12  # Máximo de regiones cargadas
-@export var visibility_radius: float = 4000.0  # Radio de carga de regiones
-@export var unload_radius: float = 6000.0  # Radio de descarga de regiones
+@export var base_region_size: float = 2000.0 # Tamaño base (aprox 1x pantalla)
+@export var region_size_variance: float = 0.5 # Variación de tamaño (±50%)
+@export var max_active_regions: int = 12 # Máximo de regiones cargadas
+@export var visibility_radius: float = 4000.0 # Radio de carga de regiones
+@export var unload_radius: float = 6000.0 # Radio de descarga de regiones
 
 # ========== COMPATIBILIDAD CON CHUNKS ==========
-@export var chunk_width: float = 1000.0  # Ancho de chunks (compatibilidad con ItemManager)
-@export var chunk_height: float = 1000.0  # Alto de chunks (compatibilidad con ItemManager)
+@export var chunk_width: float = 1000.0 # Ancho de chunks (compatibilidad con ItemManager)
+@export var chunk_height: float = 1000.0 # Alto de chunks (compatibilidad con ItemManager)
 
 # ========== CONTROL DE REGIONES ==========
-var active_regions: Dictionary = {}  # Key: Vector2i (region_id), Value: Node2D (region_root)
+var active_regions: Dictionary = {} # Key: Vector2i (region_id), Value: Node2D (region_root)
 var current_region_id: Vector2i = Vector2i(0, 0)
 var region_loading_queue: Array[Vector2i] = []
 
 # ========== REFERENCIAS DEL SISTEMA ==========
 var player_ref: Node = null
-var regions_root: Node2D = null  # Contenedor de todas las regiones
-var chunks_root: Node2D = null  # Contenedor para chunks (compatibilidad)
-var active_chunks: Dictionary = {}  # Compatibilidad con sistema de chunks
+var regions_root: Node2D = null # Contenedor de todas las regiones
+var chunks_root: Node2D = null # Contenedor para chunks (compatibilidad)
+var active_chunks: Dictionary = {} # Compatibilidad con sistema de chunks
 var organic_shape_generator: Node = null
 var biome_generator: Node = null
-var region_cache_manager: Node = null  # Renombrado de chunk_cache_manager
-var biome_region_applier: Node = null  # Aplicador de regiones y texturas
-var organic_texture_blender: Node = null  # Nuevo sistema de blending
+var region_cache_manager: Node = null # Renombrado de chunk_cache_manager
+var biome_region_applier: Node = null # Aplicador de regiones y texturas
+var organic_texture_blender: Node = null # Nuevo sistema de blending
 
 # ========== SISTEMA DE POSICIÓN VIRTUAL ==========
-var player_virtual_position: Vector2 = Vector2.ZERO  # Posición virtual del jugador
-var world_offset: Vector2 = Vector2.ZERO  # Offset acumulado del mundo
+var player_virtual_position: Vector2 = Vector2.ZERO # Posición virtual del jugador
+var world_offset: Vector2 = Vector2.ZERO # Offset acumulado del mundo
 
 # ========== ESTADO Y CONTROL ==========
 var is_generating_regions: bool = false
-var generation_frame_budget: int = 2  # Máx regiones generadas por frame
+var generation_frame_budget: int = 2 # Máx regiones generadas por frame
 var world_seed: int = 12345
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
@@ -156,7 +156,7 @@ func initialize(player: Node) -> void:
 	current_region_id = _world_pos_to_region_id(player_virtual_position)
 
 	# Generar regiones iniciales alrededor del jugador
-	await _update_regions_around_player()
+	_update_regions_around_player()
 
 	print("[InfiniteWorldManager] 🎮 Sistema de regiones orgánicas inicializado (región inicial: %s)" % current_region_id)
 
@@ -182,7 +182,7 @@ func _process(_delta: float) -> void:
 	# Si el jugador cambió de región, actualizar regiones activas
 	if new_region_id != current_region_id:
 		current_region_id = new_region_id
-		await _update_regions_around_player()
+		_update_regions_around_player()
 
 		if debug_mode:
 			print("[InfiniteWorldManager] � Jugador movió a región: %s (pos virtual: %s)" % [new_region_id, player_virtual_position])
@@ -239,7 +239,7 @@ func _update_regions_around_player() -> void:
 			region_loading_queue.append(region_id)
 
 	# Descargar regiones fuera del radio
-	await _unload_distant_regions(regions_to_keep)
+	_unload_distant_regions(regions_to_keep)
 
 	if debug_mode and (regions_to_generate.size() > 0 or regions_to_keep.size() != active_regions.size()):
 		print("[InfiniteWorldManager] 🔄 Regiones activas: %d | Cola: %d | Mantener: %d" % [
@@ -272,7 +272,7 @@ func _generate_or_load_region(region_id: Vector2i) -> void:
 	# Intentar cargar del caché primero
 	if region_cache_manager and region_cache_manager.has_cached_chunk(region_id):
 		var region_data = region_cache_manager.load_chunk(region_id)
-		var region_node = await _instantiate_region_from_cache(region_id, region_data)
+		var region_node = _instantiate_region_from_cache(region_id, region_data)
 		if region_node:
 			active_regions[region_id] = region_node
 			region_loaded_from_cache.emit(region_id)
@@ -311,7 +311,7 @@ func _generate_new_region(region_id: Vector2i) -> void:
 		# Datos mínimos por defecto
 		region_data = {
 			"region_id": region_id,
-			"biome_type": 0,  # BiomeGenerator.BiomeType.GRASSLAND
+			"biome_type": 0, # BiomeGenerator.BiomeType.GRASSLAND
 			"center_position": region_center,
 			"boundary_points": organic_region.boundary_points if organic_region else PackedVector2Array()
 		}
@@ -319,7 +319,7 @@ func _generate_new_region(region_id: Vector2i) -> void:
 	# 3. Crear nodo visual de región
 	var region_node = Node2D.new()
 	region_node.name = "Region_%d_%d" % [region_id.x, region_id.y]
-	region_node.position = Vector2.ZERO  # Las regiones usan coordenadas absolutas
+	region_node.position = Vector2.ZERO # Las regiones usan coordenadas absolutas
 
 	# Agregar al contenedor de regiones
 	if regions_root and is_instance_valid(regions_root):
@@ -463,7 +463,7 @@ func _unload_distant_regions(regions_to_keep: Array[Vector2i]) -> void:
 
 	# Descargar regiones marcadas
 	for region_id in regions_to_remove:
-		await _unload_region(region_id)
+		_unload_region(region_id)
 
 func _unload_region(region_id: Vector2i) -> void:
 	"""Descargar una región específica"""
@@ -487,7 +487,7 @@ func _unload_region(region_id: Vector2i) -> void:
 	if debug_mode:
 		print("[InfiniteWorldManager] 🗑️ Región %s descargada" % region_id)
 
-func _extract_region_data(region_node: Node2D, organic_region) -> Dictionary:
+func _extract_region_data(_region_node: Node2D, organic_region) -> Dictionary:
 	"""Extraer datos de región para guardar en caché"""
 	return {
 		"region_id": organic_region.region_id,
@@ -549,7 +549,7 @@ func move_world(direction: Vector2, delta: float) -> void:
 		return
 
 	# Velocidad de movimiento (misma que sistema anterior)
-	var movement_speed = 300.0  # píxeles/segundo
+	var movement_speed = 300.0 # píxeles/segundo
 	var movement = direction * movement_speed * delta
 
 	# Mover el contenedor de regiones en dirección opuesta al movimiento del jugador
@@ -584,7 +584,7 @@ func get_active_regions() -> Array:
 func force_region_update() -> void:
 	"""Forzar actualización de regiones (útil para debug)"""
 	current_region_id = _world_pos_to_region_id(player_virtual_position)
-	await _update_regions_around_player()
+	_update_regions_around_player()
 
 func _draw() -> void:
 	"""Dibujar contornos de regiones orgánicas en modo debug"""

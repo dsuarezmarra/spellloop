@@ -36,7 +36,7 @@ func _ready() -> void:
 	print("🧪 INICIANDO TESTS DEL SISTEMA ORGÁNICO INTEGRADO")
 	print("=".repeat(60))
 	
-	await _run_integration_tests()
+	_run_integration_tests()
 	
 	print("\n" + "=".repeat(60))
 	print("📊 RESUMEN DE RESULTADOS")
@@ -49,19 +49,19 @@ func _run_integration_tests() -> void:
 	"""Ejecutar todos los tests de integración"""
 	
 	# Test 1: Inicialización de componentes
-	await _test_component_initialization()
+	_test_component_initialization()
 	
 	# Test 2: Generación de regiones orgánicas
-	await _test_organic_region_generation()
+	_test_organic_region_generation()
 	
 	# Test 3: Pipeline completo de generación
-	await _test_complete_generation_pipeline()
+	_test_complete_generation_pipeline()
 	
 	# Test 4: Verificación de texturas y blending
-	await _test_texture_application_and_blending()
+	_test_texture_application_and_blending()
 	
 	# Test 5: Rendimiento del sistema
-	await _test_system_performance()
+	_test_system_performance()
 
 func _test_component_initialization() -> void:
 	"""Test 1: Verificar que todos los componentes se inicialicen correctamente"""
@@ -122,7 +122,7 @@ func _test_organic_region_generation() -> void:
 	var total_tests = test_region_count
 	
 	for i in range(total_tests):
-		var region_center = Vector2(i * 1000.0, 0.0)
+		var _region_center = Vector2(i * 1000.0, 0.0)
 		var region_id = Vector2i(i, 0)
 		
 		var organic_region = await organic_shape_generator.generate_region_async(region_id)
@@ -154,7 +154,7 @@ func _test_complete_generation_pipeline() -> void:
 	var total_tests = 3
 	
 	for i in range(total_tests):
-		var region_center = Vector2(i * 1500.0, 500.0)
+		var _region_center = Vector2(i * 1500.0, 500.0)
 		var region_id = Vector2i(i, 1)
 		
 		print("  🔄 Procesando región %d..." % i)
@@ -177,7 +177,7 @@ func _test_complete_generation_pipeline() -> void:
 		add_child(region_node)
 		
 		# Paso 4: Aplicar texturas
-		await biome_region_applier.apply_biome_to_region(region_node, region_data)
+		biome_region_applier.apply_biome_to_region(region_node, region_data)
 		
 		pipeline_success += 1
 		print("    ✅ Pipeline completo para región %d" % i)
@@ -221,7 +221,7 @@ func _test_texture_application_and_blending() -> void:
 		add_child(test_node)
 		
 		# Aplicar textura
-		await biome_region_applier.apply_biome_to_region(test_node, mock_region_data)
+		biome_region_applier.apply_biome_to_region(test_node, mock_region_data)
 		
 		# Verificar que se aplicó algo
 		if test_node.get_child_count() > 0:
@@ -256,11 +256,11 @@ func _test_system_performance() -> void:
 		
 		for i in range(test.iterations):
 			# Generar región de prueba
-			var region_center = Vector2(randf() * 2000.0, randf() * 2000.0)
+			var _region_center = Vector2(randf() * 2000.0, randf() * 2000.0)
 			var region_id = Vector2i(randi() % 100, randi() % 100)
 			
 			if organic_shape_generator:
-				var organic_region = await organic_shape_generator.generate_region_async(region_id)
+				var _organic_region = await organic_shape_generator.generate_region_async(region_id)
 		
 		var end_time = Time.get_ticks_msec()
 		var total_time = end_time - start_time
