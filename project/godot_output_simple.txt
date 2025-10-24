@@ -1,0 +1,185 @@
+Godot Engine v4.5.stable.official.876b29033 - https://godotengine.org
+
+[GameManager] Initializing GameManager...
+[GameManager] Steam initialization placeholder - AppID: PLACEHOLDER_STEAM_APPID
+[AttackManager] Inicializado
+[GameManager] ⚔️ AttackManager creado
+[GameManager] Sistema básico inicializado
+[GameManager] GameManager initialized successfully
+[SaveManager] Initializing SaveManager...
+[SaveManager] Loading game data...
+[SaveManager] Game data loaded successfully
+[SaveManager] Loading settings...
+[SaveManager] Settings loaded successfully
+[SaveManager] SaveManager initialized successfully
+[AudioManager] Initializing AudioManager...
+[AudioManager] Loading audio resources...
+[AudioManager] Music directory not found: res://assets/audio/music/
+[AudioManager] SFX directory not found: res://assets/audio/sfx/
+[AudioManager] Audio resources loaded: 5 music tracks, 20 SFX sounds
+[AudioManager] Audio resources loaded successfully
+[AudioManager] AudioManager initialized successfully
+[InputManager] Initializing InputManager...
+[InputManager] set_process(true) called - will update movement_vector each frame
+[InputManager] InputManager initialized successfully
+[UIManager] Initializing UIManager...
+[UIManager] UIManager initialized successfully
+[Localization] Initializing Localization...
+[Localization] Loaded translations for: en
+[Localization] Loaded translations for: es
+[Localization] Localization initialized with language: en
+📐 ScaleManager: (64.0, 64.0) → escala=0.03333333333333
+[SpriteDB] sprites_index cargado, llaves: ["tier_1", "tier_2", "tier_3", "tier_4", "bosses", "xp_orbs/blue_orb", "xp_orbs/red_orb", "chests/chest_closed", "chests/chest_open", "projectiles/fireball", "projectiles/ice_shard", "projectiles/arcane_bolt", "projectiles/dark_missile", "effects/lightning_strike", "effects/frost_nova", "effects/meteor_impact", "effects/arcane_burst", "auras/white", "auras/blue", "auras/yellow", "auras/orange", "auras/purple", "players/wizard/down", "players/wizard/up", "players/wizard/left", "players/wizard/right"]
+
+══════════════════════════════════════════════════════════════════════════
+🧪 BIOME INTEGRATION TEST - INICIANDO
+══════════════════════════════════════════════════════════════════════════
+
+❌ InfiniteWorldManager no encontrado
+✅ Configuración JSON válida (6 biomas encontrados)
+✅ Todas las texturas PNG encontradas (24/24)
+🔍 BIOME RENDERING DEBUG INITIALIZED
+🧙‍♂️ Iniciando Spellloop Game...
+🔍 VERIFICANDO SISTEMA ORGÁNICO...
+  ✅ OrganicShapeGenerator: true
+  ✅ BiomeGenerator: true
+  ✅ BiomeRegionApplier: true
+  ✅ OrganicTextureBlender: true
+  ✅ InfiniteWorldManager: true
+  ✅ OrganicShapeGenerator_script: true
+  ✅ InfiniteWorldManager_script: true
+🏆 SISTEMA ORGÁNICO: 100% funcional (7/7)
+[SpellloopGame] Creando player...
+
+[SpellloopPlayer] ===== INICIANDO SPELLLOOP PLAYER =====
+[SpellloopPlayer] OK: WizardPlayer.gd cargado
+
+[WizardPlayer] ===== INICIALIZANDO WIZARD =====
+[Wizard] Inicializando Wizard en posición: (2880.0, 1620.0)
+[HealthComponent] Inicializado para @CharacterBody2D@2: HP 100/100
+[HealthComponent] Inicializado: 100 HP
+[Wizard] ✓ Health component inicializado (HP: 100/100)
+[WizardPlayer] ✓ Animaciones configuradas para Wizard (con sprites reales)
+[Wizard] ✓ Sprite configurado: escala=0.250
+[Wizard] ✓ Física configurada
+[Wizard] GameManager: ✓ | AttackManager: ✓
+[Wizard] ✓ Inicialización completada
+[WizardPlayer] ===== WIZARD INICIALIZADO =====
+
+[SpellloopPlayer] ===== OK: SPELLLOOP PLAYER LISTO =====
+
+[SpellloopGame] Player creado en posición: (2880.0, 1620.0)
+[ParticleManager] Inicializado
+👹 EnemyManager inicializado (debug_spawns=true, spawn_rate=5.0, max_enemies=5)
+[EnemyManager] enemy_types: %s
+⚔️ WeaponManager inicializado
+⭐ ExperienceManager inicializado
+📦 ItemManager inicializado
+📦 6 tipos de items configurados
+[SpellloopGame] ✓ CombatSystemMonitor añadido a UI
+[QuickCombatDebug] Presiona 'F3' para debug, 'F4' para proyectil test, 'Shift+F5' para árbol
+[SpellloopGame] ✓ QuickCombatDebug cargado (Presiona D/P/L)
+🗺️ Configurando minimapa en posición: (-156.0, 20.0) tamaño: (200.0, 200.0)
+🗺️ Máscara circular aplicada con radio: 100.0
+🗺️ Minimapa configurado con fondo y player dot
+🗺️ Minimapa inicializado y visible
+[SpellloopGame] Inicializando sistemas...
+[VisualCalibrator] Inicializando calibrador visual...
+[VisualCalibrator] Ejecutando calibración visual automática...
+[VisualCalibrator] Calibración completada:
+  - Resolución: 64x64
+  - Escala player: 0.150
+  - Escala enemigos: 0.100
+  - Escala proyectiles: 0.100
+[VisualCalibrator] Calibración guardada en: user://visual_calibration.cfg
+[DifficultyManager] Inicializado
+[GlobalVolumeController] Inicializado
+[GlobalVolumeController] Usando valores por defecto
+🎮 ¡Spellloop Game iniciado!
+[GameManager] Starting new run...
+[GameManager] ⚠️ No se encontró el player en la escena
+[UIManager] Changed scene from '' to 'GameHUD'
+[GameManager] Nueva partida iniciada
+[VERIFY] Errors found in scene verification:
+res://scenes/SpellloopMain.tscn : OK
+res://scenes/ui/GameHUD.tscn : OK
+res://scenes/ui/LevelUpPanel.tscn : OK
+res://scenes/ui/MetaShop.tscn : OK
+res://scenes/ui/OptionsMenu.tscn : OK
+res://scenes/ui/SimpleChestPopup.tscn : OK
+res://scenes/projectiles/chaos_wave.tscn : OK
+res://scenes/player/SpellloopPlayer.tscn : OK
+res://scenes/pickups/XPOrb.tscn : OK
+res://scenes/items/TreasureChest.tscn : OK
+res://scenes/enemies/EnemyProjectile.tscn : OK
+res://scenes/enemies/Enemy_duende_sombrio.tscn : MISSING/ERROR
+res://scenes/enemies/Enemy_esqueleto_aprendiz.tscn : MISSING/ERROR
+res://scenes/enemies/Enemy_gusano_de_mana.tscn : MISSING/ERROR
+res://scenes/enemies/Enemy_murcielago_etereo.tscn : MISSING/ERROR
+res://scenes/enemies/Enemy_slime_arcano.tscn : MISSING/ERROR
+res://scenes/enemies/goblin.tscn : MISSING/ERROR
+res://scenes/enemies/skeleton.tscn : MISSING/ERROR
+res://scenes/enemies/slime.tscn : MISSING/ERROR
+res://scenes/effects/BossTelegraph.tscn : OK
+res://scenes/effects/XPOrb.tscn : OK
+res://scenes/enemies/* : OK
+res://scenes/player/SpellloopPlayer.tscn:has_texture : MISSING/ERROR
+res://scenes/enemies/*:has_texture : MISSING/ERROR
+
+======================================================================
+🔍 WORLD MOVEMENT DIAGNOSTICS INITIALIZED
+======================================================================
+
+[AttackManager] Inicializado para player: WizardPlayer
+[Wizard] ✓ AttackManager inicializado
+[WizardPlayer] === EQUIPANDO ARMAS INICIALES ===
+[WizardPlayer] DEBUG: ice_proj_scene = <PackedScene#-9223371980114229550> (type: 24)
+[WizardPlayer] ✓ IceProjectile.tscn cargado: <PackedScene#-9223371980114229550>
+[AttackManager] ⚔️ Arma equipada: Varita de Hielo (total: 1)
+[Wizard] ⚔️ Arma equipada: Varita de Hielo
+[WizardPlayer] ✓ Arma de Hielo equipada
+[WizardPlayer] Verificación: projectile_scene = <PackedScene#-9223371980114229550>
+
+=============================================================
+🔍 COMBAT SYSTEM DIAGNOSTICS
+=============================================================
+
+1️⃣  Checking GameManager...
+  ✓ GameManager found
+  - is_run_active:true
+  - attack_manager exists:true
+  - attack_manager type:Node
+
+2️⃣  Checking SpellloopGame...
+  ✗ SpellloopGame NOT found
+
+3️⃣  Checking Player...
+  ✗ Player NOT found
+
+4️⃣  Checking AttackManager...
+  ✓ AttackManager found
+  - is_active:true
+  - player ref:true
+  - weapons count:1
+  - has _process:true
+  - Weapons:
+    • Varita de Hielo (damage=8, cooldown=0.40)
+      - projectile_scene:true
+      - is_active:true
+
+5️⃣  Checking ProjectileBase.tscn...
+  ✗ ProjectileBase.tscn NOT found at res://scripts/entities/ProjectileBase.tscn
+
+6️⃣  Checking WeaponBase.gd...
+  ✗ WeaponBase.gd NOT found
+
+7️⃣  Checking Game State...
+  - Game state:IN_RUN
+  - is_run_active:true
+  - player_ref:false
+  ⚠️  Run is active but player_ref is null!
+
+=============================================================
+❌ Some issues detected - check above
+=============================================================
+

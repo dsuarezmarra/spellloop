@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dp2fpl1l1c42f"]
+
+[ext_resource type="Script" path="res://test_organic_instantiation.gd" id="1_m3v8k"]
+
+[node name="TestOrganicSystem" type="Node"]
+script = ExtResource("1_m3v8k")

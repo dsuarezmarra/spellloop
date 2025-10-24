@@ -1,0 +1,45 @@
+Godot Engine v4.5.stable.official.876b29033 - https://godotengine.org
+
+SCRIPT ERROR: Parse Error: Could not resolve class "InfiniteWorldManager", because of a parser error.
+   at: GDScript::reload (res://scripts/core/SpellloopGame.gd:280)
+ERROR: Failed to load script "res://scripts/core/SpellloopGame.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:3041)
+[GameManager] Initializing GameManager...
+[GameManager] Steam initialization placeholder - AppID: PLACEHOLDER_STEAM_APPID
+[AttackManager] Inicializado
+[GameManager] ÔÜö´©Å AttackManager creado
+[GameManager] Sistema b├ísico inicializado
+[GameManager] GameManager initialized successfully
+[SaveManager] Initializing SaveManager...
+[SaveManager] Loading game data...
+[SaveManager] Game data loaded successfully
+[SaveManager] Loading settings...
+[SaveManager] Settings loaded successfully
+[SaveManager] SaveManager initialized successfully
+[AudioManager] Initializing AudioManager...
+[AudioManager] Loading audio resources...
+[AudioManager] Music directory not found: res://assets/audio/music/
+[AudioManager] SFX directory not found: res://assets/audio/sfx/
+[AudioManager] Audio resources loaded: 5 music tracks, 20 SFX sounds
+[AudioManager] Audio resources loaded successfully
+[AudioManager] AudioManager initialized successfully
+[InputManager] Initializing InputManager...
+[InputManager] set_process(true) called - will update movement_vector each frame
+[InputManager] InputManager initialized successfully
+[UIManager] Initializing UIManager...
+[UIManager] UIManager initialized successfully
+[Localization] Initializing Localization...
+[Localization] Loaded translations for: en
+[Localization] Loaded translations for: es
+[Localization] Localization initialized with language: en
+­ƒôÉ ScaleManager: (64.0, 64.0) ÔåÆ escala=0.03333333333333
+[SpriteDB] sprites_index cargado, llaves: ["tier_1", "tier_2", "tier_3", "tier_4", "bosses", "xp_orbs/blue_orb", "xp_orbs/red_orb", "chests/chest_closed", "chests/chest_open", "projectiles/fireball", "projectiles/ice_shard", "projectiles/arcane_bolt", "projectiles/dark_missile", "effects/lightning_strike", "effects/frost_nova", "effects/meteor_impact", "effects/arcane_burst", "auras/white", "auras/blue", "auras/yellow", "auras/orange", "auras/purple", "players/wizard/down", "players/wizard/up", "players/wizard/left", "players/wizard/right"]
+
+ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+­ƒº¬ BIOME INTEGRATION TEST - INICIANDO
+ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+
+ÔØî InfiniteWorldManager no encontrado
+Ô£à Configuraci├│n JSON v├ílida (6 biomas encontrados)
+Ô£à Todas las texturas PNG encontradas (24/24)
+­ƒöì BIOME RENDERING DEBUG INITIALIZED

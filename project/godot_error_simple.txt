@@ -1,0 +1,369 @@
+SCRIPT ERROR: Parse Error: Function "_extract_region_data" has the same name as a previously declared function.
+   at: GDScript::reload (res://scripts/core/InfiniteWorldManager.gd:608)
+   GDScript backtrace (most recent call first):
+       [0] _verify_organic_system (res://scripts/core/SpellloopGame.gd:70)
+       [1] _ready (res://scripts/core/SpellloopGame.gd:38)
+ERROR: Failed to load script "res://scripts/core/InfiniteWorldManager.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:3041)
+   GDScript backtrace (most recent call first):
+       [0] _verify_organic_system (res://scripts/core/SpellloopGame.gd:70)
+       [1] _ready (res://scripts/core/SpellloopGame.gd:38)
+SCRIPT ERROR: Invalid call. Nonexistent function 'new' in base 'GDScript'.
+   at: SpellloopGame.create_world_manager (res://scripts/core/SpellloopGame.gd:275)
+   GDScript backtrace (most recent call first):
+       [0] create_world_manager (res://scripts/core/SpellloopGame.gd:275)
+       [1] setup_game (res://scripts/core/SpellloopGame.gd:187)
+ERROR: String formatting error: not all arguments converted during string formatting.
+   at: validated_evaluate (core/variant/variant_op.h:953)
+   GDScript backtrace (most recent call first):
+       [0] _setup_enemy_types (res://scripts/core/EnemyManager.gd:42)
+       [1] _ready (res://scripts/core/EnemyManager.gd:31)
+       [2] create_enemy_manager (res://scripts/core/SpellloopGame.gd:288)
+       [3] setup_game (res://scripts/core/SpellloopGame.gd:188)
+ERROR: Condition "p_z > RenderingServer::CANVAS_ITEM_Z_MAX" is true.
+   at: set_z_index (scene/main/canvas_item.cpp:649)
+   GDScript backtrace (most recent call first):
+       [0] create_debug_label (res://scripts/core/DebugOverlay.gd:30)
+       [1] _ready (res://scripts/core/DebugOverlay.gd:22)
+       [2] create_ui_layer (res://scripts/core/SpellloopGame.gd:328)
+       [3] setup_game (res://scripts/core/SpellloopGame.gd:202)
+ERROR: Condition "p_child->data.parent != this" is true.
+   at: remove_child (scene/main/node.cpp:1719)
+   GDScript backtrace (most recent call first):
+       [0] setup_game (res://scripts/core/SpellloopGame.gd:210)
+ERROR: Can't add child 'Camera2D' to 'SpellloopMain', already has a parent 'WorldRoot'.
+   at: add_child (scene/main/node.cpp:1685)
+   GDScript backtrace (most recent call first):
+       [0] setup_game (res://scripts/core/SpellloopGame.gd:211)
+SCRIPT ERROR: Invalid call. Nonexistent function 'set_regions_root' in base 'Nil'.
+   at: SpellloopGame.initialize_systems (res://scripts/core/SpellloopGame.gd:379)
+   GDScript backtrace (most recent call first):
+       [0] initialize_systems (res://scripts/core/SpellloopGame.gd:379)
+       [1] setup_game (res://scripts/core/SpellloopGame.gd:229)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/Enemy_duende_sombrio.tscn:14]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/Enemy_duende_sombrio.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/Enemy_duende_sombrio.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+WARNING: Could not load resource: res://scenes/enemies/Enemy_duende_sombrio.tscn
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:219)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/Enemy_esqueleto_aprendiz.tscn:14]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/Enemy_esqueleto_aprendiz.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/Enemy_esqueleto_aprendiz.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+WARNING: Could not load resource: res://scenes/enemies/Enemy_esqueleto_aprendiz.tscn
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:219)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/Enemy_gusano_de_mana.tscn:14]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/Enemy_gusano_de_mana.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/Enemy_gusano_de_mana.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+WARNING: Could not load resource: res://scenes/enemies/Enemy_gusano_de_mana.tscn
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:219)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/Enemy_murcielago_etereo.tscn:14]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/Enemy_murcielago_etereo.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/Enemy_murcielago_etereo.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+WARNING: Could not load resource: res://scenes/enemies/Enemy_murcielago_etereo.tscn
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:219)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/Enemy_slime_arcano.tscn:14]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/Enemy_slime_arcano.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/Enemy_slime_arcano.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+WARNING: Could not load resource: res://scenes/enemies/Enemy_slime_arcano.tscn
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:219)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/goblin.tscn:9]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/goblin.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/goblin.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+WARNING: Could not load resource: res://scenes/enemies/goblin.tscn
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:219)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/skeleton.tscn:9]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/skeleton.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/skeleton.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+WARNING: Could not load resource: res://scenes/enemies/skeleton.tscn
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:219)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/slime.tscn:9]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/slime.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/slime.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:217)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+WARNING: Could not load resource: res://scenes/enemies/slime.tscn
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] _check_scene (res://scripts/tools/verify_scenes.gd:219)
+       [1] run_checks (res://scripts/tools/verify_scenes.gd:94)
+       [2] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/Enemy_duende_sombrio.tscn:14]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/Enemy_duende_sombrio.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/Enemy_duende_sombrio.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/Enemy_esqueleto_aprendiz.tscn:14]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/Enemy_esqueleto_aprendiz.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/Enemy_esqueleto_aprendiz.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/Enemy_gusano_de_mana.tscn:14]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/Enemy_gusano_de_mana.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/Enemy_gusano_de_mana.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/Enemy_murcielago_etereo.tscn:14]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/Enemy_murcielago_etereo.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/Enemy_murcielago_etereo.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/Enemy_slime_arcano.tscn:14]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/Enemy_slime_arcano.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/Enemy_slime_arcano.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/goblin.tscn:9]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/goblin.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/goblin.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/skeleton.tscn:9]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/skeleton.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/skeleton.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Parse Error: Parse error. [Resource file res://scenes/enemies/slime.tscn:9]
+   at: _parse_node_tag (scene/resources/resource_format_text.cpp:279)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Failed loading resource: res://scenes/enemies/slime.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: Error loading resource: 'res://scenes/enemies/slime.tscn'.
+   at: load (core/core_bind.cpp:74)
+   GDScript backtrace (most recent call first):
+       [0] run_checks (res://scripts/tools/verify_scenes.gd:166)
+       [1] _run_verification (res://scripts/core/SpellloopGame.gd:97)
+ERROR: 5 RID allocations of type 'P11GodotBody2D' were leaked at exit.
+ERROR: 1 RID allocations of type 'P11GodotArea2D' were leaked at exit.
+WARNING: 5 RIDs of type "Canvas" were leaked.
+   at: _free_rids (servers/rendering/renderer_canvas_cull.cpp:2678)
+WARNING: 43 RIDs of type "CanvasItem" were leaked.
+   at: _free_rids (servers/rendering/renderer_canvas_cull.cpp:2678)
+ERROR: 1 RID allocations of type 'N16RendererViewport8ViewportE' were leaked at exit.
+ERROR: 3 RID allocations of type 'PN13RendererDummy14TextureStorage12DummyTextureE' were leaked at exit.
+ERROR: 1 RID allocations of type 'N17RendererSceneCull8ScenarioE' were leaked at exit.
+ERROR: 12 RID allocations of type 'PN18TextServerAdvanced22ShapedTextDataAdvancedE' were leaked at exit.
+ERROR: 1 RID allocations of type 'PN18TextServerAdvanced12FontAdvancedE' were leaked at exit.
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2514)
+ERROR: 12 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:795)

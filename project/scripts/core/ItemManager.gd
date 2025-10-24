@@ -17,7 +17,7 @@ signal item_collected(item_type: String, item_data: Dictionary)
 
 # Referencias
 var player: CharacterBody2D
-var world_manager: InfiniteWorldManager
+var world_manager: Node
 
 # Configuración de spawn en chunks
 var chest_spawn_chance: float = 0.3  # Probabilidad de que un chunk tenga cofre (30%)
@@ -39,7 +39,7 @@ func _ready():
 	print("📦 ItemManager inicializado")
 	setup_item_types()
 
-func initialize(player_ref: CharacterBody2D, world_ref: InfiniteWorldManager):
+func initialize(player_ref: CharacterBody2D, world_ref: Node):
 	"""Inicializar sistema de items"""
 	print("📦 Inicializando ItemManager...")
 	player = player_ref

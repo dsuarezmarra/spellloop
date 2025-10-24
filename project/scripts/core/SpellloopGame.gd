@@ -34,6 +34,8 @@ var game_running: bool = false
 
 func _ready():
 	print("🧙‍♂️ Iniciando Spellloop Game...")
+	# Verificar sistema orgánico primero
+	_verify_organic_system()
 	# Diferir setup para evitar conflictos durante _ready()
 	call_deferred("setup_game")
 	call_deferred("_run_verification")
@@ -45,6 +47,39 @@ func _get_ui():
 		if ui:
 			return ui
 	return null
+
+func _verify_organic_system():
+	"""Verificación del sistema orgánico integrado"""
+	print("🔍 VERIFICANDO SISTEMA ORGÁNICO...")
+	
+	var results = {}
+	
+	# Verificar archivos
+	results["OrganicShapeGenerator"] = ResourceLoader.exists("res://scripts/core/OrganicShapeGenerator.gd")
+	results["BiomeGenerator"] = ResourceLoader.exists("res://scripts/core/BiomeGenerator.gd") 
+	results["BiomeRegionApplier"] = ResourceLoader.exists("res://scripts/core/BiomeRegionApplier.gd")
+	results["OrganicTextureBlender"] = ResourceLoader.exists("res://scripts/core/OrganicTextureBlender.gd")
+	results["InfiniteWorldManager"] = ResourceLoader.exists("res://scripts/core/InfiniteWorldManager.gd")
+	
+	# Verificar carga de scripts (sin instanciación para evitar errores de parser)
+	if results["OrganicShapeGenerator"]:
+		var script = load("res://scripts/core/OrganicShapeGenerator.gd")
+		results["OrganicShapeGenerator_script"] = script != null
+	
+	if results["InfiniteWorldManager"]:
+		var script = load("res://scripts/core/InfiniteWorldManager.gd")
+		results["InfiniteWorldManager_script"] = script != null
+	
+	# Mostrar resultados con más detalle
+	var success_count = 0
+	for key in results.keys():
+		var status = "✅" if results[key] else "❌"
+		print("  %s %s: %s" % [status, key, str(results[key])])
+		if results[key]:
+			success_count += 1
+	
+	var success_rate = float(success_count) / float(results.size()) * 100.0
+	print("🏆 SISTEMA ORGÁNICO: %.0f%% funcional (%d/%d)" % [success_rate, success_count, results.size()])
 
 func _run_verification():
 	"""Ejecutar verificación de escenas después de setup_game()"""
@@ -236,7 +271,8 @@ func create_player():
 
 func create_world_manager():
 	"""Crear gestor de mundo infinito"""
-	world_manager = InfiniteWorldManager.new()
+	var InfiniteWorldManagerClass = load("res://scripts/core/InfiniteWorldManager.gd")
+	world_manager = InfiniteWorldManagerClass.new()
 	world_manager.name = "WorldManager"
 	add_child(world_manager)
 
@@ -267,7 +303,8 @@ func create_experience_manager():
 
 func create_item_manager():
 	"""Crear gestor de items"""
-	item_manager = ItemManager.new()
+	var ItemManagerClass = load("res://scripts/core/ItemManager.gd")
+	item_manager = ItemManagerClass.new()
 	item_manager.name = "ItemManager"
 	add_child(item_manager)
 
@@ -336,13 +373,23 @@ func initialize_systems():
 		gvc.name = "GlobalVolumeController"
 		get_tree().root.add_child(gvc)
 	
-	# Inicializar mundo infinito
+	# Inicializar mundo infinito orgánico
 	if has_node("WorldRoot/ChunksRoot"):
-		world_manager.set_chunks_root(get_node("WorldRoot/ChunksRoot"))
-		print("[SpellloopGame] ✅ chunks_root asignado: %s" % world_manager.chunks_root.name)
+		# Usar ChunksRoot como contenedor de regiones (compatibilidad)
+		world_manager.set_regions_root(get_node("WorldRoot/ChunksRoot"))
+		print("[SpellloopGame] ✅ regions_root asignado: %s" % world_manager.regions_root.name)
+	elif has_node("WorldRoot"):
+		# Crear RegionsRoot si no existe ChunksRoot
+		var regions_root = Node2D.new()
+		regions_root.name = "RegionsRoot"
+		get_node("WorldRoot").add_child(regions_root)
+		world_manager.set_regions_root(regions_root)
+		print("[SpellloopGame] ✅ RegionsRoot creado y asignado")
 	else:
-		print("[SpellloopGame] ❌ ERROR: ChunksRoot no encontrado en escena")
-	world_manager.initialize(player)
+		print("[SpellloopGame] ❌ ERROR: WorldRoot no encontrado en escena")
+	
+	# Inicializar sistema orgánico
+	await world_manager.initialize(player)
 	
 	# Inicializar enemigos
 	enemy_manager.initialize(player, world_manager)
