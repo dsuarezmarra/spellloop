@@ -35,37 +35,37 @@ var biome_textures_config: Dictionary = {}
 const BIOME_TEXTURES = {
 	"grassland": {
 		"base": "Grassland/base.png",
-		"decor": ["Grassland/decor1.png"],
+		"decor": ["Grassland/decor1.png", "Grassland/decor2.png", "Grassland/decor3.png"],
 		"scale": 1.0,
 		"tint": Color.WHITE
 	},
 	"desert": {
 		"base": "Desert/base.png",
-		"decor": ["Desert/decor1.png"],
+		"decor": ["Desert/decor1.png", "Desert/decor2.png", "Desert/decor3.png"],
 		"scale": 1.2,
 		"tint": Color(1.0, 0.95, 0.8, 1.0)
 	},
 	"snow": {
 		"base": "Snow/base.png",
-		"decor": ["Snow/decor1.png"],
+		"decor": ["Snow/decor1.png", "Snow/decor2.png", "Snow/decor3.png"],
 		"scale": 0.8,
 		"tint": Color(0.9, 0.95, 1.0, 1.0)
 	},
 	"lava": {
 		"base": "Lava/base.png",
-		"decor": ["Lava/decor1.png"],
+		"decor": ["Lava/decor1.png", "Lava/decor2.png", "Lava/decor3.png", "Lava/decor4.png", "Lava/decor5.png"],
 		"scale": 1.1,
 		"tint": Color(1.0, 0.8, 0.6, 1.0)
 	},
 	"arcane_wastes": {
 		"base": "ArcaneWastes/base.png",
-		"decor": ["ArcaneWastes/decor1.png"],
+		"decor": ["ArcaneWastes/decor1.png", "ArcaneWastes/decor2.png", "ArcaneWastes/decor3.png"],
 		"scale": 1.0,
 		"tint": Color(0.9, 0.7, 1.0, 1.0)
 	},
 	"forest": {
 		"base": "Forest/base.png",
-		"decor": ["Forest/decor1.png"],
+		"decor": ["Forest/decor1.png", "Forest/decor2.png", "Forest/decor3.png"],
 		"scale": 0.9,
 		"tint": Color(0.8, 1.0, 0.8, 1.0)
 	}
@@ -260,26 +260,45 @@ func _apply_base_texture(geometry_container: Node2D, biome_name: String, _region
 	print("[BiomeRegionApplier] ✅ Textura base aplicada: ", biome_name, " - Size: ", base_texture.get_size())
 
 func _apply_detail_overlay(geometry_container: Node2D, biome_name: String, _region_data: Dictionary) -> void:
-	"""Aplicar overlay de detalles por encima de la textura base"""
+	"""Aplicar múltiples capas de overlay de detalles por encima de la textura base"""
 	var texture_config = BIOME_TEXTURES.get(biome_name, BIOME_TEXTURES[DEFAULT_BIOME])
 
-	if not texture_config.has("decor"):
-		return # No hay decor definido
-
-	var overlay_texture = _load_biome_texture(texture_config.decor[0])
-	if not overlay_texture:
+	if not texture_config.has("decor") or texture_config.decor.is_empty():
+		print("[BiomeRegionApplier] ℹ️ Sin decoraciones para ", biome_name)
 		return
 
-	# Crear segundo polígono para overlay
-	var overlay_polygon = Polygon2D.new()
-	overlay_polygon.name = "DetailOverlay"
-	overlay_polygon.polygon = geometry_container.get_node("RegionShape").polygon
-	overlay_polygon.texture = overlay_texture
-	overlay_polygon.texture_scale = Vector2(texture_config.scale * 0.7, texture_config.scale * 0.7)
-	overlay_polygon.modulate = Color(1.0, 1.0, 1.0, 0.6) # Semi-transparente
-	overlay_polygon.z_index = 1 # Por encima de la textura base
+	var base_polygon = geometry_container.get_node_or_null("RegionShape")
+	if not base_polygon:
+		return
 
-	geometry_container.add_child(overlay_polygon)
+	var base_boundary = base_polygon.polygon
+
+	# Aplicar cada textura de decoración como una capa separada
+	var decor_count = 0
+	for decor_path in texture_config.decor:
+		var overlay_texture = _load_biome_texture(decor_path)
+		if not overlay_texture:
+			print("[BiomeRegionApplier] ⚠️ No se pudo cargar decoración: ", decor_path)
+			continue
+
+		decor_count += 1
+
+		# Crear polígono para overlay con opcionalidad de opacidad variable
+		var overlay_polygon = Polygon2D.new()
+		overlay_polygon.name = "DetailOverlay_%d" % decor_count
+		overlay_polygon.polygon = base_boundary
+		overlay_polygon.texture = overlay_texture
+		overlay_polygon.texture_scale = Vector2(texture_config.scale * 0.7, texture_config.scale * 0.7)
+		overlay_polygon.use_parent_material = false
+		overlay_polygon.antialiased = true
+		
+		# Opacity variable según capa (capas posteriores más transparentes)
+		var opacity = 0.6 - (decor_count * 0.1)
+		overlay_polygon.modulate = Color(1.0, 1.0, 1.0, max(0.2, opacity))
+		overlay_polygon.z_index = decor_count  # Cada capa sobre la anterior
+
+		geometry_container.add_child(overlay_polygon)
+		print("[BiomeRegionApplier] 🎨 Decoración capa %d aplicada: %s" % [decor_count, decor_path])
 
 func _apply_organic_blending(region_node: Node2D, region_data: Dictionary, neighbor_regions: Array) -> void:
 	"""Aplicar blending orgánico usando OrganicTextureBlender"""
