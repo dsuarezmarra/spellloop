@@ -1,6 +1,6 @@
 # InfiniteWorldManager.gd
 # Sistema profesional de generación dinámica de chunks infinitos
-# - Chunks de 5760×3240 px (3×3 pantallas)
+# - Chunks de 3840×2160 px (2×2 pantallas) - OPTIMIZADO
 # - 9 chunks simultáneos máximo (3×3 cuadrícula)
 # - Caché persistente de estado
 # - Biomas decorativos con transiciones suaves
@@ -12,10 +12,10 @@ class_name InfiniteWorldManager
 signal chunk_generated(chunk_pos: Vector2i)
 signal chunk_loaded_from_cache(chunk_pos: Vector2i)
 
-# Dimensiones del chunk
-@export var chunk_width: int = 5760
-@export var chunk_height: int = 3240
-var chunk_size: Vector2 = Vector2(5760, 3240)
+# Dimensiones del chunk (OPTIMIZADO: más pequeño para mejor performance)
+@export var chunk_width: int = 3840
+@export var chunk_height: int = 2160
+var chunk_size: Vector2 = Vector2(3840, 2160)
 
 # Límite de chunks activos (siempre 3×3)
 const ACTIVE_CHUNK_GRID: Vector2i = Vector2i(3, 3)
