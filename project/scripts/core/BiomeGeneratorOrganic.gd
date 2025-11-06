@@ -118,7 +118,7 @@ func _initialize_noise_generator() -> void:
 	if debug_mode:
 		print("[BiomeGeneratorOrganic] 🔧 Configuración Voronoi:")
 		print("  - Frequency: %.6f (regiones ~%.0f px = %.1f pantallas)" % [
-			cellular_frequency, 
+			cellular_frequency,
 			1.0 / cellular_frequency,
 			(1.0 / cellular_frequency) / 1920.0
 		])

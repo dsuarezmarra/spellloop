@@ -435,12 +435,12 @@ func _is_border_tile(center_x: float, center_y: float, tile_size: float, center_
 		Vector2(center_x - half, center_y + half),  # Esquina inferior izquierda
 		Vector2(center_x + half, center_y + half),  # Esquina inferior derecha
 	]
-	
+
 	for point in sample_points:
 		var biome = _biome_generator.get_biome_at_world_position(point.x, point.y)
 		if biome != center_biome:
 			return true  # Encontramos un bioma diferente = ES BORDE
-	
+
 	return false  # Todos los puntos son del mismo bioma = NO ES BORDE
 
 func _create_border_tiles(
@@ -457,40 +457,40 @@ func _create_border_tiles(
 	"""
 	var micro_tile_size = border_tile_size  # 64px por micro-tile
 	var subdivisions = int(tile_size / micro_tile_size)  # 512/64 = 8
-	
+
 	for sub_y in range(subdivisions):
 		for sub_x in range(subdivisions):
 			# Posición mundial del centro del micro-tile
 			var micro_world_x = tile_world_x + (sub_x * micro_tile_size) + (micro_tile_size / 2.0)
 			var micro_world_y = tile_world_y + (sub_y * micro_tile_size) + (micro_tile_size / 2.0)
-			
+
 			# Detectar bioma en este micro-tile
 			var micro_biome = _biome_generator.get_biome_at_world_position(micro_world_x, micro_world_y)
-			
+
 			# Cargar textura
 			var texture = _load_biome_base_texture(micro_biome)
 			if texture == null:
 				continue
-			
+
 			# Crear sprite del micro-tile
 			var sprite = Sprite2D.new()
 			sprite.name = "BorderMicroTile_%d_%d" % [sub_x, sub_y]
 			sprite.texture = texture
 			sprite.centered = true
-			
+
 			# Posición local dentro del chunk
 			sprite.position = Vector2(
 				tile_local_x + (sub_x * micro_tile_size) + (micro_tile_size / 2.0),
 				tile_local_y + (sub_y * micro_tile_size) + (micro_tile_size / 2.0)
 			)
-			
+
 			# Escalar para llenar micro-tile
 			var texture_size = texture.get_size()
 			sprite.scale = Vector2(
 				micro_tile_size / texture_size.x,
 				micro_tile_size / texture_size.y
 			)
-			
+
 			sprite.z_index = -100
 			parent.add_child(sprite)
 
