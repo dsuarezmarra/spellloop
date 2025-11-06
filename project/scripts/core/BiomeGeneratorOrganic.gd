@@ -70,7 +70,7 @@ func _initialize_noise_generator() -> void:
 	CELLULAR_RETURN_TYPE: RETURN_CELL_VALUE
 	- Retorna valor único por celda Voronoi
 	- Perfecto para asignar bioma por región
-	
+
 	FREQUENCY: 0.00001
 	- Regiones de ~100,000 px de diámetro
 	- Con chunks 15000×15000, cada chunk tiene 1-3 biomas dominantes
@@ -141,17 +141,17 @@ func get_biome_at_world_position(world_x: float, world_y: float) -> int:
 	3. Obtener valor Voronoi en coordenadas distorsionadas → [-1.0, 1.0]
 	4. Normalizar a [0.0, 1.0]
 	5. Mapear a [0, 5] (6 biomas)
-	
+
 	La distorsión crea bordes orgánicos irregulares sin suavizar la transición
 	"""
 	# PASO 1: Calcular offset de distorsión usando ruido Simplex
 	var distortion_x = distortion_noise.get_noise_2d(world_x, world_y) * distortion_strength
 	var distortion_y = distortion_noise.get_noise_2d(world_x + 5000, world_y + 5000) * distortion_strength
-	
+
 	# PASO 2: Aplicar distorsión a las coordenadas (esto hace los bordes irregulares)
 	var distorted_x = world_x + distortion_x
 	var distorted_y = world_y + distortion_y
-	
+
 	# PASO 3: Obtener valor Voronoi en coordenadas distorsionadas
 	var noise_value = cellular_noise.get_noise_2d(distorted_x, distorted_y)
 

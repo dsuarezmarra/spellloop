@@ -67,7 +67,7 @@ func _run_verification():
 				print("[VERIFY] Errors found in scene verification:\n", report)
 			else:
 				print("[VERIFY] All scenes verified OK:\n", report)
-	
+
 	# Run combat diagnostics
 	call_deferred("_run_combat_diagnostics")
 
@@ -79,7 +79,7 @@ func _run_combat_diagnostics() -> void:
 			var diagnostics = diag_script.new()
 			diagnostics.name = "CombatDiagnostics"
 			add_child(diagnostics)
-	
+
 	# Add WorldMovementDiagnostics for continuous monitoring
 	if ResourceLoader.exists("res://scripts/tools/WorldMovementDiagnostics.gd"):
 		var wmd_script = load("res://scripts/tools/WorldMovementDiagnostics.gd")
@@ -90,7 +90,7 @@ func _run_combat_diagnostics() -> void:
 
 func setup_game():
 	"""Configurar todos los sistemas del juego"""
-	
+
 	# Crear player fijo en el centro
 	create_player()
 
@@ -147,7 +147,7 @@ func setup_game():
 						ui_layer.add_child(om)
 					else:
 						_gt3.root.add_child(om)
-	
+
 	# Crear sistemas de gestión
 	create_world_manager()
 	create_enemy_manager()
@@ -187,17 +187,17 @@ func setup_game():
 	# Activar cámara (Godot 4.5: usar 'enabled' en lugar de 'make_current()')
 	if world_camera:
 		world_camera.enabled = true
-	
+
 	# Inicializar sistemas
 	initialize_systems()
-	
+
 	# Comenzar juego
 	start_game()
 
 func create_player():
 	"""Crear player centrado en pantalla"""
 	print("[SpellloopGame] Creando player...")
-	
+
 	# Intentar instanciar la escena del player
 	var player_scene_path = "res://scenes/player/SpellloopPlayer.tscn"
 	var player_script = null
@@ -207,7 +207,7 @@ func create_player():
 		p_res = ResourceLoader.load(player_scene_path)
 		if p_res and p_res is PackedScene:
 			player = p_res.instantiate()
-	
+
 	if not player:
 		player_script = load("res://scripts/entities/SpellloopPlayer.gd")
 		if player_script:
@@ -224,12 +224,12 @@ func create_player():
 		wr.add_child(player)
 	else:
 		add_child(player)
-	
+
 	# Actualizar cámara (Godot 4.5: usar 'enabled' en lugar de 'make_current()')
 	if world_camera and player:
 		world_camera.position = player.position
 		world_camera.enabled = true
-	
+
 	print("🧙 Jugador creado en posición: ", player.position)
 
 func create_world_manager():
@@ -287,7 +287,7 @@ func create_ui_layer():
 		debug_overlay = dbg.new()
 		debug_overlay.name = "DebugOverlay"
 		ui_layer.add_child(debug_overlay)
-	
+
 	# Add CombatSystemMonitor to UI
 	if ResourceLoader.exists("res://scripts/tools/CombatSystemMonitor.gd"):
 		var csm_script = load("res://scripts/tools/CombatSystemMonitor.gd")
@@ -296,7 +296,7 @@ func create_ui_layer():
 			combat_monitor.name = "CombatSystemMonitor"
 			ui_layer.add_child(combat_monitor)
 			print("[SpellloopGame] ✓ CombatSystemMonitor añadido a UI")
-	
+
 	# Add QuickCombatDebug
 	if ResourceLoader.exists("res://scripts/tools/QuickCombatDebug.gd"):
 		var qcd_script = load("res://scripts/tools/QuickCombatDebug.gd")
@@ -315,25 +315,25 @@ func create_minimap():
 func initialize_systems():
 	"""Inicializar todos los sistemas"""
 	print("[SpellloopGame] Inicializando sistemas...")
-	
+
 	# Crear VisualCalibrator si no existe
 	if not get_tree().root.get_node_or_null("VisualCalibrator"):
 		var vc = load("res://scripts/core/VisualCalibrator.gd").new()
 		vc.name = "VisualCalibrator"
 		get_tree().root.add_child(vc)
-	
+
 	# Crear DifficultyManager si no existe
 	if not get_tree().root.get_node_or_null("DifficultyManager"):
 		var dm = load("res://scripts/core/DifficultyManager.gd").new()
 		dm.name = "DifficultyManager"
 		get_tree().root.add_child(dm)
-	
+
 	# Crear GlobalVolumeController si no existe
 	if not get_tree().root.get_node_or_null("GlobalVolumeController"):
 		var gvc = load("res://scripts/core/GlobalVolumeController.gd").new()
 		gvc.name = "GlobalVolumeController"
 		get_tree().root.add_child(gvc)
-	
+
 	# Inicializar mundo infinito
 	if has_node("WorldRoot/ChunksRoot"):
 		world_manager.set_chunks_root(get_node("WorldRoot/ChunksRoot"))
@@ -341,19 +341,19 @@ func initialize_systems():
 	else:
 		print("[SpellloopGame] ❌ ERROR: ChunksRoot no encontrado en escena")
 	world_manager.initialize(player)
-	
+
 	# Inicializar enemigos
 	enemy_manager.initialize(player, world_manager)
-	
+
 	# Inicializar armas
 	weapon_manager.initialize(player)
-	
+
 	# Inicializar experiencia
 	experience_manager.initialize(player)
-	
+
 	# Inicializar items
 	item_manager.initialize(player, world_manager)
-	
+
 	# Inicializar minimapa
 	if minimap and minimap.has_method("setup_references"):
 		minimap.setup_references(player, enemy_manager, item_manager)
@@ -363,16 +363,16 @@ func initialize_systems():
 		var dbg = ui_layer.get_node("DebugOverlay")
 		if dbg and dbg.has_method("setup_references"):
 			dbg.setup_references(player, enemy_manager, world_manager)
-	
+
 	# Inicializar HUD
 	var ui = _get_ui()
 	if ui:
 		ui.show_game_hud()
 		_update_hud_all()
-	
+
 	# Conectar señales entre sistemas
 	connect_systems()
-	
+
 	# Setup HUD update timer (1s)
 	if not hud_timer:
 		hud_timer = Timer.new()
@@ -382,36 +382,36 @@ func initialize_systems():
 		hud_timer.name = "HUDTimer"
 		add_child(hud_timer)
 		hud_timer.timeout.connect(_on_hud_tick)
-	
+
 	print("[SpellloopGame] Sistemas inicializados correctamente")
 
 func connect_systems():
 	"""Conectar señales entre sistemas"""
 	print("[SpellloopGame] Conectando sistemas...")
-	
+
 	# NOTE: Player movement is now handled directly in _process() via InputManager.get_movement_vector()
 	# The old movement_input signal-based approach is deprecated
-	
+
 	# Player muerte -> Game Over
 	if player and player.has_signal("player_died"):
 		if not player.player_died.is_connected(Callable(self, "_on_player_died")):
 			player.player_died.connect(_on_player_died)
-	
+
 	# Enemigos muertos -> EXP
 	if enemy_manager and enemy_manager.has_signal("enemy_died"):
 		if not enemy_manager.enemy_died.is_connected(Callable(self, "_on_enemy_died")):
 			enemy_manager.enemy_died.connect(_on_enemy_died)
-	
+
 	# EXP -> Level up
 	if experience_manager and experience_manager.has_signal("level_up"):
 		if not experience_manager.level_up.is_connected(Callable(self, "_on_level_up")):
 			experience_manager.level_up.connect(_on_level_up)
-	
+
 	# EXP -> HUD
 	if experience_manager and experience_manager.has_signal("exp_gained"):
 		if not experience_manager.exp_gained.is_connected(Callable(self, "_on_exp_gained")):
 			experience_manager.exp_gained.connect(_on_exp_gained)
-	
+
 	# Boss spawned
 	if enemy_manager and enemy_manager.has_signal("boss_spawned"):
 		if not enemy_manager.boss_spawned.is_connected(Callable(self, "_on_boss_spawned")):
@@ -466,7 +466,7 @@ func _on_enemy_died(enemy_position: Vector2, _enemy_type: String, exp_value: int
 	if experience_manager:
 		# Crear bolita de EXP en la posición del enemigo
 		experience_manager.create_exp_orb(enemy_position, exp_value)
-	
+
 	# Crear orbe de oro (valor simple basado en exp_value)
 	var gold_amount = max(1, int(float(exp_value) / 2.0))
 	if experience_manager and experience_manager.has_method("create_gold_orb"):
@@ -663,7 +663,7 @@ func _process(_delta):
 	"""Update principal del juego"""
 	if not game_running:
 		return
-	
+
 	# Los sistemas se actualizan automáticamente
 	# Aquí solo manejamos coordinación global
 	# Keep camera centered on player if available
@@ -681,7 +681,7 @@ func _process(_delta):
 		var gm = get_tree().root.get_node_or_null("GameManager")
 		if gm and gm.has_method("get_elapsed_seconds"):
 			_total_seconds = int(gm.get_elapsed_seconds())
-	
+
 	if _total_seconds == 0:
 		if run_start_time != 0:
 			_total_seconds = int(int(get_unix_time_safe()) - run_start_time)
@@ -721,16 +721,16 @@ func get_game_stats() -> Dictionary:
 		"enemies_alive": 0,
 		"chunks_loaded": 0
 	}
-	
+
 	if experience_manager:
 		stats.player_level = experience_manager.current_level
-	
+
 	if enemy_manager:
 		stats.enemies_alive = enemy_manager.get_enemy_count()
-	
+
 	if world_manager:
 		stats.chunks_loaded = world_manager.get_loaded_chunks_count()
-	
+
 	return stats
 
 func _input(event):

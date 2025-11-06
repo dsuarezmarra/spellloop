@@ -249,7 +249,7 @@ func _apply_biome_specific_decorations(
 	- Detectar bioma en cada posición
 	- Cargar decoración aleatoria del bioma correspondiente
 	- Colocar sprite con variación de escala/color
-	
+
 	IMPORTANTE - DECORACIONES:
 	- ✅ Escala variable: x0.25 a x3.0 del tamaño original (configurable)
 	- ❌ NUNCA rotar: rotation = 0 siempre (se verían mal rotadas)
@@ -377,19 +377,41 @@ func _load_biome_base_texture(biome_type: int) -> Texture2D:
 	return load(texture_path) as Texture2D
 
 func _load_random_biome_decor(biome_type: int, rng: RandomNumberGenerator) -> Texture2D:
-	"""Cargar decoración aleatoria de un bioma específico"""
+	"""
+	Cargar decoración aleatoria de un bioma específico.
+	
+	SISTEMA EXTENSIBLE: Detecta automáticamente cuántos decor*.png existen.
+	- Si hay decor1.png, decor2.png, decor3.png → elegirá entre 1-3
+	- Si añades decor6.png más adelante → automáticamente lo incluirá
+	
+	Patrón esperado: res://assets/textures/biomes/{biome}/decor{N}.png
+	donde N = 1, 2, 3, 4, ...
+	"""
 	var biome_name = _get_biome_name_by_id(biome_type)
-
-	# Seleccionar aleatoriamente entre decor1-decor5
-	var decor_num = rng.randi_range(1, 5)
+	
+	# Detectar cuántos decor existen para este bioma
+	var max_decor = 0
+	var decor_index = 1
+	while true:
+		var test_path = "res://assets/textures/biomes/%s/decor%d.png" % [biome_name, decor_index]
+		if ResourceLoader.exists(test_path):
+			max_decor = decor_index
+			decor_index += 1
+		else:
+			break  # No hay más decor
+		
+		# Límite de seguridad (evitar bucle infinito)
+		if decor_index > 100:
+			break
+	
+	# Si no hay decoraciones disponibles
+	if max_decor == 0:
+		return null
+	
+	# Seleccionar aleatoriamente entre 1 y max_decor
+	var decor_num = rng.randi_range(1, max_decor)
 	var texture_path = "res://assets/textures/biomes/%s/decor%d.png" % [biome_name, decor_num]
-
-	if not ResourceLoader.exists(texture_path):
-		# Intentar con decor1 como fallback
-		texture_path = "res://assets/textures/biomes/%s/decor1.png" % biome_name
-		if not ResourceLoader.exists(texture_path):
-			return null
-
+	
 	return load(texture_path) as Texture2D
 
 func get_biome_at_position(cx: int, cy: int) -> Dictionary:

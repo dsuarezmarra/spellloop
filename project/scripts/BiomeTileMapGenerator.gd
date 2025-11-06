@@ -164,8 +164,8 @@ func _apply_terrain_cells(cells_data: Array):
 	# Nota: todas las celdas del mismo chunk usan el mismo terrain
 	if cells_data.size() > 0:
 		var first_terrain = cells_data[0].terrain
-		# set_cells_terrain_connect en Godot 4.5: (layer, cells, terrain_set, terrain)
-		tilemap.set_cells_terrain_connect(0, positions, 0, first_terrain)
+		# set_cells_terrain_connect en Godot 4.5: (cells, terrain_set, terrain, ignore_empty_terrains)
+		tilemap.set_cells_terrain_connect(positions, 0, first_terrain, false)
 
 func remove_chunk(chunk_pos: Vector2i):
 	"""Eliminar un chunk para liberar memoria"""
@@ -180,7 +180,7 @@ func remove_chunk(chunk_pos: Vector2i):
 	for local_y in range(chunk_size):
 		for local_x in range(chunk_size):
 			var pos = Vector2i(start_x + local_x, start_y + local_y)
-			tilemap.erase_cell(0, pos)  # Solo layer 0 por defecto
+			tilemap.erase_cell(pos)  # Godot 4.5: erase_cell ya no requiere layer
 
 	active_chunks.erase(chunk_pos)
 
