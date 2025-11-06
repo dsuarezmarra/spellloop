@@ -116,11 +116,11 @@ func run_checks() -> void:
 							var vl = child.visible_layers if has_visible_layers_prop else null
 							if vl != null and vl != 1:
 								_report.append({"scene": s + ":" + child.name, "ok": false, "reason": "visible_layers!=1"})
-				# Camera check
+				# Camera check (Godot 4.5: usar 'enabled' en lugar de 'current')
 				if inst.has_node("Camera2D"):
 					var cam = inst.get_node("Camera2D")
-					if cam and cam is Camera2D and not cam.current:
-						_report.append({"scene": s + ":Camera2D", "ok": false, "reason": "Camera2D.current!=true"})
+					if cam and cam is Camera2D and not cam.enabled:
+						_report.append({"scene": s + ":Camera2D", "ok": false, "reason": "Camera2D.enabled!=true"})
 
 	# Check enemies directory for at least one enemy scene
 	var enemy_exists = false

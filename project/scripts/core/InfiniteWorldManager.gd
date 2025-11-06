@@ -31,6 +31,7 @@ var chunks_root: Node2D = null  # Referencia al nodo raíz de chunks
 # NUEVO: Sistema de posición virtual del jugador para mundo móvil
 var player_virtual_position: Vector2 = Vector2.ZERO  # Posición virtual del jugador en el mundo
 var world_offset: Vector2 = Vector2.ZERO  # Acumulado de movimiento del mundo
+
 # Generación y renderizado (SISTEMA ORGÁNICO)
 var biome_generator: Node = null  # BiomeGeneratorOrganic con Voronoi
 var chunk_cache_manager: Node = null
@@ -62,6 +63,12 @@ func _ready() -> void:
 	_load_biome_generator()
 	_load_chunk_cache_manager()
 	_load_biome_applier()
+
+	# Configurar para procesamiento
+	set_process(true)
+
+	print("[InfiniteWorldManager] ✅ Inicializado (chunk_size: %s, seed: %d)" % [chunk_size, world_seed])
+
 func _load_biome_generator() -> void:
 	"""Cargar el generador de biomas ORGÁNICO (Voronoi)"""
 	# NUEVO: Usar BiomeGeneratorOrganic en lugar de BiomeGenerator
@@ -82,13 +89,7 @@ func _load_biome_generator() -> void:
 				biome_generator = bg_script.new()
 				biome_generator.name = "BiomeGenerator"
 				add_child(biome_generator)
-				print("[InfiniteWorldManager] ⚠️ BiomeGenerator antiguo cargado (fallback)")tor.gd"):
-		var bg_script = load("res://scripts/core/BiomeGenerator.gd")
-		if bg_script:
-			biome_generator = bg_script.new()
-			biome_generator.name = "BiomeGenerator"
-			add_child(biome_generator)
-			print("[InfiniteWorldManager] BiomeGenerator cargado")
+				print("[InfiniteWorldManager] ⚠️ BiomeGenerator antiguo cargado (fallback)")
 
 func _load_chunk_cache_manager() -> void:
 	"""Cargar el gestor de caché de chunks"""

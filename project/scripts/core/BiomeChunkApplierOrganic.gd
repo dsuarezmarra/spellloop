@@ -26,6 +26,8 @@ Diferencias con sistema antiguo:
 @export var config_path: String = "res://assets/textures/biomes/biome_textures_config.json"
 @export var tile_resolution: int = 512  # Resolución de cada tile de textura (px)
 @export var decor_density_global: float = 1.0  # Multiplicador global de densidad
+@export var decor_scale_min: float = 0.25  # Escala mínima de decoraciones (25% del tamaño original)
+@export var decor_scale_max: float = 3.0   # Escala máxima de decoraciones (300% del tamaño original)
 @export var dithering_enabled: bool = true
 @export var dithering_width: int = 16  # Ancho de zona de transición entre biomas (px)
 @export var debug_mode: bool = true
@@ -247,6 +249,11 @@ func _apply_biome_specific_decorations(
 	- Detectar bioma en cada posición
 	- Cargar decoración aleatoria del bioma correspondiente
 	- Colocar sprite con variación de escala/color
+	
+	IMPORTANTE - DECORACIONES:
+	- ✅ Escala variable: x0.25 a x3.0 del tamaño original (configurable)
+	- ❌ NUNCA rotar: rotation = 0 siempre (se verían mal rotadas)
+	- ✅ Variación de color sutil para diversidad visual
 	"""
 
 	# Calcular número de decoraciones según densidad
@@ -287,15 +294,13 @@ func _apply_biome_specific_decorations(
 		sprite.centered = true
 		sprite.position = Vector2(local_x, local_y)
 
-		# Escala variable (100-250 px target size)
-		var decor_size = decor_texture.get_size()
-		var target_size = chunk_rng.randf_range(100, 250)
-		sprite.scale = Vector2(
-			target_size / decor_size.x,
-			target_size / decor_size.y
-		)
+		# Escala variable uniforme (x0.25 a x3.0 del tamaño original)
+		# IMPORTANTE: NO rotar nunca (rotation = 0), solo escalar
+		var scale_factor = chunk_rng.randf_range(decor_scale_min, decor_scale_max)
+		sprite.scale = Vector2(scale_factor, scale_factor)  # Escala uniforme
+		sprite.rotation = 0.0  # NUNCA rotar decoraciones (se verían mal)
 
-		# Variación de color sutil
+		# Variación de color sutil para variedad visual
 		sprite.modulate = Color(
 			chunk_rng.randf_range(0.9, 1.1),
 			chunk_rng.randf_range(0.9, 1.1),

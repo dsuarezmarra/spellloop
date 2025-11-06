@@ -180,8 +180,7 @@ func remove_chunk(chunk_pos: Vector2i):
 	for local_y in range(chunk_size):
 		for local_x in range(chunk_size):
 			var pos = Vector2i(start_x + local_x, start_y + local_y)
-			tilemap.erase_cell(0, pos) Solo layer 0 por defecto + local_x, start_y + local_y)
-			tilemap.erase_cell(0, pos)
+			tilemap.erase_cell(0, pos)  # Solo layer 0 por defecto
 
 	active_chunks.erase(chunk_pos)
 

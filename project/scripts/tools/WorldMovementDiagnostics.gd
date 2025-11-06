@@ -90,12 +90,11 @@ func _check_node_structure() -> void:
 	if camera:
 		print("  ✓ Camera2D found")
 		print("    Position: %s" % camera.position)
-		if camera.has_method("is_current"):
-			print("    Current: %s" % camera.is_current())
-		elif "current" in camera:
-			print("    Current: %s" % camera.get("current"))
+		# Godot 4.5: usar 'enabled' en lugar de 'current'
+		if "enabled" in camera:
+			print("    Enabled: %s" % camera.enabled)
 		else:
-			print("    Current: (property not accessible)")
+			print("    Enabled: (property not accessible)")
 	else:
 		print("  ❌ Camera2D NOT found")
 
@@ -139,12 +138,11 @@ func _check_references() -> void:
 		if spellloop_main.get("world_camera"):
 			var cam = spellloop_main.get("world_camera")
 			if cam:
-				var current_status = "unknown"
-				if cam.has_method("is_current"):
-					current_status = str(cam.is_current())
-				elif "current" in cam:
-					current_status = str(cam.get("current"))
-				print("  ✓ world_camera: Camera2D (current: %s)" % current_status)
+				# Godot 4.5: usar 'enabled' en lugar de 'current'
+				var enabled_status = "unknown"
+				if "enabled" in cam:
+					enabled_status = str(cam.enabled)
+				print("  ✓ world_camera: Camera2D (enabled: %s)" % enabled_status)
 			else:
 				print("  ❌ world_camera is null")
 		else:

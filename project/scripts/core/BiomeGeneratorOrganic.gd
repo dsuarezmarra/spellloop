@@ -1,6 +1,7 @@
 # BiomeGeneratorOrganic.gd
-# Generador de biomas con regiones ORGÁNICAS usando Voronoi (FastNoiseLite TYPE_CELLULAR)
-# Sistema mejorado: chunks 15000×15000 con múltiples biomas irregulares por chunk
+# Generador de biomas con regiones MASIVAS y bordes IRREGULARES
+# Técnica: Voronoi (regiones base) + Simplex (distorsión de bordes)
+# Sistema mejorado: chunks 15000×15000 con múltiples biomas orgánicos por chunk
 
 extends Node
 class_name BiomeGeneratorOrganic
@@ -35,74 +36,97 @@ const BIOME_COLORS = {
 	BiomeType.FOREST: Color(0.15, 0.35, 0.15, 1.0),
 }
 
-# ========== NOISE VORONOI ==========
-var cellular_noise: FastNoiseLite = FastNoiseLite.new()
+# ========== NOISE GENERATORS ==========
+var cellular_noise: FastNoiseLite = FastNoiseLite.new()  # Voronoi para regiones base
+var distortion_noise: FastNoiseLite = FastNoiseLite.new()  # Simplex para distorsionar bordes
 
 # ========== CONFIGURACIÓN ==========
-@export var cellular_frequency: float = 0.0003  # Regiones GRANDES (menor = más grande)
-@export var cellular_jitter: float = 1.0        # Irregularidad máxima (1.0 = máximo)
-@export var seed_value: int = 0                 # 0 = aleatorio cada vez
+@export var cellular_frequency: float = 0.00001   # Regiones MASIVAS ~100,000 px (menor = más grande)
+@export var cellular_jitter: float = 1.0          # Irregularidad máxima (1.0 = máximo caos)
+@export var distortion_strength: float = 8000.0  # Fuerza de distorsión de bordes (px)
+@export var distortion_frequency: float = 0.0002  # Frecuencia del ruido de distorsión
+@export var seed_value: int = 0                   # 0 = aleatorio cada vez
 @export var debug_mode: bool = true
 
 func _ready() -> void:
-	"""Inicializar generador de biomas orgánicos con Voronoi"""
+	"""Inicializar generador de biomas orgánicos con Voronoi + distorsión"""
 	_initialize_noise_generator()
-	print("[BiomeGeneratorOrganic] ✅ Inicializado con Voronoi puro")
+	print("[BiomeGeneratorOrganic] ✅ Inicializado con Voronoi + distorsión Simplex (bordes irregulares)")
 
 func _initialize_noise_generator() -> void:
 	"""
-	Configurar FastNoiseLite para generar regiones Voronoi irregulares
+	Configurar FastNoiseLite para generar regiones Voronoi ENORMES e irregulares
 
 	TIPO: TYPE_CELLULAR (Voronoi/Worley noise)
-	- Crea regiones irregulares naturales
+	- Crea regiones irregulares naturales masivas
 	- Cada región tiene un valor uniforme
-	- Los bordes son orgánicos (no rectos)
+	- Los bordes son orgánicos y suaves (no rectos)
 
-	CELLULAR_DISTANCE_FUNCTION: DISTANCE_HYBRID
-	- Combina distancia Euclidiana + Manhattan
-	- Bordes más curvados y naturales
+	CELLULAR_DISTANCE_FUNCTION: DISTANCE_EUCLIDEAN
+	- Distancia euclidiana estándar (círculos)
+	- Produce formas naturales, irregulares y orgánicas
+	- Más caótico y menos geométrico que HYBRID
 
 	CELLULAR_RETURN_TYPE: RETURN_CELL_VALUE
 	- Retorna valor único por celda Voronoi
 	- Perfecto para asignar bioma por región
+	
+	FREQUENCY: 0.00001
+	- Regiones de ~100,000 px de diámetro
+	- Con chunks 15000×15000, cada chunk tiene 1-3 biomas dominantes
 	"""
 
 	# Configurar seed aleatorio o fijo
+	var main_seed: int
 	if seed_value == 0:
 		randomize()
-		cellular_noise.seed = randi()
+		main_seed = randi()
 		if debug_mode:
-			print("[BiomeGeneratorOrganic] 🎲 Seed aleatorio: %d" % cellular_noise.seed)
+			print("[BiomeGeneratorOrganic] 🎲 Seed aleatorio: %d" % main_seed)
 	else:
-		cellular_noise.seed = seed_value
+		main_seed = seed_value
 		if debug_mode:
-			print("[BiomeGeneratorOrganic] 🔒 Seed fijo: %d" % cellular_noise.seed)
+			print("[BiomeGeneratorOrganic] 🔒 Seed fijo: %d" % main_seed)
 
-	# Configuración Voronoi (Cellular)
+	# ========== CONFIGURAR VORONOI (Regiones base) ==========
+	cellular_noise.seed = main_seed
 	cellular_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	cellular_noise.frequency = cellular_frequency  # Controla tamaño de regiones
+	cellular_noise.frequency = cellular_frequency  # Regiones enormes
 
-	# Función de distancia: HYBRID para bordes más orgánicos
-	cellular_noise.cellular_distance_function = FastNoiseLite.DISTANCE_HYBRID
+	# Función de distancia: EUCLIDEAN para formas naturales
+	cellular_noise.cellular_distance_function = FastNoiseLite.DISTANCE_EUCLIDEAN
 
 	# Tipo de retorno: CELL_VALUE para regiones uniformes
 	cellular_noise.cellular_return_type = FastNoiseLite.RETURN_CELL_VALUE
 
-	# Jitter: controla irregularidad de las celdas
+	# Jitter: máxima irregularidad
 	cellular_noise.cellular_jitter = cellular_jitter
 
-	# NO usamos Domain Warp (Voronoi puro)
+	# Sin Domain Warp en Voronoi
 	cellular_noise.domain_warp_enabled = false
 
+	# ========== CONFIGURAR SIMPLEX (Distorsión de bordes) ==========
+	distortion_noise.seed = main_seed + 1000  # Seed diferente para independencia
+	distortion_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	distortion_noise.frequency = distortion_frequency
+	distortion_noise.fractal_type = FastNoiseLite.FRACTAL_FBM
+	distortion_noise.fractal_octaves = 4  # Múltiples escalas de distorsión
+	distortion_noise.fractal_lacunarity = 2.0
+	distortion_noise.fractal_gain = 0.5
+
 	if debug_mode:
-		print("[BiomeGeneratorOrganic] 🔧 Configuración:")
+		print("[BiomeGeneratorOrganic] 🔧 Configuración Voronoi:")
 		print("  - Frequency: %.6f (regiones ~%.0f px)" % [cellular_frequency, 1.0 / cellular_frequency])
-		print("  - Jitter: %.2f (irregularidad máxima)" % cellular_jitter)
-		print("  - Distance: HYBRID (bordes curvados)")
+		print("  - Jitter: %.2f (máximo caos/irregularidad)" % cellular_jitter)
+		print("  - Distance: EUCLIDEAN (formas naturales)")
+		print("[BiomeGeneratorOrganic] 🌊 Configuración Distorsión:")
+		print("  - Strength: %.0f px (cantidad de distorsión)" % distortion_strength)
+		print("  - Frequency: %.6f (escala del ruido)" % distortion_frequency)
+		print("  - Octaves: 4 (detalle multi-escala)")
 
 func get_biome_at_world_position(world_x: float, world_y: float) -> int:
 	"""
-	Obtener bioma en una posición específica del mundo usando Voronoi.
+	Obtener bioma en una posición específica del mundo usando Voronoi + distorsión.
 
 	Args:
 		world_x: Coordenada X en píxeles del mundo
@@ -112,13 +136,26 @@ func get_biome_at_world_position(world_x: float, world_y: float) -> int:
 		BiomeType (int 0-5): Tipo de bioma en esa posición
 
 	FUNCIONAMIENTO:
-	1. Obtener valor Voronoi en (x, y) → rango [-1.0, 1.0]
-	2. Normalizar a [0.0, 1.0]
-	3. Mapear a [0, 5] (6 biomas)
+	1. Calcular distorsión usando ruido Simplex
+	2. Aplicar distorsión a las coordenadas (hace bordes irregulares/escalonados)
+	3. Obtener valor Voronoi en coordenadas distorsionadas → [-1.0, 1.0]
+	4. Normalizar a [0.0, 1.0]
+	5. Mapear a [0, 5] (6 biomas)
+	
+	La distorsión crea bordes orgánicos irregulares sin suavizar la transición
 	"""
-	var noise_value = cellular_noise.get_noise_2d(world_x, world_y)
+	# PASO 1: Calcular offset de distorsión usando ruido Simplex
+	var distortion_x = distortion_noise.get_noise_2d(world_x, world_y) * distortion_strength
+	var distortion_y = distortion_noise.get_noise_2d(world_x + 5000, world_y + 5000) * distortion_strength
+	
+	# PASO 2: Aplicar distorsión a las coordenadas (esto hace los bordes irregulares)
+	var distorted_x = world_x + distortion_x
+	var distorted_y = world_y + distortion_y
+	
+	# PASO 3: Obtener valor Voronoi en coordenadas distorsionadas
+	var noise_value = cellular_noise.get_noise_2d(distorted_x, distorted_y)
 
-	# Normalizar de [-1.0, 1.0] a [0.0, 1.0]
+	# PASO 4: Normalizar de [-1.0, 1.0] a [0.0, 1.0]
 	var normalized = (noise_value + 1.0) / 2.0
 	normalized = clamp(normalized, 0.0, 1.0)
 

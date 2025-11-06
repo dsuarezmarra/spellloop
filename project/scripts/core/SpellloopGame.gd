@@ -184,11 +184,9 @@ func setup_game():
 		add_child(cam)
 		world_camera = cam
 
-	# Make camera current (safe checks)
-	if world_camera and world_camera.has_method("make_current"):
-		world_camera.make_current()
-	elif world_camera and "current" in world_camera:
-		world_camera.current = true
+	# Activar cámara (Godot 4.5: usar 'enabled' en lugar de 'make_current()')
+	if world_camera:
+		world_camera.enabled = true
 	
 	# Inicializar sistemas
 	initialize_systems()
@@ -227,12 +225,12 @@ func create_player():
 	else:
 		add_child(player)
 	
-	# Actualizar cámara
+	# Actualizar cámara (Godot 4.5: usar 'enabled' en lugar de 'make_current()')
 	if world_camera and player:
 		world_camera.position = player.position
-		world_camera.make_current()
+		world_camera.enabled = true
 	
-	print("[SpellloopGame] Player creado en posición: ", player.position)
+	print("🧙 Jugador creado en posición: ", player.position)
 
 func create_world_manager():
 	"""Crear gestor de mundo infinito"""
