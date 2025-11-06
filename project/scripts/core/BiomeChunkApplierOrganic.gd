@@ -379,16 +379,16 @@ func _load_biome_base_texture(biome_type: int) -> Texture2D:
 func _load_random_biome_decor(biome_type: int, rng: RandomNumberGenerator) -> Texture2D:
 	"""
 	Cargar decoración aleatoria de un bioma específico.
-	
+
 	SISTEMA EXTENSIBLE: Detecta automáticamente cuántos decor*.png existen.
 	- Si hay decor1.png, decor2.png, decor3.png → elegirá entre 1-3
 	- Si añades decor6.png más adelante → automáticamente lo incluirá
-	
+
 	Patrón esperado: res://assets/textures/biomes/{biome}/decor{N}.png
 	donde N = 1, 2, 3, 4, ...
 	"""
 	var biome_name = _get_biome_name_by_id(biome_type)
-	
+
 	# Detectar cuántos decor existen para este bioma
 	var max_decor = 0
 	var decor_index = 1
@@ -399,19 +399,19 @@ func _load_random_biome_decor(biome_type: int, rng: RandomNumberGenerator) -> Te
 			decor_index += 1
 		else:
 			break  # No hay más decor
-		
+
 		# Límite de seguridad (evitar bucle infinito)
 		if decor_index > 100:
 			break
-	
+
 	# Si no hay decoraciones disponibles
 	if max_decor == 0:
 		return null
-	
+
 	# Seleccionar aleatoriamente entre 1 y max_decor
 	var decor_num = rng.randi_range(1, max_decor)
 	var texture_path = "res://assets/textures/biomes/%s/decor%d.png" % [biome_name, decor_num]
-	
+
 	return load(texture_path) as Texture2D
 
 func get_biome_at_position(cx: int, cy: int) -> Dictionary:
