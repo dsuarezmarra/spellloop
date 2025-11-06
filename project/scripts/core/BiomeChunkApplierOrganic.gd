@@ -6,42 +6,28 @@ extends Node
 class_name BiomeChunkApplierOrganic
 
 """
-🌍 BIOME CHUNK APPLIER ORGANIC - Técnica Don't Starve (Probabilistic Turf Blending)
-====================================================================================
+🌍 BIOME CHUNK APPLIER ORGANIC - Sistema Multi-Bioma Voronoi
+============================================================
 
-INSPIRADO EN DON'T STARVE:
-El juego Don't Starve usa un sistema de "turfs" (losetas de suelo) donde cada tile pequeño
-tiene un bioma asignado. En zonas de transición, en lugar de usar dithering pixel-perfect,
-usa PROBABILIDAD MEZCLADA para decidir qué bioma mostrar en cada tile.
+Responsabilidades:
+- Aplicar texturas base y decoraciones a chunks con MÚLTIPLES biomas
+- Detectar qué bioma corresponde a cada posición usando BiomeGeneratorOrganic
+- Crear tiles inteligentes de texturas base
+- Colocar decorados específicos por bioma
+- Aplicar dithering en BORDES ENTRE BIOMAS (no en bordes de chunk)
 
-TÉCNICA IMPLEMENTADA:
-1. Tiles uniformes (128px) en todo el chunk → ~14,000 tiles (117×117 grid)
-2. En zonas PURAS: 100% probabilidad de bioma dominante
-3. En zonas de TRANSICIÓN: Probabilidad mezclada entre biomas vecinos
-4. Resultado: Efecto "sal y pimienta" donde biomas se entremezclan aleatoriamente
-
-VENTAJAS:
-✅ Performance: Todos los tiles son iguales (no subdivisions complejas)
-✅ Visual: Bordes orgánicos naturales tipo Don't Starve
-✅ Simplicidad: No require detección de bordes, solo probabilidad
-✅ Escalable: Funciona con cualquier número de biomas
-
-Ejemplo visual de transición:
-AAAAAAAAAAAA  ← Bioma A (100%)
-AAAAABAAAAA  ← Transición (90% A, 10% B)
-AAABABABAA  ← Transición (70% A, 30% B)
-AABBABBBBA  ← Transición (50% A, 50% B)
-BBBBABBBBB  ← Transición (80% B, 20% A)
-BBBBBBBBBBB  ← Bioma B (100%)
+Diferencias con sistema antiguo:
+- UN chunk puede tener MÚLTIPLES biomas (no solo uno)
+- Las texturas se aplican por región Voronoi (no por chunk completo)
+- Dithering entre REGIONES de biomas (bordes orgánicos)
 """
 
 # ========== CONFIGURACIÓN ==========
 @export var config_path: String = "res://assets/textures/biomes/biome_textures_config.json"
-@export var tile_resolution: int = 512  # Tiles más grandes para mejor performance (512px = ~900 tiles/chunk en lugar de 14k)
-@export var transition_zone_width: float = 2500.0  # Ancho de zona de transición aumentado para compensar tiles más grandes
+@export var tile_resolution: int = 512  # Resolución de cada tile de textura (px)
 @export var decor_density_global: float = 1.0  # Multiplicador global de densidad
-@export var decor_scale_min: float = 0.25  # Escala mínima de decoraciones (25% del tamaño original)
-@export var decor_scale_max: float = 3.0   # Escala máxima de decoraciones (300% del tamaño original)
+@export var dithering_enabled: bool = true
+@export var dithering_width: int = 16  # Ancho de zona de transición entre biomas (px)
 @export var debug_mode: bool = true
 
 # ========== DATOS INTERNOS ==========
@@ -137,8 +123,15 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 		biomes_detected
 	)
 
-	# NOTA: El "dithering" ahora está integrado en el sistema de probabilidad Don't Starve
-	# No necesitamos una fase separada de dithering
+	# Aplicar dithering en bordes entre biomas
+	if dithering_enabled:
+		_apply_voronoi_dithering(
+			biome_layer,
+			chunk_world_x,
+			chunk_world_y,
+			CHUNK_WIDTH,
+			CHUNK_HEIGHT
+		)
 
 	# Guardar metadatos
 	chunk_node.set_meta("biome_system", "organic_voronoi")
@@ -186,10 +179,6 @@ func _apply_multi_biome_tiles(
 			tiles_x, tiles_y, tiles_x * tiles_y
 		])
 
-	# RNG para transiciones aleatorias (estilo Don't Starve)
-	var tile_rng = RandomNumberGenerator.new()
-	tile_rng.seed = int(chunk_world_x) + int(chunk_world_y)
-
 	# Para cada tile del grid
 	for ty in range(tiles_y):
 		for tx in range(tiles_x):
@@ -197,33 +186,32 @@ func _apply_multi_biome_tiles(
 			var tile_world_x = chunk_world_x + (tx * tile_size) + (tile_size / 2.0)
 			var tile_world_y = chunk_world_y + (ty * tile_size) + (tile_size / 2.0)
 
-			# TÉCNICA DON'T STARVE: Muestrear bioma con probabilidad mezclada en transiciones
-			var biome_type = _sample_biome_with_transition_probability(
-				tile_world_x,
-				tile_world_y,
-				tile_rng
-			)
+			# Detectar bioma en esta posición
+			var biome_type = _biome_generator.get_biome_at_world_position(tile_world_x, tile_world_y)
 
 			# Contar biomas
 			if not biomes_count.has(biome_type):
 				biomes_count[biome_type] = 0
 			biomes_count[biome_type] += 1
 
-			# Crear tile (todos son del mismo tamaño, simple y rápido)
+			# Cargar textura del bioma
 			var texture = _load_biome_base_texture(biome_type)
 			if texture == null:
 				continue
 
+			# Crear sprite para este tile
 			var sprite = Sprite2D.new()
-			sprite.name = "Turf_%d_%d" % [tx, ty]  # "Turf" como Don't Starve
+			sprite.name = "BiomeTile_%d_%d" % [tx, ty]
 			sprite.texture = texture
 			sprite.centered = true
 
+			# Posición del tile (esquina superior izquierda + centro)
 			sprite.position = Vector2(
 				tx * tile_size + tile_size / 2.0,
 				ty * tile_size + tile_size / 2.0
 			)
 
+			# Escalar para llenar tile completo
 			var texture_size = texture.get_size()
 			sprite.scale = Vector2(
 				tile_size / texture_size.x,
@@ -259,11 +247,6 @@ func _apply_biome_specific_decorations(
 	- Detectar bioma en cada posición
 	- Cargar decoración aleatoria del bioma correspondiente
 	- Colocar sprite con variación de escala/color
-
-	IMPORTANTE - DECORACIONES:
-	- ✅ Escala variable: x0.25 a x3.0 del tamaño original (configurable)
-	- ❌ NUNCA rotar: rotation = 0 siempre (se verían mal rotadas)
-	- ✅ Variación de color sutil para diversidad visual
 	"""
 
 	# Calcular número de decoraciones según densidad
@@ -304,13 +287,15 @@ func _apply_biome_specific_decorations(
 		sprite.centered = true
 		sprite.position = Vector2(local_x, local_y)
 
-		# Escala variable uniforme (x0.25 a x3.0 del tamaño original)
-		# IMPORTANTE: NO rotar nunca (rotation = 0), solo escalar
-		var scale_factor = chunk_rng.randf_range(decor_scale_min, decor_scale_max)
-		sprite.scale = Vector2(scale_factor, scale_factor)  # Escala uniforme
-		sprite.rotation = 0.0  # NUNCA rotar decoraciones (se verían mal)
+		# Escala variable (100-250 px target size)
+		var decor_size = decor_texture.get_size()
+		var target_size = chunk_rng.randf_range(100, 250)
+		sprite.scale = Vector2(
+			target_size / decor_size.x,
+			target_size / decor_size.y
+		)
 
-		# Variación de color sutil para variedad visual
+		# Variación de color sutil
 		sprite.modulate = Color(
 			chunk_rng.randf_range(0.9, 1.1),
 			chunk_rng.randf_range(0.9, 1.1),
@@ -387,114 +372,20 @@ func _load_biome_base_texture(biome_type: int) -> Texture2D:
 	return load(texture_path) as Texture2D
 
 func _load_random_biome_decor(biome_type: int, rng: RandomNumberGenerator) -> Texture2D:
-	"""
-	Cargar decoración aleatoria de un bioma específico.
-
-	SISTEMA EXTENSIBLE: Detecta automáticamente cuántos decor*.png existen.
-	- Si hay decor1.png, decor2.png, decor3.png → elegirá entre 1-3
-	- Si añades decor6.png más adelante → automáticamente lo incluirá
-
-	Patrón esperado: res://assets/textures/biomes/{biome}/decor{N}.png
-	donde N = 1, 2, 3, 4, ...
-	"""
+	"""Cargar decoración aleatoria de un bioma específico"""
 	var biome_name = _get_biome_name_by_id(biome_type)
 
-	# Detectar cuántos decor existen para este bioma
-	var max_decor = 0
-	var decor_index = 1
-	while true:
-		var test_path = "res://assets/textures/biomes/%s/decor%d.png" % [biome_name, decor_index]
-		if ResourceLoader.exists(test_path):
-			max_decor = decor_index
-			decor_index += 1
-		else:
-			break  # No hay más decor
-
-		# Límite de seguridad (evitar bucle infinito)
-		if decor_index > 100:
-			break
-
-	# Si no hay decoraciones disponibles
-	if max_decor == 0:
-		return null
-
-	# Seleccionar aleatoriamente entre 1 y max_decor
-	var decor_num = rng.randi_range(1, max_decor)
+	# Seleccionar aleatoriamente entre decor1-decor5
+	var decor_num = rng.randi_range(1, 5)
 	var texture_path = "res://assets/textures/biomes/%s/decor%d.png" % [biome_name, decor_num]
 
+	if not ResourceLoader.exists(texture_path):
+		# Intentar con decor1 como fallback
+		texture_path = "res://assets/textures/biomes/%s/decor1.png" % biome_name
+		if not ResourceLoader.exists(texture_path):
+			return null
+
 	return load(texture_path) as Texture2D
-
-# ========== MUESTREO CON PROBABILIDAD (TÉCNICA DON'T STARVE) ==========
-func _sample_biome_with_transition_probability(
-	world_x: float,
-	world_y: float,
-	rng: RandomNumberGenerator
-) -> int:
-	"""
-	Técnica de Don't Starve: Muestrear bioma con probabilidad mezclada en zonas de transición.
-
-	FUNCIONAMIENTO:
-	1. Obtener bioma "dominante" en esta posición
-	2. Calcular distancias a biomas vecinos
-	3. Si estamos cerca de un borde → usar probabilidad mezclada
-	4. Roll aleatorio decide qué bioma mostrar
-
-	Esto crea el efecto de "tiles entremezcla dos" característico de Don't Starve
-	"""
-
-	# Bioma dominante en el centro
-	var center_biome = _biome_generator.get_biome_at_world_position(world_x, world_y)
-
-	# Muestrear puntos alrededor para detectar biomas vecinos
-	var sample_distance = transition_zone_width / 2.0
-	var neighbor_biomes = {}
-
-	# Muestrear en cruz (4 direcciones)
-	var sample_points = [
-		Vector2(world_x + sample_distance, world_y),  # Este
-		Vector2(world_x - sample_distance, world_y),  # Oeste
-		Vector2(world_x, world_y + sample_distance),  # Sur
-		Vector2(world_x, world_y - sample_distance),  # Norte
-	]
-
-	for point in sample_points:
-		var biome = _biome_generator.get_biome_at_world_position(point.x, point.y)
-		if biome != center_biome:
-			if not neighbor_biomes.has(biome):
-				neighbor_biomes[biome] = 0
-			neighbor_biomes[biome] += 1
-
-	# Si NO hay vecinos diferentes → retornar bioma dominante (100%)
-	if neighbor_biomes.size() == 0:
-		return center_biome
-
-	# SI hay vecinos → calcular probabilidad mezclada
-	# Más vecinos = más probable que aparezca el bioma vecino
-	var total_neighbors = 4
-	var neighbor_influence = 0
-	for count in neighbor_biomes.values():
-		neighbor_influence += count
-
-	# Probabilidad de que aparezca bioma vecino (0% a 100%)
-	var neighbor_probability = float(neighbor_influence) / float(total_neighbors)
-
-	# Roll aleatorio
-	if rng.randf() < neighbor_probability:
-		# Elegir bioma vecino aleatorio (ponderado por frecuencia)
-		var total_weight = 0
-		for count in neighbor_biomes.values():
-			total_weight += count
-
-		var roll = rng.randi_range(0, total_weight - 1)
-		var accumulated = 0
-
-		for biome_id in neighbor_biomes.keys():
-			accumulated += neighbor_biomes[biome_id]
-			if roll < accumulated:
-				return biome_id
-
-	# Si el roll falla, usar bioma dominante
-	return center_biome
 
 func get_biome_at_position(cx: int, cy: int) -> Dictionary:
 	"""
