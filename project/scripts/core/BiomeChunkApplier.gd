@@ -312,20 +312,20 @@ func _apply_textures_optimized(parent: Node, bioma_data: Dictionary, cx: int, cy
 			print("[✓] Decoraciones: %d instancias orgánicas (variación de pos/escala/color)" % num_decors)
 
 	# ============ TRANSICIONES SUAVES EN BORDES ============
-	# NO aplicar transiciones - el sistema actual no es adecuado para este tipo de arquitectura
-	# Las transiciones entre biomas deben manejarse a nivel de región, no de chunk
+	# Aplicar dithering/blending en los bordes del chunk
+	_apply_border_transitions(parent, bioma_data, cx, cy, chunk_size)
 
-# ============ FUNCIÓN: Transiciones (DESHABILITADA - Requiere rediseño) ============
-func _apply_border_transitions_DISABLED(parent: Node, bioma_data: Dictionary, cx: int, cy: int, chunk_size: Vector2) -> void:
+# ============ FUNCIÓN: Transiciones de Biomas ============
+func _apply_border_transitions(parent: Node, bioma_data: Dictionary, cx: int, cy: int, chunk_size: Vector2) -> void:
 	"""
 	Aplica dithering REAL en los bordes mezclando píxeles del bioma actual con vecinos.
 
 	Estrategia:
 	1. Obtener biomas de los 4 chunks vecinos (arriba, abajo, izq, der)
-	2. Si son diferentes, crear una franja de transición con patrón Bayer
-	3. En la franja, alternar píxeles de ambos biomas según patrón
+	2. Si son diferentes, crear una franja MUY DELGADA de transición
+	3. En la franja, alternar píxeles de ambos biomas según patrón Bayer (puro dithering)
 	"""
-	var border_width = 250  # Ancho de la zona de transición (aumentado para suavidad)
+	var border_width = 16  # Zona de transición MÍNIMA (solo algunos píxeles entremezclados)
 
 	# Patrón Bayer 8×8 (para dithering ordenado)
 	const BAYER_8x8 = [
@@ -423,38 +423,34 @@ func _create_dithered_border(parent: Node, direction: String, texture_a: Texture
 		stripe_size.y / texture_size.y
 	)
 
-	# Shader mejorado: Smooth alpha blending + dithering sutil
+	# Shader con DITHERING PURO - Solo píxeles intercalados sin gradientes
 	var shader_code = """
 shader_type canvas_item;
 
 uniform sampler2D texture_b;
-uniform float border_width = 250.0;
+uniform float border_width = 16.0;
 uniform bool is_horizontal = true;
 
-// Patrón Bayer 8×8 (más suave que 4×4)
-float bayer8x8(vec2 pos) {
-	int x = int(mod(pos.x, 8.0));
-	int y = int(mod(pos.y, 8.0));
+// Patrón Bayer 4×4 (más agresivo para transiciones pixeladas)
+float bayer4x4(vec2 pos) {
+	int x = int(mod(pos.x, 4.0));
+	int y = int(mod(pos.y, 4.0));
 
-	const float pattern[64] = float[](
-		0.0/64.0, 32.0/64.0, 8.0/64.0, 40.0/64.0, 2.0/64.0, 34.0/64.0, 10.0/64.0, 42.0/64.0,
-		48.0/64.0, 16.0/64.0, 56.0/64.0, 24.0/64.0, 50.0/64.0, 18.0/64.0, 58.0/64.0, 26.0/64.0,
-		12.0/64.0, 44.0/64.0, 4.0/64.0, 36.0/64.0, 14.0/64.0, 46.0/64.0, 6.0/64.0, 38.0/64.0,
-		60.0/64.0, 28.0/64.0, 52.0/64.0, 20.0/64.0, 62.0/64.0, 30.0/64.0, 54.0/64.0, 22.0/64.0,
-		3.0/64.0, 35.0/64.0, 11.0/64.0, 43.0/64.0, 1.0/64.0, 33.0/64.0, 9.0/64.0, 41.0/64.0,
-		51.0/64.0, 19.0/64.0, 59.0/64.0, 27.0/64.0, 49.0/64.0, 17.0/64.0, 57.0/64.0, 25.0/64.0,
-		15.0/64.0, 47.0/64.0, 7.0/64.0, 39.0/64.0, 13.0/64.0, 45.0/64.0, 5.0/64.0, 37.0/64.0,
-		63.0/64.0, 31.0/64.0, 55.0/64.0, 23.0/64.0, 61.0/64.0, 29.0/64.0, 53.0/64.0, 21.0/64.0
+	const float pattern[16] = float[](
+		0.0/16.0,  8.0/16.0,  2.0/16.0, 10.0/16.0,
+		12.0/16.0, 4.0/16.0, 14.0/16.0,  6.0/16.0,
+		3.0/16.0, 11.0/16.0,  1.0/16.0,  9.0/16.0,
+		15.0/16.0, 7.0/16.0, 13.0/16.0,  5.0/16.0
 	);
 
-	return pattern[y * 8 + x];
+	return pattern[y * 4 + x];
 }
 
 void fragment() {
 	vec4 color_a = texture(TEXTURE, UV);
 	vec4 color_b = texture(texture_b, UV);
 
-	// Calcular factor de blend basado en posición (0.0 = todo texture_a, 1.0 = todo texture_b)
+	// Calcular factor de blend basado en posición
 	float blend_factor;
 	if (is_horizontal) {
 		blend_factor = UV.y;
@@ -462,17 +458,11 @@ void fragment() {
 		blend_factor = UV.x;
 	}
 
-	// Aplicar smoothstep para transición suave (curva S)
-	float smooth_blend = smoothstep(0.0, 1.0, blend_factor);
+	// Aplicar dithering PURO (100% pattern-based, sin suavizado)
+	float threshold = bayer4x4(FRAGCOORD.xy);
 
-	// Aplicar dithering sutil para romper gradientes y darle textura orgánica
-	float dither_threshold = bayer8x8(FRAGCOORD.xy);
-
-	// Combinar smooth blending con dithering sutil (70% smooth, 30% dithered)
-	float final_blend = smooth_blend * 0.7 + (step(smooth_blend, dither_threshold) * 0.3);
-
-	// Mezclar texturas con alpha smooth
-	COLOR = mix(color_a, color_b, final_blend);
+	// Hard dithering: si blend_factor > threshold → texture_b, sino texture_a
+	COLOR = (blend_factor > threshold) ? color_b : color_a;
 }
 """
 

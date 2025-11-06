@@ -152,33 +152,35 @@ func _apply_terrain_cells(cells_data: Array):
 		printerr("✗ No hay TileMapLayer asignado")
 		return
 
-	# En Godot 4.5, set_cells_terrain_connect requiere aplicar cada celda individualmente
-	# o usar set_cells_terrain_path para grupos
+	# En Godot 4.5, set_cells_terrain_connect requiere:
+	# Parámetros: layer (int), cells (Array[Vector2i]), terrain_set (int), terrain (int), ignore_empty (bool)
 
+	# Preparar array de posiciones
+	var positions: Array[Vector2i] = []
 	for cell in cells_data:
-		# Aplicar terrain a cada celda
-		# Parámetros: layer, cells, terrain_set, terrain, ignore_empty_terrains
-		tilemap.set_cells_terrain_connect(
-			0,  # layer
-			[cell.pos],  # array de posiciones (1 celda)
-			0,  # terrain_set
-			cell.terrain  # terrain ID
-		)
+		positions.append(cell.pos)
+
+	# Aplicar terrain a todas las celdas del chunk de una vez
+	# Nota: todas las celdas del mismo chunk usan el mismo terrain
+	if cells_data.size() > 0:
+		var first_terrain = cells_data[0].terrain
+		# set_cells_terrain_connect en Godot 4.5: (layer, cells, terrain_set, terrain)
+		tilemap.set_cells_terrain_connect(0, positions, 0, first_terrain)
 
 func remove_chunk(chunk_pos: Vector2i):
 	"""Eliminar un chunk para liberar memoria"""
 
 	if not active_chunks.has(chunk_pos):
 		return
-
 	# Calcular posición en tiles
 	var start_x = chunk_pos.x * chunk_size
 	var start_y = chunk_pos.y * chunk_size
-
 	# Eliminar todos los tiles del chunk
+	# erase_cell en Godot 4.5: (layer, position)
 	for local_y in range(chunk_size):
 		for local_x in range(chunk_size):
 			var pos = Vector2i(start_x + local_x, start_y + local_y)
+			tilemap.erase_cell(0, pos) Solo layer 0 por defecto + local_x, start_y + local_y)
 			tilemap.erase_cell(0, pos)
 
 	active_chunks.erase(chunk_pos)

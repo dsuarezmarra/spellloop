@@ -1,10 +1,11 @@
 # InfiniteWorldManager.gd
-# Sistema profesional de generación dinámica de chunks infinitos
-# - Chunks de 3840×2160 px (2×2 pantallas) - OPTIMIZADO
+# Sistema profesional de generación dinámica de chunks infinitos con BIOMAS ORGÁNICOS
+# - Chunks de 15000×15000 px (12× más grandes, ~108 pantallas cada uno)
 # - 9 chunks simultáneos máximo (3×3 cuadrícula)
-# - Caché persistente de estado
-# - Biomas decorativos con transiciones suaves
+# - Biomas con formas IRREGULARES (Voronoi) dentro de cada chunk
+# - Múltiples biomas por chunk posibles
 # - Generación asíncrona sin lag
+# - Seed aleatorio cada partida (mundo único cada vez)
 
 extends Node2D
 class_name InfiniteWorldManager
@@ -12,10 +13,10 @@ class_name InfiniteWorldManager
 signal chunk_generated(chunk_pos: Vector2i)
 signal chunk_loaded_from_cache(chunk_pos: Vector2i)
 
-# Dimensiones del chunk (OPTIMIZADO: más pequeño para mejor performance)
-@export var chunk_width: int = 3840
-@export var chunk_height: int = 2160
-var chunk_size: Vector2 = Vector2(3840, 2160)
+# Dimensiones del chunk (SISTEMA ORGÁNICO: chunks muy grandes con múltiples biomas)
+@export var chunk_width: int = 15000
+@export var chunk_height: int = 15000
+var chunk_size: Vector2 = Vector2(15000, 15000)
 
 # Límite de chunks activos (siempre 3×3)
 const ACTIVE_CHUNK_GRID: Vector2i = Vector2i(3, 3)
@@ -30,15 +31,14 @@ var chunks_root: Node2D = null  # Referencia al nodo raíz de chunks
 # NUEVO: Sistema de posición virtual del jugador para mundo móvil
 var player_virtual_position: Vector2 = Vector2.ZERO  # Posición virtual del jugador en el mundo
 var world_offset: Vector2 = Vector2.ZERO  # Acumulado de movimiento del mundo
-
-# Generación y renderizado
-var biome_generator: Node = null
+# Generación y renderizado (SISTEMA ORGÁNICO)
+var biome_generator: Node = null  # BiomeGeneratorOrganic con Voronoi
 var chunk_cache_manager: Node = null
 var biome_applier: Node = null
 var is_generating: bool = false
 
-# Semilla para reproducibilidad
-var world_seed: int = 12345
+# Semilla para reproducibilidad (ALEATORIO CADA PARTIDA)
+var world_seed: int = 0  # 0 = aleatorio en cada _ready()
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 # Debug
@@ -46,25 +46,43 @@ var debug_mode: bool = true
 var show_chunk_bounds: bool = false
 
 func _ready() -> void:
-	"""Inicializar el gestor de mundo infinito"""
-	print("[InfiniteWorldManager] Inicializando...")
+	"""Inicializar el gestor de mundo infinito con SISTEMA ORGÁNICO"""
+	print("[InfiniteWorldManager] Inicializando con SISTEMA ORGÁNICO (Voronoi)...")
+
+	# Generar seed aleatorio cada partida si es 0
+	if world_seed == 0:
+		randomize()
+		world_seed = randi()
+		print("[InfiniteWorldManager] 🎲 Seed aleatorio generado: %d" % world_seed)
 
 	# Inicializar RNG con semilla
 	rng.seed = world_seed
 
-	# Cargar componentes
+	# Cargar componentes (NUEVO: BiomeGeneratorOrganic)
 	_load_biome_generator()
 	_load_chunk_cache_manager()
 	_load_biome_applier()
-
-	# Configurar para procesamiento
-	set_process(true)
-
-	print("[InfiniteWorldManager] ✅ Inicializado (chunk_size: %s)" % chunk_size)
-
 func _load_biome_generator() -> void:
-	"""Cargar el generador de biomas"""
-	if ResourceLoader.exists("res://scripts/core/BiomeGenerator.gd"):
+	"""Cargar el generador de biomas ORGÁNICO (Voronoi)"""
+	# NUEVO: Usar BiomeGeneratorOrganic en lugar de BiomeGenerator
+	if ResourceLoader.exists("res://scripts/core/BiomeGeneratorOrganic.gd"):
+		var bg_script = load("res://scripts/core/BiomeGeneratorOrganic.gd")
+		if bg_script:
+			biome_generator = bg_script.new()
+			biome_generator.name = "BiomeGeneratorOrganic"
+			biome_generator.seed_value = world_seed  # Pasar seed al generador
+			add_child(biome_generator)
+			print("[InfiniteWorldManager] ✅ BiomeGeneratorOrganic cargado (Voronoi)")
+	else:
+		printerr("[InfiniteWorldManager] ❌ BiomeGeneratorOrganic.gd no encontrado")
+		# Fallback al antiguo si no existe el nuevo
+		if ResourceLoader.exists("res://scripts/core/BiomeGenerator.gd"):
+			var bg_script = load("res://scripts/core/BiomeGenerator.gd")
+			if bg_script:
+				biome_generator = bg_script.new()
+				biome_generator.name = "BiomeGenerator"
+				add_child(biome_generator)
+				print("[InfiniteWorldManager] ⚠️ BiomeGenerator antiguo cargado (fallback)")tor.gd"):
 		var bg_script = load("res://scripts/core/BiomeGenerator.gd")
 		if bg_script:
 			biome_generator = bg_script.new()
@@ -83,14 +101,25 @@ func _load_chunk_cache_manager() -> void:
 			print("[InfiniteWorldManager] ChunkCacheManager cargado")
 
 func _load_biome_applier() -> void:
-	"""Cargar el aplicador de biomas y texturas"""
-	if ResourceLoader.exists("res://scripts/core/BiomeChunkApplier.gd"):
-		var ba_script = load("res://scripts/core/BiomeChunkApplier.gd")
+	"""Cargar el aplicador de biomas ORGÁNICO (multi-bioma)"""
+	# NUEVO: Usar BiomeChunkApplierOrganic en lugar de BiomeChunkApplier
+	if ResourceLoader.exists("res://scripts/core/BiomeChunkApplierOrganic.gd"):
+		var ba_script = load("res://scripts/core/BiomeChunkApplierOrganic.gd")
 		if ba_script:
 			biome_applier = ba_script.new()
-			biome_applier.name = "BiomeChunkApplier"
+			biome_applier.name = "BiomeChunkApplierOrganic"
 			add_child(biome_applier)
-			print("[InfiniteWorldManager] BiomeChunkApplier cargado")
+			print("[InfiniteWorldManager] ✅ BiomeChunkApplierOrganic cargado (multi-bioma)")
+	else:
+		printerr("[InfiniteWorldManager] ❌ BiomeChunkApplierOrganic.gd no encontrado")
+		# Fallback al antiguo si no existe el nuevo
+		if ResourceLoader.exists("res://scripts/core/BiomeChunkApplier.gd"):
+			var ba_script = load("res://scripts/core/BiomeChunkApplier.gd")
+			if ba_script:
+				biome_applier = ba_script.new()
+				biome_applier.name = "BiomeChunkApplier"
+				add_child(biome_applier)
+				print("[InfiniteWorldManager] ⚠️ BiomeChunkApplier antiguo cargado (fallback)")
 
 func initialize(player: Node) -> void:
 	"""Inicializar con referencia al jugador"""
@@ -256,10 +285,14 @@ func _instantiate_chunk_from_cache(chunk_pos: Vector2i, chunk_data: Dictionary) 
 	return chunk_node
 
 func _extract_chunk_data(chunk_node: Node2D, chunk_pos: Vector2i) -> Dictionary:
-	"""Extraer datos del chunk para guardar en caché"""
+	"""Extraer datos del chunk para guardar en caché (SISTEMA ORGÁNICO)"""
+	# Con Voronoi, no necesitamos guardar geometría específica
+	# Los biomas se recalculan determinísticamente desde la posición
 	return {
 		"position": chunk_pos,
-		"biome": chunk_node.get_meta("biome_type") if chunk_node.has_meta("biome_type") else "grassland",
+		"chunk_pos": chunk_pos,  # Guardar para reconstruir desde Voronoi
+		"biome_system": "organic_voronoi",
+		"biomes_present": chunk_node.get_meta("biomes_present") if chunk_node.has_meta("biomes_present") else [],
 		"decorations": [],
 		"items": [],
 		"timestamp": Time.get_ticks_msec()
