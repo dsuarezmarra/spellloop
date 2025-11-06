@@ -67,26 +67,26 @@ def generate_perlin_noise(width, height, scale=100):
     # Crear grid de gradientes
     def lerp(a, b, x):
         return a + x * (b - a)
-    
+
     def fade(t):
         return t * t * t * (t * (t * 6 - 15) + 10)
-    
+
     # Generar ruido
     noise = np.zeros((height, width))
-    
+
     for y in range(height):
         for x in range(width):
             # Coordenadas normalizadas
             nx = x / scale
             ny = y / scale
-            
+
             # Ruido basado en sin/cos (simplificado)
             value = np.sin(nx * 0.1) * np.cos(ny * 0.1) * 0.5 + 0.5
             value += np.sin(nx * 0.05 + 100) * np.cos(ny * 0.05 + 100) * 0.3
             value += np.sin(nx * 0.02 + 200) * np.cos(ny * 0.02 + 200) * 0.2
-            
+
             noise[y, x] = value
-    
+
     # Normalizar a 0-1
     noise = (noise - noise.min()) / (noise.max() - noise.min())
     return noise
@@ -97,19 +97,19 @@ def add_organic_noise(img, base_color, variation):
     """
     pixels = img.load()
     width, height = img.size
-    
+
     # Generar ruido Perlin
     noise = generate_perlin_noise(width, height, scale=150)
-    
+
     for y in range(height):
         for x in range(width):
             # Ruido base
             noise_value = noise[y, x]
             noise_offset = int((noise_value - 0.5) * variation * 2)
-            
+
             # Añadir ruido adicional pequeño
             fine_noise = random.randint(-variation // 3, variation // 3)
-            
+
             r, g, b = pixels[x, y]
             pixels[x, y] = (
                 max(0, min(255, r + noise_offset + fine_noise)),
@@ -123,12 +123,12 @@ def add_organic_details(img, detail_colors, density):
     """
     draw = ImageDraw.Draw(img, 'RGBA')
     width, height = img.size
-    
+
     for _ in range(density):
         x = random.randint(0, width)
         y = random.randint(0, height)
         r = random.randint(3, 12)
-        
+
         # Color aleatorio de la paleta
         color = random.choice(detail_colors)
         # Añadir variación
@@ -138,7 +138,7 @@ def add_organic_details(img, detail_colors, density):
             max(0, min(255, color[2] + random.randint(-20, 20))),
             random.randint(100, 200)  # Alpha variable
         )
-        
+
         # Forma orgánica (elipse con rotación aleatoria)
         r2 = r + random.randint(-r // 2, r // 2)
         draw.ellipse([x - r, y - r2, x + r, y + r2], fill=color)
@@ -150,16 +150,16 @@ def add_subtle_gradient(img, base_color):
     width, height = img.size
     gradient = Image.new('RGBA', (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(gradient)
-    
+
     # Gradiente radial desde el centro
     center_x, center_y = width // 2, height // 2
     max_dist = np.sqrt(center_x**2 + center_y**2)
-    
+
     for y in range(0, height, 4):  # Cada 4 píxeles para performance
         for x in range(0, width, 4):
             dist = np.sqrt((x - center_x)**2 + (y - center_y)**2)
             alpha = int(30 * (1 - dist / max_dist))  # 0-30 alpha
-            
+
             color = (
                 base_color[0],
                 base_color[1],
@@ -167,10 +167,10 @@ def add_subtle_gradient(img, base_color):
                 alpha
             )
             draw.rectangle([x, y, x + 4, y + 4], fill=color)
-    
+
     # Blur para suavizar
     gradient = gradient.filter(ImageFilter.GaussianBlur(radius=20))
-    
+
     # Componer
     img = Image.alpha_composite(img.convert('RGBA'), gradient)
     return img.convert('RGB')
@@ -180,47 +180,47 @@ def generate_biome_texture(biome_name, config, size=2048, output_dir='project/as
     Genera una textura de bioma completa
     """
     print(f"🎨 Generando textura para {biome_name}...")
-    
+
     base_color = config['base_color']
     variation = config['variation']
     detail_density = config['detail_density']
     detail_colors = config['detail_colors']
-    
+
     # 1. Crear imagen base con color
     img = Image.new('RGB', (size, size), base_color)
-    
+
     # 2. Añadir ruido orgánico
     print(f"  ├─ Añadiendo ruido orgánico...")
     add_organic_noise(img, base_color, variation)
-    
+
     # 3. Blur sutil para suavizar
     print(f"  ├─ Aplicando suavizado...")
     img = img.filter(ImageFilter.GaussianBlur(radius=1.5))
-    
+
     # 4. Añadir detalles orgánicos
     print(f"  ├─ Añadiendo {detail_density} detalles...")
     add_organic_details(img, detail_colors, detail_density)
-    
+
     # 5. Añadir gradiente sutil
     print(f"  ├─ Aplicando gradiente sutil...")
     img = add_subtle_gradient(img, base_color)
-    
+
     # 6. Ajustar contraste y saturación
     print(f"  ├─ Ajustando contraste y saturación...")
     enhancer = ImageEnhance.Contrast(img)
     img = enhancer.enhance(1.1)
     enhancer = ImageEnhance.Color(img)
     img = enhancer.enhance(1.05)
-    
+
     # 7. Hacer seamless (opcional - más complejo)
     # Por ahora lo dejamos sin seamless, pero se puede añadir después
-    
+
     # 8. Guardar
     output_path = os.path.join(output_dir, biome_name, 'base_improved.png')
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     img.save(output_path, 'PNG', optimize=True)
     print(f"  └─ ✅ Guardada en: {output_path}")
-    
+
     return output_path
 
 def main():
@@ -228,7 +228,7 @@ def main():
     print("🎨 GENERADOR DE TEXTURAS MEJORADAS PARA BIOMAS")
     print("=" * 60)
     print()
-    
+
     for biome_name, config in BIOMES.items():
         try:
             generate_biome_texture(biome_name, config)
@@ -236,7 +236,7 @@ def main():
         except Exception as e:
             print(f"❌ Error generando {biome_name}: {e}")
             print()
-    
+
     print("=" * 60)
     print("✅ PROCESO COMPLETADO")
     print("=" * 60)

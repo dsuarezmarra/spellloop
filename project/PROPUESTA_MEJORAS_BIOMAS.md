@@ -72,21 +72,21 @@ uniform vec4 chunk_bounds; // (min_x, min_y, max_x, max_y)
 
 void fragment() {
     vec2 pos = UV * chunk_bounds.zw;
-    
+
     // Calcular distancia al borde más cercano
     float dist_to_edge = min(
         min(pos.x - chunk_bounds.x, chunk_bounds.z - pos.x),
         min(pos.y - chunk_bounds.y, chunk_bounds.w - pos.y)
     );
-    
+
     // Aplicar dithering cerca del borde
     if (dist_to_edge < border_width) {
         float alpha = dist_to_edge / border_width;
-        
+
         // Sample dither pattern
         vec2 dither_uv = fract(pos / 8.0);
         float dither_value = texture(dither_pattern, dither_uv).r;
-        
+
         // Aplicar dithering al alpha
         if (alpha < dither_value) {
             COLOR.a *= alpha;
@@ -102,26 +102,26 @@ void fragment() {
 func _apply_edge_blending(chunk_container: Node2D, chunk_pos: Vector2i):
     # Crear máscara de gradiente en los bordes
     var mask = Image.create(int(chunk_size.x), int(chunk_size.y), false, Image.FORMAT_RGBA8)
-    
+
     var border_width = 200  # Píxeles de transición
-    
+
     for y in range(mask.get_height()):
         for x in range(mask.get_width()):
             var dist_to_edge = _distance_to_edge(x, y, mask.get_width(), mask.get_height())
-            
+
             if dist_to_edge < border_width:
                 # Alpha basado en distancia
                 var alpha = dist_to_edge / border_width
-                
+
                 # Aplicar dithering pattern
                 var dither = _get_dither_value(x, y)
                 if alpha < dither:
                     alpha = 0.0
-                
+
                 mask.set_pixel(x, y, Color(1, 1, 1, alpha))
             else:
                 mask.set_pixel(x, y, Color.WHITE)
-    
+
     # Aplicar máscara a los sprites del chunk
     var mask_texture = ImageTexture.create_from_image(mask)
     for sprite in chunk_container.get_children():
@@ -140,7 +140,7 @@ func _get_dither_value(x: int, y: int) -> float:
         [15, 47, 7, 39, 13, 45, 5, 37],
         [63, 31, 55, 23, 61, 29, 53, 21]
     ]
-    
+
     var bayer_x = x % 8
     var bayer_y = y % 8
     return BAYER_MATRIX[bayer_y][bayer_x] / 64.0
@@ -176,42 +176,42 @@ func _add_decorations(chunk_container: Node2D, biome_config: Dictionary, chunk_s
     var decor_list = biome_config.get("decorations", [])
     if decor_list.is_empty():
         return
-    
+
     var rng = RandomNumberGenerator.new()
     rng.seed = chunk_seed
-    
+
     # VARIACIÓN 1: Diferentes densidades por bioma
     var density = biome_config.get("decor_density", 1.0)  # 0.5 a 2.0
     var num_decors = int(9 * density)
-    
+
     for i in range(num_decors):
         var decor_path = decor_list[rng.randi() % decor_list.size()]
         var decor_tex = load(decor_path) as Texture2D
         if not decor_tex:
             continue
-        
+
         var sprite = Sprite2D.new()
         sprite.texture = decor_tex
-        
+
         # VARIACIÓN 2: Posición más orgánica (no grid)
         var rand_x = rng.randf_range(0, chunk_size.x)
         var rand_y = rng.randf_range(0, chunk_size.y)
         sprite.position = Vector2(rand_x, rand_y)
-        
+
         # VARIACIÓN 3: Escala variable por tipo de objeto
         var base_scale = Vector2(
             chunk_size.x / (SPRITE_SIZE.x * SPRITES_PER_ROW),
             chunk_size.y / (SPRITE_SIZE.y * SPRITES_PER_COL)
         )
-        
+
         # Diferentes escalas según tipo
         var scale_multiplier = _get_decor_scale_multiplier(decor_path, rng)
         sprite.scale = base_scale * scale_multiplier
-        
+
         # VARIACIÓN 4: Rotación aleatoria
         if _should_rotate_decor(decor_path):
             sprite.rotation = rng.randf_range(0, TAU)
-        
+
         # VARIACIÓN 5: Modulate para variación de color
         sprite.modulate = Color(
             rng.randf_range(0.9, 1.1),
@@ -219,22 +219,22 @@ func _add_decorations(chunk_container: Node2D, biome_config: Dictionary, chunk_s
             rng.randf_range(0.9, 1.1),
             1.0
         )
-        
+
         chunk_container.add_child(sprite)
 
 func _get_decor_scale_multiplier(decor_path: String, rng: RandomNumberGenerator) -> float:
     # Árboles: 0.8 - 1.2
     if "tree" in decor_path:
         return rng.randf_range(0.8, 1.2)
-    
+
     # Rocas: 0.5 - 1.5
     if "rock" in decor_path or "stone" in decor_path:
         return rng.randf_range(0.5, 1.5)
-    
+
     # Arbustos/plantas: 0.6 - 1.0
     if "bush" in decor_path or "plant" in decor_path:
         return rng.randf_range(0.6, 1.0)
-    
+
     # Default
     return rng.randf_range(0.8, 1.2)
 
@@ -276,7 +276,7 @@ import numpy as np
 def generate_biome_texture(biome_name, base_color, size=2048):
     img = Image.new('RGB', (size, size), base_color)
     pixels = img.load()
-    
+
     # Añadir noise
     for y in range(size):
         for x in range(size):
@@ -287,10 +287,10 @@ def generate_biome_texture(biome_name, base_color, size=2048):
                 max(0, min(255, g + noise)),
                 max(0, min(255, b + noise))
             )
-    
+
     # Aplicar blur sutil
     img = img.filter(ImageFilter.GaussianBlur(radius=1))
-    
+
     # Añadir detalles orgánicos
     draw = ImageDraw.Draw(img)
     for _ in range(500):
@@ -303,7 +303,7 @@ def generate_biome_texture(biome_name, base_color, size=2048):
             base_color[2] + random.randint(-30, 30)
         )
         draw.ellipse([x-r, y-r, x+r, y+r], fill=color)
-    
+
     img.save(f'biomes/{biome_name}/base_2048.png')
 
 # Generar para cada bioma

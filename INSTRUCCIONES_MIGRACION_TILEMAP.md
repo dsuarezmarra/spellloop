@@ -23,17 +23,17 @@
      ====================================================================
      🎨 GENERADOR DE TILES PARA BIOMAS
      ====================================================================
-     
+
      📦 Procesando: Grassland
        ✓ Textura cargada: 512x512
        ✓ Tiles creados: 64 (8×8 grid)
-     
+
      📦 Procesando: Desert
        ✓ Textura cargada: 512x512
        ✓ Tiles creados: 64 (8×8 grid)
-     
+
      [... mismo para los 6 biomas ...]
-     
+
      ====================================================================
      ✅ GENERACIÓN COMPLETADA
      ====================================================================
@@ -71,7 +71,7 @@
    - ArcaneWastes: importar todos los PNG de `arcane_wastes/`
    - Lava: importar todos los PNG de `lava/`
    - Snow: importar todos los PNG de `snow/`
-   
+
    **Total esperado:** 384 tiles (64 × 6 biomas)
 
 5. **Configurar Terrains:**
@@ -86,27 +86,27 @@
      - Terrain 5: "Snow"
 
 6. **Asignar tiles a terrains (CRÍTICO):**
-   
+
    Para cada bioma (ejemplo con Grassland):
-   
+
    a. **Seleccionar tiles del bioma:**
       - En TileSet panel → Tab "Select"
       - Seleccionar los 64 tiles de grassland (grassland_0_0 a grassland_7_7)
-   
+
    b. **Asignar terrain:**
       - Con tiles seleccionados → Tab "Terrains"
       - En "Terrain Set" elegir "Set 0"
       - En "Terrain" elegir "0 (Grassland)"
       - Click "Paint Terrain Bits" (pincel)
       - Click en el tile para marcar como parte del terrain
-   
+
    c. **Configurar terrain bits:**
       - Para cada tile, pintar las 4 esquinas (bits) según corresponda
       - **Tiles centrales:** las 4 esquinas = grassland
       - **Tiles de borde:** esquinas mixtas según vecinos
-      
+
       **NOTA:** Godot puede auto-detectar esto si los tiles siguen un patrón 3×3.
-   
+
    d. **Repetir para los 6 biomas.**
 
 7. **Verificar configuración:**
@@ -153,7 +153,7 @@
      - `fade_distance`: 3
 
 5. **Modificar InfiniteWorldManager:**
-   
+
    **OPCIÓN A - Reemplazar script (RECOMENDADO):**
    - Seleccionar nodo `InfiniteWorldManager`
    - En Inspector → Script
@@ -162,7 +162,7 @@
    - **Configurar Export Variables:**
      - `tilemap_generator`: Arrastrar `TileMapGenerator`
      - `decorators_manager`: Arrastrar `DecoratorsManager`
-   
+
    **OPCIÓN B - Mantener compatibilidad (HÍBRIDO):**
    - Dejar el script actual
    - Añadir referencias a los nuevos nodos

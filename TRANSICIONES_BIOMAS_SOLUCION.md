@@ -47,12 +47,12 @@ Si quieres mantener chunks, necesitas:
 func generate_biome_regions():
     # 1. Generar centros de bioma con Voronoi
     var voronoi_centers = generate_voronoi_points()
-    
+
     # 2. Para cada píxel, calcular distancia a centros
     for pixel in map:
         var closest_biome = find_closest_biome(pixel, voronoi_centers)
         var distance_to_border = calculate_distance_to_border(pixel)
-        
+
         # 3. Mezclar texturas con alpha
         var alpha = smoothstep(0.0, transition_width, distance_to_border)
         final_color = mix(biome_A.texture, biome_B.texture, alpha)
@@ -71,7 +71,7 @@ Combinar lo mejor de ambos mundos:
 ```
 TileMapLayer (base)
 ├─ Grassland tiles con terrains
-├─ Forest tiles con terrains  
+├─ Forest tiles con terrains
 └─ Transiciones suaves automáticas
 
 Decorators Layer (encima)
@@ -103,7 +103,7 @@ noise.seed = world_seed
 for x in range(map_width):
     for y in range(map_height):
         var value = noise.get_noise_2d(x, y)
-        
+
         # Asignar bioma según valor de noise
         if value < -0.3:
             biome = ARCANE_WASTES
@@ -113,7 +113,7 @@ for x in range(map_width):
             biome = GRASSLAND
         else:
             biome = FOREST
-        
+
         # Pintar con terrain system
         tilemap.set_cells_terrain_connect(0, [Vector2i(x, y)], 0, biome)
 ```
@@ -125,17 +125,17 @@ for x in range(map_width):
 func place_decorations():
     for tile_pos in tilemap.get_used_cells(0):
         var biome = get_biome_at_tile(tile_pos)
-        
+
         # Probabilidad de decorador
         if randf() < biome.decoration_density:
             var decor = create_decorator(biome)
             decor.position = tilemap.map_to_local(tile_pos)
-            
+
             # FADE cerca de bordes de bioma
             var distance_to_border = get_distance_to_biome_border(tile_pos)
             if distance_to_border < fade_distance:
                 decor.modulate.a = distance_to_border / fade_distance
-            
+
             add_child(decor)
 ```
 
@@ -177,7 +177,7 @@ Pero esto NO dará transiciones suaves - solo hará los bordes menos evidentes.
 
 ## 🚀 Mi Recomendación Final
 
-**Usa TileMap con Terrains.** Es la forma estándar y profesional de hacer esto en Godot. 
+**Usa TileMap con Terrains.** Es la forma estándar y profesional de hacer esto en Godot.
 
 Los chunks grandes que tienes ahora son buenos para:
 - Fondos estáticos

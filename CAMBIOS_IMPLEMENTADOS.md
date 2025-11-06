@@ -4,7 +4,7 @@
 
 **Fecha:** 30 de octubre de 2025  ## 📊 Resumen de Cambios
 
-**Tipo:** Refactorización arquitectónica completa  
+**Tipo:** Refactorización arquitectónica completa
 
 **Estado:** ✅ Scripts creados | ⏳ Configuración manual pendiente### ✅ Fase 1: Optimización de Tamaños (COMPLETADO)
 
@@ -106,7 +106,7 @@ regenerate_with_new_seed(seed: int)```
 
 **Ruta:** `project/scripts/BiomeDecoratorsManager.gd`  ```
 
-**Líneas:** ~230  
+**Líneas:** ~230
 
 **Propósito:** Colocación inteligente de decoradores con fade en bordes#### 5. Sin Rotación
 
@@ -166,7 +166,7 @@ python generate_improved_biome_textures.py
 
 ### 3. InfiniteWorldManagerTileMap.gd```
 
-**Ruta:** `project/scripts/core/InfiniteWorldManagerTileMap.gd`  
+**Ruta:** `project/scripts/core/InfiniteWorldManagerTileMap.gd`
 
 **Líneas:** ~180  **Output:** `project/assets/textures/biomes/{BiomeName}/base_improved.png`
 
@@ -210,7 +210,7 @@ regenerate_world(seed: int)- ⏳ Patrón Bayer 8×8 para dithering
 
 ### 4. GenerateBiomeTiles.gd## 🎮 Cómo Probar los Cambios
 
-**Ruta:** `project/scripts/tools/GenerateBiomeTiles.gd`  
+**Ruta:** `project/scripts/tools/GenerateBiomeTiles.gd`
 
 **Líneas:** ~170  ### 1. Verificar Compilación
 
@@ -649,7 +649,7 @@ Incluye:
 **Solución:** Asignar terrain bits correctamente en TileSet editor
 
 ### Lag al moverse
-**Solución:** 
+**Solución:**
 - Reducir `chunk_size` (32 → 24)
 - Reducir `fade_distance` (3 → 2)
 
@@ -751,9 +751,9 @@ Una vez funcionando el sistema básico:
 
 **Sistema TileMap listo para implementar.**
 
-**Archivos creados:** 4  
-**Líneas de código:** ~800  
-**Tiempo estimado de configuración:** 55 minutos  
+**Archivos creados:** 4
+**Líneas de código:** ~800
+**Tiempo estimado de configuración:** 55 minutos
 **Beneficios:** Transiciones profesionales, mejor performance, código mantenible
 
 **Siguiente paso:** Ejecutar `INSTRUCCIONES_MIGRACION_TILEMAP.md` paso a paso.

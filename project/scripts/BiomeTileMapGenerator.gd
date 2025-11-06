@@ -44,82 +44,82 @@ func _ready():
 
 func _setup_noise():
 	"""Configurar generadores de ruido para biomas"""
-	
+
 	# Ruido principal para selección de biomas
 	noise = FastNoiseLite.new()
 	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
 	noise.seed = randi()
 	noise.frequency = 0.008  # Biomas grandes
 	noise.fractal_octaves = 3
-	
+
 	# Ruido de humedad para variación
 	moisture_noise = FastNoiseLite.new()
 	moisture_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
 	moisture_noise.seed = randi() + 1000
 	moisture_noise.frequency = 0.012
-	
+
 	print("✓ Ruido configurado - Seed: %d" % noise.seed)
 
 func generate_chunk(chunk_pos: Vector2i):
 	"""Generar un chunk de tiles en la posición dada"""
-	
+
 	if active_chunks.has(chunk_pos):
 		return  # Ya existe
-	
+
 	var start_time = Time.get_ticks_msec()
-	
+
 	# Calcular posición en tiles
 	var start_x = chunk_pos.x * chunk_size
 	var start_y = chunk_pos.y * chunk_size
-	
+
 	# Array para set_cells_terrain_connect (más eficiente)
 	var cells_data = []  # [{pos: Vector2i, terrain: int}, ...]
-	
+
 	# Generar cada tile del chunk
 	for local_y in range(chunk_size):
 		for local_x in range(chunk_size):
 			var tile_x = start_x + local_x
 			var tile_y = start_y + local_y
-			
+
 			# Determinar bioma para este tile
 			var biome = _get_biome_at_position(tile_x, tile_y)
-			
+
 			cells_data.append({
 				"pos": Vector2i(tile_x, tile_y),
 				"terrain": biome
 			})
-	
+
 	# Aplicar todos los tiles del chunk de una vez
 	_apply_terrain_cells(cells_data)
-	
+
 	active_chunks[chunk_pos] = true
-	
+
 	var elapsed = Time.get_ticks_msec() - start_time
 	print("✓ Chunk generado en %dms: %s (%d tiles)" % [elapsed, chunk_pos, cells_data.size()])
-	
+
 	chunk_generated.emit(chunk_pos)
 
 func _get_biome_at_position(tile_x: int, tile_y: int) -> int:
 	"""Determinar qué bioma corresponde a esta posición de tile"""
-	
+
 	# Obtener valores de ruido (-1.0 a 1.0)
 	var main_noise = noise.get_noise_2d(tile_x, tile_y)
 	var moisture = moisture_noise.get_noise_2d(tile_x, tile_y)
-	
+
 	# Normalizar a 0.0-1.0
 	var height = (main_noise + 1.0) / 2.0
 	var wet = (moisture + 1.0) / 2.0
-	
+
 	# Mapa de biomas basado en altura y humedad
 	# Similar a Terraria/Minecraft
-	
+
 	if height < 0.25:
 		# Zonas bajas
 		if wet > 0.6:
 			return BiomeType.FOREST  # Bosque pantanoso
 		else:
 			return BiomeType.GRASSLAND  # Pradera
-	
+
 	elif height < 0.5:
 		# Zonas medias
 		if wet > 0.7:
@@ -128,33 +128,33 @@ func _get_biome_at_position(tile_x: int, tile_y: int) -> int:
 			return BiomeType.DESERT  # Desierto
 		else:
 			return BiomeType.GRASSLAND  # Pradera
-	
+
 	elif height < 0.75:
 		# Zonas altas
 		if wet > 0.6:
 			return BiomeType.ARCANE_WASTES  # Páramo mágico
 		else:
 			return BiomeType.SNOW  # Nieve
-	
+
 	else:
 		# Zonas muy altas
 		if wet > 0.5:
 			return BiomeType.LAVA  # Volcánico
 		else:
 			return BiomeType.SNOW  # Tundra helada
-	
+
 	return BiomeType.GRASSLAND  # Fallback
 
 func _apply_terrain_cells(cells_data: Array):
 	"""Aplicar tiles con terrains automáticos"""
-	
+
 	if not tilemap:
 		printerr("✗ No hay TileMapLayer asignado")
 		return
-	
+
 	# En Godot 4.5, set_cells_terrain_connect requiere aplicar cada celda individualmente
 	# o usar set_cells_terrain_path para grupos
-	
+
 	for cell in cells_data:
 		# Aplicar terrain a cada celda
 		# Parámetros: layer, cells, terrain_set, terrain, ignore_empty_terrains
@@ -167,22 +167,22 @@ func _apply_terrain_cells(cells_data: Array):
 
 func remove_chunk(chunk_pos: Vector2i):
 	"""Eliminar un chunk para liberar memoria"""
-	
+
 	if not active_chunks.has(chunk_pos):
 		return
-	
+
 	# Calcular posición en tiles
 	var start_x = chunk_pos.x * chunk_size
 	var start_y = chunk_pos.y * chunk_size
-	
+
 	# Eliminar todos los tiles del chunk
 	for local_y in range(chunk_size):
 		for local_x in range(chunk_size):
 			var pos = Vector2i(start_x + local_x, start_y + local_y)
 			tilemap.erase_cell(0, pos)
-	
+
 	active_chunks.erase(chunk_pos)
-	
+
 	print("✓ Chunk eliminado: %s" % chunk_pos)
 	chunk_removed.emit(chunk_pos)
 
@@ -206,15 +206,15 @@ func regenerate_with_new_seed(new_seed: int = -1):
 	"""Regenerar mundo con nueva semilla"""
 	if new_seed == -1:
 		new_seed = randi()
-	
+
 	noise.seed = new_seed
 	moisture_noise.seed = new_seed + 1000
-	
+
 	# Regenerar chunks existentes
 	var chunks_to_regen = active_chunks.keys()
 	clear_all_chunks()
-	
+
 	for chunk_pos in chunks_to_regen:
 		generate_chunk(chunk_pos)
-	
+
 	print("✓ Mundo regenerado con seed: %d" % new_seed)

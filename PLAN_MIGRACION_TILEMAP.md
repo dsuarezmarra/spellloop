@@ -6,7 +6,7 @@
 ```
 Sistema de Chunks (ACTUAL)
 ├─ BiomeChunkApplier.gd
-├─ InfiniteWorldManager.gd  
+├─ InfiniteWorldManager.gd
 ├─ Chunks de 3840×2160
 └─ Texturas: 512×512 (base + 5 decor por bioma)
 
@@ -90,26 +90,26 @@ func _ready():
 func generate_chunk(chunk_x: int, chunk_y: int):
     """Generar chunk de tiles con terrains"""
     var cells_to_paint = {}
-    
+
     # Para cada tile en el chunk
     for local_x in range(chunk_size):
         for local_y in range(chunk_size):
             # Coordenadas globales
             var global_x = chunk_x * chunk_size + local_x
             var global_y = chunk_y * chunk_size + local_y
-            
+
             # Obtener valor de noise
             var noise_value = noise.get_noise_2d(global_x, global_y)
-            
+
             # Determinar bioma según noise
             var terrain_id = get_terrain_for_noise(noise_value)
-            
+
             # Añadir a lista para pintar con terrains
             var tile_pos = Vector2i(global_x, global_y)
             if not cells_to_paint.has(terrain_id):
                 cells_to_paint[terrain_id] = []
             cells_to_paint[terrain_id].append(tile_pos)
-    
+
     # Pintar todos los tiles con terrain system
     for terrain_id in cells_to_paint:
         tilemap_layer.set_cells_terrain_connect(
@@ -149,7 +149,7 @@ Modificar `InfiniteWorldManager.gd` para usar TileMap:
 func _generate_chunk(cx: int, cy: int):
     # Generar tiles con terrains
     tilemap_generator.generate_chunk(cx, cy)
-    
+
     # Añadir decoradores ENCIMA del tilemap
     _place_decorators_for_chunk(cx, cy)
 
@@ -175,10 +175,10 @@ func place_decorators_for_chunk(chunk_x: int, chunk_y: int):
     """Colocar decoradores sobre tiles del chunk"""
     var chunk_key = Vector2i(chunk_x, chunk_y)
     var decorators = []
-    
+
     var rng = RandomNumberGenerator.new()
     rng.seed = hash(chunk_key)
-    
+
     # Para cada tile en el chunk
     for local_x in range(32):
         for local_y in range(32):
@@ -186,18 +186,18 @@ func place_decorators_for_chunk(chunk_x: int, chunk_y: int):
                 chunk_x * 32 + local_x,
                 chunk_y * 32 + local_y
             )
-            
+
             # Obtener bioma del tile
             var tile_data = tilemap_layer.get_cell_tile_data(tile_pos)
             if not tile_data:
                 continue
-            
+
             var biome_id = get_biome_from_tile(tile_data)
-            
+
             # Probabilidad de decorador (ej: 10%)
             if rng.randf() > 0.1:
                 continue
-            
+
             # Crear decorador
             var decor = create_decorator(biome_id, rng)
             if decor:
@@ -208,15 +208,15 @@ func place_decorators_for_chunk(chunk_x: int, chunk_y: int):
                     rng.randf_range(-20, 20)
                 )
                 decor.position = world_pos
-                
+
                 # Fade cerca de bordes de bioma
                 var distance_to_border = get_distance_to_biome_border(tile_pos)
                 if distance_to_border < 3:  # 3 tiles
                     decor.modulate.a = distance_to_border / 3.0
-                
+
                 add_child(decor)
                 decorators.append(decor)
-    
+
     active_decorators[chunk_key] = decorators
 
 func get_distance_to_biome_border(tile_pos: Vector2i) -> int:
@@ -224,26 +224,26 @@ func get_distance_to_biome_border(tile_pos: Vector2i) -> int:
     var center_data = tilemap_layer.get_cell_tile_data(tile_pos)
     if not center_data:
         return 999
-    
+
     var center_biome = get_biome_from_tile(center_data)
     var min_distance = 999
-    
+
     # Buscar en espiral hasta encontrar bioma diferente
     for radius in range(1, 10):
         for dx in range(-radius, radius + 1):
             for dy in range(-radius, radius + 1):
                 if abs(dx) != radius and abs(dy) != radius:
                     continue  # Solo bordes del cuadrado
-                
+
                 var check_pos = tile_pos + Vector2i(dx, dy)
                 var check_data = tilemap_layer.get_cell_tile_data(check_pos)
                 if not check_data:
                     continue
-                
+
                 if get_biome_from_tile(check_data) != center_biome:
                     min_distance = mini(min_distance, radius)
                     return min_distance
-    
+
     return min_distance
 
 func remove_decorators_for_chunk(chunk_x: int, chunk_y: int):

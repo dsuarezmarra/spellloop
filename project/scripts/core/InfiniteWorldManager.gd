@@ -48,18 +48,18 @@ var show_chunk_bounds: bool = false
 func _ready() -> void:
 	"""Inicializar el gestor de mundo infinito"""
 	print("[InfiniteWorldManager] Inicializando...")
-	
+
 	# Inicializar RNG con semilla
 	rng.seed = world_seed
-	
+
 	# Cargar componentes
 	_load_biome_generator()
 	_load_chunk_cache_manager()
 	_load_biome_applier()
-	
+
 	# Configurar para procesamiento
 	set_process(true)
-	
+
 	print("[InfiniteWorldManager] ✅ Inicializado (chunk_size: %s)" % chunk_size)
 
 func _load_biome_generator() -> void:
@@ -95,11 +95,11 @@ func _load_biome_applier() -> void:
 func initialize(player: Node) -> void:
 	"""Inicializar con referencia al jugador"""
 	player_ref = player
-	
+
 	# Inicializar posición virtual del jugador en el centro del mundo
 	player_virtual_position = Vector2.ZERO
 	world_offset = Vector2.ZERO
-	
+
 	# Generar chunk inicial
 	_update_chunks_around_player()
 	print("[InfiniteWorldManager] 🎮 Sistema de chunks inicializado (pos virtual inicial: %s)" % player_virtual_position)
@@ -113,10 +113,10 @@ func _process(_delta: float) -> void:
 	"""Verificar si el jugador ha cambiado de chunk cada frame"""
 	if not player_ref or not is_instance_valid(player_ref):
 		return
-	
+
 	# IMPORTANTE: Usar posición virtual del jugador, no su posición real (que es siempre 0,0)
 	var new_chunk = _world_pos_to_chunk_index(player_virtual_position)
-	
+
 	if new_chunk != current_chunk_index:
 		current_chunk_index = new_chunk
 		if debug_mode:
@@ -138,35 +138,35 @@ func _update_chunks_around_player() -> void:
 	if is_generating:
 		print("[InfiniteWorldManager] ⏸️ Generación en progreso, esperando...")
 		return
-	
+
 	# Calcular rango de chunks a mantener activos (3×3 centrado)
 	var half_grid = ACTIVE_CHUNK_GRID / 2
 	var min_chunk = current_chunk_index - half_grid
 	var max_chunk = current_chunk_index + half_grid
-	
+
 	var chunks_to_keep: Array[Vector2i] = []
 	var chunks_to_generate: Array[Vector2i] = []
-	
+
 	# Generar/cargar chunks necesarios
 	for cy in range(min_chunk.y, max_chunk.y + 1):
 		for cx in range(min_chunk.x, max_chunk.x + 1):
 			var chunk_pos = Vector2i(cx, cy)
 			chunks_to_keep.append(chunk_pos)
-			
+
 			if not active_chunks.has(chunk_pos):
 				chunks_to_generate.append(chunk_pos)
 				# Generar o cargar del caché de forma asíncrona
 				_generate_or_load_chunk.call_deferred(chunk_pos)
-	
+
 	# Destruir chunks fuera de rango
 	var chunks_to_remove: Array[Vector2i] = []
 	for chunk_pos in active_chunks.keys():
 		if not chunks_to_keep.has(chunk_pos):
 			chunks_to_remove.append(chunk_pos)
-	
+
 	for chunk_pos in chunks_to_remove:
 		_unload_chunk(chunk_pos)
-	
+
 	if debug_mode:
 		var gen_info = ""
 		if chunks_to_generate.size() > 0:
@@ -177,9 +177,9 @@ func _generate_or_load_chunk(chunk_pos: Vector2i) -> void:
 	"""Generar un chunk nuevo o cargarlo del caché de forma asíncrona"""
 	if active_chunks.has(chunk_pos):
 		return
-	
+
 	is_generating = true
-	
+
 	# Intentar cargar del caché
 	if chunk_cache_manager and chunk_cache_manager.has_cached_chunk(chunk_pos):
 		var chunk_data = chunk_cache_manager.load_chunk(chunk_pos)
@@ -189,7 +189,7 @@ func _generate_or_load_chunk(chunk_pos: Vector2i) -> void:
 		print("[InfiniteWorldManager] 📂 Chunk %s cargado del caché" % chunk_pos)
 		is_generating = false
 		return
-	
+
 	# Generar nuevo con reseteo garantizado
 	await get_tree().process_frame  # Diferir para no bloquear
 	_generate_new_chunk(chunk_pos)
@@ -200,35 +200,35 @@ func _generate_new_chunk(chunk_pos: Vector2i) -> void:
 	# Usar semilla combinada para reproducibilidad
 	var chunk_seed = world_seed ^ chunk_pos.x ^ (chunk_pos.y << 16)
 	rng.seed = chunk_seed
-	
+
 	# Crear nodo raíz del chunk
 	var chunk_node = Node2D.new()
 	chunk_node.name = "Chunk_%d_%d" % [chunk_pos.x, chunk_pos.y]
 	chunk_node.global_position = _chunk_index_to_world_pos(chunk_pos.x, chunk_pos.y)
-	
+
 	# IMPORTANT: Add to chunks_root, not to self
 	if chunks_root and is_instance_valid(chunks_root):
 		chunks_root.add_child(chunk_node)
 	else:
 		add_child(chunk_node)
 		print("[InfiniteWorldManager] ⚠️  chunks_root not available, adding chunk to self")
-	
+
 	# Generar bioma y decoraciones
 	if biome_generator:
 		await biome_generator.generate_chunk_async(chunk_node, chunk_pos, rng)
-	
+
 	# Aplicar texturas y biomas visuales
 	if biome_applier:
 		biome_applier.apply_biome_to_chunk(chunk_node, chunk_pos.x, chunk_pos.y)
-	
+
 	# Guardar en caché
 	if chunk_cache_manager:
 		var chunk_data = _extract_chunk_data(chunk_node, chunk_pos)
 		chunk_cache_manager.save_chunk(chunk_pos, chunk_data)
-	
+
 	active_chunks[chunk_pos] = chunk_node
 	chunk_generated.emit(chunk_pos)
-	
+
 	if debug_mode:
 		print("[InfiniteWorldManager] ✨ Chunk %s generado" % chunk_pos)
 
@@ -237,22 +237,22 @@ func _instantiate_chunk_from_cache(chunk_pos: Vector2i, chunk_data: Dictionary) 
 	var chunk_node = Node2D.new()
 	chunk_node.name = "Chunk_%d_%d" % [chunk_pos.x, chunk_pos.y]
 	chunk_node.global_position = _chunk_index_to_world_pos(chunk_pos.x, chunk_pos.y)
-	
+
 	# IMPORTANT: Add to chunks_root, not to self
 	if chunks_root and is_instance_valid(chunks_root):
 		chunks_root.add_child(chunk_node)
 	else:
 		add_child(chunk_node)
 		print("[InfiniteWorldManager] ⚠️  chunks_root not available, adding chunk to self")
-	
+
 	# Recrear bioma y decoraciones desde caché (sin await necesario aquí)
 	if biome_generator:
 		biome_generator.generate_chunk_from_cache(chunk_node, chunk_data)
-	
+
 	# Aplicar texturas desde caché
 	if biome_applier:
 		biome_applier.apply_biome_to_chunk(chunk_node, chunk_pos.x, chunk_pos.y)
-	
+
 	return chunk_node
 
 func _extract_chunk_data(chunk_node: Node2D, chunk_pos: Vector2i) -> Dictionary:
@@ -271,7 +271,7 @@ func _unload_chunk(chunk_pos: Vector2i) -> void:
 		var chunk_node = active_chunks[chunk_pos]
 		chunk_node.queue_free()
 		active_chunks.erase(chunk_pos)
-		
+
 		if debug_mode:
 			print("[InfiniteWorldManager] 🗑️ Chunk %s descargado" % chunk_pos)
 
@@ -292,23 +292,23 @@ func move_world(direction: Vector2, delta: float) -> void:
 			print("[InfiniteWorldManager] ⚠️ chunks_root es null, no se puede mover el mundo")
 			set_meta("logged_null_chunks_root", true)
 		return
-	
+
 	if not is_instance_valid(chunks_root):
 		print("[InfiniteWorldManager] ❌ chunks_root no es válido")
 		return
-	
+
 	# Velocidad de movimiento del mundo (contrarresta el movimiento del jugador)
 	var movement_speed = 300.0  # píxeles/segundo
 	var movement = direction * movement_speed * delta
-	
+
 	# Mover el nodo raíz de chunks
 	chunks_root.position -= movement
-	
+
 	# CRÍTICO: Actualizar posición virtual del jugador
 	# El mundo se mueve en dirección opuesta, así que el jugador "avanza" en la dirección original
 	world_offset += movement
 	player_virtual_position += movement  # El jugador se "mueve" en la misma dirección que el input
-	
+
 	# Log cada 60 fotogramas para no saturar
 	if not has_meta("frame_count"):
 		set_meta("frame_count", 0)
@@ -334,11 +334,11 @@ func _draw() -> void:
 	"""Dibujar límites de chunks en modo debug"""
 	if not show_chunk_bounds or not debug_mode:
 		return
-	
+
 	var half_grid = ACTIVE_CHUNK_GRID / 2
 	var min_chunk = current_chunk_index - half_grid
 	var max_chunk = current_chunk_index + half_grid
-	
+
 	for cy in range(min_chunk.y, max_chunk.y + 1):
 		for cx in range(min_chunk.x, max_chunk.x + 1):
 			var pos = _chunk_index_to_world_pos(cx, cy)
