@@ -6,30 +6,39 @@ extends Node
 class_name BiomeChunkApplierOrganic
 
 """
-🌍 BIOME CHUNK APPLIER ORGANIC - Sistema Multi-Bioma con Bordes Dientes de Sierra
-==================================================================================
+🌍 BIOME CHUNK APPLIER ORGANIC - Técnica Don't Starve (Probabilistic Turf Blending)
+====================================================================================
 
-TÉCNICA HÍBRIDA OPTIMIZADA:
-1. Tiles NORMALES (512px): Para zonas uniformes → Rápido y eficiente (900 sprites)
-2. Tiles SUBDIVIDIDOS (64px): SOLO en bordes → Efecto dientes de sierra (máx ~64 sprites por borde)
-3. Detección inteligente: Muestrea 4 esquinas de cada tile para detectar si es borde
+INSPIRADO EN DON'T STARVE:
+El juego Don't Starve usa un sistema de "turfs" (losetas de suelo) donde cada tile pequeño
+tiene un bioma asignado. En zonas de transición, en lugar de usar dithering pixel-perfect,
+usa PROBABILIDAD MEZCLADA para decidir qué bioma mostrar en cada tile.
 
-RESULTADO:
-✅ Fluidez: Solo ~1000-2000 sprites por chunk (vs 10,000 con grid fino completo)
-✅ Visual: Bordes irregulares "pixelados" donde se entremezclan los biomas
-✅ Performance: 90% del chunk usa tiles grandes eficientes
+TÉCNICA IMPLEMENTADA:
+1. Tiles uniformes (128px) en todo el chunk → ~14,000 tiles (117×117 grid)
+2. En zonas PURAS: 100% probabilidad de bioma dominante
+3. En zonas de TRANSICIÓN: Probabilidad mezclada entre biomas vecinos
+4. Resultado: Efecto "sal y pimienta" donde biomas se entremezclan aleatoriamente
 
-Responsabilidades:
-- Aplicar texturas base con tiles normales o subdivididos según posición
-- Detectar bordes entre biomas automáticamente
-- Colocar decorados específicos por bioma
-- Sistema extensible de decoraciones (auto-detecta decor*.png)
+VENTAJAS:
+✅ Performance: Todos los tiles son iguales (no subdivisions complejas)
+✅ Visual: Bordes orgánicos naturales tipo Don't Starve
+✅ Simplicidad: No require detección de bordes, solo probabilidad
+✅ Escalable: Funciona con cualquier número de biomas
+
+Ejemplo visual de transición:
+AAAAAAAAAAAA  ← Bioma A (100%)
+AAAAABAAAAA  ← Transición (90% A, 10% B)
+AAABABABAA  ← Transición (70% A, 30% B)
+AABBABBBBA  ← Transición (50% A, 50% B)
+BBBBABBBBB  ← Transición (80% B, 20% A)
+BBBBBBBBBBB  ← Bioma B (100%)
 """
 
 # ========== CONFIGURACIÓN ==========
 @export var config_path: String = "res://assets/textures/biomes/biome_textures_config.json"
-@export var tile_resolution: int = 128  # Tiles pequeños estilo Don't Starve "turfs"
-@export var transition_zone_width: float = 1500.0  # Ancho de zona de transición (px) - Don't Starve style
+@export var tile_resolution: int = 512  # Tiles más grandes para mejor performance (512px = ~900 tiles/chunk en lugar de 14k)
+@export var transition_zone_width: float = 2500.0  # Ancho de zona de transición aumentado para compensar tiles más grandes
 @export var decor_density_global: float = 1.0  # Multiplicador global de densidad
 @export var decor_scale_min: float = 0.25  # Escala mínima de decoraciones (25% del tamaño original)
 @export var decor_scale_max: float = 3.0   # Escala máxima de decoraciones (300% del tamaño original)
@@ -128,15 +137,8 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 		biomes_detected
 	)
 
-	# Aplicar dithering en bordes entre biomas
-	if dithering_enabled:
-		_apply_voronoi_dithering(
-			biome_layer,
-			chunk_world_x,
-			chunk_world_y,
-			CHUNK_WIDTH,
-			CHUNK_HEIGHT
-		)
+	# NOTA: El "dithering" ahora está integrado en el sistema de probabilidad Don't Starve
+	# No necesitamos una fase separada de dithering
 
 	# Guardar metadatos
 	chunk_node.set_meta("biome_system", "organic_voronoi")
@@ -422,77 +424,77 @@ func _load_random_biome_decor(biome_type: int, rng: RandomNumberGenerator) -> Te
 
 	return load(texture_path) as Texture2D
 
-# ========== DETECCIÓN Y CREACIÓN DE BORDES ==========
-func _is_border_tile(center_x: float, center_y: float, tile_size: float, center_biome: int) -> bool:
+# ========== MUESTREO CON PROBABILIDAD (TÉCNICA DON'T STARVE) ==========
+func _sample_biome_with_transition_probability(
+	world_x: float,
+	world_y: float,
+	rng: RandomNumberGenerator
+) -> int:
 	"""
-	Detectar si un tile está en un borde entre biomas.
-	Muestrea las 4 esquinas del tile para ver si alguna tiene bioma diferente.
+	Técnica de Don't Starve: Muestrear bioma con probabilidad mezclada en zonas de transición.
+
+	FUNCIONAMIENTO:
+	1. Obtener bioma "dominante" en esta posición
+	2. Calcular distancias a biomas vecinos
+	3. Si estamos cerca de un borde → usar probabilidad mezclada
+	4. Roll aleatorio decide qué bioma mostrar
+
+	Esto crea el efecto de "tiles entremezcla dos" característico de Don't Starve
 	"""
-	var half = tile_size / 2.0
+
+	# Bioma dominante en el centro
+	var center_biome = _biome_generator.get_biome_at_world_position(world_x, world_y)
+
+	# Muestrear puntos alrededor para detectar biomas vecinos
+	var sample_distance = transition_zone_width / 2.0
+	var neighbor_biomes = {}
+
+	# Muestrear en cruz (4 direcciones)
 	var sample_points = [
-		Vector2(center_x - half, center_y - half),  # Esquina superior izquierda
-		Vector2(center_x + half, center_y - half),  # Esquina superior derecha
-		Vector2(center_x - half, center_y + half),  # Esquina inferior izquierda
-		Vector2(center_x + half, center_y + half),  # Esquina inferior derecha
+		Vector2(world_x + sample_distance, world_y),  # Este
+		Vector2(world_x - sample_distance, world_y),  # Oeste
+		Vector2(world_x, world_y + sample_distance),  # Sur
+		Vector2(world_x, world_y - sample_distance),  # Norte
 	]
 
 	for point in sample_points:
 		var biome = _biome_generator.get_biome_at_world_position(point.x, point.y)
 		if biome != center_biome:
-			return true  # Encontramos un bioma diferente = ES BORDE
+			if not neighbor_biomes.has(biome):
+				neighbor_biomes[biome] = 0
+			neighbor_biomes[biome] += 1
 
-	return false  # Todos los puntos son del mismo bioma = NO ES BORDE
+	# Si NO hay vecinos diferentes → retornar bioma dominante (100%)
+	if neighbor_biomes.size() == 0:
+		return center_biome
 
-func _create_border_tiles(
-	parent: Node2D,
-	tile_local_x: float,
-	tile_local_y: float,
-	tile_size: float,
-	tile_world_x: float,
-	tile_world_y: float
-) -> void:
-	"""
-	Crear micro-tiles en zona de borde para efecto 'dientes de sierra'.
-	Subdivide el tile en grid más fino (ej: 8×8 = 64 micro-tiles).
-	"""
-	var micro_tile_size = border_tile_size  # 64px por micro-tile
-	var subdivisions = int(tile_size / micro_tile_size)  # 512/64 = 8
+	# SI hay vecinos → calcular probabilidad mezclada
+	# Más vecinos = más probable que aparezca el bioma vecino
+	var total_neighbors = 4
+	var neighbor_influence = 0
+	for count in neighbor_biomes.values():
+		neighbor_influence += count
 
-	for sub_y in range(subdivisions):
-		for sub_x in range(subdivisions):
-			# Posición mundial del centro del micro-tile
-			var micro_world_x = tile_world_x + (sub_x * micro_tile_size) + (micro_tile_size / 2.0)
-			var micro_world_y = tile_world_y + (sub_y * micro_tile_size) + (micro_tile_size / 2.0)
+	# Probabilidad de que aparezca bioma vecino (0% a 100%)
+	var neighbor_probability = float(neighbor_influence) / float(total_neighbors)
 
-			# Detectar bioma en este micro-tile
-			var micro_biome = _biome_generator.get_biome_at_world_position(micro_world_x, micro_world_y)
+	# Roll aleatorio
+	if rng.randf() < neighbor_probability:
+		# Elegir bioma vecino aleatorio (ponderado por frecuencia)
+		var total_weight = 0
+		for count in neighbor_biomes.values():
+			total_weight += count
 
-			# Cargar textura
-			var texture = _load_biome_base_texture(micro_biome)
-			if texture == null:
-				continue
+		var roll = rng.randi_range(0, total_weight - 1)
+		var accumulated = 0
 
-			# Crear sprite del micro-tile
-			var sprite = Sprite2D.new()
-			sprite.name = "BorderMicroTile_%d_%d" % [sub_x, sub_y]
-			sprite.texture = texture
-			sprite.centered = true
+		for biome_id in neighbor_biomes.keys():
+			accumulated += neighbor_biomes[biome_id]
+			if roll < accumulated:
+				return biome_id
 
-			# Posición local dentro del chunk
-			sprite.position = Vector2(
-				tile_local_x + (sub_x * micro_tile_size) + (micro_tile_size / 2.0),
-				tile_local_y + (sub_y * micro_tile_size) + (micro_tile_size / 2.0)
-			)
-
-			# Escalar para llenar micro-tile
-			var texture_size = texture.get_size()
-			sprite.scale = Vector2(
-				micro_tile_size / texture_size.x,
-				micro_tile_size / texture_size.y
-			)
-
-			sprite.z_index = -100
-			parent.add_child(sprite)
+	# Si el roll falla, usar bioma dominante
+	return center_biome
 
 func get_biome_at_position(cx: int, cy: int) -> Dictionary:
 	"""

@@ -144,7 +144,7 @@ func get_biome_at_world_position(world_x: float, world_y: float) -> int:
 	1. Calcular distorsión usando ruido Simplex
 	2. Aplicar distorsión a las coordenadas (hace bordes irregulares/escalonados)
 	3. Obtener valor Voronoi en coordenadas distorsionadas → [-1.0, 1.0]
-	4. Normalizar a [0.0, 1.0]
+	4. Usar hash de coordenadas + valor Voronoi para distribuir uniformemente biomas
 	5. Mapear a [0, 5] (6 biomas)
 
 	La distorsión crea bordes orgánicos irregulares sin suavizar la transición
@@ -160,15 +160,21 @@ func get_biome_at_world_position(world_x: float, world_y: float) -> int:
 	# PASO 3: Obtener valor Voronoi en coordenadas distorsionadas
 	var noise_value = cellular_noise.get_noise_2d(distorted_x, distorted_y)
 
-	# PASO 4: Normalizar de [-1.0, 1.0] a [0.0, 1.0]
-	var normalized = (noise_value + 1.0) / 2.0
-	normalized = clamp(normalized, 0.0, 1.0)
+	# PASO 4: NUEVO - Usar hash basado en la región Voronoi para distribuir biomas uniformemente
+	# El problema con frecuencia muy baja es que noise_value varía muy poco entre posiciones cercanas
+	# Solución: usar las coordenadas de la "celda" Voronoi como seed para distribuir biomas
 
-	# Mapear a índice de bioma [0, 5]
-	var biome_index = int(normalized * BiomeType.size())
-	biome_index = clamp(biome_index, 0, BiomeType.size() - 1)
+	# Calcular un hash único basado en las coordenadas y el valor de ruido
+	# Esto asegura que cada región Voronoi tenga un bioma diferente, no todos Lava
+	var region_x = int(distorted_x * cellular_frequency * 1000)
+	var region_y = int(distorted_y * cellular_frequency * 1000)
 
-	return biome_index
+	# Hash simple pero efectivo
+	var hash = ((region_x * 73856093) ^ (region_y * 19349663)) % BiomeType.size()
+	if hash < 0:
+		hash += BiomeType.size()
+
+	return hash
 
 func get_biome_name_at_world_position(world_x: float, world_y: float) -> String:
 	"""
