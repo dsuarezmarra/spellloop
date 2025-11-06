@@ -41,10 +41,10 @@ var cellular_noise: FastNoiseLite = FastNoiseLite.new()  # Voronoi para regiones
 var distortion_noise: FastNoiseLite = FastNoiseLite.new()  # Simplex para distorsionar bordes
 
 # ========== CONFIGURACIÓN ==========
-@export var cellular_frequency: float = 0.00001   # Regiones MASIVAS ~100,000 px (menor = más grande)
+@export var cellular_frequency: float = 0.000001  # Regiones GIGANTES ~1,000,000 px (10× más grande) - Pantalla=1920px, mínimo 4×pantalla=7680px
 @export var cellular_jitter: float = 1.0          # Irregularidad máxima (1.0 = máximo caos)
-@export var distortion_strength: float = 8000.0  # Fuerza de distorsión de bordes (px)
-@export var distortion_frequency: float = 0.0002  # Frecuencia del ruido de distorsión
+@export var distortion_strength: float = 12000.0  # Fuerza de distorsión de bordes (px) - AUMENTADO para bordes más irregulares
+@export var distortion_frequency: float = 0.00015  # Frecuencia del ruido de distorsión - MÁS BAJO = ondulaciones más grandes
 @export var seed_value: int = 0                   # 0 = aleatorio cada vez
 @export var debug_mode: bool = true
 
@@ -71,9 +71,10 @@ func _initialize_noise_generator() -> void:
 	- Retorna valor único por celda Voronoi
 	- Perfecto para asignar bioma por región
 
-	FREQUENCY: 0.00001
-	- Regiones de ~100,000 px de diámetro
-	- Con chunks 15000×15000, cada chunk tiene 1-3 biomas dominantes
+	FREQUENCY: 0.000001
+	- Regiones de ~1,000,000 px de diámetro (GIGANTES)
+	- Pantalla = 1920px, mínimo bioma = 4× pantalla = 7,680px
+	- Con chunks 15000×15000, la mayoría de chunks tendrán 1 solo bioma
 	"""
 
 	# Configurar seed aleatorio o fijo
@@ -116,7 +117,11 @@ func _initialize_noise_generator() -> void:
 
 	if debug_mode:
 		print("[BiomeGeneratorOrganic] 🔧 Configuración Voronoi:")
-		print("  - Frequency: %.6f (regiones ~%.0f px)" % [cellular_frequency, 1.0 / cellular_frequency])
+		print("  - Frequency: %.6f (regiones ~%.0f px = %.1f pantallas)" % [
+			cellular_frequency, 
+			1.0 / cellular_frequency,
+			(1.0 / cellular_frequency) / 1920.0
+		])
 		print("  - Jitter: %.2f (máximo caos/irregularidad)" % cellular_jitter)
 		print("  - Distance: EUCLIDEAN (formas naturales)")
 		print("[BiomeGeneratorOrganic] 🌊 Configuración Distorsión:")
