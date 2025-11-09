@@ -12,22 +12,27 @@ class_name BiomeChunkApplierOrganic
 Responsabilidades:
 - Aplicar texturas base y decoraciones a chunks con MÚLTIPLES biomas
 - Detectar qué bioma corresponde a cada posición usando BiomeGeneratorOrganic
-- Crear tiles inteligentes de texturas base
+- Crear tiles inteligentes (256px) que siguen las regiones Voronoi
+- Los bordes orgánicos aparecen NATURALMENTE al seguir el patrón Voronoi
 - Colocar decorados específicos por bioma
-- Aplicar dithering en BORDES ENTRE BIOMAS (no en bordes de chunk)
+
+Sistema de tiles mejorado:
+- Tiles de 256×256 px (en lugar de 512px)
+- ~60×60 = 3600 tiles por chunk (15000×15000 px)
+- Cada tile detecta bioma en su centro
+- Los bordes irregulares se forman AUTOMÁTICAMENTE
+- Sin dithering artificial (no es necesario)
 
 Diferencias con sistema antiguo:
 - UN chunk puede tener MÚLTIPLES biomas (no solo uno)
 - Las texturas se aplican por región Voronoi (no por chunk completo)
-- Dithering entre REGIONES de biomas (bordes orgánicos)
+- Bordes orgánicos naturales sin procesamiento adicional
 """
 
 # ========== CONFIGURACIÓN ==========
 @export var config_path: String = "res://assets/textures/biomes/biome_textures_config.json"
-@export var tile_resolution: int = 512  # Resolución de cada tile de textura (px)
+@export var tile_resolution: int = 256  # Tiles más pequeños para seguir Voronoi mejor (256px)
 @export var decor_density_global: float = 1.0  # Multiplicador global de densidad
-@export var dithering_enabled: bool = true
-@export var dithering_width: int = 16  # Ancho de zona de transición entre biomas (px)
 @export var debug_mode: bool = true
 
 # ========== DATOS INTERNOS ==========
@@ -74,11 +79,11 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 
 	PROCESO:
 	1. Obtener referencia a BiomeGeneratorOrganic
-	2. Dividir chunk en grid de tiles (ej: 30×30 tiles de 500×500 px)
-	3. Para cada tile, detectar bioma dominante
+	2. Dividir chunk en grid de tiles (ej: ~60×60 tiles de 256×256 px)
+	3. Para cada tile, detectar bioma dominante en su centro
 	4. Aplicar textura base correspondiente
-	5. Colocar decoraciones según bioma en cada posición
-	6. Aplicar dithering en bordes entre biomas
+	5. Los bordes orgánicos aparecen NATURALMENTE porque cada tile sigue Voronoi
+	6. Colocar decoraciones según bioma en cada posición
 
 	Args:
 		chunk_node: Nodo del chunk (Node2D)
@@ -123,16 +128,6 @@ func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
 		biomes_detected
 	)
 
-	# Aplicar dithering en bordes entre biomas
-	if dithering_enabled:
-		_apply_voronoi_dithering(
-			biome_layer,
-			chunk_world_x,
-			chunk_world_y,
-			CHUNK_WIDTH,
-			CHUNK_HEIGHT
-		)
-
 	# Guardar metadatos
 	chunk_node.set_meta("biome_system", "organic_voronoi")
 	chunk_node.set_meta("biomes_detected", biomes_detected)
@@ -158,19 +153,19 @@ func _apply_multi_biome_tiles(
 	"""
 	Aplicar texturas base dividiendo el chunk en tiles y detectando bioma por tile.
 
-	ESTRATEGIA:
-	- Dividir chunk en grid de tiles (ej: 30×30 = 900 tiles)
-	- Cada tile de 500×500 px
-	- Detectar bioma en el centro de cada tile
-	- Crear sprite con textura correspondiente
+	ESTRATEGIA MEJORADA:
+	- Tiles más pequeños (256px) siguen mejor las curvas Voronoi
+	- ~60×60 = 3600 tiles por chunk (manejable, no crea lag)
+	- Cada tile detecta bioma en su centro
+	- Los bordes orgánicos aparecen NATURALMENTE sin dithering
 
 	Returns:
 		Dictionary {biome_id: tile_count} con estadísticas de biomas presentes
 	"""
 
-	var tile_size = tile_resolution  # 512 px por tile
-	var tiles_x = ceili(float(chunk_width) / tile_size)  # ~30 tiles
-	var tiles_y = ceili(float(chunk_height) / tile_size)  # ~30 tiles
+	var tile_size = tile_resolution  # 256 px por tile
+	var tiles_x = ceili(float(chunk_width) / tile_size)  # ~59 tiles
+	var tiles_y = ceili(float(chunk_height) / tile_size)  # ~59 tiles
 
 	var biomes_count = {}  # Estadísticas de biomas
 
@@ -311,161 +306,6 @@ func _apply_biome_specific_decorations(
 		for biome_id in decors_by_biome.keys():
 			var biome_name = _get_biome_name_by_id(biome_id)
 			print("  - %s: %d decors" % [biome_name, decors_by_biome[biome_id]])
-
-# ========== APLICAR DITHERING VORONOI ==========
-func _apply_voronoi_dithering(
-	parent: Node2D,
-	chunk_world_x: float,
-	chunk_world_y: float,
-	chunk_width: int,
-	chunk_height: int
-) -> void:
-	"""
-	Aplicar dithering en los BORDES ENTRE BIOMAS usando patrón Bayer.
-
-	ESTRATEGIA:
-	- Crear grid de "dither tiles" más pequeños que los tiles de textura
-	- Para cada dither tile, detectar si está en un borde entre biomas
-	- Aplicar matriz Bayer 4×4 para mezclar texturas de biomas vecinos
-	- Crear transición orgánica y natural
-
-	IMPLEMENTACIÓN:
-	- Dither tiles de 64×64 px (8× más pequeños que texture tiles de 512px)
-	- Matriz Bayer normalizada [0.0, 1.0]
-	- Solo aplica en zonas de transición (optimizado)
-	"""
-
-	# Matriz Bayer 4×4 normalizada para ordered dithering
-	const BAYER_MATRIX = [
-		[0.0/16.0, 8.0/16.0, 2.0/16.0, 10.0/16.0],
-		[12.0/16.0, 4.0/16.0, 14.0/16.0, 6.0/16.0],
-		[3.0/16.0, 11.0/16.0, 1.0/16.0, 9.0/16.0],
-		[15.0/16.0, 7.0/16.0, 13.0/16.0, 5.0/16.0]
-	]
-
-	var dither_tile_size = 64  # Tiles pequeños para dithering fino
-	var border_detection_radius = dither_tile_size * 2  # Radio para detectar bordes
-
-	var dither_tiles_x = ceili(float(chunk_width) / dither_tile_size)
-	var dither_tiles_y = ceili(float(chunk_height) / dither_tile_size)
-
-	if debug_mode:
-		print("[BiomeChunkApplierOrganic] 🎨 Aplicando dithering Bayer %d×%d tiles..." % [
-			dither_tiles_x, dither_tiles_y
-		])
-
-	var dithered_count = 0
-	var transition_layer = Node2D.new()
-	transition_layer.name = "DitherTransitionLayer"
-	transition_layer.z_index = -99  # Encima de base, debajo de decoraciones
-	parent.add_child(transition_layer)
-
-	# Para cada dither tile
-	for ty in range(dither_tiles_y):
-		for tx in range(dither_tiles_x):
-			# Posición mundial del centro del dither tile
-			var tile_world_x = chunk_world_x + (tx * dither_tile_size) + (dither_tile_size / 2.0)
-			var tile_world_y = chunk_world_y + (ty * dither_tile_size) + (dither_tile_size / 2.0)
-
-			# Detectar bioma en el centro
-			var center_biome = _biome_generator.get_biome_at_world_position(
-				tile_world_x,
-				tile_world_y
-			)
-
-			# Detectar bioma vecino (buscar en dirección diagonal para mejor detección)
-			var neighbor_biome = _detect_neighbor_biome(
-				tile_world_x,
-				tile_world_y,
-				border_detection_radius
-			)
-
-			# Si hay bioma vecino diferente, estamos en una zona de transición
-			if neighbor_biome != -1 and neighbor_biome != center_biome:
-				# Obtener valor de matriz Bayer para este tile
-				var bayer_x = tx % 4
-				var bayer_y = ty % 4
-				var bayer_value = BAYER_MATRIX[bayer_y][bayer_x]
-
-				# Decidir qué bioma usar según el patrón Bayer
-				# bayer_value cercano a 0.0 → usar center_biome
-				# bayer_value cercano a 1.0 → usar neighbor_biome
-				var use_neighbor = (bayer_value > 0.5)
-
-				var selected_biome = neighbor_biome if use_neighbor else center_biome
-
-				# Cargar textura del bioma seleccionado
-				var texture = _load_biome_base_texture(selected_biome)
-				if texture == null:
-					continue
-
-				# Crear sprite de transición
-				var sprite = Sprite2D.new()
-				sprite.name = "DitherTile_%d_%d" % [tx, ty]
-				sprite.texture = texture
-				sprite.centered = true
-
-				# Posición local en el chunk
-				sprite.position = Vector2(
-					tx * dither_tile_size + dither_tile_size / 2.0,
-					ty * dither_tile_size + dither_tile_size / 2.0
-				)
-
-				# Escalar para cubrir el dither tile
-				var texture_size = texture.get_size()
-				sprite.scale = Vector2(
-					dither_tile_size / texture_size.x,
-					dither_tile_size / texture_size.y
-				)
-
-				sprite.z_index = -99
-				transition_layer.add_child(sprite)
-				dithered_count += 1
-
-	if debug_mode:
-		print("[BiomeChunkApplierOrganic] ✓ Dithering aplicado: %d tiles de transición creados" % dithered_count)
-
-func _detect_neighbor_biome(world_x: float, world_y: float, radius: float) -> int:
-	"""
-	Detectar si hay un bioma vecino diferente en las cercanías.
-
-	Busca en 8 direcciones (N, NE, E, SE, S, SW, W, NW) para encontrar
-	un bioma diferente al del centro.
-
-	Args:
-		world_x, world_y: Posición mundial a evaluar
-		radius: Radio de búsqueda en píxeles
-
-	Returns:
-		int: BiomeType del vecino encontrado, o -1 si todos son iguales
-	"""
-
-	var center_biome = _biome_generator.get_biome_at_world_position(world_x, world_y)
-
-	# Direcciones a verificar (8 puntos cardinales)
-	const DIRECTIONS = [
-		Vector2(0, -1),    # N
-		Vector2(1, -1),    # NE
-		Vector2(1, 0),     # E
-		Vector2(1, 1),     # SE
-		Vector2(0, 1),     # S
-		Vector2(-1, 1),    # SW
-		Vector2(-1, 0),    # W
-		Vector2(-1, -1)    # NW
-	]
-
-	# Buscar primer bioma diferente
-	for direction in DIRECTIONS:
-		var check_x = world_x + (direction.x * radius)
-		var check_y = world_y + (direction.y * radius)
-
-		var neighbor_biome = _biome_generator.get_biome_at_world_position(check_x, check_y)
-
-		if neighbor_biome != center_biome:
-			return neighbor_biome
-
-	# No se encontró bioma diferente
-	return -1
 
 # ========== UTILIDADES ==========
 
