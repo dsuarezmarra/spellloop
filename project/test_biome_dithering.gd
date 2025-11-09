@@ -7,9 +7,9 @@ var biome_generator: BiomeGeneratorOrganic
 var biome_applier: BiomeChunkApplierOrganic
 
 func _ready() -> void:
-	print("=" * 60)
+	print("=" .repeat(60))
 	print("🎨 TEST: BIOME DITHERING VISUALIZATION")
-	print("=" * 60)
+	print("=" .repeat(60))
 	
 	# Configurar cámara
 	var camera = Camera2D.new()
