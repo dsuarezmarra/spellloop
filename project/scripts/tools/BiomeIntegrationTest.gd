@@ -65,17 +65,17 @@ func _process(_delta: float) -> void:
 		set_process(false)
 
 func _check_biome_applier() -> void:
-	"""Verificar que BiomeChunkApplier está cargado en InfiniteWorldManager"""
+	"""Verificar que BiomeChunkApplierOrganic está cargado en InfiniteWorldManager"""
 	var world_manager = get_tree().root.find_child("InfiniteWorldManager", true, false)
 	
 	if world_manager:
-		var has_biome_applier = world_manager.find_child("BiomeChunkApplier", true, false) != null
+		var has_biome_applier = world_manager.find_child("BiomeChunkApplierOrganic", true, false) != null
 		test_results["biome_applier_loaded"] = has_biome_applier
 		
 		if has_biome_applier:
-			print("✅ BiomeChunkApplier encontrado en InfiniteWorldManager")
+			print("✅ BiomeChunkApplierOrganic encontrado en InfiniteWorldManager")
 		else:
-			print("❌ BiomeChunkApplier NO encontrado en InfiniteWorldManager")
+			print("❌ BiomeChunkApplierOrganic NO encontrado en InfiniteWorldManager")
 	else:
 		print("❌ InfiniteWorldManager no encontrado")
 
@@ -148,7 +148,7 @@ func _check_projectiles() -> void:
 func _show_diagnostics() -> void:
 	"""Mostrar estado actual de las pruebas"""
 	print("\n--- Diagnóstico en frame %d ---" % frame_count)
-	print("BiomeChunkApplier cargado: %s" % test_results["biome_applier_loaded"])
+	print("BiomeChunkApplierOrganic cargado: %s" % test_results["biome_applier_loaded"])
 	print("Config JSON válida: %s" % test_results["biome_config_valid"])
 	print("Texturas OK: %s" % test_results["textures_applied"])
 	print("Player moviendo: %s" % test_results["player_moving"])

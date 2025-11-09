@@ -67,12 +67,15 @@ func _debug_dump() -> void:
 	else:
 		print("❌ WorldRoot not found")
 	
-	# Verificar que BiomeChunkApplier está en InfiniteWorldManager
+	# Verificar que BiomeChunkApplierOrganic está en InfiniteWorldManager
 	if spellloop.has_node("WorldRoot"):
 		var world_root = spellloop.get_node("WorldRoot")
-		if world_root.find_child("BiomeChunkApplier", true, false):
-			print("\n✅ BiomeChunkApplier found in hierarchy")
+		if world_root.find_child("BiomeChunkApplierOrganic", true, false):
+			print("\n✅ BiomeChunkApplierOrganic found in hierarchy")
 		else:
-			print("\n❌ BiomeChunkApplier NOT found in hierarchy")
+			print("\n❌ BiomeChunkApplierOrganic NOT found in hierarchy")
+			# Fallback: buscar sistema antiguo
+			if world_root.find_child("BiomeChunkApplier", true, false):
+				print("  ⚠️ Found OLD BiomeChunkApplier (should migrate to Organic)")
 	
 	print(separator + "\n")

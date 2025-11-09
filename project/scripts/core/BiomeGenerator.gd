@@ -1,4 +1,9 @@
 # BiomeGenerator.gd
+# ⚠️ OBSOLETO - USAR BiomeGeneratorOrganic.gd EN SU LUGAR
+# Este archivo se mantiene por compatibilidad pero NO SE USA en producción
+# Sistema antiguo: un bioma por chunk, sin Voronoi
+# Sistema nuevo: múltiples biomas por chunk usando Voronoi (FastNoiseLite TYPE_CELLULAR)
+
 # Generador de biomas con decoraciones procedurales y transiciones suaves
 # Soporta 6 biomas: Grassland, Desert, Snow, Lava, Arcane Wastes, Forest
 

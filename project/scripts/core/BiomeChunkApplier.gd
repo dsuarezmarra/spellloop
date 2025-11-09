@@ -1,3 +1,9 @@
+# BiomeChunkApplier.gd
+# ⚠️ OBSOLETO - USAR BiomeChunkApplierOrganic.gd EN SU LUGAR
+# Este archivo se mantiene por compatibilidad pero NO SE USA en producción
+# Sistema antiguo: un bioma por chunk, bordes rectos
+# Sistema nuevo: múltiples biomas por chunk, bordes orgánicos Voronoi
+
 extends Node
 class_name BiomeChunkApplier
 
