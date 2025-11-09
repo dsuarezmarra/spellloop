@@ -39,7 +39,7 @@ const BIOME_COLORS = {
 var cellular_noise: FastNoiseLite = FastNoiseLite.new()
 
 # ========== CONFIGURACIÓN ==========
-@export var cellular_frequency: float = 0.00001   # Regiones MASIVAS ~100,000 px (menor = más grande)
+@export var cellular_frequency: float = 0.00003   # Regiones grandes ~33,333 px (más variedad sin ser demasiado caótico)
 @export var cellular_jitter: float = 1.0          # Irregularidad máxima (1.0 = máximo caos)
 @export var seed_value: int = 0                   # 0 = aleatorio cada vez
 @export var debug_mode: bool = true

@@ -17,8 +17,8 @@ Responsabilidades:
 - Colocar decorados específicos por bioma
 
 Sistema de tiles mejorado:
-- Tiles de 256×256 px (en lugar de 512px)
-- ~60×60 = 3600 tiles por chunk (15000×15000 px)
+- Tiles de 512×512 px (balance óptimo entre rendimiento y calidad visual)
+- ~30×30 = 900 tiles por chunk (15000×15000 px)
 - Cada tile detecta bioma en su centro
 - Los bordes irregulares se forman AUTOMÁTICAMENTE
 - Sin dithering artificial (no es necesario)
@@ -31,8 +31,9 @@ Diferencias con sistema antiguo:
 
 # ========== CONFIGURACIÓN ==========
 @export var config_path: String = "res://assets/textures/biomes/biome_textures_config.json"
-@export var tile_resolution: int = 256  # Tiles más pequeños para seguir Voronoi mejor (256px)
+@export var tile_resolution: int = 256  # Tiles de 256px (bordes más suaves)
 @export var decor_density_global: float = 1.0  # Multiplicador global de densidad
+@export var border_decor_multiplier: float = 4.0  # Multiplicador de decoraciones en tiles de borde (4x más denso)
 @export var debug_mode: bool = true
 
 # ========== DATOS INTERNOS ==========
@@ -168,13 +169,14 @@ func _apply_multi_biome_tiles(
 	var tiles_y = ceili(float(chunk_height) / tile_size)  # ~59 tiles
 
 	var biomes_count = {}  # Estadísticas de biomas
+	var tile_biome_map = {}  # Mapa de biomas por tile [Vector2i(tx,ty)] -> biome_type
 
 	if debug_mode:
 		print("[BiomeChunkApplierOrganic] 🎨 Aplicando %d×%d tiles (total: %d)" % [
 			tiles_x, tiles_y, tiles_x * tiles_y
 		])
 
-	# Para cada tile del grid
+	# FASE 1: Aplicar tiles y construir mapa de biomas
 	for ty in range(tiles_y):
 		for tx in range(tiles_x):
 			# Calcular posición mundial del centro del tile
@@ -183,6 +185,9 @@ func _apply_multi_biome_tiles(
 
 			# Detectar bioma en esta posición
 			var biome_type = _biome_generator.get_biome_at_world_position(tile_world_x, tile_world_y)
+			
+			# Guardar en mapa para detección de bordes
+			tile_biome_map[Vector2i(tx, ty)] = biome_type
 
 			# Contar biomas
 			if not biomes_count.has(biome_type):
@@ -216,6 +221,15 @@ func _apply_multi_biome_tiles(
 			sprite.z_index = -100
 			parent.add_child(sprite)
 
+	# FASE 2: Detectar tiles de borde y aplicar decoraciones extra
+	var border_tiles = _detect_border_tiles(tile_biome_map, tiles_x, tiles_y)
+	
+	if debug_mode:
+		print("[BiomeChunkApplierOrganic] 🔍 Bordes detectados: %d tiles en transición" % border_tiles.size())
+	
+	# Aplicar decoraciones densas en bordes
+	_apply_border_decorations(parent, border_tiles, tile_biome_map, tile_size, chunk_world_x, chunk_world_y)
+
 	if debug_mode:
 		print("[BiomeChunkApplierOrganic] ✓ Tiles aplicados. Biomas detectados:")
 		for biome_id in biomes_count.keys():
@@ -245,7 +259,7 @@ func _apply_biome_specific_decorations(
 	"""
 
 	# Calcular número de decoraciones según densidad
-	var base_decor_count = 50  # Base: 50 decoraciones por chunk
+	var base_decor_count = 120  # Base: 120 decoraciones por chunk (antes 50, aumentado para más densidad)
 	var total_decors = int(base_decor_count * decor_density_global)
 
 	# RNG determinístico por chunk
@@ -270,36 +284,31 @@ func _apply_biome_specific_decorations(
 			decors_by_biome[biome_type] = 0
 		decors_by_biome[biome_type] += 1
 
-		# Cargar decoración aleatoria del bioma
-		var decor_texture = _load_random_biome_decor(biome_type, chunk_rng)
-		if decor_texture == null:
+		# Crear nodo de decoración (estática o animada)
+		var decor_node = _create_random_biome_decor_node(biome_type, chunk_rng)
+		if decor_node == null:
 			continue
 
-		# Crear sprite de decoración
-		var sprite = Sprite2D.new()
-		sprite.name = "BiomeDecor_%d" % i
-		sprite.texture = decor_texture
-		sprite.centered = true
-		sprite.position = Vector2(local_x, local_y)
+		# Configurar decoración
+		decor_node.name = "BiomeDecor_%d" % i
+		decor_node.position = Vector2(local_x, local_y)
 
 		# Escala variable (100-250 px target size)
-		var decor_size = decor_texture.get_size()
 		var target_size = chunk_rng.randf_range(100, 250)
-		sprite.scale = Vector2(
-			target_size / decor_size.x,
-			target_size / decor_size.y
-		)
+		var base_size = 256.0  # Tamaño base de las decoraciones
+		var scale_factor = target_size / base_size
+		decor_node.scale = Vector2(scale_factor, scale_factor)
 
 		# Variación de color sutil
-		sprite.modulate = Color(
+		decor_node.modulate = Color(
 			chunk_rng.randf_range(0.9, 1.1),
 			chunk_rng.randf_range(0.9, 1.1),
 			chunk_rng.randf_range(0.9, 1.1),
 			chunk_rng.randf_range(0.85, 0.95)
 		)
 
-		sprite.z_index = -96  # Encima de base, debajo de personajes
-		parent.add_child(sprite)
+		decor_node.z_index = -96  # Encima de base, debajo de personajes
+		parent.add_child(decor_node)
 
 	if debug_mode:
 		print("[BiomeChunkApplierOrganic] ✓ %d decoraciones colocadas:" % total_decors)
@@ -338,7 +347,11 @@ func _load_biome_base_texture(biome_type: int) -> Texture2D:
 	return load(texture_path) as Texture2D
 
 func _load_random_biome_decor(biome_type: int, rng: RandomNumberGenerator) -> Texture2D:
-	"""Cargar decoración aleatoria de un bioma específico"""
+	"""
+	Cargar decoración aleatoria de un bioma específico.
+	OBSOLETO: Usar _create_random_biome_decor_node() para soporte de animaciones.
+	Mantenido por compatibilidad temporal.
+	"""
 	var biome_name = _get_biome_name_by_id(biome_type)
 
 	# Seleccionar aleatoriamente entre decor1-decor5
@@ -352,6 +365,170 @@ func _load_random_biome_decor(biome_type: int, rng: RandomNumberGenerator) -> Te
 			return null
 
 	return load(texture_path) as Texture2D
+
+func _create_random_biome_decor_node(biome_type: int, rng: RandomNumberGenerator) -> Node2D:
+	"""
+	Crear nodo de decoración (estática o animada) de un bioma específico.
+	Soporta tanto PNG estáticos como spritesheets animados.
+	
+	Convención de nombres:
+	- Estáticos: decorN_static_X.png (ej: lava_crack_static_a.png)
+	- Animados: decorN_sheet_fF_SIZE.png (ej: lava_spout_sheet_f8_256.png)
+	
+	Returns:
+	- Sprite2D para decoraciones estáticas
+	- AnimatedSprite2D para decoraciones animadas
+	- null si no se encuentra ninguna decoración
+	"""
+	var biome_name = _get_biome_name_by_id(biome_type)
+	var decor_folder = "res://assets/textures/biomes/%s/decor/" % biome_name
+	
+	# Buscar decoraciones disponibles (estáticas y animadas)
+	var available_decors = []
+	
+	# Buscar spritesheets animados
+	for i in range(1, 6):
+		var sheet_path = "%s%s_decor%d_sheet_f8_256.png" % [decor_folder, biome_name.to_lower(), i]
+		if ResourceLoader.exists(sheet_path):
+			available_decors.append(sheet_path)
+	
+	# Buscar decoraciones estáticas (con variantes a, b, c)
+	for i in range(1, 6):
+		for variant in ["a", "b", "c"]:
+			var static_path = "%s%s_decor%d_static_%s.png" % [
+				decor_folder, biome_name.to_lower(), i, variant
+			]
+			if ResourceLoader.exists(static_path):
+				available_decors.append(static_path)
+	
+	# Fallback: buscar formato antiguo (decorN.png)
+	if available_decors.is_empty():
+		for i in range(1, 6):
+			var legacy_path = "res://assets/textures/biomes/%s/decor%d.png" % [biome_name, i]
+			if ResourceLoader.exists(legacy_path):
+				available_decors.append(legacy_path)
+	
+	# Si no hay decoraciones, retornar null
+	if available_decors.is_empty():
+		if debug_mode:
+			push_warning("⚠️ [BiomeChunkApplier] No se encontraron decoraciones para %s" % biome_name)
+		return null
+	
+	# Seleccionar decoración aleatoria
+	var selected_decor = available_decors[rng.randi() % available_decors.size()]
+	
+	# Crear nodo usando DecorFactory
+	var decor_node = DecorFactory.make_decor(selected_decor, 10.0)
+	
+	return decor_node
+
+# ========== SISTEMA DE DETECCIÓN DE BORDES ==========
+
+func _detect_border_tiles(tile_biome_map: Dictionary, tiles_x: int, tiles_y: int) -> Array:
+	"""
+	Detectar tiles que están en los bordes entre biomas.
+	Un tile es "borde" si algún vecino (arriba, abajo, izquierda, derecha) tiene diferente bioma.
+	
+	Returns: Array de Vector2i con coordenadas (tx, ty) de tiles de borde
+	"""
+	var border_tiles = []
+	
+	for ty in range(tiles_y):
+		for tx in range(tiles_x):
+			var current_pos = Vector2i(tx, ty)
+			var current_biome = tile_biome_map.get(current_pos)
+			
+			if current_biome == null:
+				continue
+			
+			# Revisar vecinos (4 direcciones: arriba, abajo, izq, der)
+			var neighbors = [
+				Vector2i(tx, ty - 1),  # Arriba
+				Vector2i(tx, ty + 1),  # Abajo
+				Vector2i(tx - 1, ty),  # Izquierda
+				Vector2i(tx + 1, ty),  # Derecha
+			]
+			
+			var is_border = false
+			for neighbor_pos in neighbors:
+				var neighbor_biome = tile_biome_map.get(neighbor_pos)
+				if neighbor_biome != null and neighbor_biome != current_biome:
+					is_border = true
+					break
+			
+			if is_border:
+				border_tiles.append(current_pos)
+	
+	return border_tiles
+
+func _apply_border_decorations(
+	parent: Node2D,
+	border_tiles: Array,
+	tile_biome_map: Dictionary,
+	tile_size: int,
+	chunk_world_x: float,
+	chunk_world_y: float
+) -> void:
+	"""
+	Aplicar decoraciones extra en tiles de borde para camuflar transiciones.
+	Usa border_decor_multiplier (ej: 4.0 = 4x más decoraciones en bordes).
+	"""
+	
+	# RNG determinístico
+	var border_rng = RandomNumberGenerator.new()
+	border_rng.seed = hash(Vector2(chunk_world_x, chunk_world_y)) + 12345
+	
+	# Número de decoraciones por tile de borde
+	var decors_per_border_tile = int(border_decor_multiplier * 2)  # ej: 4.0 * 2 = 8 decoraciones/tile
+	
+	var total_border_decors = 0
+	
+	for tile_pos in border_tiles:
+		var tx = tile_pos.x
+		var ty = tile_pos.y
+		var biome_type = tile_biome_map.get(tile_pos)
+		
+		if biome_type == null:
+			continue
+		
+		# Colocar múltiples decoraciones en este tile de borde
+		for i in range(decors_per_border_tile):
+			# Posición aleatoria dentro del tile
+			var local_x = (tx * tile_size) + border_rng.randf_range(0, tile_size)
+			var local_y = (ty * tile_size) + border_rng.randf_range(0, tile_size)
+			
+			# Crear nodo de decoración (estática o animada)
+			var decor_node = _create_random_biome_decor_node(biome_type, border_rng)
+			if decor_node == null:
+				continue
+			
+			# Configurar decoración de borde
+			decor_node.name = "BorderDecor_%d_%d_%d" % [tx, ty, i]
+			decor_node.position = Vector2(local_x, local_y)
+			
+			# Escala más pequeña que decoraciones normales (80-180 px)
+			var target_size = border_rng.randf_range(80, 180)
+			var base_size = 256.0  # Tamaño base de las decoraciones
+			var scale_factor = target_size / base_size
+			decor_node.scale = Vector2(scale_factor, scale_factor)
+			
+			# Variación de color y alpha
+			decor_node.modulate = Color(
+				border_rng.randf_range(0.85, 1.15),
+				border_rng.randf_range(0.85, 1.15),
+				border_rng.randf_range(0.85, 1.15),
+				border_rng.randf_range(0.7, 0.9)  # Más transparentes
+			)
+			
+			decor_node.z_index = -95  # Encima de decoraciones normales
+			parent.add_child(decor_node)
+			
+			total_border_decors += 1
+	
+	if debug_mode:
+		print("[BiomeChunkApplierOrganic] 🎨 %d decoraciones de borde colocadas (x%.1f densidad)" % [
+			total_border_decors, border_decor_multiplier
+		])
 
 func get_biome_at_position(cx: int, cy: int) -> Dictionary:
 	"""
