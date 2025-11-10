@@ -19,6 +19,8 @@ func _ready():
 	print("Creando mosaico: %dx%d tiles (tamaño %dpx)" % [tiles_x, tiles_y, tile_size])
 	
 	var tiles_created = 0
+	var sync_frame = randi() % 8  # Frame sincronizado para todos los tiles
+	
 	for ty in range(tiles_y):
 		for tx in range(tiles_x):
 			var base_node = AutoFrames.load_sprite(base_texture_path)
@@ -32,17 +34,18 @@ func _ready():
 				
 				if base_node is AnimatedSprite2D:
 					base_node.play("default")
-					base_node.speed_scale = randf_range(0.95, 1.05)  # Variación sutil
-					# Desincronizar cada tile
+					base_node.speed_scale = 1.0  # Velocidad fija para sincronización
+					
+					# SINCRONIZAR: Todos los tiles empiezan en el mismo frame
 					var frames = base_node.sprite_frames
 					var frame_count = frames.get_frame_count("default")
 					if frame_count > 0:
-						base_node.frame = randi() % frame_count
+						base_node.frame = sync_frame % frame_count
 					
 					# Info solo del primer tile
 					if tx == 0 and ty == 0:
 						var fps = frames.get_animation_speed("default")
-						print("✅ Textura base animada: %d frames @ %d FPS" % [frame_count, fps])
+						print("✅ Textura base animada: %d frames @ %d FPS (sincronizado)" % [frame_count, fps])
 						print("   Tamaño por tile: %s" % str(frames.get_frame_texture("default", 0).get_size()))
 				
 				add_child(base_node)
