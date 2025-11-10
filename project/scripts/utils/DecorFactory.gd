@@ -6,13 +6,20 @@ extends Node
 
 ## Crear decoración (estática o animada) desde una ruta de textura
 ## Detecta automáticamente si es spritesheet por el patrón "_sheet_f"
-static func make_decor(tex_path: String, base_fps: float = 5.0) -> Node2D:
+static func make_decor(
+	tex_path: String, 
+	base_fps: float = 5.0, 
+	use_integration_shader: bool = true,
+	biome_name: String = ""
+) -> Node2D:
 	"""
 	Crea un nodo de decoración (Sprite2D o AnimatedSprite2D).
 	
 	Parámetros:
 	- tex_path: Ruta a la textura (PNG estático o spritesheet)
 	- base_fps: FPS base para animaciones (default 5.0)
+	- use_integration_shader: Aplicar shader de integración con suelo (default true)
+	- biome_name: Nombre del bioma (ej: "Lava", "Snow") para configurar shader
 	
 	Retorna:
 	- AnimatedSprite2D si es spritesheet (*_sheet_fN_SIZE.png)
@@ -22,6 +29,7 @@ static func make_decor(tex_path: String, base_fps: float = 5.0) -> Node2D:
 	- Pivot: bottom-center (para que "planten" en el suelo)
 	- Animaciones desincronizadas (frame inicial aleatorio)
 	- Speed variado (0.9-1.1x) para naturalidad
+	- Shader de integración: sombra + fundido en base (ajustado por bioma)
 	"""
 	var is_sheet := tex_path.contains("_sheet_f")
 	
@@ -51,6 +59,10 @@ static func make_decor(tex_path: String, base_fps: float = 5.0) -> Node2D:
 			var sz := first_frame.get_size()
 			anim.offset = Vector2(0, -sz.y / 2.0)
 		
+		# Aplicar shader de integración
+		if use_integration_shader:
+			_apply_integration_shader(anim, biome_name)
+		
 		return anim
 		
 	else:
@@ -68,19 +80,100 @@ static func make_decor(tex_path: String, base_fps: float = 5.0) -> Node2D:
 		var sz := tex.get_size()
 		spr.offset = Vector2(0, -sz.y / 2.0)
 		
+		# Aplicar shader de integración
+		if use_integration_shader:
+			_apply_integration_shader(spr, biome_name)
+		
 		return spr
+
+## Aplicar shader de integración con el suelo
+static func _apply_integration_shader(node: CanvasItem, biome_name: String = "") -> void:
+	"""
+	Aplica shader para integrar decoración con el suelo:
+	- Sombra sutil en la base
+	- Fundido gradual en la parte inferior
+	- Tinte adaptado al bioma
+	
+	Configuraciones por bioma:
+	- Lava: Naranja cálido (1.0, 0.85, 0.6)
+	- Snow: Azul frío (0.85, 0.9, 1.0)
+	- Forest: Verde natural (0.8, 0.95, 0.8)
+	- Desert: Amarillo arena (1.0, 0.95, 0.7)
+	- Default: Blanco neutro (1.0, 1.0, 1.0)
+	"""
+	var shader_path = "res://assets/shaders/decor_integration.gdshader"
+	
+	if not ResourceLoader.exists(shader_path):
+		push_warning("⚠️ [DecorFactory] Shader de integración no encontrado: %s" % shader_path)
+		return
+	
+	var shader = load(shader_path)
+	var material = ShaderMaterial.new()
+	material.shader = shader
+	
+	# Configuración según el bioma
+	var tint_color: Color
+	var shadow_intensity: float
+	var shadow_height: float
+	var base_fade: float
+	
+	match biome_name.to_lower():
+		"lava":
+			tint_color = Color(1.0, 0.85, 0.6, 1.0)  # Naranja cálido
+			shadow_intensity = 0.4
+			shadow_height = 0.25
+			base_fade = 0.12
+		
+		"snow", "ice":
+			tint_color = Color(0.85, 0.9, 1.0, 1.0)  # Azul frío
+			shadow_intensity = 0.25  # Sombra más suave (nieve refleja)
+			shadow_height = 0.2
+			base_fade = 0.15  # Más fundido en nieve
+		
+		"forest", "grass":
+			tint_color = Color(0.8, 0.95, 0.8, 1.0)  # Verde natural
+			shadow_intensity = 0.35
+			shadow_height = 0.22
+			base_fade = 0.1
+		
+		"desert", "sand":
+			tint_color = Color(1.0, 0.95, 0.7, 1.0)  # Amarillo arena
+			shadow_intensity = 0.45  # Sombra más marcada (sol fuerte)
+			shadow_height = 0.2
+			base_fade = 0.08
+		
+		"cave", "stone":
+			tint_color = Color(0.7, 0.7, 0.75, 1.0)  # Gris piedra
+			shadow_intensity = 0.5  # Sombras oscuras
+			shadow_height = 0.3
+			base_fade = 0.1
+		
+		_:  # Default / desconocido
+			tint_color = Color(1.0, 1.0, 1.0, 1.0)  # Blanco neutro
+			shadow_intensity = 0.3
+			shadow_height = 0.2
+			base_fade = 0.12
+	
+	material.set_shader_parameter("biome_tint", tint_color)
+	material.set_shader_parameter("shadow_intensity", shadow_intensity)
+	material.set_shader_parameter("shadow_height", shadow_height)
+	material.set_shader_parameter("base_fade", base_fade)
+	
+	node.material = material
 
 ## Crear decoración con escala y modulación personalizadas
 static func make_decor_styled(
 	tex_path: String,
 	scale_factor: Vector2 = Vector2.ONE,
 	modulate_color: Color = Color.WHITE,
-	base_fps: float = 5.0
+	base_fps: float = 5.0,
+	use_integration_shader: bool = true,
+	biome_name: String = ""
 ) -> Node2D:
 	"""
 	Versión extendida de make_decor() con estilo personalizado.
 	"""
-	var decor := make_decor(tex_path, base_fps)
+	var decor := make_decor(tex_path, base_fps, use_integration_shader, biome_name)
 	
 	if decor:
 		decor.scale = scale_factor

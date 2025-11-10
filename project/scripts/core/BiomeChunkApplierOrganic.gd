@@ -384,7 +384,7 @@ func _create_biome_base_tile_node(biome_type: int) -> Node2D:
 	# PRIORIDAD 1: Intentar cargar sprite sheet animado
 	# Detectar sprite sheets con patrón: {biome}_base_animated_sheet_fN_SIZE.png
 	var base_path = "res://assets/textures/biomes/%s/base/%s_base_animated" % [biome_name, biome_lower]
-	var animated_node = AutoFrames.load_sprite(base_path)
+	var animated_node = AutoFrames.load_sprite(base_path, 5.0)  # 5 FPS para animación suave
 	
 	if animated_node != null:
 		if animated_node is AnimatedSprite2D:
@@ -500,8 +500,8 @@ func _create_random_biome_decor_node(biome_type: int, rng: RandomNumberGenerator
 	# Seleccionar decoración aleatoria
 	var selected_decor = available_decors[rng.randi() % available_decors.size()]
 	
-	# Crear nodo usando DecorFactory
-	var decor_node = DecorFactory.make_decor(selected_decor, 10.0)
+	# Crear nodo usando DecorFactory (pasar nombre del bioma para shader)
+	var decor_node = DecorFactory.make_decor(selected_decor, 10.0, true, biome_name)
 	
 	return decor_node
 
