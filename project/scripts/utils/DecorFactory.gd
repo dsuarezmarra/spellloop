@@ -6,13 +6,13 @@ extends Node
 
 ## Crear decoración (estática o animada) desde una ruta de textura
 ## Detecta automáticamente si es spritesheet por el patrón "_sheet_f"
-static func make_decor(tex_path: String, base_fps: float = 10.0) -> Node2D:
+static func make_decor(tex_path: String, base_fps: float = 5.0) -> Node2D:
 	"""
 	Crea un nodo de decoración (Sprite2D o AnimatedSprite2D).
 	
 	Parámetros:
 	- tex_path: Ruta a la textura (PNG estático o spritesheet)
-	- base_fps: FPS base para animaciones (default 10.0)
+	- base_fps: FPS base para animaciones (default 5.0)
 	
 	Retorna:
 	- AnimatedSprite2D si es spritesheet (*_sheet_fN_SIZE.png)
@@ -75,7 +75,7 @@ static func make_decor_styled(
 	tex_path: String,
 	scale_factor: Vector2 = Vector2.ONE,
 	modulate_color: Color = Color.WHITE,
-	base_fps: float = 10.0
+	base_fps: float = 5.0
 ) -> Node2D:
 	"""
 	Versión extendida de make_decor() con estilo personalizado.

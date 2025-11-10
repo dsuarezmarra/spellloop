@@ -194,32 +194,45 @@ func _apply_multi_biome_tiles(
 				biomes_count[biome_type] = 0
 			biomes_count[biome_type] += 1
 
-			# Cargar textura del bioma
-			var texture = _load_biome_base_texture(biome_type)
-			if texture == null:
+			# Crear nodo de textura base (animada o estática)
+			var tile_node = _create_biome_base_tile_node(biome_type)
+			if tile_node == null:
 				continue
 
-			# Crear sprite para este tile
-			var sprite = Sprite2D.new()
-			sprite.name = "BiomeTile_%d_%d" % [tx, ty]
-			sprite.texture = texture
-			sprite.centered = true
+			# Configurar propiedades comunes (Sprite2D o AnimatedSprite2D)
+			tile_node.name = "BiomeTile_%d_%d" % [tx, ty]
+			tile_node.centered = true
 
 			# Posición del tile (esquina superior izquierda + centro)
-			sprite.position = Vector2(
+			tile_node.position = Vector2(
 				tx * tile_size + tile_size / 2.0,
 				ty * tile_size + tile_size / 2.0
 			)
 
 			# Escalar para llenar tile completo
-			var texture_size = texture.get_size()
-			sprite.scale = Vector2(
+			var texture_size: Vector2
+			if tile_node is AnimatedSprite2D:
+				# Para AnimatedSprite2D, obtener tamaño del frame actual
+				var frames = tile_node.sprite_frames
+				if frames != null and frames.has_animation("default"):
+					var frame_texture = frames.get_frame_texture("default", 0)
+					if frame_texture != null:
+						texture_size = frame_texture.get_size()
+					else:
+						texture_size = Vector2(512, 512)  # Fallback
+				else:
+					texture_size = Vector2(512, 512)  # Fallback
+			else:
+				# Para Sprite2D, obtener tamaño de la textura
+				texture_size = tile_node.texture.get_size()
+			
+			tile_node.scale = Vector2(
 				tile_size / texture_size.x,
 				tile_size / texture_size.y
 			)
 
-			sprite.z_index = -100
-			parent.add_child(sprite)
+			tile_node.z_index = -100
+			parent.add_child(tile_node)
 
 	# FASE 2: Detectar tiles de borde y aplicar decoraciones extra
 	var border_tiles = _detect_border_tiles(tile_biome_map, tiles_x, tiles_y)
@@ -293,11 +306,13 @@ func _apply_biome_specific_decorations(
 		decor_node.name = "BiomeDecor_%d" % i
 		decor_node.position = Vector2(local_x, local_y)
 
-		# Escala variable (100-250 px target size)
-		var target_size = chunk_rng.randf_range(100, 250)
-		var base_size = 256.0  # Tamaño base de las decoraciones
-		var scale_factor = target_size / base_size
+		# Escala aleatoria variable (0.5x a 3.0x del tamaño base)
+		var scale_factor = chunk_rng.randf_range(0.5, 3.0)
 		decor_node.scale = Vector2(scale_factor, scale_factor)
+		
+		# Flip horizontal aleatorio (50% probabilidad) para dar variedad
+		if chunk_rng.randf() > 0.5:
+			decor_node.scale.x *= -1.0
 
 		# Variación de color sutil
 		decor_node.modulate = Color(
@@ -335,16 +350,49 @@ func _get_biome_name_by_id(biome_id: int) -> String:
 	}
 	return BIOME_NAMES.get(biome_id, "Unknown")
 
-func _load_biome_base_texture(biome_type: int) -> Texture2D:
-	"""Cargar textura base de un bioma específico"""
+func _create_biome_base_tile_node(biome_type: int) -> Node2D:
+	"""
+	Crear nodo de textura base (animada o estática) para un bioma específico.
+	Prioridad: Sprite sheet animado → PNG estático (variante a/b) → Fallback antiguo
+	Retorna AnimatedSprite2D o Sprite2D según disponibilidad
+	"""
 	var biome_name = _get_biome_name_by_id(biome_type)
-	var texture_path = "res://assets/textures/biomes/%s/base.png" % biome_name
-
-	if not ResourceLoader.exists(texture_path):
-		printerr("[BiomeChunkApplierOrganic] ✗ Textura no encontrada: %s" % texture_path)
-		return null
-
-	return load(texture_path) as Texture2D
+	var biome_lower = biome_name.to_lower()
+	
+	# PRIORIDAD 1: Intentar cargar sprite sheet animado
+	# Detectar sprite sheets con patrón: {biome}_base_animated_sheet_fN_SIZE.png
+	var base_path = "res://assets/textures/biomes/%s/base/%s_base_animated" % [biome_name, biome_lower]
+	var animated_node = AutoFrames.load_sprite(base_path)
+	
+	if animated_node != null:
+		if animated_node is AnimatedSprite2D:
+			animated_node.play("default")
+			animated_node.speed_scale = randf_range(0.9, 1.1)  # Variación de velocidad
+			# Desincronizar animaciones
+			animated_node.frame = randi() % animated_node.sprite_frames.get_frame_count("default")
+			return animated_node
+		else:
+			# Es Sprite2D estático (solo 1 frame)
+			return animated_node
+	
+	# PRIORIDAD 2: Textura estática con variante a/b (formato nuevo)
+	var variant = ["a", "b"][randi() % 2]
+	var texture_path = "res://assets/textures/biomes/%s/base/%s_base_%s_256.png" % [biome_name, biome_lower, variant]
+	
+	if ResourceLoader.exists(texture_path):
+		var sprite = Sprite2D.new()
+		sprite.texture = load(texture_path) as Texture2D
+		return sprite
+	
+	# PRIORIDAD 3: Fallback formato antiguo base.png
+	texture_path = "res://assets/textures/biomes/%s/base.png" % biome_name
+	if ResourceLoader.exists(texture_path):
+		var sprite = Sprite2D.new()
+		sprite.texture = load(texture_path) as Texture2D
+		return sprite
+	
+	printerr("[BiomeChunkApplierOrganic] ✗ Textura base no encontrada para bioma: %s" % biome_name)
+	return null
 
 func _load_random_biome_decor(biome_type: int, rng: RandomNumberGenerator) -> Texture2D:
 	"""
@@ -381,22 +429,28 @@ func _create_random_biome_decor_node(biome_type: int, rng: RandomNumberGenerator
 	- null si no se encuentra ninguna decoración
 	"""
 	var biome_name = _get_biome_name_by_id(biome_type)
+	var biome_lower = biome_name.to_lower()
 	var decor_folder = "res://assets/textures/biomes/%s/decor/" % biome_name
 	
 	# Buscar decoraciones disponibles (estáticas y animadas)
 	var available_decors = []
 	
-	# Buscar spritesheets animados
-	for i in range(1, 6):
-		var sheet_path = "%s%s_decor%d_sheet_f8_256.png" % [decor_folder, biome_name.to_lower(), i]
-		if ResourceLoader.exists(sheet_path):
-			available_decors.append(sheet_path)
+	# Buscar spritesheets animados (cualquier cantidad de frames y tamaño)
+	# Patrones: {biome}_decor{N}_sheet_f{frames}_{size}.png
+	for i in range(1, 11):  # Buscar hasta decor10
+		for frames in [4, 6, 7, 8, 10, 12, 16]:  # Soportar múltiples cantidades de frames
+			for size in [128, 256, 512]:  # Soportar múltiples tamaños
+				var sheet_path = "%s%s_decor%d_sheet_f%d_%d.png" % [
+					decor_folder, biome_lower, i, frames, size
+				]
+				if ResourceLoader.exists(sheet_path):
+					available_decors.append(sheet_path)
 	
 	# Buscar decoraciones estáticas (con variantes a, b, c)
-	for i in range(1, 6):
+	for i in range(1, 11):  # Buscar hasta decor10
 		for variant in ["a", "b", "c"]:
 			var static_path = "%s%s_decor%d_static_%s.png" % [
-				decor_folder, biome_name.to_lower(), i, variant
+				decor_folder, biome_lower, i, variant
 			]
 			if ResourceLoader.exists(static_path):
 				available_decors.append(static_path)
@@ -506,11 +560,13 @@ func _apply_border_decorations(
 			decor_node.name = "BorderDecor_%d_%d_%d" % [tx, ty, i]
 			decor_node.position = Vector2(local_x, local_y)
 			
-			# Escala más pequeña que decoraciones normales (80-180 px)
-			var target_size = border_rng.randf_range(80, 180)
-			var base_size = 256.0  # Tamaño base de las decoraciones
-			var scale_factor = target_size / base_size
+			# Escala aleatoria variable (0.5x a 3.0x del tamaño base)
+			var scale_factor = border_rng.randf_range(0.5, 3.0)
 			decor_node.scale = Vector2(scale_factor, scale_factor)
+			
+			# Flip horizontal aleatorio (50% probabilidad) para dar variedad
+			if border_rng.randf() > 0.5:
+				decor_node.scale.x *= -1.0
 			
 			# Variación de color y alpha
 			decor_node.modulate = Color(
