@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dbu7pjfjg8yw1"
-path="res://.godot/imported/lava_base_animated_sheet_f8_512.png-ef8da1f1def51145de282a861a4da8b3.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://bfcow7mhx3m5b"
+valid=false
 
 [deps]
 
 source_file="res://assets/textures/biomes/Lava/base/lava_base_animated_sheet_f8_512.png"
-dest_files=["res://.godot/imported/lava_base_animated_sheet_f8_512.png-ef8da1f1def51145de282a861a4da8b3.ctex"]
 
 [params]
 
