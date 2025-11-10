@@ -71,7 +71,7 @@ func _ready() -> void:
 
 func _load_biome_generator() -> void:
 	"""Cargar el generador de biomas ORGÁNICO (Voronoi)"""
-	# NUEVO: Usar BiomeGeneratorOrganic en lugar de BiomeGenerator
+	# Usar BiomeGeneratorOrganic (sistema Voronoi moderno)
 	if ResourceLoader.exists("res://scripts/core/BiomeGeneratorOrganic.gd"):
 		var bg_script = load("res://scripts/core/BiomeGeneratorOrganic.gd")
 		if bg_script:
@@ -81,15 +81,9 @@ func _load_biome_generator() -> void:
 			add_child(biome_generator)
 			print("[InfiniteWorldManager] ✅ BiomeGeneratorOrganic cargado (Voronoi)")
 	else:
-		printerr("[InfiniteWorldManager] ❌ BiomeGeneratorOrganic.gd no encontrado")
-		# Fallback al antiguo si no existe el nuevo
-		if ResourceLoader.exists("res://scripts/core/BiomeGenerator.gd"):
-			var bg_script = load("res://scripts/core/BiomeGenerator.gd")
-			if bg_script:
-				biome_generator = bg_script.new()
-				biome_generator.name = "BiomeGenerator"
-				add_child(biome_generator)
-				print("[InfiniteWorldManager] ⚠️ BiomeGenerator antiguo cargado (fallback)")
+		printerr("[InfiniteWorldManager] ❌ ERROR CRÍTICO: BiomeGeneratorOrganic.gd no encontrado")
+		printerr("[InfiniteWorldManager] ❌ El juego NO funcionará sin el generador de biomas")
+
 
 func _load_chunk_cache_manager() -> void:
 	"""Cargar el gestor de caché de chunks"""
@@ -103,7 +97,7 @@ func _load_chunk_cache_manager() -> void:
 
 func _load_biome_applier() -> void:
 	"""Cargar el aplicador de biomas ORGÁNICO (multi-bioma)"""
-	# NUEVO: Usar BiomeChunkApplierOrganic en lugar de BiomeChunkApplier
+	# Usar BiomeChunkApplierOrganic (sistema multi-bioma Voronoi)
 	if ResourceLoader.exists("res://scripts/core/BiomeChunkApplierOrganic.gd"):
 		var ba_script = load("res://scripts/core/BiomeChunkApplierOrganic.gd")
 		if ba_script:
@@ -112,15 +106,8 @@ func _load_biome_applier() -> void:
 			add_child(biome_applier)
 			print("[InfiniteWorldManager] ✅ BiomeChunkApplierOrganic cargado (multi-bioma)")
 	else:
-		printerr("[InfiniteWorldManager] ❌ BiomeChunkApplierOrganic.gd no encontrado")
-		# Fallback al antiguo si no existe el nuevo
-		if ResourceLoader.exists("res://scripts/core/BiomeChunkApplier.gd"):
-			var ba_script = load("res://scripts/core/BiomeChunkApplier.gd")
-			if ba_script:
-				biome_applier = ba_script.new()
-				biome_applier.name = "BiomeChunkApplier"
-				add_child(biome_applier)
-				print("[InfiniteWorldManager] ⚠️ BiomeChunkApplier antiguo cargado (fallback)")
+		printerr("[InfiniteWorldManager] ❌ ERROR CRÍTICO: BiomeChunkApplierOrganic.gd no encontrado")
+		printerr("[InfiniteWorldManager] ❌ El juego NO funcionará sin el aplicador de biomas")
 
 func initialize(player: Node) -> void:
 	"""Inicializar con referencia al jugador"""
