@@ -36,25 +36,27 @@ def create_spritesheet(frames, output_path, frame_size=512, padding=4):
     """
     Crear sprite sheet horizontal desde frames de textura base.
     NO hace recorte ni alineación, solo combina los frames tal cual.
+    Redimensiona frames si no tienen el tamaño correcto.
     """
     num_frames = len(frames)
     
     print(f"\n  Procesando {num_frames} frames de textura base:")
     
-    # Cargar frames tal cual (sin procesamiento)
+    # Cargar frames y redimensionar si es necesario
     processed_frames = []
     for i, frame_path in enumerate(frames):
         img = Image.open(frame_path)
         
-        # Verificar tamaño
-        if img.size != (frame_size, frame_size):
-            print(f"    ADVERTENCIA: Frame {i+1} tiene tamaño {img.size}, esperado {frame_size}×{frame_size}")
-        else:
-            print(f"    Frame {i+1}: {frame_size}×{frame_size}px OK")
-        
         # Asegurar modo RGBA
         if img.mode != 'RGBA':
             img = img.convert('RGBA')
+        
+        # Redimensionar si no tiene el tamaño correcto
+        if img.size != (frame_size, frame_size):
+            print(f"    Frame {i+1}: {img.size} → Redimensionando a {frame_size}×{frame_size}px")
+            img = img.resize((frame_size, frame_size), Image.Resampling.LANCZOS)
+        else:
+            print(f"    Frame {i+1}: {frame_size}×{frame_size}px ✓")
         
         processed_frames.append(img)
     

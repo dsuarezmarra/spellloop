@@ -39,6 +39,7 @@ Diferencias con sistema antiguo:
 # ========== DATOS INTERNOS ==========
 var _config: Dictionary = {}
 var _biome_generator: Node = null  # Referencia a BiomeGeneratorOrganic
+var _biome_animation_offsets: Dictionary = {}  # Frame inicial por bioma (sincronización global)
 
 # ========== SEÑALES ==========
 signal biome_textures_applied(chunk_pos: Vector2i, biomes_count: int)
@@ -47,6 +48,7 @@ func _ready() -> void:
 	print("[BiomeChunkApplierOrganic] ✓ Inicializando (multi-bioma Voronoi)...")
 	_load_config()
 	print("[BiomeChunkApplierOrganic] ✓ Config cargado. Biomas disponibles: %d" % _config.get("biomes", []).size())
+	_initialize_biome_animation_offsets()
 
 # ========== CARGAR CONFIGURACIÓN ==========
 func _load_config() -> void:
@@ -72,6 +74,23 @@ func _load_config() -> void:
 
 	if debug_mode:
 		print("[BiomeChunkApplierOrganic] ✓ Config cargado exitosamente")
+
+func _initialize_biome_animation_offsets() -> void:
+	"""
+	Inicializar offsets de animación por bioma para sincronización global.
+	Cada bioma tendrá un frame inicial fijo que se aplica a TODOS sus tiles.
+	"""
+	# Frame inicial aleatorio pero consistente por bioma
+	_biome_animation_offsets[BiomeGeneratorOrganic.BIOME_GRASSLAND] = randi() % 100
+	_biome_animation_offsets[BiomeGeneratorOrganic.BIOME_FOREST] = randi() % 100
+	_biome_animation_offsets[BiomeGeneratorOrganic.BIOME_DESERT] = randi() % 100
+	_biome_animation_offsets[BiomeGeneratorOrganic.BIOME_SNOW] = randi() % 100
+	_biome_animation_offsets[BiomeGeneratorOrganic.BIOME_LAVA] = randi() % 100
+	_biome_animation_offsets[BiomeGeneratorOrganic.BIOME_SWAMP] = randi() % 100
+	_biome_animation_offsets[BiomeGeneratorOrganic.BIOME_ARCANE_WASTES] = randi() % 100
+	
+	if debug_mode:
+		print("[BiomeChunkApplierOrganic] ✓ Offsets de animación por bioma inicializados")
 
 # ========== APLICAR BIOMA A CHUNK ==========
 func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
@@ -355,6 +374,9 @@ func _create_biome_base_tile_node(biome_type: int) -> Node2D:
 	Crear nodo de textura base (animada o estática) para un bioma específico.
 	Prioridad: Sprite sheet animado → PNG estático (variante a/b) → Fallback antiguo
 	Retorna AnimatedSprite2D o Sprite2D según disponibilidad
+	
+	IMPORTANTE: Las animaciones se sincronizan por bioma (todos los tiles del mismo
+	bioma tienen el mismo frame inicial para patrón consistente).
 	"""
 	var biome_name = _get_biome_name_by_id(biome_type)
 	var biome_lower = biome_name.to_lower()
@@ -367,9 +389,16 @@ func _create_biome_base_tile_node(biome_type: int) -> Node2D:
 	if animated_node != null:
 		if animated_node is AnimatedSprite2D:
 			animated_node.play("default")
-			animated_node.speed_scale = randf_range(0.9, 1.1)  # Variación de velocidad
-			# Desincronizar animaciones
-			animated_node.frame = randi() % animated_node.sprite_frames.get_frame_count("default")
+			
+			# SINCRONIZACIÓN POR BIOMA: Todos los tiles del mismo bioma comparten frame inicial
+			var biome_offset = _biome_animation_offsets.get(biome_type, 0)
+			var frame_count = animated_node.sprite_frames.get_frame_count("default")
+			if frame_count > 0:
+				animated_node.frame = biome_offset % frame_count
+			
+			# Velocidad fija (sin variación) para mantener sincronización
+			animated_node.speed_scale = 1.0
+			
 			return animated_node
 		else:
 			# Es Sprite2D estático (solo 1 frame)

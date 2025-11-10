@@ -3,6 +3,75 @@
 # Convención de nombres: *_sheet_fN_SIZE.png (ej: lava_spout_sheet_f8_256.png)
 class_name AutoFrames
 
+static func load_sprite(base_path: String, default_fps: float = 5.0) -> Node2D:
+	"""
+	Busca y carga un spritesheet animado usando un path base (sin extensión).
+	Devuelve un nodo listo para usar (AnimatedSprite2D o Sprite2D).
+	
+	Parámetros:
+	- base_path: Ruta base SIN extensión (ej: "res://assets/.../lava_base_animated")
+	- default_fps: FPS de la animación (default 5.0)
+	
+	Retorna:
+	- AnimatedSprite2D si encuentra un spritesheet (*_sheet_fN_SIZE.png)
+	- Sprite2D si encuentra una imagen estática (*.png)
+	- null si no encuentra nada
+	
+	Ejemplo:
+	  var node = AutoFrames.load_sprite("res://assets/lava_base_animated")
+	  # Buscará: lava_base_animated_sheet_f8_512.png, lava_base_animated.png, etc.
+	"""
+	# Buscar todos los archivos que coincidan con el base_path
+	var dir_path = base_path.get_base_dir()
+	var file_name = base_path.get_file()
+	
+	# Intentar encontrar spritesheet animado primero
+	var dir = DirAccess.open(dir_path)
+	if dir:
+		dir.list_dir_begin()
+		var found_sheet: String = ""
+		var found_static: String = ""
+		
+		while true:
+			var file = dir.get_next()
+			if file == "":
+				break
+			
+			if file.begins_with(file_name):
+				if file.contains("_sheet_f") and file.ends_with(".png"):
+					found_sheet = dir_path.path_join(file)
+					break  # Prioridad a spritesheet animado
+				elif file.ends_with(".png") and not file.contains("_sheet_f"):
+					found_static = dir_path.path_join(file)
+		
+		dir.list_dir_end()
+		
+		# Si encontró spritesheet animado, crear AnimatedSprite2D
+		if found_sheet != "":
+			var frames = from_sheet(found_sheet, default_fps)
+			if frames:
+				var anim = AnimatedSprite2D.new()
+				anim.sprite_frames = frames
+				anim.animation = "default"
+				return anim
+			else:
+				push_error("❌ [AutoFrames] Error al cargar spritesheet: %s" % found_sheet)
+				return null
+		
+		# Si encontró imagen estática, crear Sprite2D
+		if found_static != "":
+			var tex: Texture2D = load(found_static)
+			if tex:
+				var spr = Sprite2D.new()
+				spr.texture = tex
+				return spr
+			else:
+				push_error("❌ [AutoFrames] Error al cargar textura: %s" % found_static)
+				return null
+	
+	push_warning("⚠️ [AutoFrames] No se encontró archivo para: %s" % base_path)
+	return null
+
 static func from_sheet(sheet_path: String, default_fps: float = 10.0) -> SpriteFrames:
 	"""
 	Carga un spritesheet horizontal y crea un recurso SpriteFrames.

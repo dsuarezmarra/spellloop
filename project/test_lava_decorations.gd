@@ -6,29 +6,50 @@ extends Node2D
 func _ready():
 	print("\n=== PRUEBA COMPLETA - SISTEMA BIOMA LAVA ===\n")
 	
-	# ===== TEXTURA BASE ANIMADA DEL SUELO =====
-	print("--- TEXTURA BASE ANIMADA ---")
+	# ===== TEXTURA BASE ANIMADA DEL SUELO (MOSAICO) =====
+	print("--- TEXTURA BASE ANIMADA (MOSAICO) ---")
 	var base_texture_path = "res://assets/textures/biomes/Lava/base/lava_base_animated"
-	var base_node = AutoFrames.load_sprite(base_texture_path)
 	
-	if base_node != null:
-		base_node.position = Vector2(640, 200)  # Centro superior
-		base_node.z_index = -100  # Fondo
-		
-		if base_node is AnimatedSprite2D:
-			base_node.play("default")
-			base_node.speed_scale = 1.0
-			add_child(base_node)
+	# Crear mosaico de textura base (cubrir toda la pantalla)
+	var viewport_size = get_viewport_rect().size
+	var tile_size = 512  # Tamaño de cada tile
+	var tiles_x = ceil(viewport_size.x / tile_size) + 1
+	var tiles_y = ceil(viewport_size.y / tile_size) + 1
+	
+	print("Creando mosaico: %dx%d tiles (tamaño %dpx)" % [tiles_x, tiles_y, tile_size])
+	
+	var tiles_created = 0
+	for ty in range(tiles_y):
+		for tx in range(tiles_x):
+			var base_node = AutoFrames.load_sprite(base_texture_path)
 			
-			var frames = base_node.sprite_frames
-			var frame_count = frames.get_frame_count("default")
-			var fps = frames.get_animation_speed("default")
-			print("✅ Textura base animada cargada: %d frames @ %d FPS" % [frame_count, fps])
-			print("   Tamaño: %s" % str(frames.get_frame_texture("default", 0).get_size()))
-			print("   Posición: (640, 200)")
-		else:
-			add_child(base_node)
-			print("⚠️ Textura base estática (Sprite2D)")
+			if base_node != null:
+				base_node.position = Vector2(
+					tx * tile_size + tile_size / 2,
+					ty * tile_size + tile_size / 2
+				)
+				base_node.z_index = -100  # Fondo
+				
+				if base_node is AnimatedSprite2D:
+					base_node.play("default")
+					base_node.speed_scale = randf_range(0.95, 1.05)  # Variación sutil
+					# Desincronizar cada tile
+					var frames = base_node.sprite_frames
+					var frame_count = frames.get_frame_count("default")
+					if frame_count > 0:
+						base_node.frame = randi() % frame_count
+					
+					# Info solo del primer tile
+					if tx == 0 and ty == 0:
+						var fps = frames.get_animation_speed("default")
+						print("✅ Textura base animada: %d frames @ %d FPS" % [frame_count, fps])
+						print("   Tamaño por tile: %s" % str(frames.get_frame_texture("default", 0).get_size()))
+				
+				add_child(base_node)
+				tiles_created += 1
+	
+	if tiles_created > 0:
+		print("✅ Mosaico creado: %d tiles" % tiles_created)
 	else:
 		print("❌ No se pudo cargar la textura base")
 	
@@ -48,8 +69,9 @@ func _ready():
 		"res://assets/textures/biomes/Lava/decor/lava_decor10_sheet_f8_256.png"
 	]
 	
-	var x_offset = 130
-	var current_x = 60
+	var x_offset = 200  # Mayor separación (era 130)
+	var current_x = 100
+	var decor_y = get_viewport_rect().size.y - 200  # Abajo pero con margen
 	
 	for i in range(decor_paths.size()):
 		var path = decor_paths[i]
@@ -59,7 +81,7 @@ func _ready():
 		var decor_node = DecorFactory.make_decor(path, 5.0)
 		
 		if decor_node:
-			decor_node.position = Vector2(current_x, 500)
+			decor_node.position = Vector2(current_x, decor_y)
 			decor_node.z_index = 0  # Sobre la textura base
 			add_child(decor_node)
 			
@@ -77,7 +99,7 @@ func _ready():
 			print("  ❌ Error al crear decoración")
 	
 	print("\n=== PRUEBA COMPLETADA ===")
-	print("Arriba: Textura base animada del suelo")
-	print("Abajo: 10 decoraciones animadas")
+	print("Fondo: Mosaico de textura base animada (cubre toda la pantalla)")
+	print("Abajo: 10 decoraciones animadas con más separación")
 	print("Todo a 5 FPS para animaciones suaves")
 	print("Presiona ESC o cierra la ventana para salir\n")
