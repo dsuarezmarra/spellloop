@@ -39,7 +39,7 @@ func _ready():
 					ty * tile_size
 				)
 				base_node.z_index = -100  # Fondo
-				
+
 				if base_node is AnimatedSprite2D:
 					# CRÍTICO: Desactivar centered para evitar movimiento en tiles del suelo
 					base_node.centered = false
