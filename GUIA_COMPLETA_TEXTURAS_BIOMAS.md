@@ -260,10 +260,10 @@ extends Node2D
 func _ready():
     # Configurar texturas base
     var base_sprite = $BaseTexture as AnimatedSprite2D
-    setup_animated_sprite(base_sprite, 
+    setup_animated_sprite(base_sprite,
         "res://assets/textures/biomes/ArcaneWastes/base/arcanewastes_base_animated_sheet_f8_512.png",
         8, 1, Vector2(512, 512), 4)
-    
+
     # Configurar decoraciones
     for i in range(1, 12):  # 1 a 11
         var decor_sprite = get_node("Decor%d" % i) as AnimatedSprite2D
@@ -271,29 +271,29 @@ func _ready():
             "res://assets/textures/biomes/ArcaneWastes/decor/arcanewastes_decor%d_sheet_f8_256.png" % i,
             8, 1, Vector2(256, 256), 4)
 
-func setup_animated_sprite(sprite: AnimatedSprite2D, sheet_path: String, 
+func setup_animated_sprite(sprite: AnimatedSprite2D, sheet_path: String,
                           h_frames: int, v_frames: int, frame_size: Vector2, separation: int):
     var sprite_frames = SpriteFrames.new()
     var texture = load(sheet_path) as Texture2D
-    
+
     sprite_frames.add_animation("default")
-    
+
     for i in range(h_frames * v_frames):
         var atlas = AtlasTexture.new()
         atlas.atlas = texture
-        
+
         var frame_x = i % h_frames
         var frame_y = i / h_frames
-        
+
         atlas.region = Rect2(
             frame_x * (frame_size.x + separation),
             frame_y * (frame_size.y + separation),
             frame_size.x,
             frame_size.y
         )
-        
+
         sprite_frames.add_frame("default", atlas)
-    
+
     sprite.sprite_frames = sprite_frames
     sprite.animation = "default"
     sprite.speed_scale = 10
