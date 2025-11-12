@@ -20,11 +20,17 @@ func _ready():
 	print("Creando mosaico: %dx%d tiles (tamaño %dpx)" % [tiles_x, tiles_y, tile_size])
 
 	var tiles_created = 0
-	var sync_frame = randi() % 24  # Frame sincronizado (24 frames totales con duplicación)
+	var sync_frame = randi() % 24  # Frame sincronizado (8 frames × 3 = 24 frames totales)
 
 	for ty in range(tiles_y):
 		for tx in range(tiles_x):
-			var base_node = AutoFrames.load_sprite(base_texture_path, 5.0, 5)  # 5 FPS × 5 duplicados = 24 frames totales
+			var base_node = AutoFrames.load_sprite(base_texture_path, 5.0, 3)  # 5 FPS × 3 duplicados = 24 frames totales
+
+			if base_node == null:
+				if tx == 0 and ty == 0:
+					push_error("❌ No se pudo cargar textura base desde: %s" % base_texture_path)
+					print("❌ AutoFrames.load_sprite() retornó null")
+				continue
 
 			if base_node != null:
 				base_node.position = Vector2(
@@ -35,7 +41,7 @@ func _ready():
 
 				if base_node is AnimatedSprite2D:
 					base_node.play("default")
-					base_node.speed_scale = 1.0  # Velocidad normal (ya tenemos 40 frames)
+					base_node.speed_scale = 1.0  # Velocidad fija para sincronización
 
 					# SINCRONIZAR: Todos los tiles empiezan en el mismo frame
 					var frames = base_node.sprite_frames
@@ -52,14 +58,10 @@ func _ready():
 				add_child(base_node)
 				tiles_created += 1
 
-	if tiles_created > 0:
-		print("✅ Mosaico creado: %d tiles" % tiles_created)
-	else:
-		print("❌ No se pudo cargar la textura base")
-
-	print("\n--- DECORACIONES ANIMADAS ---")
+	print("✅ %d tiles de textura base creados\n" % tiles_created)
 
 	# ===== DECORACIONES ANIMADAS =====
+	print("--- DECORACIONES ANIMADAS ---")
 	var decor_paths = [
 		"res://assets/textures/biomes/ArcaneWastes/decor/arcanewastes_decor1_sheet_f8_256.png",
 		"res://assets/textures/biomes/ArcaneWastes/decor/arcanewastes_decor2_sheet_f8_256.png",
@@ -74,55 +76,36 @@ func _ready():
 		"res://assets/textures/biomes/ArcaneWastes/decor/arcanewastes_decor11_sheet_f8_256.png"
 	]
 
-	# Distribuir decoraciones aleatoriamente por toda la pantalla
-	# Reutilizar viewport_size ya declarado arriba
-	var num_decors_to_place = 50  # Colocar 50 decoraciones (5 de cada tipo)
+	var decor_count = 0
+	var positions = [
+		Vector2(300, 200), Vector2(800, 300), Vector2(1200, 250),
+		Vector2(400, 500), Vector2(900, 600), Vector2(1400, 550),
+		Vector2(200, 800), Vector2(700, 900), Vector2(1100, 850),
+		Vector2(500, 1100), Vector2(1500, 1000)
+	]
 
-	print("Colocando %d decoraciones aleatorias..." % num_decors_to_place)
+	for i in range(decor_paths.size()):
+		var decor_node = AutoFrames.load_sprite(decor_paths[i], 5.0)
 
-	for i in range(num_decors_to_place):
-		# Seleccionar decoración aleatoria
-		var path = decor_paths[randi() % decor_paths.size()]
+		if decor_node != null:
+			decor_node.position = positions[i]
+			decor_node.z_index = 10
 
-		# Usar DecorFactory para crear el nodo con FPS reducido a 5.0
-		var decor_node = DecorFactory.make_decor(path, 5.0)
+			if decor_node is AnimatedSprite2D:
+				decor_node.play("default")
 
-		if decor_node:
-			# Posición aleatoria
-			decor_node.position = Vector2(
-				randf() * viewport_size.x,
-				randf() * viewport_size.y
-			)
+				if decor_count == 0:
+					var frames = decor_node.sprite_frames
+					var frame_count = frames.get_frame_count("default")
+					var fps = frames.get_animation_speed("default")
+					print("✅ Decoración: %d frames @ %d FPS" % [frame_count, fps])
 
-			# Escala aleatoria (0.25x a 0.5x)
-			var scale_factor = randf_range(0.25, 0.5)
-			decor_node.scale = Vector2(scale_factor, scale_factor)
-
-			# Mirror horizontal (50% probabilidad)
-			if randf() > 0.5:
-				decor_node.scale.x *= -1.0
-
-			decor_node.z_index = 0  # Sobre la textura base
 			add_child(decor_node)
+			decor_count += 1
 
-			# Información del nodo creado (solo primeros 3)
-			if i < 3:
-				if decor_node is AnimatedSprite2D:
-					var sprite_frames = decor_node.sprite_frames
-					var frame_count = sprite_frames.get_frame_count("default")
-					var fps = sprite_frames.get_animation_speed("default")
-					print("  ✅ %s: escala %.2fx, mirror: %s" % [
-						path.get_file().get_basename(),
-						scale_factor,
-						"Sí" if decor_node.scale.x < 0 else "No"
-					])
-		else:
-			print("  ❌ Error al crear decoración: %s" % path.get_file())
+	print("✅ %d decoraciones cargadas\n" % decor_count)
+	print("=== PRUEBA INICIADA - Presiona ESC para salir ===\n")
 
-	print("\n=== PRUEBA COMPLETADA ===")
-	print("Fondo: Mosaico de textura base animada (cubre toda la pantalla)")
-	print("Decoraciones: %d elementos distribuidos aleatoriamente" % num_decors_to_place)
-	print("  - Escalas: 0.25x a 0.5x aleatorias")
-	print("  - Mirror horizontal: 50%% probabilidad")
-	print("Todo a 5 FPS para animaciones suaves")
-	print("Presiona ESC o cierra la ventana para salir\n")
+func _input(event):
+	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+		get_tree().quit()

@@ -2,16 +2,12 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dhvv4otts1atp"
-path="res://.godot/imported/6.png-a14c05efb5fdb123713fc02cd620055b.ctex"
-metadata={
-"vram_texture": false
-}
+uid="uid://5kc7d41wrswq"
+valid=false
 
 [deps]
 
 source_file="res://assets/textures/biomes/Lava/base/6.png"
-dest_files=["res://.godot/imported/6.png-a14c05efb5fdb123713fc02cd620055b.ctex"]
 
 [params]
 

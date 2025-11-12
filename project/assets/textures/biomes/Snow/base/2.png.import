@@ -2,12 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://k8xwg5dbcmep"
-valid=false
+uid="uid://bbrp7fa8h3hv5"
+path="res://.godot/imported/2.png-1888bb7d89b511af2ea901ea89c36650.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
-source_file="res://assets/textures/biomes/Lava/base/5.png"
+source_file="res://assets/textures/biomes/Snow/base/2.png"
+dest_files=["res://.godot/imported/2.png-1888bb7d89b511af2ea901ea89c36650.ctex"]
 
 [params]
 

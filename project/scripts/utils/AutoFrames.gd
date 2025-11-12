@@ -58,6 +58,10 @@ static func load_sprite(base_path: String, default_fps: float = 10.0, duplicate_
 				var anim = AnimatedSprite2D.new()
 				anim.sprite_frames = frames
 				anim.animation = "default"
+				# CRÍTICO: Desactivar filtro para tiles seamless (elimina líneas entre tiles)
+				anim.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+				# CRÍTICO: Habilitar texture repeat para tiling seamless
+				anim.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 				return anim
 			else:
 				push_error("❌ [AutoFrames] Error al cargar spritesheet: %s" % found_sheet)
@@ -69,6 +73,8 @@ static func load_sprite(base_path: String, default_fps: float = 10.0, duplicate_
 			if tex:
 				var spr = Sprite2D.new()
 				spr.texture = tex
+				# CRÍTICO: Desactivar filtro para tiles seamless
+				spr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 				return spr
 			else:
 				push_error("❌ [AutoFrames] Error al cargar textura: %s" % found_static)
@@ -110,8 +116,7 @@ static func from_sheet(sheet_path: String, default_fps: float = 10.0, duplicate_
 		return null
 
 	var frames_count := int(m.get_string(1))  # Número de frames (ej: 8)
-	var frame_size := int(m.get_string(2))    # Tamaño por frame (ej: 256)
-	var padding_px := 4                        # Padding horizontal entre frames (fijo)
+	var frame_size := int(m.get_string(2))    # Tamaño por frame (ej: 256, 510, 512)
 
 	# Cargar textura
 	var tex: Texture2D = load(sheet_path)
@@ -122,11 +127,22 @@ static func from_sheet(sheet_path: String, default_fps: float = 10.0, duplicate_
 	var total_w := tex.get_width()
 	var total_h := tex.get_height()
 
-	# Validar dimensiones esperadas
-	var expected_width := (frame_size + padding_px) * frames_count - padding_px
-	if abs(total_w - expected_width) > padding_px:
-		push_warning("⚠️ [AutoFrames] Dimensiones no coinciden. Esperado: ~%d, Real: %d (%s)" % [
-			expected_width, total_w, sheet_path
+	# Detectar padding automáticamente según dimensiones reales
+	var padding_px := 0
+	var expected_width_with_padding := (frame_size + 4) * frames_count - 4  # Con 4px padding
+	var expected_width_no_padding := frame_size * frames_count               # Sin padding
+
+	if abs(total_w - expected_width_with_padding) <= 4:
+		padding_px = 4
+		if OS.is_debug_build():
+			print("[AutoFrames] 📐 Spritesheet CON padding de 4px detectado")
+	elif abs(total_w - expected_width_no_padding) <= 4:
+		padding_px = 0
+		if OS.is_debug_build():
+			print("[AutoFrames] 📐 Spritesheet SIN padding detectado")
+	else:
+		push_warning("⚠️ [AutoFrames] Dimensiones no coinciden. Esperado: %d (padding 4px) o %d (sin padding), Real: %d (%s)" % [
+			expected_width_with_padding, expected_width_no_padding, total_w, sheet_path
 		])
 
 	# Crear SpriteFrames

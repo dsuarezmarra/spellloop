@@ -81,16 +81,18 @@ func _initialize_biome_animation_offsets() -> void:
 	Cada bioma tendrá un frame inicial fijo que se aplica a TODOS sus tiles.
 	"""
 	# Frame inicial aleatorio pero consistente por bioma
-	_biome_animation_offsets[BiomeGeneratorOrganic.BIOME_GRASSLAND] = randi() % 100
-	_biome_animation_offsets[BiomeGeneratorOrganic.BIOME_FOREST] = randi() % 100
-	_biome_animation_offsets[BiomeGeneratorOrganic.BIOME_DESERT] = randi() % 100
-	_biome_animation_offsets[BiomeGeneratorOrganic.BIOME_SNOW] = randi() % 100
-	_biome_animation_offsets[BiomeGeneratorOrganic.BIOME_LAVA] = randi() % 100
-	_biome_animation_offsets[BiomeGeneratorOrganic.BIOME_SWAMP] = randi() % 100
-	_biome_animation_offsets[BiomeGeneratorOrganic.BIOME_ARCANE_WASTES] = randi() % 100
+	# Solo inicializar biomas con texturas animadas disponibles
+	_biome_animation_offsets[BiomeGeneratorOrganic.BiomeType.SNOW] = randi() % 100
+	_biome_animation_offsets[BiomeGeneratorOrganic.BiomeType.LAVA] = randi() % 100
+	_biome_animation_offsets[BiomeGeneratorOrganic.BiomeType.ARCANE_WASTES] = randi() % 100
+	
+	# TODO: Descomentar cuando estén disponibles las texturas animadas:
+	# _biome_animation_offsets[BiomeGeneratorOrganic.BiomeType.GRASSLAND] = randi() % 100
+	# _biome_animation_offsets[BiomeGeneratorOrganic.BiomeType.FOREST] = randi() % 100
+	# _biome_animation_offsets[BiomeGeneratorOrganic.BiomeType.DESERT] = randi() % 100
 
 	if debug_mode:
-		print("[BiomeChunkApplierOrganic] ✓ Offsets de animación por bioma inicializados")
+		print("[BiomeChunkApplierOrganic] ✓ Offsets de animación por bioma inicializados (Snow, Lava, ArcaneWastes)")
 
 # ========== APLICAR BIOMA A CHUNK ==========
 func apply_biome_to_chunk(chunk_node: Node2D, cx: int, cy: int) -> void:
