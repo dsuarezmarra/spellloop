@@ -8,7 +8,7 @@ func _ready():
 	
 	# ===== TEXTURA BASE ANIMADA DEL SUELO (MOSAICO) =====
 	print("--- TEXTURA BASE ANIMADA (MOSAICO) ---")
-	var base_texture_path = "res://assets/textures/biomes/Lava/base/lava_base_animated"
+	var base_texture_path = "res://assets/textures/biomes/Lava/base/lava_base_animated_sheet_f8_512.png"
 	
 	# Crear mosaico de textura base (cubrir toda la pantalla)
 	var viewport_size = get_viewport_rect().size
@@ -92,8 +92,8 @@ func _ready():
 				randf() * viewport_size.y
 			)
 			
-			# Escala aleatoria (0.5x a 3.0x)
-			var scale_factor = randf_range(0.5, 3.0)
+			# Escala aleatoria (0.25x a 0.5x)
+			var scale_factor = randf_range(0.25, 0.5)
 			decor_node.scale = Vector2(scale_factor, scale_factor)
 			
 			# Mirror horizontal (50% probabilidad)
@@ -120,7 +120,7 @@ func _ready():
 	print("\n=== PRUEBA COMPLETADA ===")
 	print("Fondo: Mosaico de textura base animada (cubre toda la pantalla)")
 	print("Decoraciones: %d elementos distribuidos aleatoriamente" % num_decors_to_place)
-	print("  - Escalas: 0.5x a 3.0x aleatorias")
+	print("  - Escalas: 0.25x a 0.5x aleatorias")
 	print("  - Mirror horizontal: 50%% probabilidad")
 	print("Todo a 5 FPS para animaciones suaves")
 	print("Presiona ESC o cierra la ventana para salir\n")
