@@ -19,11 +19,11 @@ func _ready():
 	print("Creando mosaico: %dx%d tiles (tamaño %dpx)" % [tiles_x, tiles_y, tile_size])
 
 	var tiles_created = 0
-	var sync_frame = randi() % 8  # Frame sincronizado (8 frames para ArcaneWastes)
+	var sync_frame = randi() % 24  # Frame sincronizado (24 frames totales con duplicación)
 
 	for ty in range(tiles_y):
 		for tx in range(tiles_x):
-			var base_node = AutoFrames.load_sprite(base_texture_path, 5.0)  # 5 FPS para animación suave
+			var base_node = AutoFrames.load_sprite(base_texture_path, 5.0, 5)  # 5 FPS × 5 duplicados = 24 frames totales
 
 			if base_node != null:
 				base_node.position = Vector2(
@@ -34,7 +34,7 @@ func _ready():
 
 				if base_node is AnimatedSprite2D:
 					base_node.play("default")
-					base_node.speed_scale = 1.0  # Velocidad fija para sincronización
+					base_node.speed_scale = 1.0  # Velocidad normal (ya tenemos 40 frames)
 
 					# SINCRONIZAR: Todos los tiles empiezan en el mismo frame
 					var frames = base_node.sprite_frames

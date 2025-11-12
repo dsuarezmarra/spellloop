@@ -3,7 +3,12 @@
 # Convención de nombres: *_sheet_fN_SIZE.png (ej: lava_spout_sheet_f8_256.png)
 class_name AutoFrames
 
-static func load_sprite(base_path: String, default_fps: float = 5.0) -> Node2D:
+extends Node
+
+# Caché global para SpriteFrames interpolados
+static var _interpolated_cache: Dictionary = {}
+
+static func load_sprite(base_path: String, default_fps: float = 10.0, duplicate_frames: int = 1) -> Node:
 	"""
 	Busca y carga un spritesheet animado usando un path base (sin extensión).
 	Devuelve un nodo listo para usar (AnimatedSprite2D o Sprite2D).
@@ -48,7 +53,7 @@ static func load_sprite(base_path: String, default_fps: float = 5.0) -> Node2D:
 
 		# Si encontró spritesheet animado, crear AnimatedSprite2D
 		if found_sheet != "":
-			var frames = from_sheet(found_sheet, default_fps)
+			var frames = from_sheet(found_sheet, default_fps, duplicate_frames)
 			if frames:
 				var anim = AnimatedSprite2D.new()
 				anim.sprite_frames = frames
@@ -72,18 +77,30 @@ static func load_sprite(base_path: String, default_fps: float = 5.0) -> Node2D:
 	push_warning("⚠️ [AutoFrames] No se encontró archivo para: %s" % base_path)
 	return null
 
-static func from_sheet(sheet_path: String, default_fps: float = 10.0) -> SpriteFrames:
+static func from_sheet(sheet_path: String, default_fps: float = 10.0, duplicate_frames: int = 1) -> SpriteFrames:
 	"""
 	Carga un spritesheet horizontal y crea un recurso SpriteFrames.
 
 	Parámetros:
 	- sheet_path: Ruta al PNG (debe seguir convención *_sheet_fN_SIZE.png)
 	- default_fps: FPS de la animación (default 10.0)
+	- duplicate_frames: Cuántas veces duplicar cada frame (1 = sin duplicar, 5 = 8 frames → 40 frames)
 
 	Retorna:
 	- SpriteFrames con animación "default" lista para usar
 	- null si el archivo no sigue la convención o no se puede cargar
 	"""
+	
+	# Crear clave de caché única
+	var cache_key = "%s_%d_%d" % [sheet_path, int(default_fps), duplicate_frames]
+	
+	# Si ya está en caché, retornar copia profunda
+	if _interpolated_cache.has(cache_key):
+		if OS.is_debug_build():
+			print("[AutoFrames] 🚀 Cargado desde caché: %s" % sheet_path.get_file())
+		# Deep copy para evitar compartir animaciones
+		return _interpolated_cache[cache_key].duplicate(true)
+	
 	var re := RegEx.new()
 	re.compile("_sheet_f(\\d+)_([0-9]+)\\.png$")
 	var m := re.search(sheet_path)
@@ -120,17 +137,76 @@ static func from_sheet(sheet_path: String, default_fps: float = 10.0) -> SpriteF
 
 	# Cortar frames del spritesheet
 	var x := 0
+	var original_frames = []
+	
+	# Primero extraer todos los frames originales como Image
 	for i in frames_count:
 		var region := Rect2(x, 0, frame_size, total_h)
 		var atlas := AtlasTexture.new()
 		atlas.atlas = tex
 		atlas.region = region
-		frames.add_frame("default", atlas)
+		original_frames.append(atlas)
 		x += frame_size + padding_px
+	
+	# Si duplicate_frames > 1, interpolar entre frames
+	if duplicate_frames > 1:
+		for i in frames_count:
+			var current_frame = original_frames[i]
+			var next_frame = original_frames[(i + 1) % frames_count]  # Loop al primero
+			
+			# Añadir frame original
+			frames.add_frame("default", current_frame)
+			
+			# Crear frames interpolados entre current y next
+			for step in range(1, duplicate_frames):
+				var blend_factor = float(step) / float(duplicate_frames)
+				var interpolated = _create_interpolated_frame(current_frame, next_frame, blend_factor, frame_size, total_h)
+				frames.add_frame("default", interpolated)
+	else:
+		# Sin interpolación, añadir frames normalmente
+		for atlas in original_frames:
+			frames.add_frame("default", atlas)
 
+	var total_frames := frames_count * duplicate_frames
 	if OS.is_debug_build():
-		print("[AutoFrames] ✅ Cargado: %s (%d frames @ %d FPS)" % [
-			sheet_path.get_file(), frames_count, default_fps
+		var mode = "interpolados" if duplicate_frames > 1 else "originales"
+		print("[AutoFrames] ✅ Cargado: %s (%d frames %s @ %d FPS = %d frames totales)" % [
+			sheet_path.get_file(), frames_count, mode, default_fps, total_frames
 		])
-
+	
+	# Guardar en caché
+	_interpolated_cache[cache_key] = frames
+	
 	return frames
+
+# Función auxiliar para crear un frame interpolado entre dos frames (OPTIMIZADO)
+static func _create_interpolated_frame(frame1: AtlasTexture, frame2: AtlasTexture, blend_factor: float, width: int, height: int) -> ImageTexture:
+	# Extraer regiones directamente como Image usando get_region (mucho más rápido)
+	var img1 = frame1.atlas.get_image()
+	var img2 = frame2.atlas.get_image()
+	
+	var region1 = frame1.region
+	var region2 = frame2.region
+	
+	# get_region es nativo y muy rápido
+	var crop1 = img1.get_region(Rect2i(region1.position.x, region1.position.y, width, height))
+	var crop2 = img2.get_region(Rect2i(region2.position.x, region2.position.y, width, height))
+	
+	# Crear resultado con formato optimizado
+	var result = Image.create(width, height, false, Image.FORMAT_RGBA8)
+	
+	# Blend manual optimizado usando get_data/set_data (más rápido que píxel a píxel)
+	var data1 = crop1.get_data()
+	var data2 = crop2.get_data()
+	var result_data = PackedByteArray()
+	result_data.resize(data1.size())
+	
+	# Interpolar todos los bytes de una vez (RGBA)
+	for i in range(0, data1.size()):
+		var val1 = data1[i]
+		var val2 = data2[i]
+		result_data[i] = int(lerp(val1, val2, blend_factor))
+	
+	result.set_data(width, height, false, Image.FORMAT_RGBA8, result_data)
+	
+	return ImageTexture.create_from_image(result)
