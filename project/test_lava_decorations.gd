@@ -11,8 +11,7 @@ func _ready():
 	var base_texture_path = "res://assets/textures/biomes/Lava/base/lava_base_animated_sheet_f8_512.png"
 
 	# Crear mosaico de textura base (cubrir toda la pantalla)
-	# IMPORTANTE: Usar get_visible_rect() para obtener viewport LÓGICO (no físico)
-	var viewport_size = get_viewport().get_visible_rect().size
+	var viewport_size = get_viewport_rect().size
 	var tile_size = 512  # Tamaño de cada tile
 	var tiles_x = ceil(viewport_size.x / tile_size) + 1
 	var tiles_y = ceil(viewport_size.y / tile_size) + 1
