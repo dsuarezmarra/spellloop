@@ -57,11 +57,54 @@ func _ready():
 		print("❌ No se pudo cargar la textura base")
 
 	print("\n--- DECORACIONES ANIMADAS ---")
-	print("⚠️  PENDIENTE: Decoraciones no disponibles aún")
-	print("   Las decoraciones se agregarán cuando estén listas")
+	var decor_paths = [
+		"res://assets/textures/biomes/Grassland/decor/grassland_decor1_sheet_f8_256.png",
+		"res://assets/textures/biomes/Grassland/decor/grassland_decor2_sheet_f8_256.png",
+		"res://assets/textures/biomes/Grassland/decor/grassland_decor3_sheet_f8_256.png",
+		"res://assets/textures/biomes/Grassland/decor/grassland_decor4_sheet_f8_256.png",
+		"res://assets/textures/biomes/Grassland/decor/grassland_decor5_sheet_f8_256.png",
+		"res://assets/textures/biomes/Grassland/decor/grassland_decor6_sheet_f8_256.png",
+		"res://assets/textures/biomes/Grassland/decor/grassland_decor7_sheet_f8_256.png",
+		"res://assets/textures/biomes/Grassland/decor/grassland_decor8_sheet_f8_256.png",
+		"res://assets/textures/biomes/Grassland/decor/grassland_decor9_sheet_f8_256.png",
+		"res://assets/textures/biomes/Grassland/decor/grassland_decor10_sheet_f8_256.png"
+	]
+
+	var decor_count = 0
+	var positions = [
+		Vector2(300, 200), Vector2(800, 300), Vector2(1200, 250),
+		Vector2(400, 500), Vector2(900, 600), Vector2(1400, 550),
+		Vector2(200, 800), Vector2(700, 900), Vector2(1100, 850),
+		Vector2(500, 1100)
+	]
+
+	for i in range(decor_paths.size()):
+		var decor_node = AutoFrames.load_sprite(decor_paths[i], 5.0)
+
+		if decor_node != null:
+			decor_node.position = positions[i]
+			decor_node.z_index = 10
+
+			if decor_node is AnimatedSprite2D:
+				decor_node.play("default")
+
+				if decor_count == 0:
+					var frames = decor_node.sprite_frames
+					var frame_count = frames.get_frame_count("default")
+					var fps = frames.get_animation_speed("default")
+					print("✅ Decoración: %d frames @ %d FPS" % [frame_count, fps])
+					print("   Tamaño: %s" % str(frames.get_frame_texture("default", 0).get_size()))
+
+			add_child(decor_node)
+			decor_count += 1
+		else:
+			if i == 0:
+				push_error("❌ No se pudo cargar decoración desde: %s" % decor_paths[i])
+
+	print("✅ %d decoraciones creadas\n" % decor_count)
 
 	print("\n=== PRUEBA COMPLETADA ===")
 	print("Fondo: Mosaico de textura base animada (cubre toda la pantalla)")
-	print("Decoraciones: PENDIENTE (se agregarán próximamente)")
+	print("Decoraciones: %d decoraciones animadas distribuidas" % decor_count)
 	print("Animación a 5 FPS para movimiento suave")
 	print("Presiona ESC o cierra la ventana para salir\n")

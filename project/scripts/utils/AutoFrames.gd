@@ -60,8 +60,9 @@ static func load_sprite(base_path: String, default_fps: float = 10.0, duplicate_
 				anim.animation = "default"
 				# CRÍTICO: Desactivar filtro para tiles seamless (elimina líneas entre tiles)
 				anim.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-				# CRÍTICO: Habilitar texture repeat para tiling seamless
-				anim.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+				# CRÍTICO: DESACTIVAR texture_repeat cuando se usa AtlasTexture
+				# (el repeat + atlas puede samplear fuera de región y coger frames vecinos)
+				anim.texture_repeat = CanvasItem.TEXTURE_REPEAT_DISABLED
 				return anim
 			else:
 				push_error("❌ [AutoFrames] Error al cargar spritesheet: %s" % found_sheet)
