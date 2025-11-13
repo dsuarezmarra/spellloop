@@ -4,7 +4,7 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$BiomeName,  # "Desert" o "Death"
-    
+
     [Parameter(Mandatory=$false)]
     [int]$FrameSize = 1024
 )
@@ -17,8 +17,8 @@ $OutputFile = "c:\Users\dsuarez1\git\spellloop\project\assets\textures\biomes\$B
 Write-Host "`n=== INTERPOLANDO SPRITESHEET: $BiomeName ===" -ForegroundColor Cyan
 
 # Cargar frames originales (8 frames)
-$OriginalFrames = Get-ChildItem $SourceDir -Filter "*.png" | Sort-Object { 
-    if ($_.Name -match '(\d+)\.png') { [int]$matches[1] } 
+$OriginalFrames = Get-ChildItem $SourceDir -Filter "*.png" | Sort-Object {
+    if ($_.Name -match '(\d+)\.png') { [int]$matches[1] }
 }
 
 if ($OriginalFrames.Count -eq 0) {
@@ -31,23 +31,23 @@ Write-Host "Frames originales: $($OriginalFrames.Count)" -ForegroundColor Green
 # Función para interpolar linealmente entre dos imágenes
 function Interpolate-Frame {
     param($Img1, $Img2, $BlendFactor)
-    
+
     $Result = New-Object System.Drawing.Bitmap($Img1.Width, $Img1.Height)
-    
+
     for ($y = 0; $y -lt $Img1.Height; $y++) {
         for ($x = 0; $x -lt $Img1.Width; $x++) {
             $P1 = $Img1.GetPixel($x, $y)
             $P2 = $Img2.GetPixel($x, $y)
-            
+
             $R = [Math]::Round($P1.R * (1 - $BlendFactor) + $P2.R * $BlendFactor)
             $G = [Math]::Round($P1.G * (1 - $BlendFactor) + $P2.G * $BlendFactor)
             $B = [Math]::Round($P1.B * (1 - $BlendFactor) + $P2.B * $BlendFactor)
             $A = [Math]::Round($P1.A * (1 - $BlendFactor) + $P2.A * $BlendFactor)
-            
+
             $Result.SetPixel($x, $y, [System.Drawing.Color]::FromArgb($A, $R, $G, $B))
         }
     }
-    
+
     return $Result
 }
 
@@ -65,10 +65,10 @@ $InterpolatedFrames = @()
 for ($i = 0; $i -lt $Images.Count; $i++) {
     $CurrentImg = $Images[$i]
     $NextImg = $Images[($i + 1) % $Images.Count]  # Loop al primero
-    
+
     # Añadir frame original
     $InterpolatedFrames += $CurrentImg
-    
+
     # Añadir 2 frames interpolados (total 3 frames por segmento = 8*3 = 24)
     for ($step = 1; $step -le 2; $step++) {
         $BlendFactor = $step / 3.0  # 0.333, 0.666
