@@ -19,11 +19,11 @@ func _ready():
 	print("Creando mosaico: %dx%d tiles (tamaño %dpx)" % [tiles_x, tiles_y, tile_size])
 
 	var tiles_created = 0
-	var sync_frame = randi() % 24  # Frame sincronizado (24 frames pre-interpolados)
+	var sync_frame = randi() % 8  # Frame sincronizado (8 frames)
 
 	for ty in range(tiles_y):
 		for tx in range(tiles_x):
-			var base_node = AutoFrames.load_sprite(base_texture_path, 5.0)  # 5 FPS, 24 frames pre-interpolados
+			var base_node = AutoFrames.load_sprite(base_texture_path, 5.0)  # 5 FPS, 8 frames
 
 			if base_node == null:
 				if tx == 0 and ty == 0:
