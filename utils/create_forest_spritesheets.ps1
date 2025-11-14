@@ -14,15 +14,15 @@ Write-Host "`n=== CREANDO SPRITESHEETS FOREST ===" -ForegroundColor Cyan
 for ($DecorNum = 0; $DecorNum -le 9; $DecorNum++) {
     $DecorIndex = $DecorNum + 1  # Para el nombre del archivo (forest_decor1, forest_decor2, etc.)
     $OutputFile = Join-Path $OutputDir "forest_decor${DecorIndex}_sheet_f8_256.png"
-    
+
     Write-Host "`nDecoracion ${DecorIndex}:" -ForegroundColor Yellow
-    
+
     # Cargar los 8 frames de esta decoración (X1.png - X8.png)
     $Frames = @()
     for ($FrameNum = 1; $FrameNum -le 8; $FrameNum++) {
         $FrameName = "${DecorNum}${FrameNum}.png"
         $FramePath = Join-Path $SourceDir $FrameName
-        
+
         if (Test-Path $FramePath) {
             $Frames += $FramePath
             Write-Host "  ✓ Frame $FrameName" -ForegroundColor Gray
@@ -30,12 +30,12 @@ for ($DecorNum = 0; $DecorNum -le 9; $DecorNum++) {
             Write-Host "  ✗ Frame $FrameName NO ENCONTRADO" -ForegroundColor Red
         }
     }
-    
+
     if ($Frames.Count -ne 8) {
         Write-Host "  ⚠ ADVERTENCIA: Solo se encontraron $($Frames.Count) frames (se esperaban 8)" -ForegroundColor Red
         continue
     }
-    
+
     # Crear spritesheet horizontal con padding de 4px
     $Padding = 4
     $TotalWidth = ($FrameSize + $Padding) * $Frames.Count - $Padding
@@ -43,7 +43,7 @@ for ($DecorNum = 0; $DecorNum -le 9; $DecorNum++) {
     $Graphics = [System.Drawing.Graphics]::FromImage($Spritesheet)
     $Graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::NearestNeighbor
     $Graphics.CompositingMode = [System.Drawing.Drawing2D.CompositingMode]::SourceCopy
-    
+
     $X = 0
     foreach ($FramePath in $Frames) {
         $Image = [System.Drawing.Image]::FromFile($FramePath)
@@ -51,12 +51,12 @@ for ($DecorNum = 0; $DecorNum -le 9; $DecorNum++) {
         $Image.Dispose()
         $X += $FrameSize + $Padding
     }
-    
+
     # Guardar
     $Spritesheet.Save($OutputFile, [System.Drawing.Imaging.ImageFormat]::Png)
     $Graphics.Dispose()
     $Spritesheet.Dispose()
-    
+
     Write-Host "  ✅ Spritesheet creado: ${TotalWidth}x${FrameSize}" -ForegroundColor Green
 }
 
