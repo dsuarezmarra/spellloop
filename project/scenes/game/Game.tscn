@@ -1,0 +1,33 @@
+[gd_scene load_steps=2 format=3 uid="uid://game_main_scene"]
+
+[ext_resource type="Script" path="res://scripts/game/Game.gd" id="1_game"]
+
+[node name="Game" type="Node2D"]
+script = ExtResource("1_game")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(960, 540)
+
+[node name="WorldRoot" type="Node2D" parent="."]
+
+[node name="ChunksRoot" type="Node2D" parent="WorldRoot"]
+
+[node name="EnemiesRoot" type="Node2D" parent="WorldRoot"]
+
+[node name="PickupsRoot" type="Node2D" parent="WorldRoot"]
+
+[node name="ProjectilesRoot" type="Node2D" parent="WorldRoot"]
+
+[node name="PlayerContainer" type="Node2D" parent="."]
+position = Vector2(960, 540)
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+layer = 100
+
+[node name="DebugInfo" type="Label" parent="UILayer"]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 300.0
+offset_bottom = 30.0
+theme_override_colors/font_color = Color(0.5, 1, 0.5, 0.7)
+text = "🎮 SPELLLOOP - WASD mover | ESC pausa"

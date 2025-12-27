@@ -1,9 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://dq7n8y5xwvb4x"]
-
-[ext_resource type="Script" path="res://scripts/test_voronoi_visualization.gd" id="1_voronoi"]
-
-[node name="VoronoiTest" type="Node2D"]
-script = ExtResource("1_voronoi")
-
-[node name="Camera2D" type="Camera2D" parent="."]
-offset = Vector2(400, 300)

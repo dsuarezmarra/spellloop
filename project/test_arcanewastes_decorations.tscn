@@ -1,7 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://b3qxm8yv7r5cp"]
-
-[ext_resource type="Script" path="res://test_arcanewastes_decorations.gd" id="1_test_arcanewastes"]
-
-[node name="TestArcaneWastesDecorations" type="Node2D"]
-script = ExtResource("1_test_arcanewastes")
-

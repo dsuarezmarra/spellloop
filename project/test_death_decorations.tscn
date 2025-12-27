@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://test_death_decor"]
-
-[ext_resource type="Script" path="res://test_death_decorations.gd" id="1_test_death"]
-
-[node name="TestDeathDecorations" type="Node2D"]
-script = ExtResource("1_test_death")

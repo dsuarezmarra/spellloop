@@ -293,3 +293,41 @@ func show_wave_message(text: String, duration: float = 4.0) -> void:
 	)
 	t.start()
 
+## Métodos de actualización para Game.gd
+
+func update_time(game_time: float) -> void:
+	if timer_label:
+		var minutes = int(game_time) / 60
+		var seconds = int(game_time) % 60
+		timer_label.text = "Tiempo: %02d:%02d" % [minutes, seconds]
+
+func update_level(level: int) -> void:
+	_update_player_stats_display()
+
+func update_exp(current_exp: int, exp_to_next: int) -> void:
+	_update_player_stats_display()
+
+func update_health(current_hp: int, max_hp: int) -> void:
+	_update_player_stats_display()
+
+func _update_player_stats_display() -> void:
+	# Actualizar display de stats basado en fuentes disponibles
+	if not player_stats:
+		return
+	
+	var hp_str = "HP: ???"
+	var xp_str = "XP: ???"
+	var lvl_str = "LVL: 1"
+	
+	# Intentar obtener datos del ExperienceManager
+	var tree = get_tree()
+	if tree and tree.current_scene:
+		var exp_mgr = tree.current_scene.get_node_or_null("ExperienceManager")
+		if exp_mgr:
+			var lvl = exp_mgr.get("current_level") if exp_mgr.get("current_level") else 1
+			var exp = exp_mgr.get("current_exp") if exp_mgr.get("current_exp") else 0
+			var exp_next = exp_mgr.get("exp_to_next_level") if exp_mgr.get("exp_to_next_level") else 10
+			xp_str = "XP: %d/%d" % [exp, exp_next]
+			lvl_str = "LVL: %d" % lvl
+	
+	player_stats.text = "%s  %s  %s" % [hp_str, xp_str, lvl_str]
