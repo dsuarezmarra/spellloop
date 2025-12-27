@@ -214,14 +214,10 @@ func _process(delta: float) -> void:
 			animated_sprite.animation = animation_name
 			animated_sprite.play()
 
-func _physics_process(delta: float) -> void:
-	"""Actualizar física y movimiento"""
-	if not is_instance_valid(self):
-		return
-	
-	# El mundo se mueve, el player queda centrado
-	velocity = Vector2.ZERO
-	move_and_slide()
+func _physics_process(_delta: float) -> void:
+	"""Actualizar física - movimiento manejado por SpellloopPlayer"""
+	# El movimiento se maneja en SpellloopPlayer para evitar duplicación
+	pass
 
 # ========== SALUD Y DAÑO ==========
 

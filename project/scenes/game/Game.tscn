@@ -6,7 +6,7 @@
 script = ExtResource("1_game")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(960, 540)
+position = Vector2(0, 0)
 
 [node name="WorldRoot" type="Node2D" parent="."]
 
@@ -19,7 +19,7 @@ position = Vector2(960, 540)
 [node name="ProjectilesRoot" type="Node2D" parent="WorldRoot"]
 
 [node name="PlayerContainer" type="Node2D" parent="."]
-position = Vector2(960, 540)
+position = Vector2(0, 0)
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 layer = 100

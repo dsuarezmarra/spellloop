@@ -6,6 +6,7 @@ class_name Game
 
 # Nodos principales
 @onready var world_root: Node2D = $WorldRoot
+@onready var chunks_root: Node2D = $WorldRoot/ChunksRoot
 @onready var player_container: Node2D = $PlayerContainer
 @onready var enemies_root: Node2D = $WorldRoot/EnemiesRoot
 @onready var pickups_root: Node2D = $WorldRoot/PickupsRoot
@@ -46,8 +47,8 @@ func _setup_game() -> void:
 	# Crear player
 	_create_player()
 	
-	# Crear sistemas
-	_create_world_manager()
+	# Crear sistemas (WorldManager desactivado temporalmente por rendimiento)
+	# _create_world_manager()
 	_create_enemy_manager()
 	_create_weapon_manager()
 	_create_experience_manager()
@@ -61,8 +62,22 @@ func _setup_game() -> void:
 	# Inicializar sistemas
 	_initialize_systems()
 	
+	# Crear suelo de fallback (siempre, ya que WorldManager está desactivado)
+	_create_fallback_ground()
+	
 	# Comenzar partida
 	_start_game()
+
+func _create_fallback_ground() -> void:
+	## Crear un suelo simple como fallback - MUY GRANDE para que no se acabe
+	var ground = ColorRect.new()
+	ground.name = "FallbackGround"
+	ground.color = Color(0.2, 0.35, 0.2)  # Verde oscuro para hierba
+	ground.size = Vector2(50000, 50000)
+	ground.position = Vector2(-25000, -25000)  # Centrado en el origen
+	ground.z_index = -200  # Muy atrás
+	world_root.add_child(ground)
+	print("🌿 [Game] Suelo de fallback creado")
 
 func _create_player() -> void:
 	var player_scene = load("res://scenes/player/SpellloopPlayer.tscn")
@@ -144,14 +159,19 @@ func _create_ui() -> void:
 func _setup_camera() -> void:
 	if camera:
 		camera.enabled = true
-		# La cámara sigue al player (si queremos) o se queda fija
-		# En estilo Vampire Survivors, el player se queda centrado
-		camera.global_position = Vector2.ZERO
+		camera.position_smoothing_enabled = true
+		camera.position_smoothing_speed = 5.0
+		print("📷 [Game] Cámara configurada")
+
+func _physics_process(_delta: float) -> void:
+	# La cámara sigue al player
+	if camera and player:
+		camera.global_position = player.global_position
 
 func _initialize_systems() -> void:
 	# Inicializar con referencias
 	if enemy_manager and player:
-		enemy_manager.initialize(player, world_manager)
+		enemy_manager.initialize(player, null)  # null porque WorldManager está desactivado
 	
 	if weapon_manager and player:
 		weapon_manager.initialize(player)
@@ -160,11 +180,37 @@ func _initialize_systems() -> void:
 	if experience_manager and player:
 		experience_manager.initialize(player)
 	
-	if world_manager:
-		world_manager.player_ref = player
-		world_manager.chunks_root = world_root
+	# WorldManager desactivado temporalmente
+	# if world_manager:
+	# 	world_manager.chunks_root = chunks_root
+	# 	world_manager.call_deferred("initialize", player)
+	
+	# Conectar HUD con el player
+	_connect_hud_to_player()
 	
 	print("✅ [Game] Sistemas inicializados")
+
+func _connect_hud_to_player() -> void:
+	## Conectar el HUD para que reciba actualizaciones del player
+	if not hud or not player:
+		return
+	
+	# Conectar señales del player al HUD si existen
+	if player.has_signal("health_changed") and hud.has_method("update_health"):
+		if not player.health_changed.is_connected(hud.update_health):
+			player.health_changed.connect(hud.update_health)
+	
+	# Actualización inicial del HUD
+	if player.has_method("get_health") and hud.has_method("update_stats"):
+		var health = player.get_health()
+		var exp_data = {"current": 0, "max": 10, "level": 1}
+		if experience_manager:
+			exp_data.current = experience_manager.current_exp
+			exp_data.max = experience_manager.exp_to_next_level
+			exp_data.level = experience_manager.current_level
+		hud.update_stats(health.current, health.max, exp_data.current, exp_data.max, exp_data.level)
+	
+	print("📊 [Game] HUD conectado al player")
 
 func _start_game() -> void:
 	game_running = true

@@ -195,7 +195,8 @@ func _generate_or_load_chunk(chunk_pos: Vector2i) -> void:
 	if active_chunks.has(chunk_pos):
 		return
 
-	is_generating = true
+	# Marcar que estamos generando este chunk específico
+	active_chunks[chunk_pos] = null  # Placeholder para evitar generación duplicada
 
 	# Intentar cargar del caché
 	if chunk_cache_manager and chunk_cache_manager.has_cached_chunk(chunk_pos):
@@ -204,13 +205,14 @@ func _generate_or_load_chunk(chunk_pos: Vector2i) -> void:
 		active_chunks[chunk_pos] = chunk_node
 		chunk_loaded_from_cache.emit(chunk_pos)
 		print("[InfiniteWorldManager] 📂 Chunk %s cargado del caché" % chunk_pos)
-		is_generating = false
 		return
 
-	# Generar nuevo con reseteo garantizado
-	await get_tree().process_frame  # Diferir para no bloquear
+	# Generar nuevo chunk en un frame diferido
+	_generate_new_chunk_deferred.call_deferred(chunk_pos)
+
+func _generate_new_chunk_deferred(chunk_pos: Vector2i) -> void:
+	"""Wrapper diferido para generación de chunks"""
 	_generate_new_chunk(chunk_pos)
-	is_generating = false
 
 func _generate_new_chunk(chunk_pos: Vector2i) -> void:
 	"""Generar un chunk completamente nuevo"""
@@ -230,9 +232,9 @@ func _generate_new_chunk(chunk_pos: Vector2i) -> void:
 		add_child(chunk_node)
 		print("[InfiniteWorldManager] ⚠️  chunks_root not available, adding chunk to self")
 
-	# Generar bioma y decoraciones
+	# Generar bioma y decoraciones (síncrono, no bloquea)
 	if biome_generator:
-		await biome_generator.generate_chunk_async(chunk_node, chunk_pos, rng)
+		biome_generator.generate_chunk_async(chunk_node, chunk_pos, rng)
 
 	# Aplicar texturas y biomas visuales
 	if biome_applier:

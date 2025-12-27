@@ -66,10 +66,19 @@ func _ready() -> void:
 	
 	print("[SpellloopPlayer] ===== OK: SPELLLOOP PLAYER LISTO =====\n")
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
+	# Obtener input del jugador
+	var input_manager = get_tree().root.get_node_or_null("InputManager")
+	if not input_manager:
+		return
+	
+	var movement_input = input_manager.get_movement_vector()
+	velocity = movement_input * move_speed
+	move_and_slide()
+	
+	# Sincronizar posición con WizardPlayer (para que sus sistemas funcionen)
 	if wizard_player:
-		wizard_player._physics_process(delta)
-		global_position = wizard_player.global_position
+		wizard_player.global_position = global_position
 
 func _on_wizard_damaged(amount: int, current_hp: int) -> void:
 	hp = current_hp
@@ -108,6 +117,10 @@ func get_hp() -> int:
 
 func get_max_hp() -> int:
 	return max_hp
+
+func get_health() -> Dictionary:
+	## Retorna un diccionario con la salud actual y máxima
+	return {"current": hp, "max": max_hp}
 
 func increase_max_health(amount: int) -> void:
 	if wizard_player:

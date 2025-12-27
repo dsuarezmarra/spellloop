@@ -164,9 +164,9 @@ func _process(delta: float) -> void:
 	# Mover
 	global_position += direction * speed * delta
 	
-	# Rotar sprite hacia dirección de movimiento
+	# Rotar sprite hacia dirección de movimiento (sin offset adicional)
 	if animated_sprite:
-		animated_sprite.rotation = direction.angle() + PI / 2
+		animated_sprite.rotation = direction.angle()
 	
 	# CRÍTICO: Detectar colisiones manualmente
 	_check_collision_with_enemies()

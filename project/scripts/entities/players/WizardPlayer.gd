@@ -124,32 +124,17 @@ func _equip_starting_weapons() -> void:
 		print("[WizardPlayer] ✗ Error: No se pudo instanciar IceWand")
 		return
 	
-	# Configurar propiedades
+	# Configurar propiedades básicas
 	ice_wand.name = "Varita de Hielo"
 	ice_wand.is_active = true
 	
-	# Cargar escena de proyectil con verificación
-	var ice_proj_scene = load("res://scripts/entities/weapons/projectiles/IceProjectile.tscn")
-	print("[WizardPlayer] DEBUG: ice_proj_scene = %s (type: %s)" % [ice_proj_scene, typeof(ice_proj_scene)])
-	if ice_proj_scene:
-		ice_wand.projectile_scene = ice_proj_scene
-		print("[WizardPlayer] ✓ IceProjectile.tscn cargado: %s" % ice_proj_scene)
-	else:
-		print("[WizardPlayer] ❌ IceProjectile.tscn FALLO - ice_proj_scene es null o inválido")
-		# Debug más profundo
-		if ResourceLoader.exists("res://scripts/entities/weapons/projectiles/IceProjectile.tscn"):
-			print("[WizardPlayer]    - Archivo EXISTE en disco")
-		else:
-			print("[WizardPlayer]    - ⚠️ Archivo NO existe en disco")
-	
-	# Equipar arma
+	# Equipar arma (el IceWand ya carga SimpleProjectile internamente)
 	var result = equip_weapon(ice_wand)
 	
 	if result:
-		print("[WizardPlayer] ✓ Arma de Hielo equipada")
-		print("[WizardPlayer] Verificación: projectile_scene = %s" % ice_wand.projectile_scene)
+		print("[WizardPlayer] ✓ Ice Wand equipada correctamente")
 	else:
-		print("[WizardPlayer] ⚠️ Error al equipar arma")
+		print("[WizardPlayer] ⚠️ Error al equipar Ice Wand")
 
 # ========== HABILIDADES DEL WIZARD ==========
 

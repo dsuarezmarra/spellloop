@@ -68,18 +68,23 @@ func _ready() -> void:
 	# Añadir a grupo de enemigos para detección
 	add_to_group("enemies")
 	
-	# Aplicar escala del enemigo según tier desde VisualCalibrator
-	var enemy_scale = 0.2
-	var _gt = get_tree()
-	if _gt and _gt.root:
-		var visual_calibrator = _gt.root.get_node_or_null("VisualCalibrator")
-		if visual_calibrator and visual_calibrator.has_method("get_enemy_scale_for_tier"):
-			enemy_scale = visual_calibrator.get_enemy_scale_for_tier(enemy_tier)
+	# Aplicar escala FIJA pequeña para enemigos (sin depender de VisualCalibrator)
+	# Usar misma escala base que el jugador (0.25) con variaciones por tier
+	# Tier 1: 0.20, Tier 2: 0.22, Tier 3: 0.24, Tier 4: 0.26, Boss: 0.35
+	var enemy_scale = 0.20  # Base para tier 1
+	match enemy_tier:
+		1: enemy_scale = 0.20
+		2: enemy_scale = 0.22
+		3: enemy_scale = 0.24
+		4: enemy_scale = 0.26
+		5: enemy_scale = 0.35  # Boss
 	
 	# Aplicar escala al sprite
 	if sprite:
 		sprite.scale = Vector2(enemy_scale, enemy_scale)
 		sprite.centered = true
+	
+	print("[EnemyBase] ✓ _ready() escala=%s tier=%d" % [enemy_scale, enemy_tier])
 	
 	# Configurar z_index
 	self.z_index = 0
@@ -114,16 +119,21 @@ func initialize(data: Dictionary, player):
 		add_child(sprite)
 	_load_enemy_sprite(sprite)
 	
-	# Reapply scaling if needed for dynamically created enemies
-	var enemy_scale = 0.2
-	if player and player.get_tree() and player.get_tree().root:
-		var visual_calibrator = player.get_tree().root.get_node_or_null("VisualCalibrator")
-		if visual_calibrator and visual_calibrator.has_method("get_enemy_scale_for_tier"):
-			enemy_scale = visual_calibrator.get_enemy_scale_for_tier(enemy_tier)
+	# Aplicar escala FIJA según tier (mismo sistema que en _ready())
+	# Tier 1: 0.20, Tier 2: 0.22, Tier 3: 0.24, Tier 4: 0.26, Boss: 0.35
+	var enemy_scale = 0.20  # Base para tier 1
+	match enemy_tier:
+		1: enemy_scale = 0.20
+		2: enemy_scale = 0.22
+		3: enemy_scale = 0.24
+		4: enemy_scale = 0.26
+		5: enemy_scale = 0.35  # Boss
 	
 	if sprite:
 		sprite.scale = Vector2(enemy_scale, enemy_scale)
 		sprite.centered = true
+	
+	print("[EnemyBase] ✓ Inicializado %s tier=%d escala=%.2f" % [enemy_id, enemy_tier, enemy_scale])
 
 func _find_sprite_node(node: Node) -> Sprite2D:
 	"""Buscar el primer Sprite2D en el árbol del nodo"""

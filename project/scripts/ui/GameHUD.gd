@@ -319,9 +319,24 @@ func _update_player_stats_display() -> void:
 	var xp_str = "XP: ???"
 	var lvl_str = "LVL: 1"
 	
-	# Intentar obtener datos del ExperienceManager
+	# Intentar obtener datos del ExperienceManager y Player
 	var tree = get_tree()
 	if tree and tree.current_scene:
+		# Obtener referencia al player
+		var player_container = tree.current_scene.get_node_or_null("PlayerContainer")
+		if player_container and player_container.get_child_count() > 0:
+			var player = player_container.get_child(0)
+			if player and player.has_method("get_health"):
+				var health = player.get_health()
+				hp_str = "HP: %d/%d" % [health.current, health.max]
+			elif player:
+				# Fallback: intentar acceso directo a propiedades
+				var hp = player.get("hp") if player.get("hp") != null else player.get("health")
+				var max_hp = player.get("max_hp") if player.get("max_hp") != null else player.get("max_health")
+				if hp != null and max_hp != null:
+					hp_str = "HP: %d/%d" % [hp, max_hp]
+		
+		# Obtener datos del ExperienceManager
 		var exp_mgr = tree.current_scene.get_node_or_null("ExperienceManager")
 		if exp_mgr:
 			var lvl = exp_mgr.get("current_level") if exp_mgr.get("current_level") else 1

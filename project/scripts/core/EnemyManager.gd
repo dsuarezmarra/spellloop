@@ -5,10 +5,11 @@ signal boss_spawned(boss_node: Node2D)
 signal enemy_spawned(enemy: Node2D)
 signal enemy_died(enemy_position: Vector2, enemy_type: String, exp_value: int)
 
-# Precargar clases de enemigos específicos
-var EnemyTier1Skeleton = preload("res://scripts/enemies/tier_1/EnemySkeleton.gd")
-var EnemyTier1Goblin = preload("res://scripts/enemies/tier_1/EnemyGoblin.gd")
-var EnemyTier1Slime = preload("res://scripts/enemies/tier_1/EnemySlime.gd")
+# Clases de enemigos - se cargan en _ready() para evitar problemas de orden de carga
+var EnemyTier1Skeleton: Script = null
+var EnemyTier1Goblin: Script = null
+var EnemyTier1Slime: Script = null
+var EnemyBaseScript: Script = null
 
 # Test-friendly defaults: low max, high rate so we can observe spawns quickly during debugging.
 @export var spawn_distance: float = 600.0
@@ -26,9 +27,22 @@ var spawning_enabled: bool = true
 
 func _ready() -> void:
 	randomize()
+	# Cargar scripts de enemigos de forma diferida
+	_load_enemy_scripts()
 	if debug_spawns:
 		print("👹 EnemyManager inicializado (debug_spawns=%s, spawn_rate=%s, max_enemies=%s)" % [debug_spawns, spawn_rate, max_enemies])
 	_setup_enemy_types()
+
+func _load_enemy_scripts() -> void:
+	# Cargar scripts de enemigos en runtime para evitar problemas de dependencias circulares
+	if ResourceLoader.exists("res://scripts/enemies/EnemyBase.gd"):
+		EnemyBaseScript = load("res://scripts/enemies/EnemyBase.gd")
+	if ResourceLoader.exists("res://scripts/enemies/tier_1/EnemySkeleton.gd"):
+		EnemyTier1Skeleton = load("res://scripts/enemies/tier_1/EnemySkeleton.gd")
+	if ResourceLoader.exists("res://scripts/enemies/tier_1/EnemyGoblin.gd"):
+		EnemyTier1Goblin = load("res://scripts/enemies/tier_1/EnemyGoblin.gd")
+	if ResourceLoader.exists("res://scripts/enemies/tier_1/EnemySlime.gd"):
+		EnemyTier1Slime = load("res://scripts/enemies/tier_1/EnemySlime.gd")
 
 func _setup_enemy_types() -> void:
 	# Velocidades base = 50% de lo que era antes
@@ -132,8 +146,11 @@ func spawn_enemy(enemy_type: Dictionary, world_pos: Vector2) -> Node:
 		
 		# Last resort: create a generic enemy
 		if not enemy:
-			enemy = EnemyBase.new()
-			enemy.name = "enemy_%s" % type_id
+			if EnemyBaseScript:
+				enemy = EnemyBaseScript.new()
+				enemy.name = "enemy_%s" % type_id
+			else:
+				push_warning("⚠️ [EnemyManager] EnemyBaseScript no cargado")
 
 	if not enemy:
 		enemy = Node2D.new()

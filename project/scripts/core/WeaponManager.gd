@@ -14,6 +14,9 @@ Gestiona todas las armas del player:
 
 signal weapon_fired(weapon_type: String, target_position: Vector2)
 
+# Script del proyectil mágico - se carga dinámicamente
+var MagicProjectileScript: Script = null
+
 # Referencias
 var player: CharacterBody2D
 var enemy_manager
@@ -37,6 +40,9 @@ var auto_target_range: float = 400.0
 
 func _ready():
 	print("⚔️ WeaponManager inicializado")
+	# Cargar script del proyectil mágico
+	if ResourceLoader.exists("res://scripts/magic/SpellloopMagicProjectile.gd"):
+		MagicProjectileScript = load("res://scripts/magic/SpellloopMagicProjectile.gd")
 	# Create auto-fire timer to handle cooldown ticks
 	if not auto_fire_timer:
 		auto_fire_timer = Timer.new()
@@ -60,8 +66,8 @@ func initialize(player_ref: CharacterBody2D):
 		auto_fire_timer.start()
 
 func equip_initial_weapon():
-	"""Equipar varita mágica inicial"""
-	# Ejemplo: Ice Wand
+	"""Equipar solo varita de hielo inicial"""
+	# Solo Ice Wand - el resto está desactivado para evitar spam de proyectiles
 	var ice_wand = WeaponData.new()
 	ice_wand.id = "ice_wand"
 	ice_wand.name = "Ice Wand"
@@ -73,58 +79,8 @@ func equip_initial_weapon():
 	ice_wand.targeting = WeaponData.TargetingType.NEAREST_ENEMY
 	ice_wand.tags = ["ice"]
 	equipped_weapons.append(ice_wand)
-
-	# Fire Wand
-	var fire_wand = WeaponData.new()
-	fire_wand.id = "fire_wand"
-	fire_wand.name = "Fire Wand"
-	fire_wand.damage = 12
-	fire_wand.cooldown = 1.3
-	fire_wand.weapon_range = 400.0
-	fire_wand.projectile_speed = 320.0
-	fire_wand.weapon_type = WeaponData.WeaponType.PROJECTILE
-	fire_wand.targeting = WeaponData.TargetingType.NEAREST_ENEMY
-	fire_wand.tags = ["fire"]
-	equipped_weapons.append(fire_wand)
-
-	# Arcane Nova
-	var arcane_nova = WeaponData.new()
-	arcane_nova.id = "arcane_nova"
-	arcane_nova.name = "Arcane Nova"
-	arcane_nova.damage = 7
-	arcane_nova.cooldown = 2.5
-	arcane_nova.weapon_range = 0.0
-	arcane_nova.projectile_speed = 0.0
-	arcane_nova.weapon_type = WeaponData.WeaponType.AREA_SPELL
-	arcane_nova.targeting = WeaponData.TargetingType.AREA_AROUND_PLAYER
-	arcane_nova.tags = ["arcane"]
-	equipped_weapons.append(arcane_nova)
-
-	# Chain Spark
-	var chain_spark = WeaponData.new()
-	chain_spark.id = "chain_spark"
-	chain_spark.name = "Chain Spark"
-	chain_spark.damage = 10
-	chain_spark.cooldown = 1.7
-	chain_spark.weapon_range = 420.0
-	chain_spark.projectile_speed = 400.0
-	chain_spark.weapon_type = WeaponData.WeaponType.PROJECTILE
-	chain_spark.targeting = WeaponData.TargetingType.RANDOM_ENEMY
-	chain_spark.tags = ["lightning"]
-	equipped_weapons.append(chain_spark)
-
-	# Orbit Blades
-	var orbit_blades = WeaponData.new()
-	orbit_blades.id = "orbit_blades"
-	orbit_blades.name = "Orbit Blades"
-	orbit_blades.damage = 6
-	orbit_blades.cooldown = 0.0
-	orbit_blades.weapon_range = 120.0
-	orbit_blades.projectile_speed = 0.0
-	orbit_blades.weapon_type = WeaponData.WeaponType.MELEE
-	orbit_blades.targeting = WeaponData.TargetingType.AREA_AROUND_PLAYER
-	orbit_blades.tags = ["physical", "orbit"]
-	equipped_weapons.append(orbit_blades)
+	
+	# Las otras armas están desactivadas temporalmente
 
 func set_enemy_manager(enemy_manager_ref):
 	"""Establecer referencia al gestor de enemigos"""
@@ -215,26 +171,9 @@ func fire_weapon(weapon: WeaponData, target_position: Vector2):
 	weapon_fired.emit(weapon.id, target_position)
 
 func fire_projectile(weapon: WeaponData, target_position: Vector2):
-	# Disparar proyectil mágico (placeholder)
-	# Prefer instancing a projectile scene named after the weapon id
-	var scene_path = "res://scenes/projectiles/%s.tscn" % weapon.id
-	if ResourceLoader.exists(scene_path):
-		var pscene = ResourceLoader.load(scene_path)
-		if pscene and pscene is PackedScene:
-			var instance = pscene.instantiate()
-			if instance and instance.has_method("initialize"):
-				instance.initialize(player.global_position, target_position, weapon.damage, weapon.projectile_speed)
-				get_tree().current_scene.add_child(instance)
-				return
-	# Fallback to SpellloopMagicProjectile
-	var projectile = null
-	if Engine.has_singleton("SpellloopMagicProjectile"):
-		# unlikely but try class_name
-		pass
-	# Generic fallback
-	projectile = SpellloopMagicProjectile.new()
-	projectile.initialize(player.global_position, target_position, weapon.damage, weapon.projectile_speed)
-	get_tree().current_scene.add_child(projectile)
+	# DESACTIVADO: Solo usamos IceWand.gd para proyectiles
+	# Los puntos violeta venian de SpellloopMagicProjectile
+	pass
 
 
 func fire_area_spell(weapon: WeaponData, _target_position: Vector2):

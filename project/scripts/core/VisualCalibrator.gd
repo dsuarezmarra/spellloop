@@ -117,15 +117,15 @@ func get_enemy_scale() -> float:
 	return 0.2
 
 func get_enemy_scale_for_tier(tier: int) -> float:
-	"""Obtener escala de enemigo según su tier (1-4) o boss (5) - REDUCIDO 50%"""
-	var base_scale = get_enemy_scale() * 0.5  # 50% del tamaño original
+	"""Obtener escala de enemigo según su tier - TAMAÑO COMPARABLE AL PLAYER"""
+	# Escala muy reducida para que los enemigos sean del tamaño del player o menores
 	match tier:
-		1: return base_scale * 0.8    # Tier 1: 80% del tamaño base (reducido)
-		2: return base_scale * 0.95   # Tier 2: 95% del tamaño base (reducido)
-		3: return base_scale * 1.1    # Tier 3: 110% del tamaño base (reducido)
-		4: return base_scale * 1.25   # Tier 4: 125% del tamaño base (reducido)
-		5: return base_scale * 1.5    # Boss: 150% del tamaño base (reducido)
-		_: return base_scale
+		1: return 0.035  # Tier 1: más pequeño que el player
+		2: return 0.04   # Tier 2: ligeramente más grande
+		3: return 0.05   # Tier 3: similar al player
+		4: return 0.06   # Tier 4: un poco más grande
+		5: return 0.08   # Boss: notablemente más grande
+		_: return 0.035
 
 func get_projectile_scale() -> float:
 	if calibration_data.has("projectile_scale"):
