@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cane2n7liqmm8"
-path="res://.godot/imported/minotauro_de_fuego.png-0d3d5d1f06475911a2ad8fe8257c01f5.ctex"
+uid="uid://dttofaokm2nd4"
+path="res://.godot/imported/el_corazon_del_vacio_spritesheet.png-d457bab65039a720ccc06cbf208291f7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/bosses/minotauro_de_fuego.png"
-dest_files=["res://.godot/imported/minotauro_de_fuego.png-0d3d5d1f06475911a2ad8fe8257c01f5.ctex"]
+source_file="res://assets/sprites/enemies/bosses/el_corazon_del_vacio_spritesheet.png"
+dest_files=["res://.godot/imported/el_corazon_del_vacio_spritesheet.png-d457bab65039a720ccc06cbf208291f7.ctex"]
 
 [params]
 
