@@ -11,15 +11,23 @@ class_name AnimatedEnemySprite
 # === CONFIGURACIÓN ===
 @export var enable_bobbing: bool = true
 @export var enable_breathing: bool = true
-@export var bobbing_speed: float = 5.0       # Velocidad del rebote (ciclos por segundo)
-@export var bobbing_amount: float = 4.0      # Píxeles de rebote en pantalla (escalado)
-@export var breathing_speed: float = 3.0     # Velocidad de respiración
-@export var breathing_amount: float = 0.12   # 12% de escala para que sea muy visible
-@export var sprite_scale: float = 0.2:
-	set(value):
-		sprite_scale = value
-		base_scale = Vector2(value, value)
-		scale = base_scale
+@export var enable_squash_stretch: bool = true  # Squash & stretch sincronizado con bobbing
+@export var enable_sway: bool = true             # Balanceo lateral sutil
+@export var bobbing_speed: float = 4.0           # Velocidad del rebote
+@export var bobbing_amount: float = 6.0          # Píxeles de rebote (aumentado)
+@export var breathing_speed: float = 2.0         # Velocidad de respiración
+@export var breathing_amount: float = 0.05       # 5% de escala (reducido a la mitad)
+@export var squash_amount: float = 0.08          # 8% de squash/stretch
+@export var sway_speed: float = 2.5              # Velocidad del balanceo
+@export var sway_amount: float = 3.0             # Grados de rotación
+
+# Escala base del sprite
+var sprite_scale: float = 0.2
+
+func set_sprite_scale(value: float) -> void:
+	sprite_scale = value
+	base_scale = Vector2(value, value)
+	scale = base_scale
 
 # === ESTADO INTERNO ===
 var spritesheet_texture: Texture2D = null
@@ -28,7 +36,7 @@ var frame_width: int = 0
 var frame_height: int = 0
 
 var current_direction: String = "down"  # down, left, right, up
-var base_scale: Vector2 = Vector2.ONE
+var base_scale: Vector2 = Vector2(0.2, 0.2)
 var animation_time: float = 0.0
 
 # Direcciones mapeadas a frames
@@ -41,18 +49,33 @@ const DIRECTION_TO_FRAME = {
 }
 
 func _ready() -> void:
-	base_scale = scale if scale != Vector2.ZERO else Vector2.ONE
+	# Aplicar escala inicial
+	scale = base_scale
 	# Randomizar tiempo inicial para que no todos los enemigos estén sincronizados
 	animation_time = randf() * TAU
 
 func _process(delta: float) -> void:
 	animation_time += delta
 	
+	# Resetear transformaciones
+	offset = Vector2.ZERO
+	rotation = 0.0
+	scale = base_scale
+	
+	# Aplicar animaciones
+	var bob_phase = sin(animation_time * bobbing_speed)
+	
 	if enable_bobbing:
-		_apply_bobbing()
+		_apply_bobbing(bob_phase)
+	
+	if enable_squash_stretch:
+		_apply_squash_stretch(bob_phase)
 	
 	if enable_breathing:
 		_apply_breathing()
+	
+	if enable_sway:
+		_apply_sway()
 
 func load_spritesheet(path: String) -> bool:
 	"""Cargar un spritesheet de 3 poses y dividirlo en frames"""
@@ -102,19 +125,27 @@ func set_direction(direction: Vector2) -> void:
 	else:
 		new_direction = "down" if direction.y > 0 else "up"
 	
-	if new_direction != current_direction:
-		current_direction = new_direction
-		_update_frame()
+	# Siempre actualizar el frame, sin importar si es la misma dirección
+	current_direction = new_direction
+	_update_frame()
 
 func set_direction_string(direction: String) -> void:
 	"""Establecer dirección directamente por nombre"""
-	if direction in DIRECTION_TO_FRAME and direction != current_direction:
+	if direction in DIRECTION_TO_FRAME:
 		current_direction = direction
 		_update_frame()
+
+func force_direction(dir: String) -> void:
+	"""Forzar una dirección específica (para debug/test)"""
+	if dir in DIRECTION_TO_FRAME:
+		current_direction = dir
+		_update_frame()
+		print("[AnimatedEnemySprite] Dirección forzada a: %s (frame=%d, flip=%s)" % [dir, DIRECTION_TO_FRAME[dir], flip_h])
 
 func _update_frame() -> void:
 	"""Actualizar el frame y flip según la dirección"""
 	if frame_textures.is_empty():
+		print("[AnimatedEnemySprite] ERROR: frame_textures vacío!")
 		return
 	
 	var frame_index = DIRECTION_TO_FRAME.get(current_direction, 0)
@@ -123,16 +154,28 @@ func _update_frame() -> void:
 	# Flip horizontal para dirección derecha
 	flip_h = (current_direction == "right")
 
-func _apply_bobbing() -> void:
+func _apply_bobbing(bob_phase: float) -> void:
 	"""Aplicar movimiento de bobbing (arriba/abajo) usando offset"""
-	# Usar offset en lugar de position para que sea independiente del movimiento del enemigo
-	var bob_offset = sin(animation_time * bobbing_speed) * bobbing_amount
-	offset.y = bob_offset
+	offset.y += bob_phase * bobbing_amount
+
+func _apply_squash_stretch(bob_phase: float) -> void:
+	"""Aplicar squash & stretch sincronizado con el bobbing"""
+	# Cuando sube (bob_phase negativo) = stretch (más alto, más delgado)
+	# Cuando baja (bob_phase positivo) = squash (más bajo, más ancho)
+	var squash = 1.0 + bob_phase * squash_amount
+	var stretch = 1.0 - bob_phase * squash_amount * 0.5
+	scale.x *= squash
+	scale.y *= stretch
 
 func _apply_breathing() -> void:
 	"""Aplicar efecto de respiración (escala sutil)"""
 	var breath_scale = 1.0 + sin(animation_time * breathing_speed) * breathing_amount
-	scale = base_scale * breath_scale
+	scale *= breath_scale
+
+func _apply_sway() -> void:
+	"""Aplicar balanceo lateral sutil"""
+	var sway_angle = sin(animation_time * sway_speed) * deg_to_rad(sway_amount)
+	rotation = sway_angle
 
 func set_base_scale(new_scale: Vector2) -> void:
 	"""Establecer escala base (para que breathing funcione correctamente)"""
