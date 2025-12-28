@@ -75,7 +75,7 @@ func _process(delta: float) -> void:
 		_apply_sway()
 
 func load_spritesheet(path: String) -> bool:
-	"""Cargar un spritesheet de 3 poses y dividirlo en frames"""
+	"""Cargar un spritesheet de 3 poses con gaps de 8px y extraer frames"""
 	if not ResourceLoader.exists(path):
 		push_warning("[AnimatedEnemySprite] Spritesheet no encontrado: %s" % path)
 		return false
@@ -85,21 +85,35 @@ func load_spritesheet(path: String) -> bool:
 		push_warning("[AnimatedEnemySprite] Error al cargar: %s" % path)
 		return false
 	
-	# Calcular tamaño de cada frame (3 columnas, 1 fila)
-	var img_width = spritesheet_texture.get_width()
-	var img_height = spritesheet_texture.get_height()
+	# Detectar regiones de sprites analizando la imagen
+	var img = spritesheet_texture.get_image()
+	var img_width = img.get_width()
+	var img_height = img.get_height()
 	
-	frame_width = img_width / 3
-	frame_height = img_height
+	# Encontrar las 3 regiones de sprites detectando columnas con contenido
+	var sprite_regions = _detect_sprite_regions(img)
 	
-	# Usar AtlasTexture para cada frame - esto evita el bleeding correctamente
-	# porque Godot maneja las regiones a nivel de GPU sin interpolación entre frames
+	if sprite_regions.size() != 3:
+		# Fallback: dividir en 3 partes iguales (compatibilidad con spritesheets antiguos)
+		push_warning("[AnimatedEnemySprite] No se detectaron 3 sprites, usando división simple")
+		var simple_width = img_width / 3
+		sprite_regions = [
+			Rect2(0, 0, simple_width, img_height),
+			Rect2(simple_width, 0, simple_width, img_height),
+			Rect2(simple_width * 2, 0, simple_width, img_height)
+		]
+	
+	# Guardar dimensiones del primer frame como referencia
+	frame_width = int(sprite_regions[0].size.x)
+	frame_height = int(sprite_regions[0].size.y)
+	
+	# Usar AtlasTexture para cada frame con las regiones detectadas
 	frame_textures.clear()
 	
-	for i in range(3):
+	for region in sprite_regions:
 		var atlas = AtlasTexture.new()
 		atlas.atlas = spritesheet_texture
-		atlas.region = Rect2(i * frame_width, 0, frame_width, frame_height)
+		atlas.region = region
 		atlas.filter_clip = true  # CLAVE: Evita bleeding en los bordes de la región
 		frame_textures.append(atlas)
 	
@@ -110,8 +124,62 @@ func load_spritesheet(path: String) -> bool:
 	flip_h = false
 	_update_frame()
 	
-	print("[AnimatedEnemySprite] ✓ Cargado: %s (%dx%d por frame)" % [path, frame_width, frame_height])
+	print("[AnimatedEnemySprite] ✓ Cargado: %s (3 sprites detectados)" % path)
 	return true
+
+func _detect_sprite_regions(img: Image) -> Array[Rect2]:
+	"""Detectar las 3 regiones de sprites en la imagen analizando el canal alpha"""
+	var width = img.get_width()
+	var height = img.get_height()
+	
+	# Encontrar columnas con contenido (alpha > 0)
+	var columns_with_content: Array[int] = []
+	for x in range(width):
+		var has_content = false
+		for y in range(height):
+			if img.get_pixel(x, y).a > 0.01:
+				has_content = true
+				break
+		if has_content:
+			columns_with_content.append(x)
+	
+	if columns_with_content.is_empty():
+		return []
+	
+	# Agrupar columnas consecutivas en regiones
+	var regions: Array[Rect2] = []
+	var region_start = columns_with_content[0]
+	var region_end = columns_with_content[0]
+	
+	for i in range(1, columns_with_content.size()):
+		var col = columns_with_content[i]
+		# Si hay un gap de más de 4 píxeles, es una nueva región
+		if col - region_end > 4:
+			# Encontrar el bounding box vertical para esta región
+			var y_bounds = _find_vertical_bounds(img, region_start, region_end)
+			regions.append(Rect2(region_start, y_bounds.x, region_end - region_start + 1, y_bounds.y - y_bounds.x + 1))
+			region_start = col
+		region_end = col
+	
+	# Agregar la última región
+	var y_bounds = _find_vertical_bounds(img, region_start, region_end)
+	regions.append(Rect2(region_start, y_bounds.x, region_end - region_start + 1, y_bounds.y - y_bounds.x + 1))
+	
+	return regions
+
+func _find_vertical_bounds(img: Image, col_start: int, col_end: int) -> Vector2:
+	"""Encontrar el bounding box vertical para un rango de columnas"""
+	var height = img.get_height()
+	var min_y = height
+	var max_y = 0
+	
+	for x in range(col_start, col_end + 1):
+		for y in range(height):
+			if img.get_pixel(x, y).a > 0.01:
+				min_y = min(min_y, y)
+				max_y = max(max_y, y)
+	
+	return Vector2(min_y, max_y)
 
 func set_direction(direction: Vector2) -> void:
 	"""Establecer dirección basada en vector de movimiento (ignorado si direction_locked)"""
