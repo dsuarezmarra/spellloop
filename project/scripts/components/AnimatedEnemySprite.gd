@@ -20,14 +20,11 @@ class_name AnimatedEnemySprite
 @export var squash_amount: float = 0.08          # 8% de squash/stretch
 @export var sway_speed: float = 2.5              # Velocidad del balanceo
 @export var sway_amount: float = 3.0             # Grados de rotación
-
-# Escala base del sprite
-var sprite_scale: float = 0.2
-
-func set_sprite_scale(value: float) -> void:
-	sprite_scale = value
-	base_scale = Vector2(value, value)
-	scale = base_scale
+@export var sprite_scale: float = 0.2:
+	set(value):
+		sprite_scale = value
+		base_scale = Vector2(value, value)
+		scale = base_scale
 
 # === ESTADO INTERNO ===
 var spritesheet_texture: Texture2D = null
@@ -36,7 +33,7 @@ var frame_width: int = 0
 var frame_height: int = 0
 
 var current_direction: String = "down"  # down, left, right, up
-var base_scale: Vector2 = Vector2(0.2, 0.2)
+var base_scale: Vector2 = Vector2.ONE
 var animation_time: float = 0.0
 
 # Direcciones mapeadas a frames
@@ -49,8 +46,7 @@ const DIRECTION_TO_FRAME = {
 }
 
 func _ready() -> void:
-	# Aplicar escala inicial
-	scale = base_scale
+	base_scale = scale if scale != Vector2.ZERO else Vector2.ONE
 	# Randomizar tiempo inicial para que no todos los enemigos estén sincronizados
 	animation_time = randf() * TAU
 
@@ -125,27 +121,19 @@ func set_direction(direction: Vector2) -> void:
 	else:
 		new_direction = "down" if direction.y > 0 else "up"
 	
-	# Siempre actualizar el frame, sin importar si es la misma dirección
-	current_direction = new_direction
-	_update_frame()
+	if new_direction != current_direction:
+		current_direction = new_direction
+		_update_frame()
 
 func set_direction_string(direction: String) -> void:
 	"""Establecer dirección directamente por nombre"""
-	if direction in DIRECTION_TO_FRAME:
+	if direction in DIRECTION_TO_FRAME and direction != current_direction:
 		current_direction = direction
 		_update_frame()
-
-func force_direction(dir: String) -> void:
-	"""Forzar una dirección específica (para debug/test)"""
-	if dir in DIRECTION_TO_FRAME:
-		current_direction = dir
-		_update_frame()
-		print("[AnimatedEnemySprite] Dirección forzada a: %s (frame=%d, flip=%s)" % [dir, DIRECTION_TO_FRAME[dir], flip_h])
 
 func _update_frame() -> void:
 	"""Actualizar el frame y flip según la dirección"""
 	if frame_textures.is_empty():
-		print("[AnimatedEnemySprite] ERROR: frame_textures vacío!")
 		return
 	
 	var frame_index = DIRECTION_TO_FRAME.get(current_direction, 0)

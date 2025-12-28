@@ -59,11 +59,28 @@ func _ready() -> void:
 		attack_system.name = "AttackSystem"
 		add_child(attack_system)
 	
-	# NOTA: La carga del sprite/spritesheet se hace en initialize()
-	# para que enemy_id y enemy_tier ya estén configurados
+	# Intentar usar AnimatedEnemySprite con spritesheet
+	var spritesheet_loaded = _try_load_animated_sprite()
+	
+	# Si no hay spritesheet, usar sprite estático como fallback
+	if not spritesheet_loaded:
+		var sprite = _find_sprite_node(self)
+		if not sprite:
+			sprite = Sprite2D.new()
+			sprite.name = "Sprite2D"
+			add_child(sprite)
+		_load_enemy_sprite(sprite)
+		
+		# Aplicar escala al sprite estático
+		var enemy_scale = _get_scale_for_tier()
+		if sprite:
+			sprite.scale = Vector2(enemy_scale, enemy_scale)
+			sprite.centered = true
 	
 	# Añadir a grupo de enemigos para detección
 	add_to_group("enemies")
+	
+	print("[EnemyBase] ✓ _ready() tier=%d animated=%s" % [enemy_tier, spritesheet_loaded])
 	
 	# Configurar z_index
 	self.z_index = 0

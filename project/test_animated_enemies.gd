@@ -1,11 +1,11 @@
 extends Node2D
 ## Test scene for animated enemy sprites
-## Muestra todos los enemigos tier_1, tier_2, tier_3, tier_4 con sus spritesheets animados
+## Muestra todos los enemigos tier_1, tier_2, tier_3 con sus spritesheets animados
 
 const ENEMY_BASE = preload("res://scripts/enemies/EnemyBase.gd")
 
 # Escala para visualización en el test (más grande que en juego)
-const TEST_SCALE = 0.4
+const TEST_SCALE = 0.5
 
 var tier_1_enemies = [
 	{"id": "slime", "tier": 1, "name": "Slime"},
@@ -31,14 +31,6 @@ var tier_3_enemies = [
 	{"id": "tier_3_corruptor_alado", "tier": 3, "name": "Corruptor"}
 ]
 
-var tier_4_enemies = [
-	{"id": "tier_4_titan_arcano", "tier": 4, "name": "Titán"},
-	{"id": "tier_4_senor_de_las_llamas", "tier": 4, "name": "Señor Llamas"},
-	{"id": "tier_4_reina_del_hielo", "tier": 4, "name": "Reina Hielo"},
-	{"id": "tier_4_archimago_perdido", "tier": 4, "name": "Archimago"},
-	{"id": "tier_4_dragon_etereo", "tier": 4, "name": "Dragón"}
-]
-
 var enemies_spawned = []
 var current_direction_idx = 0
 var directions = [Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT, Vector2.UP]
@@ -59,23 +51,22 @@ func _ready():
 	# Título
 	var title = Label.new()
 	title.text = "Test: Animated Enemy Sprites"
-	title.position = Vector2(700, 10)
-	title.add_theme_font_size_override("font_size", 28)
+	title.position = Vector2(700, 20)
+	title.add_theme_font_size_override("font_size", 32)
 	add_child(title)
 	
 	# Subtítulo con efectos
 	var subtitle = Label.new()
 	subtitle.text = "Efectos: Bobbing + Breathing + Squash/Stretch + Sway"
-	subtitle.position = Vector2(620, 40)
-	subtitle.add_theme_font_size_override("font_size", 16)
+	subtitle.position = Vector2(620, 60)
+	subtitle.add_theme_font_size_override("font_size", 18)
 	subtitle.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	add_child(subtitle)
 	
-	# Spawn por filas - ajustado para 4 tiers
-	_spawn_row(tier_1_enemies, 100, "TIER 1")
-	_spawn_row(tier_2_enemies, 310, "TIER 2")
-	_spawn_row(tier_3_enemies, 520, "TIER 3")
-	_spawn_row(tier_4_enemies, 730, "TIER 4")
+	# Spawn por filas con más espacio
+	_spawn_row(tier_1_enemies, 180, "TIER 1")
+	_spawn_row(tier_2_enemies, 450, "TIER 2")
+	_spawn_row(tier_3_enemies, 720, "TIER 3")
 	
 	# Label de dirección actual
 	direction_label = Label.new()
@@ -98,16 +89,16 @@ func _spawn_row(enemies: Array, y_pos: float, tier_label: String):
 	# Label del tier
 	var label = Label.new()
 	label.text = tier_label
-	label.position = Vector2(50, y_pos + 40)
-	label.add_theme_font_size_override("font_size", 24)
+	label.position = Vector2(50, y_pos + 50)
+	label.add_theme_font_size_override("font_size", 28)
 	label.add_theme_color_override("font_color", Color(0.5, 0.8, 1.0))
 	add_child(label)
 	
 	# Spawn enemigos con más espacio
-	var start_x = 230
-	var spacing = 300
+	var start_x = 250
+	var spacing = 320
 	for i in range(enemies.size()):
-		var pos = Vector2(start_x + i * spacing, y_pos + 70)
+		var pos = Vector2(start_x + i * spacing, y_pos + 80)
 		_spawn_enemy(enemies[i], pos)
 
 func _spawn_enemy(data: Dictionary, pos: Vector2):
@@ -128,9 +119,7 @@ func _spawn_enemy(data: Dictionary, pos: Vector2):
 	
 	# Aplicar escala más grande para el test
 	if enemy.animated_sprite:
-		enemy.animated_sprite.set_sprite_scale(TEST_SCALE)
-		# Forzar dirección inicial hacia abajo
-		enemy.animated_sprite.force_direction("down")
+		enemy.animated_sprite.sprite_scale = TEST_SCALE
 	
 	# Label con nombre
 	var label = Label.new()
@@ -144,27 +133,27 @@ func _spawn_enemy(data: Dictionary, pos: Vector2):
 
 func _unhandled_input(event):
 	if event is InputEventKey and event.pressed:
-		var dir_string: String = ""
+		var new_direction: Vector2 = Vector2.ZERO
 		var dir_name: String = ""
 		
 		match event.keycode:
 			KEY_1, KEY_KP_1:
-				dir_string = "down"
+				new_direction = Vector2.DOWN
 				dir_name = "Abajo (1)"
 			KEY_2, KEY_KP_2:
-				dir_string = "left"
+				new_direction = Vector2.LEFT
 				dir_name = "Izquierda (2)"
 			KEY_3, KEY_KP_3:
-				dir_string = "right"
+				new_direction = Vector2.RIGHT
 				dir_name = "Derecha (3)"
 			KEY_4, KEY_KP_4:
-				dir_string = "up"
+				new_direction = Vector2.UP
 				dir_name = "Arriba (4)"
 		
-		if dir_string != "":
+		if new_direction != Vector2.ZERO:
 			print("Cambiando dirección a: %s" % dir_name)
 			direction_label.text = "Dirección: %s" % dir_name
 			
 			for enemy in enemies_spawned:
 				if is_instance_valid(enemy) and enemy.animated_sprite:
-					enemy.animated_sprite.force_direction(dir_string)
+					enemy.animated_sprite.set_direction(new_direction)
