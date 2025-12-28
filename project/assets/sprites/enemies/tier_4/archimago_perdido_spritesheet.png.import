@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b58e8s53vncen"
-path="res://.godot/imported/duende_sombrio.png-1b3e565af38464525c38e699c7397ded.ctex"
+uid="uid://bultygoi536pj"
+path="res://.godot/imported/archimago_perdido_spritesheet.png-01e257660c0a18f5aa3661ea9c699a88.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/tier_1/duende_sombrio.png"
-dest_files=["res://.godot/imported/duende_sombrio.png-1b3e565af38464525c38e699c7397ded.ctex"]
+source_file="res://assets/sprites/enemies/tier_4/archimago_perdido_spritesheet.png"
+dest_files=["res://.godot/imported/archimago_perdido_spritesheet.png-01e257660c0a18f5aa3661ea9c699a88.ctex"]
 
 [params]
 

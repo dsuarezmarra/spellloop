@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b1j17d3174i0x"
-path="res://.godot/imported/golem_runico.png-071ebdf72b1d3b8b1d375bc46024f984.ctex"
+uid="uid://cjpdn3omg8i01"
+path="res://.godot/imported/titan_arcano_spritesheet.png-9cf62887dc2aea653b3e0c6d80031b3e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/tier_2/golem_runico.png"
-dest_files=["res://.godot/imported/golem_runico.png-071ebdf72b1d3b8b1d375bc46024f984.ctex"]
+source_file="res://assets/sprites/enemies/tier_4/titan_arcano_spritesheet.png"
+dest_files=["res://.godot/imported/titan_arcano_spritesheet.png-9cf62887dc2aea653b3e0c6d80031b3e.ctex"]
 
 [params]
 

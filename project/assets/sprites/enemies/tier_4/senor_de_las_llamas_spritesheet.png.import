@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://xjugwc8k0o8g"
-path="res://.godot/imported/sombra_flotante.png-f3cd4fa52d21c837d4f642153c3dc1f2.ctex"
+uid="uid://n84gcplrfyeo"
+path="res://.godot/imported/senor_de_las_llamas_spritesheet.png-1404d8c4d9fca1eeb75cc8f616e7e9b5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/tier_2/sombra_flotante.png"
-dest_files=["res://.godot/imported/sombra_flotante.png-f3cd4fa52d21c837d4f642153c3dc1f2.ctex"]
+source_file="res://assets/sprites/enemies/tier_4/senor_de_las_llamas_spritesheet.png"
+dest_files=["res://.godot/imported/senor_de_las_llamas_spritesheet.png-1404d8c4d9fca1eeb75cc8f616e7e9b5.ctex"]
 
 [params]
 

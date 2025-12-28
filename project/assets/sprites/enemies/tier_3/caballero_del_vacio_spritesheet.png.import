@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cb7gesdykrlwc"
-path="res://.godot/imported/lobo_de_cristal.png-39c93b97000dff1ed8b60c04cf920fd7.ctex"
+uid="uid://cyo0xk3syivu2"
+path="res://.godot/imported/caballero_del_vacio_spritesheet.png-ede8dc6405d35338d3ac629069db5df5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/tier_2/lobo_de_cristal.png"
-dest_files=["res://.godot/imported/lobo_de_cristal.png-39c93b97000dff1ed8b60c04cf920fd7.ctex"]
+source_file="res://assets/sprites/enemies/tier_3/caballero_del_vacio_spritesheet.png"
+dest_files=["res://.godot/imported/caballero_del_vacio_spritesheet.png-ede8dc6405d35338d3ac629069db5df5.ctex"]
 
 [params]
 

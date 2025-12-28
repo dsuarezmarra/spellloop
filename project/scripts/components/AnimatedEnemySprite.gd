@@ -74,11 +74,6 @@ func _process(delta: float) -> void:
 	if enable_sway:
 		_apply_sway()
 
-# Margen de recorte para evitar sangrado de frames adyacentes
-const FRAME_MARGIN: int = 0
-# Padding entre frames en el spritesheet (debe coincidir con el usado al generar)
-const FRAME_PADDING: int = 8
-
 func load_spritesheet(path: String) -> bool:
 	"""Cargar un spritesheet de 3 poses y dividirlo en frames"""
 	if not ResourceLoader.exists(path):
@@ -90,38 +85,19 @@ func load_spritesheet(path: String) -> bool:
 		push_warning("[AnimatedEnemySprite] Error al cargar: %s" % path)
 		return false
 	
-	# Calcular tamaño de cada frame
+	# Calcular tamaño de cada frame (3 columnas, 1 fila)
 	var img_width = spritesheet_texture.get_width()
 	var img_height = spritesheet_texture.get_height()
 	
-	# Detectar si tiene padding (636px) o no (612px)
-	var num_frames = 3
-	var total_padding = FRAME_PADDING * (num_frames - 1)  # 16px para 3 frames
-	var has_padding = (img_width > 612)
-	
-	if has_padding:
-		# Formato con padding: ancho = (frame_width * 3) + (padding * 2)
-		frame_width = (img_width - total_padding) / num_frames
-	else:
-		# Formato sin padding: ancho = frame_width * 3
-		frame_width = img_width / num_frames
-	
+	frame_width = img_width / 3
 	frame_height = img_height
 	
 	# Extraer los 3 frames como texturas separadas
 	frame_textures.clear()
 	var source_image = spritesheet_texture.get_image()
 	
-	for i in range(num_frames):
-		var x_start: int
-		if has_padding:
-			# Con padding: cada frame empieza en (frame_width + padding) * i
-			x_start = i * (frame_width + FRAME_PADDING)
-		else:
-			# Sin padding: cada frame empieza en frame_width * i
-			x_start = i * frame_width
-		
-		var frame_rect = Rect2i(x_start, 0, frame_width, frame_height)
+	for i in range(3):
+		var frame_rect = Rect2i(i * frame_width, 0, frame_width, frame_height)
 		var frame_image = source_image.get_region(frame_rect)
 		var frame_tex = ImageTexture.create_from_image(frame_image)
 		frame_textures.append(frame_tex)
@@ -133,7 +109,7 @@ func load_spritesheet(path: String) -> bool:
 	flip_h = false
 	_update_frame()
 	
-	print("[AnimatedEnemySprite] ✓ Cargado: %s (%dx%d por frame, padding=%s)" % [path, frame_width, frame_height, has_padding])
+	print("[AnimatedEnemySprite] ✓ Cargado: %s (%dx%d por frame)" % [path, frame_width, frame_height])
 	return true
 
 func set_direction(direction: Vector2) -> void:

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b58e8s53vncen"
-path="res://.godot/imported/duende_sombrio.png-1b3e565af38464525c38e699c7397ded.ctex"
+uid="uid://drh7h4rer5nrs"
+path="res://.godot/imported/slime_arcano_spritesheet.png-78907381d250cf6501b19123967eeed4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/tier_1/duende_sombrio.png"
-dest_files=["res://.godot/imported/duende_sombrio.png-1b3e565af38464525c38e699c7397ded.ctex"]
+source_file="res://assets/sprites/enemies/tier_1/slime_arcano_spritesheet.png"
+dest_files=["res://.godot/imported/slime_arcano_spritesheet.png-78907381d250cf6501b19123967eeed4.ctex"]
 
 [params]
 

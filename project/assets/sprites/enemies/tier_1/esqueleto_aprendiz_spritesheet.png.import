@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b58e8s53vncen"
-path="res://.godot/imported/duende_sombrio.png-1b3e565af38464525c38e699c7397ded.ctex"
+uid="uid://c32h3wchm4sbl"
+path="res://.godot/imported/esqueleto_aprendiz_spritesheet.png-b4b8bbde8a24cbd857dba4c699ee9c50.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/tier_1/duende_sombrio.png"
-dest_files=["res://.godot/imported/duende_sombrio.png-1b3e565af38464525c38e699c7397ded.ctex"]
+source_file="res://assets/sprites/enemies/tier_1/esqueleto_aprendiz_spritesheet.png"
+dest_files=["res://.godot/imported/esqueleto_aprendiz_spritesheet.png-b4b8bbde8a24cbd857dba4c699ee9c50.ctex"]
 
 [params]
 

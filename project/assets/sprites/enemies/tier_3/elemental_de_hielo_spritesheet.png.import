@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cofaeqm0vmwfe"
-path="res://.godot/imported/hechicero_desgastado.png-fef1ee043c768558a6985997c9d7fb94.ctex"
+uid="uid://bp2dcvt3ca80v"
+path="res://.godot/imported/elemental_de_hielo_spritesheet.png-35aa3bbec729c1caac4e1d2ef32353fb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/tier_2/hechicero_desgastado.png"
-dest_files=["res://.godot/imported/hechicero_desgastado.png-fef1ee043c768558a6985997c9d7fb94.ctex"]
+source_file="res://assets/sprites/enemies/tier_3/elemental_de_hielo_spritesheet.png"
+dest_files=["res://.godot/imported/elemental_de_hielo_spritesheet.png-35aa3bbec729c1caac4e1d2ef32353fb.ctex"]
 
 [params]
 

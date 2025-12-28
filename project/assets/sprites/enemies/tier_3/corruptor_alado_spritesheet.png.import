@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b58e8s53vncen"
-path="res://.godot/imported/duende_sombrio.png-1b3e565af38464525c38e699c7397ded.ctex"
+uid="uid://c5b1mcy370ajw"
+path="res://.godot/imported/corruptor_alado_spritesheet.png-300c2de1d7883b5178c0696079d48b57.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/tier_1/duende_sombrio.png"
-dest_files=["res://.godot/imported/duende_sombrio.png-1b3e565af38464525c38e699c7397ded.ctex"]
+source_file="res://assets/sprites/enemies/tier_3/corruptor_alado_spritesheet.png"
+dest_files=["res://.godot/imported/corruptor_alado_spritesheet.png-300c2de1d7883b5178c0696079d48b57.ctex"]
 
 [params]
 
