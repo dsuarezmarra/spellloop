@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cgplik2i3jlhm"
-path="res://.godot/imported/mago_abismal_spritesheet.png-db51245f3710490a125054a4f3fca150.ctex"
+uid="uid://cc54qx1brjglb"
+path="res://.godot/imported/sombra_flotante_spritesheet.png-05b3d15c67310602d8fe62057cbf22e4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/tier_3/mago_abismal_spritesheet.png"
-dest_files=["res://.godot/imported/mago_abismal_spritesheet.png-db51245f3710490a125054a4f3fca150.ctex"]
+source_file="res://assets/sprites/enemies/tier_2/sombra_flotante_spritesheet.png"
+dest_files=["res://.godot/imported/sombra_flotante_spritesheet.png-05b3d15c67310602d8fe62057cbf22e4.ctex"]
 
 [params]
 

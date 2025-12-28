@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cgplik2i3jlhm"
-path="res://.godot/imported/mago_abismal_spritesheet.png-db51245f3710490a125054a4f3fca150.ctex"
+uid="uid://dhrammhccy6ds"
+path="res://.godot/imported/lobo_de_cristal_spritesheet.png-758512fb43fd37376887da4562c4b202.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/tier_3/mago_abismal_spritesheet.png"
-dest_files=["res://.godot/imported/mago_abismal_spritesheet.png-db51245f3710490a125054a4f3fca150.ctex"]
+source_file="res://assets/sprites/enemies/tier_2/lobo_de_cristal_spritesheet.png"
+dest_files=["res://.godot/imported/lobo_de_cristal_spritesheet.png-758512fb43fd37376887da4562c4b202.ctex"]
 
 [params]
 

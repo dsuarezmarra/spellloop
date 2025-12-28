@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cgplik2i3jlhm"
-path="res://.godot/imported/mago_abismal_spritesheet.png-db51245f3710490a125054a4f3fca150.ctex"
+uid="uid://cb71qhb85j0vl"
+path="res://.godot/imported/hechicero_desgastado.png-fef1ee043c768558a6985997c9d7fb94.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/tier_3/mago_abismal_spritesheet.png"
-dest_files=["res://.godot/imported/mago_abismal_spritesheet.png-db51245f3710490a125054a4f3fca150.ctex"]
+source_file="res://assets/sprites/enemies/tier_2/hechicero_desgastado.png"
+dest_files=["res://.godot/imported/hechicero_desgastado.png-fef1ee043c768558a6985997c9d7fb94.ctex"]
 
 [params]
 

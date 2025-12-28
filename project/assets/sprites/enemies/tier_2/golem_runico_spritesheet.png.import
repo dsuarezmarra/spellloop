@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cgplik2i3jlhm"
-path="res://.godot/imported/mago_abismal_spritesheet.png-db51245f3710490a125054a4f3fca150.ctex"
+uid="uid://b38iwt84imek3"
+path="res://.godot/imported/golem_runico_spritesheet.png-98add434442eb324d80f57b35f442558.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/enemies/tier_3/mago_abismal_spritesheet.png"
-dest_files=["res://.godot/imported/mago_abismal_spritesheet.png-db51245f3710490a125054a4f3fca150.ctex"]
+source_file="res://assets/sprites/enemies/tier_2/golem_runico_spritesheet.png"
+dest_files=["res://.godot/imported/golem_runico_spritesheet.png-98add434442eb324d80f57b35f442558.ctex"]
 
 [params]
 

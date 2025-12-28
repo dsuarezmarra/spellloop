@@ -92,15 +92,16 @@ func load_spritesheet(path: String) -> bool:
 	frame_width = img_width / 3
 	frame_height = img_height
 	
-	# Extraer los 3 frames como texturas separadas
+	# Usar AtlasTexture para cada frame - esto evita el bleeding correctamente
+	# porque Godot maneja las regiones a nivel de GPU sin interpolación entre frames
 	frame_textures.clear()
-	var source_image = spritesheet_texture.get_image()
 	
 	for i in range(3):
-		var frame_rect = Rect2i(i * frame_width, 0, frame_width, frame_height)
-		var frame_image = source_image.get_region(frame_rect)
-		var frame_tex = ImageTexture.create_from_image(frame_image)
-		frame_textures.append(frame_tex)
+		var atlas = AtlasTexture.new()
+		atlas.atlas = spritesheet_texture
+		atlas.region = Rect2(i * frame_width, 0, frame_width, frame_height)
+		atlas.filter_clip = true  # CLAVE: Evita bleeding en los bordes de la región
+		frame_textures.append(atlas)
 	
 	centered = true
 	
