@@ -6,27 +6,27 @@ extends Node2D
 
 const BOSSES_PATH = "res://assets/sprites/enemies/bosses/"
 
-# Lista de bosses con sus colores de aura personalizados
+# Lista de bosses con sus colores de aura personalizados (MÁS VIBRANTES)
 const BOSSES = [
 	{
 		"name": "el_conjurador_primigenio",
 		"display_name": "El Conjurador Primigenio",
-		"aura_color": Color(0.6, 0.2, 1.0, 0.8)  # Púrpura místico
+		"aura_color": Color(0.8, 0.3, 1.0, 1.0)  # Púrpura brillante
 	},
 	{
 		"name": "el_corazon_del_vacio",
 		"display_name": "El Corazón del Vacío",
-		"aura_color": Color(0.1, 0.1, 0.3, 0.9)  # Azul oscuro/vacío
+		"aura_color": Color(0.3, 0.5, 1.0, 1.0)  # Azul eléctrico
 	},
 	{
 		"name": "el_guardian_de_runas",
 		"display_name": "El Guardián de Runas",
-		"aura_color": Color(1.0, 0.8, 0.2, 0.8)  # Dorado rúnico
+		"aura_color": Color(1.0, 0.85, 0.2, 1.0)  # Dorado brillante
 	},
 	{
 		"name": "minotauro_de_fuego",
 		"display_name": "Minotauro de Fuego",
-		"aura_color": Color(1.0, 0.3, 0.1, 0.9)  # Rojo fuego
+		"aura_color": Color(1.0, 0.4, 0.1, 1.0)  # Naranja fuego
 	}
 ]
 
@@ -60,7 +60,7 @@ func _setup_title() -> void:
 	add_child(title)
 	
 	var subtitle = Label.new()
-	subtitle.text = "Efectos: Aura Pulsante + Bobbing Lento + Breathing + Sway\nEscala: 0.35 (casi el doble que enemigos normales)"
+	subtitle.text = "Efectos: Aura Brillante + Partículas Orbitales + Bobbing Lento + Breathing\nEscala: 0.35 (casi el doble que enemigos normales)"
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.position = Vector2(640, 70)
 	subtitle.add_theme_font_size_override("font_size", 16)
@@ -108,8 +108,9 @@ func _setup_instructions() -> void:
 	var instructions = Label.new()
 	instructions.text = """
 Controles:
-[1-4] Cambiar dirección del boss seleccionado (Down, Left, Right, Up)
+[1-4] Cambiar dirección (Down, Left, Right, Up)
 [A] Toggle Aura ON/OFF
+[P] Toggle Partículas ON/OFF
 [+/-] Aumentar/Reducir escala
 [R] Resetear
 [ESC] Salir
@@ -134,6 +135,8 @@ func _input(event: InputEvent) -> void:
 				_set_all_directions("up")
 			KEY_A:
 				_toggle_aura()
+			KEY_P:
+				_toggle_particles()
 			KEY_EQUAL, KEY_KP_ADD:
 				_change_scale(0.05)
 			KEY_MINUS, KEY_KP_SUBTRACT:
@@ -152,6 +155,15 @@ func _toggle_aura() -> void:
 	for boss in spawned_bosses:
 		boss.set_aura_enabled(!boss.enable_aura)
 	print("Aura: %s" % ("ON" if spawned_bosses[0].enable_aura else "OFF"))
+
+func _toggle_particles() -> void:
+	for boss in spawned_bosses:
+		boss.enable_particles = !boss.enable_particles
+		# Ocultar/mostrar partículas existentes
+		for particle in boss.particles:
+			if is_instance_valid(particle):
+				particle.visible = boss.enable_particles
+	print("Partículas: %s" % ("ON" if spawned_bosses[0].enable_particles else "OFF"))
 
 func _change_scale(delta: float) -> void:
 	for boss in spawned_bosses:

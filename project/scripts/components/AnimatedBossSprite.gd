@@ -32,11 +32,11 @@ class_name AnimatedBossSprite
 
 # === CONFIGURACIÓN DEL AURA ===
 @export var aura_color: Color = Color(1.0, 0.8, 0.2, 1.0)  # Dorado por defecto
-@export var aura_width: float = 8.0               # Grosor del aura en píxeles (MUY VISIBLE)
+@export var aura_width: float = 6.0               # Grosor del aura (sutil para evitar cortes)
 @export var aura_pulse_speed: float = 3.0         # Velocidad del pulso
 @export var aura_pulse_amount: float = 0.3        # Variación de intensidad
-@export var aura_glow_layers: int = 3             # Capas de brillo (más = más difuminado)
-@export var aura_intensity: float = 1.5           # Multiplicador de brillo
+@export var aura_glow_layers: int = 3             # Capas de brillo
+@export var aura_intensity: float = 1.8           # Multiplicador de brillo
 
 # === PARTÍCULAS FLOTANTES ===
 @export var enable_particles: bool = true         # Partículas alrededor del boss
@@ -73,7 +73,7 @@ const AURA_SHADER = """
 shader_type canvas_item;
 
 uniform vec4 aura_color : source_color = vec4(1.0, 0.8, 0.2, 1.0);
-uniform float aura_width : hint_range(1.0, 20.0) = 8.0;
+uniform float aura_width : hint_range(1.0, 40.0) = 20.0;
 uniform float pulse_intensity : hint_range(0.0, 2.0) = 1.0;
 uniform float glow_intensity : hint_range(0.5, 3.0) = 1.5;
 
@@ -157,31 +157,6 @@ func _setup_aura_shader() -> void:
 	aura_material.set_shader_parameter("glow_intensity", aura_intensity)
 	
 	material = aura_material
-
-func _process(delta: float) -> void:
-	animation_time += delta
-	
-	# Resetear transformaciones
-	offset = Vector2.ZERO
-	rotation = 0.0
-	scale = base_scale
-	
-	# Calcular fase del bobbing (más lenta)
-	var bob_phase = sin(animation_time * bobbing_speed)
-	
-	# Aplicar animaciones
-	if enable_bobbing:
-		_apply_bobbing(bob_phase)
-	
-	if enable_breathing:
-		_apply_breathing()
-	
-	if enable_sway:
-		_apply_sway()
-	
-	# Actualizar pulso del aura
-	if enable_aura and aura_material:
-		_update_aura_pulse()
 
 func _apply_bobbing(bob_phase: float) -> void:
 	"""Movimiento vertical lento y pesado"""
@@ -394,3 +369,107 @@ func set_aura_width(width: float) -> void:
 	aura_width = width
 	if aura_material:
 		aura_material.set_shader_parameter("aura_width", width)
+
+# === SISTEMA DE PARTÍCULAS FLOTANTES ===
+
+func _setup_particles() -> void:
+	"""Crear partículas que orbitan alrededor del boss"""
+	for i in range(particle_count):
+		var particle = _create_particle(i)
+		particles.append(particle)
+		get_parent().add_child(particle)
+
+func _create_particle(index: int) -> Node2D:
+	"""Crear una partícula individual"""
+	var particle = Node2D.new()
+	
+	# Sprite de la partícula (un simple círculo brillante)
+	var sprite = Sprite2D.new()
+	
+	# Crear textura procedural para la partícula
+	var img = Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	var center = Vector2(8, 8)
+	for x in range(16):
+		for y in range(16):
+			var dist = Vector2(x, y).distance_to(center)
+			if dist < 6:
+				var alpha = 1.0 - (dist / 6.0)
+				alpha = alpha * alpha  # Más brillante en el centro
+				img.set_pixel(x, y, Color(aura_color.r, aura_color.g, aura_color.b, alpha))
+			else:
+				img.set_pixel(x, y, Color(0, 0, 0, 0))
+	
+	var tex = ImageTexture.create_from_image(img)
+	sprite.texture = tex
+	sprite.modulate = aura_color
+	sprite.modulate.a = 0.8
+	
+	particle.add_child(sprite)
+	
+	# Guardar datos de órbita en metadata
+	particle.set_meta("orbit_offset", (TAU / particle_count) * index)
+	particle.set_meta("orbit_variation", randf_range(0.8, 1.2))
+	particle.set_meta("size_variation", randf_range(0.5, 1.2))
+	
+	sprite.scale = Vector2.ONE * particle.get_meta("size_variation")
+	
+	return particle
+
+func _update_particles() -> void:
+	"""Actualizar posición de las partículas en órbita"""
+	for particle in particles:
+		if not is_instance_valid(particle):
+			continue
+		
+		var orbit_offset = particle.get_meta("orbit_offset")
+		var orbit_var = particle.get_meta("orbit_variation")
+		
+		# Calcular posición en órbita elíptica
+		var angle = animation_time * particle_speed + orbit_offset
+		var radius = particle_orbit_radius * orbit_var
+		
+		# Órbita ligeramente elíptica y con movimiento vertical
+		var orbit_x = cos(angle) * radius
+		var orbit_y = sin(angle) * radius * 0.4 + sin(angle * 2) * 10
+		
+		particle.global_position = global_position + Vector2(orbit_x, orbit_y)
+		
+		# Hacer que las partículas pulsen con el aura
+		var pulse = 0.6 + sin(animation_time * aura_pulse_speed + orbit_offset) * 0.4
+		particle.modulate.a = pulse * 0.8
+		
+		# Las partículas detrás del boss son más transparentes
+		if orbit_y > 0:
+			particle.modulate.a *= 0.5
+			particle.z_index = -1
+		else:
+			particle.z_index = 1
+
+func _process(delta: float) -> void:
+	animation_time += delta
+	
+	# Resetear transformaciones
+	offset = Vector2.ZERO
+	rotation = 0.0
+	scale = base_scale
+	
+	# Calcular fase del bobbing (más lenta)
+	var bob_phase = sin(animation_time * bobbing_speed)
+	
+	# Aplicar animaciones
+	if enable_bobbing:
+		_apply_bobbing(bob_phase)
+	
+	if enable_breathing:
+		_apply_breathing()
+	
+	if enable_sway:
+		_apply_sway()
+	
+	# Actualizar pulso del aura
+	if enable_aura and aura_material:
+		_update_aura_pulse()
+	
+	# Actualizar partículas
+	if enable_particles and particles.size() > 0:
+		_update_particles()
