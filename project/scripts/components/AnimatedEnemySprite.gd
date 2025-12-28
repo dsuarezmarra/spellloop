@@ -35,6 +35,7 @@ var frame_height: int = 0
 var current_direction: String = "down"  # down, left, right, up
 var base_scale: Vector2 = Vector2.ONE
 var animation_time: float = 0.0
+var direction_locked: bool = false  # Si true, set_direction() no hace nada
 
 # Direcciones mapeadas a frames
 # down = frente (0), left = lado (1), right = lado flipped (1), up = espalda (2)
@@ -73,6 +74,11 @@ func _process(delta: float) -> void:
 	if enable_sway:
 		_apply_sway()
 
+# Margen de recorte para evitar sangrado de frames adyacentes
+const FRAME_MARGIN: int = 0
+# Padding entre frames en el spritesheet (debe coincidir con el usado al generar)
+const FRAME_PADDING: int = 8
+
 func load_spritesheet(path: String) -> bool:
 	"""Cargar un spritesheet de 3 poses y dividirlo en frames"""
 	if not ResourceLoader.exists(path):
@@ -84,32 +90,57 @@ func load_spritesheet(path: String) -> bool:
 		push_warning("[AnimatedEnemySprite] Error al cargar: %s" % path)
 		return false
 	
-	# Calcular tamaño de cada frame (3 columnas, 1 fila)
+	# Calcular tamaño de cada frame
 	var img_width = spritesheet_texture.get_width()
 	var img_height = spritesheet_texture.get_height()
 	
-	frame_width = img_width / 3
+	# Detectar si tiene padding (636px) o no (612px)
+	var num_frames = 3
+	var total_padding = FRAME_PADDING * (num_frames - 1)  # 16px para 3 frames
+	var has_padding = (img_width > 612)
+	
+	if has_padding:
+		# Formato con padding: ancho = (frame_width * 3) + (padding * 2)
+		frame_width = (img_width - total_padding) / num_frames
+	else:
+		# Formato sin padding: ancho = frame_width * 3
+		frame_width = img_width / num_frames
+	
 	frame_height = img_height
 	
 	# Extraer los 3 frames como texturas separadas
 	frame_textures.clear()
 	var source_image = spritesheet_texture.get_image()
 	
-	for i in range(3):
-		var frame_rect = Rect2i(i * frame_width, 0, frame_width, frame_height)
+	for i in range(num_frames):
+		var x_start: int
+		if has_padding:
+			# Con padding: cada frame empieza en (frame_width + padding) * i
+			x_start = i * (frame_width + FRAME_PADDING)
+		else:
+			# Sin padding: cada frame empieza en frame_width * i
+			x_start = i * frame_width
+		
+		var frame_rect = Rect2i(x_start, 0, frame_width, frame_height)
 		var frame_image = source_image.get_region(frame_rect)
 		var frame_tex = ImageTexture.create_from_image(frame_image)
 		frame_textures.append(frame_tex)
 	
-	# Mostrar frame frontal por defecto
-	texture = frame_textures[0]
 	centered = true
 	
-	print("[AnimatedEnemySprite] ✓ Cargado: %s (%dx%d por frame)" % [path, frame_width, frame_height])
+	# Inicializar con dirección DOWN y aplicar frame
+	current_direction = "down"
+	flip_h = false
+	_update_frame()
+	
+	print("[AnimatedEnemySprite] ✓ Cargado: %s (%dx%d por frame, padding=%s)" % [path, frame_width, frame_height, has_padding])
 	return true
 
 func set_direction(direction: Vector2) -> void:
-	"""Establecer dirección basada en vector de movimiento"""
+	"""Establecer dirección basada en vector de movimiento (ignorado si direction_locked)"""
+	if direction_locked:
+		return  # No actualizar si la dirección está bloqueada
+	
 	if direction.length() < 0.1:
 		return
 	
@@ -121,15 +152,40 @@ func set_direction(direction: Vector2) -> void:
 	else:
 		new_direction = "down" if direction.y > 0 else "up"
 	
-	if new_direction != current_direction:
-		current_direction = new_direction
-		_update_frame()
+	current_direction = new_direction
+	_update_frame()
 
 func set_direction_string(direction: String) -> void:
-	"""Establecer dirección directamente por nombre"""
-	if direction in DIRECTION_TO_FRAME and direction != current_direction:
+	"""Establecer dirección directamente por nombre (ignorado si direction_locked)"""
+	if direction_locked:
+		return
+	if direction in DIRECTION_TO_FRAME:
 		current_direction = direction
 		_update_frame()
+
+func force_direction(direction: Vector2, lock: bool = false) -> void:
+	"""Forzar cambio de dirección (siempre actualiza). Si lock=true, bloquea actualizaciones automáticas."""
+	var new_direction: String
+	if abs(direction.x) > abs(direction.y):
+		new_direction = "right" if direction.x > 0 else "left"
+	else:
+		new_direction = "down" if direction.y > 0 else "up"
+	current_direction = new_direction
+	if lock:
+		direction_locked = true
+	_update_frame()
+
+func force_direction_string(direction: String, lock: bool = false) -> void:
+	"""Forzar cambio de dirección por nombre (siempre actualiza). Si lock=true, bloquea actualizaciones automáticas."""
+	if direction in DIRECTION_TO_FRAME:
+		current_direction = direction
+		if lock:
+			direction_locked = true
+		_update_frame()
+
+func unlock_direction() -> void:
+	"""Desbloquear la dirección para permitir actualizaciones automáticas"""
+	direction_locked = false
 
 func _update_frame() -> void:
 	"""Actualizar el frame y flip según la dirección"""
@@ -137,7 +193,16 @@ func _update_frame() -> void:
 		return
 	
 	var frame_index = DIRECTION_TO_FRAME.get(current_direction, 0)
-	texture = frame_textures[frame_index]
+	
+	if frame_index < 0 or frame_index >= frame_textures.size():
+		return
+	
+	var new_texture = frame_textures[frame_index]
+	if new_texture == null:
+		return
+	
+	# Asignar la nueva textura
+	texture = new_texture
 	
 	# Flip horizontal para dirección derecha
 	flip_h = (current_direction == "right")

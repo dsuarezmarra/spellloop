@@ -1,6 +1,6 @@
 extends Node2D
 ## Test scene for animated enemy sprites
-## Muestra todos los enemigos tier_1, tier_2, tier_3 con sus spritesheets animados
+## Muestra todos los enemigos tier_1, tier_2, tier_3, tier_4 con sus spritesheets animados
 
 const ENEMY_BASE = preload("res://scripts/enemies/EnemyBase.gd")
 
@@ -29,6 +29,14 @@ var tier_3_enemies = [
 	{"id": "tier_3_elemental_de_hielo", "tier": 3, "name": "Elemental"},
 	{"id": "tier_3_mago_abismal", "tier": 3, "name": "Mago"},
 	{"id": "tier_3_corruptor_alado", "tier": 3, "name": "Corruptor"}
+]
+
+var tier_4_enemies = [
+	{"id": "tier_4_titan_arcano", "tier": 4, "name": "Titán"},
+	{"id": "tier_4_senor_de_las_llamas", "tier": 4, "name": "Señor Llamas"},
+	{"id": "tier_4_reina_del_hielo", "tier": 4, "name": "Reina Hielo"},
+	{"id": "tier_4_archimago_perdido", "tier": 4, "name": "Archimago"},
+	{"id": "tier_4_dragon_etereo", "tier": 4, "name": "Dragón"}
 ]
 
 var enemies_spawned = []
@@ -63,15 +71,16 @@ func _ready():
 	subtitle.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	add_child(subtitle)
 	
-	# Spawn por filas con más espacio
-	_spawn_row(tier_1_enemies, 180, "TIER 1")
-	_spawn_row(tier_2_enemies, 450, "TIER 2")
-	_spawn_row(tier_3_enemies, 720, "TIER 3")
+	# Spawn por filas con más espacio (4 filas)
+	_spawn_row(tier_1_enemies, 140, "TIER 1")
+	_spawn_row(tier_2_enemies, 340, "TIER 2")
+	_spawn_row(tier_3_enemies, 540, "TIER 3")
+	_spawn_row(tier_4_enemies, 740, "TIER 4")
 	
 	# Label de dirección actual
 	direction_label = Label.new()
 	direction_label.text = "Dirección: Abajo (1)"
-	direction_label.position = Vector2(850, 950)
+	direction_label.position = Vector2(850, 920)
 	direction_label.add_theme_font_size_override("font_size", 24)
 	direction_label.add_theme_color_override("font_color", Color(1, 1, 0))
 	add_child(direction_label)
@@ -79,11 +88,15 @@ func _ready():
 	# Instrucciones
 	var instr = Label.new()
 	instr.text = "Teclas: 1=Abajo | 2=Izquierda | 3=Derecha | 4=Arriba"
-	instr.position = Vector2(720, 1000)
+	instr.position = Vector2(720, 970)
 	instr.add_theme_font_size_override("font_size", 20)
 	add_child(instr)
 	
 	print("✓ %d enemigos spawneados" % enemies_spawned.size())
+	
+	# Forzar dirección inicial DOWN para todos después de un frame
+	await get_tree().process_frame
+	_force_all_direction(Vector2.DOWN)
 
 func _spawn_row(enemies: Array, y_pos: float, tier_label: String):
 	# Label del tier
@@ -131,6 +144,12 @@ func _spawn_enemy(data: Dictionary, pos: Vector2):
 	
 	enemies_spawned.append(enemy)
 
+func _force_all_direction(direction: Vector2):
+	"""Forzar dirección en todos los enemigos (con lock para evitar sobrescritura)"""
+	for enemy in enemies_spawned:
+		if is_instance_valid(enemy) and enemy.animated_sprite:
+			enemy.animated_sprite.force_direction(direction, true)
+
 func _unhandled_input(event):
 	if event is InputEventKey and event.pressed:
 		var new_direction: Vector2 = Vector2.ZERO
@@ -151,9 +170,6 @@ func _unhandled_input(event):
 				dir_name = "Arriba (4)"
 		
 		if new_direction != Vector2.ZERO:
-			print("Cambiando dirección a: %s" % dir_name)
+			print(">>> Cambiando dirección a: %s" % dir_name)
 			direction_label.text = "Dirección: %s" % dir_name
-			
-			for enemy in enemies_spawned:
-				if is_instance_valid(enemy) and enemy.animated_sprite:
-					enemy.animated_sprite.set_direction(new_direction)
+			_force_all_direction(new_direction)
