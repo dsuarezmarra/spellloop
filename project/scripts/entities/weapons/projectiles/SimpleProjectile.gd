@@ -1,12 +1,13 @@
 # SimpleProjectile.gd
-# Sistema de proyectiles SIMPLE y EFECTIVO - Inspirado en Vampire Survivors
+# Sistema de proyectiles con diferentes tipos de elemento
 # 
-# Características:
-# - Movimiento en línea recta hacia el objetivo
-# - Visual circular/orbe claro y visible
-# - Sin rotación complicada
-# - Detección de colisión simple
-# - Daño al contacto con knockback
+# Tipos soportados:
+# - ice: Esquirla de hielo (rombo azul brillante)
+# - fire: Bola de fuego (círculo naranja con estela)
+# - arcane: Orbe arcano (esfera púrpura pulsante)
+# - lightning: Rayo eléctrico (forma angular amarilla)
+# - dark: Proyectil oscuro (esfera negra con aura)
+# - nature: Hoja/espina verde
 
 extends Area2D
 class_name SimpleProjectile
@@ -21,6 +22,9 @@ signal destroyed
 @export var knockback_force: float = 150.0
 @export var pierce_count: int = 0  # 0 = no atraviesa
 
+# === TIPO DE ELEMENTO ===
+@export var element_type: String = "ice"  # ice, fire, arcane, lightning, dark, nature
+
 # === ESTADO ===
 var direction: Vector2 = Vector2.RIGHT
 var current_lifetime: float = 0.0
@@ -29,19 +33,37 @@ var pierces_remaining: int = 0
 
 # === VISUAL ===
 var sprite: Sprite2D = null
-var projectile_color: Color = Color(0.4, 0.7, 1.0, 1.0)  # Azul hielo por defecto
+var projectile_color: Color = Color(0.4, 0.7, 1.0, 1.0)
 var projectile_size: float = 12.0
+var trail_particles: CPUParticles2D = null
+
+# Colores por elemento
+const ELEMENT_COLORS = {
+	"ice": Color(0.4, 0.8, 1.0, 1.0),      # Azul hielo
+	"fire": Color(1.0, 0.5, 0.1, 1.0),     # Naranja fuego
+	"arcane": Color(0.7, 0.3, 1.0, 1.0),   # Púrpura arcano
+	"lightning": Color(1.0, 1.0, 0.3, 1.0), # Amarillo eléctrico
+	"dark": Color(0.3, 0.1, 0.4, 1.0),     # Púrpura oscuro
+	"nature": Color(0.3, 0.8, 0.2, 1.0)    # Verde naturaleza
+}
 
 func _ready() -> void:
 	# Configuración básica
 	z_index = 10
 	pierces_remaining = pierce_count
 	
+	# Obtener color del elemento
+	if ELEMENT_COLORS.has(element_type):
+		projectile_color = ELEMENT_COLORS[element_type]
+	
 	# Configurar colisiones
 	_setup_collision()
 	
-	# Crear visual
+	# Crear visual según tipo de elemento
 	_create_visual()
+	
+	# Crear estela de partículas
+	_create_trail()
 	
 	# Conectar señales
 	body_entered.connect(_on_body_entered)
@@ -67,23 +89,154 @@ func _setup_collision() -> void:
 		add_child(shape)
 
 func _create_visual() -> void:
-	# Crear sprite circular simple
+	"""Crear visual según tipo de elemento"""
 	sprite = Sprite2D.new()
 	sprite.name = "Sprite"
 	
-	# Crear textura de orbe/círculo
-	var size = int(projectile_size * 2)
+	var size = int(projectile_size * 2.5)
 	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
 	var center = Vector2(size / 2.0, size / 2.0)
-	var radius = size / 2.0 - 1.0
 	
+	match element_type:
+		"ice":
+			_draw_ice_shard(image, size, center)
+		"fire":
+			_draw_fireball(image, size, center)
+		"arcane":
+			_draw_arcane_orb(image, size, center)
+		"lightning":
+			_draw_lightning_bolt(image, size, center)
+		"dark":
+			_draw_dark_orb(image, size, center)
+		"nature":
+			_draw_leaf(image, size, center)
+		_:
+			_draw_default_orb(image, size, center)
+	
+	var texture = ImageTexture.create_from_image(image)
+	sprite.texture = texture
+	sprite.centered = true
+	add_child(sprite)
+
+func _draw_ice_shard(image: Image, size: int, center: Vector2) -> void:
+	"""Dibujar esquirla de hielo (forma de diamante/rombo)"""
+	var half = size / 2.0
+	for x in range(size):
+		for y in range(size):
+			var px = x - half
+			var py = y - half
+			# Forma de rombo: |x| + |y| <= radio
+			var diamond_dist = abs(px) * 0.8 + abs(py)
+			if diamond_dist <= half * 0.85:
+				var intensity = 1.0 - (diamond_dist / (half * 0.85)) * 0.4
+				var color = Color(
+					0.7 * intensity + 0.3,
+					0.9 * intensity + 0.1,
+					1.0,
+					1.0 if diamond_dist < half * 0.6 else 0.85
+				)
+				image.set_pixel(x, y, color)
+			else:
+				image.set_pixel(x, y, Color(0, 0, 0, 0))
+
+func _draw_fireball(image: Image, size: int, center: Vector2) -> void:
+	"""Dibujar bola de fuego (círculo con gradiente cálido)"""
+	var radius = size / 2.0 - 2.0
 	for x in range(size):
 		for y in range(size):
 			var pos = Vector2(x, y)
 			var dist = pos.distance_to(center)
-			
 			if dist <= radius:
-				# Gradiente desde el centro
+				var t = dist / radius
+				# Gradiente: centro amarillo -> naranja -> rojo exterior
+				var color: Color
+				if t < 0.3:
+					color = Color(1.0, 1.0, 0.5, 1.0)  # Amarillo centro
+				elif t < 0.6:
+					color = Color(1.0, 0.6, 0.1, 1.0)  # Naranja
+				else:
+					color = Color(1.0, 0.3, 0.0, 0.9)  # Rojo exterior
+				image.set_pixel(x, y, color)
+			else:
+				image.set_pixel(x, y, Color(0, 0, 0, 0))
+
+func _draw_arcane_orb(image: Image, size: int, center: Vector2) -> void:
+	"""Dibujar orbe arcano (esfera púrpura con brillo)"""
+	var radius = size / 2.0 - 2.0
+	for x in range(size):
+		for y in range(size):
+			var pos = Vector2(x, y)
+			var dist = pos.distance_to(center)
+			if dist <= radius:
+				var t = 1.0 - dist / radius
+				var color = Color(
+					0.6 + t * 0.4,
+					0.2 + t * 0.3,
+					1.0,
+					0.8 + t * 0.2
+				)
+				image.set_pixel(x, y, color)
+			else:
+				image.set_pixel(x, y, Color(0, 0, 0, 0))
+
+func _draw_lightning_bolt(image: Image, size: int, center: Vector2) -> void:
+	"""Dibujar rayo eléctrico (forma angular)"""
+	var half = size / 2.0
+	for x in range(size):
+		for y in range(size):
+			var px = (x - half) / half
+			var py = (y - half) / half
+			# Forma de rayo zigzag
+			var in_bolt = abs(px) < 0.4 and abs(py) < 0.9
+			in_bolt = in_bolt or (abs(px - 0.2) < 0.3 and py > -0.3 and py < 0.3)
+			if in_bolt:
+				var intensity = 0.8 + randf() * 0.2
+				image.set_pixel(x, y, Color(1.0, 1.0, 0.3 * intensity, 1.0))
+			else:
+				image.set_pixel(x, y, Color(0, 0, 0, 0))
+
+func _draw_dark_orb(image: Image, size: int, center: Vector2) -> void:
+	"""Dibujar orbe oscuro (núcleo oscuro con aura púrpura)"""
+	var radius = size / 2.0 - 1.0
+	for x in range(size):
+		for y in range(size):
+			var pos = Vector2(x, y)
+			var dist = pos.distance_to(center)
+			if dist <= radius:
+				var t = dist / radius
+				if t < 0.5:
+					# Núcleo oscuro
+					image.set_pixel(x, y, Color(0.15, 0.05, 0.2, 1.0))
+				else:
+					# Aura púrpura
+					var alpha = 1.0 - (t - 0.5) * 1.5
+					image.set_pixel(x, y, Color(0.5, 0.1, 0.6, alpha))
+			else:
+				image.set_pixel(x, y, Color(0, 0, 0, 0))
+
+func _draw_leaf(image: Image, size: int, center: Vector2) -> void:
+	"""Dibujar hoja/espina de naturaleza"""
+	var half = size / 2.0
+	for x in range(size):
+		for y in range(size):
+			var px = (x - half) / half
+			var py = (y - half) / half
+			# Forma de hoja: elipse con punta
+			var leaf_shape = (px * px * 2.0 + py * py) < 0.7 and py < 0.8
+			if leaf_shape:
+				var intensity = 0.7 + abs(px) * 0.3
+				image.set_pixel(x, y, Color(0.2, 0.7 * intensity, 0.1, 1.0))
+			else:
+				image.set_pixel(x, y, Color(0, 0, 0, 0))
+
+func _draw_default_orb(image: Image, size: int, center: Vector2) -> void:
+	"""Dibujar orbe por defecto"""
+	var radius = size / 2.0 - 1.0
+	for x in range(size):
+		for y in range(size):
+			var pos = Vector2(x, y)
+			var dist = pos.distance_to(center)
+			if dist <= radius:
 				var intensity = 1.0 - (dist / radius) * 0.5
 				var color = Color(
 					projectile_color.r * intensity + 0.3,
@@ -94,11 +247,25 @@ func _create_visual() -> void:
 				image.set_pixel(x, y, color)
 			else:
 				image.set_pixel(x, y, Color(0, 0, 0, 0))
-	
-	var texture = ImageTexture.create_from_image(image)
-	sprite.texture = texture
-	sprite.centered = true
-	add_child(sprite)
+
+func _create_trail() -> void:
+	"""Crear partículas de estela según elemento"""
+	trail_particles = CPUParticles2D.new()
+	trail_particles.name = "Trail"
+	trail_particles.emitting = true
+	trail_particles.amount = 8
+	trail_particles.lifetime = 0.3
+	trail_particles.speed_scale = 1.5
+	trail_particles.explosiveness = 0.0
+	trail_particles.direction = Vector2(-1, 0)  # Hacia atrás
+	trail_particles.spread = 15.0
+	trail_particles.gravity = Vector2.ZERO
+	trail_particles.initial_velocity_min = 20.0
+	trail_particles.initial_velocity_max = 40.0
+	trail_particles.scale_amount_min = 0.3
+	trail_particles.scale_amount_max = 0.6
+	trail_particles.color = projectile_color
+	add_child(trail_particles)
 
 func _process(delta: float) -> void:
 	# Actualizar lifetime

@@ -111,4 +111,3 @@ func _on_skip():
 
 func _make_on_pressed(index: int) -> Callable:
 	return func(): _on_option_pressed(index)
-

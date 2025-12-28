@@ -65,7 +65,7 @@ func perform_attack(owner: Node2D) -> void:
 		projectile.global_position = start_pos
 		projectile.damage = damage
 		projectile.speed = projectile_speed
-		projectile.projectile_color = Color(0.4, 0.8, 1.0, 1.0)  # Azul hielo
+		projectile.element_type = element_type  # "ice" - esquirla de hielo
 		projectile.knockback_force = 120.0
 		
 		# Calcular dirección
@@ -75,7 +75,6 @@ func perform_attack(owner: Node2D) -> void:
 			direction = direction.rotated(spread)
 		
 		projectile.direction = direction
-		print("[IceWand] ✓ Proyectil creado, dirección: %s" % direction)
 
 func _find_nearest_enemy(owner: Node2D) -> Node:
 	"""Encontrar el enemigo más cercano"""

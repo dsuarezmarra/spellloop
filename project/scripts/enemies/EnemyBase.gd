@@ -6,6 +6,7 @@ signal enemy_died(enemy_node, enemy_type_id, exp_value)
 # Componentes
 var health_component = null
 var attack_system = null
+var animated_sprite = null  # AnimatedEnemySprite component
 
 var enemy_id: String = "generic"
 var enemy_tier: int = 1  # Tier del enemigo (1-4 normal, 5 boss)
@@ -22,6 +23,9 @@ var separation_radius: float = 40.0
 var attack_cooldown: float = 1.0
 var can_attack: bool = true
 var attack_timer: float = 0.0
+
+# Dirección actual del enemigo (para animación)
+var current_direction: Vector2 = Vector2.DOWN
 
 func _ready() -> void:
 	"""Inicializar al cargar la escena. Ejecutado ANTES de las subclases."""
@@ -55,36 +59,28 @@ func _ready() -> void:
 		attack_system.name = "AttackSystem"
 		add_child(attack_system)
 	
-	# Asegurar que hay un Sprite2D y cargar su textura
-	var sprite = _find_sprite_node(self)
-	if not sprite:
-		sprite = Sprite2D.new()
-		sprite.name = "Sprite2D"
-		add_child(sprite)
+	# Intentar usar AnimatedEnemySprite con spritesheet
+	var spritesheet_loaded = _try_load_animated_sprite()
 	
-	# Cargar la textura del sprite desde SpriteDB o sprites_index.json
-	_load_enemy_sprite(sprite)
+	# Si no hay spritesheet, usar sprite estático como fallback
+	if not spritesheet_loaded:
+		var sprite = _find_sprite_node(self)
+		if not sprite:
+			sprite = Sprite2D.new()
+			sprite.name = "Sprite2D"
+			add_child(sprite)
+		_load_enemy_sprite(sprite)
+		
+		# Aplicar escala al sprite estático
+		var enemy_scale = _get_scale_for_tier()
+		if sprite:
+			sprite.scale = Vector2(enemy_scale, enemy_scale)
+			sprite.centered = true
 	
 	# Añadir a grupo de enemigos para detección
 	add_to_group("enemies")
 	
-	# Aplicar escala FIJA pequeña para enemigos (sin depender de VisualCalibrator)
-	# Usar misma escala base que el jugador (0.25) con variaciones por tier
-	# Tier 1: 0.20, Tier 2: 0.22, Tier 3: 0.24, Tier 4: 0.26, Boss: 0.35
-	var enemy_scale = 0.20  # Base para tier 1
-	match enemy_tier:
-		1: enemy_scale = 0.20
-		2: enemy_scale = 0.22
-		3: enemy_scale = 0.24
-		4: enemy_scale = 0.26
-		5: enemy_scale = 0.35  # Boss
-	
-	# Aplicar escala al sprite
-	if sprite:
-		sprite.scale = Vector2(enemy_scale, enemy_scale)
-		sprite.centered = true
-	
-	print("[EnemyBase] ✓ _ready() escala=%s tier=%d" % [enemy_scale, enemy_tier])
+	print("[EnemyBase] ✓ _ready() tier=%d animated=%s" % [enemy_tier, spritesheet_loaded])
 	
 	# Configurar z_index
 	self.z_index = 0
@@ -100,6 +96,102 @@ func _ready() -> void:
 		)
 		print("[EnemyBase] ✓ Sistema de ataque inicializado para %s" % name)
 
+func _get_scale_for_tier() -> float:
+	"""Obtener escala según tier del enemigo"""
+	match enemy_tier:
+		1: return 0.20
+		2: return 0.22
+		3: return 0.24
+		4: return 0.26
+		5: return 0.35  # Boss
+		_: return 0.20
+
+func _try_load_animated_sprite() -> bool:
+	"""Intentar cargar AnimatedEnemySprite con spritesheet. Retorna true si tuvo éxito."""
+	var spritesheet_path = _get_spritesheet_path()
+	if spritesheet_path.is_empty() or not ResourceLoader.exists(spritesheet_path):
+		return false
+	
+	# Cargar el script de AnimatedEnemySprite
+	var aes_script = load("res://scripts/components/AnimatedEnemySprite.gd")
+	if not aes_script:
+		print("[EnemyBase] No se pudo cargar AnimatedEnemySprite.gd")
+		return false
+	
+	# Crear instancia
+	animated_sprite = aes_script.new()
+	animated_sprite.name = "AnimatedSprite"
+	add_child(animated_sprite)
+	
+	# Configurar escala según tier
+	var enemy_scale = _get_scale_for_tier()
+	animated_sprite.sprite_scale = enemy_scale
+	
+	# Cargar spritesheet
+	if animated_sprite.load_spritesheet(spritesheet_path):
+		print("[EnemyBase] ✓ Spritesheet cargado: %s" % spritesheet_path)
+		
+		# Eliminar Sprite2D existente si hay
+		var old_sprite = _find_sprite_node(self)
+		if old_sprite:
+			old_sprite.queue_free()
+		
+		return true
+	else:
+		print("[EnemyBase] ✗ Error cargando spritesheet: %s" % spritesheet_path)
+		animated_sprite.queue_free()
+		animated_sprite = null
+		return false
+
+func _get_spritesheet_path() -> String:
+	"""Obtener la ruta del spritesheet basado en enemy_id y tier"""
+	var base_path = "res://assets/sprites/enemies/"
+	var tier_folder = ""
+	var sprite_name = ""
+	
+	match enemy_tier:
+		1: tier_folder = "tier_1/"
+		2: tier_folder = "tier_2/"
+		3: tier_folder = "tier_3/"
+		4: tier_folder = "tier_4/"
+		5: tier_folder = "bosses/"
+		_: tier_folder = "tier_1/"
+	
+	# Mapear enemy_id a nombre de archivo de spritesheet
+	match enemy_id:
+		# Tier 1
+		"skeleton", "tier_1_esqueleto_aprendiz": sprite_name = "esqueleto_aprendiz"
+		"goblin", "tier_1_duende_sombrio": sprite_name = "duende_sombrio"
+		"slime", "tier_1_slime_arcano": sprite_name = "slime_arcano"
+		"tier_1_murcielago_etereo": sprite_name = "murcielago_etereo"
+		"tier_1_arana_venenosa": sprite_name = "arana_venenosa"
+		# Tier 2
+		"tier_2_guerrero_espectral": sprite_name = "guerrero_espectral"
+		"tier_2_lobo_de_cristal": sprite_name = "lobo_de_cristal"
+		"tier_2_golem_runico": sprite_name = "golem_runico"
+		"tier_2_hechicero_desgastado": sprite_name = "hechicero_desgastado"
+		"tier_2_sombra_flotante": sprite_name = "sombra_flotante"
+		# Tier 3
+		"tier_3_caballero_del_vacio": sprite_name = "caballero_del_vacio"
+		"tier_3_serpiente_de_fuego": sprite_name = "serpiente_de_fuego"
+		"tier_3_elemental_de_hielo": sprite_name = "elemental_de_hielo"
+		"tier_3_mago_abismal": sprite_name = "mago_abismal"
+		"tier_3_corruptor_alado": sprite_name = "corruptor_alado"
+		# Tier 4
+		"tier_4_titan_arcano": sprite_name = "titan_arcano"
+		"tier_4_senor_de_las_llamas": sprite_name = "senor_de_las_llamas"
+		"tier_4_reina_del_hielo": sprite_name = "reina_del_hielo"
+		"tier_4_archimago_perdido": sprite_name = "archimago_perdido"
+		"tier_4_dragon_etereo": sprite_name = "dragon_etereo"
+		# Bosses
+		"boss_el_conjurador": sprite_name = "el_conjurador_primigenio"
+		"boss_el_corazon": sprite_name = "el_corazon_del_vacio"
+		"boss_el_guardian": sprite_name = "el_guardian_de_runas"
+		"boss_minotauro": sprite_name = "minotauro_de_fuego"
+		_: return ""  # No hay mapeo, usar sprite estático
+	
+	return base_path + tier_folder + sprite_name + "_spritesheet.png"
+
 func initialize(data: Dictionary, player):
 	"""Llamado desde EnemyManager para enemies creados dinámicamente"""
 	enemy_id = data.get("id", enemy_id)
@@ -111,29 +203,29 @@ func initialize(data: Dictionary, player):
 	exp_value = int(data.get("exp_value", exp_value))
 	player_ref = player
 	
-	# Cargar sprite después de establecer enemy_id y enemy_tier
-	var sprite = _find_sprite_node(self)
-	if not sprite:
-		sprite = Sprite2D.new()
-		sprite.name = "Sprite2D"
-		add_child(sprite)
-	_load_enemy_sprite(sprite)
+	# Intentar usar AnimatedEnemySprite si no está ya cargado
+	if not animated_sprite:
+		var spritesheet_loaded = _try_load_animated_sprite()
+		
+		# Si no hay spritesheet, usar sprite estático como fallback
+		if not spritesheet_loaded:
+			var sprite = _find_sprite_node(self)
+			if not sprite:
+				sprite = Sprite2D.new()
+				sprite.name = "Sprite2D"
+				add_child(sprite)
+			_load_enemy_sprite(sprite)
+			
+			# Aplicar escala al sprite estático
+			var enemy_scale = _get_scale_for_tier()
+			if sprite:
+				sprite.scale = Vector2(enemy_scale, enemy_scale)
+				sprite.centered = true
+	else:
+		# Ya tiene animated_sprite, actualizar escala por si el tier cambió
+		animated_sprite.sprite_scale = _get_scale_for_tier()
 	
-	# Aplicar escala FIJA según tier (mismo sistema que en _ready())
-	# Tier 1: 0.20, Tier 2: 0.22, Tier 3: 0.24, Tier 4: 0.26, Boss: 0.35
-	var enemy_scale = 0.20  # Base para tier 1
-	match enemy_tier:
-		1: enemy_scale = 0.20
-		2: enemy_scale = 0.22
-		3: enemy_scale = 0.24
-		4: enemy_scale = 0.26
-		5: enemy_scale = 0.35  # Boss
-	
-	if sprite:
-		sprite.scale = Vector2(enemy_scale, enemy_scale)
-		sprite.centered = true
-	
-	print("[EnemyBase] ✓ Inicializado %s tier=%d escala=%.2f" % [enemy_id, enemy_tier, enemy_scale])
+	print("[EnemyBase] ✓ Inicializado %s tier=%d animated=%s" % [enemy_id, enemy_tier, animated_sprite != null])
 
 func _find_sprite_node(node: Node) -> Sprite2D:
 	"""Buscar el primer Sprite2D en el árbol del nodo"""
@@ -254,6 +346,11 @@ func _physics_process(delta: float) -> void:
 	# Calcular dirección hacia el player en coordenadas GLOBALES
 	var direction = (player_global_pos - global_position).normalized() if global_position != player_global_pos else Vector2.ZERO
 	
+	# Actualizar dirección del sprite animado si existe
+	if animated_sprite and direction.length() > 0.1:
+		current_direction = direction
+		animated_sprite.set_direction(direction)
+	
 	# Calcular separación de otros enemigos
 	var separation = _calculate_separation()
 	
@@ -332,7 +429,7 @@ func apply_knockback(knockback_force: Vector2) -> void:
 	global_position += knockback_force * 0.1  # Escalar para que no sea demasiado agresivo
 	
 	# Reproducir efecto visual: hacer parpadear el sprite
-	var sprite = _find_sprite_node(self)
+	var sprite = animated_sprite if animated_sprite else _find_sprite_node(self)
 	if sprite:
 		var tween = create_tween()
 		tween.set_trans(Tween.TRANS_QUAD)
