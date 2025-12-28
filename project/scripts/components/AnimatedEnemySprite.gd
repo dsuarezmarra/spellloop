@@ -11,10 +11,10 @@ class_name AnimatedEnemySprite
 # === CONFIGURACIÓN ===
 @export var enable_bobbing: bool = true
 @export var enable_breathing: bool = true
-@export var bobbing_speed: float = 3.0
-@export var bobbing_amount: float = 2.0
-@export var breathing_speed: float = 2.0
-@export var breathing_amount: float = 0.03
+@export var bobbing_speed: float = 5.0       # Velocidad del rebote (ciclos por segundo)
+@export var bobbing_amount: float = 4.0      # Píxeles de rebote en pantalla (escalado)
+@export var breathing_speed: float = 3.0     # Velocidad de respiración
+@export var breathing_amount: float = 0.12   # 12% de escala para que sea muy visible
 @export var sprite_scale: float = 0.2:
 	set(value):
 		sprite_scale = value
@@ -28,7 +28,6 @@ var frame_width: int = 0
 var frame_height: int = 0
 
 var current_direction: String = "down"  # down, left, right, up
-var base_position: Vector2 = Vector2.ZERO
 var base_scale: Vector2 = Vector2.ONE
 var animation_time: float = 0.0
 
@@ -42,8 +41,7 @@ const DIRECTION_TO_FRAME = {
 }
 
 func _ready() -> void:
-	base_position = position
-	base_scale = scale
+	base_scale = scale if scale != Vector2.ZERO else Vector2.ONE
 	# Randomizar tiempo inicial para que no todos los enemigos estén sincronizados
 	animation_time = randf() * TAU
 
@@ -126,9 +124,10 @@ func _update_frame() -> void:
 	flip_h = (current_direction == "right")
 
 func _apply_bobbing() -> void:
-	"""Aplicar movimiento de bobbing (arriba/abajo)"""
+	"""Aplicar movimiento de bobbing (arriba/abajo) usando offset"""
+	# Usar offset en lugar de position para que sea independiente del movimiento del enemigo
 	var bob_offset = sin(animation_time * bobbing_speed) * bobbing_amount
-	position.y = base_position.y + bob_offset
+	offset.y = bob_offset
 
 func _apply_breathing() -> void:
 	"""Aplicar efecto de respiración (escala sutil)"""
