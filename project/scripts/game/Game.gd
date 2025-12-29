@@ -6,7 +6,7 @@ class_name Game
 
 # Nodos principales
 @onready var world_root: Node2D = $WorldRoot
-@onready var chunks_root: Node2D = $WorldRoot/ChunksRoot
+@onready var arena_root: Node2D = $WorldRoot/ArenaRoot
 @onready var player_container: Node2D = $PlayerContainer
 @onready var enemies_root: Node2D = $WorldRoot/EnemiesRoot
 @onready var pickups_root: Node2D = $WorldRoot/PickupsRoot
@@ -16,7 +16,7 @@ class_name Game
 
 # Referencias a sistemas
 var player: CharacterBody2D = null
-var world_manager: Node = null
+var arena_manager: Node = null
 var enemy_manager: Node = null
 var weapon_manager: Node = null
 var experience_manager: Node = null
@@ -47,8 +47,10 @@ func _setup_game() -> void:
 	# Crear player
 	_create_player()
 	
-	# Crear sistemas (WorldManager desactivado temporalmente por rendimiento)
-	# _create_world_manager()
+	# Crear arena (debe ser antes de otros sistemas para que tengan contexto)
+	_create_arena_manager()
+	
+	# Crear sistemas
 	_create_enemy_manager()
 	_create_weapon_manager()
 	_create_experience_manager()
@@ -62,22 +64,8 @@ func _setup_game() -> void:
 	# Inicializar sistemas
 	_initialize_systems()
 	
-	# Crear suelo de fallback (siempre, ya que WorldManager está desactivado)
-	_create_fallback_ground()
-	
 	# Comenzar partida
 	_start_game()
-
-func _create_fallback_ground() -> void:
-	## Crear un suelo simple como fallback - MUY GRANDE para que no se acabe
-	var ground = ColorRect.new()
-	ground.name = "FallbackGround"
-	ground.color = Color(0.2, 0.35, 0.2)  # Verde oscuro para hierba
-	ground.size = Vector2(50000, 50000)
-	ground.position = Vector2(-25000, -25000)  # Centrado en el origen
-	ground.z_index = -200  # Muy atrás
-	world_root.add_child(ground)
-	print("🌿 [Game] Suelo de fallback creado")
 
 func _create_player() -> void:
 	var player_scene = load("res://scenes/player/SpellloopPlayer.tscn")
@@ -89,13 +77,25 @@ func _create_player() -> void:
 	else:
 		push_error("[Game] No se pudo cargar SpellloopPlayer.tscn")
 
-func _create_world_manager() -> void:
-	var wm_script = load("res://scripts/core/InfiniteWorldManager.gd")
-	if wm_script:
-		world_manager = wm_script.new()
-		world_manager.name = "WorldManager"
-		add_child(world_manager)
-		print("🌍 [Game] WorldManager creado")
+func _create_arena_manager() -> void:
+	var am_script = load("res://scripts/core/ArenaManager.gd")
+	if am_script:
+		arena_manager = am_script.new()
+		arena_manager.name = "ArenaManager"
+		add_child(arena_manager)
+		
+		# Inicializar con player y nodo raíz de arena
+		arena_manager.initialize(player, arena_root)
+		
+		# Conectar señales
+		if arena_manager.has_signal("player_zone_changed"):
+			arena_manager.player_zone_changed.connect(_on_player_zone_changed)
+		if arena_manager.has_signal("player_hit_boundary"):
+			arena_manager.player_hit_boundary.connect(_on_player_hit_boundary)
+		
+		print("🏟️ [Game] ArenaManager creado")
+	else:
+		push_error("[Game] No se pudo cargar ArenaManager.gd")
 
 func _create_enemy_manager() -> void:
 	var em_script = load("res://scripts/core/EnemyManager.gd")
@@ -171,7 +171,7 @@ func _physics_process(_delta: float) -> void:
 func _initialize_systems() -> void:
 	# Inicializar con referencias
 	if enemy_manager and player:
-		enemy_manager.initialize(player, null)  # null porque WorldManager está desactivado
+		enemy_manager.initialize(player)
 	
 	if weapon_manager and player:
 		weapon_manager.initialize(player)
@@ -179,11 +179,6 @@ func _initialize_systems() -> void:
 	
 	if experience_manager and player:
 		experience_manager.initialize(player)
-	
-	# WorldManager desactivado temporalmente
-	# if world_manager:
-	# 	world_manager.chunks_root = chunks_root
-	# 	world_manager.call_deferred("initialize", player)
 	
 	# Conectar HUD con el player
 	_connect_hud_to_player()
@@ -286,6 +281,22 @@ func _on_level_up(new_level: int, upgrades: Array) -> void:
 	
 	# Mostrar panel de level up
 	# TODO: Implementar selección de mejoras
+
+func _on_player_zone_changed(zone_id: int, zone_name: String) -> void:
+	## Callback cuando el player cambia de zona
+	print("🏟️ [Game] Player cambió a zona: %s (id=%d)" % [zone_name, zone_id])
+	
+	# Actualizar UI si es necesario
+	if hud and hud.has_method("update_zone"):
+		var biome_name = ""
+		if arena_manager:
+			biome_name = arena_manager.get_biome_at_position(player.global_position)
+		hud.update_zone(zone_name, biome_name)
+
+func _on_player_hit_boundary(damage: float) -> void:
+	## Callback cuando el player toca el borde de la arena
+	if player and player.has_method("take_damage"):
+		player.take_damage(damage)
 
 func player_died() -> void:
 	## Llamar cuando el player muere

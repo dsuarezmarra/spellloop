@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://chev40kd3msf"
-path="res://.godot/imported/1.png-52d430dee5ac4154792a809603eb167e.ctex"
+uid="uid://47ugd6yfparw"
+path="res://.godot/imported/death_base_animated_sheet_f8_512.png-475c0773a42d0f2ac0bcbaa5d913853a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/biomes/Forest/base/1.png"
-dest_files=["res://.godot/imported/1.png-52d430dee5ac4154792a809603eb167e.ctex"]
+source_file="res://assets/textures/biomes/Death/base/death_base_animated_sheet_f8_512.png"
+dest_files=["res://.godot/imported/death_base_animated_sheet_f8_512.png-475c0773a42d0f2ac0bcbaa5d913853a.ctex"]
 
 [params]
 

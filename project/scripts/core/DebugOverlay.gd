@@ -4,7 +4,7 @@ class_name DebugOverlay
 var visible_debug: bool = false
 var player_ref: Node2D = null
 var enemy_manager: Node = null
-var world_manager: Node = null
+var arena_manager: Node = null  # Reemplaza a world_manager
 var telemetry_visible: bool = false
 var _world_print_timer: float = 0.0
 var _world_print_interval: float = 1.0
@@ -25,15 +25,15 @@ func create_debug_label() -> void:
 	"""Crear etiqueta para mostrar debug info"""
 	debug_label = Label.new()
 	debug_label.name = "DebugLabel"
-	debug_label.text = "FPS: 0\nEnemies: 0\nChunks: 0"
+	debug_label.text = "FPS: 0\nEnemies: 0"
 	debug_label.position = Vector2(10, 10)
 	debug_label.z_index = 9999
 	add_child(debug_label)
 
-func setup_references(player: Node2D, enemy_mgr: Node, world_mgr: Node):
+func setup_references(player: Node2D, enemy_mgr: Node, arena_mgr: Node = null):
 	player_ref = player
 	enemy_manager = enemy_mgr
-	world_manager = world_mgr
+	arena_manager = arena_mgr
 
 func _unhandled_input(event):
 	# Handle debug hotkeys
@@ -51,11 +51,8 @@ func _unhandled_input(event):
 				print("[DEBUG F4] Player tree: ", player_ref.get_path())
 				for c in player_ref.get_children():
 					print(" - ", c.name, " (", c.get_class(), ")")
-			if world_manager:
-				if world_manager.has_method("get_loaded_chunks_count"):
-					print("[DEBUG F4] chunks_loaded: ", world_manager.get_loaded_chunks_count())
-				if world_manager.has_method("get_info"):
-					print("[DEBUG F4] world_manager info: ", world_manager.get_info())
+			if arena_manager and arena_manager.has_method("get_info"):
+				print("[DEBUG F4] arena_manager info: ", arena_manager.get_info())
 		elif event.keycode == KEY_F5:
 			# Spawn test enemies
 			if enemy_manager and player_ref:
@@ -75,8 +72,8 @@ func _unhandled_input(event):
 				telemetry_visible = not telemetry_visible
 				print("[QA] Telemetry: ", telemetry_visible)
 			elif event.keycode == KEY_2:
-				if world_manager and world_manager.has_method("get_info"):
-					print("[QA] world_manager info: ", world_manager.get_info())
+				if arena_manager and arena_manager.has_method("get_info"):
+					print("[QA] arena_manager info: ", arena_manager.get_info())
 			elif event.keycode == KEY_3:
 				var root_scene = get_tree().current_scene
 				if root_scene and root_scene.has_node("WorldRoot/EnemiesRoot"):
@@ -97,13 +94,6 @@ func _process(delta):
 	
 	if visible_debug:
 		queue_redraw()
-	
-	_world_print_timer += delta
-	if _world_print_timer >= _world_print_interval:
-		_world_print_timer = 0.0
-		if visible_debug and world_manager:
-			if world_manager.has_method("get_info"):
-				print("[DEBUG] world_manager info: ", world_manager.get_info())
 
 func _update_debug_label() -> void:
 	"""Actualizar etiqueta de debug con información actual"""
@@ -114,13 +104,8 @@ func _update_debug_label() -> void:
 	if enemy_manager and enemy_manager.has_method("get_enemy_count"):
 		enemies_count = enemy_manager.get_enemy_count()
 	
-	var chunks_count = 0
-	if world_manager and world_manager.has_method("get_loaded_chunks_count"):
-		chunks_count = world_manager.get_loaded_chunks_count()
-	
 	var text = "FPS: %d\n" % current_fps
 	text += "Enemies: %d\n" % enemies_count
-	text += "Chunks: %d\n" % chunks_count
 	
 	if player_ref:
 		text += "Player: (%.0f, %.0f)\n" % [player_ref.global_position.x, player_ref.global_position.y]
@@ -142,21 +127,8 @@ func _draw():
 		for epos in eps:
 			var lp = to_local(epos)
 			draw_circle(lp, 8, Color(1, 0, 0, 0.6))
-	if world_manager and world_manager.has_method("get_loaded_chunks_count") and world_manager.get_loaded_chunks_count() > 0:
-		# Try to access the chunks_root global position to compute chunk rectangles (safe access)
-		var _cs = Vector2(0,0)
-		if "chunks_root" in world_manager and world_manager.chunks_root and is_instance_valid(world_manager.chunks_root):
-			_cs = world_manager.chunks_root.position
-		# Iterate loaded_chunks dictionary safely (use get() to avoid invalid .has on Node)
-		var loaded_chunks_val = world_manager.get("loaded_chunks") if world_manager else null
-		if loaded_chunks_val != null:
-			for k in loaded_chunks_val.keys():
-				var chunk_pos = k
-				var wp = world_manager.chunk_to_world(chunk_pos)
-				var top_left = to_local(wp)
-				var rect = Rect2(top_left, Vector2(world_manager.CHUNK_SIZE, world_manager.CHUNK_SIZE))
-				draw_rect(rect, Color(0.2,0.6,1,0.12), false)
-				draw_rect(rect.grow(-2), Color(0.1,0.4,0.8,0.08), false)
+	
+	# TODO: Draw arena bounds when ArenaManager is implemented
 
 	# Optionally draw enemy hitboxes if they expose collision shapes
 	if visible_debug and enemy_manager and enemy_manager.get_enemy_count and enemy_manager.get_enemy_count() > 0:

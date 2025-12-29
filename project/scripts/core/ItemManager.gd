@@ -17,7 +17,6 @@ signal item_collected(item_type: String, item_data: Dictionary)
 
 # Referencias
 var player: CharacterBody2D
-var world_manager: InfiniteWorldManager
 
 # Configuración de spawn en chunks
 var chest_spawn_chance: float = 0.3  # Probabilidad de que un chunk tenga cofre (30%)
@@ -39,21 +38,15 @@ func _ready():
 	print("📦 ItemManager inicializado")
 	setup_item_types()
 
-func initialize(player_ref: CharacterBody2D, world_ref: InfiniteWorldManager):
+func initialize(player_ref: CharacterBody2D):
 	"""Inicializar sistema de items"""
 	print("📦 Inicializando ItemManager...")
 	player = player_ref
-	world_manager = world_ref
 	last_player_position = player.global_position
 	
-	# Conectar a la señal de generación de chunks
-	if world_manager.has_signal("chunk_generated"):
-		world_manager.chunk_generated.connect(_on_chunk_generated)
-		print("📦 Conectado a señal chunk_generated")
-	else:
-		print("❌ Error: chunk_generated signal no encontrada")
+	# TODO: Conectar con ArenaManager cuando exista
 	
-	# Crear cofres iniciales de prueba en el chunk inicial (0, 0)
+	# Crear cofres iniciales de prueba
 	create_initial_test_chests()
 	
 	print("📦 Sistema de items inicializado")
@@ -123,18 +116,17 @@ func _process(_delta):
 	cleanup_distant_chests()
 
 func create_initial_test_chests():
-	"""Crear cofres de prueba en el chunk inicial (0, 0)"""
-	print("📦 Creando cofres de prueba en chunk (0, 0)...")
+	"""Crear cofres de prueba cerca del centro del mapa"""
+	print("📦 Creando cofres de prueba...")
 	
-	# Crear 3 cofres de prueba en posiciones específicas dentro del chunk inicial
+	# Crear 3 cofres de prueba en posiciones específicas cerca del origen
 	var chunk_pos = Vector2i(0, 0)
-	var chunk_world_pos = Vector2(chunk_pos.x * world_manager.chunk_width, chunk_pos.y * world_manager.chunk_height)
 	
-	# Posiciones relativas dentro del chunk
+	# Posiciones cerca del centro
 	var test_positions = [
-		chunk_world_pos + Vector2(200, 200),
-		chunk_world_pos + Vector2(500, 300),
-		chunk_world_pos + Vector2(300, 600)
+		Vector2(200, 200),
+		Vector2(500, 300),
+		Vector2(300, 600)
 	]
 	
 	for pos in test_positions:
@@ -142,61 +134,37 @@ func create_initial_test_chests():
 	
 	print("📦 Cofres de prueba creados: ", test_positions.size())
 
-func _on_chunk_generated(chunk_pos: Vector2i):
-	"""Manejar generación de nuevo chunk - Generar cofre si toca"""
-	# Probabilidad de generar un cofre en este chunk
-	if randf() < chest_spawn_chance:
-		print("📦 ¡Generando cofre aleatorio en chunk ", chunk_pos, "!")
-		spawn_random_chest_in_chunk(chunk_pos)
-	else:
-		print("📦 Sin cofre en chunk ", chunk_pos)
+func _on_chunk_generated(_chunk_pos: Vector2i):
+	"""DEPRECATED: Manejar generación de nuevo chunk - Será reemplazado por ArenaManager"""
+	pass  # TODO: Reimplementar con ArenaManager
 
-func spawn_random_chest_in_chunk(chunk_pos: Vector2i):
-	"""Generar un cofre aleatorio en una posición aleatoria del chunk"""
-	# Obtener el nodo del chunk desde el world_manager
-	var chunk_node = world_manager.get_chunk_at_pos(Vector2(chunk_pos.x * world_manager.chunk_width, chunk_pos.y * world_manager.chunk_height))
-	if not chunk_node:
-		print("❌ Chunk no disponible: ", chunk_pos)
-		return
-	
-	# Posición aleatoria dentro del chunk
-	var local_pos = Vector2(
-		randf_range(100, world_manager.chunk_width - 100),
-		randf_range(100, world_manager.chunk_height - 100)
-	)
-	
-	var world_pos = chunk_node.global_position + local_pos
-	spawn_chest_at_position(chunk_pos, world_pos)
+func spawn_random_chest_in_chunk(_chunk_pos: Vector2i):
+	"""DEPRECATED: Generar un cofre aleatorio - Será reemplazado por ArenaManager"""
+	pass  # TODO: Reimplementar con ArenaManager
 
-func spawn_chest_at_position(chunk_pos: Vector2i, world_position: Vector2):
-	"""Generar un cofre en una posición específica dentro de un chunk"""
-	# Obtener el nodo del chunk desde el world_manager
-	var chunk_node = world_manager.get_chunk_at_pos(world_position)
-	if not chunk_node:
-		print("❌ Chunk no disponible para posición: ", world_position)
-		return
-	
+func spawn_chest_at_position(_chunk_pos: Vector2i, world_position: Vector2):
+	"""Generar un cofre en una posición específica"""
 	# Crear el cofre
 	var rarity = compute_normal_chest_rarity()
 	var chest = TreasureChest.new()
 	chest.initialize(world_position, "normal", player, rarity)
 	chest.chest_opened.connect(_on_chest_opened)
 	
-	# Añadir el cofre como hijo del chunk
-	# Así se mueve automáticamente cuando el chunk se carga/descarga
-	chunk_node.add_child(chest)
+	# Añadir el cofre al mundo
+	var world_root = get_tree().current_scene.get_node_or_null("WorldRoot")
+	if world_root:
+		world_root.add_child(chest)
+	else:
+		get_tree().current_scene.add_child(chest)
 	chest.global_position = world_position
 	
 	# Registrar en tracking
-	if not chests_by_chunk.has(chunk_pos):
-		chests_by_chunk[chunk_pos] = []
-	chests_by_chunk[chunk_pos].append(chest)
 	all_chests.append(chest)
 	
 	# Emitir señal
 	chest_spawned.emit(chest)
 	
-	print("📦 Cofre generado en chunk ", chunk_pos, " en posición: ", world_position)
+	print("📦 Cofre generado en posición: ", world_position)
 
 func _on_chest_opened(chest: Node2D, items: Array):
 	"""Manejar apertura de cofre"""
@@ -306,19 +274,13 @@ func create_boss_drop(position: Vector2, _boss_type: String):
 	chest.initialize(position, "big", player, chest_rarity)
 	chest.chest_opened.connect(_on_chest_opened)
 
-	# Añadir al mundo (ponerlo en world_manager para que se mueva con chunks si es posible)
-	if world_manager and world_manager.has_method("add_child"):
-		world_manager.add_child(chest)
-		# Ajustar posición global en caso de parent cambiado
-		chest.global_position = position
+	# Añadir al mundo
+	var world_root = get_tree().current_scene.get_node_or_null("WorldRoot")
+	if world_root:
+		world_root.add_child(chest)
 	else:
-		var _gt = get_tree()
-		if _gt and _gt.current_scene:
-			_gt.current_scene.add_child(chest)
-			chest.global_position = position
-		else:
-			add_child(chest)
-			chest.global_position = position
+		get_tree().current_scene.add_child(chest)
+	chest.global_position = position
 
 	# Registrar en tracking global de cofres para minimizar/cleanup
 	all_chests.append(chest)

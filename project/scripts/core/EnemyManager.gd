@@ -15,7 +15,6 @@ var EnemyBaseScript: Script = null
 @export var debug_spawns: bool = true
 
 var player: Node2D = null
-var world_manager: Node = null
 var wave_manager: Node = null
 var spawn_timer: float = 0.0
 var active_enemies: Array = []
@@ -45,13 +44,12 @@ func _setup_enemy_types() -> void:
 	if debug_spawns:
 		print("[EnemyManager] enemy_types: %s" % enemy_types)
 
-func initialize(player_ref: Node2D, world_ref: Node) -> void:
+func initialize(player_ref: Node2D, _world_ref: Node = null) -> void:
 	player = player_ref
-	world_manager = world_ref
 	spawning_enabled = true
 	spawn_timer = 0.0
 	if debug_spawns:
-		print("[EnemyManager] initialize called; player=%s world_manager=%s" % [player, world_manager])
+		print("[EnemyManager] initialize called; player=%s" % [player])
 
 func _process(delta: float) -> void:
 	if not spawning_enabled or player == null:
