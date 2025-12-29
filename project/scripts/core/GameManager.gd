@@ -40,6 +40,7 @@ var is_run_active: bool = false
 # Combat systems
 var attack_manager = null
 var player_ref = null
+var projectile_visual_manager = null  # Gestor de visuales de proyectiles
 
 # Current run data
 var current_run_data: Dictionary = {}
@@ -97,6 +98,12 @@ func _initialize_dungeon_system() -> void:
 		attack_manager.name = "AttackManager"
 		add_child(attack_manager)
 		print("[GameManager] ⚔️ AttackManager creado")
+	
+	# Crear ProjectileVisualManager para efectos visuales de proyectiles
+	projectile_visual_manager = ProjectileVisualManager.new()
+	projectile_visual_manager.name = "ProjectileVisualManager"
+	add_child(projectile_visual_manager)
+	print("[GameManager] 🎨 ProjectileVisualManager creado")
 	
 	# Sistema de mazmorra desactivado temporalmente
 	print("[GameManager] Sistema básico inicializado")

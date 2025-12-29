@@ -1,5 +1,6 @@
 # SimpleProjectile.gd
 # Sistema de proyectiles con diferentes tipos de elemento
+# ACTUALIZADO: Integra AnimatedProjectileSprite para visuales mejorados
 # 
 # Tipos soportados:
 # - ice: Esquirla de hielo (rombo azul brillante)
@@ -33,9 +34,11 @@ var pierces_remaining: int = 0
 
 # === VISUAL ===
 var sprite: Sprite2D = null
+var animated_sprite: AnimatedProjectileSprite = null  # NUEVO: Visual animado
 var projectile_color: Color = Color(0.4, 0.7, 1.0, 1.0)
 var projectile_size: float = 12.0
 var trail_particles: CPUParticles2D = null
+var _weapon_id: String = ""  # Para buscar visual data
 
 # Colores por elemento
 const ELEMENT_COLORS = {
@@ -59,15 +62,52 @@ func _ready() -> void:
 	# Configurar colisiones
 	_setup_collision()
 	
-	# Crear visual según tipo de elemento
-	_create_visual()
+	# NUEVO: Intentar crear visual animado primero
+	var used_animated = _try_create_animated_visual()
 	
-	# Crear estela de partículas
-	_create_trail()
+	if not used_animated:
+		# Crear visual según tipo de elemento (fallback)
+		_create_visual()
+		# Crear estela de partículas
+		_create_trail()
 	
 	# Conectar señales
 	body_entered.connect(_on_body_entered)
 	area_entered.connect(_on_area_entered)
+
+func _try_create_animated_visual() -> bool:
+	"""Intentar crear visual animado usando ProjectileVisualManager"""
+	# Obtener weapon_id desde metadata
+	_weapon_id = get_meta("weapon_id", "")
+	if _weapon_id.is_empty():
+		print("[SimpleProjectile] ✗ No weapon_id en metadata")
+		return false
+	
+	# Buscar el ProjectileVisualManager
+	var visual_manager = ProjectileVisualManager.instance
+	if visual_manager == null:
+		print("[SimpleProjectile] ✗ ProjectileVisualManager.instance es null")
+		return false
+	
+	# Obtener weapon_data para el visual
+	var weapon_data = WeaponDatabase.get_weapon_data(_weapon_id)
+	if weapon_data.is_empty():
+		print("[SimpleProjectile] ✗ weapon_data vacío para: %s" % _weapon_id)
+		return false
+	
+	# Crear el visual animado
+	animated_sprite = visual_manager.create_projectile_visual(_weapon_id, weapon_data)
+	if animated_sprite == null:
+		print("[SimpleProjectile] ✗ create_projectile_visual retornó null")
+		return false
+	
+	add_child(animated_sprite)
+	
+	# Iniciar animación de vuelo (saltamos launch para proyectiles en movimiento)
+	animated_sprite.play_flight()
+	
+	print("[SimpleProjectile] ✓ Visual animado creado para: %s" % _weapon_id)
+	return true
 
 func _setup_collision() -> void:
 	# Capa 4 = proyectiles del jugador
@@ -276,6 +316,10 @@ func _process(delta: float) -> void:
 	
 	# Mover en línea recta (SIN rotación)
 	global_position += direction * speed * delta
+	
+	# Actualizar dirección del sprite animado
+	if animated_sprite and is_instance_valid(animated_sprite):
+		animated_sprite.set_direction(direction)
 
 func initialize(start_pos: Vector2, target_pos: Vector2, dmg: int = -1, spd: float = -1) -> void:
 	"""Inicializar proyectil - llamar DESPUÉS de add_child()"""
@@ -367,5 +411,14 @@ func _spawn_hit_effect() -> void:
 	)
 
 func _destroy() -> void:
+	# Si tenemos visual animado, reproducir impacto
+	if animated_sprite and is_instance_valid(animated_sprite):
+		# Detener movimiento
+		set_process(false)
+		# Reproducir animación de impacto
+		animated_sprite.play_impact()
+		# Esperar a que termine
+		await animated_sprite.impact_finished
+	
 	destroyed.emit()
 	queue_free()

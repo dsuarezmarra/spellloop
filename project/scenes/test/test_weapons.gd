@@ -1,6 +1,7 @@
 # test_weapons.gd
 # Escena de prueba para testear todas las armas y fusiones
 # Incluye: Player, Dummy targets, UI de selección de armas, estadísticas
+# INCLUYE: Preview de proyectiles visuales con el nuevo sistema cartoon
 
 extends Node2D
 
@@ -18,6 +19,11 @@ var stats_label: Label = null
 var damage_log: RichTextLabel = null
 var category_label: Label = null
 var dps_label: Label = null
+
+# === PROYECTILES VISUALES ===
+var visual_manager: ProjectileVisualManager = null
+var projectile_preview_container: Node2D = null
+var current_preview: Node2D = null
 
 # === DATOS ===
 var base_weapons: Array[String] = [
@@ -60,10 +66,15 @@ func _ready() -> void:
 	# Cargar script de TestDummy
 	TestDummyScript = load("res://scenes/test/TestDummy.gd")
 	
+	# Inicializar visual manager para proyectiles
+	visual_manager = ProjectileVisualManager.new()
+	add_child(visual_manager)
+	
 	_setup_scene()
 	_create_player()
 	_create_dummies()
 	_create_ui()
+	_create_projectile_preview_area()
 	_select_weapon(0)
 	
 	test_start_time = Time.get_ticks_msec() / 1000.0
@@ -73,7 +84,7 @@ func _ready() -> void:
 	
 	print("🧪 [WeaponTest] ¡Escena lista!")
 	print("   ↑↓ = Cambiar arma | TAB = Categoría | SPACE = Equipar")
-	print("   R = Reset dummies | WASD = Mover | ESC = Salir")
+	print("   R = Reset dummies | WASD = Mover | P = Demo Proyectil | ESC = Salir")
 
 func _wait_for_attack_manager() -> void:
 	"""Esperar a que el AttackManager esté disponible"""
@@ -388,7 +399,7 @@ func _create_ui() -> void:
 	info_panel.add_child(info_label)
 	
 	var controls_label = Label.new()
-	controls_label.text = "WASD=Mover | ↑↓=Armas | TAB=Categoría | SPACE=Equipar | R=Reset | ESC=Salir"
+	controls_label.text = "WASD=Mover | ↑↓=Armas | TAB=Categoría | SPACE=Equipar | R=Reset | P=Demo Proyectil"
 	controls_label.position = Vector2(20, 35)
 	controls_label.add_theme_font_size_override("font_size", 11)
 	controls_label.add_theme_color_override("font_color", Color.LIGHT_GRAY)
@@ -464,6 +475,7 @@ func _select_weapon(index: int) -> void:
 	selected_weapon_index = index
 	_update_weapon_list_selection()
 	_update_stats_display()
+	_update_projectile_preview()  # Actualizar preview del proyectil
 
 func _equip_selected_weapon() -> void:
 	if not attack_manager:
@@ -610,6 +622,7 @@ func _toggle_category() -> void:
 	
 	_populate_weapon_list()
 	_update_stats_display()
+	_update_projectile_preview()  # Actualizar preview al cambiar categoría
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_up"):
@@ -625,6 +638,8 @@ func _input(event: InputEvent) -> void:
 	elif event is InputEventKey and event.pressed:
 		if event.keycode == KEY_R:
 			_reset_dummies()
+		elif event.keycode == KEY_P:
+			_demo_projectile_animation()
 		elif event.keycode == KEY_PAGEUP:
 			_select_weapon(selected_weapon_index - 10)
 		elif event.keycode == KEY_PAGEDOWN:
@@ -643,3 +658,212 @@ func _update_dps_display() -> void:
 	dps_label.text = "⚡ DPS: %.1f | 💥 Hits: %d | 📊 Total: %d | ⏱️ %.1fs" % [
 		dps, hits_count, total_damage_dealt, elapsed
 	]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE PREVIEW DE PROYECTILES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _create_projectile_preview_area() -> void:
+	"""Crear área para mostrar preview del proyectil del arma seleccionada"""
+	projectile_preview_container = Node2D.new()
+	projectile_preview_container.name = "ProjectilePreviewArea"
+	projectile_preview_container.position = Vector2(960, 700)  # Centro inferior
+	add_child(projectile_preview_container)
+	
+	# Label indicador
+	var preview_label = Label.new()
+	preview_label.name = "PreviewLabel"
+	preview_label.text = "🎯 PREVIEW PROYECTIL (P=Demo)"
+	preview_label.position = Vector2(-100, -80)
+	preview_label.add_theme_font_size_override("font_size", 14)
+	preview_label.add_theme_color_override("font_color", Color.LIGHT_GRAY)
+	projectile_preview_container.add_child(preview_label)
+
+func _update_projectile_preview() -> void:
+	"""Actualizar preview del proyectil cuando cambia el arma"""
+	if not visual_manager or not projectile_preview_container:
+		return
+	
+	# Limpiar preview anterior
+	if current_preview and is_instance_valid(current_preview):
+		current_preview.queue_free()
+		current_preview = null
+	
+	var weapons_to_show = base_weapons if current_category == "base" else fusion_weapons
+	var weapon_id = weapons_to_show[selected_weapon_index]
+	var data = WeaponDatabase.get_weapon_data(weapon_id)
+	
+	if data.is_empty():
+		return
+	
+	# Crear el visual según el tipo de proyectil
+	var proj_type = data.get("projectile_type", 0)
+	
+	# ProjectileType enum: SINGLE=0, MULTI=1, BEAM=2, AOE=3, ORBIT=4, CHAIN=5
+	match proj_type:
+		0, 1:  # SINGLE, MULTI
+			current_preview = visual_manager.create_projectile_visual(weapon_id, data)
+			if current_preview:
+				projectile_preview_container.add_child(current_preview)
+				current_preview.play_flight()
+		2:  # BEAM
+			current_preview = visual_manager.create_beam_visual(weapon_id, 150.0, Vector2.RIGHT, 12.0, data)
+			if current_preview:
+				projectile_preview_container.add_child(current_preview)
+				current_preview.fire(999.0)  # Mantener activo
+		3:  # AOE
+			current_preview = visual_manager.create_aoe_visual(weapon_id, 60.0, 999.0, data)
+			if current_preview:
+				projectile_preview_container.add_child(current_preview)
+				current_preview.play_appear()
+		4:  # ORBIT
+			current_preview = visual_manager.create_orbit_visual(weapon_id, 3, 50.0, data)
+			if current_preview:
+				projectile_preview_container.add_child(current_preview)
+				current_preview.spawn()
+		5:  # CHAIN
+			current_preview = visual_manager.create_chain_visual(weapon_id, 3, data)
+			if current_preview:
+				projectile_preview_container.add_child(current_preview)
+				var targets: Array[Vector2] = [Vector2(-60, 0), Vector2(0, -20), Vector2(60, 0)]
+				current_preview.create_chain_sequence(targets, 0.15)
+
+func _demo_projectile_animation() -> void:
+	"""Ejecutar demo completo del proyectil actual"""
+	if not visual_manager:
+		_log_damage("[color=red]❌ Visual manager no disponible[/color]")
+		return
+	
+	var weapons_to_show = base_weapons if current_category == "base" else fusion_weapons
+	var weapon_id = weapons_to_show[selected_weapon_index]
+	var data = WeaponDatabase.get_weapon_data(weapon_id)
+	
+	if data.is_empty():
+		return
+	
+	var proj_type = data.get("projectile_type", 0)
+	
+	_log_damage("[color=cyan]🎬 Demo proyectil: %s[/color]" % weapon_id)
+	
+	# Lanzar proyectil real desde el player hacia los dummies
+	match proj_type:
+		0, 1:  # SINGLE, MULTI
+			await _demo_single_projectile(weapon_id, data)
+		2:  # BEAM
+			await _demo_beam(weapon_id, data)
+		3:  # AOE
+			await _demo_aoe(weapon_id, data)
+		4:  # ORBIT
+			await _demo_orbit(weapon_id, data)
+		5:  # CHAIN
+			await _demo_chain(weapon_id, data)
+
+func _demo_single_projectile(weapon_id: String, data: Dictionary) -> void:
+	"""Demo de proyectil único con ciclo completo"""
+	var sprite = visual_manager.create_projectile_visual(weapon_id, data)
+	if not sprite:
+		return
+	
+	# Posición inicial cerca del player
+	var start_pos = player.global_position + Vector2(30, 0)
+	sprite.global_position = start_pos
+	add_child(sprite)
+	
+	# Fase 1: Launch
+	sprite.play_launch()
+	await sprite.launch_finished
+	
+	# Fase 2: Flight (mover hacia el dummy más cercano)
+	sprite.play_flight()
+	var target_pos = dummies[0].global_position if dummies.size() > 0 else start_pos + Vector2(300, 0)
+	
+	var tween = create_tween()
+	var distance = start_pos.distance_to(target_pos)
+	var speed = data.get("projectile_speed", 300.0)
+	var duration = distance / speed
+	
+	tween.tween_property(sprite, "global_position", target_pos, duration)
+	await tween.finished
+	
+	# Fase 3: Impact
+	sprite.play_impact()
+	await sprite.impact_finished
+	
+	if is_instance_valid(sprite):
+		sprite.queue_free()
+
+func _demo_beam(weapon_id: String, data: Dictionary) -> void:
+	"""Demo de rayo"""
+	var target_pos = dummies[0].global_position if dummies.size() > 0 else player.global_position + Vector2(300, 0)
+	var direction = (target_pos - player.global_position).normalized()
+	var length = player.global_position.distance_to(target_pos)
+	
+	var beam = visual_manager.create_beam_visual(weapon_id, length, direction, 15.0, data)
+	if not beam:
+		return
+	
+	beam.global_position = player.global_position
+	add_child(beam)
+	
+	beam.play_charge(0.3)
+	await beam.charge_complete
+	beam.fire(0.8)
+	await beam.beam_finished
+
+func _demo_aoe(weapon_id: String, data: Dictionary) -> void:
+	"""Demo de área de efecto"""
+	var radius = data.get("area", 100.0)
+	var target_pos = dummies[0].global_position if dummies.size() > 0 else player.global_position + Vector2(150, 0)
+	
+	var aoe = visual_manager.create_aoe_visual(weapon_id, radius, 1.0, data)
+	if not aoe:
+		return
+	
+	aoe.global_position = target_pos
+	add_child(aoe)
+	
+	aoe.play_appear()
+	await aoe.fade_finished
+
+func _demo_orbit(weapon_id: String, data: Dictionary) -> void:
+	"""Demo de orbitales"""
+	var orbit_container = Node2D.new()
+	orbit_container.global_position = player.global_position
+	add_child(orbit_container)
+	
+	# Crear 3 orbitales
+	var orbitals: Array = []
+	for i in range(3):
+		var angle = i * (TAU / 3)
+		var orbital = visual_manager.create_orbit_visual(weapon_id, 3, 60.0, data)
+		if orbital:
+			orbit_container.add_child(orbital)
+			orbitals.append(orbital)
+			orbital.spawn()
+	
+	# Mantener por 2 segundos
+	await get_tree().create_timer(2.0).timeout
+	
+	# Destruir orbitales
+	for orbital in orbitals:
+		if is_instance_valid(orbital):
+			orbital.destroy()
+	
+	await get_tree().create_timer(0.5).timeout
+	orbit_container.queue_free()
+
+func _demo_chain(weapon_id: String, data: Dictionary) -> void:
+	"""Demo de cadena de rayos"""
+	var chain = visual_manager.create_chain_visual(weapon_id, 3, data)
+	if not chain:
+		return
+	
+	add_child(chain)
+	
+	# Crear cadena entre player y varios dummies
+	var targets: Array[Vector2] = [player.global_position]
+	for i in range(mini(4, dummies.size())):
+		targets.append(dummies[i].global_position)
+	
+	chain.create_chain_sequence(targets, 0.1)
+	await chain.all_chains_finished

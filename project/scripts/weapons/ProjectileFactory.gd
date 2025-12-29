@@ -171,9 +171,11 @@ class BeamEffect extends Node2D:
 	var effect_duration: float = 0.0
 	var crit_chance: float = 0.0
 	var direction: Vector2 = Vector2.RIGHT
+	var weapon_id: String = ""  # Para visuales mejorados
 	
 	var _timer: float = 0.0
 	var _has_fired: bool = false
+	var _enhanced_visual: BeamVisualEffect = null
 	
 	func setup(data: Dictionary) -> void:
 		damage = data.get("damage", 25.0)
@@ -186,6 +188,7 @@ class BeamEffect extends Node2D:
 		effect_value = data.get("effect_value", 0.0)
 		effect_duration = data.get("effect_duration", 0.0)
 		crit_chance = data.get("crit_chance", 0.0)
+		weapon_id = data.get("weapon_id", "")
 	
 	func fire(owner: Node2D) -> void:
 		if _has_fired:
@@ -222,7 +225,7 @@ class BeamEffect extends Node2D:
 			query.collision_mask = 2
 			query.exclude = [collider.get_rid()]
 		
-		# Crear visual del rayo
+		# Crear visual del rayo (mejorado si está disponible)
 		_create_beam_visual(end_pos)
 	
 	func _apply_damage(enemy: Node) -> void:
@@ -241,7 +244,28 @@ class BeamEffect extends Node2D:
 			enemy.apply_knockback(kb_dir * knockback)
 	
 	func _create_beam_visual(end_pos: Vector2) -> void:
-		# Crear línea visual
+		# Intentar usar visual mejorado
+		if weapon_id != "" and ProjectileVisualManager.instance:
+			var weapon_data = WeaponDatabase.get_weapon_data(weapon_id)
+			if not weapon_data.is_empty():
+				_enhanced_visual = ProjectileVisualManager.instance.create_beam_visual(
+					weapon_id, beam_range, direction, beam_width, weapon_data)
+				if _enhanced_visual:
+					add_child(_enhanced_visual)
+					_enhanced_visual.fire(duration)
+					print("[BeamEffect] ✓ Visual mejorado creado para: %s" % weapon_id)
+					return
+				else:
+					print("[BeamEffect] ✗ create_beam_visual retornó null para: %s" % weapon_id)
+			else:
+				print("[BeamEffect] ✗ weapon_data vacío para: %s" % weapon_id)
+		else:
+			if weapon_id == "":
+				print("[BeamEffect] ✗ weapon_id vacío")
+			if not ProjectileVisualManager.instance:
+				print("[BeamEffect] ✗ ProjectileVisualManager.instance es null")
+		
+		# Fallback: visual simple
 		var line = Line2D.new()
 		line.width = beam_width
 		line.default_color = color
@@ -274,11 +298,14 @@ class AOEEffect extends Node2D:
 	var effect_value: float = 0.0
 	var effect_duration: float = 0.0
 	var crit_chance: float = 0.0
+	var weapon_id: String = ""  # Para visuales mejorados
 	
 	var _timer: float = 0.0
 	var _activated: bool = false
 	var _enemies_damaged: Array = []
 	var _damage_applied: bool = false
+	var _enhanced_visual: AOEVisualEffect = null
+	var _use_enhanced: bool = false
 	
 	func setup(data: Dictionary) -> void:
 		damage = data.get("damage", 20.0)
@@ -290,6 +317,7 @@ class AOEEffect extends Node2D:
 		effect_value = data.get("effect_value", 0.0)
 		effect_duration = data.get("effect_duration", 0.0)
 		crit_chance = data.get("crit_chance", 0.0)
+		weapon_id = data.get("weapon_id", "")
 	
 	func _ready() -> void:
 		# Activar automáticamente cuando entre al árbol
@@ -306,7 +334,7 @@ class AOEEffect extends Node2D:
 		
 		print("[AOE] Activado en posición: %s, radio: %.1f, daño: %.0f" % [global_position, aoe_radius, damage])
 		
-		# Crear visual
+		# Crear visual (mejorado si está disponible)
 		_create_aoe_visual()
 		
 		# Aplicar daño inmediatamente por distancia (no necesita física)
@@ -371,7 +399,32 @@ class AOEEffect extends Node2D:
 					enemy.apply_pull(global_position, effect_value, effect_duration)
 	
 	func _create_aoe_visual() -> void:
-		# Animación de expansión desde el centro
+		# Intentar usar visual mejorado
+		if weapon_id != "" and ProjectileVisualManager.instance:
+			var weapon_data = WeaponDatabase.get_weapon_data(weapon_id)
+			if not weapon_data.is_empty():
+				_enhanced_visual = ProjectileVisualManager.instance.create_aoe_visual(
+					weapon_id, aoe_radius, duration, weapon_data)
+				if _enhanced_visual:
+					add_child(_enhanced_visual)
+					_enhanced_visual.play_appear()
+					_use_enhanced = true
+					print("[AOEEffect] ✓ Visual mejorado creado para: %s" % weapon_id)
+					# Auto-destruir después de la duración
+					await get_tree().create_timer(duration + 0.5).timeout
+					queue_free()
+					return
+				else:
+					print("[AOEEffect] ✗ create_aoe_visual retornó null para: %s" % weapon_id)
+			else:
+				print("[AOEEffect] ✗ weapon_data vacío para: %s" % weapon_id)
+		else:
+			if weapon_id == "":
+				print("[AOEEffect] ✗ weapon_id vacío")
+			if not ProjectileVisualManager.instance:
+				print("[AOEEffect] ✗ ProjectileVisualManager.instance es null")
+		
+		# Fallback: visual simple
 		scale = Vector2(0.1, 0.1)
 		modulate.a = 1.0
 		
@@ -384,6 +437,9 @@ class AOEEffect extends Node2D:
 		tween.tween_callback(queue_free)
 	
 	func _draw() -> void:
+		# Solo dibujar si no usamos visual mejorado
+		if _use_enhanced:
+			return
 		# Dibujar círculo del AOE con múltiples capas para más visibilidad
 		# Capa exterior (borde grueso)
 		draw_arc(Vector2.ZERO, aoe_radius, 0, TAU, 48, color, 4.0)
@@ -396,7 +452,8 @@ class AOEEffect extends Node2D:
 	
 	func _process(delta: float) -> void:
 		_timer += delta
-		queue_redraw()  # Redibujar para mantener el visual actualizado
+		if not _use_enhanced:
+			queue_redraw()  # Redibujar para mantener el visual actualizado
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -416,6 +473,8 @@ class OrbitalManager extends Node2D:
 	var _rotation_angle: float = 0.0
 	var _last_hit_times: Dictionary = {}  # enemy_id -> last_hit_time
 	var _hit_cooldown: float = 0.5  # Tiempo entre hits al mismo enemigo
+	var _enhanced_visual: OrbitVisualEffect = null
+	var _use_enhanced: bool = false
 	
 	func update_orbitals(data: Dictionary) -> void:
 		"""Actualizar o crear orbitales con nuevos datos"""
@@ -451,7 +510,33 @@ class OrbitalManager extends Node2D:
 				orbital.queue_free()
 		orbitals.clear()
 		
-		# Crear nuevos orbitales
+		# Limpiar visual mejorado anterior
+		if _enhanced_visual:
+			_enhanced_visual.queue_free()
+			_enhanced_visual = null
+			_use_enhanced = false
+		
+		# Intentar crear visual mejorado
+		if orbital_weapon_id != "" and ProjectileVisualManager.instance:
+			var weapon_data = WeaponDatabase.get_weapon_data(orbital_weapon_id)
+			if not weapon_data.is_empty():
+				_enhanced_visual = ProjectileVisualManager.instance.create_orbit_visual(
+					orbital_weapon_id, orbital_count, orbital_radius, weapon_data)
+				if _enhanced_visual:
+					add_child(_enhanced_visual)
+					_use_enhanced = true
+					print("[OrbitalManager] ✓ Visual mejorado creado para: %s" % orbital_weapon_id)
+				else:
+					print("[OrbitalManager] ✗ create_orbit_visual retornó null para: %s" % orbital_weapon_id)
+			else:
+				print("[OrbitalManager] ✗ weapon_data vacío para: %s" % orbital_weapon_id)
+		else:
+			if orbital_weapon_id == "":
+				print("[OrbitalManager] ✗ weapon_id vacío")
+			if not ProjectileVisualManager.instance:
+				print("[OrbitalManager] ✗ ProjectileVisualManager.instance es null")
+		
+		# Crear nuevos orbitales (siempre necesarios para detección de colisión)
 		for i in range(orbital_count):
 			var orbital = _create_orbital(i)
 			orbitals.append(orbital)
@@ -472,9 +557,10 @@ class OrbitalManager extends Node2D:
 		shape.shape = circle
 		orbital.add_child(shape)
 		
-		# Visual
-		var visual = _create_orbital_visual()
-		orbital.add_child(visual)
+		# Visual (solo si no usamos visual mejorado)
+		if not _use_enhanced:
+			var visual = _create_orbital_visual()
+			orbital.add_child(visual)
 		
 		# Conectar señales
 		orbital.body_entered.connect(_on_orbital_hit.bind(orbital))
@@ -542,10 +628,19 @@ class OrbitalManager extends Node2D:
 				continue
 			
 			var angle = _rotation_angle + (TAU / orbitals.size()) * i
-			orbitals[i].position = Vector2(
+			var pos = Vector2(
 				cos(angle) * orbital_radius,
 				sin(angle) * orbital_radius
 			)
+			orbitals[i].position = pos
+		
+		# Actualizar visual mejorado con las posiciones actuales
+		if _use_enhanced and _enhanced_visual:
+			var positions: Array[Vector2] = []
+			for orbital in orbitals:
+				if is_instance_valid(orbital):
+					positions.append(orbital.position)
+			_enhanced_visual.update_orbital_positions(positions)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -562,6 +657,7 @@ class ChainProjectile extends Node2D:
 	var crit_chance: float = 0.0
 	var effect: String = "none"
 	var effect_value: float = 0.0
+	var weapon_id: String = ""  # Para visuales mejorados
 	
 	var first_target: Node2D = null
 	var current_target: Node2D = null
@@ -570,6 +666,8 @@ class ChainProjectile extends Node2D:
 	
 	var _moving: bool = false
 	var _visual: Line2D = null
+	var _enhanced_visual: ChainLightningVisual = null
+	var _use_enhanced: bool = false
 	
 	func setup(data: Dictionary) -> void:
 		damage = data.get("damage", 15.0)
@@ -581,6 +679,7 @@ class ChainProjectile extends Node2D:
 		crit_chance = data.get("crit_chance", 0.0)
 		effect = data.get("effect", "chain")
 		effect_value = data.get("effect_value", 2)
+		weapon_id = data.get("weapon_id", "")
 	
 	func start_chain() -> void:
 		if first_target == null or not is_instance_valid(first_target):
@@ -591,7 +690,30 @@ class ChainProjectile extends Node2D:
 		current_target = first_target
 		_moving = true
 		
-		# Crear visual del rayo
+		# Crear visual (mejorado si está disponible)
+		_create_chain_visual()
+	
+	func _create_chain_visual() -> void:
+		# Intentar usar visual mejorado
+		if weapon_id != "" and ProjectileVisualManager.instance:
+			var weapon_data = WeaponDatabase.get_weapon_data(weapon_id)
+			if not weapon_data.is_empty():
+				_enhanced_visual = ProjectileVisualManager.instance.create_chain_visual(
+					weapon_id, chain_count, weapon_data)
+				if _enhanced_visual:
+					add_child(_enhanced_visual)
+					_use_enhanced = true
+					print("[ChainProjectile] ✓ Visual mejorado creado para: %s" % weapon_id)
+					return
+				else:
+					print("[ChainProjectile] ✗ create_chain_visual retornó null para: %s" % weapon_id)
+			else:
+				print("[ChainProjectile] ✗ weapon_data vacío para: %s" % weapon_id)
+		else:
+			print("[ChainProjectile] ✗ No weapon_id ('%s') o no ProjectileVisualManager.instance" % weapon_id)
+		
+		# Fallback: visual simple
+		print("[ChainProjectile] → Usando visual simple (Line2D)")
 		_visual = Line2D.new()
 		_visual.width = 4.0
 		_visual.default_color = color
@@ -610,7 +732,10 @@ class ChainProjectile extends Node2D:
 		global_position += direction * speed * delta
 		
 		# Actualizar visual
-		if _visual:
+		if _use_enhanced and _enhanced_visual:
+			# Para el visual mejorado, actualizamos el chain actual
+			_enhanced_visual.update_chain_positions(enemies_hit, current_target)
+		elif _visual:
 			_visual.clear_points()
 			_visual.add_point(Vector2.ZERO)
 			_visual.add_point(to_local(current_target.global_position))
@@ -640,6 +765,10 @@ class ChainProjectile extends Node2D:
 			var kb_dir = (current_target.global_position - global_position).normalized()
 			current_target.apply_knockback(kb_dir * knockback)
 		
+		# Efecto de hit en visual mejorado
+		if _use_enhanced and _enhanced_visual:
+			_enhanced_visual.add_chain_hit(current_target.global_position)
+		
 		# Intentar encadenar
 		_try_chain_to_next()
 	
@@ -657,7 +786,8 @@ class ChainProjectile extends Node2D:
 			return
 		
 		# Crear efecto de "salto"
-		_create_chain_effect()
+		if not _use_enhanced:
+			_create_chain_effect()
 		
 		current_target = next_target
 	

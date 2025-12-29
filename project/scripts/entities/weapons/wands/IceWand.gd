@@ -52,7 +52,25 @@ func perform_attack(owner: Node2D) -> void:
 		var projectile = Area2D.new()
 		projectile.set_script(SimpleProjectileScript)
 		
-		# PRIMERO añadir al árbol de escena
+		# Configurar propiedades ANTES de añadir al árbol
+		# (el _ready() del proyectil necesita weapon_id para crear visuales animados)
+		projectile.damage = damage
+		projectile.speed = projectile_speed
+		projectile.element_type = element_type  # "ice" - esquirla de hielo
+		projectile.knockback_force = 120.0
+		projectile.set_meta("weapon_id", id)
+		
+		print("[IceWand] DEBUG: Configurado weapon_id='%s' antes de add_child" % id)
+		print("[IceWand] DEBUG: get_meta('weapon_id')='%s'" % projectile.get_meta("weapon_id", "NULL"))
+		
+		# Calcular dirección
+		var direction = (target_pos - start_pos).normalized()
+		if projectile_count > 1 and i > 0:
+			var spread = (float(i) / float(projectile_count - 1) - 0.5) * 0.5
+			direction = direction.rotated(spread)
+		projectile.direction = direction
+		
+		# AHORA añadir al árbol de escena (después de configurar todo)
 		var game_root = owner.get_tree().current_scene
 		if not game_root:
 			print("[IceWand] ✗ Error: No se pudo obtener current_scene")
@@ -60,21 +78,7 @@ func perform_attack(owner: Node2D) -> void:
 			return
 		
 		game_root.add_child(projectile)
-		
-		# AHORA configurar posición y propiedades
 		projectile.global_position = start_pos
-		projectile.damage = damage
-		projectile.speed = projectile_speed
-		projectile.element_type = element_type  # "ice" - esquirla de hielo
-		projectile.knockback_force = 120.0
-		
-		# Calcular dirección
-		var direction = (target_pos - start_pos).normalized()
-		if projectile_count > 1 and i > 0:
-			var spread = (float(i) / float(projectile_count - 1) - 0.5) * 0.5
-			direction = direction.rotated(spread)
-		
-		projectile.direction = direction
 
 func _find_nearest_enemy(owner: Node2D) -> Node:
 	"""Encontrar el enemigo más cercano"""
