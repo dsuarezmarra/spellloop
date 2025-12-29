@@ -148,6 +148,12 @@ static func _apply_integration_shader(node: CanvasItem, biome_name: String = "")
 			shadow_height = 0.3
 			base_fade = 0.1
 		
+		"death":
+			tint_color = Color(0.6, 0.55, 0.7, 1.0)  # Púrpura oscuro/gris muerto
+			shadow_intensity = 0.55  # Sombras muy oscuras
+			shadow_height = 0.35
+			base_fade = 0.1
+		
 		_:  # Default / desconocido
 			tint_color = Color(1.0, 1.0, 1.0, 1.0)  # Blanco neutro
 			shadow_intensity = 0.3
