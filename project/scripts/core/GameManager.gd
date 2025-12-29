@@ -140,8 +140,9 @@ func start_new_run() -> void:
 			attack_manager.initialize(player)
 			player_ref = player
 			print("[GameManager] ✓ AttackManager inicializado con player")
-			# Equipar armas iniciales
-			equip_initial_weapons()
+			# NOTA: Las armas iniciales las equipa el propio Player (_equip_starting_weapons)
+			# No duplicar aquí para evitar armas duplicadas
+			# equip_initial_weapons()  # DESACTIVADO - ver WizardPlayer._equip_starting_weapons()
 		else:
 			print("[GameManager] ⚠️ No se encontró el player en la escena")
 	

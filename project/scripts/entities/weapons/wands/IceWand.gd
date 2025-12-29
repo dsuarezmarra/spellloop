@@ -8,7 +8,7 @@ var id: String = "ice_wand"
 var name: String = "Ice Wand"
 var damage: int = 10
 var attack_range: float = 500.0
-var base_cooldown: float = 0.5
+var base_cooldown: float = 1.2  # Balanceado: antes 0.5, ahora más lento
 var current_cooldown: float = 0.0
 var projectile_speed: float = 400.0
 var projectile_count: int = 1
@@ -80,6 +80,10 @@ func _find_nearest_enemy(owner: Node2D) -> Node:
 	"""Encontrar el enemigo más cercano"""
 	var nearest: Node = null
 	var nearest_dist: float = attack_range
+	
+	# Verificar que el árbol de escena existe
+	if not owner or not owner.get_tree():
+		return null
 	
 	for enemy in owner.get_tree().get_nodes_in_group("enemies"):
 		if not is_instance_valid(enemy):

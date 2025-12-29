@@ -173,6 +173,9 @@ func _process(delta: float) -> void:
 
 func _seek_nearest_enemy() -> void:
 	"""Buscar el enemigo más cercano sin límite de distancia"""
+	if not get_tree():
+		return
+	
 	var nearest_enemy = null
 	var nearest_distance = INF
 	

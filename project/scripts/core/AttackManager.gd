@@ -1,61 +1,211 @@
 # AttackManager.gd
 # Sistema central de auto-ataque para el jugador
 # Mantiene lista de armas, gestiona cooldowns, dispara automáticamente
+#
+# NUEVO SISTEMA DE SLOTS:
+# - 6 slots máximos iniciales
+# - Al fusionar armas, se pierde 1 slot permanentemente
+# - Las armas fusionadas ocupan 1 solo slot
 
 extends Node
 class_name AttackManager
 
-signal weapon_added(weapon)
-signal weapon_removed(weapon)
+signal weapon_added(weapon, slot_index: int)
+signal weapon_removed(weapon, slot_index: int)
 signal weapon_fired(weapon, target_pos: Vector2)
+signal weapon_leveled_up(weapon, new_level: int)
+signal slots_updated(current: int, max_slots: int)
+signal fusion_available(weapon_a, weapon_b, result: Dictionary)
 
 # Referencias
 var player: CharacterBody2D = null
-var weapons: Array = []
+var weapons: Array = []  # Acepta BaseWeapon y armas legacy (RefCounted)
 var is_active: bool = true
 
+# Sistema de fusión
+var fusion_manager: WeaponFusionManager = null
+
+# Stats del jugador (para modificar daño, crit, etc.)
+var player_stats: Dictionary = {
+	"damage_mult": 1.0,
+	"cooldown_mult": 1.0,
+	"crit_chance": 0.0,
+	"area_mult": 1.0,
+	"projectile_speed_mult": 1.0
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PROPIEDADES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+var max_weapon_slots: int:
+	get:
+		if fusion_manager:
+			return fusion_manager.current_max_slots
+		return WeaponFusionManager.STARTING_MAX_SLOTS
+
+var current_weapon_count: int:
+	get:
+		return weapons.size()
+
+var has_available_slot: bool:
+	get:
+		return current_weapon_count < max_weapon_slots
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FUNCIONES HELPER PARA COMPATIBILIDAD
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _get_weapon_id(weapon) -> String:
+	"""Obtener ID del arma de forma compatible con ambos sistemas"""
+	if weapon == null:
+		return ""
+	if "id" in weapon:
+		return weapon.id
+	return ""
+
+func _get_weapon_name(weapon) -> String:
+	"""Obtener nombre del arma de forma compatible con ambos sistemas"""
+	if weapon == null:
+		return "Unknown"
+	if weapon is BaseWeapon:
+		return weapon.weapon_name
+	if "name" in weapon:
+		return weapon.name
+	if "weapon_name" in weapon:
+		return weapon.weapon_name
+	return "Unknown"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INICIALIZACIÓN
+# ═══════════════════════════════════════════════════════════════════════════════
+
 func _ready() -> void:
-	print("[AttackManager] Inicializado")
+	# Crear el manager de fusiones
+	fusion_manager = WeaponFusionManager.new()
+	fusion_manager.fusion_completed.connect(_on_fusion_completed)
+	fusion_manager.fusion_failed.connect(_on_fusion_failed)
+	
+	print("[AttackManager] Inicializado con sistema de fusiones")
 
 func initialize(player_ref: CharacterBody2D) -> void:
 	"""Inicializar con referencia al jugador"""
 	player = player_ref
 	print("[AttackManager] Inicializado para player: %s" % player.name)
+	print("[AttackManager] Slots disponibles: %d/%d" % [current_weapon_count, max_weapon_slots])
 	
 	# Iniciar actualización de cooldowns
 	set_process(true)
 
-func add_weapon(weapon) -> void:
-	"""Añadir arma a la lista de ataque"""
-	if not weapon:
-		print("[AttackManager] Error: Intento de añadir arma nula")
-		return
+# ═══════════════════════════════════════════════════════════════════════════════
+# GESTIÓN DE ARMAS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func add_weapon(weapon) -> bool:
+	"""
+	Añadir arma a un slot disponible
+	Acepta tanto BaseWeapon como armas legacy (RefCounted como IceWand)
+	Retorna: true si se añadió exitosamente
+	"""
+	if weapon == null:
+		push_error("[AttackManager] Error: Intento de añadir arma nula")
+		return false
 	
-	# Evitar duplicados
-	if weapon in weapons:
-		print("[AttackManager] Warning: Arma ya está equipada: %s" % weapon.id)
-		return
+	# Verificar si hay slots disponibles
+	if not has_available_slot:
+		print("[AttackManager] ⚠️ No hay slots disponibles (%d/%d)" % [current_weapon_count, max_weapon_slots])
+		return false
 	
+	# Obtener ID del arma (compatible con ambos sistemas)
+	var weapon_id = _get_weapon_id(weapon)
+	var weapon_display_name = _get_weapon_name(weapon)
+	
+	# Verificar si ya tenemos esta arma
+	for existing in weapons:
+		if _get_weapon_id(existing) == weapon_id:
+			print("[AttackManager] ℹ️ Ya tienes %s, subiendo de nivel..." % weapon_display_name)
+			return level_up_weapon_by_id(weapon_id)
+	
+	# Añadir a la lista
 	weapons.append(weapon)
-	weapon.reset_cooldown()
+	var slot_index = weapons.size() - 1
 	
-	print("[AttackManager] ⚔️ Arma equipada: %s (total: %d)" % [weapon.name, weapons.size()])
-	weapon_added.emit(weapon)
+	# Conectar señales del arma (solo si es BaseWeapon)
+	if weapon is BaseWeapon and weapon.has_signal("weapon_leveled_up"):
+		weapon.weapon_leveled_up.connect(_on_weapon_leveled_up)
+	
+	print("[AttackManager] ⚔️ Arma equipada: %s [Slot %d] (total: %d/%d)" % [
+		weapon_display_name, slot_index, current_weapon_count, max_weapon_slots
+	])
+	
+	weapon_added.emit(weapon, slot_index)
+	slots_updated.emit(current_weapon_count, max_weapon_slots)
+	
+	# Verificar fusiones disponibles (solo para BaseWeapon)
+	if weapon is BaseWeapon:
+		_check_available_fusions()
+	
+	return true
 
-func remove_weapon(weapon) -> void:
+func add_weapon_by_id(weapon_id: String) -> bool:
+	"""Añadir arma por su ID"""
+	var weapon = BaseWeapon.new(weapon_id)
+	if weapon.id.is_empty():
+		push_error("[AttackManager] No se pudo crear arma: %s" % weapon_id)
+		return false
+	return add_weapon(weapon)
+
+func remove_weapon(weapon) -> bool:
 	"""Remover arma de la lista"""
-	if weapon in weapons:
-		weapons.erase(weapon)
-		print("[AttackManager] ⚔️ Arma removida: %s (total: %d)" % [weapon.name, weapons.size()])
-		weapon_removed.emit(weapon)
+	if weapon not in weapons:
+		return false
+	
+	var slot_index = weapons.find(weapon)
+	weapons.erase(weapon)
+	
+	# Desconectar señales (solo si es BaseWeapon)
+	if weapon is BaseWeapon and weapon.has_signal("weapon_leveled_up"):
+		if weapon.weapon_leveled_up.is_connected(_on_weapon_leveled_up):
+			weapon.weapon_leveled_up.disconnect(_on_weapon_leveled_up)
+	
+	print("[AttackManager] ⚔️ Arma removida: %s (total: %d/%d)" % [
+		_get_weapon_name(weapon), current_weapon_count, max_weapon_slots
+	])
+	
+	weapon_removed.emit(weapon, slot_index)
+	slots_updated.emit(current_weapon_count, max_weapon_slots)
+	
+	return true
 
-func replace_weapon(old_weapon, new_weapon) -> void:
+func remove_weapon_at_slot(slot_index: int) -> bool:
+	"""Remover arma por índice de slot"""
+	if slot_index < 0 or slot_index >= weapons.size():
+		return false
+	return remove_weapon(weapons[slot_index])
+
+func replace_weapon(old_weapon, new_weapon) -> bool:
 	"""Reemplazar un arma con otra"""
-	if old_weapon in weapons:
-		var idx = weapons.find(old_weapon)
-		weapons[idx] = new_weapon
-		new_weapon.reset_cooldown()
-		print("[AttackManager] ⚔️ Arma reemplazada: %s -> %s" % [old_weapon.name, new_weapon.name])
+	if old_weapon not in weapons:
+		return false
+	
+	var idx = weapons.find(old_weapon)
+	
+	# Desconectar señales del arma antigua
+	if old_weapon is BaseWeapon and old_weapon.has_signal("weapon_leveled_up"):
+		if old_weapon.weapon_leveled_up.is_connected(_on_weapon_leveled_up):
+			old_weapon.weapon_leveled_up.disconnect(_on_weapon_leveled_up)
+	
+	# Reemplazar
+	weapons[idx] = new_weapon
+	
+	# Conectar señales del arma nueva
+	if new_weapon is BaseWeapon and new_weapon.has_signal("weapon_leveled_up"):
+		new_weapon.weapon_leveled_up.connect(_on_weapon_leveled_up)
+	
+	print("[AttackManager] ⚔️ Arma reemplazada: %s -> %s" % [
+		_get_weapon_name(old_weapon), _get_weapon_name(new_weapon)
+	])
+	return true
 
 func get_weapon_count() -> int:
 	"""Obtener número de armas activas"""
@@ -65,14 +215,156 @@ func get_weapons() -> Array:
 	"""Obtener lista de armas"""
 	return weapons.duplicate()
 
+func get_weapon_at_slot(slot_index: int):
+	"""Obtener arma en un slot específico"""
+	if slot_index < 0 or slot_index >= weapons.size():
+		return null
+	return weapons[slot_index]
+
+func get_weapon_by_id(weapon_id: String):
+	"""Obtener arma por ID"""
+	for weapon in weapons:
+		if _get_weapon_id(weapon) == weapon_id:
+			return weapon
+	return null
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE NIVELES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func level_up_weapon(weapon) -> bool:
+	"""Subir de nivel un arma"""
+	if weapon not in weapons:
+		return false
+	
+	# Solo armas BaseWeapon soportan level_up
+	if weapon is BaseWeapon:
+		if not weapon.can_level_up():
+			print("[AttackManager] %s ya está al nivel máximo" % _get_weapon_name(weapon))
+			return false
+		return weapon.level_up()
+	
+	# Armas legacy no tienen sistema de niveles
+	print("[AttackManager] %s es un arma legacy sin sistema de niveles" % _get_weapon_name(weapon))
+	return false
+
+func level_up_weapon_by_id(weapon_id: String) -> bool:
+	"""Subir de nivel un arma por ID"""
+	var weapon = get_weapon_by_id(weapon_id)
+	if weapon == null:
+		return false
+	return level_up_weapon(weapon)
+
+func level_up_weapon_at_slot(slot_index: int) -> bool:
+	"""Subir de nivel un arma por slot"""
+	var weapon = get_weapon_at_slot(slot_index)
+	if weapon == null:
+		return false
+	return level_up_weapon(weapon)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE FUSIÓN
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func can_fuse(weapon_a: BaseWeapon, weapon_b: BaseWeapon) -> Dictionary:
+	"""Verificar si dos armas pueden fusionarse"""
+	return fusion_manager.can_fuse_weapons(weapon_a, weapon_b)
+
+func fuse_weapons(weapon_a: BaseWeapon, weapon_b: BaseWeapon) -> BaseWeapon:
+	"""
+	Fusionar dos armas
+	Retorna el arma fusionada si tiene éxito, null si falla
+	"""
+	# Verificar que ambas armas están equipadas
+	if weapon_a not in weapons or weapon_b not in weapons:
+		push_error("[AttackManager] Las armas a fusionar deben estar equipadas")
+		return null
+	
+	# Ejecutar fusión
+	var fused = fusion_manager.fuse_weapons(weapon_a, weapon_b)
+	if fused == null:
+		return null
+	
+	# Remover las armas originales
+	remove_weapon(weapon_a)
+	remove_weapon(weapon_b)
+	
+	# Añadir arma fusionada
+	add_weapon(fused)
+	
+	# Actualizar slots (ya se redujo en el fusion_manager)
+	slots_updated.emit(current_weapon_count, max_weapon_slots)
+	
+	return fused
+
+func fuse_weapons_by_ids(weapon_id_a: String, weapon_id_b: String) -> BaseWeapon:
+	"""Fusionar armas por sus IDs"""
+	var weapon_a = get_weapon_by_id(weapon_id_a)
+	var weapon_b = get_weapon_by_id(weapon_id_b)
+	
+	if weapon_a == null or weapon_b == null:
+		push_error("[AttackManager] No se encontraron las armas para fusionar")
+		return null
+	
+	return fuse_weapons(weapon_a, weapon_b)
+
+func get_available_fusions() -> Array:
+	"""Obtener todas las fusiones disponibles con las armas actuales"""
+	return fusion_manager.get_available_fusions(weapons)
+
+func get_fusion_preview(weapon_a: BaseWeapon, weapon_b: BaseWeapon) -> Dictionary:
+	"""Obtener preview de una fusión para UI"""
+	return fusion_manager.get_fusion_preview(weapon_a, weapon_b)
+
+func _check_available_fusions() -> void:
+	"""Verificar y emitir señales de fusiones disponibles"""
+	var fusions = get_available_fusions()
+	for fusion in fusions:
+		fusion_available.emit(fusion.weapon_a, fusion.weapon_b, fusion.result)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CALLBACKS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _on_weapon_leveled_up(weapon_id: String, new_level: int) -> void:
+	"""Callback cuando un arma sube de nivel"""
+	var weapon = get_weapon_by_id(weapon_id)
+	if weapon:
+		weapon_leveled_up.emit(weapon, new_level)
+		print("[AttackManager] ⬆️ %s subió a nivel %d" % [_get_weapon_name(weapon), new_level])
+
+func _on_fusion_completed(fused_weapon, lost_slot: bool) -> void:
+	"""Callback cuando se completa una fusión"""
+	print("[AttackManager] 🔥 Fusión completada: %s" % _get_weapon_name(fused_weapon))
+	if lost_slot:
+		print("[AttackManager] ⚠️ Slots reducidos: %d/%d" % [current_weapon_count, max_weapon_slots])
+
+func _on_fusion_failed(reason: String) -> void:
+	"""Callback cuando falla una fusión"""
+	print("[AttackManager] ❌ Fusión fallida: %s" % reason)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PROCESAMIENTO
+# ═══════════════════════════════════════════════════════════════════════════════
+
 func _process(delta: float) -> void:
 	"""Actualizar cooldowns y disparar armas"""
 	if not is_active or not player or not is_instance_valid(player):
 		return
 	
+	# Verificar que el árbol de escena existe (evita error al cambiar de escena)
+	if not player.get_tree():
+		return
+	
 	# Iterar sobre todas las armas
 	for weapon in weapons:
-		if not weapon or not weapon.is_active:
+		if weapon == null:
+			continue
+		
+		# Verificar si el arma tiene los métodos necesarios
+		if not weapon.has_method("tick_cooldown") or not weapon.has_method("is_ready_to_fire"):
+			# Arma legacy: manejar cooldown manualmente
+			_process_legacy_weapon(weapon, delta)
 			continue
 		
 		# Decrementar cooldown
@@ -80,12 +372,38 @@ func _process(delta: float) -> void:
 		
 		# Comprobar si está lista para disparar
 		if weapon.is_ready_to_fire():
-			# Disparar
-			weapon.perform_attack(player)
+			# Verificar que el árbol siga válido antes de disparar
+			if not player.get_tree():
+				return
+			# Disparar con stats del jugador (solo BaseWeapon soporta esto)
+			if weapon is BaseWeapon:
+				weapon.perform_attack(player, player_stats)
+			else:
+				weapon.perform_attack(player)
+				# Para armas NO-BaseWeapon, resetear cooldown manualmente
+				if weapon.has_method("reset_cooldown"):
+					weapon.reset_cooldown()
+				elif "current_cooldown" in weapon and "base_cooldown" in weapon:
+					weapon.current_cooldown = weapon.base_cooldown
 			weapon_fired.emit(weapon, player.global_position)
-			
-			# Resetear cooldown
-			weapon.reset_cooldown()
+
+func _process_legacy_weapon(weapon, delta: float) -> void:
+	"""Procesar arma legacy (como IceWand original)"""
+	# Las armas legacy tienen current_cooldown y base_cooldown
+	if weapon.has_method("perform_attack"):
+		if "current_cooldown" in weapon:
+			weapon.current_cooldown -= delta
+			if weapon.current_cooldown <= 0:
+				# Verificar que el árbol siga válido
+				if not player.get_tree():
+					return
+				weapon.perform_attack(player)
+				weapon.current_cooldown = weapon.base_cooldown if "base_cooldown" in weapon else 1.0
+				weapon_fired.emit(weapon, player.global_position)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONTROL
+# ═══════════════════════════════════════════════════════════════════════════════
 
 func enable() -> void:
 	"""Activar ataque automático"""
@@ -101,38 +419,52 @@ func disable() -> void:
 
 func clear_weapons() -> void:
 	"""Remover todas las armas"""
+	for weapon in weapons:
+		if weapon is BaseWeapon and weapon.has_signal("weapon_leveled_up"):
+			if weapon.weapon_leveled_up.is_connected(_on_weapon_leveled_up):
+				weapon.weapon_leveled_up.disconnect(_on_weapon_leveled_up)
 	weapons.clear()
 	print("[AttackManager] Todas las armas removidas")
 
-func upgrade_weapon(weapon_index: int, upgrade_type: String, amount: float = 1.0) -> bool:
-	"""Mejorar un arma específica"""
-	if weapon_index < 0 or weapon_index >= weapons.size():
-		print("[AttackManager] Error: Índice de arma inválido: %d" % weapon_index)
-		return false
-	
-	var weapon = weapons[weapon_index]
-	weapon.apply_upgrade(upgrade_type, amount)
-	print("[AttackManager] ⬆️ Mejora aplicada a %s: %s+%.1f" % [weapon.name, upgrade_type, amount])
-	return true
+# ═══════════════════════════════════════════════════════════════════════════════
+# STATS DEL JUGADOR
+# ═══════════════════════════════════════════════════════════════════════════════
 
-func upgrade_all_weapons(upgrade_type: String, amount: float = 1.0) -> void:
-	"""Mejorar todas las armas"""
-	for weapon in weapons:
-		weapon.apply_upgrade(upgrade_type, amount)
-	print("[AttackManager] ⬆️ Mejora masiva: %s+%.1f a %d armas" % [upgrade_type, amount, weapons.size()])
+func set_player_stat(stat_name: String, value: float) -> void:
+	"""Establecer stat del jugador"""
+	player_stats[stat_name] = value
+	print("[AttackManager] Stat actualizado: %s = %.2f" % [stat_name, value])
 
-func get_total_damage() -> int:
+func modify_player_stat(stat_name: String, delta: float) -> void:
+	"""Modificar stat del jugador (sumar/restar)"""
+	if not player_stats.has(stat_name):
+		player_stats[stat_name] = 0.0
+	player_stats[stat_name] += delta
+	print("[AttackManager] Stat modificado: %s += %.2f (total: %.2f)" % [
+		stat_name, delta, player_stats[stat_name]
+	])
+
+func get_player_stat(stat_name: String) -> float:
+	"""Obtener stat del jugador"""
+	return player_stats.get(stat_name, 0.0)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# UTILIDADES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func get_total_damage() -> float:
 	"""Obtener daño total de todas las armas"""
-	var total = 0
+	var total: float = 0.0
 	for weapon in weapons:
 		total += weapon.damage
-	return total
+	return total * player_stats.damage_mult
 
-func get_weapons_by_element(element: String) -> Array:
+func get_weapons_by_element(element) -> Array:
 	"""Obtener armas de un elemento específico"""
 	var result: Array = []
 	for weapon in weapons:
-		if weapon.element_type == element:
+		var weapon_element = weapon.element if weapon is BaseWeapon else weapon.get("element_type", "")
+		if weapon_element == element:
 			result.append(weapon)
 	return result
 
@@ -140,15 +472,128 @@ func get_info() -> Dictionary:
 	"""Obtener información del atacante para UI"""
 	var weapon_infos = []
 	for weapon in weapons:
-		weapon_infos.append(weapon.get_info())
+		if weapon is BaseWeapon:
+			weapon_infos.append({
+				"id": weapon.id,
+				"name": weapon.weapon_name,
+				"name_es": weapon.weapon_name_es,
+				"level": weapon.level,
+				"max_level": weapon.max_level,
+				"damage": weapon.damage,
+				"cooldown": weapon.cooldown,
+				"icon": weapon.icon,
+				"is_fused": weapon.is_fused,
+				"can_level_up": weapon.can_level_up(),
+				"next_upgrade": weapon.get_next_upgrade_description()
+			})
+		else:
+			# Arma legacy
+			weapon_infos.append({
+				"id": _get_weapon_id(weapon),
+				"name": _get_weapon_name(weapon),
+				"name_es": _get_weapon_name(weapon),
+				"level": 1,
+				"max_level": 1,
+				"damage": weapon.damage if "damage" in weapon else 0,
+				"cooldown": weapon.base_cooldown if "base_cooldown" in weapon else 1.0,
+				"icon": null,
+				"is_fused": false,
+				"can_level_up": false,
+				"next_upgrade": "N/A"
+			})
 	
 	return {
-		"total_weapons": weapons.size(),
+		"total_weapons": current_weapon_count,
+		"max_slots": max_weapon_slots,
+		"slots_used": current_weapon_count,
 		"total_damage": get_total_damage(),
-		"weapons": weapon_infos
+		"player_stats": player_stats.duplicate(),
+		"weapons": weapon_infos,
+		"available_fusions": get_available_fusions().size()
 	}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SERIALIZACIÓN
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func to_dict() -> Dictionary:
+	"""Serializar para guardado"""
+	var weapons_data = []
+	for weapon in weapons:
+		if weapon is BaseWeapon:
+			weapons_data.append(weapon.to_dict())
+		else:
+			# Arma legacy - serialización básica
+			weapons_data.append({
+				"id": _get_weapon_id(weapon),
+				"name": _get_weapon_name(weapon),
+				"is_legacy": true
+			})
+	
+	return {
+		"weapons": weapons_data,
+		"player_stats": player_stats.duplicate(),
+		"fusion_manager": fusion_manager.to_dict()
+	}
+
+func from_dict(data: Dictionary) -> void:
+	"""Restaurar desde datos guardados"""
+	# Limpiar estado actual
+	clear_weapons()
+	
+	# Restaurar fusion manager
+	if data.has("fusion_manager"):
+		fusion_manager.from_dict(data.fusion_manager)
+	
+	# Restaurar armas
+	if data.has("weapons"):
+		for weapon_data in data.weapons:
+			var weapon = BaseWeapon.from_dict(weapon_data)
+			if weapon:
+				add_weapon(weapon)
+	
+	# Restaurar stats del jugador
+	if data.has("player_stats"):
+		player_stats = data.player_stats.duplicate()
 
 func _notification(what: int) -> void:
 	"""Limpiar al eliminar nodo"""
 	if what == NOTIFICATION_PREDELETE:
-		weapons.clear()
+		clear_weapons()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DEBUG
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func get_debug_info() -> String:
+	var lines = [
+		"=== ATTACK MANAGER ===",
+		"Slots: %d / %d" % [current_weapon_count, max_weapon_slots],
+		"Active: %s" % is_active,
+		"",
+		"Player Stats:",
+	]
+	
+	for stat in player_stats:
+		lines.append("  %s: %.2f" % [stat, player_stats[stat]])
+	
+	lines.append("")
+	lines.append("Weapons:")
+	
+	for i in range(weapons.size()):
+		var w = weapons[i]
+		lines.append("  [%d] %s %s Lv.%d (DMG:%.0f, CD:%.2fs)%s" % [
+			i, w.icon, w.weapon_name, w.level, w.damage, w.cooldown,
+			" [FUSED]" if w.is_fused else ""
+		])
+	
+	var fusions = get_available_fusions()
+	if not fusions.is_empty():
+		lines.append("")
+		lines.append("Fusiones disponibles: %d" % fusions.size())
+		for f in fusions:
+			lines.append("  • %s + %s → %s" % [
+				f.weapon_a.weapon_name, f.weapon_b.weapon_name, f.result.name
+			])
+	
+	return "\n".join(lines)

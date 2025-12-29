@@ -382,6 +382,9 @@ func _calculate_separation() -> Vector2:
 	var separation = Vector2.ZERO
 	var nearby_enemies = 0
 	
+	if not get_tree():
+		return separation
+	
 	for other in get_tree().get_nodes_in_group("enemies"):
 		if other == self or not is_instance_valid(other):
 			continue
