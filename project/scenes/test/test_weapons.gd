@@ -68,9 +68,55 @@ func _ready() -> void:
 	
 	test_start_time = Time.get_ticks_msec() / 1000.0
 	
+	# Esperar a que el AttackManager esté listo y obtener referencia (AWAIT!)
+	await _wait_for_attack_manager()
+	
 	print("🧪 [WeaponTest] ¡Escena lista!")
 	print("   ↑↓ = Cambiar arma | TAB = Categoría | SPACE = Equipar")
 	print("   R = Reset dummies | WASD = Mover | ESC = Salir")
+
+func _wait_for_attack_manager() -> void:
+	"""Esperar a que el AttackManager esté disponible"""
+	# Hacer polling hasta que el AttackManager esté disponible (máx 60 frames = 1 segundo)
+	var max_attempts = 60
+	var attempt = 0
+	
+	while attempt < max_attempts:
+		await get_tree().process_frame
+		attempt += 1
+		
+		# Opción 1: Buscar en el GameManager (fuente primaria)
+		var game_manager = get_tree().root.get_node_or_null("GameManager")
+		if game_manager:
+			var gm_am = game_manager.get_node_or_null("AttackManager")
+			if gm_am:
+				attack_manager = gm_am
+				print("🧪 [WeaponTest] ✓ AttackManager obtenido del GameManager (frame %d)" % attempt)
+				return
+		
+		# Opción 2: Buscar en el player (SpellloopPlayer -> WizardPlayer)
+		if player:
+			# SpellloopPlayer tiene wizard_player como hijo
+			var wizard = player.get("wizard_player")
+			if wizard and "attack_manager" in wizard and wizard.attack_manager != null:
+				attack_manager = wizard.attack_manager
+				print("🧪 [WeaponTest] ✓ AttackManager obtenido del WizardPlayer (frame %d)" % attempt)
+				return
+			
+			# También probar acceso directo por si acaso
+			if "attack_manager" in player and player.attack_manager != null:
+				attack_manager = player.attack_manager
+				print("🧪 [WeaponTest] ✓ AttackManager obtenido del player (frame %d)" % attempt)
+				return
+		
+		# Opción 3: Buscar en el root directamente
+		var root_am = get_tree().root.get_node_or_null("AttackManager")
+		if root_am:
+			attack_manager = root_am
+			print("🧪 [WeaponTest] ✓ AttackManager obtenido del root (frame %d)" % attempt)
+			return
+	
+	print("🧪 [WeaponTest] ⚠️ AttackManager no disponible después de %d frames" % max_attempts)
 
 func _setup_scene() -> void:
 	# Fondo
@@ -108,21 +154,9 @@ func _create_player() -> void:
 		add_child(player)
 		player.global_position = Vector2.ZERO
 		
-		# Obtener AttackManager
-		if player.has_node("AttackManager"):
-			attack_manager = player.get_node("AttackManager")
-		else:
-			# Buscar en el player mismo
-			for child in player.get_children():
-				if child.name == "AttackManager" or child.get_class() == "AttackManager":
-					attack_manager = child
-					break
-		
-		# Si no tiene, buscamos el global o creamos uno
-		if not attack_manager:
-			attack_manager = player.get("attack_manager")
-		
-		print("🧪 [WeaponTest] Player creado, AttackManager: %s" % str(attack_manager))
+		# El AttackManager se inicializa de forma deferred en BasePlayer
+		# Necesitamos esperar a que esté listo
+		print("🧪 [WeaponTest] Player creado, esperando AttackManager...")
 	else:
 		push_error("[WeaponTest] No se pudo cargar SpellloopPlayer.tscn")
 		_create_fallback_player()
@@ -434,14 +468,21 @@ func _select_weapon(index: int) -> void:
 func _equip_selected_weapon() -> void:
 	if not attack_manager:
 		_log_damage("[color=red]❌ AttackManager no disponible[/color]")
+		print("🧪 [WeaponTest] ❌ AttackManager es null, no se puede equipar")
 		return
 	
 	var weapons_to_show = base_weapons if current_category == "base" else fusion_weapons
 	var weapon_id = weapons_to_show[selected_weapon_index]
 	
+	print("🧪 [WeaponTest] Intentando equipar: %s" % weapon_id)
+	print("🧪 [WeaponTest] Armas antes de limpiar: %d" % attack_manager.weapons.size())
+	
 	# Limpiar armas actuales
 	if attack_manager.has_method("clear_weapons"):
 		attack_manager.clear_weapons()
+		print("🧪 [WeaponTest] Armas después de limpiar: %d" % attack_manager.weapons.size())
+	else:
+		print("🧪 [WeaponTest] ⚠️ AttackManager no tiene clear_weapons()")
 	
 	# Equipar nueva arma usando BaseWeapon
 	var BaseWeaponClass = load("res://scripts/weapons/BaseWeapon.gd")
@@ -449,11 +490,19 @@ func _equip_selected_weapon() -> void:
 		var weapon = BaseWeaponClass.new(weapon_id)
 		if weapon.id.is_empty():
 			_log_damage("[color=red]❌ Error creando arma: %s[/color]" % weapon_id)
+			print("🧪 [WeaponTest] ❌ Arma creada con ID vacío")
 			return
 		
+		print("🧪 [WeaponTest] Arma creada: %s (id: %s)" % [weapon.weapon_name, weapon.id])
+		
 		if attack_manager.has_method("add_weapon"):
-			attack_manager.add_weapon(weapon)
-			_log_damage("[color=green]✅ Equipada: %s[/color]" % weapon.weapon_name)
+			var success = attack_manager.add_weapon(weapon)
+			if success:
+				_log_damage("[color=green]✅ Equipada: %s[/color]" % weapon.weapon_name)
+				print("🧪 [WeaponTest] ✓ Arma añadida exitosamente. Total armas: %d" % attack_manager.weapons.size())
+			else:
+				_log_damage("[color=red]❌ Error al añadir arma[/color]")
+				print("🧪 [WeaponTest] ❌ add_weapon() retornó false")
 		else:
 			_log_damage("[color=red]❌ AttackManager sin add_weapon()[/color]")
 	else:

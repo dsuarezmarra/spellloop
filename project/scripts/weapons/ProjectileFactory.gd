@@ -278,11 +278,12 @@ class AOEEffect extends Node2D:
 	var _timer: float = 0.0
 	var _activated: bool = false
 	var _enemies_damaged: Array = []
+	var _damage_applied: bool = false
 	
 	func setup(data: Dictionary) -> void:
 		damage = data.get("damage", 20.0)
 		aoe_radius = data.get("area", 1.0) * 80.0  # Escalar área
-		duration = data.get("duration", 0.5)
+		duration = max(data.get("duration", 0.5), 0.4)  # Mínimo 0.4s para ver el efecto
 		knockback = data.get("knockback", 150.0)
 		color = data.get("color", Color(0.6, 0.4, 0.2))
 		effect = data.get("effect", "none")
@@ -290,52 +291,50 @@ class AOEEffect extends Node2D:
 		effect_duration = data.get("effect_duration", 0.0)
 		crit_chance = data.get("crit_chance", 0.0)
 	
-	func activate(owner: Node2D) -> void:
+	func _ready() -> void:
+		# Activar automáticamente cuando entre al árbol
+		_do_activate()
+	
+	func activate(_owner: Node2D) -> void:
+		# Método legacy, ahora se activa en _ready
+		pass
+	
+	func _do_activate() -> void:
 		if _activated:
 			return
 		_activated = true
 		
-		# Crear área de colisión
-		var area = Area2D.new()
-		area.collision_layer = 0
-		area.collision_mask = 2  # Enemigos
-		
-		var shape = CollisionShape2D.new()
-		var circle = CircleShape2D.new()
-		circle.radius = aoe_radius
-		shape.shape = circle
-		area.add_child(shape)
-		add_child(area)
-		
-		# Conectar señal
-		area.body_entered.connect(_on_body_entered)
-		area.area_entered.connect(_on_area_entered)
+		print("[AOE] Activado en posición: %s, radio: %.1f, daño: %.0f" % [global_position, aoe_radius, damage])
 		
 		# Crear visual
 		_create_aoe_visual()
 		
-		# Activar daño inicial a enemigos ya en área
-		await get_tree().process_frame
+		# Aplicar daño inmediatamente por distancia (no necesita física)
 		_damage_enemies_in_area()
 	
 	func _on_body_entered(body: Node2D) -> void:
 		if body.is_in_group("enemies") and body not in _enemies_damaged:
+			print("[AOE] Body entered: %s" % body.name)
 			_apply_damage(body)
 	
 	func _on_area_entered(area: Area2D) -> void:
 		var parent = area.get_parent()
 		if parent and parent.is_in_group("enemies") and parent not in _enemies_damaged:
+			print("[AOE] Area entered: %s" % parent.name)
 			_apply_damage(parent)
 	
 	func _damage_enemies_in_area() -> void:
 		if not get_tree():
 			return
 		var enemies = get_tree().get_nodes_in_group("enemies")
+		print("[AOE] Buscando enemigos en área. Encontrados en grupo: %d" % enemies.size())
+		
 		for enemy in enemies:
 			if enemy in _enemies_damaged:
 				continue
 			
 			var dist = global_position.distance_to(enemy.global_position)
+			print("[AOE] Enemigo %s a distancia %.1f (radio: %.1f)" % [enemy.name, dist, aoe_radius])
 			if dist <= aoe_radius:
 				_apply_damage(enemy)
 	
@@ -372,28 +371,32 @@ class AOEEffect extends Node2D:
 					enemy.apply_pull(global_position, effect_value, effect_duration)
 	
 	func _create_aoe_visual() -> void:
-		# Crear círculo visual
-		var canvas = Node2D.new()
-		canvas.name = "AOEVisual"
-		add_child(canvas)
+		# Animación de expansión desde el centro
+		scale = Vector2(0.1, 0.1)
+		modulate.a = 1.0
 		
-		# Animación de expansión y fade
 		var tween = create_tween()
-		tween.tween_property(canvas, "scale", Vector2(1.2, 1.2), duration * 0.8)
-		tween.parallel().tween_property(canvas, "modulate:a", 0.0, duration)
+		# Expandir rápidamente
+		tween.tween_property(self, "scale", Vector2(1.0, 1.0), duration * 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+		# Mantener y luego desvanecer
+		tween.tween_interval(duration * 0.3)
+		tween.tween_property(self, "modulate:a", 0.0, duration * 0.4)
 		tween.tween_callback(queue_free)
 	
 	func _draw() -> void:
-		# Dibujar círculo del AOE
-		draw_circle(Vector2.ZERO, aoe_radius, Color(color.r, color.g, color.b, 0.4))
-		draw_arc(Vector2.ZERO, aoe_radius, 0, TAU, 32, color, 3.0)
+		# Dibujar círculo del AOE con múltiples capas para más visibilidad
+		# Capa exterior (borde grueso)
+		draw_arc(Vector2.ZERO, aoe_radius, 0, TAU, 48, color, 4.0)
+		# Capa media (relleno semi-transparente)
+		draw_circle(Vector2.ZERO, aoe_radius * 0.9, Color(color.r, color.g, color.b, 0.3))
+		# Núcleo más brillante
+		draw_circle(Vector2.ZERO, aoe_radius * 0.4, Color(color.r, color.g, color.b, 0.5))
+		# Centro muy brillante
+		draw_circle(Vector2.ZERO, aoe_radius * 0.15, Color(1.0, 1.0, 1.0, 0.7))
 	
 	func _process(delta: float) -> void:
 		_timer += delta
-		queue_redraw()
-		
-		if _timer >= duration:
-			queue_free()
+		queue_redraw()  # Redibujar para mantener el visual actualizado
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

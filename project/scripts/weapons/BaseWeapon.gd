@@ -232,8 +232,15 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> void:
 		return
 	
 	var targets = _find_targets(player)
-	if targets.is_empty() and target_type != WeaponDatabase.TargetType.AREA \
-		and target_type != WeaponDatabase.TargetType.ORBIT:
+	
+	# Verificar si necesita targets
+	# AOE y ORBIT no necesitan targets para disparar
+	var needs_target = target_type != WeaponDatabase.TargetType.AREA \
+		and target_type != WeaponDatabase.TargetType.ORBIT \
+		and projectile_type != WeaponDatabase.ProjectileType.AOE \
+		and projectile_type != WeaponDatabase.ProjectileType.ORBIT
+	
+	if targets.is_empty() and needs_target:
 		return  # No hay objetivos y el arma necesita uno
 	
 	# Aplicar modificadores del jugador
@@ -247,6 +254,10 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> void:
 		# Agregar crit del efecto del arma
 		if effect == "crit_chance":
 			modified_crit += effect_value
+	
+	# Log de disparo
+	var target_info = "posición player" if targets.is_empty() else str(targets[0].global_position)
+	print("[%s] ⚡ Disparando (%s) → %s" % [weapon_name, WeaponDatabase.ProjectileType.keys()[projectile_type], target_info])
 	
 	# Crear proyectil(es) según el tipo
 	_spawn_projectiles(player, targets, modified_damage, modified_crit)
