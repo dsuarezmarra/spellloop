@@ -384,10 +384,12 @@ func _add_animated_decorations(zone_node: Node2D, radius: float, zone_type: Zone
 		decor_node.position = pos
 		decor_node.z_index = 10  # Por ENCIMA de las texturas base (-100)
 		
-		# Escala variable (más variedad visual)
-		var base_scale = 1.5  # Escala más grande para ser visible en zoom out
-		var scale_variation = rng.randf_range(0.7, 1.5)  # ±50% variación
-		var final_scale = base_scale * scale_variation
+		# Escala variable basada en el tamaño del player
+		# Player: 500px × 0.25 = 125px visual
+		# Decor: 256px × escala
+		# Para igualar al player: 256 × escala = 125 → escala = 0.49
+		# Máximo: 0.5 (igual al player), Mínimo: 0.25 (1/2 del player)
+		var final_scale = rng.randf_range(0.25, 0.5)
 		
 		# Mirror horizontal (50% probabilidad)
 		if rng.randf() > 0.5:
