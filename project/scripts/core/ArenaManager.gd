@@ -146,13 +146,10 @@ func _load_biome_textures() -> void:
 		if biome_textures.has(biome_name):
 			continue  # Ya cargado
 		
-		# === CARGAR TEXTURA BASE ESTÁTICA (frame 1 seamless) ===
+		# === CARGAR TEXTURA BASE ESTÁTICA (seamless) ===
 		var base_texture: Texture2D = null
-		var base_path: String
-		if biome_name == "Lava":
-			base_path = "res://assets/textures/biomes/Lava/base/2.png"
-		else:
-			base_path = "res://assets/textures/biomes/%s/base/1.png" % biome_name
+		var biome_lower = biome_name.to_lower()
+		var base_path = "res://assets/textures/biomes/%s/base/%s_base_seamless.png" % [biome_name, biome_lower]
 		
 		# Primero intentar carga manual directa con Image (evita problemas de .import corruptos)
 		var abs_path = ProjectSettings.globalize_path(base_path)
@@ -176,7 +173,6 @@ func _load_biome_textures() -> void:
 					print("📦 [ArenaManager] Textura cargada desde recursos: %s" % biome_name)
 		
 		# === CARGAR DECORACIONES ANIMADAS ===
-		var biome_lower = biome_name.to_lower()
 		var decor_paths: Array[String] = []
 		
 		# Guardar paths COMPLETOS de los spritesheets de decoraciones
