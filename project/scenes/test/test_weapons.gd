@@ -84,7 +84,7 @@ func _ready() -> void:
 	
 	print("🧪 [WeaponTest] ¡Escena lista!")
 	print("   ↑↓ = Cambiar arma | TAB = Categoría | SPACE = Equipar")
-	print("   R = Reset dummies | WASD = Mover | P = Demo Proyectil | ESC = Salir")
+	print("   R = Reset dummies | WASD = Mover | P = Demo Proyectil | C = Refrescar Sprites | ESC = Salir")
 
 func _wait_for_attack_manager() -> void:
 	"""Esperar a que el AttackManager esté disponible"""
@@ -399,7 +399,7 @@ func _create_ui() -> void:
 	info_panel.add_child(info_label)
 	
 	var controls_label = Label.new()
-	controls_label.text = "WASD=Mover | ↑↓=Armas | TAB=Categoría | SPACE=Equipar | R=Reset | P=Demo Proyectil"
+	controls_label.text = "WASD=Mover | ↑↓=Armas | TAB=Categoría | SPACE=Equipar | R=Reset | P=Demo | C=Refrescar Sprites"
 	controls_label.position = Vector2(20, 35)
 	controls_label.add_theme_font_size_override("font_size", 11)
 	controls_label.add_theme_color_override("font_color", Color.LIGHT_GRAY)
@@ -640,6 +640,8 @@ func _input(event: InputEvent) -> void:
 			_reset_dummies()
 		elif event.keycode == KEY_P:
 			_demo_projectile_animation()
+		elif event.keycode == KEY_C:
+			_clear_visual_cache()
 		elif event.keycode == KEY_PAGEUP:
 			_select_weapon(selected_weapon_index - 10)
 		elif event.keycode == KEY_PAGEDOWN:
@@ -662,6 +664,15 @@ func _update_dps_display() -> void:
 # ═══════════════════════════════════════════════════════════════════════════════
 # SISTEMA DE PREVIEW DE PROYECTILES
 # ═══════════════════════════════════════════════════════════════════════════════
+
+func _clear_visual_cache() -> void:
+	"""Limpiar el caché de visuales para recargar sprites (tecla C)"""
+	if visual_manager:
+		visual_manager.clear_cache()
+		_log_damage("[color=yellow]🗑️ Caché de visuales limpiado[/color]")
+		_update_projectile_preview()
+	else:
+		_log_damage("[color=red]❌ Visual manager no disponible[/color]")
 
 func _create_projectile_preview_area() -> void:
 	"""Crear área para mostrar preview del proyectil del arma seleccionada"""
@@ -720,7 +731,7 @@ func _update_projectile_preview() -> void:
 			current_preview = visual_manager.create_orbit_visual(weapon_id, 3, 50.0, data)
 			if current_preview:
 				projectile_preview_container.add_child(current_preview)
-				current_preview.spawn()
+				# OrbitalsVisualContainer hace spawn automáticamente en setup()
 		5:  # CHAIN
 			current_preview = visual_manager.create_chain_visual(weapon_id, 3, data)
 			if current_preview:
@@ -831,23 +842,17 @@ func _demo_orbit(weapon_id: String, data: Dictionary) -> void:
 	orbit_container.global_position = player.global_position
 	add_child(orbit_container)
 	
-	# Crear 3 orbitales
-	var orbitals: Array = []
-	for i in range(3):
-		var angle = i * (TAU / 3)
-		var orbital = visual_manager.create_orbit_visual(weapon_id, 3, 60.0, data)
-		if orbital:
-			orbit_container.add_child(orbital)
-			orbitals.append(orbital)
-			orbital.spawn()
+	# Crear contenedor con 3 orbitales (OrbitalsVisualContainer maneja múltiples orbes)
+	var orbital_container = visual_manager.create_orbit_visual(weapon_id, 3, 60.0, data)
+	if orbital_container:
+		orbit_container.add_child(orbital_container)
 	
 	# Mantener por 2 segundos
 	await get_tree().create_timer(2.0).timeout
 	
 	# Destruir orbitales
-	for orbital in orbitals:
-		if is_instance_valid(orbital):
-			orbital.destroy()
+	if is_instance_valid(orbital_container):
+		orbital_container.destroy()
 	
 	await get_tree().create_timer(0.5).timeout
 	orbit_container.queue_free()

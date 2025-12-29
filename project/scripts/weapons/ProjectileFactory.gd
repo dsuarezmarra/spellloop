@@ -473,7 +473,7 @@ class OrbitalManager extends Node2D:
 	var _rotation_angle: float = 0.0
 	var _last_hit_times: Dictionary = {}  # enemy_id -> last_hit_time
 	var _hit_cooldown: float = 0.5  # Tiempo entre hits al mismo enemigo
-	var _enhanced_visual: OrbitVisualEffect = null
+	var _enhanced_visual: OrbitalsVisualContainer = null
 	var _use_enhanced: bool = false
 	
 	func update_orbitals(data: Dictionary) -> void:
@@ -645,35 +645,31 @@ class OrbitalManager extends Node2D:
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CLASE INTERNA: ChainProjectile
+# Rayo encadenado INSTANTÁNEO que salta entre enemigos
 # ═══════════════════════════════════════════════════════════════════════════════
 
 class ChainProjectile extends Node2D:
 	var damage: float = 15.0
 	var chain_count: int = 2
 	var chain_range: float = 150.0
-	var speed: float = 600.0
 	var color: Color = Color(1.0, 1.0, 0.3)
 	var knockback: float = 40.0
 	var crit_chance: float = 0.0
 	var effect: String = "none"
 	var effect_value: float = 0.0
-	var weapon_id: String = ""  # Para visuales mejorados
+	var weapon_id: String = ""
 	
 	var first_target: Node2D = null
-	var current_target: Node2D = null
-	var chains_remaining: int = 0
 	var enemies_hit: Array = []
 	
-	var _moving: bool = false
-	var _visual: Line2D = null
 	var _enhanced_visual: ChainLightningVisual = null
 	var _use_enhanced: bool = false
+	var _chain_delay: float = 0.08  # Delay entre cada salto de cadena
 	
 	func setup(data: Dictionary) -> void:
 		damage = data.get("damage", 15.0)
 		chain_count = data.get("chain_count", 2)
-		chain_range = data.get("range", 150.0) * 0.5  # Rango de chain más corto
-		speed = data.get("speed", 600.0)
+		chain_range = data.get("range", 150.0) * 0.5
 		color = data.get("color", Color(1.0, 1.0, 0.3))
 		knockback = data.get("knockback", 40.0)
 		crit_chance = data.get("crit_chance", 0.0)
@@ -686,15 +682,13 @@ class ChainProjectile extends Node2D:
 			queue_free()
 			return
 		
-		chains_remaining = chain_count
-		current_target = first_target
-		_moving = true
-		
-		# Crear visual (mejorado si está disponible)
+		# Crear visual mejorado
 		_create_chain_visual()
+		
+		# Ejecutar la cadena de rayos instantáneos
+		_execute_chain_sequence()
 	
 	func _create_chain_visual() -> void:
-		# Intentar usar visual mejorado
 		if weapon_id != "" and ProjectileVisualManager.instance:
 			var weapon_data = WeaponDatabase.get_weapon_data(weapon_id)
 			if not weapon_data.is_empty():
@@ -703,97 +697,72 @@ class ChainProjectile extends Node2D:
 				if _enhanced_visual:
 					add_child(_enhanced_visual)
 					_use_enhanced = true
-					print("[ChainProjectile] ✓ Visual mejorado creado para: %s" % weapon_id)
 					return
-				else:
-					print("[ChainProjectile] ✗ create_chain_visual retornó null para: %s" % weapon_id)
-			else:
-				print("[ChainProjectile] ✗ weapon_data vacío para: %s" % weapon_id)
-		else:
-			print("[ChainProjectile] ✗ No weapon_id ('%s') o no ProjectileVisualManager.instance" % weapon_id)
 		
-		# Fallback: visual simple
-		print("[ChainProjectile] → Usando visual simple (Line2D)")
-		_visual = Line2D.new()
-		_visual.width = 4.0
-		_visual.default_color = color
-		add_child(_visual)
+		# Fallback: crear visual simple
+		_enhanced_visual = ChainLightningVisual.new()
+		_enhanced_visual.setup(null)
+		add_child(_enhanced_visual)
+		_use_enhanced = true
 	
-	func _process(delta: float) -> void:
-		if not _moving:
-			return
+	func _execute_chain_sequence() -> void:
+		"""Ejecutar la secuencia de rayos encadenados de forma instantánea"""
+		var current_pos = global_position
+		var current_target = first_target
+		var chains_done = 0
 		
-		if current_target == null or not is_instance_valid(current_target):
-			_try_chain_to_next()
-			return
+		while chains_done < chain_count and current_target != null and is_instance_valid(current_target):
+			# Guardar posición para el rayo
+			var target_pos = current_target.global_position
+			
+			# Mostrar rayo visual instantáneo
+			if _use_enhanced and _enhanced_visual:
+				_enhanced_visual.fire_at(
+					_enhanced_visual.to_local(current_pos),
+					_enhanced_visual.to_local(target_pos)
+				)
+			
+			# Aplicar daño instantáneo
+			_apply_damage_to_target(current_target)
+			enemies_hit.append(current_target)
+			
+			# Esperar un poco antes del siguiente salto (efecto visual)
+			if chains_done < chain_count - 1:
+				await get_tree().create_timer(_chain_delay).timeout
+			
+			# Actualizar posición para el siguiente salto
+			current_pos = target_pos
+			
+			# Buscar siguiente objetivo
+			current_target = _find_next_target(current_pos)
+			chains_done += 1
 		
-		# Mover hacia el objetivo
-		var direction = (current_target.global_position - global_position).normalized()
-		global_position += direction * speed * delta
-		
-		# Actualizar visual
-		if _use_enhanced and _enhanced_visual:
-			# Para el visual mejorado, actualizamos el chain actual
-			_enhanced_visual.update_chain_positions(enemies_hit, current_target)
-		elif _visual:
-			_visual.clear_points()
-			_visual.add_point(Vector2.ZERO)
-			_visual.add_point(to_local(current_target.global_position))
-		
-		# Verificar si llegamos
-		var dist = global_position.distance_to(current_target.global_position)
-		if dist < 20.0:
-			_hit_target()
+		# Esperar a que el visual termine y destruir
+		await get_tree().create_timer(0.3).timeout
+		queue_free()
 	
-	func _hit_target() -> void:
-		if current_target == null or not is_instance_valid(current_target):
-			_try_chain_to_next()
+	func _apply_damage_to_target(target: Node2D) -> void:
+		"""Aplicar daño a un objetivo"""
+		if not is_instance_valid(target):
 			return
 		
-		enemies_hit.append(current_target)
-		
-		# Aplicar daño
 		var final_damage = damage
 		if randf() < crit_chance:
 			final_damage *= 2.0
 		
-		if current_target.has_method("take_damage"):
-			current_target.take_damage(int(final_damage))
+		if target.has_method("take_damage"):
+			target.take_damage(int(final_damage))
 		
 		# Aplicar knockback
-		if knockback != 0 and current_target.has_method("apply_knockback"):
-			var kb_dir = (current_target.global_position - global_position).normalized()
-			current_target.apply_knockback(kb_dir * knockback)
-		
-		# Efecto de hit en visual mejorado
-		if _use_enhanced and _enhanced_visual:
-			_enhanced_visual.add_chain_hit(current_target.global_position)
-		
-		# Intentar encadenar
-		_try_chain_to_next()
+		if knockback != 0 and target.has_method("apply_knockback"):
+			var kb_dir = (target.global_position - global_position).normalized()
+			target.apply_knockback(kb_dir * knockback)
 	
-	func _try_chain_to_next() -> void:
-		chains_remaining -= 1
-		
-		if chains_remaining <= 0:
-			_finish_chain()
-			return
-		
-		# Buscar siguiente objetivo
-		var next_target = _find_next_target()
-		if next_target == null:
-			_finish_chain()
-			return
-		
-		# Crear efecto de "salto"
-		if not _use_enhanced:
-			_create_chain_effect()
-		
-		current_target = next_target
-	
-	func _find_next_target() -> Node2D:
+	func _find_next_target(from_pos: Vector2) -> Node2D:
+		"""Buscar el siguiente objetivo válido para encadenar"""
 		if not get_tree():
 			return null
+		
 		var enemies = get_tree().get_nodes_in_group("enemies")
 		var best_target: Node2D = null
 		var best_dist: float = chain_range
@@ -804,37 +773,9 @@ class ChainProjectile extends Node2D:
 			if not is_instance_valid(enemy):
 				continue
 			
-			var dist = global_position.distance_to(enemy.global_position)
+			var dist = from_pos.distance_to(enemy.global_position)
 			if dist < best_dist:
 				best_dist = dist
 				best_target = enemy
 		
 		return best_target
-	
-	func _create_chain_effect() -> void:
-		# Flash visual en la posición actual
-		var flash = Sprite2D.new()
-		# Crear pequeño destello
-		var size = 20
-		var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
-		for x in range(size):
-			for y in range(size):
-				var dist = Vector2(x, y).distance_to(Vector2(size/2, size/2))
-				if dist < size / 2:
-					image.set_pixel(x, y, color)
-		flash.texture = ImageTexture.create_from_image(image)
-		flash.global_position = global_position
-		get_parent().add_child(flash)
-		
-		# Fade out
-		var tween = flash.create_tween()
-		tween.tween_property(flash, "modulate:a", 0.0, 0.2)
-		tween.tween_callback(flash.queue_free)
-	
-	func _finish_chain() -> void:
-		_moving = false
-		
-		# Fade out
-		var tween = create_tween()
-		tween.tween_property(self, "modulate:a", 0.0, 0.15)
-		tween.tween_callback(queue_free)

@@ -800,6 +800,74 @@ const PROJECTILE_TYPE_MAP: Dictionary = {
 	5: ProjectileVisualData.ProjectileStyle.CHAIN    # CHAIN
 }
 
+# Path base para sprites de proyectiles personalizados
+const PROJECTILE_SPRITES_PATH = "res://assets/sprites/projectiles/"
+
+# Configuración de sprites por arma (frame counts y fps)
+const WEAPON_SPRITE_CONFIG: Dictionary = {
+	"ice_wand": {
+		"launch_frames": 4,
+		"launch_fps": 12.0,
+		"flight_frames": 6,
+		"flight_fps": 12.0,
+		"impact_frames": 6,
+		"impact_fps": 15.0,
+		"sprite_scale": 0.5  # Escala de los sprites (1/2 del tamaño original)
+	}
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CARGA DE SPRITES PERSONALIZADOS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> void:
+	"""Intentar cargar sprites personalizados para un arma si existen"""
+	var base_path = PROJECTILE_SPRITES_PATH + weapon_id + "/"
+	
+	# Verificar si existe el archivo de vuelo (mínimo requerido)
+	var flight_path = base_path + "flight.png"
+	if not ResourceLoader.exists(flight_path):
+		return  # No hay sprites personalizados, usar procedural
+	
+	# Cargar sprites
+	var flight_tex = load(flight_path) as Texture2D
+	var launch_tex = load(base_path + "launch.png") as Texture2D
+	var impact_tex = load(base_path + "impact.png") as Texture2D
+	
+	if flight_tex == null:
+		push_warning("[ProjectileVisualManager] No se pudo cargar flight.png para " + weapon_id)
+		return
+	
+	# Obtener configuración de frames para este arma
+	var config = WEAPON_SPRITE_CONFIG.get(weapon_id, {})
+	
+	# Configurar sprites de lanzamiento
+	if launch_tex:
+		data.launch_spritesheet = launch_tex
+		data.launch_frames = config.get("launch_frames", 4)
+		data.launch_fps = config.get("launch_fps", 12.0)
+		data.launch_loop = false
+	
+	# Configurar sprites de vuelo
+	data.flight_spritesheet = flight_tex
+	data.flight_frames = config.get("flight_frames", 6)
+	data.flight_fps = config.get("flight_fps", 12.0)
+	data.flight_loop = true
+	
+	# Configurar sprites de impacto
+	if impact_tex:
+		data.impact_spritesheet = impact_tex
+		data.impact_frames = config.get("impact_frames", 6)
+		data.impact_fps = config.get("impact_fps", 15.0)
+		data.impact_loop = false
+	
+	# Aplicar escala personalizada si está definida
+	if config.has("sprite_scale"):
+		data.base_scale = config.get("sprite_scale", 1.0)
+		print("[ProjectileVisualManager] Escala aplicada: %.2f para %s" % [data.base_scale, weapon_id])
+	
+	print("[ProjectileVisualManager] Sprites personalizados cargados para: " + weapon_id)
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # OBTENER DATOS VISUALES
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -818,7 +886,15 @@ func _create_weapon_visual_data(weapon_id: String, weapon_data: Dictionary) -> P
 	"""Crear datos visuales ÚNICOS para cada arma"""
 	var data = ProjectileVisualData.new()
 	
-	# Buscar configuración específica del arma
+	# ═══════════════════════════════════════════════════════════════════════════
+	# PASO 1: Valores por defecto (se pueden sobrescribir después)
+	# ═══════════════════════════════════════════════════════════════════════════
+	data.base_scale = 1.0
+	data.frame_size = Vector2i(64, 64)
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# PASO 2: Configuración específica del arma
+	# ═══════════════════════════════════════════════════════════════════════════
 	if WEAPON_VISUALS.has(weapon_id):
 		var config = WEAPON_VISUALS[weapon_id]
 		data.id = weapon_id
@@ -852,16 +928,19 @@ func _create_weapon_visual_data(weapon_id: String, weapon_data: Dictionary) -> P
 		data.set_meta("rotation_speed", 0.0)
 		data.set_meta("squash_amount", 0.1)
 	
-	# Determinar estilo según el tipo de proyectil (int del WeaponDatabase)
+	# ═══════════════════════════════════════════════════════════════════════════
+	# PASO 3: Determinar estilo según tipo de proyectil
+	# ═══════════════════════════════════════════════════════════════════════════
 	var proj_type_int = weapon_data.get("projectile_type", 0)
 	if proj_type_int is int:
 		data.style = PROJECTILE_TYPE_MAP.get(proj_type_int, ProjectileVisualData.ProjectileStyle.SINGLE)
 	else:
 		data.style = ProjectileVisualData.ProjectileStyle.SINGLE
 	
-	# Tamaño por defecto
-	data.base_scale = 1.0
-	data.frame_size = Vector2i(64, 64)
+	# ═══════════════════════════════════════════════════════════════════════════
+	# PASO 4: Cargar sprites personalizados (ÚLTIMO - puede sobrescribir escala)
+	# ═══════════════════════════════════════════════════════════════════════════
+	_try_load_custom_sprites(data, weapon_id)
 	
 	return data
 
@@ -900,12 +979,12 @@ func create_chain_visual(weapon_id: String, chain_count: int = 2, weapon_data: D
 	return effect
 
 func create_orbit_visual(weapon_id: String, orbital_count: int, orbit_radius: float, 
-		weapon_data: Dictionary = {}) -> OrbitVisualEffect:
-	"""Crear efecto visual orbital - uno solo que se usará para overlay"""
+		weapon_data: Dictionary = {}) -> OrbitalsVisualContainer:
+	"""Crear contenedor con múltiples orbes visuales"""
 	var visual_data = get_visual_data(weapon_id, weapon_data)
-	var effect = OrbitVisualEffect.new()
-	effect.setup(visual_data, orbit_radius, 0.0, 24.0)
-	return effect
+	var container = OrbitalsVisualContainer.new()
+	container.setup(visual_data, orbital_count, orbit_radius, 24.0)
+	return container
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # UTILIDADES

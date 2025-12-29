@@ -1,0 +1,422 @@
+{
+  "meta": {
+    "version": "1.0",
+    "style": "cartoon_funko_pop",
+    "base_resolution": [64, 64],
+    "format": "PNG_RGBA",
+    "animations": {
+      "launch": {"frames": 4, "fps": 12, "loop": false},
+      "flight": {"frames": 6, "fps": 12, "loop": true},
+      "impact": {"frames": 6, "fps": 15, "loop": false}
+    },
+    "aoe_animations": {
+      "appear": {"frames": 4, "fps": 12, "loop": false},
+      "active": {"frames": 6, "fps": 10, "loop": true},
+      "fade": {"frames": 4, "fps": 12, "loop": false}
+    },
+    "beam_animations": {
+      "start": {"frames": 4, "fps": 12, "loop": false},
+      "active": {"frames": 6, "fps": 10, "loop": true},
+      "end": {"frames": 4, "fps": 12, "loop": false}
+    }
+  },
+  
+  "base_weapons": [
+    {
+      "id": "ice_wand",
+      "name": "Ice Shard",
+      "type": "SINGLE",
+      "element": "ice",
+      "colors": {
+        "primary": "#66CCFF",
+        "secondary": "#FFFFFF",
+        "accent": "#99EEFF",
+        "outline": "#1A3A5C"
+      },
+      "shape": "pointed_crystal",
+      "effects": ["sparkle", "frost_trail", "icy_glow"],
+      "description": "Pointed ice crystal shard, angular but cute, with frost particles"
+    },
+    {
+      "id": "fire_wand",
+      "name": "Fireball",
+      "type": "SINGLE",
+      "element": "fire",
+      "colors": {
+        "primary": "#FF6611",
+        "secondary": "#FFCC00",
+        "accent": "#FF9944",
+        "outline": "#661100"
+      },
+      "shape": "round_flame_orb",
+      "effects": ["ember_particles", "heat_shimmer", "warm_glow"],
+      "description": "Bouncy round fireball with flickering flame wisps"
+    },
+    {
+      "id": "lightning_wand",
+      "name": "Lightning Bolt",
+      "type": "CHAIN",
+      "element": "lightning",
+      "colors": {
+        "primary": "#FFFF4D",
+        "secondary": "#FFFFFF",
+        "accent": "#FFFF99",
+        "outline": "#6633CC"
+      },
+      "shape": "zigzag_bolt",
+      "effects": ["electric_sparks", "static_crackle", "bright_flash"],
+      "description": "Zigzag lightning bolt with rounded joints and orb at tip"
+    },
+    {
+      "id": "arcane_orb",
+      "name": "Arcane Sphere",
+      "type": "ORBIT",
+      "element": "arcane",
+      "colors": {
+        "primary": "#B34DFF",
+        "secondary": "#FF66CC",
+        "accent": "#DD99FF",
+        "outline": "#330066"
+      },
+      "shape": "glowing_orb_swirl",
+      "effects": ["magic_runes", "mystical_trail", "pulse_glow"],
+      "description": "Perfect glowing orb with inner swirl pattern and floating runes"
+    },
+    {
+      "id": "shadow_dagger",
+      "name": "Shadow Blade",
+      "type": "SINGLE",
+      "element": "shadow",
+      "colors": {
+        "primary": "#4D1A66",
+        "secondary": "#1A0A26",
+        "accent": "#CCCCFF",
+        "outline": "#1A0A26"
+      },
+      "shape": "curved_dagger",
+      "effects": ["shadow_wisps", "dark_smoke", "ghostly_afterimage"],
+      "description": "Sleek curved dagger, slightly ethereal/translucent"
+    },
+    {
+      "id": "nature_staff",
+      "name": "Magic Leaf",
+      "type": "MULTI",
+      "element": "nature",
+      "colors": {
+        "primary": "#4DCC33",
+        "secondary": "#99FF66",
+        "accent": "#CCFF99",
+        "outline": "#1A4D13"
+      },
+      "shape": "glowing_leaf",
+      "effects": ["petal_particles", "nature_sparkles", "green_glow"],
+      "description": "Glowing leaf with cute appearance, round and friendly"
+    },
+    {
+      "id": "wind_blade",
+      "name": "Wind Slash",
+      "type": "MULTI",
+      "element": "wind",
+      "colors": {
+        "primary": "#E6FFFF",
+        "secondary": "#FFFFFF",
+        "accent": "#CCFFFF",
+        "outline": "#99CCCC"
+      },
+      "shape": "crescent_blade",
+      "effects": ["air_current_lines", "cloud_puffs", "motion_blur"],
+      "description": "Curved crescent blade, wispy edges, almost transparent"
+    },
+    {
+      "id": "earth_spike",
+      "name": "Rock Spike",
+      "type": "AOE",
+      "element": "earth",
+      "colors": {
+        "primary": "#996633",
+        "secondary": "#CC9966",
+        "accent": "#DDBB88",
+        "outline": "#4D3319"
+      },
+      "shape": "circular_spike_eruption",
+      "effects": ["dirt_particles", "rock_debris", "ground_cracks"],
+      "description": "Top-down view of spikes emerging from cracked ground"
+    },
+    {
+      "id": "light_beam",
+      "name": "Holy Ray",
+      "type": "BEAM",
+      "element": "light",
+      "colors": {
+        "primary": "#FFFFCC",
+        "secondary": "#FFFFFF",
+        "accent": "#FFFF99",
+        "outline": "#CCAA66"
+      },
+      "shape": "straight_beam_stars",
+      "effects": ["light_particles", "lens_flare", "divine_sparkles"],
+      "description": "Straight beam with rounded ends and star particles"
+    },
+    {
+      "id": "void_pulse",
+      "name": "Dark Singularity",
+      "type": "AOE",
+      "element": "void",
+      "colors": {
+        "primary": "#330033",
+        "secondary": "#660066",
+        "accent": "#990099",
+        "outline": "#1A001A"
+      },
+      "shape": "circular_void_vortex",
+      "effects": ["distortion_waves", "inward_particles", "dark_crackle"],
+      "description": "Top-down black hole effect, particles being sucked inward"
+    }
+  ],
+  
+  "fusions": [
+    {
+      "id": "steam_cannon",
+      "name": "Steam Blast",
+      "components": ["ice_wand", "fire_wand"],
+      "type": "AOE",
+      "colors": {
+        "primary": "#E6E6E6",
+        "secondary": "#99CCFF",
+        "accent": "#FFAA66",
+        "outline": "#666666"
+      },
+      "shape": "puffy_cloud_explosion",
+      "effects": ["steam_wisps", "water_droplets", "heat_shimmer"],
+      "description": "Puffy steam cloud with hints of ice blue and fire orange"
+    },
+    {
+      "id": "storm_caller",
+      "name": "Thunder Storm",
+      "components": ["lightning_wand", "wind_blade"],
+      "type": "CHAIN",
+      "colors": {
+        "primary": "#FFFF33",
+        "secondary": "#66FFFF",
+        "accent": "#FFFFFF",
+        "outline": "#334466"
+      },
+      "shape": "bolt_in_wind_spiral",
+      "effects": ["lightning_crackle", "wind_current", "storm_particles"],
+      "description": "Lightning bolt surrounded by swirling wind vortex"
+    },
+    {
+      "id": "soul_reaper",
+      "name": "Spectral Scythe",
+      "components": ["shadow_dagger", "nature_staff"],
+      "type": "MULTI",
+      "colors": {
+        "primary": "#4D1A4D",
+        "secondary": "#66CC33",
+        "accent": "#99FF66",
+        "outline": "#1A0A1A"
+      },
+      "shape": "curved_scythe_blade",
+      "effects": ["soul_wisps_green", "shadow_smoke", "ethereal_glow"],
+      "description": "Small curved scythe with green soul energy and shadow trails"
+    },
+    {
+      "id": "cosmic_barrier",
+      "name": "Star Sphere",
+      "components": ["arcane_orb", "light_beam"],
+      "type": "ORBIT",
+      "colors": {
+        "primary": "#FFFFCC",
+        "secondary": "#CC99FF",
+        "accent": "#FFFFFF",
+        "outline": "#996699"
+      },
+      "shape": "star_orb_hybrid",
+      "effects": ["starlight_particles", "cosmic_dust", "divine_glow"],
+      "description": "Glowing star/orb hybrid with pointed rays and cosmic shimmer"
+    },
+    {
+      "id": "earthquake",
+      "name": "Seismic Void",
+      "components": ["earth_spike", "void_pulse"],
+      "type": "AOE",
+      "colors": {
+        "primary": "#4D3319",
+        "secondary": "#330033",
+        "accent": "#660066",
+        "outline": "#1A0A0A"
+      },
+      "shape": "cracked_ground_void_rifts",
+      "effects": ["ground_shatter", "void_tendrils", "massive_debris"],
+      "description": "Large AOE with ground cracks and void energy seeping through"
+    },
+    {
+      "id": "frostfire",
+      "name": "Living Ice",
+      "components": ["ice_wand", "nature_staff"],
+      "type": "MULTI",
+      "colors": {
+        "primary": "#66FFCC",
+        "secondary": "#99FFFF",
+        "accent": "#CCFFEE",
+        "outline": "#336655"
+      },
+      "shape": "ice_leaf_hybrid",
+      "effects": ["ice_petals", "frost_sparkle", "nature_shimmer"],
+      "description": "Ice crystal infused with living nature energy, organic shapes"
+    },
+    {
+      "id": "hellfire",
+      "name": "Dark Flame",
+      "components": ["fire_wand", "shadow_dagger"],
+      "type": "MULTI",
+      "colors": {
+        "primary": "#990000",
+        "secondary": "#1A0A0A",
+        "accent": "#FF6600",
+        "outline": "#330000"
+      },
+      "shape": "demonic_flame",
+      "effects": ["black_smoke", "red_embers", "evil_glow"],
+      "description": "Dark red flame with demonic appearance, aggressive look"
+    },
+    {
+      "id": "thunder_spear",
+      "name": "Divine Thunder",
+      "components": ["lightning_wand", "light_beam"],
+      "type": "BEAM",
+      "colors": {
+        "primary": "#FFD700",
+        "secondary": "#FFFFFF",
+        "accent": "#FFFF99",
+        "outline": "#CC9900"
+      },
+      "shape": "golden_spear_beam",
+      "effects": ["golden_lightning", "holy_sparkles", "power_surge"],
+      "description": "Powerful golden beam with spear tip and divine patterns"
+    },
+    {
+      "id": "void_storm",
+      "name": "Dark Vortex",
+      "components": ["void_pulse", "wind_blade"],
+      "type": "AOE",
+      "colors": {
+        "primary": "#1A001A",
+        "secondary": "#66FFFF",
+        "accent": "#330033",
+        "outline": "#000000"
+      },
+      "shape": "void_tornado",
+      "effects": ["wind_spiral", "void_distortion", "debris_spin"],
+      "description": "Swirling vortex with void center and cyan wind edges"
+    },
+    {
+      "id": "crystal_guardian",
+      "name": "Magic Crystal",
+      "components": ["earth_spike", "arcane_orb"],
+      "type": "ORBIT",
+      "colors": {
+        "primary": "#CC9966",
+        "secondary": "#9966CC",
+        "accent": "#DDAAFF",
+        "outline": "#664422"
+      },
+      "shape": "geometric_crystal",
+      "effects": ["crystal_sparkle", "magic_runes", "earth_particles"],
+      "description": "Geometric amber crystal with purple magic glow inside"
+    },
+    {
+      "id": "frozen_thunder",
+      "name": "Ice Bolt",
+      "components": ["ice_wand", "lightning_wand"],
+      "type": "CHAIN",
+      "colors": {
+        "primary": "#66FFFF",
+        "secondary": "#FFFF66",
+        "accent": "#FFFFFF",
+        "outline": "#336666"
+      },
+      "shape": "ice_crystal_electric",
+      "effects": ["ice_shards", "electric_sparks", "frost_lightning"],
+      "description": "Jagged ice crystal with electric yellow core"
+    },
+    {
+      "id": "plasma",
+      "name": "Plasma Ball",
+      "components": ["fire_wand", "lightning_wand"],
+      "type": "SINGLE",
+      "colors": {
+        "primary": "#FF66FF",
+        "secondary": "#FFFF66",
+        "accent": "#FFFFFF",
+        "outline": "#663366"
+      },
+      "shape": "plasma_sphere",
+      "effects": ["plasma_arcs", "heat_electricity", "energy_pulse"],
+      "description": "Superheated plasma sphere with electric arcs"
+    },
+    {
+      "id": "inferno_orb",
+      "name": "Fire Orbit",
+      "components": ["fire_wand", "arcane_orb"],
+      "type": "ORBIT",
+      "colors": {
+        "primary": "#FF6600",
+        "secondary": "#9933FF",
+        "accent": "#FFCC00",
+        "outline": "#663300"
+      },
+      "shape": "flame_orb_magic",
+      "effects": ["fire_trail", "arcane_flames", "magic_embers"],
+      "description": "Orbiting fireball infused with arcane purple energy"
+    },
+    {
+      "id": "frost_orb",
+      "name": "Frozen Sphere",
+      "components": ["ice_wand", "arcane_orb"],
+      "type": "ORBIT",
+      "colors": {
+        "primary": "#99CCFF",
+        "secondary": "#CC99FF",
+        "accent": "#FFFFFF",
+        "outline": "#334466"
+      },
+      "shape": "ice_orb_magic",
+      "effects": ["frost_particles", "arcane_frost", "cold_glow"],
+      "description": "Orbiting ice sphere with arcane purple shimmer"
+    },
+    {
+      "id": "aurora",
+      "name": "Northern Light",
+      "components": ["ice_wand", "light_beam"],
+      "type": "BEAM",
+      "colors": {
+        "primary": "#66FFCC",
+        "secondary": "#FF99FF",
+        "accent": "#FFFFFF",
+        "outline": "#336655"
+      },
+      "shape": "aurora_beam",
+      "effects": ["rainbow_shimmer", "ice_sparkles", "northern_glow"],
+      "description": "Beautiful multicolored beam like aurora borealis"
+    }
+  ],
+  
+  "upgrade_variants": {
+    "description": "Future system for visual upgrades based on weapon level or items",
+    "planned_modifiers": [
+      {"name": "size_increase", "levels": [1.0, 1.1, 1.2, 1.3]},
+      {"name": "glow_intensity", "levels": [1.0, 1.2, 1.5, 2.0]},
+      {"name": "particle_count", "levels": [1, 2, 3, 5]},
+      {"name": "trail_length", "levels": [0.5, 0.75, 1.0, 1.5]},
+      {"name": "color_saturation", "levels": [0.8, 1.0, 1.2, 1.5]}
+    ],
+    "special_effects": [
+      "chain_count_visual",
+      "aoe_radius_visual", 
+      "pierce_afterimage",
+      "crit_sparkle",
+      "elemental_fusion_aura"
+    ]
+  }
+}

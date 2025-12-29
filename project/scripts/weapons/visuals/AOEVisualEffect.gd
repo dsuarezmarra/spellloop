@@ -95,21 +95,30 @@ func _create_nodes() -> void:
 func _setup_animations() -> void:
 	"""Configurar animaciones desde sprites"""
 	var frames = SpriteFrames.new()
+	var has_any_animation = false
 	
 	# Animación de aparición
 	if visual_data.aoe_appear_spritesheet:
 		_add_animation(frames, "appear", visual_data.aoe_appear_spritesheet, 
 			visual_data.aoe_appear_frames, visual_data.aoe_fps, false)
+		has_any_animation = true
 	
 	# Animación activa (loop)
 	if visual_data.aoe_active_spritesheet:
 		_add_animation(frames, "active", visual_data.aoe_active_spritesheet, 
 			visual_data.aoe_active_frames, visual_data.aoe_fps, true)
+		has_any_animation = true
 	
 	# Animación de fade
 	if visual_data.aoe_fade_spritesheet:
 		_add_animation(frames, "fade", visual_data.aoe_fade_spritesheet, 
 			visual_data.aoe_fade_frames, visual_data.aoe_fps, false)
+		has_any_animation = true
+	
+	# Si no hay ninguna animación de sprites, usar procedural
+	if not has_any_animation:
+		_setup_procedural()
+		return
 	
 	sprite.sprite_frames = frames
 	
@@ -120,7 +129,10 @@ func _setup_animations() -> void:
 func _setup_procedural() -> void:
 	"""Crear animaciones procedurales estilo cartoon"""
 	var frames = SpriteFrames.new()
-	var size = int(_radius * 2.5)
+	# OPTIMIZACIÓN: Usar tamaño fijo pequeño y escalar el sprite
+	# En lugar de generar imágenes enormes, generamos a 64px y escalamos
+	var base_size = 64  # Tamaño fijo para generación
+	var target_scale = _radius * 2.0 / float(base_size)  # Escala para alcanzar el radio deseado
 	
 	# Colores por defecto o del visual_data
 	var primary = visual_data.primary_color if visual_data else Color(0.4, 0.8, 1.0)
@@ -133,7 +145,7 @@ func _setup_procedural() -> void:
 	frames.set_animation_speed("appear", 12)
 	frames.set_animation_loop("appear", false)
 	for i in range(4):
-		var tex = _generate_aoe_frame("appear", i, 4, size, primary, secondary, accent, outline)
+		var tex = _generate_aoe_frame("appear", i, 4, base_size, primary, secondary, accent, outline)
 		frames.add_frame("appear", tex)
 	
 	# Active animation (6 frames, loop)
@@ -141,7 +153,7 @@ func _setup_procedural() -> void:
 	frames.set_animation_speed("active", 10)
 	frames.set_animation_loop("active", true)
 	for i in range(6):
-		var tex = _generate_aoe_frame("active", i, 6, size, primary, secondary, accent, outline)
+		var tex = _generate_aoe_frame("active", i, 6, base_size, primary, secondary, accent, outline)
 		frames.add_frame("active", tex)
 	
 	# Fade animation (4 frames)
@@ -149,16 +161,19 @@ func _setup_procedural() -> void:
 	frames.set_animation_speed("fade", 12)
 	frames.set_animation_loop("fade", false)
 	for i in range(4):
-		var tex = _generate_aoe_frame("fade", i, 4, size, primary, secondary, accent, outline)
+		var tex = _generate_aoe_frame("fade", i, 4, base_size, primary, secondary, accent, outline)
 		frames.add_frame("fade", tex)
 	
 	sprite.sprite_frames = frames
+	sprite.scale = Vector2.ONE * target_scale  # Escalar para alcanzar el tamaño correcto
 	
-	# Crear glow
-	_create_glow_texture(size, primary)
+	# Crear glow y ring con tamaño pequeño y escalar
+	_create_glow_texture(base_size, primary)
+	glow_sprite.scale = Vector2.ONE * target_scale * 1.5
 	
 	# Crear ring
-	_create_ring_texture(size, outline, accent)
+	_create_ring_texture(base_size, outline, accent)
+	ring_sprite.scale = Vector2.ONE * target_scale * 1.2
 
 func _generate_aoe_frame(anim: String, frame_idx: int, total: int, size: int,
 		primary: Color, secondary: Color, accent: Color, outline: Color) -> ImageTexture:

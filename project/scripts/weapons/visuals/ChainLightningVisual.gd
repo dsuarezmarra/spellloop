@@ -1,6 +1,6 @@
 # ChainLightningVisual.gd
-# Efecto visual animado para rayos encadenados
-# Estilo: Cartoon/Funko Pop con arcos eléctricos que saltan entre enemigos
+# Efecto visual para rayos encadenados que conectan múltiples enemigos
+# Estilo: Cartoon/Funko Pop con rayos eléctricos instantáneos
 
 class_name ChainLightningVisual
 extends Node2D
@@ -19,32 +19,32 @@ signal all_chains_finished
 var visual_data: ProjectileVisualData
 
 # Colores
-var _primary_color: Color = Color(0.3, 0.7, 1.0)    # Azul eléctrico
-var _secondary_color: Color = Color(0.6, 0.9, 1.0)  # Celeste
+var _primary_color: Color = Color(1.0, 1.0, 0.3)    # Amarillo eléctrico
+var _secondary_color: Color = Color(1.0, 0.9, 0.5)  # Amarillo claro
 var _core_color: Color = Color.WHITE                 # Centro brillante
-var _outline_color: Color = Color(0.1, 0.3, 0.5)    # Outline oscuro
+var _outline_color: Color = Color(0.4, 0.3, 0.1)    # Outline oscuro
 
 # Parámetros del rayo
-var _bolt_width: float = 8.0
-var _bolt_segments: int = 8
-var _jitter_amount: float = 15.0
+var _bolt_width: float = 6.0
+var _glow_width: float = 18.0
+var _bolt_segments: int = 6
+var _jitter_amount: float = 12.0
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ESTRUCTURAS
+# COMPONENTES
 # ═══════════════════════════════════════════════════════════════════════════════
 
-class ChainBolt:
-	var line: Line2D
-	var glow: Line2D
-	var start_orb: Sprite2D
-	var end_orb: Sprite2D
-	var start_pos: Vector2
-	var end_pos: Vector2
-	var time: float = 0.0
-	var active: bool = false
+var _main_bolt: Line2D       # Rayo principal (blanco/core)
+var _glow_bolt: Line2D       # Glow del rayo
+var _outline_bolt: Line2D    # Outline oscuro
+var _impact_particles: Array[Sprite2D] = []
 
-var _bolts: Array[ChainBolt] = []
+var _start_pos: Vector2
+var _end_pos: Vector2
 var _time: float = 0.0
+var _is_active: bool = false
+var _fade_timer: float = 0.0
+var _max_duration: float = 0.3
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
@@ -60,144 +60,175 @@ func setup(data: ProjectileVisualData = null) -> void:
 		_core_color = visual_data.accent_color
 		_outline_color = visual_data.outline_color
 	
-	# Crear textura para los orbes
-	_create_orb_texture()
+	_create_bolt_lines()
 
-var _orb_texture: ImageTexture
-
-func _create_orb_texture() -> void:
-	"""Crear textura del orbe de impacto"""
-	var size = 32
-	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
-	var center = Vector2(size / 2.0, size / 2.0)
-	var radius = size * 0.4
+func _create_bolt_lines() -> void:
+	"""Crear las líneas del rayo"""
+	# Outline (más grueso, detrás)
+	_outline_bolt = Line2D.new()
+	_outline_bolt.width = _bolt_width + 4
+	_outline_bolt.default_color = _outline_color
+	_outline_bolt.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	_outline_bolt.end_cap_mode = Line2D.LINE_CAP_ROUND
+	_outline_bolt.z_index = -2
+	add_child(_outline_bolt)
 	
-	for y in range(size):
-		for x in range(size):
-			var dist = Vector2(x, y).distance_to(center)
-			
-			if dist <= radius:
-				var t = dist / radius
-				var color = _core_color.lerp(_primary_color, t)
-				color = color.lerp(_secondary_color, t * t)
-				image.set_pixel(x, y, color)
+	# Glow (más grueso, semitransparente)
+	_glow_bolt = Line2D.new()
+	_glow_bolt.width = _glow_width
+	_glow_bolt.default_color = Color(_primary_color.r, _primary_color.g, _primary_color.b, 0.4)
+	_glow_bolt.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	_glow_bolt.end_cap_mode = Line2D.LINE_CAP_ROUND
+	_glow_bolt.z_index = -1
+	add_child(_glow_bolt)
 	
-	_orb_texture = ImageTexture.create_from_image(image)
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# CREAR CADENAS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-func add_chain(from: Vector2, to: Vector2, delay: float = 0.0) -> void:
-	"""Añadir un segmento de cadena de rayos"""
-	var bolt = ChainBolt.new()
-	bolt.start_pos = from
-	bolt.end_pos = to
+	# Rayo principal con gradiente
+	_main_bolt = Line2D.new()
+	_main_bolt.width = _bolt_width
+	_main_bolt.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	_main_bolt.end_cap_mode = Line2D.LINE_CAP_ROUND
+	add_child(_main_bolt)
 	
-	# Crear glow
-	bolt.glow = Line2D.new()
-	bolt.glow.width = _bolt_width * 3
-	bolt.glow.default_color = Color(_primary_color.r, _primary_color.g, _primary_color.b, 0.3)
-	bolt.glow.begin_cap_mode = Line2D.LINE_CAP_ROUND
-	bolt.glow.end_cap_mode = Line2D.LINE_CAP_ROUND
-	bolt.glow.visible = false
-	add_child(bolt.glow)
-	
-	# Crear línea principal
-	bolt.line = Line2D.new()
-	bolt.line.width = _bolt_width
-	bolt.line.begin_cap_mode = Line2D.LINE_CAP_ROUND
-	bolt.line.end_cap_mode = Line2D.LINE_CAP_ROUND
-	bolt.line.visible = false
-	add_child(bolt.line)
-	
-	# Gradiente para la línea
+	# Gradiente del rayo principal
 	var gradient = Gradient.new()
-	gradient.add_point(0.0, _core_color)
-	gradient.add_point(0.2, _primary_color)
-	gradient.add_point(0.5, _secondary_color)
-	gradient.add_point(0.8, _primary_color)
-	gradient.add_point(1.0, _core_color)
-	bolt.line.gradient = gradient
-	
-	# Orbe de inicio
-	bolt.start_orb = Sprite2D.new()
-	bolt.start_orb.texture = _orb_texture
-	bolt.start_orb.scale = Vector2.ONE * 0.8
-	bolt.start_orb.position = from
-	bolt.start_orb.visible = false
-	add_child(bolt.start_orb)
-	
-	# Orbe de fin
-	bolt.end_orb = Sprite2D.new()
-	bolt.end_orb.texture = _orb_texture
-	bolt.end_orb.scale = Vector2.ONE * 1.2
-	bolt.end_orb.position = to
-	bolt.end_orb.visible = false
-	add_child(bolt.end_orb)
-	
-	_bolts.append(bolt)
-	
-	# Activar con delay
-	if delay > 0:
-		await get_tree().create_timer(delay).timeout
-	
-	_activate_bolt(bolt)
+	gradient.set_color(0, _core_color)
+	gradient.add_point(0.3, _primary_color)
+	gradient.add_point(0.7, _primary_color)
+	gradient.set_color(1, _core_color)
+	_main_bolt.gradient = gradient
 
-func _activate_bolt(bolt: ChainBolt) -> void:
-	"""Activar un rayo"""
-	bolt.active = true
-	bolt.line.visible = true
-	bolt.glow.visible = true
-	bolt.start_orb.visible = true
-	bolt.end_orb.visible = true
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONTROL DEL RAYO
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func fire_at(from: Vector2, to: Vector2) -> void:
+	"""Disparar un rayo instantáneo de from a to"""
+	_start_pos = from
+	_end_pos = to
+	_is_active = true
+	_time = 0.0
+	_fade_timer = 0.0
 	
-	# Generar puntos del rayo
-	_generate_bolt_points(bolt)
+	# Generar puntos zigzag
+	_generate_bolt_points()
 	
-	# Animación de aparición
-	bolt.start_orb.scale = Vector2.ZERO
-	bolt.end_orb.scale = Vector2.ZERO
-	
-	var tween = create_tween()
-	tween.parallel().tween_property(bolt.start_orb, "scale", Vector2.ONE * 0.8, 0.1).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	tween.parallel().tween_property(bolt.end_orb, "scale", Vector2.ONE * 1.2, 0.15).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	# Crear efecto de impacto en destino
+	_create_impact_effect(to)
 	
 	chain_complete.emit()
 
-func _generate_bolt_points(bolt: ChainBolt) -> void:
-	"""Generar puntos zigzag para el rayo"""
-	bolt.line.clear_points()
-	bolt.glow.clear_points()
+func update_chain_positions(previous_hits: Array, current_target: Node2D) -> void:
+	"""Actualizar para mostrar el rayo hacia el objetivo actual"""
+	if not is_instance_valid(current_target):
+		return
 	
-	var direction = bolt.end_pos - bolt.start_pos
+	# Determinar punto de inicio
+	var start: Vector2
+	if previous_hits.size() > 0:
+		var last_hit = previous_hits[previous_hits.size() - 1]
+		if is_instance_valid(last_hit):
+			start = to_local(last_hit.global_position)
+		else:
+			start = Vector2.ZERO
+	else:
+		start = Vector2.ZERO
+	
+	var end = to_local(current_target.global_position)
+	
+	_start_pos = start
+	_end_pos = end
+	_is_active = true
+	_time = 0.0
+	
+	_generate_bolt_points()
+
+func add_chain_hit(hit_position: Vector2) -> void:
+	"""Añadir efecto de impacto cuando se golpea un enemigo"""
+	var local_pos = to_local(hit_position)
+	_create_impact_effect(local_pos)
+	
+	# Añadir un nuevo segmento de rayo si es necesario
+	if _is_active:
+		# Crear un nuevo bolt desde la posición actual hacia el hit
+		_end_pos = local_pos
+		_generate_bolt_points()
+
+func _generate_bolt_points() -> void:
+	"""Generar los puntos zigzag del rayo"""
+	_main_bolt.clear_points()
+	_glow_bolt.clear_points()
+	_outline_bolt.clear_points()
+	
+	var direction = _end_pos - _start_pos
 	var length = direction.length()
+	
+	if length < 1.0:
+		return
+	
 	var dir_normalized = direction.normalized()
 	var perpendicular = dir_normalized.orthogonal()
 	
 	var points: Array[Vector2] = []
-	points.append(bolt.start_pos)
+	points.append(_start_pos)
 	
+	# Generar segmentos intermedios con jitter
 	for i in range(1, _bolt_segments):
 		var t = float(i) / float(_bolt_segments)
-		var base_pos = bolt.start_pos + direction * t
+		var base_pos = _start_pos + direction * t
 		
-		# Jitter aleatorio
-		var jitter = perpendicular * randf_range(-_jitter_amount, _jitter_amount)
-		# Más jitter en el centro
+		# Jitter aleatorio, más fuerte en el centro
 		var center_factor = 1.0 - abs(t - 0.5) * 2.0
-		jitter *= center_factor
+		var jitter = perpendicular * randf_range(-_jitter_amount, _jitter_amount) * center_factor
 		
 		points.append(base_pos + jitter)
 	
-	points.append(bolt.end_pos)
+	points.append(_end_pos)
 	
+	# Añadir puntos a todas las líneas
 	for p in points:
-		bolt.line.add_point(p)
-		bolt.glow.add_point(p)
+		_main_bolt.add_point(p)
+		_glow_bolt.add_point(p)
+		_outline_bolt.add_point(p)
+
+func _create_impact_effect(pos: Vector2) -> void:
+	"""Crear efecto visual de impacto"""
+	# Círculo de impacto
+	var impact = Sprite2D.new()
+	impact.position = pos
+	impact.z_index = 1
+	add_child(impact)
+	_impact_particles.append(impact)
+	
+	# Crear textura del impacto
+	var size = 24
+	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
+	var center = Vector2(size / 2.0, size / 2.0)
+	
+	for y in range(size):
+		for x in range(size):
+			var dist = Vector2(x, y).distance_to(center)
+			var radius = size * 0.4
+			if dist <= radius:
+				var t = dist / radius
+				var color = _core_color.lerp(_primary_color, t)
+				color.a = 1.0 - t * 0.5
+				image.set_pixel(x, y, color)
+	
+	impact.texture = ImageTexture.create_from_image(image)
+	
+	# Animación de impacto: pop + fade
+	impact.scale = Vector2.ZERO
+	var tween = create_tween()
+	tween.tween_property(impact, "scale", Vector2.ONE * 1.5, 0.1).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(impact, "scale", Vector2.ONE * 0.8, 0.1)
+	tween.tween_property(impact, "modulate:a", 0.0, 0.15)
+	tween.tween_callback(func(): 
+		_impact_particles.erase(impact)
+		impact.queue_free()
+	)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MODOS DE USO
+# SECUENCIAS DE CADENA
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func create_chain_sequence(targets: Array[Vector2], delay_between: float = 0.08) -> void:
@@ -206,65 +237,26 @@ func create_chain_sequence(targets: Array[Vector2], delay_between: float = 0.08)
 		return
 	
 	for i in range(targets.size() - 1):
-		add_chain(targets[i], targets[i + 1], delay_between * i)
+		if i > 0:
+			await get_tree().create_timer(delay_between).timeout
+		
+		_start_pos = targets[i]
+		_end_pos = targets[i + 1]
+		_generate_bolt_points()
+		_create_impact_effect(targets[i + 1])
 	
-	# Auto-destruir después de completar
-	var total_time = delay_between * (targets.size() - 1) + 0.5
-	await get_tree().create_timer(total_time).timeout
+	_is_active = true
+	
+	# Auto-destruir después de mostrar
+	await get_tree().create_timer(0.4).timeout
 	fade_out()
 
-func update_chain_positions(previous_hits: Array, current_target: Node2D) -> void:
-	"""Actualizar posiciones de cadena según los enemigos alcanzados"""
-	# Reconstruir la cadena visual basada en los hits previos y el objetivo actual
-	var positions: Array[Vector2] = []
-	
-	for hit in previous_hits:
-		if is_instance_valid(hit):
-			positions.append(hit.global_position)
-	
-	if current_target and is_instance_valid(current_target):
-		positions.append(current_target.global_position)
-	
-	# Solo actualizar si hay cambios significativos
-	if positions.size() >= 2:
-		# Actualizar el último bolt si existe
-		if _bolts.size() > 0:
-			var last_bolt = _bolts[_bolts.size() - 1]
-			last_bolt.end_pos = positions[positions.size() - 1]
-			_generate_bolt_points(last_bolt)
-
-func add_chain_hit(hit_position: Vector2) -> void:
-	"""Añadir un impacto de cadena en una posición"""
-	# Crear efecto de impacto
-	var impact_sprite = Sprite2D.new()
-	impact_sprite.texture = _orb_texture
-	impact_sprite.position = hit_position
-	impact_sprite.scale = Vector2.ZERO
-	impact_sprite.modulate = _core_color
-	add_child(impact_sprite)
-	
-	# Animación de impacto
+func fade_out(duration: float = 0.2) -> void:
+	"""Desvanecer el rayo"""
 	var tween = create_tween()
-	tween.tween_property(impact_sprite, "scale", Vector2.ONE * 2.0, 0.15).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	tween.parallel().tween_property(impact_sprite, "modulate:a", 0.0, 0.3)
-	tween.tween_callback(impact_sprite.queue_free)
-	
-	# Si hay bolts activos, añadir conexión
-	if _bolts.size() > 0:
-		var last_bolt = _bolts[_bolts.size() - 1]
-		if last_bolt.active:
-			# El siguiente chain empezará desde esta posición
-			add_chain(last_bolt.end_pos, hit_position, 0.05)
-
-func fade_out(duration: float = 0.3) -> void:
-	"""Desvanecer todos los rayos"""
-	var tween = create_tween()
-	
-	for bolt in _bolts:
-		tween.parallel().tween_property(bolt.line, "modulate:a", 0.0, duration)
-		tween.parallel().tween_property(bolt.glow, "modulate:a", 0.0, duration)
-		tween.parallel().tween_property(bolt.start_orb, "modulate:a", 0.0, duration)
-		tween.parallel().tween_property(bolt.end_orb, "modulate:a", 0.0, duration)
+	tween.parallel().tween_property(_main_bolt, "modulate:a", 0.0, duration)
+	tween.parallel().tween_property(_glow_bolt, "modulate:a", 0.0, duration)
+	tween.parallel().tween_property(_outline_bolt, "modulate:a", 0.0, duration)
 	
 	await tween.finished
 	all_chains_finished.emit()
@@ -275,27 +267,21 @@ func fade_out(duration: float = 0.3) -> void:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _process(delta: float) -> void:
-	_time += delta
+	if not _is_active:
+		return
 	
-	for bolt in _bolts:
-		if not bolt.active:
-			continue
-		
-		bolt.time += delta
-		
-		# Regenerar puntos periódicamente para efecto de "chisporroteo"
-		if int(bolt.time * 30) != int((bolt.time - delta) * 30):
-			_generate_bolt_points(bolt)
-		
-		# Pulso de los orbes
-		var pulse = sin(_time * 15) * 0.15 + 1.0
-		bolt.start_orb.scale = Vector2.ONE * 0.8 * pulse
-		bolt.end_orb.scale = Vector2.ONE * 1.2 * pulse
-		
-		# Pulso del glow
-		var glow_pulse = sin(_time * 12) * 0.3 + 1.0
-		bolt.glow.width = _bolt_width * 3 * glow_pulse
-		
-		# Variación del ancho del rayo
-		var width_var = sin(_time * 20) * 0.15 + 1.0
-		bolt.line.width = _bolt_width * width_var
+	_time += delta
+	_fade_timer += delta
+	
+	# Efecto de "chisporroteo" - regenerar puntos periódicamente
+	if int(_time * 20) != int((_time - delta) * 20):
+		_generate_bolt_points()
+	
+	# Pulso del glow
+	var pulse = sin(_time * 25) * 0.3 + 1.0
+	_glow_bolt.width = _glow_width * pulse
+	
+	# Auto-fade después de duración máxima
+	if _fade_timer > _max_duration:
+		_is_active = false
+		fade_out()
