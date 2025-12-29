@@ -399,6 +399,9 @@ func play_impact() -> void:
 func set_direction(dir: Vector2) -> void:
 	"""Actualizar la dirección del proyectil"""
 	_current_direction = dir.normalized()
+	
+	# La rotación del sprite se basa directamente en la dirección del movimiento
+	# Los sprites deben estar dibujados apuntando a la DERECHA (0°)
 	rotation = dir.angle()
 	
 	# Actualizar dirección de partículas

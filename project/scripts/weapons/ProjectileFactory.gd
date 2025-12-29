@@ -42,8 +42,9 @@ static func create_projectile(owner: Node2D, data: Dictionary) -> Node2D:
 	projectile.global_position = data.get("start_position", owner.global_position)
 	projectile.direction = data.get("direction", Vector2.RIGHT)
 	
-	# Rotar hacia la dirección
-	projectile.rotation = data.direction.angle()
+	# NOTA: NO rotar el nodo proyectil aquí.
+	# El AnimatedProjectileSprite.set_direction() se encarga de la rotación del sprite.
+	# Rotar el nodo padre causaría doble rotación cuando hay sprites animados.
 	
 	# Añadir al árbol
 	var tree = owner.get_tree()

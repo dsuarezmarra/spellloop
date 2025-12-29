@@ -812,7 +812,16 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 15.0,
-		"sprite_scale": 0.5  # Escala de los sprites (1/2 del tamaño original)
+		"sprite_scale": 0.5
+	},
+	"fire_wand": {
+		"launch_frames": 4,
+		"launch_fps": 12.0,
+		"flight_frames": 6,
+		"flight_fps": 12.0,
+		"impact_frames": 6,
+		"impact_fps": 15.0,
+		"sprite_scale": 0.5
 	}
 }
 
@@ -864,7 +873,6 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 	# Aplicar escala personalizada si está definida
 	if config.has("sprite_scale"):
 		data.base_scale = config.get("sprite_scale", 1.0)
-		print("[ProjectileVisualManager] Escala aplicada: %.2f para %s" % [data.base_scale, weapon_id])
 	
 	print("[ProjectileVisualManager] Sprites personalizados cargados para: " + weapon_id)
 

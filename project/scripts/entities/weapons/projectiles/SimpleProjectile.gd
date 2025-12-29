@@ -106,7 +106,9 @@ func _try_create_animated_visual() -> bool:
 	# Iniciar animación de vuelo (saltamos launch para proyectiles en movimiento)
 	animated_sprite.play_flight()
 	
-	print("[SimpleProjectile] ✓ Visual animado creado para: %s" % _weapon_id)
+	# Aplicar rotación inmediatamente basada en la dirección actual
+	animated_sprite.set_direction(direction)
+	
 	return true
 
 func _setup_collision() -> void:
@@ -330,6 +332,10 @@ func initialize(start_pos: Vector2, target_pos: Vector2, dmg: int = -1, spd: flo
 		damage = dmg
 	if spd > 0:
 		speed = spd
+	
+	# Aplicar rotación inmediatamente al sprite animado
+	if animated_sprite and is_instance_valid(animated_sprite):
+		animated_sprite.set_direction(direction)
 
 func set_color(color: Color) -> void:
 	"""Cambiar color del proyectil"""
