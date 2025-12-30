@@ -766,59 +766,71 @@ Effects:
 ### Flight Animation (6 frames)
 ```
 Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
 
-Subject: Living ice crystal with nature energy - a frozen vine/seed that pulses with life
+Subject: Frozen seed/pod with ice vines growing from it - a living frost projectile
 
 Design:
-- Shape: Organic ice crystal with vine-like frost patterns growing on it
-- Main body: Mint green ice (#66FFCC) with internal glow
-- Ice highlights: Bright cyan sparkles (#99FFFF) 
-- Nature core: Pale mint glow from inside (#CCFFEE)
-- Vine patterns: Darker teal frost veins (#448866)
-- Outline: Deep teal (#336655), 1-2 pixels
+- Shape: Oval seed pod with 2-3 curling ice tendrils/vines extending outward
+- Main body (seed): Mint green ice (#66FFCC), semi-translucent
+- Ice vines: Cyan gradient (#99FFFF to #66DDDD), organic curved shapes
+- Nature core: Bright pale mint glow inside seed (#CCFFEE)
+- Frost crystals: Small ice thorns along vines (#AAFFEE)
+- Outline: Deep teal (#336655), 1-2 pixels, consistent on all elements
 
-Animation: Living crystal spinning and breathing
-- Frame 1: Crystal pointing right, vines barely visible
-- Frame 2: Rotating 30°, vines start glowing
-- Frame 3: Rotating 60°, nature energy pulses outward
-- Frame 4: Rotating 90°, maximum glow, frost particles
-- Frame 5: Rotating 120°, vines dimming
-- Frame 6: Rotating 150°, returning to subtle glow
+Animation: Seed pulses while vines writhe and reach forward
+- Frame 1: Seed compact, vines curled close, core dim
+- Frame 2: Core starts glowing, vines begin unfurling rightward
+- Frame 3: Vines extending further, frost crystals forming on tips
+- Frame 4: Maximum extension, core brightest, vines reaching hungrily
+- Frame 5: Vines retracting slightly, preparing for next pulse
+- Frame 6: Returning to compact form, core dimming, cycle ready to loop
 
 Effects:
-- Small frost leaves/petals floating around (2-3 particles)
-- Internal nature pulse (brightness changes)
-- Frost sparkles trailing behind
-- Organic vine patterns visible on crystal surface
-- Living/breathing feel - crystal seems alive
+- 2-3 small frost leaf particles floating nearby
+- Core pulsing (brightness changes like heartbeat)
+- Ice sparkles at vine tips when extended
+- Vines move organically like living tentacles
+- Frost mist trail behind the seed
+- Living/organic feel - this projectile is ALIVE and hungry
+
+Style: Pixel art, clean shapes, no anti-aliasing on edges.
 ```
 
 ### Impact Animation (6 frames)
 ```
 Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
 
-Subject: Frostvine crystal shattering and releasing nature energy burst
+Subject: Frostvine seed BURSTS and ice vines rapidly grow outward to ensnare target
 
 Design:
 - Same palette: Mint green (#66FFCC), cyan (#99FFFF), pale mint (#CCFFEE)
-- Vine patterns: Teal (#448866)
+- Ice vines: Teal to cyan (#448866 to #66FFCC)
+- Frost thorns: Bright cyan (#AAFFEE)
 - Outline: Deep teal (#336655)
 
-Animation: Crystal hits, cracks, and explodes into frozen leaves/petals
-- Frame 1: Crystal impact, hairline cracks appearing, bright flash at center
-- Frame 2: Cracks spreading like vines/roots, ice fragments starting to separate
-- Frame 3: Full shatter - ice pieces flying outward with frozen leaf shapes
-- Frame 4: Explosion of frost petals and ice shards, nature energy burst
-- Frame 5: Pieces spreading wide, some turning into snowflake-leaf hybrids
-- Frame 6: Final frost mist with tiny mint sparkles fading
+Animation: Seed explodes into rapidly growing frost vines that spread in all directions
+- Frame 1: Seed impacts - bright flash at center, cracks appear on pod
+- Frame 2: Pod splits open, 4-5 ice vines BURST outward in radial pattern
+- Frame 3: Vines growing rapidly longer, frost crystals forming, center glowing
+- Frame 4: Maximum vine spread (fills most of frame), thorns visible, peak frost
+- Frame 5: Vines start crystallizing/hardening, becoming more jagged ice
+- Frame 6: Vines shatter into frost mist and frozen leaf particles, dissipating
+
+Key visual concept: NOT a simple explosion - vines GROW outward like time-lapse of plant growth, then freeze solid and shatter
 
 Effects:
-- Ice shards shaped like frozen leaves/petals
-- Mint-colored frost mist expanding
-- Small vine/root patterns in the ice cracks
-- Nature energy burst (green-white flash)
-- Frozen petal particles floating outward
-- Living frost feel even in destruction
+- Vines grow in organic curves, not straight lines
+- Frost crystals/thorns appear along vine length
+- Central burst of nature energy (mint-white flash)
+- Ice particles spreading outward in final frames
+- Frozen leaf/petal shapes mixed with ice shards
+- Feeling of entangling/grabbing before shattering
+
+Style: Pixel art, clean shapes, no anti-aliasing on edges.
 ```
 
 ---

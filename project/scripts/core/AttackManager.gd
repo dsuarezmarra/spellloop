@@ -418,12 +418,20 @@ func disable() -> void:
 	print("[AttackManager] Ataque desactivado")
 
 func clear_weapons() -> void:
-	"""Remover todas las armas"""
+	"""Remover todas las armas y limpiar orbitales activos"""
 	for weapon in weapons:
 		if weapon is BaseWeapon and weapon.has_signal("weapon_leveled_up"):
 			if weapon.weapon_leveled_up.is_connected(_on_weapon_leveled_up):
 				weapon.weapon_leveled_up.disconnect(_on_weapon_leveled_up)
 	weapons.clear()
+	
+	# Limpiar OrbitalManager del jugador si existe
+	if player:
+		var orbital_manager = player.get_node_or_null("OrbitalManager")
+		if orbital_manager:
+			orbital_manager.queue_free()
+			print("[AttackManager] OrbitalManager eliminado")
+	
 	print("[AttackManager] Todas las armas removidas")
 
 # ═══════════════════════════════════════════════════════════════════════════════

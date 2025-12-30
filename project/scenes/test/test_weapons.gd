@@ -496,6 +496,10 @@ func _equip_selected_weapon() -> void:
 	else:
 		print("🧪 [WeaponTest] ⚠️ AttackManager no tiene clear_weapons()")
 	
+	# Limpieza adicional: buscar y eliminar OrbitalManager directamente del player
+	# (por si clear_weapons no tuvo acceso correcto al player)
+	_cleanup_player_orbitals()
+	
 	# Equipar nueva arma usando BaseWeapon
 	var BaseWeaponClass = load("res://scripts/weapons/BaseWeapon.gd")
 	if BaseWeaponClass:
@@ -519,6 +523,25 @@ func _equip_selected_weapon() -> void:
 			_log_damage("[color=red]❌ AttackManager sin add_weapon()[/color]")
 	else:
 		_log_damage("[color=red]❌ No se pudo cargar BaseWeapon.gd[/color]")
+
+func _cleanup_player_orbitals() -> void:
+	"""Limpiar cualquier OrbitalManager que pueda quedar en el player o sus hijos"""
+	if not player:
+		return
+	
+	# Buscar en el player directo
+	var orbital_manager = player.get_node_or_null("OrbitalManager")
+	if orbital_manager:
+		orbital_manager.queue_free()
+		print("🧪 [WeaponTest] OrbitalManager eliminado del player")
+	
+	# Buscar en el WizardPlayer (SpellloopPlayer tiene wizard_player como hijo)
+	var wizard = player.get("wizard_player") if "wizard_player" in player else null
+	if wizard:
+		var wizard_orbital = wizard.get_node_or_null("OrbitalManager")
+		if wizard_orbital:
+			wizard_orbital.queue_free()
+			print("🧪 [WeaponTest] OrbitalManager eliminado del WizardPlayer")
 
 func _update_stats_display() -> void:
 	var weapons_to_show = base_weapons if current_category == "base" else fusion_weapons
@@ -695,10 +718,8 @@ func _update_projectile_preview() -> void:
 	if not visual_manager or not projectile_preview_container:
 		return
 	
-	# Limpiar preview anterior
-	if current_preview and is_instance_valid(current_preview):
-		current_preview.queue_free()
-		current_preview = null
+	# Limpiar preview anterior de forma segura
+	_cleanup_current_preview()
 	
 	var weapons_to_show = base_weapons if current_category == "base" else fusion_weapons
 	var weapon_id = weapons_to_show[selected_weapon_index]
@@ -738,6 +759,23 @@ func _update_projectile_preview() -> void:
 				projectile_preview_container.add_child(current_preview)
 				var targets: Array[Vector2] = [Vector2(-60, 0), Vector2(0, -20), Vector2(60, 0)]
 				current_preview.create_chain_sequence(targets, 0.15)
+
+func _cleanup_current_preview() -> void:
+	"""Limpiar preview actual correctamente, incluyendo orbitales"""
+	if current_preview and is_instance_valid(current_preview):
+		# Si es un OrbitalsVisualContainer, llamar destroy() primero
+		if current_preview.has_method("destroy"):
+			current_preview.destroy()
+		current_preview.queue_free()
+		current_preview = null
+	
+	# Limpiar también cualquier nodo huérfano en el contenedor de preview
+	if projectile_preview_container:
+		for child in projectile_preview_container.get_children():
+			if child.name != "PreviewLabel" and child != current_preview:
+				if child.has_method("destroy"):
+					child.destroy()
+				child.queue_free()
 
 func _demo_projectile_animation() -> void:
 	"""Ejecutar demo completo del proyectil actual"""

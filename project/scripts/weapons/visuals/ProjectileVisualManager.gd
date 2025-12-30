@@ -273,17 +273,17 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.12
 	},
 	
-	"frostvine": {  # Ice + Nature
-		"shape": "entropy_shard",
-		"primary": Color(0.4, 0.6, 0.85),
-		"secondary": Color(0.2, 0.15, 0.4),
-		"accent": Color(0.7, 0.85, 1.0),
-		"outline": Color(0.15, 0.1, 0.3),
-		"glow": Color(0.45, 0.55, 0.8, 0.5),
-		"trail_color": Color(0.4, 0.5, 0.8, 0.45),
-		"particles": "void_frost",
-		"rotation_speed": -0.8,
-		"squash_amount": 0.15
+	"frostvine": {  # Ice + Nature - Enredadera de Hielo
+		"shape": "organic_crystal",
+		"primary": Color(0.4, 1.0, 0.8),      # Mint green (#66FFCC)
+		"secondary": Color(0.6, 1.0, 1.0),    # Cyan (#99FFFF)
+		"accent": Color(0.8, 1.0, 0.93),      # Pale mint (#CCFFEE)
+		"outline": Color(0.2, 0.4, 0.33),     # Deep teal (#336655)
+		"glow": Color(0.4, 1.0, 0.8, 0.5),
+		"trail_color": Color(0.5, 1.0, 0.9, 0.45),
+		"particles": "frost_vines",
+		"rotation_speed": 0.0,
+		"squash_amount": 0.1
 	},
 	
 	# ══════════════════════════════════════════════════════════════════════════
@@ -860,6 +860,13 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 15.0,
+		"sprite_scale": 0.5
+	},
+	"frostvine": {
+		"flight_frames": 6,
+		"flight_fps": 10.0,
+		"impact_frames": 6,
+		"impact_fps": 12.0,
 		"sprite_scale": 0.5
 	}
 }
