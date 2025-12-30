@@ -45,6 +45,7 @@ var _time: float = 0.0
 var _squash_stretch_enabled: bool = true
 var _current_direction: Vector2 = Vector2.RIGHT
 var _rotation_offset: float = 0.0  # Offset de rotación en radianes para corregir sprites desalineados
+var _lock_rotation: bool = false  # Si true, el sprite no rota con la dirección (ej: tornados)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
@@ -402,6 +403,10 @@ func set_direction(dir: Vector2) -> void:
 	"""Actualizar la dirección del proyectil"""
 	_current_direction = dir.normalized()
 	
+	# Si lock_rotation está activo, el sprite mantiene su orientación fija (ej: tornados)
+	if _lock_rotation:
+		return
+	
 	# La rotación del sprite se basa directamente en la dirección del movimiento
 	# Los sprites deben estar dibujados apuntando a la DERECHA (0°)
 	# Se añade _rotation_offset para corregir sprites con ejes desalineados
@@ -416,6 +421,12 @@ func set_direction(dir: Vector2) -> void:
 func set_rotation_offset(offset_degrees: float) -> void:
 	"""Establecer offset de rotación en grados para corregir sprites desalineados"""
 	_rotation_offset = deg_to_rad(offset_degrees)
+
+func set_lock_rotation(locked: bool) -> void:
+	"""Bloquear rotación del sprite (útil para tornados y efectos simétricos)"""
+	_lock_rotation = locked
+	if locked:
+		rotation = 0  # Resetear a orientación original
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PROCESO

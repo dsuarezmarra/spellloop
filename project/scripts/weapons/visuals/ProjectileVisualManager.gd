@@ -816,7 +816,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 15.0,
-		"sprite_scale": 0.5,
+		"sprite_scale": 1.0,
 		"rotation_offset": 30.0  # Corregir eje desviado del sprite (grados)
 	},
 	"fire_wand": {
@@ -824,28 +824,28 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 15.0,
-		"sprite_scale": 0.5
+		"sprite_scale": 1.0
 	},
 	"nature_staff": {
 		"flight_frames": 6,
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 15.0,
-		"sprite_scale": 0.5
+		"sprite_scale": 1.0
 	},
 	"wind_blade": {
 		"flight_frames": 6,
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 15.0,
-		"sprite_scale": 0.5
+		"sprite_scale": 1.0
 	},
 	"shadow_dagger": {
 		"flight_frames": 6,
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 15.0,
-		"sprite_scale": 0.5
+		"sprite_scale": 1.0
 	},
 	# === FUSION WEAPONS ===
 	"frostbite": {
@@ -853,35 +853,36 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 15.0,
-		"sprite_scale": 0.5
+		"sprite_scale": 1.0
 	},
 	"blizzard": {
 		"flight_frames": 6,
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 15.0,
-		"sprite_scale": 0.5
+		"sprite_scale": 1.0
 	},
 	"frostvine": {
 		"flight_frames": 6,
 		"flight_fps": 10.0,
 		"impact_frames": 6,
 		"impact_fps": 12.0,
-		"sprite_scale": 0.5
+		"sprite_scale": 1.0
 	},
 	"wildfire": {
 		"flight_frames": 6,
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 14.0,
-		"sprite_scale": 0.5
+		"sprite_scale": 1.0
 	},
 	"firestorm": {
 		"flight_frames": 6,
 		"flight_fps": 14.0,  # Fast spin
 		"impact_frames": 6,
 		"impact_fps": 16.0,
-		"sprite_scale": 0.5
+		"sprite_scale": 1.0,
+		"lock_rotation": true  # Tornado no rota con la dirección (siempre se ve igual)
 	}
 }
 
@@ -1026,11 +1027,13 @@ func create_projectile_visual(weapon_id: String, weapon_data: Dictionary = {}) -
 	var sprite = AnimatedProjectileSprite.new()
 	sprite.setup(visual_data)
 	
-	# Aplicar rotation_offset si está configurado para este arma
+	# Aplicar configuraciones especiales si están definidas para este arma
 	if WEAPON_SPRITE_CONFIG.has(weapon_id):
 		var config = WEAPON_SPRITE_CONFIG[weapon_id]
 		if config.has("rotation_offset"):
 			sprite.set_rotation_offset(config["rotation_offset"])
+		if config.get("lock_rotation", false):
+			sprite.set_lock_rotation(true)
 	
 	return sprite
 
