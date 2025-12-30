@@ -860,8 +860,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 15.0,
-		"sprite_scale": 0.5,
-		"frame_size": 72  # 64 + 4px padding cada lado para evitar bleeding
+		"sprite_scale": 0.5
 	}
 }
 
