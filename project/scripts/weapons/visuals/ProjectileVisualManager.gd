@@ -840,6 +840,13 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"impact_fps": 15.0,
 		"sprite_scale": 0.5
 	},
+	"shadow_dagger": {
+		"flight_frames": 6,
+		"flight_fps": 12.0,
+		"impact_frames": 6,
+		"impact_fps": 15.0,
+		"sprite_scale": 0.5
+	},
 	# === FUSION WEAPONS ===
 	"frostbite": {
 		"flight_frames": 6,
