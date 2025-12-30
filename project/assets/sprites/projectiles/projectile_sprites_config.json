@@ -236,8 +236,8 @@
       "description": "Glowing star/orb hybrid with pointed rays and cosmic shimmer"
     },
     {
-      "id": "earthquake",
-      "name": "Seismic Void",
+      "id": "rift_quake",
+      "name": "Rift Quake",
       "components": ["earth_spike", "void_pulse"],
       "type": "AOE",
       "colors": {
@@ -248,11 +248,11 @@
       },
       "shape": "cracked_ground_void_rifts",
       "effects": ["ground_shatter", "void_tendrils", "massive_debris"],
-      "description": "Large AOE with ground cracks and void energy seeping through"
+      "description": "Large AOE with ground cracks and void rifts opening"
     },
     {
-      "id": "frostfire",
-      "name": "Living Ice",
+      "id": "frostvine",
+      "name": "Living Ice Vine",
       "components": ["ice_wand", "nature_staff"],
       "type": "MULTI",
       "colors": {
@@ -263,7 +263,7 @@
       },
       "shape": "ice_leaf_hybrid",
       "effects": ["ice_petals", "frost_sparkle", "nature_shimmer"],
-      "description": "Ice crystal infused with living nature energy, organic shapes"
+      "description": "Ice crystal infused with living nature energy, organic vine shapes"
     },
     {
       "id": "hellfire",

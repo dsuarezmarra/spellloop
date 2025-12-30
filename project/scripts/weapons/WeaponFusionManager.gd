@@ -201,9 +201,9 @@ func get_synergy_description(fusion_result: Dictionary) -> String:
 		
 		"cosmic_barrier": "💜+✨ → 🌟\nBarrera de luz cósmica\n• Orbes brillantes que orbitan\n• Mayor probabilidad de crítico\n• Protección pasiva mejorada",
 		
-		"earthquake": "🪨+🕳️ → 🌋\nDestrucción total del terreno\n• Área masiva de daño\n• Atrae y aturde enemigos\n• El suelo tiembla continuamente",
+		"rift_quake": "🪨+🕳️ → 🌋\nGrietas sísmicas del vacío\n• Área masiva de daño\n• Atrae y aturde enemigos\n• Abre portales en el suelo",
 		
-		"frostfire": "❄️+🌿 → 🥶\nHielo viviente que congela todo\n• Proyectiles que persiguen\n• Congelación casi total\n• Se propaga entre enemigos cercanos",
+		"frostvine": "❄️+🌿 → 🥶\nEnredaderas de hielo viviente\n• Proyectiles que persiguen\n• Congelación casi total\n• Se propaga entre enemigos cercanos",
 		
 		"hellfire": "🔥+🗡️ → 👹\nLlamas del infierno\n• Dagas de fuego oscuro\n• Quemadura intensificada\n• Atraviesa y quema todo",
 		
@@ -224,8 +224,8 @@ func get_synergy_effects(fused_weapon_id: String) -> Array:
 		"storm_caller": ["chain", "knockback_bonus", "multi_target"],
 		"soul_reaper": ["lifesteal", "pierce_bonus", "homing"],
 		"cosmic_barrier": ["crit_bonus", "orbit", "damage_reduction"],
-		"earthquake": ["stun", "pull", "screen_shake"],
-		"frostfire": ["freeze", "spread", "homing"],
+		"rift_quake": ["stun", "pull", "screen_shake"],
+		"frostvine": ["freeze", "spread", "homing"],
 		"hellfire": ["burn_intense", "pierce_bonus", "speed_bonus"],
 		"thunder_spear": ["crit_massive", "instant", "max_range"],
 		"void_storm": ["pull_intense", "damage_aura", "slow"],

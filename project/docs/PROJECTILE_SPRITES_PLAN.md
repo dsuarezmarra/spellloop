@@ -275,15 +275,15 @@ IMPACT (6 frames): Star explodes into constellation pattern, light scatter
 
 ---
 
-### EARTHQUAKE (Earth + Void)
+### RIFT QUAKE (Earth + Void)
 **Tipo**: AOE (huge) | **Colores**: Marrón oscuro con púrpura
 
 ```
 [BASE PROMPT]
-Projectile: Seismic void / cataclysm (TOP-DOWN AOE)
+Projectile: Rift quake / seismic void (TOP-DOWN AOE)
 Colors: Dark brown (#4D3319) earth, purple-black (#330033) void energy
 Shape: Large circular area, cracks and void rifts
-Effects: Ground shatter, void tendrils, massive debris
+Effects: Ground shatter, void tendrils opening, dimensional cracks
 
 APPEAR (4 frames): Ground cracks with void energy seeping through
 ACTIVE (6 frames, loop): Earth rises and falls, void pulses, massive destruction
@@ -396,8 +396,8 @@ IMPACT (6 frames): Crystal shatters into gem fragments, magic burst
 12. storm_caller (Lightning+Wind)
 13. soul_reaper (Shadow+Nature)
 14. cosmic_barrier (Arcane+Light)
-15. earthquake (Earth+Void)
-16. frostfire (Ice+Nature)
+15. rift_quake (Earth+Void)
+16. frostvine (Ice+Nature)
 17. hellfire (Fire+Shadow)
 18. thunder_spear (Lightning+Light)
 19. void_storm (Void+Wind)
@@ -421,7 +421,7 @@ IMPACT (6 frames): Crystal shatters into gem fragments, magic burst
 37. thunder_bloom (Lightning+Nature)
 38. seismic_bolt (Lightning+Earth)
 39. void_bolt (Lightning+Void)
-40. void_orbs (Arcane+Void)
+40. shadow_orbs (Arcane+Shadow)
 41. life_orbs (Arcane+Nature)
 42. wind_orbs (Arcane+Wind)
 43. cosmic_void (Arcane+Void) - duplicate?
@@ -477,9 +477,9 @@ assets/sprites/projectiles/
 
 **Fase 2 - Fusiones Principales**:
 5. steam_cannon, storm_caller, hellfire
-6. cosmic_barrier, earthquake, thunder_spear
+6. cosmic_barrier, rift_quake, thunder_spear
 7. frozen_thunder, void_storm, soul_reaper
-8. crystal_guardian, frostfire
+8. crystal_guardian, frostvine
 
 **Fase 3 - Fusiones Restantes**:
 9-55. El resto de fusiones en orden de uso probable

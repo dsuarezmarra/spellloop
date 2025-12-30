@@ -732,13 +732,13 @@ Effects:
 
 ---
 
-## 🌋💀 15. EARTHQUAKE (Earth + Void) - AOE
+## 🌋💀 15. RIFT QUAKE (Earth + Void) - AOE
 
 ### Appear Animation (4 frames)
 ```
 Create a horizontal sprite strip of 4 frames (64x64 each = 256x64 total).
 
-Subject: Massive ground destruction with void rifts (TOP-DOWN VIEW)
+Subject: Massive ground destruction with void rifts opening (TOP-DOWN VIEW)
 
 Design:
 - Ground/rock: Dark brown (#4D3319)
@@ -746,10 +746,10 @@ Design:
 - Void energy: Purple (#660066)
 - Outline: Near black (#1A0A0A)
 
-Animation: Ground shattering with void energy seeping through
-- Frame 1: Ground cracking with purple light in cracks
-- Frame 2: Cracks widening, void tendrils emerging
-- Frame 3: Major fractures, void energy pulsing
+Animation: Ground shattering with dimensional rifts opening
+- Frame 1: Ground cracking with purple dimensional light in cracks
+- Frame 2: Cracks widening, void rifts emerging
+- Frame 3: Major fractures, dimensional portals pulsing
 - Frame 4: Full destruction zone with void rifts active
 
 Effects:
@@ -761,30 +761,64 @@ Effects:
 
 ---
 
-## ❄️🌿 16. FROSTFIRE (Ice + Nature) - MULTI
+## ❄️🌿 16. FROSTVINE (Ice + Nature) - Enredadera de Hielo - MULTI
 
 ### Flight Animation (6 frames)
 ```
 Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
 
-Subject: Ice crystal with living nature energy
+Subject: Living ice crystal with nature energy - a frozen vine/seed that pulses with life
 
 Design:
-- Ice body: Mint green (#66FFCC)
-- Ice highlights: Cyan (#99FFFF)
-- Nature glow: Pale mint (#CCFFEE)
-- Outline: Teal (#336655)
+- Shape: Organic ice crystal with vine-like frost patterns growing on it
+- Main body: Mint green ice (#66FFCC) with internal glow
+- Ice highlights: Bright cyan sparkles (#99FFFF) 
+- Nature core: Pale mint glow from inside (#CCFFEE)
+- Vine patterns: Darker teal frost veins (#448866)
+- Outline: Deep teal (#336655), 1-2 pixels
 
-Animation: Organic ice crystal spinning
-- Frames 1-6: Crystal rotating with organic curves
-- Living ice with vine-like patterns
-- Nature particles and frost sparkles
+Animation: Living crystal spinning and breathing
+- Frame 1: Crystal pointing right, vines barely visible
+- Frame 2: Rotating 30°, vines start glowing
+- Frame 3: Rotating 60°, nature energy pulses outward
+- Frame 4: Rotating 90°, maximum glow, frost particles
+- Frame 5: Rotating 120°, vines dimming
+- Frame 6: Rotating 150°, returning to subtle glow
 
 Effects:
-- Ice with organic/plant-like shapes
-- Frost sparkles
-- Small nature particles
-- Living/breathing ice feel
+- Small frost leaves/petals floating around (2-3 particles)
+- Internal nature pulse (brightness changes)
+- Frost sparkles trailing behind
+- Organic vine patterns visible on crystal surface
+- Living/breathing feel - crystal seems alive
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+
+Subject: Frostvine crystal shattering and releasing nature energy burst
+
+Design:
+- Same palette: Mint green (#66FFCC), cyan (#99FFFF), pale mint (#CCFFEE)
+- Vine patterns: Teal (#448866)
+- Outline: Deep teal (#336655)
+
+Animation: Crystal hits, cracks, and explodes into frozen leaves/petals
+- Frame 1: Crystal impact, hairline cracks appearing, bright flash at center
+- Frame 2: Cracks spreading like vines/roots, ice fragments starting to separate
+- Frame 3: Full shatter - ice pieces flying outward with frozen leaf shapes
+- Frame 4: Explosion of frost petals and ice shards, nature energy burst
+- Frame 5: Pieces spreading wide, some turning into snowflake-leaf hybrids
+- Frame 6: Final frost mist with tiny mint sparkles fading
+
+Effects:
+- Ice shards shaped like frozen leaves/petals
+- Mint-colored frost mist expanding
+- Small vine/root patterns in the ice cracks
+- Nature energy burst (green-white flash)
+- Frozen petal particles floating outward
+- Living frost feel even in destruction
 ```
 
 ---

@@ -524,13 +524,13 @@ const FUSIONS: Dictionary = {
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
-	# EARTHQUAKE (Earth + Void) - Destrucción total en área
+	# RIFT QUAKE (Earth + Void) - Grietas sísmicas del vacío
 	# ─────────────────────────────────────────────────────────────────────────────
 	"earth_spike+void_pulse": {
-		"id": "earthquake",
-		"name": "Earthquake",
-		"name_es": "Terremoto",
-		"description": "Crea un cataclismo que destruye todo a tu alrededor",
+		"id": "rift_quake",
+		"name": "Rift Quake",
+		"name_es": "Grieta Sísmica",
+		"description": "Abre grietas en la tierra que absorben enemigos al vacío",
 		"components": ["earth_spike", "void_pulse"],
 		
 		"damage": 40,
@@ -555,13 +555,13 @@ const FUSIONS: Dictionary = {
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
-	# FROSTFIRE (Ice + Nature) - Congelación que se propaga
+	# FROSTVINE (Ice + Nature) - Enredaderas de hielo viviente
 	# ─────────────────────────────────────────────────────────────────────────────
 	"ice_wand+nature_staff": {
-		"id": "frostfire",
-		"name": "Frostfire",
-		"name_es": "Fuego Gélido",
-		"description": "Proyectiles de hielo vivo que congelan y persiguen",
+		"id": "frostvine",
+		"name": "Frostvine",
+		"name_es": "Enredadera de Hielo",
+		"description": "Proyectiles de hielo vivo que congelan y persiguen como enredaderas",
 		"components": ["ice_wand", "nature_staff"],
 		
 		"damage": 14,
@@ -1227,12 +1227,12 @@ const FUSIONS: Dictionary = {
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
-	# ARCANE + SHADOW: VOID ORBS - Orbes del vacío
+	# ARCANE + SHADOW: SHADOW ORBS - Orbes de sombra
 	# ─────────────────────────────────────────────────────────────────────────────
 	"arcane_orb+shadow_dagger": {
-		"id": "void_orbs",
-		"name": "Void Orbs",
-		"name_es": "Orbes del Vacío",
+		"id": "shadow_orbs",
+		"name": "Shadow Orbs",
+		"name_es": "Orbes de Sombra",
 		"description": "Orbes oscuros que disparan dagas fantasmales",
 		"components": ["arcane_orb", "shadow_dagger"],
 		"damage": 10,

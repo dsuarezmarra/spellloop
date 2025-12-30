@@ -273,7 +273,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.12
 	},
 	
-	"frostfire": {  # Ice + Void
+	"frostvine": {  # Ice + Nature
 		"shape": "entropy_shard",
 		"primary": Color(0.4, 0.6, 0.85),
 		"secondary": Color(0.2, 0.15, 0.4),
@@ -493,7 +493,7 @@ const WEAPON_VISUALS: Dictionary = {
 	# FUSIONES ARCANE (5)
 	# ══════════════════════════════════════════════════════════════════════════
 	
-	"void_orbs": {  # Arcane + Shadow
+	"shadow_orbs": {  # Arcane + Shadow
 		"shape": "shadow_orb",
 		"primary": Color(0.4, 0.2, 0.55),
 		"secondary": Color(0.2, 0.1, 0.3),
@@ -717,7 +717,7 @@ const WEAPON_VISUALS: Dictionary = {
 	# FUSIONES EARTH (3)
 	# ══════════════════════════════════════════════════════════════════════════
 	
-	"earthquake": {  # Earth + Light
+	"rift_quake": {  # Earth + Void
 		"shape": "light_crystal",
 		"primary": Color(0.75, 0.65, 0.5),
 		"secondary": Color(0.95, 0.9, 0.75),

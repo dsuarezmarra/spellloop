@@ -34,7 +34,7 @@ var base_weapons: Array[String] = [
 var fusion_weapons: Array[String] = [
 	# Ice combos
 	"steam_cannon", "frozen_thunder", "frost_orb", "frostbite", "blizzard", 
-	"glacier", "aurora", "absolute_zero", "frostfire",
+	"glacier", "aurora", "absolute_zero", "frostvine",
 	# Fire combos  
 	"plasma", "inferno_orb", "wildfire", "firestorm", "volcano", 
 	"solar_flare", "dark_flame", "hellfire",
@@ -42,7 +42,7 @@ var fusion_weapons: Array[String] = [
 	"storm_caller", "arcane_storm", "dark_lightning", "thunder_bloom", 
 	"seismic_bolt", "thunder_spear", "void_bolt",
 	# Arcane combos
-	"void_orbs", "life_orbs", "wind_orbs", "cosmic_barrier", "cosmic_void",
+	"shadow_orbs", "life_orbs", "wind_orbs", "cosmic_barrier", "cosmic_void",
 	# Shadow combos
 	"soul_reaper", "phantom_blade", "stone_fang", "twilight", "abyss",
 	# Nature combos
@@ -50,7 +50,7 @@ var fusion_weapons: Array[String] = [
 	# Wind combos
 	"sandstorm", "prism_wind",
 	# Earth combos
-	"earthquake", "crystal_guardian", "radiant_stone",
+	"rift_quake", "crystal_guardian", "radiant_stone",
 	# Light/Void combos
 	"void_storm", "eclipse"
 ]
