@@ -875,6 +875,13 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"impact_frames": 6,
 		"impact_fps": 14.0,
 		"sprite_scale": 0.5
+	},
+	"firestorm": {
+		"flight_frames": 6,
+		"flight_fps": 14.0,  # Fast spin
+		"impact_frames": 6,
+		"impact_fps": 16.0,
+		"sprite_scale": 0.5
 	}
 }
 
@@ -891,17 +898,17 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 	else:
 		base_path = FUSION_SPRITES_PATH + weapon_id + "/"
 	
-	# Verificar si existe el archivo de vuelo (mínimo requerido)
-	var flight_path = base_path + "flight.png"
+	# Nueva nomenclatura: flight_spritesheet_[weapon].png, impact_spritesheet_[weapon].png
+	var flight_path = base_path + "flight_spritesheet_" + weapon_id + ".png"
 	if not ResourceLoader.exists(flight_path):
 		return  # No hay sprites personalizados, usar procedural
 	
-	# Cargar sprites (solo flight e impact son requeridos, launch es opcional)
+	# Cargar sprites (solo flight e impact son requeridos)
 	var flight_tex = load(flight_path) as Texture2D
-	var impact_tex = load(base_path + "impact.png") as Texture2D
+	var impact_tex = load(base_path + "impact_spritesheet_" + weapon_id + ".png") as Texture2D
 	
 	if flight_tex == null:
-		push_warning("[ProjectileVisualManager] No se pudo cargar flight.png para " + weapon_id)
+		push_warning("[ProjectileVisualManager] No se pudo cargar flight_spritesheet_" + weapon_id + ".png")
 		return
 	
 	# Obtener configuración de frames para este arma

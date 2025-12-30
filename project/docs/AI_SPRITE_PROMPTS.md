@@ -12,7 +12,7 @@
 ## 🎯 PROMPT BASE (Usar al inicio de cada sesión)
 
 ```
-I need you to create pixel art sprites for a roguelike video game. 
+I need you to create Cartoon sprites for a roguelike video game. 
 
 STYLE REQUIREMENTS:
 - Art style: Cartoon/Funko Pop - cute, round shapes with big cute features
@@ -795,7 +795,7 @@ Effects:
 - Frost mist trail behind the seed
 - Living/organic feel - this projectile is ALIVE and hungry
 
-Style: Pixel art, clean shapes, no anti-aliasing on edges.
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
 ```
 
 ### Impact Animation (6 frames)
@@ -830,7 +830,7 @@ Effects:
 - Frozen leaf/petal shapes mixed with ice shards
 - Feeling of entangling/grabbing before shattering
 
-Style: Pixel art, clean shapes, no anti-aliasing on edges.
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
 ```
 
 ---
@@ -871,7 +871,7 @@ Effects:
 - Warm glow that pulses with the animation
 - Homing feel - the flame reaches TOWARD something
 
-Style: Pixel art, clean shapes, no anti-aliasing on edges.
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
 ```
 
 ### Impact Animation (6 frames)
@@ -906,7 +906,7 @@ Effects:
 - Yellow-green hints at flame tips (nature magic)
 - Embers that look like they could start new fires
 
-Style: Pixel art, clean shapes, no anti-aliasing on edges.
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
 ```
 
 ---
@@ -947,7 +947,7 @@ Effects:
 - Pulsing intensity as it spins
 - High speed, high knockback feel
 
-Style: Pixel art, clean shapes, no anti-aliasing on edges.
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
 ```
 
 ### Impact Animation (6 frames)
@@ -982,7 +982,7 @@ Effects:
 - Smoke/ash wisps spinning outward
 - High-energy, violent dispersal feel
 
-Style: Pixel art, clean shapes, no anti-aliasing on edges.
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
 ```
 
 ---
