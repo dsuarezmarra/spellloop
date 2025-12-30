@@ -1063,7 +1063,83 @@ Style: Cartoon, clean shapes, no anti-aliasing on edges.
 
 ---
 
-## ⚡✨ 20. THUNDER SPEAR (Lightning + Light) - BEAM
+## ⚡🗡️ 20. DARK LIGHTNING (Lightning + Shadow) - Rayo Oscuro - MULTI
+
+### Flight Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Dark electric dagger projectile - shadow-infused lightning bolt
+
+Design:
+- Shape: Sleek dagger/bolt shape with electric energy crackling along the edges
+- Main body: Deep purple (#6633AA) with dark violet core (#4422AA)
+- Electric arcs: Pale lavender-white (#DDCCFF) crackling along the blade
+- Shadow wisps: Near black (#1A0A1A) trailing from the dagger
+- Inner glow: Electric violet (#9966FF)
+- Outline: Very dark purple (#220033), 1-2 pixels
+
+Animation: Electric dagger spinning with shadow trail and crackling energy
+- Frame 1: Dagger compact, shadow wisps curled, sparks minimal
+- Frame 2: Electric arcs intensify, shadow trail extends
+- Frame 3: Maximum crackling - arcs jumping around blade, shadows flowing
+- Frame 4: Electric pulse bright, blade seems to vibrate with energy
+- Frame 5: Arcs retracting, shadows coiling
+- Frame 6: Return to base state, ready to loop
+
+Key concept: Lightning CORRUPTED by shadow - electric energy with dark undertones
+
+Effects:
+- Electric arcs crackling along the blade edges (white-purple)
+- Shadow wisps trailing behind like dark smoke
+- Ghostly afterimage effect
+- Electric sparks jumping off periodically
+- Dark aura around the bright electric core
+- Fast, deadly appearance - chain lightning feel
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Dark Lightning impact - electric burst with shadow dispersion
+
+Design:
+- Same palette: Deep purple (#6633AA), dark violet (#4422AA), pale lavender (#DDCCFF)
+- Shadow burst: Near black (#1A0A1A)
+- Electric flash: Bright white-purple (#EEDDFF)
+- Outline: Very dark purple (#220033)
+
+Animation: Electric dagger strikes and releases dark lightning in chain pattern
+- Frame 1: Impact flash - bright purple-white electric burst at center
+- Frame 2: Electric arcs shoot outward in zigzag patterns, shadows disperse
+- Frame 3: Maximum spread - lightning arcs reaching out (chain effect visual), shadows everywhere
+- Frame 4: Arcs start fragmenting into smaller sparks, shadows fading
+- Frame 5: Residual sparks jumping, shadow wisps dissipating
+- Frame 6: Final electric sparkles and dark particles fading
+
+Key visual concept: Electric explosion with DARK ENERGY - not just lightning, but corrupted lightning
+
+Effects:
+- Zigzag electric arcs shooting outward (showing chain effect)
+- Shadow tendrils mixing with the lightning
+- Bright purple-white flash at center
+- Electric spark particles flying
+- Dark smoke/shadow wisps curling away
+- Feeling of electricity jumping to nearby targets
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+---
+
+## ⚡✨ 21. THUNDER SPEAR (Lightning + Light) - BEAM
 
 ### Active Animation (6 frames)
 ```

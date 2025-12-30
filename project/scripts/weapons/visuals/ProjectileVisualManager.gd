@@ -424,17 +424,17 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.18
 	},
 	
-	"dark_lightning": {  # Lightning + Nature
-		"shape": "thunder_leaf",
-		"primary": Color(0.45, 0.75, 0.6),
-		"secondary": Color(0.6, 0.9, 0.7),
-		"accent": Color(0.9, 1.0, 0.95),
-		"outline": Color(0.2, 0.4, 0.3),
-		"glow": Color(0.5, 0.8, 0.65, 0.45),
-		"trail_color": Color(0.55, 0.85, 0.7, 0.4),
-		"particles": "electric_pollen",
+	"dark_lightning": {  # Lightning + Shadow - Rayo Oscuro
+		"shape": "dark_dagger",
+		"primary": Color(0.4, 0.2, 0.67),       # Deep purple #6633AA
+		"secondary": Color(0.27, 0.13, 0.67),   # Dark violet #4422AA
+		"accent": Color(0.87, 0.8, 1.0),        # Pale lavender #DDCCFF
+		"outline": Color(0.13, 0.0, 0.2),       # Very dark purple #220033
+		"glow": Color(0.6, 0.4, 1.0, 0.55),     # Electric violet glow
+		"trail_color": Color(0.4, 0.2, 0.67, 0.5),
+		"particles": "shadow_sparks",
 		"rotation_speed": 0.0,
-		"squash_amount": 0.12
+		"squash_amount": 0.1
 	},
 	
 	"thunder_bloom": {  # Lightning + Wind
@@ -889,6 +889,13 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 14.0,
+		"sprite_scale": 1.0
+	},
+	"dark_lightning": {
+		"flight_frames": 6,
+		"flight_fps": 14.0,  # Fast for electric feel
+		"impact_frames": 6,
+		"impact_fps": 16.0,
 		"sprite_scale": 1.0
 	}
 }
