@@ -809,7 +809,7 @@ const FUSION_SPRITES_PATH = "res://assets/sprites/projectiles/fusion/"
 const BASE_WEAPONS: Array = ["ice_wand", "fire_wand", "nature_staff", "wind_blade", "lightning_wand", "arcane_orb", "shadow_dagger", "earth_spike", "light_beam", "void_pulse"]
 
 # Configuración de sprites por arma (frame counts y fps)
-# NOTA: Solo se requieren flight.png e impact.png. launch.png es opcional y no se usa.
+# Nomenclatura de archivos: flight_spritesheet_[weapon].png, impact_spritesheet_[weapon].png
 const WEAPON_SPRITE_CONFIG: Dictionary = {
 	"ice_wand": {
 		"flight_frames": 6,

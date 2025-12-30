@@ -1287,16 +1287,27 @@ Después de generar los sprites:
 1. **Redimensionar si es necesario**: A 64x64 exactos por frame
 2. **Verificar transparencia**: Fondo completamente transparente
 3. **Guardar como PNG**: En carpetas correspondientes
-4. **Nombrar archivos**: `[animation_type].png` (ej: `flight.png`, `impact.png`)
+4. **Nomenclatura de archivos**: 
+   - `flight_spritesheet_[weapon_id].png` - animación de vuelo
+   - `impact_spritesheet_[weapon_id].png` - animación de impacto
 
 ### Estructura de carpetas:
 ```
 assets/sprites/projectiles/
-├── ice_wand/
-│   ├── flight.png
-│   └── impact.png
-├── fire_wand/
-│   ├── flight.png
-│   └── impact.png
-└── ... (cada arma)
+├── weapons/
+│   ├── ice_wand/
+│   │   ├── flight_spritesheet_ice_wand.png
+│   │   └── impact_spritesheet_ice_wand.png
+│   ├── fire_wand/
+│   │   ├── flight_spritesheet_fire_wand.png
+│   │   └── impact_spritesheet_fire_wand.png
+│   └── ... (cada arma base)
+├── fusion/
+│   ├── frostvine/
+│   │   ├── flight_spritesheet_frostvine.png
+│   │   └── impact_spritesheet_frostvine.png
+│   ├── wildfire/
+│   │   ├── flight_spritesheet_wildfire.png
+│   │   └── impact_spritesheet_wildfire.png
+│   └── ... (cada fusión)
 ```
