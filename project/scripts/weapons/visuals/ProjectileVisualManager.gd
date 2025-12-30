@@ -804,10 +804,9 @@ const PROJECTILE_TYPE_MAP: Dictionary = {
 const PROJECTILE_SPRITES_PATH = "res://assets/sprites/projectiles/"
 
 # Configuración de sprites por arma (frame counts y fps)
+# NOTA: Solo se requieren flight.png e impact.png. launch.png es opcional y no se usa.
 const WEAPON_SPRITE_CONFIG: Dictionary = {
 	"ice_wand": {
-		"launch_frames": 4,
-		"launch_fps": 12.0,
 		"flight_frames": 6,
 		"flight_fps": 12.0,
 		"impact_frames": 6,
@@ -815,8 +814,13 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"sprite_scale": 0.5
 	},
 	"fire_wand": {
-		"launch_frames": 4,
-		"launch_fps": 12.0,
+		"flight_frames": 6,
+		"flight_fps": 12.0,
+		"impact_frames": 6,
+		"impact_fps": 15.0,
+		"sprite_scale": 0.5
+	},
+	"nature_staff": {
 		"flight_frames": 6,
 		"flight_fps": 12.0,
 		"impact_frames": 6,
@@ -838,9 +842,8 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 	if not ResourceLoader.exists(flight_path):
 		return  # No hay sprites personalizados, usar procedural
 	
-	# Cargar sprites
+	# Cargar sprites (solo flight e impact son requeridos, launch es opcional)
 	var flight_tex = load(flight_path) as Texture2D
-	var launch_tex = load(base_path + "launch.png") as Texture2D
 	var impact_tex = load(base_path + "impact.png") as Texture2D
 	
 	if flight_tex == null:
@@ -850,12 +853,7 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 	# Obtener configuración de frames para este arma
 	var config = WEAPON_SPRITE_CONFIG.get(weapon_id, {})
 	
-	# Configurar sprites de lanzamiento
-	if launch_tex:
-		data.launch_spritesheet = launch_tex
-		data.launch_frames = config.get("launch_frames", 4)
-		data.launch_fps = config.get("launch_fps", 12.0)
-		data.launch_loop = false
+	# NOTA: launch.png ya no se usa - los proyectiles empiezan directamente en flight
 	
 	# Configurar sprites de vuelo
 	data.flight_spritesheet = flight_tex

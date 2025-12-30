@@ -26,10 +26,11 @@ Si el sprite apunta en otra dirección, el proyectil rotará incorrectamente en 
 ### Archivos Necesarios por Proyectil
 ```
 project/assets/sprites/projectiles/{weapon_id}/
-├── launch.png    (256x64 - 4 frames de 64x64)
 ├── flight.png    (384x64 - 6 frames de 64x64)
 └── impact.png    (384x64 - 6 frames de 64x64)
 ```
+
+> **NOTA**: Solo se necesitan 2 archivos. El `launch.png` fue eliminado porque no se usa - los proyectiles empiezan directamente en animación de vuelo.
 
 ---
 
@@ -39,9 +40,10 @@ project/assets/sprites/projectiles/{weapon_id}/
 
 | Animación | Frames | Tamaño Frame | Tamaño Total | FPS |
 |-----------|--------|--------------|--------------|-----|
-| Launch    | 4      | 64x64        | 256x64       | 12  |
 | Flight    | 6      | 64x64        | 384x64       | 12  |
 | Impact    | 6      | 64x64        | 384x64       | 15  |
+
+> **NOTA**: `launch.png` ya no se usa. Los proyectiles empiezan directamente con la animación de vuelo.
 
 ### Formato de Imagen
 - **Formato**: PNG con transparencia (RGBA)
@@ -98,32 +100,7 @@ CRITICAL ORIENTATION:
 - This is essential for in-game rotation to work correctly
 ```
 
-#### Plantilla para Launch (4 frames)
-```
-Create a horizontal sprite strip of 4 frames (64x64 each = 256x64 total).
-
-Subject: [DESCRIPCIÓN DEL PROYECTIL] appearing/spawning animation
-
-Design:
-- Shape: [FORMA PRINCIPAL]
-- Main body: [COLOR PRINCIPAL] (#HEXCODE)
-- Highlights: [COLOR SECUNDARIO] (#HEXCODE)
-- Glow: [COLOR DE BRILLO] (#HEXCODE)
-- Outline: [COLOR DE CONTORNO] (#HEXCODE)
-
-Animation: [NOMBRE] materializing
-- Frame 1: Small sparkle, energy beginning
-- Frame 2: Shape starting to form
-- Frame 3: Fully formed, glowing, slight overshoot
-- Frame 4: Settles into flight position, pointing RIGHT →
-
-CRITICAL: Must point to the RIGHT (→) in frame 4.
-
-Effects:
-- [EFECTOS ESPECÍFICOS DEL ELEMENTO]
-```
-
-#### Plantilla para Flight (6 frames)
+#### Plantilla para Flight (6 frames) - `flight.png`
 ```
 Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
 
@@ -181,14 +158,12 @@ python process_sprites_universal.py --input "ruta/sprites_raw" --output "project
 
 Abrir los sprites en un editor de imágenes y verificar:
 1. ¿El proyectil apunta a la DERECHA en `flight.png`?
-2. ¿El último frame de `launch.png` apunta a la DERECHA?
-3. ¿Las dimensiones son correctas? (256x64 para launch, 384x64 para flight/impact)
+2. ¿Las dimensiones son correctas? (384x64 para flight e impact)
 
 ### Paso 4: Colocar en la Carpeta Correcta
 
 ```
 project/assets/sprites/projectiles/{weapon_id}/
-├── launch.png
 ├── flight.png
 └── impact.png
 ```
@@ -203,8 +178,8 @@ El `weapon_id` debe coincidir EXACTAMENTE con el ID en `WeaponDatabase.gd`.
 
 El sistema detecta automáticamente los sprites si:
 1. Están en la carpeta correcta: `assets/sprites/projectiles/{weapon_id}/`
-2. Los archivos se llaman exactamente: `launch.png`, `flight.png`, `impact.png`
-3. Las dimensiones son correctas
+2. Los archivos se llaman exactamente: `flight.png`, `impact.png`
+3. Las dimensiones son correctas (384x64 cada uno)
 
 ### Configuración en ProjectileVisualManager
 
@@ -213,10 +188,8 @@ Si necesitas configuración personalizada, edita `ProjectileVisualManager.gd`:
 ```gdscript
 const WEAPON_SPRITE_CONFIG: Dictionary = {
     "weapon_id": {
-        "launch_frames": 4,    # Número de frames en launch.png
-        "launch_fps": 12.0,    # Velocidad de animación
         "flight_frames": 6,    # Número de frames en flight.png
-        "flight_fps": 12.0,
+        "flight_fps": 12.0,    # Velocidad de animación
         "impact_frames": 6,    # Número de frames en impact.png
         "impact_fps": 15.0,
         "sprite_scale": 0.5    # Escala del sprite (0.5 = 50%)
@@ -255,11 +228,10 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 
 ### Después de Generar Sprites
 - [ ] **Orientación**: El proyectil apunta a la DERECHA (→)
-- [ ] **Dimensiones launch.png**: 256x64 (4 frames de 64x64)
 - [ ] **Dimensiones flight.png**: 384x64 (6 frames de 64x64)
 - [ ] **Dimensiones impact.png**: 384x64 (6 frames de 64x64)
 - [ ] **Formato**: PNG con fondo transparente
-- [ ] **Nombres de archivo**: Exactamente `launch.png`, `flight.png`, `impact.png`
+- [ ] **Nombres de archivo**: Exactamente `flight.png`, `impact.png`
 
 ### Después de Colocar en el Proyecto
 - [ ] Carpeta correcta: `project/assets/sprites/projectiles/{weapon_id}/`
@@ -297,7 +269,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 
 **Causas posibles**:
 1. La carpeta no existe o tiene nombre incorrecto
-2. Los archivos no se llaman `launch.png`, `flight.png`, `impact.png`
+2. Los archivos no se llaman `flight.png`, `impact.png`
 3. El `weapon_id` no coincide con la carpeta
 
 **Solución**:
@@ -321,7 +293,6 @@ Get-ChildItem "project\assets\sprites\projectiles\{weapon_id}\*.png" | ForEach-O
 ```
 
 Dimensiones esperadas:
-- `launch.png`: 256x64
 - `flight.png`: 384x64
 - `impact.png`: 384x64
 
@@ -366,9 +337,9 @@ Si `parent_rot` NO es 0, hay algo rotando el nodo SimpleProjectile.
 
 ```
 1. SIEMPRE apuntar a la DERECHA (→)
-2. Dimensiones: launch=256x64, flight=384x64, impact=384x64
+2. Dimensiones: flight=384x64, impact=384x64
 3. Carpeta: project/assets/sprites/projectiles/{weapon_id}/
-4. Archivos: launch.png, flight.png, impact.png
+4. Archivos: flight.png, impact.png
 5. Probar en TODAS las direcciones
 ```
 
