@@ -437,17 +437,17 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.1
 	},
 	
-	"thunder_bloom": {  # Lightning + Wind
-		"shape": "wind_bolt",
-		"primary": Color(0.6, 0.9, 0.95),
-		"secondary": Color(0.75, 0.95, 1.0),
-		"accent": Color(1.0, 1.0, 1.0),
-		"outline": Color(0.3, 0.5, 0.55),
-		"glow": Color(0.65, 0.9, 0.95, 0.5),
-		"trail_color": Color(0.7, 0.95, 1.0, 0.4),
-		"particles": "wind_sparks",
-		"rotation_speed": 6.0,
-		"squash_amount": 0.1
+	"thunder_bloom": {  # Lightning + Nature - Flor del Trueno
+		"shape": "thunder_leaf",
+		"primary": Color(0.45, 0.85, 0.35),       # Verde eléctrico brillante
+		"secondary": Color(0.6, 1.0, 0.4),        # Verde-amarillo (del weapon color)
+		"accent": Color(1.0, 1.0, 0.7),           # Destello amarillo-blanco (electricidad)
+		"outline": Color(0.2, 0.45, 0.15),        # Verde oscuro
+		"glow": Color(0.5, 0.95, 0.4, 0.55),      # Resplandor verde brillante
+		"trail_color": Color(0.55, 0.9, 0.45, 0.45),
+		"particles": "electric_pollen",
+		"rotation_speed": 3.0,
+		"squash_amount": 0.12
 	},
 	
 	"seismic_bolt": {  # Lightning + Earth
@@ -896,6 +896,28 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"flight_fps": 14.0,  # Fast for electric feel
 		"impact_frames": 6,
 		"impact_fps": 16.0,
+		"sprite_scale": 1.0,
+		"rotation_offset": 30.0  # Inclinación visual de la daga eléctrica
+	},
+	"thunder_bloom": {
+		"flight_frames": 6,
+		"flight_fps": 12.0,
+		"impact_frames": 6,
+		"impact_fps": 14.0,
+		"sprite_scale": 1.0
+	},
+	"soul_reaper": {
+		"flight_frames": 6,
+		"flight_fps": 10.0,  # Slower, more menacing
+		"impact_frames": 6,
+		"impact_fps": 12.0,
+		"sprite_scale": 1.0
+	},
+	"phantom_blade": {
+		"flight_frames": 6,
+		"flight_fps": 16.0,  # Very fast, ghostly blur
+		"impact_frames": 6,
+		"impact_fps": 18.0,
 		"sprite_scale": 1.0
 	}
 }

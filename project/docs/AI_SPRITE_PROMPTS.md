@@ -1139,7 +1139,235 @@ Style: Cartoon, clean shapes, no anti-aliasing on edges.
 
 ---
 
-## ⚡✨ 21. THUNDER SPEAR (Lightning + Light) - BEAM
+## ⚡🌿 21. THUNDER BLOOM (Lightning + Nature) - Flor del Trueno - MULTI (Homing)
+
+### Flight Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Living lightning flower projectile - electric energy in plant form
+
+Design:
+- Shape: Flower bud/bloom shape with electric petals radiating outward
+- Main body: Bright electric green (#73D930) with yellow-green core (#99FF44)
+- Electric petals: Glowing yellow-white tips (#FFFFAA) crackling with energy
+- Leaf accents: Darker green (#339922) at base
+- Lightning veins: Bright yellow (#FFFF66) running through petals
+- Outline: Deep forest green (#225511), 1-2 pixels
+
+Animation: Living flower pulsing with electric life energy, petals opening and closing
+- Frame 1: Bud compact, petals closed around glowing core
+- Frame 2: Petals starting to open, electric veins becoming visible
+- Frame 3: Half-open bloom, lightning arcing between petal tips
+- Frame 4: Full bloom - petals spread wide, maximum electric glow
+- Frame 5: Petals retracting slightly, energy gathering back to core
+- Frame 6: Return to semi-closed state, ready to loop
+
+Key concept: A FLOWER made of LIGHTNING - organic plant shape with electric energy
+
+Effects:
+- Electric arcs jumping between petal tips (yellow-white)
+- Glowing pollen particles floating around (electric green sparkles)
+- Pulsing inner core like a heartbeat
+- Leaf-shaped petals with lightning vein patterns
+- Nature meets electricity - alive and crackling
+- Homing feel - flower "faces" toward target
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Thunder Bloom impact - electric flower bursts into healing lightning storm
+
+Design:
+- Same palette: Electric green (#73D930), yellow-green (#99FF44), yellow-white (#FFFFAA)
+- Petal fragments: Bright green (#66DD33)
+- Lightning burst: Bright yellow (#FFFF66) with white core
+- Outline: Deep forest green (#225511)
+
+Animation: Flower blooms fully and explodes into electric petal storm with chain lightning
+- Frame 1: Impact - flower fully opens, bright flash at center
+- Frame 2: Petals burst outward, lightning arcs shoot in multiple directions (chain effect)
+- Frame 3: Maximum spread - petal fragments and lightning bolts everywhere
+- Frame 4: Electric chains connecting between fragments, healing energy visible (green glow)
+- Frame 5: Fragments fading, residual lightning sparks
+- Frame 6: Final electric pollen and green sparkles dissipating
+
+Key visual concept: BLOOMING EXPLOSION - flower opens and releases stored electric nature energy
+
+Effects:
+- Petal-shaped fragments flying outward (organic shapes)
+- Lightning bolts connecting fragments (chain lightning visual)
+- Green healing energy particles rising (lifesteal effect)
+- Electric pollen/spore particles scattering
+- Yellow-white flash at center
+- Feeling of life energy being released
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+---
+
+## 💀🌿 22. SOUL REAPER (Shadow + Nature) - Segador de Almas - MULTI (Homing)
+
+### Flight Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Spectral scythe projectile - ghostly death blade with nature corruption
+
+Design:
+- Shape: Small curved scythe/sickle blade with ethereal wisps trailing
+- Main blade: Dark purple-gray (#3D3347) with ghostly translucent edges
+- Shadow core: Near black (#1A1520) at blade center
+- Nature corruption: Sickly green (#66AA44) vines/veins running through blade
+- Soul wisps: Pale green-white (#CCDDAA) ghostly energy trailing
+- Outline: Very dark purple (#1A0A1A), 1-2 pixels
+
+Animation: Spectral scythe spinning while soul wisps flow around it
+- Frame 1: Scythe compact, wisps close, blade dim
+- Frame 2: Blade rotating, green veins start glowing, wisps extending
+- Frame 3: Mid-rotation, soul energy intensifying, nature corruption visible
+- Frame 4: Blade at peak glow, wisps at maximum reach, harvesting feel
+- Frame 5: Rotation continuing, wisps retracting slightly
+- Frame 6: Return to start position, ready to loop
+
+Key concept: A DEATH SCYTHE corrupted by NATURE - harvests souls AND life force
+
+Effects:
+- Ghostly soul wisps trailing behind (pale green-white)
+- Green nature veins pulsing through dark blade
+- Translucent/ethereal blade edges
+- Small soul orb particles floating around
+- Dark aura surrounding the bright nature corruption
+- Menacing, life-draining appearance - this weapon FEEDS
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Soul Reaper impact - spectral blade harvests soul with nature drain
+
+Design:
+- Same palette: Dark purple-gray (#3D3347), near black (#1A1520), sickly green (#66AA44)
+- Soul burst: Pale green-white (#CCDDAA)
+- Life drain: Bright green (#88DD55) energy streams
+- Outline: Very dark purple (#1A0A1A)
+
+Animation: Scythe strikes and rips out soul energy in a harvesting motion
+- Frame 1: Impact - blade cuts, bright green-white flash at strike point
+- Frame 2: Soul energy RIPPING outward - green wisps being torn from impact
+- Frame 3: Maximum harvest - soul fragments and nature energy swirling
+- Frame 4: Life energy streams flowing BACK toward where player would be (lifesteal visual)
+- Frame 5: Soul fragments dissipating, green energy fading
+- Frame 6: Final wisps and dark particles fading
+
+Key visual concept: HARVESTING souls - not just damage, but DRAINING life essence
+
+Effects:
+- Soul fragments being ripped outward then pulled back (lifesteal)
+- Green life energy streams showing the drain effect
+- Dark shadow burst at center
+- Ghostly wisps swirling
+- Nature vine fragments mixed with soul particles
+- Feeling of something being TAKEN, not just destroyed
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+---
+
+## 👻💨 23. PHANTOM BLADE (Shadow + Wind) - Hoja Fantasma - MULTI
+
+### Flight Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Ghostly wind dagger projectile - spectral blade that phases through matter
+
+Design:
+- Shape: Sleek curved dagger/blade with semi-transparent ghostly edges
+- Main body: Pale blue-gray (#7788AA) with translucent appearance
+- Ghost core: Darker purple-gray (#3D3850) at center
+- Wind trails: Cyan-white wisps (#CCDDEE) flowing around blade
+- Spectral glow: Pale lavender (#AABBCC) along edges
+- Outline: Dark slate blue (#2A2A40), 1-2 pixels, slightly faded
+
+Animation: Ghost blade spinning rapidly with wind and spectral afterimages
+- Frame 1: Blade solid, wind wisps tight around it
+- Frame 2: Spinning, ghostly afterimage appearing behind
+- Frame 3: Mid-spin, wind trails extending, blade becoming more translucent
+- Frame 4: Maximum transparency, multiple afterimages visible, peak speed feel
+- Frame 5: Blade reforming slightly more solid, afterimages fading
+- Frame 6: Return to start, wind gathering for next spin
+
+Key concept: A GHOST BLADE carried by WIND - phases through reality, impossibly fast
+
+Effects:
+- Ghostly afterimages trailing (semi-transparent copies)
+- Wind current lines flowing around blade
+- Semi-transparent/ethereal appearance throughout
+- Speed blur effect on edges
+- Pale cyan wind particles
+- Feeling of something that CANNOT BE STOPPED - phases through everything
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Phantom Blade impact - ghost blade phases through and disperses into wind
+
+Design:
+- Same palette: Pale blue-gray (#7788AA), purple-gray (#3D3850), cyan-white (#CCDDEE)
+- Wind burst: Pale cyan (#DDEEFF)
+- Ghost fragments: Translucent blue-purple (#6677AA with alpha)
+- Outline: Dark slate blue (#2A2A40)
+
+Animation: Ghost blade passes through target, leaving spectral wind burst
+- Frame 1: Impact moment - blade partially phased, bright flash
+- Frame 2: Blade fragmenting into ghost shards AND wind burst simultaneously
+- Frame 3: Maximum dispersal - ghost fragments and wind spiraling outward
+- Frame 4: Ghost shards fading, wind currents dominant
+- Frame 5: Wind wisps spiraling away, few ghost particles remain
+- Frame 6: Final wisps and spectral sparkles vanishing
+
+Key visual concept: NOT a solid impact - blade PHASES THROUGH and disperses into wind
+
+Effects:
+- Ghost fragments flying outward (semi-transparent shards)
+- Wind spiral burst pattern
+- Spectral afterimages lingering briefly
+- Cyan wind current lines
+- Ethereal fade-out (not hard edges)
+- Feeling of something passing THROUGH, not hitting
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+---
+
+## ⚡✨ 24. THUNDER SPEAR (Lightning + Light) - BEAM
 
 ### Active Animation (6 frames)
 ```
