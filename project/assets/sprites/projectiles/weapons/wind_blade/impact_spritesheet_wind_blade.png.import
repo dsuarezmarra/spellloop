@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://blp4c454edquo"
-path="res://.godot/imported/flight.png-6dbdf5bc6a7bca1a5c34deaa2afdb121.ctex"
+uid="uid://ckocdbursd81x"
+path="res://.godot/imported/impact_spritesheet_wind_blade.png-e6a919bcd62ec043d470b2854db67175.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/weapons/shadow_dagger/flight.png"
-dest_files=["res://.godot/imported/flight.png-6dbdf5bc6a7bca1a5c34deaa2afdb121.ctex"]
+source_file="res://assets/sprites/projectiles/weapons/wind_blade/impact_spritesheet_wind_blade.png"
+dest_files=["res://.godot/imported/impact_spritesheet_wind_blade.png-e6a919bcd62ec043d470b2854db67175.ctex"]
 
 [params]
 

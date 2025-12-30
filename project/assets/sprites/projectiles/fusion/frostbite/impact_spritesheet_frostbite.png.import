@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ca0ulw5ccypre"
-path="res://.godot/imported/impact.png-6b6606d6520ace982f07ceec528d5cdc.ctex"
+uid="uid://3iws41lvwl32"
+path="res://.godot/imported/impact_spritesheet_frostbite.png-7ecfa42d16b230eb1cb2177835716d31.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/firestorm/impact.png"
-dest_files=["res://.godot/imported/impact.png-6b6606d6520ace982f07ceec528d5cdc.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/frostbite/impact_spritesheet_frostbite.png"
+dest_files=["res://.godot/imported/impact_spritesheet_frostbite.png-7ecfa42d16b230eb1cb2177835716d31.ctex"]
 
 [params]
 

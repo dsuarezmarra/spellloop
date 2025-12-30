@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bdtpm17ivdtnq"
-path="res://.godot/imported/impact.png-cf979a4d70c7397d0ce26aa2f00a7742.ctex"
+uid="uid://cm1m4614wggei"
+path="res://.godot/imported/flight_spritesheet_frostvine.png-0a17f240009283e4a7486b3839da8f8c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/weapons/shadow_dagger/impact.png"
-dest_files=["res://.godot/imported/impact.png-cf979a4d70c7397d0ce26aa2f00a7742.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/frostvine/flight_spritesheet_frostvine.png"
+dest_files=["res://.godot/imported/flight_spritesheet_frostvine.png-0a17f240009283e4a7486b3839da8f8c.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dnvpnu5j6kixv"
-path="res://.godot/imported/flight.png-520fb0c52fdc306e8b0c71078bc72525.ctex"
+uid="uid://cgpl0o530k4s"
+path="res://.godot/imported/flight_spritesheet_firestorm.png-40ef65d0233c1b85bf0165864942dcaa.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/frostvine/flight.png"
-dest_files=["res://.godot/imported/flight.png-520fb0c52fdc306e8b0c71078bc72525.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/firestorm/flight_spritesheet_firestorm.png"
+dest_files=["res://.godot/imported/flight_spritesheet_firestorm.png-40ef65d0233c1b85bf0165864942dcaa.ctex"]
 
 [params]
 

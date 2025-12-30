@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dlllb1o4dckhf"
-path="res://.godot/imported/flight.png-1eb3bb6cd91c040b263e27b535a74d25.ctex"
+uid="uid://drybpxqhttet6"
+path="res://.godot/imported/impact_spritesheet_ice_wand.png-26de5416099b45d4c830a67ff4085335.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/weapons/ice_wand/flight.png"
-dest_files=["res://.godot/imported/flight.png-1eb3bb6cd91c040b263e27b535a74d25.ctex"]
+source_file="res://assets/sprites/projectiles/weapons/ice_wand/impact_spritesheet_ice_wand.png"
+dest_files=["res://.godot/imported/impact_spritesheet_ice_wand.png-26de5416099b45d4c830a67ff4085335.ctex"]
 
 [params]
 

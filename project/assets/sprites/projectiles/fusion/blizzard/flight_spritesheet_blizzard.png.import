@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ditp7u6b5iqis"
-path="res://.godot/imported/impact.png-d94dd34132ae20144797999884c8efbc.ctex"
+uid="uid://cwknbknwjhrlw"
+path="res://.godot/imported/flight_spritesheet_blizzard.png-6451521bb49ceab20b9457a50b9204cf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/weapons/wind_blade/impact.png"
-dest_files=["res://.godot/imported/impact.png-d94dd34132ae20144797999884c8efbc.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/blizzard/flight_spritesheet_blizzard.png"
+dest_files=["res://.godot/imported/flight_spritesheet_blizzard.png-6451521bb49ceab20b9457a50b9204cf.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c44wkhjgoa6lx"
-path="res://.godot/imported/flight.png-acf770645f3098f69246f24de591b0d3.ctex"
+uid="uid://dbsguuqpa0hg5"
+path="res://.godot/imported/flight_spritesheet_wind_blade.png-10e00f2cb8c6068e0a767fc62e104258.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/firestorm/flight.png"
-dest_files=["res://.godot/imported/flight.png-acf770645f3098f69246f24de591b0d3.ctex"]
+source_file="res://assets/sprites/projectiles/weapons/wind_blade/flight_spritesheet_wind_blade.png"
+dest_files=["res://.godot/imported/flight_spritesheet_wind_blade.png-10e00f2cb8c6068e0a767fc62e104258.ctex"]
 
 [params]
 

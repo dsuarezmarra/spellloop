@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dspq2x3wwy2km"
-path="res://.godot/imported/flight.png-cfe869982b83f91d1dbdbd2e3fdbd508.ctex"
+uid="uid://fpjijevllh4c"
+path="res://.godot/imported/flight_spritesheet_nature_staff.png-e63497b4cbed09943bca5161f951161e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/wildfire/flight.png"
-dest_files=["res://.godot/imported/flight.png-cfe869982b83f91d1dbdbd2e3fdbd508.ctex"]
+source_file="res://assets/sprites/projectiles/weapons/nature_staff/flight_spritesheet_nature_staff.png"
+dest_files=["res://.godot/imported/flight_spritesheet_nature_staff.png-e63497b4cbed09943bca5161f951161e.ctex"]
 
 [params]
 

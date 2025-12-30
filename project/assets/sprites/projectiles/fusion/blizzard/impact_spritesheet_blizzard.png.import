@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c8py2nsx8p7p"
-path="res://.godot/imported/impact.png-eef358a2dca1367bb517bf9964cbca31.ctex"
+uid="uid://bhkh67rkugnuq"
+path="res://.godot/imported/impact_spritesheet_blizzard.png-9d50e34c3cff026033d274b33307fa12.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/wildfire/impact.png"
-dest_files=["res://.godot/imported/impact.png-eef358a2dca1367bb517bf9964cbca31.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/blizzard/impact_spritesheet_blizzard.png"
+dest_files=["res://.godot/imported/impact_spritesheet_blizzard.png-9d50e34c3cff026033d274b33307fa12.ctex"]
 
 [params]
 

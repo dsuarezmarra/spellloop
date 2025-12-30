@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d0oreregm5tci"
-path="res://.godot/imported/impact.png-b2c8bba1afd603565407898cfd598b2b.ctex"
+uid="uid://didegm6h8voac"
+path="res://.godot/imported/impact_spritesheet_firestorm.png-2da017afb7c08ecab2cb5bc5bc890a93.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/weapons/nature_staff/impact.png"
-dest_files=["res://.godot/imported/impact.png-b2c8bba1afd603565407898cfd598b2b.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/firestorm/impact_spritesheet_firestorm.png"
+dest_files=["res://.godot/imported/impact_spritesheet_firestorm.png-2da017afb7c08ecab2cb5bc5bc890a93.ctex"]
 
 [params]
 

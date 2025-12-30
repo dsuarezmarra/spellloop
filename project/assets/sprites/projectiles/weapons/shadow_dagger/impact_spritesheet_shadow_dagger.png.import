@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c87gsctqg00uw"
-path="res://.godot/imported/impact.png-504d8d7abbbe40d411f763e6db89d36e.ctex"
+uid="uid://drejgg7vja84y"
+path="res://.godot/imported/impact_spritesheet_shadow_dagger.png-6ad2d60ce1968a82afd401af69601aaf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/weapons/fire_wand/impact.png"
-dest_files=["res://.godot/imported/impact.png-504d8d7abbbe40d411f763e6db89d36e.ctex"]
+source_file="res://assets/sprites/projectiles/weapons/shadow_dagger/impact_spritesheet_shadow_dagger.png"
+dest_files=["res://.godot/imported/impact_spritesheet_shadow_dagger.png-6ad2d60ce1968a82afd401af69601aaf.ctex"]
 
 [params]
 

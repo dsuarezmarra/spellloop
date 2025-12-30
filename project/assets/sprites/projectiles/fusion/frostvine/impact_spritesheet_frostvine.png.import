@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cum2q7k64vh7e"
-path="res://.godot/imported/impact.png-95adc73ff5ab9680988d2fc383997b3b.ctex"
+uid="uid://cepw6ogg2hjj"
+path="res://.godot/imported/impact_spritesheet_frostvine.png-92ab751200d4c90a3a4b9eaf5bd8afb7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/weapons/ice_wand/impact.png"
-dest_files=["res://.godot/imported/impact.png-95adc73ff5ab9680988d2fc383997b3b.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/frostvine/impact_spritesheet_frostvine.png"
+dest_files=["res://.godot/imported/impact_spritesheet_frostvine.png-92ab751200d4c90a3a4b9eaf5bd8afb7.ctex"]
 
 [params]
 
