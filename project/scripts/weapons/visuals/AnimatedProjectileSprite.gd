@@ -138,6 +138,7 @@ func _add_spritesheet_animation(frames: SpriteFrames, anim_name: String,
 		var atlas = AtlasTexture.new()
 		atlas.atlas = spritesheet
 		atlas.region = Rect2(i * frame_width, 0, frame_width, frame_height)
+		atlas.filter_clip = true  # Evita bleeding de frames adyacentes
 		frames.add_frame(anim_name, atlas)
 
 func _create_procedural_animations(frames: SpriteFrames) -> void:
