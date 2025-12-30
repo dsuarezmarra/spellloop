@@ -802,6 +802,11 @@ const PROJECTILE_TYPE_MAP: Dictionary = {
 
 # Path base para sprites de proyectiles personalizados
 const PROJECTILE_SPRITES_PATH = "res://assets/sprites/projectiles/"
+const WEAPONS_SPRITES_PATH = "res://assets/sprites/projectiles/weapons/"
+const FUSION_SPRITES_PATH = "res://assets/sprites/projectiles/fusion/"
+
+# Lista de armas base (van en carpeta weapons/)
+const BASE_WEAPONS: Array = ["ice_wand", "fire_wand", "nature_staff", "wind_blade", "lightning_wand", "arcane_orb", "shadow_dagger", "earth_spike", "light_beam", "void_pulse"]
 
 # Configuración de sprites por arma (frame counts y fps)
 # NOTA: Solo se requieren flight.png e impact.png. launch.png es opcional y no se usa.
@@ -827,6 +832,21 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"impact_frames": 6,
 		"impact_fps": 15.0,
 		"sprite_scale": 0.5
+	},
+	"wind_blade": {
+		"flight_frames": 6,
+		"flight_fps": 12.0,
+		"impact_frames": 6,
+		"impact_fps": 15.0,
+		"sprite_scale": 0.5
+	},
+	# === FUSION WEAPONS ===
+	"frostbite": {
+		"flight_frames": 6,
+		"flight_fps": 12.0,
+		"impact_frames": 6,
+		"impact_fps": 15.0,
+		"sprite_scale": 0.5
 	}
 }
 
@@ -836,7 +856,12 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 
 func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> void:
 	"""Intentar cargar sprites personalizados para un arma si existen"""
-	var base_path = PROJECTILE_SPRITES_PATH + weapon_id + "/"
+	# Determinar la ruta base según si es arma base o fusión
+	var base_path: String
+	if weapon_id in BASE_WEAPONS:
+		base_path = WEAPONS_SPRITES_PATH + weapon_id + "/"
+	else:
+		base_path = FUSION_SPRITES_PATH + weapon_id + "/"
 	
 	# Verificar si existe el archivo de vuelo (mínimo requerido)
 	var flight_path = base_path + "flight.png"

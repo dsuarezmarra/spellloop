@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cum2q7k64vh7e"
-path="res://.godot/imported/impact.png-a20394c8e2fc638854c7f5c3c237d76a.ctex"
+uid="uid://d0oreregm5tci"
+path="res://.godot/imported/impact.png-b2c8bba1afd603565407898cfd598b2b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/ice_wand/impact.png"
-dest_files=["res://.godot/imported/impact.png-a20394c8e2fc638854c7f5c3c237d76a.ctex"]
+source_file="res://assets/sprites/projectiles/weapons/nature_staff/impact.png"
+dest_files=["res://.godot/imported/impact.png-b2c8bba1afd603565407898cfd598b2b.ctex"]
 
 [params]
 

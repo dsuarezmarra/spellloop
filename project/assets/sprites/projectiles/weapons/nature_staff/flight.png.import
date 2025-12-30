@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d0oreregm5tci"
-path="res://.godot/imported/impact.png-8d032dc057f0e72513440667882afa79.ctex"
+uid="uid://cty8wul38st7o"
+path="res://.godot/imported/flight.png-ef7a570e538838247e08318f11bf44f8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/nature_staff/impact.png"
-dest_files=["res://.godot/imported/impact.png-8d032dc057f0e72513440667882afa79.ctex"]
+source_file="res://assets/sprites/projectiles/weapons/nature_staff/flight.png"
+dest_files=["res://.godot/imported/flight.png-ef7a570e538838247e08318f11bf44f8.ctex"]
 
 [params]
 

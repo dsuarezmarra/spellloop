@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c6f5rnpx5v62"
-path="res://.godot/imported/flight.png-12fc5bec0dfa80ded11827df36e08bd3.ctex"
+uid="uid://cum2q7k64vh7e"
+path="res://.godot/imported/impact.png-95adc73ff5ab9680988d2fc383997b3b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fire_wand/flight.png"
-dest_files=["res://.godot/imported/flight.png-12fc5bec0dfa80ded11827df36e08bd3.ctex"]
+source_file="res://assets/sprites/projectiles/weapons/ice_wand/impact.png"
+dest_files=["res://.godot/imported/impact.png-95adc73ff5ab9680988d2fc383997b3b.ctex"]
 
 [params]
 
