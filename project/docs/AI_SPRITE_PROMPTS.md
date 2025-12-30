@@ -1367,7 +1367,467 @@ Style: Cartoon, clean shapes, no anti-aliasing on edges.
 
 ---
 
-## ⚡✨ 24. THUNDER SPEAR (Lightning + Light) - BEAM
+## 🗡️🪨 24. STONE FANG (Shadow + Earth) - Colmillo de Piedra - SINGLE
+
+### Flight Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Obsidian fang projectile - dark crystal tooth forged from shadow and earth
+
+Design:
+- Shape: Sharp curved fang/tooth shape with jagged obsidian texture
+- Main body: Dark charcoal gray (#403340) with obsidian sheen
+- Obsidian core: Near black (#332833) at center
+- Earth veins: Brown-gray (#665850) cracks running through surface
+- Shadow wisps: Very dark purple (#2A1F2A) trailing from base
+- Highlights: Glassy obsidian shine (#807080) on edges
+- Outline: Very dark (#1A1518), 1-2 pixels
+
+Animation: Obsidian fang flying straight with subtle shadow trail and glassy shimmer
+- Frame 1: Fang sharp and solid, minimal shadow trail
+- Frame 2: Shadow wisps extending, obsidian catching light
+- Frame 3: Maximum shadow trail, glassy highlights shifting
+- Frame 4: Shadow pulsing darker, earth cracks glowing faintly
+- Frame 5: Shadows retracting, fang solidifying
+- Frame 6: Return to base state, ready to loop
+
+Key concept: A TOOTH of obsidian - sharp, deadly, formed from SHADOW and EARTH combined
+
+Effects:
+- Glassy obsidian reflections shifting on surface
+- Shadow wisps trailing behind like dark smoke
+- Subtle earth-brown cracks pulsing with energy
+- Sharp, predatory appearance
+- Dark aura surrounding the fang
+- Feeling of ancient, primal weapon
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Stone Fang impact - obsidian shatters into shadow and rock fragments
+
+Design:
+- Same palette: Dark charcoal (#403340), near black (#332833), brown-gray (#665850)
+- Shatter fragments: Obsidian shards (#504050) with glassy edges
+- Shadow burst: Very dark purple (#2A1F2A)
+- Dust cloud: Brown-gray (#5A4A45)
+- Outline: Very dark (#1A1518)
+
+Animation: Obsidian fang pierces and shatters, releasing shadow and stone
+- Frame 1: Impact - fang pierces, cracks spreading, flash of obsidian light
+- Frame 2: Fang shattering, obsidian shards flying, shadow bursting outward
+- Frame 3: Maximum spread - sharp obsidian fragments everywhere, dust cloud forming
+- Frame 4: Shards spinning outward, shadow wisps mixing with earth dust
+- Frame 5: Fragments falling, dust settling, shadows dissipating
+- Frame 6: Final obsidian sparkles and dust particles fading
+
+Key visual concept: OBSIDIAN EXPLOSION - sharp glass-like shards with shadow and earth dust
+
+Effects:
+- Sharp obsidian shards flying outward (glassy, reflective)
+- Shadow burst at impact point
+- Earth dust/debris cloud
+- Glassy reflection flashes on fragments
+- Dark smoke mixing with brown dust
+- Feeling of something PIERCING then SHATTERING
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+---
+
+## 🌅🌙 25. TWILIGHT (Shadow + Light) - Crepúsculo - SINGLE
+
+### Flight Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Twilight orb projectile - duality sphere of shadow and light intertwined
+
+Design:
+- Shape: Spherical orb split/swirling between light and dark halves
+- Light half: Warm golden-cream (#CCB8A0) with white highlights (#E5DCD0)
+- Shadow half: Soft purple (#806698) with dark core (#4D3355)
+- Swirl boundary: Where light meets dark - gradient mixing zone
+- Accent particles: Golden sparkles on light side, purple wisps on dark side
+- Outline: Medium purple-gray (#553D5D), 1-2 pixels
+
+Animation: Twilight orb spinning with light and shadow halves flowing into each other
+- Frame 1: Clear division - light on one side, shadow on other
+- Frame 2: Halves starting to swirl, boundary blurring
+- Frame 3: Maximum mixing - yin-yang spiral pattern forming
+- Frame 4: Colors interweaving, golden and purple particles mixing
+- Frame 5: Separation beginning, halves pulling apart
+- Frame 6: Return to start division, ready to loop
+
+Key concept: Neither light nor dark - the MOMENT BETWEEN them, eternally balanced
+
+Effects:
+- Golden light particles on one half
+- Purple shadow wisps on the other half
+- Swirling boundary where they meet
+- Both colors glowing but not overpowering each other
+- Serene, balanced appearance
+- Feeling of DUALITY - two forces in harmony
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Twilight impact - orb bursts releasing both light and shadow energy
+
+Design:
+- Same palette: Golden-cream (#CCB8A0), white (#E5DCD0), soft purple (#806698), dark purple (#4D3355)
+- Light burst: Warm white-gold (#F0E8D8)
+- Shadow burst: Purple-black (#3D2645)
+- Outline: Medium purple-gray (#553D5D)
+
+Animation: Twilight orb explodes, releasing light and shadow in spiraling pattern
+- Frame 1: Impact - orb cracks, both colors flashing simultaneously
+- Frame 2: Light and shadow bursting outward in opposite spirals
+- Frame 3: Maximum spread - golden rays and purple tendrils interweaving
+- Frame 4: Both energies creating beautiful pattern, neither dominating
+- Frame 5: Light fading upward, shadows fading downward
+- Frame 6: Final sparkles of both colors dissipating together
+
+Key visual concept: BALANCED EXPLOSION - equal light and shadow, beautiful duality
+
+Effects:
+- Golden rays expanding on one axis
+- Purple shadow wisps on perpendicular axis
+- Spiraling interweave pattern
+- Both colors at equal intensity
+- Peaceful yet powerful appearance
+- Feeling of RELEASE - trapped duality finally free
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+---
+
+## 🕳️👁️ 26. ABYSS (Shadow + Void) - Abismo - SINGLE
+
+### Flight Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Abyss maw projectile - a tiny black hole mouth consuming everything
+
+Design:
+- Shape: Circular void mouth with jagged edges like teeth/maw opening
+- Core: Absolute void black (#0D0310) - TRUE darkness at center
+- Inner ring: Very dark purple (#1F1028) surrounding the void
+- Outer maw: Dark purple teeth/edges (#38204D) reaching outward
+- Consuming effect: Faint purple-red (#5D2D50) being pulled INTO the center
+- Outline: Almost invisible dark (#100810), 1 pixel, broken/distorted
+
+Animation: Void maw pulsing and consuming, edges writhing like a hungry mouth
+- Frame 1: Maw slightly closed, void core small but intense
+- Frame 2: Maw opening wider, void expanding, pulling effect visible
+- Frame 3: Maximum opening - teeth-like edges spread wide, void hungriest
+- Frame 4: Things being pulled in (particle streams toward center)
+- Frame 5: Maw contracting, void core pulsing darker
+- Frame 6: Return to smaller state, ready to consume again
+
+Key concept: A MOUTH of the VOID - it doesn't just damage, it CONSUMES existence
+
+Effects:
+- Particle streams being pulled INTO center (reverse of normal effects!)
+- Jagged maw edges writhing like teeth
+- Absolute black void at core (darker than background)
+- Distortion effect around edges
+- Faint purple glow at the event horizon
+- Feeling of HUNGER - this wants to DEVOUR
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Abyss impact - void maw opens fully and implodes, consuming the area
+
+Design:
+- Same palette: Absolute void (#0D0310), dark purple (#1F1028), maw edges (#38204D)
+- Implosion effect: Everything being pulled to center
+- Void flash: Inverse light - darkness pulsing outward then IN
+- Final remnant: Tiny void scar (#150818)
+- Outline: Almost invisible
+
+Animation: Void maw fully opens then IMPLODES - not explosion, but IMPLOSION
+- Frame 1: Impact - maw opens WIDE, void core exposed
+- Frame 2: Everything rushing INWARD toward center (reverse explosion)
+- Frame 3: Maximum consumption - all particles being devoured
+- Frame 4: Void PULSING - single frame of total darkness spreading
+- Frame 5: Implosion completing, void collapsing on itself
+- Frame 6: Tiny void scar fading, reality reasserting itself
+
+Key visual concept: IMPLOSION not explosion - everything gets PULLED IN and consumed
+
+Effects:
+- Particles rushing INWARD (opposite of normal impact!)
+- Void pulse that briefly darkens the whole frame
+- Reality distortion at edges
+- Teeth-like maw edges collapsing inward
+- Brief moment of absolute darkness
+- Feeling of something being ERASED from existence
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+---
+
+## 🌸💨 27. POLLEN STORM (Nature + Wind) - Tormenta de Polen - MULTI
+
+### Flight Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Pollen cloud projectile - swirling mass of golden pollen carried by wind
+
+Design:
+- Shape: Cloud-like mass with visible pollen particles swirling within
+- Main cloud: Yellow-green (#B3D966) with soft edges
+- Pollen particles: Golden yellow (#F2E066) dots scattered throughout
+- Wind currents: Pale mint-green (#B3CCB3) swirl lines
+- Core glow: Bright lime (#CCFF80) at center
+- Outline: Olive green (#5A7340), soft/broken edges
+
+Animation: Pollen cloud drifting with wind currents, particles swirling chaotically
+- Frame 1: Cloud compact, pollen gathered, wind lines minimal
+- Frame 2: Wind picking up, pollen starting to spread
+- Frame 3: Maximum swirl - pollen particles spinning in vortex pattern
+- Frame 4: Cloud expanding, pollen at widest distribution
+- Frame 5: Wind shifting, pollen regathering
+- Frame 6: Return to compact state, ready to loop
+
+Key concept: A LIVING CLOUD of pollen - nature's seeds carried by playful wind
+
+Effects:
+- Golden pollen particles drifting in wind patterns
+- Wind current lines showing air movement
+- Soft, fluffy cloud edges
+- Pollen density varying (thicker at center)
+- Gentle, nature-magic appearance
+- Feeling of ALLERGENS but magical - irritating and damaging
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Pollen Storm impact - cloud bursts into wind-scattered pollen explosion
+
+Design:
+- Same palette: Yellow-green (#B3D966), golden yellow (#F2E066), pale mint (#B3CCB3)
+- Pollen burst: Bright golden (#FFEE88)
+- Wind spirals: Cyan-white (#DDEEBB)
+- Outline: Olive green (#5A7340)
+
+Animation: Pollen cloud bursts, scattering seeds in all directions on wind currents
+- Frame 1: Impact - cloud compresses then bursts
+- Frame 2: Pollen explosion - particles flying outward on wind currents
+- Frame 3: Maximum spread - pollen EVERYWHERE, wind spirals visible
+- Frame 4: Pollen settling, wind currents carrying particles further
+- Frame 5: Most pollen dispersed, lingering golden sparkles
+- Frame 6: Final pollen drifting away, wind calming
+
+Key visual concept: POLLEN EXPLOSION - sneeze-inducing cloud of nature particles
+
+Effects:
+- Hundreds of tiny pollen particles scattering
+- Wind spiral patterns carrying pollen
+- Golden shimmer in the air
+- Soft, organic feel to explosion
+- No hard impacts - everything floats and drifts
+- Feeling of NATURE RELEASED - seeds spreading everywhere
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+---
+
+## 🏜️🌪️ 28. SANDSTORM (Wind + Earth) - Tormenta de Arena - MULTI
+
+### Flight Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Sand vortex projectile - mini tornado of swirling desert sand
+
+Design:
+- Shape: Vertical cone/vortex shape with sand particles spiraling around
+- Sand particles: Various tan/brown (#CCB380, #A68A60, #BFA870)
+- Wind core: Pale yellow-brown (#E6D8BF) at center
+- Dust cloud: Sandy beige (#D9C9A3) surrounding vortex
+- Occasional rock bits: Darker brown (#806040) small chunks
+- Outline: Brown (#73604A), broken/dusty edges
+
+Animation: Sand vortex spinning rapidly with particles flying around chaotically
+- Frame 1: Vortex tight, sand concentrated, minimal spread
+- Frame 2: Spinning faster, sand particles spreading outward
+- Frame 3: Maximum spin - sand flying in wide spiral pattern
+- Frame 4: Vortex at peak intensity, rock bits visible
+- Frame 5: Spin maintaining, some sand settling
+- Frame 6: Return to tight formation, ready to loop
+
+Key concept: A DESERT TORNADO - wind harnessing earth's sand into a weapon
+
+Effects:
+- Sand particles spiraling in vortex pattern
+- Wind lines showing rotation
+- Dust cloud at base
+- Small rock chunks mixed in
+- Dry, abrasive appearance
+- Feeling of BLINDING STORM - sand getting everywhere
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Sandstorm impact - vortex explodes into blinding sand burst
+
+Design:
+- Same palette: Tan/brown (#CCB380, #A68A60), pale yellow (#E6D8BF), beige (#D9C9A3)
+- Sand burst: Bright sandy yellow (#F2E6CC)
+- Rock fragments: Dark brown (#806040)
+- Outline: Brown (#73604A)
+
+Animation: Sand vortex hits and explodes into massive sand cloud
+- Frame 1: Impact - vortex compresses, sand concentrates
+- Frame 2: Explosion outward - sand flying in all directions
+- Frame 3: Maximum spread - entire frame filled with sand particles
+- Frame 4: Sand cloud expanding, visibility-obscuring density
+- Frame 5: Sand settling, particles drifting down
+- Frame 6: Final sand particles falling, dust clearing
+
+Key visual concept: SANDBLAST EXPLOSION - abrasive, blinding cloud of desert fury
+
+Effects:
+- Sand particles flying radially outward
+- Dust cloud obscuring center
+- Rock chunks tumbling
+- Wind spiral remnants
+- Dry, rough appearance
+- Feeling of being HIT BY DESERT - gritty and blinding
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+---
+
+## ✨💨 29. PRISM WIND (Wind + Light) - Viento Prismático - MULTI
+
+### Flight Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Prismatic wind gust projectile - light-refracting wind blade
+
+Design:
+- Shape: Curved crescent/blade of swirling wind with prismatic light within
+- Wind body: Near-white with slight cyan tint (#D9F2F2)
+- Prism colors: Rainbow hints - pale red (#FFDDDD), yellow (#FFFFDD), blue (#DDDDFF)
+- Light sparkles: Pure white (#FFFFFF) stars scattered throughout
+- Wind trails: Pale silver (#E6E6EE) flowing lines
+- Outline: Light gray (#8899AA), subtle and flowing
+
+Animation: Wind blade spinning with rainbow light refracting through it
+- Frame 1: Blade compact, prism colors concentrated at center
+- Frame 2: Spinning, light beginning to refract, colors spreading
+- Frame 3: Rainbow effect visible - colors separating along blade
+- Frame 4: Maximum refraction - full spectrum visible, sparkling
+- Frame 5: Colors blending back together
+- Frame 6: Return to concentrated state, ready to loop
+
+Key concept: WIND that BENDS LIGHT - a blade of pure air refracting rainbow
+
+Effects:
+- Rainbow prismatic colors shifting along the blade
+- Wind current lines flowing
+- Light sparkle particles
+- Ethereal, almost invisible appearance
+- Beautiful, magical aesthetics
+- Feeling of PURE BEAUTY - deadly but gorgeous
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Prism Wind impact - wind blade shatters into rainbow light burst
+
+Design:
+- Same palette: Cyan-white (#D9F2F2), rainbow hints, pure white (#FFFFFF)
+- Light burst: Bright white with color fringes
+- Prism fragments: Tiny rainbow sparkles
+- Wind spiral: Silver-white (#F0F0F8)
+- Outline: Light gray (#8899AA)
+
+Animation: Wind blade disperses into spectacular prismatic light show
+- Frame 1: Impact - blade shatters, white flash
+- Frame 2: Light refracting outward in multiple colors
+- Frame 3: Maximum rainbow - colors separating in radial pattern
+- Frame 4: Prismatic sparkles everywhere, wind spiraling
+- Frame 5: Colors fading to white, sparkles diminishing
+- Frame 6: Final white sparkles and wind wisps fading
+
+Key visual concept: RAINBOW EXPLOSION - light shattering into its component colors
+
+Effects:
+- Rainbow light rays spreading outward
+- Wind spiral carrying the colors
+- Prismatic sparkle particles
+- Brief flash of brilliant white at center
+- Ethereal, magical fade-out
+- Feeling of LIGHT RELEASED - wind freeing captured rainbows
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+---
+
+## ⚡✨ 30. THUNDER SPEAR (Lightning + Light) - BEAM
 
 ### Active Animation (6 frames)
 ```

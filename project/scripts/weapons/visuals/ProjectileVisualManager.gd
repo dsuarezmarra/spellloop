@@ -920,6 +920,49 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"impact_frames": 6,
 		"impact_fps": 18.0,
 		"sprite_scale": 1.0
+	},
+	"stone_fang": {
+		"flight_frames": 6,
+		"flight_fps": 10.0,  # Slow, heavy obsidian projectile
+		"impact_frames": 6,
+		"impact_fps": 14.0,
+		"sprite_scale": 1.0
+	},
+	"twilight": {
+		"flight_frames": 6,
+		"flight_fps": 10.0,  # Serene, balanced rotation
+		"impact_frames": 6,
+		"impact_fps": 12.0,
+		"sprite_scale": 1.0
+	},
+	"abyss": {
+		"flight_frames": 6,
+		"flight_fps": 8.0,  # Very slow, ominous void maw
+		"impact_frames": 6,
+		"impact_fps": 10.0,
+		"sprite_scale": 1.0
+	},
+	"pollen_storm": {
+		"flight_frames": 6,
+		"flight_fps": 12.0,
+		"impact_frames": 6,
+		"impact_fps": 14.0,
+		"sprite_scale": 1.0
+	},
+	"sandstorm": {
+		"flight_frames": 6,
+		"flight_fps": 16.0,  # Fast spinning vortex
+		"impact_frames": 6,
+		"impact_fps": 16.0,
+		"sprite_scale": 1.0,
+		"lock_rotation": true  # Tornado/vortex siempre vertical
+	},
+	"prism_wind": {
+		"flight_frames": 6,
+		"flight_fps": 14.0,  # Fast, ethereal wind blade
+		"impact_frames": 6,
+		"impact_fps": 16.0,
+		"sprite_scale": 1.0
 	}
 }
 
