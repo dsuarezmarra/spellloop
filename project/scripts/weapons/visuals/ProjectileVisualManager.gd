@@ -811,7 +811,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 15.0,
-		"sprite_scale": 0.5
+		"sprite_scale": 0.5,
+		"rotation_offset": 30.0  # Corregir eje desviado del sprite (grados)
 	},
 	"fire_wand": {
 		"flight_frames": 6,
@@ -959,6 +960,13 @@ func create_projectile_visual(weapon_id: String, weapon_data: Dictionary = {}) -
 	var visual_data = get_visual_data(weapon_id, weapon_data)
 	var sprite = AnimatedProjectileSprite.new()
 	sprite.setup(visual_data)
+	
+	# Aplicar rotation_offset si está configurado para este arma
+	if WEAPON_SPRITE_CONFIG.has(weapon_id):
+		var config = WEAPON_SPRITE_CONFIG[weapon_id]
+		if config.has("rotation_offset"):
+			sprite.set_rotation_offset(config["rotation_offset"])
+	
 	return sprite
 
 func create_aoe_visual(weapon_id: String, radius: float, duration: float = 0.5, 

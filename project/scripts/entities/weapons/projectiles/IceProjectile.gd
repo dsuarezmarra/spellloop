@@ -164,7 +164,8 @@ func _process(delta: float) -> void:
 	# Mover
 	global_position += direction * speed * delta
 	
-	# Rotar sprite hacia dirección de movimiento (sin offset adicional)
+	# Rotar sprite hacia dirección de movimiento
+	# NOTA: El offset de rotación se configura en ProjectileVisualManager.WEAPON_SPRITE_CONFIG
 	if animated_sprite:
 		animated_sprite.rotation = direction.angle()
 	

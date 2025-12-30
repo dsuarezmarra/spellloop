@@ -44,6 +44,7 @@ var outline_sprite: AnimatedSprite2D  # Para el contorno cartoon
 var _time: float = 0.0
 var _squash_stretch_enabled: bool = true
 var _current_direction: Vector2 = Vector2.RIGHT
+var _rotation_offset: float = 0.0  # Offset de rotación en radianes para corregir sprites desalineados
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
@@ -402,13 +403,18 @@ func set_direction(dir: Vector2) -> void:
 	
 	# La rotación del sprite se basa directamente en la dirección del movimiento
 	# Los sprites deben estar dibujados apuntando a la DERECHA (0°)
-	rotation = dir.angle()
+	# Se añade _rotation_offset para corregir sprites con ejes desalineados
+	rotation = dir.angle() + _rotation_offset
 	
 	# Actualizar dirección de partículas
 	if trail_particles and trail_particles.process_material:
 		var mat = trail_particles.process_material as ParticleProcessMaterial
 		if mat:
 			mat.direction = Vector3(-dir.x, -dir.y, 0)
+
+func set_rotation_offset(offset_degrees: float) -> void:
+	"""Establecer offset de rotación en grados para corregir sprites desalineados"""
+	_rotation_offset = deg_to_rad(offset_degrees)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PROCESO
