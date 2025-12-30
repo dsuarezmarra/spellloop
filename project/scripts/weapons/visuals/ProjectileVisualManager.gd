@@ -904,7 +904,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 14.0,
-		"sprite_scale": 1.0
+		"sprite_scale": 1.0,
+		"lock_rotation": true  # Flor no rota con la dirección (siempre se ve igual)
 	},
 	"soul_reaper": {
 		"flight_frames": 6,
