@@ -316,33 +316,33 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.15
 	},
 	
-	"wildfire": {  # Fire + Shadow
-		"shape": "dark_flame",
-		"primary": Color(0.8, 0.3, 0.1),
-		"secondary": Color(0.3, 0.1, 0.15),
-		"accent": Color(1.0, 0.6, 0.2),
-		"outline": Color(0.2, 0.05, 0.05),
-		"glow": Color(0.7, 0.25, 0.1, 0.5),
-		"trail_color": Color(0.6, 0.2, 0.1, 0.5),
-		"particles": "shadow_flames",
+	"wildfire": {  # Fire + Nature - Fuego Salvaje
+		"shape": "organic_flame",
+		"primary": Color(1.0, 0.4, 0.07),     # Bright orange (#FF6611)
+		"secondary": Color(0.8, 1.0, 0.2),    # Yellow-green (#CCFF33)
+		"accent": Color(1.0, 0.8, 0.0),       # Yellow (#FFCC00)
+		"outline": Color(0.6, 0.2, 0.0),      # Burnt orange (#993300)
+		"glow": Color(1.0, 0.6, 0.15, 0.5),
+		"trail_color": Color(1.0, 0.5, 0.1, 0.5),
+		"particles": "burning_seeds",
 		"rotation_speed": 0.0,
-		"squash_amount": 0.18
+		"squash_amount": 0.15
 	},
 	
-	"firestorm": {  # Fire + Nature
-		"shape": "burning_seed",
-		"primary": Color(1.0, 0.6, 0.2),
-		"secondary": Color(0.5, 0.7, 0.2),
-		"accent": Color(1.0, 0.9, 0.4),
-		"outline": Color(0.4, 0.3, 0.1),
-		"glow": Color(0.9, 0.6, 0.25, 0.5),
-		"trail_color": Color(0.85, 0.55, 0.2, 0.45),
-		"particles": "burning_leaves",
-		"rotation_speed": 0.5,
-		"squash_amount": 0.12
+	"firestorm": {  # Fire + Wind - Tornado de fuego giratorio
+		"shape": "fire_tornado",
+		"primary": Color(1.0, 0.4, 0.0),       # Orange #FF6600
+		"secondary": Color(1.0, 0.27, 0.0),    # Red-orange #FF4400
+		"accent": Color(1.0, 0.93, 0.4),       # Yellow-white core #FFEE66
+		"outline": Color(0.4, 0.13, 0.0),      # Deep red-brown #662200
+		"glow": Color(1.0, 0.5, 0.1, 0.55),
+		"trail_color": Color(1.0, 0.8, 0.6, 0.5),  # Wind-fire trail
+		"particles": "fire_embers",
+		"rotation_speed": 8.0,  # Fast spin for tornado effect
+		"squash_amount": 0.08
 	},
 	
-	"volcano": {  # Fire + Wind
+	"volcano": {  # Fire + Earth
 		"shape": "lava_rock",
 		"primary": Color(1.0, 0.45, 0.1),
 		"secondary": Color(0.6, 0.3, 0.2),
@@ -867,6 +867,13 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"flight_fps": 10.0,
 		"impact_frames": 6,
 		"impact_fps": 12.0,
+		"sprite_scale": 0.5
+	},
+	"wildfire": {
+		"flight_frames": 6,
+		"flight_fps": 12.0,
+		"impact_frames": 6,
+		"impact_fps": 14.0,
 		"sprite_scale": 0.5
 	}
 }

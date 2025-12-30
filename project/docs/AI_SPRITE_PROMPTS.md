@@ -835,7 +835,159 @@ Style: Pixel art, clean shapes, no anti-aliasing on edges.
 
 ---
 
-## 🔥💀 17. HELLFIRE (Fire + Shadow) - MULTI
+## 🔥🌿 17. WILDFIRE (Fire + Nature) - Fuego Salvaje - MULTI (Homing)
+
+### Flight Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Living flame with plant-like organic form - fire that grows like vegetation
+
+Design:
+- Shape: Flame with leaf/petal-like fire tongues, organic curves instead of sharp flames
+- Main fire body: Bright orange (#FF6611) with yellow core (#FFCC00)
+- Leaf-flame tips: Yellow-green transitioning to orange (#CCFF33 fading to #FF8822)
+- Inner glow: Bright yellow-white (#FFEE66)
+- Ember particles: Orange-red (#FF4400)
+- Outline: Deep burnt orange (#993300), 1-2 pixels
+
+Animation: Living flame that breathes and reaches outward like growing plant
+- Frame 1: Compact flame, leaf-shaped tongues curled inward
+- Frame 2: Flame expanding, leaf-tongues unfurling rightward (seeking prey)
+- Frame 3: Maximum reach, 3-4 leaf-shaped flame tendrils extended
+- Frame 4: Flame pulsing brighter, tendrils at peak extension
+- Frame 5: Tendrils retracting, preparing for next pulse
+- Frame 6: Returning to compact form, embers trailing
+
+Key concept: This fire BEHAVES like a plant - it grows, reaches, and spreads organically
+
+Effects:
+- Flame tongues shaped like leaves/petals, not jagged fire
+- Organic flowing motion, not chaotic flickering
+- Small ember seeds floating around (like burning pollen)
+- Yellow-green tinge at the tips (nature influence)
+- Warm glow that pulses with the animation
+- Homing feel - the flame reaches TOWARD something
+
+Style: Pixel art, clean shapes, no anti-aliasing on edges.
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Wildfire impact - flame bursts and SPREADS like rapidly growing fire vegetation
+
+Design:
+- Same palette: Orange (#FF6611), yellow (#FFCC00), yellow-green tips (#CCFF33)
+- Spreading flames: Orange-red (#FF4400)
+- Ember seeds: Bright yellow (#FFEE44)
+- Outline: Burnt orange (#993300)
+
+Animation: Fire hits and spreads outward like wildfire consuming dry grass
+- Frame 1: Impact flash - bright yellow-white burst at center
+- Frame 2: Fire splashes outward in 4-5 leaf-shaped flame bursts
+- Frame 3: Flames SPREADING further, growing like vegetation consuming ground
+- Frame 4: Maximum spread - ring of organic flames, burning seed particles flying
+- Frame 5: Outer flames turning to embers, center still burning
+- Frame 6: Embers and burning leaf particles floating away, dissipating
+
+Key visual concept: Fire that SPREADS and GROWS, not just explodes - like watching grass fire in fast-forward
+
+Effects:
+- Flames spread in organic patterns, not circular explosion
+- Leaf-shaped flame tongues reaching outward
+- Burning seed/pollen particles scattering (spreading the fire)
+- Ground-hugging spread pattern (wildfire behavior)
+- Yellow-green hints at flame tips (nature magic)
+- Embers that look like they could start new fires
+
+Style: Pixel art, clean shapes, no anti-aliasing on edges.
+```
+
+---
+
+## 🌪️🔥 18. FIRESTORM (Fire + Wind) - Tormenta de Fuego - MULTI
+
+### Flight Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Spinning fire tornado projectile - a miniature firestorm
+
+Design:
+- Shape: Compact spiral/vortex of flames, funnel-like tornado shape from above
+- Fire body: Bright orange (#FF6600) with red-orange core (#FF4400)
+- Wind spiral: Pale orange-white (#FFCC99) showing air movement
+- Inner core: Bright yellow-white (#FFEE66) at the center (hot spot)
+- Ember particles: Orange-red sparks (#FF5500)
+- Outline: Deep red-brown (#662200), 1-2 pixels
+
+Animation: Fire tornado spinning rapidly and pulsing with heat
+- Frame 1: Spiral tight, flames concentrated
+- Frame 2: Spinning, flames start spreading outward from rotation
+- Frame 3: Maximum spin visible, wind lines showing rotation
+- Frame 4: Flames flaring outward from centrifugal force
+- Frame 5: Spiral tightening again, intense heat at center
+- Frame 6: Return to tight form, ready to loop
+
+Key concept: SPINNING fire - the wind element creates ROTATIONAL motion
+
+Effects:
+- Clear spiral/vortex pattern visible from above
+- Wind lines (lighter color) showing rotation direction
+- Embers flying off tangentially from the spin
+- Heat shimmer around the tornado
+- Pulsing intensity as it spins
+- High speed, high knockback feel
+
+Style: Pixel art, clean shapes, no anti-aliasing on edges.
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Fire tornado impact - explosive spiral burst with massive knockback
+
+Design:
+- Same palette: Orange (#FF6600), red-orange (#FF4400), yellow-white core (#FFEE66)
+- Wind burst: Pale orange-white (#FFCC99)
+- Flying embers: Bright orange-red (#FF5500)
+- Outline: Deep red-brown (#662200)
+
+Animation: Spinning fire explodes outward in spiral pattern
+- Frame 1: Impact - tornado compresses, bright flash at center
+- Frame 2: Spiral explosion begins - flames shoot outward in CURVED paths (following spin)
+- Frame 3: Maximum burst - spiral arms of fire expanding, wind visible
+- Frame 4: Flames continuing outward in curved trajectories, embers everywhere
+- Frame 5: Spiral arms dissipating, embers still flying in curves
+- Frame 6: Final ember sparks curving away, smoke wisps fading
+
+Key visual concept: Explosion follows SPIRAL pattern, not radial - flames curve as they fly out
+
+Effects:
+- Curved flame trails showing the spin momentum
+- Wind burst lines in spiral pattern
+- Embers flying in curved paths (tangential)
+- Central heat flash
+- Smoke/ash wisps spinning outward
+- High-energy, violent dispersal feel
+
+Style: Pixel art, clean shapes, no anti-aliasing on edges.
+```
+
+---
+
+## 🔥💀 19. HELLFIRE (Fire + Shadow) - MULTI
 
 ### Flight Animation (6 frames)
 ```
@@ -863,7 +1015,7 @@ Effects:
 
 ---
 
-## ⚡✨ 18. THUNDER SPEAR (Lightning + Light) - BEAM
+## ⚡✨ 20. THUNDER SPEAR (Lightning + Light) - BEAM
 
 ### Active Animation (6 frames)
 ```
@@ -891,7 +1043,7 @@ Effects:
 
 ---
 
-## 🌀💨 19. VOID STORM (Void + Wind) - AOE
+## 🌀💨 21. VOID STORM (Void + Wind) - AOE
 
 ### Active Animation (6 frames)
 ```
@@ -919,7 +1071,7 @@ Effects:
 
 ---
 
-## 💎🔮 20. CRYSTAL GUARDIAN (Earth + Arcane) - ORBIT
+## 💎🔮 22. CRYSTAL GUARDIAN (Earth + Arcane) - ORBIT
 
 ### Flight Animation (6 frames)
 ```
@@ -947,7 +1099,7 @@ Effects:
 
 ---
 
-## ❄️⚡ 21. FROZEN THUNDER (Ice + Lightning) - CHAIN
+## ❄️⚡ 23. FROZEN THUNDER (Ice + Lightning) - CHAIN
 
 ### Flight Animation (6 frames)
 ```
@@ -975,7 +1127,7 @@ Effects:
 
 ---
 
-## 🔥⚡ 22. PLASMA (Fire + Lightning) - SINGLE
+## 🔥⚡ 24. PLASMA (Fire + Lightning) - SINGLE
 
 ### Flight Animation (6 frames)
 ```
@@ -1003,7 +1155,7 @@ Effects:
 
 ---
 
-## 🔥🔮 23. INFERNO ORB (Fire + Arcane) - ORBIT
+## 🔥🔮 25. INFERNO ORB (Fire + Arcane) - ORBIT
 
 ### Flight Animation (6 frames)
 ```
@@ -1031,7 +1183,7 @@ Effects:
 
 ---
 
-## ❄️🔮 24. FROST ORB (Ice + Arcane) - ORBIT
+## ❄️🔮 26. FROST ORB (Ice + Arcane) - ORBIT
 
 ### Flight Animation (6 frames)
 ```
@@ -1059,7 +1211,7 @@ Effects:
 
 ---
 
-## ❄️✨ 25. AURORA (Ice + Light) - BEAM
+## ❄️✨ 27. AURORA (Ice + Light) - BEAM
 
 ### Active Animation (6 frames)
 ```
