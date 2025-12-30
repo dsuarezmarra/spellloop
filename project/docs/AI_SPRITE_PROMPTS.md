@@ -987,30 +987,78 @@ Style: Cartoon, clean shapes, no anti-aliasing on edges.
 
 ---
 
-## 🔥💀 19. HELLFIRE (Fire + Shadow) - MULTI
+## 🔥💀 19. HELLFIRE (Fire + Shadow) - Fuego Infernal - MULTI
 
 ### Flight Animation (6 frames)
 ```
 Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
 
-Subject: Dark demonic flame projectile
+Subject: Dark demonic flame projectile - corrupted fire with shadow essence
 
 Design:
-- Flame body: Dark red (#990000)
-- Shadow core: Near black (#1A0A0A)
-- Fire highlights: Orange (#FF6600)
-- Outline: Very dark red (#330000)
+- Shape: Flame orb with jagged, aggressive flame tongues reaching outward
+- Main fire body: Deep crimson red (#990033) with dark red core (#660022)
+- Shadow wisps: Near black tendrils (#1A0A0A) weaving through the flames
+- Fire highlights: Bright orange-red (#FF4422) at flame tips
+- Inner glow: Sinister magenta-red (#CC2244)
+- Outline: Very dark purple-red (#330011), 1-2 pixels
 
-Animation: Evil-looking flame with dark smoke
-- Frames 1-6: Demonic flame flickering
-- Black smoke wisps
-- Aggressive, angry appearance
+Animation: Demonic flame flickering aggressively with shadow tendrils writhing
+- Frame 1: Compact dark flame, shadow wisps curled close
+- Frame 2: Flames flare outward, shadow tendrils start reaching
+- Frame 3: Maximum aggression - jagged flame tongues, shadows spreading
+- Frame 4: Flame pulses brighter, shadows at peak extension
+- Frame 5: Flames retracting slightly, shadows coiling back
+- Frame 6: Return to compact form, ready to loop
+
+Key concept: This fire is CORRUPTED - shadows and flames intertwine like fighting/dancing together
 
 Effects:
-- Black smoke particles
-- Red ember sparks
-- Evil/demonic glow
-- Aggressive flame shapes
+- Shadow wisps/tendrils weaving through the fire (not separate, intertwined)
+- Jagged, aggressive flame shapes (not friendly rounded flames)
+- Dark smoke particles trailing
+- Sinister red-orange glow
+- Embers that look like tiny dark sparks
+- Menacing, evil appearance - this fire wants to hurt
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Hellfire impact - dark flame explosion that burns and corrupts
+
+Design:
+- Same palette: Deep crimson (#990033), dark red (#660022), orange-red (#FF4422)
+- Shadow burst: Near black (#1A0A0A)
+- Dark embers: Deep red (#881122)
+- Outline: Very dark purple-red (#330011)
+
+Animation: Corrupted fire explodes with shadow tendrils bursting outward
+- Frame 1: Impact flash - sinister red-white burst at center
+- Frame 2: Dark flames burst outward, shadow tendrils shoot in all directions
+- Frame 3: Maximum explosion - ring of hellfire with shadows reaching like claws
+- Frame 4: Flames spreading further, shadows grasping outward
+- Frame 5: Fire turning to dark embers, shadow tendrils dissipating
+- Frame 6: Final dark sparks and shadow wisps fading
+
+Key visual concept: Fire and shadow EXPLODE TOGETHER - not just fire with shadow on top
+
+Effects:
+- Shadow tendrils bursting outward like dark fingers/claws
+- Dark flames spreading in aggressive patterns
+- Sinister red-magenta flash at center
+- Dark ember particles flying
+- Smoke/shadow wisps curling away
+- Feeling of corruption spreading from impact point
+
+Style: Cartoon, clean shapes, no anti-aliasing on edges.
 ```
 
 ---

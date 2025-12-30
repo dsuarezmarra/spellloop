@@ -381,17 +381,17 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.15
 	},
 	
-	"hellfire": {  # Fire + Void
-		"shape": "chaos_flame",
-		"primary": Color(0.7, 0.2, 0.4),
-		"secondary": Color(0.2, 0.05, 0.15),
-		"accent": Color(1.0, 0.5, 0.3),
-		"outline": Color(0.15, 0.05, 0.1),
-		"glow": Color(0.65, 0.2, 0.35, 0.55),
-		"trail_color": Color(0.6, 0.15, 0.3, 0.5),
-		"particles": "void_flames",
-		"rotation_speed": -0.5,
-		"squash_amount": 0.2
+	"hellfire": {  # Fire + Shadow - Fuego demoníaco corrupto
+		"shape": "demonic_flame",
+		"primary": Color(0.6, 0.0, 0.2),       # Deep crimson #990033
+		"secondary": Color(0.4, 0.0, 0.13),    # Dark red #660022
+		"accent": Color(1.0, 0.27, 0.13),      # Orange-red #FF4422
+		"outline": Color(0.2, 0.0, 0.07),      # Very dark #330011
+		"glow": Color(0.8, 0.13, 0.27, 0.55),  # Sinister magenta-red
+		"trail_color": Color(0.1, 0.04, 0.04, 0.6),  # Shadow trail
+		"particles": "dark_embers",
+		"rotation_speed": 0.0,
+		"squash_amount": 0.15
 	},
 	
 	# ══════════════════════════════════════════════════════════════════════════
@@ -883,6 +883,13 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"impact_fps": 16.0,
 		"sprite_scale": 1.0,
 		"lock_rotation": true  # Tornado no rota con la dirección (siempre se ve igual)
+	},
+	"hellfire": {
+		"flight_frames": 6,
+		"flight_fps": 12.0,
+		"impact_frames": 6,
+		"impact_fps": 14.0,
+		"sprite_scale": 1.0
 	}
 }
 
