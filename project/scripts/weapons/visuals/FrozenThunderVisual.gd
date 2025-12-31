@@ -34,8 +34,8 @@ var _core_color: Color = Color.WHITE                 # Centro brillante
 var _outline_color: Color = Color(0.2, 0.4, 0.6)    # Azul oscuro
 
 # Parámetros del rayo de hielo
-var _bolt_width: float = 7.0
-var _glow_width: float = 20.0
+var _bolt_width: float = 3.5
+var _glow_width: float = 10.0
 var _bolt_segments: int = 5  # Menos segmentos = más cristalino
 var _jitter_amount: float = 8.0  # Menos jitter = más rígido/helado
 

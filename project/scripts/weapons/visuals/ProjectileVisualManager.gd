@@ -849,6 +849,16 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"chain_bolt_frames": 4,
 		"chain_zap_frames": 4
 	},
+	"storm_caller": {  # Lightning + Wind fusion - Chain weapon
+		"flight_frames": 4,
+		"flight_fps": 20.0,  # Medium - powerful storm
+		"impact_frames": 4,
+		"impact_fps": 22.0,  # Storm impact
+		"sprite_scale": 1.0,
+		"is_chain": true,
+		"chain_bolt_frames": 4,
+		"chain_zap_frames": 4
+	},
 	"fire_wand": {
 		"flight_frames": 6,
 		"flight_fps": 12.0,
@@ -1174,6 +1184,10 @@ func create_chain_visual(weapon_id: String, chain_count: int = 2, weapon_data: D
 			return effect
 		"plasma":
 			var effect = PlasmaVisual.new()
+			effect.setup(visual_data, chain_count)
+			return effect
+		"storm_caller":
+			var effect = StormCallerVisual.new()
 			effect.setup(visual_data, chain_count)
 			return effect
 		_:  # Default: lightning_wand y otros

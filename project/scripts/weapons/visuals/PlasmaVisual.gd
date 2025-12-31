@@ -34,8 +34,8 @@ var _core_color: Color = Color(1.0, 0.95, 1.0)      # Blanco-rosa brillante
 var _outline_color: Color = Color(0.5, 0.2, 0.4)    # Magenta oscuro
 
 # Parámetros del rayo de plasma
-var _bolt_width: float = 7.0
-var _glow_width: float = 22.0
+var _bolt_width: float = 3.5  # Reducido a la mitad
+var _glow_width: float = 11.0  # Reducido a la mitad
 var _bolt_segments: int = 7  # Más segmentos = más eléctrico
 var _jitter_amount: float = 14.0  # Más jitter = más caótico/plasma
 
