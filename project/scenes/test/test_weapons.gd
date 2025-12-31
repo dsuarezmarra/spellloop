@@ -758,7 +758,7 @@ func _update_projectile_preview() -> void:
 			if current_preview:
 				projectile_preview_container.add_child(current_preview)
 				var targets: Array[Vector2] = [Vector2(-60, 0), Vector2(0, -20), Vector2(60, 0)]
-				current_preview.create_chain_sequence(targets, 0.15)
+ 				current_preview.create_chain_sequence(targets, 0.15)
 
 func _cleanup_current_preview() -> void:
 	"""Limpiar preview actual correctamente, incluyendo orbitales"""
