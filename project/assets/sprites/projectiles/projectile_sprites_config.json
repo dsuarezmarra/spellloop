@@ -356,6 +356,21 @@
       "description": "Superheated plasma sphere with electric arcs"
     },
     {
+      "id": "shadow_bolt",
+      "name": "Shadow Bolt",
+      "components": ["shadow_dagger", "lightning_wand"],
+      "type": "CHAIN",
+      "colors": {
+        "primary": "#4D1A66",
+        "secondary": "#1A0A26",
+        "accent": "#CCCCFF",
+        "outline": "#1A0A26"
+      },
+      "shape": "shadow_bolt",
+      "effects": ["shadow_wisps", "ghostly_sparks", "dark_crackle"],
+      "description": "Dark ethereal lightning bolt with ghostly pale sparks"
+    },
+    {
       "id": "inferno_orb",
       "name": "Fire Orbit",
       "components": ["fire_wand", "arcane_orb"],

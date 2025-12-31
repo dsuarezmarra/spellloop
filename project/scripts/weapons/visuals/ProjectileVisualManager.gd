@@ -411,6 +411,19 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.15
 	},
 
+	"shadow_bolt": {  # Shadow + Lightning - Rayo de Sombra
+		"shape": "shadow_bolt",
+		"primary": Color(0.3, 0.1, 0.4),        # Dark purple #4D1A66
+		"secondary": Color(0.1, 0.04, 0.15),    # Near-black #1A0A26
+		"accent": Color(0.8, 0.8, 1.0),         # Ghostly pale #CCCCFF
+		"outline": Color(0.1, 0.04, 0.15),      # Very dark purple-black
+		"glow": Color(0.3, 0.1, 0.4, 0.4),      # Dark purple glow
+		"trail_color": Color(0.4, 0.2, 0.5, 0.35),
+		"particles": "shadow_sparks",
+		"rotation_speed": 0.0,
+		"squash_amount": 0.1
+	},
+
 	"arcane_storm": {  # Lightning + Shadow
 		"shape": "dark_bolt",
 		"primary": Color(0.35, 0.4, 0.7),
@@ -859,6 +872,16 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"chain_bolt_frames": 4,
 		"chain_zap_frames": 4
 	},
+	"shadow_bolt": {  # Shadow + Lightning fusion - Chain weapon
+		"flight_frames": 4,
+		"flight_fps": 18.0,  # Slower - ethereal shadow
+		"impact_frames": 4,
+		"impact_fps": 20.0,  # Ghostly impact
+		"sprite_scale": 1.0,
+		"is_chain": true,
+		"chain_bolt_frames": 4,
+		"chain_zap_frames": 4
+	},
 	"fire_wand": {
 		"flight_frames": 6,
 		"flight_fps": 12.0,
@@ -1188,6 +1211,10 @@ func create_chain_visual(weapon_id: String, chain_count: int = 2, weapon_data: D
 			return effect
 		"storm_caller":
 			var effect = StormCallerVisual.new()
+			effect.setup(visual_data, chain_count)
+			return effect
+		"shadow_bolt":
+			var effect = ShadowBoltVisual.new()
 			effect.setup(visual_data, chain_count)
 			return effect
 		_:  # Default: lightning_wand y otros

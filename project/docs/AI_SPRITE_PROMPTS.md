@@ -2018,11 +2018,24 @@ Las siguientes fusiones también necesitan sprites. Usa los colores base de los 
 | flame_tornado | Tornado de Fuego | fire + wind | AOE |
 | toxic_cloud | Nube Tóxica | nature + void | AOE |
 | light_orb | Orbe de Luz | light + arcane | ORBIT |
-| shadow_bolt | Rayo de Sombra | shadow + lightning | CHAIN |
 | earth_wall | Muro de Tierra | earth + light | BEAM |
 | frost_wind | Viento Helado | ice + wind | MULTI |
 | flame_dagger | Daga de Fuego | fire + shadow | SINGLE |
 | thunder_leaf | Hoja Trueno | lightning + nature | MULTI |
+
+---
+
+## 🗡️⚡ 28. SHADOW BOLT (Shadow + Lightning) - CHAIN
+
+### Flight Animation (4 frames)
+```
+Create a pixel art horizontal sprite sheet of a SHADOW LIGHTNING BOLT projectile for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE PROJECTILE: A dark lightning bolt made of shadow energy - a jagged zigzag shape crackling with purple-black darkness and ghostly electric sparks. The bolt should look ethereal and ominous. COLOR PALETTE: - Core: Pale ghostly white-purple (#CCCCFF / #E6E6FF) - Primary: Dark purple (#4D1A66 / #662288) - Secondary: Near-black shadow (#1A0A26 / #0D0513) - Accent: Ghostly pale sparks (#CCCCFF) - Outline: Very dark purple-black (#1A0A26) ANIMATION SEQUENCE (4 frames): Frame 1: Shadow bolt forming with dark wisps gathering, ghostly sparks flickering Frame 2: Bolt solidifies, shadow tendrils wrap around the zigzag shape Frame 3: Maximum intensity, pale core visible through dark energy, shadow smoke radiating Frame 4: Energy pulse effect, ghostly afterimages, cycle back IMPORTANT DETAILS: - Orientation: Bolt pointing RIGHT (→) as if flying toward target - Dark ethereal energy with ghostly electric crackle effects - Mix of shadow smoke with lightning sharpness - Semi-transparent/ghostly appearance - Pale purple sparks contrasting against dark body - Cartoon-cute but ominous/spooky appearance - Each frame clearly separated in its own cell
+```
+
+### Impact Animation (4 frames)
+```
+Create a pixel art horizontal sprite sheet of a SHADOW LIGHTNING EXPLOSION IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE EFFECT: A burst of dark shadow energy when hitting an enemy - purple-black tendrils exploding outward with ghostly pale sparks between them. COLOR PALETTE: - Core: Bright ghostly flash (#CCCCFF / #E6E6FF) - Primary: Dark purple (#4D1A66 / #662288) - Secondary: Near-black shadow (#1A0A26 / #0D0513) - Accent: Pale ghostly sparks (#CCCCFF / #FFFFFF) - Outline: Very dark purple-black (#1A0A26) ANIMATION SEQUENCE (4 frames): Frame 1: Initial flash - pale ghostly burst center with shadow beginning to expand Frame 2: Expansion - shadow tendrils shoot outward with ghostly arcs between them Frame 3: Maximum spread - dark explosion with pale sparkling particles, shadow smoke Frame 4: Dissipation - darkness fades, last ghostly sparkles, lingering shadow mist IMPORTANT DETAILS: - Radial burst pattern (centered explosion expanding outward) - Shadow tendrils mixed with ghostly pale sparks - Dark smoke particles with ethereal glow - Feeling of "dark electricity" - shadow and lightning combined - Semi-transparent ghostly effects - Cartoon-cute style with spooky vibes - Each frame clearly separated in its own cell
+```
 | void_orb | Orbe del Vacío | void + arcane | ORBIT |
 | earth_wind | Tierra Ventosa | earth + wind | AOE |
 | ice_spike | Espina de Hielo | ice + earth | AOE |
