@@ -829,6 +829,16 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"chain_bolt_frames": 4,
 		"chain_zap_frames": 4
 	},
+	"frozen_thunder": {  # Ice + Lightning fusion - Chain weapon
+		"flight_frames": 4,
+		"flight_fps": 18.0,  # Slightly slower - ice crystals forming
+		"impact_frames": 4,
+		"impact_fps": 20.0,  # Ice shattering effect
+		"sprite_scale": 1.0,
+		"is_chain": true,
+		"chain_bolt_frames": 4,
+		"chain_zap_frames": 4
+	},
 	"fire_wand": {
 		"flight_frames": 6,
 		"flight_fps": 12.0,
@@ -1143,12 +1153,19 @@ func create_beam_visual(weapon_id: String, length: float, direction: Vector2,
 	effect.setup(visual_data, length, direction, width)
 	return effect
 
-func create_chain_visual(weapon_id: String, chain_count: int = 2, weapon_data: Dictionary = {}) -> ChainLightningVisual:
-	"""Crear efecto visual de cadena de rayos"""
+func create_chain_visual(weapon_id: String, chain_count: int = 2, weapon_data: Dictionary = {}) -> Node2D:
+	"""Crear efecto visual de cadena de rayos - cada arma tiene su propia clase"""
 	var visual_data = get_visual_data(weapon_id, weapon_data)
-	var effect = ChainLightningVisual.new()
-	effect.setup(visual_data, weapon_id, chain_count)
-	return effect
+
+	match weapon_id:
+		"frozen_thunder":
+			var effect = FrozenThunderVisual.new()
+			effect.setup(visual_data, chain_count)
+			return effect
+		_:  # Default: lightning_wand y otros
+			var effect = ChainLightningVisual.new()
+			effect.setup(visual_data, weapon_id, chain_count)
+			return effect
 
 func create_orbit_visual(weapon_id: String, orbital_count: int, orbit_radius: float,
 		weapon_data: Dictionary = {}) -> OrbitalsVisualContainer:

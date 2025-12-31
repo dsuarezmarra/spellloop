@@ -662,11 +662,11 @@ class ChainProjectile extends Node2D:
 	
 	var first_target: Node2D = null
 	var enemies_hit: Array = []
-	
-	var _enhanced_visual: ChainLightningVisual = null
+
+	var _enhanced_visual: Node2D = null  # ChainLightningVisual, FrozenThunderVisual, etc.
 	var _use_enhanced: bool = false
 	var _chain_delay: float = 0.08  # Delay entre cada salto de cadena
-	
+
 	func setup(data: Dictionary) -> void:
 		damage = data.get("damage", 15.0)
 		chain_count = data.get("chain_count", 2)
