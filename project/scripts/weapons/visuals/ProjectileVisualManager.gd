@@ -34,7 +34,7 @@ const WEAPON_VISUALS: Dictionary = {
 	# ══════════════════════════════════════════════════════════════════════════
 	# ARMAS BASE (10)
 	# ══════════════════════════════════════════════════════════════════════════
-	
+
 	"ice_wand": {
 		"shape": "shard",           # Forma de cristal puntiagudo
 		"primary": Color(0.4, 0.85, 1.0),
@@ -47,7 +47,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,       # No rota
 		"squash_amount": 0.1
 	},
-	
+
 	"fire_wand": {
 		"shape": "fireball",         # Bola de fuego con llamas
 		"primary": Color(1.0, 0.5, 0.1),
@@ -60,7 +60,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.15
 	},
-	
+
 	"lightning_wand": {
 		"shape": "bolt",             # Rayo zigzag
 		"primary": Color(0.4, 0.8, 1.0),
@@ -73,7 +73,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.2
 	},
-	
+
 	"arcane_orb": {
 		"shape": "orb",              # Orbe mágico con runas
 		"primary": Color(0.6, 0.3, 0.9),
@@ -86,7 +86,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 2.0,       # Rota sobre sí mismo
 		"squash_amount": 0.1
 	},
-	
+
 	"shadow_dagger": {
 		"shape": "dagger",           # Daga oscura
 		"primary": Color(0.25, 0.1, 0.35),
@@ -99,7 +99,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 8.0,       # Gira rápido como cuchillo lanzado
 		"squash_amount": 0.05
 	},
-	
+
 	"nature_staff": {
 		"shape": "leaf",             # Hoja/espina vegetal
 		"primary": Color(0.35, 0.8, 0.3),
@@ -112,7 +112,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 1.0,
 		"squash_amount": 0.12
 	},
-	
+
 	"wind_blade": {
 		"shape": "crescent",         # Media luna de viento
 		"primary": Color(0.75, 0.92, 0.85),
@@ -125,7 +125,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 12.0,      # Gira muy rápido
 		"squash_amount": 0.08
 	},
-	
+
 	"earth_spike": {
 		"shape": "spike",            # Pico de roca
 		"primary": Color(0.6, 0.45, 0.25),
@@ -138,7 +138,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.05
 	},
-	
+
 	"light_beam": {
 		"shape": "star",             # Estrella brillante
 		"primary": Color(1.0, 0.98, 0.85),
@@ -151,7 +151,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 3.0,
 		"squash_amount": 0.1
 	},
-	
+
 	"void_pulse": {
 		"shape": "void_sphere",      # Esfera de vacío distorsionada
 		"primary": Color(0.12, 0.05, 0.2),
@@ -164,11 +164,11 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": -1.5,      # Rota al revés
 		"squash_amount": 0.2
 	},
-	
+
 	# ══════════════════════════════════════════════════════════════════════════
 	# FUSIONES ICE (9)
 	# ══════════════════════════════════════════════════════════════════════════
-	
+
 	"steam_cannon": {  # Ice + Fire
 		"shape": "steam_cloud",
 		"primary": Color(0.9, 0.9, 0.95),
@@ -181,7 +181,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.5,
 		"squash_amount": 0.18
 	},
-	
+
 	"frozen_thunder": {  # Ice + Lightning
 		"shape": "ice_bolt",
 		"primary": Color(0.5, 0.85, 1.0),
@@ -194,7 +194,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.15
 	},
-	
+
 	"frost_orb": {  # Ice + Arcane
 		"shape": "frost_crystal",
 		"primary": Color(0.5, 0.7, 0.95),
@@ -207,7 +207,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 1.5,
 		"squash_amount": 0.1
 	},
-	
+
 	"frostbite": {  # Ice + Shadow
 		"shape": "dark_shard",
 		"primary": Color(0.3, 0.5, 0.7),
@@ -220,7 +220,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.08
 	},
-	
+
 	"blizzard": {  # Ice + Nature
 		"shape": "snowstorm",
 		"primary": Color(0.5, 0.85, 0.75),
@@ -233,7 +233,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.8,
 		"squash_amount": 0.15
 	},
-	
+
 	"glacier": {  # Ice + Wind
 		"shape": "ice_blade",
 		"primary": Color(0.55, 0.9, 0.95),
@@ -246,7 +246,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 10.0,
 		"squash_amount": 0.1
 	},
-	
+
 	"aurora": {  # Ice + Earth
 		"shape": "aurora_crystal",
 		"primary": Color(0.5, 0.8, 0.85),
@@ -259,7 +259,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.08
 	},
-	
+
 	"absolute_zero": {  # Ice + Light
 		"shape": "pure_ice",
 		"primary": Color(0.7, 0.95, 1.0),
@@ -272,7 +272,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 2.0,
 		"squash_amount": 0.12
 	},
-	
+
 	"frostvine": {  # Ice + Nature - Enredadera de Hielo
 		"shape": "organic_crystal",
 		"primary": Color(0.4, 1.0, 0.8),      # Mint green (#66FFCC)
@@ -285,11 +285,11 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.1
 	},
-	
+
 	# ══════════════════════════════════════════════════════════════════════════
 	# FUSIONES FIRE (8)
 	# ══════════════════════════════════════════════════════════════════════════
-	
+
 	"plasma": {  # Fire + Lightning
 		"shape": "plasma_ball",
 		"primary": Color(1.0, 0.7, 0.9),
@@ -302,7 +302,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.2
 	},
-	
+
 	"inferno_orb": {  # Fire + Arcane
 		"shape": "arcane_flame",
 		"primary": Color(1.0, 0.4, 0.3),
@@ -315,7 +315,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 1.5,
 		"squash_amount": 0.15
 	},
-	
+
 	"wildfire": {  # Fire + Nature - Fuego Salvaje
 		"shape": "organic_flame",
 		"primary": Color(1.0, 0.4, 0.07),     # Bright orange (#FF6611)
@@ -328,7 +328,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.15
 	},
-	
+
 	"firestorm": {  # Fire + Wind - Tornado de fuego giratorio
 		"shape": "fire_tornado",
 		"primary": Color(1.0, 0.4, 0.0),       # Orange #FF6600
@@ -341,7 +341,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 8.0,  # Fast spin for tornado effect
 		"squash_amount": 0.08
 	},
-	
+
 	"volcano": {  # Fire + Earth
 		"shape": "lava_rock",
 		"primary": Color(1.0, 0.45, 0.1),
@@ -354,7 +354,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 3.0,
 		"squash_amount": 0.1
 	},
-	
+
 	"solar_flare": {  # Fire + Earth
 		"shape": "solar_disc",
 		"primary": Color(1.0, 0.7, 0.3),
@@ -367,7 +367,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 2.0,
 		"squash_amount": 0.1
 	},
-	
+
 	"dark_flame": {  # Fire + Light
 		"shape": "holy_fire",
 		"primary": Color(1.0, 0.85, 0.5),
@@ -380,7 +380,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 1.0,
 		"squash_amount": 0.15
 	},
-	
+
 	"hellfire": {  # Fire + Shadow - Fuego demoníaco corrupto
 		"shape": "demonic_flame",
 		"primary": Color(0.6, 0.0, 0.2),       # Deep crimson #990033
@@ -393,11 +393,11 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.15
 	},
-	
+
 	# ══════════════════════════════════════════════════════════════════════════
 	# FUSIONES LIGHTNING (7)
 	# ══════════════════════════════════════════════════════════════════════════
-	
+
 	"storm_caller": {  # Lightning + Arcane
 		"shape": "storm_orb",
 		"primary": Color(0.5, 0.6, 0.95),
@@ -410,7 +410,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 2.5,
 		"squash_amount": 0.15
 	},
-	
+
 	"arcane_storm": {  # Lightning + Shadow
 		"shape": "dark_bolt",
 		"primary": Color(0.35, 0.4, 0.7),
@@ -423,7 +423,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.18
 	},
-	
+
 	"dark_lightning": {  # Lightning + Shadow - Rayo Oscuro
 		"shape": "dark_dagger",
 		"primary": Color(0.4, 0.2, 0.67),       # Deep purple #6633AA
@@ -436,7 +436,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.1
 	},
-	
+
 	"thunder_bloom": {  # Lightning + Nature - Flor del Trueno
 		"shape": "thunder_leaf",
 		"primary": Color(0.45, 0.85, 0.35),       # Verde eléctrico brillante
@@ -449,7 +449,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 3.0,
 		"squash_amount": 0.12
 	},
-	
+
 	"seismic_bolt": {  # Lightning + Earth
 		"shape": "geo_bolt",
 		"primary": Color(0.65, 0.55, 0.4),
@@ -462,7 +462,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.08
 	},
-	
+
 	"thunder_spear": {  # Lightning + Light
 		"shape": "light_bolt",
 		"primary": Color(0.85, 0.95, 1.0),
@@ -475,7 +475,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.15
 	},
-	
+
 	"void_bolt": {  # Lightning + Void
 		"shape": "entropy_bolt",
 		"primary": Color(0.35, 0.25, 0.6),
@@ -488,11 +488,11 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": -2.0,
 		"squash_amount": 0.2
 	},
-	
+
 	# ══════════════════════════════════════════════════════════════════════════
 	# FUSIONES ARCANE (5)
 	# ══════════════════════════════════════════════════════════════════════════
-	
+
 	"shadow_orbs": {  # Arcane + Shadow
 		"shape": "shadow_orb",
 		"primary": Color(0.4, 0.2, 0.55),
@@ -505,7 +505,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 1.5,
 		"squash_amount": 0.12
 	},
-	
+
 	"life_orbs": {  # Arcane + Nature
 		"shape": "nature_orb",
 		"primary": Color(0.5, 0.7, 0.5),
@@ -518,7 +518,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 1.0,
 		"squash_amount": 0.1
 	},
-	
+
 	"wind_orbs": {  # Arcane + Wind
 		"shape": "wind_orb",
 		"primary": Color(0.65, 0.75, 0.9),
@@ -531,7 +531,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 4.0,
 		"squash_amount": 0.15
 	},
-	
+
 	"cosmic_barrier": {  # Arcane + Earth
 		"shape": "crystal_orb",
 		"primary": Color(0.6, 0.45, 0.7),
@@ -544,7 +544,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.8,
 		"squash_amount": 0.08
 	},
-	
+
 	"cosmic_void": {  # Arcane + Light
 		"shape": "radiant_orb",
 		"primary": Color(0.85, 0.75, 0.95),
@@ -557,11 +557,11 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 1.5,
 		"squash_amount": 0.1
 	},
-	
+
 	# ══════════════════════════════════════════════════════════════════════════
 	# FUSIONES SHADOW (5)
 	# ══════════════════════════════════════════════════════════════════════════
-	
+
 	"soul_reaper": {  # Shadow + Nature
 		"shape": "death_scythe",
 		"primary": Color(0.25, 0.3, 0.2),
@@ -574,7 +574,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 6.0,
 		"squash_amount": 0.08
 	},
-	
+
 	"phantom_blade": {  # Shadow + Wind
 		"shape": "ghost_blade",
 		"primary": Color(0.4, 0.45, 0.5),
@@ -587,7 +587,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 10.0,
 		"squash_amount": 0.1
 	},
-	
+
 	"stone_fang": {  # Shadow + Earth
 		"shape": "obsidian_fang",
 		"primary": Color(0.25, 0.2, 0.25),
@@ -600,7 +600,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.05
 	},
-	
+
 	"twilight": {  # Shadow + Light
 		"shape": "twilight_orb",
 		"primary": Color(0.5, 0.4, 0.6),
@@ -613,7 +613,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 1.0,
 		"squash_amount": 0.12
 	},
-	
+
 	"abyss": {  # Shadow + Void
 		"shape": "abyss_maw",
 		"primary": Color(0.1, 0.05, 0.15),
@@ -626,11 +626,11 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": -1.0,
 		"squash_amount": 0.25
 	},
-	
+
 	# ══════════════════════════════════════════════════════════════════════════
 	# FUSIONES NATURE (4)
 	# ══════════════════════════════════════════════════════════════════════════
-	
+
 	"pollen_storm": {  # Nature + Wind
 		"shape": "pollen_cloud",
 		"primary": Color(0.7, 0.85, 0.4),
@@ -643,7 +643,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 3.0,
 		"squash_amount": 0.18
 	},
-	
+
 	"gaia": {  # Nature + Earth
 		"shape": "earth_seed",
 		"primary": Color(0.45, 0.6, 0.35),
@@ -656,7 +656,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.5,
 		"squash_amount": 0.1
 	},
-	
+
 	"solar_bloom": {  # Nature + Light
 		"shape": "sun_flower",
 		"primary": Color(0.55, 0.8, 0.45),
@@ -669,7 +669,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 2.0,
 		"squash_amount": 0.12
 	},
-	
+
 	"decay": {  # Nature + Void
 		"shape": "rot_spore",
 		"primary": Color(0.35, 0.4, 0.25),
@@ -682,11 +682,11 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.3,
 		"squash_amount": 0.15
 	},
-	
+
 	# ══════════════════════════════════════════════════════════════════════════
 	# FUSIONES WIND (3)
 	# ══════════════════════════════════════════════════════════════════════════
-	
+
 	"sandstorm": {  # Wind + Earth
 		"shape": "sand_vortex",
 		"primary": Color(0.8, 0.7, 0.5),
@@ -699,7 +699,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 8.0,
 		"squash_amount": 0.15
 	},
-	
+
 	"prism_wind": {  # Wind + Light
 		"shape": "light_gust",
 		"primary": Color(0.85, 0.95, 0.95),
@@ -712,11 +712,11 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 5.0,
 		"squash_amount": 0.1
 	},
-	
+
 	# ══════════════════════════════════════════════════════════════════════════
 	# FUSIONES EARTH (3)
 	# ══════════════════════════════════════════════════════════════════════════
-	
+
 	"rift_quake": {  # Earth + Void
 		"shape": "light_crystal",
 		"primary": Color(0.75, 0.65, 0.5),
@@ -729,7 +729,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.08
 	},
-	
+
 	"crystal_guardian": {  # Earth + Void
 		"shape": "void_crystal",
 		"primary": Color(0.45, 0.35, 0.45),
@@ -742,7 +742,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": -0.5,
 		"squash_amount": 0.1
 	},
-	
+
 	"radiant_stone": {  # Earth + Light
 		"shape": "radiant_gem",
 		"primary": Color(0.8, 0.7, 0.55),
@@ -755,11 +755,11 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 1.0,
 		"squash_amount": 0.08
 	},
-	
+
 	# ══════════════════════════════════════════════════════════════════════════
 	# FUSIONES LIGHT/VOID (2)
 	# ══════════════════════════════════════════════════════════════════════════
-	
+
 	"void_storm": {  # Light + Void
 		"shape": "duality_orb",
 		"primary": Color(0.7, 0.65, 0.8),
@@ -772,7 +772,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"rotation_speed": 0.0,
 		"squash_amount": 0.18
 	},
-	
+
 	"eclipse": {  # Void + Light
 		"shape": "eclipse_ring",
 		"primary": Color(0.2, 0.15, 0.3),
@@ -988,47 +988,47 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 		base_path = WEAPONS_SPRITES_PATH + weapon_id + "/"
 	else:
 		base_path = FUSION_SPRITES_PATH + weapon_id + "/"
-	
+
 	# Nueva nomenclatura: flight_spritesheet_[weapon].png, impact_spritesheet_[weapon].png
 	var flight_path = base_path + "flight_spritesheet_" + weapon_id + ".png"
 	if not ResourceLoader.exists(flight_path):
 		return  # No hay sprites personalizados, usar procedural
-	
+
 	# Cargar sprites (solo flight e impact son requeridos)
 	var flight_tex = load(flight_path) as Texture2D
 	var impact_tex = load(base_path + "impact_spritesheet_" + weapon_id + ".png") as Texture2D
-	
+
 	if flight_tex == null:
 		push_warning("[ProjectileVisualManager] No se pudo cargar flight_spritesheet_" + weapon_id + ".png")
 		return
-	
+
 	# Obtener configuración de frames para este arma
 	var config = WEAPON_SPRITE_CONFIG.get(weapon_id, {})
-	
+
 	# NOTA: launch.png ya no se usa - los proyectiles empiezan directamente en flight
-	
+
 	# Configurar sprites de vuelo
 	data.flight_spritesheet = flight_tex
 	data.flight_frames = config.get("flight_frames", 6)
 	data.flight_fps = config.get("flight_fps", 12.0)
 	data.flight_loop = true
-	
+
 	# Configurar sprites de impacto
 	if impact_tex:
 		data.impact_spritesheet = impact_tex
 		data.impact_frames = config.get("impact_frames", 6)
 		data.impact_fps = config.get("impact_fps", 15.0)
 		data.impact_loop = false
-	
+
 	# Aplicar escala personalizada si está definida
 	if config.has("sprite_scale"):
 		data.base_scale = config.get("sprite_scale", 1.0)
-	
+
 	# Aplicar tamaño de frame personalizado si está definido
 	if config.has("frame_size"):
 		var fs = config.get("frame_size", 64)
 		data.frame_size = Vector2i(fs, fs)
-	
+
 	print("[ProjectileVisualManager] Sprites personalizados cargados para: " + weapon_id)
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1039,7 +1039,7 @@ func get_visual_data(weapon_id: String, weapon_data: Dictionary = {}) -> Project
 	"""Obtener o crear datos visuales para un arma específica"""
 	if _visual_data_cache.has(weapon_id):
 		return _visual_data_cache[weapon_id]
-	
+
 	# Crear datos visuales únicos para esta arma
 	var data = _create_weapon_visual_data(weapon_id, weapon_data)
 	_visual_data_cache[weapon_id] = data
@@ -1048,13 +1048,13 @@ func get_visual_data(weapon_id: String, weapon_data: Dictionary = {}) -> Project
 func _create_weapon_visual_data(weapon_id: String, weapon_data: Dictionary) -> ProjectileVisualData:
 	"""Crear datos visuales ÚNICOS para cada arma"""
 	var data = ProjectileVisualData.new()
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# PASO 1: Valores por defecto (se pueden sobrescribir después)
 	# ═══════════════════════════════════════════════════════════════════════════
 	data.base_scale = 1.0
 	data.frame_size = Vector2i(64, 64)
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# PASO 2: Configuración específica del arma
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1071,7 +1071,7 @@ func _create_weapon_visual_data(weapon_id: String, weapon_data: Dictionary) -> P
 		data.trail_color = config.get("trail_color", data.glow_color)
 		data.glow_enabled = true
 		data.glow_intensity = 0.5
-		
+
 		# Guardar shape y efectos especiales en metadata
 		data.set_meta("shape", config.get("shape", "orb"))
 		data.set_meta("particles", config.get("particles", "default"))
@@ -1090,7 +1090,7 @@ func _create_weapon_visual_data(weapon_id: String, weapon_data: Dictionary) -> P
 		data.set_meta("shape", "orb")
 		data.set_meta("rotation_speed", 0.0)
 		data.set_meta("squash_amount", 0.1)
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# PASO 3: Determinar estilo según tipo de proyectil
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1099,12 +1099,12 @@ func _create_weapon_visual_data(weapon_id: String, weapon_data: Dictionary) -> P
 		data.style = PROJECTILE_TYPE_MAP.get(proj_type_int, ProjectileVisualData.ProjectileStyle.SINGLE)
 	else:
 		data.style = ProjectileVisualData.ProjectileStyle.SINGLE
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# PASO 4: Cargar sprites personalizados (ÚLTIMO - puede sobrescribir escala)
 	# ═══════════════════════════════════════════════════════════════════════════
 	_try_load_custom_sprites(data, weapon_id)
-	
+
 	return data
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1116,7 +1116,7 @@ func create_projectile_visual(weapon_id: String, weapon_data: Dictionary = {}) -
 	var visual_data = get_visual_data(weapon_id, weapon_data)
 	var sprite = AnimatedProjectileSprite.new()
 	sprite.setup(visual_data)
-	
+
 	# Aplicar configuraciones especiales si están definidas para este arma
 	if WEAPON_SPRITE_CONFIG.has(weapon_id):
 		var config = WEAPON_SPRITE_CONFIG[weapon_id]
@@ -1124,10 +1124,10 @@ func create_projectile_visual(weapon_id: String, weapon_data: Dictionary = {}) -
 			sprite.set_rotation_offset(config["rotation_offset"])
 		if config.get("lock_rotation", false):
 			sprite.set_lock_rotation(true)
-	
+
 	return sprite
 
-func create_aoe_visual(weapon_id: String, radius: float, duration: float = 0.5, 
+func create_aoe_visual(weapon_id: String, radius: float, duration: float = 0.5,
 		weapon_data: Dictionary = {}) -> AOEVisualEffect:
 	"""Crear efecto visual AOE"""
 	var visual_data = get_visual_data(weapon_id, weapon_data)
@@ -1150,7 +1150,7 @@ func create_chain_visual(weapon_id: String, chain_count: int = 2, weapon_data: D
 	effect.setup(visual_data, weapon_id, chain_count)
 	return effect
 
-func create_orbit_visual(weapon_id: String, orbital_count: int, orbit_radius: float, 
+func create_orbit_visual(weapon_id: String, orbital_count: int, orbit_radius: float,
 		weapon_data: Dictionary = {}) -> OrbitalsVisualContainer:
 	"""Crear contenedor con múltiples orbes visuales"""
 	var visual_data = get_visual_data(weapon_id, weapon_data)
