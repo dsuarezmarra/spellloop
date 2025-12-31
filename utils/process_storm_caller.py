@@ -4,8 +4,10 @@ process_storm_caller.py
 Procesador de sprites para Storm Caller (Invocador de Tormentas)
 Lightning + Wind = Tormenta eléctrica azul-púrpura
 
-Grilla esperada: 4 columnas x N filas
-Cada celda: ~150x150px
+Formato de entrada (ChatGPT/DALL-E):
+- flight.png: ~612x408px con 4 frames en fila horizontal
+- impact.png: similar formato
+
 Output: spritesheet horizontal 256x64 (4 frames de 64x64)
 """
 
@@ -17,13 +19,12 @@ import os
 # ═══════════════════════════════════════════════════════════════════════════════
 
 GRID_COLS = 4
-CELL_SIZE = None  # Se calcula automáticamente
 FRAME_SIZE = 64
 OUTPUT_WIDTH = FRAME_SIZE * 4
 OUTPUT_HEIGHT = FRAME_SIZE
 
 # Carpeta de sprites
-SPRITE_FOLDER = r"C:\Users\dsuarez1\git\spellloop\project\assets\sprites\projectiles\fusion\storm_caller"
+SPRITE_FOLDER = r"C:\git\spellloop\project\assets\sprites\projectiles\fusion\storm_caller"
 
 # Archivos de entrada
 INPUT_FILES = ["flight.png", "impact.png"]
@@ -33,26 +34,26 @@ INPUT_FILES = ["flight.png", "impact.png"]
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def extract_grid_frames(image_path: str, cols: int = 4) -> list[Image.Image]:
-    """Extraer frames de una grilla uniforme"""
+    """Extraer frames de una grilla uniforme horizontal"""
     img = Image.open(image_path).convert("RGBA")
     width, height = img.size
 
     cell_width = width // cols
-    cell_height = height  # Asumimos 1 fila
+    cell_height = height  # Toda la altura
 
     frames = []
     for col in range(cols):
         x = col * cell_width
         y = 0
 
-        # Extraer celda
+        # Extraer celda completa
         cell = img.crop((x, y, x + cell_width, y + cell_height))
 
-        # Centrar en 64x64
+        # Centrar en 64x64 (recorta al contenido y escala)
         centered = center_in_frame(cell, FRAME_SIZE, FRAME_SIZE)
         frames.append(centered)
 
-        print(f"    Frame {col + 1}: extraído y centrado en {FRAME_SIZE}x{FRAME_SIZE}")
+        print(f"    Frame {col + 1}: extraído de X={x}-{x+cell_width}, centrado en {FRAME_SIZE}x{FRAME_SIZE}")
 
     return frames
 

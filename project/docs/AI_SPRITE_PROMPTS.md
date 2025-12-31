@@ -650,28 +650,14 @@ Effects:
 
 ## ⚡💨 12. STORM CALLER (Lightning + Wind) - CHAIN
 
-### Flight Animation (6 frames)
+### Flight Animation (4 frames)
 ```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+Create a pixel art horizontal sprite sheet of a STORM LIGHTNING BOLT projectile for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE PROJECTILE: A crackling lightning bolt surrounded by swirling cyan wind currents - electricity meets storm winds. The bolt should have a wind vortex spiraling around it. COLOR PALETTE: - Core: Bright white (#FFFFFF) - Primary: Electric yellow (#FFFF33 / #FFFF66) - Secondary: Cyan wind (#66FFFF / #99FFFF) - Accent: White-blue sparks - Outline: Blue-gray (#334466) ANIMATION SEQUENCE (4 frames): Frame 1: Lightning bolt forming with wind currents beginning to swirl Frame 2: Bolt crackles, wind vortex tightens around it, sparks fly Frame 3: Maximum intensity, bright electric core with cyan wind spiral at peak Frame 4: Energy pulse, wind currents disperse slightly, cycle back IMPORTANT DETAILS: - Orientation: Bolt pointing RIGHT (→) as if flying toward target - Electric crackling with visible wind current lines - Combination of sharp lightning with flowing wind - Storm particles and mini cloud puffs around the bolt - Cartoon-cute but powerful stormy appearance - Each frame clearly separated in its own cell
+```
 
-Subject: Lightning bolt surrounded by wind vortex
-
-Design:
-- Lightning: Bright yellow (#FFFF33)
-- Wind vortex: Cyan (#66FFFF)
-- Core: White (#FFFFFF)
-- Outline: Blue-gray (#334466)
-
-Animation: Electric bolt spinning in wind tornado
-- Frames 1-6: Lightning bolt rotating
-- Wind spiral constantly moving around it
-- Electric sparks flying off
-
-Effects:
-- Wind current spiral lines
-- Electric sparks
-- Storm cloud particles
-- Dynamic energy
+### Impact Animation (4 frames)
+```
+Create a pixel art horizontal sprite sheet of a STORM LIGHTNING EXPLOSION IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE EFFECT: A burst of electric storm energy when hitting an enemy - yellow lightning arcs with cyan wind bursting outward in a spiral pattern. COLOR PALETTE: - Core: Bright white flash (#FFFFFF) - Primary: Electric yellow (#FFFF33 / #FFFF66) - Secondary: Cyan wind (#66FFFF / #99FFFF) - Accent: White-blue electric sparks - Outline: Blue-gray (#334466) ANIMATION SEQUENCE (4 frames): Frame 1: Initial flash - white-yellow burst center with wind beginning to spiral outward Frame 2: Expansion - lightning arcs shoot outward with wind currents spiraling between them Frame 3: Maximum spread - storm explosion with electric sparks and swirling wind particles Frame 4: Dissipation - energy fades, last sparks, lingering wind wisps IMPORTANT DETAILS: - Radial burst pattern with spiral wind motion - Lightning arcs mixed with cyan wind swirls - Storm cloud puff particles - Feeling of "electric tornado" explosion - Cartoon-cute style with clear, readable shapes - Each frame clearly separated in its own cell
 ```
 
 ---
@@ -1913,56 +1899,28 @@ Effects:
 
 ## ❄️⚡ 23. FROZEN THUNDER (Ice + Lightning) - CHAIN
 
-### Flight Animation (6 frames)
+### Flight Animation (4 frames)
 ```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+Create a pixel art horizontal sprite sheet of a FROZEN LIGHTNING BOLT projectile for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE PROJECTILE: A jagged ice crystal bolt with an electric yellow core - frozen lightning that crackles with cold electricity. The bolt should look like crystallized lightning made of ice. COLOR PALETTE: - Core: Electric yellow glow (#FFFF66 / #FFFF99) - Primary: Cyan ice (#66FFFF / #99FFFF) - Secondary: White frost (#FFFFFF / #E6FFFF) - Accent: Yellow electric sparks through ice - Outline: Teal (#336666) ANIMATION SEQUENCE (4 frames): Frame 1: Ice bolt forming with yellow electric core flickering inside Frame 2: Frost intensifies, electric arcs visible through transparent ice Frame 3: Maximum intensity, bright yellow core pulsing through crystalline ice Frame 4: Energy crackle effect, ice particles and sparks, cycle back IMPORTANT DETAILS: - Orientation: Bolt pointing RIGHT (→) as if flying toward target - Transparent ice effect showing electric core inside - Mix of sharp ice crystals with lightning zigzag shape - Frost particles and electric sparks around the bolt - Cartoon-cute but cold and electric appearance - Each frame clearly separated in its own cell
+```
 
-Subject: Ice crystal with electric core
-
-Design:
-- Ice body: Cyan (#66FFFF)
-- Electric core: Yellow (#FFFF66)
-- Highlights: White (#FFFFFF)
-- Outline: Teal (#336666)
-
-Animation: Jagged ice crystal with crackling electricity
-- Frames 1-6: Ice crystal with electric core pulsing
-- Ice shards with electric arcs
-- Frost and spark particles
-
-Effects:
-- Ice shard fragments
-- Electric spark arcs on surface
-- Frost particles
-- Electric glow through ice
+### Impact Animation (4 frames)
+```
+Create a pixel art horizontal sprite sheet of a FROZEN LIGHTNING EXPLOSION IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE EFFECT: A burst of ice and electricity when hitting an enemy - cyan ice shards exploding outward with yellow electric arcs between them. COLOR PALETTE: - Core: Bright white-yellow flash (#FFFFFF / #FFFFCC) - Primary: Cyan ice (#66FFFF / #99FFFF) - Secondary: White frost (#FFFFFF / #E6FFFF) - Electric accents: Yellow sparks (#FFFF66) - Outline: Teal (#336666) ANIMATION SEQUENCE (4 frames): Frame 1: Initial flash - white-cyan burst center with ice beginning to shatter Frame 2: Expansion - ice shards shoot outward with electric arcs jumping between them Frame 3: Maximum spread - frozen explosion with ice crystals and electric discharge Frame 4: Dissipation - ice fades, last frost sparkles, lingering electric crackle IMPORTANT DETAILS: - Radial burst pattern (centered explosion expanding outward) - Ice crystal shards mixed with lightning sparks - Frost mist particles in cyan/white tones - Feeling of "frozen electricity" shattering - Cartoon-cute style with clear, readable shapes - Each frame clearly separated in its own cell
 ```
 
 ---
 
-## 🔥⚡ 24. PLASMA (Fire + Lightning) - SINGLE
+## 🔥⚡ 24. PLASMA (Fire + Lightning) - CHAIN
 
-### Flight Animation (6 frames)
+### Flight Animation (4 frames)
 ```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+Create a pixel art horizontal sprite sheet of a PLASMA LIGHTNING BOLT projectile for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE PROJECTILE: An electrified plasma bolt - a jagged lightning shape made of hot pink/magenta plasma energy. The bolt should look like superheated electrical fire with plasma particles. COLOR PALETTE: - Core: White-pink glow (#FFFFFF to #FFF2FF) - Primary: Hot pink/magenta (#FF66CC / #FFB3E6) - Secondary: Deep magenta (#E666B3) - Accent: Electric white-pink sparks - Outline: Dark magenta (#804066) ANIMATION SEQUENCE (4 frames): Frame 1: Plasma bolt forming with small energy particles gathering Frame 2: Bolt intensifies, plasma particles swirl around the zigzag shape Frame 3: Maximum intensity, bright core with plasma tendrils radiating Frame 4: Energy pulse effect, particles disperse slightly, cycle back IMPORTANT DETAILS: - Orientation: Bolt pointing RIGHT (→) as if flying toward target - Hot plasma energy with electric crackle effects - Mix of fire-like fluidity with lightning sharpness - Pink/magenta glowing particles around the bolt - Cartoon-cute but powerful appearance - Each frame clearly separated in its own cell
+```
 
-Subject: Superheated plasma sphere projectile
-
-Design:
-- Plasma body: Pink-magenta (#FF66FF)
-- Electric arcs: Yellow (#FFFF66)
-- Core: White (#FFFFFF)
-- Outline: Dark magenta (#663366)
-
-Animation: Plasma ball with electric arcs
-- Frames 1-6: Sphere pulsing with plasma
-- Electric arcs jumping on surface
-- Intense heat glow
-
-Effects:
-- Plasma arcs dancing on surface
-- Heat shimmer
-- Electric spark bursts
-- Intense energy feel
+### Impact Animation (4 frames)
+```
+Create a pixel art horizontal sprite sheet of a PLASMA EXPLOSION IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE EFFECT: A burst of plasma energy when hitting an enemy - hot pink electric fire expanding outward with sparks and plasma particles. COLOR PALETTE: - Core: Bright white-pink flash (#FFFFFF / #FFF2FF) - Primary: Hot pink (#FF66CC / #FFB3E6) - Secondary: Pale pink (#FFE6F7) - Electric accents: White-magenta sparks - Outline: Dark magenta (#804066) ANIMATION SEQUENCE (4 frames): Frame 1: Initial flash - white-pink burst center with plasma beginning to expand Frame 2: Expansion - plasma tendrils shoot outward with electric arcs between them Frame 3: Maximum spread - plasma explosion with bright sparkling particles, electric discharge Frame 4: Dissipation - energy fades, last pink sparkles, lingering plasma mist IMPORTANT DETAILS: - Radial burst pattern (centered explosion expanding outward) - Plasma tendrils mixed with lightning sparks - Hot energy particles in pink/magenta tones - Feeling of "superheated electricity" - fire and lightning combined - Cartoon-cute style with clear, readable shapes - Each frame clearly separated in its own cell
 ```
 
 ---

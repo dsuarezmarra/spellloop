@@ -144,6 +144,10 @@ func fire_chain(from: Vector2, to: Vector2) -> void:
 	else:
 		_update_bolt_path()
 
+func fire_at(from: Vector2, to: Vector2) -> void:
+	"""Alias para fire_chain - compatibilidad con ProjectileFactory"""
+	fire_chain(from, to)
+
 func _create_sprite_bolt(from: Vector2, to: Vector2) -> void:
 	"""Crear sprite animado del rayo de tormenta entre dos puntos"""
 	var bolt_sprite = AnimatedSprite2D.new()
