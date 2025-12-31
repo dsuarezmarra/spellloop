@@ -304,3 +304,63 @@ func _cleanup() -> void:
 		if is_instance_valid(particle):
 			particle.queue_free()
 	_impact_particles.clear()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SECUENCIAS DE CADENA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func create_chain_sequence(targets: Array[Vector2], delay_between: float = 0.08) -> void:
+	"""Crear una secuencia de rayos del vacío entre múltiples objetivos"""
+	if targets.size() < 2:
+		return
+
+	for i in range(targets.size() - 1):
+		if i > 0:
+			await get_tree().create_timer(delay_between).timeout
+
+		_start_pos = targets[i]
+		_end_pos = targets[i + 1]
+
+		if _use_custom_sprites:
+			_fire_with_sprites(targets[i], targets[i + 1])
+		else:
+			_update_bolt_points()
+
+	_is_active = true
+
+	await get_tree().create_timer(0.35).timeout
+	fade_out()
+
+func fade_out(duration: float = 0.2) -> void:
+	"""Desvanecer el rayo del vacío"""
+	if _use_custom_sprites:
+		var tween = create_tween()
+		for bolt in _bolt_sprites:
+			if is_instance_valid(bolt):
+				tween.parallel().tween_property(bolt, "modulate:a", 0.0, duration)
+		for zap in _zap_sprites:
+			if is_instance_valid(zap):
+				tween.parallel().tween_property(zap, "modulate:a", 0.0, duration)
+
+		await tween.finished
+
+		for bolt in _bolt_sprites:
+			if is_instance_valid(bolt):
+				bolt.queue_free()
+		for zap in _zap_sprites:
+			if is_instance_valid(zap):
+				zap.queue_free()
+	else:
+		var tween = create_tween()
+		if _main_bolt:
+			tween.parallel().tween_property(_main_bolt, "modulate:a", 0.0, duration)
+		if _glow_bolt:
+			tween.parallel().tween_property(_glow_bolt, "modulate:a", 0.0, duration)
+		if _outline_bolt:
+			tween.parallel().tween_property(_outline_bolt, "modulate:a", 0.0, duration)
+		await tween.finished
+
+	_bolt_sprites.clear()
+	_zap_sprites.clear()
+	emit_signal("all_chains_finished")
+	queue_free()
