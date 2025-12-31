@@ -294,3 +294,20 @@ func reset() -> void:
 	_cleanup()
 	_time = 0.0
 	_fade_timer = 0.0
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SECUENCIAS DE CADENA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func create_chain_sequence(targets: Array[Vector2], delay_between: float = 0.08) -> void:
+	"""Crear una secuencia de rayos de tormenta entre múltiples objetivos"""
+	if targets.size() < 2:
+		return
+
+	for i in range(targets.size() - 1):
+		if i > 0:
+			await get_tree().create_timer(delay_between).timeout
+
+		fire_chain(targets[i], targets[i + 1])
+
+	emit_signal("all_chains_finished")
