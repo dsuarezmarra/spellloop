@@ -819,6 +819,16 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"sprite_scale": 1.0,
 		"rotation_offset": 30.0  # Corregir eje desviado del sprite (grados)
 	},
+	"lightning_wand": {
+		"flight_frames": 4,
+		"flight_fps": 20.0,  # Fast for electric crackling effect
+		"impact_frames": 4,
+		"impact_fps": 24.0,  # Very fast for instant zap feel
+		"sprite_scale": 1.0,
+		"is_chain": true,    # Usar sistema de sprites chain
+		"chain_bolt_frames": 4,
+		"chain_zap_frames": 4
+	},
 	"fire_wand": {
 		"flight_frames": 6,
 		"flight_fps": 12.0,
@@ -1137,7 +1147,7 @@ func create_chain_visual(weapon_id: String, chain_count: int = 2, weapon_data: D
 	"""Crear efecto visual de cadena de rayos"""
 	var visual_data = get_visual_data(weapon_id, weapon_data)
 	var effect = ChainLightningVisual.new()
-	effect.setup(visual_data)
+	effect.setup(visual_data, weapon_id, chain_count)
 	return effect
 
 func create_orbit_visual(weapon_id: String, orbital_count: int, orbit_radius: float, 
