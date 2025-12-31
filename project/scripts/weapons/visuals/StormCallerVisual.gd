@@ -172,7 +172,7 @@ func _create_sprite_bolt(from: Vector2, to: Vector2) -> void:
 	var midpoint = (from + to) / 2.0
 
 	bolt_sprite.position = midpoint
-	bolt_sprite.rotation = direction.angle() + deg_to_rad(30)  # Rotar 30º a la derecha
+	bolt_sprite.rotation = direction.angle()
 	bolt_sprite.scale = Vector2(distance / frame_width, 1.0)
 
 	add_child(bolt_sprite)
