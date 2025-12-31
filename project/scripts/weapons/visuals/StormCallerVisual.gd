@@ -118,14 +118,14 @@ func _create_bolt_lines() -> void:
 	_main_bolt = Line2D.new()
 	_main_bolt.width = _bolt_width
 	_main_bolt.default_color = _primary_color
-	
+
 	# Gradiente azul-púrpura
 	var gradient = Gradient.new()
 	gradient.add_point(0.0, _secondary_color)
 	gradient.add_point(0.5, _core_color)
 	gradient.add_point(1.0, _primary_color)
 	_main_bolt.gradient = gradient
-	
+
 	_main_bolt.joint_mode = Line2D.LINE_JOINT_ROUND
 	_main_bolt.end_cap_mode = Line2D.LINE_CAP_ROUND
 	_main_bolt.antialiased = true
@@ -149,7 +149,7 @@ func _create_sprite_bolt(from: Vector2, to: Vector2) -> void:
 	var bolt_sprite = AnimatedSprite2D.new()
 	var frames = SpriteFrames.new()
 	frames.add_animation("default")
-	
+
 	# Añadir frames del spritesheet
 	var frame_width = 64
 	for i in range(_bolt_frames):
@@ -158,31 +158,31 @@ func _create_sprite_bolt(from: Vector2, to: Vector2) -> void:
 		atlas.atlas = _bolt_spritesheet
 		atlas.region = region
 		frames.add_frame("default", atlas, i)
-	
+
 	frames.set_animation_speed("default", _bolt_fps)
 	bolt_sprite.sprite_frames = frames
-	
+
 	# Posicionar y orientar
 	var direction = (to - from).normalized()
 	var distance = from.distance_to(to)
 	var midpoint = (from + to) / 2.0
-	
+
 	bolt_sprite.position = midpoint
-	bolt_sprite.rotation = direction.angle()
+	bolt_sprite.rotation = direction.angle() + deg_to_rad(30)  # Rotar 30º a la derecha
 	bolt_sprite.scale = Vector2(distance / frame_width, 1.0)
-	
+
 	add_child(bolt_sprite)
 	_bolt_sprites.append(bolt_sprite)
 	bolt_sprite.play("default")
-	
+
 	# Crear impacto en destino
 	_create_sprite_zap(to)
-	
+
 	# Auto-cleanup después de la animación
 	await get_tree().create_timer(0.3).timeout
 	if is_instance_valid(bolt_sprite):
 		bolt_sprite.queue_free()
-	
+
 	emit_signal("chain_complete")
 
 func _create_sprite_zap(at_pos: Vector2) -> void:
@@ -190,7 +190,7 @@ func _create_sprite_zap(at_pos: Vector2) -> void:
 	var zap_sprite = AnimatedSprite2D.new()
 	var frames = SpriteFrames.new()
 	frames.add_animation("default")
-	
+
 	# Añadir frames del spritesheet de impacto
 	var frame_width = 64
 	for i in range(_zap_frames):
@@ -199,15 +199,15 @@ func _create_sprite_zap(at_pos: Vector2) -> void:
 		atlas.atlas = _zap_spritesheet
 		atlas.region = region
 		frames.add_frame("default", atlas, i)
-	
+
 	frames.set_animation_speed("default", _zap_fps)
 	zap_sprite.sprite_frames = frames
 	zap_sprite.position = at_pos
-	
+
 	add_child(zap_sprite)
 	_zap_sprites.append(zap_sprite)
 	zap_sprite.play("default")
-	
+
 	# Auto-cleanup
 	await get_tree().create_timer(0.25).timeout
 	if is_instance_valid(zap_sprite):
@@ -216,7 +216,7 @@ func _create_sprite_zap(at_pos: Vector2) -> void:
 func _update_bolt_path() -> void:
 	"""Generar los puntos del rayo de tormenta (natural y dinámico)"""
 	var points = _generate_lightning_points(_start_pos, _end_pos, _bolt_segments)
-	
+
 	if _outline_bolt:
 		_outline_bolt.points = points
 	if _glow_bolt:
@@ -228,38 +228,38 @@ func _generate_lightning_points(from: Vector2, to: Vector2, segments: int) -> Pa
 	"""Generar los puntos del rayo de tormenta (natural y dinámico)"""
 	var points = PackedVector2Array()
 	points.append(from)
-	
+
 	var direction = (to - from)
 	var distance = direction.length()
 	var normalized_dir = direction.normalized()
 	var perpendicular = Vector2(-normalized_dir.y, normalized_dir.x)
-	
+
 	# Crear segmentos con jitter
 	for i in range(1, segments):
 		var t = float(i) / float(segments)
 		var base_pos = from + direction * t
-		
+
 		# Jitter perpendicular (más natural que plasma)
 		var jitter_offset = perpendicular * randf_range(-_jitter_amount, _jitter_amount)
 		var point = base_pos + jitter_offset
-		
+
 		points.append(point)
-	
+
 	points.append(to)
 	return points
 
 func _process(delta: float) -> void:
 	if not _is_active:
 		return
-	
+
 	_time += delta
 	_fade_timer += delta
-	
+
 	# Actualizar rayo (solo en modo procedural)
 	if not _use_custom_sprites and _time < 0.1:
 		# Regenerar ligeramente los puntos para efecto de "chispa"
 		_update_bolt_path()
-	
+
 	# Fade out
 	if _fade_timer >= _max_duration:
 		_cleanup()
@@ -267,7 +267,7 @@ func _process(delta: float) -> void:
 func _cleanup() -> void:
 	"""Limpiar efectos visuales"""
 	_is_active = false
-	
+
 	# Limpiar líneas procedurales
 	if _main_bolt:
 		_main_bolt.points = PackedVector2Array()
@@ -275,18 +275,18 @@ func _cleanup() -> void:
 		_glow_bolt.points = PackedVector2Array()
 	if _outline_bolt:
 		_outline_bolt.points = PackedVector2Array()
-	
+
 	# Limpiar sprites
 	for sprite in _bolt_sprites:
 		if is_instance_valid(sprite):
 			sprite.queue_free()
 	_bolt_sprites.clear()
-	
+
 	for sprite in _zap_sprites:
 		if is_instance_valid(sprite):
 			sprite.queue_free()
 	_zap_sprites.clear()
-	
+
 	emit_signal("all_chains_finished")
 
 func reset() -> void:
