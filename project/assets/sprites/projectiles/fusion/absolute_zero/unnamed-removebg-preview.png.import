@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dgx74hc25nax1"
-path="res://.godot/imported/6aca1208-4df2-49b2-8579-1d851866e3d0-md-removebg-preview.png-d94270d5f82e5aa37f3887ebafaad69b.ctex"
+uid="uid://bqy5va2y40iv6"
+path="res://.godot/imported/unnamed-removebg-preview.png-e16a6310075e1e4276c8932a122147b7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/weapons/earth_spike/6aca1208-4df2-49b2-8579-1d851866e3d0-md-removebg-preview.png"
-dest_files=["res://.godot/imported/6aca1208-4df2-49b2-8579-1d851866e3d0-md-removebg-preview.png-d94270d5f82e5aa37f3887ebafaad69b.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/absolute_zero/unnamed-removebg-preview.png"
+dest_files=["res://.godot/imported/unnamed-removebg-preview.png-e16a6310075e1e4276c8932a122147b7.ctex"]
 
 [params]
 

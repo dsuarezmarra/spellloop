@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://xmsvgmwej3gy"
-path="res://.godot/imported/aoe_active_absolute_zero_RAW.png-1fc13e3c380b73ac7f7aa4afa1001ea4.ctex"
+uid="uid://ckmgqauu4rmnc"
+path="res://.godot/imported/aoe_active_earth_spike.png-939d66653c8ea507683e1dfd981f64e2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/absolute_zero/aoe_active_absolute_zero_RAW.png"
-dest_files=["res://.godot/imported/aoe_active_absolute_zero_RAW.png-1fc13e3c380b73ac7f7aa4afa1001ea4.ctex"]
+source_file="res://assets/sprites/projectiles/weapons/earth_spike/aoe_active_earth_spike.png"
+dest_files=["res://.godot/imported/aoe_active_earth_spike.png-939d66653c8ea507683e1dfd981f64e2.ctex"]
 
 [params]
 
