@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cilrcurbwaj2f"
-path="res://.godot/imported/aoe_active_void_storm_RAW.png-6c85115706b59f53d1b1d3ddcfd06333.ctex"
+uid="uid://b3eulgpx2wacs"
+path="res://.godot/imported/aoe_active_dark_flame.png-531fdecff76edc6a56a1ad21e6e44bcc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/void_storm/aoe_active_void_storm_RAW.png"
-dest_files=["res://.godot/imported/aoe_active_void_storm_RAW.png-6c85115706b59f53d1b1d3ddcfd06333.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/dark_flame/aoe_active_dark_flame.png"
+dest_files=["res://.godot/imported/aoe_active_dark_flame.png-531fdecff76edc6a56a1ad21e6e44bcc.ctex"]
 
 [params]
 

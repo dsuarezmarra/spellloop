@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cilrcurbwaj2f"
-path="res://.godot/imported/aoe_active_void_storm_RAW.png-6c85115706b59f53d1b1d3ddcfd06333.ctex"
+uid="uid://b0y8w5rghvdmm"
+path="res://.godot/imported/aoe_active_volcano.png-41ad938138874f4f05d7e84aa5f1cf01.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/void_storm/aoe_active_void_storm_RAW.png"
-dest_files=["res://.godot/imported/aoe_active_void_storm_RAW.png-6c85115706b59f53d1b1d3ddcfd06333.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/volcano/aoe_active_volcano.png"
+dest_files=["res://.godot/imported/aoe_active_volcano.png-41ad938138874f4f05d7e84aa5f1cf01.ctex"]
 
 [params]
 
