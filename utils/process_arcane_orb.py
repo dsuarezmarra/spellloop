@@ -50,33 +50,45 @@ def remove_gray_background(img):
 
 
 def detect_frame_boundaries(img):
-    """Detectar los límites X de cada frame basándose en columnas con contenido"""
+    """Detectar los límites X de cada frame buscando valles de densidad entre frames"""
     pixels = np.array(img)
     alpha = pixels[:,:,3]
     w, h = img.size
     
-    # Umbral de contenido
-    threshold = 10
+    # Calcular densidad de píxeles por columna (suma de alpha)
+    col_density = np.sum(alpha > 10, axis=0).astype(float)
     
-    # Encontrar columnas que tienen contenido
-    col_has_content = np.any(alpha > threshold, axis=0)
+    # Suavizar la densidad para evitar ruido
+    kernel_size = 5
+    kernel = np.ones(kernel_size) / kernel_size
+    col_density_smooth = np.convolve(col_density, kernel, mode='same')
     
-    # Encontrar grupos de columnas consecutivas con contenido
+    # Estimar ancho aproximado de cada frame
+    estimated_frame_width = w // NUM_FRAMES
+    
+    # Buscar los valles (mínimos locales) entre frames
+    # Dividimos en regiones y buscamos el mínimo en cada frontera
+    boundaries = [0]  # Empezamos desde 0
+    
+    for i in range(1, NUM_FRAMES):
+        # Zona donde buscar el valle (alrededor de la frontera esperada)
+        expected_boundary = i * estimated_frame_width
+        search_start = max(0, expected_boundary - estimated_frame_width // 3)
+        search_end = min(w, expected_boundary + estimated_frame_width // 3)
+        
+        # Encontrar el mínimo de densidad en esa zona
+        search_region = col_density_smooth[search_start:search_end]
+        min_idx = np.argmin(search_region)
+        actual_boundary = search_start + min_idx
+        
+        boundaries.append(actual_boundary)
+    
+    boundaries.append(w)  # Terminamos en el ancho total
+    
+    # Crear lista de frames
     frames = []
-    in_content = False
-    start_x = 0
-    
-    for x in range(w):
-        if col_has_content[x] and not in_content:
-            start_x = x
-            in_content = True
-        elif not col_has_content[x] and in_content:
-            frames.append((start_x, x))
-            in_content = False
-    
-    # Si terminamos dentro de contenido
-    if in_content:
-        frames.append((start_x, w))
+    for i in range(NUM_FRAMES):
+        frames.append((boundaries[i], boundaries[i + 1]))
     
     return frames
 
