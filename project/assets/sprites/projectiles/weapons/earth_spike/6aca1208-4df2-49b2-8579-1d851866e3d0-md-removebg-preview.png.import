@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b0euvbasrpgw7"
-path="res://.godot/imported/aoe_active_void_pulse_RAW.png-dc6363b525d2403f8c884368ba699bd2.ctex"
+uid="uid://dgx74hc25nax1"
+path="res://.godot/imported/6aca1208-4df2-49b2-8579-1d851866e3d0-md-removebg-preview.png-d94270d5f82e5aa37f3887ebafaad69b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/weapons/void_pulse/aoe_active_void_pulse_RAW.png"
-dest_files=["res://.godot/imported/aoe_active_void_pulse_RAW.png-dc6363b525d2403f8c884368ba699bd2.ctex"]
+source_file="res://assets/sprites/projectiles/weapons/earth_spike/6aca1208-4df2-49b2-8579-1d851866e3d0-md-removebg-preview.png"
+dest_files=["res://.godot/imported/6aca1208-4df2-49b2-8579-1d851866e3d0-md-removebg-preview.png-d94270d5f82e5aa37f3887ebafaad69b.ctex"]
 
 [params]
 

@@ -409,15 +409,32 @@ Effects:
 # 
 # INSTRUCCIONES PARA GENERAR SPRITES AOE:
 # 1. Todos los AOE son vista TOP-DOWN (desde arriba)
-# 2. Fondo 100% TRANSPARENTE - NO dibujar suelo, terreno ni superficie
-# 3. Solo el EFECTO VISUAL: partículas, energía, fracturas luminosas, etc.
-# 4. SEMITRANSPARENCIA: Los efectos deben ser semi-transparentes para integrarse
-# 5. Estilo: Cartoon/Funko Pop - formas redondeadas, colores saturados
-# 6. Outline sutil de 1-2 píxeles para definir formas
-# 7. Efecto circular/radial centrado en el frame
+# 2. Solo el EFECTO VISUAL: partículas, energía, fracturas luminosas, etc.
+# 3. Estilo: Cartoon/Funko Pop - formas redondeadas, colores saturados
+# 4. Outline de 1-2 píxeles en COLORES OSCUROS (no negro puro)
+# 5. Efecto circular/radial centrado en el frame
+# 6. NO incluir suelo, terreno, piedras ni superficie
 #
-# ⚠️ IMPORTANTE: NO incluir suelo, piedras, tierra, hierba ni ningún terreno.
-# El efecto debe poder superponerse sobre CUALQUIER bioma del juego.
+# ═══════════════════════════════════════════════════════════════════════════════
+# ⚠️ IMPORTANTE SOBRE FONDOS - LEER SEGÚN TU IA:
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# 🤖 PARA CHATGPT/DALL-E:
+#    - Pedir "solid BLACK background (#000000)"
+#    - ChatGPT NO puede generar transparencia real
+#    - Después usar: python utils/remove_background_preserve_alpha.py
+#    - El script elimina el negro preservando bordes semi-transparentes
+#
+# 🌟 PARA GEMINI:
+#    - Pedir "transparent background (checkered pattern)"
+#    - Gemini SÍ genera PNGs con transparencia real
+#    - El resultado se puede usar directamente
+#
+# 📋 PROCESAMIENTO POST-GENERACIÓN:
+#    python utils/remove_background_preserve_alpha.py input.png output.png --tolerance 25
+#    python utils/process_sprites_universal.py (para normalizar a 64x64 frames)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
 #
 # FORMATO DE ARCHIVOS:
 # - Active: 6 frames @ 64x64 = 384x64 total (LOOP)
@@ -469,31 +486,66 @@ EFFECTS:
 > Archivo: `weapons/void_pulse/aoe_active_void_pulse.png`
 
 ### Active Animation (6 frames)
+
+#### 🤖 Versión ChatGPT (fondo negro):
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Solid BLACK background (#000000).
+STYLE: Cartoon/Funko Pop - cute, bold colors, 2px dark purple outline on shapes (NOT black).
 VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Void singularity energy ONLY - NO ground. Swirling dark energy vortex floating on transparent background.
+SUBJECT: Void singularity - swirling dark energy vortex. A magical portal/black hole effect with purple energy spiraling inward.
 
-⚠️ CRITICAL: Do NOT draw any ground or surface. ONLY the void energy effect itself. Pure ethereal dark energy.
+DO NOT DRAW: Any ground, floor, terrain, surface or environmental elements. ONLY the void energy effect floating in blackness.
 
 COLOR PALETTE:
-- Primary: Deep purple-black (#1A001A) - core
-- Secondary: Dark violet (#330033) - swirls
-- Accent: Bright purple energy (#9933FF) - semi-transparent wisps
+- Core: Deep purple-black (#1A001A)
+- Swirls: Dark violet (#330033) and medium purple (#660066)
+- Energy wisps: Bright purple (#9933FF) and magenta (#FF33FF)
+- Highlights: Pale lavender (#CC99FF)
+- Outline: Dark purple (#2D0033) - NOT black!
+
+ANIMATION SEQUENCE (LOOP):
+- Frame 1: Vortex stable, energy particles drifting inward slowly
+- Frame 2: Vortex same, particles closer to center
+- Frame 3: Vortex pulses slightly larger, energy brightens
+- Frame 4: Maximum pulse, brightest purple energy
+- Frame 5: Vortex contracts, energy ripples outward
+- Frame 6: Returns to starting size, ready to loop
+
+IMPORTANT DETAILS:
+- The vortex should have a dark center (near-black) with bright purple edges
+- Spiral arms of purple energy rotating
+- Small bright particles being "sucked" toward center
+- Ethereal, magical appearance
+- Outlines must be DARK PURPLE not black (for background removal)
+```
+
+#### 🌟 Versión Gemini (fondo transparente):
+```
+Create a horizontal sprite strip for a 2D roguelike game.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. TRANSPARENT background (checkered pattern).
+STYLE: Cartoon/Funko Pop - cute, bold colors, 2px dark outline on shapes.
+VIEW: TOP-DOWN (looking straight down)
+
+SUBJECT: Void singularity - swirling dark energy vortex. A magical portal/black hole effect with purple energy spiraling inward.
+
+DO NOT DRAW: Any ground, floor, terrain, surface or environmental elements. ONLY the void energy effect.
+
+COLOR PALETTE:
+- Core: Deep purple-black (#1A001A)
+- Swirls: Dark violet (#330033) 
+- Energy: Bright purple (#9933FF) - semi-transparent edges
 - Outline: Near-black (#0D000D)
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Void vortex stable, particles drifting inward
+- Frame 1-2: Vortex stable, particles drifting inward
 - Frame 3-4: Vortex pulses larger, energy intensifies
 - Frame 5-6: Vortex contracts, energy ripples outward
 
 EFFECTS:
-- Swirling dark energy (semi-transparent)
+- Swirling dark energy (semi-transparent at edges)
 - Purple energy wisps being sucked to center
-- Distortion rings (transparent)
 - NO ground - pure void energy floating
 ```
 
