@@ -1186,7 +1186,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 	"light_beam": {
 		"beam_frames": 6,
 		"beam_fps": 12.0,
-		"sprite_scale": 1.0,
+		"sprite_scale": 1.5,  # Escala aumentada para mejor visibilidad
 		"is_beam": true
 	},
 	"thunder_spear": {  # Lightning + Light fusion
@@ -1265,16 +1265,19 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 	# ═══════════════════════════════════════════════════════════════════════════
 	if config.get("is_beam", false):
 		var start_path = base_path + "beam_start_" + weapon_id + ".png"
+		var body_path = base_path + "beam_body_" + weapon_id + ".png"
 		var tip_path = base_path + "beam_tip_" + weapon_id + ".png"
 		
 		print("[ProjectileVisualManager] Buscando BEAM sprites para: " + weapon_id)
 		print("  Start path: " + start_path + " - Existe: " + str(ResourceLoader.exists(start_path)))
+		print("  Body path: " + body_path + " - Existe: " + str(ResourceLoader.exists(body_path)))
 		print("  Tip path: " + tip_path + " - Existe: " + str(ResourceLoader.exists(tip_path)))
 		
 		var start_tex = load(start_path) as Texture2D if ResourceLoader.exists(start_path) else null
+		var body_tex = load(body_path) as Texture2D if ResourceLoader.exists(body_path) else null
 		var tip_tex = load(tip_path) as Texture2D if ResourceLoader.exists(tip_path) else null
 		
-		if start_tex or tip_tex:
+		if start_tex or body_tex or tip_tex:
 			# Al menos uno de los sprites BEAM existe
 			var beam_frames_count = config.get("beam_frames", 6)
 			var beam_frame_size = config.get("beam_frame_size", 64)
@@ -1283,6 +1286,9 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 				data.beam_start_spritesheet = start_tex
 				data.beam_frames = beam_frames_count
 				print("  Start spritesheet: " + str(start_tex.get_width()) + "x" + str(start_tex.get_height()))
+			if body_tex:
+				data.beam_body_spritesheet = body_tex
+				print("  Body spritesheet: " + str(body_tex.get_width()) + "x" + str(body_tex.get_height()))
 			if tip_tex:
 				data.beam_tip_spritesheet = tip_tex
 				data.beam_frames = beam_frames_count

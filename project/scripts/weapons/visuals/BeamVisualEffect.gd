@@ -134,8 +134,26 @@ func _setup_from_sprites() -> void:
 			visual_data.beam_frames, visual_data.beam_fps, true)
 		start_sprite.sprite_frames = frames
 		start_sprite.scale = Vector2.ONE * sprite_scale
+		start_sprite.z_index = 10  # Encima del Line2D
+		start_sprite.visible = true
 		start_sprite.play("active")  # Iniciar animación inmediatamente
 		print("  ✓ Start sprite configurado: " + str(visual_data.beam_frames) + " frames, scale: " + str(sprite_scale))
+	
+	# Body texture para el Line2D
+	if visual_data.beam_body_spritesheet:
+		body_line.texture = visual_data.beam_body_spritesheet
+		body_line.texture_mode = Line2D.LINE_TEXTURE_TILE
+		body_line.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		body_line.width = visual_data.beam_body_spritesheet.get_height() * sprite_scale
+		# Eliminar el gradiente cuando hay textura
+		body_line.gradient = null
+		# Hacer el glow más sutil cuando hay textura de body
+		glow_line.modulate.a = 0.3
+		print("  ✓ Body texture configurada: " + str(visual_data.beam_body_spritesheet.get_width()) + "x" + str(visual_data.beam_body_spritesheet.get_height()))
+	else:
+		# Sin body sprite, hacer el Line2D más sutil para no tapar los otros sprites
+		body_line.modulate.a = 0.3
+		glow_line.modulate.a = 0.2
 	
 	# Tip sprite
 	if visual_data.beam_tip_spritesheet:
@@ -144,13 +162,16 @@ func _setup_from_sprites() -> void:
 			visual_data.beam_frames, visual_data.beam_fps, true)
 		tip_sprite.sprite_frames = frames
 		tip_sprite.scale = Vector2.ONE * sprite_scale
+		tip_sprite.z_index = 10  # Encima del Line2D
+		tip_sprite.visible = true
 		tip_sprite.play("active")  # Iniciar animación inmediatamente
 		print("  ✓ Tip sprite configurado: " + str(visual_data.beam_frames) + " frames, scale: " + str(sprite_scale))
 	else:
 		print("  ✗ Tip sprite NO TIENE SPRITESHEET")
 	
-	# Configurar gradiente del body
-	_setup_body_gradient()
+	# Configurar gradiente del body (si no hay textura)
+	if not visual_data.beam_body_spritesheet:
+		_setup_body_gradient()
 
 func _setup_procedural() -> void:
 	"""Crear animaciones procedurales"""
@@ -362,6 +383,9 @@ func _update_beam_points(current_length: float) -> void:
 	if points.size() > 0:
 		tip_sprite.position = points[-1]
 		tip_sprite.rotation = _direction.angle()
+		# Debug: verificar posición del tip
+		if Engine.get_frames_drawn() % 60 == 0:  # Solo cada 60 frames para no saturar
+			print("[BeamVisualEffect] Tip en posición: " + str(tip_sprite.position) + ", visible: " + str(tip_sprite.visible))
 
 func dissipate() -> void:
 	"""Desvanecer el rayo"""
