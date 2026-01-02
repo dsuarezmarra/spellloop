@@ -243,6 +243,58 @@ class BeamEffect extends Node2D:
 		if knockback != 0 and enemy.has_method("apply_knockback"):
 			var kb_dir = (enemy.global_position - global_position).normalized()
 			enemy.apply_knockback(kb_dir * knockback)
+		
+		# Aplicar efectos especiales
+		_apply_effect(enemy)
+	
+	func _apply_effect(enemy: Node) -> void:
+		"""Aplicar efectos especiales del beam"""
+		if effect == "none":
+			return
+		
+		match effect:
+			"burn":
+				if enemy.has_method("apply_burn"):
+					enemy.apply_burn(effect_value, effect_duration)
+			"freeze":
+				if enemy.has_method("apply_freeze"):
+					enemy.apply_freeze(effect_value, effect_duration)
+				elif enemy.has_method("apply_slow"):
+					enemy.apply_slow(effect_value, effect_duration)
+			"slow":
+				if enemy.has_method("apply_slow"):
+					enemy.apply_slow(effect_value, effect_duration)
+			"stun":
+				if enemy.has_method("apply_stun"):
+					enemy.apply_stun(effect_duration)
+			"blind":
+				if enemy.has_method("apply_blind"):
+					enemy.apply_blind(effect_duration)
+			"pull":
+				if enemy.has_method("apply_pull"):
+					enemy.apply_pull(global_position, effect_value, effect_duration)
+			"execute":
+				if enemy.has_method("get_info"):
+					var info = enemy.get_info()
+					var hp = info.get("hp", 100)
+					var max_hp = info.get("max_hp", 100)
+					var hp_percent = float(hp) / float(max_hp)
+					if hp_percent <= effect_value:
+						if enemy.has_method("take_damage"):
+							enemy.take_damage(hp)
+			"lifesteal":
+				var player = _get_player()
+				if player and player.has_method("heal"):
+					player.heal(int(effect_value))
+	
+	func _get_player() -> Node:
+		"""Obtener referencia al jugador"""
+		if not get_tree():
+			return null
+		var players = get_tree().get_nodes_in_group("player")
+		if players.size() > 0:
+			return players[0]
+		return null
 
 	func _create_beam_visual(end_pos: Vector2) -> void:
 		# Intentar usar visual mejorado
@@ -469,16 +521,65 @@ class AOEEffect extends Node2D:
 				if enemy.has_method("apply_pull"):
 					enemy.apply_pull(global_position, effect_value, effect_duration)
 			"freeze":
+				if enemy.has_method("apply_freeze"):
+					enemy.apply_freeze(effect_value, effect_duration)
+				elif enemy.has_method("apply_slow"):
+					enemy.apply_slow(effect_value, effect_duration)
+			"slow":
 				if enemy.has_method("apply_slow"):
 					enemy.apply_slow(effect_value, effect_duration)
 			"burn":
 				if enemy.has_method("apply_burn"):
 					enemy.apply_burn(effect_value, effect_duration)
+			"blind":
+				if enemy.has_method("apply_blind"):
+					enemy.apply_blind(effect_duration)
+			"steam":
+				# Efecto combinado: slow + burn
+				if enemy.has_method("apply_slow"):
+					enemy.apply_slow(0.3, effect_duration)  # 30% slow
+				if enemy.has_method("apply_burn"):
+					enemy.apply_burn(effect_value, effect_duration)
+			"freeze_chain":
+				# Freeze que se propaga (el chain se maneja en otro lugar)
+				if enemy.has_method("apply_freeze"):
+					enemy.apply_freeze(effect_value, effect_duration)
+				elif enemy.has_method("apply_slow"):
+					enemy.apply_slow(effect_value, effect_duration)
+			"burn_chain":
+				# Burn que se propaga
+				if enemy.has_method("apply_burn"):
+					enemy.apply_burn(effect_value, effect_duration)
 			"lifesteal":
-				# Curar al jugador
+				# Curar al jugador por cada tick
 				var player = _get_player()
 				if player and player.has_method("heal"):
 					player.heal(int(effect_value))
+			"lifesteal_chain":
+				# Lifesteal que se propaga
+				var player = _get_player()
+				if player and player.has_method("heal"):
+					player.heal(int(effect_value))
+			"execute":
+				# Ejecutar si el enemigo tiene menos del X% de vida
+				if enemy.has_method("get_info"):
+					var info = enemy.get_info()
+					var hp = info.get("hp", 100)
+					var max_hp = info.get("max_hp", 100)
+					var hp_percent = float(hp) / float(max_hp)
+					if hp_percent <= effect_value:  # effect_value es el umbral (ej: 0.2 = 20%)
+						if enemy.has_method("take_damage"):
+							enemy.take_damage(hp)  # Matar instantáneamente
+							print("[AOE] ⚔️ EXECUTE! %s eliminado (%.0f%% HP)" % [enemy.name, hp_percent * 100])
+			"knockback_bonus":
+				# Ya se maneja el knockback en otro lugar, esto solo incrementa
+				pass
+			"crit_chance":
+				# Ya se maneja en _apply_damage_tick
+				pass
+			"chain":
+				# El chain se maneja en ChainProjectile, no aquí
+				pass
 	
 	func _get_player() -> Node:
 		"""Obtener referencia al jugador para lifesteal"""
@@ -571,6 +672,11 @@ class OrbitalManager extends Node2D:
 	var orbital_speed: float = 200.0
 	var color: Color = Color(0.7, 0.3, 1.0)
 	var crit_chance: float = 0.0
+	
+	# Efectos especiales
+	var effect: String = "none"
+	var effect_value: float = 0.0
+	var effect_duration: float = 0.0
 
 	var _rotation_angle: float = 0.0
 	var _last_hit_times: Dictionary = {}  # enemy_id -> last_hit_time
@@ -602,6 +708,11 @@ class OrbitalManager extends Node2D:
 		orbital_speed = data.get("speed", 200.0)
 		color = data.get("color", Color(0.7, 0.3, 1.0))
 		crit_chance = data.get("crit_chance", 0.0)
+		
+		# Efectos especiales
+		effect = data.get("effect", "none")
+		effect_value = data.get("effect_value", 0.0)
+		effect_duration = data.get("effect_duration", 0.0)
 
 		_recreate_orbitals()
 
@@ -719,6 +830,49 @@ class OrbitalManager extends Node2D:
 
 		if enemy.has_method("take_damage"):
 			enemy.take_damage(int(final_damage))
+		
+		# Aplicar efectos especiales
+		_apply_orbital_effect(enemy)
+	
+	func _apply_orbital_effect(enemy: Node) -> void:
+		"""Aplicar efectos especiales de orbitales"""
+		if effect == "none":
+			return
+		
+		match effect:
+			"slow":
+				if enemy.has_method("apply_slow"):
+					enemy.apply_slow(effect_value, effect_duration)
+			"burn":
+				if enemy.has_method("apply_burn"):
+					enemy.apply_burn(effect_value, effect_duration)
+			"freeze":
+				if enemy.has_method("apply_freeze"):
+					enemy.apply_freeze(effect_value, effect_duration)
+				elif enemy.has_method("apply_slow"):
+					enemy.apply_slow(effect_value, effect_duration)
+			"stun":
+				if enemy.has_method("apply_stun"):
+					enemy.apply_stun(effect_duration)
+			"pull":
+				if enemy.has_method("apply_pull"):
+					enemy.apply_pull(global_position, effect_value, effect_duration)
+			"blind":
+				if enemy.has_method("apply_blind"):
+					enemy.apply_blind(effect_duration)
+			"lifesteal":
+				var player = _get_orbital_player()
+				if player and player.has_method("heal"):
+					player.heal(int(effect_value))
+	
+	func _get_orbital_player() -> Node:
+		"""Obtener referencia al jugador para lifesteal"""
+		if not get_tree():
+			return null
+		var players = get_tree().get_nodes_in_group("player")
+		if players.size() > 0:
+			return players[0]
+		return null
 
 	func _process(delta: float) -> void:
 		# Rotar orbitales
@@ -759,6 +913,7 @@ class ChainProjectile extends Node2D:
 	var crit_chance: float = 0.0
 	var effect: String = "none"
 	var effect_value: float = 0.0
+	var effect_duration: float = 2.0  # Duración de efectos
 	var weapon_id: String = ""
 
 	var first_target: Node2D = null
@@ -777,6 +932,7 @@ class ChainProjectile extends Node2D:
 		crit_chance = data.get("crit_chance", 0.0)
 		effect = data.get("effect", "chain")
 		effect_value = data.get("effect_value", 2)
+		effect_duration = data.get("effect_duration", 2.0)
 		weapon_id = data.get("weapon_id", "")
 
 	func start_chain() -> void:
@@ -859,6 +1015,58 @@ class ChainProjectile extends Node2D:
 		if knockback != 0 and target.has_method("apply_knockback"):
 			var kb_dir = (target.global_position - global_position).normalized()
 			target.apply_knockback(kb_dir * knockback)
+		
+		# Aplicar efectos especiales de cadena
+		_apply_chain_effect(target)
+
+	func _apply_chain_effect(target: Node2D) -> void:
+		"""Aplicar efectos especiales de proyectiles encadenados"""
+		if effect == "none" or effect == "chain":
+			return
+		
+		# Usar la duración del efecto configurada (ya cargada en setup)
+		match effect:
+			"freeze_chain":
+				# Congelar a cada enemigo en la cadena
+				if target.has_method("apply_freeze"):
+					target.apply_freeze(effect_value, effect_duration)
+				elif target.has_method("apply_slow"):
+					target.apply_slow(effect_value, effect_duration)
+			"burn_chain":
+				# Quemar a cada enemigo en la cadena
+				if target.has_method("apply_burn"):
+					target.apply_burn(effect_value, effect_duration)
+			"lifesteal_chain":
+				# Curar al jugador por cada enemigo
+				var player = _get_player()
+				if player and player.has_method("heal"):
+					player.heal(int(effect_value))
+			"stun":
+				if target.has_method("apply_stun"):
+					target.apply_stun(effect_duration)
+			"slow":
+				if target.has_method("apply_slow"):
+					target.apply_slow(effect_value, effect_duration)
+			"burn":
+				if target.has_method("apply_burn"):
+					target.apply_burn(effect_value, effect_duration)
+			"freeze":
+				if target.has_method("apply_freeze"):
+					target.apply_freeze(effect_value, effect_duration)
+				elif target.has_method("apply_slow"):
+					target.apply_slow(effect_value, effect_duration)
+			"pull":
+				if target.has_method("apply_pull"):
+					target.apply_pull(global_position, effect_value, effect_duration)
+	
+	func _get_player() -> Node:
+		"""Obtener referencia al jugador para lifesteal"""
+		if not get_tree():
+			return null
+		var players = get_tree().get_nodes_in_group("player")
+		if players.size() > 0:
+			return players[0]
+		return null
 
 	func _find_next_target(from_pos: Vector2) -> Node2D:
 		"""Buscar el siguiente objetivo válido para encadenar"""

@@ -335,6 +335,13 @@ func _load_enemy_sprite(sprite: Sprite2D) -> void:
 			print("[EnemyBase] Ruta de sprite no existe: ", sprite_path)
 
 func _physics_process(delta: float) -> void:
+	# Procesar efectos de estado primero
+	_process_status_effects(delta)
+	
+	# Si está stunneado, no moverse
+	if _is_stunned:
+		return
+	
 	# Usar GLOBAL_POSITION para ignorar que el parent se mueve
 	# El player SIEMPRE está en (0, 0) globalmente en el viewport
 	var player_global_pos = Vector2.ZERO
@@ -350,6 +357,10 @@ func _physics_process(delta: float) -> void:
 	if animated_sprite and direction.length() > 0.1:
 		current_direction = direction
 		animated_sprite.set_direction(direction)
+	
+	# Si está siendo atraído (pull), no calcular movimiento normal
+	if _is_pulled:
+		return
 	
 	# Calcular separación de otros enemigos
 	var separation = _calculate_separation()
@@ -440,6 +451,278 @@ func apply_knockback(knockback_force: Vector2) -> void:
 		var original_color = sprite.modulate
 		tween.tween_property(sprite, "modulate", Color.WHITE.lightened(0.2), 0.05)
 		tween.tween_property(sprite, "modulate", original_color, 0.05)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE EFECTOS DE ESTADO
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Variables de estado
+var _is_stunned: bool = false
+var _is_slowed: bool = false
+var _is_burning: bool = false
+var _is_blinded: bool = false
+var _is_pulled: bool = false
+var _is_frozen: bool = false  # Separado de slow para visual diferente
+
+var _base_speed: float = 0.0  # Velocidad original antes de efectos
+var _slow_amount: float = 0.0
+var _burn_damage: float = 0.0
+var _burn_timer: float = 0.0
+var _burn_tick_timer: float = 0.0
+var _stun_timer: float = 0.0
+var _slow_timer: float = 0.0
+var _blind_timer: float = 0.0
+var _freeze_timer: float = 0.0
+var _pull_target: Vector2 = Vector2.ZERO
+var _pull_force: float = 0.0
+var _pull_timer: float = 0.0
+
+# Para el efecto visual persistente
+var _status_tween: Tween = null
+var _current_status_color: Color = Color.WHITE
+
+const BURN_TICK_INTERVAL: float = 0.5  # Daño de quemadura cada 0.5s
+
+func apply_slow(amount: float, duration: float) -> void:
+	"""Aplicar efecto de ralentización
+	amount: porcentaje de reducción de velocidad (0.0 - 1.0)
+	duration: duración del efecto en segundos
+	"""
+	if _is_stunned:
+		return  # No aplicar slow si está stunneado
+	
+	# Guardar velocidad base si no está guardada
+	if _base_speed == 0.0:
+		_base_speed = speed
+	
+	# Aplicar el slow más fuerte si ya hay uno activo
+	if _is_slowed:
+		_slow_amount = max(_slow_amount, amount)
+		_slow_timer = max(_slow_timer, duration)
+	else:
+		_slow_amount = clamp(amount, 0.0, 0.95)  # Máximo 95% slow
+		_slow_timer = duration
+		_is_slowed = true
+	
+	# Aplicar reducción de velocidad
+	speed = _base_speed * (1.0 - _slow_amount)
+	
+	_update_status_visual()
+	print("[EnemyBase] ❄️ %s ralentizado %.0f%% por %.1fs" % [name, _slow_amount * 100, duration])
+
+func apply_freeze(amount: float, duration: float) -> void:
+	"""Aplicar efecto de congelación (slow extremo)
+	amount: porcentaje de reducción (típicamente 0.7-0.9)
+	duration: duración del efecto
+	"""
+	# Guardar velocidad base si no está guardada
+	if _base_speed == 0.0:
+		_base_speed = speed
+	
+	_is_frozen = true
+	_freeze_timer = max(_freeze_timer, duration)
+	_slow_amount = max(_slow_amount, amount)
+	_is_slowed = true
+	_slow_timer = max(_slow_timer, duration)
+	
+	# Aplicar reducción de velocidad
+	speed = _base_speed * (1.0 - _slow_amount)
+	
+	_update_status_visual()
+	print("[EnemyBase] 🧊 %s congelado %.0f%% por %.1fs" % [name, amount * 100, duration])
+
+func apply_burn(damage_per_tick: float, duration: float) -> void:
+	"""Aplicar efecto de quemadura (DoT)
+	damage_per_tick: daño por cada tick
+	duration: duración total del efecto
+	"""
+	# Si ya está quemando, refrescar/apilar
+	if _is_burning:
+		# Aplicar el daño más alto y refrescar duración
+		_burn_damage = max(_burn_damage, damage_per_tick)
+		_burn_timer = max(_burn_timer, duration)
+	else:
+		_burn_damage = damage_per_tick
+		_burn_timer = duration
+		_burn_tick_timer = 0.0
+		_is_burning = true
+	
+	_update_status_visual()
+	print("[EnemyBase] 🔥 %s quemándose %.1f daño/tick por %.1fs" % [name, damage_per_tick, duration])
+
+func apply_stun(duration: float) -> void:
+	"""Aplicar efecto de aturdimiento (paraliza completamente)
+	duration: duración del stun
+	"""
+	# Guardar velocidad base
+	if _base_speed == 0.0:
+		_base_speed = speed
+	
+	# Aplicar o refrescar stun
+	_stun_timer = max(_stun_timer, duration)
+	
+	if not _is_stunned:
+		_is_stunned = true
+		speed = 0.0  # Paralizar
+		can_attack = false  # No puede atacar
+	
+	_update_status_visual()
+	print("[EnemyBase] ⭐ %s aturdido por %.1fs" % [name, duration])
+
+func apply_pull(target_position: Vector2, force: float, duration: float) -> void:
+	"""Aplicar efecto de atracción hacia un punto
+	target_position: posición hacia donde atraer
+	force: fuerza de atracción (velocidad)
+	duration: duración del efecto
+	"""
+	_pull_target = target_position
+	_pull_force = force
+	_pull_timer = duration
+	_is_pulled = true
+	
+	_update_status_visual()
+	print("[EnemyBase] 🌀 %s atraído hacia %s por %.1fs" % [name, target_position, duration])
+
+func apply_blind(duration: float) -> void:
+	"""Aplicar efecto de ceguera (reduce precisión de ataques)
+	duration: duración del efecto
+	"""
+	_blind_timer = max(_blind_timer, duration)
+	_is_blinded = true
+	
+	_update_status_visual()
+	print("[EnemyBase] 👁️ %s cegado por %.1fs" % [name, duration])
+
+func _update_status_visual() -> void:
+	"""Actualizar el color del sprite según los efectos activos (prioridad)"""
+	var target_color: Color = Color.WHITE
+	
+	# Prioridad de colores (el más importante se muestra)
+	if _is_stunned:
+		target_color = Color(1.0, 1.0, 0.3, 1.0)  # Amarillo brillante
+	elif _is_frozen:
+		target_color = Color(0.4, 0.9, 1.0, 1.0)  # Cyan hielo
+	elif _is_burning:
+		target_color = Color(1.0, 0.5, 0.2, 1.0)  # Naranja fuego
+	elif _is_slowed:
+		target_color = Color(0.6, 0.8, 1.0, 1.0)  # Azul claro
+	elif _is_pulled:
+		target_color = Color(0.8, 0.5, 1.0, 1.0)  # Púrpura
+	elif _is_blinded:
+		target_color = Color(0.4, 0.4, 0.4, 1.0)  # Gris oscuro
+	
+	# Solo actualizar si el color cambió
+	if target_color != _current_status_color:
+		_current_status_color = target_color
+		_apply_persistent_color(target_color)
+
+func _apply_persistent_color(color: Color) -> void:
+	"""Aplicar color persistente al sprite"""
+	var sprite = animated_sprite if animated_sprite else _find_sprite_node(self)
+	if sprite:
+		# Cancelar tween anterior si existe
+		if _status_tween and _status_tween.is_valid():
+			_status_tween.kill()
+		
+		# Aplicar color con transición suave
+		_status_tween = create_tween()
+		_status_tween.tween_property(sprite, "modulate", color, 0.15)
+
+func _flash_damage() -> void:
+	"""Flash rápido cuando recibe daño de burn"""
+	var sprite = animated_sprite if animated_sprite else _find_sprite_node(self)
+	if sprite:
+		var original = _current_status_color
+		var flash_tween = create_tween()
+		flash_tween.tween_property(sprite, "modulate", Color(1.0, 0.2, 0.0), 0.05)
+		flash_tween.tween_property(sprite, "modulate", original, 0.1)
+
+func _process_status_effects(delta: float) -> void:
+	"""Procesar todos los efectos de estado activos"""
+	var status_changed: bool = false
+	
+	# Procesar STUN
+	if _is_stunned:
+		_stun_timer -= delta
+		if _stun_timer <= 0:
+			_is_stunned = false
+			can_attack = true
+			status_changed = true
+			if _base_speed > 0:
+				speed = _base_speed * (1.0 - _slow_amount if _is_slowed else 1.0)
+	
+	# Procesar FREEZE (separado de slow para el visual)
+	if _is_frozen:
+		_freeze_timer -= delta
+		if _freeze_timer <= 0:
+			_is_frozen = false
+			status_changed = true
+	
+	# Procesar SLOW
+	if _is_slowed and not _is_stunned:
+		_slow_timer -= delta
+		if _slow_timer <= 0:
+			_is_slowed = false
+			_slow_amount = 0.0
+			status_changed = true
+			if _base_speed > 0:
+				speed = _base_speed
+	
+	# Procesar BURN (DoT)
+	if _is_burning:
+		_burn_timer -= delta
+		_burn_tick_timer += delta
+		
+		# Aplicar daño cada tick
+		if _burn_tick_timer >= BURN_TICK_INTERVAL:
+			_burn_tick_timer = 0.0
+			take_damage(int(_burn_damage))
+			_flash_damage()  # Flash visual de daño
+		
+		if _burn_timer <= 0:
+			_is_burning = false
+			_burn_damage = 0.0
+			status_changed = true
+	
+	# Procesar BLIND
+	if _is_blinded:
+		_blind_timer -= delta
+		if _blind_timer <= 0:
+			_is_blinded = false
+			status_changed = true
+	
+	# Procesar PULL
+	if _is_pulled:
+		_pull_timer -= delta
+		# Mover hacia el objetivo
+		var pull_direction = (_pull_target - global_position).normalized()
+		global_position += pull_direction * _pull_force * delta
+		
+		if _pull_timer <= 0:
+			_is_pulled = false
+			status_changed = true
+	
+	# Actualizar visual si algún estado cambió
+	if status_changed:
+		_update_status_visual()
+
+func is_stunned() -> bool:
+	"""Verificar si el enemigo está aturdido"""
+	return _is_stunned
+
+func is_blinded() -> bool:
+	"""Verificar si el enemigo está cegado"""
+	return _is_blinded
+
+func get_attack_accuracy() -> float:
+	"""Obtener precisión de ataque (afectada por ceguera)"""
+	if _is_blinded:
+		return 0.3  # 30% precisión cuando está cegado
+	return 1.0  # 100% precisión normal
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MUERTE Y LIFECYCLE
+# ═══════════════════════════════════════════════════════════════════════════════
 
 func die() -> void:
 	emit_signal("enemy_died", self, enemy_id, exp_value)

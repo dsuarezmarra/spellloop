@@ -173,7 +173,215 @@ func _spawn_damage_popup(amount: int) -> void:
 
 func apply_knockback(force: Vector2) -> void:
 	"""Recibir knockback - dummy no se mueve pero registra"""
-	print("[TestDummy #%d] Knockback: %s" % [dummy_id, force])
+	print("[TestDummy #%d] 💨 Knockback: %s" % [dummy_id, force])
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE EFECTOS DE ESTADO (igual que EnemyBase)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+var _is_stunned: bool = false
+var _is_slowed: bool = false
+var _is_burning: bool = false
+var _is_blinded: bool = false
+var _is_pulled: bool = false
+var _is_frozen: bool = false
+
+var _base_speed: float = 0.0
+var _slow_amount: float = 0.0
+var _burn_damage: float = 0.0
+var _burn_timer: float = 0.0
+var _burn_tick_timer: float = 0.0
+var _stun_timer: float = 0.0
+var _slow_timer: float = 0.0
+var _blind_timer: float = 0.0
+var _freeze_timer: float = 0.0
+var _pull_target: Vector2 = Vector2.ZERO
+var _pull_force: float = 0.0
+var _pull_timer: float = 0.0
+
+var _status_tween: Tween = null
+var _current_status_color: Color = Color.WHITE
+
+const BURN_TICK_INTERVAL: float = 0.5
+
+func _process(delta: float) -> void:
+	_process_status_effects(delta)
+
+func apply_slow(amount: float, duration: float) -> void:
+	"""Aplicar efecto de ralentización"""
+	if _is_stunned:
+		return
+	
+	_slow_amount = clamp(amount, 0.0, 0.95)
+	_slow_timer = max(_slow_timer, duration)
+	_is_slowed = true
+	
+	_update_status_visual()
+	_log_effect("❄️ SLOW", "%.0f%% por %.1fs" % [amount * 100, duration])
+
+func apply_freeze(amount: float, duration: float) -> void:
+	"""Aplicar efecto de congelación"""
+	_is_frozen = true
+	_freeze_timer = max(_freeze_timer, duration)
+	_slow_amount = max(_slow_amount, amount)
+	_is_slowed = true
+	_slow_timer = max(_slow_timer, duration)
+	
+	_update_status_visual()
+	_log_effect("🧊 FREEZE", "%.0f%% por %.1fs" % [amount * 100, duration])
+
+func apply_burn(damage_per_tick: float, duration: float) -> void:
+	"""Aplicar efecto de quemadura (DoT)"""
+	if _is_burning:
+		_burn_damage = max(_burn_damage, damage_per_tick)
+		_burn_timer = max(_burn_timer, duration)
+	else:
+		_burn_damage = damage_per_tick
+		_burn_timer = duration
+		_burn_tick_timer = 0.0
+		_is_burning = true
+	
+	_update_status_visual()
+	_log_effect("🔥 BURN", "%.1f daño/tick por %.1fs" % [damage_per_tick, duration])
+
+func apply_stun(duration: float) -> void:
+	"""Aplicar efecto de aturdimiento"""
+	_stun_timer = max(_stun_timer, duration)
+	_is_stunned = true
+	
+	_update_status_visual()
+	_log_effect("⭐ STUN", "%.1fs" % duration)
+
+func apply_pull(target_position: Vector2, force: float, duration: float) -> void:
+	"""Aplicar efecto de atracción"""
+	_pull_target = target_position
+	_pull_force = force
+	_pull_timer = duration
+	_is_pulled = true
+	
+	_update_status_visual()
+	_log_effect("🌀 PULL", "hacia %s, fuerza %.1f por %.1fs" % [target_position, force, duration])
+
+func apply_blind(duration: float) -> void:
+	"""Aplicar efecto de ceguera"""
+	_blind_timer = max(_blind_timer, duration)
+	_is_blinded = true
+	
+	_update_status_visual()
+	_log_effect("👁️ BLIND", "%.1fs" % duration)
+
+func _log_effect(effect_name: String, details: String) -> void:
+	"""Log de efectos aplicados"""
+	print("[TestDummy #%d] %s: %s" % [dummy_id, effect_name, details])
+
+func _update_status_visual() -> void:
+	"""Actualizar el color del sprite según los efectos activos"""
+	var target_color: Color = Color.WHITE
+	
+	if _is_stunned:
+		target_color = Color(1.0, 1.0, 0.3, 1.0)  # Amarillo
+	elif _is_frozen:
+		target_color = Color(0.4, 0.9, 1.0, 1.0)  # Cyan
+	elif _is_burning:
+		target_color = Color(1.0, 0.5, 0.2, 1.0)  # Naranja
+	elif _is_slowed:
+		target_color = Color(0.6, 0.8, 1.0, 1.0)  # Azul claro
+	elif _is_pulled:
+		target_color = Color(0.8, 0.5, 1.0, 1.0)  # Púrpura
+	elif _is_blinded:
+		target_color = Color(0.4, 0.4, 0.4, 1.0)  # Gris
+	
+	if target_color != _current_status_color:
+		_current_status_color = target_color
+		_apply_persistent_color(target_color)
+
+func _apply_persistent_color(color: Color) -> void:
+	"""Aplicar color persistente al sprite"""
+	if sprite:
+		if _status_tween and _status_tween.is_valid():
+			_status_tween.kill()
+		_status_tween = create_tween()
+		_status_tween.tween_property(sprite, "modulate", color, 0.15)
+
+func _flash_damage() -> void:
+	"""Flash rápido de daño de burn"""
+	if sprite:
+		var original = _current_status_color
+		var flash_tween = create_tween()
+		flash_tween.tween_property(sprite, "modulate", Color(1.0, 0.2, 0.0), 0.05)
+		flash_tween.tween_property(sprite, "modulate", original, 0.1)
+
+func _process_status_effects(delta: float) -> void:
+	"""Procesar todos los efectos de estado activos"""
+	var status_changed: bool = false
+	
+	# STUN
+	if _is_stunned:
+		_stun_timer -= delta
+		if _stun_timer <= 0:
+			_is_stunned = false
+			status_changed = true
+	
+	# FREEZE
+	if _is_frozen:
+		_freeze_timer -= delta
+		if _freeze_timer <= 0:
+			_is_frozen = false
+			status_changed = true
+	
+	# SLOW
+	if _is_slowed:
+		_slow_timer -= delta
+		if _slow_timer <= 0:
+			_is_slowed = false
+			_slow_amount = 0.0
+			status_changed = true
+	
+	# BURN (DoT)
+	if _is_burning:
+		_burn_timer -= delta
+		_burn_tick_timer += delta
+		
+		if _burn_tick_timer >= BURN_TICK_INTERVAL:
+			_burn_tick_timer = 0.0
+			take_damage(int(_burn_damage), "burn")
+			_flash_damage()
+		
+		if _burn_timer <= 0:
+			_is_burning = false
+			_burn_damage = 0.0
+			status_changed = true
+	
+	# BLIND
+	if _is_blinded:
+		_blind_timer -= delta
+		if _blind_timer <= 0:
+			_is_blinded = false
+			status_changed = true
+	
+	# PULL (los dummies no se mueven, solo registran)
+	if _is_pulled:
+		_pull_timer -= delta
+		if _pull_timer <= 0:
+			_is_pulled = false
+			status_changed = true
+	
+	if status_changed:
+		_update_status_visual()
+
+func is_stunned() -> bool:
+	return _is_stunned
+
+func is_blinded() -> bool:
+	return _is_blinded
+
+func get_info() -> Dictionary:
+	"""Para efectos como execute que necesitan saber el HP"""
+	return {
+		"id": dummy_id,
+		"hp": current_hp,
+		"max_hp": max_hp
+	}
 
 func reset() -> void:
 	"""Resetear el dummy a su estado inicial"""

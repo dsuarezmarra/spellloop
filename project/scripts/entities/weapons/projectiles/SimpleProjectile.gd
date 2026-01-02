@@ -362,22 +362,125 @@ func _handle_hit(target: Node) -> void:
 	
 	enemies_hit.append(target)
 	
+	# Calcular daño final (con crítico si aplica)
+	var final_damage = damage
+	var crit_chance = get_meta("crit_chance", 0.0)
+	if randf() < crit_chance:
+		final_damage *= 2
+	
 	# Aplicar daño
 	if target.has_method("take_damage"):
-		target.take_damage(damage)
+		target.take_damage(final_damage)
 	elif target.has_node("HealthComponent"):
 		var hc = target.get_node("HealthComponent")
 		if hc.has_method("take_damage"):
-			hc.take_damage(damage, "physical")
+			hc.take_damage(final_damage, "physical")
+	
+	# Calcular knockback real (con bonus si aplica)
+	var final_knockback = knockback_force
+	var effect = get_meta("effect", "none")
+	var effect_value = get_meta("effect_value", 0.0)
+	if effect == "knockback_bonus":
+		final_knockback *= effect_value  # effect_value es el multiplicador
 	
 	# Aplicar knockback
-	if knockback_force > 0 and target.has_method("apply_knockback"):
-		target.apply_knockback(direction * knockback_force)
-	elif knockback_force > 0 and target is CharacterBody2D:
-		target.velocity += direction * knockback_force
+	if final_knockback > 0 and target.has_method("apply_knockback"):
+		target.apply_knockback(direction * final_knockback)
+	elif final_knockback > 0 and target is CharacterBody2D:
+		target.velocity += direction * final_knockback
+	
+	# Aplicar efectos especiales
+	_apply_effect(target)
 	
 	# Emitir señal
-	hit_enemy.emit(target, damage)
+	hit_enemy.emit(target, final_damage)
+	
+	# Efecto de impacto
+	_spawn_hit_effect()
+	
+	# Verificar pierce
+	if pierces_remaining > 0:
+		pierces_remaining -= 1
+	else:
+		_destroy()
+
+func _apply_effect(target: Node) -> void:
+	"""Aplicar efecto especial del proyectil al objetivo"""
+	var effect = get_meta("effect", "none")
+	var effect_value = get_meta("effect_value", 0.0)
+	var effect_duration = get_meta("effect_duration", 0.0)
+	
+	# Debug: imprimir el efecto que se intenta aplicar
+	if effect != "none":
+		print("[SimpleProjectile] 🎯 Aplicando efecto '%s' (valor=%.2f, dur=%.2f) a %s" % [effect, effect_value, effect_duration, target.name])
+	
+	if effect == "none":
+		return
+	
+	match effect:
+		"slow":
+			if target.has_method("apply_slow"):
+				target.apply_slow(effect_value, effect_duration)
+		"burn":
+			if target.has_method("apply_burn"):
+				target.apply_burn(effect_value, effect_duration)
+		"freeze":
+			if target.has_method("apply_freeze"):
+				target.apply_freeze(effect_value, effect_duration)
+			elif target.has_method("apply_slow"):
+				target.apply_slow(effect_value, effect_duration)
+		"stun":
+			if target.has_method("apply_stun"):
+				target.apply_stun(effect_duration)
+		"pull":
+			# Para pull necesitamos una posición objetivo (normalmente el jugador)
+			var player = _get_player()
+			if player and target.has_method("apply_pull"):
+				target.apply_pull(player.global_position, effect_value, effect_duration)
+		"blind":
+			if target.has_method("apply_blind"):
+				target.apply_blind(effect_duration)
+		"steam":
+			# Combinación de slow + burn
+			if target.has_method("apply_slow"):
+				target.apply_slow(0.3, effect_duration)
+			if target.has_method("apply_burn"):
+				target.apply_burn(effect_value, effect_duration)
+		"freeze_chain":
+			if target.has_method("apply_freeze"):
+				target.apply_freeze(effect_value, effect_duration)
+			elif target.has_method("apply_slow"):
+				target.apply_slow(effect_value, effect_duration)
+		"burn_chain":
+			if target.has_method("apply_burn"):
+				target.apply_burn(effect_value, effect_duration)
+		"lifesteal":
+			var player = _get_player()
+			if player and player.has_method("heal"):
+				player.heal(int(effect_value))
+		"lifesteal_chain":
+			var player = _get_player()
+			if player and player.has_method("heal"):
+				player.heal(int(effect_value))
+		"execute":
+			if target.has_method("get_info"):
+				var info = target.get_info()
+				var hp = info.get("hp", 100)
+				var max_hp = info.get("max_hp", 100)
+				var hp_percent = float(hp) / float(max_hp)
+				if hp_percent <= effect_value:
+					if target.has_method("take_damage"):
+						target.take_damage(hp)  # Matar instantáneamente
+		"knockback_bonus", "crit_chance", "chain":
+			pass  # Ya manejados en otro lugar
+
+func _get_player() -> Node:
+	"""Obtener referencia al jugador"""
+	if get_tree():
+		var players = get_tree().get_nodes_in_group("player")
+		if players.size() > 0:
+			return players[0]
+	return null
 	
 	# Efecto de impacto
 	_spawn_hit_effect()

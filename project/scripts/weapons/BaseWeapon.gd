@@ -508,8 +508,28 @@ func apply_effect_to_target(target: Node2D) -> void:
 			_apply_stun(target)
 		"pull":
 			_apply_pull(target)
+		"blind":
+			_apply_blind(target)
+		"steam":
+			_apply_steam(target)
+		"freeze_chain":
+			_apply_freeze(target)
+			# El chain se maneja en el proyectil
+		"burn_chain":
+			_apply_burn(target)
+			# El chain se maneja en el proyectil
 		"lifesteal":
-			pass  # Se maneja al matar
+			pass  # Se maneja al hacer daño
+		"lifesteal_chain":
+			pass  # Se maneja al hacer daño
+		"execute":
+			_apply_execute(target)
+		"knockback_bonus":
+			pass  # Se aplica automáticamente al knockback
+		"crit_chance":
+			pass  # Se aplica automáticamente al daño
+		"chain":
+			pass  # Se maneja en el proyectil
 	
 	effect_applied.emit(target, effect, effect_value)
 
@@ -525,7 +545,10 @@ func _apply_burn(target: Node2D) -> void:
 
 func _apply_freeze(target: Node2D) -> void:
 	"""Aplicar freeze (slow extremo) al objetivo"""
-	if target.has_method("apply_slow"):
+	if target.has_method("apply_freeze"):
+		target.apply_freeze(effect_value, effect_duration)
+	elif target.has_method("apply_slow"):
+		# Fallback a slow si no hay método freeze
 		target.apply_slow(effect_value, effect_duration)
 
 func _apply_stun(target: Node2D) -> void:
@@ -535,8 +558,48 @@ func _apply_stun(target: Node2D) -> void:
 
 func _apply_pull(target: Node2D) -> void:
 	"""Atraer objetivo hacia el jugador"""
-	if target.has_method("apply_pull"):
-		target.apply_pull(effect_value, effect_duration)
+	var player = _get_player()
+	if player and target.has_method("apply_pull"):
+		target.apply_pull(player.global_position, effect_value, effect_duration)
+
+func _apply_blind(target: Node2D) -> void:
+	"""Aplicar ceguera al objetivo"""
+	if target.has_method("apply_blind"):
+		target.apply_blind(effect_duration)
+
+func _apply_steam(target: Node2D) -> void:
+	"""Aplicar efecto de vapor (slow + burn combinados)"""
+	# Slow moderado
+	if target.has_method("apply_slow"):
+		target.apply_slow(0.3, effect_duration)  # 30% slow
+	# Burn con el valor del efecto
+	if target.has_method("apply_burn"):
+		target.apply_burn(effect_value, effect_duration)
+
+func _apply_execute(target: Node2D) -> void:
+	"""Ejecutar al objetivo si tiene poca vida"""
+	if not target.has_method("get_info"):
+		return
+	
+	var info = target.get_info()
+	var hp = info.get("hp", 100)
+	var max_hp = info.get("max_hp", 100)
+	var hp_percent = float(hp) / float(max_hp)
+	
+	# effect_value es el umbral (ej: 0.2 = 20% HP)
+	if hp_percent <= effect_value:
+		if target.has_method("take_damage"):
+			target.take_damage(hp)  # Daño letal
+			print("[BaseWeapon] ⚔️ EXECUTE! Enemigo eliminado (%.0f%% HP)" % [hp_percent * 100])
+
+func _get_player() -> Node:
+	"""Obtener referencia al jugador"""
+	var tree = Engine.get_main_loop()
+	if tree and tree is SceneTree:
+		var players = tree.get_nodes_in_group("player")
+		if players.size() > 0:
+			return players[0]
+	return null
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SERIALIZACIÓN
