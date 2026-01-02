@@ -672,6 +672,7 @@ class OrbitalManager extends Node2D:
 	var orbital_speed: float = 200.0
 	var color: Color = Color(0.7, 0.3, 1.0)
 	var crit_chance: float = 0.0
+	var knockback: float = 20.0  # Knockback base de orbitales
 	
 	# Efectos especiales
 	var effect: String = "none"
@@ -708,6 +709,7 @@ class OrbitalManager extends Node2D:
 		orbital_speed = data.get("speed", 200.0)
 		color = data.get("color", Color(0.7, 0.3, 1.0))
 		crit_chance = data.get("crit_chance", 0.0)
+		knockback = data.get("knockback", 20.0)
 		
 		# Efectos especiales
 		effect = data.get("effect", "none")
@@ -830,6 +832,16 @@ class OrbitalManager extends Node2D:
 
 		if enemy.has_method("take_damage"):
 			enemy.take_damage(int(final_damage))
+		
+		# Calcular knockback real (con bonus si aplica)
+		var final_knockback = knockback
+		if effect == "knockback_bonus":
+			final_knockback *= effect_value  # effect_value es el multiplicador
+		
+		# Aplicar knockback hacia afuera (desde el centro del jugador)
+		if final_knockback != 0 and enemy.has_method("apply_knockback"):
+			var kb_dir = (enemy.global_position - global_position).normalized()
+			enemy.apply_knockback(kb_dir * final_knockback)
 		
 		# Aplicar efectos especiales
 		_apply_orbital_effect(enemy)

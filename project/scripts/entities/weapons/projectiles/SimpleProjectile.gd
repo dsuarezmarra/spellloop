@@ -55,6 +55,14 @@ func _ready() -> void:
 	z_index = 10
 	pierces_remaining = pierce_count
 	
+	# DEBUG: Mostrar metadatos de efectos al crear
+	var _effect = get_meta("effect", "none")
+	var _effect_value = get_meta("effect_value", 0.0)
+	var _effect_dur = get_meta("effect_duration", 0.0)
+	var _wid = get_meta("weapon_id", "")
+	if _effect != "none":
+		print("[SimpleProjectile] 🆕 Creado - weapon: %s, effect: %s (val=%.2f, dur=%.2f)" % [_wid, _effect, _effect_value, _effect_dur])
+	
 	# Obtener color del elemento
 	if ELEMENT_COLORS.has(element_type):
 		projectile_color = ELEMENT_COLORS[element_type]

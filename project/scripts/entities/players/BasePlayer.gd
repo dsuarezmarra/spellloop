@@ -232,8 +232,42 @@ func take_damage(amount: int) -> void:
 func heal(amount: int) -> void:
 	"""Curar al personaje"""
 	if health_component:
+		var old_hp = health_component.current_health
 		health_component.heal(amount)
-		print("[%s] Curación: +%d (HP: %d/%d)" % [character_class, amount, health_component.current_health, max_hp])
+		var healed = health_component.current_health - old_hp
+		
+		# Mostrar texto flotante de curación si realmente curó algo
+		if healed > 0:
+			FloatingText.spawn_heal(global_position + Vector2(0, -30), healed)
+			_spawn_heal_particles()
+		
+		print("[%s] Curación: +%d (HP: %d/%d)" % [character_class, healed, health_component.current_health, max_hp])
+
+func _spawn_heal_particles() -> void:
+	"""Crear partículas de curación verde"""
+	var particles = CPUParticles2D.new()
+	particles.emitting = true
+	particles.one_shot = true
+	particles.explosiveness = 0.8
+	particles.amount = 8
+	particles.lifetime = 0.6
+	particles.direction = Vector2(0, -1)
+	particles.spread = 45.0
+	particles.gravity = Vector2(0, -20)
+	particles.initial_velocity_min = 30.0
+	particles.initial_velocity_max = 60.0
+	particles.scale_amount_min = 3.0
+	particles.scale_amount_max = 5.0
+	particles.color = Color(0.3, 1.0, 0.4, 0.9)
+	
+	add_child(particles)
+	
+	# Auto-destruir después de que terminen las partículas
+	var timer = get_tree().create_timer(1.0)
+	timer.timeout.connect(func(): 
+		if is_instance_valid(particles):
+			particles.queue_free()
+	)
 
 func _on_health_changed(current: int, max_val: int) -> void:
 	"""Callback cuando la salud cambia"""

@@ -431,6 +431,12 @@ func _create_projectile(player: Node2D, direction: Vector2, dmg: float, crit: fl
 	projectile_data["direction"] = direction
 	projectile_data["start_position"] = player.global_position
 	
+	# DEBUG: Verificar que los datos de efecto se pasan
+	if projectile_data.get("effect", "none") != "none":
+		print("[BaseWeapon] 📤 Creando proyectil para %s - effect: %s, val: %.2f, dur: %.2f" % [
+			id, projectile_data.effect, projectile_data.effect_value, projectile_data.effect_duration
+		])
+	
 	# Emitir para que el AttackManager maneje la creación
 	ProjectileFactory.create_projectile(player, projectile_data)
 

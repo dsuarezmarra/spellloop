@@ -15,6 +15,12 @@ var hit_count: int = 0
 var last_hit_time: float = 0.0
 var invincible: bool = false
 
+# Knockback y posición
+var _original_position: Vector2 = Vector2.ZERO
+var _knockback_velocity: Vector2 = Vector2.ZERO
+var _return_to_origin: bool = true  # Si debe volver a su posición original
+var _return_speed: float = 100.0    # Velocidad de retorno
+
 # Visual
 var sprite: AnimatedSprite2D = null
 var hp_label: Label = null
@@ -24,6 +30,9 @@ func _ready() -> void:
 	add_to_group("enemies")
 	_setup_visuals()
 	_setup_collision()
+	
+	# Guardar posición original para volver después del knockback
+	_original_position = global_position
 
 func _setup_visuals() -> void:
 	# Sprite del dummy (círculo rojo)
@@ -172,8 +181,11 @@ func _spawn_damage_popup(amount: int) -> void:
 	tween.chain().tween_callback(popup.queue_free)
 
 func apply_knockback(force: Vector2) -> void:
-	"""Recibir knockback - dummy no se mueve pero registra"""
-	print("[TestDummy #%d] 💨 Knockback: %s" % [dummy_id, force])
+	"""Recibir knockback - ahora sí mueve al dummy"""
+	print("[TestDummy #%d] 💨 Knockback: %s (magnitud: %.1f)" % [dummy_id, force, force.length()])
+	
+	# Aplicar la fuerza como velocidad
+	_knockback_velocity = force
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SISTEMA DE EFECTOS DE ESTADO (igual que EnemyBase)
@@ -206,6 +218,35 @@ const BURN_TICK_INTERVAL: float = 0.5
 
 func _process(delta: float) -> void:
 	_process_status_effects(delta)
+
+func _physics_process(delta: float) -> void:
+	_process_knockback_and_return(delta)
+
+func _process_knockback_and_return(delta: float) -> void:
+	"""Procesar el movimiento de knockback y retorno a posición original"""
+	# Si hay knockback activo, mover
+	if _knockback_velocity.length() > 5.0:
+		# Aplicar knockback con fricción
+		velocity = _knockback_velocity
+		move_and_slide()
+		
+		# Reducir knockback (fricción)
+		_knockback_velocity *= 0.85
+	else:
+		_knockback_velocity = Vector2.ZERO
+		
+		# Si debe volver a la posición original
+		if _return_to_origin:
+			var distance_to_origin = global_position.distance_to(_original_position)
+			if distance_to_origin > 2.0:
+				# Moverse hacia la posición original
+				var direction = (_original_position - global_position).normalized()
+				velocity = direction * _return_speed
+				move_and_slide()
+			else:
+				# Ya está en posición
+				global_position = _original_position
+				velocity = Vector2.ZERO
 
 func apply_slow(amount: float, duration: float) -> void:
 	"""Aplicar efecto de ralentización"""
@@ -359,9 +400,19 @@ func _process_status_effects(delta: float) -> void:
 			_is_blinded = false
 			status_changed = true
 	
-	# PULL (los dummies no se mueven, solo registran)
+	# PULL - ahora sí mueve al dummy hacia el objetivo
 	if _is_pulled:
 		_pull_timer -= delta
+		
+		# Calcular dirección hacia el objetivo
+		var direction = (_pull_target - global_position).normalized()
+		var distance = global_position.distance_to(_pull_target)
+		
+		# Solo mover si no está muy cerca del objetivo
+		if distance > 20.0:
+			# Aplicar fuerza de atracción como knockback inverso
+			_knockback_velocity = direction * _pull_force * 0.5
+		
 		if _pull_timer <= 0:
 			_is_pulled = false
 			status_changed = true
