@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 """
-Procesar sprites de Arcane Orb (orbital)
+Procesar sprites orbitales
 Detecta automáticamente los límites de cada frame basándose en el contenido
+Uso: python process_arcane_orb.py [weapon_id] [base_path]
 """
 
 from PIL import Image
 import numpy as np
 from pathlib import Path
+import sys
 
-# Configuración
-WEAPON_ID = "arcane_orb"
-INPUT_PATH = Path(r"C:\git\spellloop\project\assets\sprites\projectiles\weapons\arcane_orb\orbit_raw.png")
-OUTPUT_PATH = Path(r"C:\git\spellloop\project\assets\sprites\projectiles\weapons\arcane_orb\orbit_spritesheet_arcane_orb.png")
+# Configuración por defecto
+WEAPON_ID = sys.argv[1] if len(sys.argv) > 1 else "arcane_orb"
+BASE_PATH = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(r"C:\git\spellloop\project\assets\sprites\projectiles\weapons\arcane_orb")
+INPUT_PATH = BASE_PATH / "orbit_raw.png"
+OUTPUT_PATH = BASE_PATH / f"orbit_spritesheet_{WEAPON_ID}.png"
 
 FRAME_SIZE = 64  # Tamaño final de cada frame
 NUM_FRAMES = 8   # Número de frames esperados
