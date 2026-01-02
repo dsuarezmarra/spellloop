@@ -486,57 +486,21 @@ EFFECTS:
 > Archivo: `weapons/void_pulse/aoe_active_void_pulse.png`
 
 ### Active Animation (6 frames)
-
-#### 🤖 Versión ChatGPT (fondo negro):
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Solid BLACK background (#000000).
-STYLE: Cartoon/Funko Pop - cute, bold colors, 2px dark purple outline on shapes (NOT black).
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
 VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Void singularity - swirling dark energy vortex. A magical portal/black hole effect with purple energy spiraling inward.
+SUBJECT: Void singularity ONLY - NO ground. Swirling dark energy vortex with purple energy spiraling inward, floating on transparent background.
 
-DO NOT DRAW: Any ground, floor, terrain, surface or environmental elements. ONLY the void energy effect floating in blackness.
-
-COLOR PALETTE:
-- Core: Deep purple-black (#1A001A)
-- Swirls: Dark violet (#330033) and medium purple (#660066)
-- Energy wisps: Bright purple (#9933FF) and magenta (#FF33FF)
-- Highlights: Pale lavender (#CC99FF)
-- Outline: Dark purple (#2D0033) - NOT black!
-
-ANIMATION SEQUENCE (LOOP):
-- Frame 1: Vortex stable, energy particles drifting inward slowly
-- Frame 2: Vortex same, particles closer to center
-- Frame 3: Vortex pulses slightly larger, energy brightens
-- Frame 4: Maximum pulse, brightest purple energy
-- Frame 5: Vortex contracts, energy ripples outward
-- Frame 6: Returns to starting size, ready to loop
-
-IMPORTANT DETAILS:
-- The vortex should have a dark center (near-black) with bright purple edges
-- Spiral arms of purple energy rotating
-- Small bright particles being "sucked" toward center
-- Ethereal, magical appearance
-- Outlines must be DARK PURPLE not black (for background removal)
-```
-
-#### 🌟 Versión Gemini (fondo transparente):
-```
-Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. TRANSPARENT background (checkered pattern).
-STYLE: Cartoon/Funko Pop - cute, bold colors, 2px dark outline on shapes.
-VIEW: TOP-DOWN (looking straight down)
-
-SUBJECT: Void singularity - swirling dark energy vortex. A magical portal/black hole effect with purple energy spiraling inward.
-
-DO NOT DRAW: Any ground, floor, terrain, surface or environmental elements. ONLY the void energy effect.
+⚠️ CRITICAL: Do NOT draw any ground, floor, terrain or surface. ONLY the void energy vortex effect itself.
 
 COLOR PALETTE:
-- Core: Deep purple-black (#1A001A)
-- Swirls: Dark violet (#330033) 
-- Energy: Bright purple (#9933FF)
-- Outline: Near-black (#0D000D)
+- Primary: Deep purple-black (#1A001A) - core
+- Secondary: Dark violet (#330033) - swirls
+- Accent: Bright purple (#9933FF) - energy wisps
+- Outline: Dark purple (#2D0033)
 
 ANIMATION SEQUENCE (LOOP):
 - Frame 1-2: Vortex stable, particles drifting inward
@@ -544,10 +508,11 @@ ANIMATION SEQUENCE (LOOP):
 - Frame 5-6: Vortex contracts, energy ripples outward
 
 EFFECTS:
-- Swirling dark energy with bold colors
-- Purple energy wisps being sucked to center
+- Dark void center with solid colors
+- Spiral arms of purple energy rotating
+- Purple particles being sucked toward center
 - NO ground - pure void energy floating
-- Solid outlines, no fading edges
+- Bold outlines on all elements
 ```
 
 ---

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://blfduodsfigel"
-path="res://.godot/imported/aoe_active_glacier_RAW.png-5b560e74040899ac01c60811fe973a0c.ctex"
+uid="uid://dkd7q8i22sjdi"
+path="res://.godot/imported/aoe_active_rift_quake.png-28c91ecc8449a16336177e113a410867.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/glacier/aoe_active_glacier_RAW.png"
-dest_files=["res://.godot/imported/aoe_active_glacier_RAW.png-5b560e74040899ac01c60811fe973a0c.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/rift_quake/aoe_active_rift_quake.png"
+dest_files=["res://.godot/imported/aoe_active_rift_quake.png-28c91ecc8449a16336177e113a410867.ctex"]
 
 [params]
 
