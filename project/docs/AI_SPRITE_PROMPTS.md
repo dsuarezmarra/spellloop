@@ -409,10 +409,15 @@ Effects:
 # 
 # INSTRUCCIONES PARA GENERAR SPRITES AOE:
 # 1. Todos los AOE son vista TOP-DOWN (desde arriba)
-# 2. Fondo transparente (checkerboard para verificar)
-# 3. Estilo: Cartoon/Funko Pop - formas redondeadas, colores saturados
-# 4. Outline oscuro de 1-2 píxeles en todos los elementos
-# 5. Efecto circular/radial centrado en el frame
+# 2. Fondo 100% TRANSPARENTE - NO dibujar suelo, terreno ni superficie
+# 3. Solo el EFECTO VISUAL: partículas, energía, fracturas luminosas, etc.
+# 4. SEMITRANSPARENCIA: Los efectos deben ser semi-transparentes para integrarse
+# 5. Estilo: Cartoon/Funko Pop - formas redondeadas, colores saturados
+# 6. Outline sutil de 1-2 píxeles para definir formas
+# 7. Efecto circular/radial centrado en el frame
+#
+# ⚠️ IMPORTANTE: NO incluir suelo, piedras, tierra, hierba ni ningún terreno.
+# El efecto debe poder superponerse sobre CUALQUIER bioma del juego.
 #
 # FORMATO DE ARCHIVOS:
 # - Active: 6 frames @ 64x64 = 384x64 total (LOOP)
@@ -429,28 +434,30 @@ Effects:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
-VIEW: TOP-DOWN (looking straight down at the ground)
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Rock spike zone active and threatening
+SUBJECT: Rock spikes ONLY - NO ground/terrain. Just the spikes emerging upward as seen from above, floating on transparent background.
+
+⚠️ CRITICAL: Do NOT draw any ground, floor, dirt, stones or terrain. ONLY the rock spikes themselves with dust particles. The effect must overlay on any game biome.
 
 COLOR PALETTE:
-- Primary: Brown rock (#996633)
+- Primary: Brown rock (#996633) - semi-transparent edges
 - Secondary: Tan highlights (#CC9966)
-- Accent: Light brown dust (#DDBB88)
+- Accent: Light brown dust particles (#DDBB88) - very transparent
 - Outline: Dark brown (#4D3319)
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Spikes at normal size, dust floating
-- Frame 3-4: Spikes pulse slightly larger, ground trembles
-- Frame 5-6: Spikes return to normal, dust settles slightly
+- Frame 1-2: Spikes visible from above, dust floating
+- Frame 3-4: Spikes pulse slightly, more dust
+- Frame 5-6: Spikes settle, dust dissipates
 
 EFFECTS:
-- Subtle size pulse on spike tips
-- Floating dust particles
-- Ground vibration effect (slight position shifts)
-- Circular arrangement maintained
+- Rock spikes as circular arrangement seen from top
+- Floating semi-transparent dust particles
+- NO ground texture - pure transparent background
+- Spikes should have some transparency at edges
 ```
 
 ---
@@ -464,28 +471,30 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
-VIEW: TOP-DOWN (looking straight down at the ground)
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Void singularity pulsing and pulling
+SUBJECT: Void singularity energy ONLY - NO ground. Swirling dark energy vortex floating on transparent background.
+
+⚠️ CRITICAL: Do NOT draw any ground or surface. ONLY the void energy effect itself. Pure ethereal dark energy.
 
 COLOR PALETTE:
-- Primary: Deep purple-black (#1A001A)
-- Secondary: Dark violet (#330033)
-- Accent: Purple energy (#9933FF)
+- Primary: Deep purple-black (#1A001A) - core
+- Secondary: Dark violet (#330033) - swirls
+- Accent: Bright purple energy (#9933FF) - semi-transparent wisps
 - Outline: Near-black (#0D000D)
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Void core stable, particles drifting inward
-- Frame 3-4: Core pulses larger, pull intensifies
-- Frame 5-6: Core contracts, energy ripples outward
+- Frame 1-2: Void vortex stable, particles drifting inward
+- Frame 3-4: Vortex pulses larger, energy intensifies
+- Frame 5-6: Vortex contracts, energy ripples outward
 
 EFFECTS:
-- Particles being sucked toward center
-- Distortion waves around void
-- Dark energy tendrils
-- Ominous pulsing glow
+- Swirling dark energy (semi-transparent)
+- Purple energy wisps being sucked to center
+- Distortion rings (transparent)
+- NO ground - pure void energy floating
 ```
 
 ---
@@ -499,28 +508,30 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
-VIEW: TOP-DOWN (looking straight down at the ground)
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Steam explosion zone billowing and scalding
+SUBJECT: Steam cloud ONLY - NO ground. Billowing steam and vapor floating on transparent background.
+
+⚠️ CRITICAL: Do NOT draw any ground or surface. ONLY the steam/vapor clouds themselves. Pure atmospheric effect.
 
 COLOR PALETTE:
-- Primary: White steam (#FFFFFF)
-- Secondary: Light gray mist (#CCCCCC)
-- Accent: Orange-red heat (#FF6633)
-- Outline: Gray-blue (#667788)
+- Primary: White steam (#FFFFFF) - semi-transparent (50-70% opacity)
+- Secondary: Light gray mist (#CCCCCC) - very transparent
+- Accent: Orange-red heat glow (#FF6633) - subtle, transparent
+- Outline: Gray-blue (#667788) - subtle
 
 ANIMATION SEQUENCE (LOOP):
 - Frame 1-2: Steam clouds billowing, heat shimmer
-- Frame 3-4: Steam intensifies, orange glow visible
+- Frame 3-4: Steam intensifies, orange glow at center
 - Frame 5-6: Steam disperses slightly, cycle resets
 
 EFFECTS:
-- Billowing cloud animation
-- Heat distortion effect
-- Water droplets in steam
-- Warm orange undertones
+- Billowing semi-transparent steam clouds
+- Heat shimmer (wavy transparent distortion)
+- NO ground - clouds floating on transparency
+- Warm orange undertones in center
 ```
 
 ---
@@ -534,28 +545,30 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
-VIEW: TOP-DOWN (looking straight down at the ground)
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Dimensional cracks in earth with void energy
+SUBJECT: Glowing dimensional cracks ONLY - NO ground. Purple energy fissures floating on transparent background, like cracks in reality itself.
+
+⚠️ CRITICAL: Do NOT draw any ground, earth or terrain. ONLY the glowing crack lines with void energy. The cracks are pure energy, not physical ground.
 
 COLOR PALETTE:
-- Primary: Brown cracked earth (#996633)
-- Secondary: Deep purple void (#330033)
-- Accent: Violet energy (#9933FF)
-- Outline: Dark brown-purple (#4D2233)
+- Primary: Bright purple void energy (#9933FF) - the crack lines
+- Secondary: Deep purple glow (#330033) - aura around cracks
+- Accent: White-violet core (#CC99FF) - brightest parts
+- Outline: Dark purple (#2D0033)
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Ground cracks stable, void glowing within
-- Frame 3-4: Cracks widen, purple energy surges up
-- Frame 5-6: Energy settles, cracks pulse
+- Frame 1-2: Energy cracks stable, void glowing within
+- Frame 3-4: Cracks pulse brighter, energy surges
+- Frame 5-6: Energy settles, cracks dim slightly
 
 EFFECTS:
-- Earth cracks with purple glow inside
+- Glowing crack lines (semi-transparent energy)
 - Void tendrils emerging from fissures
-- Ground vibration
-- Dimensional distortion
+- Purple energy particles
+- NO ground - pure energy cracks floating
 ```
 
 ---
@@ -569,28 +582,30 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
-VIEW: TOP-DOWN (looking straight down at the ground)
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Swirling void tornado from above
+SUBJECT: Swirling void vortex ONLY - NO ground. Dark energy tornado with cyan wind streaks floating on transparent background.
+
+⚠️ CRITICAL: Do NOT draw any ground or surface. ONLY the swirling vortex energy itself.
 
 COLOR PALETTE:
-- Primary: Deep void black (#1A001A)
-- Secondary: Cyan wind (#66FFFF)
-- Accent: Dark purple (#330033)
-- Outline: Black (#000000)
+- Primary: Deep void black (#1A001A) - core, semi-transparent
+- Secondary: Cyan wind streaks (#66FFFF) - semi-transparent
+- Accent: Dark purple (#330033) - energy wisps
+- Outline: Black (#000000) - subtle
 
 ANIMATION SEQUENCE (LOOP):
 - Frame 1-2: Vortex spinning, void center stable
-- Frame 3-4: Spin accelerates, debris visible
-- Frame 5-6: Vortex pulses, wind lines prominent
+- Frame 3-4: Spin accelerates, wind streaks prominent
+- Frame 5-6: Vortex pulses, energy disperses slightly
 
 EFFECTS:
-- Spiral wind lines
-- Dark void center
-- Debris particles spinning
-- Contrast between void and wind
+- Spiral wind lines (semi-transparent cyan)
+- Dark void center (semi-transparent)
+- Energy particles spinning
+- NO ground - pure floating vortex
 ```
 
 ---
@@ -604,28 +619,30 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
-VIEW: TOP-DOWN (looking straight down at the ground)
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Glacial ice spikes gleaming with frost
+SUBJECT: Ice crystal spikes ONLY - NO ground. Crystalline ice formations floating on transparent background as seen from above.
+
+⚠️ CRITICAL: Do NOT draw any ground, snow or terrain. ONLY the ice crystals/spikes themselves with frost particles.
 
 COLOR PALETTE:
-- Primary: Light cyan ice (#66FFFF)
-- Secondary: White frost (#FFFFFF)
-- Accent: Pale blue-gray (#B3D9E6)
+- Primary: Light cyan ice (#66FFFF) - semi-transparent crystals
+- Secondary: White frost (#FFFFFF) - highlights, transparent
+- Accent: Pale blue-gray (#B3D9E6) - depth
 - Outline: Dark cyan-blue (#1A5C66)
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Ice spikes gleaming, frost stable
-- Frame 3-4: Crystal reflections shift, mist swirls
-- Frame 5-6: Sparkles flash on tips, mist settles
+- Frame 1-2: Ice crystals gleaming, frost particles floating
+- Frame 3-4: Crystal reflections shift, sparkles appear
+- Frame 5-6: Sparkles flash, frost settles
 
 EFFECTS:
-- Crystalline light reflections
-- Cold mist breathing effect
-- Ice sparkle particles
-- Frozen, dangerous beauty
+- Semi-transparent ice crystals seen from above
+- Floating frost particles
+- Crystalline sparkle effects
+- NO ground - crystals on pure transparency
 ```
 
 ---
@@ -639,28 +656,30 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
-VIEW: TOP-DOWN (looking straight down at the ground)
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Frozen void singularity - time stopped
+SUBJECT: Frozen void singularity ONLY - NO ground. Dark void core surrounded by frozen ice crystals, all floating on transparent background.
+
+⚠️ CRITICAL: Do NOT draw any ground or surface. ONLY the void-ice energy effect itself.
 
 COLOR PALETTE:
-- Primary: Deep black-purple void (#0D0019)
-- Secondary: Pale cyan ice (#99CCFF)
-- Accent: Dark purple-blue (#330066)
+- Primary: Deep black-purple void (#0D0019) - core, semi-transparent
+- Secondary: Pale cyan ice (#99CCFF) - frozen particles, transparent
+- Accent: Dark purple-blue (#330066) - energy
 - Outline: Near black (#0A0A1A)
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Frozen void stable, ice crystals static
+- Frame 1-2: Frozen void stable, ice crystals suspended
 - Frame 3-4: Void pulses, crystals shimmer
 - Frame 5-6: Cold energy radiates outward
 
 EFFECTS:
-- Ice crystals floating statically (time frozen)
-- Void distortion at center
-- Extreme cold visual (white frost)
-- Eerie stillness feeling
+- Semi-transparent void core
+- Floating frozen particles (time-stopped feeling)
+- Ice crystals suspended in air
+- NO ground - pure ethereal frozen void
 ```
 
 ---
@@ -674,28 +693,30 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
-VIEW: TOP-DOWN (looking straight down at the ground)
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Active volcanic crater with bubbling lava
+SUBJECT: Lava eruption ONLY - NO ground/crater. Splashing lava, flames and embers floating on transparent background.
+
+⚠️ CRITICAL: Do NOT draw any ground, crater or rock surface. ONLY the lava splashes, flames and ember particles themselves.
 
 COLOR PALETTE:
-- Primary: Bright orange lava (#FF6600)
-- Secondary: Red-orange magma (#CC3300)
-- Accent: Dark red-brown rock (#661100)
-- Outline: Very dark brown (#331100)
+- Primary: Bright orange lava (#FF6600) - semi-transparent
+- Secondary: Red-orange magma (#CC3300) - glowing
+- Accent: Yellow-white hot core (#FFCC00) - brightest
+- Outline: Dark red (#661100)
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Lava pool bubbling gently
-- Frame 3-4: Magma geyser erupts, splashes
-- Frame 5-6: Lava settles, embers float
+- Frame 1-2: Lava splashes at peak, embers floating
+- Frame 3-4: More splashes erupt, flames dance
+- Frame 5-6: Lava falls back, embers scatter
 
 EFFECTS:
-- Bubbling lava animation
-- Lava splashes
-- Ember particles rising
-- Heat distortion
+- Lava splash droplets (semi-transparent)
+- Rising ember particles
+- Flame wisps
+- NO ground/crater - pure lava effect floating
 ```
 
 ---
@@ -709,28 +730,30 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
-VIEW: TOP-DOWN (looking straight down at the ground)
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Dark void fire burning with malice
+SUBJECT: Dark void flames ONLY - NO ground. Purple-red ethereal fire floating on transparent background.
+
+⚠️ CRITICAL: Do NOT draw any ground or surface. ONLY the dark flame effect itself.
 
 COLOR PALETTE:
-- Primary: Dark purple-red (#660033)
-- Secondary: Deep crimson (#990033)
-- Accent: Black-purple void (#1A001A)
+- Primary: Dark purple-red flames (#660033) - semi-transparent
+- Secondary: Deep crimson (#990033) - fire core
+- Accent: Black-purple void (#1A001A) - wisps
 - Outline: Near black (#0D000D)
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Dark flames flickering, void core pulsing
-- Frame 3-4: Flames spiral inward, void pulls
-- Frame 5-6: Flames dance outward, reset
+- Frame 1-2: Dark flames flickering, void wisps floating
+- Frame 3-4: Flames spiral inward, intensity increases
+- Frame 5-6: Flames dance outward, cycle resets
 
 EFFECTS:
-- Dark fire flickering (purple-red)
-- Void distortion at center
-- Soul-like wisps
-- Ominous threatening energy
+- Semi-transparent dark fire
+- Void energy wisps being pulled to center
+- Soul-like ethereal particles
+- NO ground - pure floating dark flames
 ```
 
 ---
@@ -744,28 +767,30 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
-VIEW: TOP-DOWN (looking straight down at the ground)
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Electrified cracked ground with arcs
+SUBJECT: Electric crack lines ONLY - NO ground. Glowing yellow lightning fractures floating on transparent background, like cracks of pure electricity.
+
+⚠️ CRITICAL: Do NOT draw any ground, rocks or terrain. ONLY the electric crack energy lines themselves.
 
 COLOR PALETTE:
-- Primary: Bright yellow lightning (#FFFF00)
-- Secondary: Brown-tan earth (#996633)
-- Accent: Yellow-brown glow (#CCAA44)
-- Outline: Dark brown (#4D3319)
+- Primary: Bright yellow lightning (#FFFF00) - the crack lines
+- Secondary: Orange-yellow glow (#FFAA00) - aura around cracks
+- Accent: White-yellow core (#FFFFCC) - brightest centers
+- Outline: Dark amber (#664400)
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Ground cracked, electric arcs jumping
-- Frame 3-4: Arcs intensify, rocks vibrate
+- Frame 1-2: Electric cracks glowing, arcs jumping
+- Frame 3-4: Arcs intensify, more branches appear
 - Frame 5-6: Electricity crackles, settles
 
 EFFECTS:
-- Electric arcs between cracks
-- Rock debris bouncing
-- Yellow glow in fissures
-- Ground tremor effect
+- Glowing electric crack lines (semi-transparent glow)
+- Lightning arcs jumping between cracks
+- Electric sparkle particles
+- NO ground - pure floating electricity
 ```
 
 ---
@@ -779,28 +804,30 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
-VIEW: TOP-DOWN (looking straight down at the ground)
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Living earth with roots and glowing stones
+SUBJECT: Glowing roots and nature energy ONLY - NO ground. Living vines/roots with green energy floating on transparent background.
+
+⚠️ CRITICAL: Do NOT draw any ground or terrain. ONLY the roots, vines and nature energy particles themselves.
 
 COLOR PALETTE:
-- Primary: Moss green-brown (#668844)
+- Primary: Moss green-brown roots (#668844) - semi-transparent
 - Secondary: Root brown (#886633)
-- Accent: Bright nature green (#66FF66)
+- Accent: Bright nature green energy (#66FF66) - glowing, transparent
 - Outline: Dark green-brown (#2D3319)
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Roots stable, stones glowing softly
-- Frame 3-4: Roots writhe, green energy pulses
+- Frame 1-2: Roots visible, green energy glowing
+- Frame 3-4: Roots pulse with life, energy intensifies
 - Frame 5-6: Healing waves radiate, settles
 
 EFFECTS:
-- Roots moving organically
-- Green energy pulse waves
-- Leaf particles floating
-- Life-giving aura
+- Semi-transparent root structures
+- Green glowing energy particles
+- Floating leaf particles
+- NO ground - roots on pure transparency
 ```
 
 ---
@@ -814,28 +841,30 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
-VIEW: TOP-DOWN (looking straight down at the ground)
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Corrupted nature zone draining life
+SUBJECT: Corrupted vines and void energy ONLY - NO ground. Sickly green-purple tendrils with drain effect floating on transparent background.
+
+⚠️ CRITICAL: Do NOT draw any ground or terrain. ONLY the corrupted vine energy and void particles.
 
 COLOR PALETTE:
-- Primary: Sickly green-brown (#556622)
-- Secondary: Dark purple void (#330033)
-- Accent: Yellow-green rot (#99AA33)
+- Primary: Sickly green-brown vines (#556622) - semi-transparent
+- Secondary: Dark purple void (#330033) - corruption
+- Accent: Yellow-green rot glow (#99AA33) - decay energy
 - Outline: Near black-green (#0D1A0D)
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Dead vines stable, void pulsing
-- Frame 3-4: Vines twitch, life being drained
+- Frame 1-2: Dead vines visible, void energy pulsing
+- Frame 3-4: Vines twitch, life drain particles toward center
 - Frame 5-6: Decay spreads, void contracts
 
 EFFECTS:
-- Corrupted vines moving sickly
-- Life drain particles toward center
+- Semi-transparent corrupted tendrils
+- Life drain particles (green to purple)
 - Void core pulsing
-- Unsettling hungry feeling
+- NO ground - pure floating corruption
 ```
 
 ---
@@ -849,28 +878,30 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
-VIEW: TOP-DOWN (looking straight down at the ground)
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Divine crystal pillars glowing with holy light
+SUBJECT: Glowing divine crystals ONLY - NO ground. Holy light crystal formations floating on transparent background.
+
+⚠️ CRITICAL: Do NOT draw any ground or terrain. ONLY the radiant crystal formations and light particles.
 
 COLOR PALETTE:
-- Primary: Pale gold-white (#FFFFCC)
-- Secondary: Pure white (#FFFFFF)
-- Accent: Tan-gold stone (#DDAA77)
+- Primary: Pale gold-white crystals (#FFFFCC) - semi-transparent
+- Secondary: Pure white light (#FFFFFF) - glow
+- Accent: Tan-gold stone (#DDAA77) - crystal depth
 - Outline: Muted gold (#AA8855)
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Crystals gleaming, light stable
-- Frame 3-4: Light pulses through crystals, sparkles
+- Frame 1-2: Crystals gleaming, holy light stable
+- Frame 3-4: Light pulses through crystals, sparkles appear
 - Frame 5-6: Divine glow breathes, settles
 
 EFFECTS:
-- Crystal facet reflections
-- Holy sparkle particles
-- Light pulse waves
-- Blessed protective feeling
+- Semi-transparent radiant crystals
+- Holy light sparkle particles
+- Light pulse waves (very transparent)
+- NO ground - crystals on pure transparency
 ```
 
 ---
