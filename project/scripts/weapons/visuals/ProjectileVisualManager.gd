@@ -1013,6 +1013,67 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"impact_frames": 6,
 		"impact_fps": 16.0,
 		"sprite_scale": 1.0
+	},
+	# === ORBITAL WEAPONS ===
+	"arcane_orb": {
+		"orbit_frames": 8,
+		"orbit_fps": 10.0,  # Smooth magical rotation
+		"sprite_scale": 1.0,
+		"is_orbital": true
+	},
+	"cosmic_barrier": {
+		"orbit_frames": 8,
+		"orbit_fps": 12.0,  # Divine light pulsing
+		"sprite_scale": 1.0,
+		"is_orbital": true
+	},
+	"crystal_guardian": {
+		"orbit_frames": 8,
+		"orbit_fps": 8.0,  # Slow, heavy crystal rotation
+		"sprite_scale": 1.0,
+		"is_orbital": true
+	},
+	"frost_orb": {
+		"orbit_frames": 8,
+		"orbit_fps": 10.0,  # Cold, elegant rotation
+		"sprite_scale": 1.0,
+		"is_orbital": true
+	},
+	"inferno_orb": {
+		"orbit_frames": 8,
+		"orbit_fps": 14.0,  # Fast, chaotic flames
+		"sprite_scale": 1.0,
+		"is_orbital": true
+	},
+	"arcane_storm": {
+		"orbit_frames": 8,
+		"orbit_fps": 16.0,  # Fast electric crackling
+		"sprite_scale": 1.0,
+		"is_orbital": true
+	},
+	"shadow_orbs": {
+		"orbit_frames": 8,
+		"orbit_fps": 8.0,  # Slow, ghostly movement
+		"sprite_scale": 1.0,
+		"is_orbital": true
+	},
+	"life_orbs": {
+		"orbit_frames": 8,
+		"orbit_fps": 10.0,  # Gentle breathing rhythm
+		"sprite_scale": 1.0,
+		"is_orbital": true
+	},
+	"wind_orbs": {
+		"orbit_frames": 8,
+		"orbit_fps": 14.0,  # Fast, airy movement
+		"sprite_scale": 1.0,
+		"is_orbital": true
+	},
+	"cosmic_void": {
+		"orbit_frames": 8,
+		"orbit_fps": 8.0,  # Slow, ominous pull
+		"sprite_scale": 1.0,
+		"is_orbital": true
 	}
 }
 
@@ -1029,7 +1090,35 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 	else:
 		base_path = FUSION_SPRITES_PATH + weapon_id + "/"
 
-	# Nueva nomenclatura: flight_spritesheet_[weapon].png, impact_spritesheet_[weapon].png
+	# Obtener configuración de frames para este arma
+	var config = WEAPON_SPRITE_CONFIG.get(weapon_id, {})
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# SPRITES ORBITALES (para armas tipo ORBIT)
+	# ═══════════════════════════════════════════════════════════════════════════
+	if config.get("is_orbital", false):
+		var orbit_path = base_path + "orbit_spritesheet_" + weapon_id + ".png"
+		if ResourceLoader.exists(orbit_path):
+			var orbit_tex = load(orbit_path) as Texture2D
+			if orbit_tex:
+				data.orbit_idle_spritesheet = orbit_tex
+				data.orbit_idle_frames = config.get("orbit_frames", 8)
+				data.orbit_fps = config.get("orbit_fps", 10.0)
+				
+				# Aplicar escala personalizada si está definida
+				if config.has("sprite_scale"):
+					data.base_scale = config.get("sprite_scale", 1.0)
+				
+				print("[ProjectileVisualManager] Sprites orbitales cargados para: " + weapon_id)
+				return
+			else:
+				push_warning("[ProjectileVisualManager] No se pudo cargar orbit_spritesheet_" + weapon_id + ".png")
+		# Si no hay sprites orbitales, usar procedural
+		return
+
+	# ═══════════════════════════════════════════════════════════════════════════
+	# SPRITES DE PROYECTIL NORMAL (flight + impact)
+	# ═══════════════════════════════════════════════════════════════════════════
 	var flight_path = base_path + "flight_spritesheet_" + weapon_id + ".png"
 	if not ResourceLoader.exists(flight_path):
 		return  # No hay sprites personalizados, usar procedural
@@ -1041,9 +1130,6 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 	if flight_tex == null:
 		push_warning("[ProjectileVisualManager] No se pudo cargar flight_spritesheet_" + weapon_id + ".png")
 		return
-
-	# Obtener configuración de frames para este arma
-	var config = WEAPON_SPRITE_CONFIG.get(weapon_id, {})
 
 	# NOTA: launch.png ya no se usa - los proyectiles empiezan directamente en flight
 

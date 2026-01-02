@@ -189,55 +189,58 @@ Effects:
 
 ---
 
-## 💫 4. ARCANE ORB - Esfera Arcana
+## 💫 4. ARCANE ORB - Orbe Arcano (ORBITAL)
 
-### Flight Animation (6 frames)
+> ⚠️ **TIPO ESPECIAL: ORBITAL**
+> Este arma NO dispara proyectiles. Los orbes orbitan ALREDEDOR del jugador y hacen daño por contacto.
+> Solo necesita animación de **ORBIT** (loop infinito mientras gira).
+
+### Orbit Animation (8 frames, LOOP)
 ```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+Create a horizontal sprite strip of 8 frames (64x64 each = 512x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
 
-Subject: A mystical orbiting magic sphere
+Subject: Mystical arcane orb with pulsing magical energy - orbits around player
 
 Design:
-- Shape: Perfect glowing orb with inner swirl pattern
-- Main body: Purple (#B34DFF)
-- Inner swirl: Pink (#FF66CC)
-- Glow: Light purple (#DD99FF)
-- Outline: Dark purple (#330066)
+- Shape: Perfect glowing sphere with rotating inner magical swirl
+- Main body: Rich purple (#9933FF) with magical depth
+- Inner swirl: Bright pink-magenta (#FF66CC) energy spiral that ROTATES
+- Core glow: White-lavender (#E6CCFF) pulsing at center
+- Floating runes: Pale purple (#CC99FF) symbols orbiting the sphere
+- Outline: Deep dark purple (#2A0A4D), 2 pixels
 
-Animation: Orb spinning with internal energy swirling
-- Frames 1-6: Inner swirl pattern rotating within the orb
-- Subtle size pulse (magical breathing)
-- Small magic runes appearing around the orb
+Animation: Orb with ROTATING internal energy and PULSING glow (LOOPS INFINITELY)
+- Frames 1-8: The inner swirl pattern rotates 360° through the 8 frames
+- Core brightness PULSES: dim → bright → dim through the cycle
+- 2-3 arcane runes slowly orbit AROUND the orb (different positions each frame)
+- Subtle size "breathing" effect (99% → 101% → 99%)
 
-Effects:
-- 2-3 tiny floating runes orbiting the sphere
-- Mystical sparkle particles
-- Soft purple glow halo
-- Magic trail wisps
-```
+Frame-by-frame breakdown:
+- Frame 1: Swirl at 0°, core at minimum brightness, runes at position A
+- Frame 2: Swirl at 45°, core brightening
+- Frame 3: Swirl at 90°, core bright
+- Frame 4: Swirl at 135°, core at maximum brightness, magical flash
+- Frame 5: Swirl at 180°, core starting to dim
+- Frame 6: Swirl at 225°, core dimming
+- Frame 7: Swirl at 270°, core dim
+- Frame 8: Swirl at 315°, core at minimum, ready to loop back to frame 1
 
-### Impact Animation (6 frames)
-```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
-
-Subject: Arcane orb magical dispersion
-
-Design:
-- Same palette: purple (#B34DFF), pink (#FF66CC), light purple (#DD99FF)
-- Dark purple outline (#330066)
-
-Animation: Orb releasing magical energy
-- Frame 1: Orb reaching target, energy intensifying
-- Frame 2: Burst of magic, runes appearing
-- Frame 3: Magical explosion with swirling energy
-- Frame 4: Energy dispersing into particles
-- Frame 5: Particles spreading, runes fading
-- Frame 6: Final magical sparkles disappearing
+Key concept: A LIVING magical orb with constantly swirling internal energy
 
 Effects:
-- Magical rune symbols appearing briefly
-- Swirling energy pattern
-- Mystical particles
+- Inner pink swirl clearly visible rotating inside purple sphere
+- Pulsing core brightness (like a magical heartbeat)
+- 2-3 small arcane rune symbols floating around (☆, ✦, ◇ shapes)
+- Soft purple glow halo that pulses with core brightness
+- Magical sparkle particles occasionally appearing
+- The orb feels ALIVE and full of magical energy
+
+Style: Cartoon/Funko Pop, clean shapes, bold outlines, no anti-aliasing on edges.
+This animation must loop SEAMLESSLY from frame 8 back to frame 1.
+
+Output file: orbit_spritesheet_arcane_orb.png (512x64)
 ```
 
 ---
@@ -692,28 +695,54 @@ Effects:
 
 ## ⭐✨ 14. COSMIC BARRIER (Arcane + Light) - ORBIT
 
-### Flight Animation (6 frames)
-```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+> Fusión: arcane_orb + light_beam
+> Escudo orbital brillante - combina magia arcana con luz divina
 
-Subject: Star-orb hybrid orbiting shield
+### Orbit Animation (8 frames, LOOP)
+```
+Create a horizontal sprite strip of 8 frames (64x64 each = 512x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Star-shaped magical orb with divine light - protective barrier orbital
 
 Design:
-- Core: Pale yellow (#FFFFCC)
-- Magic swirl: Light purple (#CC99FF)
-- Glow: White (#FFFFFF)
-- Outline: Muted purple (#996699)
+- Shape: Star-orb hybrid - spherical core with 4-6 pointed rays extending outward
+- Main body: Pale golden-cream (#FFFFCC) with warm glow
+- Magic swirl: Light purple-pink (#CC99FF) inside the core
+- Ray tips: Pure white (#FFFFFF) divine light
+- Sparkles: Golden (#FFE066) star particles
+- Outline: Muted purple-gold (#996688), 2 pixels
 
-Animation: Star-shaped orb with pointed rays pulsing
-- Frames 1-6: Star rays extending/retracting
-- Internal swirl rotating
-- Cosmic dust particles around
+Animation: Star-orb ROTATING with rays pulsing and divine light shimmering
+- Frames 1-8: Star shape rotates 360° through the animation
+- Rays PULSE: extend outward then retract slightly
+- Internal purple swirl rotates opposite to outer star
+- Core brightness cycles: warm → bright white → warm
+
+Frame-by-frame breakdown:
+- Frame 1: Star at 0°, rays at normal length, core warm
+- Frame 2: Star at 45°, rays starting to extend
+- Frame 3: Star at 90°, rays at maximum extension, bright flash
+- Frame 4: Star at 135°, core at peak brightness
+- Frame 5: Star at 180°, rays retracting
+- Frame 6: Star at 225°, core dimming
+- Frame 7: Star at 270°, rays at minimum
+- Frame 8: Star at 315°, ready to loop
+
+Key concept: DIVINE PROTECTION orb - warm, inviting, defensive feel
 
 Effects:
-- Pointed star rays
-- Starlight particles
-- Cosmic dust shimmer
-- Divine magical glow
+- Pointed star rays that glow with divine light
+- Inner purple magic swirl (arcane heritage)
+- Golden star sparkle particles floating around
+- Soft white-gold halo surrounding the orb
+- Protective, benevolent energy feel
+
+Style: Cartoon/Funko Pop, clean shapes, bold outlines.
+This animation must loop SEAMLESSLY.
+
+Output file: orbit_spritesheet_cosmic_barrier.png (512x64)
 ```
 
 ---
@@ -1871,28 +1900,54 @@ Effects:
 
 ## 💎🔮 22. CRYSTAL GUARDIAN (Earth + Arcane) - ORBIT
 
-### Flight Animation (6 frames)
-```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+> Fusión: earth_spike + arcane_orb
+> Cristales mágicos orbitantes - tierra infundida con magia arcana
 
-Subject: Geometric magic crystal orbiting
+### Orbit Animation (8 frames, LOOP)
+```
+Create a horizontal sprite strip of 8 frames (64x64 each = 512x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Geometric magic crystal with glowing arcane core - defensive earth orbital
 
 Design:
-- Crystal body: Amber/tan (#CC9966)
-- Magic glow: Purple (#9966CC)
-- Inner light: Light purple (#DDAAFF)
-- Outline: Dark brown (#664422)
+- Shape: Hexagonal/geometric crystal with faceted surfaces
+- Crystal body: Amber/tan (#CC9966) with rocky texture
+- Magic core: Purple arcane glow (#9966CC) visible inside
+- Facet highlights: Light purple (#DDAAFF) on edges
+- Earth particles: Brown (#886644) dust floating around
+- Outline: Dark brown (#553311), 2 pixels, angular
 
-Animation: Geometric crystal with magic glow rotating
-- Frames 1-6: Crystal rotating showing facets
-- Internal purple magic glow pulsing
-- Earth particles and magic runes
+Animation: Crystal ROTATING to show facets, arcane core PULSING
+- Frames 1-8: Crystal rotates showing different faceted faces
+- Internal purple glow PULSES like magical heartbeat
+- Earth particles orbit around the crystal
+- Facet highlights shimmer as they catch "light"
+
+Frame-by-frame breakdown:
+- Frame 1: Front facet visible, core dim
+- Frame 2: Crystal rotating 45°, core brightening
+- Frame 3: Side facet prominent, core bright
+- Frame 4: Edge visible, core at maximum, flash on facets
+- Frame 5: Opposite facet, core dimming
+- Frame 6: Continuing rotation, earth particles visible
+- Frame 7: Almost full rotation, core dim
+- Frame 8: Nearly back to start, ready to loop
+
+Key concept: EARTH MAGIC crystal - solid, protective, with arcane power inside
 
 Effects:
-- Crystal sparkle on facets
-- Magic runes floating nearby
-- Earth/dust particles
-- Geometric precision with magical warmth
+- Sharp geometric facets with reflective highlights
+- Purple arcane glow pulsing from within
+- 2-3 small earth/dust particles orbiting
+- Occasional arcane rune appearing near crystal
+- Sturdy, defensive feel with magical mystery
+
+Style: Cartoon/Funko Pop, clean shapes, angular edges for crystal facets.
+This animation must loop SEAMLESSLY.
+
+Output file: orbit_spritesheet_crystal_guardian.png (512x64)
 ```
 
 ---
@@ -1927,61 +1982,383 @@ Create a pixel art horizontal sprite sheet of a PLASMA EXPLOSION IMPACT for a 2D
 
 ## 🔥🔮 25. INFERNO ORB (Fire + Arcane) - ORBIT
 
-### Flight Animation (6 frames)
-```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+> Fusión: fire_wand + arcane_orb
+> Orbe de fuego infernal - llamas potenciadas con magia arcana
 
-Subject: Orbiting fireball with arcane magic
+### Orbit Animation (8 frames, LOOP)
+```
+Create a horizontal sprite strip of 8 frames (64x64 each = 512x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Blazing fireball infused with purple arcane magic - offensive fire orbital
 
 Design:
-- Fire body: Orange (#FF6600)
-- Arcane magic: Purple (#9933FF)
-- Core: Yellow (#FFCC00)
-- Outline: Dark brown (#663300)
+- Shape: Spherical flame orb with dancing fire tongues
+- Fire body: Bright orange (#FF6600) with yellow highlights
+- Arcane infusion: Purple (#9933FF) swirls weaving through flames
+- Core: Bright yellow-white (#FFCC00) hot center
+- Fire tips: Orange-red (#FF4400) flame edges
+- Outline: Dark red-brown (#552200), 2 pixels
 
-Animation: Fireball with purple magic infusion orbiting
-- Frames 1-6: Flame with purple arcane swirls
-- Magic runes appearing in flames
-- Dual-color energy pulsing
+Animation: Fireball FLICKERING with arcane purple swirls rotating inside
+- Frames 1-8: Fire tongues dance chaotically
+- Purple arcane swirl rotates 360° through the flames
+- Core brightness PULSES with heat intensity
+- Occasional purple rune appears in the flames
+
+Frame-by-frame breakdown:
+- Frame 1: Flames at rest position, purple swirl at 0°
+- Frame 2: Flames flare outward, swirl at 45°
+- Frame 3: Maximum flame size, swirl at 90°, core bright
+- Frame 4: Flames dancing, swirl at 135°, purple rune visible
+- Frame 5: Flames contract slightly, swirl at 180°
+- Frame 6: New flame pattern, swirl at 225°
+- Frame 7: Flames shifting, swirl at 270°
+- Frame 8: Returning to start shape, swirl at 315°
+
+Key concept: MAGICAL FIRE - chaotic flames with controlled arcane power
 
 Effects:
-- Fire trail with purple magic
-- Arcane runes in flames
-- Magic and fire particles mixed
-- Mystical fire feel
+- Orange-yellow flames flickering chaotically
+- Purple arcane energy swirling through the fire
+- Ember particles flying off
+- Occasional purple magical rune appearing
+- Hot, aggressive, but magically controlled feel
+
+Style: Cartoon/Funko Pop, clean shapes, bold outlines.
+This animation must loop SEAMLESSLY.
+
+Output file: orbit_spritesheet_inferno_orb.png (512x64)
 ```
 
 ---
 
 ## ❄️🔮 26. FROST ORB (Ice + Arcane) - ORBIT
 
-### Flight Animation (6 frames)
-```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+> Fusión: ice_wand + arcane_orb
+> Orbe de escarcha - hielo cristalino con magia arcana interior
 
-Subject: Frozen sphere with arcane energy orbiting
+### Orbit Animation (8 frames, LOOP)
+```
+Create a horizontal sprite strip of 8 frames (64x64 each = 512x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Frozen crystal sphere with purple arcane magic inside - icy orbital
 
 Design:
-- Ice body: Light blue (#99CCFF)
-- Arcane magic: Light purple (#CC99FF)
-- Core: White (#FFFFFF)
-- Outline: Blue-gray (#334466)
+- Shape: Perfect ice sphere with crystalline surface patterns
+- Ice body: Light cyan-blue (#99CCFF) semi-translucent
+- Arcane core: Light purple (#CC99FF) swirl visible inside
+- Ice highlights: White (#FFFFFF) frost sparkles on surface
+- Frost particles: Pale cyan (#CCFFFF) snowflake shapes
+- Outline: Blue-gray (#334466), 2 pixels
 
-Animation: Ice orb with purple magic shimmer orbiting
-- Frames 1-6: Ice sphere with arcane swirl inside
-- Purple magic runes floating around
-- Frost and magic particles
+Animation: Ice sphere ROTATING with internal purple magic swirling
+- Frames 1-8: Surface frost patterns shift as sphere rotates
+- Internal purple arcane swirl rotates visibly through translucent ice
+- Ice highlights SHIMMER and move across surface
+- Frost particles drift around the sphere
+
+Frame-by-frame breakdown:
+- Frame 1: Ice surface pattern A, purple swirl at 0°
+- Frame 2: Surface pattern shifting, swirl at 45°, frost sparkle
+- Frame 3: New ice pattern, swirl at 90°
+- Frame 4: Purple core at maximum visibility, 135°
+- Frame 5: Surface frost forming, swirl at 180°
+- Frame 6: Ice pattern C, swirl at 225°
+- Frame 7: Frost particles prominent, swirl at 270°
+- Frame 8: Returning to pattern A, swirl at 315°
+
+Key concept: FROZEN MAGIC - cold, crystalline beauty with arcane mystery within
 
 Effects:
-- Ice sparkles
-- Arcane frost patterns
-- Magic runes
-- Cold magical glow
+- Translucent ice effect (purple visible inside)
+- Frost sparkles shimmering on surface
+- 2-3 small snowflake particles floating around
+- Purple arcane glow from within
+- Cold, elegant, magically enhanced feel
+
+Style: Cartoon/Funko Pop, clean shapes, bold outlines.
+This animation must loop SEAMLESSLY.
+
+Output file: orbit_spritesheet_frost_orb.png (512x64)
 ```
 
 ---
 
-## ❄️✨ 27. AURORA (Ice + Light) - BEAM
+## ⚡🔮 27. ARCANE STORM (Lightning + Arcane) - ORBIT
+
+> Fusión: lightning_wand + arcane_orb
+> Tormenta arcana - electricidad canalizada por magia arcana
+
+### Orbit Animation (8 frames, LOOP)
+```
+Create a horizontal sprite strip of 8 frames (64x64 each = 512x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Crackling electric orb with arcane purple energy - storm orbital
+
+Design:
+- Shape: Spherical energy orb with electric arcs jumping on surface
+- Electric body: Bright yellow (#FFFF33) with white core
+- Arcane infusion: Purple (#9933FF) energy weaving through electricity
+- Lightning arcs: White-yellow (#FFFFCC) bolts jumping around
+- Sparkles: Electric blue-white (#CCFFFF) sparks
+- Outline: Purple-blue (#4422AA), 2 pixels
+
+Animation: Electric orb CRACKLING with purple arcane energy swirling
+- Frames 1-8: Lightning arcs jump to different positions each frame
+- Purple arcane swirl rotates 360° inside the electric ball
+- Core brightness FLASHES irregularly (electric feel)
+- Electric sparks fly off in different directions each frame
+
+Frame-by-frame breakdown:
+- Frame 1: Arc at top, swirl at 0°, medium brightness
+- Frame 2: Arc jumps to right, swirl at 45°, spark flies
+- Frame 3: Arc at bottom-right, swirl at 90°, bright flash
+- Frame 4: Multiple small arcs, swirl at 135°, maximum glow
+- Frame 5: Arc at left, swirl at 180°, dimming
+- Frame 6: Arc at top-left, swirl at 225°, spark flies
+- Frame 7: Arc at bottom, swirl at 270°, medium
+- Frame 8: Arc returning to top, swirl at 315°
+
+Key concept: ELECTRIC MAGIC - chaotic lightning contained by arcane control
+
+Effects:
+- Lightning arcs jumping unpredictably on surface
+- Purple magic swirl visible inside yellow-white electricity
+- Electric sparks flying off
+- Bright flashing core
+- Dangerous, energetic, but magically controlled feel
+
+Style: Cartoon/Funko Pop, clean shapes, bold outlines.
+This animation must loop SEAMLESSLY.
+
+Output file: orbit_spritesheet_arcane_storm.png (512x64)
+```
+
+---
+
+## 🗡️🔮 28. SHADOW ORBS (Arcane + Shadow) - ORBIT
+
+> Fusión: arcane_orb + shadow_dagger
+> Orbes de sombra - magia arcana corrompida por oscuridad
+
+### Orbit Animation (8 frames, LOOP)
+```
+Create a horizontal sprite strip of 8 frames (64x64 each = 512x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Dark ethereal orb with ghostly purple-black energy - shadow orbital
+
+Design:
+- Shape: Spherical orb with wispy shadow tendrils extending outward
+- Shadow body: Dark purple-gray (#3D2850) semi-translucent
+- Arcane core: Dim purple (#7744AA) glow visible inside
+- Shadow wisps: Near-black (#1A1020) tendrils reaching outward
+- Ghost highlights: Pale lavender (#CCBBDD) on edges
+- Outline: Very dark purple (#1A0A20), 2 pixels
+
+Animation: Shadow orb PULSING with dark tendrils writhing slowly
+- Frames 1-8: Shadow tendrils reach outward then retract
+- Internal purple core PULSES dimly
+- Ghostly afterimage effect (translucent duplicates)
+- Wisps move in organic, serpentine patterns
+
+Frame-by-frame breakdown:
+- Frame 1: Tendrils close, core dim
+- Frame 2: Tendrils starting to extend, core brightening
+- Frame 3: Tendrils reaching outward, ghostly trail
+- Frame 4: Maximum extension, core at peak glow
+- Frame 5: Tendrils at peak, starting to retract
+- Frame 6: Tendrils pulling back, shadow mist
+- Frame 7: Tendrils mostly retracted, core dimming
+- Frame 8: Returning to compact form
+
+Key concept: CORRUPTED MAGIC - dark, sinister, but beautiful in a ghostly way
+
+Effects:
+- Shadow tendrils moving organically like smoke
+- Dim purple arcane glow from within
+- Ghostly semi-transparent appearance
+- Dark smoke particles drifting off
+- Ethereal, haunting, dangerous feel
+
+Style: Cartoon/Funko Pop, clean shapes, bold outlines.
+This animation must loop SEAMLESSLY.
+
+Output file: orbit_spritesheet_shadow_orbs.png (512x64)
+```
+
+---
+
+## 🌿🔮 29. LIFE ORBS (Arcane + Nature) - ORBIT
+
+> Fusión: arcane_orb + nature_staff
+> Orbes de vida - magia arcana infundida con energía vital
+
+### Orbit Animation (8 frames, LOOP)
+```
+Create a horizontal sprite strip of 8 frames (64x64 each = 512x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Living nature orb with green-purple magical energy - life orbital
+
+Design:
+- Shape: Spherical orb with small leaves/petals floating around it
+- Nature body: Bright green (#66DD44) with life energy
+- Arcane core: Purple (#9944CC) magic swirl inside
+- Leaf accents: Light green (#99FF66) small leaves orbiting
+- Life sparkles: Yellow-green (#CCFF66) healing particles
+- Outline: Dark forest green (#224411), 2 pixels
+
+Animation: Life orb BREATHING with leaves orbiting and life energy pulsing
+- Frames 1-8: Size subtly "breathes" (grows and shrinks)
+- 2-3 small leaves orbit around the orb
+- Internal purple-green swirl rotates
+- Life energy particles pulse outward
+
+Frame-by-frame breakdown:
+- Frame 1: Normal size, leaves at position A, swirl at 0°
+- Frame 2: Slightly larger, leaves orbiting, swirl at 45°
+- Frame 3: Maximum size (breathing in), life sparkle
+- Frame 4: Still large, leaves moving, swirl at 135°
+- Frame 5: Shrinking, swirl at 180°
+- Frame 6: Smaller (breathing out), leaves continuing
+- Frame 7: Minimum size, swirl at 270°
+- Frame 8: Returning to normal, swirl at 315°
+
+Key concept: LIVING MAGIC - alive, nurturing, full of growth energy
+
+Effects:
+- Subtle size pulsing like breathing
+- Small leaf shapes orbiting the orb
+- Green-yellow life energy sparkles
+- Purple arcane core visible inside green
+- Warm, healing, nurturing feel
+
+Style: Cartoon/Funko Pop, clean shapes, bold outlines.
+This animation must loop SEAMLESSLY.
+
+Output file: orbit_spritesheet_life_orbs.png (512x64)
+```
+
+---
+
+## 💨🔮 30. WIND ORBS (Arcane + Wind) - ORBIT
+
+> Fusión: arcane_orb + wind_blade
+> Orbes de viento - magia arcana potenciada por corrientes de aire
+
+### Orbit Animation (8 frames, LOOP)
+```
+Create a horizontal sprite strip of 8 frames (64x64 each = 512x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Swirling wind orb with cyan-purple magical energy - wind orbital
+
+Design:
+- Shape: Spherical orb with visible wind currents swirling around it
+- Wind body: Pale cyan (#CCFFEE) semi-translucent
+- Arcane core: Light purple (#BB88DD) visible inside
+- Wind lines: White (#FFFFFF) curved lines showing air flow
+- Air particles: Pale green-cyan (#DDFFEE) wisps
+- Outline: Teal (#446666), 2 pixels
+
+Animation: Wind orb with AIR CURRENTS spiraling around it rapidly
+- Frames 1-8: Wind lines spiral around the orb (fast rotation feel)
+- Internal purple swirl rotates opposite direction
+- Air wisps fly off in the wind's direction
+- Slight "vibration" effect (position micro-shifts)
+
+Frame-by-frame breakdown:
+- Frame 1: Wind spiral at 0°, core at center
+- Frame 2: Spiral at 45°, wisp flies off
+- Frame 3: Spiral at 90°, core shifting slightly left
+- Frame 4: Spiral at 135°, maximum wind effect
+- Frame 5: Spiral at 180°, core shifting right
+- Frame 6: Spiral at 225°, wisp flies off
+- Frame 7: Spiral at 270°, core returning to center
+- Frame 8: Spiral at 315°, ready to loop
+
+Key concept: MAGICAL WIND - fast, light, always in motion
+
+Effects:
+- Visible wind current lines spiraling around
+- Semi-translucent body (can see through slightly)
+- Air wisp particles being blown off
+- Purple arcane glow inside
+- Light, airy, fast-moving feel
+
+Style: Cartoon/Funko Pop, clean shapes, bold outlines.
+This animation must loop SEAMLESSLY.
+
+Output file: orbit_spritesheet_wind_orbs.png (512x64)
+```
+
+---
+
+## 🌀🔮 31. COSMIC VOID (Arcane + Void) - ORBIT
+
+> Fusión: arcane_orb + void_pulse
+> Vacío cósmico - magia arcana fusionada con energía del vacío
+
+### Orbit Animation (8 frames, LOOP)
+```
+Create a horizontal sprite strip of 8 frames (64x64 each = 512x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Void singularity orb with arcane purple energy at edges - void orbital
+
+Design:
+- Shape: Spherical void with dark center pulling inward
+- Void center: Absolute black (#0A0510) - darker than background
+- Arcane edge: Purple (#8833AA) energy ring around the void
+- Event horizon: Dark purple-red (#4D1535) transition zone
+- Distortion particles: Dark magenta (#331133) being pulled in
+- Outline: Very dark purple (#200820), 2 pixels
+
+Animation: Void orb PULLING particles inward with arcane edge pulsing
+- Frames 1-8: Particles are drawn TOWARD the center (reverse of normal)
+- Purple arcane ring rotates around the void
+- Core darkness PULSES (seems to get darker/lighter)
+- Distortion effect at edges
+
+Frame-by-frame breakdown:
+- Frame 1: Void at normal intensity, ring at 0°
+- Frame 2: Particles being pulled in, ring at 45°
+- Frame 3: Void darker, particles closer, ring at 90°
+- Frame 4: Maximum void intensity, ring at 135°
+- Frame 5: Void slightly lighter, ring at 180°
+- Frame 6: New particles appearing at edges, ring at 225°
+- Frame 7: Particles mid-pull, ring at 270°
+- Frame 8: Returning to start, ring at 315°
+
+Key concept: CONSUMING VOID - dark, ominous, pulls everything in
+
+Effects:
+- Particles moving INWARD (opposite of normal effects!)
+- Purple arcane ring containing the void
+- Central darkness that's darker than the background
+- Distortion/warping effect at event horizon
+- Ominous, powerful, dangerous feel
+
+Style: Cartoon/Funko Pop, clean shapes, bold outlines.
+This animation must loop SEAMLESSLY.
+
+Output file: orbit_spritesheet_cosmic_void.png (512x64)
+```
+
+---
+
+## ❄️✨ 32. AURORA (Ice + Light) - BEAM
 
 ### Active Animation (6 frames)
 ```
@@ -2060,8 +2437,11 @@ Después de generar los sprites:
 2. **Verificar transparencia**: Fondo completamente transparente
 3. **Guardar como PNG**: En carpetas correspondientes
 4. **Nomenclatura de archivos**: 
-   - `flight_spritesheet_[weapon_id].png` - animación de vuelo
-   - `impact_spritesheet_[weapon_id].png` - animación de impacto
+   - Proyectiles normales:
+     - `flight_spritesheet_[weapon_id].png` - animación de vuelo
+     - `impact_spritesheet_[weapon_id].png` - animación de impacto
+   - **Proyectiles orbitales** (arcane_orb y fusiones):
+     - `orbit_spritesheet_[weapon_id].png` - animación de órbita (8 frames, 512x64)
 
 ### Estructura de carpetas:
 ```
@@ -2073,13 +2453,41 @@ assets/sprites/projectiles/
 │   ├── fire_wand/
 │   │   ├── flight_spritesheet_fire_wand.png
 │   │   └── impact_spritesheet_fire_wand.png
+│   ├── arcane_orb/                              # ← ORBITAL
+│   │   └── orbit_spritesheet_arcane_orb.png     # Solo necesita orbit!
 │   └── ... (cada arma base)
 ├── fusion/
 │   ├── frostvine/
 │   │   ├── flight_spritesheet_frostvine.png
 │   │   └── impact_spritesheet_frostvine.png
-│   ├── wildfire/
-│   │   ├── flight_spritesheet_wildfire.png
-│   │   └── impact_spritesheet_wildfire.png
+│   ├── cosmic_barrier/                          # ← ORBITAL
+│   │   └── orbit_spritesheet_cosmic_barrier.png
+│   ├── frost_orb/                               # ← ORBITAL
+│   │   └── orbit_spritesheet_frost_orb.png
+│   ├── inferno_orb/                             # ← ORBITAL
+│   │   └── orbit_spritesheet_inferno_orb.png
+│   ├── crystal_guardian/                        # ← ORBITAL
+│   │   └── orbit_spritesheet_crystal_guardian.png
+│   ├── arcane_storm/                            # ← ORBITAL
+│   │   └── orbit_spritesheet_arcane_storm.png
+│   ├── shadow_orbs/                             # ← ORBITAL
+│   │   └── orbit_spritesheet_shadow_orbs.png
+│   ├── life_orbs/                               # ← ORBITAL
+│   │   └── orbit_spritesheet_life_orbs.png
+│   ├── wind_orbs/                               # ← ORBITAL
+│   │   └── orbit_spritesheet_wind_orbs.png
+│   ├── cosmic_void/                             # ← ORBITAL
+│   │   └── orbit_spritesheet_cosmic_void.png
 │   └── ... (cada fusión)
 ```
+
+### Resumen de tipos de sprites por tipo de proyectil:
+
+| Tipo | Archivos necesarios | Frames | Tamaño total |
+|------|---------------------|--------|--------------|
+| SINGLE/MULTI/HOMING | flight + impact | 6 cada uno | 384x64 + 384x64 |
+| CHAIN | flight + impact | 4 cada uno | 256x64 + 256x64 |
+| AOE | appear + active + fade | 4/6/4 | varía |
+| BEAM | start + active + end | 4/6/4 | varía |
+| **ORBIT** | **orbit** | **8 frames** | **512x64** |
+
