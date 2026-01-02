@@ -211,7 +211,25 @@ func get_synergy_description(fusion_result: Dictionary) -> String:
 		
 		"void_storm": "🕳️+🌪️ → 🌀\nVortex del vacío infinito\n• Tornado que succiona enemigos\n• Daño continuo en área\n• Imposible de escapar",
 		
-		"crystal_guardian": "🪨+💜 → 💎\nCristales arcanos protectores\n• Cristales que orbitan\n• Explosiones al contacto\n• Aturden brevemente"
+		"crystal_guardian": "🪨+💜 → 💎\nCristales arcanos protectores\n• Cristales que orbitan\n• Explosiones al contacto\n• Aturden brevemente",
+		
+		# ═══════════════════════════════════════════════════════════════════════
+		# FUSIONES ORBITALES
+		# ═══════════════════════════════════════════════════════════════════════
+		
+		"frost_orb": "❄️+🔮 → 🔵\nOrbes gélidos orbitantes\n• Orbitan ralentizando enemigos cercanos\n• Aura de frío constante\n• Congelación progresiva",
+		
+		"inferno_orb": "🔥+🔮 → 🔴\nOrbes de fuego infernal\n• Orbitan quemando todo a su paso\n• Llamas caóticas y explosivas\n• Daño continuo intenso",
+		
+		"arcane_storm": "💜+⚡ → 💜⚡\nTormenta arcana orbital\n• Orbes de energía eléctrica\n• Rayos que saltan entre objetivos\n• Campo electromagnético",
+		
+		"shadow_orbs": "🗡️+🔮 → ⚫\nOrbes de sombra letal\n• Orbitan absorbiendo luz\n• Daño crítico aumentado\n• Atraviesan enemigos",
+		
+		"life_orbs": "🌿+🔮 → 💚\nOrbes de vida natural\n• Orbitan curando al portador\n• Drenan vida de enemigos\n• Regeneración pasiva",
+		
+		"wind_orbs": "🌪️+🔮 → 🌬️\nOrbes de viento cortante\n• Orbitan a alta velocidad\n• Empujan enemigos hacia afuera\n• Escudo de aire protector",
+		
+		"cosmic_void": "🕳️+🔮 → 🌌\nOrbes del vacío cósmico\n• Orbitan distorsionando la realidad\n• Atraen enemigos hacia el centro\n• Daño gravitacional masivo"
 	}
 	
 	var fusion_id = fusion_result.get("id", "")
@@ -229,7 +247,18 @@ func get_synergy_effects(fused_weapon_id: String) -> Array:
 		"hellfire": ["burn_intense", "pierce_bonus", "speed_bonus"],
 		"thunder_spear": ["crit_massive", "instant", "max_range"],
 		"void_storm": ["pull_intense", "damage_aura", "slow"],
-		"crystal_guardian": ["orbit", "stun", "explosion"]
+		"crystal_guardian": ["orbit", "stun", "explosion"],
+		
+		# ═══════════════════════════════════════════════════════════════════════
+		# FUSIONES ORBITALES
+		# ═══════════════════════════════════════════════════════════════════════
+		"frost_orb": ["orbit", "slow", "freeze_aura"],
+		"inferno_orb": ["orbit", "burn", "explosion_on_hit"],
+		"arcane_storm": ["orbit", "chain", "energy_field"],
+		"shadow_orbs": ["orbit", "crit_bonus", "pierce_bonus"],
+		"life_orbs": ["orbit", "lifesteal", "regen"],
+		"wind_orbs": ["orbit", "knockback_bonus", "speed_bonus"],
+		"cosmic_void": ["orbit", "pull_intense", "gravity_damage"]
 	}
 	
 	return effects.get(fused_weapon_id, [])
