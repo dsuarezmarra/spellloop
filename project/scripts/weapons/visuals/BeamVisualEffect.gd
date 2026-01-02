@@ -147,8 +147,8 @@ func _setup_from_sprites() -> void:
 		body_line.width = visual_data.beam_body_spritesheet.get_height() * sprite_scale
 		# Eliminar el gradiente cuando hay textura
 		body_line.gradient = null
-		# Hacer el glow más sutil cuando hay textura de body
-		glow_line.modulate.a = 0.3
+		# OCULTAR el glow completamente cuando hay textura de body
+		glow_line.visible = false
 		print("  ✓ Body texture configurada: " + str(visual_data.beam_body_spritesheet.get_width()) + "x" + str(visual_data.beam_body_spritesheet.get_height()))
 	else:
 		# Sin body sprite, hacer el Line2D más sutil para no tapar los otros sprites
@@ -343,7 +343,11 @@ func fire(duration: float = 0.5) -> void:
 	
 	# Mostrar todos los elementos
 	body_line.visible = true
-	glow_line.visible = true
+	# Solo mostrar glow si NO hay textura de body personalizada
+	if visual_data and visual_data.beam_body_spritesheet:
+		glow_line.visible = false
+	else:
+		glow_line.visible = true
 	tip_sprite.visible = true
 	
 	# Animar extensión del rayo
@@ -422,10 +426,12 @@ func _process(delta: float) -> void:
 		# Actualizar zigzag
 		_update_beam_points(_length)
 		
-		# Pulso de glow
-		var glow_pulse = sin(_time * 10) * 0.2 + 1.0
-		glow_line.width = _width * 4 * glow_pulse
-		
-		# Vibración del ancho
-		var width_pulse = sin(_time * 20) * 0.1 + 1.0
-		body_line.width = _width * width_pulse
+		# Solo aplicar efectos de pulso si NO hay textura de body
+		if not (visual_data and visual_data.beam_body_spritesheet):
+			# Pulso de glow (solo para rayos procedurales)
+			var glow_pulse = sin(_time * 10) * 0.2 + 1.0
+			glow_line.width = _width * 4 * glow_pulse
+			
+			# Vibración del ancho
+			var width_pulse = sin(_time * 20) * 0.1 + 1.0
+			body_line.width = _width * width_pulse
