@@ -287,6 +287,7 @@ class BeamEffect extends Node2D:
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CLASE INTERNA: AOEEffect
+# Sistema de daño por tics - hace daño continuo mientras los enemigos estén dentro
 # ═══════════════════════════════════════════════════════════════════════════════
 
 class AOEEffect extends Node2D:
@@ -300,13 +301,42 @@ class AOEEffect extends Node2D:
 	var effect_duration: float = 0.0
 	var crit_chance: float = 0.0
 	var weapon_id: String = ""  # Para visuales mejorados
+	
+	# Sistema de tics de daño
+	var tick_interval: float = 0.25  # Tiempo entre cada tic de daño
+	var damage_per_tick: float = 5.0  # Daño por cada tic
+	var total_ticks: int = 4  # Número total de tics durante la duración
 
 	var _timer: float = 0.0
+	var _tick_timer: float = 0.0
+	var _ticks_applied: int = 0
 	var _activated: bool = false
-	var _enemies_damaged: Array = []
+	var _enemies_damaged: Array = []  # Para el primer impacto
+	var _enemies_in_area: Dictionary = {}  # {enemy_id: last_tick_time} para tics
 	var _damage_applied: bool = false
 	var _enhanced_visual: AOEVisualEffect = null
 	var _use_enhanced: bool = false
+	
+	# Configuración de tics por arma (balanceado)
+	# damage_per_tick, tick_interval, total_ticks
+	const AOE_TICK_CONFIG: Dictionary = {
+		# Armas base
+		"earth_spike": {"damage_per_tick": 7, "tick_interval": 0.25, "total_ticks": 2},  # 14 total (burst)
+		"void_pulse": {"damage_per_tick": 4, "tick_interval": 0.25, "total_ticks": 4},   # 16 total (sustained)
+		
+		# Fusiones AOE
+		"rift_quake": {"damage_per_tick": 8, "tick_interval": 0.3, "total_ticks": 5},     # 40 total
+		"glacier": {"damage_per_tick": 8, "tick_interval": 0.2, "total_ticks": 3},        # 24 total
+		"absolute_zero": {"damage_per_tick": 5, "tick_interval": 0.3, "total_ticks": 4},  # 20 total
+		"volcano": {"damage_per_tick": 10, "tick_interval": 0.25, "total_ticks": 3},      # 30 total
+		"dark_flame": {"damage_per_tick": 5, "tick_interval": 0.25, "total_ticks": 5},    # 25 total (sustained burn)
+		"seismic_bolt": {"damage_per_tick": 10, "tick_interval": 0.25, "total_ticks": 3}, # 30 total (burst)
+		"void_storm": {"damage_per_tick": 4, "tick_interval": 0.25, "total_ticks": 8},    # 32 total (long duration)
+		"gaia": {"damage_per_tick": 8, "tick_interval": 0.25, "total_ticks": 3},          # 24 total + lifesteal
+		"decay": {"damage_per_tick": 4, "tick_interval": 0.25, "total_ticks": 6},         # 24 total (drain over time)
+		"radiant_stone": {"damage_per_tick": 11, "tick_interval": 0.2, "total_ticks": 3}, # 33 total (burst + stun)
+		"steam_cannon": {"damage_per_tick": 9, "tick_interval": 0.2, "total_ticks": 3},   # 27 total (fast burst)
+	}
 
 	func setup(data: Dictionary) -> void:
 		damage = data.get("damage", 20.0)
@@ -319,6 +349,30 @@ class AOEEffect extends Node2D:
 		effect_duration = data.get("effect_duration", 0.0)
 		crit_chance = data.get("crit_chance", 0.0)
 		weapon_id = data.get("weapon_id", "")
+		
+		# Configurar tics según el arma
+		_setup_tick_damage()
+	
+	func _setup_tick_damage() -> void:
+		"""Configurar el daño por tics basado en el arma"""
+		if AOE_TICK_CONFIG.has(weapon_id):
+			var config = AOE_TICK_CONFIG[weapon_id]
+			damage_per_tick = config.get("damage_per_tick", damage / 4.0)
+			tick_interval = config.get("tick_interval", 0.25)
+			total_ticks = config.get("total_ticks", 4)
+		else:
+			# Configuración por defecto: distribuir el daño en tics
+			total_ticks = max(2, int(duration / 0.25))
+			tick_interval = duration / float(total_ticks)
+			damage_per_tick = damage / float(total_ticks)
+		
+		print("[AOE] Tick config para %s: %d daño/tick, %.2fs intervalo, %d ticks (total: %d)" % [
+			weapon_id if weapon_id != "" else "default",
+			int(damage_per_tick),
+			tick_interval,
+			total_ticks,
+			int(damage_per_tick * total_ticks)
+		])
 
 	func _ready() -> void:
 		# Activar automáticamente cuando entre al árbol
@@ -333,59 +387,75 @@ class AOEEffect extends Node2D:
 			return
 		_activated = true
 
-		print("[AOE] Activado en posición: %s, radio: %.1f, daño: %.0f" % [global_position, aoe_radius, damage])
+		print("[AOE] Activado en posición: %s, radio: %.1f" % [global_position, aoe_radius])
 
 		# Crear visual (mejorado si está disponible)
 		_create_aoe_visual()
 
-		# Aplicar daño inmediatamente por distancia (no necesita física)
-		_damage_enemies_in_area()
+		# Aplicar primer tic de daño inmediatamente
+		_apply_tick_damage()
+		_ticks_applied = 1
 
 	func _on_body_entered(body: Node2D) -> void:
-		if body.is_in_group("enemies") and body not in _enemies_damaged:
-			print("[AOE] Body entered: %s" % body.name)
-			_apply_damage(body)
+		if body.is_in_group("enemies"):
+			var enemy_id = body.get_instance_id()
+			if not _enemies_in_area.has(enemy_id):
+				_enemies_in_area[enemy_id] = 0.0  # Puede recibir daño inmediatamente
+				print("[AOE] Body entered: %s" % body.name)
 
 	func _on_area_entered(area: Area2D) -> void:
 		var parent = area.get_parent()
-		if parent and parent.is_in_group("enemies") and parent not in _enemies_damaged:
-			print("[AOE] Area entered: %s" % parent.name)
-			_apply_damage(parent)
+		if parent and parent.is_in_group("enemies"):
+			var enemy_id = parent.get_instance_id()
+			if not _enemies_in_area.has(enemy_id):
+				_enemies_in_area[enemy_id] = 0.0
+				print("[AOE] Area entered: %s" % parent.name)
 
-	func _damage_enemies_in_area() -> void:
+	func _apply_tick_damage() -> void:
+		"""Aplicar un tic de daño a todos los enemigos en el área"""
 		if not get_tree():
 			return
 		var enemies = get_tree().get_nodes_in_group("enemies")
-		print("[AOE] Buscando enemigos en área. Encontrados en grupo: %d" % enemies.size())
 
 		for enemy in enemies:
-			if enemy in _enemies_damaged:
+			if not is_instance_valid(enemy):
 				continue
-
+			
 			var dist = global_position.distance_to(enemy.global_position)
-			print("[AOE] Enemigo %s a distancia %.1f (radio: %.1f)" % [enemy.name, dist, aoe_radius])
 			if dist <= aoe_radius:
-				_apply_damage(enemy)
+				_apply_damage_tick(enemy)
 
-	func _apply_damage(enemy: Node) -> void:
-		if enemy in _enemies_damaged:
-			return
-		_enemies_damaged.append(enemy)
-
-		var final_damage = damage
+	func _apply_damage_tick(enemy: Node) -> void:
+		"""Aplicar daño de un tic a un enemigo"""
+		var final_damage = damage_per_tick
+		var is_crit = false
+		
 		if randf() < crit_chance:
 			final_damage *= 2.0
+			is_crit = true
 
 		if enemy.has_method("take_damage"):
 			enemy.take_damage(int(final_damage))
+			if is_crit:
+				print("[AOE] ⚡ CRIT! %s recibe %d daño (tick %d/%d)" % [enemy.name, int(final_damage), _ticks_applied, total_ticks])
 
-		# Aplicar knockback (puede ser negativo para pull)
-		if knockback != 0 and enemy.has_method("apply_knockback"):
-			var kb_dir = (enemy.global_position - global_position).normalized()
-			enemy.apply_knockback(kb_dir * knockback)
+		# Aplicar knockback solo en el primer tic (para no empujar continuamente)
+		var enemy_id = enemy.get_instance_id()
+		if not _enemies_damaged.has(enemy_id):
+			_enemies_damaged.append(enemy_id)
+			if knockback != 0 and enemy.has_method("apply_knockback"):
+				var kb_dir = (enemy.global_position - global_position).normalized()
+				enemy.apply_knockback(kb_dir * knockback)
+			# Aplicar efectos especiales solo una vez
+			_apply_effect(enemy)
 
-		# Aplicar efectos especiales
-		_apply_effect(enemy)
+	func _apply_damage(enemy: Node) -> void:
+		"""Legacy: redirigir a tick damage"""
+		_apply_damage_tick(enemy)
+
+	func _damage_enemies_in_area() -> void:
+		"""Legacy: ahora se usa _apply_tick_damage"""
+		pass
 
 	func _apply_effect(enemy: Node) -> void:
 		if effect == "none":
@@ -398,6 +468,26 @@ class AOEEffect extends Node2D:
 			"pull":
 				if enemy.has_method("apply_pull"):
 					enemy.apply_pull(global_position, effect_value, effect_duration)
+			"freeze":
+				if enemy.has_method("apply_slow"):
+					enemy.apply_slow(effect_value, effect_duration)
+			"burn":
+				if enemy.has_method("apply_burn"):
+					enemy.apply_burn(effect_value, effect_duration)
+			"lifesteal":
+				# Curar al jugador
+				var player = _get_player()
+				if player and player.has_method("heal"):
+					player.heal(int(effect_value))
+	
+	func _get_player() -> Node:
+		"""Obtener referencia al jugador para lifesteal"""
+		if not get_tree():
+			return null
+		var players = get_tree().get_nodes_in_group("player")
+		if players.size() > 0:
+			return players[0]
+		return null
 
 	func _create_aoe_visual() -> void:
 		# Intentar usar visual mejorado
@@ -453,8 +543,19 @@ class AOEEffect extends Node2D:
 
 	func _process(delta: float) -> void:
 		_timer += delta
+		_tick_timer += delta
+		
+		# Aplicar tics de daño mientras dure el efecto
+		if _ticks_applied < total_ticks and _tick_timer >= tick_interval:
+			_tick_timer = 0.0
+			_ticks_applied += 1
+			_apply_tick_damage()
+		
+		# Terminar cuando se alcance la duración (si no usamos visual mejorado)
 		if not _use_enhanced:
 			queue_redraw()  # Redibujar para mantener el visual actualizado
+			if _timer >= duration:
+				queue_free()
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
