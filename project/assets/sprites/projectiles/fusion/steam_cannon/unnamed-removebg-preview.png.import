@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://lcup30nd88of"
-path="res://.godot/imported/aoe_active_rift_quake_RAW.png-6d5175d35b2c82dc8d5474f413185f4f.ctex"
+uid="uid://dfp6nlhnkoj8b"
+path="res://.godot/imported/unnamed-removebg-preview.png-6ffcf735c72a69d6a333e867f8245106.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/rift_quake/aoe_active_rift_quake_RAW.png"
-dest_files=["res://.godot/imported/aoe_active_rift_quake_RAW.png-6d5175d35b2c82dc8d5474f413185f4f.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/steam_cannon/unnamed-removebg-preview.png"
+dest_files=["res://.godot/imported/unnamed-removebg-preview.png-6ffcf735c72a69d6a333e867f8245106.ctex"]
 
 [params]
 

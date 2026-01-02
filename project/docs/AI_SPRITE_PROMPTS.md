@@ -460,9 +460,9 @@ SUBJECT: Rock spikes ONLY - NO ground/terrain. Just the spikes emerging upward a
 ⚠️ CRITICAL: Do NOT draw any ground, floor, dirt, stones or terrain. ONLY the rock spikes themselves with dust particles. The effect must overlay on any game biome.
 
 COLOR PALETTE:
-- Primary: Brown rock (#996633) - semi-transparent edges
+- Primary: Brown rock (#996633)
 - Secondary: Tan highlights (#CC9966)
-- Accent: Light brown dust particles (#DDBB88) - very transparent
+- Accent: Light brown dust particles (#DDBB88)
 - Outline: Dark brown (#4D3319)
 
 ANIMATION SEQUENCE (LOOP):
@@ -472,9 +472,9 @@ ANIMATION SEQUENCE (LOOP):
 
 EFFECTS:
 - Rock spikes as circular arrangement seen from top
-- Floating semi-transparent dust particles
-- NO ground texture - pure transparent background
-- Spikes should have some transparency at edges
+- Floating dust particles around the spikes
+- NO ground texture - background will be removed later
+- Bold, solid colors with clear outlines
 ```
 
 ---
@@ -535,7 +535,7 @@ DO NOT DRAW: Any ground, floor, terrain, surface or environmental elements. ONLY
 COLOR PALETTE:
 - Core: Deep purple-black (#1A001A)
 - Swirls: Dark violet (#330033) 
-- Energy: Bright purple (#9933FF) - semi-transparent edges
+- Energy: Bright purple (#9933FF)
 - Outline: Near-black (#0D000D)
 
 ANIMATION SEQUENCE (LOOP):
@@ -544,9 +544,10 @@ ANIMATION SEQUENCE (LOOP):
 - Frame 5-6: Vortex contracts, energy ripples outward
 
 EFFECTS:
-- Swirling dark energy (semi-transparent at edges)
+- Swirling dark energy with bold colors
 - Purple energy wisps being sucked to center
 - NO ground - pure void energy floating
+- Solid outlines, no fading edges
 ```
 
 ---
@@ -569,10 +570,10 @@ SUBJECT: Steam cloud ONLY - NO ground. Billowing steam and vapor floating on tra
 ⚠️ CRITICAL: Do NOT draw any ground or surface. ONLY the steam/vapor clouds themselves. Pure atmospheric effect.
 
 COLOR PALETTE:
-- Primary: White steam (#FFFFFF) - semi-transparent (50-70% opacity)
-- Secondary: Light gray mist (#CCCCCC) - very transparent
-- Accent: Orange-red heat glow (#FF6633) - subtle, transparent
-- Outline: Gray-blue (#667788) - subtle
+- Primary: White steam (#FFFFFF)
+- Secondary: Light gray mist (#CCCCCC)
+- Accent: Orange-red heat glow (#FF6633)
+- Outline: Gray-blue (#667788)
 
 ANIMATION SEQUENCE (LOOP):
 - Frame 1-2: Steam clouds billowing, heat shimmer
@@ -580,9 +581,9 @@ ANIMATION SEQUENCE (LOOP):
 - Frame 5-6: Steam disperses slightly, cycle resets
 
 EFFECTS:
-- Billowing semi-transparent steam clouds
-- Heat shimmer (wavy transparent distortion)
-- NO ground - clouds floating on transparency
+- Billowing steam clouds with solid shapes
+- Heat shimmer effect (wavy lines)
+- NO ground - clouds floating, background removed later
 - Warm orange undertones in center
 ```
 
@@ -617,10 +618,11 @@ ANIMATION SEQUENCE (LOOP):
 - Frame 5-6: Energy settles, cracks dim slightly
 
 EFFECTS:
-- Glowing crack lines (semi-transparent energy)
+- Glowing crack lines with bold purple glow
 - Void tendrils emerging from fissures
 - Purple energy particles
 - NO ground - pure energy cracks floating
+- Solid colors with clear outlines
 ```
 
 ---
@@ -643,10 +645,10 @@ SUBJECT: Swirling void vortex ONLY - NO ground. Dark energy tornado with cyan wi
 ⚠️ CRITICAL: Do NOT draw any ground or surface. ONLY the swirling vortex energy itself.
 
 COLOR PALETTE:
-- Primary: Deep void black (#1A001A) - core, semi-transparent
-- Secondary: Cyan wind streaks (#66FFFF) - semi-transparent
+- Primary: Deep void black (#1A001A) - core
+- Secondary: Cyan wind streaks (#66FFFF)
 - Accent: Dark purple (#330033) - energy wisps
-- Outline: Black (#000000) - subtle
+- Outline: Dark purple (#220022)
 
 ANIMATION SEQUENCE (LOOP):
 - Frame 1-2: Vortex spinning, void center stable
@@ -654,10 +656,11 @@ ANIMATION SEQUENCE (LOOP):
 - Frame 5-6: Vortex pulses, energy disperses slightly
 
 EFFECTS:
-- Spiral wind lines (semi-transparent cyan)
-- Dark void center (semi-transparent)
+- Spiral wind lines in bold cyan
+- Dark void center with solid colors
 - Energy particles spinning
 - NO ground - pure floating vortex
+- Clear outlines on all shapes
 ```
 
 ---
@@ -680,8 +683,8 @@ SUBJECT: Ice crystal spikes ONLY - NO ground. Crystalline ice formations floatin
 ⚠️ CRITICAL: Do NOT draw any ground, snow or terrain. ONLY the ice crystals/spikes themselves with frost particles.
 
 COLOR PALETTE:
-- Primary: Light cyan ice (#66FFFF) - semi-transparent crystals
-- Secondary: White frost (#FFFFFF) - highlights, transparent
+- Primary: Light cyan ice (#66FFFF)
+- Secondary: White frost (#FFFFFF) - highlights
 - Accent: Pale blue-gray (#B3D9E6) - depth
 - Outline: Dark cyan-blue (#1A5C66)
 
@@ -691,10 +694,10 @@ ANIMATION SEQUENCE (LOOP):
 - Frame 5-6: Sparkles flash, frost settles
 
 EFFECTS:
-- Semi-transparent ice crystals seen from above
+- Ice crystals seen from above with solid colors
 - Floating frost particles
 - Crystalline sparkle effects
-- NO ground - crystals on pure transparency
+- NO ground - crystals floating, background removed later
 ```
 
 ---
@@ -717,8 +720,8 @@ SUBJECT: Frozen void singularity ONLY - NO ground. Dark void core surrounded by 
 ⚠️ CRITICAL: Do NOT draw any ground or surface. ONLY the void-ice energy effect itself.
 
 COLOR PALETTE:
-- Primary: Deep black-purple void (#0D0019) - core, semi-transparent
-- Secondary: Pale cyan ice (#99CCFF) - frozen particles, transparent
+- Primary: Deep black-purple void (#0D0019) - core
+- Secondary: Pale cyan ice (#99CCFF) - frozen particles
 - Accent: Dark purple-blue (#330066) - energy
 - Outline: Near black (#0A0A1A)
 
@@ -728,10 +731,11 @@ ANIMATION SEQUENCE (LOOP):
 - Frame 5-6: Cold energy radiates outward
 
 EFFECTS:
-- Semi-transparent void core
+- Dark void core with solid colors
 - Floating frozen particles (time-stopped feeling)
 - Ice crystals suspended in air
 - NO ground - pure ethereal frozen void
+- Bold outlines on all elements
 ```
 
 ---
@@ -754,7 +758,7 @@ SUBJECT: Lava eruption ONLY - NO ground/crater. Splashing lava, flames and ember
 ⚠️ CRITICAL: Do NOT draw any ground, crater or rock surface. ONLY the lava splashes, flames and ember particles themselves.
 
 COLOR PALETTE:
-- Primary: Bright orange lava (#FF6600) - semi-transparent
+- Primary: Bright orange lava (#FF6600)
 - Secondary: Red-orange magma (#CC3300) - glowing
 - Accent: Yellow-white hot core (#FFCC00) - brightest
 - Outline: Dark red (#661100)
@@ -765,10 +769,11 @@ ANIMATION SEQUENCE (LOOP):
 - Frame 5-6: Lava falls back, embers scatter
 
 EFFECTS:
-- Lava splash droplets (semi-transparent)
+- Lava splash droplets with solid colors
 - Rising ember particles
 - Flame wisps
 - NO ground/crater - pure lava effect floating
+- Bold outlines on all shapes
 ```
 
 ---
@@ -791,10 +796,10 @@ SUBJECT: Dark void flames ONLY - NO ground. Purple-red ethereal fire floating on
 ⚠️ CRITICAL: Do NOT draw any ground or surface. ONLY the dark flame effect itself.
 
 COLOR PALETTE:
-- Primary: Dark purple-red flames (#660033) - semi-transparent
+- Primary: Dark purple-red flames (#660033)
 - Secondary: Deep crimson (#990033) - fire core
 - Accent: Black-purple void (#1A001A) - wisps
-- Outline: Near black (#0D000D)
+- Outline: Dark purple (#220011)
 
 ANIMATION SEQUENCE (LOOP):
 - Frame 1-2: Dark flames flickering, void wisps floating
@@ -802,10 +807,11 @@ ANIMATION SEQUENCE (LOOP):
 - Frame 5-6: Flames dance outward, cycle resets
 
 EFFECTS:
-- Semi-transparent dark fire
+- Dark fire with solid bold colors
 - Void energy wisps being pulled to center
 - Soul-like ethereal particles
 - NO ground - pure floating dark flames
+- Clear outlines on flame shapes
 ```
 
 ---
@@ -839,10 +845,11 @@ ANIMATION SEQUENCE (LOOP):
 - Frame 5-6: Electricity crackles, settles
 
 EFFECTS:
-- Glowing electric crack lines (semi-transparent glow)
+- Glowing electric crack lines with bold yellow
 - Lightning arcs jumping between cracks
 - Electric sparkle particles
 - NO ground - pure floating electricity
+- Solid colors with clear outlines
 ```
 
 ---
@@ -865,9 +872,9 @@ SUBJECT: Glowing roots and nature energy ONLY - NO ground. Living vines/roots wi
 ⚠️ CRITICAL: Do NOT draw any ground or terrain. ONLY the roots, vines and nature energy particles themselves.
 
 COLOR PALETTE:
-- Primary: Moss green-brown roots (#668844) - semi-transparent
+- Primary: Moss green-brown roots (#668844)
 - Secondary: Root brown (#886633)
-- Accent: Bright nature green energy (#66FF66) - glowing, transparent
+- Accent: Bright nature green energy (#66FF66) - glowing
 - Outline: Dark green-brown (#2D3319)
 
 ANIMATION SEQUENCE (LOOP):
@@ -876,10 +883,11 @@ ANIMATION SEQUENCE (LOOP):
 - Frame 5-6: Healing waves radiate, settles
 
 EFFECTS:
-- Semi-transparent root structures
+- Root structures with solid colors
 - Green glowing energy particles
 - Floating leaf particles
-- NO ground - roots on pure transparency
+- NO ground - roots floating, background removed later
+- Bold outlines on all elements
 ```
 
 ---
@@ -902,10 +910,10 @@ SUBJECT: Corrupted vines and void energy ONLY - NO ground. Sickly green-purple t
 ⚠️ CRITICAL: Do NOT draw any ground or terrain. ONLY the corrupted vine energy and void particles.
 
 COLOR PALETTE:
-- Primary: Sickly green-brown vines (#556622) - semi-transparent
+- Primary: Sickly green-brown vines (#556622)
 - Secondary: Dark purple void (#330033) - corruption
 - Accent: Yellow-green rot glow (#99AA33) - decay energy
-- Outline: Near black-green (#0D1A0D)
+- Outline: Dark green (#1A2A1A)
 
 ANIMATION SEQUENCE (LOOP):
 - Frame 1-2: Dead vines visible, void energy pulsing
@@ -913,10 +921,11 @@ ANIMATION SEQUENCE (LOOP):
 - Frame 5-6: Decay spreads, void contracts
 
 EFFECTS:
-- Semi-transparent corrupted tendrils
+- Corrupted tendrils with solid colors
 - Life drain particles (green to purple)
 - Void core pulsing
 - NO ground - pure floating corruption
+- Clear outlines on all shapes
 ```
 
 ---
@@ -939,7 +948,7 @@ SUBJECT: Glowing divine crystals ONLY - NO ground. Holy light crystal formations
 ⚠️ CRITICAL: Do NOT draw any ground or terrain. ONLY the radiant crystal formations and light particles.
 
 COLOR PALETTE:
-- Primary: Pale gold-white crystals (#FFFFCC) - semi-transparent
+- Primary: Pale gold-white crystals (#FFFFCC)
 - Secondary: Pure white light (#FFFFFF) - glow
 - Accent: Tan-gold stone (#DDAA77) - crystal depth
 - Outline: Muted gold (#AA8855)
@@ -950,10 +959,11 @@ ANIMATION SEQUENCE (LOOP):
 - Frame 5-6: Divine glow breathes, settles
 
 EFFECTS:
-- Semi-transparent radiant crystals
+- Radiant crystals with solid bold colors
 - Holy light sparkle particles
-- Light pulse waves (very transparent)
-- NO ground - crystals on pure transparency
+- Light pulse waves
+- NO ground - crystals floating, background removed later
+- Clear golden outlines on all crystals
 ```
 
 ---
