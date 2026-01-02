@@ -934,73 +934,37 @@ EFFECTS:
 ---
 
 
-## ✨ 9. LIGHT BEAM - Rayo de Luz
+## ✨ 9. LIGHT BEAM (Luz Pura) - BEAM
 
-### Start Animation (4 frames)
+> Sprites necesarios: beam_body + beam_tip
+> Ubicación: `res://assets/sprites/projectiles/weapons/light_beam/`
+
+### beam_body_light_beam.png (64x32 tileable)
 ```
-Create a horizontal sprite strip of 4 frames (64x64 each = 256x64 total).
-
-Subject: Holy light beam forming
-
-Design:
-- Main beam: Pale yellow (#FFFFCC)
-- Core: Pure white (#FFFFFF)
-- Glow: Soft yellow (#FFFF99)
-- Outline: Gold (#CCAA66)
-
-Animation: Beam charging and forming
-- Frame 1: Small point of light appearing
-- Frame 2: Light expanding, beam starting to form
-- Frame 3: Beam extending, sparkles appearing
-- Frame 4: Full beam formed, divine glow
-
-Effects:
-- Light particles gathering
-- Star/sparkle effects
-- Divine glow halo
+Pixel art seamless tileable texture, 64x32 pixels.
+Horizontal light beam ray body for a holy beam weapon.
+Pure white and golden color palette (#FFFFFF, #FFD700, #FFFACD).
+Bright white core in the center (brightest line).
+Golden glow fading outward toward edges.
+Soft particle sparkles scattered throughout.
+Must tile seamlessly horizontally (left edge connects to right edge).
+Transparent background, clean pixel art style.
+Ethereal holy energy feel, luminous and divine appearance.
 ```
 
-### Active Animation (6 frames)
+### beam_tip_light_beam.png (384x64, 6 frames)
 ```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
-
-Subject: Holy light beam active/sustained
-
-Design:
-- Same palette: pale yellow (#FFFFCC), white (#FFFFFF), yellow (#FFFF99)
-- Gold outline (#CCAA66)
-
-Animation: Beam pulsing with holy energy
-- Frames 1-6: Beam intensity pulsing
-- Star particles flowing through beam
-- Soft shimmer effect
-
-Effects:
-- Flowing light particles within beam
-- Small star sparkles
-- Soft warm glow around beam
-- Lens flare effects
-```
-
-### End Animation (4 frames)
-```
-Create a horizontal sprite strip of 4 frames (64x64 each = 256x64 total).
-
-Subject: Holy light beam dissipating
-
-Design:
-- Same color palette as above
-
-Animation: Beam fading away gracefully
-- Frame 1: Full beam starting to dim
-- Frame 2: Beam breaking into light particles
-- Frame 3: Particles spreading, beam mostly gone
-- Frame 4: Final sparkles fading away
-
-Effects:
-- Particles rising upward
-- Soft glow lingering
-- Final divine sparkles
+Pixel art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
+Animation of holy light impact/endpoint of a beam attack.
+Pure white and golden color palette (#FFFFFF, #FFD700, #FFFACD).
+Frame 1: Initial contact point, small bright flash
+Frame 2: Expanding light burst with golden sparks
+Frame 3: Full radiant explosion with light rays
+Frame 4: Peak brightness with divine cross pattern
+Frame 5: Dispersing light particles and sparkles
+Frame 6: Fading glow with lingering golden motes
+Transparent background, clean pixel art style, 16-bit aesthetic.
+Holy magical impact feel, dramatic radiance, purifying energy.
 ```
 
 ---
@@ -2173,28 +2137,35 @@ Style: Cartoon, clean shapes, no anti-aliasing on edges.
 
 ## ⚡✨ 30. THUNDER SPEAR (Lightning + Light) - BEAM
 
-### Active Animation (6 frames)
+> Sprites necesarios: beam_body + beam_tip
+> Ubicación: `res://assets/sprites/projectiles/weapons/thunder_spear/`
+
+### beam_body_thunder_spear.png (64x32 tileable)
 ```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+Pixel art seamless tileable texture, 64x32 pixels.
+Horizontal lightning beam ray body for divine thunder weapon.
+Cyan and golden electric color palette (#00FFFF, #FFD700, #FFFFFF).
+Jagged electric core line in bright cyan (not straight, lightning-like).
+Golden electric glow around the edges.
+Small spark particles scattered throughout.
+Must tile seamlessly horizontally (left edge connects to right edge).
+Transparent background, clean pixel art style.
+Electric energy feel, crackling thunder, divine lightning appearance.
+```
 
-Subject: Divine golden lightning beam
-
-Design:
-- Beam body: Golden yellow (#FFD700)
-- Core: White (#FFFFFF)
-- Glow: Pale yellow (#FFFF99)
-- Outline: Dark gold (#CC9900)
-
-Animation: Powerful golden beam with spear tip
-- Frames 1-6: Beam pulsing with golden lightning
-- Holy sparkles flowing through
-- Divine energy crackling
-
-Effects:
-- Golden lightning arcs
-- Holy sparkle particles
-- Power surge pulses
-- Spear tip at end of beam
+### beam_tip_thunder_spear.png (384x64, 6 frames)
+```
+Pixel art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
+Animation of divine thunder impact at endpoint of lightning beam.
+Cyan and golden electric color palette (#00FFFF, #FFD700, #FFFFFF).
+Frame 1: Initial electric contact, small spark burst
+Frame 2: Expanding lightning branches in all directions
+Frame 3: Full electric explosion with multiple bolts
+Frame 4: Peak discharge with bright golden-cyan flash
+Frame 5: Electric arcs dissipating outward
+Frame 6: Fading sparks and lingering static energy
+Transparent background, clean pixel art style, 16-bit aesthetic.
+Thunder strike impact, electric explosion, divine judgment.
 ```
 
 ---
@@ -2661,28 +2632,140 @@ Output file: orbit_spritesheet_cosmic_void.png (512x64)
 
 ## ❄️✨ 32. AURORA (Ice + Light) - BEAM
 
-### Active Animation (6 frames)
+> Sprites necesarios: beam_body + beam_tip
+> Ubicación: `res://assets/sprites/projectiles/weapons/aurora/`
+
+### beam_body_aurora.png (64x32 tileable)
 ```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+Pixel art seamless tileable texture, 64x32 pixels.
+Horizontal aurora beam ray body for ice-light weapon.
+Cyan, green aurora, and white palette (#00FFFF, #50FA7B, #E0FFFF).
+Gradient bands of cyan and green (aurora borealis effect).
+Subtle ice crystal sparkles embedded in the beam.
+Soft wavy pattern suggesting aurora movement.
+Must tile seamlessly horizontally (left edge connects to right edge).
+Transparent background, clean pixel art style.
+Northern lights energy, frozen elegance, mystical ice-light.
+```
 
-Subject: Beautiful aurora borealis beam
+### beam_tip_aurora.png (384x64, 6 frames)
+```
+Pixel art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
+Animation of aurora light impact at endpoint of ice-light beam.
+Cyan, green aurora, and white ice palette (#00FFFF, #50FA7B, #E0FFFF).
+Frame 1: Initial contact with ice crystal formation
+Frame 2: Expanding aurora burst with cyan-green swirls
+Frame 3: Full aurora explosion with dancing lights
+Frame 4: Peak brightness with ice shards and color waves
+Frame 5: Dispersing aurora wisps and ice particles
+Frame 6: Fading glow with lingering ice sparkles
+Transparent background, clean pixel art style, 16-bit aesthetic.
+Aurora impact, frozen light burst, elegant icy explosion.
+```
 
-Design:
-- Main beam: Mint green (#66FFCC)
-- Secondary: Pink (#FF99FF)
-- Highlights: White (#FFFFFF)
-- Outline: Soft teal (#336655)
+---
 
-Animation: Flowing aurora light beam
-- Frames 1-6: Rainbow-like colors flowing through beam
-- Northern lights shimmer effect
-- Magical ice sparkles
+## 🔥✨ 33. SOLAR FLARE (Fire + Light) - BEAM
 
-Effects:
-- Multiple soft colors flowing
-- Aurora wave pattern
-- Ice sparkle particles
-- Dreamy, ethereal beauty
+> Sprites necesarios: beam_body + beam_tip
+> Ubicación: `res://assets/sprites/projectiles/weapons/solar_flare/`
+
+### beam_body_solar_flare.png (64x32 tileable)
+```
+Pixel art seamless tileable texture, 64x32 pixels.
+Horizontal solar plasma beam ray body for fire-light weapon.
+Orange, yellow, and white-hot palette (#FF8C00, #FFD700, #FFFFFF).
+White-hot bright core in the center.
+Orange and yellow plasma flames along the edges.
+Small ember particles and heat distortion suggestion.
+Must tile seamlessly horizontally (left edge connects to right edge).
+Transparent background, clean pixel art style.
+Solar plasma energy, blazing heat ray, stellar fire beam.
+```
+
+### beam_tip_solar_flare.png (384x64, 6 frames)
+```
+Pixel art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
+Animation of solar plasma impact at endpoint of fire-light beam.
+Orange, yellow, and white-hot palette (#FF8C00, #FFD700, #FFFFFF, #FF4500).
+Frame 1: Initial plasma contact, small solar burst
+Frame 2: Expanding solar flare with erupting flames
+Frame 3: Full plasma explosion with corona effect
+Frame 4: Peak intensity with white-hot flash and embers
+Frame 5: Dispersing solar particles and flame wisps
+Frame 6: Fading heat glow with lingering embers
+Transparent background, clean pixel art style, 16-bit aesthetic.
+Solar explosion impact, plasma burst, stellar devastation.
+```
+
+---
+
+## 🌿✨ 34. SOLAR BLOOM (Nature + Light) - BEAM
+
+> Sprites necesarios: beam_body + beam_tip
+> Ubicación: `res://assets/sprites/projectiles/weapons/solar_bloom/`
+
+### beam_body_solar_bloom.png (64x32 tileable)
+```
+Pixel art seamless tileable texture, 64x32 pixels.
+Horizontal nature-light beam ray body for solar bloom weapon.
+Green, golden, and yellow palette (#50FA7B, #FFD700, #ADFF2F).
+Bright golden-green core in the center.
+Leaf-like patterns and vine suggestions along edges.
+Small pollen sparkles and life energy particles.
+Must tile seamlessly horizontally (left edge connects to right edge).
+Transparent background, clean pixel art style.
+Life energy beam, photosynthesis ray, nature-light fusion.
+```
+
+### beam_tip_solar_bloom.png (384x64, 6 frames)
+```
+Pixel art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
+Animation of nature-light impact at endpoint of life energy beam.
+Green, golden, and yellow palette (#50FA7B, #FFD700, #ADFF2F, #98FB98).
+Frame 1: Initial contact with sprouting energy burst
+Frame 2: Expanding bloom explosion with petals of light
+Frame 3: Full flower burst with golden pollen cloud
+Frame 4: Peak radiance with leaves and light rays
+Frame 5: Dispersing pollen particles and leaf wisps
+Frame 6: Fading glow with lingering nature sparkles
+Transparent background, clean pixel art style, 16-bit aesthetic.
+Life energy burst, blooming explosion, natural magic impact.
+```
+
+---
+
+## 🌑✨ 35. ECLIPSE (Light + Void) - BEAM
+
+> Sprites necesarios: beam_body + beam_tip
+> Ubicación: `res://assets/sprites/projectiles/weapons/eclipse/`
+
+### beam_body_eclipse.png (64x32 tileable)
+```
+Pixel art seamless tileable texture, 64x32 pixels.
+Horizontal eclipse beam ray body for light-void weapon.
+Dual palette: White/Gold AND Purple/Black gradient.
+One half of beam is bright white-gold light energy.
+Other half is deep purple-black void energy.
+Swirling boundary between light and dark in the middle.
+Must tile seamlessly horizontally (left edge connects to right edge).
+Transparent background, clean pixel art style.
+Cosmic duality beam, light and shadow intertwined, eclipse energy.
+```
+
+### beam_tip_eclipse.png (384x64, 6 frames)
+```
+Pixel art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
+Animation of light-void impact at endpoint of eclipse beam.
+Dual palette: White/Gold (#FFFFFF, #FFD700) AND Purple/Black (#9B59B6, #2D1B4E).
+Frame 1: Initial contact with light-dark flash
+Frame 2: Expanding duality burst with interweaving energies
+Frame 3: Full eclipse explosion with corona of both forces
+Frame 4: Peak contrast with brilliant white and deep void
+Frame 5: Dispersing light and shadow particles spiraling
+Frame 6: Fading glow with lingering cosmic duality motes
+Transparent background, clean pixel art style, 16-bit aesthetic.
+Cosmic impact, duality explosion, light-void annihilation.
 ```
 
 ---
