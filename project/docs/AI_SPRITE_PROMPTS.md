@@ -941,20 +941,20 @@ EFFECTS:
 
 ### beam_body_light_beam.png (64x32 tileable)
 ```
-Pixel art seamless tileable texture, 64x32 pixels.
+cartoon art seamless tileable texture, 64x32 pixels.
 Horizontal light beam ray body for a holy beam weapon.
 Pure white and golden color palette (#FFFFFF, #FFD700, #FFFACD).
 Bright white core in the center (brightest line).
 Golden glow fading outward toward edges.
 Soft particle sparkles scattered throughout.
 Must tile seamlessly horizontally (left edge connects to right edge).
-Transparent background, clean pixel art style.
-Ethereal holy energy feel, luminous and divine appearance.
+Solid black background (#000000) filling the entire image.
+Clean cartoon art style. Ethereal holy energy feel, luminous and divine appearance.
 ```
 
 ### beam_tip_light_beam.png (384x64, 6 frames)
 ```
-Pixel art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
+cartoon art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
 Animation of holy light impact/endpoint of a beam attack.
 Pure white and golden color palette (#FFFFFF, #FFD700, #FFFACD).
 Frame 1: Initial contact point, small bright flash
@@ -963,8 +963,8 @@ Frame 3: Full radiant explosion with light rays
 Frame 4: Peak brightness with divine cross pattern
 Frame 5: Dispersing light particles and sparkles
 Frame 6: Fading glow with lingering golden motes
-Transparent background, clean pixel art style, 16-bit aesthetic.
-Holy magical impact feel, dramatic radiance, purifying energy.
+Solid black background (#000000) filling the entire image.
+Clean cartoon art style, 16-bit aesthetic. Holy magical impact feel, dramatic radiance, purifying energy.
 ```
 
 ---
@@ -977,12 +977,12 @@ Holy magical impact feel, dramatic radiance, purifying energy.
 
 ### Flight Animation (4 frames)
 ```
-Create a pixel art horizontal sprite sheet of a STORM LIGHTNING BOLT projectile for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE PROJECTILE: A crackling lightning bolt surrounded by swirling cyan wind currents - electricity meets storm winds. The bolt should have a wind vortex spiraling around it. COLOR PALETTE: - Core: Bright white (#FFFFFF) - Primary: Electric yellow (#FFFF33 / #FFFF66) - Secondary: Cyan wind (#66FFFF / #99FFFF) - Accent: White-blue sparks - Outline: Blue-gray (#334466) ANIMATION SEQUENCE (4 frames): Frame 1: Lightning bolt forming with wind currents beginning to swirl Frame 2: Bolt crackles, wind vortex tightens around it, sparks fly Frame 3: Maximum intensity, bright electric core with cyan wind spiral at peak Frame 4: Energy pulse, wind currents disperse slightly, cycle back IMPORTANT DETAILS: - Orientation: Bolt pointing RIGHT (→) as if flying toward target - Electric crackling with visible wind current lines - Combination of sharp lightning with flowing wind - Storm particles and mini cloud puffs around the bolt - Cartoon-cute but powerful stormy appearance - Each frame clearly separated in its own cell
+Create a cartoon art horizontal sprite sheet of a STORM LIGHTNING BOLT projectile for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE PROJECTILE: A crackling lightning bolt surrounded by swirling cyan wind currents - electricity meets storm winds. The bolt should have a wind vortex spiraling around it. COLOR PALETTE: - Core: Bright white (#FFFFFF) - Primary: Electric yellow (#FFFF33 / #FFFF66) - Secondary: Cyan wind (#66FFFF / #99FFFF) - Accent: White-blue sparks - Outline: Blue-gray (#334466) ANIMATION SEQUENCE (4 frames): Frame 1: Lightning bolt forming with wind currents beginning to swirl Frame 2: Bolt crackles, wind vortex tightens around it, sparks fly Frame 3: Maximum intensity, bright electric core with cyan wind spiral at peak Frame 4: Energy pulse, wind currents disperse slightly, cycle back IMPORTANT DETAILS: - Orientation: Bolt pointing RIGHT (→) as if flying toward target - Electric crackling with visible wind current lines - Combination of sharp lightning with flowing wind - Storm particles and mini cloud puffs around the bolt - Cartoon-cute but powerful stormy appearance - Each frame clearly separated in its own cell
 ```
 
 ### Impact Animation (4 frames)
 ```
-Create a pixel art horizontal sprite sheet of a STORM LIGHTNING EXPLOSION IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE EFFECT: A burst of electric storm energy when hitting an enemy - yellow lightning arcs with cyan wind bursting outward in a spiral pattern. COLOR PALETTE: - Core: Bright white flash (#FFFFFF) - Primary: Electric yellow (#FFFF33 / #FFFF66) - Secondary: Cyan wind (#66FFFF / #99FFFF) - Accent: White-blue electric sparks - Outline: Blue-gray (#334466) ANIMATION SEQUENCE (4 frames): Frame 1: Initial flash - white-yellow burst center with wind beginning to spiral outward Frame 2: Expansion - lightning arcs shoot outward with wind currents spiraling between them Frame 3: Maximum spread - storm explosion with electric sparks and swirling wind particles Frame 4: Dissipation - energy fades, last sparks, lingering wind wisps IMPORTANT DETAILS: - Radial burst pattern with spiral wind motion - Lightning arcs mixed with cyan wind swirls - Storm cloud puff particles - Feeling of "electric tornado" explosion - Cartoon-cute style with clear, readable shapes - Each frame clearly separated in its own cell
+Create a cartoon art horizontal sprite sheet of a STORM LIGHTNING EXPLOSION IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE EFFECT: A burst of electric storm energy when hitting an enemy - yellow lightning arcs with cyan wind bursting outward in a spiral pattern. COLOR PALETTE: - Core: Bright white flash (#FFFFFF) - Primary: Electric yellow (#FFFF33 / #FFFF66) - Secondary: Cyan wind (#66FFFF / #99FFFF) - Accent: White-blue electric sparks - Outline: Blue-gray (#334466) ANIMATION SEQUENCE (4 frames): Frame 1: Initial flash - white-yellow burst center with wind beginning to spiral outward Frame 2: Expansion - lightning arcs shoot outward with wind currents spiraling between them Frame 3: Maximum spread - storm explosion with electric sparks and swirling wind particles Frame 4: Dissipation - energy fades, last sparks, lingering wind wisps IMPORTANT DETAILS: - Radial burst pattern with spiral wind motion - Lightning arcs mixed with cyan wind swirls - Storm cloud puff particles - Feeling of "electric tornado" explosion - Cartoon-cute style with clear, readable shapes - Each frame clearly separated in its own cell
 ```
 
 ---
@@ -2142,20 +2142,20 @@ Style: Cartoon, clean shapes, no anti-aliasing on edges.
 
 ### beam_body_thunder_spear.png (64x32 tileable)
 ```
-Pixel art seamless tileable texture, 64x32 pixels.
+cartoon art seamless tileable texture, 64x32 pixels.
 Horizontal lightning beam ray body for divine thunder weapon.
 Cyan and golden electric color palette (#00FFFF, #FFD700, #FFFFFF).
 Jagged electric core line in bright cyan (not straight, lightning-like).
 Golden electric glow around the edges.
 Small spark particles scattered throughout.
 Must tile seamlessly horizontally (left edge connects to right edge).
-Transparent background, clean pixel art style.
-Electric energy feel, crackling thunder, divine lightning appearance.
+Solid black background (#000000) filling the entire image.
+Clean cartoon art style. Electric energy feel, crackling thunder, divine lightning appearance.
 ```
 
 ### beam_tip_thunder_spear.png (384x64, 6 frames)
 ```
-Pixel art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
+cartoon art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
 Animation of divine thunder impact at endpoint of lightning beam.
 Cyan and golden electric color palette (#00FFFF, #FFD700, #FFFFFF).
 Frame 1: Initial electric contact, small spark burst
@@ -2164,8 +2164,8 @@ Frame 3: Full electric explosion with multiple bolts
 Frame 4: Peak discharge with bright golden-cyan flash
 Frame 5: Electric arcs dissipating outward
 Frame 6: Fading sparks and lingering static energy
-Transparent background, clean pixel art style, 16-bit aesthetic.
-Thunder strike impact, electric explosion, divine judgment.
+Solid black background (#000000) filling the entire image.
+Clean cartoon art style, 16-bit aesthetic. Thunder strike impact, electric explosion, divine judgment.
 ```
 
 ---
@@ -2228,12 +2228,12 @@ Output file: orbit_spritesheet_crystal_guardian.png (512x64)
 
 ### Flight Animation (4 frames)
 ```
-Create a pixel art horizontal sprite sheet of a FROZEN LIGHTNING BOLT projectile for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE PROJECTILE: A jagged ice crystal bolt with an electric yellow core - frozen lightning that crackles with cold electricity. The bolt should look like crystallized lightning made of ice. COLOR PALETTE: - Core: Electric yellow glow (#FFFF66 / #FFFF99) - Primary: Cyan ice (#66FFFF / #99FFFF) - Secondary: White frost (#FFFFFF / #E6FFFF) - Accent: Yellow electric sparks through ice - Outline: Teal (#336666) ANIMATION SEQUENCE (4 frames): Frame 1: Ice bolt forming with yellow electric core flickering inside Frame 2: Frost intensifies, electric arcs visible through transparent ice Frame 3: Maximum intensity, bright yellow core pulsing through crystalline ice Frame 4: Energy crackle effect, ice particles and sparks, cycle back IMPORTANT DETAILS: - Orientation: Bolt pointing RIGHT (→) as if flying toward target - Transparent ice effect showing electric core inside - Mix of sharp ice crystals with lightning zigzag shape - Frost particles and electric sparks around the bolt - Cartoon-cute but cold and electric appearance - Each frame clearly separated in its own cell
+Create a cartoon art horizontal sprite sheet of a FROZEN LIGHTNING BOLT projectile for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE PROJECTILE: A jagged ice crystal bolt with an electric yellow core - frozen lightning that crackles with cold electricity. The bolt should look like crystallized lightning made of ice. COLOR PALETTE: - Core: Electric yellow glow (#FFFF66 / #FFFF99) - Primary: Cyan ice (#66FFFF / #99FFFF) - Secondary: White frost (#FFFFFF / #E6FFFF) - Accent: Yellow electric sparks through ice - Outline: Teal (#336666) ANIMATION SEQUENCE (4 frames): Frame 1: Ice bolt forming with yellow electric core flickering inside Frame 2: Frost intensifies, electric arcs visible through transparent ice Frame 3: Maximum intensity, bright yellow core pulsing through crystalline ice Frame 4: Energy crackle effect, ice particles and sparks, cycle back IMPORTANT DETAILS: - Orientation: Bolt pointing RIGHT (→) as if flying toward target - Transparent ice effect showing electric core inside - Mix of sharp ice crystals with lightning zigzag shape - Frost particles and electric sparks around the bolt - Cartoon-cute but cold and electric appearance - Each frame clearly separated in its own cell
 ```
 
 ### Impact Animation (4 frames)
 ```
-Create a pixel art horizontal sprite sheet of a FROZEN LIGHTNING EXPLOSION IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE EFFECT: A burst of ice and electricity when hitting an enemy - cyan ice shards exploding outward with yellow electric arcs between them. COLOR PALETTE: - Core: Bright white-yellow flash (#FFFFFF / #FFFFCC) - Primary: Cyan ice (#66FFFF / #99FFFF) - Secondary: White frost (#FFFFFF / #E6FFFF) - Electric accents: Yellow sparks (#FFFF66) - Outline: Teal (#336666) ANIMATION SEQUENCE (4 frames): Frame 1: Initial flash - white-cyan burst center with ice beginning to shatter Frame 2: Expansion - ice shards shoot outward with electric arcs jumping between them Frame 3: Maximum spread - frozen explosion with ice crystals and electric discharge Frame 4: Dissipation - ice fades, last frost sparkles, lingering electric crackle IMPORTANT DETAILS: - Radial burst pattern (centered explosion expanding outward) - Ice crystal shards mixed with lightning sparks - Frost mist particles in cyan/white tones - Feeling of "frozen electricity" shattering - Cartoon-cute style with clear, readable shapes - Each frame clearly separated in its own cell
+Create a cartoon art horizontal sprite sheet of a FROZEN LIGHTNING EXPLOSION IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE EFFECT: A burst of ice and electricity when hitting an enemy - cyan ice shards exploding outward with yellow electric arcs between them. COLOR PALETTE: - Core: Bright white-yellow flash (#FFFFFF / #FFFFCC) - Primary: Cyan ice (#66FFFF / #99FFFF) - Secondary: White frost (#FFFFFF / #E6FFFF) - Electric accents: Yellow sparks (#FFFF66) - Outline: Teal (#336666) ANIMATION SEQUENCE (4 frames): Frame 1: Initial flash - white-cyan burst center with ice beginning to shatter Frame 2: Expansion - ice shards shoot outward with electric arcs jumping between them Frame 3: Maximum spread - frozen explosion with ice crystals and electric discharge Frame 4: Dissipation - ice fades, last frost sparkles, lingering electric crackle IMPORTANT DETAILS: - Radial burst pattern (centered explosion expanding outward) - Ice crystal shards mixed with lightning sparks - Frost mist particles in cyan/white tones - Feeling of "frozen electricity" shattering - Cartoon-cute style with clear, readable shapes - Each frame clearly separated in its own cell
 ```
 
 ---
@@ -2242,12 +2242,12 @@ Create a pixel art horizontal sprite sheet of a FROZEN LIGHTNING EXPLOSION IMPAC
 
 ### Flight Animation (4 frames)
 ```
-Create a pixel art horizontal sprite sheet of a PLASMA LIGHTNING BOLT projectile for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE PROJECTILE: An electrified plasma bolt - a jagged lightning shape made of hot pink/magenta plasma energy. The bolt should look like superheated electrical fire with plasma particles. COLOR PALETTE: - Core: White-pink glow (#FFFFFF to #FFF2FF) - Primary: Hot pink/magenta (#FF66CC / #FFB3E6) - Secondary: Deep magenta (#E666B3) - Accent: Electric white-pink sparks - Outline: Dark magenta (#804066) ANIMATION SEQUENCE (4 frames): Frame 1: Plasma bolt forming with small energy particles gathering Frame 2: Bolt intensifies, plasma particles swirl around the zigzag shape Frame 3: Maximum intensity, bright core with plasma tendrils radiating Frame 4: Energy pulse effect, particles disperse slightly, cycle back IMPORTANT DETAILS: - Orientation: Bolt pointing RIGHT (→) as if flying toward target - Hot plasma energy with electric crackle effects - Mix of fire-like fluidity with lightning sharpness - Pink/magenta glowing particles around the bolt - Cartoon-cute but powerful appearance - Each frame clearly separated in its own cell
+Create a cartoon art horizontal sprite sheet of a PLASMA LIGHTNING BOLT projectile for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE PROJECTILE: An electrified plasma bolt - a jagged lightning shape made of hot pink/magenta plasma energy. The bolt should look like superheated electrical fire with plasma particles. COLOR PALETTE: - Core: White-pink glow (#FFFFFF to #FFF2FF) - Primary: Hot pink/magenta (#FF66CC / #FFB3E6) - Secondary: Deep magenta (#E666B3) - Accent: Electric white-pink sparks - Outline: Dark magenta (#804066) ANIMATION SEQUENCE (4 frames): Frame 1: Plasma bolt forming with small energy particles gathering Frame 2: Bolt intensifies, plasma particles swirl around the zigzag shape Frame 3: Maximum intensity, bright core with plasma tendrils radiating Frame 4: Energy pulse effect, particles disperse slightly, cycle back IMPORTANT DETAILS: - Orientation: Bolt pointing RIGHT (→) as if flying toward target - Hot plasma energy with electric crackle effects - Mix of fire-like fluidity with lightning sharpness - Pink/magenta glowing particles around the bolt - Cartoon-cute but powerful appearance - Each frame clearly separated in its own cell
 ```
 
 ### Impact Animation (4 frames)
 ```
-Create a pixel art horizontal sprite sheet of a PLASMA EXPLOSION IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE EFFECT: A burst of plasma energy when hitting an enemy - hot pink electric fire expanding outward with sparks and plasma particles. COLOR PALETTE: - Core: Bright white-pink flash (#FFFFFF / #FFF2FF) - Primary: Hot pink (#FF66CC / #FFB3E6) - Secondary: Pale pink (#FFE6F7) - Electric accents: White-magenta sparks - Outline: Dark magenta (#804066) ANIMATION SEQUENCE (4 frames): Frame 1: Initial flash - white-pink burst center with plasma beginning to expand Frame 2: Expansion - plasma tendrils shoot outward with electric arcs between them Frame 3: Maximum spread - plasma explosion with bright sparkling particles, electric discharge Frame 4: Dissipation - energy fades, last pink sparkles, lingering plasma mist IMPORTANT DETAILS: - Radial burst pattern (centered explosion expanding outward) - Plasma tendrils mixed with lightning sparks - Hot energy particles in pink/magenta tones - Feeling of "superheated electricity" - fire and lightning combined - Cartoon-cute style with clear, readable shapes - Each frame clearly separated in its own cell
+Create a cartoon art horizontal sprite sheet of a PLASMA EXPLOSION IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style. LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Transparent background. THE EFFECT: A burst of plasma energy when hitting an enemy - hot pink electric fire expanding outward with sparks and plasma particles. COLOR PALETTE: - Core: Bright white-pink flash (#FFFFFF / #FFF2FF) - Primary: Hot pink (#FF66CC / #FFB3E6) - Secondary: Pale pink (#FFE6F7) - Electric accents: White-magenta sparks - Outline: Dark magenta (#804066) ANIMATION SEQUENCE (4 frames): Frame 1: Initial flash - white-pink burst center with plasma beginning to expand Frame 2: Expansion - plasma tendrils shoot outward with electric arcs between them Frame 3: Maximum spread - plasma explosion with bright sparkling particles, electric discharge Frame 4: Dissipation - energy fades, last pink sparkles, lingering plasma mist IMPORTANT DETAILS: - Radial burst pattern (centered explosion expanding outward) - Plasma tendrils mixed with lightning sparks - Hot energy particles in pink/magenta tones - Feeling of "superheated electricity" - fire and lightning combined - Cartoon-cute style with clear, readable shapes - Each frame clearly separated in its own cell
 ```
 
 ---
@@ -2637,20 +2637,20 @@ Output file: orbit_spritesheet_cosmic_void.png (512x64)
 
 ### beam_body_aurora.png (64x32 tileable)
 ```
-Pixel art seamless tileable texture, 64x32 pixels.
+cartoon art seamless tileable texture, 64x32 pixels.
 Horizontal aurora beam ray body for ice-light weapon.
 Cyan, green aurora, and white palette (#00FFFF, #50FA7B, #E0FFFF).
 Gradient bands of cyan and green (aurora borealis effect).
 Subtle ice crystal sparkles embedded in the beam.
 Soft wavy pattern suggesting aurora movement.
 Must tile seamlessly horizontally (left edge connects to right edge).
-Transparent background, clean pixel art style.
-Northern lights energy, frozen elegance, mystical ice-light.
+Solid black background (#000000) filling the entire image.
+Clean cartoon art style. Northern lights energy, frozen elegance, mystical ice-light.
 ```
 
 ### beam_tip_aurora.png (384x64, 6 frames)
 ```
-Pixel art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
+cartoon art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
 Animation of aurora light impact at endpoint of ice-light beam.
 Cyan, green aurora, and white ice palette (#00FFFF, #50FA7B, #E0FFFF).
 Frame 1: Initial contact with ice crystal formation
@@ -2659,8 +2659,8 @@ Frame 3: Full aurora explosion with dancing lights
 Frame 4: Peak brightness with ice shards and color waves
 Frame 5: Dispersing aurora wisps and ice particles
 Frame 6: Fading glow with lingering ice sparkles
-Transparent background, clean pixel art style, 16-bit aesthetic.
-Aurora impact, frozen light burst, elegant icy explosion.
+Solid black background (#000000) filling the entire image.
+Clean cartoon art style, 16-bit aesthetic. Aurora impact, frozen light burst, elegant icy explosion.
 ```
 
 ---
@@ -2672,20 +2672,20 @@ Aurora impact, frozen light burst, elegant icy explosion.
 
 ### beam_body_solar_flare.png (64x32 tileable)
 ```
-Pixel art seamless tileable texture, 64x32 pixels.
+cartoon art seamless tileable texture, 64x32 pixels.
 Horizontal solar plasma beam ray body for fire-light weapon.
 Orange, yellow, and white-hot palette (#FF8C00, #FFD700, #FFFFFF).
 White-hot bright core in the center.
 Orange and yellow plasma flames along the edges.
 Small ember particles and heat distortion suggestion.
 Must tile seamlessly horizontally (left edge connects to right edge).
-Transparent background, clean pixel art style.
-Solar plasma energy, blazing heat ray, stellar fire beam.
+Solid black background (#000000) filling the entire image.
+Clean cartoon art style. Solar plasma energy, blazing heat ray, stellar fire beam.
 ```
 
 ### beam_tip_solar_flare.png (384x64, 6 frames)
 ```
-Pixel art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
+cartoon art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
 Animation of solar plasma impact at endpoint of fire-light beam.
 Orange, yellow, and white-hot palette (#FF8C00, #FFD700, #FFFFFF, #FF4500).
 Frame 1: Initial plasma contact, small solar burst
@@ -2694,8 +2694,8 @@ Frame 3: Full plasma explosion with corona effect
 Frame 4: Peak intensity with white-hot flash and embers
 Frame 5: Dispersing solar particles and flame wisps
 Frame 6: Fading heat glow with lingering embers
-Transparent background, clean pixel art style, 16-bit aesthetic.
-Solar explosion impact, plasma burst, stellar devastation.
+Solid black background (#000000) filling the entire image.
+Clean cartoon art style, 16-bit aesthetic. Solar explosion impact, plasma burst, stellar devastation.
 ```
 
 ---
@@ -2707,20 +2707,20 @@ Solar explosion impact, plasma burst, stellar devastation.
 
 ### beam_body_solar_bloom.png (64x32 tileable)
 ```
-Pixel art seamless tileable texture, 64x32 pixels.
+cartoon art seamless tileable texture, 64x32 pixels.
 Horizontal nature-light beam ray body for solar bloom weapon.
 Green, golden, and yellow palette (#50FA7B, #FFD700, #ADFF2F).
 Bright golden-green core in the center.
 Leaf-like patterns and vine suggestions along edges.
 Small pollen sparkles and life energy particles.
 Must tile seamlessly horizontally (left edge connects to right edge).
-Transparent background, clean pixel art style.
-Life energy beam, photosynthesis ray, nature-light fusion.
+Solid black background (#000000) filling the entire image.
+Clean cartoon art style. Life energy beam, photosynthesis ray, nature-light fusion.
 ```
 
 ### beam_tip_solar_bloom.png (384x64, 6 frames)
 ```
-Pixel art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
+cartoon art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
 Animation of nature-light impact at endpoint of life energy beam.
 Green, golden, and yellow palette (#50FA7B, #FFD700, #ADFF2F, #98FB98).
 Frame 1: Initial contact with sprouting energy burst
@@ -2729,8 +2729,8 @@ Frame 3: Full flower burst with golden pollen cloud
 Frame 4: Peak radiance with leaves and light rays
 Frame 5: Dispersing pollen particles and leaf wisps
 Frame 6: Fading glow with lingering nature sparkles
-Transparent background, clean pixel art style, 16-bit aesthetic.
-Life energy burst, blooming explosion, natural magic impact.
+Solid black background (#000000) filling the entire image.
+Clean cartoon art style, 16-bit aesthetic. Life energy burst, blooming explosion, natural magic impact.
 ```
 
 ---
@@ -2742,20 +2742,20 @@ Life energy burst, blooming explosion, natural magic impact.
 
 ### beam_body_eclipse.png (64x32 tileable)
 ```
-Pixel art seamless tileable texture, 64x32 pixels.
+cartoon art seamless tileable texture, 64x32 pixels.
 Horizontal eclipse beam ray body for light-void weapon.
 Dual palette: White/Gold AND Purple/Black gradient.
 One half of beam is bright white-gold light energy.
 Other half is deep purple-black void energy.
 Swirling boundary between light and dark in the middle.
 Must tile seamlessly horizontally (left edge connects to right edge).
-Transparent background, clean pixel art style.
-Cosmic duality beam, light and shadow intertwined, eclipse energy.
+Solid black background (#000000) filling the entire image.
+Clean cartoon art style. Cosmic duality beam, light and shadow intertwined, eclipse energy.
 ```
 
 ### beam_tip_eclipse.png (384x64, 6 frames)
 ```
-Pixel art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
+cartoon art spritesheet, 384x64 pixels total, 6 frames of 64x64 each arranged horizontally.
 Animation of light-void impact at endpoint of eclipse beam.
 Dual palette: White/Gold (#FFFFFF, #FFD700) AND Purple/Black (#9B59B6, #2D1B4E).
 Frame 1: Initial contact with light-dark flash
@@ -2764,8 +2764,8 @@ Frame 3: Full eclipse explosion with corona of both forces
 Frame 4: Peak contrast with brilliant white and deep void
 Frame 5: Dispersing light and shadow particles spiraling
 Frame 6: Fading glow with lingering cosmic duality motes
-Transparent background, clean pixel art style, 16-bit aesthetic.
-Cosmic impact, duality explosion, light-void annihilation.
+Solid black background (#000000) filling the entire image.
+Clean cartoon art style, 16-bit aesthetic. Cosmic impact, duality explosion, light-void annihilation.
 ```
 
 ---
