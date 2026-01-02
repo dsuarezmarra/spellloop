@@ -78,7 +78,11 @@ func setup(data: ProjectileVisualData, length: float = 200.0,
 		_secondary_color = visual_data.secondary_color
 		_core_color = visual_data.accent_color
 		_outline_color = visual_data.outline_color
-		_setup_from_sprites()
+		# Solo usar sprites si realmente existen, sino procedural
+		if visual_data.beam_start_spritesheet or visual_data.beam_tip_spritesheet:
+			_setup_from_sprites()
+		else:
+			_setup_procedural()
 	else:
 		_setup_procedural()
 
@@ -117,19 +121,33 @@ func _create_nodes() -> void:
 
 func _setup_from_sprites() -> void:
 	"""Configurar desde spritesheets"""
+	var frame_size = visual_data.frame_size if visual_data else Vector2i(64, 64)
+	print("[BeamVisualEffect] Configurando sprites con frame_size: " + str(frame_size))
+	
+	# Escala base de visual_data
+	var sprite_scale = visual_data.base_scale if visual_data else 1.0
+	
 	# Start sprite
 	if visual_data.beam_start_spritesheet:
 		var frames = SpriteFrames.new()
 		_add_animation(frames, "active", visual_data.beam_start_spritesheet, 
-			visual_data.beam_start_frames, visual_data.beam_fps, true)
+			visual_data.beam_frames, visual_data.beam_fps, true)
 		start_sprite.sprite_frames = frames
+		start_sprite.scale = Vector2.ONE * sprite_scale
+		start_sprite.play("active")  # Iniciar animación inmediatamente
+		print("  ✓ Start sprite configurado: " + str(visual_data.beam_frames) + " frames, scale: " + str(sprite_scale))
 	
 	# Tip sprite
 	if visual_data.beam_tip_spritesheet:
 		var frames = SpriteFrames.new()
 		_add_animation(frames, "active", visual_data.beam_tip_spritesheet,
-			visual_data.beam_tip_frames, visual_data.beam_fps, true)
+			visual_data.beam_frames, visual_data.beam_fps, true)
 		tip_sprite.sprite_frames = frames
+		tip_sprite.scale = Vector2.ONE * sprite_scale
+		tip_sprite.play("active")  # Iniciar animación inmediatamente
+		print("  ✓ Tip sprite configurado: " + str(visual_data.beam_frames) + " frames, scale: " + str(sprite_scale))
+	else:
+		print("  ✗ Tip sprite NO TIENE SPRITESHEET")
 	
 	# Configurar gradiente del body
 	_setup_body_gradient()

@@ -1180,6 +1180,44 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_fps": 12.0,  # Divine crystal light
 		"sprite_scale": 1.0,
 		"is_aoe": true
+	},
+	# === BEAM WEAPONS (Rayos instantáneos) ===
+	# Sprites: beam_start_[weapon].png (orbe origen), beam_tip_[weapon].png (punta impacto)
+	"light_beam": {
+		"beam_frames": 6,
+		"beam_fps": 12.0,
+		"sprite_scale": 1.0,
+		"is_beam": true
+	},
+	"thunder_spear": {  # Lightning + Light fusion
+		"beam_frames": 6,
+		"beam_fps": 14.0,  # Fast electric crackling
+		"sprite_scale": 1.0,
+		"is_beam": true
+	},
+	"aurora": {  # Ice + Light fusion
+		"beam_frames": 6,
+		"beam_fps": 10.0,  # Slow, ethereal shimmer
+		"sprite_scale": 1.0,
+		"is_beam": true
+	},
+	"solar_flare": {  # Fire + Light fusion
+		"beam_frames": 6,
+		"beam_fps": 14.0,  # Fast, intense solar burn
+		"sprite_scale": 1.0,
+		"is_beam": true
+	},
+	"solar_bloom": {  # Nature + Light fusion
+		"beam_frames": 6,
+		"beam_fps": 10.0,  # Gentle, organic growth
+		"sprite_scale": 1.0,
+		"is_beam": true
+	},
+	"eclipse": {  # Light + Void fusion
+		"beam_frames": 6,
+		"beam_fps": 12.0,  # Balanced light/void swirl
+		"sprite_scale": 1.0,
+		"is_beam": true
 	}
 }
 
@@ -1222,6 +1260,48 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 		# Si no hay sprites orbitales, usar procedural
 		return
 	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# SPRITES BEAM (para armas tipo BEAM: start + tip)
+	# ═══════════════════════════════════════════════════════════════════════════
+	if config.get("is_beam", false):
+		var start_path = base_path + "beam_start_" + weapon_id + ".png"
+		var tip_path = base_path + "beam_tip_" + weapon_id + ".png"
+		
+		print("[ProjectileVisualManager] Buscando BEAM sprites para: " + weapon_id)
+		print("  Start path: " + start_path + " - Existe: " + str(ResourceLoader.exists(start_path)))
+		print("  Tip path: " + tip_path + " - Existe: " + str(ResourceLoader.exists(tip_path)))
+		
+		var start_tex = load(start_path) as Texture2D if ResourceLoader.exists(start_path) else null
+		var tip_tex = load(tip_path) as Texture2D if ResourceLoader.exists(tip_path) else null
+		
+		if start_tex or tip_tex:
+			# Al menos uno de los sprites BEAM existe
+			var beam_frames_count = config.get("beam_frames", 6)
+			var beam_frame_size = config.get("beam_frame_size", 64)
+			
+			if start_tex:
+				data.beam_start_spritesheet = start_tex
+				data.beam_frames = beam_frames_count
+				print("  Start spritesheet: " + str(start_tex.get_width()) + "x" + str(start_tex.get_height()))
+			if tip_tex:
+				data.beam_tip_spritesheet = tip_tex
+				data.beam_frames = beam_frames_count
+				print("  Tip spritesheet: " + str(tip_tex.get_width()) + "x" + str(tip_tex.get_height()))
+			
+			data.beam_fps = config.get("beam_fps", 12.0)
+			# Configurar frame_size para BEAM sprites
+			data.frame_size = Vector2i(beam_frame_size, beam_frame_size)
+			
+			# Aplicar escala personalizada si está definida
+			if config.has("sprite_scale"):
+				data.base_scale = config.get("sprite_scale", 1.0)
+			
+			print("[ProjectileVisualManager] Sprites BEAM cargados para: " + weapon_id)
+			print("  frame_size: " + str(data.frame_size) + ", frames: " + str(beam_frames_count))
+			return
+		# Si no hay sprites BEAM, usar procedural
+		return
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# SPRITES AOE (para armas tipo AOE: appear + active + fade)
 	# ═══════════════════════════════════════════════════════════════════════════
