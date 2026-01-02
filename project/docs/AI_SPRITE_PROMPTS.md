@@ -403,78 +403,478 @@ Effects:
 
 ---
 
-## 🪨 8. EARTH SPIKE - Pico de Tierra (AOE)
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🎯 SECCIÓN AOE (ÁREA DE EFECTO)
+# ═══════════════════════════════════════════════════════════════════════════════
+# 
+# INSTRUCCIONES PARA GENERAR SPRITES AOE:
+# 1. Todos los AOE son vista TOP-DOWN (desde arriba)
+# 2. Fondo transparente (checkerboard para verificar)
+# 3. Estilo: Cartoon/Funko Pop - formas redondeadas, colores saturados
+# 4. Outline oscuro de 1-2 píxeles en todos los elementos
+# 5. Efecto circular/radial centrado en el frame
+#
+# FORMATO DE ARCHIVOS:
+# - Active: 6 frames @ 64x64 = 384x64 total (LOOP)
+# - El sistema usa tweens procedurales para appear (scale 0→1) y fade (alpha→0)
+#
+# ═══════════════════════════════════════════════════════════════════════════════
 
-### Appear Animation (4 frames)
-```
-Create a horizontal sprite strip of 4 frames (64x64 each = 256x64 total).
+## 🪨 AOE-01. EARTH SPIKE - Pico de Tierra
 
-Subject: Rock spikes emerging from ground (TOP-DOWN VIEW)
-
-Design:
-- This is a top-down view of the ground breaking
-- Main rock: Brown (#996633)
-- Rock highlights: Tan (#CC9966)
-- Dust/debris: Light brown (#DDBB88)
-- Cracks outline: Dark brown (#4D3319)
-
-Animation: Ground cracking and spikes emerging
-- Frame 1: Ground starting to crack, small fissures appearing
-- Frame 2: Cracks widening, spike tips visible
-- Frame 3: Spikes emerging more, debris flying
-- Frame 4: Full spike pattern visible from above
-
-Effects:
-- Cracks radiating from center
-- Dirt/dust particles flying
-- Rock debris scattered
-```
+> Arma base: earth_spike
+> Picos de roca emergiendo del suelo, aturde enemigos
+> Archivo: `weapons/earth_spike/aoe_active_earth_spike.png`
 
 ### Active Animation (6 frames)
 ```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+Create a horizontal sprite strip for a 2D roguelike game.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
+VIEW: TOP-DOWN (looking straight down at the ground)
 
-Subject: Rock spike area effect active (TOP-DOWN VIEW)
+SUBJECT: Rock spike zone active and threatening
 
-Design:
-- Top-down view showing circular spike pattern
-- Same palette: brown (#996633), tan (#CC9966), light brown (#DDBB88)
-- Dark brown outline (#4D3319)
+COLOR PALETTE:
+- Primary: Brown rock (#996633)
+- Secondary: Tan highlights (#CC9966)
+- Accent: Light brown dust (#DDBB88)
+- Outline: Dark brown (#4D3319)
 
-Animation: Spikes pulsing/threatening from ground
-- Frames 1-6: Subtle pulsing of spike pattern
-- Dust particles floating
-- Ground trembling effect (slight shake)
+ANIMATION SEQUENCE (LOOP):
+- Frame 1-2: Spikes at normal size, dust floating
+- Frame 3-4: Spikes pulse slightly larger, ground trembles
+- Frame 5-6: Spikes return to normal, dust settles slightly
 
-Effects:
-- Circular crack pattern on ground
-- Multiple spike points visible from above
+EFFECTS:
+- Subtle size pulse on spike tips
 - Floating dust particles
-- Slight vibration/shake between frames
-```
-
-### Fade Animation (4 frames)
-```
-Create a horizontal sprite strip of 4 frames (64x64 each = 256x64 total).
-
-Subject: Rock spikes retracting (TOP-DOWN VIEW)
-
-Design:
-- Same color palette as above
-
-Animation: Spikes sinking back into ground
-- Frame 1: Full spike pattern, starting to retract
-- Frame 2: Spikes half-retracted, cracks starting to close
-- Frame 3: Most spikes gone, cracks healing
-- Frame 4: Ground nearly normal, final dust settling
-
-Effects:
-- Dust settling down
-- Cracks closing
-- Debris fading
+- Ground vibration effect (slight position shifts)
+- Circular arrangement maintained
 ```
 
 ---
+
+## 🌀 AOE-02. VOID PULSE - Pulso del Vacío
+
+> Arma base: void_pulse
+> Singularidad oscura que succiona y daña, efecto pull
+> Archivo: `weapons/void_pulse/aoe_active_void_pulse.png`
+
+### Active Animation (6 frames)
+```
+Create a horizontal sprite strip for a 2D roguelike game.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
+VIEW: TOP-DOWN (looking straight down at the ground)
+
+SUBJECT: Void singularity pulsing and pulling
+
+COLOR PALETTE:
+- Primary: Deep purple-black (#1A001A)
+- Secondary: Dark violet (#330033)
+- Accent: Purple energy (#9933FF)
+- Outline: Near-black (#0D000D)
+
+ANIMATION SEQUENCE (LOOP):
+- Frame 1-2: Void core stable, particles drifting inward
+- Frame 3-4: Core pulses larger, pull intensifies
+- Frame 5-6: Core contracts, energy ripples outward
+
+EFFECTS:
+- Particles being sucked toward center
+- Distortion waves around void
+- Dark energy tendrils
+- Ominous pulsing glow
+```
+
+---
+
+## 💨🔥 AOE-03. STEAM CANNON - Cañón de Vapor
+
+> Fusión: ice_wand + fire_wand
+> Explosión de vapor ardiente, mezcla de agua y fuego
+> Archivo: `fusion/steam_cannon/aoe_active_steam_cannon.png`
+
+### Active Animation (6 frames)
+```
+Create a horizontal sprite strip for a 2D roguelike game.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
+VIEW: TOP-DOWN (looking straight down at the ground)
+
+SUBJECT: Steam explosion zone billowing and scalding
+
+COLOR PALETTE:
+- Primary: White steam (#FFFFFF)
+- Secondary: Light gray mist (#CCCCCC)
+- Accent: Orange-red heat (#FF6633)
+- Outline: Gray-blue (#667788)
+
+ANIMATION SEQUENCE (LOOP):
+- Frame 1-2: Steam clouds billowing, heat shimmer
+- Frame 3-4: Steam intensifies, orange glow visible
+- Frame 5-6: Steam disperses slightly, cycle resets
+
+EFFECTS:
+- Billowing cloud animation
+- Heat distortion effect
+- Water droplets in steam
+- Warm orange undertones
+```
+
+---
+
+## 🌋💀 AOE-04. RIFT QUAKE - Terremoto Dimensional
+
+> Fusión: earth_spike + void_pulse
+> Fisuras dimensionales en la tierra, combina tierra y vacío
+> Archivo: `fusion/rift_quake/aoe_active_rift_quake.png`
+
+### Active Animation (6 frames)
+```
+Create a horizontal sprite strip for a 2D roguelike game.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
+VIEW: TOP-DOWN (looking straight down at the ground)
+
+SUBJECT: Dimensional cracks in earth with void energy
+
+COLOR PALETTE:
+- Primary: Brown cracked earth (#996633)
+- Secondary: Deep purple void (#330033)
+- Accent: Violet energy (#9933FF)
+- Outline: Dark brown-purple (#4D2233)
+
+ANIMATION SEQUENCE (LOOP):
+- Frame 1-2: Ground cracks stable, void glowing within
+- Frame 3-4: Cracks widen, purple energy surges up
+- Frame 5-6: Energy settles, cracks pulse
+
+EFFECTS:
+- Earth cracks with purple glow inside
+- Void tendrils emerging from fissures
+- Ground vibration
+- Dimensional distortion
+```
+
+---
+
+## 🌀💨 AOE-05. VOID STORM - Tormenta del Vacío
+
+> Fusión: void_pulse + wind_blade
+> Vórtice dimensional con vientos del vacío
+> Archivo: `fusion/void_storm/aoe_active_void_storm.png`
+
+### Active Animation (6 frames)
+```
+Create a horizontal sprite strip for a 2D roguelike game.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
+VIEW: TOP-DOWN (looking straight down at the ground)
+
+SUBJECT: Swirling void tornado from above
+
+COLOR PALETTE:
+- Primary: Deep void black (#1A001A)
+- Secondary: Cyan wind (#66FFFF)
+- Accent: Dark purple (#330033)
+- Outline: Black (#000000)
+
+ANIMATION SEQUENCE (LOOP):
+- Frame 1-2: Vortex spinning, void center stable
+- Frame 3-4: Spin accelerates, debris visible
+- Frame 5-6: Vortex pulses, wind lines prominent
+
+EFFECTS:
+- Spiral wind lines
+- Dark void center
+- Debris particles spinning
+- Contrast between void and wind
+```
+
+---
+
+## ❄️🪨 AOE-06. GLACIER - Glaciar
+
+> Fusión: ice_wand + earth_spike
+> Espinas de hielo cristalizado emergiendo del suelo
+> Archivo: `fusion/glacier/aoe_active_glacier.png`
+
+### Active Animation (6 frames)
+```
+Create a horizontal sprite strip for a 2D roguelike game.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
+VIEW: TOP-DOWN (looking straight down at the ground)
+
+SUBJECT: Glacial ice spikes gleaming with frost
+
+COLOR PALETTE:
+- Primary: Light cyan ice (#66FFFF)
+- Secondary: White frost (#FFFFFF)
+- Accent: Pale blue-gray (#B3D9E6)
+- Outline: Dark cyan-blue (#1A5C66)
+
+ANIMATION SEQUENCE (LOOP):
+- Frame 1-2: Ice spikes gleaming, frost stable
+- Frame 3-4: Crystal reflections shift, mist swirls
+- Frame 5-6: Sparkles flash on tips, mist settles
+
+EFFECTS:
+- Crystalline light reflections
+- Cold mist breathing effect
+- Ice sparkle particles
+- Frozen, dangerous beauty
+```
+
+---
+
+## ❄️🌀 AOE-07. ABSOLUTE ZERO - Cero Absoluto
+
+> Fusión: ice_wand + void_pulse
+> Congelación absoluta del espacio-tiempo
+> Archivo: `fusion/absolute_zero/aoe_active_absolute_zero.png`
+
+### Active Animation (6 frames)
+```
+Create a horizontal sprite strip for a 2D roguelike game.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
+VIEW: TOP-DOWN (looking straight down at the ground)
+
+SUBJECT: Frozen void singularity - time stopped
+
+COLOR PALETTE:
+- Primary: Deep black-purple void (#0D0019)
+- Secondary: Pale cyan ice (#99CCFF)
+- Accent: Dark purple-blue (#330066)
+- Outline: Near black (#0A0A1A)
+
+ANIMATION SEQUENCE (LOOP):
+- Frame 1-2: Frozen void stable, ice crystals static
+- Frame 3-4: Void pulses, crystals shimmer
+- Frame 5-6: Cold energy radiates outward
+
+EFFECTS:
+- Ice crystals floating statically (time frozen)
+- Void distortion at center
+- Extreme cold visual (white frost)
+- Eerie stillness feeling
+```
+
+---
+
+## 🔥🪨 AOE-08. VOLCANO - Volcán
+
+> Fusión: fire_wand + earth_spike
+> Erupción volcánica con lava y rocas fundidas
+> Archivo: `fusion/volcano/aoe_active_volcano.png`
+
+### Active Animation (6 frames)
+```
+Create a horizontal sprite strip for a 2D roguelike game.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
+VIEW: TOP-DOWN (looking straight down at the ground)
+
+SUBJECT: Active volcanic crater with bubbling lava
+
+COLOR PALETTE:
+- Primary: Bright orange lava (#FF6600)
+- Secondary: Red-orange magma (#CC3300)
+- Accent: Dark red-brown rock (#661100)
+- Outline: Very dark brown (#331100)
+
+ANIMATION SEQUENCE (LOOP):
+- Frame 1-2: Lava pool bubbling gently
+- Frame 3-4: Magma geyser erupts, splashes
+- Frame 5-6: Lava settles, embers float
+
+EFFECTS:
+- Bubbling lava animation
+- Lava splashes
+- Ember particles rising
+- Heat distortion
+```
+
+---
+
+## 🔥🌀 AOE-09. DARK FLAME - Llama Oscura
+
+> Fusión: fire_wand + void_pulse
+> Llamas del vacío que queman y succionan
+> Archivo: `fusion/dark_flame/aoe_active_dark_flame.png`
+
+### Active Animation (6 frames)
+```
+Create a horizontal sprite strip for a 2D roguelike game.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
+VIEW: TOP-DOWN (looking straight down at the ground)
+
+SUBJECT: Dark void fire burning with malice
+
+COLOR PALETTE:
+- Primary: Dark purple-red (#660033)
+- Secondary: Deep crimson (#990033)
+- Accent: Black-purple void (#1A001A)
+- Outline: Near black (#0D000D)
+
+ANIMATION SEQUENCE (LOOP):
+- Frame 1-2: Dark flames flickering, void core pulsing
+- Frame 3-4: Flames spiral inward, void pulls
+- Frame 5-6: Flames dance outward, reset
+
+EFFECTS:
+- Dark fire flickering (purple-red)
+- Void distortion at center
+- Soul-like wisps
+- Ominous threatening energy
+```
+
+---
+
+## ⚡🪨 AOE-10. SEISMIC BOLT - Descarga Sísmica
+
+> Fusión: lightning_wand + earth_spike
+> Descarga eléctrica que fractura el suelo
+> Archivo: `fusion/seismic_bolt/aoe_active_seismic_bolt.png`
+
+### Active Animation (6 frames)
+```
+Create a horizontal sprite strip for a 2D roguelike game.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
+VIEW: TOP-DOWN (looking straight down at the ground)
+
+SUBJECT: Electrified cracked ground with arcs
+
+COLOR PALETTE:
+- Primary: Bright yellow lightning (#FFFF00)
+- Secondary: Brown-tan earth (#996633)
+- Accent: Yellow-brown glow (#CCAA44)
+- Outline: Dark brown (#4D3319)
+
+ANIMATION SEQUENCE (LOOP):
+- Frame 1-2: Ground cracked, electric arcs jumping
+- Frame 3-4: Arcs intensify, rocks vibrate
+- Frame 5-6: Electricity crackles, settles
+
+EFFECTS:
+- Electric arcs between cracks
+- Rock debris bouncing
+- Yellow glow in fissures
+- Ground tremor effect
+```
+
+---
+
+## 🌿🪨 AOE-11. GAIA - Gaia
+
+> Fusión: nature_staff + earth_spike
+> Poder primordial de la tierra viva
+> Archivo: `fusion/gaia/aoe_active_gaia.png`
+
+### Active Animation (6 frames)
+```
+Create a horizontal sprite strip for a 2D roguelike game.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
+VIEW: TOP-DOWN (looking straight down at the ground)
+
+SUBJECT: Living earth with roots and glowing stones
+
+COLOR PALETTE:
+- Primary: Moss green-brown (#668844)
+- Secondary: Root brown (#886633)
+- Accent: Bright nature green (#66FF66)
+- Outline: Dark green-brown (#2D3319)
+
+ANIMATION SEQUENCE (LOOP):
+- Frame 1-2: Roots stable, stones glowing softly
+- Frame 3-4: Roots writhe, green energy pulses
+- Frame 5-6: Healing waves radiate, settles
+
+EFFECTS:
+- Roots moving organically
+- Green energy pulse waves
+- Leaf particles floating
+- Life-giving aura
+```
+
+---
+
+## 🌿🌀 AOE-12. DECAY - Decadencia
+
+> Fusión: nature_staff + void_pulse
+> Descomposición dimensional, naturaleza corrupta
+> Archivo: `fusion/decay/aoe_active_decay.png`
+
+### Active Animation (6 frames)
+```
+Create a horizontal sprite strip for a 2D roguelike game.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
+VIEW: TOP-DOWN (looking straight down at the ground)
+
+SUBJECT: Corrupted nature zone draining life
+
+COLOR PALETTE:
+- Primary: Sickly green-brown (#556622)
+- Secondary: Dark purple void (#330033)
+- Accent: Yellow-green rot (#99AA33)
+- Outline: Near black-green (#0D1A0D)
+
+ANIMATION SEQUENCE (LOOP):
+- Frame 1-2: Dead vines stable, void pulsing
+- Frame 3-4: Vines twitch, life being drained
+- Frame 5-6: Decay spreads, void contracts
+
+EFFECTS:
+- Corrupted vines moving sickly
+- Life drain particles toward center
+- Void core pulsing
+- Unsettling hungry feeling
+```
+
+---
+
+## 🪨✨ AOE-13. RADIANT STONE - Piedra Radiante
+
+> Fusión: earth_spike + light_beam
+> Pilares de cristal divino emergiendo del suelo
+> Archivo: `fusion/radiant_stone/aoe_active_radiant_stone.png`
+
+### Active Animation (6 frames)
+```
+Create a horizontal sprite strip for a 2D roguelike game.
+FORMAT: 6 frames, 64x64 pixels each = 384x64 total. Transparent background.
+STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on all shapes.
+VIEW: TOP-DOWN (looking straight down at the ground)
+
+SUBJECT: Divine crystal pillars glowing with holy light
+
+COLOR PALETTE:
+- Primary: Pale gold-white (#FFFFCC)
+- Secondary: Pure white (#FFFFFF)
+- Accent: Tan-gold stone (#DDAA77)
+- Outline: Muted gold (#AA8855)
+
+ANIMATION SEQUENCE (LOOP):
+- Frame 1-2: Crystals gleaming, light stable
+- Frame 3-4: Light pulses through crystals, sparkles
+- Frame 5-6: Divine glow breathes, settles
+
+EFFECTS:
+- Crystal facet reflections
+- Holy sparkle particles
+- Light pulse waves
+- Blessed protective feeling
+```
+
+---
+
 
 ## ✨ 9. LIGHT BEAM - Rayo de Luz
 
@@ -547,107 +947,7 @@ Effects:
 
 ---
 
-## 🌀 10. VOID PULSE - Pulso del Vacío (AOE)
-
-### Appear Animation (4 frames)
-```
-Create a horizontal sprite strip of 4 frames (64x64 each = 256x64 total).
-
-Subject: Dark void singularity forming (TOP-DOWN VIEW)
-
-Design:
-- Center void: Very dark purple-black (#330033)
-- Void edge: Dark purple (#660066)
-- Outer distortion: Purple (#990099)
-- Outline: Near black (#1A001A)
-
-Animation: Black hole/void opening
-- Frame 1: Small dark point appearing
-- Frame 2: Void expanding, distortion waves starting
-- Frame 3: Void larger, particles being pulled in
-- Frame 4: Full void effect active
-
-Effects:
-- Distortion waves radiating inward (opposite of explosion)
-- Small particles being sucked toward center
-- Dark energy crackling at edges
-```
-
-### Active Animation (6 frames)
-```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
-
-Subject: Void singularity active (TOP-DOWN VIEW)
-
-Design:
-- Same palette: black-purple (#330033), dark purple (#660066), purple (#990099)
-- Very dark outline (#1A001A)
-
-Animation: Void pulsing and pulling
-- Frames 1-6: Void core rotating/pulsing
-- Distortion waves pulling inward
-- Particles constantly being drawn to center
-
-Effects:
-- Spiral distortion pattern
-- Particles flowing toward center
-- Dark energy crackling
-- Otherworldly glow at edge
-```
-
-### Fade Animation (4 frames)
-```
-Create a horizontal sprite strip of 4 frames (64x64 each = 256x64 total).
-
-Subject: Void singularity closing
-
-Design:
-- Same color palette as above
-
-Animation: Black hole collapsing/closing
-- Frame 1: Full void starting to shrink
-- Frame 2: Void contracting, final particles pulled in
-- Frame 3: Void nearly closed, dark ripples
-- Frame 4: Final dark sparkles fading, reality returning to normal
-
-Effects:
-- Final implosion effect
-- Dark energy ripples
-- Reality "snapping" back
-```
-
----
-
-## 🌟 FUSIONES PRINCIPALES
-
----
-
-## 💨🔥 11. STEAM CANNON (Ice + Fire) - AOE
-
-### Appear Animation (4 frames)
-```
-Create a horizontal sprite strip of 4 frames (64x64 each = 256x64 total).
-
-Subject: Steam explosion forming (TOP-DOWN VIEW)
-
-Design:
-- Steam clouds: Light gray-white (#E6E6E6)
-- Cold hints: Pale blue (#99CCFF)
-- Hot hints: Soft orange (#FFAA66)
-- Outline: Medium gray (#666666)
-
-Animation: Steam burst appearing
-- Frame 1: Central point glowing with mixed hot/cold
-- Frame 2: Steam burst beginning, puffy clouds forming
-- Frame 3: Steam expanding rapidly
-- Frame 4: Full steam cloud AOE
-
-Effects:
-- Water droplets flying
-- Heat shimmer at orange areas
-- Cold frost at blue areas
-- Puffy cloud texture
-```
+## � FUSIONES PRINCIPALES
 
 ---
 
@@ -743,35 +1043,6 @@ Style: Cartoon/Funko Pop, clean shapes, bold outlines.
 This animation must loop SEAMLESSLY.
 
 Output file: orbit_spritesheet_cosmic_barrier.png (512x64)
-```
-
----
-
-## 🌋💀 15. RIFT QUAKE (Earth + Void) - AOE
-
-### Appear Animation (4 frames)
-```
-Create a horizontal sprite strip of 4 frames (64x64 each = 256x64 total).
-
-Subject: Massive ground destruction with void rifts opening (TOP-DOWN VIEW)
-
-Design:
-- Ground/rock: Dark brown (#4D3319)
-- Void rifts: Dark purple (#330033)
-- Void energy: Purple (#660066)
-- Outline: Near black (#1A0A0A)
-
-Animation: Ground shattering with dimensional rifts opening
-- Frame 1: Ground cracking with purple dimensional light in cracks
-- Frame 2: Cracks widening, void rifts emerging
-- Frame 3: Major fractures, dimensional portals pulsing
-- Frame 4: Full destruction zone with void rifts active
-
-Effects:
-- Large ground cracks
-- Void tendrils reaching out of cracks
-- Rock debris with purple glow
-- Massive scale destruction feel
 ```
 
 ---
@@ -1866,34 +2137,6 @@ Effects:
 - Holy sparkle particles
 - Power surge pulses
 - Spear tip at end of beam
-```
-
----
-
-## 🌀💨 21. VOID STORM (Void + Wind) - AOE
-
-### Active Animation (6 frames)
-```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
-
-Subject: Void tornado vortex (TOP-DOWN VIEW)
-
-Design:
-- Void center: Very dark (#1A001A)
-- Wind edges: Cyan (#66FFFF)
-- Void glow: Dark purple (#330033)
-- Outline: Black (#000000)
-
-Animation: Swirling void tornado from above
-- Frames 1-6: Spiral vortex rotating
-- Void center with cyan wind edges
-- Debris being pulled around
-
-Effects:
-- Spiral wind lines
-- Void distortion at center
-- Debris particles spinning
-- Contrast between dark void and bright wind
 ```
 
 ---

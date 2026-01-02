@@ -1074,6 +1074,112 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"orbit_fps": 8.0,  # Slow, ominous pull
 		"sprite_scale": 1.0,
 		"is_orbital": true
+	},
+	# === AOE WEAPONS (Area of Effect) ===
+	# Sprites: aoe_appear_[weapon].png, aoe_active_[weapon].png, aoe_fade_[weapon].png
+	"earth_spike": {
+		"aoe_appear_frames": 4,
+		"aoe_active_frames": 6,
+		"aoe_fade_frames": 4,
+		"aoe_fps": 12.0,
+		"sprite_scale": 1.0,
+		"is_aoe": true
+	},
+	"void_pulse": {
+		"aoe_appear_frames": 4,
+		"aoe_active_frames": 6,
+		"aoe_fade_frames": 4,
+		"aoe_fps": 10.0,  # Slower, ominous void
+		"sprite_scale": 1.0,
+		"is_aoe": true
+	},
+	"steam_cannon": {
+		"aoe_appear_frames": 4,
+		"aoe_active_frames": 6,
+		"aoe_fade_frames": 4,
+		"aoe_fps": 14.0,  # Fast steam dispersal
+		"sprite_scale": 1.0,
+		"is_aoe": true
+	},
+	"rift_quake": {
+		"aoe_appear_frames": 4,
+		"aoe_active_frames": 6,
+		"aoe_fade_frames": 4,
+		"aoe_fps": 12.0,  # Powerful seismic
+		"sprite_scale": 1.0,
+		"is_aoe": true
+	},
+	"void_storm": {
+		"aoe_appear_frames": 4,
+		"aoe_active_frames": 6,
+		"aoe_fade_frames": 4,
+		"aoe_fps": 14.0,  # Fast vortex spin
+		"sprite_scale": 1.0,
+		"is_aoe": true
+	},
+	"glacier": {
+		"aoe_appear_frames": 4,
+		"aoe_active_frames": 6,
+		"aoe_fade_frames": 4,
+		"aoe_fps": 10.0,  # Slow, cold ice formation
+		"sprite_scale": 1.0,
+		"is_aoe": true
+	},
+	"absolute_zero": {
+		"aoe_appear_frames": 4,
+		"aoe_active_frames": 6,
+		"aoe_fade_frames": 4,
+		"aoe_fps": 8.0,  # Very slow, time-frozen
+		"sprite_scale": 1.0,
+		"is_aoe": true
+	},
+	"volcano": {
+		"aoe_appear_frames": 4,
+		"aoe_active_frames": 6,
+		"aoe_fade_frames": 4,
+		"aoe_fps": 14.0,  # Fast, violent eruption
+		"sprite_scale": 1.0,
+		"is_aoe": true
+	},
+	"dark_flame": {
+		"aoe_appear_frames": 4,
+		"aoe_active_frames": 6,
+		"aoe_fade_frames": 4,
+		"aoe_fps": 12.0,  # Sinister dark fire
+		"sprite_scale": 1.0,
+		"is_aoe": true
+	},
+	"seismic_bolt": {
+		"aoe_appear_frames": 4,
+		"aoe_active_frames": 6,
+		"aoe_fade_frames": 4,
+		"aoe_fps": 16.0,  # Fast electric shockwave
+		"sprite_scale": 1.0,
+		"is_aoe": true
+	},
+	"gaia": {
+		"aoe_appear_frames": 4,
+		"aoe_active_frames": 6,
+		"aoe_fade_frames": 4,
+		"aoe_fps": 10.0,  # Slow, organic growth
+		"sprite_scale": 1.0,
+		"is_aoe": true
+	},
+	"decay": {
+		"aoe_appear_frames": 4,
+		"aoe_active_frames": 6,
+		"aoe_fade_frames": 4,
+		"aoe_fps": 8.0,  # Slow, creeping corruption
+		"sprite_scale": 1.0,
+		"is_aoe": true
+	},
+	"radiant_stone": {
+		"aoe_appear_frames": 4,
+		"aoe_active_frames": 6,
+		"aoe_fade_frames": 4,
+		"aoe_fps": 12.0,  # Divine crystal light
+		"sprite_scale": 1.0,
+		"is_aoe": true
 	}
 }
 
@@ -1114,6 +1220,41 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 			else:
 				push_warning("[ProjectileVisualManager] No se pudo cargar orbit_spritesheet_" + weapon_id + ".png")
 		# Si no hay sprites orbitales, usar procedural
+		return
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# SPRITES AOE (para armas tipo AOE: appear + active + fade)
+	# ═══════════════════════════════════════════════════════════════════════════
+	if config.get("is_aoe", false):
+		var appear_path = base_path + "aoe_appear_" + weapon_id + ".png"
+		var active_path = base_path + "aoe_active_" + weapon_id + ".png"
+		var fade_path = base_path + "aoe_fade_" + weapon_id + ".png"
+		
+		var appear_tex = load(appear_path) as Texture2D if ResourceLoader.exists(appear_path) else null
+		var active_tex = load(active_path) as Texture2D if ResourceLoader.exists(active_path) else null
+		var fade_tex = load(fade_path) as Texture2D if ResourceLoader.exists(fade_path) else null
+		
+		if appear_tex or active_tex or fade_tex:
+			# Al menos uno de los sprites AOE existe
+			if appear_tex:
+				data.aoe_appear_spritesheet = appear_tex
+				data.aoe_appear_frames = config.get("aoe_appear_frames", 4)
+			if active_tex:
+				data.aoe_active_spritesheet = active_tex
+				data.aoe_active_frames = config.get("aoe_active_frames", 6)
+			if fade_tex:
+				data.aoe_fade_spritesheet = fade_tex
+				data.aoe_fade_frames = config.get("aoe_fade_frames", 4)
+			
+			data.aoe_fps = config.get("aoe_fps", 12.0)
+			
+			# Aplicar escala personalizada si está definida
+			if config.has("sprite_scale"):
+				data.base_scale = config.get("sprite_scale", 1.0)
+			
+			print("[ProjectileVisualManager] Sprites AOE cargados para: " + weapon_id)
+			return
+		# Si no hay sprites AOE, usar procedural
 		return
 
 	# ═══════════════════════════════════════════════════════════════════════════
