@@ -3174,12 +3174,13 @@ Clean cartoon art style, 16-bit aesthetic. Cosmic impact, duality explosion, lig
 
 > Fusión: ice_wand + wind_blade
 > Tipo: MULTI (5 proyectiles en abanico direccional)
-> Comportamiento: Ráfagas de viento helado que viajan en abanico, ralentizando enemigos
+> Comportamiento: Mini-tornados de hielo que viajan en abanico, ralentizando enemigos
 > Ubicación: `res://assets/sprites/projectiles/fusion/blizzard/`
 
 ### Características del ataque:
 - Dispara 5 proyectiles simultáneos en patrón de abanico
-- Cada proyectil es una ráfaga individual de ventisca
+- Cada proyectil es un mini-tornado de ventisca
+- **NO ROTA** - el tornado mantiene su eje vertical visual
 - Atraviesa 2 enemigos (pierce: 2)
 - Causa efecto de ralentización (slow 35%)
 - Velocidad media (400)
@@ -3190,36 +3191,38 @@ Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
 TOP-DOWN VIEW for 2D game. Black background (#000000).
 Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
 
-Subject: A swirling ice wind gust projectile - a small localized blizzard carried by fierce wind. NOT a snowflake. NOT a static ice shard. This is DYNAMIC frozen wind.
+Subject: A small ice tornado/vortex - a vertical spinning column of frozen wind. This is a TORNADO shape, NOT a horizontal gust. The sprite should look the same regardless of travel direction.
+
+IMPORTANT: This sprite does NOT rotate with movement direction. It always maintains the same vertical orientation. Design it to look correct from any angle.
 
 Design:
-- Shape: Horizontal elongated swirl of wind carrying ice crystals (wider than tall)
-- Central vortex: Semi-translucent pale blue-white (#E8F4FF) swirling wind mass
-- Ice crystals: Tiny scattered ice shards within the vortex (#88DDFF, #AAEEFF)
-- Snowflakes: 3-5 small snowflake particles mixed in the wind (#FFFFFF)
-- Wind streaks: Wispy white-cyan trails showing motion direction (#CCFFFF)
-- Frost particles: Tiny sparkles at edges (#FFFFFF with transparency)
-- Outline: Soft blue-gray (#6699AA), 1 pixel, fading at wind edges
+- Shape: VERTICAL tornado/vortex shape - wider at top, narrower at bottom (or vice versa)
+- Vortex body: Semi-translucent pale blue-white (#E8F4FF) spinning funnel
+- Ice crystals: Tiny scattered ice shards orbiting the vortex (#88DDFF, #AAEEFF)
+- Snowflakes: 3-5 small snowflake particles caught in the spin (#FFFFFF)
+- Wind spiral lines: Curved lines wrapping around the tornado showing rotation (#CCFFFF)
+- Frost particles: Tiny sparkles being flung outward (#FFFFFF with transparency)
+- Outline: Soft blue-gray (#6699AA), 1 pixel, broken/wispy at edges
 
-Animation: Continuous swirling/rotating motion of frozen wind gust
-- Frame 1: Compact swirl, crystals clustered at center
-- Frame 2: Vortex expanding slightly, ice crystals spread outward
-- Frame 3: Full rotation visible, snowflakes at maximum spread
-- Frame 4: Wind streaks most visible, dynamic motion feel
-- Frame 5: Vortex contracting, crystals pulling back
+Animation: Internal spinning motion of the tornado - the vortex itself animates, NOT the whole sprite rotating
+- Frame 1: Tornado compact, ice crystals close to center
+- Frame 2: Vortex widening slightly, crystals spread outward in spin
+- Frame 3: Full width, spiral lines most visible, maximum particle spread
+- Frame 4: Tornado at peak intensity, ice debris flying off edges
+- Frame 5: Vortex tightening, particles pulling back in
 - Frame 6: Return to compact form, cycle ready to loop
 
-Key visual concept: WIND carrying ICE, not ice with wind decoration. The wind itself is the projectile, filled with frozen particles.
+Key visual concept: A STATIONARY TORNADO that spins internally. The animation shows the ice and wind INSIDE the tornado moving, but the tornado shape itself stays oriented the same way.
 
 Effects:
-- Visible rotation/turbulence in the wind mass
-- Ice crystals moving within the vortex (not static)
-- Wind streaks trailing behind showing direction of travel
-- Semi-transparent center suggesting depth
-- Frost sparkles appearing and disappearing
-- Feeling of COLD WIND, not solid ice
+- Visible internal spiral/rotation of ice particles
+- Wind lines wrapping around the funnel shape
+- Ice crystals orbiting at different heights
+- Semi-transparent body showing depth
+- Frost debris being thrown off the edges
+- Feeling of CONTAINED STORM - powerful but localized
 
-Style: Cartoon, clean shapes, semi-transparent wind effect.
+Style: Cartoon, clean shapes, semi-transparent tornado effect.
 Color palette: White (#FFFFFF), Ice blue (#88DDFF), Pale cyan (#AAEEFF), Frost tint (#CCDDFF)
 ```
 
@@ -3229,7 +3232,7 @@ Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
 TOP-DOWN VIEW for 2D game. Black background (#000000).
 Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
 
-Subject: Ice wind burst impact - the moment a blizzard gust DISPERSES upon hitting a target, releasing all its frozen particles in an expanding ring of freezing wind.
+Subject: Ice tornado COLLAPSES on impact - the vortex loses cohesion and all frozen particles scatter in a radial burst of freezing wind.
 
 Design:
 - Central burst: Bright white-cyan flash at point of impact (#FFFFFF to #CCFFFF)

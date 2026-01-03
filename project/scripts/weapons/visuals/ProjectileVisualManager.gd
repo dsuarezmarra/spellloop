@@ -234,7 +234,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.15
 	},
 
-	"glacier": {  # Ice + Wind
+	"glacier": {  # Ice + Earth
 		"shape": "ice_blade",
 		"primary": Color(0.55, 0.9, 0.95),
 		"secondary": Color(0.7, 0.95, 1.0),
@@ -247,7 +247,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.1
 	},
 
-	"aurora": {  # Ice + Earth
+	"aurora": {  # Ice + Light
 		"shape": "aurora_crystal",
 		"primary": Color(0.5, 0.8, 0.85),
 		"secondary": Color(0.7, 0.6, 0.5),
@@ -260,7 +260,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.08
 	},
 
-	"absolute_zero": {  # Ice + Light
+	"absolute_zero": {  # Ice + Void
 		"shape": "pure_ice",
 		"primary": Color(0.7, 0.95, 1.0),
 		"secondary": Color(0.9, 0.98, 1.0),
@@ -355,7 +355,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.1
 	},
 
-	"solar_flare": {  # Fire + Earth
+	"solar_flare": {  # Fire + Light
 		"shape": "solar_disc",
 		"primary": Color(1.0, 0.7, 0.3),
 		"secondary": Color(0.85, 0.55, 0.25),
@@ -368,7 +368,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.1
 	},
 
-	"dark_flame": {  # Fire + Light
+	"dark_flame": {  # Fire + Void
 		"shape": "holy_fire",
 		"primary": Color(1.0, 0.85, 0.5),
 		"secondary": Color(1.0, 0.5, 0.2),
@@ -398,7 +398,7 @@ const WEAPON_VISUALS: Dictionary = {
 	# FUSIONES LIGHTNING (7)
 	# ══════════════════════════════════════════════════════════════════════════
 
-	"storm_caller": {  # Lightning + Arcane
+	"storm_caller": {  # Lightning + Wind
 		"shape": "storm_orb",
 		"primary": Color(0.5, 0.6, 0.95),
 		"secondary": Color(0.7, 0.5, 0.9),
@@ -411,7 +411,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.15
 	},
 
-	"arcane_storm": {  # Lightning + Shadow
+	"arcane_storm": {  # Lightning + Arcane
 		"shape": "dark_bolt",
 		"primary": Color(0.35, 0.4, 0.7),
 		"secondary": Color(0.15, 0.15, 0.35),
@@ -532,7 +532,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.15
 	},
 
-	"cosmic_barrier": {  # Arcane + Earth
+	"cosmic_barrier": {  # Arcane + Light
 		"shape": "crystal_orb",
 		"primary": Color(0.6, 0.45, 0.7),
 		"secondary": Color(0.7, 0.55, 0.5),
@@ -545,7 +545,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.08
 	},
 
-	"cosmic_void": {  # Arcane + Light
+	"cosmic_void": {  # Arcane + Void
 		"shape": "radiant_orb",
 		"primary": Color(0.85, 0.75, 0.95),
 		"secondary": Color(0.95, 0.9, 0.8),
@@ -730,7 +730,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.08
 	},
 
-	"crystal_guardian": {  # Earth + Void
+	"crystal_guardian": {  # Earth + Arcane
 		"shape": "void_crystal",
 		"primary": Color(0.45, 0.35, 0.45),
 		"secondary": Color(0.2, 0.15, 0.25),
@@ -760,7 +760,7 @@ const WEAPON_VISUALS: Dictionary = {
 	# FUSIONES LIGHT/VOID (2)
 	# ══════════════════════════════════════════════════════════════════════════
 
-	"void_storm": {  # Light + Void
+	"void_storm": {  # Void + Wind
 		"shape": "duality_orb",
 		"primary": Color(0.7, 0.65, 0.8),
 		"secondary": Color(0.15, 0.1, 0.25),
@@ -773,7 +773,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.18
 	},
 
-	"eclipse": {  # Void + Light
+	"eclipse": {  # Light + Void
 		"shape": "eclipse_ring",
 		"primary": Color(0.2, 0.15, 0.3),
 		"secondary": Color(0.9, 0.85, 0.75),
