@@ -285,7 +285,9 @@ class BeamEffect extends Node2D:
 			"lifesteal":
 				var player = _get_player()
 				if player and player.has_method("heal"):
-					player.heal(int(effect_value))
+					var heal_amount = int(effect_value)
+					player.heal(heal_amount)
+					FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
 			"bleed":
 				if enemy.has_method("apply_bleed"):
 					enemy.apply_bleed(effect_value, effect_duration)
@@ -560,12 +562,16 @@ class AOEEffect extends Node2D:
 				# Curar al jugador por cada tick
 				var player = _get_player()
 				if player and player.has_method("heal"):
-					player.heal(int(effect_value))
+					var heal_amount = int(effect_value)
+					player.heal(heal_amount)
+					FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
 			"lifesteal_chain":
 				# Lifesteal que se propaga
-				var player = _get_player()
-				if player and player.has_method("heal"):
-					player.heal(int(effect_value))
+				var player2 = _get_player()
+				if player2 and player2.has_method("heal"):
+					var heal_amount2 = int(effect_value)
+					player2.heal(heal_amount2)
+					FloatingText.spawn_heal(player2.global_position + Vector2(0, -30), heal_amount2)
 			"execute":
 				# Ejecutar si el enemigo tiene menos del X% de vida
 				if enemy.has_method("get_info"):
@@ -889,7 +895,9 @@ class OrbitalManager extends Node2D:
 			"lifesteal":
 				var player = _get_orbital_player()
 				if player and player.has_method("heal"):
-					player.heal(int(effect_value))
+					var heal_amount = int(effect_value)
+					player.heal(heal_amount)
+					FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
 			"bleed":
 				if enemy.has_method("apply_bleed"):
 					enemy.apply_bleed(effect_value, effect_duration)
@@ -904,7 +912,7 @@ class OrbitalManager extends Node2D:
 		"""Aplicar daño encadenado a enemigos cercanos"""
 		var enemies_hit = [first_target]
 		var current_pos = first_target.global_position
-		var chain_damage = damage * 0.6  # Daño reducido para chains
+		var chain_damage = orbital_damage * 0.6  # Daño reducido para chains
 		
 		for i in range(chain_count):
 			var next_target = _find_chain_target(current_pos, enemies_hit)
@@ -1128,7 +1136,9 @@ class ChainProjectile extends Node2D:
 				# Curar al jugador por cada enemigo
 				var player = _get_player()
 				if player and player.has_method("heal"):
-					player.heal(int(effect_value))
+					var heal_amount = int(effect_value)
+					player.heal(heal_amount)
+					FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
 			"stun":
 				if target.has_method("apply_stun"):
 					target.apply_stun(effect_duration)

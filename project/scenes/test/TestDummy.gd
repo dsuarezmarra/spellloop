@@ -228,6 +228,7 @@ var _burn_damage: float = 0.0
 var _burn_timer: float = 0.0
 var _burn_tick_timer: float = 0.0
 var _stun_timer: float = 0.0
+var _stun_flash_timer: float = 0.0  # Timer para parpadeo de stun
 var _slow_timer: float = 0.0
 var _blind_timer: float = 0.0
 var _freeze_timer: float = 0.0
@@ -381,7 +382,7 @@ func _update_status_visual() -> void:
 	var target_color: Color = Color.WHITE
 	
 	if _is_stunned:
-		target_color = Color(1.0, 1.0, 0.3, 1.0)  # Amarillo
+		target_color = Color(1.0, 1.0, 1.0, 1.0)  # Blanco brillante (el parpadeo lo hace visible)
 	elif _is_frozen:
 		target_color = Color(0.4, 0.9, 1.0, 1.0)  # Cyan
 	elif _is_burning:
@@ -425,13 +426,28 @@ func _flash_bleed() -> void:
 		flash_tween.tween_property(sprite, "modulate", Color(0.9, 0.1, 0.2), 0.05)
 		flash_tween.tween_property(sprite, "modulate", original, 0.1)
 
+func _flash_stun(delta: float) -> void:
+	"""Parpadeo continuo mientras está stuneado - alterna entre blanco y amarillo"""
+	_stun_flash_timer += delta
+	if _stun_flash_timer >= 0.15:  # Parpadeo cada 0.15s
+		_stun_flash_timer = 0.0
+		if sprite:
+			# Alternar entre blanco brillante y amarillo dorado
+			var is_white = sprite.modulate.g > 0.9 and sprite.modulate.b > 0.9
+			if is_white:
+				sprite.modulate = Color(1.0, 0.9, 0.2, 1.0)  # Amarillo dorado
+			else:
+				sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)  # Blanco brillante
+
 func _process_status_effects(delta: float) -> void:
 	"""Procesar todos los efectos de estado activos"""
 	var status_changed: bool = false
 	
-	# STUN
+	# STUN - con efecto de parpadeo
 	if _is_stunned:
 		_stun_timer -= delta
+		# Parpadeo visual mientras está stuneado
+		_flash_stun(delta)
 		if _stun_timer <= 0:
 			_is_stunned = false
 			status_changed = true
