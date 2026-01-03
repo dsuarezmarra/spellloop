@@ -141,47 +141,59 @@ Effects:
 
 > Ubicación: `res://assets/sprites/projectiles/weapons/lightning_wand/`
 > Arma base tipo CHAIN - El rayo salta entre enemigos
+> ⚠️ IMPORTANTE: El flight sprite es el ARCO que conecta enemigos (se escala horizontalmente)
 
 ### flight_spritesheet_lightning_wand.png (256x64, 4 frames)
 ```
-Create a cartoon art horizontal sprite sheet of a CHAIN LIGHTNING ORB projectile for a 2D game, in cute chibi/Funko Pop cartoon style.
+Create a cartoon art horizontal sprite sheet of a HORIZONTAL LIGHTNING ARC for a 2D game chain weapon, in cute chibi/Funko Pop cartoon style.
 
-LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Solid black background (#000000).
+LAYOUT: 4 frames in a single horizontal strip, 256x64 pixels total. Each frame is 64x64. Solid black background (#000000).
 
-THE PROJECTILE: A spherical electric orb with MULTIPLE LIGHTNING ARCS reaching outward - this is a CHAIN weapon, NOT a pointed bolt. The orb has 2-3 electric tendrils/arcs extending from it in different directions, searching for the next target to chain to. Think of it as a ball of yellow energy with "arms" of lightning.
+⚠️ CRITICAL: This sprite will be STRETCHED HORIZONTALLY to connect two enemies. It must be a HORIZONTAL LIGHTNING BOLT that goes from LEFT EDGE to RIGHT EDGE of each frame.
+
+THE CHAIN ARC: A crackling lightning bolt that spans the FULL WIDTH of each 64x64 frame, going from left to right. This is the visual "chain" that connects enemy A to enemy B.
 
 SHAPE CONCEPT:
-- Central SPHERE of crackling electric energy (NOT pointed, NOT a bolt shape)
-- 2-3 LIGHTNING ARCS extending outward from the sphere like tentacles
-- Arcs should curve and reach in different directions (showing "seeking" behavior)
+- A HORIZONTAL zigzag lightning bolt from X=0 to X=64
+- Starts at LEFT edge, ends at RIGHT edge
+- Vertically centered (around Y=32)
+- Classic lightning bolt shape with 3-5 zigzag segments
+- Small energy orbs at both ends (connection points)
 
 COLOR PALETTE:
-- Core orb: Bright white (#FFFFFF) center fading to electric yellow (#FFFF4D)
-- Lightning arcs: Yellow (#FFFF33) with white tips
-- Electric sparks: Pale yellow (#FFFF99) particles
+- Core: Bright white (#FFFFFF) - the hot center of the bolt
+- Primary: Electric yellow (#FFFF4D / #FFFF33)
+- Glow: Pale yellow (#FFFF99) aura around bolt
 - Outline: Purple (#6633CC), 2 pixels
 
 ANIMATION SEQUENCE (4 frames):
-Frame 1: Electric orb with 2 arcs extending - arcs at rest positions
-Frame 2: Arcs WIGGLE and shift direction - searching for targets, sparks intensify
-Frame 3: Maximum energy - orb pulses bright, arcs reach furthest
-Frame 4: Arcs retract slightly and reposition - ready to chain again
+Frame 1: Lightning arc at rest - clear zigzag path from left to right
+Frame 2: Arc JITTERS - zigzag points shift slightly up/down, electric crackle
+Frame 3: Maximum intensity - bolt thickens, brightest glow, sparks flying off
+Frame 4: Arc shifts again - different zigzag pattern, ready to loop
 
 IMPORTANT DETAILS:
-- Central orb shape - NOT a pointed lightning bolt
-- Multiple arcs extending outward like CHAIN LINKS seeking targets
-- Cartoon-cute but powerful electric appearance
-- Each frame clearly separated in its own cell
-- The arcs should look like they're "alive" and searching
+- MUST span full width LEFT to RIGHT (this gets stretched between enemies)
+- Vertically centered in frame
+- Classic cartoon lightning bolt zigzag shape
+- Small sparks/particles around the bolt
+- Each frame clearly separated
+- Animation shows electric "crackling" effect
 ```
 
 ### impact_spritesheet_lightning_wand.png (256x64, 4 frames)
 ```
-Create a cartoon art horizontal sprite sheet of a CHAIN LIGHTNING IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style.
+Create a cartoon art horizontal sprite sheet of an ELECTRIC IMPACT BURST for a 2D game, in cute chibi/Funko Pop cartoon style.
 
-LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Solid black background (#000000).
+LAYOUT: 4 frames in a single horizontal strip, 256x64 pixels total. Each frame is 64x64. Solid black background (#000000).
 
-THE EFFECT: The lightning orb hits and SPLITS into multiple electric arcs that shoot toward different directions - showing the "chain" mechanic visually. Electric energy JUMPS to nearby targets.
+THE EFFECT: A small electric burst/zap at the point where the chain lightning hits an enemy. This is the "hit" effect, not the connecting arc.
+
+SHAPE CONCEPT:
+- CENTERED in each 64x64 frame
+- Small radial electric burst (not a full explosion)
+- 4-6 small lightning sparks shooting outward from center
+- Compact effect - about 40-50px diameter max
 
 COLOR PALETTE:
 - Core: Bright white flash (#FFFFFF)
@@ -191,17 +203,17 @@ COLOR PALETTE:
 - Outline: Purple (#6633CC)
 
 ANIMATION SEQUENCE (4 frames):
-Frame 1: Impact flash - orb bursts, 2-3 CHAIN ARCS begin shooting outward in DIFFERENT directions (not radial explosion, but distinct arcs to "targets")
-Frame 2: Chain arcs EXTEND - each arc reaches toward a different direction, showing electricity jumping to multiple enemies
-Frame 3: Maximum chain spread - arcs at full length, secondary sparks jumping between them
-Frame 4: Arcs fade from tips inward - energy dissipates, last sparks, chain effect complete
+Frame 1: Initial ZAP - bright white-yellow flash at center, small sparks beginning to form
+Frame 2: Spark burst - 4-6 small lightning sparks shoot outward from center
+Frame 3: Maximum spread - sparks at furthest point, central glow fading
+Frame 4: Dissipation - sparks shrink and fade, last electric crackles
 
 IMPORTANT DETAILS:
-- NOT a radial explosion - show DISTINCT CHAIN ARCS going to specific directions
-- Each arc should look like it's hitting a different target
-- Feeling of electricity JUMPING between targets
-- Cartoon-cute style with clear shapes
-- Each frame clearly separated in its own cell
+- CENTERED in frame (this appears at hit location)
+- Compact burst, not huge explosion
+- Electric/zappy feel, not fiery
+- Quick, snappy animation
+- Each frame clearly separated
 ```
 
 ---
@@ -995,71 +1007,82 @@ Clean cartoon art style, 16-bit aesthetic. Holy magical impact feel, dramatic ra
 > Fusión: lightning_wand + wind_blade
 > Cadena de tormenta que salta entre enemigos
 > Ubicación: `res://assets/sprites/projectiles/fusion/storm_caller/`
+> ⚠️ IMPORTANTE: El flight sprite es el ARCO que conecta enemigos (se escala horizontalmente)
 
 ### flight_spritesheet_storm_caller.png (256x64, 4 frames)
 ```
-Create a cartoon art horizontal sprite sheet of a CHAIN LIGHTNING ORB projectile for a 2D game, in cute chibi/Funko Pop cartoon style.
+Create a cartoon art horizontal sprite sheet of a HORIZONTAL STORM LIGHTNING ARC for a 2D game chain weapon, in cute chibi/Funko Pop cartoon style.
 
-LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Solid black background (#000000).
+LAYOUT: 4 frames in a single horizontal strip, 256x64 pixels total. Each frame is 64x64. Solid black background (#000000).
 
-THE PROJECTILE: A spherical storm orb with MULTIPLE ENERGY ARCS reaching outward - this is a CHAIN weapon, NOT a pointed bolt. The orb has 3-4 electric tendrils/arcs extending from it in different directions, searching for the next target to chain to. Think of it as a ball of energy with "arms" of lightning.
+⚠️ CRITICAL: This sprite will be STRETCHED HORIZONTALLY to connect two enemies. It must be a HORIZONTAL LIGHTNING BOLT that goes from LEFT EDGE to RIGHT EDGE of each frame.
+
+THE CHAIN ARC: A crackling storm lightning bolt with wind energy, spanning the FULL WIDTH of each 64x64 frame, going from left to right. This is the visual "chain" that connects enemy A to enemy B.
 
 SHAPE CONCEPT:
-- Central SPHERE of swirling storm energy (NOT pointed, NOT a bolt shape)
-- 3-4 LIGHTNING ARCS extending outward from the sphere like tentacles
-- Arcs should curve and reach in different directions (showing "seeking" behavior)
-- Wind swirls around the central orb
+- A HORIZONTAL zigzag lightning bolt from X=0 to X=64
+- Starts at LEFT edge, ends at RIGHT edge
+- Vertically centered (around Y=32)
+- Classic lightning bolt shape with 3-5 zigzag segments
+- WIND SWIRLS wrapping around the lightning bolt (cyan wisps)
+- Small energy orbs at both ends (connection points)
 
 COLOR PALETTE:
-- Core orb: Bright white (#FFFFFF) center fading to electric yellow (#FFFF66)
-- Lightning arcs: Yellow (#FFFF33) with white tips
-- Wind swirls: Cyan (#66FFFF / #99FFFF) spiraling around
-- Sparks: White-blue particles
+- Core: Bright white (#FFFFFF) - the hot center of the bolt
+- Primary: Electric yellow (#FFFF33 / #FFFF66)
+- Wind energy: Cyan (#66FFFF / #99FFFF) swirling around bolt
+- Glow: Pale yellow-cyan aura
 - Outline: Blue-gray (#334466), 2 pixels
 
 ANIMATION SEQUENCE (4 frames):
-Frame 1: Storm orb with 3 arcs extending - arcs at rest positions
-Frame 2: Arcs WIGGLE and shift direction - searching for targets, wind intensifies
-Frame 3: Maximum energy - orb pulses bright, arcs reach furthest, cyan wind spiral at peak
-Frame 4: Arcs retract slightly and reposition - ready to chain again
+Frame 1: Storm arc at rest - zigzag bolt with cyan wind wisps spiraling around it
+Frame 2: Arc JITTERS - zigzag shifts, wind swirls ROTATE around the bolt
+Frame 3: Maximum intensity - bolt thickens, wind spiral at peak, brightest glow
+Frame 4: Arc shifts again - wind continues spiraling, ready to loop
 
 IMPORTANT DETAILS:
-- Central orb shape - NOT a pointed lightning bolt
-- Multiple arcs extending outward like CHAIN LINKS seeking targets
-- Wind current swirls around the orb
-- Cartoon-cute but powerful stormy appearance
-- Each frame clearly separated in its own cell
-- The arcs should look like they're "alive" and searching
+- MUST span full width LEFT to RIGHT (this gets stretched between enemies)
+- Vertically centered in frame
+- Lightning bolt WITH wind energy swirling around it
+- The cyan wind makes this different from basic lightning
+- Each frame clearly separated
+- Animation shows electric "crackling" + wind "swirling"
 ```
 
 ### impact_spritesheet_storm_caller.png (256x64, 4 frames)
 ```
-Create a cartoon art horizontal sprite sheet of a CHAIN LIGHTNING IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style.
+Create a cartoon art horizontal sprite sheet of a STORM ELECTRIC IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style.
 
-LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Solid black background (#000000).
+LAYOUT: 4 frames in a single horizontal strip, 256x64 pixels total. Each frame is 64x64. Solid black background (#000000).
 
-THE EFFECT: The chain orb hits and SPLITS into multiple lightning arcs that shoot toward different directions - showing the "chain" mechanic visually. Electric energy JUMPS to nearby targets.
+THE EFFECT: A stormy electric burst at the point where the chain lightning hits an enemy. Combines lightning zap with wind burst.
+
+SHAPE CONCEPT:
+- CENTERED in each 64x64 frame
+- Small electric burst with wind swirl effect
+- 4-6 small lightning sparks shooting outward from center
+- Cyan wind particles spiraling outward
+- Compact effect - about 40-50px diameter max
 
 COLOR PALETTE:
 - Core: Bright white flash (#FFFFFF)
 - Primary: Electric yellow (#FFFF33 / #FFFF66)
-- Secondary: Cyan wind (#66FFFF / #99FFFF)
-- Sparks: White-blue particles
+- Wind: Cyan (#66FFFF / #99FFFF) particles
+- Sparks: White-yellow-cyan mix
 - Outline: Blue-gray (#334466)
 
 ANIMATION SEQUENCE (4 frames):
-Frame 1: Impact flash - orb bursts, 3-4 CHAIN ARCS begin shooting outward in DIFFERENT directions (not radial explosion, but distinct arcs to "targets")
-Frame 2: Chain arcs EXTEND - each arc reaches toward a different direction, showing electricity jumping to multiple enemies
-Frame 3: Maximum chain spread - arcs at full length, secondary sparks jumping between them, wind particles swirling
-Frame 4: Arcs fade from tips inward - energy dissipates, last sparks, chain effect complete
+Frame 1: Initial ZAP - bright flash at center, wind and sparks beginning to form
+Frame 2: Storm burst - lightning sparks + cyan wind particles shoot outward in spiral
+Frame 3: Maximum spread - sparks at furthest point, wind swirl visible
+Frame 4: Dissipation - sparks and wind fade, last electric crackles
 
 IMPORTANT DETAILS:
-- NOT a radial explosion - show DISTINCT CHAIN ARCS going to specific directions
-- Each arc should look like it's hitting a different target
-- Wind swirl particles between the arcs
-- Feeling of electricity JUMPING between targets
-- Cartoon-cute style with clear shapes
-- Each frame clearly separated in its own cell
+- CENTERED in frame (this appears at hit location)
+- Compact burst with BOTH lightning and wind elements
+- Electric zap feel + windy swirl
+- Quick, snappy animation
+- Each frame clearly separated
 ```
 
 ---
@@ -2306,75 +2329,83 @@ Output file: orbit_spritesheet_crystal_guardian.png (512x64)
 > Fusión: ice_wand + lightning_wand
 > Rayo congelante que encadena enemigos - hielo cristalizado con electricidad
 > Ubicación: `res://assets/sprites/projectiles/fusion/frozen_thunder/`
+> ⚠️ IMPORTANTE: El flight sprite es el ARCO que conecta enemigos (se escala horizontalmente)
 
 ### flight_spritesheet_frozen_thunder.png (256x64, 4 frames)
 ```
-Create a cartoon art horizontal sprite sheet of a FROZEN CHAIN ORB projectile for a 2D game, in cute chibi/Funko Pop cartoon style.
+Create a cartoon art horizontal sprite sheet of a HORIZONTAL FROZEN LIGHTNING ARC for a 2D game chain weapon, in cute chibi/Funko Pop cartoon style.
 
-LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Solid black background (#000000).
+LAYOUT: 4 frames in a single horizontal strip, 256x64 pixels total. Each frame is 64x64. Solid black background (#000000).
 
-THE PROJECTILE: A spherical ice orb with MULTIPLE FROZEN LIGHTNING ARCS reaching outward - this is a CHAIN weapon, NOT a pointed bolt. The orb is crystalline ice with 3-4 electric tendrils made of ice extending from it in different directions, searching for the next target to chain to. Think of it as a FROZEN ORB with "arms" of icy electricity.
+⚠️ CRITICAL: This sprite will be STRETCHED HORIZONTALLY to connect two enemies. It must be a HORIZONTAL FROZEN LIGHTNING BOLT that goes from LEFT EDGE to RIGHT EDGE of each frame.
+
+THE CHAIN ARC: An ICY lightning bolt made of translucent ice with electricity inside, spanning the FULL WIDTH of each 64x64 frame, going from left to right. This is the visual "chain" that connects enemy A to enemy B.
 
 SHAPE CONCEPT:
-- Central SPHERE of translucent ice crystal (NOT pointed, NOT a bolt shape)
-- 3-4 FROZEN ELECTRIC ARCS extending outward from the sphere like icy tentacles
-- Arcs are made of ice with electricity crackling inside them
-- Arcs should curve and reach in different directions (showing "seeking" behavior)
-- Frost mist swirling around the central orb
+- A HORIZONTAL zigzag lightning bolt made of ICE from X=0 to X=64
+- Starts at LEFT edge, ends at RIGHT edge
+- Vertically centered (around Y=32)
+- Classic lightning bolt shape with 3-5 zigzag segments
+- The bolt is FROZEN - translucent cyan ice with electric core visible inside
+- Small ice crystals along the bolt edges
+- Small energy orbs at both ends (connection points)
 
 COLOR PALETTE:
-- Core orb: Bright white (#FFFFFF) center fading to ice cyan (#99FFFF)
-- Ice arcs: Translucent cyan (#66FFFF) with white electric cores
-- Electric inside arcs: White-cyan (#CCFFFF / #FFFFFF) visible through ice
-- Frost particles: White and pale cyan
+- Ice body: Translucent cyan (#66FFFF / #99FFFF)
+- Electric core: White (#FFFFFF) visible inside the ice
+- Glow: Pale frost (#E6FFFF / #CCFFFF) aura
+- Ice crystals: White and cyan shards
 - Outline: Dark teal (#224455), 2 pixels
 
 ANIMATION SEQUENCE (4 frames):
-Frame 1: Ice orb with 3 frozen arcs extending - arcs at rest positions, faint electric glow inside
-Frame 2: Arcs WIGGLE and shift direction - searching for targets, electricity PULSES brighter, frost intensifies
-Frame 3: Maximum energy - orb pulses bright, arcs reach furthest, electric cores FLARE white through the ice
-Frame 4: Arcs retract slightly and reposition - ready to chain again, frost particles scatter
+Frame 1: Frozen arc at rest - icy zigzag bolt with faint electric glow inside
+Frame 2: Arc JITTERS - zigzag shifts, electricity PULSES brighter through ice
+Frame 3: Maximum intensity - electric core FLARES white, ice crystals fly off
+Frame 4: Arc shifts again - frost particles scatter, ready to loop
 
 IMPORTANT DETAILS:
-- Central orb shape - NOT a pointed lightning bolt
-- Multiple FROZEN arcs extending outward like CHAIN LINKS seeking targets
-- Transparent ice effect - see electricity glowing inside the frozen arcs
-- Frost mist around the orb
-- Cartoon-cute but cold and powerful appearance
-- Each frame clearly separated in its own cell
-- The arcs should look like frozen tentacles alive with electricity
+- MUST span full width LEFT to RIGHT (this gets stretched between enemies)
+- Vertically centered in frame
+- TRANSLUCENT ICE with electric energy visible inside
+- Small ice shards/crystals decorating the bolt
+- Each frame clearly separated
+- Animation shows "frozen electricity" effect
 ```
 
 ### impact_spritesheet_frozen_thunder.png (256x64, 4 frames)
 ```
-Create a cartoon art horizontal sprite sheet of a FROZEN CHAIN IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style.
+Create a cartoon art horizontal sprite sheet of a FROZEN ELECTRIC IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style.
 
-LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Solid black background (#000000).
+LAYOUT: 4 frames in a single horizontal strip, 256x64 pixels total. Each frame is 64x64. Solid black background (#000000).
 
-THE EFFECT: The frozen chain orb hits and SPLITS into multiple ICY LIGHTNING ARCS that shoot toward different directions - showing the "chain" mechanic visually. Frozen electric energy JUMPS to nearby targets, leaving ice crystals in its wake.
+THE EFFECT: A freezing electric burst at the point where the chain lightning hits an enemy. Ice crystals form instantly with electric discharge.
+
+SHAPE CONCEPT:
+- CENTERED in each 64x64 frame
+- Small burst of ice shards + electric sparks
+- Ice crystals shooting outward from center
+- Electric zaps mixed with frost particles
+- Compact effect - about 40-50px diameter max
 
 COLOR PALETTE:
 - Core: Bright white flash (#FFFFFF)
-- Primary: Cyan ice (#66FFFF / #99FFFF)
-- Secondary: Pale frost (#E6FFFF / #CCFFFF)
-- Electric accents: White-cyan sparks (#FFFFFF / #CCFFFF)
-- Ice shards: Translucent cyan crystals
+- Ice: Cyan (#66FFFF / #99FFFF) crystals
+- Frost: Pale (#E6FFFF / #CCFFFF)
+- Electric: White-cyan sparks
 - Outline: Dark teal (#224455)
 
 ANIMATION SEQUENCE (4 frames):
-Frame 1: Impact flash - orb SHATTERS, 3-4 FROZEN CHAIN ARCS begin shooting outward in DIFFERENT directions (distinct arcs to "targets", not radial explosion)
-Frame 2: Chain arcs EXTEND - each icy arc reaches toward a different direction, ice crystals forming along the arc paths
-Frame 3: Maximum chain spread - arcs at full length, ice shards flying between them, electric crackle visible inside the frozen paths
-Frame 4: Arcs fade from tips inward - ice crystallizes where arcs touched, frost dissipates, chain effect complete
+Frame 1: Initial FREEZE-ZAP - white flash at center, ice crystals beginning to form
+Frame 2: Crystal burst - ice shards + electric sparks shoot outward
+Frame 3: Maximum spread - ice crystals at furthest, frost cloud forming
+Frame 4: Dissipation - crystals fade, frost mist lingers, last sparks
 
 IMPORTANT DETAILS:
-- NOT a radial explosion - show DISTINCT FROZEN CHAIN ARCS going to specific directions
-- Each arc is made of ice with electricity inside
-- Ice crystal shards forming along the arc paths
-- Feeling of frozen electricity JUMPING between targets
-- Frost mist cloud at impact center
-- Cartoon-cute style with clear shapes
-- Each frame clearly separated in its own cell
+- CENTERED in frame (this appears at hit location)
+- Compact burst with ice shards + electricity
+- Freezing feel + electric zap combined
+- Quick, snappy animation
+- Each frame clearly separated
 ```
 
 ---
@@ -2384,27 +2415,84 @@ IMPORTANT DETAILS:
 > Fusión: fire_wand + lightning_wand
 > Plasma superheated que encadena entre enemigos
 > Ubicación: `res://assets/sprites/projectiles/fusion/plasma/`
+> ⚠️ IMPORTANTE: El flight sprite es el ARCO que conecta enemigos (se escala horizontalmente)
 
 ### flight_spritesheet_plasma.png (256x64, 4 frames)
 ```
-Create a cartoon art horizontal sprite sheet of a PLASMA CHAIN ORB projectile for a 2D game, in cute chibi/Funko Pop cartoon style.
+Create a cartoon art horizontal sprite sheet of a HORIZONTAL PLASMA ARC for a 2D game chain weapon, in cute chibi/Funko Pop cartoon style.
 
-LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Solid black background (#000000).
+LAYOUT: 4 frames in a single horizontal strip, 256x64 pixels total. Each frame is 64x64. Solid black background (#000000).
 
-THE PROJECTILE: A spherical plasma orb with MULTIPLE HOT ELECTRIC ARCS reaching outward - this is a CHAIN weapon, NOT a pointed bolt. The orb is superheated pink/magenta plasma with 3-4 electric tendrils extending from it in different directions, searching for the next target to chain to. Think of it as a PLASMA BALL with "arms" of fire-lightning.
+⚠️ CRITICAL: This sprite will be STRETCHED HORIZONTALLY to connect two enemies. It must be a HORIZONTAL PLASMA BOLT that goes from LEFT EDGE to RIGHT EDGE of each frame.
+
+THE CHAIN ARC: A superheated plasma bolt spanning the FULL WIDTH of each 64x64 frame, going from left to right. Hot pink/magenta energy with electric core. This is the visual "chain" that connects enemy A to enemy B.
 
 SHAPE CONCEPT:
-- Central SPHERE of swirling hot plasma (NOT pointed, NOT a bolt shape)
-- 3-4 PLASMA ARCS extending outward from the sphere like fiery tentacles
-- Arcs are hot pink energy with white electric cores
-- Arcs should curve and reach in different directions (showing "seeking" behavior)
-- Heat shimmer/plasma particles around the central orb
+- A HORIZONTAL plasma bolt from X=0 to X=64
+- Starts at LEFT edge, ends at RIGHT edge
+- Vertically centered (around Y=32)
+- Flowing plasma shape with 3-5 wavy/zigzag segments (fire + lightning combined)
+- Hot pink plasma with white-hot electric core
+- Heat distortion particles around the bolt
+- Small energy orbs at both ends (connection points)
 
 COLOR PALETTE:
-- Core orb: White-pink (#FFFFFF to #FFF2FF) center fading to hot pink (#FF66CC)
-- Plasma arcs: Hot magenta (#FFB3E6) with white cores
-- Electric inside arcs: White-pink sparks (#FFFFFF / #FFCCEE)
-- Heat particles: Pink and orange sparks
+- Core: White-hot center (#FFFFFF / #FFF2FF)
+- Primary: Hot pink/magenta (#FF66CC / #FFB3E6)
+- Glow: Pale pink (#FFE6F7) aura
+- Heat particles: Orange-pink (#FF9966)
+- Outline: Dark magenta (#804066), 2 pixels
+
+ANIMATION SEQUENCE (4 frames):
+Frame 1: Plasma arc at rest - hot pink bolt with white core visible
+Frame 2: Arc PULSES - plasma intensifies, heat shimmer effect
+Frame 3: Maximum intensity - white-hot core FLARES, plasma at peak
+Frame 4: Arc shifts - plasma flows along bolt, ready to loop
+
+IMPORTANT DETAILS:
+- MUST span full width LEFT to RIGHT (this gets stretched between enemies)
+- Vertically centered in frame
+- Combination of FIRE fluidity + LIGHTNING sharpness
+- Hot pink plasma with visible white-hot core
+- Each frame clearly separated
+- Animation shows "superheated electric" effect
+```
+
+### impact_spritesheet_plasma.png (256x64, 4 frames)
+```
+Create a cartoon art horizontal sprite sheet of a PLASMA IMPACT BURST for a 2D game, in cute chibi/Funko Pop cartoon style.
+
+LAYOUT: 4 frames in a single horizontal strip, 256x64 pixels total. Each frame is 64x64. Solid black background (#000000).
+
+THE EFFECT: A hot plasma burst at the point where the chain lightning hits an enemy. Superheated pink energy with electric discharge.
+
+SHAPE CONCEPT:
+- CENTERED in each 64x64 frame
+- Small burst of plasma energy + electric sparks
+- Hot pink tendrils shooting outward from center
+- Heat shimmer/distortion particles
+- Compact effect - about 40-50px diameter max
+
+COLOR PALETTE:
+- Core: Bright white-pink flash (#FFFFFF / #FFF2FF)
+- Primary: Hot pink (#FF66CC / #FFB3E6)
+- Secondary: Pale pink (#FFE6F7)
+- Heat: Orange-pink particles
+- Outline: Dark magenta (#804066)
+
+ANIMATION SEQUENCE (4 frames):
+Frame 1: Initial BURST - white-pink flash at center, plasma beginning to expand
+Frame 2: Plasma burst - hot pink tendrils + sparks shoot outward
+Frame 3: Maximum spread - plasma at furthest, heat shimmer visible
+Frame 4: Dissipation - plasma fades, heat particles linger, last sparks
+
+IMPORTANT DETAILS:
+- CENTERED in frame (this appears at hit location)
+- Compact burst with plasma + electricity
+- Superheated feel - fire + lightning combined
+- Quick, snappy animation
+- Each frame clearly separated
+```
 - Outline: Dark magenta (#804066), 2 pixels
 
 ANIMATION SEQUENCE (4 frames):
@@ -2457,81 +2545,92 @@ IMPORTANT DETAILS:
 
 ---
 
-## �️⚡ 25. VOID BOLT (Lightning + Void) - CHAIN
+## 🕳️⚡ 25. VOID BOLT (Lightning + Void) - CHAIN
 
 > Fusión: lightning_wand + void_pulse
 > Rayo del vacío que encadena y atrae enemigos hacia portales oscuros
 > Ubicación: `res://assets/sprites/projectiles/fusion/void_bolt/`
+> ⚠️ IMPORTANTE: El flight sprite es el ARCO que conecta enemigos (se escala horizontalmente)
 
 ### flight_spritesheet_void_bolt.png (256x64, 4 frames)
 ```
-Create a cartoon art horizontal sprite sheet of a VOID CHAIN ORB projectile for a 2D game, in cute chibi/Funko Pop cartoon style.
+Create a cartoon art horizontal sprite sheet of a HORIZONTAL VOID LIGHTNING ARC for a 2D game chain weapon, in cute chibi/Funko Pop cartoon style.
 
-LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Solid black background (#000000).
+LAYOUT: 4 frames in a single horizontal strip, 256x64 pixels total. Each frame is 64x64. Solid black background (#000000).
 
-THE PROJECTILE: A spherical VOID orb with MULTIPLE DARK ELECTRIC ARCS reaching outward - this is a CHAIN weapon, NOT a pointed bolt. The orb is a dark purple/black void sphere with 3-4 ethereal lightning tendrils extending from it in different directions, searching for targets to chain to. The arcs look ghostly and otherworldly.
+⚠️ CRITICAL: This sprite will be STRETCHED HORIZONTALLY to connect two enemies. It must be a HORIZONTAL VOID LIGHTNING BOLT that goes from LEFT EDGE to RIGHT EDGE of each frame.
+
+THE CHAIN ARC: A dark ethereal lightning bolt spanning the FULL WIDTH of each 64x64 frame, going from left to right. Dark purple void energy with reality-bending distortion. This is the visual "chain" that connects enemy A to enemy B.
 
 SHAPE CONCEPT:
-- Central SPHERE of swirling void energy (NOT pointed, NOT a bolt shape)
-- 3-4 VOID LIGHTNING ARCS extending outward from the sphere like dark tentacles
-- Arcs are made of purple/violet energy with distortion effects around them
-- Arcs should curve and reach in different directions (showing "seeking" behavior)
-- Void particles being pulled INTO the orb (reverse particle direction)
+- A HORIZONTAL zigzag lightning bolt made of VOID energy from X=0 to X=64
+- Starts at LEFT edge, ends at RIGHT edge
+- Vertically centered (around Y=32)
+- Classic lightning bolt shape with 3-5 zigzag segments
+- The bolt is DARK - deep purple/violet with subtle glow
+- Small void distortion effect around the bolt (darker areas)
+- Particles being PULLED TOWARD the bolt (reverse particle direction)
+- Small energy orbs at both ends (connection points)
 
 COLOR PALETTE:
-- Core orb: Dark center (#1A001A) fading to deep purple (#330033)
-- Void arcs: Purple-violet (#6633CC / #9966FF) with darker cores
-- Electric accents: White-purple sparks (#CCAAFF / #FFFFFF)
-- Distortion effect: Darker areas around arcs showing "reality bending"
-- Outline: Very dark purple-black (#0D000D), 2 pixels
+- Core: White-purple (#FFFFFF fading to #CCAAFF)
+- Primary: Deep purple-violet (#6633CC / #9966FF)
+- Void areas: Very dark purple (#1A001A / #330033)
+- Distortion: Darker spots showing "reality bending"
+- Outline: Near-black purple (#0D000D), 2 pixels
 
 ANIMATION SEQUENCE (4 frames):
-Frame 1: Void orb with 3 dark arcs extending - arcs at rest positions, particles being sucked in
-Frame 2: Arcs WIGGLE and shift direction - searching for targets, void energy PULSES darker
-Frame 3: Maximum energy - orb pulses with inner void glow, arcs reach furthest, distortion at peak
-Frame 4: Arcs retract slightly and reposition - ready to chain again, particles spiral inward
+Frame 1: Void arc at rest - dark zigzag bolt with ethereal glow
+Frame 2: Arc JITTERS - zigzag shifts, void energy PULSES darker
+Frame 3: Maximum intensity - core brightens, distortion at peak, particles pulled in
+Frame 4: Arc shifts again - void stabilizes, ready to loop
 
 IMPORTANT DETAILS:
-- Central orb shape - NOT a pointed lightning bolt
-- Multiple VOID arcs extending outward like CHAIN LINKS seeking targets
-- REVERSE particle effect - particles being PULLED IN (shows void/pull mechanic)
-- Dark, ethereal, otherworldly appearance
-- Cartoon-cute but mysterious and dangerous
-- Each frame clearly separated in its own cell
-- The arcs should look like ghostly tentacles alive with dark energy
+- MUST span full width LEFT to RIGHT (this gets stretched between enemies)
+- Vertically centered in frame
+- DARK ethereal appearance - mysterious and dangerous
+- Particles moving TOWARD the bolt (void pull effect)
+- Each frame clearly separated
+- Animation shows "dark electricity" effect
 ```
 
 ### impact_spritesheet_void_bolt.png (256x64, 4 frames)
 ```
-Create a cartoon art horizontal sprite sheet of a VOID CHAIN IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style.
+Create a cartoon art horizontal sprite sheet of a VOID IMPACT BURST for a 2D game, in cute chibi/Funko Pop cartoon style.
 
-LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Solid black background (#000000).
+LAYOUT: 4 frames in a single horizontal strip, 256x64 pixels total. Each frame is 64x64. Solid black background (#000000).
 
-THE EFFECT: The void chain orb hits and SPLITS into multiple DARK ELECTRIC ARCS that shoot toward different directions - showing the "chain" mechanic visually. Void energy JUMPS to nearby targets while creating a pulling effect (small portal opening).
+THE EFFECT: A void burst at the point where the chain lightning hits an enemy. Creates a small void portal effect that pulls particles inward.
+
+SHAPE CONCEPT:
+- CENTERED in each 64x64 frame
+- Small circular void portal forming at center
+- Purple-white electric sparks around the portal edge
+- Particles being SUCKED INWARD (reverse explosion)
+- Compact effect - about 40-50px diameter max
 
 COLOR PALETTE:
-- Core: Dark purple flash (#330033) with white-purple center
-- Primary: Deep purple-violet (#6633CC / #9966FF)
-- Secondary: Pale lavender (#E6CCFF)
-- Void distortion: Very dark purple (#1A001A) - reality bending
-- Electric accents: White-purple sparks
-- Outline: Dark purple-black (#0D000D)
+- Core: Very dark (#1A001A / #330033) void center
+- Edge: Purple-white (#9966FF / #CCAAFF) glow ring
+- Sparks: White-purple particles
+- Distortion: Darker areas around
+- Outline: Near-black purple (#0D000D)
 
 ANIMATION SEQUENCE (4 frames):
-Frame 1: Impact flash - orb bursts into small VOID PORTAL, 3-4 VOID CHAIN ARCS begin shooting outward in DIFFERENT directions (distinct arcs to "targets", not radial explosion)
-Frame 2: Chain arcs EXTEND - each dark arc reaches toward a different direction, small void portal forms at center with inward-pulling particle effect
-Frame 3: Maximum chain spread - arcs at full length, void portal at peak (circular darkness with purple edge), particles being sucked toward center
-Frame 4: Arcs fade from tips inward - portal closes, last ethereal sparks, chain effect complete
+Frame 1: Initial BURST - flash at center, small dark portal beginning to form
+Frame 2: Portal forms - circular void with glowing purple edge, particles pulling in
+Frame 3: Maximum pull - portal at peak darkness, particles spiraling inward
+Frame 4: Portal closes - void shrinks and fades, last particles absorbed
 
 IMPORTANT DETAILS:
-- NOT a radial explosion - show DISTINCT VOID CHAIN ARCS going to specific directions
-- Each arc should look like it's hitting a different target
-- Small VOID PORTAL at impact center (shows the "pull" mechanic)
-- Particles moving INWARD toward center (unlike normal explosions)
-- Dark, ethereal, otherworldly appearance
-- Cartoon-cute style with clear shapes
-- Each frame clearly separated in its own cell
+- CENTERED in frame (this appears at hit location)
+- Creates small VOID PORTAL effect (circular darkness)
+- Particles move INWARD (unique pull mechanic visual)
+- Dark, ethereal, otherworldly
+- Quick, snappy animation
+- Each frame clearly separated
 ```
+
 
 ---
 
