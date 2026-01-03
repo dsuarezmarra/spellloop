@@ -2,120 +2,156 @@
 process_void_bolt.py
 Procesador de sprites para Void Bolt (Rayo del Vacío)
 Lightning + Void fusion - CHAIN type projectile
+
+ESTRUCTURA DE LOS ARCHIVOS:
+- FLIGHT (unnamed-removebg-preview.png): 4 rayos horizontales dispuestos en FILAS VERTICALES
+- IMPACT (unnamed-removebg-preview (3).png): 3 explosiones grandes (duplicamos una para tener 4)
 """
 
 from PIL import Image
-import os
+import numpy as np
+from pathlib import Path
+from scipy import ndimage
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# CONFIGURACIÓN
-# ═══════════════════════════════════════════════════════════════════════════════
+# Configuración
+FRAME_SIZE = 64
+OUTPUT_WIDTH = 256  # 4 frames * 64px
 
-# Configuración de entrada (sprites generados por IA)
-INPUT_WIDTH = 612   # Ancho aproximado de imagen generada
-INPUT_HEIGHT = 408  # Alto aproximado de imagen generada
-INPUT_FRAMES = 4    # 4 frames horizontales
 
-# Configuración de salida (formato del juego)
-OUTPUT_FRAME_SIZE = 64   # Cada frame será 64x64
-OUTPUT_WIDTH = 256       # 4 frames * 64px = 256px
-OUTPUT_HEIGHT = 64       # Una fila
+def extract_rows(img_path, num_rows=4):
+    """
+    Extrae frames de filas horizontales.
+    Cada fila contiene un rayo horizontal completo.
+    """
+    img = Image.open(img_path).convert('RGBA')
+    arr = np.array(img)
+    h, w = arr.shape[:2]
+    
+    row_height = h // num_rows
+    frames = []
+    
+    for i in range(num_rows):
+        y_start = i * row_height
+        y_end = (i + 1) * row_height if i < num_rows - 1 else h
+        
+        row_section = arr[y_start:y_end]
+        alpha = row_section[:,:,3]
+        
+        # Encontrar el contenido real en esta fila
+        rows_with_content = np.where(alpha.max(axis=1) > 20)[0]
+        cols_with_content = np.where(alpha.max(axis=0) > 20)[0]
+        
+        if len(rows_with_content) > 0 and len(cols_with_content) > 0:
+            y1, y2 = rows_with_content[0], rows_with_content[-1] + 1
+            x1, x2 = cols_with_content[0], cols_with_content[-1] + 1
+            
+            frame = Image.fromarray(row_section[y1:y2, x1:x2])
+            frames.append(frame)
+            print(f"    Fila {i+1}: extraído {frame.width}x{frame.height}px desde ({x1},{y_start+y1})")
+        else:
+            print(f"    Fila {i+1}: vacía")
+    
+    return frames
 
-# Carpeta de sprites
-SPRITE_FOLDER = r"C:\git\spellloop\project\assets\sprites\projectiles\fusion\void_bolt"
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# FUNCIONES
-# ═══════════════════════════════════════════════════════════════════════════════
+def extract_large_components(img_path, num_components=3):
+    """
+    Extrae los N componentes más grandes de la imagen usando detección de componentes conectados.
+    """
+    img = Image.open(img_path).convert('RGBA')
+    arr = np.array(img)
+    
+    alpha = arr[:,:,3]
+    binary = (alpha > 20).astype(int)
+    labeled, num_features = ndimage.label(binary)
+    
+    components = []
+    for i in range(1, num_features + 1):
+        mask = labeled == i
+        rows = np.where(mask.any(axis=1))[0]
+        cols = np.where(mask.any(axis=0))[0]
+        
+        if len(rows) > 0 and len(cols) > 0:
+            y1, y2 = rows[0], rows[-1] + 1
+            x1, x2 = cols[0], cols[-1] + 1
+            area = int(mask.sum())
+            components.append((x1, y1, x2, y2, area))
+    
+    # Ordenar por área descendente y tomar los N más grandes
+    components.sort(key=lambda c: -c[4])
+    components = components[:num_components]
+    
+    # Ordenar de izquierda a derecha para consistencia visual
+    components.sort(key=lambda c: c[0])
+    
+    frames = []
+    for i, (x1, y1, x2, y2, area) in enumerate(components):
+        frame = Image.fromarray(arr[y1:y2, x1:x2])
+        frames.append(frame)
+        print(f"    Componente {i+1}: {frame.width}x{frame.height}px, área={area}")
+    
+    return frames
 
-def find_content_bounds(img, frame_x, frame_width, padding=2):
-    """Encontrar los límites del contenido real en un frame (ignorando transparencia)"""
-    pixels = img.load()
-    width, height = img.size
-    
-    start_x = frame_x
-    end_x = min(frame_x + frame_width, width)
-    
-    min_x, max_x = end_x, start_x
-    min_y, max_y = height, 0
-    
-    for x in range(start_x, end_x):
-        for y in range(height):
-            pixel = pixels[x, y]
-            # Verificar si el pixel tiene contenido (alpha > 0)
-            if len(pixel) >= 4 and pixel[3] > 10:  # Umbral de alpha
-                min_x = min(min_x, x)
-                max_x = max(max_x, x)
-                min_y = min(min_y, y)
-                max_y = max(max_y, y)
-    
-    # Añadir padding
-    min_x = max(start_x, min_x - padding)
-    max_x = min(end_x, max_x + padding)
-    min_y = max(0, min_y - padding)
-    max_y = min(height, max_y + padding)
-    
-    return min_x, min_y, max_x, max_y
 
-def extract_and_resize_frame(img, frame_index, frame_width, output_size):
-    """Extraer un frame, encontrar su contenido y redimensionar a tamaño fijo"""
-    frame_x = frame_index * frame_width
+def create_flight_spritesheet(frames, frame_size=FRAME_SIZE):
+    """
+    Crea spritesheet de FLIGHT para rayos horizontales.
+    Los rayos deben llenar el ancho del frame para verse bien al estirarse entre enemigos.
+    """
+    spritesheet = Image.new('RGBA', (frame_size * 4, frame_size), (0, 0, 0, 0))
     
-    # Encontrar bounds del contenido real
-    bounds = find_content_bounds(img, frame_x, frame_width)
-    min_x, min_y, max_x, max_y = bounds
+    for i, frame in enumerate(frames):
+        w, h = frame.size
+        
+        # Para FLIGHT: escalar para llenar el ancho, centrar verticalmente
+        scale = frame_size / w
+        new_w = frame_size
+        new_h = max(1, int(h * scale))
+        
+        # Si queda muy alto, ajustar proporcionalmente
+        if new_h > frame_size:
+            scale = frame_size / h
+            new_h = frame_size
+            new_w = max(1, int(w * scale))
+        
+        resized = frame.resize((new_w, new_h), Image.Resampling.LANCZOS)
+        
+        # Centrar en el frame
+        x_offset = (frame_size - new_w) // 2
+        y_offset = (frame_size - new_h) // 2
+        
+        spritesheet.paste(resized, (i * frame_size + x_offset, y_offset), resized)
     
-    # Si no hay contenido, devolver frame vacío
-    if min_x >= max_x or min_y >= max_y:
-        return Image.new('RGBA', (output_size, output_size), (0, 0, 0, 0))
-    
-    # Extraer el contenido
-    content = img.crop((min_x, min_y, max_x, max_y))
-    
-    # Calcular escala manteniendo aspecto
-    content_width, content_height = content.size
-    scale = min(output_size / content_width, output_size / content_height) * 0.85
-    
-    new_width = int(content_width * scale)
-    new_height = int(content_height * scale)
-    
-    # Redimensionar
-    content_resized = content.resize((new_width, new_height), Image.Resampling.LANCZOS)
-    
-    # Crear frame de salida y centrar contenido
-    output_frame = Image.new('RGBA', (output_size, output_size), (0, 0, 0, 0))
-    paste_x = (output_size - new_width) // 2
-    paste_y = (output_size - new_height) // 2
-    output_frame.paste(content_resized, (paste_x, paste_y), content_resized)
-    
-    return output_frame
+    return spritesheet
 
-def process_spritesheet(input_path, output_path, num_frames=4):
-    """Procesar un spritesheet de entrada y generar el formato de salida"""
-    print(f"  Procesando: {os.path.basename(input_path)}")
+
+def create_impact_spritesheet(frames, frame_size=FRAME_SIZE):
+    """
+    Crea spritesheet de IMPACT para explosiones.
+    Las explosiones deben estar centradas y escaladas uniformemente.
+    """
+    # Encontrar el tamaño máximo para escalar todos igual
+    max_size = max(max(f.width, f.height) for f in frames)
     
-    # Cargar imagen
-    img = Image.open(input_path).convert('RGBA')
-    width, height = img.size
-    print(f"    Tamaño entrada: {width}x{height}")
+    spritesheet = Image.new('RGBA', (frame_size * 4, frame_size), (0, 0, 0, 0))
     
-    # Calcular ancho de cada frame de entrada
-    frame_width = width // num_frames
-    print(f"    Ancho por frame: {frame_width}px")
+    for i, frame in enumerate(frames):
+        w, h = frame.size
+        
+        # Escalar manteniendo proporción, basado en el más grande
+        scale = (frame_size * 0.95) / max_size  # 95% para dejar margen
+        new_w = max(1, int(w * scale))
+        new_h = max(1, int(h * scale))
+        
+        resized = frame.resize((new_w, new_h), Image.Resampling.LANCZOS)
+        
+        # Centrar en el frame
+        x_offset = (frame_size - new_w) // 2
+        y_offset = (frame_size - new_h) // 2
+        
+        spritesheet.paste(resized, (i * frame_size + x_offset, y_offset), resized)
     
-    # Crear imagen de salida
-    output = Image.new('RGBA', (OUTPUT_WIDTH, OUTPUT_HEIGHT), (0, 0, 0, 0))
-    
-    # Procesar cada frame
-    for i in range(num_frames):
-        frame = extract_and_resize_frame(img, i, frame_width, OUTPUT_FRAME_SIZE)
-        output.paste(frame, (i * OUTPUT_FRAME_SIZE, 0))
-        print(f"    Frame {i+1}/{num_frames} procesado")
-    
-    # Guardar
-    output.save(output_path, 'PNG')
-    print(f"    ✓ Guardado: {os.path.basename(output_path)}")
-    print(f"    Tamaño salida: {OUTPUT_WIDTH}x{OUTPUT_HEIGHT}")
+    return spritesheet
 
 def main():
     print("=" * 60)
@@ -123,44 +159,58 @@ def main():
     print("  Lightning + Void Fusion - Chain Projectile")
     print("=" * 60)
     
-    # Buscar archivos de entrada
-    flight_input = None
-    impact_input = None
+    base_path = Path("project/assets/sprites/projectiles/fusion/void_bolt")
+    output_path = Path("project/assets/sprites/projectiles/fusion")
     
-    for file in os.listdir(SPRITE_FOLDER):
-        lower = file.lower()
-        if lower.endswith('.png') and 'spritesheet' not in lower:
-            if 'flight' in lower or 'bolt' in lower or 'ray' in lower:
-                flight_input = os.path.join(SPRITE_FOLDER, file)
-            elif 'impact' in lower or 'explosion' in lower or 'hit' in lower or 'zap' in lower:
-                impact_input = os.path.join(SPRITE_FOLDER, file)
+    flight_file = base_path / "unnamed-removebg-preview.png"
+    impact_file = base_path / "unnamed-removebg-preview (3).png"
     
-    # Procesar flight
-    if flight_input:
-        print(f"\n📦 Procesando FLIGHT sprite...")
-        output_path = os.path.join(SPRITE_FOLDER, "flight_spritesheet_void_bolt.png")
-        process_spritesheet(flight_input, output_path)
+    # ===== FLIGHT =====
+    print("\n📦 Procesando FLIGHT (rayos en filas verticales)...")
+    print(f"  Archivo: {flight_file}")
+    
+    if flight_file.exists():
+        flight_frames = extract_rows(flight_file, num_rows=4)
+        print(f"  Extraídos {len(flight_frames)} frames de FLIGHT")
+        
+        if len(flight_frames) == 4:
+            flight_sheet = create_flight_spritesheet(flight_frames)
+            flight_output = output_path / "flight_spritesheet_void_bolt.png"
+            flight_sheet.save(flight_output)
+            print(f"  ✓ Guardado: {flight_output} ({flight_sheet.width}x{flight_sheet.height})")
+        else:
+            print(f"  ⚠ Se esperaban 4 frames, se obtuvieron {len(flight_frames)}")
     else:
-        print("\n⚠️ No se encontró archivo flight (buscar: flight, bolt, ray)")
+        print(f"  ⚠ Archivo no encontrado: {flight_file}")
     
-    # Procesar impact
-    if impact_input:
-        print(f"\n💥 Procesando IMPACT sprite...")
-        output_path = os.path.join(SPRITE_FOLDER, "impact_spritesheet_void_bolt.png")
-        process_spritesheet(impact_input, output_path)
+    # ===== IMPACT =====
+    print("\n💥 Procesando IMPACT (explosiones)...")
+    print(f"  Archivo: {impact_file}")
+    
+    if impact_file.exists():
+        impact_frames = extract_large_components(impact_file, num_components=3)
+        print(f"  Extraídos {len(impact_frames)} componentes grandes")
+        
+        if len(impact_frames) == 3:
+            # Duplicar el frame del medio para tener 4
+            print("  Duplicando frame central para completar 4 frames...")
+            impact_frames.insert(2, impact_frames[1].copy())
+            print(f"  Ahora tenemos {len(impact_frames)} frames")
+        
+        if len(impact_frames) >= 4:
+            impact_sheet = create_impact_spritesheet(impact_frames[:4])
+            impact_output = output_path / "impact_spritesheet_void_bolt.png"
+            impact_sheet.save(impact_output)
+            print(f"  ✓ Guardado: {impact_output} ({impact_sheet.width}x{impact_sheet.height})")
+        else:
+            print(f"  ⚠ Se esperaban al menos 4 frames, se obtuvieron {len(impact_frames)}")
     else:
-        print("\n⚠️ No se encontró archivo impact (buscar: impact, explosion, hit, zap)")
+        print(f"  ⚠ Archivo no encontrado: {impact_file}")
     
     print("\n" + "=" * 60)
-    if flight_input and impact_input:
-        print("  ✓ PROCESO COMPLETADO")
-    else:
-        print("  ⚠️ PROCESO INCOMPLETO - Faltan archivos de entrada")
-        print(f"\n  Coloca los sprites en: {SPRITE_FOLDER}")
-        print("  Nombres esperados:")
-        print("    - flight.png (o bolt.png, ray.png)")
-        print("    - impact.png (o explosion.png, hit.png, zap.png)")
+    print("  ✓ PROCESO COMPLETADO")
     print("=" * 60)
+
 
 if __name__ == "__main__":
     main()
