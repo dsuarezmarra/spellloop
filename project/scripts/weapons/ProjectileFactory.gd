@@ -286,6 +286,12 @@ class BeamEffect extends Node2D:
 				var player = _get_player()
 				if player and player.has_method("heal"):
 					player.heal(int(effect_value))
+			"bleed":
+				if enemy.has_method("apply_bleed"):
+					enemy.apply_bleed(effect_value, effect_duration)
+			"shadow_mark":
+				if enemy.has_method("apply_shadow_mark"):
+					enemy.apply_shadow_mark(effect_value, effect_duration)
 	
 	func _get_player() -> Node:
 		"""Obtener referencia al jugador"""
@@ -577,6 +583,14 @@ class AOEEffect extends Node2D:
 			"crit_chance":
 				# Ya se maneja en _apply_damage_tick
 				pass
+			"bleed":
+				# Efecto de sangrado (DoT separado del burn)
+				if enemy.has_method("apply_bleed"):
+					enemy.apply_bleed(effect_value, effect_duration)
+			"shadow_mark":
+				# Marcar enemigo para daño extra
+				if enemy.has_method("apply_shadow_mark"):
+					enemy.apply_shadow_mark(effect_value, effect_duration)
 			"chain":
 				# El chain se maneja en ChainProjectile, no aquí
 				pass
@@ -876,6 +890,12 @@ class OrbitalManager extends Node2D:
 				var player = _get_orbital_player()
 				if player and player.has_method("heal"):
 					player.heal(int(effect_value))
+			"bleed":
+				if enemy.has_method("apply_bleed"):
+					enemy.apply_bleed(effect_value, effect_duration)
+			"shadow_mark":
+				if enemy.has_method("apply_shadow_mark"):
+					enemy.apply_shadow_mark(effect_value, effect_duration)
 	
 	func _get_orbital_player() -> Node:
 		"""Obtener referencia al jugador para lifesteal"""
@@ -1070,6 +1090,12 @@ class ChainProjectile extends Node2D:
 			"pull":
 				if target.has_method("apply_pull"):
 					target.apply_pull(global_position, effect_value, effect_duration)
+			"bleed":
+				if target.has_method("apply_bleed"):
+					target.apply_bleed(effect_value, effect_duration)
+			"shadow_mark":
+				if target.has_method("apply_shadow_mark"):
+					target.apply_shadow_mark(effect_value, effect_duration)
 	
 	func _get_player() -> Node:
 		"""Obtener referencia al jugador para lifesteal"""

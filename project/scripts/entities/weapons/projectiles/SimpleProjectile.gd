@@ -481,6 +481,12 @@ func _apply_effect(target: Node) -> void:
 						target.take_damage(hp)  # Matar instantáneamente
 		"knockback_bonus", "crit_chance", "chain":
 			pass  # Ya manejados en otro lugar
+		"bleed":
+			if target.has_method("apply_bleed"):
+				target.apply_bleed(effect_value, effect_duration)
+		"shadow_mark":
+			if target.has_method("apply_shadow_mark"):
+				target.apply_shadow_mark(effect_value, effect_duration)
 
 func _get_player() -> Node:
 	"""Obtener referencia al jugador"""

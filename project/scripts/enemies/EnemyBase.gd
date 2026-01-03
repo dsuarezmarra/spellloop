@@ -423,12 +423,18 @@ func _attempt_attack() -> void:
 
 func take_damage(amount: int) -> void:
 	"""Recibir daño del enemigo"""
+	# Aplicar bonus de shadow_mark si está marcado
+	var final_damage = amount
+	if _is_shadow_marked:
+		final_damage = int(amount * (1.0 + _shadow_mark_bonus))
+		print("[EnemyBase] 🎯 Shadow Mark! Daño aumentado: %d → %d" % [amount, final_damage])
+	
 	# Aplicar daño a través del HealthComponent
 	if health_component:
-		health_component.take_damage(amount, "physical")
+		health_component.take_damage(final_damage, "physical")
 	else:
 		# Fallback si no hay HealthComponent (no debería pasar)
-		hp -= amount
+		hp -= final_damage
 		if hp <= 0:
 			die()
 
@@ -463,6 +469,8 @@ var _is_burning: bool = false
 var _is_blinded: bool = false
 var _is_pulled: bool = false
 var _is_frozen: bool = false  # Separado de slow para visual diferente
+var _is_bleeding: bool = false  # Efecto bleed (DoT) - phantom_blade
+var _is_shadow_marked: bool = false  # Marca de sombra - shadow_orbs (daño extra)
 
 var _base_speed: float = 0.0  # Velocidad original antes de efectos
 var _slow_amount: float = 0.0
@@ -476,6 +484,16 @@ var _freeze_timer: float = 0.0
 var _pull_target: Vector2 = Vector2.ZERO
 var _pull_force: float = 0.0
 var _pull_timer: float = 0.0
+
+# Bleed effect (DoT separado del burn, color diferente)
+var _bleed_damage: float = 0.0
+var _bleed_timer: float = 0.0
+var _bleed_tick_timer: float = 0.0
+const BLEED_TICK_INTERVAL: float = 0.5  # Daño de sangrado cada 0.5s
+
+# Shadow Mark effect (enemigos marcados reciben daño extra)
+var _shadow_mark_timer: float = 0.0
+var _shadow_mark_bonus: float = 0.0  # % de daño extra (ej: 0.25 = 25%)
 
 # Para el efecto visual persistente
 var _status_tween: Tween = null
@@ -593,6 +611,41 @@ func apply_blind(duration: float) -> void:
 	_update_status_visual()
 	print("[EnemyBase] 👁️ %s cegado por %.1fs" % [name, duration])
 
+func apply_bleed(damage_per_tick: float, duration: float) -> void:
+	"""Aplicar efecto de sangrado (DoT diferente al burn)
+	damage_per_tick: daño por cada tick
+	duration: duración total del efecto
+	"""
+	# Si ya está sangrando, refrescar/apilar
+	if _is_bleeding:
+		_bleed_damage = max(_bleed_damage, damage_per_tick)
+		_bleed_timer = max(_bleed_timer, duration)
+	else:
+		_bleed_damage = damage_per_tick
+		_bleed_timer = duration
+		_bleed_tick_timer = 0.0
+		_is_bleeding = true
+	
+	_update_status_visual()
+	print("[EnemyBase] 🩸 %s sangrando %.1f daño/tick por %.1fs" % [name, damage_per_tick, duration])
+
+func apply_shadow_mark(bonus_damage: float, duration: float) -> void:
+	"""Aplicar marca de sombra (enemigos marcados reciben daño extra)
+	bonus_damage: porcentaje de daño extra (ej: 0.25 = 25%)
+	duration: duración del efecto
+	"""
+	# Refrescar si ya está marcado
+	if _is_shadow_marked:
+		_shadow_mark_bonus = max(_shadow_mark_bonus, bonus_damage)
+		_shadow_mark_timer = max(_shadow_mark_timer, duration)
+	else:
+		_shadow_mark_bonus = bonus_damage
+		_shadow_mark_timer = duration
+		_is_shadow_marked = true
+	
+	_update_status_visual()
+	print("[EnemyBase] 👤 %s marcado! +%.0f%% daño por %.1fs" % [name, bonus_damage * 100, duration])
+
 func _update_status_visual() -> void:
 	"""Actualizar el color del sprite según los efectos activos (prioridad)"""
 	var target_color: Color = Color.WHITE
@@ -604,6 +657,10 @@ func _update_status_visual() -> void:
 		target_color = Color(0.4, 0.9, 1.0, 1.0)  # Cyan hielo
 	elif _is_burning:
 		target_color = Color(1.0, 0.5, 0.2, 1.0)  # Naranja fuego
+	elif _is_bleeding:
+		target_color = Color(0.8, 0.2, 0.3, 1.0)  # Rojo sangre
+	elif _is_shadow_marked:
+		target_color = Color(0.5, 0.3, 0.7, 1.0)  # Púrpura oscuro (marca)
 	elif _is_slowed:
 		target_color = Color(0.6, 0.8, 1.0, 1.0)  # Azul claro
 	elif _is_pulled:
@@ -635,6 +692,15 @@ func _flash_damage() -> void:
 		var original = _current_status_color
 		var flash_tween = create_tween()
 		flash_tween.tween_property(sprite, "modulate", Color(1.0, 0.2, 0.0), 0.05)
+		flash_tween.tween_property(sprite, "modulate", original, 0.1)
+
+func _flash_bleed() -> void:
+	"""Flash rápido cuando recibe daño de bleed (color rojo sangre)"""
+	var sprite = animated_sprite if animated_sprite else _find_sprite_node(self)
+	if sprite:
+		var original = _current_status_color
+		var flash_tween = create_tween()
+		flash_tween.tween_property(sprite, "modulate", Color(0.9, 0.1, 0.2), 0.05)
 		flash_tween.tween_property(sprite, "modulate", original, 0.1)
 
 func _process_status_effects(delta: float) -> void:
@@ -689,6 +755,36 @@ func _process_status_effects(delta: float) -> void:
 		_blind_timer -= delta
 		if _blind_timer <= 0:
 			_is_blinded = false
+			status_changed = true
+	
+	# Procesar BLEED (DoT separado del burn)
+	if _is_bleeding:
+		_bleed_timer -= delta
+		_bleed_tick_timer += delta
+		
+		# Aplicar daño cada tick
+		if _bleed_tick_timer >= BLEED_TICK_INTERVAL:
+			_bleed_tick_timer = 0.0
+			# Bypass shadow_mark para evitar loop infinito (daño directo)
+			if health_component:
+				health_component.take_damage(int(_bleed_damage), "bleed")
+			else:
+				hp -= int(_bleed_damage)
+				if hp <= 0:
+					die()
+			_flash_bleed()  # Flash visual de sangrado
+		
+		if _bleed_timer <= 0:
+			_is_bleeding = false
+			_bleed_damage = 0.0
+			status_changed = true
+	
+	# Procesar SHADOW MARK
+	if _is_shadow_marked:
+		_shadow_mark_timer -= delta
+		if _shadow_mark_timer <= 0:
+			_is_shadow_marked = false
+			_shadow_mark_bonus = 0.0
 			status_changed = true
 	
 	# Procesar PULL

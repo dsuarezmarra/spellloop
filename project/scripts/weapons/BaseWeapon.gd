@@ -536,6 +536,10 @@ func apply_effect_to_target(target: Node2D) -> void:
 			pass  # Se aplica automáticamente al daño
 		"chain":
 			pass  # Se maneja en el proyectil
+		"bleed":
+			_apply_bleed(target)
+		"shadow_mark":
+			_apply_shadow_mark(target)
 	
 	effect_applied.emit(target, effect, effect_value)
 
@@ -597,6 +601,16 @@ func _apply_execute(target: Node2D) -> void:
 		if target.has_method("take_damage"):
 			target.take_damage(hp)  # Daño letal
 			print("[BaseWeapon] ⚔️ EXECUTE! Enemigo eliminado (%.0f%% HP)" % [hp_percent * 100])
+
+func _apply_bleed(target: Node2D) -> void:
+	"""Aplicar sangrado al objetivo (DoT)"""
+	if target.has_method("apply_bleed"):
+		target.apply_bleed(effect_value, effect_duration)
+
+func _apply_shadow_mark(target: Node2D) -> void:
+	"""Aplicar marca de sombra al objetivo (daño extra)"""
+	if target.has_method("apply_shadow_mark"):
+		target.apply_shadow_mark(effect_value, effect_duration)
 
 func _get_player() -> Node:
 	"""Obtener referencia al jugador"""

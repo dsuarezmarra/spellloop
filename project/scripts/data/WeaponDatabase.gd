@@ -454,7 +454,7 @@ const FUSIONS: Dictionary = {
 		"projectile_type": ProjectileType.CHAIN,
 		
 		"effect": "chain",
-		"effect_value": 3,  # 3 saltos
+		"effect_value": 2,  # 2 saltos (nerfed from 3)
 		"effect_duration": 0.0,
 		
 		"color": Color(0.9, 1.0, 0.5),
@@ -485,7 +485,7 @@ const FUSIONS: Dictionary = {
 		"projectile_type": ProjectileType.MULTI,
 		
 		"effect": "lifesteal",
-		"effect_value": 3,  # 3 HP por kill
+		"effect_value": 2,  # 2 HP por kill (nerfed from 3)
 		"effect_duration": 0.0,
 		
 		"color": Color(0.4, 0.2, 0.5),
@@ -534,7 +534,7 @@ const FUSIONS: Dictionary = {
 		"components": ["earth_spike", "void_pulse"],
 		
 		"damage": 40,
-		"cooldown": 3.0,
+		"cooldown": 2.5,  # Buffed from 3.0
 		"range": 300.0,
 		"projectile_speed": 0.0,
 		"projectile_count": 1,
@@ -1246,9 +1246,9 @@ const FUSIONS: Dictionary = {
 		"knockback": 35.0,
 		"target_type": TargetType.ORBIT,
 		"projectile_type": ProjectileType.ORBIT,
-		"effect": "none",
-		"effect_value": 0,
-		"effect_duration": 0.0,
+		"effect": "shadow_mark",  # Marked enemies take 25% extra damage
+		"effect_value": 0.25,
+		"effect_duration": 3.0,
 		"color": Color(0.4, 0.2, 0.5),
 		"icon": "🔮🗡️"
 	},
@@ -1274,7 +1274,7 @@ const FUSIONS: Dictionary = {
 		"target_type": TargetType.ORBIT,
 		"projectile_type": ProjectileType.ORBIT,
 		"effect": "lifesteal",
-		"effect_value": 2,
+		"effect_value": 3,  # Buffed from 2
 		"effect_duration": 0.0,
 		"color": Color(0.5, 0.9, 0.6),
 		"icon": "🔮🌿"
@@ -1320,7 +1320,7 @@ const FUSIONS: Dictionary = {
 		"cooldown": 0.0,
 		"range": 180.0,
 		"projectile_speed": 160.0,
-		"projectile_count": 3,
+		"projectile_count": 4,  # Buffed from 3
 		"pierce": 999,
 		"area": 1.8,
 		"duration": 999.0,
@@ -1354,9 +1354,9 @@ const FUSIONS: Dictionary = {
 		"knockback": 70.0,
 		"target_type": TargetType.DIRECTION,
 		"projectile_type": ProjectileType.MULTI,
-		"effect": "none",
-		"effect_value": 0,
-		"effect_duration": 0.0,
+		"effect": "bleed",  # DoT damage over time
+		"effect_value": 3,  # 3 damage per tick
+		"effect_duration": 2.0,  # 2 seconds
 		"color": Color(0.4, 0.3, 0.5),
 		"icon": "👻🗡️"
 	},
@@ -1429,7 +1429,7 @@ const FUSIONS: Dictionary = {
 		"range": 380.0,
 		"projectile_speed": 400.0,
 		"projectile_count": 3,
-		"pierce": 999,
+		"pierce": 5,  # Nerfed from 999 (infinite)
 		"area": 1.2,
 		"duration": 0.0,
 		"knockback": -80.0,
@@ -1571,7 +1571,7 @@ const FUSIONS: Dictionary = {
 		"target_type": TargetType.DIRECTION,
 		"projectile_type": ProjectileType.MULTI,
 		"effect": "blind",
-		"effect_value": 0.5,
+		"effect_value": 0.4,  # Nerfed from 0.5 (50% to 40%)
 		"effect_duration": 2.0,
 		"color": Color(0.8, 0.7, 0.5),
 		"icon": "🏜️"
@@ -1590,7 +1590,7 @@ const FUSIONS: Dictionary = {
 		"cooldown": 0.6,
 		"range": 420.0,
 		"projectile_speed": 500.0,
-		"projectile_count": 4,
+		"projectile_count": 3,  # Nerfed from 4
 		"pierce": 2,
 		"area": 1.0,
 		"duration": 0.0,
@@ -1641,7 +1641,7 @@ const FUSIONS: Dictionary = {
 		"description": "El equilibrio entre luz y oscuridad, destrucción pura",
 		"components": ["light_beam", "void_pulse"],
 		"damage": 50,
-		"cooldown": 3.0,
+		"cooldown": 2.5,  # Buffed from 3.0
 		"range": 500.0,
 		"projectile_speed": 999.0,
 		"projectile_count": 1,
@@ -1652,7 +1652,7 @@ const FUSIONS: Dictionary = {
 		"target_type": TargetType.AREA,
 		"projectile_type": ProjectileType.BEAM,
 		"effect": "execute",
-		"effect_value": 0.2,
+		"effect_value": 0.25,  # Buffed from 0.2 (20% to 25%)
 		"effect_duration": 0.0,
 		"color": Color(0.5, 0.4, 0.6),
 		"icon": "🌑"

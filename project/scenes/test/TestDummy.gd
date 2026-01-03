@@ -123,9 +123,15 @@ func take_damage(amount: int, _damage_type: String = "physical") -> void:
 	if invincible:
 		return
 	
+	# Aplicar bonus de shadow_mark si está marcado
+	var final_damage = amount
+	if _is_shadow_marked:
+		final_damage = int(amount * (1.0 + _shadow_mark_bonus))
+		print("[TestDummy #%d] 🎯 Shadow Mark! Daño aumentado: %d → %d" % [dummy_id, amount, final_damage])
+	
 	hit_count += 1
-	total_damage_received += amount
-	current_hp = max(0, current_hp - amount)
+	total_damage_received += final_damage
+	current_hp = max(0, current_hp - final_damage)
 	last_hit_time = Time.get_ticks_msec() / 1000.0
 	
 	# Actualizar label
@@ -136,14 +142,30 @@ func take_damage(amount: int, _damage_type: String = "physical") -> void:
 	_play_hit_effect()
 	
 	# Popup de daño
-	_spawn_damage_popup(amount)
+	_spawn_damage_popup(final_damage)
 	
 	# Emitir señal
-	damage_received.emit(amount, _damage_type)
+	damage_received.emit(final_damage, _damage_type)
 	
 	print("[TestDummy #%d] Recibió %d daño (%s). HP: %d | Total: %d | Hits: %d" % [
-		dummy_id, amount, _damage_type, current_hp, total_damage_received, hit_count
+		dummy_id, final_damage, _damage_type, current_hp, total_damage_received, hit_count
 	])
+
+func _take_direct_damage(amount: int, _damage_type: String = "physical") -> void:
+	"""Daño directo sin aplicar shadow_mark (para DoTs)"""
+	if invincible:
+		return
+	
+	hit_count += 1
+	total_damage_received += amount
+	current_hp = max(0, current_hp - amount)
+	last_hit_time = Time.get_ticks_msec() / 1000.0
+	
+	if hp_label:
+		hp_label.text = "HP: %d" % current_hp
+	
+	_spawn_damage_popup(amount)
+	damage_received.emit(amount, _damage_type)
 
 func _play_hit_effect() -> void:
 	if not sprite:
@@ -197,6 +219,8 @@ var _is_burning: bool = false
 var _is_blinded: bool = false
 var _is_pulled: bool = false
 var _is_frozen: bool = false
+var _is_bleeding: bool = false
+var _is_shadow_marked: bool = false
 
 var _base_speed: float = 0.0
 var _slow_amount: float = 0.0
@@ -210,6 +234,16 @@ var _freeze_timer: float = 0.0
 var _pull_target: Vector2 = Vector2.ZERO
 var _pull_force: float = 0.0
 var _pull_timer: float = 0.0
+
+# Bleed effect
+var _bleed_damage: float = 0.0
+var _bleed_timer: float = 0.0
+var _bleed_tick_timer: float = 0.0
+const BLEED_TICK_INTERVAL: float = 0.5
+
+# Shadow Mark effect
+var _shadow_mark_timer: float = 0.0
+var _shadow_mark_bonus: float = 0.0
 
 var _status_tween: Tween = null
 var _current_status_color: Color = Color.WHITE
@@ -311,6 +345,33 @@ func apply_blind(duration: float) -> void:
 	_update_status_visual()
 	_log_effect("👁️ BLIND", "%.1fs" % duration)
 
+func apply_bleed(damage_per_tick: float, duration: float) -> void:
+	"""Aplicar efecto de sangrado (DoT)"""
+	if _is_bleeding:
+		_bleed_damage = max(_bleed_damage, damage_per_tick)
+		_bleed_timer = max(_bleed_timer, duration)
+	else:
+		_bleed_damage = damage_per_tick
+		_bleed_timer = duration
+		_bleed_tick_timer = 0.0
+		_is_bleeding = true
+	
+	_update_status_visual()
+	_log_effect("🩸 BLEED", "%.1f daño/tick por %.1fs" % [damage_per_tick, duration])
+
+func apply_shadow_mark(bonus_damage: float, duration: float) -> void:
+	"""Aplicar marca de sombra (daño extra)"""
+	if _is_shadow_marked:
+		_shadow_mark_bonus = max(_shadow_mark_bonus, bonus_damage)
+		_shadow_mark_timer = max(_shadow_mark_timer, duration)
+	else:
+		_shadow_mark_bonus = bonus_damage
+		_shadow_mark_timer = duration
+		_is_shadow_marked = true
+	
+	_update_status_visual()
+	_log_effect("👤 SHADOW MARK", "+%.0f%% daño por %.1fs" % [bonus_damage * 100, duration])
+
 func _log_effect(effect_name: String, details: String) -> void:
 	"""Log de efectos aplicados"""
 	print("[TestDummy #%d] %s: %s" % [dummy_id, effect_name, details])
@@ -325,6 +386,10 @@ func _update_status_visual() -> void:
 		target_color = Color(0.4, 0.9, 1.0, 1.0)  # Cyan
 	elif _is_burning:
 		target_color = Color(1.0, 0.5, 0.2, 1.0)  # Naranja
+	elif _is_bleeding:
+		target_color = Color(0.8, 0.2, 0.3, 1.0)  # Rojo sangre
+	elif _is_shadow_marked:
+		target_color = Color(0.5, 0.3, 0.7, 1.0)  # Púrpura oscuro
 	elif _is_slowed:
 		target_color = Color(0.6, 0.8, 1.0, 1.0)  # Azul claro
 	elif _is_pulled:
@@ -350,6 +415,14 @@ func _flash_damage() -> void:
 		var original = _current_status_color
 		var flash_tween = create_tween()
 		flash_tween.tween_property(sprite, "modulate", Color(1.0, 0.2, 0.0), 0.05)
+		flash_tween.tween_property(sprite, "modulate", original, 0.1)
+
+func _flash_bleed() -> void:
+	"""Flash rápido de daño de bleed (rojo sangre)"""
+	if sprite:
+		var original = _current_status_color
+		var flash_tween = create_tween()
+		flash_tween.tween_property(sprite, "modulate", Color(0.9, 0.1, 0.2), 0.05)
 		flash_tween.tween_property(sprite, "modulate", original, 0.1)
 
 func _process_status_effects(delta: float) -> void:
@@ -398,6 +471,30 @@ func _process_status_effects(delta: float) -> void:
 		_blind_timer -= delta
 		if _blind_timer <= 0:
 			_is_blinded = false
+			status_changed = true
+	
+	# BLEED (DoT)
+	if _is_bleeding:
+		_bleed_timer -= delta
+		_bleed_tick_timer += delta
+		
+		if _bleed_tick_timer >= BLEED_TICK_INTERVAL:
+			_bleed_tick_timer = 0.0
+			# Daño directo sin aplicar shadow_mark para evitar loops
+			_take_direct_damage(int(_bleed_damage), "bleed")
+			_flash_bleed()
+		
+		if _bleed_timer <= 0:
+			_is_bleeding = false
+			_bleed_damage = 0.0
+			status_changed = true
+	
+	# SHADOW MARK
+	if _is_shadow_marked:
+		_shadow_mark_timer -= delta
+		if _shadow_mark_timer <= 0:
+			_is_shadow_marked = false
+			_shadow_mark_bonus = 0.0
 			status_changed = true
 	
 	# PULL - ahora sí mueve al dummy hacia el objetivo
