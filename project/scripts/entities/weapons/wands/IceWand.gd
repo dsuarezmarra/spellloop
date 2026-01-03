@@ -60,6 +60,11 @@ func perform_attack(owner: Node2D) -> void:
 		projectile.knockback_force = 120.0
 		projectile.set_meta("weapon_id", id)
 		
+		# Configurar efecto slow (30% por 2 segundos)
+		projectile.set_meta("effect", "slow")
+		projectile.set_meta("effect_value", 0.30)
+		projectile.set_meta("effect_duration", 2.0)
+		
 		print("[IceWand] DEBUG: Configurado weapon_id='%s' antes de add_child" % id)
 		print("[IceWand] DEBUG: get_meta('weapon_id')='%s'" % projectile.get_meta("weapon_id", "NULL"))
 		
