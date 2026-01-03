@@ -137,54 +137,71 @@ Effects:
 
 ---
 
-## ⚡ 3. LIGHTNING WAND - Rayo
+## ⚡ 3. LIGHTNING WAND - Varita de Relámpago - CHAIN
 
-### Flight Animation (6 frames)
+> Ubicación: `res://assets/sprites/projectiles/weapons/lightning_wand/`
+> Arma base tipo CHAIN - El rayo salta entre enemigos
+
+### flight_spritesheet_lightning_wand.png (256x64, 4 frames)
 ```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+Create a cartoon art horizontal sprite sheet of a CHAIN LIGHTNING ORB projectile for a 2D game, in cute chibi/Funko Pop cartoon style.
 
-Subject: A cute lightning bolt projectile with energy orb
+LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Solid black background (#000000).
 
-Design:
-- Shape: Zigzag bolt with a round energy orb at the tip
-- Bolt: Bright yellow (#FFFF4D)
-- Core/orb: White (#FFFFFF)
-- Electric glow: Pale yellow (#FFFF99)
+THE PROJECTILE: A spherical electric orb with MULTIPLE LIGHTNING ARCS reaching outward - this is a CHAIN weapon, NOT a pointed bolt. The orb has 2-3 electric tendrils/arcs extending from it in different directions, searching for the next target to chain to. Think of it as a ball of yellow energy with "arms" of lightning.
+
+SHAPE CONCEPT:
+- Central SPHERE of crackling electric energy (NOT pointed, NOT a bolt shape)
+- 2-3 LIGHTNING ARCS extending outward from the sphere like tentacles
+- Arcs should curve and reach in different directions (showing "seeking" behavior)
+
+COLOR PALETTE:
+- Core orb: Bright white (#FFFFFF) center fading to electric yellow (#FFFF4D)
+- Lightning arcs: Yellow (#FFFF33) with white tips
+- Electric sparks: Pale yellow (#FFFF99) particles
+- Outline: Purple (#6633CC), 2 pixels
+
+ANIMATION SEQUENCE (4 frames):
+Frame 1: Electric orb with 2 arcs extending - arcs at rest positions
+Frame 2: Arcs WIGGLE and shift direction - searching for targets, sparks intensify
+Frame 3: Maximum energy - orb pulses bright, arcs reach furthest
+Frame 4: Arcs retract slightly and reposition - ready to chain again
+
+IMPORTANT DETAILS:
+- Central orb shape - NOT a pointed lightning bolt
+- Multiple arcs extending outward like CHAIN LINKS seeking targets
+- Cartoon-cute but powerful electric appearance
+- Each frame clearly separated in its own cell
+- The arcs should look like they're "alive" and searching
+```
+
+### impact_spritesheet_lightning_wand.png (256x64, 4 frames)
+```
+Create a cartoon art horizontal sprite sheet of a CHAIN LIGHTNING IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style.
+
+LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Solid black background (#000000).
+
+THE EFFECT: The lightning orb hits and SPLITS into multiple electric arcs that shoot toward different directions - showing the "chain" mechanic visually. Electric energy JUMPS to nearby targets.
+
+COLOR PALETTE:
+- Core: Bright white flash (#FFFFFF)
+- Primary: Electric yellow (#FFFF4D / #FFFF33)
+- Secondary: Pale yellow (#FFFF99)
+- Sparks: White-yellow particles
 - Outline: Purple (#6633CC)
 
-Animation: Electric energy crackling and orb pulsing
-- Frames 1-6: The bolt shape stays similar but electricity crackles
-- Orb pulses bright on alternating frames
-- Small electric arcs appear and disappear around the bolt
+ANIMATION SEQUENCE (4 frames):
+Frame 1: Impact flash - orb bursts, 2-3 CHAIN ARCS begin shooting outward in DIFFERENT directions (not radial explosion, but distinct arcs to "targets")
+Frame 2: Chain arcs EXTEND - each arc reaches toward a different direction, showing electricity jumping to multiple enemies
+Frame 3: Maximum chain spread - arcs at full length, secondary sparks jumping between them
+Frame 4: Arcs fade from tips inward - energy dissipates, last sparks, chain effect complete
 
-Effects:
-- Electric spark particles jumping around
-- Small lightning branches extending and retracting
-- Glow intensity fluctuating
-```
-
-### Impact Animation (6 frames)
-```
-Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
-
-Subject: Lightning strike impact
-
-Design:
-- Same palette: yellow (#FFFF4D), white (#FFFFFF), pale yellow (#FFFF99)
-- Purple outline (#6633CC)
-
-Animation: Lightning bolt striking and electricity dispersing
-- Frame 1: Bright flash, bolt hitting target area
-- Frame 2: Maximum brightness, electric arcs radiating outward
-- Frame 3: Central bolt fading, arcs at maximum spread
-- Frame 4: Electricity breaking into smaller sparks
-- Frame 5: Sparks dissipating, residual glow
-- Frame 6: Final sparkles fading away
-
-Effects:
-- Bright white flash in center
-- Electric arcs in radial pattern
-- Small spark particles
+IMPORTANT DETAILS:
+- NOT a radial explosion - show DISTINCT CHAIN ARCS going to specific directions
+- Each arc should look like it's hitting a different target
+- Feeling of electricity JUMPING between targets
+- Cartoon-cute style with clear shapes
+- Each frame clearly separated in its own cell
 ```
 
 ---
@@ -2440,7 +2457,85 @@ IMPORTANT DETAILS:
 
 ---
 
-## 🔥🔮 25. INFERNO ORB (Fire + Arcane) - ORBIT
+## �️⚡ 25. VOID BOLT (Lightning + Void) - CHAIN
+
+> Fusión: lightning_wand + void_pulse
+> Rayo del vacío que encadena y atrae enemigos hacia portales oscuros
+> Ubicación: `res://assets/sprites/projectiles/fusion/void_bolt/`
+
+### flight_spritesheet_void_bolt.png (256x64, 4 frames)
+```
+Create a cartoon art horizontal sprite sheet of a VOID CHAIN ORB projectile for a 2D game, in cute chibi/Funko Pop cartoon style.
+
+LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Solid black background (#000000).
+
+THE PROJECTILE: A spherical VOID orb with MULTIPLE DARK ELECTRIC ARCS reaching outward - this is a CHAIN weapon, NOT a pointed bolt. The orb is a dark purple/black void sphere with 3-4 ethereal lightning tendrils extending from it in different directions, searching for targets to chain to. The arcs look ghostly and otherworldly.
+
+SHAPE CONCEPT:
+- Central SPHERE of swirling void energy (NOT pointed, NOT a bolt shape)
+- 3-4 VOID LIGHTNING ARCS extending outward from the sphere like dark tentacles
+- Arcs are made of purple/violet energy with distortion effects around them
+- Arcs should curve and reach in different directions (showing "seeking" behavior)
+- Void particles being pulled INTO the orb (reverse particle direction)
+
+COLOR PALETTE:
+- Core orb: Dark center (#1A001A) fading to deep purple (#330033)
+- Void arcs: Purple-violet (#6633CC / #9966FF) with darker cores
+- Electric accents: White-purple sparks (#CCAAFF / #FFFFFF)
+- Distortion effect: Darker areas around arcs showing "reality bending"
+- Outline: Very dark purple-black (#0D000D), 2 pixels
+
+ANIMATION SEQUENCE (4 frames):
+Frame 1: Void orb with 3 dark arcs extending - arcs at rest positions, particles being sucked in
+Frame 2: Arcs WIGGLE and shift direction - searching for targets, void energy PULSES darker
+Frame 3: Maximum energy - orb pulses with inner void glow, arcs reach furthest, distortion at peak
+Frame 4: Arcs retract slightly and reposition - ready to chain again, particles spiral inward
+
+IMPORTANT DETAILS:
+- Central orb shape - NOT a pointed lightning bolt
+- Multiple VOID arcs extending outward like CHAIN LINKS seeking targets
+- REVERSE particle effect - particles being PULLED IN (shows void/pull mechanic)
+- Dark, ethereal, otherworldly appearance
+- Cartoon-cute but mysterious and dangerous
+- Each frame clearly separated in its own cell
+- The arcs should look like ghostly tentacles alive with dark energy
+```
+
+### impact_spritesheet_void_bolt.png (256x64, 4 frames)
+```
+Create a cartoon art horizontal sprite sheet of a VOID CHAIN IMPACT for a 2D game, in cute chibi/Funko Pop cartoon style.
+
+LAYOUT: 4 frames in a single horizontal strip, each frame in its own cell of approximately 150x100 pixels. Total image around 600x400 pixels. Solid black background (#000000).
+
+THE EFFECT: The void chain orb hits and SPLITS into multiple DARK ELECTRIC ARCS that shoot toward different directions - showing the "chain" mechanic visually. Void energy JUMPS to nearby targets while creating a pulling effect (small portal opening).
+
+COLOR PALETTE:
+- Core: Dark purple flash (#330033) with white-purple center
+- Primary: Deep purple-violet (#6633CC / #9966FF)
+- Secondary: Pale lavender (#E6CCFF)
+- Void distortion: Very dark purple (#1A001A) - reality bending
+- Electric accents: White-purple sparks
+- Outline: Dark purple-black (#0D000D)
+
+ANIMATION SEQUENCE (4 frames):
+Frame 1: Impact flash - orb bursts into small VOID PORTAL, 3-4 VOID CHAIN ARCS begin shooting outward in DIFFERENT directions (distinct arcs to "targets", not radial explosion)
+Frame 2: Chain arcs EXTEND - each dark arc reaches toward a different direction, small void portal forms at center with inward-pulling particle effect
+Frame 3: Maximum chain spread - arcs at full length, void portal at peak (circular darkness with purple edge), particles being sucked toward center
+Frame 4: Arcs fade from tips inward - portal closes, last ethereal sparks, chain effect complete
+
+IMPORTANT DETAILS:
+- NOT a radial explosion - show DISTINCT VOID CHAIN ARCS going to specific directions
+- Each arc should look like it's hitting a different target
+- Small VOID PORTAL at impact center (shows the "pull" mechanic)
+- Particles moving INWARD toward center (unlike normal explosions)
+- Dark, ethereal, otherworldly appearance
+- Cartoon-cute style with clear shapes
+- Each frame clearly separated in its own cell
+```
+
+---
+
+## 🔥🔮 26. INFERNO ORB (Fire + Arcane) - ORBIT
 
 > Fusión: fire_wand + arcane_orb
 > Orbe de fuego infernal - llamas potenciadas con magia arcana

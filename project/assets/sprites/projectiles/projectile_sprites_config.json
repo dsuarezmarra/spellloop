@@ -344,7 +344,7 @@
       "id": "plasma",
       "name": "Plasma Ball",
       "components": ["fire_wand", "lightning_wand"],
-      "type": "SINGLE",
+      "type": "CHAIN",
       "colors": {
         "primary": "#FF66FF",
         "secondary": "#FFFF66",
@@ -354,6 +354,21 @@
       "shape": "plasma_sphere",
       "effects": ["plasma_arcs", "heat_electricity", "energy_pulse"],
       "description": "Superheated plasma sphere with electric arcs"
+    },
+    {
+      "id": "void_bolt",
+      "name": "Void Bolt",
+      "components": ["lightning_wand", "void_pulse"],
+      "type": "CHAIN",
+      "colors": {
+        "primary": "#6633CC",
+        "secondary": "#330033",
+        "accent": "#9966FF",
+        "outline": "#1A001A"
+      },
+      "shape": "void_lightning",
+      "effects": ["void_distortion", "electric_sparks", "dark_energy"],
+      "description": "Dark ethereal lightning that chains and pulls enemies"
     },
     {
       "id": "inferno_orb",
