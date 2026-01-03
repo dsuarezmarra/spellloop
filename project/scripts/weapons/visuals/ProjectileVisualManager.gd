@@ -221,7 +221,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"squash_amount": 0.08
 	},
 
-	"blizzard": {  # Ice + Nature
+	"blizzard": {  # Ice + Wind
 		"shape": "snowstorm",
 		"primary": Color(0.5, 0.85, 0.75),
 		"secondary": Color(0.4, 0.75, 0.9),
@@ -230,7 +230,7 @@ const WEAPON_VISUALS: Dictionary = {
 		"glow": Color(0.5, 0.85, 0.8, 0.45),
 		"trail_color": Color(0.55, 0.9, 0.8, 0.4),
 		"particles": "ice_leaves",
-		"rotation_speed": 0.8,
+		"rotation_speed": 0.0,  # Tornados NO rotan - mantienen eje vertical
 		"squash_amount": 0.15
 	},
 

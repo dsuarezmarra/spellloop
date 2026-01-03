@@ -2006,7 +2006,19 @@ Style: Cartoon, clean shapes, no anti-aliasing on edges.
 
 ---
 
-## 🌸💨 27. POLLEN STORM (Nature + Wind) - Tormenta de Polen - MULTI
+## 🌸💨 27. POLLEN STORM (Nature + Wind) - Tormenta de Polen - MULTI (Homing)
+
+> Fusión: nature_staff + wind_blade
+> Tipo: MULTI con HOMING (5 proyectiles que persiguen enemigos)
+> Comportamiento: Esporas venenosas llevadas por el viento que drenan vida al impactar
+> Ubicación: `res://assets/sprites/projectiles/fusion/pollen_storm/`
+
+### Características del ataque:
+- Dispara 5 proyectiles que persiguen enemigos (homing)
+- Cada proyectil es una nube de esporas venenosas
+- Atraviesa 2 enemigos (pierce: 2)
+- Causa efecto de lifesteal (drena vida)
+- Velocidad media (350)
 
 ### Flight Animation (6 frames)
 ```
@@ -2014,35 +2026,37 @@ Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
 TOP-DOWN VIEW for 2D game. Black background (#000000).
 Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
 
-Subject: Pollen cloud projectile - swirling mass of golden pollen carried by wind
+Subject: A swirling cloud of toxic spores carried by wind - a small living storm of poisonous nature particles that SEEKS enemies. NOT static pollen. This is PREDATORY nature magic.
 
 Design:
-- Shape: Cloud-like mass with visible pollen particles swirling within
-- Main cloud: Yellow-green (#B3D966) with soft edges
-- Pollen particles: Golden yellow (#F2E066) dots scattered throughout
-- Wind currents: Pale mint-green (#B3CCB3) swirl lines
-- Core glow: Bright lime (#CCFF80) at center
-- Outline: Olive green (#5A7340), soft/broken edges
+- Shape: Compact spiraling cloud of spores with wind vortex motion (slightly elongated horizontally)
+- Central vortex: Yellow-green toxic mist (#B8E060) with visible swirl pattern
+- Spore particles: Golden-orange dots (#FFD840, #FFA030) - multiple sizes, scattered in spiral
+- Wind currents: Pale green-white (#D0F0C0) curved lines showing air flow
+- Toxic glow: Lime-green aura (#C0FF60) at center suggesting poison
+- Wispy tendrils: 2-3 thin spore trails extending outward like reaching fingers
+- Outline: Olive green (#5A7340), soft/broken edges (clouds don't have hard outlines)
 
-Animation: Pollen cloud drifting with wind currents, particles swirling chaotically
-- Frame 1: Cloud compact, pollen gathered, wind lines minimal
-- Frame 2: Wind picking up, pollen starting to spread
-- Frame 3: Maximum swirl - pollen particles spinning in vortex pattern
-- Frame 4: Cloud expanding, pollen at widest distribution
-- Frame 5: Wind shifting, pollen regathering
-- Frame 6: Return to compact state, ready to loop
+Animation: Spiraling motion of spore cloud that appears to be HUNTING - reaching forward
+- Frame 1: Compact cloud, spores clustered tight, glow dim
+- Frame 2: Cloud expanding, spores begin spiral outward, tendrils form
+- Frame 3: Full spiral visible, spores at maximum spin, tendrils reaching forward
+- Frame 4: Cloud pulsing larger, toxic glow brightest, predatory feel
+- Frame 5: Spores contracting, preparing for next pulse
+- Frame 6: Return to compact form, cycle ready to loop
 
-Key concept: A LIVING CLOUD of pollen - nature's seeds carried by playful wind
+Key visual concept: HUNTING SPORES - this is not passive pollen, it's a living toxic cloud that WANTS to reach enemies. Wind carries it but the spores seem to have intent.
 
 Effects:
-- Golden pollen particles drifting in wind patterns
-- Wind current lines showing air movement
-- Soft, fluffy cloud edges
-- Pollen density varying (thicker at center)
-- Gentle, nature-magic appearance
-- Feeling of ALLERGENS but magical - irritating and damaging
+- Visible rotation/spiral of spores within the cloud
+- Wind current lines showing directional movement
+- Spore particles of varying sizes (some large, some tiny)
+- Toxic green glow suggesting poison/lifesteal
+- Wispy tendrils reaching forward (homing behavior hint)
+- Organic, alive feeling - this projectile BREATHES
 
-Style: Cartoon, clean shapes, no anti-aliasing on edges.
+Style: Cartoon, clean shapes, soft cloud edges.
+Color palette: Yellow-green (#B8E060), Golden (#FFD840), Orange-gold (#FFA030), Toxic lime (#C0FF60)
 ```
 
 ### Impact Animation (6 frames)
@@ -2051,33 +2065,37 @@ Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
 TOP-DOWN VIEW for 2D game. Black background (#000000).
 Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
 
-Subject: Pollen Storm impact - cloud bursts into wind-scattered pollen explosion
+Subject: Toxic spore cloud BURSTS on impact - poisonous particles scatter and ABSORB life energy from the target. The burst should feel like the spores are FEEDING.
 
 Design:
-- Same palette: Yellow-green (#B3D966), golden yellow (#F2E066), pale mint (#B3CCB3)
-- Pollen burst: Bright golden (#FFEE88)
-- Wind spirals: Cyan-white (#DDEEBB)
-- Outline: Olive green (#5A7340)
+- Central burst: Bright lime-yellow flash at impact (#E0FF80 to #FFFF80)
+- Expanding ring: Semi-translucent toxic green mist (#B8E060 with transparency)
+- Spore particles: Golden-orange dots flying radially outward (#FFD840, #FFA030)
+- Life drain effect: Small red-orange wisps being pulled INTO the cloud center (#FF8060)
+- Wind spirals: Pale green curved lines dispersing (#D0F0C0)
+- Poison mist: Ground-level toxic fog (#B8D860 with high transparency)
+- Outline: None needed - organic explosion fades naturally
 
-Animation: Pollen cloud bursts, scattering seeds in all directions on wind currents
-- Frame 1: Impact - cloud compresses then bursts
-- Frame 2: Pollen explosion - particles flying outward on wind currents
-- Frame 3: Maximum spread - pollen EVERYWHERE, wind spirals visible
-- Frame 4: Pollen settling, wind currents carrying particles further
-- Frame 5: Most pollen dispersed, lingering golden sparkles
-- Frame 6: Final pollen drifting away, wind calming
+Animation: Spore cloud explodes, scatters, then briefly PULLS energy back before fading
+- Frame 1: IMPACT - Cloud compresses, bright toxic flash at center
+- Frame 2: BURST - Spores explode outward in all directions, wind spirals appear
+- Frame 3: MAXIMUM SPREAD - Spores at widest, toxic mist visible, golden particles everywhere
+- Frame 4: DRAIN - Red-orange wisps appear, being pulled toward center (lifesteal visual)
+- Frame 5: FADE - Spores dissolving, life energy absorbed, mist settling
+- Frame 6: DISSIPATE - Nearly gone, only faint toxic sparkles remain
 
-Key visual concept: POLLEN EXPLOSION - sneeze-inducing cloud of nature particles
+Key visual concept: The spores don't just explode - they FEED. Frame 4 should show a brief moment where energy flows BACK toward the center, representing the lifesteal effect.
 
 Effects:
-- Hundreds of tiny pollen particles scattering
-- Wind spiral patterns carrying pollen
-- Golden shimmer in the air
-- Soft, organic feel to explosion
-- No hard impacts - everything floats and drifts
-- Feeling of NATURE RELEASED - seeds spreading everywhere
+- Radial explosion of spore particles
+- Toxic green mist at ground level
+- Golden shimmer in the air (spore dust)
+- RED-ORANGE WISPS being drawn inward (lifesteal!)
+- Wind patterns carrying spores outward
+- Organic, poisonous feel - this is nature's vengeance
 
-Style: Cartoon, clean shapes, no anti-aliasing on edges.
+Style: Cartoon, clean shapes, transparency for mist effects.
+Color palette: Yellow-green (#B8E060), Golden (#FFD840), Toxic lime (#C0FF60), Lifesteal red (#FF8060)
 ```
 
 ---
@@ -3148,6 +3166,100 @@ Frame 5: Dispersing light and shadow particles spiraling
 Frame 6: Fading glow with lingering cosmic duality motes
 Solid black background (#000000) filling the entire image.
 Clean cartoon art style, 16-bit aesthetic. Cosmic impact, duality explosion, light-void annihilation.
+```
+
+---
+
+## 🌨️❄️ 36. BLIZZARD (Ice + Wind) - Ventisca - MULTI
+
+> Fusión: ice_wand + wind_blade
+> Tipo: MULTI (5 proyectiles en abanico direccional)
+> Comportamiento: Ráfagas de viento helado que viajan en abanico, ralentizando enemigos
+> Ubicación: `res://assets/sprites/projectiles/fusion/blizzard/`
+
+### Características del ataque:
+- Dispara 5 proyectiles simultáneos en patrón de abanico
+- Cada proyectil es una ráfaga individual de ventisca
+- Atraviesa 2 enemigos (pierce: 2)
+- Causa efecto de ralentización (slow 35%)
+- Velocidad media (400)
+
+### Flight Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: A swirling ice wind gust projectile - a small localized blizzard carried by fierce wind. NOT a snowflake. NOT a static ice shard. This is DYNAMIC frozen wind.
+
+Design:
+- Shape: Horizontal elongated swirl of wind carrying ice crystals (wider than tall)
+- Central vortex: Semi-translucent pale blue-white (#E8F4FF) swirling wind mass
+- Ice crystals: Tiny scattered ice shards within the vortex (#88DDFF, #AAEEFF)
+- Snowflakes: 3-5 small snowflake particles mixed in the wind (#FFFFFF)
+- Wind streaks: Wispy white-cyan trails showing motion direction (#CCFFFF)
+- Frost particles: Tiny sparkles at edges (#FFFFFF with transparency)
+- Outline: Soft blue-gray (#6699AA), 1 pixel, fading at wind edges
+
+Animation: Continuous swirling/rotating motion of frozen wind gust
+- Frame 1: Compact swirl, crystals clustered at center
+- Frame 2: Vortex expanding slightly, ice crystals spread outward
+- Frame 3: Full rotation visible, snowflakes at maximum spread
+- Frame 4: Wind streaks most visible, dynamic motion feel
+- Frame 5: Vortex contracting, crystals pulling back
+- Frame 6: Return to compact form, cycle ready to loop
+
+Key visual concept: WIND carrying ICE, not ice with wind decoration. The wind itself is the projectile, filled with frozen particles.
+
+Effects:
+- Visible rotation/turbulence in the wind mass
+- Ice crystals moving within the vortex (not static)
+- Wind streaks trailing behind showing direction of travel
+- Semi-transparent center suggesting depth
+- Frost sparkles appearing and disappearing
+- Feeling of COLD WIND, not solid ice
+
+Style: Cartoon, clean shapes, semi-transparent wind effect.
+Color palette: White (#FFFFFF), Ice blue (#88DDFF), Pale cyan (#AAEEFF), Frost tint (#CCDDFF)
+```
+
+### Impact Animation (6 frames)
+```
+Create a horizontal sprite strip of 6 frames (64x64 each = 384x64 total).
+TOP-DOWN VIEW for 2D game. Black background (#000000).
+Each frame CENTERED in its 64x64 cell. Content max 54x54px with 5px padding.
+
+Subject: Ice wind burst impact - the moment a blizzard gust DISPERSES upon hitting a target, releasing all its frozen particles in an expanding ring of freezing wind.
+
+Design:
+- Central burst: Bright white-cyan flash at point of impact (#FFFFFF to #CCFFFF)
+- Expanding ring: Semi-translucent frost ring spreading outward (#AAEEFF with transparency)
+- Ice shards: Small crystalline fragments flying radially outward (#88DDFF)
+- Snowflakes: Multiple small snowflakes scattering in all directions (#FFFFFF)
+- Wind wisps: Curved wind trail lines dispersing from center (#E8F4FF)
+- Frost mist: Subtle blue-white fog effect at ground level (#CCDDFF with high transparency)
+- Outline: None needed - impact effects fade naturally at edges
+
+Animation: Expanding burst of frozen wind that settles and fades
+- Frame 1: IMPACT - Compressed bright flash at center, all particles still clustered
+- Frame 2: BURST BEGINS - Ring starts expanding, ice crystals scatter outward, wind wisps appear
+- Frame 3: FULL EXPANSION - Maximum ring size, snowflakes at widest spread, frost mist visible
+- Frame 4: PEAK FREEZE - Most particles visible, freezing effect at maximum, slight lingering
+- Frame 5: SETTLING - Ring fading, ice crystals dissolving, some particles settling downward
+- Frame 6: DISSIPATE - Nearly gone, only faint frost sparkles and mist remaining
+
+Key visual concept: The wind RELEASES its payload of ice particles in all directions, creating a brief localized freeze zone before vanishing.
+
+Effects:
+- Radial expansion of all particles from center point
+- Frost ring with visible wind current patterns inside
+- Ice crystal fragments flying outward (not floating - propelled by wind)
+- Snowflakes scattering naturally with wind motion
+- Ground-level frost mist effect (freeze puddle suggestion)
+- Gradual fade to nothing - clean disappearance
+
+Style: Cartoon, clean shapes, transparency for wind/mist effects.
+Color palette: White (#FFFFFF), Ice blue (#88DDFF), Pale cyan (#AAEEFF), Frost violet (#CCDDFF)
 ```
 
 ---

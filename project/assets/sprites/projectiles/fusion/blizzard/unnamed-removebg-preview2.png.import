@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bia5wsnvwc1m5"
-path="res://.godot/imported/impact_spritesheet_blizzard.png-9d50e34c3cff026033d274b33307fa12.ctex"
+uid="uid://b05nqq6api5p8"
+path="res://.godot/imported/unnamed-removebg-preview2.png-4a08b60686e965efc444b9a3fc90fedb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/blizzard/impact_spritesheet_blizzard.png"
-dest_files=["res://.godot/imported/impact_spritesheet_blizzard.png-9d50e34c3cff026033d274b33307fa12.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/blizzard/unnamed-removebg-preview2.png"
+dest_files=["res://.godot/imported/unnamed-removebg-preview2.png-4a08b60686e965efc444b9a3fc90fedb.ctex"]
 
 [params]
 
