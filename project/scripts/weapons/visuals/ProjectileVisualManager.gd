@@ -910,7 +910,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"flight_fps": 12.0,
 		"impact_frames": 6,
 		"impact_fps": 15.0,
-		"sprite_scale": 1.0
+		"sprite_scale": 1.0,
+		"lock_rotation": true  # Tornado de hielo no rota con la dirección (siempre vertical)
 	},
 	"frostvine": {
 		"flight_frames": 6,

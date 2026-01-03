@@ -466,10 +466,12 @@ func _apply_effect(target: Node) -> void:
 			var player = _get_player()
 			if player and player.has_method("heal"):
 				player.heal(int(effect_value))
+				_spawn_lifesteal_effect(player)
 		"lifesteal_chain":
 			var player = _get_player()
 			if player and player.has_method("heal"):
 				player.heal(int(effect_value))
+				_spawn_lifesteal_effect(player)
 		"execute":
 			if target.has_method("get_info"):
 				var info = target.get_info()
@@ -532,6 +534,85 @@ func _spawn_hit_effect() -> void:
 		if is_instance_valid(particles):
 			particles.queue_free()
 	)
+
+func _spawn_lifesteal_effect(player: Node) -> void:
+	"""Crear efecto visual de lifesteal - partículas verdes volando hacia el jugador"""
+	if not is_instance_valid(player):
+		return
+	
+	var start_pos = global_position
+	var end_pos = player.global_position
+	
+	# Crear partículas verdes que van hacia el jugador
+	var particles = CPUParticles2D.new()
+	particles.emitting = true
+	particles.one_shot = true
+	particles.explosiveness = 0.8
+	particles.amount = 12
+	particles.lifetime = 0.5
+	
+	# Dirección hacia el jugador
+	var dir_to_player = (end_pos - start_pos).normalized()
+	particles.direction = dir_to_player
+	particles.spread = 25.0
+	particles.initial_velocity_min = 150.0
+	particles.initial_velocity_max = 250.0
+	particles.gravity = Vector2.ZERO
+	particles.scale_amount_min = 3.0
+	particles.scale_amount_max = 5.0
+	
+	# Color verde brillante para lifesteal
+	particles.color = Color(0.3, 1.0, 0.4, 1.0)
+	
+	# Gradiente para fade out
+	var gradient = Gradient.new()
+	gradient.set_color(0, Color(0.3, 1.0, 0.4, 1.0))
+	gradient.set_color(1, Color(0.2, 0.8, 0.3, 0.0))
+	particles.color_ramp = gradient
+	
+	particles.global_position = start_pos
+	get_tree().current_scene.add_child(particles)
+	
+	# Crear también un flash verde en el jugador
+	_spawn_heal_flash(player)
+	
+	# Auto-destruir partículas
+	var timer = get_tree().create_timer(0.8)
+	timer.timeout.connect(func(): 
+		if is_instance_valid(particles):
+			particles.queue_free()
+	)
+
+func _spawn_heal_flash(player: Node) -> void:
+	"""Crear flash verde en el jugador al recibir curación"""
+	if not is_instance_valid(player):
+		return
+	
+	# Crear un sprite temporal con efecto de curación
+	var flash = Sprite2D.new()
+	var img = Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	
+	# Dibujar un círculo verde suave
+	var center = Vector2(16, 16)
+	for x in range(32):
+		for y in range(32):
+			var dist = Vector2(x, y).distance_to(center)
+			if dist < 14:
+				var alpha = 1.0 - (dist / 14.0)
+				img.set_pixel(x, y, Color(0.3, 1.0, 0.4, alpha * 0.7))
+	
+	flash.texture = ImageTexture.create_from_image(img)
+	flash.z_index = 100
+	flash.scale = Vector2(2.0, 2.0)
+	
+	player.add_child(flash)
+	
+	# Animar el flash (crecer y desvanecerse)
+	var tween = player.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(flash, "scale", Vector2(4.0, 4.0), 0.3)
+	tween.tween_property(flash, "modulate:a", 0.0, 0.3)
+	tween.chain().tween_callback(flash.queue_free)
 
 func _destroy() -> void:
 	# Si tenemos visual animado, reproducir impacto
