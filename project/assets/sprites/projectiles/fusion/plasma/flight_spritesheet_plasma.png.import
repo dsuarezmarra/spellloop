@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cr46jga4eedix"
-path="res://.godot/imported/impact_spritesheet_void_bolt.png-ddd74d7d88c26a55df999d59d750addb.ctex"
+uid="uid://bgfhjns0ykfw7"
+path="res://.godot/imported/flight_spritesheet_plasma.png-520603c04f943947d742fa752e00c939.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/void_bolt/impact_spritesheet_void_bolt.png"
-dest_files=["res://.godot/imported/impact_spritesheet_void_bolt.png-ddd74d7d88c26a55df999d59d750addb.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/plasma/flight_spritesheet_plasma.png"
+dest_files=["res://.godot/imported/flight_spritesheet_plasma.png-520603c04f943947d742fa752e00c939.ctex"]
 
 [params]
 
