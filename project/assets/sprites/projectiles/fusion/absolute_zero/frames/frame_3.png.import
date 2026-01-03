@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dfjd11kqjg78e"
-path="res://.godot/imported/aoe_active_absolute_zero.png-f89b476f9fea22c36a447cc914829f6a.ctex"
+uid="uid://62rgev6qhdxm"
+path="res://.godot/imported/frame_3.png-f1a455d7adffe847a46e5076be8b73dd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/absolute_zero/aoe_active_absolute_zero.png"
-dest_files=["res://.godot/imported/aoe_active_absolute_zero.png-f89b476f9fea22c36a447cc914829f6a.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/absolute_zero/frames/frame_3.png"
+dest_files=["res://.godot/imported/frame_3.png-f1a455d7adffe847a46e5076be8b73dd.ctex"]
 
 [params]
 
