@@ -896,7 +896,63 @@ class OrbitalManager extends Node2D:
 			"shadow_mark":
 				if enemy.has_method("apply_shadow_mark"):
 					enemy.apply_shadow_mark(effect_value, effect_duration)
+			"chain":
+				# Crear salto de daño a enemigos cercanos
+				_apply_chain_damage(enemy, int(effect_value))
 	
+	func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
+		"""Aplicar daño encadenado a enemigos cercanos"""
+		var enemies_hit = [first_target]
+		var current_pos = first_target.global_position
+		var chain_damage = damage * 0.6  # Daño reducido para chains
+		
+		for i in range(chain_count):
+			var next_target = _find_chain_target(current_pos, enemies_hit)
+			if next_target == null:
+				break
+			
+			# Aplicar daño al siguiente objetivo
+			if next_target.has_method("take_damage"):
+				next_target.take_damage(int(chain_damage))
+			
+			# Crear efecto visual de rayo entre objetivos
+			_spawn_chain_lightning_visual(current_pos, next_target.global_position)
+			
+			enemies_hit.append(next_target)
+			current_pos = next_target.global_position
+			chain_damage *= 0.8  # Reducir daño progresivamente
+	
+	func _find_chain_target(from_pos: Vector2, exclude: Array) -> Node:
+		"""Buscar siguiente objetivo para chain"""
+		var enemies = get_tree().get_nodes_in_group("enemies")
+		var closest: Node = null
+		var closest_dist = 200.0  # Rango máximo de chain
+		
+		for enemy in enemies:
+			if enemy in exclude or not is_instance_valid(enemy):
+				continue
+			var dist = from_pos.distance_to(enemy.global_position)
+			if dist < closest_dist:
+				closest = enemy
+				closest_dist = dist
+		
+		return closest
+	
+	func _spawn_chain_lightning_visual(from_pos: Vector2, to_pos: Vector2) -> void:
+		"""Crear efecto visual de rayo entre posiciones"""
+		var line = Line2D.new()
+		line.width = 3.0
+		line.default_color = Color(0.8, 0.6, 1.0, 0.9)  # Púrpura arcano
+		line.add_point(from_pos)
+		line.add_point(to_pos)
+		line.z_index = 100
+		get_tree().current_scene.add_child(line)
+		
+		# Desvanecer y eliminar
+		var tween = line.create_tween()
+		tween.tween_property(line, "modulate:a", 0.0, 0.2)
+		tween.tween_callback(line.queue_free)
+
 	func _get_orbital_player() -> Node:
 		"""Obtener referencia al jugador para lifesteal"""
 		if not get_tree():

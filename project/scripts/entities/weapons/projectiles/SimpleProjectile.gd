@@ -481,14 +481,71 @@ func _apply_effect(target: Node) -> void:
 				if hp_percent <= effect_value:
 					if target.has_method("take_damage"):
 						target.take_damage(hp)  # Matar instantáneamente
-		"knockback_bonus", "crit_chance", "chain":
+		"knockback_bonus", "crit_chance":
 			pass  # Ya manejados en otro lugar
+		"chain":
+			# Crear salto de daño a enemigos cercanos
+			_apply_chain_damage(target, int(effect_value))
 		"bleed":
 			if target.has_method("apply_bleed"):
 				target.apply_bleed(effect_value, effect_duration)
 		"shadow_mark":
 			if target.has_method("apply_shadow_mark"):
 				target.apply_shadow_mark(effect_value, effect_duration)
+
+func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
+	"""Aplicar daño encadenado a enemigos cercanos"""
+	var enemies_hit = [first_target]
+	var current_pos = first_target.global_position
+	var chain_damage = damage * 0.6  # Daño reducido para chains
+	
+	for i in range(chain_count):
+		var next_target = _find_chain_target(current_pos, enemies_hit)
+		if next_target == null:
+			break
+		
+		# Aplicar daño al siguiente objetivo
+		if next_target.has_method("take_damage"):
+			next_target.take_damage(int(chain_damage))
+		
+		# Crear efecto visual de rayo entre objetivos
+		_spawn_chain_lightning_visual(current_pos, next_target.global_position)
+		
+		enemies_hit.append(next_target)
+		current_pos = next_target.global_position
+		chain_damage *= 0.8  # Reducir daño progresivamente
+
+func _find_chain_target(from_pos: Vector2, exclude: Array) -> Node:
+	"""Buscar siguiente objetivo para chain"""
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var closest: Node = null
+	var closest_dist = 200.0  # Rango máximo de chain
+	
+	for enemy in enemies:
+		if enemy in exclude or not is_instance_valid(enemy):
+			continue
+		var dist = from_pos.distance_to(enemy.global_position)
+		if dist < closest_dist:
+			closest = enemy
+			closest_dist = dist
+	
+	return closest
+
+func _spawn_chain_lightning_visual(from_pos: Vector2, to_pos: Vector2) -> void:
+	"""Crear efecto visual de rayo entre posiciones"""
+	var line = Line2D.new()
+	line.width = 3.0
+	line.default_color = projectile_color
+	line.default_color.a = 0.9
+	line.add_point(from_pos)
+	line.add_point(to_pos)
+	line.z_index = 100
+	get_tree().current_scene.add_child(line)
+	
+	# Desvanecer y eliminar
+	var tween = line.create_tween()
+	tween.tween_property(line, "modulate:a", 0.0, 0.2)
+	tween.tween_callback(line.queue_free)
 
 func _get_player() -> Node:
 	"""Obtener referencia al jugador"""

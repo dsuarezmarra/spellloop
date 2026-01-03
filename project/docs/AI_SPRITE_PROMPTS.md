@@ -596,27 +596,27 @@ FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
 STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
 VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Glowing dimensional cracks ONLY - NO ground. Purple energy fissures floating on transparent background, like cracks in reality itself.
+SUBJECT: DELICATE dimensional crack pattern - THIN, ELEGANT glowing fissure lines spreading outward like shattered glass. NOT heavy dark masses. Think of FINE branching cracks (1-2px) with TINY void particles escaping.
 
-⚠️ CRITICAL: Do NOT draw any ground, earth or terrain. ONLY the glowing crack lines with void energy. The cracks are pure energy, not physical ground.
+⚠️ CRITICAL: Make it LIGHT and DELICATE. Use VERY THIN crack lines, not thick energy bands. Small scattered void particles. The effect should look like delicate reality fractures, not heavy void blobs.
 
 COLOR PALETTE:
-- Primary: Bright purple void energy (#9933FF) - the crack lines
-- Secondary: Deep purple glow (#330033) - aura around cracks
-- Accent: White-violet core (#CC99FF) - brightest parts
-- Outline: Dark purple (#2D0033)
+- Primary: Bright violet (#AA66FF) - thin crack lines
+- Secondary: White-purple glow (#DDAAFF) - brightest centers, small
+- Accent: Dark purple particles (#6633AA) - escaping void bits
+- Outline: Deep purple (#442266) - very thin
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Energy cracks stable, void glowing within
-- Frame 3-4: Cracks pulse brighter, energy surges
-- Frame 5-6: Energy settles, cracks dim slightly
+- Frame 1-2: Fine cracks visible, tiny void particles drift out
+- Frame 3-4: Cracks pulse with energy, particles scatter
+- Frame 5-6: Reality shimmers, cracks flicker
 
 EFFECTS:
-- Glowing crack lines with bold purple glow
-- Void tendrils emerging from fissures
-- Purple energy particles
-- NO ground - pure energy cracks floating
-- Solid colors with clear outlines
+- THIN branching crack lines (1-2px) NOT thick bands
+- TINY void particles escaping from cracks
+- Subtle purple glow along fissures
+- Delicate shattered-glass pattern
+- Very light visual weight
 ```
 
 ---
@@ -634,27 +634,27 @@ FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
 STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
 VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Swirling void vortex ONLY - NO ground. Dark energy tornado with cyan wind streaks floating on transparent background.
+SUBJECT: DELICATE swirling void spiral - a THIN, ELEGANT energy whorl. NOT a heavy tornado. Think of DELICATE wind trails and FINE particle lines spiraling inward. Light, airy, ethereal.
 
-⚠️ CRITICAL: Do NOT draw any ground or surface. ONLY the swirling vortex energy itself.
+⚠️ CRITICAL: Make it LIGHT and DELICATE. No heavy blobs or thick shapes. Use THIN lines (1-2px) and SMALL particles. The effect should feel weightless and ethereal, not like a massive tornado.
 
 COLOR PALETTE:
-- Primary: Deep void black (#1A001A) - core
-- Secondary: Cyan wind streaks (#66FFFF)
-- Accent: Dark purple (#330033) - energy wisps
-- Outline: Dark purple (#220022)
+- Primary: Translucent purple-black (#2A0033) - very subtle, 40% opacity
+- Secondary: Thin cyan wind trails (#88FFFF) - 1px lines
+- Accent: Small violet sparks (#9966FF) - tiny dots
+- Outline: Soft purple (#330044) - very thin
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Vortex spinning, void center stable
-- Frame 3-4: Spin accelerates, wind streaks prominent
-- Frame 5-6: Vortex pulses, energy disperses slightly
+- Frame 1-2: Fine spiral lines rotating, small particles drifting
+- Frame 3-4: Lines curve elegantly, sparks twinkle
+- Frame 5-6: Gentle pulse, particles scatter delicately
 
 EFFECTS:
-- Spiral wind lines in bold cyan
-- Dark void center with solid colors
-- Energy particles spinning
-- NO ground - pure floating vortex
-- Clear outlines on all shapes
+- THIN spiral lines (1-2px) NOT thick bands
+- SMALL scattered particles NOT heavy clusters
+- Subtle semi-transparent core NOT solid dark mass
+- Elegant, flowing motion
+- Very light visual weight
 ```
 
 ---
@@ -672,26 +672,27 @@ FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
 STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
 VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Ice crystal spikes ONLY - NO ground. Crystalline ice formations floating on transparent background as seen from above.
+SUBJECT: DELICATE ice crystal formation - THIN, NEEDLE-LIKE ice shards arranged in an elegant star/snowflake pattern. NOT chunky ice blocks. Think of FINE crystal needles and TINY frost sparkles.
 
-⚠️ CRITICAL: Do NOT draw any ground, snow or terrain. ONLY the ice crystals/spikes themselves with frost particles.
+⚠️ CRITICAL: Make it LIGHT and DELICATE. Use THIN needle shapes (2-3px wide), not thick chunky crystals. Small scattered frost particles. The effect should look like delicate frozen lace, not heavy ice boulders.
 
 COLOR PALETTE:
-- Primary: Light cyan ice (#66FFFF)
-- Secondary: White frost (#FFFFFF) - highlights
-- Accent: Pale blue-gray (#B3D9E6) - depth
-- Outline: Dark cyan-blue (#1A5C66)
+- Primary: Pale ice blue (#CCFFFF) - translucent crystals
+- Secondary: White highlights (#FFFFFF) - sparkle points
+- Accent: Light sky blue (#99DDFF) - crystal edges
+- Outline: Soft cyan (#66AACC) - very thin
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Ice crystals gleaming, frost particles floating
-- Frame 3-4: Crystal reflections shift, sparkles appear
-- Frame 5-6: Sparkles flash, frost settles
+- Frame 1-2: Fine crystal needles gleaming, tiny frost particles drift
+- Frame 3-4: Light refracts through crystals, sparkles appear
+- Frame 5-6: Gentle shimmer, frost settles delicately
 
 EFFECTS:
-- Ice crystals seen from above with solid colors
-- Floating frost particles
-- Crystalline sparkle effects
-- NO ground - crystals floating, background removed later
+- THIN needle-like ice crystals NOT thick blocks
+- TINY scattered frost particles
+- Subtle light refraction sparkles
+- Star/snowflake arrangement
+- Very light, ethereal appearance
 ```
 
 ---
@@ -823,27 +824,27 @@ FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
 STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
 VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Electric crack lines ONLY - NO ground. Glowing yellow lightning fractures floating on transparent background, like cracks of pure electricity.
+SUBJECT: DELICATE lightning crack pattern - THIN electric lines branching out like a lightning bolt seen from above. NOT heavy glowing masses. Think of FINE branching lines (1-2px) with TINY spark particles.
 
-⚠️ CRITICAL: Do NOT draw any ground, rocks or terrain. ONLY the electric crack energy lines themselves.
+⚠️ CRITICAL: Make it LIGHT and DELICATE. Use VERY THIN branching lines, not thick glowing bands. Small scattered electric sparks. The effect should look like delicate lightning veins, not heavy energy blobs.
 
 COLOR PALETTE:
-- Primary: Bright yellow lightning (#FFFF00) - the crack lines
-- Secondary: Orange-yellow glow (#FFAA00) - aura around cracks
-- Accent: White-yellow core (#FFFFCC) - brightest centers
-- Outline: Dark amber (#664400)
+- Primary: Bright yellow (#FFFF44) - thin lightning lines
+- Secondary: White core (#FFFFFF) - brightest centers, very small
+- Accent: Orange-gold (#FFAA44) - subtle glow, 30% opacity
+- Outline: Soft amber (#AA8833) - minimal
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Electric cracks glowing, arcs jumping
-- Frame 3-4: Arcs intensify, more branches appear
-- Frame 5-6: Electricity crackles, settles
+- Frame 1-2: Fine lightning branches visible, tiny sparks jump
+- Frame 3-4: Lines flicker, new branches appear briefly
+- Frame 5-6: Electricity crackles, sparks scatter
 
 EFFECTS:
-- Glowing electric crack lines with bold yellow
-- Lightning arcs jumping between cracks
-- Electric sparkle particles
-- NO ground - pure floating electricity
-- Solid colors with clear outlines
+- THIN branching lightning lines (1-2px) NOT thick bands
+- TINY spark particles scattered around
+- Subtle electric flicker animation
+- Delicate, energetic appearance
+- Light visual weight
 ```
 
 ---
@@ -861,27 +862,27 @@ FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
 STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
 VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Glowing roots and nature energy ONLY - NO ground. Living vines/roots with green energy floating on transparent background.
+SUBJECT: DELICATE vine and root pattern - THIN, ELEGANT curving lines like fine roots spreading outward. NOT thick chunky roots. Think of GRACEFUL tendrils (1-2px) with TINY leaf particles and soft green energy sparkles.
 
-⚠️ CRITICAL: Do NOT draw any ground or terrain. ONLY the roots, vines and nature energy particles themselves.
+⚠️ CRITICAL: Make it LIGHT and DELICATE. Use VERY THIN curving vine lines, not thick root masses. Small scattered leaf particles. The effect should look like delicate living filigree, not heavy root tangles.
 
 COLOR PALETTE:
-- Primary: Moss green-brown roots (#668844)
-- Secondary: Root brown (#886633)
-- Accent: Bright nature green energy (#66FF66) - glowing
-- Outline: Dark green-brown (#2D3319)
+- Primary: Soft green (#88DD66) - thin vine lines
+- Secondary: Bright nature glow (#AAFFAA) - energy sparkles, small
+- Accent: Earthy brown (#AA8866) - subtle root hints
+- Outline: Forest green (#447733) - very thin
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Roots visible, green energy glowing
-- Frame 3-4: Roots pulse with life, energy intensifies
-- Frame 5-6: Healing waves radiate, settles
+- Frame 1-2: Fine vines visible, tiny leaf particles drift
+- Frame 3-4: Green energy pulses gently along vines
+- Frame 5-6: Sparkles twinkle, particles scatter
 
 EFFECTS:
-- Root structures with solid colors
-- Green glowing energy particles
-- Floating leaf particles
-- NO ground - roots floating, background removed later
-- Bold outlines on all elements
+- THIN curving vine lines (1-2px) NOT thick roots
+- TINY floating leaf particles
+- Soft green energy glow particles
+- Elegant, organic flowing pattern
+- Very light, ethereal appearance
 ```
 
 ---
@@ -899,27 +900,27 @@ FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
 STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
 VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Corrupted vines and void energy ONLY - NO ground. Sickly green-purple tendrils with drain effect floating on transparent background.
+SUBJECT: DELICATE corrupted vine wisps - THIN, WISPY tendrils of dying vegetation mixed with void energy. NOT heavy dark masses. Think of FINE withered tendrils (1-2px) with TINY draining particles flowing inward.
 
-⚠️ CRITICAL: Do NOT draw any ground or terrain. ONLY the corrupted vine energy and void particles.
+⚠️ CRITICAL: Make it LIGHT and DELICATE. Use VERY THIN wispy lines, not thick corruption blobs. Small scattered decay particles. The effect should look like delicate withering smoke, not heavy rot masses.
 
 COLOR PALETTE:
-- Primary: Sickly green-brown vines (#556622)
-- Secondary: Dark purple void (#330033) - corruption
-- Accent: Yellow-green rot glow (#99AA33) - decay energy
-- Outline: Dark green (#1A2A1A)
+- Primary: Sickly yellow-green (#AAAA44) - thin wispy lines
+- Secondary: Faded purple (#664466) - void wisps, translucent
+- Accent: Pale green particles (#CCDD88) - draining energy
+- Outline: Dark olive (#444422) - very subtle
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Dead vines visible, void energy pulsing
-- Frame 3-4: Vines twitch, life drain particles toward center
-- Frame 5-6: Decay spreads, void contracts
+- Frame 1-2: Fine wisps visible, particles drift toward center
+- Frame 3-4: Tendrils curl and fade, draining effect
+- Frame 5-6: Void pulses subtly, particles absorbed
 
 EFFECTS:
-- Corrupted tendrils with solid colors
-- Life drain particles (green to purple)
-- Void core pulsing
-- NO ground - pure floating corruption
-- Clear outlines on all shapes
+- THIN wispy corruption lines (1-2px) NOT thick masses
+- TINY particles flowing inward (life drain)
+- Subtle void shimmer in center
+- Elegant, haunting appearance
+- Very light visual weight
 ```
 
 ---
@@ -937,27 +938,27 @@ FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
 STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
 VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Glowing divine crystals ONLY - NO ground. Holy light crystal formations floating on transparent background.
+SUBJECT: DELICATE light crystal pattern - THIN, ELEGANT prism-like shapes arranged in a radiant star pattern. NOT heavy stone pillars. Think of FINE crystalline rays (2-3px) with TINY sparkle particles emanating outward.
 
-⚠️ CRITICAL: Do NOT draw any ground or terrain. ONLY the radiant crystal formations and light particles.
+⚠️ CRITICAL: Make it LIGHT and DELICATE. Use THIN prismatic shapes, not chunky stone blocks. Small scattered light particles. The effect should look like delicate divine light rays, not heavy rock formations.
 
 COLOR PALETTE:
-- Primary: Pale gold-white crystals (#FFFFCC)
-- Secondary: Pure white light (#FFFFFF) - glow
-- Accent: Tan-gold stone (#DDAA77) - crystal depth
-- Outline: Muted gold (#AA8855)
+- Primary: Warm white-gold (#FFFFEE) - thin crystal rays
+- Secondary: Bright white (#FFFFFF) - sparkle points
+- Accent: Soft gold (#FFDD99) - subtle warm glow
+- Outline: Pale gold (#CCAA77) - very thin
 
 ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Crystals gleaming, holy light stable
-- Frame 3-4: Light pulses through crystals, sparkles appear
-- Frame 5-6: Divine glow breathes, settles
+- Frame 1-2: Fine crystal rays gleaming, tiny sparkles drift
+- Frame 3-4: Light pulses gently through crystals
+- Frame 5-6: Divine shimmer, particles scatter outward
 
 EFFECTS:
-- Radiant crystals with solid bold colors
-- Holy light sparkle particles
-- Light pulse waves
-- NO ground - crystals floating, background removed later
-- Clear golden outlines on all crystals
+- THIN prismatic ray shapes (2-3px) NOT thick pillars
+- TINY scattered light particles
+- Soft holy glow emanating outward
+- Elegant star/sun arrangement
+- Very light, ethereal divine appearance
 ```
 
 ---
