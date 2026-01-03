@@ -41,6 +41,9 @@ func _ready() -> void:
 	"""Inicialización del personaje"""
 	print("[%s] Inicializando %s en posición: %s" % [character_class, character_class, global_position])
 	
+	# Añadir al grupo "player" para que otros sistemas puedan encontrarnos
+	add_to_group("player")
+	
 	# Posicionar en el centro
 	global_position = Vector2.ZERO
 	

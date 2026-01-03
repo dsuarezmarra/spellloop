@@ -24,6 +24,9 @@ var health_bar_container: Node2D = null
 func _ready() -> void:
 	print("\n[SpellloopPlayer] ===== INICIANDO SPELLLOOP PLAYER =====")
 	
+	# Añadir al grupo "player" para que otros sistemas puedan encontrarnos
+	add_to_group("player")
+	
 	var wizard_script = load("res://scripts/entities/players/WizardPlayer.gd")
 	if not wizard_script:
 		print("[SpellloopPlayer] ERROR: No se pudo cargar WizardPlayer.gd")
