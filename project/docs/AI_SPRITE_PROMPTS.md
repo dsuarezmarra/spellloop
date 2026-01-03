@@ -517,31 +517,46 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+FORMAT: 6 frames in 2 rows x 3 columns layout (will be processed into 384x64 strip). 100% TRANSPARENT background.
+STYLE: Pixel art / Hand-painted fantasy - LIGHTWEIGHT and ETHEREAL, delicate wisps, soft glow.
 VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Void singularity ONLY - NO ground. Swirling dark energy vortex with purple energy spiraling inward, floating on transparent background.
+SUBJECT: Delicate void singularity - ethereal dark energy with wispy purple tendrils spiraling gently inward. Small, elegant, NOT heavy or chunky.
 
-⚠️ CRITICAL: Do NOT draw any ground, floor, terrain or surface. ONLY the void energy vortex effect itself.
+⚠️ CRITICAL: 
+- Do NOT draw any ground, floor, terrain or surface
+- Keep it LIGHT and AIRY - thin wispy energy, NOT solid masses
+- Small delicate core with flowing tendrils
+- Ethereal and ghostly appearance
+
+DESIGN - LIGHTWEIGHT VOID:
+- Tiny dark core (15-20px) with soft edges
+- 4-6 thin wispy purple tendrils spiraling inward
+- Delicate particle trails being drawn toward center
+- Soft purple glow, NOT harsh or solid
+- Semi-transparent layers for depth
 
 COLOR PALETTE:
-- Primary: Deep purple-black (#1A001A) - core
-- Secondary: Dark violet (#330033) - swirls
-- Accent: Bright purple (#9933FF) - energy wisps
-- Outline: Dark purple (#2D0033)
+- Core: Deep violet-black (#1A0025) with soft edges
+- Tendrils: Translucent purple (#7722AA) - thin and wispy
+- Particles: Bright violet sparks (#AA44FF) - tiny dots
+- Glow: Soft purple aura (#6633AA, 40% opacity)
+- Accent: Dark magenta hints (#440066)
 
-ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Vortex stable, particles drifting inward
-- Frame 3-4: Vortex pulses larger, energy intensifies
-- Frame 5-6: Vortex contracts, energy ripples outward
+ANIMATION SEQUENCE (6 frames, gentle pulsing):
+- Frame 1: Small stable vortex, tendrils drift slowly
+- Frame 2: Core pulses slightly brighter, particles drift in
+- Frame 3: Tendrils rotate 15°, gentle pull effect
+- Frame 4: Core dims slightly, energy accumulates
+- Frame 5: Subtle ripple from center, soft glow expands
+- Frame 6: Return to calm, particles spiral gently
 
 EFFECTS:
-- Dark void center with solid colors
-- Spiral arms of purple energy rotating
-- Purple particles being sucked toward center
-- NO ground - pure void energy floating
-- Bold outlines on all elements
+- Ethereal and ghostly - like a gentle cosmic whisper
+- Thin spiral arms, NOT thick solid shapes
+- Delicate particle absorption effect
+- Soft inner glow that pulses gently
+- Everything feels weightless and floating
 ```
 
 ---
@@ -706,31 +721,46 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+FORMAT: 6 frames in 2 rows x 3 columns layout (will be processed into 384x64 strip). 100% TRANSPARENT background.
+STYLE: Pixel art / Hand-painted fantasy - LIGHTWEIGHT and ETHEREAL, delicate ice crystals, soft frozen glow.
 VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Frozen void singularity ONLY - NO ground. Dark void core surrounded by frozen ice crystals, all floating on transparent background.
+SUBJECT: Delicate frozen void singularity - ethereal dark core with suspended ice crystals and frost wisps. Small, elegant, NOT heavy or chunky.
 
-⚠️ CRITICAL: Do NOT draw any ground or surface. ONLY the void-ice energy effect itself.
+⚠️ CRITICAL: 
+- Do NOT draw any ground, floor, terrain or surface
+- Keep it LIGHT and AIRY - delicate crystals, NOT solid ice blocks
+- Small ethereal core with floating frozen particles
+- Time-frozen feeling, everything suspended delicately
+
+DESIGN - LIGHTWEIGHT FROZEN VOID:
+- Tiny dark void core (12-15px) with soft purple-black edges
+- 6-8 small ice crystals (5-8px each) suspended around core
+- Delicate frost particles floating motionlessly
+- Soft cyan-purple glow emanating from center
+- Semi-transparent layers for ethereal depth
 
 COLOR PALETTE:
-- Primary: Deep black-purple void (#0D0019) - core
-- Secondary: Pale cyan ice (#99CCFF) - frozen particles
-- Accent: Dark purple-blue (#330066) - energy
-- Outline: Near black (#0A0A1A)
+- Core: Deep void black (#0D0019) with soft edges
+- Ice crystals: Pale cyan (#AADDFF) - small and delicate
+- Frost wisps: White-blue (#DDEEFF) - thin and wispy
+- Glow: Soft purple-cyan (#6688BB, 40% opacity)
+- Accent: Dark purple hints (#220044)
 
-ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Frozen void stable, ice crystals suspended
-- Frame 3-4: Void pulses, crystals shimmer
-- Frame 5-6: Cold energy radiates outward
+ANIMATION SEQUENCE (6 frames, time-frozen pulsing):
+- Frame 1: Stable frozen void, crystals suspended still
+- Frame 2: Core pulses softly, faint shimmer on crystals
+- Frame 3: Gentle cold aura expands, particles drift slowly
+- Frame 4: Crystals rotate ever so slightly (time-stop effect)
+- Frame 5: Cold energy ripple from center, soft glow
+- Frame 6: Return to stillness, everything frozen again
 
 EFFECTS:
-- Dark void core with solid colors
-- Floating frozen particles (time-stopped feeling)
-- Ice crystals suspended in air
-- NO ground - pure ethereal frozen void
-- Bold outlines on all elements
+- Ethereal time-frozen feeling - suspended animation
+- Delicate ice crystals, NOT chunky ice blocks
+- Soft inner void glow with cold cyan rim
+- Frost particles hanging in air motionlessly
+- Everything feels weightless and frozen in time
 ```
 
 ---
@@ -782,31 +812,46 @@ EFFECTS:
 ### Active Animation (6 frames)
 ```
 Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+FORMAT: 6 frames in 2 rows x 3 columns layout (will be processed into 384x64 strip). 100% TRANSPARENT background.
+STYLE: Pixel art / Hand-painted fantasy - LIGHTWEIGHT and ETHEREAL, delicate dark flames, soft ghostly glow.
 VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Dark void flames ONLY - NO ground. Purple-red ethereal fire floating on transparent background.
+SUBJECT: Delicate void flames - ethereal purple-crimson fire wisps with dark energy tendrils. Small, elegant, NOT heavy or chunky.
 
-⚠️ CRITICAL: Do NOT draw any ground or surface. ONLY the dark flame effect itself.
+⚠️ CRITICAL: 
+- Do NOT draw any ground, floor, terrain or surface
+- Keep it LIGHT and AIRY - wispy flames, NOT solid fire masses
+- Small delicate flame tongues with void wisps
+- Ghostly and ethereal appearance
+
+DESIGN - LIGHTWEIGHT DARK FLAMES:
+- Small dark core (10-15px) with soft crimson glow
+- 5-7 delicate flame wisps (thin, 2-4px wide) dancing upward
+- Tiny void particles being drawn toward center
+- Soft purple-red glow, ethereal and ghostly
+- Semi-transparent layers for spectral depth
 
 COLOR PALETTE:
-- Primary: Dark purple-red flames (#660033)
-- Secondary: Deep crimson (#990033) - fire core
-- Accent: Black-purple void (#1A001A) - wisps
-- Outline: Dark purple (#220011)
+- Core: Deep crimson-black (#330011) with soft edges
+- Flames: Translucent purple-red (#882244) - thin wisps
+- Void wisps: Dark violet (#220033) - delicate tendrils
+- Glow: Soft crimson aura (#662233, 40% opacity)
+- Sparks: Bright magenta hints (#AA3366) - tiny particles
 
-ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Dark flames flickering, void wisps floating
-- Frame 3-4: Flames spiral inward, intensity increases
-- Frame 5-6: Flames dance outward, cycle resets
+ANIMATION SEQUENCE (6 frames, ghostly flickering):
+- Frame 1: Delicate flames drift upward, void wisps circle
+- Frame 2: Flames flicker gently, particles drift inward
+- Frame 3: Core pulses softly, flames dance to side
+- Frame 4: Void tendrils spiral, ethereal shimmer
+- Frame 5: Flames reach higher briefly, soft glow expands
+- Frame 6: Return to gentle flicker, cycle resets
 
 EFFECTS:
-- Dark fire with solid bold colors
-- Void energy wisps being pulled to center
-- Soul-like ethereal particles
-- NO ground - pure floating dark flames
-- Clear outlines on flame shapes
+- Ethereal ghostly flames - like spectral fire
+- Thin flame tongues, NOT thick solid fire
+- Delicate void energy being absorbed
+- Soft inner glow with dark rim
+- Everything feels weightless and supernatural
 ```
 
 ---

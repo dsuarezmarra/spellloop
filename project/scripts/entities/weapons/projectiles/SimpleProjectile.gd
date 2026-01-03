@@ -471,13 +471,15 @@ func _apply_effect(target: Node) -> void:
 				# También mostrar número flotante verde directamente
 				FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
 		"lifesteal_chain":
+			# Primero el lifesteal
 			var player = _get_player()
 			if player and player.has_method("heal"):
 				var heal_amount = int(effect_value)
 				player.heal(heal_amount)
 				_spawn_lifesteal_effect(player)
-				# También mostrar número flotante verde directamente
 				FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
+			# Luego la cadena de daño (3 saltos por defecto)
+			_apply_chain_damage(target, 3)
 		"execute":
 			if target.has_method("get_info"):
 				var info = target.get_info()

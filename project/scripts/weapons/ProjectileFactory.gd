@@ -566,12 +566,14 @@ class AOEEffect extends Node2D:
 					player.heal(heal_amount)
 					FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
 			"lifesteal_chain":
-				# Lifesteal que se propaga
+				# Lifesteal que se propaga + cadena de daño
 				var player2 = _get_player()
 				if player2 and player2.has_method("heal"):
 					var heal_amount2 = int(effect_value)
 					player2.heal(heal_amount2)
 					FloatingText.spawn_heal(player2.global_position + Vector2(0, -30), heal_amount2)
+				# Aplicar cadena de daño (3 saltos)
+				_apply_chain_damage(enemy, 3)
 			"execute":
 				# Ejecutar si el enemigo tiene menos del X% de vida
 				if enemy.has_method("get_info"):
