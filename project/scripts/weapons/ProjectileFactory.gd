@@ -879,7 +879,7 @@ class OrbitalManager extends Node2D:
 				if enemy.has_method("apply_burn"):
 					enemy.apply_burn(effect_value, effect_duration)
 			"freeze":
-				if enemy.has_method("apply_freeze"):
+				if enemy.has_method("apply_freeze"):	
 					enemy.apply_freeze(effect_value, effect_duration)
 				elif enemy.has_method("apply_slow"):
 					enemy.apply_slow(effect_value, effect_duration)

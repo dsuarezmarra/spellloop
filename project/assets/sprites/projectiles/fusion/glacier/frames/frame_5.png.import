@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cjgxqr1707fhw"
-path="res://.godot/imported/aoe_active_seismic_bolt.png-e2f825a3a93746b1f56f53e013000ef6.ctex"
+uid="uid://dkfi4lq5xysvc"
+path="res://.godot/imported/frame_5.png-64aaa8331db31328224c23be6dfa2156.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/seismic_bolt/aoe_active_seismic_bolt.png"
-dest_files=["res://.godot/imported/aoe_active_seismic_bolt.png-e2f825a3a93746b1f56f53e013000ef6.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/glacier/frames/frame_5.png"
+dest_files=["res://.godot/imported/frame_5.png-64aaa8331db31328224c23be6dfa2156.ctex"]
 
 [params]
 

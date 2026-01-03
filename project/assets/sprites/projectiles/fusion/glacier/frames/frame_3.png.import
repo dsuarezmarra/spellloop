@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bu2srnr1qe8yc"
-path="res://.godot/imported/aoe_active_gaia.png-d30467f134d18e02a2c7d1934c5ee211.ctex"
+uid="uid://bhr8g4qucvbbd"
+path="res://.godot/imported/frame_3.png-74ce17fefc0816ce4c34e062a5413514.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/gaia/aoe_active_gaia.png"
-dest_files=["res://.godot/imported/aoe_active_gaia.png-d30467f134d18e02a2c7d1934c5ee211.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/glacier/frames/frame_3.png"
+dest_files=["res://.godot/imported/frame_3.png-74ce17fefc0816ce4c34e062a5413514.ctex"]
 
 [params]
 
