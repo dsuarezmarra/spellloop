@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ckq308b5sqa5w"
-path="res://.godot/imported/aoe_active_glacier.png-3d2e2744b7acefa9a6f72e91177b7fcc.ctex"
+uid="uid://efjyomw64xlv"
+path="res://.godot/imported/unnamed-removebg-preview.png-392818d5a668a81c0f4c98cd3e1b16fc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/glacier/aoe_active_glacier.png"
-dest_files=["res://.godot/imported/aoe_active_glacier.png-3d2e2744b7acefa9a6f72e91177b7fcc.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/void_storm/unnamed-removebg-preview.png"
+dest_files=["res://.godot/imported/unnamed-removebg-preview.png-392818d5a668a81c0f4c98cd3e1b16fc.ctex"]
 
 [params]
 
