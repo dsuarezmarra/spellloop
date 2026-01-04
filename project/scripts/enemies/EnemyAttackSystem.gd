@@ -796,6 +796,11 @@ func _get_enemy_element() -> String:
 	var enemy_id = enemy.get("enemy_id") if "enemy_id" in enemy else ""
 	var name_lower = enemy_id.to_lower()
 	
+	# Casos especiales primero (antes de la detección genérica)
+	# Hechicero Desgastado es un mago de fuego corrupto
+	if "hechicero_desgastado" in name_lower or "hechicero" in name_lower:
+		return "fire"
+	
 	if "fuego" in name_lower or "llamas" in name_lower or "fire" in name_lower:
 		return "fire"
 	if "hielo" in name_lower or "ice" in name_lower or "frost" in name_lower or "cristal" in name_lower:
