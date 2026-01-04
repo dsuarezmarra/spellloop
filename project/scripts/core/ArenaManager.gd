@@ -695,32 +695,41 @@ func _create_circular_barrier(radius: float, zone_type: ZoneType, barrier_name: 
 	barrier.set_collision_layer_value(8, true)  # Layer 8 para barreras de zona
 	barrier.collision_mask = 0   # No detecta nada, solo bloquea
 	
-	# Grosor de la barrera
-	var barrier_thickness: float = 50.0
+	# Grosor de la barrera - debe ser suficiente para no ser atravesada
+	var barrier_thickness: float = 100.0
 	
-	# Crear múltiples segmentos para formar un anillo
+	# Crear múltiples rectángulos para formar un anillo sólido
+	# Usamos RectangleShape2D en lugar de SegmentShape2D para colisiones sólidas
 	var segments = 64  # Más segmentos = círculo más suave
 	var angle_step = TAU / segments
 	
+	# Calcular el ancho de cada segmento basado en el perímetro
+	var segment_width = (2.0 * PI * radius) / segments * 1.2  # 1.2 para overlap
+	
 	for i in range(segments):
-		var angle = i * angle_step
-		var next_angle = (i + 1) * angle_step
+		var angle = i * angle_step + (angle_step / 2.0)  # Centro del segmento
 		
-		# Crear un CollisionShape2D con forma de segmento
+		# Crear un CollisionShape2D con forma de rectángulo
 		var collision = CollisionShape2D.new()
-		var shape = SegmentShape2D.new()
+		var shape = RectangleShape2D.new()
 		
-		# Puntos del segmento en el perímetro
-		shape.a = Vector2(cos(angle), sin(angle)) * radius
-		shape.b = Vector2(cos(next_angle), sin(next_angle)) * radius
+		# Tamaño del rectángulo: ancho del segmento x grosor de la barrera
+		shape.size = Vector2(segment_width, barrier_thickness)
 		
 		collision.shape = shape
 		collision.name = "Segment_%d" % i
+		
+		# Posicionar en el perímetro y rotar para que sea tangente
+		collision.position = Vector2(cos(angle), sin(angle)) * radius
+		collision.rotation = angle + PI/2  # Rotar 90° para que sea tangente al círculo
+		
 		barrier.add_child(collision)
 	
 	# Añadir visual de la barrera
 	var visual = _create_barrier_visual(radius, zone_type)
 	barrier.add_child(visual)
+	
+	print("🚧 [ArenaManager] Barrera %s creada: r=%.0f, %d segmentos, grosor=%.0f" % [barrier_name, radius, segments, barrier_thickness])
 	
 	return barrier
 

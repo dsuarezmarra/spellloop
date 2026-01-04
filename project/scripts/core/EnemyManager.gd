@@ -25,7 +25,10 @@ signal wave_cleared()
 @export var spawn_distance: float = 600.0
 @export var max_enemies: int = 50
 @export var base_spawn_rate: float = 1.5  # Enemigos por segundo base
-@export var debug_spawns: bool = true  # Habilitado para depuración de zonas
+@export var debug_spawns: bool = false  # Normal: desactivado
+
+# DEBUG TEMPORAL - Activar para ver spawns de zona
+const DEBUG_ZONE_SPAWNS: bool = true
 
 @export_group("Scaling")
 @export var spawn_rate_increase_per_minute: float = 0.1  # +10% por minuto
@@ -148,13 +151,14 @@ func _attempt_spawn() -> void:
 	# Determinar el tier basado en la zona donde va a spawnear
 	var selected_tier = _get_tier_for_spawn_position(pos)
 	
-	if debug_spawns:
+	# DEBUG: Siempre mostrar info de spawn por zona
+	if DEBUG_ZONE_SPAWNS:
 		var arena_manager = _get_arena_manager()
 		var zone_name = "UNKNOWN"
 		if arena_manager:
 			var zone = arena_manager.get_zone_at_position(pos)
 			zone_name = str(zone)
-		print("[EnemyManager] 🎯 Spawn en pos %s, zona=%s, tier=%d" % [pos, zone_name, selected_tier])
+		print("[EnemyManager] 🎯 Spawn: pos=%s, zona=%s, tier=%d" % [pos, zone_name, selected_tier])
 	
 	# Verificar que tenemos enemigos disponibles para este tier
 	var enemy_data = EnemyDatabase.get_random_enemy_for_tier(selected_tier)
@@ -179,7 +183,13 @@ func _get_tier_for_spawn_position(pos: Vector2) -> int:
 	"""Obtener el tier de enemigo basado en la posición de spawn"""
 	var arena_manager = _get_arena_manager()
 	if arena_manager and arena_manager.has_method("get_spawn_tier_at_position"):
-		return arena_manager.get_spawn_tier_at_position(pos)
+		var tier = arena_manager.get_spawn_tier_at_position(pos)
+		if DEBUG_ZONE_SPAWNS:
+			print("[EnemyManager] 📍 Tier para pos %s = %d (ArenaManager OK)" % [pos, tier])
+		return tier
+	
+	if DEBUG_ZONE_SPAWNS:
+		print("[EnemyManager] ⚠️ ArenaManager no encontrado, usando fallback por tiempo")
 	
 	# Fallback: usar el sistema basado en tiempo
 	var minute = game_time_seconds / 60.0
