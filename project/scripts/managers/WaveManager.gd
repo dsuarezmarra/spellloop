@@ -337,6 +337,7 @@ func _calculate_wave_spawn_position() -> Vector2:
 	
 	var pattern = current_wave_config.get("spawn_pattern", "random")
 	var player_pos = player.global_position
+	var raw_pos: Vector2
 	
 	match pattern:
 		"surround":
@@ -345,7 +346,7 @@ func _calculate_wave_spawn_position() -> Vector2:
 			var spawned = current_wave_config.spawn_count - enemies_to_spawn_in_wave
 			var angle = (TAU / total) * spawned
 			var distance = randf_range(SpawnConfig.SPAWN_DISTANCE_MIN, SpawnConfig.SPAWN_DISTANCE_MAX)
-			return player_pos + Vector2.from_angle(angle) * distance
+			raw_pos = player_pos + Vector2.from_angle(angle) * distance
 		
 		"directional":
 			# Desde una dirección fija con algo de varianza
@@ -353,18 +354,21 @@ func _calculate_wave_spawn_position() -> Vector2:
 			var variance = deg_to_rad(22.5)
 			var angle = base_angle + randf_range(-variance, variance)
 			var distance = randf_range(SpawnConfig.SPAWN_DISTANCE_MIN, SpawnConfig.SPAWN_DISTANCE_MAX)
-			return player_pos + Vector2.from_angle(angle) * distance
+			raw_pos = player_pos + Vector2.from_angle(angle) * distance
 		
 		"cluster":
 			# Grupo compacto
 			var cluster_center = player_pos + Vector2.from_angle(randf() * TAU) * SpawnConfig.SPAWN_DISTANCE_MIN
 			var cluster_radius = 100.0
-			return cluster_center + Vector2.from_angle(randf() * TAU) * randf() * cluster_radius
+			raw_pos = cluster_center + Vector2.from_angle(randf() * TAU) * randf() * cluster_radius
 		
 		_:  # "random"
 			var angle = randf() * TAU
 			var distance = randf_range(SpawnConfig.SPAWN_DISTANCE_MIN, SpawnConfig.SPAWN_DISTANCE_MAX)
-			return player_pos + Vector2.from_angle(angle) * distance
+			raw_pos = player_pos + Vector2.from_angle(angle) * distance
+	
+	# Limitar posición a zonas desbloqueadas
+	return _clamp_spawn_to_unlocked_zones(raw_pos)
 
 func _complete_wave() -> void:
 	wave_in_progress = false
@@ -436,7 +440,37 @@ func _get_random_spawn_position() -> Vector2:
 	
 	var angle = randf() * TAU
 	var distance = randf_range(SpawnConfig.SPAWN_DISTANCE_MIN, SpawnConfig.SPAWN_DISTANCE_MAX)
-	return player.global_position + Vector2.from_angle(angle) * distance
+	var raw_pos = player.global_position + Vector2.from_angle(angle) * distance
+	
+	# Limitar posición a zonas desbloqueadas
+	return _clamp_spawn_to_unlocked_zones(raw_pos)
+
+func _clamp_spawn_to_unlocked_zones(pos: Vector2) -> Vector2:
+	"""Limitar posición de spawn al radio máximo de zonas desbloqueadas.
+	   Si la posición está más allá de la zona desbloqueada más externa,
+	   se mueve hacia adentro manteniendo la dirección."""
+	var arena_manager = _get_arena_manager()
+	if not arena_manager:
+		return pos
+	
+	# Obtener el radio máximo permitido
+	var max_radius = arena_manager.get_max_allowed_radius()
+	var dist_from_center = pos.length()
+	
+	# Si está dentro del radio permitido, no hacer nada
+	if dist_from_center <= max_radius:
+		return pos
+	
+	# Si está fuera, mover hacia el borde de la zona desbloqueada
+	# Mantener un margen de 50 pixels para no spawnear justo en el borde
+	var clamped_radius = max_radius - 50.0
+	var direction = pos.normalized()
+	var clamped_pos = direction * clamped_radius
+	
+	print("[WaveManager] 🚧 Spawn clampado: %s → %s (radio %d → %d)" % [
+		pos, clamped_pos, int(dist_from_center), int(clamped_radius)])
+	
+	return clamped_pos
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # GESTIÓN DE BOSSES
