@@ -566,11 +566,17 @@ func _apply_stun(target: Node2D) -> void:
 	if target.has_method("apply_stun"):
 		target.apply_stun(effect_duration)
 
-func _apply_pull(target: Node2D) -> void:
-	"""Atraer objetivo hacia el jugador"""
-	var player = _get_player()
-	if player and target.has_method("apply_pull"):
-		target.apply_pull(player.global_position, effect_value, effect_duration)
+func _apply_pull(target: Node2D, pull_position: Vector2 = Vector2.ZERO) -> void:
+	"""Atraer objetivo hacia una posición (por defecto el jugador)"""
+	var target_pos = pull_position
+	if target_pos == Vector2.ZERO:
+		var player = _get_player()
+		if player:
+			target_pos = player.global_position
+		else:
+			return
+	if target.has_method("apply_pull"):
+		target.apply_pull(target_pos, effect_value, effect_duration)
 
 func _apply_blind(target: Node2D) -> void:
 	"""Aplicar ceguera al objetivo"""

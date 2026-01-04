@@ -443,10 +443,9 @@ func _apply_effect(target: Node) -> void:
 			if target.has_method("apply_stun"):
 				target.apply_stun(effect_duration)
 		"pull":
-			# Para pull necesitamos una posición objetivo (normalmente el jugador)
-			var player = _get_player()
-			if player and target.has_method("apply_pull"):
-				target.apply_pull(player.global_position, effect_value, effect_duration)
+			# Pull hacia el punto de impacto del proyectil (no hacia el jugador)
+			if target.has_method("apply_pull"):
+				target.apply_pull(global_position, effect_value, effect_duration)
 		"blind":
 			if target.has_method("apply_blind"):
 				target.apply_blind(effect_duration)
