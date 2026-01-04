@@ -821,6 +821,8 @@ func _spawn_fire_trail() -> void:
 	var trail_duration = modifiers.get("trail_duration", 2.0)
 	var trail_radius = modifiers.get("trail_radius", 30.0)
 	
+	print("[EnemyBase] 🔥 %s crea fire trail (damage=%d, dur=%.1fs, radius=%.0f)" % [enemy_id, trail_damage, trail_duration, trail_radius])
+	
 	# Crear nodo de trail
 	var trail = Area2D.new()
 	trail.name = "FireTrail"
@@ -839,15 +841,56 @@ func _spawn_fire_trail() -> void:
 	collision.shape = shape
 	trail.add_child(collision)
 	
-	# Visual del trail
+	# Visual mejorado del trail - Múltiples capas para efecto de fuego
 	var visual = Node2D.new()
 	visual.name = "Visual"
 	trail.add_child(visual)
+	
+	# Variables para animación
+	var time_offset = randf() * TAU
+	var flame_count = 6
+	
 	visual.draw.connect(func():
-		visual.draw_circle(Vector2.ZERO, trail_radius, Color(1, 0.3, 0, 0.5))
-		visual.draw_arc(Vector2.ZERO, trail_radius, 0, TAU, 16, Color(1, 0.5, 0, 0.8), 2.0)
+		var time = Time.get_ticks_msec() * 0.004 + time_offset
+		
+		# Capa base - núcleo amarillo
+		visual.draw_circle(Vector2.ZERO, trail_radius * 0.3, Color(1, 0.9, 0.3, 0.8))
+		
+		# Capa media - naranja pulsante
+		var pulse = 0.9 + sin(time * 3) * 0.1
+		visual.draw_circle(Vector2.ZERO, trail_radius * 0.6 * pulse, Color(1, 0.5, 0.1, 0.5))
+		
+		# Capa exterior - rojo translúcido
+		visual.draw_circle(Vector2.ZERO, trail_radius * 0.9, Color(1, 0.2, 0.0, 0.3))
+		
+		# Llamas individuales animadas
+		for i in range(flame_count):
+			var angle = (TAU / flame_count) * i + time * 0.5
+			var flame_dist = trail_radius * (0.4 + sin(time * 2 + i) * 0.2)
+			var flame_pos = Vector2(cos(angle), sin(angle)) * flame_dist
+			var flame_size = trail_radius * (0.15 + sin(time * 4 + i * 2) * 0.05)
+			
+			# Dibujar llama como triángulo hacia arriba
+			var flame_tip = flame_pos + Vector2(0, -flame_size * 2)
+			var flame_left = flame_pos + Vector2(-flame_size, flame_size * 0.5)
+			var flame_right = flame_pos + Vector2(flame_size, flame_size * 0.5)
+			var flame_points = PackedVector2Array([flame_tip, flame_left, flame_right])
+			visual.draw_colored_polygon(flame_points, Color(1, 0.6, 0.1, 0.7))
+		
+		# Borde exterior brillante
+		visual.draw_arc(Vector2.ZERO, trail_radius, 0, TAU, 24, Color(1, 0.4, 0.0, 0.9), 3.0)
 	)
 	visual.queue_redraw()
+	
+	# Timer para actualizar animación
+	var anim_timer = Timer.new()
+	anim_timer.wait_time = 0.05
+	anim_timer.autostart = true
+	trail.add_child(anim_timer)
+	anim_timer.timeout.connect(func():
+		if is_instance_valid(visual):
+			visual.queue_redraw()
+	)
 	
 	# Añadir al mundo
 	var parent = get_parent()
