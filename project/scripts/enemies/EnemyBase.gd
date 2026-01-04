@@ -816,10 +816,75 @@ func _do_teleport() -> void:
 	print("[EnemyBase] ✨ %s se teletransporta!" % enemy_id)
 
 func _spawn_fire_trail() -> void:
-	"""Crear una zona de fuego en la posición actual"""
-	# TODO: Implementar efecto visual de trail de fuego
-	# Por ahora solo un placeholder
-	pass
+	"""Crear una zona de fuego en la posición actual que daña al player"""
+	var trail_damage = modifiers.get("trail_damage", 5)
+	var trail_duration = modifiers.get("trail_duration", 2.0)
+	var trail_radius = modifiers.get("trail_radius", 30.0)
+	
+	# Crear nodo de trail
+	var trail = Area2D.new()
+	trail.name = "FireTrail"
+	trail.global_position = global_position
+	
+	# Configurar colisión
+	trail.collision_layer = 0
+	trail.set_collision_layer_value(4, true)  # EnemyProjectile layer
+	trail.collision_mask = 0
+	trail.set_collision_mask_value(1, true)  # Player layer
+	
+	# Añadir collision shape
+	var collision = CollisionShape2D.new()
+	var shape = CircleShape2D.new()
+	shape.radius = trail_radius
+	collision.shape = shape
+	trail.add_child(collision)
+	
+	# Visual del trail
+	var visual = Node2D.new()
+	visual.name = "Visual"
+	trail.add_child(visual)
+	visual.draw.connect(func():
+		visual.draw_circle(Vector2.ZERO, trail_radius, Color(1, 0.3, 0, 0.5))
+		visual.draw_arc(Vector2.ZERO, trail_radius, 0, TAU, 16, Color(1, 0.5, 0, 0.8), 2.0)
+	)
+	visual.queue_redraw()
+	
+	# Añadir al mundo
+	var parent = get_parent()
+	if parent:
+		parent.add_child(trail)
+	
+	# Timer de daño periódico
+	var damage_interval = 0.5
+	var damage_timer = Timer.new()
+	damage_timer.wait_time = damage_interval
+	damage_timer.autostart = true
+	trail.add_child(damage_timer)
+	
+	damage_timer.timeout.connect(func():
+		if not is_instance_valid(trail):
+			return
+		# Buscar player en el área
+		var players = get_tree().get_nodes_in_group("player")
+		for p in players:
+			if is_instance_valid(p):
+				var dist = p.global_position.distance_to(trail.global_position)
+				if dist <= trail_radius:
+					if p.has_method("take_damage"):
+						p.take_damage(trail_damage)
+						print("[EnemyBase] 🔥 Fire trail daña a player: %d" % trail_damage)
+	)
+	
+	# Auto-destruir después de duration
+	get_tree().create_timer(trail_duration).timeout.connect(func():
+		if is_instance_valid(trail):
+			trail.queue_free()
+	)
+	
+	# Fade out visual
+	var tween = create_tween()
+	tween.tween_interval(trail_duration * 0.7)
+	tween.tween_property(visual, "modulate:a", 0.0, trail_duration * 0.3)
 
 func _buff_nearby_allies() -> void:
 	"""Buffear aliados cercanos"""
