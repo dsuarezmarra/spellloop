@@ -540,7 +540,7 @@ func _spawn_poison_particle() -> void:
 	particle.initial_velocity_max = 30.0
 	particle.scale_amount_min = 2.0
 	particle.scale_amount_max = 3.0
-	particle.color = Color(0.4, 0.9, 0.2, 0.8)
+	particle.color = Color(0.6, 0.2, 0.8, 0.8)  # Morado para no confundir con lifesteal
 	add_child(particle)
 	get_tree().create_timer(0.7).timeout.connect(func():
 		if is_instance_valid(particle): particle.queue_free()
