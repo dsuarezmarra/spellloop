@@ -20,6 +20,7 @@ var arena_manager: Node = null
 var enemy_manager: Node = null
 var weapon_manager: Node = null
 var experience_manager: Node = null
+var wave_manager: Node = null
 var hud: CanvasLayer = null
 var pause_menu: Control = null
 var game_over_screen: Control = null
@@ -52,6 +53,7 @@ func _setup_game() -> void:
 	
 	# Crear sistemas
 	_create_enemy_manager()
+	_create_wave_manager()
 	_create_weapon_manager()
 	_create_experience_manager()
 	
@@ -109,6 +111,37 @@ func _create_enemy_manager() -> void:
 			enemy_manager.enemy_died.connect(_on_enemy_died)
 		
 		print("👹 [Game] EnemyManager creado")
+
+func _create_wave_manager() -> void:
+	var wm_script = load("res://scripts/managers/WaveManager.gd")
+	if wm_script:
+		wave_manager = wm_script.new()
+		wave_manager.name = "WaveManager"
+		add_child(wave_manager)
+		
+		# Conectar señales de WaveManager
+		if wave_manager.has_signal("phase_changed"):
+			wave_manager.phase_changed.connect(_on_phase_changed)
+		if wave_manager.has_signal("wave_started"):
+			wave_manager.wave_started.connect(_on_wave_started)
+		if wave_manager.has_signal("boss_incoming"):
+			wave_manager.boss_incoming.connect(_on_boss_incoming)
+		if wave_manager.has_signal("boss_spawned"):
+			wave_manager.boss_spawned.connect(_on_boss_spawned)
+		if wave_manager.has_signal("boss_defeated"):
+			wave_manager.boss_defeated.connect(_on_boss_defeated)
+		if wave_manager.has_signal("elite_spawned"):
+			wave_manager.elite_spawned.connect(_on_elite_spawned)
+		if wave_manager.has_signal("special_event_started"):
+			wave_manager.special_event_started.connect(_on_special_event_started)
+		if wave_manager.has_signal("special_event_ended"):
+			wave_manager.special_event_ended.connect(_on_special_event_ended)
+		if wave_manager.has_signal("game_phase_infinite"):
+			wave_manager.game_phase_infinite.connect(_on_game_phase_infinite)
+		
+		print("🌊 [Game] WaveManager creado")
+	else:
+		push_warning("[Game] No se pudo cargar WaveManager.gd - usando spawn básico")
 
 func _create_weapon_manager() -> void:
 	var wm_script = load("res://scripts/core/WeaponManager.gd")
@@ -172,6 +205,11 @@ func _initialize_systems() -> void:
 	# Inicializar con referencias
 	if enemy_manager and player:
 		enemy_manager.initialize(player)
+		
+		# Si WaveManager está activo, deshabilitar spawn automático del EnemyManager
+		# WaveManager controlará los spawns
+		if wave_manager:
+			enemy_manager.enable_spawning(false)
 	
 	if weapon_manager and player:
 		weapon_manager.initialize(player)
@@ -179,6 +217,11 @@ func _initialize_systems() -> void:
 	
 	if experience_manager and player:
 		experience_manager.initialize(player)
+	
+	# Configurar WaveManager con referencias
+	if wave_manager:
+		wave_manager.enemy_manager = enemy_manager
+		wave_manager.player = player
 	
 	# Conectar HUD con el player
 	_connect_hud_to_player()
@@ -310,3 +353,93 @@ func add_damage_stat(amount: int) -> void:
 
 func add_gold_stat(amount: int) -> void:
 	run_stats["gold"] += amount
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CALLBACKS DE WAVEMANAGER
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _on_phase_changed(phase_num: int, phase_config: Dictionary) -> void:
+	"""Callback cuando cambia la fase del juego"""
+	var phase_name = phase_config.get("name", "Fase %d" % phase_num)
+	print("🌊 [Game] Fase cambiada: %s" % phase_name)
+	
+	if hud and hud.has_method("show_wave_message"):
+		var msg = "═══ FASE %d: %s ═══" % [phase_num, phase_name.to_upper()]
+		hud.show_wave_message(msg, 5.0)
+
+func _on_wave_started(wave_type: String, wave_config: Dictionary) -> void:
+	"""Callback cuando inicia una oleada"""
+	var announcement = wave_config.get("announcement", "")
+	if announcement != "" and hud and hud.has_method("show_wave_message"):
+		hud.show_wave_message(announcement, 3.0)
+
+func _on_boss_incoming(boss_id: String, seconds_until: float) -> void:
+	"""Callback de advertencia de boss"""
+	print("⚠️ [Game] ¡Boss %s llegando en %.1f segundos!" % [boss_id, seconds_until])
+	
+	if hud and hud.has_method("show_wave_message"):
+		var boss_name = _get_boss_display_name(boss_id)
+		hud.show_wave_message("⚠️ ¡%s SE APROXIMA!" % boss_name.to_upper(), 5.0)
+
+func _on_boss_spawned(boss_id: String) -> void:
+	"""Callback cuando aparece un boss"""
+	print("👹 [Game] ¡BOSS SPAWNEADO: %s!" % boss_id)
+	
+	var boss_name = _get_boss_display_name(boss_id)
+	
+	if hud and hud.has_method("show_wave_message"):
+		hud.show_wave_message("👹 ¡%s HA APARECIDO!" % boss_name.to_upper(), 4.0)
+	
+	# Mostrar barra de HP del boss
+	if hud and hud.has_method("show_boss_bar") and wave_manager:
+		var boss_node = wave_manager.get_current_boss()
+		if boss_node:
+			hud.show_boss_bar(boss_node, boss_name)
+
+func _on_boss_defeated(boss_id: String) -> void:
+	"""Callback cuando se derrota a un boss"""
+	print("🏆 [Game] ¡BOSS DERROTADO: %s!" % boss_id)
+	
+	var boss_name = _get_boss_display_name(boss_id)
+	
+	if hud and hud.has_method("show_wave_message"):
+		hud.show_wave_message("🏆 ¡%s DERROTADO!" % boss_name.to_upper(), 4.0)
+	
+	if hud and hud.has_method("hide_boss_bar"):
+		hud.hide_boss_bar()
+
+func _on_elite_spawned(enemy_id: String) -> void:
+	"""Callback cuando aparece un élite"""
+	print("⭐ [Game] ¡ÉLITE SPAWNEADO: %s!" % enemy_id)
+	
+	if hud and hud.has_method("show_wave_message"):
+		hud.show_wave_message("⭐ ¡ENEMIGO LEGENDARIO!", 3.0)
+
+func _on_special_event_started(event_name: String, event_config: Dictionary) -> void:
+	"""Callback cuando inicia un evento especial"""
+	print("🎪 [Game] Evento especial: %s" % event_name)
+	
+	var announcement = event_config.get("announcement", "")
+	if announcement != "" and hud and hud.has_method("show_wave_message"):
+		hud.show_wave_message(announcement, 4.0)
+
+func _on_special_event_ended(event_name: String) -> void:
+	"""Callback cuando termina un evento especial"""
+	print("🎪 [Game] Evento terminado: %s" % event_name)
+
+func _on_game_phase_infinite() -> void:
+	"""Callback cuando entramos en fase infinita"""
+	print("♾️ [Game] ¡MODO INFINITO ACTIVADO!")
+	
+	if hud and hud.has_method("show_wave_message"):
+		hud.show_wave_message("♾️ ═══ MODO INFINITO ═══ ♾️\n¡Sobrevive todo lo que puedas!", 6.0)
+
+func _get_boss_display_name(boss_id: String) -> String:
+	"""Obtener nombre legible del boss"""
+	var names = {
+		"el_conjurador_primigenio": "El Conjurador Primigenio",
+		"el_corazon_del_vacio": "El Corazón del Vacío",
+		"el_guardian_de_runas": "El Guardián de Runas",
+		"minotauro_de_fuego": "Minotauro de Fuego"
+	}
+	return names.get(boss_id, boss_id.replace("_", " ").capitalize())

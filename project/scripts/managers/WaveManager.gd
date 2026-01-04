@@ -21,11 +21,11 @@ signal special_event_ended(event_name: String)
 signal game_phase_infinite()  # Cuando entramos en fase infinita
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# REFERENCIAS
+# REFERENCIAS (asignadas por Game.gd)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-@onready var enemy_manager: EnemyManager = null
-@onready var player: Node2D = null
+var enemy_manager: Node = null
+var player: Node2D = null
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ESTADO DEL JUEGO
@@ -81,29 +81,32 @@ var infinite_scaling_multipliers: Dictionary = {
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _ready() -> void:
-	# Buscar referencias
+	# Las referencias son asignadas por Game.gd
+	# Esperar un frame para que las referencias estén asignadas
 	await get_tree().process_frame
-	_find_references()
+	
+	# Si no hay referencias asignadas, intentar buscarlas
+	if not enemy_manager or not player:
+		_find_references()
 	
 	# Inicializar primera fase
 	_enter_phase(1)
 
 func _find_references() -> void:
-	# Buscar EnemyManager
-	enemy_manager = get_tree().get_first_node_in_group("enemy_manager")
+	"""Buscar referencias si no fueron asignadas por Game.gd (fallback)"""
 	if not enemy_manager:
-		var enemy_managers = get_tree().get_nodes_in_group("enemy_spawner")
-		if enemy_managers.size() > 0:
-			enemy_manager = enemy_managers[0]
-	
-	# Si aún no lo encontramos, buscarlo como hermano o hijo
-	if not enemy_manager:
+		# Buscar EnemyManager como hermano
 		enemy_manager = get_node_or_null("../EnemyManager")
-	if not enemy_manager:
-		enemy_manager = get_node_or_null("EnemyManager")
+		if not enemy_manager:
+			enemy_manager = get_tree().get_first_node_in_group("enemy_manager")
 	
-	# Buscar jugador
-	player = get_tree().get_first_node_in_group("player")
+	if not player:
+		# Buscar jugador
+		player = get_tree().get_first_node_in_group("player")
+		if not player:
+			var player_container = get_node_or_null("../PlayerContainer")
+			if player_container and player_container.get_child_count() > 0:
+				player = player_container.get_child(0)
 	
 	if not enemy_manager:
 		push_warning("WaveManager: No se encontró EnemyManager")
