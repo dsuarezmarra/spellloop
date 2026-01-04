@@ -63,8 +63,10 @@ func _ready() -> void:
 	if _effect != "none":
 		print("[SimpleProjectile] 🆕 Creado - weapon: %s, effect: %s (val=%.2f, dur=%.2f)" % [_wid, _effect, _effect_value, _effect_dur])
 	
-	# Obtener color del elemento
-	if ELEMENT_COLORS.has(element_type):
+	# Obtener color: priorizar color del arma sobre color del elemento
+	if has_meta("weapon_color"):
+		projectile_color = get_meta("weapon_color")
+	elif ELEMENT_COLORS.has(element_type):
 		projectile_color = ELEMENT_COLORS[element_type]
 	
 	# Configurar colisiones

@@ -147,6 +147,10 @@ static func _create_base_projectile(data: Dictionary) -> SimpleProjectile:
 	projectile.set_meta("effect_duration", data.get("effect_duration", 0.0))
 	projectile.set_meta("crit_chance", data.get("crit_chance", 0.0))
 	projectile.set_meta("weapon_id", data.get("weapon_id", ""))
+	
+	# Pasar el color del arma si está definido
+	if data.has("color"):
+		projectile.set_meta("weapon_color", data.get("color"))
 
 	return projectile
 
