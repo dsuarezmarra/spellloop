@@ -1131,7 +1131,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 8.0,  # Very slow, time-frozen
-		"sprite_scale": 1.0,
+		"sprite_scale": 0.3,  # Escalar para que se vea del tamaño correcto (216px -> ~65px)
+		"frame_size": 216,  # Frame size del spritesheet de alta calidad
 		"is_aoe": true
 	},
 	"volcano": {
@@ -1334,6 +1335,11 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 				data.aoe_fade_frames = config.get("aoe_fade_frames", 4)
 			
 			data.aoe_fps = config.get("aoe_fps", 12.0)
+			
+			# Aplicar tamaño de frame personalizado si está definido
+			if config.has("frame_size"):
+				var fs = config.get("frame_size", 64)
+				data.frame_size = Vector2i(fs, fs)
 			
 			# Aplicar escala personalizada si está definida
 			if config.has("sprite_scale"):

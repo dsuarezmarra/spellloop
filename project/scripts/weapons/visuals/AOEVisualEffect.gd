@@ -122,8 +122,10 @@ func _setup_animations() -> void:
 	
 	sprite.sprite_frames = frames
 	
-	# Escalar según el radio
+	# Escalar según el radio y el base_scale
 	var sprite_scale = _radius * 2.0 / visual_data.frame_size.x
+	if visual_data.base_scale != 1.0:
+		sprite_scale *= visual_data.base_scale
 	sprite.scale = Vector2.ONE * sprite_scale
 
 func _setup_procedural() -> void:

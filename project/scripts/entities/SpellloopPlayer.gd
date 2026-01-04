@@ -99,12 +99,21 @@ func take_damage(amount: int) -> void:
 func heal(amount: int) -> void:
 	if wizard_player:
 		wizard_player.heal(amount)
+		_play_heal_animation()
 
 func _play_damage_animation() -> void:
 	if animated_sprite:
 		animated_sprite.modulate = Color(2, 0.2, 0.2, 1)
 		var tween = create_tween()
 		tween.tween_property(animated_sprite, "modulate", Color(1, 1, 1, 1), 0.3)
+
+func _play_heal_animation() -> void:
+	"""Aura verde sutil al curarse"""
+	if animated_sprite:
+		# Verde muy sutil - no tan intenso como el daño
+		animated_sprite.modulate = Color(0.7, 1.3, 0.7, 1)
+		var tween = create_tween()
+		tween.tween_property(animated_sprite, "modulate", Color(1, 1, 1, 1), 0.4)
 
 func update_health_bar() -> void:
 	if not health_bar_container:
