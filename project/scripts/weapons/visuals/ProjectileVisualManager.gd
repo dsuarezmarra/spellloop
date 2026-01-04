@@ -1091,7 +1091,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 10.0,  # Slower, ominous void
-		"sprite_scale": 1.0,
+		"sprite_scale": 0.35,
+		"frame_size": 184,
 		"is_aoe": true
 	},
 	"steam_cannon": {
@@ -1099,7 +1100,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 14.0,  # Fast steam dispersal
-		"sprite_scale": 1.0,
+		"sprite_scale": 0.31,
+		"frame_size": 208,
 		"is_aoe": true
 	},
 	"rift_quake": {
@@ -1107,7 +1109,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 12.0,  # Powerful seismic
-		"sprite_scale": 1.0,
+		"sprite_scale": 0.53,
+		"frame_size": 120,
 		"is_aoe": true
 	},
 	"void_storm": {
@@ -1115,7 +1118,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 14.0,  # Fast vortex spin
-		"sprite_scale": 1.0,
+		"sprite_scale": 0.35,
+		"frame_size": 184,
 		"is_aoe": true
 	},
 	"glacier": {
@@ -1123,7 +1127,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 10.0,  # Slow, cold ice formation
-		"sprite_scale": 1.0,
+		"sprite_scale": 0.36,
+		"frame_size": 176,
 		"is_aoe": true
 	},
 	"absolute_zero": {
@@ -1131,8 +1136,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 8.0,  # Very slow, time-frozen
-		"sprite_scale": 0.3,  # Escalar para que se vea del tamaño correcto (216px -> ~65px)
-		"frame_size": 216,  # Frame size del spritesheet de alta calidad
+		"sprite_scale": 0.29,
+		"frame_size": 224,
 		"is_aoe": true
 	},
 	"volcano": {
@@ -1140,7 +1145,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 14.0,  # Fast, violent eruption
-		"sprite_scale": 1.0,
+		"sprite_scale": 0.32,
+		"frame_size": 200,
 		"is_aoe": true
 	},
 	"dark_flame": {
@@ -1148,7 +1154,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 12.0,  # Sinister dark fire
-		"sprite_scale": 1.0,
+		"sprite_scale": 0.42,
+		"frame_size": 152,
 		"is_aoe": true
 	},
 	"seismic_bolt": {
@@ -1156,7 +1163,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 16.0,  # Fast electric shockwave
-		"sprite_scale": 1.0,
+		"sprite_scale": 0.29,
+		"frame_size": 224,
 		"is_aoe": true
 	},
 	"gaia": {
@@ -1164,7 +1172,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 10.0,  # Slow, organic growth
-		"sprite_scale": 1.0,
+		"sprite_scale": 0.36,
+		"frame_size": 176,
 		"is_aoe": true
 	},
 	"decay": {
@@ -1172,7 +1181,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 8.0,  # Slow, creeping corruption
-		"sprite_scale": 1.0,
+		"sprite_scale": 0.31,
+		"frame_size": 208,
 		"is_aoe": true
 	},
 	"radiant_stone": {
@@ -1180,7 +1190,8 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 12.0,  # Divine crystal light
-		"sprite_scale": 1.0,
+		"sprite_scale": 0.53,
+		"frame_size": 120,
 		"is_aoe": true
 	},
 	# === BEAM WEAPONS (Rayos instantáneos) ===

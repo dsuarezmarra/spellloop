@@ -569,31 +569,48 @@ EFFECTS:
 
 ### Active Animation (6 frames)
 ```
-Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+Create a sprite sheet for a 2D roguelike game.
+FORMAT: 6 frames arranged in 3 COLUMNS x 2 ROWS grid. Total image ~600x400 pixels. 100% TRANSPARENT background.
+STYLE: Pixel art / Hand-painted fantasy - LIGHTWEIGHT and ETHEREAL, soft billowing steam, warm glow.
 VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Steam cloud ONLY - NO ground. Billowing steam and vapor floating on transparent background.
+SUBJECT: Delicate steam and vapor clouds - ethereal white mist with orange heat glow. Small, elegant, NOT heavy or thick.
 
-⚠️ CRITICAL: Do NOT draw any ground or surface. ONLY the steam/vapor clouds themselves. Pure atmospheric effect.
+⚠️ CRITICAL:
+- Do NOT draw any ground, floor, terrain or surface
+- FORMAT: 3 columns x 2 rows grid (will be processed into 6 frames)
+- Keep it LIGHT and AIRY - wispy steam, NOT solid cloud masses
+- Billowing vapor with heat shimmer effect
+- Ghostly and ethereal appearance
+
+DESIGN - LIGHTWEIGHT STEAM BURST:
+- Soft steam wisps radiating from center (40-50px total area)
+- Delicate vapor tendrils curling outward
+- Warm orange-red undertone at core (heat source)
+- Tiny water droplet particles scattered around
+- Semi-transparent layers for ethereal depth
 
 COLOR PALETTE:
-- Primary: White steam (#FFFFFF)
-- Secondary: Light gray mist (#CCCCCC)
-- Accent: Orange-red heat glow (#FF6633)
-- Outline: Gray-blue (#667788)
+- Primary: Pure white steam (#FFFFFF) with soft edges
+- Secondary: Light gray mist (#DDDDDD, 70% opacity)
+- Heat glow: Warm orange (#FF7744) at center, subtle
+- Accent: Pale yellow (#FFFFAA) heat shimmer hints
+- Outline: Gray-blue (#778899) - very thin
 
-ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Steam clouds billowing, heat shimmer
-- Frame 3-4: Steam intensifies, orange glow at center
-- Frame 5-6: Steam disperses slightly, cycle resets
+ANIMATION SEQUENCE (6 frames, billowing cycle):
+- Frame 1: Steam wisps form, heat shimmer visible
+- Frame 2: Clouds billow outward, particles drift
+- Frame 3: Maximum expansion, orange glow intensifies
+- Frame 4: Steam swirls, new wisps appear
+- Frame 5: Clouds contract slightly, heat pulses
+- Frame 6: Return to initial state, cycle resets
 
 EFFECTS:
-- Billowing steam clouds with solid shapes
-- Heat shimmer effect (wavy lines)
-- NO ground - clouds floating, background removed later
-- Warm orange undertones in center
+- Ethereal billowing steam - like hot springs vapor
+- Thin wispy clouds, NOT thick solid masses
+- Delicate heat shimmer (wavy lines)
+- Soft warm inner glow with cool outer rim
+- Everything feels weightless and misty
 ```
 
 ---
@@ -773,31 +790,48 @@ EFFECTS:
 
 ### Active Animation (6 frames)
 ```
-Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames, 64x64 pixels each = 384x64 total. 100% TRANSPARENT background.
-STYLE: Cartoon/Funko Pop - cute, bold colors, 1-2px dark outline on shapes.
+Create a sprite sheet for a 2D roguelike game.
+FORMAT: 6 frames arranged in 3 COLUMNS x 2 ROWS grid. Total image ~600x400 pixels. 100% TRANSPARENT background.
+STYLE: Pixel art / Hand-painted fantasy - DYNAMIC and FIERY, molten lava splashes, intense glow.
 VIEW: TOP-DOWN (looking straight down)
 
-SUBJECT: Lava eruption ONLY - NO ground/crater. Splashing lava, flames and embers floating on transparent background.
+SUBJECT: Lava eruption from above - molten rock splashing upward with flames and embers. Dynamic, fiery, NOT a static pool.
 
-⚠️ CRITICAL: Do NOT draw any ground, crater or rock surface. ONLY the lava splashes, flames and ember particles themselves.
+⚠️ CRITICAL:
+- Do NOT draw any ground, crater, or rock surface
+- FORMAT: 3 columns x 2 rows grid (will be processed into 6 frames)
+- ONLY the lava splashes, flames, and ember particles
+- Dynamic explosive motion radiating outward
+- Intense heat and light effect
+
+DESIGN - LAVA ERUPTION BURST:
+- Central bright yellow-white core (hottest point, 15-20px)
+- Orange-red lava droplets splashing outward in all directions
+- Small flame tongues dancing at the edges
+- Tiny ember particles scattered and flying
+- Radial explosion pattern seen from above
 
 COLOR PALETTE:
-- Primary: Bright orange lava (#FF6600)
-- Secondary: Red-orange magma (#CC3300) - glowing
-- Accent: Yellow-white hot core (#FFCC00) - brightest
-- Outline: Dark red (#661100)
+- Core: Bright yellow-white (#FFEE44 / #FFFFFF) - hottest center
+- Primary: Vivid orange lava (#FF6600) - main splashes
+- Secondary: Red-orange magma (#DD3300) - cooler edges
+- Embers: Yellow-orange (#FFAA33) - small particles
+- Outline: Dark red-brown (#661100) - 1-2px
 
-ANIMATION SEQUENCE (LOOP):
-- Frame 1-2: Lava splashes at peak, embers floating
-- Frame 3-4: More splashes erupt, flames dance
-- Frame 5-6: Lava falls back, embers scatter
+ANIMATION SEQUENCE (6 frames, eruption cycle):
+- Frame 1: Initial burst, lava shoots upward from center
+- Frame 2: Splashes spread outward, maximum height
+- Frame 3: Droplets at peak, flames intensify
+- Frame 4: Lava falls back, embers scatter
+- Frame 5: New burst begins, flames dance
+- Frame 6: Return to frame 1 state, seamless loop
 
 EFFECTS:
-- Lava splash droplets with solid colors
-- Rising ember particles
-- Flame wisps
-- NO ground/crater - pure lava effect floating
+- Dynamic lava splashing in all directions
+- Bright core with radiating heat
+- Ember particles flying outward
+- Flame wisps at edges
+- NO ground - pure floating lava effect
 - Bold outlines on all shapes
 ```
 
@@ -811,8 +845,8 @@ EFFECTS:
 
 ### Active Animation (6 frames)
 ```
-Create a horizontal sprite strip for a 2D roguelike game.
-FORMAT: 6 frames in 2 rows x 3 columns layout (will be processed into 384x64 strip). 100% TRANSPARENT background.
+Create a sprite sheet for a 2D roguelike game.
+FORMAT: 6 frames arranged in 3 COLUMNS x 2 ROWS grid. Total image ~600x400 pixels. 100% TRANSPARENT background.
 STYLE: Pixel art / Hand-painted fantasy - LIGHTWEIGHT and ETHEREAL, delicate dark flames, soft ghostly glow.
 VIEW: TOP-DOWN (looking straight down)
 
@@ -820,6 +854,7 @@ SUBJECT: Delicate void flames - ethereal purple-crimson fire wisps with dark ene
 
 ⚠️ CRITICAL: 
 - Do NOT draw any ground, floor, terrain or surface
+- FORMAT: 3 columns x 2 rows grid (will be processed into 6 frames)
 - Keep it LIGHT and AIRY - wispy flames, NOT solid fire masses
 - Small delicate flame tongues with void wisps
 - Ghostly and ethereal appearance
