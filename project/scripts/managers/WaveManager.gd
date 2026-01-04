@@ -664,7 +664,7 @@ func get_scaling_multipliers() -> Dictionary:
 
 func force_spawn_wave(wave_type: String) -> void:
 	"""Forzar una oleada específica (para testing/debug)"""
-	if WAVE_TYPES.has(wave_type):
+	if SpawnConfig.WAVE_TYPES.has(wave_type):
 		current_wave_config = SpawnConfig.get_wave_config(wave_type)
 		enemies_to_spawn_in_wave = current_wave_config.spawn_count
 		wave_in_progress = true

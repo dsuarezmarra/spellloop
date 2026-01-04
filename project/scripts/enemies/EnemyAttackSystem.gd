@@ -42,6 +42,9 @@ func _process(delta: float) -> void:
 	if not player or not is_instance_valid(player):
 		player = _get_player()
 		if not player:
+			# Solo debug una vez cada 60 frames para no saturar
+			if Engine.get_process_frames() % 60 == 0:
+				print("[EnemyAttackSystem] ⚠️ No se encontró player para %s" % enemy.name)
 			return
 	
 	# Decrementar cooldown
@@ -55,15 +58,27 @@ func _process(delta: float) -> void:
 
 func _get_player() -> Node:
 	"""Obtener referencia al jugador"""
+	# Método 1: Desde el enemigo padre (más directo y fiable)
+	if enemy and enemy.has_method("get") and enemy.get("player_ref"):
+		return enemy.player_ref
+	
+	# Método 2: Buscar en GameManager
+	if GameManager and GameManager.player_ref:
+		return GameManager.player_ref
+	
+	# Método 3: Buscar por grupos
+	var players = get_tree().get_nodes_in_group("player")
+	if players.size() > 0:
+		return players[0]
+	
+	# Método 4: Buscar en la estructura del árbol
 	var tree = Engine.get_main_loop()
 	if tree and tree.root:
-		var sp = tree.root.get_node_or_null("SpellloopGame/SpellloopPlayer")
-		if not sp:
-			# Buscar en GameManager
-			var gm = tree.root.get_node_or_null("GameManager")
-			if gm and gm.has_meta("player"):
-				sp = gm.get_meta("player")
-		return sp
+		# Buscar Game/PlayerContainer/SpellloopPlayer
+		var sp = tree.root.get_node_or_null("Game/PlayerContainer/SpellloopPlayer")
+		if sp:
+			return sp
+	
 	return null
 
 func _player_in_range() -> bool:
@@ -72,7 +87,13 @@ func _player_in_range() -> bool:
 		return false
 	
 	var distance = enemy.global_position.distance_to(player.global_position)
-	return distance <= attack_range
+	var in_range = distance <= attack_range
+	
+	# Debug ocasional (cada 2 segundos aprox) para ver distancias
+	#if Engine.get_process_frames() % 120 == 0:
+	#	print("[EnemyAttackSystem] %s: dist=%.1f, range=%.1f, in_range=%s" % [enemy.name, distance, attack_range, in_range])
+	
+	return in_range
 
 func _perform_attack() -> void:
 	"""Ejecutar el ataque (melee o ranged)"""
