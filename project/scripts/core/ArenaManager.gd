@@ -710,6 +710,13 @@ func _create_zone_barriers() -> void:
 	barriers_container.add_child(barrier_death)
 	zone_barriers[ZoneType.DEATH] = barrier_death
 	
+	# === BARRERA PERIMETRAL PERMANENTE ===
+	# Esta barrera rodea todo el mapa y NUNCA se desbloquea
+	var barrier_perimeter = _create_circular_barrier(arena_radius, ZoneType.SAFE, "BarrierPerimeter")
+	barriers_container.add_child(barrier_perimeter)
+	# Nota: No añadimos esta barrera a zone_barriers porque nunca se desbloquea
+	print("🚧 [ArenaManager] Barrera perimetral permanente creada: r=%.0f" % arena_radius)
+	
 	print("🚧 [ArenaManager] Barreras de zona creadas")
 
 func _create_circular_barrier(radius: float, zone_type: ZoneType, barrier_name: String) -> StaticBody2D:
@@ -780,6 +787,9 @@ func _create_barrier_visual(radius: float, zone_type: ZoneType) -> Node2D:
 			color = Color(1.0, 0.5, 0.0, 0.7)  # Naranja
 		ZoneType.DEATH:
 			color = Color(1.0, 0.1, 0.1, 0.8)  # Rojo
+		ZoneType.SAFE:
+			# Barrera perimetral permanente - color púrpura oscuro
+			color = Color(0.5, 0.0, 0.8, 0.9)  # Púrpura
 		_:
 			color = Color(1.0, 1.0, 1.0, 0.5)
 	
