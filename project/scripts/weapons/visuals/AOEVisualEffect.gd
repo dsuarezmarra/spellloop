@@ -127,6 +127,9 @@ func _setup_animations() -> void:
 	if visual_data.base_scale != 1.0:
 		sprite_scale *= visual_data.base_scale
 	sprite.scale = Vector2.ONE * sprite_scale
+	
+	# Aplicar transparencia del 30% a todos los AOE
+	sprite.modulate.a = 0.7
 
 func _setup_procedural() -> void:
 	"""Crear animaciones procedurales estilo cartoon"""
@@ -168,6 +171,9 @@ func _setup_procedural() -> void:
 	
 	sprite.sprite_frames = frames
 	sprite.scale = Vector2.ONE * target_scale  # Escalar para alcanzar el tamaño correcto
+	
+	# Aplicar transparencia del 30% a todos los AOE
+	sprite.modulate.a = 0.7
 	
 	# Crear glow y ring con tamaño pequeño y escalar
 	_create_glow_texture(base_size, primary)

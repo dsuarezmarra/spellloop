@@ -1154,7 +1154,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 12.0,  # Sinister dark fire
-		"sprite_scale": 2.18,
+		"sprite_scale": 1.74,
 		"frame_size": 152,
 		"is_aoe": true
 	},
@@ -1211,7 +1211,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 	"aurora": {  # Ice + Light fusion
 		"beam_frames": 6,
 		"beam_fps": 10.0,  # Slow, ethereal shimmer
-		"beam_frame_size": 208,
+		"beam_frame_size": 104,
 		"sprite_scale": 1.0,
 		"is_beam": true
 	},
