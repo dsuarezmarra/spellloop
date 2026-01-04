@@ -193,28 +193,158 @@ func _create_fallback_player() -> void:
 		attack_manager.initialize(player)
 
 func _create_dummies() -> void:
-	# Crear varios dummies en diferentes posiciones
-	var positions = [
-		Vector2(200, 0),    # Derecha cerca
-		Vector2(350, 0),    # Derecha lejos
-		Vector2(-200, 0),   # Izquierda cerca
-		Vector2(-350, 0),   # Izquierda lejos
-		Vector2(0, -180),   # Arriba
-		Vector2(0, 180),    # Abajo
-		Vector2(150, -150), # Diagonal NE
-		Vector2(-150, 150), # Diagonal SW
+	# Crear enemigos reales de cada tier distribuidos por el mapa
+	# Obtenemos todos los enemigos de la base de datos
+	var all_enemies: Array[Dictionary] = []
+	
+	# Tier 1
+	for key in EnemyDatabase.TIER_1_ENEMIES:
+		var data = EnemyDatabase.TIER_1_ENEMIES[key].duplicate(true)
+		all_enemies.append(data)
+	
+	# Tier 2
+	for key in EnemyDatabase.TIER_2_ENEMIES:
+		var data = EnemyDatabase.TIER_2_ENEMIES[key].duplicate(true)
+		all_enemies.append(data)
+	
+	# Tier 3
+	for key in EnemyDatabase.TIER_3_ENEMIES:
+		var data = EnemyDatabase.TIER_3_ENEMIES[key].duplicate(true)
+		all_enemies.append(data)
+	
+	# Tier 4
+	for key in EnemyDatabase.TIER_4_ENEMIES:
+		var data = EnemyDatabase.TIER_4_ENEMIES[key].duplicate(true)
+		all_enemies.append(data)
+	
+	# Bosses (Tier 5)
+	for key in EnemyDatabase.BOSSES:
+		var data = EnemyDatabase.BOSSES[key].duplicate(true)
+		all_enemies.append(data)
+	
+	print("🧪 [WeaponTest] Creando %d enemigos de prueba..." % all_enemies.size())
+	
+	# Generar posiciones aleatorias distribuidas
+	var positions = _generate_enemy_positions(all_enemies.size())
+	
+	# Crear cada enemigo
+	for i in range(all_enemies.size()):
+		var enemy_data = all_enemies[i]
+		var pos = positions[i]
+		var enemy = _create_test_enemy(enemy_data, pos, i + 1)
+		if enemy:
+			dummies.append(enemy)
+			add_child(enemy)
+			
+			# Conectar señal de daño si existe
+			var health = enemy.get_node_or_null("HealthComponent")
+			if health and health.has_signal("damage_taken"):
+				health.damage_taken.connect(_on_enemy_damage.bind(enemy))
+	
+	print("🧪 [WeaponTest] ✓ %d enemigos creados" % dummies.size())
+	_print_enemy_summary(all_enemies)
+
+func _generate_enemy_positions(count: int) -> Array[Vector2]:
+	"""Generar posiciones distribuidas para los enemigos"""
+	var positions: Array[Vector2] = []
+	
+	# Distribuir en círculos concéntricos
+	var rings = [
+		{"radius": 200, "count": 6},    # Anillo interior
+		{"radius": 350, "count": 8},    # Anillo medio
+		{"radius": 500, "count": 10},   # Anillo exterior
+		{"radius": 650, "count": 12},   # Anillo muy exterior
 	]
+	
+	var idx = 0
+	for ring in rings:
+		var r = ring.radius
+		var n = ring.count
+		for j in range(n):
+			if idx >= count:
+				break
+			var angle = (TAU / n) * j + randf_range(-0.2, 0.2)
+			var offset = Vector2(randf_range(-30, 30), randf_range(-30, 30))
+			positions.append(Vector2(cos(angle), sin(angle)) * r + offset)
+			idx += 1
+		if idx >= count:
+			break
+	
+	# Si necesitamos más posiciones, añadir aleatorias
+	while positions.size() < count:
+		var angle = randf() * TAU
+		var dist = randf_range(250, 700)
+		positions.append(Vector2(cos(angle), sin(angle)) * dist)
+	
+	return positions
 
-	for i in range(positions.size()):
-		var dummy = _create_dummy(positions[i], i + 1)
-		dummies.append(dummy)
-		add_child(dummy)
+func _create_test_enemy(data: Dictionary, pos: Vector2, id: int) -> CharacterBody2D:
+	"""Crear un enemigo de prueba basado en datos de EnemyDatabase"""
+	# Cargar la escena base de enemigo
+	var enemy_scene = load("res://scenes/enemies/EnemyBase.tscn")
+	if not enemy_scene:
+		push_error("[WeaponTest] No se pudo cargar EnemyBase.tscn")
+		return _create_basic_dummy(id)
+	
+	var enemy = enemy_scene.instantiate()
+	enemy.name = "TestEnemy_%s_%d" % [data.get("id", "unknown"), id]
+	enemy.global_position = pos
+	
+	# Inicializar con datos (sin player para que no persiga)
+	if enemy.has_method("initialize_from_database"):
+		# Hacer HP muy alto para testing
+		var test_data = data.duplicate(true)
+		test_data["base_hp"] = 99999
+		enemy.initialize_from_database(test_data, null)
+	
+	# Desactivar movimiento
+	if "speed" in enemy:
+		enemy.speed = 0
+	if "_base_speed" in enemy:
+		enemy._base_speed = 0
+	
+	# Label con info del enemigo
+	var label = Label.new()
+	label.name = "InfoLabel"
+	var tier = data.get("tier", 1)
+	var tier_text = "T%d" % tier if tier < 5 else "BOSS"
+	label.text = "%s\n[%s]" % [data.get("name", "???"), tier_text]
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.position = Vector2(-50, -60)
+	label.add_theme_font_size_override("font_size", 10)
+	
+	# Color según tier
+	var tier_colors = {
+		1: Color.WHITE,
+		2: Color.CYAN,
+		3: Color.ORANGE,
+		4: Color.MAGENTA,
+		5: Color.GOLD
+	}
+	label.add_theme_color_override("font_color", tier_colors.get(tier, Color.WHITE))
+	enemy.add_child(label)
+	
+	return enemy
 
-		# Conectar señal de daño
-		if dummy.has_signal("damage_received"):
-			dummy.damage_received.connect(_on_dummy_damage.bind(dummy))
+func _on_enemy_damage(amount: float, _type: String, enemy: Node) -> void:
+	"""Callback cuando un enemigo recibe daño"""
+	total_damage_dealt += int(amount)
+	hits_count += 1
+	
+	var enemy_name = enemy.name if enemy else "Unknown"
+	_log_damage("[color=orange]💥 %s: -%d (%s)[/color]" % [enemy_name, int(amount), _type])
 
-	print("🧪 [WeaponTest] %d dummies creados" % dummies.size())
+func _print_enemy_summary(enemies: Array[Dictionary]) -> void:
+	"""Imprimir resumen de enemigos creados"""
+	var tier_count = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+	for e in enemies:
+		var t = e.get("tier", 1)
+		tier_count[t] = tier_count.get(t, 0) + 1
+	
+	print("   📊 Resumen por tier:")
+	print("      T1: %d | T2: %d | T3: %d | T4: %d | Bosses: %d" % [
+		tier_count[1], tier_count[2], tier_count[3], tier_count[4], tier_count[5]
+	])
 
 func _create_dummy(pos: Vector2, id: int) -> CharacterBody2D:
 	var dummy: CharacterBody2D
@@ -618,20 +748,16 @@ func _reset_dummies() -> void:
 	hits_count = 0
 	test_start_time = Time.get_ticks_msec() / 1000.0
 
+	# Eliminar enemigos existentes
 	for dummy in dummies:
 		if is_instance_valid(dummy):
-			if dummy.has_method("reset"):
-				dummy.reset()
-			else:
-				# Fallback para dummy básico
-				var health = dummy.get_node_or_null("HealthComponent")
-				if health:
-					health.set_meta("current_hp", 99999)
-				var hp_label = dummy.get_node_or_null("HPLabel")
-				if hp_label:
-					hp_label.text = "HP: 99999"
+			dummy.queue_free()
+	dummies.clear()
+	
+	# Recrear enemigos
+	_create_dummies()
 
-	_log_damage("[color=yellow]🔄 Dummies reseteados - Contador reiniciado[/color]")
+	_log_damage("[color=yellow]🔄 Enemigos recreados - Contador reiniciado[/color]")
 	_update_dps_display()
 
 func _toggle_category() -> void:
