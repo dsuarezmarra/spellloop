@@ -1109,7 +1109,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 12.0,  # Powerful seismic
-		"sprite_scale": 3.6,
+		"sprite_scale": 1.8,  # Reduced from 3.6 (50%)
 		"frame_size": 120,
 		"is_aoe": true
 	},
@@ -1118,7 +1118,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 14.0,  # Fast vortex spin
-		"sprite_scale": 1.96,
+		"sprite_scale": 1.18,  # Reduced from 1.96 (60%)
 		"frame_size": 184,
 		"is_aoe": true
 	},
@@ -1190,7 +1190,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 12.0,  # Divine crystal light
-		"sprite_scale": 2.4,
+		"sprite_scale": 1.44,  # Reduced from 2.4 (60%)
 		"frame_size": 120,
 		"is_aoe": true
 	},
