@@ -125,12 +125,12 @@ func _ready() -> void:
 func _get_scale_for_tier() -> float:
 	"""Obtener escala según tier del enemigo"""
 	match enemy_tier:
-		1: return 0.20
-		2: return 0.22
-		3: return 0.24
-		4: return 0.26
-		5: return 0.35  # Boss
-		_: return 0.20
+		1: return 0.24
+		2: return 0.26
+		3: return 0.29
+		4: return 0.31
+		5: return 0.42  # Boss
+		_: return 0.24
 
 func _try_load_animated_sprite() -> bool:
 	"""Intentar cargar AnimatedEnemySprite con spritesheet. Retorna true si tuvo éxito."""
