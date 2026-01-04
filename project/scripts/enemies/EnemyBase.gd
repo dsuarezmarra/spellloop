@@ -731,7 +731,14 @@ func _process_charge(delta: float) -> void:
 		if global_position.distance_to(player_ref.global_position) < attack_range:
 			# Aplicar daño de carga
 			var charge_damage_mult = modifiers.get("charge_damage_mult", 2.0)
-			# TODO: Aplicar daño al jugador
+			var charge_damage = int(attack_damage * charge_damage_mult)
+			if player_ref.has_method("take_damage"):
+				player_ref.take_damage(charge_damage)
+				print("[EnemyBase] ⚡ %s impacta carga por %d daño!" % [enemy_id, charge_damage])
+				# Aplicar stun en carga
+				if player_ref.has_method("apply_stun"):
+					player_ref.apply_stun(0.5)  # 0.5s stun
+					print("[EnemyBase] ⚡ Carga aplica Stun!")
 			_end_charge()
 
 func _end_charge() -> void:

@@ -183,11 +183,54 @@ func _perform_melee_attack() -> void:
 	player.take_damage(attack_damage)
 	print("[EnemyAttackSystem] ⚔️ %s atacó melee a player por %d daño" % [enemy.name, attack_damage])
 	
+	# Aplicar efectos según arquetipo y elemento
+	_apply_melee_effects()
+	
 	# Emitir señal
 	attacked_player.emit(attack_damage, true)
 	
 	# Efecto visual
 	_emit_melee_effect()
+
+func _apply_melee_effects() -> void:
+	"""Aplicar efectos de estado según arquetipo y elemento"""
+	var elem = _get_enemy_element()
+	
+	# Efectos por arquetipo
+	match archetype:
+		"debuffer":  # Araña Venenosa
+			if player.has_method("apply_poison"):
+				var poison_dmg = modifiers.get("poison_damage", 2.0)
+				var poison_dur = modifiers.get("poison_duration", 3.0)
+				player.apply_poison(poison_dmg, poison_dur)
+			if player.has_method("apply_slow"):
+				var slow_amt = modifiers.get("slow_amount", 0.2)
+				var slow_dur = modifiers.get("slow_duration", 2.0)
+				player.apply_slow(slow_amt, slow_dur)
+		"pack":  # Lobo de Cristal - causa bleed (implementado como burn menor)
+			if player.has_method("apply_burn"):
+				player.apply_burn(2.0, 2.0)  # Bleed como burn menor
+		"phase":  # Sombra Flotante - aplica curse
+			if player.has_method("apply_curse"):
+				player.apply_curse(0.3, 4.0)  # -30% curación por 4s
+		"charger":  # Caballero del Vacío - stun en carga
+			# El stun se aplica en el ataque de carga, no en melee normal
+			pass
+	
+	# Efectos por elemento
+	match elem:
+		"fire":
+			if player.has_method("apply_burn"):
+				player.apply_burn(3.0, 2.0)  # 3 daño/tick por 2s
+		"ice":
+			if player.has_method("apply_slow"):
+				player.apply_slow(0.25, 2.0)  # 25% slow por 2s
+		"dark", "void":
+			if player.has_method("apply_weakness"):
+				player.apply_weakness(0.2, 3.0)  # +20% daño recibido por 3s
+		"poison":
+			if player.has_method("apply_poison"):
+				player.apply_poison(2.0, 4.0)
 
 func _perform_ranged_attack() -> void:
 	"""Ataque ranged: disparar proyectil al jugador"""
@@ -276,9 +319,31 @@ func _perform_aoe_attack() -> void:
 			player.take_damage(aoe_damage)
 			print("[EnemyAttackSystem] 💥 %s AoE hit player por %d daño (radio=%.0f)" % [enemy.name, aoe_damage, radius])
 			attacked_player.emit(aoe_damage, false)
+			# Aplicar efectos según elemento del AoE
+			_apply_aoe_effects()
 	
 	# Efecto visual del AoE
 	_spawn_aoe_visual(enemy.global_position, radius)
+
+func _apply_aoe_effects() -> void:
+	"""Aplicar efectos de estado en ataques AoE"""
+	var elem = _get_enemy_element()
+	
+	# Señor de las Llamas - Burn
+	if elem == "fire":
+		if player.has_method("apply_burn"):
+			player.apply_burn(5.0, 3.0)  # 5 daño/tick por 3s
+			print("[EnemyAttackSystem] 🔥 AoE aplica Burn!")
+	# Reina del Hielo - Slow/Freeze
+	elif elem == "ice":
+		if player.has_method("apply_slow"):
+			player.apply_slow(0.4, 3.0)  # 40% slow por 3s
+			print("[EnemyAttackSystem] ❄️ AoE aplica Slow!")
+	# Titán Arcano - Stun
+	elif "arcane" in enemy.name.to_lower() or "titan" in enemy.name.to_lower():
+		if player.has_method("apply_stun"):
+			player.apply_stun(0.5)  # 0.5s stun
+			print("[EnemyAttackSystem] ⚡ AoE aplica Stun!")
 
 func _perform_breath_attack() -> void:
 	"""Ataque de aliento: daño en cono hacia el player"""
@@ -300,9 +365,21 @@ func _perform_breath_attack() -> void:
 			player.take_damage(breath_damage)
 			print("[EnemyAttackSystem] 🐉 %s Breath hit player por %d daño" % [enemy.name, breath_damage])
 			attacked_player.emit(breath_damage, false)
+			# Aplicar efectos de breath
+			_apply_breath_effects()
 	
 	# Efecto visual del breath
 	_spawn_breath_visual(enemy.global_position, direction, cone_range)
+
+func _apply_breath_effects() -> void:
+	"""Aplicar efectos del ataque breath"""
+	var elem = _get_enemy_element()
+	
+	# Dragón Etéreo es de tipo 'fire' o 'etereo'
+	# Aplicar burn siempre en breath de dragón
+	if player.has_method("apply_burn"):
+		player.apply_burn(6.0, 2.5)  # 6 daño/tick por 2.5s
+		print("[EnemyAttackSystem] 🔥 Breath aplica Burn!")
 
 func _perform_multi_attack() -> void:
 	"""Ataque múltiple: varios proyectiles o ataques en secuencia"""
@@ -370,10 +447,34 @@ func _perform_boss_melee_attack() -> void:
 	player.take_damage(boss_damage)
 	print("[EnemyAttackSystem] 👹 %s (Boss) melee devastador por %d daño" % [enemy.name, boss_damage])
 	
+	# Aplicar efecto según el boss
+	_apply_boss_melee_effects()
+	
 	attacked_player.emit(boss_damage, true)
 	
 	# Efecto visual de impacto de boss (más grande)
 	_spawn_boss_impact_effect()
+
+func _apply_boss_melee_effects() -> void:
+	"""Efectos de estado en ataques melee de boss"""
+	var enemy_name_lower = enemy.name.to_lower()
+	
+	# Minotauro - Burn
+	if "minotauro" in enemy_name_lower or "fuego" in enemy_name_lower:
+		if player.has_method("apply_burn"):
+			player.apply_burn(8.0, 3.0)  # 8 daño/tick por 3s
+	# Corazón del Vacío - Weakness
+	elif "corazon" in enemy_name_lower or "vacio" in enemy_name_lower:
+		if player.has_method("apply_weakness"):
+			player.apply_weakness(0.3, 4.0)  # +30% daño recibido por 4s
+	# Guardián de Runas - Stun breve
+	elif "guardian" in enemy_name_lower or "runas" in enemy_name_lower:
+		if player.has_method("apply_stun"):
+			player.apply_stun(0.3)  # 0.3s stun
+	# Conjurador - Curse
+	elif "conjurador" in enemy_name_lower:
+		if player.has_method("apply_curse"):
+			player.apply_curse(0.4, 5.0)  # -40% curación por 5s
 
 func _perform_boss_void_explosion() -> void:
 	"""El Corazón del Vacío - explosión de vacío"""
@@ -390,6 +491,10 @@ func _perform_boss_void_explosion() -> void:
 			player.take_damage(explosion_damage)
 			print("[EnemyAttackSystem] 💜 %s Void Explosion por %d daño!" % [enemy.name, explosion_damage])
 			attacked_player.emit(explosion_damage, false)
+			# Aplicar Weakness fuerte
+			if player.has_method("apply_weakness"):
+				player.apply_weakness(0.4, 5.0)  # +40% daño recibido por 5s
+				print("[EnemyAttackSystem] 💜 Void Explosion aplica Weakness!")
 	
 	# Visual de explosión de vacío
 	_spawn_void_explosion_visual(enemy.global_position, explosion_radius)
@@ -408,6 +513,10 @@ func _perform_boss_rune_blast() -> void:
 			player.take_damage(blast_damage)
 			print("[EnemyAttackSystem] ✨ %s Rune Blast por %d daño!" % [enemy.name, blast_damage])
 			attacked_player.emit(blast_damage, false)
+			# Aplicar Stun
+			if player.has_method("apply_stun"):
+				player.apply_stun(0.5)  # 0.5s stun
+				print("[EnemyAttackSystem] ✨ Rune Blast aplica Stun!")
 	
 	# Visual de runas
 	_spawn_rune_blast_visual(enemy.global_position, blast_radius)
@@ -426,6 +535,12 @@ func _perform_boss_fire_stomp() -> void:
 			player.take_damage(stomp_damage)
 			print("[EnemyAttackSystem] 🔥 %s Fire Stomp por %d daño!" % [enemy.name, stomp_damage])
 			attacked_player.emit(stomp_damage, false)
+			# Aplicar Burn fuerte + Stun breve
+			if player.has_method("apply_burn"):
+				player.apply_burn(10.0, 4.0)  # 10 daño/tick por 4s (muy fuerte)
+				print("[EnemyAttackSystem] 🔥 Fire Stomp aplica Burn!")
+			if player.has_method("apply_stun"):
+				player.apply_stun(0.3)  # 0.3s stun
 	
 	# Visual de pisotón de fuego
 	_spawn_fire_stomp_visual(enemy.global_position, stomp_radius)
