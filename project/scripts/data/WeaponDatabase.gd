@@ -63,7 +63,7 @@ const WEAPONS: Dictionary = {
 		"rarity": "common",
 		
 		# Stats base
-		"damage": 10,
+		"damage": 14,  # BUFFED from 10
 		"cooldown": 1.4,
 		"range": 350.0,
 		"projectile_speed": 320.0,
@@ -79,7 +79,7 @@ const WEAPONS: Dictionary = {
 		
 		# Efecto especial
 		"effect": "slow",
-		"effect_value": 0.30,  # 30% slow
+		"effect_value": 0.40,  # BUFFED from 0.30 (40% slow)
 		"effect_duration": 2.0,
 		
 		# Visual
@@ -195,11 +195,11 @@ const WEAPONS: Dictionary = {
 		"rarity": "common",
 		
 		"damage": 7,
-		"cooldown": 0.9,  # Rápido pero balanceado
+		"cooldown": 1.0,  # NERFED from 0.9
 		"range": 450.0,
 		"projectile_speed": 500.0,
 		"projectile_count": 1,
-		"pierce": 3,
+		"pierce": 2,  # NERFED from 3
 		"area": 0.8,
 		"duration": 0.0,
 		"knockback": 30.0,
@@ -258,7 +258,7 @@ const WEAPONS: Dictionary = {
 		"element": Element.WIND,
 		"rarity": "common",
 		
-		"damage": 6,
+		"damage": 8,  # BUFFED from 6
 		"cooldown": 1.2,
 		"range": 380.0,
 		"projectile_speed": 450.0,
@@ -322,8 +322,8 @@ const WEAPONS: Dictionary = {
 		"element": Element.LIGHT,
 		"rarity": "rare",
 		
-		"damage": 25,
-		"cooldown": 2.0,
+		"damage": 20,  # NERFED from 25
+		"cooldown": 2.3,  # NERFED from 2.0
 		"range": 600.0,
 		"projectile_speed": 999.0,  # Instantáneo
 		"projectile_count": 1,
@@ -502,11 +502,11 @@ const FUSIONS: Dictionary = {
 		"description": "Orbes de luz pura que protegen y dañan",
 		"components": ["arcane_orb", "light_beam"],
 		
-		"damage": 20,
+		"damage": 12,  # NERFED from 20
 		"cooldown": 0.0,
 		"range": 150.0,
 		"projectile_speed": 250.0,
-		"projectile_count": 5,
+		"projectile_count": 4,  # NERFED from 5
 		"pierce": 999,
 		"area": 1.5,
 		"duration": 999.0,
@@ -516,7 +516,7 @@ const FUSIONS: Dictionary = {
 		"projectile_type": ProjectileType.ORBIT,
 		
 		"effect": "crit_chance",
-		"effect_value": 0.25,
+		"effect_value": 0.15,  # NERFED from 0.25
 		"effect_duration": 0.0,
 		
 		"color": Color(0.9, 0.8, 1.0),
@@ -657,8 +657,8 @@ const FUSIONS: Dictionary = {
 		"description": "Un tornado de vacío que succiona y destruye enemigos",
 		"components": ["void_pulse", "wind_blade"],
 		
-		"damage": 22,
-		"cooldown": 1.8,
+		"damage": 28,  # BUFFED from 22
+		"cooldown": 1.5,  # BUFFED from 1.8
 		"range": 280.0,
 		"projectile_speed": 150.0,
 		"projectile_count": 1,
@@ -688,7 +688,7 @@ const FUSIONS: Dictionary = {
 		"description": "Cristales mágicos que orbitan y explotan al contacto",
 		"components": ["earth_spike", "arcane_orb"],
 		
-		"damage": 16,
+		"damage": 12,  # NERFED from 16
 		"cooldown": 0.0,
 		"range": 140.0,
 		"projectile_speed": 180.0,
@@ -749,7 +749,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Orbe de Escarcha",
 		"description": "Orbes de hielo que orbitan y ralentizan enemigos cercanos",
 		"components": ["ice_wand", "arcane_orb"],
-		"damage": 10,
+		"damage": 8,  # NERFED from 10
 		"cooldown": 0.0,
 		"range": 130.0,
 		"projectile_speed": 190.0,
@@ -803,7 +803,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Ventisca",
 		"description": "Una tormenta de nieve que ralentiza y daña en área",
 		"components": ["ice_wand", "wind_blade"],
-		"damage": 8,
+		"damage": 12,  # BUFFED from 8
 		"cooldown": 0.6,
 		"range": 350.0,
 		"projectile_speed": 400.0,
@@ -884,8 +884,8 @@ const FUSIONS: Dictionary = {
 		"name_es": "Cero Absoluto",
 		"description": "Un pulso de frío absoluto que congela el espacio-tiempo",
 		"components": ["ice_wand", "void_pulse"],
-		"damage": 20,
-		"cooldown": 2.2,
+		"damage": 28,  # BUFFED from 20
+		"cooldown": 1.8,  # BUFFED from 2.2
 		"range": 220.0,
 		"projectile_speed": 0.0,
 		"projectile_count": 1,
@@ -938,7 +938,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Orbe Infernal",
 		"description": "Orbes de fuego mágico que orbitan dejando rastros de llamas",
 		"components": ["fire_wand", "arcane_orb"],
-		"damage": 12,
+		"damage": 9,  # NERFED from 12
 		"cooldown": 0.0,
 		"range": 125.0,
 		"projectile_speed": 210.0,
@@ -1073,8 +1073,8 @@ const FUSIONS: Dictionary = {
 		"name_es": "Llama Oscura",
 		"description": "Fuego del vacío que atrae y consume enemigos",
 		"components": ["fire_wand", "void_pulse"],
-		"damage": 24,
-		"cooldown": 2.3,
+		"damage": 28,  # BUFFED from 24
+		"cooldown": 1.8,  # BUFFED from 2.3
 		"range": 210.0,
 		"projectile_speed": 0.0,
 		"projectile_count": 1,
@@ -1100,11 +1100,11 @@ const FUSIONS: Dictionary = {
 		"name_es": "Tormenta Arcana",
 		"description": "Orbes que disparan rayos a enemigos cercanos",
 		"components": ["lightning_wand", "arcane_orb"],
-		"damage": 14,
+		"damage": 9,  # NERFED from 14
 		"cooldown": 0.0,
 		"range": 160.0,
 		"projectile_speed": 200.0,
-		"projectile_count": 4,
+		"projectile_count": 3,  # NERFED from 4
 		"pierce": 0,
 		"area": 1.0,
 		"duration": 999.0,
@@ -1181,8 +1181,8 @@ const FUSIONS: Dictionary = {
 		"name_es": "Rayo Sísmico",
 		"description": "Rayos que crean ondas sísmicas al impactar",
 		"components": ["lightning_wand", "earth_spike"],
-		"damage": 28,
-		"cooldown": 1.7,
+		"damage": 32,  # BUFFED from 28
+		"cooldown": 1.4,  # BUFFED from 1.7
 		"range": 350.0,
 		"projectile_speed": 600.0,
 		"projectile_count": 1,
@@ -1208,8 +1208,8 @@ const FUSIONS: Dictionary = {
 		"name_es": "Rayo del Vacío",
 		"description": "Rayos que abren portales que atraen enemigos",
 		"components": ["lightning_wand", "void_pulse"],
-		"damage": 26,
-		"cooldown": 2.0,
+		"damage": 32,  # BUFFED from 26
+		"cooldown": 1.6,  # BUFFED from 2.0
 		"range": 380.0,
 		"projectile_speed": 650.0,
 		"projectile_count": 1,
@@ -1235,7 +1235,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Orbes de Sombra",
 		"description": "Orbes oscuros que disparan dagas fantasmales",
 		"components": ["arcane_orb", "shadow_dagger"],
-		"damage": 10,
+		"damage": 8,  # NERFED from 10
 		"cooldown": 0.0,
 		"range": 135.0,
 		"projectile_speed": 220.0,
@@ -1262,7 +1262,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Orbes de Vida",
 		"description": "Orbes vivientes que curan mientras dañan",
 		"components": ["arcane_orb", "nature_staff"],
-		"damage": 9,
+		"damage": 7,  # NERFED from 9
 		"cooldown": 0.0,
 		"range": 140.0,
 		"projectile_speed": 200.0,
@@ -1289,7 +1289,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Orbes de Viento",
 		"description": "Orbes rápidos que empujan enemigos hacia afuera",
 		"components": ["arcane_orb", "wind_blade"],
-		"damage": 8,
+		"damage": 6,  # NERFED from 8
 		"cooldown": 0.0,
 		"range": 150.0,
 		"projectile_speed": 280.0,
@@ -1316,13 +1316,13 @@ const FUSIONS: Dictionary = {
 		"name_es": "Vacío Cósmico",
 		"description": "Orbes del vacío que marcan enemigos para daño extra",
 		"components": ["arcane_orb", "void_pulse"],
-		"damage": 16,
+		"damage": 10,  # NERFED from 16
 		"cooldown": 0.0,
 		"range": 180.0,
 		"projectile_speed": 160.0,
 		"projectile_count": 4,
 		"pierce": 999,
-		"area": 1.8,
+		"area": 1.3,  # NERFED from 1.8
 		"duration": 999.0,
 		"knockback": 0.0,
 		"target_type": TargetType.ORBIT,
@@ -1398,11 +1398,11 @@ const FUSIONS: Dictionary = {
 		"description": "Dagas de luz y sombra que critican frecuentemente",
 		"components": ["shadow_dagger", "light_beam"],
 		"damage": 16,
-		"cooldown": 0.45,
+		"cooldown": 0.65,  # NERFED from 0.45
 		"range": 450.0,
 		"projectile_speed": 520.0,
 		"projectile_count": 2,
-		"pierce": 4,
+		"pierce": 3,  # NERFED from 4
 		"area": 0.9,
 		"duration": 0.0,
 		"knockback": 40.0,
@@ -1418,11 +1418,13 @@ const FUSIONS: Dictionary = {
 	# ─────────────────────────────────────────────────────────────────────────────
 	# SHADOW + VOID: ABYSS - El abismo
 	# ─────────────────────────────────────────────────────────────────────────────
+	# SHADOW + VOID: ABYSS - Dagas que crean vórtices de vacío
+	# ─────────────────────────────────────────────────────────────────────────────
 	"shadow_dagger+void_pulse": {
 		"id": "abyss",
 		"name": "Abyss",
 		"name_es": "Abismo",
-		"description": "Dagas del abismo que ciegan y devoran la luz",
+		"description": "Dagas del abismo que crean vórtices de vacío al impactar, atrayendo enemigos",
 		"components": ["shadow_dagger", "void_pulse"],
 		"damage": 18,
 		"cooldown": 0.6,
@@ -1430,14 +1432,14 @@ const FUSIONS: Dictionary = {
 		"projectile_speed": 400.0,
 		"projectile_count": 3,
 		"pierce": 5,
-		"area": 1.2,
-		"duration": 0.0,
-		"knockback": -60.0,
+		"area": 1.5,  # Área de atracción aumentada
+		"duration": 1.2,  # Duración del vórtice en el punto de impacto
+		"knockback": 50.0,  # Knockback normal al impactar (el pull viene del efecto)
 		"target_type": TargetType.DIRECTION,
 		"projectile_type": ProjectileType.MULTI,
-		"effect": "blind",
-		"effect_value": 0.0,
-		"effect_duration": 2.0,
+		"effect": "pull",  # Cambiado de blind a pull
+		"effect_value": 120.0,  # Fuerza de atracción hacia el punto de impacto
+		"effect_duration": 1.2,  # Tiempo que dura atrayendo
 		"color": Color(0.1, 0.0, 0.2),
 		"icon": "🕳️🗡️"
 	},
@@ -1451,7 +1453,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Tormenta de Polen",
 		"description": "Esporas venenosas que el viento esparce por todos lados",
 		"components": ["nature_staff", "wind_blade"],
-		"damage": 7,
+		"damage": 11,  # BUFFED from 7
 		"cooldown": 0.65,
 		"range": 400.0,
 		"projectile_speed": 350.0,
@@ -1463,7 +1465,7 @@ const FUSIONS: Dictionary = {
 		"target_type": TargetType.HOMING,
 		"projectile_type": ProjectileType.MULTI,
 		"effect": "lifesteal",
-		"effect_value": 1,
+		"effect_value": 2,  # BUFFED from 1
 		"effect_duration": 0.0,
 		"color": Color(0.7, 0.9, 0.4),
 		"icon": "🌿🌪️"
@@ -1532,8 +1534,8 @@ const FUSIONS: Dictionary = {
 		"name_es": "Descomposición",
 		"description": "El poder de la naturaleza y el vacío consume todo",
 		"components": ["nature_staff", "void_pulse"],
-		"damage": 20,
-		"cooldown": 2.0,
+		"damage": 26,  # BUFFED from 20
+		"cooldown": 1.7,  # BUFFED from 2.0
 		"range": 240.0,
 		"projectile_speed": 0.0,
 		"projectile_count": 1,
