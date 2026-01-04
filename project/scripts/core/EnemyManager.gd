@@ -456,3 +456,96 @@ func set_spawn_rate(new_rate: float) -> void:
 
 func set_max_enemies(new_max: int) -> void:
 	max_enemies = max(1, new_max)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# API PARA WAVEMANAGER
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func spawn_specific_enemy(enemy_id: String, world_pos: Vector2, multipliers: Dictionary = {}) -> Node:
+	"""Spawnear un enemigo específico por su ID en una posición dada"""
+	var enemy_data = EnemyDatabase.get_enemy_by_id(enemy_id)
+	
+	if enemy_data.is_empty():
+		push_warning("[EnemyManager] No se encontró enemigo con ID: %s" % enemy_id)
+		return null
+	
+	# Aplicar escalado base
+	var minute = game_time_seconds / 60.0
+	var difficulty_mult = 1.0
+	if difficulty_manager:
+		difficulty_mult = difficulty_manager.enemy_health_multiplier
+	
+	enemy_data = EnemyDatabase.apply_difficulty_scaling(enemy_data, minute, difficulty_mult)
+	
+	# Aplicar multiplicadores adicionales del WaveManager (escalado infinito)
+	if multipliers.has("hp_multiplier"):
+		enemy_data["final_hp"] = int(enemy_data.get("final_hp", enemy_data.get("base_hp", 20)) * multipliers.hp_multiplier)
+	if multipliers.has("damage_multiplier"):
+		enemy_data["final_damage"] = int(enemy_data.get("final_damage", enemy_data.get("base_damage", 5)) * multipliers.damage_multiplier)
+	
+	return spawn_enemy(enemy_data, world_pos)
+
+func spawn_boss(boss_id: String, world_pos: Vector2, multipliers: Dictionary = {}) -> Node:
+	"""Spawnear un boss específico - usado por WaveManager"""
+	var boss_data = EnemyDatabase.get_enemy_by_id(boss_id)
+	
+	if boss_data.is_empty():
+		push_warning("[EnemyManager] No se encontró boss con ID: %s" % boss_id)
+		return null
+	
+	# Aplicar escalado
+	var minute = game_time_seconds / 60.0
+	var difficulty_mult = 1.0
+	if difficulty_manager:
+		difficulty_mult = difficulty_manager.enemy_health_multiplier
+	
+	boss_data = EnemyDatabase.apply_difficulty_scaling(boss_data, minute, difficulty_mult)
+	boss_data["is_boss"] = true
+	
+	# Aplicar multiplicadores adicionales (escalado infinito)
+	if multipliers.has("hp_multiplier"):
+		boss_data["final_hp"] = int(boss_data.get("final_hp", boss_data.get("base_hp", 100)) * multipliers.hp_multiplier)
+	if multipliers.has("damage_multiplier"):
+		boss_data["final_damage"] = int(boss_data.get("final_damage", boss_data.get("base_damage", 20)) * multipliers.damage_multiplier)
+	
+	var boss = spawn_enemy(boss_data, world_pos)
+	
+	if boss:
+		emit_signal("boss_spawned", boss)
+		print("🔥 [EnemyManager] ¡BOSS SPAWNEADO: %s!" % boss_data.name)
+	
+	return boss
+
+func spawn_elite(enemy_id: String, world_pos: Vector2, multipliers: Dictionary = {}) -> Node:
+	"""Spawnear un élite de un tipo específico - usado por WaveManager"""
+	var base_enemy = EnemyDatabase.get_enemy_by_id(enemy_id)
+	
+	if base_enemy.is_empty():
+		push_warning("[EnemyManager] No se encontró enemigo para élite con ID: %s" % enemy_id)
+		return null
+	
+	# Convertir a élite
+	var elite_data = EnemyDatabase.create_elite_version(base_enemy)
+	
+	# Aplicar escalado normal
+	var minute = game_time_seconds / 60.0
+	var difficulty_mult = 1.0
+	if difficulty_manager:
+		difficulty_mult = difficulty_manager.enemy_health_multiplier
+	
+	elite_data = EnemyDatabase.apply_difficulty_scaling(elite_data, minute, difficulty_mult)
+	
+	# Aplicar multiplicadores adicionales (escalado infinito)
+	if multipliers.has("hp_multiplier"):
+		elite_data["final_hp"] = int(elite_data.get("final_hp", elite_data.get("base_hp", 50)) * multipliers.hp_multiplier)
+	if multipliers.has("damage_multiplier"):
+		elite_data["final_damage"] = int(elite_data.get("final_damage", elite_data.get("base_damage", 10)) * multipliers.damage_multiplier)
+	
+	var elite = spawn_enemy(elite_data, world_pos)
+	
+	if elite:
+		elites_spawned_this_run += 1
+		emit_signal("elite_spawned", elite)
+		print("⭐ [EnemyManager] ¡ÉLITE SPAWNEADO: %s!" % elite_data.name)
+	
+	return elite

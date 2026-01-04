@@ -782,3 +782,20 @@ static func should_spawn_elite(minute: float, elites_spawned: int) -> bool:
 	# Chance aumenta con el tiempo
 	var chance = ELITE_CONFIG.spawn_chance_per_minute * minute
 	return randf() < chance
+
+static func get_enemies_by_tier(tier: int) -> Array:
+	"""Obtener array con los IDs de enemigos de un tier específico"""
+	var ids = []
+	var source = {}
+	
+	match tier:
+		1: source = TIER_1_ENEMIES
+		2: source = TIER_2_ENEMIES
+		3: source = TIER_3_ENEMIES
+		4: source = TIER_4_ENEMIES
+		5: source = BOSSES
+	
+	for key in source:
+		ids.append(key)
+	
+	return ids
