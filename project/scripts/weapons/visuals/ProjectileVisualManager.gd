@@ -1109,7 +1109,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 12.0,  # Powerful seismic
-		"sprite_scale": 1.8,  # Reduced from 3.6 (50%)
+		"sprite_scale": 1.0,  # Reduced from 3.6
 		"frame_size": 120,
 		"is_aoe": true
 	},
