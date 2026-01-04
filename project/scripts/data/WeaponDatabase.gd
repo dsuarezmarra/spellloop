@@ -1324,7 +1324,7 @@ const FUSIONS: Dictionary = {
 		"pierce": 999,
 		"area": 1.3,  # NERFED from 1.8
 		"duration": 999.0,
-		"knockback": 0.0,
+		"knockback": 25.0,  # Fixed from 0.0
 		"target_type": TargetType.ORBIT,
 		"projectile_type": ProjectileType.ORBIT,
 		"effect": "shadow_mark",
