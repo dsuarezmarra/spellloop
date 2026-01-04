@@ -27,6 +27,15 @@ func _ready() -> void:
 	# Añadir al grupo "player" para que otros sistemas puedan encontrarnos
 	add_to_group("player")
 	
+	# Configurar capas de colisión para SpellloopPlayer (quien hace move_and_slide)
+	collision_layer = 0
+	set_collision_layer_value(1, true)   # Capa player
+	collision_mask = 0
+	set_collision_mask_value(2, true)    # Enemigos
+	set_collision_mask_value(4, true)    # Proyectiles enemigos
+	set_collision_mask_value(5, true)    # Pickups
+	set_collision_mask_value(8, true)    # Barreras de zona
+	
 	var wizard_script = load("res://scripts/entities/players/WizardPlayer.gd")
 	if not wizard_script:
 		print("[SpellloopPlayer] ERROR: No se pudo cargar WizardPlayer.gd")

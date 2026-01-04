@@ -25,7 +25,7 @@ signal wave_cleared()
 @export var spawn_distance: float = 600.0
 @export var max_enemies: int = 50
 @export var base_spawn_rate: float = 1.5  # Enemigos por segundo base
-@export var debug_spawns: bool = false
+@export var debug_spawns: bool = true  # Habilitado para depuración de zonas
 
 @export_group("Scaling")
 @export var spawn_rate_increase_per_minute: float = 0.1  # +10% por minuto
@@ -147,6 +147,14 @@ func _attempt_spawn() -> void:
 	
 	# Determinar el tier basado en la zona donde va a spawnear
 	var selected_tier = _get_tier_for_spawn_position(pos)
+	
+	if debug_spawns:
+		var arena_manager = _get_arena_manager()
+		var zone_name = "UNKNOWN"
+		if arena_manager:
+			var zone = arena_manager.get_zone_at_position(pos)
+			zone_name = str(zone)
+		print("[EnemyManager] 🎯 Spawn en pos %s, zona=%s, tier=%d" % [pos, zone_name, selected_tier])
 	
 	# Verificar que tenemos enemigos disponibles para este tier
 	var enemy_data = EnemyDatabase.get_random_enemy_for_tier(selected_tier)
