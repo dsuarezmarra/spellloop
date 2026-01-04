@@ -307,9 +307,45 @@ func initialize_from_database(data: Dictionary, player) -> void:
 	if is_elite:
 		_create_elite_aura()
 	
+	# Actualizar sistema de ataque con configuración completa (especialmente para bosses)
+	if attack_system:
+		attack_system.initialize_full({
+			"attack_cooldown": attack_cooldown,
+			"attack_range": attack_range,
+			"damage": damage,
+			"is_ranged": archetype in ["ranged", "teleporter"],
+			"archetype": archetype,
+			"element_type": _determine_element_from_id(enemy_id),
+			"special_abilities": special_abilities,
+			"modifiers": modifiers
+		})
+		
+		# Para bosses, pasar también los ability_cooldowns
+		if is_boss and data.has("ability_cooldowns"):
+			attack_system.modifiers["ability_cooldowns"] = data.ability_cooldowns
+	
 	print("[EnemyBase] ✓ Inicializado desde DB: %s (T%d, %s) HP:%d SPD:%.0f DMG:%d" % [
 		data.get("name", enemy_id), enemy_tier, archetype, max_hp, speed, damage
 	])
+
+func _determine_element_from_id(id: String) -> String:
+	"""Determinar elemento del enemigo basado en su ID"""
+	var lower_id = id.to_lower()
+	
+	if "fuego" in lower_id or "fire" in lower_id or "minotauro" in lower_id:
+		return "fire"
+	if "hielo" in lower_id or "ice" in lower_id or "frost" in lower_id or "cristal" in lower_id:
+		return "ice"
+	if "void" in lower_id or "vacio" in lower_id or "shadow" in lower_id or "corazon" in lower_id:
+		return "dark"
+	if "arcano" in lower_id or "conjurador" in lower_id or "mago" in lower_id or "guardian" in lower_id or "runas" in lower_id:
+		return "arcane"
+	if "veneno" in lower_id or "poison" in lower_id:
+		return "poison"
+	if "rayo" in lower_id or "lightning" in lower_id:
+		return "lightning"
+	
+	return "physical"
 
 func _setup_archetype_behavior() -> void:
 	"""Configurar comportamiento específico según arquetipo"""

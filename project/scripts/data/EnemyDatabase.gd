@@ -517,7 +517,9 @@ const TIER_4_ENEMIES = {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# BASE DE DATOS DE BOSSES
+# BASE DE DATOS DE BOSSES - DISEÑADOS COMO AUTÉNTICOS DESAFÍOS
+# Cada boss tiene múltiples habilidades con cooldowns independientes
+# La dificultad escala según el minuto de aparición
 # ═══════════════════════════════════════════════════════════════════════════════
 
 const BOSSES = {
@@ -526,26 +528,55 @@ const BOSSES = {
 		"name": "El Conjurador Primigenio",
 		"tier": 5,
 		"archetype": "boss",
-		"base_hp": 800,
-		"base_damage": 50,
-		"base_speed": 28.0,
+		"base_hp": 1000,
+		"base_damage": 45,
+		"base_speed": 30.0,
 		"base_xp": 100,
-		"attack_range": 300.0,
-		"attack_cooldown": 2.5,
+		"attack_range": 280.0,
+		"attack_cooldown": 2.0,
 		"collision_radius": 32.0,
-		"description": "El primer mago. Invoca legiones desde el más allá.",
-		"spawn_minute": 5,  # Aparece en el minuto 5
+		"description": "El primer mago. Domina la invocación y la magia arcana.",
+		"spawn_minute": 5,
 		"phases": 3,
-		"special_abilities": ["summon_minions", "ranged_attack", "teleport", "phase_transition"],
+		"special_abilities": [
+			"arcane_barrage",      # Ráfaga de 5 proyectiles arcanos
+			"summon_minions",      # Invoca enemigos
+			"teleport_strike",     # Teleport + ataque inmediato
+			"arcane_nova",         # Nova de daño en área
+			"curse_aura"           # Aura que reduce curación del player
+		],
+		"ability_cooldowns": {
+			"arcane_barrage": 3.0,
+			"summon_minions": 12.0,
+			"teleport_strike": 8.0,
+			"arcane_nova": 10.0,
+			"curse_aura": 15.0
+		},
 		"modifiers": {
-			"summon_count": 3,           # Enemigos invocados
-			"summon_cooldown": 10.0,
-			"summon_tier": 1,            # Tier de enemigos invocados
-			"teleport_cooldown": 8.0,
-			"phase_2_hp": 0.6,           # Fase 2 al 60% HP
-			"phase_3_hp": 0.3,           # Fase 3 al 30% HP
-			"phase_2_summon_count": 5,
-			"phase_3_summon_tier": 2
+			# Arcane Barrage
+			"barrage_count": 5,
+			"barrage_damage": 15,
+			"barrage_spread": 30.0,      # Grados de dispersión
+			# Summon
+			"summon_count": 2,
+			"summon_tier": 1,
+			# Teleport Strike
+			"teleport_range": 200.0,
+			"teleport_damage_mult": 1.5,
+			# Arcane Nova
+			"nova_radius": 120.0,
+			"nova_damage": 40,
+			# Curse Aura
+			"curse_radius": 150.0,
+			"curse_reduction": 0.5,      # -50% curación
+			"curse_duration": 8.0,
+			# Fases
+			"phase_2_hp": 0.6,
+			"phase_3_hp": 0.3,
+			"phase_2_summon_count": 3,
+			"phase_2_barrage_count": 7,
+			"phase_3_summon_tier": 2,
+			"phase_3_nova_damage": 60
 		}
 	},
 	"el_corazon_del_vacio": {
@@ -553,31 +584,63 @@ const BOSSES = {
 		"name": "El Corazón del Vacío",
 		"tier": 5,
 		"archetype": "boss",
-		"base_hp": 1200,
-		"base_damage": 55,
-		"base_speed": 20.0,
-		"base_xp": 120,
+		"base_hp": 1500,
+		"base_damage": 50,
+		"base_speed": 18.0,
+		"base_xp": 150,
 		"attack_range": 250.0,
-		"attack_cooldown": 3.0,
+		"attack_cooldown": 2.5,
 		"collision_radius": 40.0,
-		"description": "Núcleo de pura energía del vacío. Atrae todo hacia sí.",
+		"description": "Núcleo de energía del vacío. Distorsiona la realidad a su alrededor.",
 		"spawn_minute": 10,
 		"phases": 3,
-		"special_abilities": ["void_pull", "void_explosion", "damage_aura", "phase_transition"],
+		"special_abilities": [
+			"void_pull",           # Atrae al player hacia él
+			"void_explosion",      # Explosión masiva de vacío
+			"void_orbs",           # Lanza orbes que persiguen
+			"reality_tear",        # Crea zona de daño persistente
+			"damage_aura",         # Aura de daño constante
+			"void_beam"            # Rayo canalizado de alto daño
+		],
+		"ability_cooldowns": {
+			"void_pull": 6.0,
+			"void_explosion": 10.0,
+			"void_orbs": 5.0,
+			"reality_tear": 12.0,
+			"damage_aura": 0.0,          # Siempre activa
+			"void_beam": 15.0
+		},
 		"modifiers": {
-			"pull_radius": 300.0,
-			"pull_force": 100.0,
-			"pull_duration": 2.0,
-			"pull_cooldown": 8.0,
-			"explosion_radius": 150.0,
-			"explosion_damage": 60,
-			"explosion_cooldown": 12.0,
-			"aura_radius": 80.0,
-			"aura_damage": 10,           # DPS
+			# Void Pull
+			"pull_radius": 350.0,
+			"pull_force": 150.0,
+			"pull_duration": 2.5,
+			# Void Explosion
+			"explosion_radius": 180.0,
+			"explosion_damage": 70,
+			# Void Orbs
+			"orb_count": 3,
+			"orb_damage": 25,
+			"orb_speed": 120.0,
+			"orb_duration": 5.0,
+			# Reality Tear
+			"tear_radius": 80.0,
+			"tear_damage": 15,           # DPS
+			"tear_duration": 6.0,
+			# Damage Aura
+			"aura_radius": 100.0,
+			"aura_damage": 8,            # DPS
+			# Void Beam
+			"beam_damage": 30,           # DPS durante canalización
+			"beam_duration": 3.0,
+			"beam_width": 40.0,
+			# Fases
 			"phase_2_hp": 0.5,
 			"phase_3_hp": 0.2,
-			"phase_2_pull_force": 150.0,
-			"phase_3_aura_radius": 120.0
+			"phase_2_pull_force": 200.0,
+			"phase_2_orb_count": 5,
+			"phase_3_aura_radius": 150.0,
+			"phase_3_explosion_damage": 100
 		}
 	},
 	"el_guardian_de_runas": {
@@ -585,30 +648,59 @@ const BOSSES = {
 		"name": "El Guardián de Runas",
 		"tier": 5,
 		"archetype": "boss",
-		"base_hp": 1500,
-		"base_damage": 45,
+		"base_hp": 2000,
+		"base_damage": 55,
 		"base_speed": 25.0,
-		"base_xp": 140,
+		"base_xp": 180,
 		"attack_range": 200.0,
-		"attack_cooldown": 2.0,
-		"collision_radius": 36.0,
-		"description": "Protector ancestral. Sus runas lo hacen casi invulnerable.",
+		"attack_cooldown": 1.8,
+		"collision_radius": 38.0,
+		"description": "Protector ancestral cubierto de runas de poder. Casi indestructible.",
 		"spawn_minute": 15,
 		"phases": 3,
-		"special_abilities": ["rune_shield", "rune_blast", "counter_attack", "phase_transition"],
+		"special_abilities": [
+			"rune_shield",         # Escudo que absorbe hits
+			"rune_blast",          # Explosión de runas
+			"rune_prison",         # Atrapa al player brevemente
+			"counter_stance",      # Postura de contraataque
+			"rune_barrage",        # Múltiples runas disparadas
+			"ground_slam"          # Golpe de tierra con ondas
+		],
+		"ability_cooldowns": {
+			"rune_shield": 18.0,
+			"rune_blast": 5.0,
+			"rune_prison": 12.0,
+			"counter_stance": 10.0,
+			"rune_barrage": 7.0,
+			"ground_slam": 8.0
+		},
 		"modifiers": {
-			"shield_charges": 3,         # Hits que absorbe el escudo
-			"shield_duration": 8.0,
-			"shield_cooldown": 15.0,
-			"blast_damage": 45,
-			"blast_radius": 100.0,
-			"blast_cooldown": 6.0,
-			"counter_damage_mult": 2.0,
-			"counter_window": 0.5,       # Ventana de contraataque
+			# Rune Shield
+			"shield_charges": 4,
+			"shield_duration": 10.0,
+			# Rune Blast
+			"blast_radius": 120.0,
+			"blast_damage": 50,
+			# Rune Prison
+			"prison_duration": 1.5,
+			"prison_damage": 20,         # Daño al escapar
+			# Counter Stance
+			"counter_window": 2.0,
+			"counter_damage_mult": 2.5,
+			# Rune Barrage
+			"barrage_count": 6,
+			"barrage_damage": 20,
+			# Ground Slam
+			"slam_radius": 150.0,
+			"slam_damage": 45,
+			"slam_stun": 0.5,
+			# Fases
 			"phase_2_hp": 0.6,
 			"phase_3_hp": 0.25,
-			"phase_2_shield_charges": 5,
-			"phase_3_counter_damage_mult": 3.0
+			"phase_2_shield_charges": 6,
+			"phase_2_blast_damage": 70,
+			"phase_3_counter_damage_mult": 3.5,
+			"phase_3_slam_damage": 70
 		}
 	},
 	"minotauro_de_fuego": {
@@ -616,30 +708,66 @@ const BOSSES = {
 		"name": "Minotauro de Fuego",
 		"tier": 5,
 		"archetype": "boss",
-		"base_hp": 1000,
-		"base_damage": 60,
+		"base_hp": 1800,
+		"base_damage": 70,
 		"base_speed": 35.0,
-		"base_xp": 110,
-		"attack_range": 60.0,
-		"attack_cooldown": 1.8,
-		"collision_radius": 34.0,
-		"description": "Bestia enfurecida envuelta en llamas. Carga sin piedad.",
+		"base_xp": 200,
+		"attack_range": 65.0,
+		"attack_cooldown": 1.5,
+		"collision_radius": 36.0,
+		"description": "La bestia definitiva. Furia y fuego encarnados.",
 		"spawn_minute": 20,
 		"phases": 3,
-		"special_abilities": ["charge_attack", "fire_stomp", "enrage", "phase_transition"],
+		"special_abilities": [
+			"charge_attack",       # Carga devastadora
+			"fire_stomp",          # Pisotón de fuego
+			"flame_breath",        # Aliento de fuego en cono
+			"meteor_call",         # Invoca meteoros del cielo
+			"enrage",              # Se enfurece (buff permanente)
+			"fire_trail"           # Deja fuego al caminar
+		],
+		"ability_cooldowns": {
+			"charge_attack": 5.0,
+			"fire_stomp": 6.0,
+			"flame_breath": 8.0,
+			"meteor_call": 15.0,
+			"enrage": 0.0,               # Se activa automáticamente
+			"fire_trail": 0.0            # Siempre activo en fase 3
+		},
 		"modifiers": {
-			"charge_speed": 400.0,
+			# Charge Attack
+			"charge_speed": 450.0,
 			"charge_damage_mult": 2.5,
-			"charge_cooldown": 5.0,
-			"stomp_radius": 120.0,
-			"stomp_damage": 50,
-			"stomp_fire_duration": 4.0,
-			"stomp_cooldown": 8.0,
-			"enrage_threshold": 0.3,     # Se enfurece al 30% HP
-			"enrage_damage_bonus": 0.5,  # +50% daño
-			"enrage_speed_bonus": 0.3,   # +30% velocidad
+			"charge_stun": 0.8,
+			# Fire Stomp
+			"stomp_radius": 140.0,
+			"stomp_damage": 60,
+			"stomp_burn": 12.0,          # DPS de burn
+			"stomp_burn_duration": 4.0,
+			# Flame Breath
+			"breath_angle": 50.0,
+			"breath_range": 180.0,
+			"breath_damage": 25,         # Por tick
+			"breath_duration": 2.0,
+			# Meteor Call
+			"meteor_count": 5,
+			"meteor_damage": 50,
+			"meteor_radius": 60.0,
+			"meteor_delay": 1.5,         # Tiempo de aviso antes de impacto
+			# Enrage
+			"enrage_threshold": 0.3,
+			"enrage_damage_bonus": 0.5,
+			"enrage_speed_bonus": 0.3,
+			# Fire Trail
+			"trail_damage": 10,
+			"trail_duration": 3.0,
+			# Fases
 			"phase_2_hp": 0.5,
-			"phase_3_hp": 0.2
+			"phase_3_hp": 0.2,
+			"phase_2_charge_damage_mult": 3.0,
+			"phase_2_stomp_radius": 180.0,
+			"phase_3_meteor_count": 8,
+			"phase_3_breath_damage": 40
 		}
 	}
 }
