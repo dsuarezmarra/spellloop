@@ -142,28 +142,50 @@ func _attempt_spawn() -> void:
 	if active_enemies.size() >= _get_current_max_enemies():
 		return
 	
-	var minute = game_time_seconds / 60.0
-	var available_tiers = EnemyDatabase.get_available_tiers_for_minute(minute)
+	# Obtener posición de spawn primero para determinar la zona
+	var pos = _get_spawn_position()
 	
-	if available_tiers.is_empty():
-		return
+	# Determinar el tier basado en la zona donde va a spawnear
+	var selected_tier = _get_tier_for_spawn_position(pos)
 	
-	# Seleccionar tier con peso (tiers más altos son menos comunes)
-	var selected_tier = _select_weighted_tier(available_tiers, minute)
+	# Verificar que tenemos enemigos disponibles para este tier
 	var enemy_data = EnemyDatabase.get_random_enemy_for_tier(selected_tier)
 	
 	if enemy_data.is_empty():
-		return
+		# Si no hay enemigos para este tier, intentar con tier 1 como fallback
+		enemy_data = EnemyDatabase.get_random_enemy_for_tier(1)
+		if enemy_data.is_empty():
+			return
 	
 	# Aplicar escalado de dificultad
+	var minute = game_time_seconds / 60.0
 	var difficulty_mult = 1.0
 	if difficulty_manager:
 		difficulty_mult = difficulty_manager.enemy_health_multiplier
 	
 	enemy_data = EnemyDatabase.apply_difficulty_scaling(enemy_data, minute, difficulty_mult)
 	
-	var pos = _get_spawn_position()
 	spawn_enemy(enemy_data, pos)
+
+func _get_tier_for_spawn_position(pos: Vector2) -> int:
+	"""Obtener el tier de enemigo basado en la posición de spawn"""
+	var arena_manager = _get_arena_manager()
+	if arena_manager and arena_manager.has_method("get_spawn_tier_at_position"):
+		return arena_manager.get_spawn_tier_at_position(pos)
+	
+	# Fallback: usar el sistema basado en tiempo
+	var minute = game_time_seconds / 60.0
+	var available_tiers = EnemyDatabase.get_available_tiers_for_minute(minute)
+	if available_tiers.is_empty():
+		return 1
+	return _select_weighted_tier(available_tiers, minute)
+
+func _get_arena_manager() -> Node:
+	"""Obtener referencia al ArenaManager"""
+	var tree = get_tree()
+	if tree and tree.root:
+		return tree.root.get_node_or_null("Game/ArenaManager")
+	return null
 
 func _select_weighted_tier(available_tiers: Array, minute: float) -> int:
 	"""Seleccionar tier con pesos - tiers más altos menos comunes"""
@@ -200,7 +222,26 @@ func _get_spawn_position() -> Vector2:
 	var angle = randf() * TAU
 	var distance = spawn_distance + randf() * 100.0  # Algo de variación
 	
-	return ppos + Vector2(cos(angle), sin(angle)) * distance
+	var spawn_pos = ppos + Vector2(cos(angle), sin(angle)) * distance
+	
+	# Verificar que la posición está en una zona desbloqueada
+	var arena_manager = _get_arena_manager()
+	if arena_manager:
+		var max_attempts = 8
+		for _i in range(max_attempts):
+			var zone_at_pos = arena_manager.get_zone_at_position(spawn_pos)
+			if arena_manager.is_zone_unlocked(zone_at_pos):
+				return spawn_pos
+			
+			# Intentar una nueva posición más cercana al player
+			angle = randf() * TAU
+			distance = spawn_distance * 0.5 + randf() * (spawn_distance * 0.5)
+			spawn_pos = ppos + Vector2(cos(angle), sin(angle)) * distance
+		
+		# Si todos los intentos fallan, spawnear cerca del player (zona SAFE)
+		return ppos + Vector2(cos(randf() * TAU), sin(randf() * TAU)) * (spawn_distance * 0.3)
+	
+	return spawn_pos
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SPAWN DE BOSSES

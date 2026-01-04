@@ -129,6 +129,7 @@ func _initialize_physics() -> void:
 	set_collision_mask_value(2, true)    # Enemigos
 	set_collision_mask_value(4, true)    # Proyectiles enemigos
 	set_collision_mask_value(5, true)    # Pickups
+	set_collision_mask_value(8, true)    # Barreras de zona
 	
 	print("[%s] ✓ Física configurada" % character_class)
 

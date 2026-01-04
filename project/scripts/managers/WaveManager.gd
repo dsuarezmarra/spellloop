@@ -126,6 +126,9 @@ func _process(delta: float) -> void:
 	game_time_seconds += delta
 	game_time_minutes = game_time_seconds / 60.0
 	
+	# Verificar desbloqueo de zonas en ArenaManager
+	_check_zone_unlocks()
+	
 	# Actualizar fase si es necesario
 	_check_phase_transition()
 	
@@ -149,6 +152,23 @@ func _process(delta: float) -> void:
 	
 	# Verificar eventos programados
 	_check_timed_events()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DESBLOQUEO DE ZONAS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _check_zone_unlocks() -> void:
+	"""Verificar si hay zonas para desbloquear basándose en el tiempo"""
+	var arena_manager = _get_arena_manager()
+	if arena_manager and arena_manager.has_method("check_zone_unlocks"):
+		arena_manager.check_zone_unlocks(game_time_seconds)
+
+func _get_arena_manager() -> Node:
+	"""Obtener referencia al ArenaManager"""
+	var tree = get_tree()
+	if tree and tree.root:
+		return tree.root.get_node_or_null("Game/ArenaManager")
+	return null
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # GESTIÓN DE FASES

@@ -81,6 +81,28 @@ var arena_root: Node2D = null  # Nodo donde se renderizan las zonas
 var player_current_zone: ZoneType = ZoneType.SAFE
 var player_outside_arena: bool = false
 
+# === SISTEMA DE BARRERAS ENTRE ZONAS ===
+# Zonas desbloqueadas (SAFE siempre desbloqueada)
+var unlocked_zones: Dictionary = {
+	ZoneType.SAFE: true,
+	ZoneType.MEDIUM: false,
+	ZoneType.DANGER: false,
+	ZoneType.DEATH: false
+}
+
+# Tiempo de juego para desbloquear cada zona (en segundos)
+const ZONE_UNLOCK_TIMES: Dictionary = {
+	ZoneType.MEDIUM: 300.0,  # 5 minutos
+	ZoneType.DANGER: 600.0,  # 10 minutos
+	ZoneType.DEATH: 900.0    # 15 minutos
+}
+
+# Nodos de barreras físicas
+var zone_barriers: Dictionary = {}  # ZoneType -> StaticBody2D
+
+# Señales adicionales
+signal zone_unlocked(zone_type: int, zone_name: String)
+
 # Texturas cargadas
 var biome_textures: Dictionary = {}  # biome_name -> {base: Texture, decor: [Texture]}
 
@@ -118,6 +140,9 @@ func initialize(player: Node2D, root: Node2D) -> void:
 	# Crear barrera del borde
 	_create_boundary()
 	
+	# Crear barreras físicas entre zonas
+	_create_zone_barriers()
+	
 	# Emitir señal de arena lista
 	var arena_data = get_arena_info()
 	arena_ready.emit(arena_data)
@@ -127,6 +152,7 @@ func initialize(player: Node2D, root: Node2D) -> void:
 	print("   - Medium Zone: %s (r=%.0f)" % [selected_biomes[ZoneType.MEDIUM], medium_zone_radius])
 	print("   - Danger Zone: %s (r=%.0f)" % [selected_biomes[ZoneType.DANGER], danger_zone_radius])
 	print("   - Death Zone: %s (r=%.0f)" % [selected_biomes[ZoneType.DEATH], arena_radius])
+	print("   - 🚧 Barreras creadas: MEDIUM, DANGER, DEATH (bloqueadas)")
 
 func _select_random_biomes() -> void:
 	"""Seleccionar un bioma aleatorio para cada zona"""
@@ -632,3 +658,175 @@ func get_difficulty_multiplier_at_position(pos: Vector2) -> float:
 		ZoneType.DEATH:
 			return 4.0
 	return 1.0
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE BARRERAS ENTRE ZONAS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _create_zone_barriers() -> void:
+	"""Crear barreras físicas circulares entre zonas"""
+	# Crear contenedor para barreras
+	var barriers_container = Node2D.new()
+	barriers_container.name = "ZoneBarriers"
+	arena_root.add_child(barriers_container)
+	
+	# Barrera entre SAFE y MEDIUM (en safe_zone_radius)
+	var barrier_medium = _create_circular_barrier(safe_zone_radius, ZoneType.MEDIUM, "BarrierToMedium")
+	barriers_container.add_child(barrier_medium)
+	zone_barriers[ZoneType.MEDIUM] = barrier_medium
+	
+	# Barrera entre MEDIUM y DANGER (en medium_zone_radius)
+	var barrier_danger = _create_circular_barrier(medium_zone_radius, ZoneType.DANGER, "BarrierToDanger")
+	barriers_container.add_child(barrier_danger)
+	zone_barriers[ZoneType.DANGER] = barrier_danger
+	
+	# Barrera entre DANGER y DEATH (en danger_zone_radius)
+	var barrier_death = _create_circular_barrier(danger_zone_radius, ZoneType.DEATH, "BarrierToDeath")
+	barriers_container.add_child(barrier_death)
+	zone_barriers[ZoneType.DEATH] = barrier_death
+	
+	print("🚧 [ArenaManager] Barreras de zona creadas")
+
+func _create_circular_barrier(radius: float, zone_type: ZoneType, barrier_name: String) -> StaticBody2D:
+	"""Crear una barrera circular física en el radio especificado"""
+	var barrier = StaticBody2D.new()
+	barrier.name = barrier_name
+	barrier.collision_layer = 0
+	barrier.set_collision_layer_value(8, true)  # Layer 8 para barreras de zona
+	barrier.collision_mask = 0   # No detecta nada, solo bloquea
+	
+	# Grosor de la barrera
+	var barrier_thickness: float = 50.0
+	
+	# Crear múltiples segmentos para formar un anillo
+	var segments = 64  # Más segmentos = círculo más suave
+	var angle_step = TAU / segments
+	
+	for i in range(segments):
+		var angle = i * angle_step
+		var next_angle = (i + 1) * angle_step
+		
+		# Crear un CollisionShape2D con forma de segmento
+		var collision = CollisionShape2D.new()
+		var shape = SegmentShape2D.new()
+		
+		# Puntos del segmento en el perímetro
+		shape.a = Vector2(cos(angle), sin(angle)) * radius
+		shape.b = Vector2(cos(next_angle), sin(next_angle)) * radius
+		
+		collision.shape = shape
+		collision.name = "Segment_%d" % i
+		barrier.add_child(collision)
+	
+	# Añadir visual de la barrera
+	var visual = _create_barrier_visual(radius, zone_type)
+	barrier.add_child(visual)
+	
+	return barrier
+
+func _create_barrier_visual(radius: float, zone_type: ZoneType) -> Node2D:
+	"""Crear el efecto visual de la barrera (un anillo brillante)"""
+	var visual = Node2D.new()
+	visual.name = "BarrierVisual"
+	
+	# Color según la zona
+	var color: Color
+	match zone_type:
+		ZoneType.MEDIUM:
+			color = Color(0.2, 0.6, 1.0, 0.7)  # Azul
+		ZoneType.DANGER:
+			color = Color(1.0, 0.5, 0.0, 0.7)  # Naranja
+		ZoneType.DEATH:
+			color = Color(1.0, 0.1, 0.1, 0.8)  # Rojo
+		_:
+			color = Color(1.0, 1.0, 1.0, 0.5)
+	
+	# Crear un script inline para dibujar el anillo
+	var script = GDScript.new()
+	script.source_code = """
+extends Node2D
+
+var radius: float = 1000.0
+var ring_color: Color = Color.WHITE
+var thickness: float = 8.0
+var pulse_time: float = 0.0
+
+func _process(delta: float) -> void:
+	pulse_time += delta * 2.0
+	queue_redraw()
+
+func _draw() -> void:
+	var pulse = (sin(pulse_time) + 1.0) / 2.0  # 0 a 1
+	var alpha = ring_color.a * (0.5 + pulse * 0.5)
+	var draw_color = Color(ring_color.r, ring_color.g, ring_color.b, alpha)
+	
+	# Dibujar anillo exterior
+	draw_arc(Vector2.ZERO, radius, 0, TAU, 128, draw_color, thickness)
+	
+	# Dibujar línea interior más fina
+	var inner_color = Color(ring_color.r, ring_color.g, ring_color.b, alpha * 0.3)
+	draw_arc(Vector2.ZERO, radius - thickness, 0, TAU, 128, inner_color, 2.0)
+"""
+	script.reload()
+	visual.set_script(script)
+	visual.set("radius", radius)
+	visual.set("ring_color", color)
+	
+	return visual
+
+func unlock_zone(zone_type: ZoneType) -> void:
+	"""Desbloquear una zona y eliminar su barrera"""
+	if zone_type == ZoneType.SAFE:
+		return  # SAFE siempre está desbloqueada
+	
+	if unlocked_zones.get(zone_type, false):
+		return  # Ya desbloqueada
+	
+	unlocked_zones[zone_type] = true
+	
+	# Eliminar barrera física
+	if zone_barriers.has(zone_type):
+		var barrier = zone_barriers[zone_type]
+		if is_instance_valid(barrier):
+			# Animación de desvanecimiento
+			var tween = create_tween()
+			var visual = barrier.get_node_or_null("BarrierVisual")
+			if visual:
+				tween.tween_property(visual, "modulate:a", 0.0, 1.0)
+				tween.tween_callback(barrier.queue_free)
+			else:
+				barrier.queue_free()
+		zone_barriers.erase(zone_type)
+	
+	var zone_name = ZoneType.keys()[zone_type]
+	zone_unlocked.emit(zone_type, zone_name)
+	print("🔓 [ArenaManager] ¡Zona %s DESBLOQUEADA!" % zone_name)
+
+func check_zone_unlocks(game_time_seconds: float) -> void:
+	"""Verificar si alguna zona debe desbloquearse basándose en el tiempo de juego"""
+	for zone_type in ZONE_UNLOCK_TIMES.keys():
+		var unlock_time = ZONE_UNLOCK_TIMES[zone_type]
+		if game_time_seconds >= unlock_time and not unlocked_zones.get(zone_type, false):
+			unlock_zone(zone_type)
+
+func is_zone_unlocked(zone_type: ZoneType) -> bool:
+	"""Verificar si una zona está desbloqueada"""
+	return unlocked_zones.get(zone_type, false)
+
+func get_tier_for_zone(zone_type: ZoneType) -> int:
+	"""Obtener el tier de enemigos que corresponde a una zona"""
+	match zone_type:
+		ZoneType.SAFE:
+			return 1
+		ZoneType.MEDIUM:
+			return 2
+		ZoneType.DANGER:
+			return 3
+		ZoneType.DEATH:
+			return 4
+	return 1
+
+func get_spawn_tier_at_position(pos: Vector2) -> int:
+	"""Obtener el tier de enemigo que debe spawnear en una posición"""
+	var zone = get_zone_at_position(pos)
+	return get_tier_for_zone(zone)
