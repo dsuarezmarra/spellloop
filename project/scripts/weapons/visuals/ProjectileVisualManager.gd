@@ -1091,7 +1091,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 10.0,  # Slower, ominous void
-		"sprite_scale": 0.35,
+		"sprite_scale": 1.57,
 		"frame_size": 184,
 		"is_aoe": true
 	},
@@ -1100,7 +1100,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 14.0,  # Fast steam dispersal
-		"sprite_scale": 0.31,
+		"sprite_scale": 1.38,
 		"frame_size": 208,
 		"is_aoe": true
 	},
@@ -1109,7 +1109,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 12.0,  # Powerful seismic
-		"sprite_scale": 0.53,
+		"sprite_scale": 3.6,
 		"frame_size": 120,
 		"is_aoe": true
 	},
@@ -1118,7 +1118,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 14.0,  # Fast vortex spin
-		"sprite_scale": 0.35,
+		"sprite_scale": 1.96,
 		"frame_size": 184,
 		"is_aoe": true
 	},
@@ -1127,7 +1127,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 10.0,  # Slow, cold ice formation
-		"sprite_scale": 0.36,
+		"sprite_scale": 1.47,
 		"frame_size": 176,
 		"is_aoe": true
 	},
@@ -1136,7 +1136,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 8.0,  # Very slow, time-frozen
-		"sprite_scale": 0.29,
+		"sprite_scale": 1.41,
 		"frame_size": 224,
 		"is_aoe": true
 	},
@@ -1145,7 +1145,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 14.0,  # Fast, violent eruption
-		"sprite_scale": 0.32,
+		"sprite_scale": 1.44,
 		"frame_size": 200,
 		"is_aoe": true
 	},
@@ -1154,7 +1154,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 12.0,  # Sinister dark fire
-		"sprite_scale": 0.42,
+		"sprite_scale": 2.18,
 		"frame_size": 152,
 		"is_aoe": true
 	},
@@ -1163,7 +1163,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 16.0,  # Fast electric shockwave
-		"sprite_scale": 0.29,
+		"sprite_scale": 1.16,
 		"frame_size": 224,
 		"is_aoe": true
 	},
@@ -1172,7 +1172,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 10.0,  # Slow, organic growth
-		"sprite_scale": 0.36,
+		"sprite_scale": 1.47,
 		"frame_size": 176,
 		"is_aoe": true
 	},
@@ -1181,7 +1181,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 8.0,  # Slow, creeping corruption
-		"sprite_scale": 0.31,
+		"sprite_scale": 1.66,
 		"frame_size": 208,
 		"is_aoe": true
 	},
@@ -1190,7 +1190,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 		"aoe_active_frames": 6,
 		"aoe_fade_frames": 4,
 		"aoe_fps": 12.0,  # Divine crystal light
-		"sprite_scale": 0.53,
+		"sprite_scale": 2.4,
 		"frame_size": 120,
 		"is_aoe": true
 	},
@@ -1211,6 +1211,7 @@ const WEAPON_SPRITE_CONFIG: Dictionary = {
 	"aurora": {  # Ice + Light fusion
 		"beam_frames": 6,
 		"beam_fps": 10.0,  # Slow, ethereal shimmer
+		"beam_frame_size": 208,
 		"sprite_scale": 1.0,
 		"is_beam": true
 	},

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dypm4jamx3g3h"
-path="res://.godot/imported/beam_tip_aurora.png-755abf4b1c36f4f1ad74422a4e9c888b.ctex"
+uid="uid://y1431vvmt54p"
+path="res://.godot/imported/tip_frame_3.png-c183964b62cc79af1b72c639f7a3a5b7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/projectiles/fusion/aurora/beam_tip_aurora.png"
-dest_files=["res://.godot/imported/beam_tip_aurora.png-755abf4b1c36f4f1ad74422a4e9c888b.ctex"]
+source_file="res://assets/sprites/projectiles/fusion/aurora/tip_frames/tip_frame_3.png"
+dest_files=["res://.godot/imported/tip_frame_3.png-c183964b62cc79af1b72c639f7a3a5b7.ctex"]
 
 [params]
 
