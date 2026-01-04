@@ -731,7 +731,7 @@ func _process_charge(delta: float) -> void:
 		if global_position.distance_to(player_ref.global_position) < attack_range:
 			# Aplicar daño de carga
 			var charge_damage_mult = modifiers.get("charge_damage_mult", 2.0)
-			var charge_damage = int(attack_damage * charge_damage_mult)
+			var charge_damage = int(damage * charge_damage_mult)
 			if player_ref.has_method("take_damage"):
 				player_ref.take_damage(charge_damage)
 				print("[EnemyBase] ⚡ %s impacta carga por %d daño!" % [enemy_id, charge_damage])
@@ -1501,4 +1501,3 @@ func _on_health_died() -> void:
 
 func get_info() -> Dictionary:
 	return {"id": enemy_id, "hp": hp, "max_hp": max_hp}
-
