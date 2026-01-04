@@ -168,9 +168,41 @@ func _create_player() -> void:
 		# El AttackManager se inicializa de forma deferred en BasePlayer
 		# Necesitamos esperar a que esté listo
 		print("🧪 [WeaponTest] Player creado, esperando AttackManager...")
+		
+		# TESTING: HP máximo para que no muera
+		call_deferred("_set_player_max_hp")
 	else:
 		push_error("[WeaponTest] No se pudo cargar SpellloopPlayer.tscn")
 		_create_fallback_player()
+
+func _set_player_max_hp() -> void:
+	"""Configurar HP máximo para el player (para testing)"""
+	if not player:
+		return
+	
+	# Acceder al wizard_player interno
+	var wizard = player.get("wizard_player") if "wizard_player" in player else null
+	if wizard:
+		wizard.max_hp = 99999
+		wizard.hp = 99999
+		if wizard.health_component:
+			wizard.health_component.initialize(99999)
+		print("🧪 [WeaponTest] ✓ Player HP configurado a 99999 (invencible)")
+	
+	# También en SpellloopPlayer
+	if "max_hp" in player:
+		player.max_hp = 99999
+	if "hp" in player:
+		player.hp = 99999
+	
+	# Conectar señal de daño del player para logging
+	if player.has_signal("player_damaged"):
+		if not player.player_damaged.is_connected(_on_player_damaged):
+			player.player_damaged.connect(_on_player_damaged)
+
+func _on_player_damaged(amount: int, current_hp: int) -> void:
+	"""Callback cuando el player recibe daño de enemigos"""
+	_log_damage("[color=red]🛡️ PLAYER: -%d (HP: %d)[/color]" % [amount, current_hp])
 
 func _create_fallback_player() -> void:
 	# Player de fallback simple
@@ -297,13 +329,13 @@ func _create_test_enemy(data: Dictionary, pos: Vector2, id: int) -> CharacterBod
 	add_child(enemy)
 	enemy.global_position = pos
 	
-	# Inicializar con datos (sin player para que no persiga)
+	# Inicializar CON player para que puedan atacar
 	if enemy.has_method("initialize_from_database"):
 		# Hacer HP muy alto para testing (tanto base como final)
 		var test_data = data.duplicate(true)
 		test_data["base_hp"] = 99999
 		test_data["final_hp"] = 99999
-		enemy.initialize_from_database(test_data, null)
+		enemy.initialize_from_database(test_data, player)  # Pasar player para que ataquen
 	
 	# Forzar HP alto después de inicializar (por si acaso)
 	if "max_hp" in enemy:
@@ -327,15 +359,35 @@ func _create_test_enemy(data: Dictionary, pos: Vector2, id: int) -> CharacterBod
 	if "_base_speed" in enemy:
 		enemy._base_speed = 0
 	
-	# Label con info del enemigo
+	# Configurar sistema de ataque del enemigo para que ataque al player
+	var attack_sys = enemy.get_node_or_null("AttackSystem")
+	if attack_sys:
+		# Obtener datos de ataque del enemigo
+		var atk_cooldown = float(data.get("attack_cooldown", 1.5))
+		var atk_range = float(data.get("attack_range", 50.0))
+		var atk_damage = int(data.get("final_damage", data.get("base_damage", 10)))
+		var is_ranged = data.get("archetype", "melee") == "ranged"
+		
+		attack_sys.initialize(atk_cooldown, atk_range, atk_damage, is_ranged, null)
+		attack_sys.player = player
+		
+		# Conectar señal de ataque para logging
+		if attack_sys.has_signal("attacked_player"):
+			attack_sys.attacked_player.connect(_on_enemy_attacked_player.bind(enemy))
+		
+		print("   ⚔️ Ataque configurado: CD=%.1fs, Range=%.0f, DMG=%d, Ranged=%s" % [atk_cooldown, atk_range, atk_damage, is_ranged])
+	
+	# Label con info del enemigo (incluyendo stats de combate)
 	var label = Label.new()
 	label.name = "InfoLabel"
 	var tier = data.get("tier", 1)
 	var tier_text = "T%d" % tier if tier < 5 else "BOSS"
-	label.text = "%s\n[%s]" % [data.get("name", "???"), tier_text]
+	var dmg = data.get("final_damage", data.get("base_damage", 0))
+	var defense_info = _get_enemy_defense_info(data)
+	label.text = "%s\n[%s] DMG:%d%s" % [data.get("name", "???"), tier_text, dmg, defense_info]
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.position = Vector2(-50, -60)
-	label.add_theme_font_size_override("font_size", 10)
+	label.position = Vector2(-60, -70)
+	label.add_theme_font_size_override("font_size", 9)
 	
 	# Color según tier
 	var tier_colors = {
@@ -358,7 +410,72 @@ func _on_enemy_damage(amount: float, _type: String, enemy: Node) -> void:
 	hits_count += 1
 	
 	var enemy_name = enemy.name if enemy else "Unknown"
+	
+	# Categorizar tipo de daño para estadísticas
+	var damage_category = _categorize_damage_type(_type)
+	_track_damage_by_category(damage_category, int(amount))
+	
 	_log_damage("[color=orange]💥 %s: -%d (%s)[/color]" % [enemy_name, int(amount), _type])
+
+func _on_enemy_attacked_player(damage: int, is_melee: bool, enemy: Node) -> void:
+	"""Callback cuando un enemigo ataca al player"""
+	var enemy_name = enemy.name if enemy else "Unknown"
+	var attack_type = "MELEE" if is_melee else "RANGED"
+	_log_damage("[color=red]⚔️ %s atacó (%s): %d daño[/color]" % [enemy_name, attack_type, damage])
+
+func _get_enemy_defense_info(data: Dictionary) -> String:
+	"""Obtener información de defensas especiales del enemigo"""
+	var info = ""
+	var abilities = data.get("special_abilities", [])
+	var mods = data.get("modifiers", {})
+	
+	# Revisar habilidades especiales defensivas
+	if "ice_armor" in abilities:
+		var reduction = mods.get("ice_armor_reduction", 0.25)
+		info += "\n🛡️ Ice Armor: -%d%%" % int(reduction * 100)
+	if "phase" in abilities or "ethereal" in abilities:
+		info += "\n👻 Etéreo"
+	if "regeneration" in abilities:
+		var regen = mods.get("regen_rate", 5)
+		info += "\n💚 Regen: %d/s" % regen
+	if "shield" in abilities:
+		info += "\n🔵 Escudo"
+	
+	return info
+
+# === TRACKING DE DAÑO POR CATEGORÍA ===
+var damage_by_category: Dictionary = {
+	"direct": 0,      # Daño directo de impacto
+	"dot": 0,         # Daño over time (burn, poison, etc)
+	"aoe": 0,         # Daño de área
+	"chain": 0,       # Daño de cadena (chain lightning)
+	"crit": 0,        # Daño crítico
+	"other": 0        # Otros
+}
+
+func _categorize_damage_type(damage_type: String) -> String:
+	"""Categorizar el tipo de daño para estadísticas"""
+	var dt = damage_type.to_lower()
+	
+	if "burn" in dt or "poison" in dt or "bleed" in dt or "dot" in dt:
+		return "dot"
+	if "aoe" in dt or "explosion" in dt or "area" in dt:
+		return "aoe"
+	if "chain" in dt or "bounce" in dt:
+		return "chain"
+	if "crit" in dt:
+		return "crit"
+	if "projectile" in dt or "impact" in dt or "direct" in dt or "physical" in dt:
+		return "direct"
+	
+	return "other"
+
+func _track_damage_by_category(category: String, amount: int) -> void:
+	"""Acumular daño por categoría"""
+	if category in damage_by_category:
+		damage_by_category[category] += amount
+	else:
+		damage_by_category["other"] += amount
 
 func _print_enemy_summary(enemies: Array[Dictionary]) -> void:
 	"""Imprimir resumen de enemigos creados"""
@@ -773,6 +890,10 @@ func _reset_dummies() -> void:
 	total_damage_dealt = 0
 	hits_count = 0
 	test_start_time = Time.get_ticks_msec() / 1000.0
+	
+	# Resetear categorías de daño
+	for key in damage_by_category:
+		damage_by_category[key] = 0
 
 	# Eliminar enemigos existentes
 	for dummy in dummies:
@@ -832,8 +953,21 @@ func _update_dps_display() -> void:
 	var elapsed = (Time.get_ticks_msec() / 1000.0) - test_start_time
 	var dps = total_damage_dealt / max(1.0, elapsed)
 
-	dps_label.text = "⚡ DPS: %.1f | 💥 Hits: %d | 📊 Total: %d | ⏱️ %.1fs" % [
-		dps, hits_count, total_damage_dealt, elapsed
+	# Mostrar DPS general + desglose por categoría
+	var breakdown = ""
+	if damage_by_category["direct"] > 0:
+		breakdown += " | 🎯%d" % damage_by_category["direct"]
+	if damage_by_category["dot"] > 0:
+		breakdown += " | 🔥%d" % damage_by_category["dot"]
+	if damage_by_category["aoe"] > 0:
+		breakdown += " | 💫%d" % damage_by_category["aoe"]
+	if damage_by_category["chain"] > 0:
+		breakdown += " | ⚡%d" % damage_by_category["chain"]
+	if damage_by_category["crit"] > 0:
+		breakdown += " | 💥%d" % damage_by_category["crit"]
+
+	dps_label.text = "⚡ DPS: %.1f | Hits: %d | Total: %d%s" % [
+		dps, hits_count, total_damage_dealt, breakdown
 	]
 
 # ═══════════════════════════════════════════════════════════════════════════════
