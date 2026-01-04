@@ -1874,22 +1874,10 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	if not is_instance_valid(enemy) or not is_instance_valid(player):
 		return
 	
-	var orb = Area2D.new()
+	var orb = Node2D.new()  # Usar Node2D simple, colisión por distancia
 	orb.name = "HomingOrb"
 	orb.global_position = pos
-	
-	# Configurar colisión correctamente
-	orb.collision_layer = 0
-	orb.set_collision_layer_value(4, true)  # Capa 4 = proyectiles enemigos
-	orb.collision_mask = 0
-	orb.set_collision_mask_value(1, true)   # Máscara 1 = player
-	
-	# Collision shape
-	var collision = CollisionShape2D.new()
-	var shape = CircleShape2D.new()
-	shape.radius = 12.0
-	collision.shape = shape
-	orb.add_child(collision)
+	orb.z_index = 10
 	
 	# Visual mejorado
 	var visual = Node2D.new()
@@ -1900,13 +1888,13 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	visual.draw.connect(func():
 		var pulse = 1.0 + sin(orb_time * 6) * 0.15
 		# Glow exterior
-		visual.draw_circle(Vector2.ZERO, 14 * pulse, Color(color.r, color.g, color.b, 0.2))
+		visual.draw_circle(Vector2.ZERO, 16 * pulse, Color(color.r, color.g, color.b, 0.2))
 		# Cuerpo principal
-		visual.draw_circle(Vector2.ZERO, 10 * pulse, color)
+		visual.draw_circle(Vector2.ZERO, 12 * pulse, color)
 		# Núcleo brillante
-		visual.draw_circle(Vector2.ZERO, 6 * pulse, Color(color.r + 0.3, color.g + 0.3, color.b + 0.3, 0.9).clamp())
+		visual.draw_circle(Vector2.ZERO, 7 * pulse, Color(color.r + 0.3, color.g + 0.3, color.b + 0.3, 0.9).clamp())
 		# Centro blanco
-		visual.draw_circle(Vector2.ZERO, 3, Color(1, 1, 1, 0.8))
+		visual.draw_circle(Vector2.ZERO, 3, Color(1, 1, 1, 0.9))
 	)
 	visual.queue_redraw()
 	
@@ -1918,8 +1906,9 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	var time_alive = 0.0
 	var player_ref = player
 	var has_hit = false
+	var hit_radius = 25.0  # Radio de colisión
 	
-	# Usar timer para movimiento y colisión manual
+	# Usar timer para movimiento y colisión por distancia
 	var timer = Timer.new()
 	timer.wait_time = 0.016
 	timer.autostart = true
@@ -1950,17 +1939,17 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 		# Actualizar visual
 		visual.queue_redraw()
 		
-		# CHECK MANUAL de colisión (más fiable que body_entered)
-		var overlapping = orb.get_overlapping_bodies()
-		for body in overlapping:
-			if body.is_in_group("player") and body.has_method("take_damage"):
-				has_hit = true
-				body.take_damage(damage)
+		# CHECK POR DISTANCIA (más fiable que Area2D)
+		var dist = orb.global_position.distance_to(player_ref.global_position)
+		if dist < hit_radius:
+			has_hit = true
+			if player_ref.has_method("take_damage"):
+				player_ref.take_damage(damage)
 				print("[HomingOrb] 🔮 Impacto en player: %d daño (%s)" % [damage, element])
-				# Efecto de impacto
-				_spawn_orb_impact_effect(orb.global_position, color)
-				orb.queue_free()
-				return
+			# Efecto de impacto
+			_spawn_orb_impact_effect(orb.global_position, color)
+			orb.queue_free()
+			return
 	)
 
 func _spawn_orb_impact_effect(pos: Vector2, color: Color) -> void:

@@ -30,10 +30,14 @@ func _ready() -> void:
 	collision_mask = 0
 	set_collision_mask_value(1, true)
 	
+	# CRÍTICO: Habilitar monitoring para detectar colisiones
+	monitoring = true
+	monitorable = true
+	
 	# Crear CollisionShape
 	var collision = CollisionShape2D.new()
 	var shape = CircleShape2D.new()
-	shape.radius = 8.0
+	shape.radius = 12.0  # Aumentar hitbox para mejor detección
 	collision.shape = shape
 	add_child(collision)
 	
@@ -62,7 +66,7 @@ func initialize(p_direction: Vector2, p_speed: float, p_damage: int, p_lifetime:
 	if direction != Vector2.ZERO:
 		rotation = direction.angle()
 
-func _process(delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	_time += delta
 	
 	# Guardar posición actual para trail
@@ -78,20 +82,23 @@ func _process(delta: float) -> void:
 	if visual_node:
 		visual_node.queue_redraw()
 	
-	# CHECK MANUAL de colisión con player (body_entered puede fallar con CharacterBody2D en movimiento)
-	_check_player_collision()
+	# CHECK MANUAL de colisión con player (más fiable que body_entered)
+	_check_player_collision_distance()
 	
 	# Lifetime
 	_lifetime_timer -= delta
 	if _lifetime_timer <= 0:
 		queue_free()
 
-func _check_player_collision() -> void:
-	"""Verificar colisión manual con el player usando get_overlapping_bodies"""
-	var overlapping = get_overlapping_bodies()
-	for body in overlapping:
-		if body.is_in_group("player"):
-			_hit_player(body)
+func _check_player_collision_distance() -> void:
+	"""Verificar colisión por distancia al player (más fiable)"""
+	var players = get_tree().get_nodes_in_group("player")
+	for player_node in players:
+		if not is_instance_valid(player_node):
+			continue
+		var dist = global_position.distance_to(player_node.global_position)
+		if dist < 20.0:  # Radio de colisión
+			_hit_player(player_node)
 			return
 
 func _hit_player(player_body: Node2D) -> void:
