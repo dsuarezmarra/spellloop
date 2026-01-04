@@ -769,7 +769,8 @@ func _process_charge(delta: float) -> void:
 			var charge_damage_mult = modifiers.get("charge_damage_mult", 2.0)
 			var charge_damage = int(damage * charge_damage_mult)
 			if player_ref.has_method("take_damage"):
-				player_ref.take_damage(charge_damage)
+				var elem = _determine_element_from_id(enemy_id)
+				player_ref.call("take_damage", charge_damage, elem)
 				print("[EnemyBase] ⚡ %s impacta carga por %d daño!" % [enemy_id, charge_damage])
 				# Aplicar stun en carga
 				if player_ref.has_method("apply_stun"):
@@ -957,7 +958,7 @@ func _spawn_fire_trail() -> void:
 				var dist = p.global_position.distance_to(trail.global_position)
 				if dist <= trail_radius:
 					if p.has_method("take_damage"):
-						p.take_damage(trail_damage)
+						p.call("take_damage", trail_damage, "fire")
 						print("[EnemyBase] 🔥 Fire trail daña a player: %d" % trail_damage)
 	)
 	
