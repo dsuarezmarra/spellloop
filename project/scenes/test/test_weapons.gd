@@ -234,7 +234,7 @@ func _create_dummies() -> void:
 		var enemy = _create_test_enemy(enemy_data, pos, i + 1)
 		if enemy:
 			dummies.append(enemy)
-			add_child(enemy)
+			# El enemigo ya fue añadido como hijo en _create_test_enemy
 			
 			# Conectar señal de daño si existe
 			var health = enemy.get_node_or_null("HealthComponent")
@@ -280,14 +280,21 @@ func _generate_enemy_positions(count: int) -> Array[Vector2]:
 
 func _create_test_enemy(data: Dictionary, pos: Vector2, id: int) -> CharacterBody2D:
 	"""Crear un enemigo de prueba basado en datos de EnemyDatabase"""
-	# Cargar la escena base de enemigo
-	var enemy_scene = load("res://scenes/enemies/EnemyBase.tscn")
-	if not enemy_scene:
-		push_error("[WeaponTest] No se pudo cargar EnemyBase.tscn")
+	# Los enemigos se crean dinámicamente con CharacterBody2D + EnemyBase.gd
+	var EnemyBaseScript = load("res://scripts/enemies/EnemyBase.gd")
+	if not EnemyBaseScript:
+		push_error("[WeaponTest] No se pudo cargar EnemyBase.gd")
 		return _create_basic_dummy(id)
 	
-	var enemy = enemy_scene.instantiate()
-	enemy.name = "TestEnemy_%s_%d" % [data.get("id", "unknown"), id]
+	# Crear CharacterBody2D con script EnemyBase
+	var enemy = CharacterBody2D.new()
+	enemy.set_script(EnemyBaseScript)
+	
+	var type_id = str(data.get("id", "unknown"))
+	enemy.name = "TestEnemy_%d_%s" % [id, type_id]
+	
+	# Añadir al árbol ANTES de inicializar (necesario para que _ready funcione)
+	add_child(enemy)
 	enemy.global_position = pos
 	
 	# Inicializar con datos (sin player para que no persiga)
@@ -323,6 +330,8 @@ func _create_test_enemy(data: Dictionary, pos: Vector2, id: int) -> CharacterBod
 	}
 	label.add_theme_color_override("font_color", tier_colors.get(tier, Color.WHITE))
 	enemy.add_child(label)
+	
+	print("[WeaponTest] ✓ Enemigo creado: %s en %s (T%d)" % [enemy.name, pos, tier])
 	
 	return enemy
 
