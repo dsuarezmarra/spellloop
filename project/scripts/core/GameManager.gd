@@ -119,6 +119,9 @@ func start_new_run() -> void:
 	run_start_time = get_unix_time_safe()
 	game_start_time = get_unix_time_safe()  # Inicializar tiempo de juego
 	
+	# Resetear tracking de bosses para nueva partida
+	SpawnConfig.reset_boss_tracking()
+	
 	# Initialize run data
 	current_run_data = {
 		"start_time": run_start_time,

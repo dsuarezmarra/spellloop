@@ -399,7 +399,7 @@ func _perform_multi_attack() -> void:
 	attacked_player.emit(attack_damage, false)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SISTEMA DE BOSS COMPLETO - Múltiples habilidades con cooldowns independientes
+# SISTEMA DE BOSS COMPLETO - Habilidades escaladas por minuto de aparición
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Tracking de cooldowns de habilidades de boss (por enemigo)
@@ -409,13 +409,29 @@ var boss_enraged: bool = false
 var boss_fire_trail_active: bool = false
 var boss_damage_aura_timer: float = 0.0
 
+# Sistema de habilidades limitadas por minuto
+var boss_scaling_config: Dictionary = {}     # Configuración de escalado del minuto
+var boss_unlocked_abilities: Array = []      # Habilidades desbloqueadas para este boss
+var boss_combo_count: int = 0                # Habilidades usadas en el combo actual
+var boss_combo_timer: float = 0.0            # Timer para resetear combo
+var boss_global_cooldown: float = 0.0        # Cooldown global entre habilidades
+
 func _perform_boss_attack() -> void:
-	"""Sistema de ataque de boss con múltiples habilidades y cooldowns independientes"""
+	"""Sistema de ataque de boss con habilidades limitadas según minuto de spawn"""
 	if not enemy or not player:
 		return
 	
-	# Inicializar cooldowns si es necesario
-	_init_boss_cooldowns()
+	# Inicializar sistema si es necesario
+	_init_boss_system()
+	
+	# Actualizar timers
+	var delta = get_process_delta_time()
+	if boss_global_cooldown > 0:
+		boss_global_cooldown -= delta
+	if boss_combo_timer > 0:
+		boss_combo_timer -= delta
+	else:
+		boss_combo_count = 0  # Resetear combo si pasó el tiempo
 	
 	# Actualizar fase del boss según HP
 	_update_boss_phase()
@@ -423,44 +439,138 @@ func _perform_boss_attack() -> void:
 	# Actualizar efectos pasivos (auras, trails)
 	_update_boss_passive_effects()
 	
-	# Obtener habilidades disponibles (fuera de cooldown)
+	# Verificar si puede atacar (global cooldown)
+	if boss_global_cooldown > 0:
+		return
+	
+	# Verificar límite de combo
+	var max_combo = boss_scaling_config.get("max_combo", 1)
+	if boss_combo_count >= max_combo:
+		# Esperar a que se resetee el combo
+		return
+	
+	# Obtener habilidades disponibles (desbloqueadas y fuera de cooldown)
 	var available_abilities = _get_available_boss_abilities()
 	
 	if available_abilities.is_empty():
 		# Ataque básico si no hay habilidades disponibles
 		_perform_boss_melee_attack()
+		boss_global_cooldown = 1.5
 		return
 	
-	# Seleccionar habilidad con peso basado en prioridad y situación
+	# Seleccionar y ejecutar habilidad
 	var selected_ability = _select_boss_ability(available_abilities)
-	
-	# Ejecutar la habilidad
 	_execute_boss_ability(selected_ability)
 	
-	# Poner en cooldown
+	# Actualizar cooldowns
+	_apply_ability_cooldown(selected_ability)
+	
+	# Actualizar combo
+	boss_combo_count += 1
+	var combo_delay = boss_scaling_config.get("combo_delay", 2.0)
+	boss_combo_timer = 4.0  # Ventana de combo
+	boss_global_cooldown = combo_delay  # Delay hasta la siguiente habilidad
+	
+	print("[Boss] 👹 %s usó %s (combo %d/%d, fase %d)" % [
+		enemy.name, selected_ability, boss_combo_count, max_combo, boss_current_phase
+	])
+
+func _init_boss_system() -> void:
+	"""Inicializar sistema de boss con configuración de escalado"""
+	if not boss_scaling_config.is_empty():
+		return
+	
+	# Obtener minuto de spawn del boss
+	var spawn_minute = 5
+	if enemy and "enemy_data" in enemy:
+		spawn_minute = enemy.enemy_data.get("spawn_minute", 5)
+	elif modifiers.has("spawn_minute"):
+		spawn_minute = modifiers.get("spawn_minute", 5)
+	
+	# Obtener configuración de escalado
+	boss_scaling_config = SpawnConfig.get_boss_scaling_for_minute(spawn_minute)
+	
+	# Determinar habilidades desbloqueadas
+	var max_abilities = boss_scaling_config.get("abilities_unlocked", 2)
+	boss_unlocked_abilities = _get_prioritized_abilities(max_abilities)
+	
+	# Inicializar cooldowns solo para habilidades desbloqueadas
+	for ability in boss_unlocked_abilities:
+		boss_ability_cooldowns[ability] = 0.0
+	
+	print("[Boss] 👹 Inicializado para minuto %d: %d habilidades, combo max %d" % [
+		spawn_minute, boss_unlocked_abilities.size(), boss_scaling_config.get("max_combo", 1)
+	])
+	print("[Boss] 👹 Habilidades: %s" % str(boss_unlocked_abilities))
+
+func _get_prioritized_abilities(max_count: int) -> Array:
+	"""Obtener las habilidades priorizadas para desbloquear"""
+	# Prioridad de habilidades (las básicas primero, las más poderosas después)
+	var priority_order = {
+		# Conjurador - básicas primero
+		"arcane_barrage": 1,
+		"summon_minions": 3,
+		"teleport_strike": 2,
+		"arcane_nova": 4,
+		"curse_aura": 5,
+		
+		# Corazón del Vacío
+		"void_orbs": 1,
+		"void_pull": 2,
+		"void_explosion": 3,
+		"reality_tear": 4,
+		"void_beam": 5,
+		"damage_aura": 6,
+		
+		# Guardián de Runas
+		"rune_blast": 1,
+		"rune_barrage": 2,
+		"ground_slam": 3,
+		"rune_prison": 4,
+		"rune_shield": 5,
+		"counter_stance": 6,
+		
+		# Minotauro
+		"fire_stomp": 1,
+		"charge_attack": 2,
+		"flame_breath": 3,
+		"meteor_call": 4,
+		"enrage": 5,
+		"fire_trail": 6
+	}
+	
+	# Filtrar solo las habilidades de este boss
+	var boss_abilities = special_abilities.duplicate()
+	
+	# Ordenar por prioridad
+	boss_abilities.sort_custom(func(a, b):
+		return priority_order.get(a, 10) < priority_order.get(b, 10)
+	)
+	
+	# Tomar las primeras N
+	var unlocked = []
+	for i in range(min(max_count, boss_abilities.size())):
+		unlocked.append(boss_abilities[i])
+	
+	return unlocked
+
+func _apply_ability_cooldown(ability: String) -> void:
+	"""Aplicar cooldown a una habilidad usada"""
 	var ability_cooldowns = modifiers.get("ability_cooldowns", {})
 	if ability_cooldowns.is_empty():
-		# Fallback a cooldowns del EnemyDatabase
 		var boss_data = _get_boss_data()
 		if boss_data:
 			ability_cooldowns = boss_data.get("ability_cooldowns", {})
 	
-	var base_cd = ability_cooldowns.get(selected_ability, 5.0)
-	# Reducir cooldowns en fases avanzadas
-	var phase_mult = 1.0 - (boss_current_phase - 1) * 0.15  # -15% por fase
-	boss_ability_cooldowns[selected_ability] = base_cd * phase_mult
+	var base_cd = ability_cooldowns.get(ability, 5.0)
 	
-	print("[EnemyAttackSystem] 👹 %s usó %s (fase %d)" % [enemy.name, selected_ability, boss_current_phase])
-
-func _init_boss_cooldowns() -> void:
-	"""Inicializar diccionario de cooldowns si está vacío"""
-	if not boss_ability_cooldowns.is_empty():
-		return
+	# Aplicar modificador de cooldown del escalado por minuto
+	var cooldown_mult = boss_scaling_config.get("cooldown_mult", 1.0)
 	
-	for ability in special_abilities:
-		boss_ability_cooldowns[ability] = 0.0
+	# Reducir cooldowns adicionales en fases avanzadas
+	var phase_mult = 1.0 - (boss_current_phase - 1) * 0.1  # -10% por fase
 	
-	print("[EnemyAttackSystem] 👹 Cooldowns inicializados para %s: %s" % [enemy.name, special_abilities])
+	boss_ability_cooldowns[ability] = base_cd * cooldown_mult * phase_mult
 
 func _update_boss_phase() -> void:
 	"""Actualizar la fase del boss según su HP actual"""
@@ -468,8 +578,15 @@ func _update_boss_phase() -> void:
 		return
 	
 	var hp_percent = float(enemy.current_hp) / float(enemy.max_hp)
-	var phase_2_threshold = modifiers.get("phase_2_hp", 0.6)
-	var phase_3_threshold = modifiers.get("phase_3_hp", 0.3)
+	
+	# Obtener umbrales de fase (ajustados por escalado del minuto)
+	var phase_mult = boss_scaling_config.get("phase_threshold_mult", 1.0)
+	var phase_2_threshold = modifiers.get("phase_2_hp", 0.6) / phase_mult
+	var phase_3_threshold = modifiers.get("phase_3_hp", 0.3) / phase_mult
+	
+	# Clamp para evitar valores imposibles
+	phase_2_threshold = clamp(phase_2_threshold, 0.3, 0.8)
+	phase_3_threshold = clamp(phase_3_threshold, 0.1, 0.4)
 	
 	var new_phase = 1
 	if hp_percent <= phase_3_threshold:
@@ -527,11 +644,12 @@ func _update_boss_passive_effects() -> void:
 		_spawn_fire_trail()
 
 func _get_available_boss_abilities() -> Array:
-	"""Obtener lista de habilidades disponibles (fuera de cooldown)"""
+	"""Obtener lista de habilidades disponibles (desbloqueadas y fuera de cooldown)"""
 	var available = []
 	var delta = get_process_delta_time()
 	
-	for ability in special_abilities:
+	# Solo considerar habilidades desbloqueadas
+	for ability in boss_unlocked_abilities:
 		# Decrementar cooldown
 		if ability in boss_ability_cooldowns:
 			boss_ability_cooldowns[ability] = max(0, boss_ability_cooldowns[ability] - delta)
@@ -1760,21 +1878,35 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	orb.name = "HomingOrb"
 	orb.global_position = pos
 	
-	# Collision
+	# Configurar colisión correctamente
+	orb.collision_layer = 0
+	orb.set_collision_layer_value(4, true)  # Capa 4 = proyectiles enemigos
+	orb.collision_mask = 0
+	orb.set_collision_mask_value(1, true)   # Máscara 1 = player
+	
+	# Collision shape
 	var collision = CollisionShape2D.new()
 	var shape = CircleShape2D.new()
 	shape.radius = 12.0
 	collision.shape = shape
 	orb.add_child(collision)
 	
-	# Visual
+	# Visual mejorado
 	var visual = Node2D.new()
 	orb.add_child(visual)
 	var color = _get_element_color(element)
+	var orb_time = 0.0
 	
 	visual.draw.connect(func():
-		visual.draw_circle(Vector2.ZERO, 10, color)
-		visual.draw_circle(Vector2.ZERO, 6, Color(1, 1, 1, 0.7))
+		var pulse = 1.0 + sin(orb_time * 6) * 0.15
+		# Glow exterior
+		visual.draw_circle(Vector2.ZERO, 14 * pulse, Color(color.r, color.g, color.b, 0.2))
+		# Cuerpo principal
+		visual.draw_circle(Vector2.ZERO, 10 * pulse, color)
+		# Núcleo brillante
+		visual.draw_circle(Vector2.ZERO, 6 * pulse, Color(color.r + 0.3, color.g + 0.3, color.b + 0.3, 0.9).clamp())
+		# Centro blanco
+		visual.draw_circle(Vector2.ZERO, 3, Color(1, 1, 1, 0.8))
 	)
 	visual.queue_redraw()
 	
@@ -1782,32 +1914,83 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	if parent:
 		parent.add_child(orb)
 	
-	# Movimiento homing
+	# Variables para tracking
 	var time_alive = 0.0
 	var player_ref = player
+	var has_hit = false
 	
-	orb.body_entered.connect(func(body):
-		if body == player_ref and player_ref.has_method("take_damage"):
-			player_ref.take_damage(damage)
-			orb.queue_free()
-	)
-	
-	# Usar timer para movimiento
+	# Usar timer para movimiento y colisión manual
 	var timer = Timer.new()
 	timer.wait_time = 0.016
 	timer.autostart = true
 	orb.add_child(timer)
 	
 	timer.timeout.connect(func():
-		if not is_instance_valid(orb) or not is_instance_valid(player_ref):
+		if not is_instance_valid(orb) or has_hit:
 			return
-		time_alive += 0.016
-		if time_alive >= duration:
+		if not is_instance_valid(player_ref):
 			orb.queue_free()
 			return
 		
+		time_alive += 0.016
+		orb_time += 0.016
+		
+		# Check duración
+		if time_alive >= duration:
+			# Efecto de desvanecimiento
+			var tween = orb.create_tween()
+			tween.tween_property(orb, "modulate:a", 0.0, 0.3)
+			tween.tween_callback(orb.queue_free)
+			return
+		
+		# Mover hacia player
 		var dir = (player_ref.global_position - orb.global_position).normalized()
 		orb.global_position += dir * speed * 0.016
+		
+		# Actualizar visual
+		visual.queue_redraw()
+		
+		# CHECK MANUAL de colisión (más fiable que body_entered)
+		var overlapping = orb.get_overlapping_bodies()
+		for body in overlapping:
+			if body.is_in_group("player") and body.has_method("take_damage"):
+				has_hit = true
+				body.take_damage(damage)
+				print("[HomingOrb] 🔮 Impacto en player: %d daño (%s)" % [damage, element])
+				# Efecto de impacto
+				_spawn_orb_impact_effect(orb.global_position, color)
+				orb.queue_free()
+				return
+	)
+
+func _spawn_orb_impact_effect(pos: Vector2, color: Color) -> void:
+	"""Crear efecto visual de impacto de orbe"""
+	var effect = Node2D.new()
+	effect.global_position = pos
+	effect.top_level = true
+	
+	if is_instance_valid(enemy):
+		var parent = enemy.get_parent()
+		if parent:
+			parent.add_child(effect)
+	
+	var anim_progress = 0.0
+	effect.draw.connect(func():
+		var radius = 25 * anim_progress
+		var alpha = (1.0 - anim_progress) * 0.8
+		effect.draw_circle(Vector2.ZERO, radius, Color(color.r, color.g, color.b, alpha * 0.4))
+		effect.draw_arc(Vector2.ZERO, radius * 0.8, 0, TAU, 16, Color(1, 1, 1, alpha), 2.0)
+	)
+	
+	var tween = effect.create_tween()
+	tween.tween_method(func(val):
+		anim_progress = val
+		if is_instance_valid(effect):
+			effect.queue_redraw()
+	, 0.0, 1.0, 0.25)
+	tween.tween_callback(func():
+		if is_instance_valid(effect):
+			effect.queue_free()
 	)
 
 func _spawn_damage_zone(pos: Vector2, radius: float, dps: int, duration: float, element: String) -> void:

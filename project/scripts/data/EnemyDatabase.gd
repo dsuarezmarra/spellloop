@@ -517,9 +517,9 @@ const TIER_4_ENEMIES = {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# BASE DE DATOS DE BOSSES - DISEÑADOS COMO AUTÉNTICOS DESAFÍOS
-# Cada boss tiene múltiples habilidades con cooldowns independientes
-# La dificultad escala según el minuto de aparición
+# BASE DE DATOS DE BOSSES - STATS BASE SIMILARES, DIFICULTAD ESCALA POR MINUTO
+# Todos los bosses tienen stats base equilibrados.
+# La dificultad real depende del minuto en que aparecen (5, 10, 15, 20+)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 const BOSSES = {
@@ -528,22 +528,21 @@ const BOSSES = {
 		"name": "El Conjurador Primigenio",
 		"tier": 5,
 		"archetype": "boss",
-		"base_hp": 1000,
-		"base_damage": 45,
+		"base_hp": 800,
+		"base_damage": 35,
 		"base_speed": 30.0,
 		"base_xp": 100,
 		"attack_range": 280.0,
 		"attack_cooldown": 2.0,
 		"collision_radius": 32.0,
 		"description": "El primer mago. Domina la invocación y la magia arcana.",
-		"spawn_minute": 5,
 		"phases": 3,
 		"special_abilities": [
-			"arcane_barrage",      # Ráfaga de 5 proyectiles arcanos
-			"summon_minions",      # Invoca enemigos
-			"teleport_strike",     # Teleport + ataque inmediato
-			"arcane_nova",         # Nova de daño en área
-			"curse_aura"           # Aura que reduce curación del player
+			"arcane_barrage",
+			"summon_minions",
+			"teleport_strike",
+			"arcane_nova",
+			"curse_aura"
 		],
 		"ability_cooldowns": {
 			"arcane_barrage": 3.0,
@@ -553,30 +552,24 @@ const BOSSES = {
 			"curse_aura": 15.0
 		},
 		"modifiers": {
-			# Arcane Barrage
 			"barrage_count": 5,
-			"barrage_damage": 15,
-			"barrage_spread": 30.0,      # Grados de dispersión
-			# Summon
+			"barrage_damage": 12,
+			"barrage_spread": 30.0,
 			"summon_count": 2,
 			"summon_tier": 1,
-			# Teleport Strike
 			"teleport_range": 200.0,
 			"teleport_damage_mult": 1.5,
-			# Arcane Nova
 			"nova_radius": 120.0,
-			"nova_damage": 40,
-			# Curse Aura
+			"nova_damage": 30,
 			"curse_radius": 150.0,
-			"curse_reduction": 0.5,      # -50% curación
+			"curse_reduction": 0.5,
 			"curse_duration": 8.0,
-			# Fases
 			"phase_2_hp": 0.6,
 			"phase_3_hp": 0.3,
 			"phase_2_summon_count": 3,
 			"phase_2_barrage_count": 7,
 			"phase_3_summon_tier": 2,
-			"phase_3_nova_damage": 60
+			"phase_3_nova_damage": 45
 		}
 	},
 	"el_corazon_del_vacio": {
@@ -584,63 +577,55 @@ const BOSSES = {
 		"name": "El Corazón del Vacío",
 		"tier": 5,
 		"archetype": "boss",
-		"base_hp": 1500,
-		"base_damage": 50,
+		"base_hp": 800,
+		"base_damage": 35,
 		"base_speed": 18.0,
-		"base_xp": 150,
+		"base_xp": 100,
 		"attack_range": 250.0,
 		"attack_cooldown": 2.5,
 		"collision_radius": 40.0,
 		"description": "Núcleo de energía del vacío. Distorsiona la realidad a su alrededor.",
-		"spawn_minute": 10,
 		"phases": 3,
 		"special_abilities": [
-			"void_pull",           # Atrae al player hacia él
-			"void_explosion",      # Explosión masiva de vacío
-			"void_orbs",           # Lanza orbes que persiguen
-			"reality_tear",        # Crea zona de daño persistente
-			"damage_aura",         # Aura de daño constante
-			"void_beam"            # Rayo canalizado de alto daño
+			"void_pull",
+			"void_explosion",
+			"void_orbs",
+			"reality_tear",
+			"damage_aura",
+			"void_beam"
 		],
 		"ability_cooldowns": {
 			"void_pull": 6.0,
 			"void_explosion": 10.0,
 			"void_orbs": 5.0,
 			"reality_tear": 12.0,
-			"damage_aura": 0.0,          # Siempre activa
+			"damage_aura": 0.0,
 			"void_beam": 15.0
 		},
 		"modifiers": {
-			# Void Pull
 			"pull_radius": 350.0,
 			"pull_force": 150.0,
 			"pull_duration": 2.5,
-			# Void Explosion
 			"explosion_radius": 180.0,
-			"explosion_damage": 70,
-			# Void Orbs
+			"explosion_damage": 50,
 			"orb_count": 3,
-			"orb_damage": 25,
+			"orb_damage": 20,
 			"orb_speed": 120.0,
 			"orb_duration": 5.0,
-			# Reality Tear
 			"tear_radius": 80.0,
-			"tear_damage": 15,           # DPS
+			"tear_damage": 12,
 			"tear_duration": 6.0,
-			# Damage Aura
 			"aura_radius": 100.0,
-			"aura_damage": 8,            # DPS
-			# Void Beam
-			"beam_damage": 30,           # DPS durante canalización
+			"aura_damage": 6,
+			"beam_damage": 25,
 			"beam_duration": 3.0,
 			"beam_width": 40.0,
-			# Fases
 			"phase_2_hp": 0.5,
 			"phase_3_hp": 0.2,
 			"phase_2_pull_force": 200.0,
 			"phase_2_orb_count": 5,
 			"phase_3_aura_radius": 150.0,
-			"phase_3_explosion_damage": 100
+			"phase_3_explosion_damage": 75
 		}
 	},
 	"el_guardian_de_runas": {
@@ -648,23 +633,22 @@ const BOSSES = {
 		"name": "El Guardián de Runas",
 		"tier": 5,
 		"archetype": "boss",
-		"base_hp": 2000,
-		"base_damage": 55,
+		"base_hp": 800,
+		"base_damage": 35,
 		"base_speed": 25.0,
-		"base_xp": 180,
+		"base_xp": 100,
 		"attack_range": 200.0,
 		"attack_cooldown": 1.8,
 		"collision_radius": 38.0,
 		"description": "Protector ancestral cubierto de runas de poder. Casi indestructible.",
-		"spawn_minute": 15,
 		"phases": 3,
 		"special_abilities": [
-			"rune_shield",         # Escudo que absorbe hits
-			"rune_blast",          # Explosión de runas
-			"rune_prison",         # Atrapa al player brevemente
-			"counter_stance",      # Postura de contraataque
-			"rune_barrage",        # Múltiples runas disparadas
-			"ground_slam"          # Golpe de tierra con ondas
+			"rune_shield",
+			"rune_blast",
+			"rune_prison",
+			"counter_stance",
+			"rune_barrage",
+			"ground_slam"
 		],
 		"ability_cooldowns": {
 			"rune_shield": 18.0,
@@ -675,32 +659,25 @@ const BOSSES = {
 			"ground_slam": 8.0
 		},
 		"modifiers": {
-			# Rune Shield
 			"shield_charges": 4,
 			"shield_duration": 10.0,
-			# Rune Blast
 			"blast_radius": 120.0,
-			"blast_damage": 50,
-			# Rune Prison
+			"blast_damage": 35,
 			"prison_duration": 1.5,
-			"prison_damage": 20,         # Daño al escapar
-			# Counter Stance
+			"prison_damage": 15,
 			"counter_window": 2.0,
 			"counter_damage_mult": 2.5,
-			# Rune Barrage
 			"barrage_count": 6,
-			"barrage_damage": 20,
-			# Ground Slam
+			"barrage_damage": 15,
 			"slam_radius": 150.0,
-			"slam_damage": 45,
+			"slam_damage": 35,
 			"slam_stun": 0.5,
-			# Fases
 			"phase_2_hp": 0.6,
 			"phase_3_hp": 0.25,
 			"phase_2_shield_charges": 6,
-			"phase_2_blast_damage": 70,
+			"phase_2_blast_damage": 50,
 			"phase_3_counter_damage_mult": 3.5,
-			"phase_3_slam_damage": 70
+			"phase_3_slam_damage": 55
 		}
 	},
 	"minotauro_de_fuego": {
@@ -708,66 +685,58 @@ const BOSSES = {
 		"name": "Minotauro de Fuego",
 		"tier": 5,
 		"archetype": "boss",
-		"base_hp": 1800,
-		"base_damage": 70,
+		"base_hp": 800,
+		"base_damage": 35,
 		"base_speed": 35.0,
-		"base_xp": 200,
+		"base_xp": 100,
 		"attack_range": 65.0,
 		"attack_cooldown": 1.5,
 		"collision_radius": 36.0,
 		"description": "La bestia definitiva. Furia y fuego encarnados.",
-		"spawn_minute": 20,
 		"phases": 3,
 		"special_abilities": [
-			"charge_attack",       # Carga devastadora
-			"fire_stomp",          # Pisotón de fuego
-			"flame_breath",        # Aliento de fuego en cono
-			"meteor_call",         # Invoca meteoros del cielo
-			"enrage",              # Se enfurece (buff permanente)
-			"fire_trail"           # Deja fuego al caminar
+			"charge_attack",
+			"fire_stomp",
+			"flame_breath",
+			"meteor_call",
+			"enrage",
+			"fire_trail"
 		],
 		"ability_cooldowns": {
 			"charge_attack": 5.0,
 			"fire_stomp": 6.0,
 			"flame_breath": 8.0,
 			"meteor_call": 15.0,
-			"enrage": 0.0,               # Se activa automáticamente
-			"fire_trail": 0.0            # Siempre activo en fase 3
+			"enrage": 0.0,
+			"fire_trail": 0.0
 		},
 		"modifiers": {
-			# Charge Attack
 			"charge_speed": 450.0,
 			"charge_damage_mult": 2.5,
 			"charge_stun": 0.8,
-			# Fire Stomp
 			"stomp_radius": 140.0,
-			"stomp_damage": 60,
-			"stomp_burn": 12.0,          # DPS de burn
+			"stomp_damage": 45,
+			"stomp_burn": 10.0,
 			"stomp_burn_duration": 4.0,
-			# Flame Breath
 			"breath_angle": 50.0,
 			"breath_range": 180.0,
-			"breath_damage": 25,         # Por tick
+			"breath_damage": 20,
 			"breath_duration": 2.0,
-			# Meteor Call
 			"meteor_count": 5,
-			"meteor_damage": 50,
+			"meteor_damage": 40,
 			"meteor_radius": 60.0,
-			"meteor_delay": 1.5,         # Tiempo de aviso antes de impacto
-			# Enrage
+			"meteor_delay": 1.5,
 			"enrage_threshold": 0.3,
 			"enrage_damage_bonus": 0.5,
 			"enrage_speed_bonus": 0.3,
-			# Fire Trail
-			"trail_damage": 10,
+			"trail_damage": 8,
 			"trail_duration": 3.0,
-			# Fases
 			"phase_2_hp": 0.5,
 			"phase_3_hp": 0.2,
 			"phase_2_charge_damage_mult": 3.0,
 			"phase_2_stomp_radius": 180.0,
 			"phase_3_meteor_count": 8,
-			"phase_3_breath_damage": 40
+			"phase_3_breath_damage": 35
 		}
 	}
 }
@@ -833,26 +802,47 @@ static func get_available_tiers_for_minute(minute: float) -> Array:
 	return available
 
 static func get_boss_for_minute(minute: int) -> Dictionary:
-	"""Obtener el boss correspondiente al minuto (si hay alguno)"""
+	"""Obtener un boss aleatorio con escalado según el minuto"""
 	if minute % int(BOSS_SPAWN_INTERVAL) != 0 or minute == 0:
 		return {}
 	
-	# Determinar qué boss toca
-	var boss_index = int(minute / BOSS_SPAWN_INTERVAL) - 1
-	var boss_keys = BOSSES.keys()
+	# Obtener boss aleatorio desde SpawnConfig
+	var boss_id = SpawnConfig.get_boss_for_minute(minute)
+	if boss_id.is_empty() or not BOSSES.has(boss_id):
+		return {}
 	
-	if boss_index < boss_keys.size():
-		return BOSSES[boss_keys[boss_index]].duplicate(true)
-	else:
-		# Después del minuto 20, rotar bosses con escalado
-		var rotated_index = boss_index % boss_keys.size()
-		var boss = BOSSES[boss_keys[rotated_index]].duplicate(true)
-		# Aplicar escalado exponencial
-		var scale_factor = get_exponential_scale(minute)
-		boss.base_hp = int(boss.base_hp * scale_factor)
-		boss.base_damage = int(boss.base_damage * scale_factor)
-		boss.base_xp = int(boss.base_xp * scale_factor)
-		return boss
+	var boss = BOSSES[boss_id].duplicate(true)
+	
+	# Aplicar escalado según el minuto de aparición
+	var minute_scaling = SpawnConfig.get_boss_scaling_for_minute(minute)
+	
+	boss.base_hp = int(boss.base_hp * minute_scaling.hp_mult)
+	boss.base_damage = int(boss.base_damage * minute_scaling.damage_mult)
+	boss.base_xp = int(boss.base_xp * (1.0 + (minute - 5) * 0.25))  # XP escala también
+	
+	# Aplicar escalado a cooldowns (más rápido en minutos altos)
+	if boss.has("ability_cooldowns"):
+		var scaled_cooldowns = {}
+		for ability in boss.ability_cooldowns:
+			scaled_cooldowns[ability] = boss.ability_cooldowns[ability] * minute_scaling.cooldown_mult
+		boss.ability_cooldowns = scaled_cooldowns
+	
+	# También escalar algunos modifiers de daño
+	if boss.has("modifiers"):
+		var mods = boss.modifiers
+		for key in mods:
+			if "damage" in key and typeof(mods[key]) in [TYPE_INT, TYPE_FLOAT]:
+				mods[key] = mods[key] * minute_scaling.damage_mult
+	
+	# Marcar con info de escalado para debug
+	boss["spawn_minute"] = minute
+	boss["scaling_applied"] = minute_scaling
+	
+	print("[EnemyDatabase] 👹 Boss seleccionado: %s para minuto %d (HP: %d, DMG: %d)" % [
+		boss.name, minute, boss.base_hp, boss.base_damage
+	])
+	
+	return boss
 
 static func get_exponential_scale(minute: float) -> float:
 	"""Calcular el factor de escalado exponencial después del minuto 20"""

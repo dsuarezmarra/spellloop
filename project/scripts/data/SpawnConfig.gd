@@ -148,20 +148,57 @@ const PHASE_WAVE_SEQUENCES = {
 # CONFIGURACIÓN DE BOSSES
 # ═══════════════════════════════════════════════════════════════════════════════
 
-const BOSS_SPAWN_TIMES = {
-	5: "el_conjurador_primigenio",   # Minuto 5
-	10: "el_corazon_del_vacio",      # Minuto 10
-	15: "el_guardian_de_runas",      # Minuto 15
-	20: "minotauro_de_fuego"         # Minuto 20
-}
-
-# Después del minuto 20, los bosses rotan
-const BOSS_ROTATION_ORDER = [
+# Pool de todos los bosses disponibles (aparecen aleatoriamente)
+const BOSS_POOL = [
 	"el_conjurador_primigenio",
-	"el_corazon_del_vacio", 
+	"el_corazon_del_vacio",
 	"el_guardian_de_runas",
 	"minotauro_de_fuego"
 ]
+
+# Escalado de dificultad según el minuto de aparición
+# El mismo boss será más difícil si aparece en minuto 15 que en minuto 5
+const BOSS_MINUTE_SCALING = {
+	5: {
+		"hp_mult": 1.0,
+		"damage_mult": 1.0,
+		"cooldown_mult": 1.3,           # Cooldowns 30% más largos
+		"abilities_unlocked": 2,         # Solo 2 habilidades desbloqueadas
+		"max_combo": 1,                  # Solo 1 habilidad a la vez
+		"combo_delay": 3.0,              # 3s entre habilidades
+		"phase_threshold_mult": 0.8      # Fases se activan antes (más fácil)
+	},
+	10: {
+		"hp_mult": 1.5,
+		"damage_mult": 1.3,
+		"cooldown_mult": 1.0,           # Cooldowns normales
+		"abilities_unlocked": 3,         # 3 habilidades desbloqueadas
+		"max_combo": 2,                  # Puede hacer combos de 2
+		"combo_delay": 1.5,              # 1.5s entre habilidades del combo
+		"phase_threshold_mult": 1.0      # Fases normales
+	},
+	15: {
+		"hp_mult": 2.0,
+		"damage_mult": 1.6,
+		"cooldown_mult": 0.8,           # Cooldowns 20% más cortos
+		"abilities_unlocked": 4,         # 4 habilidades desbloqueadas
+		"max_combo": 3,                  # Puede hacer combos de 3
+		"combo_delay": 1.0,              # 1s entre habilidades del combo
+		"phase_threshold_mult": 1.2      # Fases se activan más tarde (más difícil)
+	},
+	20: {
+		"hp_mult": 2.5,
+		"damage_mult": 2.0,
+		"cooldown_mult": 0.6,           # Cooldowns 40% más cortos
+		"abilities_unlocked": 6,         # Todas las habilidades
+		"max_combo": 4,                  # Puede hacer combos de 4
+		"combo_delay": 0.5,              # 0.5s entre habilidades del combo
+		"phase_threshold_mult": 1.5      # Fases se activan muy tarde
+	}
+}
+
+# Tracking del último boss para no repetir
+static var last_boss_spawned: String = ""
 
 # Configuración de spawn de boss
 const BOSS_CONFIG = {
@@ -303,16 +340,41 @@ static func get_wave_config(wave_type: String) -> Dictionary:
 	return WAVE_TYPES.get(wave_type, WAVE_TYPES["normal"])
 
 static func get_boss_for_minute(minute: int) -> String:
-	"""Obtener el boss que debe aparecer en un minuto dado"""
-	if BOSS_SPAWN_TIMES.has(minute):
-		return BOSS_SPAWN_TIMES[minute]
+	"""Obtener un boss aleatorio (sin repetir el anterior)"""
+	if minute % 5 != 0 or minute < 5:
+		return ""
 	
-	# Después del minuto 20, rotar bosses
-	if minute > 20 and minute % 5 == 0:
-		var boss_index = ((minute - 20) / 5) % BOSS_ROTATION_ORDER.size()
-		return BOSS_ROTATION_ORDER[boss_index]
+	# Crear lista de bosses disponibles (excluyendo el último)
+	var available_bosses = BOSS_POOL.duplicate()
+	if last_boss_spawned != "" and available_bosses.size() > 1:
+		available_bosses.erase(last_boss_spawned)
 	
-	return ""
+	# Seleccionar aleatorio
+	var selected = available_bosses[randi() % available_bosses.size()]
+	last_boss_spawned = selected
+	
+	return selected
+
+static func get_boss_scaling_for_minute(minute: int) -> Dictionary:
+	"""Obtener multiplicadores de dificultad según el minuto"""
+	if BOSS_MINUTE_SCALING.has(minute):
+		return BOSS_MINUTE_SCALING[minute].duplicate()
+	
+	# Para minutos > 20, escalar progresivamente
+	var intervals = (minute - 20) / 5
+	return {
+		"hp_mult": 2.5 + intervals * 0.5,
+		"damage_mult": 2.0 + intervals * 0.3,
+		"cooldown_mult": max(0.4, 0.6 - intervals * 0.05),
+		"abilities_unlocked": 6,         # Todas desbloqueadas
+		"max_combo": min(5, 4 + intervals),  # Combos cada vez más largos
+		"combo_delay": max(0.3, 0.5 - intervals * 0.05),
+		"phase_threshold_mult": 1.5 + intervals * 0.2
+	}
+
+static func reset_boss_tracking() -> void:
+	"""Resetear tracking de bosses (llamar al inicio de partida)"""
+	last_boss_spawned = ""
 
 static func get_infinite_scaling_multiplier(minute: float) -> Dictionary:
 	"""Calcular multiplicadores de escalado infinito"""
