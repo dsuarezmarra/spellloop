@@ -58,6 +58,10 @@ func _ready() -> void:
 	if wizard_player.has_signal("player_died"):
 		wizard_player.player_died.connect(_on_wizard_died)
 	
+	# Conectar health_changed del HealthComponent para actualizar barra visual
+	if wizard_player.health_component and wizard_player.health_component.has_signal("health_changed"):
+		wizard_player.health_component.health_changed.connect(_on_health_changed_visual)
+	
 	# Actualizar referencias después de que WizardPlayer ya fue inicializado
 	animated_sprite = wizard_player.animated_sprite
 	health_component = wizard_player.health_component
@@ -85,8 +89,11 @@ func _physics_process(_delta: float) -> void:
 
 func _on_wizard_damaged(amount: int, current_hp: int) -> void:
 	hp = current_hp
+	if wizard_player:
+		max_hp = wizard_player.max_hp
 	player_damaged.emit(amount, current_hp)
 	_play_damage_animation()
+	update_health_bar()
 
 func _on_wizard_died() -> void:
 	player_died.emit()
@@ -115,13 +122,19 @@ func _play_heal_animation() -> void:
 		var tween = create_tween()
 		tween.tween_property(animated_sprite, "modulate", Color(1, 1, 1, 1), 0.4)
 
+func _on_health_changed_visual(current: int, max_val: int) -> void:
+	"""Callback directo desde HealthComponent para actualizar visual"""
+	hp = current
+	max_hp = max_val
+	update_health_bar()
+
 func update_health_bar() -> void:
 	if not health_bar_container:
 		return
 	
 	var health_bar = health_bar_container.get_node_or_null("HealthBar")
 	if health_bar:
-		var health_percent = float(hp) / float(max_hp)
+		var health_percent = float(hp) / float(max_hp) if max_hp > 0 else 1.0
 		health_bar.size.x = 40.0 * health_percent
 
 func get_hp() -> int:
