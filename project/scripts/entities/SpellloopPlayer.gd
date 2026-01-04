@@ -90,7 +90,16 @@ func _physics_process(_delta: float) -> void:
 	
 	var movement_input = input_manager.get_movement_vector()
 	velocity = movement_input * move_speed
+	
+	# DEBUG: Verificar colisiones antes de mover
+	var pos_before = global_position
 	move_and_slide()
+	
+	# DEBUG: Si hubo colisión, mostrar info
+	if get_slide_collision_count() > 0:
+		for i in get_slide_collision_count():
+			var collision = get_slide_collision(i)
+			print("🛡️ [Player] Colisión detectada con: %s (layer: %d)" % [collision.get_collider().name, collision.get_collider().collision_layer])
 	
 	# Sincronizar posición con WizardPlayer (para que sus sistemas funcionen)
 	if wizard_player:

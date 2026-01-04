@@ -256,11 +256,11 @@ func _spawn_wave_enemy() -> void:
 	if not enemy_manager:
 		return
 	
-	# Determinar tier del enemigo
-	var tier = _get_wave_enemy_tier()
-	
-	# Determinar patrón de spawn
+	# PRIMERO: Determinar posición de spawn
 	var spawn_pos = _calculate_wave_spawn_position()
+	
+	# SEGUNDO: Determinar tier basado en la ZONA donde va a spawnear
+	var tier = _get_tier_for_position(spawn_pos)
 	
 	# Solicitar spawn al EnemyManager
 	var enemy_id = _select_enemy_for_tier(tier)
@@ -286,6 +286,20 @@ func _get_wave_enemy_tier() -> int:
 		tier = phase_config.available_tiers.max()
 	
 	return tier
+
+func _get_tier_for_position(pos: Vector2) -> int:
+	"""Obtener el tier de enemigo basado en la zona de la posición de spawn.
+	   Las zonas bloqueadas fuerzan el spawn hacia la zona SAFE (tier 1).
+	"""
+	var arena_manager = _get_arena_manager()
+	if arena_manager and arena_manager.has_method("get_spawn_tier_at_position"):
+		var tier = arena_manager.get_spawn_tier_at_position(pos)
+		print("[WaveManager] 🎯 Spawn en pos=%s → Tier %d (zona)" % [pos, tier])
+		return tier
+	
+	# Fallback: usar sistema basado en fase
+	print("[WaveManager] ⚠️ Sin ArenaManager, usando tier por fase")
+	return _get_wave_enemy_tier()
 
 func _select_weighted_tier(weights: Dictionary) -> int:
 	var total_weight = 0.0
@@ -403,15 +417,17 @@ func _spawn_continuous_enemy() -> void:
 	if enemy_manager.get_enemy_count() >= enemy_manager.max_enemies:
 		return
 	
-	var tier = _select_weighted_tier(phase_config.tier_weights)
+	if not player:
+		return
 	
-	# Asegurar que el tier esté disponible
-	if not tier in phase_config.available_tiers:
-		tier = phase_config.available_tiers[randi() % phase_config.available_tiers.size()]
+	# PRIMERO: Calcular posición de spawn
+	var spawn_pos = _get_random_spawn_position()
+	
+	# SEGUNDO: Determinar tier basado en la ZONA de spawn
+	var tier = _get_tier_for_position(spawn_pos)
 	
 	var enemy_id = _select_enemy_for_tier(tier)
-	if enemy_id != "" and player:
-		var spawn_pos = _get_random_spawn_position()
+	if enemy_id != "":
 		enemy_manager.spawn_specific_enemy(enemy_id, spawn_pos)
 
 func _get_random_spawn_position() -> Vector2:

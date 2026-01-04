@@ -665,15 +665,25 @@ func get_difficulty_multiplier_at_position(pos: Vector2) -> float:
 
 func _create_zone_barriers() -> void:
 	"""Crear barreras físicas circulares entre zonas"""
-	# Crear contenedor para barreras
+	# IMPORTANTE: Las barreras deben estar en el mismo espacio que el player
+	# Usar get_tree().root para añadirlas al nivel superior
+	var game_node = get_tree().root.get_node_or_null("Game")
+	if not game_node:
+		push_error("🚧 [ArenaManager] ERROR: No se encontró nodo Game")
+		return
+	
+	# Crear contenedor para barreras como hijo directo de Game
 	var barriers_container = Node2D.new()
 	barriers_container.name = "ZoneBarriers"
-	arena_root.add_child(barriers_container)
+	game_node.add_child(barriers_container)
+	
+	print("🚧 [ArenaManager] Contenedor de barreras creado en: %s" % barriers_container.get_path())
 	
 	# Barrera entre SAFE y MEDIUM (en safe_zone_radius)
 	var barrier_medium = _create_circular_barrier(safe_zone_radius, ZoneType.MEDIUM, "BarrierToMedium")
 	barriers_container.add_child(barrier_medium)
 	zone_barriers[ZoneType.MEDIUM] = barrier_medium
+	print("🚧 [ArenaManager] BarrierToMedium path: %s, children: %d" % [barrier_medium.get_path(), barrier_medium.get_child_count()])
 	
 	# Barrera entre MEDIUM y DANGER (en medium_zone_radius)
 	var barrier_danger = _create_circular_barrier(medium_zone_radius, ZoneType.DANGER, "BarrierToDanger")
@@ -724,6 +734,14 @@ func _create_circular_barrier(radius: float, zone_type: ZoneType, barrier_name: 
 		collision.rotation = angle + PI/2  # Rotar 90° para que sea tangente al círculo
 		
 		barrier.add_child(collision)
+	
+	# DEBUG: Verificar primer segmento
+	var first_collision = barrier.get_child(0) as CollisionShape2D
+	if first_collision and first_collision.shape:
+		var s = first_collision.shape as RectangleShape2D
+		print("🚧 [ArenaManager] %s primer segmento: pos=%s, size=%s, layer=%d" % [
+			barrier_name, first_collision.position, s.size, barrier.collision_layer
+		])
 	
 	# Añadir visual de la barrera
 	var visual = _create_barrier_visual(radius, zone_type)
@@ -836,6 +854,12 @@ func get_tier_for_zone(zone_type: ZoneType) -> int:
 	return 1
 
 func get_spawn_tier_at_position(pos: Vector2) -> int:
-	"""Obtener el tier de enemigo que debe spawnear en una posición"""
+	"""Obtener el tier de enemigo que debe spawnear en una posición.
+	   Si la zona está bloqueada, devuelve tier 1 (zona SAFE)."""
 	var zone = get_zone_at_position(pos)
+	
+	# Si la zona está bloqueada, forzar tier 1
+	if not unlocked_zones.get(zone, false):
+		return 1
+	
 	return get_tier_for_zone(zone)
