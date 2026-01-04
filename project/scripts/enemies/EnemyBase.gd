@@ -7,6 +7,7 @@ signal enemy_died(enemy_node, enemy_type_id, exp_value)
 var health_component = null
 var attack_system = null
 var animated_sprite = null  # AnimatedEnemySprite component
+var aura_sprite = null      # Sprite para élites
 
 var enemy_id: String = "generic"
 var enemy_tier: int = 1  # Tier del enemigo (1-4 normal, 5 boss)
@@ -17,12 +18,37 @@ var damage: int = 5
 var exp_value: int = 1
 var player_ref: Node = null
 
+# Datos completos del enemigo (desde EnemyDatabase)
+var enemy_data: Dictionary = {}
+var archetype: String = "melee"
+var special_abilities: Array = []
+var modifiers: Dictionary = {}
+
+# Flags especiales
+var is_elite: bool = false
+var is_boss: bool = false
+var aura_color: Color = Color(1.0, 0.8, 0.2, 0.8)
+var elite_size_scale: float = 1.5
+
 # AI parameters (can be overridden in subclasses)
 var attack_range: float = 32.0
 var separation_radius: float = 40.0
 var attack_cooldown: float = 1.0
 var can_attack: bool = true
 var attack_timer: float = 0.0
+
+# Comportamiento específico por arquetipo
+var preferred_distance: float = 0.0  # Para ranged
+var charge_cooldown_timer: float = 0.0
+var is_charging: bool = false
+var charge_target: Vector2 = Vector2.ZERO
+var phase_cooldown_timer: float = 0.0
+var is_phased: bool = false
+var teleport_cooldown_timer: float = 0.0
+var ability_cooldown_timer: float = 0.0
+var trail_timer: float = 0.0
+var zigzag_timer: float = 0.0
+var zigzag_direction: float = 1.0
 
 # Dirección actual del enemigo (para animación)
 var current_direction: Vector2 = Vector2.DOWN
@@ -227,6 +253,147 @@ func initialize(data: Dictionary, player):
 	
 	print("[EnemyBase] ✓ Inicializado %s tier=%d animated=%s" % [enemy_id, enemy_tier, animated_sprite != null])
 
+func initialize_from_database(data: Dictionary, player) -> void:
+	"""Inicializar desde EnemyDatabase con todos los datos completos"""
+	enemy_data = data.duplicate(true)
+	
+	# Datos básicos
+	enemy_id = data.get("id", enemy_id)
+	enemy_tier = int(data.get("tier", enemy_tier))
+	
+	# Stats (usar final_ si están calculados, sino base_)
+	max_hp = int(data.get("final_hp", data.get("base_hp", max_hp)))
+	hp = max_hp
+	speed = float(data.get("final_speed", data.get("base_speed", speed)))
+	damage = int(data.get("final_damage", data.get("base_damage", damage)))
+	exp_value = int(data.get("final_xp", data.get("base_xp", exp_value)))
+	
+	# Configuración de combate
+	attack_range = float(data.get("attack_range", attack_range))
+	attack_cooldown = float(data.get("attack_cooldown", attack_cooldown))
+	
+	# Colisión
+	var collision_radius = float(data.get("collision_radius", 16.0))
+	var collision_shape = _find_collision_shape_node(self)
+	if collision_shape and collision_shape.shape is CircleShape2D:
+		collision_shape.shape.radius = collision_radius
+	
+	# Arquetipo y comportamiento
+	archetype = data.get("archetype", "melee")
+	special_abilities = data.get("special_abilities", [])
+	modifiers = data.get("modifiers", {})
+	
+	# Configurar comportamiento específico
+	_setup_archetype_behavior()
+	
+	# Flags especiales
+	is_elite = data.get("is_elite", false)
+	is_boss = data.get("is_boss", false)
+	
+	if data.has("aura_color"):
+		aura_color = data.aura_color
+	if data.has("size_scale"):
+		elite_size_scale = data.size_scale
+	
+	player_ref = player
+	
+	# Guardar velocidad base para efectos
+	_base_speed = speed
+	
+	# Configurar visual
+	_setup_enemy_visual()
+	
+	# Si es élite, crear aura
+	if is_elite:
+		_create_elite_aura()
+	
+	print("[EnemyBase] ✓ Inicializado desde DB: %s (T%d, %s) HP:%d SPD:%.0f DMG:%d" % [
+		data.get("name", enemy_id), enemy_tier, archetype, max_hp, speed, damage
+	])
+
+func _setup_archetype_behavior() -> void:
+	"""Configurar comportamiento específico según arquetipo"""
+	match archetype:
+		"ranged":
+			preferred_distance = modifiers.get("preferred_distance", 180.0)
+		"charger":
+			charge_cooldown_timer = modifiers.get("charge_cooldown", 4.0)
+		"phase":
+			phase_cooldown_timer = modifiers.get("phase_cooldown", 6.0)
+		"teleporter":
+			teleport_cooldown_timer = modifiers.get("teleport_cooldown", 5.0)
+		"agile":
+			zigzag_timer = 0.0
+		"tank":
+			# Los tanks tienen reducción de daño
+			pass
+		"support", "aoe", "breath", "multi":
+			ability_cooldown_timer = 0.0
+
+func _setup_enemy_visual() -> void:
+	"""Configurar sprites y escala"""
+	# Intentar usar AnimatedEnemySprite si no está ya cargado
+	if not animated_sprite:
+		var spritesheet_loaded = _try_load_animated_sprite()
+		
+		if not spritesheet_loaded:
+			var sprite = _find_sprite_node(self)
+			if not sprite:
+				sprite = Sprite2D.new()
+				sprite.name = "Sprite2D"
+				add_child(sprite)
+			_load_enemy_sprite(sprite)
+			
+			var enemy_scale = _get_scale_for_tier()
+			if is_elite:
+				enemy_scale *= elite_size_scale
+			if sprite:
+				sprite.scale = Vector2(enemy_scale, enemy_scale)
+				sprite.centered = true
+	else:
+		var enemy_scale = _get_scale_for_tier()
+		if is_elite:
+			enemy_scale *= elite_size_scale
+		animated_sprite.sprite_scale = enemy_scale
+
+func _create_elite_aura() -> void:
+	"""Crear efecto de aura para enemigos élite"""
+	if aura_sprite:
+		return
+	
+	# Crear un sprite circular para el aura
+	aura_sprite = Sprite2D.new()
+	aura_sprite.name = "EliteAura"
+	
+	# Crear textura procedural para el aura
+	var aura_size = 64
+	var image = Image.create(aura_size, aura_size, false, Image.FORMAT_RGBA8)
+	var center = Vector2(aura_size / 2.0, aura_size / 2.0)
+	var radius = aura_size / 2.0
+	
+	for x in range(aura_size):
+		for y in range(aura_size):
+			var dist = Vector2(x, y).distance_to(center)
+			if dist < radius:
+				var alpha = (1.0 - dist / radius) * 0.5
+				var color = Color(aura_color.r, aura_color.g, aura_color.b, alpha)
+				image.set_pixel(x, y, color)
+			else:
+				image.set_pixel(x, y, Color(0, 0, 0, 0))
+	
+	var texture = ImageTexture.create_from_image(image)
+	aura_sprite.texture = texture
+	aura_sprite.z_index = -1
+	aura_sprite.scale = Vector2(elite_size_scale * 1.5, elite_size_scale * 1.5)
+	
+	add_child(aura_sprite)
+	
+	# Animar el aura con pulsación
+	var tween = create_tween()
+	tween.set_loops()
+	tween.tween_property(aura_sprite, "scale", Vector2(elite_size_scale * 1.8, elite_size_scale * 1.8), 0.8)
+	tween.tween_property(aura_sprite, "scale", Vector2(elite_size_scale * 1.5, elite_size_scale * 1.5), 0.8)
+
 func _find_sprite_node(node: Node) -> Sprite2D:
 	"""Buscar el primer Sprite2D en el árbol del nodo"""
 	for child in node.get_children():
@@ -338,12 +505,24 @@ func _physics_process(delta: float) -> void:
 	# Procesar efectos de estado primero
 	_process_status_effects(delta)
 	
+	# Actualizar cooldowns de habilidades
+	_update_ability_cooldowns(delta)
+	
 	# Si está stunneado, no moverse
 	if _is_stunned:
 		return
 	
+	# Si está en fase (intangible), comportamiento especial
+	if is_phased:
+		_process_phase_movement(delta)
+		return
+	
+	# Si está cargando, continuar carga
+	if is_charging:
+		_process_charge(delta)
+		return
+	
 	# Usar GLOBAL_POSITION para ignorar que el parent se mueve
-	# El player SIEMPRE está en (0, 0) globalmente en el viewport
 	var player_global_pos = Vector2.ZERO
 	if player_ref and is_instance_valid(player_ref):
 		player_global_pos = player_ref.global_position
@@ -362,19 +541,21 @@ func _physics_process(delta: float) -> void:
 	if _is_pulled:
 		return
 	
+	# Calcular movimiento según arquetipo
+	var movement = _calculate_archetype_movement(direction, distance_to_player, delta)
+	
 	# Calcular separación de otros enemigos
 	var separation = _calculate_separation()
 	
-	# Combinar movimiento: dirección a player + evitar otros enemigos
-	var movement = direction * speed + separation
+	# Combinar movimiento
+	movement = movement + separation
 	
-	# Si hay movimiento, normalizarlo a speed
+	# Si hay movimiento, aplicar
 	if movement.length() > 0.1:
-		movement = movement.normalized() * speed
+		global_position += movement * delta
 	
-	# CLAVE: Aplicar movimiento en GLOBAL_POSITION
-	# Esto ignora completamente que el parent se mueve
-	global_position += movement * delta
+	# Ejecutar habilidades especiales si aplica
+	_try_special_abilities(distance_to_player, delta)
 	
 	# Lógica de ataque si está lo suficientemente cerca
 	if distance_to_player <= attack_range:
@@ -387,6 +568,324 @@ func _physics_process(delta: float) -> void:
 		if attack_timer <= 0:
 			can_attack = true
 			attack_timer = 0.0
+
+func _update_ability_cooldowns(delta: float) -> void:
+	"""Actualizar cooldowns de habilidades especiales"""
+	if charge_cooldown_timer > 0:
+		charge_cooldown_timer -= delta
+	if phase_cooldown_timer > 0:
+		phase_cooldown_timer -= delta
+	if teleport_cooldown_timer > 0:
+		teleport_cooldown_timer -= delta
+	if ability_cooldown_timer > 0:
+		ability_cooldown_timer -= delta
+	if trail_timer > 0:
+		trail_timer -= delta
+
+func _calculate_archetype_movement(direction: Vector2, distance: float, delta: float) -> Vector2:
+	"""Calcular movimiento según el arquetipo del enemigo"""
+	var movement = Vector2.ZERO
+	
+	match archetype:
+		"melee", "tank", "blocker", "debuffer":
+			# Movimiento directo hacia el jugador
+			movement = direction * speed
+		
+		"agile":
+			# Movimiento en zigzag
+			zigzag_timer += delta
+			if zigzag_timer > 0.3:
+				zigzag_timer = 0.0
+				zigzag_direction *= -1
+			
+			var perpendicular = Vector2(-direction.y, direction.x)
+			movement = (direction + perpendicular * zigzag_direction * 0.5).normalized() * speed * 1.2
+		
+		"flying":
+			# Movimiento errático
+			var noise_offset = sin(Time.get_ticks_msec() * 0.005) * 0.3
+			var perpendicular = Vector2(-direction.y, direction.x)
+			movement = (direction + perpendicular * noise_offset).normalized() * speed
+		
+		"ranged", "teleporter":
+			# Mantener distancia
+			if distance < preferred_distance * 0.8:
+				# Alejarse
+				movement = -direction * speed * 0.7
+			elif distance > preferred_distance * 1.2:
+				# Acercarse
+				movement = direction * speed * 0.5
+			else:
+				# Movimiento lateral para esquivar
+				var perpendicular = Vector2(-direction.y, direction.x)
+				movement = perpendicular * sin(Time.get_ticks_msec() * 0.003) * speed * 0.3
+		
+		"pack":
+			# Movimiento normal pero buscar otros lobos
+			movement = direction * speed
+			# Bonus de velocidad si hay pack cerca
+			var pack_count = _count_nearby_pack_members()
+			var speed_bonus = modifiers.get("pack_speed_bonus", 0.05)
+			movement *= (1.0 + pack_count * speed_bonus)
+		
+		"charger":
+			# Movimiento normal, la carga se maneja en _try_special_abilities
+			movement = direction * speed
+		
+		"phase":
+			# Movimiento normal cuando no está en fase
+			movement = direction * speed
+		
+		"trail":
+			# Movimiento normal, dejar trail
+			movement = direction * speed
+		
+		"support":
+			# Mantenerse cerca de aliados
+			var ally_center = _get_nearby_allies_center()
+			if ally_center != Vector2.ZERO:
+				var to_allies = (ally_center - global_position).normalized()
+				movement = (direction * 0.5 + to_allies * 0.5).normalized() * speed
+			else:
+				movement = direction * speed
+		
+		"aoe", "breath", "multi":
+			# Movimiento moderado, prefiere rango medio
+			if distance < 100:
+				movement = -direction * speed * 0.5
+			else:
+				movement = direction * speed * 0.7
+		
+		"boss":
+			# Los bosses tienen patrones especiales
+			movement = direction * speed
+		
+		_:
+			movement = direction * speed
+	
+	return movement
+
+func _try_special_abilities(distance: float, delta: float) -> void:
+	"""Intentar usar habilidades especiales según arquetipo"""
+	
+	# CHARGER: Carga hacia el jugador
+	if archetype == "charger" and charge_cooldown_timer <= 0 and not is_charging:
+		var charge_distance = modifiers.get("charge_distance", 200.0)
+		if distance > 80 and distance < charge_distance:
+			_start_charge()
+	
+	# PHASE: Volverse intangible
+	if archetype == "phase" and phase_cooldown_timer <= 0 and not is_phased:
+		# Activar fase si recibió daño recientemente o está en peligro
+		if hp < max_hp * 0.7:
+			_start_phase()
+	
+	# TELEPORTER: Teletransportarse
+	if archetype == "teleporter" and teleport_cooldown_timer <= 0:
+		var threshold = modifiers.get("teleport_health_threshold", 0.4)
+		if hp < max_hp * threshold:
+			_do_teleport()
+	
+	# TRAIL: Dejar rastro de fuego
+	if archetype == "trail" and trail_timer <= 0:
+		trail_timer = modifiers.get("trail_interval", 0.2)
+		_spawn_fire_trail()
+	
+	# SUPPORT: Buff a aliados
+	if archetype == "support" and ability_cooldown_timer <= 0:
+		ability_cooldown_timer = modifiers.get("buff_cooldown", 8.0)
+		_buff_nearby_allies()
+	
+	# PACK: Daño bonus por aliados cercanos (pasivo, se aplica en ataque)
+
+func _start_charge() -> void:
+	"""Iniciar carga hacia el jugador"""
+	if not player_ref or not is_instance_valid(player_ref):
+		return
+	
+	is_charging = true
+	charge_target = player_ref.global_position
+	charge_cooldown_timer = modifiers.get("charge_cooldown", 4.0)
+	
+	# Visual: cambiar color brevemente
+	var sprite = animated_sprite if animated_sprite else _find_sprite_node(self)
+	if sprite:
+		var tween = create_tween()
+		tween.tween_property(sprite, "modulate", Color(1.0, 0.3, 0.3), 0.2)
+	
+	print("[EnemyBase] ⚡ %s inicia carga!" % enemy_id)
+
+func _process_charge(delta: float) -> void:
+	"""Procesar movimiento de carga"""
+	var charge_speed = modifiers.get("charge_speed", 300.0)
+	var direction = (charge_target - global_position).normalized()
+	
+	global_position += direction * charge_speed * delta
+	
+	# Verificar si llegamos al destino o pasamos
+	if global_position.distance_to(charge_target) < 20:
+		_end_charge()
+	
+	# Verificar colisión con jugador durante carga
+	if player_ref and is_instance_valid(player_ref):
+		if global_position.distance_to(player_ref.global_position) < attack_range:
+			# Aplicar daño de carga
+			var charge_damage_mult = modifiers.get("charge_damage_mult", 2.0)
+			# TODO: Aplicar daño al jugador
+			_end_charge()
+
+func _end_charge() -> void:
+	"""Terminar carga"""
+	is_charging = false
+	
+	# Restaurar color
+	var sprite = animated_sprite if animated_sprite else _find_sprite_node(self)
+	if sprite:
+		var tween = create_tween()
+		tween.tween_property(sprite, "modulate", _current_status_color, 0.2)
+
+func _start_phase() -> void:
+	"""Activar modo fase (intangible)"""
+	is_phased = true
+	phase_cooldown_timer = modifiers.get("phase_cooldown", 6.0)
+	
+	# Visual: semi-transparente
+	var sprite = animated_sprite if animated_sprite else _find_sprite_node(self)
+	if sprite:
+		var tween = create_tween()
+		tween.tween_property(sprite, "modulate:a", 0.3, 0.3)
+	
+	# Desactivar colisión temporalmente
+	set_collision_layer_value(2, false)
+	
+	# Timer para terminar fase
+	var phase_duration = modifiers.get("phase_duration", 1.5)
+	get_tree().create_timer(phase_duration).timeout.connect(_end_phase)
+	
+	print("[EnemyBase] 👻 %s entra en fase!" % enemy_id)
+
+func _process_phase_movement(delta: float) -> void:
+	"""Movimiento durante fase (más rápido, atraviesa)"""
+	if not player_ref or not is_instance_valid(player_ref):
+		return
+	
+	var direction = (player_ref.global_position - global_position).normalized()
+	var phase_speed = speed * modifiers.get("phase_speed_bonus", 1.5)
+	global_position += direction * phase_speed * delta
+
+func _end_phase() -> void:
+	"""Terminar modo fase"""
+	is_phased = false
+	
+	# Restaurar visual
+	var sprite = animated_sprite if animated_sprite else _find_sprite_node(self)
+	if sprite:
+		var tween = create_tween()
+		tween.tween_property(sprite, "modulate:a", 1.0, 0.3)
+	
+	# Reactivar colisión
+	set_collision_layer_value(2, true)
+
+func _do_teleport() -> void:
+	"""Teletransportarse a una posición segura"""
+	teleport_cooldown_timer = modifiers.get("teleport_cooldown", 5.0)
+	
+	var teleport_range = modifiers.get("teleport_range", 150.0)
+	
+	# Calcular posición de teleport (lejos del jugador)
+	var player_pos = Vector2.ZERO
+	if player_ref and is_instance_valid(player_ref):
+		player_pos = player_ref.global_position
+	
+	var away_direction = (global_position - player_pos).normalized()
+	var new_pos = global_position + away_direction * teleport_range
+	
+	# Añadir algo de variación
+	new_pos += Vector2(randf_range(-50, 50), randf_range(-50, 50))
+	
+	# Visual de teleport
+	var sprite = animated_sprite if animated_sprite else _find_sprite_node(self)
+	if sprite:
+		var tween = create_tween()
+		tween.tween_property(sprite, "modulate:a", 0.0, 0.15)
+		tween.tween_callback(func(): global_position = new_pos)
+		tween.tween_property(sprite, "modulate:a", 1.0, 0.15)
+	else:
+		global_position = new_pos
+	
+	print("[EnemyBase] ✨ %s se teletransporta!" % enemy_id)
+
+func _spawn_fire_trail() -> void:
+	"""Crear una zona de fuego en la posición actual"""
+	# TODO: Implementar efecto visual de trail de fuego
+	# Por ahora solo un placeholder
+	pass
+
+func _buff_nearby_allies() -> void:
+	"""Buffear aliados cercanos"""
+	var buff_radius = modifiers.get("buff_radius", 150.0)
+	
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if enemy == self or not is_instance_valid(enemy):
+			continue
+		
+		if enemy.global_position.distance_to(global_position) <= buff_radius:
+			# Aplicar buff de velocidad temporal
+			var speed_bonus = modifiers.get("buff_speed_bonus", 0.15)
+			if enemy.has_method("apply_speed_buff"):
+				enemy.apply_speed_buff(speed_bonus, modifiers.get("buff_duration", 5.0))
+	
+	print("[EnemyBase] 💪 %s buffea aliados cercanos!" % enemy_id)
+
+func apply_speed_buff(amount: float, duration: float) -> void:
+	"""Recibir buff de velocidad de un support"""
+	if _base_speed == 0:
+		_base_speed = speed
+	
+	speed = _base_speed * (1.0 + amount)
+	
+	# Timer para quitar el buff
+	get_tree().create_timer(duration).timeout.connect(func():
+		if _base_speed > 0:
+			speed = _base_speed * (1.0 - _slow_amount if _is_slowed else 1.0)
+	)
+
+func _count_nearby_pack_members() -> int:
+	"""Contar aliados del mismo tipo cercanos (para pack bonus)"""
+	var count = 0
+	var pack_radius = modifiers.get("pack_radius", 200.0)
+	var max_pack = modifiers.get("max_pack_bonus", 3)
+	
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if enemy == self or not is_instance_valid(enemy):
+			continue
+		
+		# Solo contar si es del mismo tipo
+		if enemy.get("archetype") == "pack" and enemy.global_position.distance_to(global_position) <= pack_radius:
+			count += 1
+			if count >= max_pack:
+				break
+	
+	return count
+
+func _get_nearby_allies_center() -> Vector2:
+	"""Obtener centro de aliados cercanos (para support)"""
+	var center = Vector2.ZERO
+	var count = 0
+	var buff_radius = modifiers.get("buff_radius", 150.0)
+	
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if enemy == self or not is_instance_valid(enemy):
+			continue
+		
+		if enemy.global_position.distance_to(global_position) <= buff_radius:
+			center += enemy.global_position
+			count += 1
+	
+	if count > 0:
+		center /= count
+	
+	return center
 
 func _calculate_separation() -> Vector2:
 	"""Calcular vector de separación respecto a otros enemigos cercanos"""
@@ -418,15 +917,46 @@ func _attempt_attack() -> void:
 	"""Intentar atacar al player. Puede ser sobrescrito en subclases"""
 	can_attack = false
 	attack_timer = attack_cooldown
+	
+	# Calcular daño según arquetipo
+	var final_damage = damage
+	
+	# PACK: Bonus de daño por aliados cercanos
+	if archetype == "pack":
+		var pack_count = _count_nearby_pack_members()
+		var damage_bonus = modifiers.get("pack_damage_bonus", 0.15)
+		final_damage = int(damage * (1.0 + pack_count * damage_bonus))
+	
+	# BLOCKER: Chance de contraataque
+	if archetype == "blocker":
+		var counter_damage = modifiers.get("counter_damage", 1.5)
+		# El contraataque se aplicaría aquí si el jugador acaba de atacar
+	
 	# Implementación base: sin efecto visual, solo daño
-	# Las subclases pueden añadir animaciones y efectos
+	# TODO: Conectar con sistema de daño al jugador
 
 func take_damage(amount: int) -> void:
 	"""Recibir daño del enemigo"""
-	# Aplicar bonus de shadow_mark si está marcado
 	var final_damage = amount
+	
+	# BLOCKER: Chance de bloquear
+	if archetype == "blocker":
+		var block_chance = modifiers.get("block_chance", 0.25)
+		if randf() < block_chance:
+			var block_reduction = modifiers.get("block_reduction", 0.7)
+			final_damage = int(amount * (1.0 - block_reduction))
+			print("[EnemyBase] 🛡️ %s bloquea! Daño reducido: %d → %d" % [enemy_id, amount, final_damage])
+			# Visual de bloqueo
+			_flash_block()
+	
+	# TANK: Reducción de daño pasiva
+	if archetype == "tank" or modifiers.has("damage_reduction"):
+		var reduction = modifiers.get("damage_reduction", 0.0)
+		final_damage = int(final_damage * (1.0 - reduction))
+	
+	# Aplicar bonus de shadow_mark si está marcado
 	if _is_shadow_marked:
-		final_damage = int(amount * (1.0 + _shadow_mark_bonus))
+		final_damage = int(final_damage * (1.0 + _shadow_mark_bonus))
 		print("[EnemyBase] 🎯 Shadow Mark! Daño aumentado: %d → %d" % [amount, final_damage])
 	
 	# Aplicar daño a través del HealthComponent
@@ -437,6 +967,15 @@ func take_damage(amount: int) -> void:
 		hp -= final_damage
 		if hp <= 0:
 			die()
+
+func _flash_block() -> void:
+	"""Flash visual cuando bloquea un ataque"""
+	var sprite = animated_sprite if animated_sprite else _find_sprite_node(self)
+	if sprite:
+		var original = sprite.modulate
+		var tween = create_tween()
+		tween.tween_property(sprite, "modulate", Color(0.5, 0.7, 1.0), 0.05)
+		tween.tween_property(sprite, "modulate", original, 0.15)
 
 func apply_knockback(knockback_force: Vector2) -> void:
 	"""Aplicar knockback (empujón) al enemigo desde un impacto"""

@@ -1,214 +1,425 @@
+# EnemyManager.gd
+# Gestor de spawn y control de enemigos
+# Usa EnemyDatabase para obtener datos de enemigos
+#
+# Características:
+# - Spawn por tiers según tiempo de juego
+# - Bosses cada 5 minutos
+# - Élites aleatorios con aura
+# - Escalado exponencial después del minuto 20
+
 extends Node
 class_name EnemyManager
 
 signal boss_spawned(boss_node: Node2D)
+signal elite_spawned(elite_node: Node2D)
 signal enemy_spawned(enemy: Node2D)
 signal enemy_died(enemy_position: Vector2, enemy_type: String, exp_value: int)
+signal wave_cleared()
 
-# Script base de enemigos - todos los enemigos usan EnemyBase
-var EnemyBaseScript: Script = null
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONFIGURACIÓN
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# Test-friendly defaults: low max, high rate so we can observe spawns quickly during debugging.
+@export_group("Spawn Settings")
 @export var spawn_distance: float = 600.0
-@export var max_enemies: int = 5
-@export var spawn_rate: float = 5.0 # spawn attempts per second (useful for quick tests)
-@export var debug_spawns: bool = true
+@export var max_enemies: int = 50
+@export var base_spawn_rate: float = 1.5  # Enemigos por segundo base
+@export var debug_spawns: bool = false
+
+@export_group("Scaling")
+@export var spawn_rate_increase_per_minute: float = 0.1  # +10% por minuto
+@export var max_enemies_increase_per_minute: int = 2
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ESTADO
+# ═══════════════════════════════════════════════════════════════════════════════
 
 var player: Node2D = null
-var wave_manager: Node = null
 var spawn_timer: float = 0.0
 var active_enemies: Array = []
-var enemy_types: Array = []
 var spawning_enabled: bool = true
+
+# Tracking de tiempo
+var game_time_seconds: float = 0.0
+var last_boss_minute: int = -1
+var elites_spawned_this_run: int = 0
+var elite_check_timer: float = 0.0
+
+# Script base de enemigos
+var EnemyBaseScript: Script = null
+
+# Referencia a DifficultyManager
+var difficulty_manager = null
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INICIALIZACIÓN
+# ═══════════════════════════════════════════════════════════════════════════════
 
 func _ready() -> void:
 	randomize()
 	_load_enemy_scripts()
+	_find_difficulty_manager()
+	
 	if debug_spawns:
-		print("👹 EnemyManager inicializado (debug_spawns=%s, spawn_rate=%s, max_enemies=%s)" % [debug_spawns, spawn_rate, max_enemies])
-	_setup_enemy_types()
+		print("👹 [EnemyManager] Inicializado")
+		print("   - Max enemigos base: %d" % max_enemies)
+		print("   - Spawn rate base: %.1f/s" % base_spawn_rate)
 
 func _load_enemy_scripts() -> void:
-	# Solo cargamos EnemyBase - es el script universal para todos los enemigos
 	if ResourceLoader.exists("res://scripts/enemies/EnemyBase.gd"):
 		EnemyBaseScript = load("res://scripts/enemies/EnemyBase.gd")
 
-func _setup_enemy_types() -> void:
-	# Velocidades base = 50% de lo que era antes
-	# Skeleton: 40 (era 80), Goblin: 60 (era 120), Slime: 30 (era 60)
-	enemy_types = [
-		{"id":"skeleton","name":"Esqueleto","health":15,"speed":40.0,"exp_value":1,"tier":1},
-		{"id":"goblin","name":"Goblin","health":10,"speed":60.0,"exp_value":1,"tier":1},
-		{"id":"slime","name":"Slime","health":25,"speed":30.0,"exp_value":2,"tier":1}
-	]
-	if debug_spawns:
-		print("[EnemyManager] enemy_types: %s" % enemy_types)
+func _find_difficulty_manager() -> void:
+	var tree = get_tree()
+	if tree and tree.root:
+		difficulty_manager = tree.root.get_node_or_null("DifficultyManager")
 
 func initialize(player_ref: Node2D, _world_ref: Node = null) -> void:
 	player = player_ref
 	spawning_enabled = true
 	spawn_timer = 0.0
+	game_time_seconds = 0.0
+	last_boss_minute = -1
+	elites_spawned_this_run = 0
+	
 	if debug_spawns:
-		print("[EnemyManager] initialize called; player=%s" % [player])
+		print("[EnemyManager] Inicializado con player: %s" % player)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PROCESO PRINCIPAL
+# ═══════════════════════════════════════════════════════════════════════════════
 
 func _process(delta: float) -> void:
 	if not spawning_enabled or player == null:
 		return
+	
+	game_time_seconds += delta
+	
 	_update_spawn_timer(delta)
-	# NOTE: Enemy movement is now handled by each enemy's _physics_process() in EnemyBase
-	# This avoids duplicate movement calculations
+	_check_boss_spawn()
+	_check_elite_spawn(delta)
+	_cleanup_dead_enemies()
 
 func _update_spawn_timer(delta: float) -> void:
 	spawn_timer += delta
-	var interval = max(0.01, 1.0 / spawn_rate)
+	
+	var current_spawn_rate = _get_current_spawn_rate()
+	var interval = 1.0 / max(0.1, current_spawn_rate)
+	
 	if spawn_timer >= interval:
 		spawn_timer = 0.0
 		_attempt_spawn()
 
-func _attempt_spawn() -> void:
-	if active_enemies.size() >= max_enemies:
-		return
-	if enemy_types.is_empty():
-		return
+func _get_current_spawn_rate() -> float:
+	"""Calcular spawn rate actual basado en tiempo y dificultad"""
+	var minute = game_time_seconds / 60.0
+	var rate = base_spawn_rate * (1.0 + minute * spawn_rate_increase_per_minute)
+	
+	# Aplicar multiplicador de DifficultyManager si existe
+	if difficulty_manager:
+		rate *= difficulty_manager.enemy_count_multiplier
+	
+	return rate
 
-	var choice = enemy_types[randi() % enemy_types.size()]
+func _get_current_max_enemies() -> int:
+	"""Calcular máximo de enemigos actual"""
+	var minute = int(game_time_seconds / 60.0)
+	var current_max = max_enemies + (minute * max_enemies_increase_per_minute)
+	
+	# Después del minuto 20, escala más agresivamente
+	if minute > 20:
+		var extra_periods = (minute - 20) / 5
+		current_max += extra_periods * 10
+	
+	return current_max
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPAWN DE ENEMIGOS NORMALES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _attempt_spawn() -> void:
+	if active_enemies.size() >= _get_current_max_enemies():
+		return
+	
+	var minute = game_time_seconds / 60.0
+	var available_tiers = EnemyDatabase.get_available_tiers_for_minute(minute)
+	
+	if available_tiers.is_empty():
+		return
+	
+	# Seleccionar tier con peso (tiers más altos son menos comunes)
+	var selected_tier = _select_weighted_tier(available_tiers, minute)
+	var enemy_data = EnemyDatabase.get_random_enemy_for_tier(selected_tier)
+	
+	if enemy_data.is_empty():
+		return
+	
+	# Aplicar escalado de dificultad
+	var difficulty_mult = 1.0
+	if difficulty_manager:
+		difficulty_mult = difficulty_manager.enemy_health_multiplier
+	
+	enemy_data = EnemyDatabase.apply_difficulty_scaling(enemy_data, minute, difficulty_mult)
+	
 	var pos = _get_spawn_position()
-	if debug_spawns:
-		print("[EnemyManager] attempt spawn: type=%s pos=%s active=%d/%d" % [choice.get("id"), str(pos), active_enemies.size(), max_enemies])
-	spawn_enemy(choice, pos)
+	spawn_enemy(enemy_data, pos)
+
+func _select_weighted_tier(available_tiers: Array, minute: float) -> int:
+	"""Seleccionar tier con pesos - tiers más altos menos comunes"""
+	# Pesos base: tier 1 = 100%, tier 2 = 60%, tier 3 = 35%, tier 4 = 15%
+	var weights = {1: 1.0, 2: 0.6, 3: 0.35, 4: 0.15}
+	
+	# Después del minuto 20, los tiers altos son más comunes
+	if minute > 20:
+		var bonus = (minute - 20) / 20.0  # +5% por minuto después del 20
+		weights[2] = min(1.0, weights[2] + bonus * 0.5)
+		weights[3] = min(0.8, weights[3] + bonus * 0.4)
+		weights[4] = min(0.6, weights[4] + bonus * 0.3)
+	
+	var total_weight = 0.0
+	for tier in available_tiers:
+		total_weight += weights.get(tier, 0.1)
+	
+	var roll = randf() * total_weight
+	var cumulative = 0.0
+	
+	for tier in available_tiers:
+		cumulative += weights.get(tier, 0.1)
+		if roll <= cumulative:
+			return tier
+	
+	return available_tiers[0]
 
 func _get_spawn_position() -> Vector2:
 	var ppos: Vector2 = Vector2.ZERO
 	if player and player is Node2D:
 		ppos = player.global_position
-
-	var side = randi() % 4
-	match side:
-		0:
-			return Vector2(randf_range(ppos.x - spawn_distance, ppos.x + spawn_distance), ppos.y - spawn_distance)
-		1:
-			return Vector2(ppos.x + spawn_distance, randf_range(ppos.y - spawn_distance, ppos.y + spawn_distance))
-		2:
-			return Vector2(randf_range(ppos.x - spawn_distance, ppos.x + spawn_distance), ppos.y + spawn_distance)
-		3:
-			return Vector2(ppos.x - spawn_distance, randf_range(ppos.y - spawn_distance, ppos.y + spawn_distance))
-	return Vector2.ZERO
-
-func _find_visual_node(root: Node) -> Node:
-	if root == null:
-		return null
-	if root is Sprite2D or root is AnimatedSprite2D:
-		return root
-	for c in root.get_children():
-		if c is Node:
-			var f = _find_visual_node(c)
-			if f:
-				return f
-	return null
-
-func spawn_enemy(enemy_type: Dictionary, world_pos: Vector2) -> Node:
-	var type_id: String = "enemy"
-	if typeof(enemy_type) == TYPE_DICTIONARY:
-		type_id = str(enemy_type.get("id", "enemy"))
-
-	var enemy: Node = null
 	
-	# Todos los enemigos usan EnemyBase - la configuración viene del diccionario
-	if EnemyBaseScript:
-		enemy = CharacterBody2D.new()
-		enemy.set_script(EnemyBaseScript)
-		enemy.name = "Enemy_%s" % type_id
-	else:
+	# Spawn en un círculo alrededor del jugador
+	var angle = randf() * TAU
+	var distance = spawn_distance + randf() * 100.0  # Algo de variación
+	
+	return ppos + Vector2(cos(angle), sin(angle)) * distance
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPAWN DE BOSSES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _check_boss_spawn() -> void:
+	var current_minute = int(game_time_seconds / 60.0)
+	
+	# Solo spawn en múltiplos de 5 minutos
+	if current_minute > 0 and current_minute % 5 == 0 and current_minute != last_boss_minute:
+		last_boss_minute = current_minute
+		_spawn_boss(current_minute)
+
+func _spawn_boss(minute: int) -> void:
+	var boss_data = EnemyDatabase.get_boss_for_minute(minute)
+	
+	if boss_data.is_empty():
+		if debug_spawns:
+			print("[EnemyManager] No hay boss para el minuto %d" % minute)
+		return
+	
+	# Aplicar escalado
+	var difficulty_mult = 1.0
+	if difficulty_manager:
+		difficulty_mult = difficulty_manager.enemy_health_multiplier
+	
+	boss_data = EnemyDatabase.apply_difficulty_scaling(boss_data, float(minute), difficulty_mult)
+	boss_data["is_boss"] = true
+	
+	var pos = _get_spawn_position()
+	var boss = spawn_enemy(boss_data, pos)
+	
+	if boss:
+		emit_signal("boss_spawned", boss)
+		print("🔥 [EnemyManager] ¡BOSS SPAWNEADO: %s (Minuto %d)!" % [boss_data.name, minute])
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPAWN DE ÉLITES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _check_elite_spawn(delta: float) -> void:
+	elite_check_timer += delta
+	
+	# Revisar cada 10 segundos
+	if elite_check_timer < 10.0:
+		return
+	
+	elite_check_timer = 0.0
+	
+	# Verificar si ya hay un élite activo
+	for enemy in active_enemies:
+		if is_instance_valid(enemy) and enemy.get("is_elite"):
+			return  # Ya hay un élite, no spawneamos otro
+	
+	var minute = game_time_seconds / 60.0
+	
+	if EnemyDatabase.should_spawn_elite(minute, elites_spawned_this_run):
+		_spawn_elite()
+
+func _spawn_elite() -> void:
+	var minute = game_time_seconds / 60.0
+	var available_tiers = EnemyDatabase.get_available_tiers_for_minute(minute)
+	
+	# Los élites pueden ser de cualquier tier disponible
+	var tier = available_tiers[randi() % available_tiers.size()]
+	var base_enemy = EnemyDatabase.get_random_enemy_for_tier(tier)
+	
+	if base_enemy.is_empty():
+		return
+	
+	# Convertir a élite
+	var elite_data = EnemyDatabase.create_elite_version(base_enemy)
+	
+	# Aplicar escalado normal también
+	var difficulty_mult = 1.0
+	if difficulty_manager:
+		difficulty_mult = difficulty_manager.enemy_health_multiplier
+	
+	elite_data = EnemyDatabase.apply_difficulty_scaling(elite_data, minute, difficulty_mult)
+	
+	var pos = _get_spawn_position()
+	var elite = spawn_enemy(elite_data, pos)
+	
+	if elite:
+		elites_spawned_this_run += 1
+		emit_signal("elite_spawned", elite)
+		print("⭐ [EnemyManager] ¡ÉLITE SPAWNEADO: %s!" % elite_data.name)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FUNCIÓN PRINCIPAL DE SPAWN
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
+	if not EnemyBaseScript:
 		push_warning("⚠️ [EnemyManager] EnemyBaseScript no cargado")
 		return null
-
-	if enemy and enemy.has_method("initialize"):
-		enemy.initialize(enemy_type, player)
-
-	# Los sprites ya están asignados en initialize() via AnimatedEnemySprite
-	var visual = _find_visual_node(enemy)
-	if visual and visual is Sprite2D:
-		visual.centered = true
+	
+	var type_id = str(enemy_data.get("id", "unknown"))
+	
+	# Crear CharacterBody2D con script EnemyBase
+	var enemy = CharacterBody2D.new()
+	enemy.set_script(EnemyBaseScript)
+	enemy.name = "Enemy_%s" % type_id
+	
+	# Inicializar con datos de la base de datos
+	if enemy.has_method("initialize_from_database"):
+		enemy.initialize_from_database(enemy_data, player)
+	elif enemy.has_method("initialize"):
+		# Fallback al método antiguo
+		var legacy_data = {
+			"id": enemy_data.get("id", "unknown"),
+			"name": enemy_data.get("name", "Enemigo"),
+			"health": enemy_data.get("final_hp", enemy_data.get("base_hp", 20)),
+			"speed": enemy_data.get("final_speed", enemy_data.get("base_speed", 40.0)),
+			"exp_value": enemy_data.get("final_xp", enemy_data.get("base_xp", 1)),
+			"tier": enemy_data.get("tier", 1),
+			"damage": enemy_data.get("final_damage", enemy_data.get("base_damage", 5))
+		}
+		enemy.initialize(legacy_data, player)
+	
+	# Configurar propiedades adicionales desde enemy_data
+	if enemy_data.get("is_elite", false):
+		enemy.set("is_elite", true)
+		if enemy_data.has("aura_color"):
+			enemy.set("aura_color", enemy_data.aura_color)
+		if enemy_data.has("size_scale"):
+			enemy.set("elite_size_scale", enemy_data.size_scale)
+	
+	if enemy_data.get("is_boss", false):
+		enemy.set("is_boss", true)
+	
+	# Conectar señal de muerte
+	if enemy.has_signal("enemy_died"):
+		enemy.enemy_died.connect(_on_enemy_died)
 	
 	# Asegurar visibilidad
-	if enemy is Node2D:
-		enemy.visible = true
-		enemy.z_index = 0
-
-	# Add to scene tree
+	enemy.visible = true
+	enemy.z_index = 0
+	
+	# Añadir al árbol de escena
 	var root_scene = get_tree().current_scene if get_tree() else null
 	if root_scene and root_scene.has_node("WorldRoot/EnemiesRoot"):
 		var er = root_scene.get_node("WorldRoot/EnemiesRoot")
 		er.add_child(enemy)
-		if enemy is Node2D:
-			enemy.position = er.to_local(world_pos)
+		enemy.position = er.to_local(world_pos)
 	else:
 		add_child(enemy)
-		if enemy is Node2D:
-			enemy.global_position = world_pos
-
+		enemy.global_position = world_pos
+	
 	active_enemies.append(enemy)
 	emit_signal("enemy_spawned", enemy)
-	# If this enemy_type indicates a boss, emit boss_spawned for listeners
-	var is_boss: bool = false
-	if typeof(enemy_type) == TYPE_DICTIONARY:
-		is_boss = bool(enemy_type.get("is_boss", false))
-	# Heuristic: also treat types with 'boss' in their id as bosses
-	if not is_boss and type_id.find("boss") != -1:
-		is_boss = true
-	if is_boss:
+	
+	# Emitir señal de boss si aplica
+	if enemy_data.get("is_boss", false) or type_id.find("boss") != -1:
 		emit_signal("boss_spawned", enemy)
+	
 	if debug_spawns:
-		print("[EnemyManager] Spawned %s at %s (active=%d)" % [type_id, str(world_pos), active_enemies.size()])
+		var tier = enemy_data.get("tier", 1)
+		var hp = enemy_data.get("final_hp", enemy_data.get("base_hp", 0))
+		print("[EnemyManager] Spawned T%d %s (HP:%d) at %s" % [tier, enemy_data.get("name", "?"), hp, world_pos])
+	
 	return enemy
 
-func spawn_elite() -> Node:
-	# Spawn a stronger random elite/boss near the player
-	var elite_data = {"id":"slime_boss","name":"Slime Boss","health":150,"speed":60.0,"exp_value":20, "is_boss": true}
-	var pos = _get_spawn_position()
-	return spawn_enemy(elite_data, pos)
-
+# ═══════════════════════════════════════════════════════════════════════════════
+# CALLBACKS
+# ═══════════════════════════════════════════════════════════════════════════════
 
 func _on_enemy_died(enemy: Node, type_id: String = "", exp_value: int = 0) -> void:
 	if enemy in active_enemies:
 		active_enemies.erase(enemy)
+	
 	var pos = Vector2.ZERO
-	if enemy and enemy is Node2D:
+	if is_instance_valid(enemy) and enemy is Node2D:
 		pos = enemy.global_position
+	
 	emit_signal("enemy_died", pos, type_id, exp_value)
+	
 	if debug_spawns:
-		print("[EnemyManager] enemy died: %s at %s exp=%d" % [type_id, pos, exp_value])
+		print("[EnemyManager] Enemy died: %s XP:%d" % [type_id, exp_value])
+
+func _cleanup_dead_enemies() -> void:
+	var to_remove = []
+	for enemy in active_enemies:
+		if not is_instance_valid(enemy):
+			to_remove.append(enemy)
+	
+	for e in to_remove:
+		active_enemies.erase(e)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# API PÚBLICA
+# ═══════════════════════════════════════════════════════════════════════════════
 
 func get_enemy_count() -> int:
 	return active_enemies.size()
 
-func cleanup_enemies() -> void:
-	var enemies_to_remove: Array = []
+func get_active_enemies() -> Array:
+	"""Retornar posiciones de enemigos activos"""
+	var positions = []
 	for enemy in active_enemies:
-		if not is_instance_valid(enemy):
-			enemies_to_remove.append(enemy)
-			continue
-		if enemy is Node2D and player and player is Node2D:
-			var distance = enemy.global_position.distance_to(player.global_position)
-			if distance > spawn_distance * 2:
-				enemies_to_remove.append(enemy)
-				enemy.queue_free()
-	for e in enemies_to_remove:
-		active_enemies.erase(e)
+		if is_instance_valid(enemy) and enemy is Node2D:
+			positions.append(enemy.global_position)
+	return positions
 
-func get_enemies_in_range(center: Vector2, r: float) -> Array:
-	var found: Array = []
-	for e in active_enemies:
-		if is_instance_valid(e) and e is Node2D:
-			if e.global_position.distance_to(center) <= r:
-				found.append(e)
+func get_active_enemy_nodes() -> Array:
+	"""Retornar nodos de enemigos activos"""
+	var nodes = []
+	for enemy in active_enemies:
+		if is_instance_valid(enemy):
+			nodes.append(enemy)
+	return nodes
+
+func get_enemies_in_range(center: Vector2, radius: float) -> Array:
+	var found = []
+	for enemy in active_enemies:
+		if is_instance_valid(enemy) and enemy is Node2D:
+			if enemy.global_position.distance_to(center) <= radius:
+				found.append(enemy)
 	return found
-
-func set_spawn_rate(new_rate: float) -> void:
-	spawn_rate = max(0.01, new_rate)
-
-func set_max_enemies(new_max: int) -> void:
-	max_enemies = max(0, new_max)
 
 func enable_spawning(enabled: bool) -> void:
 	spawning_enabled = enabled
@@ -219,17 +430,29 @@ func clear_all_enemies() -> void:
 			enemy.queue_free()
 	active_enemies.clear()
 
-func get_active_enemy_positions() -> Array:
-	var out: Array = []
-	for enemy in active_enemies:
-		if is_instance_valid(enemy) and enemy is Node2D:
-			out.append(enemy.global_position)
-	return out
+func force_spawn_boss() -> void:
+	"""Forzar spawn de boss (para testing)"""
+	var minute = max(5, int(game_time_seconds / 60.0))
+	if minute % 5 != 0:
+		minute = ((minute / 5) + 1) * 5
+	_spawn_boss(minute)
 
-func get_active_enemies() -> Array:
-	"""Retornar posiciones de enemigos activos para el minimapa"""
-	var out: Array = []
-	for enemy in active_enemies:
-		if is_instance_valid(enemy) and enemy is Node2D:
-			out.append(enemy.global_position)
-	return out
+func force_spawn_elite() -> void:
+	"""Forzar spawn de élite (para testing)"""
+	_spawn_elite()
+
+func get_game_time_minutes() -> float:
+	return game_time_seconds / 60.0
+
+func get_elites_spawned() -> int:
+	return elites_spawned_this_run
+
+func set_game_time(seconds: float) -> void:
+	"""Para testing - establecer tiempo de juego"""
+	game_time_seconds = seconds
+
+func set_spawn_rate(new_rate: float) -> void:
+	base_spawn_rate = max(0.1, new_rate)
+
+func set_max_enemies(new_max: int) -> void:
+	max_enemies = max(1, new_max)
