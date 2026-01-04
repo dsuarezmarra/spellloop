@@ -104,7 +104,8 @@ func _check_player_collision_distance() -> void:
 func _hit_player(player_body: Node2D) -> void:
 	"""Impactar al player y destruir proyectil"""
 	if player_body.has_method("take_damage"):
-		player_body.take_damage(damage)
+		# Intentar pasar el elemento, si falla usar la versión simple
+		player_body.call("take_damage", damage, element_type)
 		print("[EnemyProjectile] 🎯 Impacto en player: %d daño (%s)" % [damage, element_type])
 	
 	# Aplicar efectos según elemento

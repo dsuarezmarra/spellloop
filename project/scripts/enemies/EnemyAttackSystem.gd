@@ -180,8 +180,9 @@ func _perform_melee_attack() -> void:
 	if not player.has_method("take_damage"):
 		return
 	
-	player.take_damage(attack_damage)
-	print("[EnemyAttackSystem] ⚔️ %s atacó melee a player por %d daño" % [enemy.name, attack_damage])
+	var elem = _get_enemy_element()
+	player.call("take_damage", attack_damage, elem)
+	print("[EnemyAttackSystem] ⚔️ %s atacó melee a player por %d daño (%s)" % [enemy.name, attack_damage, elem])
 	
 	# Aplicar efectos según arquetipo y elemento
 	_apply_melee_effects()
@@ -311,13 +312,14 @@ func _perform_aoe_attack() -> void:
 	var aoe_center = player.global_position
 	var radius = modifiers.get("aoe_radius", 100.0)
 	var aoe_damage = int(attack_damage * modifiers.get("aoe_damage_mult", 1.0))
+	var elem = _get_enemy_element()
 	
 	# Verificar si player está en rango del AoE
 	var dist_to_player = aoe_center.distance_to(player.global_position)
 	if dist_to_player <= radius:
 		if player.has_method("take_damage"):
-			player.take_damage(aoe_damage)
-			print("[EnemyAttackSystem] 💥 %s AoE hit player por %d daño (radio=%.0f)" % [enemy.name, aoe_damage, radius])
+			player.call("take_damage", aoe_damage, elem)
+			print("[EnemyAttackSystem] 💥 %s AoE hit player por %d daño (%s, radio=%.0f)" % [enemy.name, aoe_damage, elem, radius])
 			attacked_player.emit(aoe_damage, false)
 			# Aplicar efectos según elemento del AoE
 			_apply_aoe_effects()
@@ -1944,7 +1946,7 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 		if dist < hit_radius:
 			has_hit = true
 			if player_ref.has_method("take_damage"):
-				player_ref.take_damage(damage)
+				player_ref.call("take_damage", damage, element)
 				print("[HomingOrb] 🔮 Impacto en player: %d daño (%s)" % [damage, element])
 			# Efecto de impacto
 			_spawn_orb_impact_effect(orb.global_position, color)

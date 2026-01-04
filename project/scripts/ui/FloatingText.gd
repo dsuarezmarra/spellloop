@@ -41,10 +41,84 @@ static func spawn_heal(pos: Vector2, amount: int) -> void:
 	_spawn_text(pos, "+%d" % amount, Color(0.3, 1.0, 0.3), 18, 1.2)
 
 static func spawn_damage(pos: Vector2, amount: int, is_crit: bool = false) -> void:
-	"""Mostrar texto de daño"""
+	"""Mostrar texto de daño (enemigo recibe)"""
 	var col = Color(1.0, 0.3, 0.3) if not is_crit else Color(1.0, 0.8, 0.2)
 	var size = 16 if not is_crit else 22
 	_spawn_text(pos, str(amount), col, size, 0.8)
+
+static func spawn_player_damage(pos: Vector2, amount: int, element: String = "physical") -> void:
+	"""Mostrar daño recibido por el player (formato -X con color según elemento)"""
+	var col: Color
+	var prefix: String = "-"
+	
+	match element:
+		"fire":
+			col = Color(1.0, 0.5, 0.1)  # Naranja fuego
+		"ice":
+			col = Color(0.4, 0.8, 1.0)  # Cyan hielo
+		"poison":
+			col = Color(0.6, 0.9, 0.2)  # Verde veneno
+		"dark", "void", "shadow":
+			col = Color(0.6, 0.2, 0.8)  # Morado oscuro
+		"arcane":
+			col = Color(0.9, 0.4, 0.9)  # Rosa arcano
+		"lightning":
+			col = Color(1.0, 1.0, 0.4)  # Amarillo eléctrico
+		_:
+			col = Color(1.0, 0.3, 0.3)  # Rojo por defecto
+	
+	_spawn_text(pos, "%s%d" % [prefix, amount], col, 20, 1.0)
+
+static func spawn_dot_tick(pos: Vector2, amount: int, dot_type: String) -> void:
+	"""Mostrar tick de DoT (burn/poison) - más pequeño y sutil"""
+	var col: Color
+	var icon: String = ""
+	
+	match dot_type:
+		"burn":
+			col = Color(1.0, 0.6, 0.2, 0.9)
+			icon = "🔥"
+		"poison":
+			col = Color(0.5, 0.8, 0.3, 0.9)
+			icon = "☠️"
+		"bleed":
+			col = Color(0.8, 0.2, 0.2, 0.9)
+			icon = "🩸"
+		_:
+			col = Color(0.8, 0.3, 0.3, 0.9)
+			icon = ""
+	
+	_spawn_text(pos, "%s-%d" % [icon, amount], col, 14, 0.8)
+
+static func spawn_status_applied(pos: Vector2, status: String) -> void:
+	"""Mostrar cuando se aplica un estado al player"""
+	var col: Color
+	var text: String
+	
+	match status:
+		"slow":
+			col = Color(0.4, 0.7, 1.0)
+			text = "❄️ SLOW"
+		"burn":
+			col = Color(1.0, 0.5, 0.2)
+			text = "🔥 BURN"
+		"poison":
+			col = Color(0.5, 0.9, 0.3)
+			text = "☠️ POISON"
+		"weakness":
+			col = Color(0.6, 0.2, 0.6)
+			text = "💀 WEAK"
+		"curse":
+			col = Color(0.5, 0.3, 0.6)
+			text = "👻 CURSE"
+		"stun":
+			col = Color(1.0, 1.0, 0.4)
+			text = "⚡ STUN"
+		_:
+			col = Color(0.8, 0.8, 0.8)
+			text = status.to_upper()
+	
+	_spawn_text(pos, text, col, 14, 1.2)
 
 static func spawn_text(pos: Vector2, txt: String, col: Color = Color.WHITE) -> void:
 	"""Mostrar texto personalizado"""

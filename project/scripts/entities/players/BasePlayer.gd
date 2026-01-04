@@ -60,6 +60,13 @@ var _curse_timer: float = 0.0
 var _curse_amount: float = 0.0  # % reducción de curación
 var _is_cursed: bool = false
 
+# ========== SISTEMA VISUAL DE DEBUFFS ==========
+var _status_visual_node: Node2D = null
+var _status_aura_timer: float = 0.0
+var _status_flash_timer: float = 0.0
+const STATUS_FLASH_INTERVAL: float = 0.15
+const STATUS_AURA_PULSE_SPEED: float = 4.0
+
 # ========== CONFIGURACIÓN VISUAL ==========
 @export var player_sprite_scale: float = 0.25
 var last_dir: String = "down"
@@ -84,6 +91,7 @@ func _ready() -> void:
 	_initialize_health_component()
 	_initialize_visual()
 	_initialize_physics()
+	_initialize_status_visual()
 	
 	# Crear barra de vida
 	create_health_bar()
@@ -255,6 +263,7 @@ func _physics_process(delta: float) -> void:
 	"""Actualizar física y debuffs"""
 	# El movimiento se maneja en SpellloopPlayer para evitar duplicación
 	_process_debuffs(delta)
+	_update_status_visuals(delta)
 
 func _process_debuffs(delta: float) -> void:
 	"""Procesar todos los debuffs activos"""
@@ -302,19 +311,225 @@ func _process_debuffs(delta: float) -> void:
 		if _curse_timer <= 0:
 			_clear_curse()
 
+func _initialize_status_visual() -> void:
+	"""Inicializar nodo para efectos visuales de estado"""
+	_status_visual_node = Node2D.new()
+	_status_visual_node.name = "StatusVisuals"
+	_status_visual_node.z_index = 5
+	add_child(_status_visual_node)
+	_status_visual_node.draw.connect(_draw_status_effects)
+
+func _update_status_visuals(delta: float) -> void:
+	"""Actualizar efectos visuales de debuffs"""
+	_status_aura_timer += delta * STATUS_AURA_PULSE_SPEED
+	_status_flash_timer += delta
+	
+	# Parpadeo del sprite según estado
+	if _status_flash_timer >= STATUS_FLASH_INTERVAL:
+		_status_flash_timer = 0.0
+		_apply_status_flash()
+	
+	# Redibujar auras
+	if _status_visual_node and _has_any_status():
+		_status_visual_node.queue_redraw()
+
+func _has_any_status() -> bool:
+	"""Verificar si tiene algún estado activo"""
+	return _burn_timer > 0 or _slow_timer > 0 or _poison_timer > 0 or _stun_timer > 0 or _weakness_timer > 0 or _curse_timer > 0
+
+func _apply_status_flash() -> void:
+	"""Aplicar parpadeo al sprite según estados activos"""
+	if not animated_sprite:
+		return
+	
+	# Color base
+	var flash_color = Color.WHITE
+	var should_flash = false
+	
+	# Prioridad de colores (el más reciente se muestra)
+	if _stun_timer > 0:
+		flash_color = Color(1.0, 1.0, 0.5, 1.0)  # Amarillo stun
+		should_flash = true
+	elif _burn_timer > 0:
+		flash_color = Color(1.0, 0.7, 0.4, 1.0)  # Naranja fuego
+		should_flash = true
+	elif _poison_timer > 0:
+		flash_color = Color(0.7, 1.0, 0.5, 1.0)  # Verde veneno
+		should_flash = true
+	elif _slow_timer > 0:
+		flash_color = Color(0.6, 0.8, 1.0, 1.0)  # Azul hielo
+		should_flash = true
+	elif _weakness_timer > 0:
+		flash_color = Color(0.8, 0.5, 0.9, 1.0)  # Morado weakness
+		should_flash = true
+	elif _curse_timer > 0:
+		flash_color = Color(0.6, 0.4, 0.7, 1.0)  # Morado oscuro curse
+		should_flash = true
+	
+	if should_flash:
+		# Alternar entre color de estado y blanco
+		var pulse = sin(_status_aura_timer * 3.0)
+		if pulse > 0:
+			animated_sprite.modulate = flash_color
+		else:
+			animated_sprite.modulate = Color.WHITE
+	else:
+		animated_sprite.modulate = Color.WHITE
+
+func _draw_status_effects() -> void:
+	"""Dibujar auras y efectos visuales de estado"""
+	if not _status_visual_node:
+		return
+	
+	var pulse = (sin(_status_aura_timer) + 1.0) / 2.0  # 0.0 - 1.0
+	
+	# === AURA DE FUEGO (Burn) ===
+	if _burn_timer > 0:
+		var fire_alpha = 0.3 + pulse * 0.2
+		var fire_radius = 20.0 + pulse * 5.0
+		# Aura exterior
+		_status_visual_node.draw_circle(Vector2.ZERO, fire_radius, Color(1.0, 0.5, 0.1, fire_alpha * 0.5))
+		# Anillo interior
+		_status_visual_node.draw_arc(Vector2.ZERO, fire_radius * 0.7, 0, TAU, 16, Color(1.0, 0.3, 0.0, fire_alpha), 2.0)
+		# Pequeñas llamas
+		for i in range(4):
+			var angle = _status_aura_timer + i * TAU / 4.0
+			var flame_pos = Vector2(cos(angle), sin(angle)) * (fire_radius * 0.6)
+			var flame_size = 3.0 + pulse * 2.0
+			_status_visual_node.draw_circle(flame_pos, flame_size, Color(1.0, 0.6, 0.2, fire_alpha))
+	
+	# === AURA DE HIELO (Slow) ===
+	if _slow_timer > 0:
+		var ice_alpha = 0.25 + pulse * 0.15
+		var ice_radius = 22.0 + pulse * 3.0
+		# Aura exterior azulada
+		_status_visual_node.draw_circle(Vector2.ZERO, ice_radius, Color(0.4, 0.7, 1.0, ice_alpha * 0.4))
+		# Cristales de hielo giratorios
+		for i in range(6):
+			var angle = _status_aura_timer * 0.5 + i * TAU / 6.0
+			var crystal_pos = Vector2(cos(angle), sin(angle)) * (ice_radius * 0.7)
+			# Dibujar cristal como rombo pequeño
+			var crystal_size = 4.0
+			var points = PackedVector2Array([
+				crystal_pos + Vector2(0, -crystal_size),
+				crystal_pos + Vector2(crystal_size * 0.5, 0),
+				crystal_pos + Vector2(0, crystal_size),
+				crystal_pos + Vector2(-crystal_size * 0.5, 0)
+			])
+			_status_visual_node.draw_colored_polygon(points, Color(0.6, 0.9, 1.0, ice_alpha))
+	
+	# === AURA DE VENENO (Poison) ===
+	if _poison_timer > 0:
+		var poison_alpha = 0.2 + pulse * 0.15
+		var poison_radius = 18.0 + pulse * 4.0
+		# Aura verde tóxica
+		_status_visual_node.draw_circle(Vector2.ZERO, poison_radius, Color(0.4, 0.8, 0.2, poison_alpha * 0.4))
+		# Burbujas de veneno
+		for i in range(5):
+			var bubble_angle = _status_aura_timer * 0.8 + i * TAU / 5.0
+			var bubble_offset = sin(_status_aura_timer * 2.0 + i) * 3.0
+			var bubble_pos = Vector2(cos(bubble_angle), sin(bubble_angle)) * (poison_radius * 0.5 + bubble_offset)
+			var bubble_size = 2.0 + sin(_status_aura_timer * 3.0 + i * 1.5) * 1.0
+			_status_visual_node.draw_circle(bubble_pos, bubble_size, Color(0.5, 0.9, 0.3, poison_alpha))
+	
+	# === AURA DE STUN ===
+	if _stun_timer > 0:
+		var stun_alpha = 0.4 + pulse * 0.3
+		# Estrellas giratorias de stun
+		for i in range(3):
+			var star_angle = _status_aura_timer * 2.0 + i * TAU / 3.0
+			var star_pos = Vector2(cos(star_angle), sin(star_angle)) * 15.0 + Vector2(0, -20)
+			_draw_star(star_pos, 5.0, Color(1.0, 1.0, 0.3, stun_alpha))
+	
+	# === AURA DE WEAKNESS ===
+	if _weakness_timer > 0:
+		var weak_alpha = 0.15 + pulse * 0.1
+		var weak_radius = 24.0
+		# Aura morada débil
+		_status_visual_node.draw_arc(Vector2.ZERO, weak_radius, 0, TAU, 16, Color(0.6, 0.2, 0.6, weak_alpha), 3.0)
+		# Flechas hacia abajo
+		for i in range(3):
+			var arrow_x = (i - 1) * 15.0
+			var arrow_y = -25.0 + sin(_status_aura_timer * 2.0 + i) * 3.0
+			_draw_down_arrow(Vector2(arrow_x, arrow_y), Color(0.7, 0.3, 0.7, weak_alpha * 2.0))
+	
+	# === AURA DE CURSE ===
+	if _curse_timer > 0:
+		var curse_alpha = 0.2 + pulse * 0.15
+		var curse_radius = 20.0
+		# Símbolos de maldición giratorios
+		_status_visual_node.draw_arc(Vector2.ZERO, curse_radius, 0, TAU, 12, Color(0.4, 0.2, 0.5, curse_alpha), 2.0)
+		# Runas pequeñas
+		for i in range(4):
+			var rune_angle = _status_aura_timer * 0.3 + i * TAU / 4.0
+			var rune_pos = Vector2(cos(rune_angle), sin(rune_angle)) * (curse_radius * 0.8)
+			_status_visual_node.draw_rect(Rect2(rune_pos - Vector2(2, 2), Vector2(4, 4)), Color(0.5, 0.2, 0.6, curse_alpha))
+
+func _draw_star(pos: Vector2, size: float, col: Color) -> void:
+	"""Dibujar una estrella de 4 puntas"""
+	var points = PackedVector2Array()
+	for i in range(8):
+		var angle = i * TAU / 8.0 - TAU / 16.0
+		var r = size if i % 2 == 0 else size * 0.4
+		points.append(pos + Vector2(cos(angle), sin(angle)) * r)
+	_status_visual_node.draw_colored_polygon(points, col)
+
+func _draw_down_arrow(pos: Vector2, col: Color) -> void:
+	"""Dibujar una flecha hacia abajo (weakness)"""
+	var points = PackedVector2Array([
+		pos + Vector2(-4, -4),
+		pos + Vector2(4, -4),
+		pos + Vector2(0, 4)
+	])
+	_status_visual_node.draw_colored_polygon(points, col)
+
 # ========== SALUD Y DAÑO ==========
 
-func take_damage(amount: int) -> void:
+var _last_damage_element: String = "physical"
+
+func take_damage(amount: int, element: String = "physical") -> void:
 	"""Recibir daño (aplica weakness si está activo)"""
+	_last_damage_element = element
 	if health_component:
 		var final_damage = amount
 		# Aplicar weakness si está activo
 		if _is_weakened:
 			final_damage = int(amount * (1.0 + _weakness_amount))
 		health_component.take_damage(final_damage)
-		print("[%s] Daño recibido: %d (HP: %d/%d)%s" % [character_class, final_damage, health_component.current_health, max_hp, " [WEAKENED]" if _is_weakened else ""])
+		
+		# Mostrar texto flotante de daño sobre el player
+		FloatingText.spawn_player_damage(global_position + Vector2(0, -35), final_damage, element)
+		
+		# Efecto visual de impacto
+		_play_damage_flash(element)
+		
+		print("[%s] 💥 Daño recibido: %d (%s) (HP: %d/%d)%s" % [character_class, final_damage, element, health_component.current_health, max_hp, " [WEAKENED]" if _is_weakened else ""])
 	else:
 		print("[%s] ⚠️ HealthComponent no disponible" % character_class)
+
+func _play_damage_flash(element: String) -> void:
+	"""Flash de daño según el elemento"""
+	if not animated_sprite:
+		return
+	
+	var flash_color: Color
+	match element:
+		"fire":
+			flash_color = Color(2.0, 0.6, 0.2, 1.0)
+		"ice":
+			flash_color = Color(0.6, 0.9, 2.0, 1.0)
+		"poison":
+			flash_color = Color(0.6, 2.0, 0.4, 1.0)
+		"dark", "void", "shadow":
+			flash_color = Color(1.2, 0.4, 1.5, 1.0)
+		"lightning":
+			flash_color = Color(2.0, 2.0, 0.5, 1.0)
+		_:
+			flash_color = Color(2.0, 0.3, 0.3, 1.0)  # Rojo por defecto
+	
+	animated_sprite.modulate = flash_color
+	var tween = create_tween()
+	tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.2)
 
 func heal(amount: int) -> void:
 	"""Curar al personaje (aplica curse si está activo)"""
@@ -459,34 +674,52 @@ func update_health_bar() -> void:
 
 func apply_slow(amount: float, duration: float) -> void:
 	"""Aplicar slow al jugador (reduce velocidad)"""
+	var was_slowed = _is_slowed
 	_slow_amount = clamp(amount, 0.0, 0.8)  # Máximo 80% slow
 	_slow_timer = max(_slow_timer, duration)
 	_is_slowed = true
 	move_speed = base_move_speed * (1.0 - _slow_amount)
+	
+	# Mostrar notificación solo si es nuevo
+	if not was_slowed:
+		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "slow")
+	
 	print("[%s] ❄️ Ralentizado %.0f%% por %.1fs" % [character_class, _slow_amount * 100, duration])
 
 func _clear_slow() -> void:
 	_is_slowed = false
 	_slow_amount = 0.0
 	move_speed = base_move_speed
+	if animated_sprite:
+		animated_sprite.modulate = Color.WHITE
 	print("[%s] ❄️ Slow terminado" % character_class)
 
 func apply_burn(damage_per_tick: float, duration: float) -> void:
 	"""Aplicar burn al jugador (DoT de fuego)"""
+	var was_burning = _burn_timer > 0
 	_burn_damage = damage_per_tick
 	_burn_timer = max(_burn_timer, duration)
 	_burn_tick_timer = BURN_TICK_INTERVAL
+	
+	# Mostrar notificación solo si es nuevo
+	if not was_burning:
+		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "burn")
+	
 	print("[%s] 🔥 Quemándose por %.1f daño/tick durante %.1fs" % [character_class, damage_per_tick, duration])
 
 func _apply_burn_tick() -> void:
 	if health_component:
 		var dmg = int(_burn_damage)
 		health_component.take_damage(dmg)
+		# Mostrar daño de tick flotante
+		FloatingText.spawn_dot_tick(global_position + Vector2(randf_range(-15, 15), -30), dmg, "burn")
 		# Efecto visual de burn
 		_spawn_burn_particle()
 
 func _clear_burn() -> void:
 	_burn_damage = 0.0
+	if animated_sprite:
+		animated_sprite.modulate = Color.WHITE
 	print("[%s] 🔥 Burn terminado" % character_class)
 
 func _spawn_burn_particle() -> void:
@@ -494,36 +727,46 @@ func _spawn_burn_particle() -> void:
 	var particle = CPUParticles2D.new()
 	particle.emitting = true
 	particle.one_shot = true
-	particle.amount = 4
-	particle.lifetime = 0.4
+	particle.amount = 6
+	particle.lifetime = 0.5
 	particle.direction = Vector2(0, -1)
-	particle.spread = 30.0
-	particle.gravity = Vector2(0, -50)
-	particle.initial_velocity_min = 20.0
-	particle.initial_velocity_max = 40.0
-	particle.scale_amount_min = 2.0
-	particle.scale_amount_max = 4.0
-	particle.color = Color(1.0, 0.4, 0.1, 0.9)
+	particle.spread = 40.0
+	particle.gravity = Vector2(0, -60)
+	particle.initial_velocity_min = 25.0
+	particle.initial_velocity_max = 50.0
+	particle.scale_amount_min = 2.5
+	particle.scale_amount_max = 5.0
+	particle.color = Color(1.0, 0.5, 0.1, 0.9)
 	add_child(particle)
-	get_tree().create_timer(0.6).timeout.connect(func():
+	get_tree().create_timer(0.7).timeout.connect(func():
 		if is_instance_valid(particle): particle.queue_free()
 	)
 
 func apply_poison(damage_per_tick: float, duration: float) -> void:
 	"""Aplicar poison al jugador (DoT más lento pero más largo)"""
+	var was_poisoned = _poison_timer > 0
 	_poison_damage = damage_per_tick
 	_poison_timer = max(_poison_timer, duration)
 	_poison_tick_timer = POISON_TICK_INTERVAL
+	
+	# Mostrar notificación solo si es nuevo
+	if not was_poisoned:
+		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "poison")
+	
 	print("[%s] ☠️ Envenenado por %.1f daño/tick durante %.1fs" % [character_class, damage_per_tick, duration])
 
 func _apply_poison_tick() -> void:
 	if health_component:
 		var dmg = int(_poison_damage)
 		health_component.take_damage(dmg)
+		# Mostrar daño de tick flotante
+		FloatingText.spawn_dot_tick(global_position + Vector2(randf_range(-15, 15), -30), dmg, "poison")
 		_spawn_poison_particle()
 
 func _clear_poison() -> void:
 	_poison_damage = 0.0
+	if animated_sprite:
+		animated_sprite.modulate = Color.WHITE
 	print("[%s] ☠️ Poison terminado" % character_class)
 
 func _spawn_poison_particle() -> void:
@@ -531,53 +774,77 @@ func _spawn_poison_particle() -> void:
 	var particle = CPUParticles2D.new()
 	particle.emitting = true
 	particle.one_shot = true
-	particle.amount = 3
-	particle.lifetime = 0.5
+	particle.amount = 5
+	particle.lifetime = 0.6
 	particle.direction = Vector2(0, -1)
-	particle.spread = 45.0
-	particle.gravity = Vector2(0, -20)
-	particle.initial_velocity_min = 15.0
-	particle.initial_velocity_max = 30.0
-	particle.scale_amount_min = 2.0
-	particle.scale_amount_max = 3.0
-	particle.color = Color(0.6, 0.2, 0.8, 0.8)  # Morado para no confundir con lifesteal
+	particle.spread = 50.0
+	particle.gravity = Vector2(0, -25)
+	particle.initial_velocity_min = 20.0
+	particle.initial_velocity_max = 35.0
+	particle.scale_amount_min = 2.5
+	particle.scale_amount_max = 4.0
+	particle.color = Color(0.5, 0.9, 0.3, 0.85)  # Verde venenoso
 	add_child(particle)
-	get_tree().create_timer(0.7).timeout.connect(func():
+	get_tree().create_timer(0.8).timeout.connect(func():
 		if is_instance_valid(particle): particle.queue_free()
 	)
 
 func apply_stun(duration: float) -> void:
 	"""Aplicar stun al jugador (paralizado)"""
+	var was_stunned = _is_stunned
 	_stun_timer = max(_stun_timer, duration)
 	_is_stunned = true
+	
+	# Mostrar notificación solo si es nuevo
+	if not was_stunned:
+		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "stun")
+	
 	print("[%s] ⚡ Aturdido por %.1fs" % [character_class, duration])
 
 func _clear_stun() -> void:
 	_is_stunned = false
+	if animated_sprite:
+		animated_sprite.modulate = Color.WHITE
 	print("[%s] ⚡ Stun terminado" % character_class)
 
 func apply_weakness(amount: float, duration: float) -> void:
 	"""Aplicar weakness al jugador (recibe más daño)"""
+	var was_weakened = _is_weakened
 	_weakness_amount = clamp(amount, 0.0, 1.0)  # Máximo +100% daño
 	_weakness_timer = max(_weakness_timer, duration)
 	_is_weakened = true
+	
+	# Mostrar notificación solo si es nuevo
+	if not was_weakened:
+		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "weakness")
+	
 	print("[%s] 💀 Debilitado +%.0f%% daño recibido por %.1fs" % [character_class, _weakness_amount * 100, duration])
 
 func _clear_weakness() -> void:
 	_is_weakened = false
 	_weakness_amount = 0.0
+	if animated_sprite:
+		animated_sprite.modulate = Color.WHITE
 	print("[%s] 💀 Weakness terminado" % character_class)
 
 func apply_curse(amount: float, duration: float) -> void:
 	"""Aplicar curse al jugador (reduce curación)"""
+	var was_cursed = _is_cursed
 	_curse_amount = clamp(amount, 0.0, 0.9)  # Máximo -90% curación
 	_curse_timer = max(_curse_timer, duration)
 	_is_cursed = true
+	
+	# Mostrar notificación solo si es nuevo
+	if not was_cursed:
+		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "curse")
+	
 	print("[%s] 👻 Maldito -%.0f%% curación por %.1fs" % [character_class, _curse_amount * 100, duration])
 
 func _clear_curse() -> void:
 	_is_cursed = false
 	_curse_amount = 0.0
+	if animated_sprite:
+		animated_sprite.modulate = Color.WHITE
 	print("[%s] 👻 Curse terminado" % character_class)
 
 func is_stunned() -> bool:

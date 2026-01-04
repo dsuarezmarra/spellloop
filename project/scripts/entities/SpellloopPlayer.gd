@@ -88,8 +88,17 @@ func _physics_process(_delta: float) -> void:
 	if not input_manager:
 		return
 	
-	var movement_input = input_manager.get_movement_vector()
-	velocity = movement_input * move_speed
+	# Sincronizar velocidad desde WizardPlayer (puede estar modificada por slow)
+	if wizard_player:
+		move_speed = wizard_player.move_speed
+	
+	# No moverse si está stunneado
+	if wizard_player and wizard_player.is_stunned():
+		velocity = Vector2.ZERO
+	else:
+		var movement_input = input_manager.get_movement_vector()
+		velocity = movement_input * move_speed
+	
 	move_and_slide()
 	
 	# === SISTEMA DE BARRERAS POR DISTANCIA ===
@@ -137,9 +146,9 @@ func _on_wizard_damaged(amount: int, current_hp: int) -> void:
 func _on_wizard_died() -> void:
 	player_died.emit()
 
-func take_damage(amount: int) -> void:
+func take_damage(amount: int, element: String = "physical") -> void:
 	if wizard_player:
-		wizard_player.take_damage(amount)
+		wizard_player.take_damage(amount, element)
 	hp = wizard_player.hp if wizard_player else hp
 
 func heal(amount: int) -> void:
@@ -147,11 +156,34 @@ func heal(amount: int) -> void:
 		wizard_player.heal(amount)
 		_play_heal_animation()
 
+# Propagar métodos de efectos de estado al WizardPlayer
+func apply_slow(amount: float, duration: float) -> void:
+	if wizard_player:
+		wizard_player.apply_slow(amount, duration)
+
+func apply_burn(damage_per_tick: float, duration: float) -> void:
+	if wizard_player:
+		wizard_player.apply_burn(damage_per_tick, duration)
+
+func apply_poison(damage_per_tick: float, duration: float) -> void:
+	if wizard_player:
+		wizard_player.apply_poison(damage_per_tick, duration)
+
+func apply_stun(duration: float) -> void:
+	if wizard_player:
+		wizard_player.apply_stun(duration)
+
+func apply_weakness(amount: float, duration: float) -> void:
+	if wizard_player:
+		wizard_player.apply_weakness(amount, duration)
+
+func apply_curse(amount: float, duration: float) -> void:
+	if wizard_player:
+		wizard_player.apply_curse(amount, duration)
+
 func _play_damage_animation() -> void:
-	if animated_sprite:
-		animated_sprite.modulate = Color(2, 0.2, 0.2, 1)
-		var tween = create_tween()
-		tween.tween_property(animated_sprite, "modulate", Color(1, 1, 1, 1), 0.3)
+	# Ya no es necesario aquí, el WizardPlayer maneja los efectos visuales
+	pass
 
 func _play_heal_animation() -> void:
 	"""Aura verde sutil al curarse"""
