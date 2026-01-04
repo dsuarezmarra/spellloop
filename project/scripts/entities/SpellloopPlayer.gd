@@ -90,20 +90,41 @@ func _physics_process(_delta: float) -> void:
 	
 	var movement_input = input_manager.get_movement_vector()
 	velocity = movement_input * move_speed
-	
-	# DEBUG: Verificar colisiones antes de mover
-	var pos_before = global_position
 	move_and_slide()
 	
-	# DEBUG: Si hubo colisión, mostrar info
-	if get_slide_collision_count() > 0:
-		for i in get_slide_collision_count():
-			var collision = get_slide_collision(i)
-			print("🛡️ [Player] Colisión detectada con: %s (layer: %d)" % [collision.get_collider().name, collision.get_collider().collision_layer])
+	# === SISTEMA DE BARRERAS POR DISTANCIA ===
+	# Más confiable que colisiones físicas para barreras circulares
+	_enforce_zone_barriers()
 	
 	# Sincronizar posición con WizardPlayer (para que sus sistemas funcionen)
 	if wizard_player:
 		wizard_player.global_position = global_position
+
+func _enforce_zone_barriers() -> void:
+	"""Sistema de barreras basado en distancia - 100% confiable"""
+	var arena_manager = get_tree().root.get_node_or_null("Game/ArenaManager")
+	if not arena_manager:
+		return
+	
+	var dist_from_center = global_position.length()
+	var max_allowed_radius = arena_manager.get_max_allowed_radius()
+	
+	# Si estamos más allá del radio permitido, empujar hacia adentro
+	if dist_from_center > max_allowed_radius:
+		var direction_to_center = -global_position.normalized()
+		var push_distance = dist_from_center - max_allowed_radius + 5.0  # +5 de margen
+		global_position += direction_to_center * push_distance
+		
+		# Feedback visual/sonoro opcional
+		if not _barrier_hit_cooldown:
+			_barrier_hit_cooldown = true
+			print("🚧 [Player] Barrera de zona! Radio actual: %.0f, máximo permitido: %.0f" % [dist_from_center, max_allowed_radius])
+			# Pequeño efecto de rebote
+			velocity = direction_to_center * 100.0
+			# Reset cooldown después de 0.5s
+			get_tree().create_timer(0.5).timeout.connect(func(): _barrier_hit_cooldown = false)
+
+var _barrier_hit_cooldown: bool = false
 
 func _on_wizard_damaged(amount: int, current_hp: int) -> void:
 	hp = current_hp

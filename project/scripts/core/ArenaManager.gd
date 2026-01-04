@@ -555,6 +555,21 @@ func _handle_player_outside_arena(delta: float, player_pos: Vector2, distance: f
 
 # === API PÚBLICA ===
 
+func get_max_allowed_radius() -> float:
+	"""Obtener el radio máximo al que el player puede llegar.
+	   Basado en qué zonas están desbloqueadas."""
+	# Si DEATH está desbloqueada, puede ir hasta el borde de la arena
+	if unlocked_zones.get(ZoneType.DEATH, false):
+		return arena_radius - 50.0  # Pequeño margen del borde
+	# Si DANGER está desbloqueada, puede ir hasta DANGER
+	if unlocked_zones.get(ZoneType.DANGER, false):
+		return danger_zone_radius - 10.0
+	# Si MEDIUM está desbloqueada, puede ir hasta MEDIUM
+	if unlocked_zones.get(ZoneType.MEDIUM, false):
+		return medium_zone_radius - 10.0
+	# Solo SAFE desbloqueada
+	return safe_zone_radius - 10.0
+
 func get_arena_info() -> Dictionary:
 	"""Obtener información completa de la arena"""
 	return {
