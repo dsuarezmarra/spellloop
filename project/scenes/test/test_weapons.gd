@@ -299,12 +299,29 @@ func _create_test_enemy(data: Dictionary, pos: Vector2, id: int) -> CharacterBod
 	
 	# Inicializar con datos (sin player para que no persiga)
 	if enemy.has_method("initialize_from_database"):
-		# Hacer HP muy alto para testing
+		# Hacer HP muy alto para testing (tanto base como final)
 		var test_data = data.duplicate(true)
 		test_data["base_hp"] = 99999
+		test_data["final_hp"] = 99999
 		enemy.initialize_from_database(test_data, null)
 	
-	# Desactivar movimiento
+	# Forzar HP alto después de inicializar (por si acaso)
+	if "max_hp" in enemy:
+		enemy.max_hp = 99999
+	if "hp" in enemy:
+		enemy.hp = 99999
+	
+	# Actualizar HealthComponent si existe - reinicializar completamente
+	var health_comp = enemy.get_node_or_null("HealthComponent")
+	if health_comp:
+		if health_comp.has_method("initialize"):
+			health_comp.initialize(99999)  # Reinicializa max_health Y current_health
+		else:
+			health_comp.max_health = 99999
+			health_comp.current_health = 99999
+			health_comp.is_alive = true
+	
+	# Desactivar movimiento (pero mantener capacidad de recibir knockback)
 	if "speed" in enemy:
 		enemy.speed = 0
 	if "_base_speed" in enemy:
@@ -331,7 +348,7 @@ func _create_test_enemy(data: Dictionary, pos: Vector2, id: int) -> CharacterBod
 	label.add_theme_color_override("font_color", tier_colors.get(tier, Color.WHITE))
 	enemy.add_child(label)
 	
-	print("[WeaponTest] ✓ Enemigo creado: %s en %s (T%d)" % [enemy.name, pos, tier])
+	print("[WeaponTest] ✓ Enemigo creado: %s en %s (T%d) HP:%d" % [enemy.name, pos, tier, enemy.hp if "hp" in enemy else 0])
 	
 	return enemy
 
