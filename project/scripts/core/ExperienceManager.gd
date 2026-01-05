@@ -150,7 +150,7 @@ func create_coin(position: Vector2, base_value: int = 1) -> Node2D:
 func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
 	"""Spawnear monedas al morir un enemigo basado en su tier"""
 	print("🪙 [DEBUG] spawn_coins_from_enemy llamado: pos=%s, tier=%d, elite=%s, boss=%s" % [position, enemy_tier, is_elite, is_boss])
-	
+
 	# Decidir si dropea monedas
 	var drop_chance = base_coin_drop_chance
 	if is_boss:
@@ -163,7 +163,7 @@ func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bo
 		return  # No drop
 
 	print("🪙 [DEBUG] Drop confirmado (chance: %.2f)" % drop_chance)
-	
+
 	# Determinar tipo de moneda según tier/elite/boss
 	var coin_type = _get_coin_type_for_enemy(enemy_tier, is_elite, is_boss)
 
@@ -220,20 +220,20 @@ func _get_coin_type_for_enemy(tier: int, is_elite: bool, is_boss: bool) -> int:
 func _create_coin_with_type(pos: Vector2, coin_type: int) -> Node2D:
 	"""Crear moneda con tipo específico"""
 	var coin: Node2D = null
-	
+
 	# Usar escena si está cargada
 	if coin_scene:
 		coin = coin_scene.instantiate()
 	else:
 		# Fallback: crear moneda simple
 		coin = _create_fallback_coin()
-	
+
 	if coin:
 		# Añadir al mundo
 		var parent = get_tree().current_scene
 		if parent:
 			parent.add_child(coin)
-		
+
 		# Inicializar CON TIPO
 		if coin.has_method("initialize"):
 			coin.initialize(pos, 1, player, coin_type)
@@ -241,15 +241,15 @@ func _create_coin_with_type(pos: Vector2, coin_type: int) -> Node2D:
 			coin.global_position = pos
 			if "coin_value" in coin:
 				coin.coin_value = 1
-		
+
 		# Conectar señal de recolección
 		if coin.has_signal("coin_collected"):
 			if not coin.coin_collected.is_connected(_on_coin_collected):
 				coin.coin_collected.connect(_on_coin_collected)
-		
+
 		active_coins.append(coin)
 		coin_created.emit(coin)
-	
+
 	return coin
 
 func _create_fallback_coin() -> Node2D:
