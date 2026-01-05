@@ -227,18 +227,21 @@ func show_pause_menu(current_time: float = 0.0) -> void:
 	get_tree().paused = true
 	current_tab = 0
 
-	# Obtener referencias automáticamente si no se inicializó
+	# Inicializar navegacion
+	current_nav_row = NavRow.TABS
+	content_selection = 0
+	action_selection = 0
+	content_items.clear()
+
+	# Obtener referencias automaticamente si no se inicializo
 	_find_references()
 
 	_update_time_display()
 	_update_tabs_visual()
 	_show_tab_content()
+	_update_navigation_visuals()
 
-	# Focus en primer tab
-	if tab_buttons.size() > 0:
-		tab_buttons[0].grab_focus()
-
-	# Animación
+	# Animacion
 	modulate.a = 0
 	var tween = create_tween()
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
@@ -263,20 +266,38 @@ func _update_time_display() -> void:
 func _update_tabs_visual() -> void:
 	for i in range(tab_buttons.size()):
 		var btn = tab_buttons[i] as Button
-		if i == current_tab:
+		var is_selected = (i == current_tab)
+		var is_focused = (current_nav_row == NavRow.TABS and is_selected)
+
+		if is_selected:
 			btn.add_theme_color_override("font_color", SELECTED_TAB)
 			btn.add_theme_color_override("font_hover_color", SELECTED_TAB)
 		else:
 			btn.add_theme_color_override("font_color", UNSELECTED_TAB)
 			btn.add_theme_color_override("font_hover_color", Color.WHITE)
 
+		# Estilo visual para indicar foco
+		if is_focused:
+			var style = StyleBoxFlat.new()
+			style.bg_color = Color(0.2, 0.3, 0.4)
+			style.border_color = SELECTED_TAB
+			style.set_border_width_all(2)
+			style.set_corner_radius_all(6)
+			btn.add_theme_stylebox_override("normal", style)
+			btn.add_theme_stylebox_override("hover", style)
+		else:
+			btn.remove_theme_stylebox_override("normal")
+			btn.remove_theme_stylebox_override("hover")
+
 func _on_tab_pressed(tab_index: int) -> void:
 	current_tab = tab_index
+	current_nav_row = NavRow.TABS
 	_update_tabs_visual()
 	_show_tab_content()
 
 func _show_tab_content() -> void:
-	# Limpiar contenido anterior
+	# Limpiar contenido anterior y items navegables
+	content_items.clear()
 	for child in content_container.get_children():
 		child.queue_free()
 
@@ -284,6 +305,10 @@ func _show_tab_content() -> void:
 		0: _show_stats_tab()
 		1: _show_weapons_tab()
 		2: _show_upgrades_tab()
+
+	# Resetear seleccion de contenido
+	content_selection = 0
+	_update_content_selection_visual()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB: STATS DEL JUGADOR (REDISEÑADO)
@@ -717,9 +742,19 @@ func _show_weapons_tab() -> void:
 	weapons_grid.add_theme_constant_override("v_separation", 12)
 	main_vbox.add_child(weapons_grid)
 
-	for weapon in weapons:
+	for i in range(weapons.size()):
+		var weapon = weapons[i]
 		var weapon_card = _create_weapon_card(weapon)
 		weapons_grid.add_child(weapon_card)
+
+		# Registrar como elemento navegable
+		content_items.append({
+			"panel": weapon_card,
+			"type": "weapon",
+			"index": i,
+			"weapon": weapon,
+			"callback": Callable()  # Sin callback por ahora
+		})
 
 func _create_weapon_card(weapon) -> Control:
 	"""Crear tarjeta detallada de arma"""
@@ -951,15 +986,25 @@ func _show_upgrades_tab() -> void:
 
 	if upgrades.is_empty():
 		var no_upgrades = Label.new()
-		no_upgrades.text = "Aún no has recogido ninguna mejora"
+		no_upgrades.text = "Sube de nivel para conseguir mejoras"
 		no_upgrades.add_theme_font_size_override("font_size", 16)
 		no_upgrades.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
 		grid.add_child(no_upgrades)
 		return
 
-	for upgrade in upgrades:
+	for i in range(upgrades.size()):
+		var upgrade = upgrades[i]
 		var upgrade_panel = _create_upgrade_panel(upgrade)
 		grid.add_child(upgrade_panel)
+
+		# Registrar como elemento navegable
+		content_items.append({
+			"panel": upgrade_panel,
+			"type": "upgrade",
+			"index": i,
+			"upgrade": upgrade,
+			"callback": Callable()
+		})
 
 func _create_upgrade_panel(upgrade: Dictionary) -> Control:
 	var panel = PanelContainer.new()
