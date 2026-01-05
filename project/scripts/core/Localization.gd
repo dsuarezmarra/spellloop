@@ -3,7 +3,7 @@
 # Handles text translation, language switching, and locale-specific formatting
 #
 # Public API:
-# - tr(key: String, args: Array = []) -> String  # Short alias for get_text
+# - L(key: String, args: Array = []) -> String  # Short alias for get_text (avoids Godot's tr conflict)
 # - get_text(key: String, args: Array = []) -> String
 # - set_language(language_code: String) -> bool
 # - get_current_language() -> String
@@ -331,11 +331,12 @@ func is_language_available(language_code: String) -> bool:
 	return language_code in SUPPORTED_LANGUAGES
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SHORT ALIAS - Use tr() for convenience
+# SHORT ALIAS - Use L() for convenience (tr is reserved by Godot's Object class)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-func tr(key: String, args: Array = []) -> String:
-	"""Short alias for get_text() - Use this in UI code"""
+func L(key: String, args: Array = []) -> String:
+	"""Short alias for get_text() - Use this in UI code
+	Named 'L' to avoid conflict with Godot's native tr() method"""
 	return get_text(key, args)
 
 func _load_language_from_settings() -> void:

@@ -773,15 +773,18 @@ func set_banish_count(count: int) -> void:
 
 func _get_localized(key: String, fallback: String) -> String:
 	"""Obtener texto localizado con fallback"""
-	if Engine.has_singleton("Localization"):
-		return Engine.get_singleton("Localization").tr(key)
-
-	# Intentar acceder al autoload
+	# Intentar acceder al autoload Localization
 	var loc = get_node_or_null("/root/Localization")
-	if loc and loc.has_method("tr"):
-		var result = loc.tr(key)
-		if result != key:  # Si no es la key misma, encontró traducción
-			return result
+	if loc:
+		# Usar L() o get_text() (L es alias de get_text)
+		if loc.has_method("L"):
+			var result = loc.L(key)
+			if result != key:  # Si no es la key misma, encontró traducción
+				return result
+		elif loc.has_method("get_text"):
+			var result = loc.get_text(key)
+			if result != key:
+				return result
 
 	return fallback
 
