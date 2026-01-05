@@ -1,0 +1,170 @@
+{
+	"ui": {
+		"main_menu": {
+			"title": "SPELLLOOP",
+			"new_run": "새 게임",
+			"continue": "계속하기",
+			"settings": "설정",
+			"quit": "종료",
+			"meta_shop": "메타 상점"
+		},
+		"pause_menu": {
+			"title": "일시정지",
+			"resume": "재개",
+			"settings": "설정",
+			"main_menu": "메인 메뉴",
+			"quit": "게임 종료"
+		},
+		"settings": {
+			"title": "설정",
+			"audio": "오디오",
+			"video": "비디오",
+			"controls": "조작",
+			"language": "언어",
+			"back": "뒤로",
+			"reset": "초기화",
+			"master_volume": "마스터 볼륨",
+			"music_volume": "음악 볼륨",
+			"sfx_volume": "효과음 볼륨",
+			"fullscreen": "전체 화면",
+			"vsync": "수직 동기화"
+		},
+		"game_over": {
+			"title": "게임 종료",
+			"victory": "승리!",
+			"defeat": "패배",
+			"score": "점수",
+			"time": "시간",
+			"level": "레벨",
+			"enemies_killed": "처치한 적",
+			"coins_collected": "획득한 코인",
+			"continue": "계속",
+			"retry": "재시도",
+			"main_menu": "메인 메뉴"
+		},
+		"hud": {
+			"hp": "HP",
+			"xp": "경험치",
+			"lvl": "Lv",
+			"time": "시간",
+			"weapons": "무기",
+			"streak": "콤보",
+			"meta": "메타",
+			"coins": "코인"
+		},
+		"level_up": {
+			"title": "레벨 업!",
+			"subtitle": "강화를 선택하세요",
+			"select": "선택",
+			"reroll": "리롤",
+			"banish": "추방",
+			"skip": "건너뛰기",
+			"new_weapon": "새 무기",
+			"upgrade_weapon": "강화",
+			"fusion": "융합",
+			"upgrade": "업그레이드"
+		},
+		"chest": {
+			"title": "보물 상자",
+			"buy": "구매",
+			"close": "닫기",
+			"tier": "티어 {0}"
+		}
+	},
+	"gameplay": {
+		"weapons": {
+			"ice_wand": "얼음 지팡이",
+			"fire_wand": "불 지팡이",
+			"lightning_staff": "번개 지팡이",
+			"nature_staff": "자연 지팡이",
+			"shadow_dagger": "그림자 단검",
+			"arcane_orb": "비전 구체",
+			"frost_nova": "서리 폭발",
+			"meteor_staff": "유성 지팡이",
+			"poison_blade": "맹독 칼날",
+			"holy_light": "성스러운 빛"
+		},
+		"passives": {
+			"damage_boost": "마법 피해 +",
+			"damage_boost_desc": "마법 투사체 피해가 10% 증가합니다",
+			"speed_boost": "속도 +",
+			"speed_boost_desc": "이동 속도가 10% 증가합니다",
+			"health_boost": "최대 체력 +",
+			"health_boost_desc": "최대 체력이 20 증가합니다",
+			"cooldown_reduction": "빠른 회복",
+			"cooldown_reduction_desc": "무기 재사용 대기시간이 5% 감소합니다",
+			"crit_chance": "독수리의 눈",
+			"crit_chance_desc": "치명타 확률이 5% 증가합니다",
+			"crit_damage": "치명타 일격",
+			"crit_damage_desc": "치명타 피해가 20% 증가합니다",
+			"pickup_range": "자석 효과",
+			"pickup_range_desc": "코인을 훨씬 멀리서 끌어당깁니다 (+100 픽셀)",
+			"streak_bonus": "콤보 마스터",
+			"streak_bonus_desc": "코인 콤보 보너스가 2배가 됩니다",
+			"coin_value": "탐욕",
+			"coin_value_desc": "코인 가치가 20% 증가합니다",
+			"xp_boost": "빠른 학습",
+			"xp_boost_desc": "경험치 획득량이 15% 증가합니다",
+			"armor": "두꺼운 피부",
+			"armor_desc": "받는 피해가 5% 감소합니다",
+			"regen": "재생",
+			"regen_desc": "3초마다 체력 1을 회복합니다",
+			"dodge": "회피",
+			"dodge_desc": "5% 확률로 공격을 회피합니다",
+			"luck": "행운의 부적",
+			"luck_desc": "더 좋은 보상과 희귀 아이템을 얻습니다"
+		},
+		"enemies": {
+			"skeleton_apprentice": "스켈레톤 견습생",
+			"ethereal_bat": "에테르 박쥐",
+			"shadow_goblin": "그림자 고블린",
+			"arcane_slime": "비전 슬라임",
+			"venomous_spider": "독거미"
+		},
+		"biomes": {
+			"grassland": "초원",
+			"desert": "사막",
+			"lava": "화산 지대",
+			"death": "죽음의 영역",
+			"arcane_wastes": "비전 황무지",
+			"ice": "얼음 봉우리"
+		},
+		"zones": {
+			"safe": "안전 구역",
+			"medium": "중간 구역",
+			"danger": "위험 구역",
+			"death": "사망 구역"
+		}
+	},
+	"messages": {
+		"game_saved": "게임이 저장되었습니다",
+		"game_loaded": "게임이 불러와졌습니다",
+		"weapon_equipped": "장착: {0}",
+		"weapon_upgraded": "강화: {0} → Lv.{1}",
+		"level_up": "레벨 업! 현재 Lv.{0}",
+		"coin_collected": "+{0}",
+		"xp_gained": "+{0} 경험치",
+		"enemy_killed": "적을 처치했습니다!",
+		"boss_spawned": "보스가 나타났습니다!",
+		"wave_complete": "웨이브 클리어!",
+		"fusion_available": "융합 가능!"
+	},
+	"rarity": {
+		"common": "일반",
+		"uncommon": "고급",
+		"rare": "희귀",
+		"epic": "영웅",
+		"legendary": "전설"
+	},
+	"stats": {
+		"damage": "피해",
+		"speed": "속도",
+		"health": "체력",
+		"cooldown": "재사용 대기시간",
+		"range": "사거리",
+		"luck": "행운",
+		"armor": "방어구",
+		"crit_chance": "치명타 확률",
+		"crit_damage": "치명타 피해"
+	}
+}

@@ -43,13 +43,13 @@ const FALLBACK_LANGUAGE = "en"
 
 func _ready() -> void:
 	print("[Localization] Initializing Localization...")
-	
+
 	# Load translation files
 	_load_all_translations()
-	
+
 	# Set initial language from settings
 	_load_language_from_settings()
-	
+
 	print("[Localization] Localization initialized with language: ", current_language)
 
 func _load_all_translations() -> void:
@@ -60,49 +60,49 @@ func _load_all_translations() -> void:
 func _load_translation_file(language_code: String) -> bool:
 	"""Load translation file for specific language"""
 	var file_path = TRANSLATION_DIR + language_code + ".json"
-	
+
 	if not FileAccess.file_exists(file_path):
 		print("[Localization] Translation file not found: ", file_path)
-		
+
 		# Create default translation file
 		_create_default_translation_file(language_code)
 		return false
-	
+
 	var file = FileAccess.open(file_path, FileAccess.READ)
 	if file == null:
 		print("[Localization] Failed to open translation file: ", file_path)
 		return false
-	
+
 	var json_string = file.get_as_text()
 	file.close()
-	
+
 	var json = JSON.new()
 	var parse_result = json.parse(json_string)
-	
+
 	if parse_result != OK:
 		print("[Localization] Failed to parse translation file: ", file_path)
 		return false
-	
+
 	translations[language_code] = json.data
 	print("[Localization] Loaded translations for: ", language_code)
 	translation_loaded.emit(language_code)
-	
+
 	return true
 
 func _create_default_translation_file(language_code: String) -> void:
 	"""Create a default translation file with base keys"""
 	var default_translations = _get_default_translations(language_code)
-	
+
 	# Ensure directory exists
 	DirAccess.open("res://").make_dir_recursive("assets/data/localization")
-	
+
 	var file_path = TRANSLATION_DIR + language_code + ".json"
 	var file = FileAccess.open(file_path, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(default_translations, "\t"))
 		file.close()
 		print("[Localization] Created default translation file: ", file_path)
-		
+
 		# Load the created file
 		translations[language_code] = default_translations
 
@@ -243,28 +243,28 @@ func _get_default_translations(language_code: String) -> Dictionary:
 func get_text(key: String, args: Array = []) -> String:
 	"""Get localized text for a key with optional arguments"""
 	var text = _get_text_recursive(key, translations.get(current_language, {}))
-	
+
 	# Fallback to English if not found
 	if text == key and current_language != FALLBACK_LANGUAGE:
 		text = _get_text_recursive(key, translations.get(FALLBACK_LANGUAGE, {}))
-	
+
 	# Apply string formatting if args provided
 	if args.size() > 0:
 		text = _format_string(text, args)
-	
+
 	return text
 
 func _get_text_recursive(key: String, dict: Dictionary) -> String:
 	"""Recursively get text from nested dictionary using dot notation"""
 	var keys = key.split(".")
 	var current = dict
-	
+
 	for k in keys:
 		if current is Dictionary and current.has(k):
 			current = current[k]
 		else:
 			return key  # Return key if not found
-	
+
 	if current is String:
 		return current
 	else:
@@ -273,11 +273,11 @@ func _get_text_recursive(key: String, dict: Dictionary) -> String:
 func _format_string(text: String, args: Array) -> String:
 	"""Format string with arguments using {0}, {1}, etc. placeholders"""
 	var formatted = text
-	
+
 	for i in range(args.size()):
 		var placeholder = "{" + str(i) + "}"
 		formatted = formatted.replace(placeholder, str(args[i]))
-	
+
 	return formatted
 
 func set_language(language_code: String) -> bool:
@@ -285,16 +285,16 @@ func set_language(language_code: String) -> bool:
 	if not is_language_available(language_code):
 		print("[Localization] Language not available: ", language_code)
 		return false
-	
+
 	var old_language = current_language
 	current_language = language_code
-	
+
 	# Save to settings
 	_save_language_to_settings()
-	
+
 	language_changed.emit(old_language, current_language)
 	print("[Localization] Language changed from '", old_language, "' to '", current_language, "'")
-	
+
 	return true
 
 func get_current_language() -> String:
@@ -303,15 +303,40 @@ func get_current_language() -> String:
 
 func get_available_languages() -> Array[String]:
 	"""Get list of available language codes"""
-	return SUPPORTED_LANGUAGES.keys()
+	var langs: Array[String] = []
+	for key in SUPPORTED_LANGUAGES.keys():
+		langs.append(key)
+	return langs
 
 func get_language_display_name(language_code: String) -> String:
 	"""Get display name for a language code"""
-	return SUPPORTED_LANGUAGES.get(language_code, language_code)
+	if SUPPORTED_LANGUAGES.has(language_code):
+		return SUPPORTED_LANGUAGES[language_code].get("name", language_code)
+	return language_code
+
+func get_language_native_name(language_code: String) -> String:
+	"""Get native name for a language code (e.g., 'Español' for 'es')"""
+	if SUPPORTED_LANGUAGES.has(language_code):
+		return SUPPORTED_LANGUAGES[language_code].get("native", language_code)
+	return language_code
+
+func get_language_flag(language_code: String) -> String:
+	"""Get flag emoji for a language code"""
+	if SUPPORTED_LANGUAGES.has(language_code):
+		return SUPPORTED_LANGUAGES[language_code].get("flag", "🏳️")
+	return "🏳️"
 
 func is_language_available(language_code: String) -> bool:
 	"""Check if a language is available"""
 	return language_code in SUPPORTED_LANGUAGES
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHORT ALIAS - Use tr() for convenience
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func tr(key: String, args: Array = []) -> String:
+	"""Short alias for get_text() - Use this in UI code"""
+	return get_text(key, args)
 
 func _load_language_from_settings() -> void:
 	"""Load language setting from SaveManager"""
@@ -356,7 +381,7 @@ func detect_system_language() -> String:
 	"""Detect system language and return supported language code"""
 	var system_locale = OS.get_locale()
 	var language_code = system_locale.split("_")[0]  # Get language part (e.g., "en" from "en_US")
-	
+
 	if is_language_available(language_code):
 		return language_code
 	else:

@@ -1,0 +1,170 @@
+{
+	"ui": {
+		"main_menu": {
+			"title": "SPELLLOOP",
+			"new_run": "Nouvelle Partie",
+			"continue": "Continuer",
+			"settings": "Paramètres",
+			"quit": "Quitter",
+			"meta_shop": "Méta-Boutique"
+		},
+		"pause_menu": {
+			"title": "PAUSE",
+			"resume": "Reprendre",
+			"settings": "Paramètres",
+			"main_menu": "Menu Principal",
+			"quit": "Quitter le Jeu"
+		},
+		"settings": {
+			"title": "Paramètres",
+			"audio": "Audio",
+			"video": "Vidéo",
+			"controls": "Contrôles",
+			"language": "Langue",
+			"back": "Retour",
+			"reset": "Réinitialiser",
+			"master_volume": "Volume Principal",
+			"music_volume": "Volume Musique",
+			"sfx_volume": "Volume Effets",
+			"fullscreen": "Plein Écran",
+			"vsync": "VSync"
+		},
+		"game_over": {
+			"title": "Partie Terminée",
+			"victory": "Victoire !",
+			"defeat": "Défaite",
+			"score": "Score",
+			"time": "Temps",
+			"level": "Niveau",
+			"enemies_killed": "Ennemis Vaincus",
+			"coins_collected": "Pièces Collectées",
+			"continue": "Continuer",
+			"retry": "Réessayer",
+			"main_menu": "Menu Principal"
+		},
+		"hud": {
+			"hp": "PV",
+			"xp": "XP",
+			"lvl": "NVL",
+			"time": "Temps",
+			"weapons": "Armes",
+			"streak": "Série",
+			"meta": "Méta",
+			"coins": "Pièces"
+		},
+		"level_up": {
+			"title": "NIVEAU SUPÉRIEUR !",
+			"subtitle": "Choisissez une amélioration",
+			"select": "Sélectionner",
+			"reroll": "Relancer",
+			"banish": "Bannir",
+			"skip": "Passer",
+			"new_weapon": "Nouvelle Arme",
+			"upgrade_weapon": "Améliorer",
+			"fusion": "Fusion",
+			"upgrade": "Amélioration"
+		},
+		"chest": {
+			"title": "Coffre au Trésor",
+			"buy": "Acheter",
+			"close": "Fermer",
+			"tier": "Tier {0}"
+		}
+	},
+	"gameplay": {
+		"weapons": {
+			"ice_wand": "Baguette de Glace",
+			"fire_wand": "Baguette de Feu",
+			"lightning_staff": "Bâton de Foudre",
+			"nature_staff": "Bâton de Nature",
+			"shadow_dagger": "Dague des Ombres",
+			"arcane_orb": "Orbe Arcanique",
+			"frost_nova": "Nova de Givre",
+			"meteor_staff": "Bâton de Météores",
+			"poison_blade": "Lame Empoisonnée",
+			"holy_light": "Lumière Sacrée"
+		},
+		"passives": {
+			"damage_boost": "Dégâts Magiques +",
+			"damage_boost_desc": "Augmente les dégâts des projectiles magiques de 10%",
+			"speed_boost": "Vitesse +",
+			"speed_boost_desc": "Augmente la vitesse de déplacement de 10%",
+			"health_boost": "Vie Maximale +",
+			"health_boost_desc": "Augmente la vie maximale de 20",
+			"cooldown_reduction": "Recharge Rapide",
+			"cooldown_reduction_desc": "Réduit le temps de recharge des armes de 5%",
+			"crit_chance": "Œil de Lynx",
+			"crit_chance_desc": "Augmente les chances de coup critique de 5%",
+			"crit_damage": "Coup Critique",
+			"crit_damage_desc": "Augmente les dégâts critiques de 20%",
+			"pickup_range": "Vide Magnétique",
+			"pickup_range_desc": "Les pièces sont attirées de beaucoup plus loin (+100 pixels)",
+			"streak_bonus": "Maître des Séries",
+			"streak_bonus_desc": "Le bonus de série de pièces est doublé",
+			"coin_value": "Avidité",
+			"coin_value_desc": "Les pièces valent 20% de plus",
+			"xp_boost": "Apprenti Rapide",
+			"xp_boost_desc": "Gagnez 15% d'expérience en plus",
+			"armor": "Peau Épaisse",
+			"armor_desc": "Réduit les dégâts reçus de 5%",
+			"regen": "Régénération",
+			"regen_desc": "Régénère 1 PV toutes les 3 secondes",
+			"dodge": "Esquive",
+			"dodge_desc": "5% de chances d'esquiver les attaques",
+			"luck": "Porte-Bonheur",
+			"luck_desc": "Meilleures récompenses et objets rares"
+		},
+		"enemies": {
+			"skeleton_apprentice": "Squelette Apprenti",
+			"ethereal_bat": "Chauve-souris Éthérée",
+			"shadow_goblin": "Gobelin des Ombres",
+			"arcane_slime": "Slime Arcanique",
+			"venomous_spider": "Araignée Venimeuse"
+		},
+		"biomes": {
+			"grassland": "Prairie",
+			"desert": "Désert",
+			"lava": "Terres Volcaniques",
+			"death": "Royaume de la Mort",
+			"arcane_wastes": "Terres Arcaniques",
+			"ice": "Pics Gelés"
+		},
+		"zones": {
+			"safe": "Zone Sûre",
+			"medium": "Zone Moyenne",
+			"danger": "Zone Dangereuse",
+			"death": "Zone de Mort"
+		}
+	},
+	"messages": {
+		"game_saved": "Partie sauvegardée",
+		"game_loaded": "Partie chargée",
+		"weapon_equipped": "Équipé : {0}",
+		"weapon_upgraded": "Amélioré : {0} au Nv.{1}",
+		"level_up": "Niveau supérieur ! Maintenant Nv.{0}",
+		"coin_collected": "+{0}",
+		"xp_gained": "+{0} XP",
+		"enemy_killed": "Ennemi vaincu !",
+		"boss_spawned": "Boss en approche !",
+		"wave_complete": "Vague Terminée !",
+		"fusion_available": "Fusion disponible !"
+	},
+	"rarity": {
+		"common": "Commun",
+		"uncommon": "Peu Commun",
+		"rare": "Rare",
+		"epic": "Épique",
+		"legendary": "Légendaire"
+	},
+	"stats": {
+		"damage": "Dégâts",
+		"speed": "Vitesse",
+		"health": "Vie",
+		"cooldown": "Recharge",
+		"range": "Portée",
+		"luck": "Chance",
+		"armor": "Armure",
+		"crit_chance": "Chance Critique",
+		"crit_damage": "Dégâts Critiques"
+	}
+}

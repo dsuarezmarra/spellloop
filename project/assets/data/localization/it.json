@@ -1,0 +1,170 @@
+{
+	"ui": {
+		"main_menu": {
+			"title": "SPELLLOOP",
+			"new_run": "Nuova Partita",
+			"continue": "Continua",
+			"settings": "Impostazioni",
+			"quit": "Esci",
+			"meta_shop": "Negozio Meta"
+		},
+		"pause_menu": {
+			"title": "IN PAUSA",
+			"resume": "Riprendi",
+			"settings": "Impostazioni",
+			"main_menu": "Menu Principale",
+			"quit": "Esci dal Gioco"
+		},
+		"settings": {
+			"title": "Impostazioni",
+			"audio": "Audio",
+			"video": "Video",
+			"controls": "Controlli",
+			"language": "Lingua",
+			"back": "Indietro",
+			"reset": "Ripristina",
+			"master_volume": "Volume Generale",
+			"music_volume": "Volume Musica",
+			"sfx_volume": "Volume Effetti",
+			"fullscreen": "Schermo Intero",
+			"vsync": "VSync"
+		},
+		"game_over": {
+			"title": "Partita Terminata",
+			"victory": "Vittoria!",
+			"defeat": "Sconfitta",
+			"score": "Punteggio",
+			"time": "Tempo",
+			"level": "Livello",
+			"enemies_killed": "Nemici Uccisi",
+			"coins_collected": "Monete Raccolte",
+			"continue": "Continua",
+			"retry": "Riprova",
+			"main_menu": "Menu Principale"
+		},
+		"hud": {
+			"hp": "PV",
+			"xp": "PE",
+			"lvl": "LV",
+			"time": "Tempo",
+			"weapons": "Armi",
+			"streak": "Serie",
+			"meta": "Meta",
+			"coins": "Monete"
+		},
+		"level_up": {
+			"title": "SALITO DI LIVELLO!",
+			"subtitle": "Scegli un potenziamento",
+			"select": "Seleziona",
+			"reroll": "Ritira",
+			"banish": "Bandisci",
+			"skip": "Salta",
+			"new_weapon": "Nuova Arma",
+			"upgrade_weapon": "Potenzia",
+			"fusion": "Fusione",
+			"upgrade": "Potenziamento"
+		},
+		"chest": {
+			"title": "Scrigno del Tesoro",
+			"buy": "Compra",
+			"close": "Chiudi",
+			"tier": "Livello {0}"
+		}
+	},
+	"gameplay": {
+		"weapons": {
+			"ice_wand": "Bacchetta di Ghiaccio",
+			"fire_wand": "Bacchetta di Fuoco",
+			"lightning_staff": "Bastone del Fulmine",
+			"nature_staff": "Bastone della Natura",
+			"shadow_dagger": "Pugnale dell'Ombra",
+			"arcane_orb": "Sfera Arcana",
+			"frost_nova": "Nova Gelida",
+			"meteor_staff": "Bastone Meteoritico",
+			"poison_blade": "Lama Velenosa",
+			"holy_light": "Luce Sacra"
+		},
+		"passives": {
+			"damage_boost": "Danno Magico +",
+			"damage_boost_desc": "Aumenta il danno dei proiettili magici del 10%",
+			"speed_boost": "Velocità +",
+			"speed_boost_desc": "Aumenta la velocità di movimento del 10%",
+			"health_boost": "Salute Massima +",
+			"health_boost_desc": "Aumenta la salute massima di 20",
+			"cooldown_reduction": "Recupero Rapido",
+			"cooldown_reduction_desc": "Riduce il tempo di ricarica delle armi del 5%",
+			"crit_chance": "Occhio d'Aquila",
+			"crit_chance_desc": "Aumenta la probabilità di critico del 5%",
+			"crit_damage": "Colpo Critico",
+			"crit_damage_desc": "Aumenta il danno critico del 20%",
+			"pickup_range": "Vuoto Magnetico",
+			"pickup_range_desc": "Le monete vengono attratte da molto più lontano (+100 pixel)",
+			"streak_bonus": "Maestro delle Serie",
+			"streak_bonus_desc": "Il bonus serie di monete è raddoppiato",
+			"coin_value": "Avidità",
+			"coin_value_desc": "Le monete valgono il 20% in più",
+			"xp_boost": "Apprendista Veloce",
+			"xp_boost_desc": "Guadagna il 15% di esperienza in più",
+			"armor": "Pelle Dura",
+			"armor_desc": "Riduce il danno subito del 5%",
+			"regen": "Rigenerazione",
+			"regen_desc": "Rigenera 1 PV ogni 3 secondi",
+			"dodge": "Schivata",
+			"dodge_desc": "5% di probabilità di schivare gli attacchi",
+			"luck": "Amuleto Fortunato",
+			"luck_desc": "Ricompense migliori e oggetti rari"
+		},
+		"enemies": {
+			"skeleton_apprentice": "Scheletro Apprendista",
+			"ethereal_bat": "Pipistrello Etereo",
+			"shadow_goblin": "Goblin dell'Ombra",
+			"arcane_slime": "Melma Arcana",
+			"venomous_spider": "Ragno Velenoso"
+		},
+		"biomes": {
+			"grassland": "Prateria",
+			"desert": "Deserto",
+			"lava": "Terre Vulcaniche",
+			"death": "Regno della Morte",
+			"arcane_wastes": "Terre Arcane",
+			"ice": "Picchi Ghiacciati"
+		},
+		"zones": {
+			"safe": "Zona Sicura",
+			"medium": "Zona Media",
+			"danger": "Zona di Pericolo",
+			"death": "Zona Mortale"
+		}
+	},
+	"messages": {
+		"game_saved": "Gioco salvato con successo",
+		"game_loaded": "Gioco caricato con successo",
+		"weapon_equipped": "Equipaggiato: {0}",
+		"weapon_upgraded": "Potenziato: {0} a Lv.{1}",
+		"level_up": "Salito di livello! Ora Lv.{0}",
+		"coin_collected": "+{0}",
+		"xp_gained": "+{0} PE",
+		"enemy_killed": "Nemico sconfitto!",
+		"boss_spawned": "Un boss si avvicina!",
+		"wave_complete": "Ondata Completata!",
+		"fusion_available": "Fusione disponibile!"
+	},
+	"rarity": {
+		"common": "Comune",
+		"uncommon": "Non Comune",
+		"rare": "Raro",
+		"epic": "Epico",
+		"legendary": "Leggendario"
+	},
+	"stats": {
+		"damage": "Danno",
+		"speed": "Velocità",
+		"health": "Salute",
+		"cooldown": "Ricarica",
+		"range": "Portata",
+		"luck": "Fortuna",
+		"armor": "Armatura",
+		"crit_chance": "Probabilità Critica",
+		"crit_damage": "Danno Critico"
+	}
+}

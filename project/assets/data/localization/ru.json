@@ -1,0 +1,170 @@
+{
+	"ui": {
+		"main_menu": {
+			"title": "SPELLLOOP",
+			"new_run": "Новый Забег",
+			"continue": "Продолжить",
+			"settings": "Настройки",
+			"quit": "Выход",
+			"meta_shop": "Мета-Магазин"
+		},
+		"pause_menu": {
+			"title": "ПАУЗА",
+			"resume": "Продолжить",
+			"settings": "Настройки",
+			"main_menu": "Главное Меню",
+			"quit": "Выйти из Игры"
+		},
+		"settings": {
+			"title": "Настройки",
+			"audio": "Звук",
+			"video": "Видео",
+			"controls": "Управление",
+			"language": "Язык",
+			"back": "Назад",
+			"reset": "Сбросить",
+			"master_volume": "Общая Громкость",
+			"music_volume": "Громкость Музыки",
+			"sfx_volume": "Громкость Эффектов",
+			"fullscreen": "Полный Экран",
+			"vsync": "VSync"
+		},
+		"game_over": {
+			"title": "Забег Окончен",
+			"victory": "Победа!",
+			"defeat": "Поражение",
+			"score": "Счёт",
+			"time": "Время",
+			"level": "Уровень",
+			"enemies_killed": "Убито Врагов",
+			"coins_collected": "Собрано Монет",
+			"continue": "Продолжить",
+			"retry": "Повторить",
+			"main_menu": "Главное Меню"
+		},
+		"hud": {
+			"hp": "ОЗ",
+			"xp": "ОО",
+			"lvl": "УР",
+			"time": "Время",
+			"weapons": "Оружие",
+			"streak": "Серия",
+			"meta": "Мета",
+			"coins": "Монеты"
+		},
+		"level_up": {
+			"title": "УРОВЕНЬ ПОВЫШЕН!",
+			"subtitle": "Выберите улучшение",
+			"select": "Выбрать",
+			"reroll": "Перебросить",
+			"banish": "Изгнать",
+			"skip": "Пропустить",
+			"new_weapon": "Новое Оружие",
+			"upgrade_weapon": "Улучшить",
+			"fusion": "Слияние",
+			"upgrade": "Улучшение"
+		},
+		"chest": {
+			"title": "Сундук с Сокровищами",
+			"buy": "Купить",
+			"close": "Закрыть",
+			"tier": "Уровень {0}"
+		}
+	},
+	"gameplay": {
+		"weapons": {
+			"ice_wand": "Ледяной Жезл",
+			"fire_wand": "Огненный Жезл",
+			"lightning_staff": "Посох Молнии",
+			"nature_staff": "Посох Природы",
+			"shadow_dagger": "Теневой Кинжал",
+			"arcane_orb": "Магическая Сфера",
+			"frost_nova": "Ледяная Вспышка",
+			"meteor_staff": "Посох Метеоров",
+			"poison_blade": "Ядовитый Клинок",
+			"holy_light": "Святой Свет"
+		},
+		"passives": {
+			"damage_boost": "Магический Урон +",
+			"damage_boost_desc": "Увеличивает урон магических снарядов на 10%",
+			"speed_boost": "Скорость +",
+			"speed_boost_desc": "Увеличивает скорость передвижения на 10%",
+			"health_boost": "Максимальное Здоровье +",
+			"health_boost_desc": "Увеличивает максимальное здоровье на 20",
+			"cooldown_reduction": "Быстрое Восстановление",
+			"cooldown_reduction_desc": "Уменьшает время перезарядки оружия на 5%",
+			"crit_chance": "Орлиный Глаз",
+			"crit_chance_desc": "Увеличивает шанс критического удара на 5%",
+			"crit_damage": "Критический Удар",
+			"crit_damage_desc": "Увеличивает критический урон на 20%",
+			"pickup_range": "Магнитное Поле",
+			"pickup_range_desc": "Монеты притягиваются с большего расстояния (+100 пикселей)",
+			"streak_bonus": "Мастер Серий",
+			"streak_bonus_desc": "Бонус серии монет удвоен",
+			"coin_value": "Жадность",
+			"coin_value_desc": "Монеты стоят на 20% больше",
+			"xp_boost": "Быстрое Обучение",
+			"xp_boost_desc": "Получайте на 15% больше опыта",
+			"armor": "Толстая Кожа",
+			"armor_desc": "Уменьшает получаемый урон на 5%",
+			"regen": "Регенерация",
+			"regen_desc": "Восстанавливает 1 ОЗ каждые 3 секунды",
+			"dodge": "Уклонение",
+			"dodge_desc": "5% шанс уклониться от атаки",
+			"luck": "Амулет Удачи",
+			"luck_desc": "Лучшие награды и редкие предметы"
+		},
+		"enemies": {
+			"skeleton_apprentice": "Скелет-Ученик",
+			"ethereal_bat": "Эфирная Летучая Мышь",
+			"shadow_goblin": "Теневой Гоблин",
+			"arcane_slime": "Магический Слизень",
+			"venomous_spider": "Ядовитый Паук"
+		},
+		"biomes": {
+			"grassland": "Луга",
+			"desert": "Пустыня",
+			"lava": "Вулканические Земли",
+			"death": "Царство Смерти",
+			"arcane_wastes": "Магические Пустоши",
+			"ice": "Ледяные Пики"
+		},
+		"zones": {
+			"safe": "Безопасная Зона",
+			"medium": "Средняя Зона",
+			"danger": "Опасная Зона",
+			"death": "Смертельная Зона"
+		}
+	},
+	"messages": {
+		"game_saved": "Игра успешно сохранена",
+		"game_loaded": "Игра успешно загружена",
+		"weapon_equipped": "Экипировано: {0}",
+		"weapon_upgraded": "Улучшено: {0} до Ур.{1}",
+		"level_up": "Уровень повышен! Теперь Ур.{0}",
+		"coin_collected": "+{0}",
+		"xp_gained": "+{0} ОО",
+		"enemy_killed": "Враг повержен!",
+		"boss_spawned": "Приближается босс!",
+		"wave_complete": "Волна Завершена!",
+		"fusion_available": "Слияние доступно!"
+	},
+	"rarity": {
+		"common": "Обычный",
+		"uncommon": "Необычный",
+		"rare": "Редкий",
+		"epic": "Эпический",
+		"legendary": "Легендарный"
+	},
+	"stats": {
+		"damage": "Урон",
+		"speed": "Скорость",
+		"health": "Здоровье",
+		"cooldown": "Перезарядка",
+		"range": "Дальность",
+		"luck": "Удача",
+		"armor": "Броня",
+		"crit_chance": "Шанс Крита",
+		"crit_damage": "Крит. Урон"
+	}
+}

@@ -1,0 +1,170 @@
+{
+	"ui": {
+		"main_menu": {
+			"title": "SPELLLOOP",
+			"new_run": "新しいゲーム",
+			"continue": "続ける",
+			"settings": "設定",
+			"quit": "終了",
+			"meta_shop": "メタショップ"
+		},
+		"pause_menu": {
+			"title": "一時停止",
+			"resume": "再開",
+			"settings": "設定",
+			"main_menu": "メインメニュー",
+			"quit": "ゲームを終了"
+		},
+		"settings": {
+			"title": "設定",
+			"audio": "オーディオ",
+			"video": "ビデオ",
+			"controls": "操作",
+			"language": "言語",
+			"back": "戻る",
+			"reset": "リセット",
+			"master_volume": "マスター音量",
+			"music_volume": "音楽音量",
+			"sfx_volume": "効果音音量",
+			"fullscreen": "フルスクリーン",
+			"vsync": "垂直同期"
+		},
+		"game_over": {
+			"title": "ゲーム終了",
+			"victory": "勝利！",
+			"defeat": "敗北",
+			"score": "スコア",
+			"time": "時間",
+			"level": "レベル",
+			"enemies_killed": "撃破した敵",
+			"coins_collected": "獲得コイン",
+			"continue": "続ける",
+			"retry": "リトライ",
+			"main_menu": "メインメニュー"
+		},
+		"hud": {
+			"hp": "HP",
+			"xp": "EXP",
+			"lvl": "Lv",
+			"time": "時間",
+			"weapons": "武器",
+			"streak": "コンボ",
+			"meta": "メタ",
+			"coins": "コイン"
+		},
+		"level_up": {
+			"title": "レベルアップ！",
+			"subtitle": "強化を選択",
+			"select": "選択",
+			"reroll": "リロール",
+			"banish": "除外",
+			"skip": "スキップ",
+			"new_weapon": "新しい武器",
+			"upgrade_weapon": "強化",
+			"fusion": "融合",
+			"upgrade": "アップグレード"
+		},
+		"chest": {
+			"title": "宝箱",
+			"buy": "購入",
+			"close": "閉じる",
+			"tier": "ティア {0}"
+		}
+	},
+	"gameplay": {
+		"weapons": {
+			"ice_wand": "アイスワンド",
+			"fire_wand": "ファイアワンド",
+			"lightning_staff": "ライトニングスタッフ",
+			"nature_staff": "ネイチャースタッフ",
+			"shadow_dagger": "シャドウダガー",
+			"arcane_orb": "アルケインオーブ",
+			"frost_nova": "フロストノヴァ",
+			"meteor_staff": "メテオスタッフ",
+			"poison_blade": "ポイズンブレイド",
+			"holy_light": "ホーリーライト"
+		},
+		"passives": {
+			"damage_boost": "魔法ダメージ +",
+			"damage_boost_desc": "魔法弾のダメージが10%上昇",
+			"speed_boost": "スピード +",
+			"speed_boost_desc": "移動速度が10%上昇",
+			"health_boost": "最大HP +",
+			"health_boost_desc": "最大HPが20増加",
+			"cooldown_reduction": "クイックリカバリー",
+			"cooldown_reduction_desc": "武器のクールダウンが5%減少",
+			"crit_chance": "イーグルアイ",
+			"crit_chance_desc": "クリティカル率が5%上昇",
+			"crit_damage": "クリティカルストライク",
+			"crit_damage_desc": "クリティカルダメージが20%上昇",
+			"pickup_range": "マグネットフィールド",
+			"pickup_range_desc": "コインの吸引範囲が大幅に拡大（+100ピクセル）",
+			"streak_bonus": "コンボマスター",
+			"streak_bonus_desc": "コインコンボボーナスが2倍",
+			"coin_value": "グリード",
+			"coin_value_desc": "コインの価値が20%上昇",
+			"xp_boost": "クイックラーナー",
+			"xp_boost_desc": "獲得経験値が15%上昇",
+			"armor": "タフスキン",
+			"armor_desc": "受けるダメージが5%減少",
+			"regen": "リジェネレーション",
+			"regen_desc": "3秒ごとに1HP回復",
+			"dodge": "ドッジ",
+			"dodge_desc": "5%の確率で攻撃を回避",
+			"luck": "ラッキーチャーム",
+			"luck_desc": "より良い報酬とレアアイテム"
+		},
+		"enemies": {
+			"skeleton_apprentice": "スケルトン見習い",
+			"ethereal_bat": "エーテルバット",
+			"shadow_goblin": "シャドウゴブリン",
+			"arcane_slime": "アルケインスライム",
+			"venomous_spider": "毒蜘蛛"
+		},
+		"biomes": {
+			"grassland": "草原",
+			"desert": "砂漠",
+			"lava": "火山地帯",
+			"death": "死の領域",
+			"arcane_wastes": "魔法の荒野",
+			"ice": "氷の頂"
+		},
+		"zones": {
+			"safe": "安全ゾーン",
+			"medium": "中間ゾーン",
+			"danger": "危険ゾーン",
+			"death": "死のゾーン"
+		}
+	},
+	"messages": {
+		"game_saved": "ゲームを保存しました",
+		"game_loaded": "ゲームを読み込みました",
+		"weapon_equipped": "装備：{0}",
+		"weapon_upgraded": "強化：{0} を Lv.{1} に",
+		"level_up": "レベルアップ！現在 Lv.{0}",
+		"coin_collected": "+{0}",
+		"xp_gained": "+{0} EXP",
+		"enemy_killed": "敵を撃破！",
+		"boss_spawned": "ボス出現！",
+		"wave_complete": "ウェーブクリア！",
+		"fusion_available": "融合可能！"
+	},
+	"rarity": {
+		"common": "コモン",
+		"uncommon": "アンコモン",
+		"rare": "レア",
+		"epic": "エピック",
+		"legendary": "レジェンダリー"
+	},
+	"stats": {
+		"damage": "ダメージ",
+		"speed": "スピード",
+		"health": "HP",
+		"cooldown": "クールダウン",
+		"range": "射程",
+		"luck": "運",
+		"armor": "アーマー",
+		"crit_chance": "クリティカル率",
+		"crit_damage": "クリティカルダメージ"
+	}
+}

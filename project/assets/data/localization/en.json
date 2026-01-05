@@ -5,7 +5,8 @@
 			"new_run": "New Run",
 			"continue": "Continue",
 			"settings": "Settings",
-			"quit": "Quit"
+			"quit": "Quit",
+			"meta_shop": "Meta-Shop"
 		},
 		"pause_menu": {
 			"title": "PAUSED",
@@ -21,65 +22,149 @@
 			"controls": "Controls",
 			"language": "Language",
 			"back": "Back",
-			"reset": "Reset to Defaults"
+			"reset": "Reset to Defaults",
+			"master_volume": "Master Volume",
+			"music_volume": "Music Volume",
+			"sfx_volume": "SFX Volume",
+			"fullscreen": "Fullscreen",
+			"vsync": "VSync"
 		},
 		"game_over": {
 			"title": "Run Complete",
+			"victory": "Victory!",
+			"defeat": "Defeat",
 			"score": "Score",
 			"time": "Time",
-			"rooms": "Rooms Cleared",
-			"enemies": "Enemies Defeated",
+			"level": "Level",
+			"enemies_killed": "Enemies Killed",
+			"coins_collected": "Coins Collected",
 			"continue": "Continue",
-			"retry": "Try Again"
+			"retry": "Try Again",
+			"main_menu": "Main Menu"
+		},
+		"hud": {
+			"hp": "HP",
+			"xp": "XP",
+			"lvl": "LVL",
+			"time": "Time",
+			"weapons": "Weapons",
+			"streak": "Streak",
+			"meta": "Meta",
+			"coins": "Coins"
+		},
+		"level_up": {
+			"title": "LEVEL UP!",
+			"subtitle": "Choose an upgrade",
+			"select": "Select",
+			"reroll": "Reroll",
+			"banish": "Banish",
+			"skip": "Skip",
+			"new_weapon": "New Weapon",
+			"upgrade_weapon": "Upgrade",
+			"fusion": "Fusion",
+			"upgrade": "Upgrade"
+		},
+		"chest": {
+			"title": "Treasure Chest",
+			"buy": "Buy",
+			"close": "Close",
+			"tier": "Tier {0}"
 		}
 	},
 	"gameplay": {
-		"spells": {
-			"fireball": "Fireball",
-			"ice_shard": "Ice Shard",
-			"lightning_bolt": "Lightning Bolt",
-			"healing_light": "Healing Light",
-			"shadow_blast": "Shadow Blast",
-			"earth_spike": "Earth Spike",
-			"wind_slash": "Wind Slash",
+		"weapons": {
+			"ice_wand": "Ice Wand",
+			"fire_wand": "Fire Wand",
+			"lightning_staff": "Lightning Staff",
+			"nature_staff": "Nature Staff",
+			"shadow_dagger": "Shadow Dagger",
+			"arcane_orb": "Arcane Orb",
 			"frost_nova": "Frost Nova",
-			"flame_wave": "Flame Wave",
-			"thunder_storm": "Thunder Storm"
+			"meteor_staff": "Meteor Staff",
+			"poison_blade": "Poison Blade",
+			"holy_light": "Holy Light"
+		},
+		"passives": {
+			"damage_boost": "Magic Damage +",
+			"damage_boost_desc": "Increases magic projectile damage by 10%",
+			"speed_boost": "Speed +",
+			"speed_boost_desc": "Increases movement speed by 10%",
+			"health_boost": "Max Health +",
+			"health_boost_desc": "Increases maximum health by 20",
+			"cooldown_reduction": "Quick Reload",
+			"cooldown_reduction_desc": "Reduces weapon cooldown by 5%",
+			"crit_chance": "Eagle Eye",
+			"crit_chance_desc": "Increases critical hit chance by 5%",
+			"crit_damage": "Critical Strike",
+			"crit_damage_desc": "Increases critical damage by 20%",
+			"pickup_range": "Magnetic Vacuum",
+			"pickup_range_desc": "Coins are attracted from much farther (+100 pixels)",
+			"streak_bonus": "Streak Master",
+			"streak_bonus_desc": "Coin streak bonus is doubled",
+			"coin_value": "Greed",
+			"coin_value_desc": "Coins are worth 20% more",
+			"xp_boost": "Fast Learner",
+			"xp_boost_desc": "Gain 15% more experience",
+			"armor": "Thick Skin",
+			"armor_desc": "Reduces incoming damage by 5%",
+			"regen": "Regeneration",
+			"regen_desc": "Regenerate 1 HP every 3 seconds",
+			"dodge": "Evasion",
+			"dodge_desc": "5% chance to dodge attacks",
+			"luck": "Lucky Charm",
+			"luck_desc": "Better rewards and rare drops"
 		},
 		"enemies": {
-			"basic_slime": "Slime",
-			"fire_imp": "Fire Imp",
-			"ice_golem": "Ice Golem",
-			"shadow_wraith": "Shadow Wraith",
-			"crystal_spider": "Crystal Spider",
-			"lava_beast": "Lava Beast",
-			"frost_wolf": "Frost Wolf",
-			"void_crawler": "Void Crawler"
+			"skeleton_apprentice": "Skeleton Apprentice",
+			"ethereal_bat": "Ethereal Bat",
+			"shadow_goblin": "Shadow Goblin",
+			"arcane_slime": "Arcane Slime",
+			"venomous_spider": "Venomous Spider"
 		},
 		"biomes": {
-			"fire_caverns": "Fire Caverns",
-			"ice_peaks": "Frozen Peaks",
-			"shadow_realm": "Shadow Realm",
-			"crystal_gardens": "Crystal Gardens"
+			"grassland": "Grassland",
+			"desert": "Desert",
+			"lava": "Volcanic Wastes",
+			"death": "Death Realm",
+			"arcane_wastes": "Arcane Wastes",
+			"ice": "Frozen Peaks"
 		},
-		"mages": {
-			"fire_mage": "Flame Weaver",
-			"ice_mage": "Frost Caller",
-			"shadow_mage": "Void Walker",
-			"earth_mage": "Stone Shaper",
-			"lightning_mage": "Storm Bringer"
+		"zones": {
+			"safe": "Safe Zone",
+			"medium": "Medium Zone",
+			"danger": "Danger Zone",
+			"death": "Death Zone"
 		}
 	},
 	"messages": {
 		"game_saved": "Game saved successfully",
 		"game_loaded": "Game loaded successfully",
-		"spell_unlocked": "New spell unlocked: {0}",
-		"mage_unlocked": "New mage unlocked: {0}",
-		"achievement_unlocked": "Achievement unlocked: {0}",
-		"room_cleared": "Room cleared!",
-		"boss_defeated": "Boss defeated!",
-		"level_up": "Level up!",
-		"health_low": "Health is low!",
-		"out_of_mana": "Out of mana!"
+		"weapon_equipped": "Equipped: {0}",
+		"weapon_upgraded": "Upgraded: {0} to Lv.{1}",
+		"level_up": "Level Up! Now Lv.{0}",
+		"coin_collected": "+{0}",
+		"xp_gained": "+{0} XP",
+		"enemy_killed": "Enemy defeated!",
+		"boss_spawned": "Boss incoming!",
+		"wave_complete": "Wave Complete!",
+		"fusion_available": "Fusion available!"
+	},
+	"rarity": {
+		"common": "Common",
+		"uncommon": "Uncommon",
+		"rare": "Rare",
+		"epic": "Epic",
+		"legendary": "Legendary"
+	},
+	"stats": {
+		"damage": "Damage",
+		"speed": "Speed",
+		"health": "Health",
+		"cooldown": "Cooldown",
+		"range": "Range",
+		"luck": "Luck",
+		"armor": "Armor",
+		"crit_chance": "Crit Chance",
+		"crit_damage": "Crit Damage"
 	}
 }

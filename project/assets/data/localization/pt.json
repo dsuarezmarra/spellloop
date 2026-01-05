@@ -1,0 +1,170 @@
+{
+	"ui": {
+		"main_menu": {
+			"title": "SPELLLOOP",
+			"new_run": "Nova Partida",
+			"continue": "Continuar",
+			"settings": "Configurações",
+			"quit": "Sair",
+			"meta_shop": "Meta-Loja"
+		},
+		"pause_menu": {
+			"title": "PAUSADO",
+			"resume": "Retomar",
+			"settings": "Configurações",
+			"main_menu": "Menu Principal",
+			"quit": "Sair do Jogo"
+		},
+		"settings": {
+			"title": "Configurações",
+			"audio": "Áudio",
+			"video": "Vídeo",
+			"controls": "Controles",
+			"language": "Idioma",
+			"back": "Voltar",
+			"reset": "Restaurar",
+			"master_volume": "Volume Geral",
+			"music_volume": "Volume da Música",
+			"sfx_volume": "Volume dos Efeitos",
+			"fullscreen": "Tela Cheia",
+			"vsync": "VSync"
+		},
+		"game_over": {
+			"title": "Partida Concluída",
+			"victory": "Vitória!",
+			"defeat": "Derrota",
+			"score": "Pontuação",
+			"time": "Tempo",
+			"level": "Nível",
+			"enemies_killed": "Inimigos Derrotados",
+			"coins_collected": "Moedas Coletadas",
+			"continue": "Continuar",
+			"retry": "Tentar Novamente",
+			"main_menu": "Menu Principal"
+		},
+		"hud": {
+			"hp": "PV",
+			"xp": "XP",
+			"lvl": "NVL",
+			"time": "Tempo",
+			"weapons": "Armas",
+			"streak": "Sequência",
+			"meta": "Meta",
+			"coins": "Moedas"
+		},
+		"level_up": {
+			"title": "SUBIU DE NÍVEL!",
+			"subtitle": "Escolha uma melhoria",
+			"select": "Selecionar",
+			"reroll": "Rolar Novamente",
+			"banish": "Banir",
+			"skip": "Pular",
+			"new_weapon": "Nova Arma",
+			"upgrade_weapon": "Melhorar",
+			"fusion": "Fusão",
+			"upgrade": "Melhoria"
+		},
+		"chest": {
+			"title": "Baú do Tesouro",
+			"buy": "Comprar",
+			"close": "Fechar",
+			"tier": "Tier {0}"
+		}
+	},
+	"gameplay": {
+		"weapons": {
+			"ice_wand": "Varinha de Gelo",
+			"fire_wand": "Varinha de Fogo",
+			"lightning_staff": "Cajado de Raios",
+			"nature_staff": "Cajado da Natureza",
+			"shadow_dagger": "Adaga das Sombras",
+			"arcane_orb": "Orbe Arcano",
+			"frost_nova": "Nova Gélida",
+			"meteor_staff": "Cajado de Meteoros",
+			"poison_blade": "Lâmina Venenosa",
+			"holy_light": "Luz Sagrada"
+		},
+		"passives": {
+			"damage_boost": "Dano Mágico +",
+			"damage_boost_desc": "Aumenta o dano dos projéteis mágicos em 10%",
+			"speed_boost": "Velocidade +",
+			"speed_boost_desc": "Aumenta a velocidade de movimento em 10%",
+			"health_boost": "Vida Máxima +",
+			"health_boost_desc": "Aumenta a vida máxima em 20",
+			"cooldown_reduction": "Recarga Rápida",
+			"cooldown_reduction_desc": "Reduz o tempo de recarga das armas em 5%",
+			"crit_chance": "Olho de Águia",
+			"crit_chance_desc": "Aumenta a chance de crítico em 5%",
+			"crit_damage": "Golpe Crítico",
+			"crit_damage_desc": "Aumenta o dano crítico em 20%",
+			"pickup_range": "Vácuo Magnético",
+			"pickup_range_desc": "Moedas são atraídas de muito mais longe (+100 pixels)",
+			"streak_bonus": "Mestre das Sequências",
+			"streak_bonus_desc": "O bônus de sequência de moedas é dobrado",
+			"coin_value": "Ganância",
+			"coin_value_desc": "Moedas valem 20% a mais",
+			"xp_boost": "Aprendiz Rápido",
+			"xp_boost_desc": "Ganhe 15% mais experiência",
+			"armor": "Pele Grossa",
+			"armor_desc": "Reduz o dano recebido em 5%",
+			"regen": "Regeneração",
+			"regen_desc": "Regenera 1 PV a cada 3 segundos",
+			"dodge": "Esquiva",
+			"dodge_desc": "5% de chance de esquivar ataques",
+			"luck": "Amuleto da Sorte",
+			"luck_desc": "Melhores recompensas e itens raros"
+		},
+		"enemies": {
+			"skeleton_apprentice": "Esqueleto Aprendiz",
+			"ethereal_bat": "Morcego Etéreo",
+			"shadow_goblin": "Goblin das Sombras",
+			"arcane_slime": "Slime Arcano",
+			"venomous_spider": "Aranha Venenosa"
+		},
+		"biomes": {
+			"grassland": "Pradaria",
+			"desert": "Deserto",
+			"lava": "Terras Vulcânicas",
+			"death": "Reino da Morte",
+			"arcane_wastes": "Terras Arcanas",
+			"ice": "Picos Gelados"
+		},
+		"zones": {
+			"safe": "Zona Segura",
+			"medium": "Zona Média",
+			"danger": "Zona de Perigo",
+			"death": "Zona da Morte"
+		}
+	},
+	"messages": {
+		"game_saved": "Jogo salvo com sucesso",
+		"game_loaded": "Jogo carregado com sucesso",
+		"weapon_equipped": "Equipado: {0}",
+		"weapon_upgraded": "Melhorado: {0} para Nv.{1}",
+		"level_up": "Subiu de nível! Agora Nv.{0}",
+		"coin_collected": "+{0}",
+		"xp_gained": "+{0} XP",
+		"enemy_killed": "Inimigo derrotado!",
+		"boss_spawned": "Chefe se aproximando!",
+		"wave_complete": "Onda Completa!",
+		"fusion_available": "Fusão disponível!"
+	},
+	"rarity": {
+		"common": "Comum",
+		"uncommon": "Incomum",
+		"rare": "Raro",
+		"epic": "Épico",
+		"legendary": "Lendário"
+	},
+	"stats": {
+		"damage": "Dano",
+		"speed": "Velocidade",
+		"health": "Vida",
+		"cooldown": "Recarga",
+		"range": "Alcance",
+		"luck": "Sorte",
+		"armor": "Armadura",
+		"crit_chance": "Chance Crítica",
+		"crit_damage": "Dano Crítico"
+	}
+}

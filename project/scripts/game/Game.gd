@@ -30,6 +30,14 @@ var game_running: bool = false
 var game_time: float = 0.0
 var is_paused: bool = false
 
+# Contadores de Reroll/Banish persistentes para toda la partida
+# Balance:
+# - Reroll (3): permite re-randomizar opciones de level up
+# - Banish (2): elimina una opción permanentemente del pool
+# - Skip: siempre disponible, sin límite
+var remaining_rerolls: int = 3
+var remaining_banishes: int = 2
+
 # Estadísticas de la partida
 var run_stats: Dictionary = {
 	"time": 0.0,
@@ -357,11 +365,21 @@ func _show_level_up_panel(level: int) -> void:
 	if panel.has_method("initialize"):
 		panel.initialize(attack_mgr, stats)
 
+	# Configurar contadores de reroll/banish (persistentes entre level ups)
+	if panel.has_method("set_reroll_count"):
+		panel.set_reroll_count(remaining_rerolls)
+	if panel.has_method("set_banish_count"):
+		panel.set_banish_count(remaining_banishes)
+
 	# Conectar señales
 	if panel.has_signal("option_selected"):
 		panel.option_selected.connect(_on_level_up_option_selected)
 	if panel.has_signal("panel_closed"):
 		panel.panel_closed.connect(_on_level_up_panel_closed)
+	if panel.has_signal("reroll_used"):
+		panel.reroll_used.connect(_on_reroll_used)
+	if panel.has_signal("banish_used"):
+		panel.banish_used.connect(_on_banish_used)
 
 	# Mostrar panel (pausa el juego internamente)
 	if panel.has_method("show_panel"):
@@ -376,6 +394,16 @@ func _on_level_up_option_selected(option: Dictionary) -> void:
 func _on_level_up_panel_closed() -> void:
 	"""Callback cuando se cierra el panel de level up"""
 	print("🆙 [Game] Panel de level up cerrado")
+
+func _on_reroll_used() -> void:
+	"""Callback cuando se usa un reroll"""
+	remaining_rerolls = maxi(0, remaining_rerolls - 1)
+	print("🎲 [Game] Reroll usado (restantes: %d)" % remaining_rerolls)
+
+func _on_banish_used(_option_index: int) -> void:
+	"""Callback cuando se usa un banish"""
+	remaining_banishes = maxi(0, remaining_banishes - 1)
+	print("🚫 [Game] Banish usado (restantes: %d)" % remaining_banishes)
 
 func _on_coin_collected(value: int, total: int) -> void:
 	## Callback cuando se recoge una moneda

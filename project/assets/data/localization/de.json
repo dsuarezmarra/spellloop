@@ -1,0 +1,170 @@
+{
+	"ui": {
+		"main_menu": {
+			"title": "SPELLLOOP",
+			"new_run": "Neuer Durchlauf",
+			"continue": "Fortsetzen",
+			"settings": "Einstellungen",
+			"quit": "Beenden",
+			"meta_shop": "Meta-Shop"
+		},
+		"pause_menu": {
+			"title": "PAUSIERT",
+			"resume": "Fortsetzen",
+			"settings": "Einstellungen",
+			"main_menu": "Hauptmenü",
+			"quit": "Spiel Beenden"
+		},
+		"settings": {
+			"title": "Einstellungen",
+			"audio": "Audio",
+			"video": "Video",
+			"controls": "Steuerung",
+			"language": "Sprache",
+			"back": "Zurück",
+			"reset": "Zurücksetzen",
+			"master_volume": "Gesamtlautstärke",
+			"music_volume": "Musiklautstärke",
+			"sfx_volume": "Effektlautstärke",
+			"fullscreen": "Vollbild",
+			"vsync": "VSync"
+		},
+		"game_over": {
+			"title": "Durchlauf Beendet",
+			"victory": "Sieg!",
+			"defeat": "Niederlage",
+			"score": "Punkte",
+			"time": "Zeit",
+			"level": "Stufe",
+			"enemies_killed": "Getötete Feinde",
+			"coins_collected": "Gesammelte Münzen",
+			"continue": "Fortsetzen",
+			"retry": "Erneut Versuchen",
+			"main_menu": "Hauptmenü"
+		},
+		"hud": {
+			"hp": "LP",
+			"xp": "EP",
+			"lvl": "STF",
+			"time": "Zeit",
+			"weapons": "Waffen",
+			"streak": "Serie",
+			"meta": "Meta",
+			"coins": "Münzen"
+		},
+		"level_up": {
+			"title": "AUFGESTIEGEN!",
+			"subtitle": "Wähle eine Verbesserung",
+			"select": "Auswählen",
+			"reroll": "Neu Würfeln",
+			"banish": "Verbannen",
+			"skip": "Überspringen",
+			"new_weapon": "Neue Waffe",
+			"upgrade_weapon": "Verbessern",
+			"fusion": "Fusion",
+			"upgrade": "Verbesserung"
+		},
+		"chest": {
+			"title": "Schatztruhe",
+			"buy": "Kaufen",
+			"close": "Schließen",
+			"tier": "Stufe {0}"
+		}
+	},
+	"gameplay": {
+		"weapons": {
+			"ice_wand": "Eisstab",
+			"fire_wand": "Feuerstab",
+			"lightning_staff": "Blitzstab",
+			"nature_staff": "Naturstab",
+			"shadow_dagger": "Schattendolch",
+			"arcane_orb": "Arkane Kugel",
+			"frost_nova": "Frostnova",
+			"meteor_staff": "Meteorstab",
+			"poison_blade": "Giftklinge",
+			"holy_light": "Heiliges Licht"
+		},
+		"passives": {
+			"damage_boost": "Magischer Schaden +",
+			"damage_boost_desc": "Erhöht den Schaden magischer Projektile um 10%",
+			"speed_boost": "Geschwindigkeit +",
+			"speed_boost_desc": "Erhöht die Bewegungsgeschwindigkeit um 10%",
+			"health_boost": "Maximale Gesundheit +",
+			"health_boost_desc": "Erhöht die maximale Gesundheit um 20",
+			"cooldown_reduction": "Schnelle Erholung",
+			"cooldown_reduction_desc": "Reduziert die Abklingzeit der Waffen um 5%",
+			"crit_chance": "Adlerauge",
+			"crit_chance_desc": "Erhöht die kritische Trefferchance um 5%",
+			"crit_damage": "Kritischer Schlag",
+			"crit_damage_desc": "Erhöht den kritischen Schaden um 20%",
+			"pickup_range": "Magnetisches Vakuum",
+			"pickup_range_desc": "Münzen werden aus größerer Entfernung angezogen (+100 Pixel)",
+			"streak_bonus": "Serienmeister",
+			"streak_bonus_desc": "Münzserienbonus ist verdoppelt",
+			"coin_value": "Gier",
+			"coin_value_desc": "Münzen sind 20% mehr wert",
+			"xp_boost": "Schneller Lerner",
+			"xp_boost_desc": "Erhalte 15% mehr Erfahrung",
+			"armor": "Dicke Haut",
+			"armor_desc": "Reduziert erlittenen Schaden um 5%",
+			"regen": "Regeneration",
+			"regen_desc": "Regeneriert 1 LP alle 3 Sekunden",
+			"dodge": "Ausweichen",
+			"dodge_desc": "5% Chance, Angriffen auszuweichen",
+			"luck": "Glücksamulett",
+			"luck_desc": "Bessere Belohnungen und seltene Gegenstände"
+		},
+		"enemies": {
+			"skeleton_apprentice": "Skelett-Lehrling",
+			"ethereal_bat": "Ätherische Fledermaus",
+			"shadow_goblin": "Schatten-Goblin",
+			"arcane_slime": "Arkaner Schleim",
+			"venomous_spider": "Giftspinne"
+		},
+		"biomes": {
+			"grassland": "Grasland",
+			"desert": "Wüste",
+			"lava": "Vulkanland",
+			"death": "Todesreich",
+			"arcane_wastes": "Arkane Ödnis",
+			"ice": "Eisgipfel"
+		},
+		"zones": {
+			"safe": "Sichere Zone",
+			"medium": "Mittlere Zone",
+			"danger": "Gefahrenzone",
+			"death": "Todeszone"
+		}
+	},
+	"messages": {
+		"game_saved": "Spiel erfolgreich gespeichert",
+		"game_loaded": "Spiel erfolgreich geladen",
+		"weapon_equipped": "Ausgerüstet: {0}",
+		"weapon_upgraded": "Verbessert: {0} auf Stf.{1}",
+		"level_up": "Aufgestiegen! Jetzt Stf.{0}",
+		"coin_collected": "+{0}",
+		"xp_gained": "+{0} EP",
+		"enemy_killed": "Feind besiegt!",
+		"boss_spawned": "Boss nähert sich!",
+		"wave_complete": "Welle Abgeschlossen!",
+		"fusion_available": "Fusion verfügbar!"
+	},
+	"rarity": {
+		"common": "Gewöhnlich",
+		"uncommon": "Ungewöhnlich",
+		"rare": "Selten",
+		"epic": "Episch",
+		"legendary": "Legendär"
+	},
+	"stats": {
+		"damage": "Schaden",
+		"speed": "Geschwindigkeit",
+		"health": "Gesundheit",
+		"cooldown": "Abklingzeit",
+		"range": "Reichweite",
+		"luck": "Glück",
+		"armor": "Rüstung",
+		"crit_chance": "Kritische Chance",
+		"crit_damage": "Kritischer Schaden"
+	}
+}

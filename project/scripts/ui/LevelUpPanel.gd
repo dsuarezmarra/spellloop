@@ -53,9 +53,15 @@ const RARITY_COLORS = {
 
 var options: Array = []
 var option_buttons: Array = []
-var reroll_count: int = 2
-var banish_count: int = 2
-var skip_count: int = 1
+
+# Balance de Reroll y Banish:
+# - El jugador inicia con un número FIJO de cada uno para TODA la partida
+# - NO se regeneran al subir de nivel
+# - Reroll: 3 usos totales (permite re-randomizar opciones)
+# - Banish: 2 usos totales (elimina una opción permanentemente del pool)
+# - Skip: ILIMITADO (siempre puede cerrar sin elegir nada)
+var reroll_count: int = 3  # Fijo para toda la partida
+var banish_count: int = 2  # Fijo para toda la partida
 var locked: bool = false
 
 # Referencias
@@ -129,16 +135,16 @@ func _create_ui() -> void:
 	inner_vbox.add_theme_constant_override("separation", 15)
 	margin.add_child(inner_vbox)
 
-	# Título
+	# Título (se actualiza con localización en show_panel)
 	title_label = Label.new()
-	title_label.text = "⬆️ ¡LEVEL UP! ⬆️"
+	title_label.name = "TitleLabel"
 	title_label.add_theme_font_size_override("font_size", 32)
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	inner_vbox.add_child(title_label)
 
 	# Subtítulo
 	var subtitle = Label.new()
-	subtitle.text = "Elige una mejora"
+	subtitle.name = "SubtitleLabel"
 	subtitle.add_theme_font_size_override("font_size", 18)
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.modulate = Color(0.7, 0.7, 0.7)
@@ -168,22 +174,19 @@ func _create_ui() -> void:
 
 	# Botón Reroll
 	reroll_button = Button.new()
-	reroll_button.text = "🎲 Reroll (%d)" % reroll_count
-	reroll_button.custom_minimum_size = Vector2(120, 40)
+	reroll_button.custom_minimum_size = Vector2(130, 40)
 	reroll_button.pressed.connect(_on_reroll_pressed)
 	controls_container.add_child(reroll_button)
 
 	# Botón Banish (eliminar opción)
 	banish_button = Button.new()
-	banish_button.text = "🚫 Banish (%d)" % banish_count
-	banish_button.custom_minimum_size = Vector2(120, 40)
+	banish_button.custom_minimum_size = Vector2(130, 40)
 	banish_button.pressed.connect(_on_banish_pressed)
 	controls_container.add_child(banish_button)
 
-	# Botón Skip
+	# Botón Skip (siempre disponible, sin límite)
 	skip_button = Button.new()
-	skip_button.text = "⏭️ Skip (%d)" % skip_count
-	skip_button.custom_minimum_size = Vector2(120, 40)
+	skip_button.custom_minimum_size = Vector2(130, 40)
 	skip_button.pressed.connect(_on_skip_pressed)
 	controls_container.add_child(skip_button)
 
@@ -263,10 +266,9 @@ func _create_option_panel(index: int) -> Control:
 	desc_label.custom_minimum_size.y = 60
 	inner_vbox.add_child(desc_label)
 
-	# Botón de selección
+	# Botón de selección (texto se actualiza con localización)
 	var select_btn = Button.new()
 	select_btn.name = "SelectButton"
-	select_btn.text = "Seleccionar"
 	select_btn.pressed.connect(_make_option_callback(index))
 	inner_vbox.add_child(select_btn)
 
@@ -561,17 +563,8 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 	var desc_label = panel.find_child("DescLabel", true, false) as Label
 	var select_btn = panel.find_child("SelectButton", true, false) as Button
 
-	# Tipo
-	var type_text = ""
-	match option.get("type", OPTION_TYPES.PLAYER_UPGRADE):
-		OPTION_TYPES.NEW_WEAPON:
-			type_text = "🆕 Nueva Arma"
-		OPTION_TYPES.LEVEL_UP_WEAPON:
-			type_text = "⬆️ Subir Nivel"
-		OPTION_TYPES.FUSION:
-			type_text = "🔥 Fusión"
-		OPTION_TYPES.PLAYER_UPGRADE:
-			type_text = "✨ Mejora"
+	# Tipo (usando localización)
+	var type_text = _get_option_type_text(option.get("type", OPTION_TYPES.PLAYER_UPGRADE))
 
 	if type_label:
 		type_label.text = type_text
@@ -618,18 +611,24 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 		select_btn.disabled = false
 
 func _update_control_buttons() -> void:
-	"""Actualizar estados de los botones de control"""
+	"""Actualizar estados de los botones de control con localización"""
+	# Obtener textos localizados
+	var reroll_text = _get_localized("ui.level_up.reroll", "Reroll")
+	var banish_text = _get_localized("ui.level_up.banish", "Banish")
+	var skip_text = _get_localized("ui.level_up.skip", "Skip")
+	
 	if reroll_button:
-		reroll_button.text = "🎲 Reroll (%d)" % reroll_count
+		reroll_button.text = "🎲 %s (%d)" % [reroll_text, reroll_count]
 		reroll_button.disabled = reroll_count <= 0
 
 	if banish_button:
-		banish_button.text = "🚫 Banish (%d)" % banish_count
+		banish_button.text = "🚫 %s (%d)" % [banish_text, banish_count]
 		banish_button.disabled = banish_count <= 0
 
+	# Skip siempre habilitado (sin límite)
 	if skip_button:
-		skip_button.text = "⏭️ Skip (%d)" % skip_count
-		skip_button.disabled = skip_count <= 0
+		skip_button.text = "⏭️ %s" % skip_text
+		skip_button.disabled = false
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CALLBACKS
@@ -726,14 +725,13 @@ func _on_banish_pressed() -> void:
 		print("[LevelUpPanel] Banish usado: %s" % banished.name)
 
 func _on_skip_pressed() -> void:
-	"""Manejar skip"""
-	if locked or skip_count <= 0:
+	"""Manejar skip (siempre disponible, sin límite)"""
+	if locked:
 		return
 
-	skip_count -= 1
 	skip_used.emit()
 	_close_panel()
-	print("[LevelUpPanel] Skip usado (restantes: %d)" % skip_count)
+	print("[LevelUpPanel] Skip usado")
 
 func _close_panel() -> void:
 	"""Cerrar el panel"""
@@ -750,6 +748,7 @@ func show_panel() -> void:
 	visible = true
 	get_tree().paused = true
 	locked = false
+	_update_localized_texts()  # Actualizar textos con idioma actual
 	generate_options()
 
 func setup_options(opts: Array) -> void:
@@ -765,6 +764,58 @@ func set_banish_count(count: int) -> void:
 	banish_count = count
 	_update_control_buttons()
 
-func set_skip_count(count: int) -> void:
-	skip_count = count
+# Skip ya no tiene límite - función removida
+# func set_skip_count(count: int) -> void: ...
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LOCALIZACIÓN
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _get_localized(key: String, fallback: String) -> String:
+	"""Obtener texto localizado con fallback"""
+	if Engine.has_singleton("Localization"):
+		return Engine.get_singleton("Localization").tr(key)
+	
+	# Intentar acceder al autoload
+	var loc = get_node_or_null("/root/Localization")
+	if loc and loc.has_method("tr"):
+		var result = loc.tr(key)
+		if result != key:  # Si no es la key misma, encontró traducción
+			return result
+	
+	return fallback
+
+func _update_localized_texts() -> void:
+	"""Actualizar todos los textos con localización"""
+	# Título
+	if title_label:
+		title_label.text = "⬆️ %s ⬆️" % _get_localized("ui.level_up.title", "LEVEL UP!")
+	
+	# Subtítulo
+	var subtitle = main_container.find_child("SubtitleLabel", true, false) as Label
+	if subtitle:
+		subtitle.text = _get_localized("ui.level_up.subtitle", "Choose an upgrade")
+	
+	# Botones de opciones
+	var select_text = _get_localized("ui.level_up.select", "Select")
+	for panel in option_buttons:
+		var select_btn = panel.find_child("SelectButton", true, false) as Button
+		if select_btn:
+			select_btn.text = select_text
+	
+	# Botones de control
 	_update_control_buttons()
+
+func _get_option_type_text(option_type: String) -> String:
+	"""Obtener texto localizado para tipo de opción"""
+	match option_type:
+		OPTION_TYPES.NEW_WEAPON:
+			return "🆕 " + _get_localized("ui.level_up.new_weapon", "New Weapon")
+		OPTION_TYPES.LEVEL_UP_WEAPON:
+			return "⬆️ " + _get_localized("ui.level_up.upgrade_weapon", "Upgrade")
+		OPTION_TYPES.FUSION:
+			return "🔥 " + _get_localized("ui.level_up.fusion", "Fusion")
+		OPTION_TYPES.PLAYER_UPGRADE:
+			return "✨ " + _get_localized("ui.level_up.upgrade", "Upgrade")
+		_:
+			return "✨ " + _get_localized("ui.level_up.upgrade", "Upgrade")
