@@ -291,6 +291,12 @@ func _process(delta: float) -> void:
 	# Obtener rango de atracción dinámicamente del player
 	var attraction_range = _get_player_pickup_range()
 
+	# Recolección automática por proximidad (no depender solo de body_entered)
+	const COLLECT_DISTANCE: float = 25.0
+	if distance <= COLLECT_DISTANCE:
+		_collect(player_ref)
+		return
+
 	# Atracción
 	if distance <= attraction_range:
 		is_being_attracted = true
