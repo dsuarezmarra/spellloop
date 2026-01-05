@@ -4,7 +4,7 @@
 # Muestra:
 # - Stats del jugador
 # - Armas equipadas con sus stats
-# - Mejoras recolectadas
+# - Objetos/items pasivos recolectados
 
 extends Control
 class_name PauseMenu
@@ -21,7 +21,7 @@ var experience_manager_ref: Node = null
 
 # Estado
 var game_time: float = 0.0
-var current_tab: int = 0  # 0=Stats, 1=Armas, 2=Mejoras
+var current_tab: int = 0  # 0=Stats, 1=Armas, 2=Objetos
 var _options_open: bool = false  # Bloquear input cuando opciones esta abierto
 
 # Sistema de navegacion mejorado
@@ -111,7 +111,7 @@ func _create_ui() -> void:
 	tabs_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(tabs_container)
 
-	var tab_names = ["📊 Stats", "⚔️ Armas", "✨ Mejoras"]
+	var tab_names = ["📊 Stats", "⚔️ Armas", "🎒 Objetos"]
 	for i in range(tab_names.size()):
 		var btn = Button.new()
 		btn.text = tab_names[i]
@@ -278,25 +278,6 @@ func _is_attack_manager(node: Node) -> bool:
 	if node.has_method("get_equipped_weapons"):
 		return true
 	return false
-	"""Buscar un nodo por nombre de clase recursivamente"""
-	# Solo buscar por nombre exacto del nodo
-	if node.name == class_name_str:
-		return node
-
-	# Verificar si es una instancia del script correcto (nombre de archivo debe coincidir)
-	var script = node.get_script()
-	if script:
-		var script_path = script.resource_path if script.resource_path else ""
-		# El archivo debe llamarse exactamente ClassNombre.gd
-		if script_path.ends_with("/" + class_name_str + ".gd"):
-			return node
-
-	for child in node.get_children():
-		var found = _find_node_by_class(child, class_name_str)
-		if found:
-			return found
-
-	return null
 
 func show_pause_menu(current_time: float = 0.0) -> void:
 	game_time = current_time
@@ -1096,7 +1077,7 @@ func _get_weapon_special_effect(weapon) -> String:
 	return ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB: MEJORAS
+# TAB: OBJETOS (Items pasivos recolectados)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _show_upgrades_tab() -> void:
@@ -1112,7 +1093,7 @@ func _show_upgrades_tab() -> void:
 
 	if not player_stats:
 		var no_data = Label.new()
-		no_data.text = "No hay mejoras"
+		no_data.text = "No hay objetos"
 		grid.add_child(no_data)
 		return
 
@@ -1120,7 +1101,7 @@ func _show_upgrades_tab() -> void:
 
 	if upgrades.is_empty():
 		var no_upgrades = Label.new()
-		no_upgrades.text = "Sube de nivel para conseguir mejoras"
+		no_upgrades.text = "Sube de nivel para obtener objetos"
 		no_upgrades.add_theme_font_size_override("font_size", 16)
 		no_upgrades.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
 		grid.add_child(no_upgrades)

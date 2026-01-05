@@ -16,6 +16,7 @@ class_name Game
 
 # Referencias a sistemas
 var player: CharacterBody2D = null
+var player_stats: Node = null  # Sistema de stats del jugador
 var arena_manager: Node = null
 var enemy_manager: Node = null
 var weapon_manager: Node = null
@@ -60,6 +61,7 @@ func _setup_game() -> void:
 	_create_arena_manager()
 
 	# Crear sistemas
+	_create_player_stats()  # IMPORTANTE: Crear antes que otros sistemas
 	_create_enemy_manager()
 	_create_wave_manager()
 	_create_weapon_manager()
@@ -106,6 +108,23 @@ func _create_arena_manager() -> void:
 		print("🏟️ [Game] ArenaManager creado")
 	else:
 		push_error("[Game] No se pudo cargar ArenaManager.gd")
+
+func _create_player_stats() -> void:
+	var ps_script = load("res://scripts/core/PlayerStats.gd")
+	if ps_script:
+		player_stats = ps_script.new()
+		player_stats.name = "PlayerStats"
+		add_child(player_stats)
+		
+		# Conectar señales de stats
+		if player_stats.has_signal("stat_changed"):
+			player_stats.stat_changed.connect(_on_stat_changed)
+		if player_stats.has_signal("level_changed"):
+			player_stats.level_changed.connect(_on_player_level_changed)
+		
+		print("📊 [Game] PlayerStats creado")
+	else:
+		push_error("[Game] No se pudo cargar PlayerStats.gd")
 
 func _create_enemy_manager() -> void:
 	var em_script = load("res://scripts/core/EnemyManager.gd")
@@ -213,6 +232,19 @@ func _physics_process(_delta: float) -> void:
 		camera.global_position = player.global_position
 
 func _initialize_systems() -> void:
+	# Inicializar PlayerStats primero (otros sistemas pueden depender de el)
+	if player_stats:
+		# Obtener AttackManager del player si existe
+		var attack_mgr = null
+		if player and player.has_method("get_attack_manager"):
+			attack_mgr = player.get_attack_manager()
+		elif player and "wizard_player" in player and player.wizard_player:
+			attack_mgr = player.wizard_player.get("attack_manager")
+		
+		if player_stats.has_method("initialize"):
+			player_stats.initialize(attack_mgr)
+		print("📊 [Game] PlayerStats inicializado")
+
 	# Inicializar con referencias
 	if enemy_manager and player:
 		enemy_manager.initialize(player)
@@ -356,12 +388,11 @@ func _show_level_up_panel(level: int) -> void:
 		attack_mgr = player.get_attack_manager()
 	elif player and "attack_manager" in player:
 		attack_mgr = player.attack_manager
+	elif player and "wizard_player" in player and player.wizard_player:
+		attack_mgr = player.wizard_player.get("attack_manager")
 
-	var stats = null
-	if player and player.has_method("get_stats"):
-		stats = player.get_stats()
-	elif player and "stats" in player:
-		stats = player.stats
+	# Usar el PlayerStats de Game (no del player)
+	var stats = player_stats
 
 	if panel.has_method("initialize"):
 		panel.initialize(attack_mgr, stats)
@@ -391,10 +422,25 @@ func _show_level_up_panel(level: int) -> void:
 func _on_level_up_option_selected(option: Dictionary) -> void:
 	"""Callback cuando se selecciona una mejora en el level up"""
 	print("🆙 [Game] Mejora seleccionada: %s" % option.get("name", "???"))
+	
+	# Aplicar la mejora a PlayerStats si es un objeto pasivo (no arma)
+	if player_stats and option.get("type", "") != "weapon":
+		if player_stats.has_method("apply_upgrade"):
+			player_stats.apply_upgrade(option)
+			print("📊 [Game] Mejora aplicada a PlayerStats")
 
 func _on_level_up_panel_closed() -> void:
 	"""Callback cuando se cierra el panel de level up"""
 	print("🆙 [Game] Panel de level up cerrado")
+
+func _on_stat_changed(stat_name: String, _old_value: float, new_value: float) -> void:
+	"""Callback cuando cambia un stat del jugador"""
+	print("📊 [Game] Stat cambiado: %s = %.2f" % [stat_name, new_value])
+
+func _on_player_level_changed(new_level: int) -> void:
+	"""Callback cuando sube el nivel del jugador (desde PlayerStats)"""
+	run_stats["level"] = new_level
+	print("📊 [Game] Nivel del jugador: %d" % new_level)
 
 func _on_reroll_used() -> void:
 	"""Callback cuando se usa un reroll"""
