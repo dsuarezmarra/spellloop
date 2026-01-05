@@ -31,6 +31,7 @@ var content_selection: int = 0  # Indice del elemento seleccionado en el conteni
 var action_selection: int = 0   # 0=Continuar, 1=Opciones, 2=Menu
 var content_items: Array = []   # Array de elementos navegables en el contenido
 var action_buttons: Array = []  # Array de botones de accion
+var content_scroll: ScrollContainer = null  # Referencia al scroll del contenido actual
 
 # UI Nodes creados dinamicamente
 var main_panel: PanelContainer = null
@@ -396,9 +397,11 @@ const CATEGORY_ICONS = {
 
 func _show_stats_tab() -> void:
 	var scroll = ScrollContainer.new()
+	scroll.name = "StatsScroll"
 	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	content_container.add_child(scroll)
+	content_scroll = scroll  # Guardar referencia para scroll con WASD
 
 	var main_vbox = VBoxContainer.new()
 	main_vbox.add_theme_constant_override("separation", 12)
@@ -1082,8 +1085,10 @@ func _get_weapon_special_effect(weapon) -> String:
 
 func _show_upgrades_tab() -> void:
 	var scroll = ScrollContainer.new()
+	scroll.name = "UpgradesScroll"
 	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
 	content_container.add_child(scroll)
+	content_scroll = scroll  # Guardar referencia para scroll con WASD
 
 	var grid = GridContainer.new()
 	grid.columns = 3
@@ -1141,18 +1146,35 @@ func _create_upgrade_panel(upgrade: Dictionary) -> Control:
 	header.add_theme_constant_override("separation", 8)
 	vbox.add_child(header)
 
-	# Icono: cargar textura si es ruta, o mostrar emoji
+	# Icono: cargar textura si existe, o usar emoji de categoria/fallback
 	var icon_path = str(upgrade.get("icon", "✨"))
+	var texture_loaded = false
 	if icon_path.begins_with("res://") and ResourceLoader.exists(icon_path):
-		var tex_rect = TextureRect.new()
-		tex_rect.texture = load(icon_path)
-		tex_rect.custom_minimum_size = Vector2(32, 32)
-		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		header.add_child(tex_rect)
-	else:
+		var tex = load(icon_path)
+		if tex:
+			var tex_rect = TextureRect.new()
+			tex_rect.texture = tex
+			tex_rect.custom_minimum_size = Vector2(32, 32)
+			tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			header.add_child(tex_rect)
+			texture_loaded = true
+	
+	if not texture_loaded:
+		# Fallback a emoji segun categoria o un emoji generico
 		var icon = Label.new()
-		icon.text = icon_path
+		var emoji = "✨"
+		var category = upgrade.get("category", "")
+		match category:
+			"combat": emoji = "⚔️"
+			"defense": emoji = "🛡️"
+			"utility": emoji = "🔧"
+			"special": emoji = "⭐"
+			_:
+				# Si no es ruta, usar el icono directamente (emoji)
+				if not icon_path.begins_with("res://"):
+					emoji = icon_path
+		icon.text = emoji
 		icon.add_theme_font_size_override("font_size", 24)
 		header.add_child(icon)
 
@@ -1216,15 +1238,39 @@ func _input(event: InputEvent) -> void:
 		_safe_handle_input()
 
 func _navigate_vertical(direction: int) -> void:
-	"""Navegar arriba/abajo entre filas (tabs, contenido, acciones)"""
+	"""Navegar arriba/abajo entre filas (tabs, contenido, acciones) o hacer scroll"""
 	var old_row = current_nav_row
 
-	if direction < 0:  # Arriba (W)
+	# Si estamos en CONTENT y hay scroll, hacer scroll con W/S
+	if current_nav_row == NavRow.CONTENT and content_scroll:
+		var scroll_amount = 60  # Pixeles a scrollear por pulsacion
+		var current_v = content_scroll.scroll_vertical
+		var max_v = content_scroll.get_v_scroll_bar().max_value - content_scroll.size.y
+
+		if direction < 0:  # W - Scroll arriba
+			if current_v > 0:
+				content_scroll.scroll_vertical = maxi(0, current_v - scroll_amount)
+				return
+			else:
+				# Ya estamos arriba, ir a tabs
+				current_nav_row = NavRow.TABS
+		else:  # S - Scroll abajo
+			if current_v < max_v:
+				content_scroll.scroll_vertical = mini(int(max_v), current_v + scroll_amount)
+				return
+			else:
+				# Ya estamos abajo, ir a actions
+				current_nav_row = NavRow.ACTIONS
+	elif direction < 0:  # Arriba (W)
 		match current_nav_row:
 			NavRow.ACTIONS:
-				if content_items.size() > 0:
+				if content_scroll or content_items.size() > 0:
 					current_nav_row = NavRow.CONTENT
-					content_selection = mini(content_selection, content_items.size() - 1)
+					content_selection = mini(content_selection, maxi(0, content_items.size() - 1))
+					# Ir al final del scroll
+					if content_scroll:
+						await get_tree().process_frame
+						content_scroll.scroll_vertical = int(content_scroll.get_v_scroll_bar().max_value)
 				else:
 					current_nav_row = NavRow.TABS
 			NavRow.CONTENT:
@@ -1235,9 +1281,12 @@ func _navigate_vertical(direction: int) -> void:
 	else:  # Abajo (S)
 		match current_nav_row:
 			NavRow.TABS:
-				if content_items.size() > 0:
+				if content_scroll or content_items.size() > 0:
 					current_nav_row = NavRow.CONTENT
-					content_selection = mini(content_selection, content_items.size() - 1)
+					content_selection = mini(content_selection, maxi(0, content_items.size() - 1))
+					# Ir al inicio del scroll
+					if content_scroll:
+						content_scroll.scroll_vertical = 0
 				else:
 					current_nav_row = NavRow.ACTIONS
 			NavRow.CONTENT:

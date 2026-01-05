@@ -229,6 +229,10 @@ func initialize(data: Dictionary, player):
 	damage = int(data.get("damage", damage))
 	exp_value = int(data.get("exp_value", exp_value))
 	player_ref = player
+	
+	# Pasar player al attack_system
+	if attack_system:
+		attack_system.player = player_ref
 
 	# Intentar usar AnimatedEnemySprite si no está ya cargado
 	if not animated_sprite:
@@ -320,6 +324,9 @@ func initialize_from_database(data: Dictionary, player) -> void:
 			"special_abilities": special_abilities,
 			"modifiers": modifiers
 		})
+		
+		# Pasar referencia al player para ataques
+		attack_system.player = player_ref
 
 		# Para bosses, pasar también los ability_cooldowns
 		if is_boss and data.has("ability_cooldowns"):
@@ -1103,6 +1110,7 @@ func _attempt_attack() -> void:
 func take_damage(amount: int) -> void:
 	"""Recibir daño del enemigo"""
 	var final_damage = amount
+	var is_blocked = false
 
 	# BLOCKER: Chance de bloquear
 	if archetype == "blocker":
@@ -1110,6 +1118,7 @@ func take_damage(amount: int) -> void:
 		if randf() < block_chance:
 			var block_reduction = modifiers.get("block_reduction", 0.7)
 			final_damage = int(amount * (1.0 - block_reduction))
+			is_blocked = true
 			print("[EnemyBase] 🛡️ %s bloquea! Daño reducido: %d → %d" % [enemy_id, amount, final_damage])
 			# Visual de bloqueo
 			_flash_block()
@@ -1123,6 +1132,11 @@ func take_damage(amount: int) -> void:
 	if _is_shadow_marked:
 		final_damage = int(final_damage * (1.0 + _shadow_mark_bonus))
 		print("[EnemyBase] 🎯 Shadow Mark! Daño aumentado: %d → %d" % [amount, final_damage])
+
+	# Mostrar texto flotante de daño
+	if final_damage > 0:
+		var is_crit = final_damage >= amount * 1.5  # Detectar crítico
+		FloatingText.spawn_damage(global_position + Vector2(0, -20), final_damage, is_crit)
 
 	# Aplicar daño a través del HealthComponent
 	if health_component:

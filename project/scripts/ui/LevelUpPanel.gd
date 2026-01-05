@@ -720,16 +720,31 @@ func _get_player_upgrade_options(luck: float) -> Array:
 				var effects_array = p.get("effects", [])
 				if effects_array.is_empty() and p.has("effect"):
 					var eff = p.effect
-					var operation = "add"
-					if eff.get("type", "") == "multiply_stat":
-						operation = "multiply"
-					elif eff.get("type", "") == "set_stat":
-						operation = "set"
-					effects_array = [{
-						"stat": eff.get("stat", ""),
-						"value": eff.get("value", 0),
-						"operation": operation
-					}]
+					# Manejar efectos "multi" que contienen array de efectos
+					if eff.get("type", "") == "multi" and eff.has("effects"):
+						for sub_eff in eff.effects:
+							var sub_op = "add"
+							if sub_eff.get("type", "") == "multiply_stat":
+								sub_op = "multiply"
+							elif sub_eff.get("type", "") == "set_stat":
+								sub_op = "set"
+							effects_array.append({
+								"stat": sub_eff.get("stat", ""),
+								"value": sub_eff.get("value", 0),
+								"operation": sub_op
+							})
+					else:
+						# Efecto simple
+						var operation = "add"
+						if eff.get("type", "") == "multiply_stat":
+							operation = "multiply"
+						elif eff.get("type", "") == "set_stat":
+							operation = "set"
+						effects_array = [{
+							"stat": eff.get("stat", ""),
+							"value": eff.get("value", 0),
+							"operation": operation
+						}]
 				upgrade_options.append({
 					"type": OPTION_TYPES.PLAYER_UPGRADE,
 					"upgrade_id": p.get("id", ""),
@@ -737,6 +752,7 @@ func _get_player_upgrade_options(luck: float) -> Array:
 					"description": p.get("description", ""),
 					"icon": p.get("icon", "✨"),
 					"rarity": p.get("rarity", "common"),
+					"category": p.get("category", ""),
 					"effects": effects_array,
 					"priority": 0.8
 				})
