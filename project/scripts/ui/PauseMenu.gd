@@ -22,9 +22,17 @@ var experience_manager_ref: Node = null
 # Estado
 var game_time: float = 0.0
 var current_tab: int = 0  # 0=Stats, 1=Armas, 2=Mejoras
-var _options_open: bool = false  # Bloquear input cuando opciones está abierto
+var _options_open: bool = false  # Bloquear input cuando opciones esta abierto
 
-# UI Nodes creados dinámicamente
+# Sistema de navegacion mejorado
+enum NavRow { TABS, CONTENT, ACTIONS }
+var current_nav_row: NavRow = NavRow.TABS
+var content_selection: int = 0  # Indice del elemento seleccionado en el contenido
+var action_selection: int = 0   # 0=Continuar, 1=Opciones, 2=Menu
+var content_items: Array = []   # Array de elementos navegables en el contenido
+var action_buttons: Array = []  # Array de botones de accion
+
+# UI Nodes creados dinamicamente
 var main_panel: PanelContainer = null
 var tabs_container: HBoxContainer = null
 var content_container: Control = null
@@ -37,6 +45,7 @@ const SELECTED_TAB = Color(1.0, 0.85, 0.3)
 const UNSELECTED_TAB = Color(0.5, 0.5, 0.6)
 const STAT_COLOR = Color(0.8, 0.8, 0.9)
 const VALUE_COLOR = Color(0.3, 0.9, 0.4)
+const HIGHLIGHT_COLOR = Color(0.3, 0.5, 0.8, 0.3)
 const RARITY_COLORS = {
 	"common": Color(0.7, 0.7, 0.7),
 	"uncommon": Color(0.3, 0.9, 0.3),
@@ -109,7 +118,7 @@ func _create_ui() -> void:
 		btn.custom_minimum_size = Vector2(150, 40)
 		btn.add_theme_font_size_override("font_size", 16)
 		btn.pressed.connect(_on_tab_pressed.bind(i))
-		btn.focus_mode = Control.FOCUS_ALL
+		btn.focus_mode = Control.FOCUS_NONE  # Desactivar foco nativo, usamos manual
 		tabs_container.add_child(btn)
 		tab_buttons.append(btn)
 
@@ -122,43 +131,50 @@ func _create_ui() -> void:
 	content_container.custom_minimum_size = Vector2(860, 380)
 	vbox.add_child(content_container)
 
-	# === BOTONES DE ACCIÓN ===
+	# === BOTONES DE ACCION ===
 	var sep2 = HSeparator.new()
 	vbox.add_child(sep2)
 
 	var buttons_row = HBoxContainer.new()
+	buttons_row.name = "ActionsRow"
 	buttons_row.add_theme_constant_override("separation", 20)
 	buttons_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(buttons_row)
 
 	var resume_btn = Button.new()
 	resume_btn.name = "ResumeButton"
-	resume_btn.text = "▶️  Continuar"
+	resume_btn.text = ">  Continuar"
 	resume_btn.custom_minimum_size = Vector2(180, 45)
 	resume_btn.add_theme_font_size_override("font_size", 18)
 	resume_btn.pressed.connect(_on_resume_pressed)
-	resume_btn.focus_mode = Control.FOCUS_ALL
+	resume_btn.focus_mode = Control.FOCUS_NONE
 	buttons_row.add_child(resume_btn)
+	action_buttons.append(resume_btn)
 
 	var options_btn = Button.new()
-	options_btn.text = "⚙️  Opciones"
+	options_btn.name = "OptionsButton"
+	options_btn.text = "*  Opciones"
 	options_btn.custom_minimum_size = Vector2(180, 45)
 	options_btn.add_theme_font_size_override("font_size", 18)
 	options_btn.pressed.connect(_on_options_pressed)
-	options_btn.focus_mode = Control.FOCUS_ALL
+	options_btn.focus_mode = Control.FOCUS_NONE
 	buttons_row.add_child(options_btn)
+	action_buttons.append(options_btn)
 
 	var quit_btn = Button.new()
-	quit_btn.text = "🏠  Menú"
+	quit_btn.name = "QuitButton"
+	quit_btn.text = "#  Menu"
 	quit_btn.custom_minimum_size = Vector2(180, 45)
 	quit_btn.add_theme_font_size_override("font_size", 18)
 	quit_btn.pressed.connect(_on_quit_pressed)
-	quit_btn.focus_mode = Control.FOCUS_ALL
+	quit_btn.focus_mode = Control.FOCUS_NONE
 	buttons_row.add_child(quit_btn)
+	action_buttons.append(quit_btn)
 
 	# Help text
 	var help = Label.new()
-	help.text = "ESC para continuar  |  ← → Cambiar pestaña"
+	help.name = "HelpLabel"
+	help.text = "WASD: Navegar  |  ESPACIO: Seleccionar  |  ESC: Continuar"
 	help.add_theme_font_size_override("font_size", 12)
 	help.add_theme_color_override("font_color", Color(0.4, 0.4, 0.5))
 	help.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -986,15 +1002,15 @@ func _create_upgrade_panel(upgrade: Dictionary) -> Control:
 
 	return panel
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# INPUT
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
+# SISTEMA DE NAVEGACION CON WASD
+# ===============================================================================
 
 func _input(event: InputEvent) -> void:
 	if not visible:
 		return
 
-	# Si el menú de opciones está abierto, no procesar input del menú de pausa
+	# Si el menu de opciones esta abierto, no procesar input del menu de pausa
 	if _options_open:
 		return
 
@@ -1004,13 +1020,140 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 
-	# Navegación de tabs con flechas
-	if event.is_action_pressed("ui_left") or event.is_action_pressed("move_left"):
-		_change_tab(-1)
+	# Navegacion con WASD
+	if event.is_action_pressed("move_up"):
+		_navigate_vertical(-1)
 		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("ui_right") or event.is_action_pressed("move_right"):
-		_change_tab(1)
+	elif event.is_action_pressed("move_down"):
+		_navigate_vertical(1)
 		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("move_left"):
+		_navigate_horizontal(-1)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("move_right"):
+		_navigate_horizontal(1)
+		get_viewport().set_input_as_handled()
+
+	# Seleccionar con espacio o enter
+	if event.is_action_pressed("cast_spell") or event.is_action_pressed("ui_accept"):
+		_activate_current_selection()
+		get_viewport().set_input_as_handled()
+
+func _navigate_vertical(direction: int) -> void:
+	"""Navegar arriba/abajo entre filas (tabs, contenido, acciones)"""
+	var old_row = current_nav_row
+
+	if direction < 0:  # Arriba (W)
+		match current_nav_row:
+			NavRow.ACTIONS:
+				if content_items.size() > 0:
+					current_nav_row = NavRow.CONTENT
+					content_selection = mini(content_selection, content_items.size() - 1)
+				else:
+					current_nav_row = NavRow.TABS
+			NavRow.CONTENT:
+				current_nav_row = NavRow.TABS
+			NavRow.TABS:
+				# Ya estamos arriba, ir a acciones (wrap)
+				current_nav_row = NavRow.ACTIONS
+	else:  # Abajo (S)
+		match current_nav_row:
+			NavRow.TABS:
+				if content_items.size() > 0:
+					current_nav_row = NavRow.CONTENT
+					content_selection = mini(content_selection, content_items.size() - 1)
+				else:
+					current_nav_row = NavRow.ACTIONS
+			NavRow.CONTENT:
+				current_nav_row = NavRow.ACTIONS
+			NavRow.ACTIONS:
+				# Ya estamos abajo, ir a tabs (wrap)
+				current_nav_row = NavRow.TABS
+
+	if old_row != current_nav_row:
+		_update_navigation_visuals()
+
+func _navigate_horizontal(direction: int) -> void:
+	"""Navegar izquierda/derecha dentro de la fila actual"""
+	match current_nav_row:
+		NavRow.TABS:
+			current_tab = (current_tab + direction) % tab_buttons.size()
+			if current_tab < 0:
+				current_tab = tab_buttons.size() - 1
+			_update_tabs_visual()
+			_show_tab_content()
+		NavRow.CONTENT:
+			if content_items.size() > 0:
+				content_selection = (content_selection + direction) % content_items.size()
+				if content_selection < 0:
+					content_selection = content_items.size() - 1
+				_update_content_selection_visual()
+		NavRow.ACTIONS:
+			action_selection = (action_selection + direction) % action_buttons.size()
+			if action_selection < 0:
+				action_selection = action_buttons.size() - 1
+			_update_action_buttons_visual()
+
+func _activate_current_selection() -> void:
+	"""Activar el elemento seleccionado actualmente"""
+	match current_nav_row:
+		NavRow.TABS:
+			# Ya esta seleccionado, no hacer nada especial
+			pass
+		NavRow.CONTENT:
+			if content_items.size() > content_selection:
+				var item = content_items[content_selection]
+				if item.has("callback") and item.callback:
+					item.callback.call()
+		NavRow.ACTIONS:
+			match action_selection:
+				0: _on_resume_pressed()
+				1: _on_options_pressed()
+				2: _on_quit_pressed()
+
+func _update_navigation_visuals() -> void:
+	"""Actualizar todos los visuales de navegacion"""
+	_update_tabs_visual()
+	_update_content_selection_visual()
+	_update_action_buttons_visual()
+
+func _update_content_selection_visual() -> void:
+	"""Actualizar visual del contenido seleccionado"""
+	for i in range(content_items.size()):
+		var item = content_items[i]
+		if item.has("panel") and item.panel:
+			var panel = item.panel as PanelContainer
+			if panel:
+				var style = panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+				if i == content_selection and current_nav_row == NavRow.CONTENT:
+					style.border_color = SELECTED_TAB
+					style.set_border_width_all(3)
+				else:
+					style.border_color = Color(0.3, 0.3, 0.4)
+					style.set_border_width_all(1)
+				panel.add_theme_stylebox_override("panel", style)
+
+func _update_action_buttons_visual() -> void:
+	"""Actualizar visual de los botones de accion"""
+	for i in range(action_buttons.size()):
+		var btn = action_buttons[i] as Button
+		if btn:
+			if i == action_selection and current_nav_row == NavRow.ACTIONS:
+				btn.add_theme_color_override("font_color", SELECTED_TAB)
+				btn.add_theme_color_override("font_hover_color", SELECTED_TAB)
+				# Agregar indicador visual de seleccion
+				var style = StyleBoxFlat.new()
+				style.bg_color = Color(0.2, 0.3, 0.4)
+				style.border_color = SELECTED_TAB
+				style.set_border_width_all(2)
+				style.set_corner_radius_all(8)
+				btn.add_theme_stylebox_override("normal", style)
+				btn.add_theme_stylebox_override("hover", style)
+			else:
+				btn.add_theme_color_override("font_color", Color(0.8, 0.8, 0.9))
+				btn.add_theme_color_override("font_hover_color", Color.WHITE)
+				btn.remove_theme_stylebox_override("normal")
+				btn.remove_theme_stylebox_override("hover")
 
 func _change_tab(direction: int) -> void:
 	current_tab = (current_tab + direction) % tab_buttons.size()
@@ -1018,10 +1161,8 @@ func _change_tab(direction: int) -> void:
 		current_tab = tab_buttons.size() - 1
 	_update_tabs_visual()
 	_show_tab_content()
-	if tab_buttons.size() > current_tab:
-		tab_buttons[current_tab].grab_focus()
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ===============================================================================
 # CALLBACKS DE BOTONES
 # ═══════════════════════════════════════════════════════════════════════════════
 

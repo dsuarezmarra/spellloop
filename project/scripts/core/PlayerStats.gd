@@ -838,7 +838,16 @@ func apply_upgrade(upgrade_id: String) -> bool:
 	var upgrade = PLAYER_UPGRADES[upgrade_id]
 	add_stat(upgrade.stat, upgrade.amount)
 
-	print("[PlayerStats] ✨ Upgrade aplicado: %s (%s)" % [upgrade.name, upgrade.description])
+	# Registrar la mejora en el historial
+	add_upgrade({
+		"id": upgrade_id,
+		"name": upgrade.name,
+		"icon": upgrade.get("icon", ""),
+		"description": upgrade.description,
+		"effects": [{"stat": upgrade.stat, "value": upgrade.amount, "operation": "add"}]
+	})
+
+	print("[PlayerStats] Upgrade aplicado: %s (%s)" % [upgrade.name, upgrade.description])
 	return true
 
 # ═══════════════════════════════════════════════════════════════════════════════
