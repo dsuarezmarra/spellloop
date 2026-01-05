@@ -87,18 +87,30 @@ func initialize(attack_mgr: AttackManager, stats: PlayerStats) -> void:
 
 func _create_ui() -> void:
 	"""Crear la interfaz del panel"""
-	# Fondo oscuro
+	# Fondo oscuro que cubre toda la pantalla
 	var dark_bg = ColorRect.new()
-	dark_bg.color = Color(0, 0, 0, 0.7)
+	dark_bg.color = Color(0, 0, 0, 0.8)
 	dark_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(dark_bg)
 
-	# Container principal
+	# CenterContainer para centrar el panel
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(center)
+
+	# Container principal con estilo
 	main_container = PanelContainer.new()
-	main_container.set_anchors_preset(Control.PRESET_CENTER)
-	main_container.custom_minimum_size = Vector2(900, 500)
-	main_container.position = Vector2(-450, -250)  # Centrar
-	add_child(main_container)
+	main_container.custom_minimum_size = Vector2(850, 450)
+	
+	# Crear StyleBox para el panel
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.12, 0.12, 0.18, 0.98)
+	style.border_color = Color(0.4, 0.35, 0.6)
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(12)
+	style.set_content_margin_all(15)
+	main_container.add_theme_stylebox_override("panel", style)
+	center.add_child(main_container)
 
 	# Layout vertical
 	var vbox = VBoxContainer.new()
@@ -178,8 +190,17 @@ func _create_ui() -> void:
 func _create_option_panel(index: int) -> Control:
 	"""Crear un panel de opción individual"""
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(200, 280)
+	panel.custom_minimum_size = Vector2(190, 300)
 	panel.name = "Option_%d" % index
+	
+	# Estilo del panel de opción
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.15, 0.15, 0.22, 0.95)
+	style.border_color = Color(0.35, 0.35, 0.5)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(10)
+	panel.add_theme_stylebox_override("panel", style)
 
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 8)
@@ -187,30 +208,44 @@ func _create_option_panel(index: int) -> Control:
 
 	# Margen
 	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 10)
-	margin.add_theme_constant_override("margin_right", 10)
-	margin.add_theme_constant_override("margin_top", 10)
-	margin.add_theme_constant_override("margin_bottom", 10)
+	margin.add_theme_constant_override("margin_left", 8)
+	margin.add_theme_constant_override("margin_right", 8)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_bottom", 8)
 	vbox.add_child(margin)
 
 	var inner_vbox = VBoxContainer.new()
-	inner_vbox.add_theme_constant_override("separation", 5)
+	inner_vbox.add_theme_constant_override("separation", 6)
 	margin.add_child(inner_vbox)
 
 	# Tipo (pequeño)
 	var type_label = Label.new()
 	type_label.name = "TypeLabel"
-	type_label.add_theme_font_size_override("font_size", 12)
+	type_label.add_theme_font_size_override("font_size", 11)
 	type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	type_label.modulate = Color(0.6, 0.6, 0.6)
+	type_label.modulate = Color(0.7, 0.7, 0.8)
 	inner_vbox.add_child(type_label)
 
-	# Icono
+	# Container de icono (centrado)
+	var icon_container = CenterContainer.new()
+	icon_container.custom_minimum_size = Vector2(64, 64)
+	inner_vbox.add_child(icon_container)
+	
+	# Icono como TextureRect
+	var icon_texture = TextureRect.new()
+	icon_texture.name = "IconTexture"
+	icon_texture.custom_minimum_size = Vector2(64, 64)
+	icon_texture.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	icon_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_container.add_child(icon_texture)
+	
+	# Label de icono como fallback (para emojis)
 	var icon_label = Label.new()
 	icon_label.name = "IconLabel"
 	icon_label.add_theme_font_size_override("font_size", 48)
 	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	inner_vbox.add_child(icon_label)
+	icon_label.visible = false  # Oculto por defecto
+	icon_container.add_child(icon_label)
 
 	# Nombre
 	var name_label = Label.new()
@@ -520,6 +555,7 @@ func _update_options_ui() -> void:
 func _update_option_panel(panel: Control, option: Dictionary) -> void:
 	"""Actualizar un panel de opción con datos"""
 	var type_label = panel.find_child("TypeLabel", true, false) as Label
+	var icon_texture = panel.find_child("IconTexture", true, false) as TextureRect
 	var icon_label = panel.find_child("IconLabel", true, false) as Label
 	var name_label = panel.find_child("NameLabel", true, false) as Label
 	var desc_label = panel.find_child("DescLabel", true, false) as Label
@@ -527,7 +563,7 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 
 	# Tipo
 	var type_text = ""
-	match option.type:
+	match option.get("type", OPTION_TYPES.PLAYER_UPGRADE):
 		OPTION_TYPES.NEW_WEAPON:
 			type_text = "🆕 Nueva Arma"
 		OPTION_TYPES.LEVEL_UP_WEAPON:
@@ -540,9 +576,32 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 	if type_label:
 		type_label.text = type_text
 
-	# Icono
+	# Icono - intentar cargar imagen, fallback a emoji
+	var icon_value = option.get("icon", "✨")
+	var loaded_texture = false
+	
+	if icon_texture:
+		icon_texture.texture = null
+		icon_texture.visible = false
 	if icon_label:
-		icon_label.text = option.get("icon", "?")
+		icon_label.visible = false
+	
+	# Si el icono es una ruta de archivo, cargar textura
+	if icon_value is String and icon_value.begins_with("res://"):
+		var tex = load(icon_value)
+		if tex and icon_texture:
+			icon_texture.texture = tex
+			icon_texture.visible = true
+			loaded_texture = true
+	
+	# Si no se cargó textura, usar emoji
+	if not loaded_texture and icon_label:
+		# Si es una ruta que no se cargó, usar emoji por defecto
+		if icon_value is String and icon_value.begins_with("res://"):
+			icon_label.text = "✨"
+		else:
+			icon_label.text = str(icon_value)
+		icon_label.visible = true
 
 	# Nombre con color de rareza
 	if name_label:
