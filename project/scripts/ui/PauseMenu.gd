@@ -13,9 +13,11 @@ signal resume_pressed
 signal options_pressed
 signal quit_to_menu_pressed
 
-# Referencias externas
+# Referencias externas (se obtienen automáticamente)
 var player_stats: PlayerStats = null
 var attack_manager: AttackManager = null
+var player_ref: Node = null
+var experience_manager_ref: Node = null
 
 # Estado
 var game_time: float = 0.0
@@ -165,11 +167,51 @@ func initialize(stats: PlayerStats, attack_mgr: AttackManager) -> void:
 	player_stats = stats
 	attack_manager = attack_mgr
 
+func _find_references() -> void:
+	"""Busca referencias a sistemas del juego automáticamente"""
+	var tree = get_tree()
+	if not tree:
+		return
+
+	# Buscar PlayerStats en el árbol
+	if not player_stats:
+		player_stats = tree.root.get_node_or_null("Game/PlayerStats")
+		if not player_stats:
+			# Buscar en cualquier lugar
+			var nodes = tree.get_nodes_in_group("player_stats")
+			if nodes.size() > 0:
+				player_stats = nodes[0]
+
+	# Buscar AttackManager
+	if not attack_manager:
+		attack_manager = tree.root.get_node_or_null("Game/AttackManager")
+		if not attack_manager:
+			attack_manager = tree.root.get_node_or_null("AttackManager")
+
+	# Buscar Player para obtener stats directamente
+	if not player_ref:
+		var players = tree.get_nodes_in_group("player")
+		if players.size() > 0:
+			player_ref = players[0]
+			# Intentar obtener attack_manager del player
+			if not attack_manager and player_ref:
+				if "wizard_player" in player_ref and player_ref.wizard_player:
+					attack_manager = player_ref.wizard_player.attack_manager
+
+	# Buscar ExperienceManager para nivel/XP
+	if not experience_manager_ref:
+		experience_manager_ref = tree.root.get_node_or_null("Game/ExperienceManager")
+		if not experience_manager_ref:
+			experience_manager_ref = tree.root.get_node_or_null("ExperienceManager")
+
 func show_pause_menu(current_time: float = 0.0) -> void:
 	game_time = current_time
 	visible = true
 	get_tree().paused = true
 	current_tab = 0
+
+	# Obtener referencias automáticamente si no se inicializó
+	_find_references()
 
 	_update_time_display()
 	_update_tabs_visual()
@@ -241,13 +283,36 @@ func _show_stats_tab() -> void:
 	grid.add_theme_constant_override("v_separation", 12)
 	scroll.add_child(grid)
 
-	if not player_stats:
-		var no_data = Label.new()
-		no_data.text = "No hay datos del jugador"
-		grid.add_child(no_data)
-		return
+	# Header
+	var header_name = Label.new()
+	header_name.text = "ESTADÍSTICA"
+	header_name.add_theme_font_size_override("font_size", 14)
+	header_name.add_theme_color_override("font_color", SELECTED_TAB)
+	grid.add_child(header_name)
 
-	# Stats a mostrar con nombres amigables
+	var header_value = Label.new()
+	header_value.text = "VALOR"
+	header_value.add_theme_font_size_override("font_size", 14)
+	header_value.add_theme_color_override("font_color", SELECTED_TAB)
+	grid.add_child(header_value)
+
+	# Intentar obtener stats de PlayerStats primero, sino del player directamente
+	if player_stats and player_stats.has_method("get_stat"):
+		_show_stats_from_player_stats(grid)
+	elif player_ref:
+		_show_stats_from_player(grid)
+	else:
+		var no_data = Label.new()
+		no_data.text = "No hay datos del jugador disponibles"
+		no_data.add_theme_color_override("font_color", Color(0.6, 0.5, 0.5))
+		grid.add_child(no_data)
+		grid.add_child(Label.new())
+
+	# Nivel y XP (siempre mostrar si hay ExperienceManager)
+	_show_level_and_xp(grid)
+
+func _show_stats_from_player_stats(grid: GridContainer) -> void:
+	"""Mostrar stats desde PlayerStats (sistema nuevo)"""
 	var stats_display = [
 		["max_health", "❤️ Vida Máxima", ""],
 		["health_regen", "💚 Regeneración", "/s"],
@@ -264,52 +329,97 @@ func _show_stats_tab() -> void:
 		["luck", "🍀 Suerte", ""]
 	]
 
-	# Header
-	var header_name = Label.new()
-	header_name.text = "ESTADÍSTICA"
-	header_name.add_theme_font_size_override("font_size", 14)
-	header_name.add_theme_color_override("font_color", SELECTED_TAB)
-	grid.add_child(header_name)
-
-	var header_value = Label.new()
-	header_value.text = "VALOR"
-	header_value.add_theme_font_size_override("font_size", 14)
-	header_value.add_theme_color_override("font_color", SELECTED_TAB)
-	grid.add_child(header_value)
-
 	for stat_info in stats_display:
 		var stat_name = stat_info[0]
 		var display_name = stat_info[1]
 		var suffix = stat_info[2]
 
-		var name_label = Label.new()
-		name_label.text = display_name
-		name_label.add_theme_font_size_override("font_size", 16)
-		name_label.add_theme_color_override("font_color", STAT_COLOR)
-		grid.add_child(name_label)
+		_add_stat_row(grid, display_name, player_stats.get_stat(stat_name), suffix)
 
-		var value = player_stats.get_stat(stat_name)
-		var value_text = ""
+func _show_stats_from_player(grid: GridContainer) -> void:
+	"""Mostrar stats directamente desde el player (sistema antiguo)"""
+	# Stats disponibles en SpellloopPlayer/WizardPlayer
+	var stats_to_show = []
 
-		if suffix == "%":
-			value_text = "%.0f%%" % (value * 100)
-		elif suffix == "x":
-			value_text = "%.2fx" % value
-		elif suffix == "/s":
-			value_text = "%.1f/s" % value
-		else:
-			value_text = "%.0f" % value if value == int(value) else "%.2f" % value
+	# HP
+	if player_ref.has_method("get_max_hp"):
+		stats_to_show.append(["❤️ Vida Máxima", player_ref.get_max_hp(), ""])
+	elif "max_hp" in player_ref:
+		stats_to_show.append(["❤️ Vida Máxima", player_ref.max_hp, ""])
 
-		var value_label = Label.new()
-		value_label.text = value_text
-		value_label.add_theme_font_size_override("font_size", 16)
-		value_label.add_theme_color_override("font_color", VALUE_COLOR)
-		grid.add_child(value_label)
+	if player_ref.has_method("get_hp"):
+		stats_to_show.append(["💓 Vida Actual", player_ref.get_hp(), ""])
+	elif "hp" in player_ref:
+		stats_to_show.append(["💓 Vida Actual", player_ref.hp, ""])
 
-	# Nivel y XP
+	# Move speed
+	if "move_speed" in player_ref:
+		stats_to_show.append(["🏃 Velocidad", player_ref.move_speed, ""])
+
+	# Armor
+	if "armor" in player_ref:
+		stats_to_show.append(["🛡️ Armadura", player_ref.armor, ""])
+
+	# Magnet/Pickup range
+	if player_ref.has_method("get_pickup_range"):
+		stats_to_show.append(["🧲 Rango Recogida", player_ref.get_pickup_range(), " px"])
+	elif "pickup_radius" in player_ref:
+		stats_to_show.append(["🧲 Rango Recogida", player_ref.pickup_radius, " px"])
+
+	# Coin value mult
+	if player_ref.has_method("get_coin_value_mult"):
+		stats_to_show.append(["🪙 Valor Monedas", player_ref.get_coin_value_mult(), "x"])
+	elif "coin_value_mult" in player_ref:
+		stats_to_show.append(["🪙 Valor Monedas", player_ref.coin_value_mult, "x"])
+
+	for stat in stats_to_show:
+		_add_stat_row(grid, stat[0], stat[1], stat[2])
+
+func _add_stat_row(grid: GridContainer, display_name: String, value, suffix: String) -> void:
+	"""Añade una fila de stat al grid"""
+	var name_label = Label.new()
+	name_label.text = display_name
+	name_label.add_theme_font_size_override("font_size", 16)
+	name_label.add_theme_color_override("font_color", STAT_COLOR)
+	grid.add_child(name_label)
+
+	var value_text = ""
+	if suffix == "%":
+		value_text = "%.0f%%" % (float(value) * 100)
+	elif suffix == "x":
+		value_text = "%.2fx" % float(value)
+	elif suffix == "/s":
+		value_text = "%.1f/s" % float(value)
+	else:
+		value_text = "%.0f%s" % [value, suffix] if value == int(value) else "%.2f%s" % [value, suffix]
+
+	var value_label = Label.new()
+	value_label.text = value_text
+	value_label.add_theme_font_size_override("font_size", 16)
+	value_label.add_theme_color_override("font_color", VALUE_COLOR)
+	grid.add_child(value_label)
+
+func _show_level_and_xp(grid: GridContainer) -> void:
+	"""Mostrar nivel y XP"""
+	# Separador
 	var sep = HSeparator.new()
 	grid.add_child(sep)
 	grid.add_child(HSeparator.new())
+
+	var level = 1
+	var current_xp = 0.0
+	var xp_to_next = 10.0
+
+	# Intentar obtener de PlayerStats
+	if player_stats and "level" in player_stats:
+		level = player_stats.level
+		current_xp = player_stats.current_xp if "current_xp" in player_stats else 0
+		xp_to_next = player_stats.xp_to_next_level if "xp_to_next_level" in player_stats else 10
+	# O de ExperienceManager
+	elif experience_manager_ref:
+		level = experience_manager_ref.current_level if "current_level" in experience_manager_ref else 1
+		current_xp = experience_manager_ref.current_exp if "current_exp" in experience_manager_ref else 0
+		xp_to_next = experience_manager_ref.exp_to_next_level if "exp_to_next_level" in experience_manager_ref else 10
 
 	var level_label = Label.new()
 	level_label.text = "📈 Nivel"
@@ -318,7 +428,7 @@ func _show_stats_tab() -> void:
 	grid.add_child(level_label)
 
 	var level_value = Label.new()
-	level_value.text = "%d" % player_stats.level
+	level_value.text = "%d" % level
 	level_value.add_theme_font_size_override("font_size", 16)
 	level_value.add_theme_color_override("font_color", SELECTED_TAB)
 	grid.add_child(level_value)
@@ -330,7 +440,7 @@ func _show_stats_tab() -> void:
 	grid.add_child(xp_label)
 
 	var xp_value = Label.new()
-	xp_value.text = "%.0f / %.0f" % [player_stats.current_xp, player_stats.xp_to_next_level]
+	xp_value.text = "%.0f / %.0f" % [current_xp, xp_to_next]
 	xp_value.add_theme_font_size_override("font_size", 16)
 	xp_value.add_theme_color_override("font_color", VALUE_COLOR)
 	grid.add_child(xp_value)
