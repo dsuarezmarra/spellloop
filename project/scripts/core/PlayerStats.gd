@@ -43,8 +43,10 @@ const BASE_STATS: Dictionary = {
 	"crit_chance": 0.05,
 	"crit_damage": 2.0,
 	"area_mult": 1.0,
-	"pickup_range": 1.0,
+	"pickup_range": 1.0,        # Multiplicador de rango de recolección
+	"pickup_range_flat": 0.0,   # Bonus plano de rango (en píxeles)
 	"xp_mult": 1.0,
+	"coin_value_mult": 1.0,     # Multiplicador de valor de monedas
 	"armor": 0.0,
 	"luck": 0.0
 }
@@ -59,6 +61,7 @@ const STAT_LIMITS: Dictionary = {
 	"crit_chance": {"min": 0.0, "max": 1.0},     # Máximo 100%
 	"damage_mult": {"min": 0.1, "max": 10.0},   # Máximo 1000% daño
 	"move_speed": {"min": 0.3, "max": 3.0},     # Rango de velocidad
+	"pickup_range": {"min": 0.5, "max": 5.0},   # 50% a 500% del rango base
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════

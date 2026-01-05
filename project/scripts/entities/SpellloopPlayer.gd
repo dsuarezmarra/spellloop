@@ -8,6 +8,7 @@ var wizard_player = null
 
 signal player_damaged(amount: int, hp: int)
 signal player_died
+signal pickup_range_changed(new_range: float)
 
 var hp: int = 100
 var max_hp: int = 100
@@ -15,6 +16,8 @@ var move_speed: float = 220.0
 var armor: int = 0
 var magnet: float = 1.0
 var pickup_radius: float = 64.0
+var pickup_range_flat: float = 0.0  # Bonus plano de rango
+var coin_value_mult: float = 1.0    # Multiplicador de valor de monedas
 
 var health_component = null
 var animated_sprite: AnimatedSprite2D = null
@@ -235,7 +238,44 @@ func modify_stat(stat: String, value) -> void:
 		"max_health":
 			wizard_player.max_hp += int(value)
 		"magnet":
-			wizard_player.magnet *= value
+			magnet *= value
+			pickup_range_changed.emit(get_pickup_range())
+		"pickup_range":
+			# Multiplicador
+			magnet *= value
+			pickup_range_changed.emit(get_pickup_range())
+		"pickup_range_flat":
+			# Bonus plano en píxeles
+			pickup_range_flat += value
+			pickup_range_changed.emit(get_pickup_range())
+		"coin_value_mult":
+			coin_value_mult *= value
+
+func get_pickup_range() -> float:
+	"""Retorna el rango efectivo de recolección (base * magnet + flat bonus)"""
+	return (pickup_radius * magnet) + pickup_range_flat
+
+func get_coin_value_mult() -> float:
+	"""Retorna el multiplicador de valor de monedas"""
+	return coin_value_mult
+
+func add_pickup_range(amount: float) -> void:
+	"""Añade rango de recolección base en píxeles"""
+	pickup_radius += amount
+	pickup_range_changed.emit(get_pickup_range())
+	print("🧲 [Player] Pickup range: %.0f (base: %.0f, mult: %.2fx, flat: +%.0f)" % [get_pickup_range(), pickup_radius, magnet, pickup_range_flat])
+
+func multiply_pickup_range(multiplier: float) -> void:
+	"""Multiplica el rango de recolección"""
+	magnet *= multiplier
+	pickup_range_changed.emit(get_pickup_range())
+	print("🧲 [Player] Pickup range: %.0f (base: %.0f, mult: %.2fx, flat: +%.0f)" % [get_pickup_range(), pickup_radius, magnet, pickup_range_flat])
+
+func add_pickup_range_flat(amount: float) -> void:
+	"""Añade bonus plano de rango de recolección"""
+	pickup_range_flat += amount
+	pickup_range_changed.emit(get_pickup_range())
+	print("🧲 [Player] Pickup range: %.0f (base: %.0f, mult: %.2fx, flat: +%.0f)" % [get_pickup_range(), pickup_radius, magnet, pickup_range_flat])
 
 func apply_special_effect(_effect_name: String, _item_data: Dictionary) -> void:
 	pass

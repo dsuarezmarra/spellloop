@@ -3453,3 +3453,124 @@ assets/sprites/projectiles/
 | BEAM | start + active + end | 4/6/4 | varía |
 | **ORBIT** | **orbit** | **8 frames** | **512x64** |
 
+---
+
+## 🪙 PICKUPS - Monedas de Oro
+
+### Coin Animation (4 frames - Idle Spin)
+```
+Create a horizontal sprite strip of 4 frames (32x32 each = 128x32 total).
+
+Subject: A shiny gold coin pickup for a roguelike game
+
+Design:
+- Shape: Classic round coin with embossed star/rune in center
+- Main body: Rich gold (#FFD700) with metallic sheen
+- Highlights: Bright gold-yellow (#FFF44F) on upper-left edge
+- Shadows: Darker gold (#DAA520) for depth on lower-right
+- Outline: Dark amber (#8B6914) 1-pixel outline
+
+Animation: Coin rotating on vertical axis (simple 3D spin)
+- Frame 1: Full front view (circle, 100% width)
+- Frame 2: Turned 45° (ellipse, ~70% width)
+- Frame 3: Edge view (thin line, ~15% width)
+- Frame 4: Turned other way (ellipse, ~70% width, showing "back")
+
+Effects:
+- Small sparkle/glint on highlight area in frame 1
+- Subtle golden glow around coin
+
+Technical:
+- Keep coin centered in each 32x32 frame
+- Leave 2-3 pixels padding from edges
+- Coin should be ~26-28 pixels diameter at full view
+```
+
+### Coin Variants (Value Tiers)
+
+#### Bronze Coin (Common enemies - Tier 0)
+```
+Same 4-frame spin design but with bronze color palette:
+- Main body: Bronze (#CD7F32)
+- Highlights: Light bronze (#D4A574)
+- Shadows: Dark bronze (#8B4513)
+- Outline: Dark brown (#5C3317)
+- Embossed: Simple dot or circle pattern
+```
+
+#### Silver Coin (Standard enemies - Tier 1)
+```
+Same 4-frame spin design but with silver color palette:
+- Main body: Silver (#C0C0C0)
+- Highlights: Bright silver (#E8E8E8)
+- Shadows: Dark silver (#808080)
+- Outline: Dark gray (#4A4A4A)
+- Embossed: Diamond shape pattern
+```
+
+#### Gold Coin (Strong enemies - Tier 2)
+```
+(Main design above - gold with star embossed)
+```
+
+#### Diamond Gem (Elite enemies)
+```
+Create a horizontal sprite strip of 4 frames (32x32 each = 128x32 total).
+
+Subject: A sparkling diamond/gem pickup
+
+Design:
+- Shape: Cut diamond/gem with visible facets
+- Main body: Light blue crystal (#B0E0E6) with transparency feel
+- Highlights: Bright white (#FFFFFF) sparkles on facets
+- Inner color: Cyan tint (#00CED1)
+- Outline: Dark blue (#1A1A3A)
+
+Animation: Diamond with shimmer/sparkle effect
+- Frame 1: Normal gem, sparkle on top-left facet
+- Frame 2: Normal gem, sparkle moves to top-right
+- Frame 3: Slightly brighter (pulse), sparkle on center
+- Frame 4: Normal gem, sparkle on bottom facet
+```
+
+#### Purple Soul Gem (Boss enemies)
+```
+Create a horizontal sprite strip of 4 frames (32x32 each = 128x32 total).
+
+Subject: A mystical purple soul gem/essence pickup
+
+Design:
+- Shape: Floating orb with wispy energy trails
+- Main body: Deep purple (#8B008B) with inner glow
+- Core: Bright magenta (#FF00FF) glowing center
+- Wisps: Light purple (#DDA0DD) small trails
+- Outline: Dark purple (#4B0082)
+
+Animation: Gentle pulse/glow effect
+- Frame 1: Normal size, wisps up
+- Frame 2: Slightly larger (5%), brighter core
+- Frame 3: Peak glow, wisps spread
+- Frame 4: Back to normal, wisps settling
+```
+
+### File Organization:
+```
+assets/sprites/pickups/coins/
+├── coin_bronze_spin.png      (128x32 - 4 frames)
+├── coin_silver_spin.png      (128x32 - 4 frames)  
+├── coin_gold_spin.png        (128x32 - 4 frames)
+├── gem_diamond_spin.png      (128x32 - 4 frames)
+└── gem_purple_spin.png       (128x32 - 4 frames)
+```
+
+### Alternative: Single Spritesheet
+If preferred, all coin types can be in one vertical spritesheet:
+```
+coin_spritesheet.png (128x160)
+- Row 1 (y=0):   Bronze coins (4 frames)
+- Row 2 (y=32):  Silver coins (4 frames)
+- Row 3 (y=64):  Gold coins (4 frames)
+- Row 4 (y=96):  Diamond gems (4 frames)
+- Row 5 (y=128): Purple soul gems (4 frames)
+```
+

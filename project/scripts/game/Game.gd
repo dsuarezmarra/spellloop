@@ -163,6 +163,8 @@ func _create_experience_manager() -> void:
 			experience_manager.level_up.connect(_on_level_up)
 		if experience_manager.has_signal("exp_gained"):
 			experience_manager.exp_gained.connect(_on_exp_gained)
+		if experience_manager.has_signal("coin_collected"):
+			experience_manager.coin_collected.connect(_on_coin_collected)
 		
 		print("⭐ [Game] ExperienceManager creado")
 
@@ -309,12 +311,16 @@ func _update_hud() -> void:
 		var health_data = player.get_health()
 		hud.update_health(health_data.current, health_data.max)
 
-func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int) -> void:
+func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
 	run_stats["kills"] += 1
 	
-	# Crear orbe de XP
+	# XP AUTOMÁTICO - Se da directamente al matar
 	if experience_manager:
-		experience_manager.create_exp_orb(position, exp_value)
+		experience_manager.grant_exp_from_kill(exp_value)
+	
+	# MONEDAS - Caen al suelo para que el player las recoja
+	if experience_manager:
+		experience_manager.spawn_coins_from_enemy(position, enemy_tier, is_elite, is_boss)
 
 func _on_exp_gained(amount: int, total: int) -> void:
 	run_stats["xp_total"] = total
@@ -324,6 +330,14 @@ func _on_level_up(new_level: int, upgrades: Array) -> void:
 	
 	# Mostrar panel de level up
 	# TODO: Implementar selección de mejoras
+
+func _on_coin_collected(value: int, total: int) -> void:
+	## Callback cuando se recoge una moneda
+	run_stats["coins"] = total
+	
+	# Actualizar HUD
+	if hud and hud.has_method("update_coins"):
+		hud.update_coins(value, total)
 
 func _on_player_zone_changed(zone_id: int, zone_name: String) -> void:
 	## Callback cuando el player cambia de zona

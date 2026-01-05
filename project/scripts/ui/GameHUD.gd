@@ -15,6 +15,8 @@ var boss_bar: ProgressBar
 var boss_name_label: Label
 var boss_target: Node = null
 var boss_update_timer: Timer = null
+var coins_label: Label = null  # Monedas de la partida actual
+var current_run_coins: int = 0  # Contador de monedas esta partida
 
 # Señales
 signal upgrade_selected(upgrade: Dictionary)
@@ -60,6 +62,16 @@ func _ready():
 				right_box.add_child(gold_label)
 			else:
 				gold_label = right_box.get_node("GoldLabel")
+		
+		# Coins label (monedas de la partida actual)
+		if not right_box.has_node("CoinsLabel"):
+			coins_label = Label.new()
+			coins_label.name = "CoinsLabel"
+			coins_label.text = "🪙 0"
+			coins_label.add_theme_color_override("font_color", Color(1.0, 0.84, 0.0))  # Dorado
+			right_box.add_child(coins_label)
+		else:
+			coins_label = right_box.get_node("CoinsLabel")
 
 	# Initialize meta display
 	refresh_meta_display()
@@ -211,6 +223,29 @@ func _on_upgrade_button_pressed(idx):
 func set_streak(count: int):
 	if streak_label:
 		streak_label.text = "Streak: %d" % [count]
+
+func update_coins(amount: int, total: int) -> void:
+	"""Actualizar display de monedas de la partida actual"""
+	current_run_coins = total
+	if coins_label:
+		coins_label.text = "🪙 %d" % total
+		# Efecto visual de +monedas
+		if amount > 0:
+			_flash_coins_label()
+
+func _flash_coins_label() -> void:
+	"""Efecto de parpadeo cuando se recoge una moneda"""
+	if not coins_label:
+		return
+	var original_color = Color(1.0, 0.84, 0.0)
+	var flash_color = Color(1.0, 1.0, 0.5)
+	coins_label.add_theme_color_override("font_color", flash_color)
+	var tween = create_tween()
+	tween.tween_property(coins_label, "theme_override_colors/font_color", original_color, 0.3)
+
+func get_run_coins() -> int:
+	"""Obtener monedas de esta partida"""
+	return current_run_coins
 
 func _on_shop_pressed():
 	# Open MetaShop scene (instanced on demand) if it exists

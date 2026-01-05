@@ -2,54 +2,51 @@ extends Node
 class_name ExperienceManager
 
 """
-⭐ GESTOR DE EXPERIENCIA - VAMPIRE SURVIVORS STYLE
-================================================
+⭐ GESTOR DE EXPERIENCIA Y MONEDAS - ESTILO BROTATO
+===================================================
 
-Gestiona el sistema de experiencia:
-- Bolitas de EXP que dropean enemigos
-- Recolección automática
-- Sistema de niveles
-- Selección de mejoras al subir nivel
+Gestiona:
+- XP AUTOMÁTICO: Se obtiene directamente al matar enemigos
+- MONEDAS: Caen al suelo, el player las recoge (con atracción)
+- Sistema de niveles y selección de mejoras
 """
 
-signal exp_orb_created(orb: Node2D)
-signal gold_orb_created(orb: Node2D)
-signal gold_collected(amount: int)
+# === SEÑALES ===
+signal coin_created(coin: Node2D)
+signal coin_collected(amount: int, total: int)
 signal exp_gained(amount: int, total_exp: int)
 signal level_up(new_level: int, available_upgrades: Array)
 signal streak_updated(count: int)
 
-# Referencias
+# === REFERENCIAS ===
 var player: CharacterBody2D
 
-# Sistema de experiencia
+# === SISTEMA DE EXPERIENCIA ===
 var current_exp: int = 0
 var current_level: int = 1
 var exp_to_next_level: int = 10
 
-# Configuración de orbes
-var orb_collection_range: float = 80.0
-var orb_attraction_range: float = 150.0
-var orb_movement_speed: float = 200.0
+# === SISTEMA DE MONEDAS ===
+var total_coins: int = 0  # Monedas totales de esta partida
+var active_coins: Array[Node2D] = []  # Monedas activas en el mundo
+var coin_scene: PackedScene = null
 
-# Orbes activos
-var active_orbs: Array[Node2D] = []
+# Configuración de drops de monedas
+var base_coin_drop_chance: float = 0.7  # 70% de chance de drop
+var coin_value_variance: float = 0.3  # ±30% variación en valor
 
-# Pool de orbes para optimización
-var orb_pool: Array[Node2D] = []
-var max_pool_size: int = 50
-
-# Streak tracking for gold pickups
+# Streak tracking for coin pickups
 var streak_count: int = 0
-var last_gold_time: float = 0.0
-var streak_timeout: float = 2.5
+var last_coin_time: float = 0.0
+var streak_timeout: float = 2.0  # Segundos para mantener streak
 
-# Configuración de niveles
+# === CONFIGURACIÓN DE NIVELES ===
 var level_exp_curve: Array[int] = []
 
 func _ready():
 	print("⭐ ExperienceManager inicializado")
 	setup_level_curve()
+	_load_coin_scene()
 
 func initialize(player_ref: CharacterBody2D):
 	"""Inicializar sistema de experiencia"""
@@ -57,8 +54,19 @@ func initialize(player_ref: CharacterBody2D):
 	current_exp = 0
 	current_level = 1
 	exp_to_next_level = get_exp_for_level(2)
+	total_coins = 0
+	active_coins.clear()
 	
-	print("⭐ Sistema de experiencia inicializado")
+	print("⭐ Sistema de experiencia y monedas inicializado")
+
+func _load_coin_scene() -> void:
+	"""Cargar la escena de monedas"""
+	var coin_path = "res://scenes/pickups/CoinPickup.tscn"
+	if ResourceLoader.exists(coin_path):
+		coin_scene = load(coin_path)
+		print("🪙 Escena de monedas cargada")
+	else:
+		push_warning("[ExperienceManager] No se encontró CoinPickup.tscn")
 
 func setup_level_curve():
 	"""Configurar curva de experiencia por nivel"""
@@ -75,145 +83,225 @@ func get_exp_for_level(level: int) -> int:
 		return level_exp_curve[level - 2]
 	return 5 + level * 3
 
-func create_exp_orb(position: Vector2, exp_value: int):
-	"""Crear orbe de experiencia en una posición"""
-	var fb = load("res://scripts/core/Fallbacks.gd")
-	var parent_node = get_tree().current_scene
-	var orb = fb.spawn_xp_orb(parent_node, position, exp_value)
-	# Try to initialize if the real orb scene was used
-	if orb and orb.has_method("initialize"):
-		orb.initialize(position, exp_value, player)
-		if orb.has_signal("orb_collected"):
-			orb.orb_collected.connect(Callable(self, "_on_exp_orb_collected"))
-	active_orbs.append(orb)
-	exp_orb_created.emit(orb)
+# ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE XP AUTOMÁTICO
+# ═══════════════════════════════════════════════════════════════════════════════
 
-func create_gold_orb(position: Vector2, gold_value: int):
-	"""Crear orbe de oro (reutiliza la lógica de EXP pero con color distinto)"""
-	var fb = load("res://scripts/core/Fallbacks.gd")
-	var parent_node = get_tree().current_scene
-	var orb = fb.spawn_xp_orb(parent_node, position, gold_value)
-	if orb and orb.has_method("initialize"):
-		orb.initialize(position, gold_value, player)
-	orb.set_meta("is_gold_orb", true)
-	orb.set_meta("gold_value", gold_value)
-	orb.z_index = 45
-	if orb.has_signal("orb_collected"):
-		orb.orb_collected.connect(Callable(self, "_on_exp_orb_collected"))
-	active_orbs.append(orb)
-	gold_orb_created.emit(orb)
-	return orb
+func grant_exp_from_kill(exp_value: int) -> void:
+	"""Dar XP directamente al matar un enemigo (sin orbes)"""
+	gain_experience(exp_value)
+	print("⭐ XP automático: +%d" % exp_value)
 
-func get_pooled_orb() -> Node2D:
-	"""Obtener orbe del pool si está disponible"""
-	if orb_pool.is_empty():
-		return null
+# ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE MONEDAS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func create_coin(position: Vector2, base_value: int = 1) -> Node2D:
+	"""Crear una moneda en el escenario"""
+	var coin: Node2D = null
 	
-	return orb_pool.pop_back()
-
-func return_orb_to_pool(orb: Node2D):
-	"""Devolver orbe al pool"""
-	if orb_pool.size() < max_pool_size:
-		orb_pool.append(orb)
+	# Aplicar variación al valor
+	var variance = randf_range(-coin_value_variance, coin_value_variance)
+	var final_value = max(1, int(base_value * (1.0 + variance)))
+	
+	# Usar escena si está cargada
+	if coin_scene:
+		coin = coin_scene.instantiate()
 	else:
-		orb.queue_free()
+		# Fallback: crear moneda simple
+		coin = _create_fallback_coin()
+	
+	if coin:
+		# Añadir al mundo
+		var parent = get_tree().current_scene
+		if parent:
+			parent.add_child(coin)
+		
+		# Inicializar
+		if coin.has_method("initialize"):
+			coin.initialize(position, final_value, player)
+		else:
+			coin.global_position = position
+			if "coin_value" in coin:
+				coin.coin_value = final_value
+		
+		# Conectar señal de recolección
+		if coin.has_signal("coin_collected"):
+			coin.coin_collected.connect(_on_coin_collected)
+		
+		active_coins.append(coin)
+		coin_created.emit(coin)
+	
+	return coin
 
-func _process(delta):
-	"""Actualizar sistema de experiencia"""
-	if not player:
+func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
+	"""Spawnear monedas al morir un enemigo basado en su tier"""
+	# Decidir si dropea monedas
+	var drop_chance = base_coin_drop_chance
+	if is_boss:
+		drop_chance = 1.0  # Bosses siempre dropean
+	elif is_elite:
+		drop_chance = 1.0  # Élites siempre dropean
+	
+	if randf() > drop_chance:
+		return  # No drop
+	
+	# Calcular cantidad y valor de monedas
+	var coin_count = 1
+	var base_value = 1
+	
+	match enemy_tier:
+		1:
+			coin_count = randi_range(1, 2)
+			base_value = 1
+		2:
+			coin_count = randi_range(1, 3)
+			base_value = 2
+		3:
+			coin_count = randi_range(2, 4)
+			base_value = 3
+		4:
+			coin_count = randi_range(3, 5)
+			base_value = 5
+		5:  # Boss
+			coin_count = randi_range(8, 15)
+			base_value = 10
+	
+	# Multiplicadores especiales
+	if is_elite:
+		coin_count = int(coin_count * 2.5)
+		base_value = int(base_value * 2)
+	if is_boss:
+		coin_count = int(coin_count * 1.5)
+		base_value = int(base_value * 1.5)
+	
+	# Crear las monedas con pequeño offset aleatorio
+	for i in range(coin_count):
+		var offset = Vector2(randf_range(-20, 20), randf_range(-20, 20))
+		create_coin(position + offset, base_value)
+
+func _create_fallback_coin() -> Node2D:
+	"""Crear moneda simple si no hay escena"""
+	var coin = Area2D.new()
+	coin.name = "CoinFallback"
+	
+	# Colisión
+	var collision = CollisionShape2D.new()
+	var shape = CircleShape2D.new()
+	shape.radius = 10.0
+	collision.shape = shape
+	coin.add_child(collision)
+	
+	# Sprite simple
+	var sprite = Sprite2D.new()
+	var size = 12
+	var img = Image.create(size, size, false, Image.FORMAT_RGBA8)
+	var center = Vector2(size / 2.0, size / 2.0)
+	for x in range(size):
+		for y in range(size):
+			var dist = Vector2(x, y).distance_to(center)
+			if dist < size / 2.0 - 1:
+				img.set_pixel(x, y, Color(1.0, 0.84, 0.0))  # Dorado
+			else:
+				img.set_pixel(x, y, Color.TRANSPARENT)
+	sprite.texture = ImageTexture.create_from_image(img)
+	coin.add_child(sprite)
+	
+	# Añadir propiedades necesarias
+	coin.set_meta("coin_value", 1)
+	
+	return coin
+
+func on_coin_collected(value: int, _position: Vector2 = Vector2.ZERO) -> void:
+	"""Callback cuando se recoge una moneda (llamado desde CoinPickup)"""
+	_on_coin_collected(value)
+
+func _on_coin_collected(value: int) -> void:
+	"""Procesar recolección de moneda"""
+	# Actualizar streak
+	var now = Time.get_ticks_msec() / 1000.0
+	if now - last_coin_time <= streak_timeout:
+		streak_count += 1
+	else:
+		streak_count = 1
+	last_coin_time = now
+	
+	# Aplicar multiplicador de streak (5% por cada streak adicional)
+	# El flag "double_coin_streak" duplica este bonus
+	var streak_bonus_per = 0.05
+	if _has_flag("double_coin_streak"):
+		streak_bonus_per = 0.10
+	var streak_multiplier = 1.0 + streak_bonus_per * float(max(0, streak_count - 1))
+	
+	# Aplicar multiplicador de valor de monedas del player
+	var coin_mult = _get_player_coin_mult()
+	
+	var final_value = int(ceil(float(value) * streak_multiplier * coin_mult))
+	
+	# Añadir al total
+	total_coins += final_value
+	
+	# Emitir señales
+	streak_updated.emit(streak_count)
+	coin_collected.emit(final_value, total_coins)
+	
+	# Guardar en SaveManager si existe
+	_save_coins_to_progression(final_value)
+	
+	if coin_mult > 1.0 or streak_multiplier > 1.0:
+		print("🪙 Moneda: +%d (base: %d, streak: x%.2f, coin_mult: x%.2f, total: %d)" % [final_value, value, streak_multiplier, coin_mult, total_coins])
+	else:
+		print("🪙 Moneda: +%d (streak: %d, total: %d)" % [final_value, streak_count, total_coins])
+
+func _get_player_coin_mult() -> float:
+	"""Obtener multiplicador de monedas del player"""
+	var player = _find_player()
+	if player and player.has_method("get_coin_value_mult"):
+		return player.get_coin_value_mult()
+	elif player and "coin_value_mult" in player:
+		return player.coin_value_mult
+	return 1.0
+
+func _has_flag(flag_name: String) -> bool:
+	"""Verificar si el player tiene un flag activo (de pasivos especiales)"""
+	var player = _find_player()
+	if player and "active_flags" in player:
+		return flag_name in player.active_flags
+	# También verificar en un nodo global de flags si existe
+	var tree = get_tree()
+	if tree and tree.root:
+		var game = tree.root.get_node_or_null("Game")
+		if game and "player_flags" in game:
+			return flag_name in game.player_flags
+	return false
+	
+	print("🪙 Moneda: +%d (streak: %d, total: %d)" % [final_value, streak_count, total_coins])
+
+func _save_coins_to_progression(amount: int) -> void:
+	"""Guardar monedas en la progresión del jugador"""
+	var tree = get_tree()
+	if not tree or not tree.root:
 		return
 	
-	# Actualizar orbes (atracción y recolección)
-	update_orbs(delta)
+	var save_manager = tree.root.get_node_or_null("SaveManager")
+	if save_manager and save_manager.has_method("get_player_progression"):
+		var progression = save_manager.get_player_progression()
+		if progression:
+			progression["meta_currency"] = progression.get("meta_currency", 0) + amount
+			# No guardar inmediatamente cada moneda, se guarda al final de la partida
 
-func update_orbs(delta):
-	"""Actualizar orbes de experiencia"""
-	var orbs_to_remove = []
+func _process(delta):
+	"""Actualizar sistema - limpiar monedas inválidas"""
+	# Limpiar referencias a monedas destruidas
+	var coins_to_remove = []
+	for coin in active_coins:
+		if not is_instance_valid(coin):
+			coins_to_remove.append(coin)
 	
-	for orb in active_orbs:
-		if not is_instance_valid(orb):
-			orbs_to_remove.append(orb)
-			continue
-		
-		# Verificar distancia al player para atracción/recolección
-		var distance_to_player = orb.global_position.distance_to(player.global_position)
-		
-		# Recolección automática
-		var player_pickup = orb_collection_range
-		var player_magnet = 1.0
-		# Acceder a propiedades del player de forma defensiva
-		if player:
-			if _has_property(player, "pickup_radius"):
-				player_pickup = player.pickup_radius
-			if _has_property(player, "magnet"):
-				player_magnet = player.magnet
-		if distance_to_player <= player_pickup:
-			collect_orb(orb)
-			orbs_to_remove.append(orb)
-		# Atracción hacia el player
-		elif distance_to_player <= orb_attraction_range * player_magnet:
-			attract_orb_to_player(orb, delta)
-	
-	# Remover orbes recolectados
-	for orb in orbs_to_remove:
-		active_orbs.erase(orb)
+	for coin in coins_to_remove:
+		active_coins.erase(coin)
 
-func attract_orb_to_player(orb: Node2D, delta: float):
-	"""Atraer orbe hacia el player"""
-	if orb.has_method("move_towards_player"):
-		orb.move_towards_player(player.global_position, orb_movement_speed, delta)
-
-func collect_orb(orb: Node2D):
-	"""Recolectar orbe de experiencia"""
-	var exp_value = orb.exp_value if orb.has_method("get_exp_value") else 1
-	
-	gain_experience(exp_value)
-	
-	# Efecto visual de recolección
-	create_collection_effect(orb.global_position)
-	
-	# Devolver al pool o destruir
-	# If this orb is a gold orb, emit a different signal or call a gold handler
-	if orb.get_meta("is_gold_orb"):
-		var gold = int(orb.get_meta("gold_value")) if orb.has_meta("gold_value") else 1
-		# Handle streak: increase if collected quickly
-		var now = Time.get_ticks_msec() / 1000.0
-		if now - last_gold_time <= streak_timeout:
-			streak_count += 1
-		else:
-			streak_count = 1
-		last_gold_time = now
-		# Emit and try to update HUD if available
-		emit_signal("streak_updated", streak_count)
-		var _gt = get_tree()
-		var root_scene = _gt.current_scene if _gt else null
-		if root_scene and root_scene.has_node("GameHUD"):
-			var gh = root_scene.get_node("GameHUD")
-			if gh and gh.has_method("set_streak"):
-				gh.set_streak(streak_count)
-		print("💰 Gold collected: ", gold, " (streak:", streak_count, ")")
-
-		# Apply streak multiplier (10% per extra streak)
-		var multiplier = 1.0 + 0.10 * float(max(0, streak_count - 1))
-		var gold_awarded = int(round(float(gold) * multiplier))
-		# Notify global SaveManager or UI via signals (best-effort runtime lookup)
-		var _gt2 = get_tree()
-		var sm = _gt2.root.get_node_or_null("SaveManager") if _gt2 and _gt2.root else null
-		if sm and sm.has_method("get_player_progression"):
-			var pd = sm.get_player_progression()
-			if pd:
-				pd["meta_currency"] = pd.get("meta_currency", 0) + gold_awarded
-				sm.save_game_data()
-				# Update HUD if possible
-				var ui = _gt2.root.get_node_or_null("UIManager") if _gt2 and _gt2.root else null
-				if ui and ui.has_method("show_notification"):
-					ui.show_notification("+" + str(gold) + " gold")
-				# Emit signal to notify gold collected (amount awarded)
-				emit_signal("gold_collected", gold_awarded)
-				orb.queue_free()
-	else:
-		orb.queue_free()
-
+func create_collection_effect(_position: Vector2):
 func create_collection_effect(_position: Vector2):
 	"""Crear efecto visual de recolección de EXP"""
 	# Efecto simple de partículas o brillo

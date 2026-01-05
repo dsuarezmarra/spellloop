@@ -14,7 +14,7 @@ class_name EnemyManager
 signal boss_spawned(boss_node: Node2D)
 signal elite_spawned(elite_node: Node2D)
 signal enemy_spawned(enemy: Node2D)
-signal enemy_died(enemy_position: Vector2, enemy_type: String, exp_value: int)
+signal enemy_died(enemy_position: Vector2, enemy_type: String, exp_value: int, enemy_tier: int, is_elite: bool, is_boss: bool)
 signal wave_cleared()
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -427,7 +427,7 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 # CALLBACKS
 # ═══════════════════════════════════════════════════════════════════════════════
 
-func _on_enemy_died(enemy: Node, type_id: String = "", exp_value: int = 0) -> void:
+func _on_enemy_died(enemy: Node, type_id: String = "", exp_value: int = 0, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
 	if enemy in active_enemies:
 		active_enemies.erase(enemy)
 	
@@ -435,10 +435,12 @@ func _on_enemy_died(enemy: Node, type_id: String = "", exp_value: int = 0) -> vo
 	if is_instance_valid(enemy) and enemy is Node2D:
 		pos = enemy.global_position
 	
-	emit_signal("enemy_died", pos, type_id, exp_value)
+	emit_signal("enemy_died", pos, type_id, exp_value, enemy_tier, is_elite, is_boss)
 	
 	if debug_spawns:
-		print("[EnemyManager] Enemy died: %s XP:%d" % [type_id, exp_value])
+		var elite_str = " [ELITE]" if is_elite else ""
+		var boss_str = " [BOSS]" if is_boss else ""
+		print("[EnemyManager] Enemy died: T%d %s%s%s XP:%d" % [enemy_tier, type_id, elite_str, boss_str, exp_value])
 
 func _cleanup_dead_enemies() -> void:
 	var to_remove = []

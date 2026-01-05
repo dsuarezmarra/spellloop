@@ -1,7 +1,8 @@
 extends CharacterBody2D
 class_name EnemyBase
 
-signal enemy_died(enemy_node, enemy_type_id, exp_value)
+# Señal actualizada: incluye tier, is_elite, is_boss para el sistema de monedas
+signal enemy_died(enemy_node, enemy_type_id, exp_value, enemy_tier, is_elite, is_boss)
 
 # Componentes
 var health_component = null
@@ -1529,7 +1530,7 @@ func get_attack_accuracy() -> float:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func die() -> void:
-	emit_signal("enemy_died", self, enemy_id, exp_value)
+	emit_signal("enemy_died", self, enemy_id, exp_value, enemy_tier, is_elite, is_boss)
 	queue_free()
 
 func _on_health_died() -> void:
