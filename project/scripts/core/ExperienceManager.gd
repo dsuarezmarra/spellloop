@@ -149,8 +149,6 @@ func create_coin(position: Vector2, base_value: int = 1) -> Node2D:
 
 func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
 	"""Spawnear monedas al morir un enemigo basado en su tier"""
-	print("🪙 [DEBUG] spawn_coins_from_enemy llamado: pos=%s, tier=%d, elite=%s, boss=%s" % [position, enemy_tier, is_elite, is_boss])
-
 	# Decidir si dropea monedas
 	var drop_chance = base_coin_drop_chance
 	if is_boss:
@@ -159,10 +157,7 @@ func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bo
 		drop_chance = 1.0  # Élites siempre dropean
 
 	if randf() > drop_chance:
-		print("🪙 [DEBUG] No drop (chance: %.2f)" % drop_chance)
 		return  # No drop
-
-	print("🪙 [DEBUG] Drop confirmado (chance: %.2f)" % drop_chance)
 
 	# Determinar tipo de moneda según tier/elite/boss
 	var coin_type = _get_coin_type_for_enemy(enemy_tier, is_elite, is_boss)
@@ -188,14 +183,9 @@ func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bo
 		coin_count = int(coin_count * 2.5)
 
 	# Crear las monedas con pequeño offset aleatorio
-	print("🪙 [DEBUG] Creando %d monedas tipo %d" % [coin_count, coin_type])
 	for i in range(coin_count):
 		var offset = Vector2(randf_range(-20, 20), randf_range(-20, 20))
-		var coin = _create_coin_with_type(position + offset, coin_type)
-		if coin:
-			print("🪙 [DEBUG] Moneda %d creada en %s" % [i + 1, position + offset])
-		else:
-			print("🪙 [ERROR] Fallo al crear moneda %d" % [i + 1])
+		_create_coin_with_type(position + offset, coin_type)
 
 func _get_coin_type_for_enemy(tier: int, is_elite: bool, is_boss: bool) -> int:
 	"""Determinar el tipo de moneda según el enemigo"""
