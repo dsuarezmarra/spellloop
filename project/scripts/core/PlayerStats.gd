@@ -34,20 +34,204 @@ signal xp_gained(amount: float, total: float)
 # CONSTANTES
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# Metadatos de cada stat para UI (descripción, icono, categoría)
+const STAT_METADATA: Dictionary = {
+	# === STATS DEFENSIVOS ===
+	"max_health": {
+		"name": "Vida Máxima",
+		"icon": "❤️",
+		"category": "defensive",
+		"description": "La cantidad máxima de puntos de vida que puedes tener.",
+		"format": "flat",  # flat, percent, multiplier
+		"color": Color(1.0, 0.3, 0.3)
+	},
+	"health_regen": {
+		"name": "Regeneración",
+		"icon": "💚",
+		"category": "defensive",
+		"description": "Puntos de vida recuperados por segundo.",
+		"format": "per_second",
+		"color": Color(0.3, 1.0, 0.3)
+	},
+	"armor": {
+		"name": "Armadura",
+		"icon": "🛡️",
+		"category": "defensive",
+		"description": "Reduce el daño recibido de forma plana.",
+		"format": "flat",
+		"color": Color(0.6, 0.6, 0.8)
+	},
+	"dodge_chance": {
+		"name": "Esquivar",
+		"icon": "💨",
+		"category": "defensive",
+		"description": "Probabilidad de evitar completamente un ataque. Máximo 60%.",
+		"format": "percent",
+		"color": Color(0.5, 0.8, 1.0)
+	},
+	"life_steal": {
+		"name": "Robo de Vida",
+		"icon": "🩸",
+		"category": "defensive",
+		"description": "Porcentaje de daño infligido que recuperas como vida.",
+		"format": "percent",
+		"color": Color(0.8, 0.2, 0.4)
+	},
+	
+	# === STATS OFENSIVOS ===
+	"damage_mult": {
+		"name": "Daño",
+		"icon": "⚔️",
+		"category": "offensive",
+		"description": "Multiplicador global de todo el daño que infliges.",
+		"format": "multiplier",
+		"color": Color(1.0, 0.5, 0.2)
+	},
+	"cooldown_mult": {
+		"name": "Cooldown",
+		"icon": "⏱️",
+		"category": "offensive",
+		"description": "Multiplicador de tiempo entre ataques. Menor es mejor.",
+		"format": "multiplier_inverse",
+		"color": Color(0.3, 0.7, 1.0)
+	},
+	"area_mult": {
+		"name": "Área de Efecto",
+		"icon": "🌀",
+		"category": "offensive",
+		"description": "Tamaño de todas las áreas de efecto y explosiones.",
+		"format": "multiplier",
+		"color": Color(0.8, 0.4, 1.0)
+	},
+	"projectile_speed_mult": {
+		"name": "Vel. Proyectiles",
+		"icon": "➡️",
+		"category": "offensive",
+		"description": "Velocidad de todos tus proyectiles.",
+		"format": "multiplier",
+		"color": Color(0.4, 0.9, 0.6)
+	},
+	"duration_mult": {
+		"name": "Duración",
+		"icon": "⌛",
+		"category": "offensive",
+		"description": "Duración de efectos, proyectiles y habilidades.",
+		"format": "multiplier",
+		"color": Color(0.9, 0.8, 0.3)
+	},
+	"extra_projectiles": {
+		"name": "Proyectiles Extra",
+		"icon": "🎯",
+		"category": "offensive",
+		"description": "Proyectiles adicionales en cada ataque.",
+		"format": "flat",
+		"color": Color(1.0, 0.6, 0.8)
+	},
+	"knockback_mult": {
+		"name": "Empuje",
+		"icon": "💥",
+		"category": "offensive",
+		"description": "Fuerza con la que empujas a los enemigos.",
+		"format": "multiplier",
+		"color": Color(0.9, 0.5, 0.3)
+	},
+	
+	# === STATS CRÍTICOS ===
+	"crit_chance": {
+		"name": "Prob. Crítico",
+		"icon": "🎯",
+		"category": "critical",
+		"description": "Probabilidad de infligir un golpe crítico.",
+		"format": "percent",
+		"color": Color(1.0, 0.9, 0.2)
+	},
+	"crit_damage": {
+		"name": "Daño Crítico",
+		"icon": "💢",
+		"category": "critical",
+		"description": "Multiplicador de daño en golpes críticos.",
+		"format": "multiplier",
+		"color": Color(1.0, 0.7, 0.1)
+	},
+	
+	# === STATS DE UTILIDAD ===
+	"move_speed": {
+		"name": "Velocidad",
+		"icon": "🏃",
+		"category": "utility",
+		"description": "Velocidad de movimiento del personaje.",
+		"format": "multiplier",
+		"color": Color(0.4, 0.8, 1.0)
+	},
+	"pickup_range": {
+		"name": "Rango Recogida",
+		"icon": "🧲",
+		"category": "utility",
+		"description": "Distancia a la que atraes XP y objetos.",
+		"format": "multiplier",
+		"color": Color(0.8, 0.5, 1.0)
+	},
+	"pickup_range_flat": {
+		"name": "Rango Extra",
+		"icon": "🧲",
+		"category": "utility",
+		"description": "Bonus plano al rango de recogida (píxeles).",
+		"format": "flat",
+		"color": Color(0.8, 0.5, 1.0)
+	},
+	"xp_mult": {
+		"name": "Experiencia",
+		"icon": "⭐",
+		"category": "utility",
+		"description": "Multiplicador de experiencia obtenida.",
+		"format": "multiplier",
+		"color": Color(0.3, 0.9, 0.5)
+	},
+	"coin_value_mult": {
+		"name": "Valor Monedas",
+		"icon": "🪙",
+		"category": "utility",
+		"description": "Multiplicador del valor de las monedas.",
+		"format": "multiplier",
+		"color": Color(1.0, 0.85, 0.2)
+	},
+	"luck": {
+		"name": "Suerte",
+		"icon": "🍀",
+		"category": "utility",
+		"description": "Afecta la rareza de drops y mejoras ofrecidas.",
+		"format": "flat",
+		"color": Color(0.2, 0.9, 0.4)
+	}
+}
+
 const BASE_STATS: Dictionary = {
+	# Defensivos
 	"max_health": 100.0,
 	"health_regen": 0.0,
-	"move_speed": 1.0,
+	"armor": 0.0,
+	"dodge_chance": 0.0,        # Nuevo: probabilidad de esquivar (máx 0.6)
+	"life_steal": 0.0,          # Nuevo: % de daño que recupera como vida
+	
+	# Ofensivos
 	"damage_mult": 1.0,
 	"cooldown_mult": 1.0,
+	"area_mult": 1.0,
+	"projectile_speed_mult": 1.0,  # Nuevo
+	"duration_mult": 1.0,          # Nuevo
+	"extra_projectiles": 0,        # Nuevo: proyectiles adicionales
+	"knockback_mult": 1.0,         # Nuevo
+	
+	# Críticos
 	"crit_chance": 0.05,
 	"crit_damage": 2.0,
-	"area_mult": 1.0,
-	"pickup_range": 1.0,        # Multiplicador de rango de recolección
-	"pickup_range_flat": 0.0,   # Bonus plano de rango (en píxeles)
+	
+	# Utilidad
+	"move_speed": 1.0,
+	"pickup_range": 1.0,
+	"pickup_range_flat": 0.0,
 	"xp_mult": 1.0,
-	"coin_value_mult": 1.0,     # Multiplicador de valor de monedas
-	"armor": 0.0,
+	"coin_value_mult": 1.0,
 	"luck": 0.0
 }
 
@@ -57,11 +241,17 @@ const XP_SCALING: float = 1.15  # Cada nivel requiere 15% más XP
 
 # Límites de stats
 const STAT_LIMITS: Dictionary = {
-	"cooldown_mult": {"min": 0.1, "max": 2.0},  # Mínimo 10% cooldown
-	"crit_chance": {"min": 0.0, "max": 1.0},     # Máximo 100%
-	"damage_mult": {"min": 0.1, "max": 10.0},   # Máximo 1000% daño
-	"move_speed": {"min": 0.3, "max": 3.0},     # Rango de velocidad
-	"pickup_range": {"min": 0.5, "max": 5.0},   # 50% a 500% del rango base
+	"cooldown_mult": {"min": 0.1, "max": 2.0},
+	"crit_chance": {"min": 0.0, "max": 1.0},
+	"damage_mult": {"min": 0.1, "max": 10.0},
+	"move_speed": {"min": 0.3, "max": 3.0},
+	"pickup_range": {"min": 0.5, "max": 5.0},
+	"dodge_chance": {"min": 0.0, "max": 0.6},  # Máximo 60%
+	"life_steal": {"min": 0.0, "max": 0.5},    # Máximo 50%
+	"area_mult": {"min": 0.5, "max": 3.0},
+	"projectile_speed_mult": {"min": 0.5, "max": 3.0},
+	"duration_mult": {"min": 0.5, "max": 3.0},
+	"knockback_mult": {"min": 0.0, "max": 5.0},
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -119,7 +309,67 @@ func _sync_with_attack_manager() -> void:
 	attack_manager.set_player_stat("damage_mult", get_stat("damage_mult"))
 	attack_manager.set_player_stat("cooldown_mult", get_stat("cooldown_mult"))
 	attack_manager.set_player_stat("crit_chance", get_stat("crit_chance"))
+	attack_manager.set_player_stat("crit_damage", get_stat("crit_damage"))
 	attack_manager.set_player_stat("area_mult", get_stat("area_mult"))
+	attack_manager.set_player_stat("projectile_speed_mult", get_stat("projectile_speed_mult"))
+	attack_manager.set_player_stat("duration_mult", get_stat("duration_mult"))
+	attack_manager.set_player_stat("extra_projectiles", get_stat("extra_projectiles"))
+	attack_manager.set_player_stat("knockback_mult", get_stat("knockback_mult"))
+	attack_manager.set_player_stat("life_steal", get_stat("life_steal"))
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MÉTODOS DE METADATOS (PARA UI)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func get_stat_metadata(stat_name: String) -> Dictionary:
+	"""Obtener metadatos de un stat para mostrar en UI"""
+	return STAT_METADATA.get(stat_name, {
+		"name": stat_name,
+		"icon": "❓",
+		"category": "other",
+		"description": "Sin descripción.",
+		"format": "flat",
+		"color": Color.WHITE
+	})
+
+func get_stats_by_category(category: String) -> Array:
+	"""Obtener lista de stats de una categoría específica"""
+	var result = []
+	for stat_name in STAT_METADATA:
+		if STAT_METADATA[stat_name].get("category") == category:
+			result.append(stat_name)
+	return result
+
+func get_all_categories() -> Array:
+	"""Obtener todas las categorías de stats"""
+	return ["defensive", "offensive", "critical", "utility"]
+
+func format_stat_value(stat_name: String, value: float) -> String:
+	"""Formatear el valor de un stat para mostrar en UI"""
+	var meta = get_stat_metadata(stat_name)
+	var format_type = meta.get("format", "flat")
+	
+	match format_type:
+		"percent":
+			return "%.0f%%" % (value * 100)
+		"multiplier":
+			if value >= 1.0:
+				return "+%.0f%%" % ((value - 1.0) * 100)
+			else:
+				return "%.0f%%" % ((value - 1.0) * 100)
+		"multiplier_inverse":
+			# Para cooldown, menos es mejor
+			if value <= 1.0:
+				return "-%.0f%%" % ((1.0 - value) * 100)
+			else:
+				return "+%.0f%%" % ((value - 1.0) * 100)
+		"per_second":
+			return "%.1f/s" % value
+		_:  # flat
+			if value == int(value):
+				return "%d" % int(value)
+			else:
+				return "%.1f" % value
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # GETTERS DE STATS
@@ -464,6 +714,71 @@ const PLAYER_UPGRADES: Dictionary = {
 		"amount": 0.10,
 		"icon": "🍀",
 		"rarity": "rare"
+	},
+	# === NUEVOS STATS ===
+	"dodge_small": {
+		"name": "Evasión I",
+		"description": "+5% Esquivar ataques",
+		"stat": "dodge_chance",
+		"amount": 0.05,
+		"icon": "💨",
+		"rarity": "uncommon"
+	},
+	"dodge_large": {
+		"name": "Evasión II",
+		"description": "+10% Esquivar ataques",
+		"stat": "dodge_chance",
+		"amount": 0.10,
+		"icon": "💨",
+		"rarity": "rare"
+	},
+	"life_steal_small": {
+		"name": "Vampirismo I",
+		"description": "+3% Robo de vida",
+		"stat": "life_steal",
+		"amount": 0.03,
+		"icon": "🩸",
+		"rarity": "uncommon"
+	},
+	"life_steal_large": {
+		"name": "Vampirismo II",
+		"description": "+7% Robo de vida",
+		"stat": "life_steal",
+		"amount": 0.07,
+		"icon": "🩸",
+		"rarity": "rare"
+	},
+	"projectile_speed": {
+		"name": "Velocidad Proyectil",
+		"description": "+15% Vel. proyectiles",
+		"stat": "projectile_speed_mult",
+		"amount": 0.15,
+		"icon": "➡️",
+		"rarity": "common"
+	},
+	"duration": {
+		"name": "Persistencia",
+		"description": "+15% Duración efectos",
+		"stat": "duration_mult",
+		"amount": 0.15,
+		"icon": "⌛",
+		"rarity": "common"
+	},
+	"extra_projectile": {
+		"name": "Proyectil Extra",
+		"description": "+1 Proyectil adicional",
+		"stat": "extra_projectiles",
+		"amount": 1,
+		"icon": "🎯",
+		"rarity": "rare"
+	},
+	"knockback": {
+		"name": "Empuje",
+		"description": "+25% Fuerza de empuje",
+		"stat": "knockback_mult",
+		"amount": 0.25,
+		"icon": "💥",
+		"rarity": "common"
 	}
 }
 

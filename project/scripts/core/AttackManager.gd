@@ -30,8 +30,13 @@ var player_stats: Dictionary = {
 	"damage_mult": 1.0,
 	"cooldown_mult": 1.0,
 	"crit_chance": 0.0,
+	"crit_damage": 2.0,
 	"area_mult": 1.0,
-	"projectile_speed_mult": 1.0
+	"projectile_speed_mult": 1.0,
+	"duration_mult": 1.0,
+	"extra_projectiles": 0,
+	"knockback_mult": 1.0,
+	"life_steal": 0.0
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════

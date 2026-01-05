@@ -287,6 +287,211 @@ const PASSIVES: Dictionary = {
 			"flag": "double_coin_streak",
 			"value": true
 		}
+	},
+
+	# ───────────────────────────────────────────────────────────────────────────
+	# NUEVOS STATS - Defensivos avanzados
+	# ───────────────────────────────────────────────────────────────────────────
+
+	"dodge_1": {
+		"id": "dodge_1",
+		"name": "Reflejos",
+		"description": "5% de probabilidad de esquivar ataques",
+		"icon": "res://assets/sprites/ui/passives/dodge.png",
+		"category": "defense",
+		"rarity": "uncommon",
+		"max_stacks": 6,  # Max 30%
+		"effect": {
+			"type": "add_stat",
+			"stat": "dodge_chance",
+			"value": 0.05
+		}
+	},
+
+	"dodge_2": {
+		"id": "dodge_2",
+		"name": "Evasión Total",
+		"description": "10% de probabilidad de esquivar ataques",
+		"icon": "res://assets/sprites/ui/passives/dodge_2.png",
+		"category": "defense",
+		"rarity": "rare",
+		"max_stacks": 3,  # Max 30%
+		"effect": {
+			"type": "add_stat",
+			"stat": "dodge_chance",
+			"value": 0.10
+		}
+	},
+
+	"life_steal_1": {
+		"id": "life_steal_1",
+		"name": "Vampirismo",
+		"description": "Recupera 3% del daño infligido como vida",
+		"icon": "res://assets/sprites/ui/passives/lifesteal.png",
+		"category": "defense",
+		"rarity": "uncommon",
+		"max_stacks": 5,  # Max 15%
+		"effect": {
+			"type": "add_stat",
+			"stat": "life_steal",
+			"value": 0.03
+		}
+	},
+
+	"life_steal_2": {
+		"id": "life_steal_2",
+		"name": "Sed de Sangre",
+		"description": "Recupera 8% del daño infligido como vida",
+		"icon": "res://assets/sprites/ui/passives/lifesteal_2.png",
+		"category": "defense",
+		"rarity": "rare",
+		"max_stacks": 2,  # Max 16%
+		"effect": {
+			"type": "add_stat",
+			"stat": "life_steal",
+			"value": 0.08
+		}
+	},
+
+	# ───────────────────────────────────────────────────────────────────────────
+	# NUEVOS STATS - Ofensivos avanzados
+	# ───────────────────────────────────────────────────────────────────────────
+
+	"projectile_speed_1": {
+		"id": "projectile_speed_1",
+		"name": "Proyectiles Rápidos",
+		"description": "Aumenta la velocidad de proyectiles en 15%",
+		"icon": "res://assets/sprites/ui/passives/proj_speed.png",
+		"category": "combat",
+		"rarity": "common",
+		"max_stacks": 5,
+		"effect": {
+			"type": "multiply_stat",
+			"stat": "projectile_speed_mult",
+			"value": 1.15
+		}
+	},
+
+	"duration_1": {
+		"id": "duration_1",
+		"name": "Persistencia",
+		"description": "Aumenta la duración de efectos en 15%",
+		"icon": "res://assets/sprites/ui/passives/duration.png",
+		"category": "combat",
+		"rarity": "common",
+		"max_stacks": 5,
+		"effect": {
+			"type": "multiply_stat",
+			"stat": "duration_mult",
+			"value": 1.15
+		}
+	},
+
+	"extra_projectiles_1": {
+		"id": "extra_projectiles_1",
+		"name": "Multidisparo",
+		"description": "Dispara 1 proyectil adicional",
+		"icon": "res://assets/sprites/ui/passives/multi.png",
+		"category": "combat",
+		"rarity": "rare",
+		"max_stacks": 3,
+		"effect": {
+			"type": "add_stat",
+			"stat": "extra_projectiles",
+			"value": 1
+		}
+	},
+
+	"knockback_1": {
+		"id": "knockback_1",
+		"name": "Impacto Fuerte",
+		"description": "Aumenta el empuje a enemigos en 25%",
+		"icon": "res://assets/sprites/ui/passives/knockback.png",
+		"category": "combat",
+		"rarity": "common",
+		"max_stacks": 4,
+		"effect": {
+			"type": "multiply_stat",
+			"stat": "knockback_mult",
+			"value": 1.25
+		}
+	},
+
+	# ───────────────────────────────────────────────────────────────────────────
+	# COMBOS LEGENDARIOS
+	# ───────────────────────────────────────────────────────────────────────────
+
+	"glass_cannon": {
+		"id": "glass_cannon",
+		"name": "Cañón de Cristal",
+		"description": "+50% Daño, +25% Crítico, -30% Vida máxima",
+		"icon": "res://assets/sprites/ui/passives/glass_cannon.png",
+		"category": "special",
+		"rarity": "legendary",
+		"max_stacks": 1,
+		"effect": {
+			"type": "multi",
+			"effects": [
+				{"type": "multiply_stat", "stat": "damage_mult", "value": 1.5},
+				{"type": "add_stat", "stat": "crit_chance", "value": 0.25},
+				{"type": "multiply_stat", "stat": "max_health", "value": 0.7}
+			]
+		}
+	},
+
+	"tank": {
+		"id": "tank",
+		"name": "Fortaleza",
+		"description": "+50 Vida, +5 Armadura, 15% Esquivar, -20% Velocidad",
+		"icon": "res://assets/sprites/ui/passives/tank.png",
+		"category": "special",
+		"rarity": "legendary",
+		"max_stacks": 1,
+		"effect": {
+			"type": "multi",
+			"effects": [
+				{"type": "add_stat", "stat": "max_health", "value": 50},
+				{"type": "add_stat", "stat": "armor", "value": 5},
+				{"type": "add_stat", "stat": "dodge_chance", "value": 0.15},
+				{"type": "multiply_stat", "stat": "move_speed", "value": 0.8}
+			]
+		}
+	},
+
+	"berserker": {
+		"id": "berserker",
+		"name": "Berserker",
+		"description": "+30% Daño, +10% Robo de Vida, +20% Velocidad Ataque",
+		"icon": "res://assets/sprites/ui/passives/berserker.png",
+		"category": "special",
+		"rarity": "legendary",
+		"max_stacks": 1,
+		"effect": {
+			"type": "multi",
+			"effects": [
+				{"type": "multiply_stat", "stat": "damage_mult", "value": 1.3},
+				{"type": "add_stat", "stat": "life_steal", "value": 0.10},
+				{"type": "multiply_stat", "stat": "cooldown_mult", "value": 0.8}
+			]
+		}
+	},
+
+	"sniper": {
+		"id": "sniper",
+		"name": "Francotirador",
+		"description": "+50% Crítico, +100% Daño Crítico, +30% Vel. Proyectil",
+		"icon": "res://assets/sprites/ui/passives/sniper.png",
+		"category": "special",
+		"rarity": "legendary",
+		"max_stacks": 1,
+		"effect": {
+			"type": "multi",
+			"effects": [
+				{"type": "add_stat", "stat": "crit_chance", "value": 0.50},
+				{"type": "add_stat", "stat": "crit_damage", "value": 1.0},
+				{"type": "multiply_stat", "stat": "projectile_speed_mult", "value": 1.3}
+			]
+		}
 	}
 }
 

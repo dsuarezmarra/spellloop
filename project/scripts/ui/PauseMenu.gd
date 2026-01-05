@@ -269,266 +269,722 @@ func _show_tab_content() -> void:
 		2: _show_upgrades_tab()
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB: STATS DEL JUGADOR
+# TAB: STATS DEL JUGADOR (REDISEÑADO)
 # ═══════════════════════════════════════════════════════════════════════════════
+
+# Colores por categoría
+const CATEGORY_COLORS = {
+	"defensive": Color(0.2, 0.7, 0.3),
+	"offensive": Color(1.0, 0.4, 0.2),
+	"critical": Color(1.0, 0.85, 0.2),
+	"utility": Color(0.4, 0.7, 1.0)
+}
+
+const CATEGORY_NAMES = {
+	"defensive": "🛡️ DEFENSIVO",
+	"offensive": "⚔️ OFENSIVO",
+	"critical": "💥 CRÍTICOS",
+	"utility": "🔧 UTILIDAD"
+}
+
+const CATEGORY_ICONS = {
+	"defensive": "🛡️",
+	"offensive": "⚔️",
+	"critical": "💥",
+	"utility": "🔧"
+}
 
 func _show_stats_tab() -> void:
 	var scroll = ScrollContainer.new()
 	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	content_container.add_child(scroll)
-
-	var grid = GridContainer.new()
-	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 40)
-	grid.add_theme_constant_override("v_separation", 12)
-	scroll.add_child(grid)
-
-	# Header
-	var header_name = Label.new()
-	header_name.text = "ESTADÍSTICA"
-	header_name.add_theme_font_size_override("font_size", 14)
-	header_name.add_theme_color_override("font_color", SELECTED_TAB)
-	grid.add_child(header_name)
-
-	var header_value = Label.new()
-	header_value.text = "VALOR"
-	header_value.add_theme_font_size_override("font_size", 14)
-	header_value.add_theme_color_override("font_color", SELECTED_TAB)
-	grid.add_child(header_value)
-
-	# Intentar obtener stats de PlayerStats primero, sino del player directamente
+	
+	var main_vbox = VBoxContainer.new()
+	main_vbox.add_theme_constant_override("separation", 20)
+	scroll.add_child(main_vbox)
+	
+	# === HEADER CON VIDA Y NIVEL ===
+	_create_player_header(main_vbox)
+	
+	# === GRID DE CATEGORÍAS (2x2) ===
+	var categories_grid = GridContainer.new()
+	categories_grid.columns = 2
+	categories_grid.add_theme_constant_override("h_separation", 15)
+	categories_grid.add_theme_constant_override("v_separation", 15)
+	main_vbox.add_child(categories_grid)
+	
+	# Crear panel para cada categoría
 	if player_stats and player_stats.has_method("get_stat"):
-		_show_stats_from_player_stats(grid)
-	elif player_ref:
-		_show_stats_from_player(grid)
+		for category in ["defensive", "offensive", "critical", "utility"]:
+			var category_panel = _create_category_panel(category)
+			categories_grid.add_child(category_panel)
 	else:
 		var no_data = Label.new()
 		no_data.text = "No hay datos del jugador disponibles"
 		no_data.add_theme_color_override("font_color", Color(0.6, 0.5, 0.5))
-		grid.add_child(no_data)
-		grid.add_child(Label.new())
+		main_vbox.add_child(no_data)
+	
+	# === BUFFS ACTIVOS ===
+	_create_active_buffs_section(main_vbox)
 
-	# Nivel y XP (siempre mostrar si hay ExperienceManager)
-	_show_level_and_xp(grid)
-
-func _show_stats_from_player_stats(grid: GridContainer) -> void:
-	"""Mostrar stats desde PlayerStats (sistema nuevo)"""
-	var stats_display = [
-		["max_health", "❤️ Vida Máxima", ""],
-		["health_regen", "💚 Regeneración", "/s"],
-		["move_speed", "🏃 Velocidad", "x"],
-		["damage_mult", "⚔️ Daño", "x"],
-		["cooldown_mult", "⏱️ Cooldown", "x"],
-		["crit_chance", "🎯 Prob. Crítico", "%"],
-		["crit_damage", "💥 Daño Crítico", "x"],
-		["area_mult", "🌀 Área", "x"],
-		["pickup_range", "🧲 Rango Recogida", "x"],
-		["xp_mult", "⭐ Multiplicador XP", "x"],
-		["coin_value_mult", "🪙 Valor Monedas", "x"],
-		["armor", "🛡️ Armadura", ""],
-		["luck", "🍀 Suerte", ""]
-	]
-
-	for stat_info in stats_display:
-		var stat_name = stat_info[0]
-		var display_name = stat_info[1]
-		var suffix = stat_info[2]
-
-		_add_stat_row(grid, display_name, player_stats.get_stat(stat_name), suffix)
-
-func _show_stats_from_player(grid: GridContainer) -> void:
-	"""Mostrar stats directamente desde el player (sistema antiguo)"""
-	# Stats disponibles en SpellloopPlayer/WizardPlayer
-	var stats_to_show = []
-
-	# HP
-	if player_ref.has_method("get_max_hp"):
-		stats_to_show.append(["❤️ Vida Máxima", player_ref.get_max_hp(), ""])
-	elif "max_hp" in player_ref:
-		stats_to_show.append(["❤️ Vida Máxima", player_ref.max_hp, ""])
-
-	if player_ref.has_method("get_hp"):
-		stats_to_show.append(["💓 Vida Actual", player_ref.get_hp(), ""])
-	elif "hp" in player_ref:
-		stats_to_show.append(["💓 Vida Actual", player_ref.hp, ""])
-
-	# Move speed
-	if "move_speed" in player_ref:
-		stats_to_show.append(["🏃 Velocidad", player_ref.move_speed, ""])
-
-	# Armor
-	if "armor" in player_ref:
-		stats_to_show.append(["🛡️ Armadura", player_ref.armor, ""])
-
-	# Magnet/Pickup range
-	if player_ref.has_method("get_pickup_range"):
-		stats_to_show.append(["🧲 Rango Recogida", player_ref.get_pickup_range(), " px"])
-	elif "pickup_radius" in player_ref:
-		stats_to_show.append(["🧲 Rango Recogida", player_ref.pickup_radius, " px"])
-
-	# Coin value mult
-	if player_ref.has_method("get_coin_value_mult"):
-		stats_to_show.append(["🪙 Valor Monedas", player_ref.get_coin_value_mult(), "x"])
-	elif "coin_value_mult" in player_ref:
-		stats_to_show.append(["🪙 Valor Monedas", player_ref.coin_value_mult, "x"])
-
-	for stat in stats_to_show:
-		_add_stat_row(grid, stat[0], stat[1], stat[2])
-
-func _add_stat_row(grid: GridContainer, display_name: String, value, suffix: String) -> void:
-	"""Añade una fila de stat al grid"""
-	var name_label = Label.new()
-	name_label.text = display_name
-	name_label.add_theme_font_size_override("font_size", 16)
-	name_label.add_theme_color_override("font_color", STAT_COLOR)
-	grid.add_child(name_label)
-
-	var value_text = ""
-	if suffix == "%":
-		value_text = "%.0f%%" % (float(value) * 100)
-	elif suffix == "x":
-		value_text = "%.2fx" % float(value)
-	elif suffix == "/s":
-		value_text = "%.1f/s" % float(value)
-	else:
-		value_text = "%.0f%s" % [value, suffix] if value == int(value) else "%.2f%s" % [value, suffix]
-
-	var value_label = Label.new()
-	value_label.text = value_text
-	value_label.add_theme_font_size_override("font_size", 16)
-	value_label.add_theme_color_override("font_color", VALUE_COLOR)
-	grid.add_child(value_label)
-
-func _show_level_and_xp(grid: GridContainer) -> void:
-	"""Mostrar nivel y XP"""
-	# Separador
-	var sep = HSeparator.new()
-	grid.add_child(sep)
-	grid.add_child(HSeparator.new())
-
+func _create_player_header(parent: VBoxContainer) -> void:
+	"""Crear header con vida, nivel y XP"""
+	var header_panel = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.12, 0.12, 0.18)
+	style.border_color = Color(0.3, 0.3, 0.4)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(12)
+	header_panel.add_theme_stylebox_override("panel", style)
+	parent.add_child(header_panel)
+	
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 30)
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	header_panel.add_child(hbox)
+	
+	# Obtener datos
+	var current_hp = 100
+	var max_hp = 100
 	var level = 1
 	var current_xp = 0.0
 	var xp_to_next = 10.0
-
-	# Intentar obtener de PlayerStats
-	if player_stats and "level" in player_stats:
-		level = player_stats.level
-		current_xp = player_stats.current_xp if "current_xp" in player_stats else 0
-		xp_to_next = player_stats.xp_to_next_level if "xp_to_next_level" in player_stats else 10
-	# O de ExperienceManager
+	
+	if player_ref:
+		if player_ref.has_method("get_hp"):
+			current_hp = player_ref.get_hp()
+		elif "hp" in player_ref:
+			current_hp = player_ref.hp
+		if player_ref.has_method("get_max_hp"):
+			max_hp = player_ref.get_max_hp()
+		elif "max_hp" in player_ref:
+			max_hp = player_ref.max_hp
+	
+	if player_stats:
+		if "level" in player_stats:
+			level = player_stats.level
+		if "current_xp" in player_stats:
+			current_xp = player_stats.current_xp
+		if "xp_to_next_level" in player_stats:
+			xp_to_next = player_stats.xp_to_next_level
 	elif experience_manager_ref:
-		level = experience_manager_ref.current_level if "current_level" in experience_manager_ref else 1
-		current_xp = experience_manager_ref.current_exp if "current_exp" in experience_manager_ref else 0
-		xp_to_next = experience_manager_ref.exp_to_next_level if "exp_to_next_level" in experience_manager_ref else 10
-
+		if "current_level" in experience_manager_ref:
+			level = experience_manager_ref.current_level
+		if "current_exp" in experience_manager_ref:
+			current_xp = experience_manager_ref.current_exp
+		if "exp_to_next_level" in experience_manager_ref:
+			xp_to_next = experience_manager_ref.exp_to_next_level
+	
+	# === VIDA ===
+	var hp_vbox = VBoxContainer.new()
+	hp_vbox.add_theme_constant_override("separation", 4)
+	hbox.add_child(hp_vbox)
+	
+	var hp_label = Label.new()
+	hp_label.text = "❤️ VIDA"
+	hp_label.add_theme_font_size_override("font_size", 12)
+	hp_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
+	hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hp_vbox.add_child(hp_label)
+	
+	var hp_value = Label.new()
+	hp_value.text = "%d / %d" % [current_hp, max_hp]
+	hp_value.add_theme_font_size_override("font_size", 20)
+	hp_value.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+	hp_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hp_vbox.add_child(hp_value)
+	
+	# Barra de vida
+	var hp_bar_bg = ColorRect.new()
+	hp_bar_bg.custom_minimum_size = Vector2(120, 8)
+	hp_bar_bg.color = Color(0.2, 0.15, 0.15)
+	hp_vbox.add_child(hp_bar_bg)
+	
+	var hp_bar = ColorRect.new()
+	hp_bar.custom_minimum_size = Vector2(120 * (float(current_hp) / float(max_hp)), 8)
+	hp_bar.color = Color(1.0, 0.3, 0.3)
+	hp_bar.position = Vector2.ZERO
+	hp_bar_bg.add_child(hp_bar)
+	
+	# === NIVEL ===
+	var level_vbox = VBoxContainer.new()
+	level_vbox.add_theme_constant_override("separation", 4)
+	hbox.add_child(level_vbox)
+	
 	var level_label = Label.new()
-	level_label.text = "📈 Nivel"
-	level_label.add_theme_font_size_override("font_size", 16)
-	level_label.add_theme_color_override("font_color", STAT_COLOR)
-	grid.add_child(level_label)
-
+	level_label.text = "📈 NIVEL"
+	level_label.add_theme_font_size_override("font_size", 12)
+	level_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
+	level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	level_vbox.add_child(level_label)
+	
 	var level_value = Label.new()
 	level_value.text = "%d" % level
-	level_value.add_theme_font_size_override("font_size", 16)
+	level_value.add_theme_font_size_override("font_size", 24)
 	level_value.add_theme_color_override("font_color", SELECTED_TAB)
-	grid.add_child(level_value)
-
+	level_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	level_vbox.add_child(level_value)
+	
+	# === XP ===
+	var xp_vbox = VBoxContainer.new()
+	xp_vbox.add_theme_constant_override("separation", 4)
+	hbox.add_child(xp_vbox)
+	
 	var xp_label = Label.new()
-	xp_label.text = "⭐ Experiencia"
-	xp_label.add_theme_font_size_override("font_size", 16)
-	xp_label.add_theme_color_override("font_color", STAT_COLOR)
-	grid.add_child(xp_label)
-
+	xp_label.text = "⭐ EXPERIENCIA"
+	xp_label.add_theme_font_size_override("font_size", 12)
+	xp_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
+	xp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	xp_vbox.add_child(xp_label)
+	
 	var xp_value = Label.new()
 	xp_value.text = "%.0f / %.0f" % [current_xp, xp_to_next]
 	xp_value.add_theme_font_size_override("font_size", 16)
-	xp_value.add_theme_color_override("font_color", VALUE_COLOR)
-	grid.add_child(xp_value)
+	xp_value.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
+	xp_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	xp_vbox.add_child(xp_value)
+	
+	# Barra de XP
+	var xp_percent = current_xp / xp_to_next if xp_to_next > 0 else 0
+	var xp_bar_bg = ColorRect.new()
+	xp_bar_bg.custom_minimum_size = Vector2(150, 6)
+	xp_bar_bg.color = Color(0.15, 0.2, 0.15)
+	xp_vbox.add_child(xp_bar_bg)
+	
+	var xp_bar = ColorRect.new()
+	xp_bar.custom_minimum_size = Vector2(150 * xp_percent, 6)
+	xp_bar.color = Color(0.3, 0.9, 0.4)
+	xp_bar.position = Vector2.ZERO
+	xp_bar_bg.add_child(xp_bar)
+
+func _create_category_panel(category: String) -> Control:
+	"""Crear panel para una categoría de stats"""
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(400, 0)
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.1, 0.1, 0.14)
+	style.border_color = CATEGORY_COLORS.get(category, Color.WHITE).darkened(0.3)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(10)
+	style.set_content_margin_all(12)
+	panel.add_theme_stylebox_override("panel", style)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	panel.add_child(vbox)
+	
+	# Header de categoría
+	var header = Label.new()
+	header.text = CATEGORY_NAMES.get(category, category.to_upper())
+	header.add_theme_font_size_override("font_size", 14)
+	header.add_theme_color_override("font_color", CATEGORY_COLORS.get(category, Color.WHITE))
+	vbox.add_child(header)
+	
+	# Separador
+	var sep = HSeparator.new()
+	sep.add_theme_color_override("separator", CATEGORY_COLORS.get(category, Color.WHITE).darkened(0.5))
+	vbox.add_child(sep)
+	
+	# Stats de esta categoría
+	var stats_in_category = _get_stats_for_category(category)
+	
+	for stat_name in stats_in_category:
+		var stat_row = _create_stat_row_visual(stat_name)
+		vbox.add_child(stat_row)
+	
+	return panel
+
+func _get_stats_for_category(category: String) -> Array:
+	"""Obtener stats de una categoría"""
+	if player_stats and player_stats.has_method("get_stats_by_category"):
+		return player_stats.get_stats_by_category(category)
+	
+	# Fallback manual
+	match category:
+		"defensive":
+			return ["max_health", "health_regen", "armor", "dodge_chance", "life_steal"]
+		"offensive":
+			return ["damage_mult", "cooldown_mult", "area_mult", "projectile_speed_mult", "duration_mult", "extra_projectiles", "knockback_mult"]
+		"critical":
+			return ["crit_chance", "crit_damage"]
+		"utility":
+			return ["move_speed", "pickup_range", "xp_mult", "coin_value_mult", "luck"]
+	return []
+
+func _create_stat_row_visual(stat_name: String) -> Control:
+	"""Crear una fila visual para un stat con tooltip"""
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 8)
+	
+	# Obtener metadatos
+	var meta = {}
+	if player_stats and player_stats.has_method("get_stat_metadata"):
+		meta = player_stats.get_stat_metadata(stat_name)
+	else:
+		meta = {
+			"name": stat_name,
+			"icon": "❓",
+			"color": Color.WHITE,
+			"description": ""
+		}
+	
+	# Icono
+	var icon = Label.new()
+	icon.text = meta.get("icon", "❓")
+	icon.add_theme_font_size_override("font_size", 16)
+	icon.custom_minimum_size = Vector2(24, 0)
+	hbox.add_child(icon)
+	
+	# Nombre
+	var name_label = Label.new()
+	name_label.text = meta.get("name", stat_name)
+	name_label.add_theme_font_size_override("font_size", 13)
+	name_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.9))
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(name_label)
+	
+	# Valor
+	var value = 0.0
+	if player_stats and player_stats.has_method("get_stat"):
+		value = player_stats.get_stat(stat_name)
+	
+	var value_label = Label.new()
+	if player_stats and player_stats.has_method("format_stat_value"):
+		value_label.text = player_stats.format_stat_value(stat_name, value)
+	else:
+		value_label.text = _format_stat_value_fallback(stat_name, value)
+	
+	value_label.add_theme_font_size_override("font_size", 13)
+	
+	# Color según si es positivo/negativo
+	var stat_color = _get_value_color(stat_name, value)
+	value_label.add_theme_color_override("font_color", stat_color)
+	hbox.add_child(value_label)
+	
+	# Tooltip con descripción
+	if meta.has("description") and meta.description != "":
+		hbox.tooltip_text = meta.description
+	
+	return hbox
+
+func _format_stat_value_fallback(stat_name: String, value: float) -> String:
+	"""Formatear valor cuando no hay PlayerStats"""
+	if stat_name in ["crit_chance", "dodge_chance", "life_steal"]:
+		return "%.0f%%" % (value * 100)
+	elif stat_name in ["damage_mult", "cooldown_mult", "area_mult", "move_speed", "pickup_range", "xp_mult", "coin_value_mult", "crit_damage", "projectile_speed_mult", "duration_mult", "knockback_mult"]:
+		if value >= 1.0:
+			return "+%.0f%%" % ((value - 1.0) * 100)
+		else:
+			return "%.0f%%" % ((value - 1.0) * 100)
+	elif stat_name == "extra_projectiles":
+		return "+%d" % int(value)
+	else:
+		if value == int(value):
+			return "%d" % int(value)
+		return "%.1f" % value
+
+func _get_value_color(stat_name: String, value: float) -> Color:
+	"""Obtener color según el valor del stat"""
+	# Para cooldown, menos es mejor
+	if stat_name == "cooldown_mult":
+		if value < 1.0:
+			return Color(0.3, 1.0, 0.4)  # Verde si es menor
+		elif value > 1.0:
+			return Color(1.0, 0.4, 0.3)  # Rojo si es mayor
+		return Color(0.8, 0.8, 0.8)
+	
+	# Para el resto, más es mejor
+	var base_value = 1.0 if stat_name.ends_with("_mult") else 0.0
+	if stat_name == "crit_chance":
+		base_value = 0.05
+	elif stat_name == "crit_damage":
+		base_value = 2.0
+	elif stat_name == "max_health":
+		base_value = 100.0
+	
+	if value > base_value:
+		return Color(0.3, 1.0, 0.4)  # Verde
+	elif value < base_value:
+		return Color(1.0, 0.4, 0.3)  # Rojo
+	return Color(0.8, 0.8, 0.8)  # Gris neutro
+
+func _create_active_buffs_section(parent: VBoxContainer) -> void:
+	"""Crear sección de buffs/debuffs activos"""
+	if not player_stats:
+		return
+	
+	# Verificar si hay buffs temporales
+	var has_temp_modifiers = false
+	if "temp_modifiers" in player_stats and not player_stats.temp_modifiers.is_empty():
+		has_temp_modifiers = true
+	
+	if not has_temp_modifiers:
+		return
+	
+	var buffs_panel = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.15, 0.1, 0.2)
+	style.border_color = Color(0.6, 0.4, 0.8)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(10)
+	buffs_panel.add_theme_stylebox_override("panel", style)
+	parent.add_child(buffs_panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 6)
+	buffs_panel.add_child(vbox)
+	
+	var header = Label.new()
+	header.text = "✨ EFECTOS ACTIVOS"
+	header.add_theme_font_size_override("font_size", 14)
+	header.add_theme_color_override("font_color", Color(0.8, 0.6, 1.0))
+	vbox.add_child(header)
+	
+	var buffs_hbox = HBoxContainer.new()
+	buffs_hbox.add_theme_constant_override("separation", 10)
+	vbox.add_child(buffs_hbox)
+	
+	for stat_name in player_stats.temp_modifiers:
+		for mod in player_stats.temp_modifiers[stat_name]:
+			var buff_chip = _create_buff_chip(stat_name, mod)
+			buffs_hbox.add_child(buff_chip)
+
+func _create_buff_chip(stat_name: String, mod: Dictionary) -> Control:
+	"""Crear chip visual para un buff"""
+	var chip = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.2, 0.15, 0.3)
+	style.set_corner_radius_all(12)
+	style.set_content_margin_all(6)
+	chip.add_theme_stylebox_override("panel", style)
+	
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 4)
+	chip.add_child(hbox)
+	
+	var meta = {}
+	if player_stats and player_stats.has_method("get_stat_metadata"):
+		meta = player_stats.get_stat_metadata(stat_name)
+	
+	var icon = Label.new()
+	icon.text = meta.get("icon", "✨")
+	icon.add_theme_font_size_override("font_size", 14)
+	hbox.add_child(icon)
+	
+	var info = Label.new()
+	var amount_text = "+%.0f%%" % (mod.amount * 100) if mod.amount < 1 else "+%.0f" % mod.amount
+	info.text = "%s %.1fs" % [amount_text, mod.duration]
+	info.add_theme_font_size_override("font_size", 11)
+	info.add_theme_color_override("font_color", Color(0.7, 0.9, 0.7))
+	hbox.add_child(info)
+	
+	chip.tooltip_text = "%s: %s durante %.1f segundos" % [
+		meta.get("name", stat_name),
+		amount_text,
+		mod.duration
+	]
+	
+	return chip
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB: ARMAS
+# TAB: ARMAS (MEJORADO)
 # ═══════════════════════════════════════════════════════════════════════════════
+
+# Colores por elemento
+const ELEMENT_COLORS = {
+	"ice": Color(0.4, 0.8, 1.0),
+	"fire": Color(1.0, 0.5, 0.2),
+	"lightning": Color(1.0, 1.0, 0.3),
+	"arcane": Color(0.7, 0.4, 1.0),
+	"shadow": Color(0.5, 0.3, 0.7),
+	"nature": Color(0.3, 0.9, 0.4),
+	"wind": Color(0.6, 0.9, 0.8),
+	"earth": Color(0.7, 0.5, 0.3),
+	"light": Color(1.0, 1.0, 0.9),
+	"void": Color(0.3, 0.2, 0.5),
+	"physical": Color(0.7, 0.7, 0.7)
+}
+
+const ELEMENT_ICONS = {
+	"ice": "❄️",
+	"fire": "🔥",
+	"lightning": "⚡",
+	"arcane": "💜",
+	"shadow": "🗡️",
+	"nature": "🌿",
+	"wind": "🌪️",
+	"earth": "🪨",
+	"light": "✨",
+	"void": "🕳️",
+	"physical": "⚔️"
+}
 
 func _show_weapons_tab() -> void:
 	var scroll = ScrollContainer.new()
 	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	content_container.add_child(scroll)
 
-	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 15)
-	scroll.add_child(vbox)
+	var main_vbox = VBoxContainer.new()
+	main_vbox.add_theme_constant_override("separation", 12)
+	scroll.add_child(main_vbox)
+	
+	# Header con contador de armas
+	var header = HBoxContainer.new()
+	header.add_theme_constant_override("separation", 10)
+	main_vbox.add_child(header)
+	
+	var title = Label.new()
+	title.text = "⚔️ ARSENAL"
+	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_color_override("font_color", SELECTED_TAB)
+	header.add_child(title)
 
 	if not attack_manager or not attack_manager.has_method("get_weapons"):
 		var no_data = Label.new()
-		no_data.text = "No hay armas equipadas"
-		vbox.add_child(no_data)
+		no_data.text = "Sistema de armas no disponible"
+		no_data.add_theme_color_override("font_color", Color(0.5, 0.4, 0.4))
+		main_vbox.add_child(no_data)
 		return
 
 	var weapons = attack_manager.get_weapons()
+	
+	# Contador de slots
+	var max_slots = attack_manager.max_weapon_slots if "max_weapon_slots" in attack_manager else 6
+	var slots_label = Label.new()
+	slots_label.text = "(%d / %d slots)" % [weapons.size(), max_slots]
+	slots_label.add_theme_font_size_override("font_size", 14)
+	slots_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+	header.add_child(slots_label)
 
 	if weapons.is_empty():
 		var no_weapons = Label.new()
-		no_weapons.text = "No hay armas equipadas"
+		no_weapons.text = "🎮 Aún no has obtenido ningún arma.\n¡Sube de nivel para conseguir tu primera arma!"
 		no_weapons.add_theme_font_size_override("font_size", 16)
 		no_weapons.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
-		vbox.add_child(no_weapons)
+		no_weapons.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		main_vbox.add_child(no_weapons)
 		return
 
+	# Grid de armas (2 columnas)
+	var weapons_grid = GridContainer.new()
+	weapons_grid.columns = 2
+	weapons_grid.add_theme_constant_override("h_separation", 12)
+	weapons_grid.add_theme_constant_override("v_separation", 12)
+	main_vbox.add_child(weapons_grid)
+
 	for weapon in weapons:
-		var weapon_panel = _create_weapon_panel(weapon)
-		vbox.add_child(weapon_panel)
+		var weapon_card = _create_weapon_card(weapon)
+		weapons_grid.add_child(weapon_card)
 
-func _create_weapon_panel(weapon) -> Control:
-	var panel = PanelContainer.new()
+func _create_weapon_card(weapon) -> Control:
+	"""Crear tarjeta detallada de arma"""
+	var card = PanelContainer.new()
+	card.custom_minimum_size = Vector2(400, 0)
+	
+	# Obtener elemento y rareza
+	var element = str(weapon.element if "element" in weapon else weapon.element_type if "element_type" in weapon else "physical").to_lower()
+	var rarity = str(weapon.rarity if "rarity" in weapon else "common").to_lower()
+	var weapon_level = weapon.level if "level" in weapon else 1
+	var max_level = weapon.max_level if "max_level" in weapon else 8
+	
+	# Estilo con borde del elemento
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.15, 0.15, 0.2)
-	style.border_color = RARITY_COLORS.get(weapon.rarity if "rarity" in weapon else "common", Color.WHITE)
+	style.bg_color = Color(0.1, 0.1, 0.14)
+	style.border_color = ELEMENT_COLORS.get(element, RARITY_COLORS.get(rarity, Color.WHITE))
 	style.set_border_width_all(2)
-	style.set_corner_radius_all(8)
+	style.set_corner_radius_all(10)
 	style.set_content_margin_all(12)
-	panel.add_theme_stylebox_override("panel", style)
-
-	var hbox = HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 15)
-	panel.add_child(hbox)
-
-	# Icono
+	card.add_theme_stylebox_override("panel", style)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	card.add_child(vbox)
+	
+	# === HEADER: Icono + Nombre + Nivel ===
+	var header_hbox = HBoxContainer.new()
+	header_hbox.add_theme_constant_override("separation", 10)
+	vbox.add_child(header_hbox)
+	
+	# Icono grande
+	var icon_container = PanelContainer.new()
+	var icon_style = StyleBoxFlat.new()
+	icon_style.bg_color = ELEMENT_COLORS.get(element, Color.GRAY).darkened(0.6)
+	icon_style.set_corner_radius_all(8)
+	icon_style.set_content_margin_all(8)
+	icon_container.add_theme_stylebox_override("panel", icon_style)
+	header_hbox.add_child(icon_container)
+	
 	var icon = Label.new()
-	icon.text = weapon.icon if "icon" in weapon else "🔮"
-	icon.add_theme_font_size_override("font_size", 36)
-	hbox.add_child(icon)
-
-	# Info
+	icon.text = weapon.icon if "icon" in weapon else ELEMENT_ICONS.get(element, "🔮")
+	icon.add_theme_font_size_override("font_size", 32)
+	icon_container.add_child(icon)
+	
+	# Info del nombre
 	var info_vbox = VBoxContainer.new()
-	info_vbox.add_theme_constant_override("separation", 4)
-	hbox.add_child(info_vbox)
-
-	# Nombre y nivel
-	var name_label = Label.new()
+	info_vbox.add_theme_constant_override("separation", 2)
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_hbox.add_child(info_vbox)
+	
 	var weapon_name = weapon.weapon_name_es if "weapon_name_es" in weapon else weapon.weapon_name if "weapon_name" in weapon else "Arma"
-	name_label.text = "%s  Nv.%d" % [weapon_name, weapon.level if "level" in weapon else 1]
-	name_label.add_theme_font_size_override("font_size", 18)
-	name_label.add_theme_color_override("font_color", RARITY_COLORS.get(weapon.rarity if "rarity" in weapon else "common", Color.WHITE))
+	var name_label = Label.new()
+	name_label.text = weapon_name
+	name_label.add_theme_font_size_override("font_size", 16)
+	name_label.add_theme_color_override("font_color", RARITY_COLORS.get(rarity, Color.WHITE))
 	info_vbox.add_child(name_label)
-
-	# Stats del arma
-	var stats_text = ""
+	
+	# Elemento y tipo
+	var type_label = Label.new()
+	var element_display = ELEMENT_ICONS.get(element, "❓") + " " + element.capitalize()
+	type_label.text = element_display
+	type_label.add_theme_font_size_override("font_size", 12)
+	type_label.add_theme_color_override("font_color", ELEMENT_COLORS.get(element, Color.GRAY))
+	info_vbox.add_child(type_label)
+	
+	# === NIVEL Y BARRA DE PROGRESO ===
+	var level_hbox = HBoxContainer.new()
+	level_hbox.add_theme_constant_override("separation", 8)
+	header_hbox.add_child(level_hbox)
+	
+	var level_vbox = VBoxContainer.new()
+	level_vbox.add_theme_constant_override("separation", 2)
+	level_hbox.add_child(level_vbox)
+	
+	var level_label = Label.new()
+	level_label.text = "Nv.%d" % weapon_level
+	level_label.add_theme_font_size_override("font_size", 18)
+	level_label.add_theme_color_override("font_color", SELECTED_TAB if weapon_level >= max_level else Color.WHITE)
+	level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	level_vbox.add_child(level_label)
+	
+	# Indicador de nivel máximo o estrellas
+	var stars = ""
+	for i in range(max_level):
+		if i < weapon_level:
+			stars += "★"
+		else:
+			stars += "☆"
+	
+	var stars_label = Label.new()
+	stars_label.text = stars.substr(0, 8)  # Mostrar máximo 8 estrellas
+	stars_label.add_theme_font_size_override("font_size", 8)
+	stars_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2) if weapon_level > 0 else Color(0.4, 0.4, 0.4))
+	level_vbox.add_child(stars_label)
+	
+	# === STATS DEL ARMA ===
+	var stats_grid = GridContainer.new()
+	stats_grid.columns = 3
+	stats_grid.add_theme_constant_override("h_separation", 15)
+	stats_grid.add_theme_constant_override("v_separation", 4)
+	vbox.add_child(stats_grid)
+	
+	# Daño
 	if "damage" in weapon:
-		stats_text += "⚔️%.0f  " % weapon.damage
+		_add_weapon_stat(stats_grid, "⚔️", "Daño", "%.0f" % weapon.damage)
+	
+	# Cooldown
 	if "cooldown" in weapon:
-		stats_text += "⏱️%.2fs  " % weapon.cooldown
-	if "projectile_count" in weapon and weapon.projectile_count > 1:
-		stats_text += "🎯x%d  " % weapon.projectile_count
+		_add_weapon_stat(stats_grid, "⏱️", "Cooldown", "%.2fs" % weapon.cooldown)
+	
+	# Proyectiles
+	if "projectile_count" in weapon and weapon.projectile_count > 0:
+		_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "x%d" % weapon.projectile_count)
+	
+	# Pierce
 	if "pierce" in weapon and weapon.pierce > 0:
-		stats_text += "🗡️+%d  " % weapon.pierce
+		_add_weapon_stat(stats_grid, "🗡️", "Atravesar", "%d" % weapon.pierce)
+	
+	# Área
+	if "area" in weapon and weapon.area != 1.0:
+		_add_weapon_stat(stats_grid, "🌀", "Área", "%.0f%%" % (weapon.area * 100))
+	
+	# Velocidad de proyectil
+	if "projectile_speed" in weapon:
+		_add_weapon_stat(stats_grid, "➡️", "Velocidad", "%.0f" % weapon.projectile_speed)
+	
+	# Knockback
+	if "knockback" in weapon and weapon.knockback > 0:
+		_add_weapon_stat(stats_grid, "💥", "Empuje", "%.0f" % weapon.knockback)
+	
+	# === EFECTO ESPECIAL ===
+	var special_effect = _get_weapon_special_effect(weapon)
+	if special_effect != "":
+		var sep = HSeparator.new()
+		vbox.add_child(sep)
+		
+		var effect_label = Label.new()
+		effect_label.text = "✨ " + special_effect
+		effect_label.add_theme_font_size_override("font_size", 11)
+		effect_label.add_theme_color_override("font_color", ELEMENT_COLORS.get(element, Color(0.7, 0.9, 0.7)))
+		effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		vbox.add_child(effect_label)
+	
+	# Tooltip con descripción completa
+	var description = weapon.description if "description" in weapon else ""
+	if description != "":
+		card.tooltip_text = description
+	
+	return card
 
-	var stats_label = Label.new()
-	stats_label.text = stats_text if stats_text != "" else "Sin stats"
-	stats_label.add_theme_font_size_override("font_size", 14)
-	stats_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
-	info_vbox.add_child(stats_label)
+func _add_weapon_stat(grid: GridContainer, icon: String, stat_name: String, value: String) -> void:
+	"""Añadir stat de arma al grid"""
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 4)
+	
+	var icon_label = Label.new()
+	icon_label.text = icon
+	icon_label.add_theme_font_size_override("font_size", 12)
+	hbox.add_child(icon_label)
+	
+	var name_label = Label.new()
+	name_label.text = stat_name
+	name_label.add_theme_font_size_override("font_size", 11)
+	name_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+	hbox.add_child(name_label)
+	
+	var value_label = Label.new()
+	value_label.text = value
+	value_label.add_theme_font_size_override("font_size", 11)
+	value_label.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
+	hbox.add_child(value_label)
+	
+	grid.add_child(hbox)
 
-	return panel
+func _get_weapon_special_effect(weapon) -> String:
+	"""Obtener descripción del efecto especial del arma"""
+	var element = str(weapon.element if "element" in weapon else weapon.element_type if "element_type" in weapon else "").to_lower()
+	
+	# Efectos por defecto según elemento
+	match element:
+		"ice":
+			var slow = weapon.slow_amount if "slow_amount" in weapon else 0.4
+			return "Ralentiza enemigos un %.0f%%" % (slow * 100)
+		"fire":
+			return "Inflige quemadura (daño continuo)"
+		"lightning":
+			var chains = weapon.chain_count if "chain_count" in weapon else 2
+			return "Salta a %d enemigos cercanos" % chains
+		"nature":
+			return "Persigue enemigos y roba vida"
+		"shadow":
+			var pierce = weapon.pierce if "pierce" in weapon else 2
+			return "Atraviesa %d enemigos" % pierce
+		"arcane":
+			return "Orbita alrededor del jugador"
+		"earth":
+			return "Aturde enemigos en el área"
+		"light":
+			return "Daño instantáneo con bonus crítico"
+		"void":
+			return "Atrae enemigos hacia el impacto"
+		"wind":
+			return "Gran empuje a los enemigos"
+	
+	return ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB: MEJORAS
@@ -649,7 +1105,29 @@ func _on_resume_pressed() -> void:
 func _on_options_pressed() -> void:
 	_play_button_sound()
 	options_pressed.emit()
-	# TODO: Mostrar opciones
+	_show_options()
+
+func _show_options() -> void:
+	# Buscar o crear el menú de opciones
+	var options_menu = get_node_or_null("OptionsMenu")
+	if not options_menu:
+		var options_scene = load("res://scenes/ui/OptionsMenu.tscn")
+		if options_scene:
+			options_menu = options_scene.instantiate()
+			options_menu.name = "OptionsMenu"
+			add_child(options_menu)
+	
+	if options_menu:
+		options_menu.visible = true
+		if options_menu.has_signal("closed"):
+			if not options_menu.closed.is_connected(_on_options_closed):
+				options_menu.closed.connect(_on_options_closed)
+
+func _on_options_closed() -> void:
+	# Volver el foco al botón de continuar
+	var resume_btn = main_panel.find_child("ResumeButton", true, false)
+	if resume_btn:
+		resume_btn.grab_focus()
 
 func _on_quit_pressed() -> void:
 	_play_button_sound()
