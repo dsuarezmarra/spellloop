@@ -3,6 +3,7 @@
 # Handles text translation, language switching, and locale-specific formatting
 #
 # Public API:
+# - tr(key: String, args: Array = []) -> String  # Short alias for get_text
 # - get_text(key: String, args: Array = []) -> String
 # - set_language(language_code: String) -> bool
 # - get_current_language() -> String
@@ -18,10 +19,18 @@ extends Node
 signal language_changed(old_language: String, new_language: String)
 signal translation_loaded(language: String)
 
-# Supported languages
+# Supported languages with display names and native names
 const SUPPORTED_LANGUAGES = {
-	"en": "English",
-	"es": "Español"
+	"en": {"name": "English", "native": "English", "flag": "🇬🇧"},
+	"es": {"name": "Spanish", "native": "Español", "flag": "🇪🇸"},
+	"fr": {"name": "French", "native": "Français", "flag": "🇫🇷"},
+	"pt": {"name": "Portuguese", "native": "Português", "flag": "🇧🇷"},
+	"ru": {"name": "Russian", "native": "Русский", "flag": "🇷🇺"},
+	"de": {"name": "German", "native": "Deutsch", "flag": "🇩🇪"},
+	"it": {"name": "Italian", "native": "Italiano", "flag": "🇮🇹"},
+	"zh": {"name": "Chinese", "native": "中文", "flag": "🇨🇳"},
+	"ja": {"name": "Japanese", "native": "日本語", "flag": "🇯🇵"},
+	"ko": {"name": "Korean", "native": "한국어", "flag": "🇰🇷"}
 }
 
 # Translation data
