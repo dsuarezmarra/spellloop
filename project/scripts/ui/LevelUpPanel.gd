@@ -1,12 +1,10 @@
 # LevelUpPanel.gd
-# Panel de selección al subir de nivel - DISEÑO SIMPLIFICADO
+# Panel de selección al subir de nivel
 #
-# NAVEGACIÓN UNIFICADA (WASD o Flechas funcionan igual):
-# - ← → o A/D: Navegar entre opciones
-# - Enter/Espacio: Seleccionar (comprar) la opción actual
-# - R: Reroll (regenerar opciones)
-# - X: Eliminar opción seleccionada (banish)
-# - Escape: Saltar/Salir sin elegir
+# NAVEGACIÓN COMPLETA (WASD y Flechas funcionan igual en todo):
+# - ← → o A/D: Navegar horizontalmente (opciones o botones)
+# - ↑ ↓ o W/S: Cambiar entre fila de opciones y fila de botones
+# - Enter/Espacio: Confirmar acción
 
 extends CanvasLayer
 class_name LevelUpPanel
@@ -33,7 +31,7 @@ const OPTION_TYPES = {
 	PLAYER_UPGRADE = "player_upgrade"
 }
 
-# Colores por rareza
+# Colores
 const RARITY_COLORS = {
 	"common": Color(0.7, 0.7, 0.7),
 	"uncommon": Color(0.3, 0.9, 0.3),
@@ -42,19 +40,27 @@ const RARITY_COLORS = {
 	"legendary": Color(1.0, 0.8, 0.2)
 }
 
-# Colores UI
-const SELECTED_COLOR = Color(1.0, 0.85, 0.3)  # Dorado
+const SELECTED_COLOR = Color(1.0, 0.85, 0.3)
 const UNSELECTED_COLOR = Color(0.4, 0.4, 0.5)
+const DISABLED_COLOR = Color(0.3, 0.3, 0.35)
 const BG_COLOR = Color(0.08, 0.08, 0.12, 0.95)
 const PANEL_BG = Color(0.12, 0.12, 0.18, 0.98)
+const BUTTON_BG = Color(0.18, 0.18, 0.25)
+const BUTTON_HOVER = Color(0.25, 0.25, 0.35)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ESTADO
+# ESTADO DE NAVEGACIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
+
+enum Row { OPTIONS, BUTTONS }
+
+var current_row: Row = Row.OPTIONS
+var option_index: int = 0      # Índice en fila de opciones (0-3)
+var button_index: int = 0      # Índice en fila de botones (0=Reroll, 1=Eliminar, 2=Saltar)
 
 var options: Array = []
 var option_panels: Array = []
-var selected_index: int = 0
+var button_panels: Array = []
 var reroll_count: int = 3
 var banish_count: int = 2
 var locked: bool = false
@@ -67,7 +73,7 @@ var player_stats: PlayerStats = null
 var title_label: Label = null
 var hint_label: Label = null
 var options_container: HBoxContainer = null
-var controls_label: Label = null
+var buttons_container: HBoxContainer = null
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
@@ -83,7 +89,7 @@ func initialize(attack_mgr: AttackManager, stats: PlayerStats) -> void:
 	player_stats = stats
 
 func _create_ui() -> void:
-	# Fondo oscuro semi-transparente
+	# Fondo oscuro
 	var bg = ColorRect.new()
 	bg.color = BG_COLOR
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -96,13 +102,13 @@ func _create_ui() -> void:
 
 	# Panel principal
 	var main_panel = PanelContainer.new()
-	main_panel.custom_minimum_size = Vector2(850, 480)
+	main_panel.custom_minimum_size = Vector2(1100, 580)
 	var main_style = StyleBoxFlat.new()
 	main_style.bg_color = PANEL_BG
 	main_style.border_color = Color(0.3, 0.3, 0.4)
 	main_style.set_border_width_all(2)
 	main_style.set_corner_radius_all(16)
-	main_style.set_content_margin_all(20)
+	main_style.set_content_margin_all(25)
 	main_panel.add_theme_stylebox_override("panel", main_style)
 	center.add_child(main_panel)
 
@@ -113,44 +119,66 @@ func _create_ui() -> void:
 
 	# === TÍTULO ===
 	title_label = Label.new()
-	title_label.add_theme_font_size_override("font_size", 36)
+	title_label.text = "⬆️ ¡SUBISTE DE NIVEL! ⬆️"
+	title_label.add_theme_font_size_override("font_size", 32)
 	title_label.add_theme_color_override("font_color", SELECTED_COLOR)
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title_label)
 
 	# === INSTRUCCIONES ===
 	hint_label = Label.new()
+	hint_label.text = "Elige una mejora para continuar"
 	hint_label.add_theme_font_size_override("font_size", 14)
 	hint_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(hint_label)
 
-	# === OPCIONES ===
+	# === FILA DE OPCIONES ===
 	options_container = HBoxContainer.new()
 	options_container.add_theme_constant_override("separation", 20)
 	options_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(options_container)
 
-	# Crear paneles de opción
 	for i in range(MAX_OPTIONS):
 		var panel = _create_option_panel(i)
 		options_container.add_child(panel)
 		option_panels.append(panel)
 
-	# === CONTROLES (texto informativo) ===
-	var separator = HSeparator.new()
-	separator.add_theme_color_override("separator_color", Color(0.3, 0.3, 0.4))
-	vbox.add_child(separator)
+	# === SEPARADOR ===
+	var sep = HSeparator.new()
+	sep.add_theme_color_override("separator_color", Color(0.3, 0.3, 0.4))
+	vbox.add_child(sep)
 
-	controls_label = Label.new()
-	controls_label.add_theme_font_size_override("font_size", 16)
-	controls_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
-	controls_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(controls_label)
+	# === FILA DE BOTONES ===
+	buttons_container = HBoxContainer.new()
+	buttons_container.add_theme_constant_override("separation", 30)
+	buttons_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(buttons_container)
+
+	# Crear los 3 botones de acción
+	var btn_reroll = _create_action_button(0, "🎲", "Reroll", "(%d)")
+	var btn_banish = _create_action_button(1, "❌", "Eliminar", "(%d)")
+	var btn_skip = _create_action_button(2, "⏭️", "Saltar", "")
+
+	buttons_container.add_child(btn_reroll)
+	buttons_container.add_child(btn_banish)
+	buttons_container.add_child(btn_skip)
+
+	button_panels.append(btn_reroll)
+	button_panels.append(btn_banish)
+	button_panels.append(btn_skip)
+
+	# === AYUDA DE NAVEGACIÓN ===
+	var nav_help = Label.new()
+	nav_help.text = "← → Navegar   |   ↑ ↓ Cambiar fila   |   ENTER Confirmar"
+	nav_help.add_theme_font_size_override("font_size", 12)
+	nav_help.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
+	nav_help.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(nav_help)
 
 func _create_option_panel(index: int) -> Control:
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(180, 300)
+	panel.custom_minimum_size = Vector2(220, 300)
 	panel.name = "Option_%d" % index
 
 	var style = StyleBoxFlat.new()
@@ -162,7 +190,7 @@ func _create_option_panel(index: int) -> Control:
 	panel.add_theme_stylebox_override("panel", style)
 
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 10)
+	vbox.add_theme_constant_override("separation", 8)
 	panel.add_child(vbox)
 
 	# Tipo
@@ -173,21 +201,37 @@ func _create_option_panel(index: int) -> Control:
 	type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(type_label)
 
-	# Icono centrado
+	# Icono
 	var icon_center = CenterContainer.new()
-	icon_center.custom_minimum_size = Vector2(64, 64)
+	icon_center.custom_minimum_size = Vector2(80, 80)
 	vbox.add_child(icon_center)
+
+	var icon_container = Control.new()
+	icon_container.name = "IconContainer"
+	icon_container.custom_minimum_size = Vector2(64, 64)
+	icon_center.add_child(icon_container)
 
 	var icon_label = Label.new()
 	icon_label.name = "IconLabel"
 	icon_label.add_theme_font_size_override("font_size", 48)
 	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	icon_center.add_child(icon_label)
+	icon_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	icon_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	icon_container.add_child(icon_label)
+
+	var icon_texture = TextureRect.new()
+	icon_texture.name = "IconTexture"
+	icon_texture.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	icon_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_texture.custom_minimum_size = Vector2(64, 64)
+	icon_texture.set_anchors_preset(Control.PRESET_FULL_RECT)
+	icon_texture.visible = false
+	icon_container.add_child(icon_texture)
 
 	# Nombre
 	var name_label = Label.new()
 	name_label.name = "NameLabel"
-	name_label.add_theme_font_size_override("font_size", 16)
+	name_label.add_theme_font_size_override("font_size", 15)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(name_label)
@@ -199,7 +243,7 @@ func _create_option_panel(index: int) -> Control:
 	desc_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.75))
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc_label.custom_minimum_size.y = 60
+	desc_label.custom_minimum_size.y = 50
 	vbox.add_child(desc_label)
 
 	# Indicador de selección
@@ -214,86 +258,140 @@ func _create_option_panel(index: int) -> Control:
 
 	return panel
 
+func _create_action_button(index: int, icon: String, text: String, count_format: String) -> Control:
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(160, 60)
+	panel.name = "Button_%d" % index
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = BUTTON_BG
+	style.border_color = UNSELECTED_COLOR
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(10)
+	panel.add_theme_stylebox_override("panel", style)
+
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 10)
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	panel.add_child(hbox)
+
+	var icon_label = Label.new()
+	icon_label.name = "Icon"
+	icon_label.text = icon
+	icon_label.add_theme_font_size_override("font_size", 24)
+	hbox.add_child(icon_label)
+
+	var text_vbox = VBoxContainer.new()
+	text_vbox.add_theme_constant_override("separation", 2)
+	hbox.add_child(text_vbox)
+
+	var text_label = Label.new()
+	text_label.name = "Text"
+	text_label.text = text
+	text_label.add_theme_font_size_override("font_size", 16)
+	text_vbox.add_child(text_label)
+
+	if count_format != "":
+		var count_label = Label.new()
+		count_label.name = "Count"
+		count_label.text = count_format % 0
+		count_label.add_theme_font_size_override("font_size", 12)
+		count_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+		text_vbox.add_child(count_label)
+
+	return panel
+
 # ═══════════════════════════════════════════════════════════════════════════════
-# INPUT - Navegación unificada (WASD + Flechas)
+# INPUT - NAVEGACIÓN COMPLETA
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _input(event: InputEvent) -> void:
 	if locked or not visible:
 		return
 
-	# Navegación izquierda (← o A)
+	var handled = false
+
+	# Navegación IZQUIERDA (← o A)
 	if event.is_action_pressed("ui_left") or event.is_action_pressed("move_left"):
-		_navigate(-1)
-		get_viewport().set_input_as_handled()
-	# Navegación derecha (→ o D)
+		_navigate_horizontal(-1)
+		handled = true
+
+	# Navegación DERECHA (→ o D)
 	elif event.is_action_pressed("ui_right") or event.is_action_pressed("move_right"):
-		_navigate(1)
-		get_viewport().set_input_as_handled()
-	# Seleccionar/Comprar (Enter/Espacio)
+		_navigate_horizontal(1)
+		handled = true
+
+	# Navegación ARRIBA (↑ o W)
+	elif event.is_action_pressed("ui_up") or event.is_action_pressed("move_up"):
+		_navigate_vertical(-1)
+		handled = true
+
+	# Navegación ABAJO (↓ o S)
+	elif event.is_action_pressed("ui_down") or event.is_action_pressed("move_down"):
+		_navigate_vertical(1)
+		handled = true
+
+	# CONFIRMAR (Enter/Espacio)
 	elif event.is_action_pressed("ui_accept"):
-		_select_current()
-		get_viewport().set_input_as_handled()
-	# Salir (Escape)
+		_confirm_selection()
+		handled = true
+
+	# CANCELAR (Escape) - atajo directo para saltar
 	elif event.is_action_pressed("ui_cancel"):
 		_on_skip()
-		get_viewport().set_input_as_handled()
-	# Reroll (R)
-	elif event is InputEventKey and event.pressed and event.keycode == KEY_R:
-		_on_reroll()
-		get_viewport().set_input_as_handled()
-	# Banish/Eliminar (X)
-	elif event is InputEventKey and event.pressed and event.keycode == KEY_X:
-		_on_banish()
+		handled = true
+
+	if handled:
 		get_viewport().set_input_as_handled()
 
-func _navigate(direction: int) -> void:
-	var count = options.size()
-	if count == 0:
-		return
+func _navigate_horizontal(direction: int) -> void:
+	if current_row == Row.OPTIONS:
+		var count = options.size()
+		if count == 0:
+			return
+		option_index = (option_index + direction) % count
+		if option_index < 0:
+			option_index = count - 1
+	else:
+		# En fila de botones (3 botones)
+		button_index = (button_index + direction) % 3
+		if button_index < 0:
+			button_index = 2
 
-	selected_index = (selected_index + direction) % count
-	if selected_index < 0:
-		selected_index = count - 1
+	_update_all_visuals()
 
-	_update_visuals()
+func _navigate_vertical(direction: int) -> void:
+	if direction > 0:
+		# Bajar a botones
+		current_row = Row.BUTTONS
+	else:
+		# Subir a opciones
+		current_row = Row.OPTIONS
 
-func _update_visuals() -> void:
-	for i in range(option_panels.size()):
-		var panel = option_panels[i]
-		var is_selected = (i == selected_index and i < options.size())
-		var is_visible = (i < options.size())
+	_update_all_visuals()
 
-		panel.visible = is_visible
-
-		if not is_visible:
-			continue
-
-		# Actualizar estilo del borde
-		var style = panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
-		if is_selected:
-			style.border_color = SELECTED_COLOR
-			style.set_border_width_all(3)
-		else:
-			style.border_color = UNSELECTED_COLOR
-			style.set_border_width_all(2)
-		panel.add_theme_stylebox_override("panel", style)
-
-		# Indicador
-		var indicator = panel.find_child("Indicator", true, false) as Label
-		if indicator:
-			indicator.visible = is_selected
+func _confirm_selection() -> void:
+	if current_row == Row.OPTIONS:
+		# Seleccionar opción actual
+		_select_option()
+	else:
+		# Ejecutar botón actual
+		match button_index:
+			0: _on_reroll()
+			1: _on_banish()
+			2: _on_skip()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ACCIONES
 # ═══════════════════════════════════════════════════════════════════════════════
 
-func _select_current() -> void:
-	if locked or selected_index >= options.size():
+func _select_option() -> void:
+	if locked or option_index >= options.size():
 		return
 
 	locked = true
-	var selected = options[selected_index]
+	var selected = options[option_index]
 	_apply_option(selected)
 	option_selected.emit(selected)
 	_close_panel()
@@ -305,23 +403,31 @@ func _on_reroll() -> void:
 	reroll_count -= 1
 	reroll_used.emit()
 	generate_options()
+	# Volver a opciones después de reroll
+	current_row = Row.OPTIONS
+	option_index = 0
+	_update_all_visuals()
 
 func _on_banish() -> void:
-	if locked or banish_count <= 0 or selected_index >= options.size():
+	if locked or banish_count <= 0 or options.size() == 0:
 		return
 
-	var banished = options[selected_index]
-	options.remove_at(selected_index)
-	banish_count -= 1
-	banish_used.emit(selected_index)
+	# Eliminar la opción actualmente seleccionada en la fila de opciones
+	var idx_to_remove = option_index
+	if idx_to_remove >= options.size():
+		idx_to_remove = options.size() - 1
 
-	# Ajustar selección
-	if selected_index >= options.size() and options.size() > 0:
-		selected_index = options.size() - 1
+	options.remove_at(idx_to_remove)
+	banish_count -= 1
+	banish_used.emit(idx_to_remove)
+
+	# Ajustar índice
+	if option_index >= options.size() and options.size() > 0:
+		option_index = options.size() - 1
 
 	_update_options_ui()
-	_update_visuals()
-	_update_controls_text()
+	_update_all_visuals()
+	_update_button_counts()
 
 func _on_skip() -> void:
 	if locked:
@@ -334,6 +440,136 @@ func _close_panel() -> void:
 	get_tree().paused = false
 	panel_closed.emit()
 	queue_free()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ACTUALIZACIÓN VISUAL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _update_all_visuals() -> void:
+	# Actualizar opciones
+	for i in range(option_panels.size()):
+		var panel = option_panels[i]
+		var is_selected = (current_row == Row.OPTIONS and i == option_index and i < options.size())
+		var is_visible = (i < options.size())
+
+		panel.visible = is_visible
+
+		if not is_visible:
+			continue
+
+		var style = panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+		if is_selected:
+			style.border_color = SELECTED_COLOR
+			style.set_border_width_all(3)
+		else:
+			style.border_color = UNSELECTED_COLOR
+			style.set_border_width_all(2)
+		panel.add_theme_stylebox_override("panel", style)
+
+		var indicator = panel.find_child("Indicator", true, false) as Label
+		if indicator:
+			indicator.visible = is_selected
+
+	# Actualizar botones
+	for i in range(button_panels.size()):
+		var panel = button_panels[i]
+		var is_selected = (current_row == Row.BUTTONS and i == button_index)
+		var is_disabled = _is_button_disabled(i)
+
+		var style = panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+		if is_disabled:
+			style.border_color = DISABLED_COLOR
+			style.bg_color = Color(0.1, 0.1, 0.12)
+		elif is_selected:
+			style.border_color = SELECTED_COLOR
+			style.bg_color = BUTTON_HOVER
+			style.set_border_width_all(3)
+		else:
+			style.border_color = UNSELECTED_COLOR
+			style.bg_color = BUTTON_BG
+			style.set_border_width_all(2)
+		panel.add_theme_stylebox_override("panel", style)
+
+		# Actualizar color del texto si está deshabilitado
+		var text_label = panel.find_child("Text", true, false) as Label
+		if text_label:
+			text_label.add_theme_color_override("font_color", DISABLED_COLOR if is_disabled else Color.WHITE)
+
+func _is_button_disabled(index: int) -> bool:
+	match index:
+		0: return reroll_count <= 0  # Reroll
+		1: return banish_count <= 0 or options.size() == 0  # Eliminar
+		_: return false  # Saltar siempre disponible
+
+func _update_button_counts() -> void:
+	# Actualizar contador de Reroll
+	var reroll_count_label = button_panels[0].find_child("Count", true, false) as Label
+	if reroll_count_label:
+		reroll_count_label.text = "(%d)" % reroll_count
+
+	# Actualizar contador de Banish
+	var banish_count_label = button_panels[1].find_child("Count", true, false) as Label
+	if banish_count_label:
+		banish_count_label.text = "(%d)" % banish_count
+
+func _update_options_ui() -> void:
+	for i in range(MAX_OPTIONS):
+		var panel = option_panels[i]
+
+		if i < options.size():
+			_update_option_panel(panel, options[i])
+			panel.visible = true
+		else:
+			panel.visible = false
+
+func _update_option_panel(panel: Control, option: Dictionary) -> void:
+	var type_label = panel.find_child("TypeLabel", true, false) as Label
+	var icon_label = panel.find_child("IconLabel", true, false) as Label
+	var icon_texture = panel.find_child("IconTexture", true, false) as TextureRect
+	var name_label = panel.find_child("NameLabel", true, false) as Label
+	var desc_label = panel.find_child("DescLabel", true, false) as Label
+
+	# Tipo
+	if type_label:
+		type_label.text = _get_type_text(option.get("type", ""))
+
+	# Icono
+	var icon_value = option.get("icon", "✨")
+	var is_image_path = str(icon_value).begins_with("res://") or str(icon_value).ends_with(".png")
+
+	if icon_label and icon_texture:
+		if is_image_path:
+			icon_label.visible = false
+			icon_texture.visible = true
+			var texture = load(str(icon_value))
+			if texture:
+				icon_texture.texture = texture
+			else:
+				icon_label.visible = true
+				icon_texture.visible = false
+				icon_label.text = "✨"
+		else:
+			icon_label.visible = true
+			icon_texture.visible = false
+			icon_label.text = str(icon_value)
+
+	# Nombre
+	if name_label:
+		name_label.text = option.get("name", "???")
+		var rarity = option.get("rarity", "common")
+		name_label.add_theme_color_override("font_color", RARITY_COLORS.get(rarity, Color.WHITE))
+
+	# Descripción
+	if desc_label:
+		desc_label.text = option.get("description", "")
+
+func _get_type_text(option_type: String) -> String:
+	match option_type:
+		OPTION_TYPES.NEW_WEAPON: return "🆕 Nueva Arma"
+		OPTION_TYPES.LEVEL_UP_WEAPON: return "⬆️ Mejorar"
+		OPTION_TYPES.FUSION: return "🔥 Fusión"
+		OPTION_TYPES.PLAYER_UPGRADE: return "✨ Mejora"
+		_: return "✨ Mejora"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # GENERACIÓN DE OPCIONES
@@ -370,11 +606,11 @@ func generate_options() -> void:
 
 	possible_options.shuffle()
 	options = _balance_options(possible_options)
-	selected_index = 0
+	option_index = 0
 
 	_update_options_ui()
-	_update_visuals()
-	_update_controls_text()
+	_update_all_visuals()
+	_update_button_counts()
 
 func _get_player_upgrade_options(luck: float) -> Array:
 	var upgrade_options: Array = []
@@ -544,63 +780,6 @@ func _balance_options(all_options: Array) -> Array:
 	return balanced
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# UI UPDATE
-# ═══════════════════════════════════════════════════════════════════════════════
-
-func _update_options_ui() -> void:
-	for i in range(MAX_OPTIONS):
-		var panel = option_panels[i]
-
-		if i < options.size():
-			_update_option_panel(panel, options[i])
-			panel.visible = true
-		else:
-			panel.visible = false
-
-func _update_option_panel(panel: Control, option: Dictionary) -> void:
-	var type_label = panel.find_child("TypeLabel", true, false) as Label
-	var icon_label = panel.find_child("IconLabel", true, false) as Label
-	var name_label = panel.find_child("NameLabel", true, false) as Label
-	var desc_label = panel.find_child("DescLabel", true, false) as Label
-
-	# Tipo
-	if type_label:
-		type_label.text = _get_type_text(option.get("type", ""))
-
-	# Icono
-	if icon_label:
-		icon_label.text = str(option.get("icon", "✨"))
-
-	# Nombre con color de rareza
-	if name_label:
-		name_label.text = option.get("name", "???")
-		var rarity = option.get("rarity", "common")
-		name_label.add_theme_color_override("font_color", RARITY_COLORS.get(rarity, Color.WHITE))
-
-	# Descripción
-	if desc_label:
-		desc_label.text = option.get("description", "")
-
-func _update_controls_text() -> void:
-	if controls_label:
-		# Texto de controles en español, siempre actualizado con contadores
-		var text = "⬅️ A/D ➡️ Navegar   |   ⏎ ENTER Seleccionar   |   🎲 R Reroll (%d)   |   ❌ X Eliminar (%d)   |   ⏭️ ESC Saltar" % [reroll_count, banish_count]
-		controls_label.text = text
-
-func _get_type_text(option_type: String) -> String:
-	match option_type:
-		OPTION_TYPES.NEW_WEAPON:
-			return "🆕 Nueva Arma"
-		OPTION_TYPES.LEVEL_UP_WEAPON:
-			return "⬆️ Mejorar"
-		OPTION_TYPES.FUSION:
-			return "🔥 Fusión"
-		OPTION_TYPES.PLAYER_UPGRADE:
-			return "✨ Mejora"
-		_:
-			return "✨ Mejora"
-
-# ═══════════════════════════════════════════════════════════════════════════════
 # APLICAR OPCIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -632,12 +811,9 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 				player_stats.modify_stat(stat, value, op)
 			elif stat in player_stats:
 				match op:
-					"add":
-						player_stats[stat] += value
-					"multiply":
-						player_stats[stat] *= value
-					"set":
-						player_stats[stat] = value
+					"add": player_stats[stat] += value
+					"multiply": player_stats[stat] *= value
+					"set": player_stats[stat] = value
 		return
 
 	if player_stats and player_stats.has_method("apply_upgrade"):
@@ -651,30 +827,23 @@ func show_panel() -> void:
 	visible = true
 	get_tree().paused = true
 	locked = false
-	_update_texts()
+	current_row = Row.OPTIONS
+	option_index = 0
+	button_index = 0
 	generate_options()
 
 func setup_options(opts: Array) -> void:
 	options = opts.duplicate()
-	selected_index = 0
+	option_index = 0
 	_update_options_ui()
-	_update_visuals()
+	_update_all_visuals()
 
 func set_reroll_count(count: int) -> void:
 	reroll_count = count
-	_update_controls_text()
+	_update_button_counts()
+	_update_all_visuals()
 
 func set_banish_count(count: int) -> void:
 	banish_count = count
-	_update_controls_text()
-
-func _update_texts() -> void:
-	# Título siempre en español
-	if title_label:
-		title_label.text = "⬆️ ¡SUBISTE DE NIVEL! ⬆️"
-
-	# Instrucciones
-	if hint_label:
-		hint_label.text = "Elige una mejora para continuar"
-
-	_update_controls_text()
+	_update_button_counts()
+	_update_all_visuals()
