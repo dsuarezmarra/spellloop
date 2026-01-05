@@ -1,17 +1,15 @@
 # LevelUpPanel.gd
 # Panel de selección al subir de nivel
 #
-# TIPOS DE OPCIONES:
-# 1. Nueva arma (si hay slots disponibles)
-# 2. Subir nivel de arma existente
-# 3. Fusionar dos armas (si hay fusiones disponibles)
-# 4. Upgrade de stats del jugador
+# NAVEGACIÓN:
+# - Flechas izquierda/derecha o joystick para navegar entre opciones
+# - Enter/Espacio/A para abrir menú de acciones
+# - Escape/B para cerrar menú de acciones o salir (skip)
 #
-# El sistema genera opciones basadas en:
-# - Armas actuales del jugador
-# - Slots disponibles
-# - Fusiones posibles
-# - Suerte del jugador
+# ACCIONES:
+# - Comprar: Adquiere la mejora seleccionada
+# - Banish: Elimina la opción del pool (limitado)
+# - Cancelar: Vuelve a la selección
 
 extends CanvasLayer
 class_name LevelUpPanel
@@ -47,21 +45,27 @@ const RARITY_COLORS = {
 	"legendary": Color(1.0, 0.8, 0.2)
 }
 
+# Colores de selección
+const SELECTED_BORDER_COLOR = Color(1.0, 0.85, 0.3)  # Dorado
+const UNSELECTED_BORDER_COLOR = Color(0.35, 0.35, 0.5)
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # ESTADO
 # ═══════════════════════════════════════════════════════════════════════════════
 
 var options: Array = []
-var option_buttons: Array = []
+var option_panels: Array = []
+
+# Navegación
+var selected_index: int = 0
+var action_menu_open: bool = false
 
 # Balance de Reroll y Banish:
-# - El jugador inicia con un número FIJO de cada uno para TODA la partida
-# - NO se regeneran al subir de nivel
 # - Reroll: 3 usos totales (permite re-randomizar opciones)
 # - Banish: 2 usos totales (elimina una opción permanentemente del pool)
 # - Skip: ILIMITADO (siempre puede cerrar sin elegir nada)
-var reroll_count: int = 3  # Fijo para toda la partida
-var banish_count: int = 2  # Fijo para toda la partida
+var reroll_count: int = 3
+var banish_count: int = 2
 var locked: bool = false
 
 # Referencias
@@ -71,11 +75,17 @@ var player_stats: PlayerStats = null
 # UI Nodes
 var main_container: PanelContainer = null
 var title_label: Label = null
+var subtitle_label: Label = null
 var options_container: HBoxContainer = null
 var controls_container: HBoxContainer = null
+var action_menu_container: PanelContainer = null
 var reroll_button: Button = null
-var banish_button: Button = null
 var skip_button: Button = null
+
+# Action menu buttons
+var buy_button: Button = null
+var banish_button: Button = null
+var cancel_button: Button = null
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
@@ -106,7 +116,7 @@ func _create_ui() -> void:
 
 	# Container principal con estilo
 	main_container = PanelContainer.new()
-	main_container.custom_minimum_size = Vector2(850, 450)
+	main_container.custom_minimum_size = Vector2(900, 520)
 
 	# Crear StyleBox para el panel
 	var style = StyleBoxFlat.new()
@@ -120,7 +130,7 @@ func _create_ui() -> void:
 
 	# Layout vertical
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 20)
+	vbox.add_theme_constant_override("separation", 15)
 	main_container.add_child(vbox)
 
 	# Margen interno
@@ -128,27 +138,27 @@ func _create_ui() -> void:
 	margin.add_theme_constant_override("margin_left", 30)
 	margin.add_theme_constant_override("margin_right", 30)
 	margin.add_theme_constant_override("margin_top", 20)
-	margin.add_theme_constant_override("margin_bottom", 20)
+	margin.add_theme_constant_override("margin_bottom", 15)
 	vbox.add_child(margin)
 
 	var inner_vbox = VBoxContainer.new()
-	inner_vbox.add_theme_constant_override("separation", 15)
+	inner_vbox.add_theme_constant_override("separation", 12)
 	margin.add_child(inner_vbox)
 
-	# Título (se actualiza con localización en show_panel)
+	# Título
 	title_label = Label.new()
 	title_label.name = "TitleLabel"
 	title_label.add_theme_font_size_override("font_size", 32)
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	inner_vbox.add_child(title_label)
 
-	# Subtítulo
-	var subtitle = Label.new()
-	subtitle.name = "SubtitleLabel"
-	subtitle.add_theme_font_size_override("font_size", 18)
-	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle.modulate = Color(0.7, 0.7, 0.7)
-	inner_vbox.add_child(subtitle)
+	# Subtítulo con instrucciones
+	subtitle_label = Label.new()
+	subtitle_label.name = "SubtitleLabel"
+	subtitle_label.add_theme_font_size_override("font_size", 14)
+	subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle_label.modulate = Color(0.6, 0.6, 0.7)
+	inner_vbox.add_child(subtitle_label)
 
 	# Container de opciones
 	options_container = HBoxContainer.new()
@@ -156,17 +166,20 @@ func _create_ui() -> void:
 	options_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	inner_vbox.add_child(options_container)
 
-	# Crear botones de opción
+	# Crear paneles de opción (sin botones de selección)
 	for i in range(MAX_OPTIONS):
 		var option_panel = _create_option_panel(i)
 		options_container.add_child(option_panel)
-		option_buttons.append(option_panel)
+		option_panels.append(option_panel)
 
 	# Separador
 	var separator = HSeparator.new()
 	inner_vbox.add_child(separator)
 
-	# Container de controles
+	# Container de menú de acciones (inicialmente oculto)
+	_create_action_menu(inner_vbox)
+
+	# Container de controles inferiores
 	controls_container = HBoxContainer.new()
 	controls_container.add_theme_constant_override("separation", 20)
 	controls_container.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -174,32 +187,26 @@ func _create_ui() -> void:
 
 	# Botón Reroll
 	reroll_button = Button.new()
-	reroll_button.custom_minimum_size = Vector2(130, 40)
+	reroll_button.custom_minimum_size = Vector2(140, 40)
 	reroll_button.pressed.connect(_on_reroll_pressed)
 	controls_container.add_child(reroll_button)
 
-	# Botón Banish (eliminar opción)
-	banish_button = Button.new()
-	banish_button.custom_minimum_size = Vector2(130, 40)
-	banish_button.pressed.connect(_on_banish_pressed)
-	controls_container.add_child(banish_button)
-
-	# Botón Skip (siempre disponible, sin límite)
+	# Botón Skip (siempre disponible)
 	skip_button = Button.new()
-	skip_button.custom_minimum_size = Vector2(130, 40)
+	skip_button.custom_minimum_size = Vector2(140, 40)
 	skip_button.pressed.connect(_on_skip_pressed)
 	controls_container.add_child(skip_button)
 
 func _create_option_panel(index: int) -> Control:
-	"""Crear un panel de opción individual"""
+	"""Crear un panel de opción individual (sin botón de selección)"""
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(190, 300)
+	panel.custom_minimum_size = Vector2(190, 280)
 	panel.name = "Option_%d" % index
 
-	# Estilo del panel de opción
+	# Estilo del panel de opción (se actualiza según selección)
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.15, 0.15, 0.22, 0.95)
-	style.border_color = Color(0.35, 0.35, 0.5)
+	style.border_color = UNSELECTED_BORDER_COLOR
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(8)
 	style.set_content_margin_all(10)
@@ -210,16 +217,16 @@ func _create_option_panel(index: int) -> Control:
 	panel.add_child(vbox)
 
 	# Margen
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 8)
-	margin.add_theme_constant_override("margin_right", 8)
-	margin.add_theme_constant_override("margin_top", 8)
-	margin.add_theme_constant_override("margin_bottom", 8)
-	vbox.add_child(margin)
+	var margin_container = MarginContainer.new()
+	margin_container.add_theme_constant_override("margin_left", 8)
+	margin_container.add_theme_constant_override("margin_right", 8)
+	margin_container.add_theme_constant_override("margin_top", 8)
+	margin_container.add_theme_constant_override("margin_bottom", 8)
+	vbox.add_child(margin_container)
 
 	var inner_vbox = VBoxContainer.new()
 	inner_vbox.add_theme_constant_override("separation", 6)
-	margin.add_child(inner_vbox)
+	margin_container.add_child(inner_vbox)
 
 	# Tipo (pequeño)
 	var type_label = Label.new()
@@ -247,7 +254,7 @@ func _create_option_panel(index: int) -> Control:
 	icon_label.name = "IconLabel"
 	icon_label.add_theme_font_size_override("font_size", 48)
 	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	icon_label.visible = false  # Oculto por defecto
+	icon_label.visible = false
 	icon_container.add_child(icon_label)
 
 	# Nombre
@@ -263,16 +270,160 @@ func _create_option_panel(index: int) -> Control:
 	desc_label.add_theme_font_size_override("font_size", 12)
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc_label.custom_minimum_size.y = 60
+	desc_label.custom_minimum_size.y = 70
 	inner_vbox.add_child(desc_label)
 
-	# Botón de selección (texto se actualiza con localización)
-	var select_btn = Button.new()
-	select_btn.name = "SelectButton"
-	select_btn.pressed.connect(_make_option_callback(index))
-	inner_vbox.add_child(select_btn)
+	# Indicador de selección (flecha)
+	var selection_indicator = Label.new()
+	selection_indicator.name = "SelectionIndicator"
+	selection_indicator.text = "▲"
+	selection_indicator.add_theme_font_size_override("font_size", 20)
+	selection_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	selection_indicator.modulate = SELECTED_BORDER_COLOR
+	selection_indicator.visible = false
+	inner_vbox.add_child(selection_indicator)
 
 	return panel
+
+func _create_action_menu(parent: VBoxContainer) -> void:
+	"""Crear el menú de acciones (Comprar, Banish, Cancelar)"""
+	action_menu_container = PanelContainer.new()
+	action_menu_container.name = "ActionMenu"
+	action_menu_container.visible = false
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.18, 0.18, 0.25, 0.98)
+	style.border_color = SELECTED_BORDER_COLOR
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(10)
+	action_menu_container.add_theme_stylebox_override("panel", style)
+	parent.add_child(action_menu_container)
+
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 15)
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	action_menu_container.add_child(hbox)
+
+	# Botón Comprar
+	buy_button = Button.new()
+	buy_button.name = "BuyButton"
+	buy_button.custom_minimum_size = Vector2(140, 45)
+	buy_button.pressed.connect(_on_buy_pressed)
+	hbox.add_child(buy_button)
+
+	# Botón Banish
+	banish_button = Button.new()
+	banish_button.name = "BanishButton"
+	banish_button.custom_minimum_size = Vector2(140, 45)
+	banish_button.pressed.connect(_on_banish_option_pressed)
+	hbox.add_child(banish_button)
+
+	# Botón Cancelar
+	cancel_button = Button.new()
+	cancel_button.name = "CancelButton"
+	cancel_button.custom_minimum_size = Vector2(140, 45)
+	cancel_button.pressed.connect(_on_cancel_action_pressed)
+	hbox.add_child(cancel_button)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INPUT - Navegación con teclado/gamepad
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _input(event: InputEvent) -> void:
+	if locked or not visible:
+		return
+
+	# Navegación con flechas/joystick
+	if event.is_action_pressed("ui_left") or event.is_action_pressed("move_left"):
+		_navigate(-1)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_right") or event.is_action_pressed("move_right"):
+		_navigate(1)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_accept"):  # Enter/Espacio/A
+		if action_menu_open:
+			# Si el menú está abierto, comprar por defecto
+			_on_buy_pressed()
+		else:
+			_open_action_menu()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_cancel"):  # Escape/B
+		if action_menu_open:
+			_close_action_menu()
+		else:
+			_on_skip_pressed()
+		get_viewport().set_input_as_handled()
+
+func _navigate(direction: int) -> void:
+	"""Navegar entre opciones"""
+	if action_menu_open:
+		return
+
+	var visible_count = 0
+	for i in range(options.size()):
+		if i < option_panels.size() and option_panels[i].visible:
+			visible_count += 1
+
+	if visible_count == 0:
+		return
+
+	selected_index = (selected_index + direction) % visible_count
+	if selected_index < 0:
+		selected_index = visible_count - 1
+
+	_update_selection_visual()
+
+func _update_selection_visual() -> void:
+	"""Actualizar indicador visual de selección"""
+	for i in range(option_panels.size()):
+		var panel = option_panels[i]
+		var indicator = panel.find_child("SelectionIndicator", true, false) as Label
+		var style = panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+
+		if i == selected_index and i < options.size():
+			# Seleccionado
+			style.border_color = SELECTED_BORDER_COLOR
+			style.set_border_width_all(3)
+			if indicator:
+				indicator.visible = true
+		else:
+			# No seleccionado
+			style.border_color = UNSELECTED_BORDER_COLOR
+			style.set_border_width_all(2)
+			if indicator:
+				indicator.visible = false
+
+		panel.add_theme_stylebox_override("panel", style)
+
+func _open_action_menu() -> void:
+	"""Abrir menú de acciones para la opción seleccionada"""
+	if selected_index >= options.size():
+		return
+
+	action_menu_open = true
+	action_menu_container.visible = true
+	_update_action_menu_buttons()
+
+	# Enfocar botón comprar
+	buy_button.grab_focus()
+
+func _close_action_menu() -> void:
+	"""Cerrar menú de acciones"""
+	action_menu_open = false
+	action_menu_container.visible = false
+
+func _update_action_menu_buttons() -> void:
+	"""Actualizar textos y estado de botones del menú de acciones"""
+	var buy_text = _get_localized("ui.level_up.buy", "Comprar")
+	var banish_text = _get_localized("ui.level_up.banish", "Eliminar")
+	var cancel_text = _get_localized("ui.level_up.cancel", "Cancelar")
+
+	buy_button.text = "✅ " + buy_text
+	banish_button.text = "🚫 %s (%d)" % [banish_text, banish_count]
+	cancel_button.text = "❌ " + cancel_text
+
+	banish_button.disabled = banish_count <= 0
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # GENERACIÓN DE OPCIONES
@@ -319,8 +470,12 @@ func generate_options() -> void:
 	# Balancear tipos de opciones
 	options = _balance_options(possible_options)
 
+	# Reset selección
+	selected_index = 0
+
 	# Actualizar UI
 	_update_options_ui()
+	_update_selection_visual()
 
 func _get_player_upgrade_options_from_database(luck: float) -> Array:
 	"""Obtener opciones de mejora usando PassiveDatabase directamente"""
@@ -368,8 +523,8 @@ func _get_fallback_options() -> Array:
 		{
 			"type": OPTION_TYPES.PLAYER_UPGRADE,
 			"upgrade_id": "damage_boost",
-			"name": "Daño Mágico +",
-			"description": "Aumenta el daño de los proyectiles mágicos en un 10%",
+			"name": _get_localized("gameplay.passives.damage_boost", "Daño Mágico +"),
+			"description": _get_localized("gameplay.passives.damage_boost_desc", "Aumenta el daño de los proyectiles mágicos en un 10%"),
 			"icon": "⚡",
 			"rarity": "common",
 			"effects": [{"stat": "damage_multiplier", "value": 0.10, "operation": "add"}],
@@ -378,8 +533,8 @@ func _get_fallback_options() -> Array:
 		{
 			"type": OPTION_TYPES.PLAYER_UPGRADE,
 			"upgrade_id": "speed_boost",
-			"name": "Velocidad +",
-			"description": "Aumenta la velocidad de movimiento en un 10%",
+			"name": _get_localized("gameplay.passives.speed_boost", "Velocidad +"),
+			"description": _get_localized("gameplay.passives.speed_boost_desc", "Aumenta la velocidad de movimiento en un 10%"),
 			"icon": "💨",
 			"rarity": "common",
 			"effects": [{"stat": "speed_multiplier", "value": 0.10, "operation": "add"}],
@@ -388,8 +543,8 @@ func _get_fallback_options() -> Array:
 		{
 			"type": OPTION_TYPES.PLAYER_UPGRADE,
 			"upgrade_id": "health_boost",
-			"name": "Vida Máxima +",
-			"description": "Aumenta la vida máxima en 20",
+			"name": _get_localized("gameplay.passives.health_boost", "Vida Máxima +"),
+			"description": _get_localized("gameplay.passives.health_boost_desc", "Aumenta la vida máxima en 20"),
 			"icon": "❤️",
 			"rarity": "common",
 			"effects": [{"stat": "max_health", "value": 20, "operation": "add"}],
@@ -398,8 +553,8 @@ func _get_fallback_options() -> Array:
 		{
 			"type": OPTION_TYPES.PLAYER_UPGRADE,
 			"upgrade_id": "cooldown_reduction",
-			"name": "Recarga Rápida",
-			"description": "Reduce el tiempo de recarga de armas en un 5%",
+			"name": _get_localized("gameplay.passives.cooldown_reduction", "Recarga Rápida"),
+			"description": _get_localized("gameplay.passives.cooldown_reduction_desc", "Reduce el tiempo de recarga de armas en un 5%"),
 			"icon": "⏰",
 			"rarity": "uncommon",
 			"effects": [{"stat": "cooldown_reduction", "value": 0.05, "operation": "add"}],
@@ -432,7 +587,7 @@ func _get_new_weapon_options() -> Array:
 			"description": weapon_data.get("description", ""),
 			"icon": weapon_data.get("icon", "🔮"),
 			"rarity": weapon_data.get("rarity", "common"),
-			"priority": 1.0  # Prioridad media
+			"priority": 1.0
 		})
 
 	return new_options
@@ -453,7 +608,7 @@ func _get_weapon_level_up_options() -> Array:
 			"description": weapon.get_next_upgrade_description(),
 			"icon": weapon.icon,
 			"rarity": "uncommon" if weapon.level < 5 else "rare",
-			"priority": 1.5  # Prioridad alta
+			"priority": 1.5
 		})
 
 	return level_options
@@ -477,31 +632,10 @@ func _get_fusion_options() -> Array:
 			],
 			"icon": preview.get("icon", "⚡"),
 			"rarity": "epic",
-			"priority": 2.0  # Prioridad muy alta
+			"priority": 2.0
 		})
 
 	return fusion_options
-
-func _get_player_upgrade_options(luck: float) -> Array:
-	"""Obtener opciones de mejora del jugador"""
-	if player_stats == null:
-		return []
-
-	var upgrades = player_stats.get_random_upgrades(6, luck)
-	var upgrade_options: Array = []
-
-	for upgrade in upgrades:
-		upgrade_options.append({
-			"type": OPTION_TYPES.PLAYER_UPGRADE,
-			"upgrade_id": upgrade.id,
-			"name": upgrade.name,
-			"description": upgrade.description,
-			"icon": upgrade.icon,
-			"rarity": upgrade.rarity,
-			"priority": 0.8  # Prioridad baja
-		})
-
-	return upgrade_options
 
 func _balance_options(all_options: Array) -> Array:
 	"""Balancear tipos de opciones para que haya variedad"""
@@ -544,7 +678,7 @@ func _balance_options(all_options: Array) -> Array:
 func _update_options_ui() -> void:
 	"""Actualizar la UI con las opciones actuales"""
 	for i in range(MAX_OPTIONS):
-		var panel = option_buttons[i]
+		var panel = option_panels[i]
 
 		if i < options.size():
 			_update_option_panel(panel, options[i])
@@ -561,11 +695,9 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 	var icon_label = panel.find_child("IconLabel", true, false) as Label
 	var name_label = panel.find_child("NameLabel", true, false) as Label
 	var desc_label = panel.find_child("DescLabel", true, false) as Label
-	var select_btn = panel.find_child("SelectButton", true, false) as Button
 
 	# Tipo (usando localización)
 	var type_text = _get_option_type_text(option.get("type", OPTION_TYPES.PLAYER_UPGRADE))
-
 	if type_label:
 		type_label.text = type_text
 
@@ -589,7 +721,6 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 
 	# Si no se cargó textura, usar emoji
 	if not loaded_texture and icon_label:
-		# Si es una ruta que no se cargó, usar emoji por defecto
 		if icon_value is String and icon_value.begins_with("res://"):
 			icon_label.text = "✨"
 		else:
@@ -606,45 +737,30 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 	if desc_label:
 		desc_label.text = option.get("description", "")
 
-	# Habilitar botón
-	if select_btn:
-		select_btn.disabled = false
-
 func _update_control_buttons() -> void:
 	"""Actualizar estados de los botones de control con localización"""
-	# Obtener textos localizados
 	var reroll_text = _get_localized("ui.level_up.reroll", "Reroll")
-	var banish_text = _get_localized("ui.level_up.banish", "Banish")
-	var skip_text = _get_localized("ui.level_up.skip", "Skip")
+	var skip_text = _get_localized("ui.level_up.skip", "Salir")
 
 	if reroll_button:
 		reroll_button.text = "🎲 %s (%d)" % [reroll_text, reroll_count]
 		reroll_button.disabled = reroll_count <= 0
 
-	if banish_button:
-		banish_button.text = "🚫 %s (%d)" % [banish_text, banish_count]
-		banish_button.disabled = banish_count <= 0
-
-	# Skip siempre habilitado (sin límite)
 	if skip_button:
 		skip_button.text = "⏭️ %s" % skip_text
 		skip_button.disabled = false
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# CALLBACKS
+# CALLBACKS - Acciones
 # ═══════════════════════════════════════════════════════════════════════════════
 
-func _make_option_callback(index: int) -> Callable:
-	"""Crear callback para selección de opción"""
-	return func(): _on_option_selected(index)
-
-func _on_option_selected(index: int) -> void:
-	"""Manejar selección de opción"""
-	if locked or index >= options.size():
+func _on_buy_pressed() -> void:
+	"""Comprar/Seleccionar la opción actual"""
+	if locked or selected_index >= options.size():
 		return
 
 	locked = true
-	var selected = options[index]
+	var selected = options[selected_index]
 
 	# Aplicar la opción seleccionada
 	_apply_option(selected)
@@ -652,6 +768,50 @@ func _on_option_selected(index: int) -> void:
 	# Emitir señal y cerrar
 	option_selected.emit(selected)
 	_close_panel()
+
+func _on_banish_option_pressed() -> void:
+	"""Banish la opción seleccionada"""
+	if locked or banish_count <= 0 or selected_index >= options.size():
+		return
+
+	var banished = options[selected_index]
+	options.remove_at(selected_index)
+	banish_count -= 1
+
+	banish_used.emit(selected_index)
+	print("[LevelUpPanel] Banish usado: %s (restantes: %d)" % [banished.name, banish_count])
+
+	# Ajustar selección si es necesario
+	if selected_index >= options.size() and options.size() > 0:
+		selected_index = options.size() - 1
+
+	# Cerrar menú de acciones y actualizar
+	_close_action_menu()
+	_update_options_ui()
+	_update_selection_visual()
+
+func _on_cancel_action_pressed() -> void:
+	"""Cancelar acción y volver a selección"""
+	_close_action_menu()
+
+func _on_reroll_pressed() -> void:
+	"""Manejar reroll"""
+	if locked or reroll_count <= 0:
+		return
+
+	reroll_count -= 1
+	reroll_used.emit()
+	generate_options()
+	print("[LevelUpPanel] Reroll usado (restantes: %d)" % reroll_count)
+
+func _on_skip_pressed() -> void:
+	"""Manejar skip (siempre disponible, sin límite)"""
+	if locked:
+		return
+
+	skip_used.emit()
+	_close_panel()
+	print("[LevelUpPanel] Skip usado")
 
 func _apply_option(option: Dictionary) -> void:
 	"""Aplicar la opción seleccionada"""
@@ -700,39 +860,6 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 	if player_stats and player_stats.has_method("apply_upgrade"):
 		player_stats.apply_upgrade(option.get("upgrade_id", ""))
 
-func _on_reroll_pressed() -> void:
-	"""Manejar reroll"""
-	if locked or reroll_count <= 0:
-		return
-
-	reroll_count -= 1
-	reroll_used.emit()
-	generate_options()
-	print("[LevelUpPanel] Reroll usado (restantes: %d)" % reroll_count)
-
-func _on_banish_pressed() -> void:
-	"""Manejar banish (mostrar selector)"""
-	if locked or banish_count <= 0:
-		return
-
-	# Por ahora, banish la primera opción
-	# TODO: Implementar selector de qué opción banish
-	if options.size() > 0:
-		banish_count -= 1
-		var banished = options.pop_front()
-		banish_used.emit(0)
-		_update_options_ui()
-		print("[LevelUpPanel] Banish usado: %s" % banished.name)
-
-func _on_skip_pressed() -> void:
-	"""Manejar skip (siempre disponible, sin límite)"""
-	if locked:
-		return
-
-	skip_used.emit()
-	_close_panel()
-	print("[LevelUpPanel] Skip usado")
-
 func _close_panel() -> void:
 	"""Cerrar el panel"""
 	get_tree().paused = false
@@ -748,13 +875,17 @@ func show_panel() -> void:
 	visible = true
 	get_tree().paused = true
 	locked = false
-	_update_localized_texts()  # Actualizar textos con idioma actual
+	action_menu_open = false
+	action_menu_container.visible = false
+	_update_localized_texts()
 	generate_options()
 
 func setup_options(opts: Array) -> void:
 	"""Configurar opciones manualmente (para compatibilidad)"""
 	options = opts.duplicate()
+	selected_index = 0
 	_update_options_ui()
+	_update_selection_visual()
 
 func set_reroll_count(count: int) -> void:
 	reroll_count = count
@@ -762,10 +893,7 @@ func set_reroll_count(count: int) -> void:
 
 func set_banish_count(count: int) -> void:
 	banish_count = count
-	_update_control_buttons()
-
-# Skip ya no tiene límite - función removida
-# func set_skip_count(count: int) -> void: ...
+	_update_action_menu_buttons()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LOCALIZACIÓN
@@ -773,13 +901,11 @@ func set_banish_count(count: int) -> void:
 
 func _get_localized(key: String, fallback: String) -> String:
 	"""Obtener texto localizado con fallback"""
-	# Intentar acceder al autoload Localization
 	var loc = get_node_or_null("/root/Localization")
 	if loc:
-		# Usar L() o get_text() (L es alias de get_text)
 		if loc.has_method("L"):
 			var result = loc.L(key)
-			if result != key:  # Si no es la key misma, encontró traducción
+			if result != key:
 				return result
 		elif loc.has_method("get_text"):
 			var result = loc.get_text(key)
@@ -792,33 +918,27 @@ func _update_localized_texts() -> void:
 	"""Actualizar todos los textos con localización"""
 	# Título
 	if title_label:
-		title_label.text = "⬆️ %s ⬆️" % _get_localized("ui.level_up.title", "LEVEL UP!")
+		title_label.text = "⬆️ %s ⬆️" % _get_localized("ui.level_up.title", "¡SUBISTE DE NIVEL!")
 
-	# Subtítulo
-	var subtitle = main_container.find_child("SubtitleLabel", true, false) as Label
-	if subtitle:
-		subtitle.text = _get_localized("ui.level_up.subtitle", "Choose an upgrade")
-
-	# Botones de opciones
-	var select_text = _get_localized("ui.level_up.select", "Select")
-	for panel in option_buttons:
-		var select_btn = panel.find_child("SelectButton", true, false) as Button
-		if select_btn:
-			select_btn.text = select_text
+	# Subtítulo con instrucciones
+	if subtitle_label:
+		var nav_hint = _get_localized("ui.level_up.nav_hint", "◀ ▶ Navegar  |  Enter/A Seleccionar  |  Esc/B Salir")
+		subtitle_label.text = nav_hint
 
 	# Botones de control
 	_update_control_buttons()
+	_update_action_menu_buttons()
 
 func _get_option_type_text(option_type: String) -> String:
 	"""Obtener texto localizado para tipo de opción"""
 	match option_type:
 		OPTION_TYPES.NEW_WEAPON:
-			return "🆕 " + _get_localized("ui.level_up.new_weapon", "New Weapon")
+			return "🆕 " + _get_localized("ui.level_up.new_weapon", "Nueva Arma")
 		OPTION_TYPES.LEVEL_UP_WEAPON:
-			return "⬆️ " + _get_localized("ui.level_up.upgrade_weapon", "Upgrade")
+			return "⬆️ " + _get_localized("ui.level_up.upgrade_weapon", "Mejorar")
 		OPTION_TYPES.FUSION:
-			return "🔥 " + _get_localized("ui.level_up.fusion", "Fusion")
+			return "🔥 " + _get_localized("ui.level_up.fusion", "Fusión")
 		OPTION_TYPES.PLAYER_UPGRADE:
-			return "✨ " + _get_localized("ui.level_up.upgrade", "Upgrade")
+			return "✨ " + _get_localized("ui.level_up.upgrade", "Mejora")
 		_:
-			return "✨ " + _get_localized("ui.level_up.upgrade", "Upgrade")
+			return "✨ " + _get_localized("ui.level_up.upgrade", "Mejora")
