@@ -146,39 +146,61 @@ func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bo
 	if randf() > drop_chance:
 		return  # No drop
 
-	# Calcular cantidad y valor de monedas
+	# Determinar tipo de moneda según tier/elite/boss
+	var coin_type = _get_coin_type_for_enemy(enemy_tier, is_elite, is_boss)
+	
+	# Calcular cantidad de monedas
 	var coin_count = 1
-	var base_value = 1
-
 	match enemy_tier:
 		1:
 			coin_count = randi_range(1, 2)
-			base_value = 1
 		2:
 			coin_count = randi_range(1, 3)
-			base_value = 2
 		3:
-			coin_count = randi_range(2, 4)
-			base_value = 3
+			coin_count = randi_range(2, 3)
 		4:
-			coin_count = randi_range(3, 5)
-			base_value = 5
-		5:  # Boss
-			coin_count = randi_range(8, 15)
-			base_value = 10
+			coin_count = randi_range(2, 4)
+		5:  # Boss tier
+			coin_count = randi_range(5, 8)
 
 	# Multiplicadores especiales
 	if is_elite:
-		coin_count = int(coin_count * 2.5)
-		base_value = int(base_value * 2)
+		coin_count = int(coin_count * 2)
 	if is_boss:
-		coin_count = int(coin_count * 1.5)
-		base_value = int(base_value * 1.5)
+		coin_count = int(coin_count * 2.5)
 
 	# Crear las monedas con pequeño offset aleatorio
 	for i in range(coin_count):
 		var offset = Vector2(randf_range(-20, 20), randf_range(-20, 20))
-		create_coin(position + offset, base_value)
+		_create_coin_with_type(position + offset, coin_type)
+
+func _get_coin_type_for_enemy(tier: int, is_elite: bool, is_boss: bool) -> int:
+	"""Determinar el tipo de moneda según el enemigo"""
+	# CoinType enum: BRONZE=0, SILVER=1, GOLD=2, DIAMOND=3, PURPLE=4
+	if is_boss:
+		return 4  # PURPLE
+	elif is_elite:
+		return 3  # DIAMOND
+	else:
+		match tier:
+			1:
+				return 0  # BRONZE
+			2:
+				return 1  # SILVER
+			3, 4:
+				return 2  # GOLD
+			5:
+				return 3  # DIAMOND
+			_:
+				return 0  # BRONZE
+
+func _create_coin_with_type(pos: Vector2, coin_type: int) -> Node2D:
+	"""Crear moneda con tipo específico"""
+	var coin = create_coin(pos, 1)  # Valor se determina por tipo
+	if coin and coin.has_method("initialize"):
+		var player = _find_player()
+		coin.initialize(pos, 1, player, coin_type)
+	return coin
 
 func _create_fallback_coin() -> Node2D:
 	"""Crear moneda simple si no hay escena"""
@@ -301,7 +323,6 @@ func _process(delta):
 	for coin in coins_to_remove:
 		active_coins.erase(coin)
 
-func create_collection_effect(_position: Vector2):
 func create_collection_effect(_position: Vector2):
 	"""Crear efecto visual de recolección de EXP"""
 	# Efecto simple de partículas o brillo
@@ -480,4 +501,3 @@ class ExpOrb:
 
 	func get_exp_value() -> int:
 		return exp_value
-

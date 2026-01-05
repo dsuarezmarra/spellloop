@@ -13,6 +13,28 @@ signal coin_collected(value: int)
 @export var attraction_speed: float = 400.0  # Velocidad cuando es atraída
 @export var base_attraction_range: float = 120.0  # Rango base de atracción
 
+# === TIPO DE MONEDA ===
+enum CoinType { BRONZE, SILVER, GOLD, DIAMOND, PURPLE }
+var coin_type: CoinType = CoinType.BRONZE
+
+# === SPRITESHEETS ===
+const COIN_SPRITES = {
+	CoinType.BRONZE: "res://assets/sprites/pickups/coins/coin_bronze_spin.png",
+	CoinType.SILVER: "res://assets/sprites/pickups/coins/coin_silver_spin.png",
+	CoinType.GOLD: "res://assets/sprites/pickups/coins/coin_gold_spin.png",
+	CoinType.DIAMOND: "res://assets/sprites/pickups/coins/gem_diamond_spin.png",
+	CoinType.PURPLE: "res://assets/sprites/pickups/coins/gem_purple_spin.png",
+}
+
+# === VALORES POR TIPO ===
+const COIN_VALUES = {
+	CoinType.BRONZE: 1,
+	CoinType.SILVER: 3,
+	CoinType.GOLD: 5,
+	CoinType.DIAMOND: 10,
+	CoinType.PURPLE: 25,
+}
+
 # === ESTADO ===
 var is_being_attracted: bool = false
 var player_ref: Node2D = null
@@ -25,14 +47,18 @@ var friction: float = 5.0  # Fricción para el movimiento inicial
 var sprite: Sprite2D = null
 var animation_tween: Tween = null
 var glow_tween: Tween = null
+var current_frame: int = 0
+var animation_timer: float = 0.0
+const FRAME_DURATION: float = 0.15  # Segundos por frame
+const TOTAL_FRAMES: int = 4
 
-# === COLORES POR VALOR ===
+# === COLORES POR TIPO (fallback) ===
 const COIN_COLORS = {
-	1: Color(0.85, 0.65, 0.13),    # Cobre/Bronce
-	5: Color(0.75, 0.75, 0.75),    # Plata
-	10: Color(1.0, 0.84, 0.0),     # Oro
-	25: Color(0.0, 0.8, 0.8),      # Diamante/Cyan
-	50: Color(0.7, 0.3, 1.0),      # Púrpura/Épico
+	CoinType.BRONZE: Color(0.85, 0.65, 0.13),    # Cobre/Bronce
+	CoinType.SILVER: Color(0.75, 0.75, 0.75),    # Plata
+	CoinType.GOLD: Color(1.0, 0.84, 0.0),        # Oro
+	CoinType.DIAMOND: Color(0.0, 0.8, 0.8),      # Diamante/Cyan
+	CoinType.PURPLE: Color(0.7, 0.3, 1.0),       # Púrpura/Épico
 }
 
 func _ready() -> void:
@@ -48,13 +74,15 @@ func _ready() -> void:
 	# Añadir al grupo para fácil acceso
 	add_to_group("coins")
 
+
 	# Z-index para que esté sobre el suelo pero debajo de entidades
 	z_index = 5
 
-func initialize(pos: Vector2, value: int = 1, player: Node2D = null) -> void:
-	"""Inicializar la moneda con posición, valor y referencia al player"""
+func initialize(pos: Vector2, value: int = 1, player: Node2D = null, type: CoinType = CoinType.BRONZE) -> void:
+	"""Inicializar la moneda con posición, tipo y referencia al player"""
 	global_position = pos
-	coin_value = value
+	coin_type = type
+	coin_value = COIN_VALUES.get(type, value)
 	player_ref = player
 
 	# Dar velocidad inicial aleatoria para que "salte" del enemigo
@@ -62,8 +90,26 @@ func initialize(pos: Vector2, value: int = 1, player: Node2D = null) -> void:
 	var random_force = randf_range(80.0, 150.0)
 	spawn_velocity = Vector2(cos(random_angle), sin(random_angle)) * random_force
 
-	# Actualizar visual según valor
-	_update_visual_for_value()
+	# Actualizar visual según tipo
+	_update_visual_for_type()
+
+func initialize_by_value(pos: Vector2, value: int = 1, player: Node2D = null) -> void:
+	"""Inicializar por valor (determina tipo automáticamente)"""
+	var type = _get_type_for_value(value)
+	initialize(pos, value, player, type)
+
+func _get_type_for_value(value: int) -> CoinType:
+	"""Determinar tipo de moneda según valor"""
+	if value >= 25:
+		return CoinType.PURPLE
+	elif value >= 10:
+		return CoinType.DIAMOND
+	elif value >= 5:
+		return CoinType.GOLD
+	elif value >= 3:
+		return CoinType.SILVER
+	else:
+		return CoinType.BRONZE
 
 func _setup_collision() -> void:
 	"""Configurar el área de colisión"""
@@ -89,17 +135,50 @@ func _setup_visual() -> void:
 	sprite.name = "Sprite"
 	add_child(sprite)
 
-	# Intentar cargar sprite real, si no existe usar fallback
-	var sprite_path = "res://assets/sprites/pickups/coins/coin_gold.png"
-	if ResourceLoader.exists(sprite_path):
-		sprite.texture = load(sprite_path)
-	else:
-		_create_fallback_texture()
-
+	# Intentar cargar spritesheet según tipo
+	_load_spritesheet_for_type()
+	
 	sprite.centered = true
 
 	# Iniciar animación de flotación
 	_start_float_animation()
+
+func _load_spritesheet_for_type() -> void:
+	"""Cargar el spritesheet correcto para el tipo de moneda"""
+	var sprite_path = COIN_SPRITES.get(coin_type, COIN_SPRITES[CoinType.BRONZE])
+	
+	if ResourceLoader.exists(sprite_path):
+		var texture = load(sprite_path)
+		sprite.texture = texture
+		# Configurar para mostrar solo el primer frame (128x32, frame de 32x32)
+		sprite.hframes = TOTAL_FRAMES
+		sprite.vframes = 1
+		sprite.frame = 0
+	else:
+		_create_fallback_texture()
+
+func _update_visual_for_type() -> void:
+	"""Actualizar visual cuando cambia el tipo"""
+	if sprite:
+		_load_spritesheet_for_type()
+		
+		# Escalar según tipo
+		var scale_factor = 1.0
+		match coin_type:
+			CoinType.PURPLE:
+				scale_factor = 1.3
+			CoinType.DIAMOND:
+				scale_factor = 1.2
+			CoinType.GOLD:
+				scale_factor = 1.1
+			_:
+				scale_factor = 1.0
+		
+		sprite.scale = Vector2(scale_factor, scale_factor)
+		
+		# Añadir glow para monedas valiosas
+		if coin_type >= CoinType.GOLD:
+			_add_glow_effect()
 
 func _create_fallback_texture() -> void:
 	"""Crear textura procedural si no hay sprite"""
@@ -108,8 +187,8 @@ func _create_fallback_texture() -> void:
 	var center = Vector2(size / 2.0, size / 2.0)
 	var radius = size / 2.0 - 1.0
 
-	# Color según valor
-	var coin_color = _get_color_for_value()
+	# Color según tipo
+	var coin_color = _get_color_for_type()
 	var highlight_color = coin_color.lightened(0.4)
 	var shadow_color = coin_color.darkened(0.3)
 
@@ -142,43 +221,16 @@ func _create_fallback_texture() -> void:
 
 	var texture = ImageTexture.create_from_image(image)
 	sprite.texture = texture
+	# Reset hframes para fallback (no es spritesheet)
+	sprite.hframes = 1
+
+func _get_color_for_type() -> Color:
+	"""Obtener color según el tipo de la moneda"""
+	return COIN_COLORS.get(coin_type, COIN_COLORS[CoinType.BRONZE])
 
 func _get_color_for_value() -> Color:
-	"""Obtener color según el valor de la moneda"""
-	# Buscar el color más cercano según el valor
-	var best_color = COIN_COLORS[1]
-	var best_threshold = 1
-
-	for threshold in COIN_COLORS.keys():
-		if coin_value >= threshold and threshold >= best_threshold:
-			best_color = COIN_COLORS[threshold]
-			best_threshold = threshold
-
-	return best_color
-
-func _update_visual_for_value() -> void:
-	"""Actualizar visual cuando cambia el valor"""
-	if sprite:
-		# Si es fallback, recrear textura
-		if not ResourceLoader.exists("res://assets/sprites/pickups/coins/coin_gold.png"):
-			_create_fallback_texture()
-
-		# Escalar según valor
-		var scale_factor = 1.0
-		if coin_value >= 50:
-			scale_factor = 1.4
-		elif coin_value >= 25:
-			scale_factor = 1.3
-		elif coin_value >= 10:
-			scale_factor = 1.2
-		elif coin_value >= 5:
-			scale_factor = 1.1
-
-		sprite.scale = Vector2(scale_factor, scale_factor)
-
-		# Añadir glow para monedas valiosas
-		if coin_value >= 10:
-			_add_glow_effect()
+	"""Obtener color según el valor (para compatibilidad)"""
+	return _get_color_for_type()
 
 func _start_float_animation() -> void:
 	"""Animación de flotación suave"""
@@ -203,6 +255,14 @@ func _add_glow_effect() -> void:
 func _process(delta: float) -> void:
 	# Actualizar timer de vida
 	life_timer += delta
+	
+	# Animar spritesheet (solo si tiene múltiples frames)
+	if sprite and sprite.hframes > 1:
+		animation_timer += delta
+		if animation_timer >= FRAME_DURATION:
+			animation_timer = 0.0
+			current_frame = (current_frame + 1) % TOTAL_FRAMES
+			sprite.frame = current_frame
 
 	# Parpadear cuando está por desaparecer
 	if life_timer > lifetime - 5.0:
