@@ -246,31 +246,35 @@ func generate_options() -> void:
 	options.clear()
 	
 	var luck = 0.0
-	if player_stats:
+	if player_stats and player_stats.has_method("get_stat"):
 		luck = player_stats.get_stat("luck")
 	
 	# Pool de opciones posibles
 	var possible_options: Array = []
 	
 	# 1. Nuevas armas (si hay slots)
-	if attack_manager and attack_manager.has_available_slot:
-		var new_weapons = _get_new_weapon_options()
-		possible_options.append_array(new_weapons)
+	if attack_manager and attack_manager.has_method("has_available_slot"):
+		if attack_manager.has_available_slot:
+			var new_weapons = _get_new_weapon_options()
+			possible_options.append_array(new_weapons)
 	
 	# 2. Subir nivel de armas existentes
-	if attack_manager:
+	if attack_manager and attack_manager.has_method("get_weapons"):
 		var level_up_options = _get_weapon_level_up_options()
 		possible_options.append_array(level_up_options)
 	
 	# 3. Fusiones disponibles
-	if attack_manager:
+	if attack_manager and attack_manager.has_method("get_available_fusions"):
 		var fusion_options = _get_fusion_options()
 		possible_options.append_array(fusion_options)
 	
-	# 4. Upgrades de stats del jugador
-	if player_stats:
-		var player_upgrades = _get_player_upgrade_options(luck)
-		possible_options.append_array(player_upgrades)
+	# 4. Upgrades de stats del jugador (desde PassiveDatabase)
+	var player_upgrades = _get_player_upgrade_options_from_database(luck)
+	possible_options.append_array(player_upgrades)
+	
+	# Si no hay opciones suficientes, usar fallback
+	if possible_options.size() < 2:
+		possible_options = _get_fallback_options()
 	
 	# Mezclar y seleccionar
 	possible_options.shuffle()
@@ -280,6 +284,91 @@ func generate_options() -> void:
 	
 	# Actualizar UI
 	_update_options_ui()
+
+func _get_player_upgrade_options_from_database(luck: float) -> Array:
+	"""Obtener opciones de mejora usando PassiveDatabase directamente"""
+	var upgrade_options: Array = []
+	
+	# Intentar cargar PassiveDatabase
+	var PassiveDB = load("res://scripts/data/PassiveDatabase.gd")
+	if PassiveDB:
+		var db_instance = PassiveDB.new()
+		if db_instance.has_method("get_random_passives"):
+			var passives = db_instance.get_random_passives(6, [], luck)
+			for passive in passives:
+				upgrade_options.append({
+					"type": OPTION_TYPES.PLAYER_UPGRADE,
+					"upgrade_id": passive.get("id", ""),
+					"name": passive.get("name", "???"),
+					"description": passive.get("description", ""),
+					"icon": passive.get("icon", "✨"),
+					"rarity": passive.get("rarity", "common"),
+					"effects": passive.get("effects", []),
+					"priority": 0.8
+				})
+			db_instance.queue_free()
+			return upgrade_options
+	
+	# Fallback: usar PlayerStats si tiene el método
+	if player_stats and player_stats.has_method("get_random_upgrades"):
+		var upgrades = player_stats.get_random_upgrades(6, luck)
+		for upgrade in upgrades:
+			upgrade_options.append({
+				"type": OPTION_TYPES.PLAYER_UPGRADE,
+				"upgrade_id": upgrade.id,
+				"name": upgrade.name,
+				"description": upgrade.description,
+				"icon": upgrade.icon,
+				"rarity": upgrade.rarity,
+				"priority": 0.8
+			})
+	
+	return upgrade_options
+
+func _get_fallback_options() -> Array:
+	"""Opciones de fallback si no hay otras disponibles"""
+	return [
+		{
+			"type": OPTION_TYPES.PLAYER_UPGRADE,
+			"upgrade_id": "damage_boost",
+			"name": "Daño Mágico +",
+			"description": "Aumenta el daño de los proyectiles mágicos en un 10%",
+			"icon": "⚡",
+			"rarity": "common",
+			"effects": [{"stat": "damage_multiplier", "value": 0.10, "operation": "add"}],
+			"priority": 0.8
+		},
+		{
+			"type": OPTION_TYPES.PLAYER_UPGRADE,
+			"upgrade_id": "speed_boost",
+			"name": "Velocidad +",
+			"description": "Aumenta la velocidad de movimiento en un 10%",
+			"icon": "💨",
+			"rarity": "common",
+			"effects": [{"stat": "speed_multiplier", "value": 0.10, "operation": "add"}],
+			"priority": 0.8
+		},
+		{
+			"type": OPTION_TYPES.PLAYER_UPGRADE,
+			"upgrade_id": "health_boost",
+			"name": "Vida Máxima +",
+			"description": "Aumenta la vida máxima en 20",
+			"icon": "❤️",
+			"rarity": "common",
+			"effects": [{"stat": "max_health", "value": 20, "operation": "add"}],
+			"priority": 0.8
+		},
+		{
+			"type": OPTION_TYPES.PLAYER_UPGRADE,
+			"upgrade_id": "cooldown_reduction",
+			"name": "Recarga Rápida",
+			"description": "Reduce el tiempo de recarga de armas en un 5%",
+			"icon": "⏰",
+			"rarity": "uncommon",
+			"effects": [{"stat": "cooldown_reduction", "value": 0.05, "operation": "add"}],
+			"priority": 0.8
+		}
+	]
 
 func _get_new_weapon_options() -> Array:
 	"""Obtener opciones de armas nuevas"""
@@ -510,24 +599,48 @@ func _apply_option(option: Dictionary) -> void:
 	"""Aplicar la opción seleccionada"""
 	match option.type:
 		OPTION_TYPES.NEW_WEAPON:
-			if attack_manager:
+			if attack_manager and attack_manager.has_method("add_weapon_by_id"):
 				attack_manager.add_weapon_by_id(option.weapon_id)
 				print("[LevelUpPanel] Nueva arma: %s" % option.name)
 		
 		OPTION_TYPES.LEVEL_UP_WEAPON:
-			if attack_manager:
+			if attack_manager and attack_manager.has_method("level_up_weapon_by_id"):
 				attack_manager.level_up_weapon_by_id(option.weapon_id)
 				print("[LevelUpPanel] Arma mejorada: %s" % option.name)
 		
 		OPTION_TYPES.FUSION:
-			if attack_manager:
+			if attack_manager and attack_manager.has_method("fuse_weapons"):
 				attack_manager.fuse_weapons(option.weapon_a, option.weapon_b)
 				print("[LevelUpPanel] Fusión realizada: %s" % option.name)
 		
 		OPTION_TYPES.PLAYER_UPGRADE:
-			if player_stats:
-				player_stats.apply_upgrade(option.upgrade_id)
-				print("[LevelUpPanel] Upgrade aplicado: %s" % option.name)
+			_apply_player_upgrade(option)
+			print("[LevelUpPanel] Upgrade aplicado: %s" % option.name)
+
+func _apply_player_upgrade(option: Dictionary) -> void:
+	"""Aplicar upgrade de jugador"""
+	# Intentar aplicar efectos directamente
+	if option.has("effects") and player_stats:
+		for effect in option.effects:
+			var stat_name = effect.get("stat", "")
+			var value = effect.get("value", 0)
+			var operation = effect.get("operation", "add")
+			
+			if player_stats.has_method("modify_stat"):
+				player_stats.modify_stat(stat_name, value, operation)
+			elif stat_name in player_stats:
+				match operation:
+					"add":
+						player_stats[stat_name] += value
+					"multiply":
+						player_stats[stat_name] *= value
+					"set":
+						player_stats[stat_name] = value
+		return
+	
+	# Fallback: usar método apply_upgrade de PlayerStats
+	if player_stats and player_stats.has_method("apply_upgrade"):
+		player_stats.apply_upgrade(option.get("upgrade_id", ""))
 
 func _on_reroll_pressed() -> void:
 	"""Manejar reroll"""

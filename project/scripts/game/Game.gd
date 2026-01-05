@@ -325,11 +325,57 @@ func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy
 func _on_exp_gained(amount: int, total: int) -> void:
 	run_stats["xp_total"] = total
 
-func _on_level_up(new_level: int, upgrades: Array) -> void:
+func _on_level_up(new_level: int, _upgrades: Array) -> void:
 	run_stats["level"] = new_level
 
 	# Mostrar panel de level up
-	# TODO: Implementar selección de mejoras
+	_show_level_up_panel(new_level)
+
+func _show_level_up_panel(level: int) -> void:
+	"""Mostrar el panel de selección de mejoras al subir nivel"""
+	var panel_scene = load("res://scenes/ui/LevelUpPanel.tscn")
+	if not panel_scene:
+		push_error("[Game] No se pudo cargar LevelUpPanel.tscn")
+		return
+
+	var panel = panel_scene.instantiate()
+	ui_layer.add_child(panel)
+
+	# Inicializar con referencias
+	var attack_mgr = null
+	if player and player.has_method("get_attack_manager"):
+		attack_mgr = player.get_attack_manager()
+	elif player and "attack_manager" in player:
+		attack_mgr = player.attack_manager
+
+	var stats = null
+	if player and player.has_method("get_stats"):
+		stats = player.get_stats()
+	elif player and "stats" in player:
+		stats = player.stats
+
+	if panel.has_method("initialize"):
+		panel.initialize(attack_mgr, stats)
+
+	# Conectar señales
+	if panel.has_signal("option_selected"):
+		panel.option_selected.connect(_on_level_up_option_selected)
+	if panel.has_signal("panel_closed"):
+		panel.panel_closed.connect(_on_level_up_panel_closed)
+
+	# Mostrar panel (pausa el juego internamente)
+	if panel.has_method("show_panel"):
+		panel.show_panel()
+
+	print("🆙 [Game] Panel de level up mostrado (nivel %d)" % level)
+
+func _on_level_up_option_selected(option: Dictionary) -> void:
+	"""Callback cuando se selecciona una mejora en el level up"""
+	print("🆙 [Game] Mejora seleccionada: %s" % option.get("name", "???"))
+
+func _on_level_up_panel_closed() -> void:
+	"""Callback cuando se cierra el panel de level up"""
+	print("🆙 [Game] Panel de level up cerrado")
 
 func _on_coin_collected(value: int, total: int) -> void:
 	## Callback cuando se recoge una moneda

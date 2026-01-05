@@ -399,41 +399,70 @@ func level_up_player():
 	print("🆙 ¡LEVEL UP! Nuevo nivel: ", current_level)
 
 func generate_upgrade_options() -> Array:
-	"""Generar opciones de mejora para selección"""
+	"""Generar opciones de mejora para selección usando PassiveDatabase"""
 	var options = []
 
-	# Opciones básicas de ejemplo
+	# Intentar usar PassiveDatabase
+	var PassiveDB = load("res://scripts/data/PassiveDatabase.gd")
+	if PassiveDB:
+		var db_instance = PassiveDB.new()
+		if db_instance.has_method("get_random_passives"):
+			# Obtener 4 pasivos aleatorios (permitimos más para dar variedad)
+			var luck_bonus = 0.0
+			# Intentar obtener luck del player si tiene stats
+			if player and "stats" in player and player.stats and "luck" in player.stats:
+				luck_bonus = player.stats.luck
+
+			options = db_instance.get_random_passives(4, [], luck_bonus)
+			db_instance.queue_free()
+
+			if options.size() > 0:
+				return options
+
+	# Fallback: opciones básicas si PassiveDatabase no está disponible
 	options.append({
 		"id": "damage_boost",
 		"name": "Daño Mágico +",
-		"description": "Aumenta el daño de los proyectiles mágicos",
-		"icon": "⚡"
+		"description": "Aumenta el daño de los proyectiles mágicos en un 10%",
+		"icon": "⚡",
+		"type": "PLAYER_UPGRADE",
+		"rarity": "common",
+		"effects": [{"stat": "damage_multiplier", "value": 0.10, "operation": "add"}]
 	})
 
 	options.append({
 		"id": "speed_boost",
 		"name": "Velocidad +",
-		"description": "Aumenta la velocidad de movimiento",
-		"icon": "💨"
+		"description": "Aumenta la velocidad de movimiento en un 10%",
+		"icon": "💨",
+		"type": "PLAYER_UPGRADE",
+		"rarity": "common",
+		"effects": [{"stat": "speed_multiplier", "value": 0.10, "operation": "add"}]
 	})
 
 	options.append({
 		"id": "health_boost",
 		"name": "Vida Máxima +",
-		"description": "Aumenta la vida máxima",
-		"icon": "❤️"
+		"description": "Aumenta la vida máxima en 20",
+		"icon": "❤️",
+		"type": "PLAYER_UPGRADE",
+		"rarity": "common",
+		"effects": [{"stat": "max_health", "value": 20, "operation": "add"}]
 	})
 
 	options.append({
 		"id": "cooldown_reduction",
 		"name": "Recarga Rápida",
-		"description": "Reduce el tiempo de recarga de armas",
-		"icon": "⏰"
+		"description": "Reduce el tiempo de recarga de armas en un 5%",
+		"icon": "⏰",
+		"type": "PLAYER_UPGRADE",
+		"rarity": "uncommon",
+		"effects": [{"stat": "cooldown_reduction", "value": 0.05, "operation": "add"}]
 	})
 
 	# Shuffle y devolver 3-4 opciones aleatorias
 	options.shuffle()
-	return options.slice(0, min(3, options.size()))
+	return options.slice(0, min(4, options.size()))
 
 func _on_exp_orb_collected(_orb: Node2D, exp_value: int):
 	"""Manejar recolección de orbe (señal desde el orbe)"""

@@ -1,6 +1,6 @@
-[gd_scene load_steps=1 format=3 uid="uid://levelup_panel_tscn"]
+[gd_scene load_steps=2 format=3 uid="uid://levelup_panel_tscn"]
 
-[ext_resource type="Script" path="res://scripts/ui/LevelUpPanel.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/ui/LevelUpPanel.gd" id="1_script"]
 
 [node name="LevelUpPanel" type="CanvasLayer"]
-script = ExtResource( 1 )
+script = ExtResource("1_script")
