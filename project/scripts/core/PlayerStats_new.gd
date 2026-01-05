@@ -1,22 +1,21 @@
 # PlayerStats.gd
-# Sistema de estadísticas del jugador
+# Sistema de estadísticas del JUGADOR (no de armas)
 #
-# IMPORTANTE: No hay items pasivos separados
-# Las mejoras van directamente al jugador o a las armas
-#
-# STATS DEL JUGADOR:
+# STATS DEL JUGADOR (supervivencia y utilidad):
 # - max_health: Vida máxima
 # - health_regen: Regeneración de vida por segundo
-# - move_speed: Velocidad de movimiento
-# - damage_mult: Multiplicador de daño global
-# - cooldown_mult: Multiplicador de cooldown (menor = más rápido)
-# - crit_chance: Probabilidad de crítico
-# - crit_damage: Multiplicador de daño crítico
-# - area_mult: Multiplicador de área de efecto
-# - pickup_range: Rango de recolección de XP
-# - xp_mult: Multiplicador de experiencia
 # - armor: Reducción de daño plana
-# - luck: Afecta rareza de drops y opciones de level up
+# - dodge_chance: Probabilidad de esquivar (máx 60%)
+# - life_steal: % de daño infligido que recupera como vida
+# - move_speed: Velocidad de movimiento
+# - pickup_range: Rango de recolección de XP/monedas
+# - xp_mult: Multiplicador de experiencia
+# - coin_value_mult: Multiplicador del valor de monedas
+# - luck: Afecta rareza de drops y mejoras ofrecidas
+#
+# Los stats de ARMAS (daño, velocidad de ataque, área, etc.) están en:
+# - WeaponStats.gd (por arma individual)
+# - GlobalWeaponStats.gd (mejoras globales a todas las armas)
 
 extends Node
 class_name PlayerStats
@@ -34,15 +33,15 @@ signal xp_gained(amount: float, total: float)
 # CONSTANTES
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Metadatos de cada stat para UI (descripción, icono, categoría)
+# Metadatos de cada stat para UI
 const STAT_METADATA: Dictionary = {
 	# === STATS DEFENSIVOS ===
 	"max_health": {
 		"name": "Vida Máxima",
 		"icon": "❤️",
 		"category": "defensive",
-		"description": "La cantidad máxima de puntos de vida que puedes tener.",
-		"format": "flat",  # flat, percent, multiplier
+		"description": "La cantidad máxima de puntos de vida.",
+		"format": "flat",
 		"color": Color(1.0, 0.3, 0.3)
 	},
 	"health_regen": {
@@ -65,7 +64,7 @@ const STAT_METADATA: Dictionary = {
 		"name": "Esquivar",
 		"icon": "💨",
 		"category": "defensive",
-		"description": "Probabilidad de evitar completamente un ataque. Máximo 60%.",
+		"description": "Probabilidad de evitar un ataque. Máximo 60%.",
 		"format": "percent",
 		"color": Color(0.5, 0.8, 1.0)
 	},
@@ -73,85 +72,9 @@ const STAT_METADATA: Dictionary = {
 		"name": "Robo de Vida",
 		"icon": "🩸",
 		"category": "defensive",
-		"description": "Porcentaje de daño infligido que recuperas como vida.",
+		"description": "% de daño infligido que recuperas como vida.",
 		"format": "percent",
 		"color": Color(0.8, 0.2, 0.4)
-	},
-
-	# === STATS OFENSIVOS ===
-	"damage_mult": {
-		"name": "Daño",
-		"icon": "⚔️",
-		"category": "offensive",
-		"description": "Multiplicador global de todo el daño que infliges.",
-		"format": "multiplier",
-		"color": Color(1.0, 0.5, 0.2)
-	},
-	"cooldown_mult": {
-		"name": "Cooldown",
-		"icon": "⏱️",
-		"category": "offensive",
-		"description": "Multiplicador de tiempo entre ataques. Menor es mejor.",
-		"format": "multiplier_inverse",
-		"color": Color(0.3, 0.7, 1.0)
-	},
-	"area_mult": {
-		"name": "Área de Efecto",
-		"icon": "🌀",
-		"category": "offensive",
-		"description": "Tamaño de todas las áreas de efecto y explosiones.",
-		"format": "multiplier",
-		"color": Color(0.8, 0.4, 1.0)
-	},
-	"projectile_speed_mult": {
-		"name": "Vel. Proyectiles",
-		"icon": "➡️",
-		"category": "offensive",
-		"description": "Velocidad de todos tus proyectiles.",
-		"format": "multiplier",
-		"color": Color(0.4, 0.9, 0.6)
-	},
-	"duration_mult": {
-		"name": "Duración",
-		"icon": "⌛",
-		"category": "offensive",
-		"description": "Duración de efectos, proyectiles y habilidades.",
-		"format": "multiplier",
-		"color": Color(0.9, 0.8, 0.3)
-	},
-	"extra_projectiles": {
-		"name": "Proyectiles Extra",
-		"icon": "🎯",
-		"category": "offensive",
-		"description": "Proyectiles adicionales en cada ataque.",
-		"format": "flat",
-		"color": Color(1.0, 0.6, 0.8)
-	},
-	"knockback_mult": {
-		"name": "Empuje",
-		"icon": "💥",
-		"category": "offensive",
-		"description": "Fuerza con la que empujas a los enemigos.",
-		"format": "multiplier",
-		"color": Color(0.9, 0.5, 0.3)
-	},
-
-	# === STATS CRÍTICOS ===
-	"crit_chance": {
-		"name": "Prob. Crítico",
-		"icon": "🎯",
-		"category": "critical",
-		"description": "Probabilidad de infligir un golpe crítico.",
-		"format": "percent",
-		"color": Color(1.0, 0.9, 0.2)
-	},
-	"crit_damage": {
-		"name": "Daño Crítico",
-		"icon": "💢",
-		"category": "critical",
-		"description": "Multiplicador de daño en golpes críticos.",
-		"format": "multiplier",
-		"color": Color(1.0, 0.7, 0.1)
 	},
 
 	# === STATS DE UTILIDAD ===
@@ -160,23 +83,15 @@ const STAT_METADATA: Dictionary = {
 		"icon": "🏃",
 		"category": "utility",
 		"description": "Velocidad de movimiento del personaje.",
-		"format": "multiplier",
+		"format": "percent",
 		"color": Color(0.4, 0.8, 1.0)
 	},
 	"pickup_range": {
 		"name": "Rango Recogida",
 		"icon": "🧲",
 		"category": "utility",
-		"description": "Distancia a la que atraes XP y objetos.",
-		"format": "multiplier",
-		"color": Color(0.8, 0.5, 1.0)
-	},
-	"pickup_range_flat": {
-		"name": "Rango Extra",
-		"icon": "🧲",
-		"category": "utility",
-		"description": "Bonus plano al rango de recogida (píxeles).",
-		"format": "flat",
+		"description": "Distancia a la que atraes XP y monedas.",
+		"format": "percent",
 		"color": Color(0.8, 0.5, 1.0)
 	},
 	"xp_mult": {
@@ -184,7 +99,7 @@ const STAT_METADATA: Dictionary = {
 		"icon": "⭐",
 		"category": "utility",
 		"description": "Multiplicador de experiencia obtenida.",
-		"format": "multiplier",
+		"format": "percent",
 		"color": Color(0.3, 0.9, 0.5)
 	},
 	"coin_value_mult": {
@@ -192,44 +107,31 @@ const STAT_METADATA: Dictionary = {
 		"icon": "🪙",
 		"category": "utility",
 		"description": "Multiplicador del valor de las monedas.",
-		"format": "multiplier",
+		"format": "percent",
 		"color": Color(1.0, 0.85, 0.2)
 	},
 	"luck": {
 		"name": "Suerte",
 		"icon": "🍀",
 		"category": "utility",
-		"description": "Afecta la rareza de drops y mejoras ofrecidas.",
+		"description": "Mejora la rareza de drops y mejoras ofrecidas.",
 		"format": "flat",
 		"color": Color(0.2, 0.9, 0.4)
 	}
 }
 
+# Stats base del jugador
 const BASE_STATS: Dictionary = {
 	# Defensivos
 	"max_health": 100.0,
 	"health_regen": 0.0,
 	"armor": 0.0,
-	"dodge_chance": 0.0,        # Nuevo: probabilidad de esquivar (máx 0.6)
-	"life_steal": 0.0,          # Nuevo: % de daño que recupera como vida
-
-	# Ofensivos
-	"damage_mult": 1.0,
-	"cooldown_mult": 1.0,
-	"area_mult": 1.0,
-	"projectile_speed_mult": 1.0,  # Nuevo
-	"duration_mult": 1.0,          # Nuevo
-	"extra_projectiles": 0,        # Nuevo: proyectiles adicionales
-	"knockback_mult": 1.0,         # Nuevo
-
-	# Críticos
-	"crit_chance": 0.05,
-	"crit_damage": 2.0,
+	"dodge_chance": 0.0,
+	"life_steal": 0.0,
 
 	# Utilidad
 	"move_speed": 1.0,
 	"pickup_range": 1.0,
-	"pickup_range_flat": 0.0,
 	"xp_mult": 1.0,
 	"coin_value_mult": 1.0,
 	"luck": 0.0
@@ -237,46 +139,30 @@ const BASE_STATS: Dictionary = {
 
 const MAX_LEVEL: int = 99
 const BASE_XP_TO_LEVEL: float = 10.0
-const XP_SCALING: float = 1.15  # Cada nivel requiere 15% más XP
+const XP_SCALING: float = 1.15
 
 # Límites de stats
 const STAT_LIMITS: Dictionary = {
-	"cooldown_mult": {"min": 0.1, "max": 2.0},
-	"crit_chance": {"min": 0.0, "max": 1.0},
-	"damage_mult": {"min": 0.1, "max": 10.0},
+	"dodge_chance": {"min": 0.0, "max": 0.6},
+	"life_steal": {"min": 0.0, "max": 0.5},
 	"move_speed": {"min": 0.3, "max": 3.0},
 	"pickup_range": {"min": 0.5, "max": 5.0},
-	"dodge_chance": {"min": 0.0, "max": 0.6},  # Máximo 60%
-	"life_steal": {"min": 0.0, "max": 0.5},    # Máximo 50%
-	"area_mult": {"min": 0.5, "max": 3.0},
-	"projectile_speed_mult": {"min": 0.5, "max": 3.0},
-	"duration_mult": {"min": 0.5, "max": 3.0},
-	"knockback_mult": {"min": 0.0, "max": 5.0},
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ESTADO
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Stats actuales
 var stats: Dictionary = {}
-
-# Modificadores temporales (por buffs/debuffs)
-var temp_modifiers: Dictionary = {}  # stat_name -> [{amount, duration, source}]
-
-# Historial de mejoras aplicadas (para mostrar en pausa)
-var collected_upgrades: Array = []  # [{id, name, icon, description, effects}]
-
-# Vida actual
+var temp_modifiers: Dictionary = {}
+var collected_upgrades: Array = []
 var current_health: float = 100.0
-
-# Sistema de nivel
 var level: int = 1
 var current_xp: float = 0.0
 var xp_to_next_level: float = BASE_XP_TO_LEVEL
 
-# Referencia al AttackManager para sincronizar stats
-var attack_manager: AttackManager = null
+# Referencia a GlobalWeaponStats para sincronizar vida robada
+var global_weapon_stats: GlobalWeaponStats = null
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
@@ -286,7 +172,6 @@ func _init() -> void:
 	_reset_stats()
 
 func _reset_stats() -> void:
-	"""Resetear a stats base"""
 	stats = BASE_STATS.duplicate()
 	temp_modifiers.clear()
 	collected_upgrades.clear()
@@ -295,63 +180,16 @@ func _reset_stats() -> void:
 	current_xp = 0.0
 	xp_to_next_level = BASE_XP_TO_LEVEL
 
-func initialize(attack_mgr: AttackManager = null) -> void:
-	"""Inicializar con referencia al AttackManager"""
-	attack_manager = attack_mgr
-	# Agregar a grupo para facilitar busqueda desde PauseMenu
+func initialize(p_global_weapon_stats: GlobalWeaponStats = null) -> void:
+	global_weapon_stats = p_global_weapon_stats
 	add_to_group("player_stats")
-	_sync_with_attack_manager()
 	print("[PlayerStats] Inicializado - Nivel %d" % level)
 
-func _sync_with_attack_manager() -> void:
-	"""
-	Sincronizar stats relevantes con AttackManager.
-	
-	NOTA (v2.0): Los stats de armas (damage_mult, cooldown_mult, area_mult, etc.)
-	ahora se manejan directamente en GlobalWeaponStats dentro de AttackManager.
-	Solo sincronizamos stats que son tanto del jugador como de las armas.
-	
-	Para mejoras de armas, usar:
-	- attack_manager.apply_global_upgrade() para mejoras globales
-	- attack_manager.apply_weapon_upgrade() para mejoras específicas
-	"""
-	if attack_manager == null:
-		return
-
-	# Solo sincronizar stats que pertenecen a AMBOS sistemas
-	# life_steal afecta tanto la supervivencia del jugador como el combate
-	attack_manager.set_player_stat("life_steal", get_stat("life_steal"))
-	
-	# DEPRECADO: Estos stats ahora viven en GlobalWeaponStats
-	# Las mejoras genéricas del LevelUpPanel deben llamar a 
-	# attack_manager.apply_global_upgrade() directamente
-	#
-	# Por compatibilidad temporal, seguimos sincronizando:
-	if stats.has("damage_mult"):
-		attack_manager.set_player_stat("damage_mult", get_stat("damage_mult"))
-	if stats.has("cooldown_mult"):
-		attack_manager.set_player_stat("cooldown_mult", get_stat("cooldown_mult"))
-	if stats.has("crit_chance"):
-		attack_manager.set_player_stat("crit_chance", get_stat("crit_chance"))
-	if stats.has("crit_damage"):
-		attack_manager.set_player_stat("crit_damage", get_stat("crit_damage"))
-	if stats.has("area_mult"):
-		attack_manager.set_player_stat("area_mult", get_stat("area_mult"))
-	if stats.has("projectile_speed_mult"):
-		attack_manager.set_player_stat("projectile_speed_mult", get_stat("projectile_speed_mult"))
-	if stats.has("duration_mult"):
-		attack_manager.set_player_stat("duration_mult", get_stat("duration_mult"))
-	if stats.has("extra_projectiles"):
-		attack_manager.set_player_stat("extra_projectiles", get_stat("extra_projectiles"))
-	if stats.has("knockback_mult"):
-		attack_manager.set_player_stat("knockback_mult", get_stat("knockback_mult"))
-
 # ═══════════════════════════════════════════════════════════════════════════════
-# MÉTODOS DE METADATOS (PARA UI)
+# METADATOS PARA UI
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func get_stat_metadata(stat_name: String) -> Dictionary:
-	"""Obtener metadatos de un stat para mostrar en UI"""
 	return STAT_METADATA.get(stat_name, {
 		"name": stat_name,
 		"icon": "❓",
@@ -362,7 +200,6 @@ func get_stat_metadata(stat_name: String) -> Dictionary:
 	})
 
 func get_stats_by_category(category: String) -> Array:
-	"""Obtener lista de stats de una categoría específica"""
 	var result = []
 	for stat_name in STAT_METADATA:
 		if STAT_METADATA[stat_name].get("category") == category:
@@ -370,31 +207,21 @@ func get_stats_by_category(category: String) -> Array:
 	return result
 
 func get_all_categories() -> Array:
-	"""Obtener todas las categorías de stats"""
-	return ["defensive", "offensive", "critical", "utility"]
+	return ["defensive", "utility"]
 
 func format_stat_value(stat_name: String, value: float) -> String:
-	"""Formatear el valor de un stat para mostrar en UI"""
 	var meta = get_stat_metadata(stat_name)
 	var format_type = meta.get("format", "flat")
 
 	match format_type:
 		"percent":
-			return "%.0f%%" % (value * 100)
-		"multiplier":
 			if value >= 1.0:
-				return "+%.0f%%" % ((value - 1.0) * 100)
+				return "+%.0f%%" % ((value - 1.0) * 100) if value > 1.0 else "0%"
 			else:
-				return "%.0f%%" % ((value - 1.0) * 100)
-		"multiplier_inverse":
-			# Para cooldown, menos es mejor
-			if value <= 1.0:
-				return "-%.0f%%" % ((1.0 - value) * 100)
-			else:
-				return "+%.0f%%" % ((value - 1.0) * 100)
+				return "%.0f%%" % (value * 100)
 		"per_second":
 			return "%.1f/s" % value
-		_:  # flat
+		_:
 			if value == int(value):
 				return "%d" % int(value)
 			else:
@@ -405,12 +232,10 @@ func format_stat_value(stat_name: String, value: float) -> String:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func get_stat(stat_name: String) -> float:
-	"""Obtener valor actual de un stat (base + modificadores temporales)"""
 	var base_value = stats.get(stat_name, 0.0)
 	var temp_bonus = _get_temp_modifier_total(stat_name)
 	var final_value = base_value + temp_bonus
 
-	# Aplicar límites si existen
 	if STAT_LIMITS.has(stat_name):
 		var limits = STAT_LIMITS[stat_name]
 		final_value = clampf(final_value, limits.min, limits.max)
@@ -418,32 +243,27 @@ func get_stat(stat_name: String) -> float:
 	return final_value
 
 func get_base_stat(stat_name: String) -> float:
-	"""Obtener valor base sin modificadores temporales"""
 	return stats.get(stat_name, 0.0)
 
 func _get_temp_modifier_total(stat_name: String) -> float:
-	"""Obtener suma de modificadores temporales"""
 	if not temp_modifiers.has(stat_name):
 		return 0.0
-
 	var total = 0.0
 	for mod in temp_modifiers[stat_name]:
 		total += mod.amount
 	return total
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MODIFICACIÓN DE STATS (PERMANENTES)
+# MODIFICACIÓN DE STATS
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func add_stat(stat_name: String, amount: float) -> void:
-	"""Añadir valor a un stat (permanente)"""
 	if not stats.has(stat_name):
 		stats[stat_name] = 0.0
 
 	var old_value = stats[stat_name]
 	stats[stat_name] += amount
 
-	# Aplicar límites
 	if STAT_LIMITS.has(stat_name):
 		var limits = STAT_LIMITS[stat_name]
 		stats[stat_name] = clampf(stats[stat_name], limits.min, limits.max)
@@ -457,11 +277,9 @@ func add_stat(stat_name: String, amount: float) -> void:
 	print("[PlayerStats] %s: %.2f → %.2f (+%.2f)" % [stat_name, old_value, new_value, amount])
 
 func set_stat(stat_name: String, value: float) -> void:
-	"""Establecer valor exacto de un stat"""
 	var old_value = stats.get(stat_name, 0.0)
 	stats[stat_name] = value
 
-	# Aplicar límites
 	if STAT_LIMITS.has(stat_name):
 		var limits = STAT_LIMITS[stat_name]
 		stats[stat_name] = clampf(stats[stat_name], limits.min, limits.max)
@@ -473,30 +291,22 @@ func set_stat(stat_name: String, value: float) -> void:
 		_on_stat_changed(stat_name, old_value, new_value)
 
 func multiply_stat(stat_name: String, multiplier: float) -> void:
-	"""Multiplicar un stat por un valor"""
 	if not stats.has(stat_name):
 		return
 	add_stat(stat_name, stats[stat_name] * (multiplier - 1.0))
 
 func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> void:
-	"""Manejar cambios especiales de stats"""
 	match stat_name:
 		"max_health":
-			# Ajustar salud actual proporcionalmente
 			var ratio = current_health / old_value if old_value > 0 else 1.0
 			current_health = new_value * ratio
 			health_changed.emit(current_health, new_value)
 
-		"damage_mult", "cooldown_mult", "crit_chance", "area_mult":
-			# Sincronizar con AttackManager
-			_sync_with_attack_manager()
-
 # ═══════════════════════════════════════════════════════════════════════════════
-# MODIFICADORES TEMPORALES (BUFFS/DEBUFFS)
+# MODIFICADORES TEMPORALES
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func add_temp_modifier(stat_name: String, amount: float, duration: float, source: String = "") -> void:
-	"""Añadir modificador temporal"""
 	if not temp_modifiers.has(stat_name):
 		temp_modifiers[stat_name] = []
 
@@ -507,24 +317,17 @@ func add_temp_modifier(stat_name: String, amount: float, duration: float, source
 		"time_added": Time.get_ticks_msec() / 1000.0
 	})
 
-	print("[PlayerStats] Buff temporal: %s +%.2f por %.1fs (%s)" % [
-		stat_name, amount, duration, source
-	])
-
 func remove_temp_modifiers_by_source(source: String) -> void:
-	"""Remover todos los modificadores de una fuente específica"""
 	for stat_name in temp_modifiers:
 		temp_modifiers[stat_name] = temp_modifiers[stat_name].filter(
 			func(mod): return mod.source != source
 		)
 
 func _process(delta: float) -> void:
-	"""Actualizar modificadores temporales y regeneración"""
 	_update_temp_modifiers(delta)
 	_update_health_regen(delta)
 
 func _update_temp_modifiers(delta: float) -> void:
-	"""Reducir duración de modificadores temporales"""
 	for stat_name in temp_modifiers.keys():
 		var mods = temp_modifiers[stat_name]
 		var to_remove = []
@@ -534,16 +337,13 @@ func _update_temp_modifiers(delta: float) -> void:
 			if mods[i].duration <= 0:
 				to_remove.append(i)
 
-		# Remover expirados (en orden inverso)
 		for i in range(to_remove.size() - 1, -1, -1):
 			mods.remove_at(to_remove[i])
 
-		# Limpiar array vacío
 		if mods.is_empty():
 			temp_modifiers.erase(stat_name)
 
 func _update_health_regen(delta: float) -> void:
-	"""Aplicar regeneración de vida"""
 	var regen = get_stat("health_regen")
 	if regen > 0 and current_health < get_stat("max_health"):
 		heal(regen * delta)
@@ -553,25 +353,22 @@ func _update_health_regen(delta: float) -> void:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func take_damage(amount: float) -> float:
-	"""
-	Recibir daño (aplicando armor)
-	Retorna: daño efectivo recibido
-	"""
+	# Verificar esquivar
+	var dodge = get_stat("dodge_chance")
+	if dodge > 0 and randf() < dodge:
+		print("[PlayerStats] ¡Esquivado!")
+		return 0.0
+
 	var armor = get_stat("armor")
-	var effective_damage = maxf(1.0, amount - armor)  # Mínimo 1 de daño
+	var effective_damage = maxf(1.0, amount - armor)
 
 	current_health -= effective_damage
 	current_health = maxf(0.0, current_health)
 
 	health_changed.emit(current_health, get_stat("max_health"))
-
 	return effective_damage
 
 func heal(amount: float) -> float:
-	"""
-	Curar vida
-	Retorna: cantidad efectiva curada
-	"""
 	var max_hp = get_stat("max_health")
 	var old_health = current_health
 
@@ -583,12 +380,19 @@ func heal(amount: float) -> float:
 
 	return healed
 
+func apply_life_steal(damage_dealt: float) -> float:
+	"""Aplicar robo de vida basado en daño infligido"""
+	var life_steal_percent = get_stat("life_steal")
+	if life_steal_percent <= 0:
+		return 0.0
+
+	var heal_amount = damage_dealt * life_steal_percent
+	return heal(heal_amount)
+
 func is_dead() -> bool:
-	"""Verificar si el jugador está muerto"""
 	return current_health <= 0
 
 func get_health_percent() -> float:
-	"""Obtener porcentaje de vida"""
 	return current_health / get_stat("max_health")
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -596,10 +400,6 @@ func get_health_percent() -> float:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func gain_xp(amount: float) -> int:
-	"""
-	Ganar experiencia
-	Retorna: número de niveles subidos
-	"""
 	var xp_bonus = get_stat("xp_mult")
 	var effective_xp = amount * xp_bonus
 
@@ -608,13 +408,10 @@ func gain_xp(amount: float) -> int:
 
 	var levels_gained = 0
 
-	# Subir niveles mientras haya suficiente XP
 	while current_xp >= xp_to_next_level and level < MAX_LEVEL:
 		current_xp -= xp_to_next_level
 		level += 1
 		levels_gained += 1
-
-		# Calcular XP para siguiente nivel
 		xp_to_next_level = BASE_XP_TO_LEVEL * pow(XP_SCALING, level - 1)
 
 		print("[PlayerStats] ⬆️ ¡Nivel %d alcanzado!" % level)
@@ -623,262 +420,300 @@ func gain_xp(amount: float) -> int:
 	return levels_gained
 
 func get_xp_progress() -> float:
-	"""Obtener progreso hacia el siguiente nivel (0.0 - 1.0)"""
 	return current_xp / xp_to_next_level
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# UPGRADES DISPONIBLES (para Level Up Panel)
+# MEJORAS DEL JUGADOR (solo stats del player, no de armas)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Definición de upgrades disponibles para el jugador
 const PLAYER_UPGRADES: Dictionary = {
-	"max_health_small": {
+	# === DEFENSIVOS ===
+	"max_health_1": {
 		"name": "Vitalidad I",
-		"description": "+10 Vida máxima",
+		"description": "+15 Vida máxima",
 		"stat": "max_health",
-		"amount": 10.0,
+		"amount": 15.0,
 		"icon": "❤️",
-		"rarity": "common"
+		"rarity": "common",
+		"tier": 1
 	},
-	"max_health_large": {
+	"max_health_2": {
 		"name": "Vitalidad II",
-		"description": "+25 Vida máxima",
+		"description": "+30 Vida máxima",
 		"stat": "max_health",
-		"amount": 25.0,
+		"amount": 30.0,
 		"icon": "❤️",
-		"rarity": "uncommon"
+		"rarity": "uncommon",
+		"tier": 2
 	},
-	"health_regen": {
-		"name": "Regeneración",
+	"max_health_3": {
+		"name": "Vitalidad III",
+		"description": "+50 Vida máxima",
+		"stat": "max_health",
+		"amount": 50.0,
+		"icon": "❤️",
+		"rarity": "rare",
+		"tier": 3
+	},
+	"health_regen_1": {
+		"name": "Regeneración I",
 		"description": "+0.5 HP/s",
 		"stat": "health_regen",
 		"amount": 0.5,
 		"icon": "💚",
-		"rarity": "uncommon"
+		"rarity": "common",
+		"tier": 1
 	},
-	"damage_small": {
-		"name": "Poder I",
-		"description": "+10% Daño",
-		"stat": "damage_mult",
-		"amount": 0.10,
-		"icon": "⚔️",
-		"rarity": "common"
+	"health_regen_2": {
+		"name": "Regeneración II",
+		"description": "+1.5 HP/s",
+		"stat": "health_regen",
+		"amount": 1.5,
+		"icon": "💚",
+		"rarity": "uncommon",
+		"tier": 2
 	},
-	"damage_large": {
-		"name": "Poder II",
-		"description": "+20% Daño",
-		"stat": "damage_mult",
-		"amount": 0.20,
-		"icon": "⚔️",
-		"rarity": "uncommon"
-	},
-	"cooldown": {
-		"name": "Celeridad",
-		"description": "-10% Cooldown de armas",
-		"stat": "cooldown_mult",
-		"amount": -0.10,
-		"icon": "⏱️",
-		"rarity": "uncommon"
-	},
-	"crit_chance": {
-		"name": "Precisión",
-		"description": "+5% Probabilidad de crítico",
-		"stat": "crit_chance",
-		"amount": 0.05,
-		"icon": "🎯",
-		"rarity": "uncommon"
-	},
-	"crit_damage": {
-		"name": "Devastación",
-		"description": "+25% Daño crítico",
-		"stat": "crit_damage",
-		"amount": 0.25,
-		"icon": "💥",
-		"rarity": "rare"
-	},
-	"area": {
-		"name": "Expansión",
-		"description": "+15% Área de efecto",
-		"stat": "area_mult",
-		"amount": 0.15,
-		"icon": "🔵",
-		"rarity": "uncommon"
-	},
-	"move_speed": {
-		"name": "Velocidad",
-		"description": "+10% Velocidad de movimiento",
-		"stat": "move_speed",
-		"amount": 0.10,
-		"icon": "👟",
-		"rarity": "common"
-	},
-	"pickup_range": {
-		"name": "Magnetismo",
-		"description": "+25% Rango de recolección",
-		"stat": "pickup_range",
-		"amount": 0.25,
-		"icon": "🧲",
-		"rarity": "common"
-	},
-	"xp_mult": {
-		"name": "Sabiduría",
-		"description": "+15% Experiencia ganada",
-		"stat": "xp_mult",
-		"amount": 0.15,
-		"icon": "📚",
-		"rarity": "uncommon"
-	},
-	"armor": {
-		"name": "Armadura",
-		"description": "+3 Reducción de daño",
+	"armor_1": {
+		"name": "Armadura I",
+		"description": "+2 Armadura",
 		"stat": "armor",
-		"amount": 3.0,
+		"amount": 2.0,
 		"icon": "🛡️",
-		"rarity": "uncommon"
+		"rarity": "common",
+		"tier": 1
 	},
-	"luck": {
-		"name": "Fortuna",
-		"description": "+10% Suerte",
-		"stat": "luck",
-		"amount": 0.10,
-		"icon": "🍀",
-		"rarity": "rare"
+	"armor_2": {
+		"name": "Armadura II",
+		"description": "+5 Armadura",
+		"stat": "armor",
+		"amount": 5.0,
+		"icon": "🛡️",
+		"rarity": "uncommon",
+		"tier": 2
 	},
-	# === NUEVOS STATS ===
-	"dodge_small": {
+	"dodge_1": {
 		"name": "Evasión I",
-		"description": "+5% Esquivar ataques",
+		"description": "+5% Esquivar",
 		"stat": "dodge_chance",
 		"amount": 0.05,
 		"icon": "💨",
-		"rarity": "uncommon"
+		"rarity": "uncommon",
+		"tier": 2
 	},
-	"dodge_large": {
+	"dodge_2": {
 		"name": "Evasión II",
-		"description": "+10% Esquivar ataques",
+		"description": "+10% Esquivar",
 		"stat": "dodge_chance",
 		"amount": 0.10,
 		"icon": "💨",
-		"rarity": "rare"
+		"rarity": "rare",
+		"tier": 3
 	},
-	"life_steal_small": {
+	"life_steal_1": {
 		"name": "Vampirismo I",
 		"description": "+3% Robo de vida",
 		"stat": "life_steal",
 		"amount": 0.03,
 		"icon": "🩸",
-		"rarity": "uncommon"
+		"rarity": "uncommon",
+		"tier": 2
 	},
-	"life_steal_large": {
+	"life_steal_2": {
 		"name": "Vampirismo II",
 		"description": "+7% Robo de vida",
 		"stat": "life_steal",
 		"amount": 0.07,
 		"icon": "🩸",
-		"rarity": "rare"
+		"rarity": "rare",
+		"tier": 3
 	},
-	"projectile_speed": {
-		"name": "Velocidad Proyectil",
-		"description": "+15% Vel. proyectiles",
-		"stat": "projectile_speed_mult",
-		"amount": 0.15,
-		"icon": "➡️",
-		"rarity": "common"
+
+	# === UTILIDAD ===
+	"move_speed_1": {
+		"name": "Velocidad I",
+		"description": "+10% Vel. movimiento",
+		"stat": "move_speed",
+		"amount": 0.10,
+		"icon": "🏃",
+		"rarity": "common",
+		"tier": 1
 	},
-	"duration": {
-		"name": "Persistencia",
-		"description": "+15% Duración efectos",
-		"stat": "duration_mult",
-		"amount": 0.15,
-		"icon": "⌛",
-		"rarity": "common"
+	"move_speed_2": {
+		"name": "Velocidad II",
+		"description": "+20% Vel. movimiento",
+		"stat": "move_speed",
+		"amount": 0.20,
+		"icon": "🏃",
+		"rarity": "uncommon",
+		"tier": 2
 	},
-	"extra_projectile": {
-		"name": "Proyectil Extra",
-		"description": "+1 Proyectil adicional",
-		"stat": "extra_projectiles",
-		"amount": 1,
-		"icon": "🎯",
-		"rarity": "rare"
-	},
-	"knockback": {
-		"name": "Empuje",
-		"description": "+25% Fuerza de empuje",
-		"stat": "knockback_mult",
+	"pickup_range_1": {
+		"name": "Magnetismo I",
+		"description": "+25% Rango recogida",
+		"stat": "pickup_range",
 		"amount": 0.25,
-		"icon": "💥",
-		"rarity": "common"
+		"icon": "🧲",
+		"rarity": "common",
+		"tier": 1
+	},
+	"pickup_range_2": {
+		"name": "Magnetismo II",
+		"description": "+50% Rango recogida",
+		"stat": "pickup_range",
+		"amount": 0.50,
+		"icon": "🧲",
+		"rarity": "uncommon",
+		"tier": 2
+	},
+	"xp_mult_1": {
+		"name": "Sabiduría I",
+		"description": "+15% Experiencia",
+		"stat": "xp_mult",
+		"amount": 0.15,
+		"icon": "⭐",
+		"rarity": "common",
+		"tier": 1
+	},
+	"xp_mult_2": {
+		"name": "Sabiduría II",
+		"description": "+30% Experiencia",
+		"stat": "xp_mult",
+		"amount": 0.30,
+		"icon": "⭐",
+		"rarity": "uncommon",
+		"tier": 2
+	},
+	"coin_value_1": {
+		"name": "Avaricia I",
+		"description": "+20% Valor monedas",
+		"stat": "coin_value_mult",
+		"amount": 0.20,
+		"icon": "🪙",
+		"rarity": "common",
+		"tier": 1
+	},
+	"coin_value_2": {
+		"name": "Avaricia II",
+		"description": "+40% Valor monedas",
+		"stat": "coin_value_mult",
+		"amount": 0.40,
+		"icon": "🪙",
+		"rarity": "uncommon",
+		"tier": 2
+	},
+	"luck_1": {
+		"name": "Fortuna I",
+		"description": "+5 Suerte",
+		"stat": "luck",
+		"amount": 5.0,
+		"icon": "🍀",
+		"rarity": "uncommon",
+		"tier": 2
+	},
+	"luck_2": {
+		"name": "Fortuna II",
+		"description": "+15 Suerte",
+		"stat": "luck",
+		"amount": 15.0,
+		"icon": "🍀",
+		"rarity": "rare",
+		"tier": 3
 	}
 }
 
-func get_random_upgrades(count: int = 3, luck_bonus: float = 0.0) -> Array:
-	"""
-	Obtener upgrades aleatorios para el panel de level up
-	luck_bonus aumenta probabilidad de upgrades raros
-	"""
-	var upgrades_list = PLAYER_UPGRADES.keys()
-	upgrades_list.shuffle()
+func get_random_upgrades(count: int = 3, game_time_minutes: float = 0.0) -> Array:
+	"""Obtener mejoras aleatorias del jugador con sistema de tiers por tiempo"""
+	var luck = get_stat("luck")
+	var tier_weights = _calculate_tier_weights(game_time_minutes, luck)
 
 	var selected = []
-	var actual_luck = get_stat("luck") + luck_bonus
+	var attempts = 0
+	var max_attempts = count * 10
 
-	for upgrade_id in upgrades_list:
-		if selected.size() >= count:
-			break
+	while selected.size() < count and attempts < max_attempts:
+		attempts += 1
 
-		var upgrade = PLAYER_UPGRADES[upgrade_id].duplicate()
-		upgrade["id"] = upgrade_id
+		var selected_tier = _weighted_random_tier(tier_weights)
+		var tier_upgrades = []
 
-		# Filtrar por rareza según luck
-		var rarity_roll = randf()
-		match upgrade.rarity:
-			"common":
-				selected.append(upgrade)
-			"uncommon":
-				if rarity_roll < 0.5 + actual_luck * 0.3:
-					selected.append(upgrade)
-			"rare":
-				if rarity_roll < 0.2 + actual_luck * 0.4:
-					selected.append(upgrade)
-
-	# Si no hay suficientes, llenar con comunes
-	while selected.size() < count:
-		for upgrade_id in upgrades_list:
+		for upgrade_id in PLAYER_UPGRADES:
 			var upgrade = PLAYER_UPGRADES[upgrade_id]
-			if upgrade.rarity == "common":
-				var dup = upgrade.duplicate()
-				dup["id"] = upgrade_id
-				if dup not in selected:
-					selected.append(dup)
-					break
+			if upgrade.get("tier", 1) == selected_tier:
+				tier_upgrades.append(upgrade_id)
 
-		# Prevenir loop infinito
-		if selected.size() < count:
-			break
+		if tier_upgrades.is_empty():
+			continue
 
-	return selected.slice(0, count)
+		var upgrade_id = tier_upgrades[randi() % tier_upgrades.size()]
+
+		# Evitar duplicados
+		var already_selected = false
+		for s in selected:
+			if s.get("id") == upgrade_id:
+				already_selected = true
+				break
+
+		if not already_selected:
+			var upgrade = PLAYER_UPGRADES[upgrade_id].duplicate()
+			upgrade["id"] = upgrade_id
+			selected.append(upgrade)
+
+	return selected
+
+func _calculate_tier_weights(game_time_minutes: float, luck: float) -> Dictionary:
+	var weights = {1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0}
+
+	if game_time_minutes < 3.0:
+		weights = {1: 0.80, 2: 0.18, 3: 0.02, 4: 0.0}
+	elif game_time_minutes < 8.0:
+		weights = {1: 0.50, 2: 0.35, 3: 0.13, 4: 0.02}
+	elif game_time_minutes < 15.0:
+		weights = {1: 0.25, 2: 0.35, 3: 0.30, 4: 0.10}
+	else:
+		weights = {1: 0.10, 2: 0.30, 3: 0.35, 4: 0.25}
+
+	# Aplicar suerte
+	if luck > 0:
+		var luck_factor = clampf(luck * 0.01, 0.0, 0.25)
+		var shift = (weights[1] + weights[2]) * luck_factor
+		weights[1] *= (1.0 - luck_factor)
+		weights[2] *= (1.0 - luck_factor * 0.5)
+		weights[3] += shift * 0.6
+		weights[4] += shift * 0.4
+
+	return weights
+
+func _weighted_random_tier(weights: Dictionary) -> int:
+	var total = 0.0
+	for w in weights.values():
+		total += w
+
+	var roll = randf() * total
+	var cumulative = 0.0
+
+	for tier in weights:
+		cumulative += weights[tier]
+		if roll <= cumulative:
+			return tier
+
+	return 1
 
 func apply_upgrade(upgrade_data) -> bool:
-	"""Aplicar un upgrade del jugador. Acepta String (ID) o Dictionary (datos completos)"""
 	var upgrade_id: String = ""
 	var upgrade_dict: Dictionary = {}
 
-	# Determinar si es un ID o un Dictionary completo
 	if upgrade_data is String:
 		upgrade_id = upgrade_data
 	elif upgrade_data is Dictionary:
 		upgrade_id = upgrade_data.get("upgrade_id", upgrade_data.get("id", ""))
 		upgrade_dict = upgrade_data
 	else:
-		push_error("[PlayerStats] apply_upgrade: tipo invalido %s" % typeof(upgrade_data))
+		push_error("[PlayerStats] apply_upgrade: tipo invalido")
 		return false
 
-	# Si tenemos un ID valido, buscar en PLAYER_UPGRADES
 	if upgrade_id != "" and PLAYER_UPGRADES.has(upgrade_id):
 		var upgrade = PLAYER_UPGRADES[upgrade_id]
 		add_stat(upgrade.stat, upgrade.amount)
-
-		# Registrar la mejora en el historial
 		add_upgrade({
 			"id": upgrade_id,
 			"name": upgrade.name,
@@ -886,53 +721,51 @@ func apply_upgrade(upgrade_data) -> bool:
 			"description": upgrade.description,
 			"effects": [{"stat": upgrade.stat, "value": upgrade.amount, "operation": "add"}]
 		})
-
-		print("[PlayerStats] Upgrade aplicado (por ID): %s" % upgrade.name)
+		print("[PlayerStats] Upgrade aplicado: %s" % upgrade.name)
 		return true
 
-	# Fallback: aplicar efectos directamente desde el Dictionary
 	if upgrade_dict.has("effects"):
 		for effect in upgrade_dict.effects:
 			var stat = effect.get("stat", "")
 			var value = effect.get("value", 0)
 			var op = effect.get("operation", "add")
-			if stat != "":
+			if stat != "" and stat in stats:
 				match op:
 					"add": add_stat(stat, value)
 					"multiply": multiply_stat(stat, value)
 					"set": set_stat(stat, value)
-					_: add_stat(stat, value)
-
 		add_upgrade(upgrade_dict)
-		print("[PlayerStats] Upgrade aplicado (por efectos): %s" % upgrade_dict.get("name", "???"))
 		return true
 
-	# Fallback: stat y amount directamente
 	if upgrade_dict.has("stat") and upgrade_dict.has("amount"):
-		add_stat(upgrade_dict.stat, upgrade_dict.amount)
-		add_upgrade(upgrade_dict)
-		print("[PlayerStats] Upgrade aplicado (stat+amount): %s" % upgrade_dict.get("name", "???"))
-		return true
+		if upgrade_dict.stat in stats:
+			add_stat(upgrade_dict.stat, upgrade_dict.amount)
+			add_upgrade(upgrade_dict)
+			return true
 
-	push_warning("[PlayerStats] No se pudo aplicar upgrade: %s" % str(upgrade_data))
 	return false
+
+func add_upgrade(upgrade_dict: Dictionary) -> void:
+	collected_upgrades.append(upgrade_dict)
+
+func get_collected_upgrades() -> Array:
+	return collected_upgrades.duplicate()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SERIALIZACIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func to_dict() -> Dictionary:
-	"""Serializar para guardado"""
 	return {
 		"stats": stats.duplicate(),
 		"current_health": current_health,
 		"level": level,
 		"current_xp": current_xp,
-		"xp_to_next_level": xp_to_next_level
+		"xp_to_next_level": xp_to_next_level,
+		"collected_upgrades": collected_upgrades.duplicate(true)
 	}
 
 func from_dict(data: Dictionary) -> void:
-	"""Restaurar desde datos guardados"""
 	if data.has("stats"):
 		stats = data.stats.duplicate()
 	if data.has("current_health"):
@@ -943,8 +776,8 @@ func from_dict(data: Dictionary) -> void:
 		current_xp = data.current_xp
 	if data.has("xp_to_next_level"):
 		xp_to_next_level = data.xp_to_next_level
-
-	_sync_with_attack_manager()
+	if data.has("collected_upgrades"):
+		collected_upgrades = data.collected_upgrades.duplicate(true)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DEBUG
@@ -960,53 +793,7 @@ func get_debug_info() -> String:
 	]
 
 	for stat_name in stats:
-		var base = stats[stat_name]
-		var final = get_stat(stat_name)
-		var temp = _get_temp_modifier_total(stat_name)
-
-		if temp != 0:
-			lines.append("  %s: %.2f (base: %.2f, temp: %+.2f)" % [stat_name, final, base, temp])
-		else:
-			lines.append("  %s: %.2f" % [stat_name, final])
-
-	if not temp_modifiers.is_empty():
-		lines.append("")
-		lines.append("Buffs activos:")
-		for stat_name in temp_modifiers:
-			for mod in temp_modifiers[stat_name]:
-				lines.append("  %s: %+.2f (%.1fs restantes) [%s]" % [
-					stat_name, mod.amount, mod.duration, mod.source
-				])
+		var value = get_stat(stat_name)
+		lines.append("  %s: %s" % [stat_name, format_stat_value(stat_name, value)])
 
 	return "\n".join(lines)
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# SISTEMA DE MEJORAS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-func add_upgrade(upgrade_data: Dictionary) -> void:
-	"""Registrar una mejora aplicada"""
-	collected_upgrades.append({
-		"id": upgrade_data.get("upgrade_id", upgrade_data.get("id", "")),
-		"name": upgrade_data.get("name", "???"),
-		"icon": upgrade_data.get("icon", "✨"),
-		"description": upgrade_data.get("description", ""),
-		"effects": upgrade_data.get("effects", [])
-	})
-	print("[PlayerStats] Mejora añadida: %s" % upgrade_data.get("name", "???"))
-
-func get_collected_upgrades() -> Array:
-	"""Obtener lista de mejoras recolectadas"""
-	return collected_upgrades.duplicate()
-
-func modify_stat(stat_name: String, value: float, operation: String = "add") -> void:
-	"""Modificar un stat con operación específica"""
-	match operation:
-		"add":
-			add_stat(stat_name, value)
-		"multiply":
-			multiply_stat(stat_name, value)
-		"set":
-			set_stat(stat_name, value)
-		_:
-			add_stat(stat_name, value)

@@ -574,26 +574,27 @@ func _create_compact_stat_row(stat_name: String) -> Control:
 
 	return hbox
 
-# Metadatos por defecto para todos los stats
+# Metadatos por defecto para todos los stats - ACTUALIZADO v2.0
 const DEFAULT_STAT_METADATA = {
-	# Defensivos
+	# === STATS DEL JUGADOR ===
 	"max_health": {"name": "Vida Maxima", "icon": "<3", "description": "Puntos de vida maximos"},
 	"health_regen": {"name": "Regeneracion", "icon": "+", "description": "Vida regenerada por segundo"},
 	"armor": {"name": "Armadura", "icon": "[=]", "description": "Reduce el danio recibido"},
 	"dodge_chance": {"name": "Esquivar", "icon": "~", "description": "Probabilidad de esquivar ataques"},
 	"life_steal": {"name": "Robo de Vida", "icon": "<", "description": "Vida robada al atacar"},
-	# Ofensivos
-	"damage_mult": {"name": "Danio", "icon": "!", "description": "Multiplicador de danio"},
-	"cooldown_mult": {"name": "Enfriamiento", "icon": "o", "description": "Velocidad de recarga"},
+	# === STATS GLOBALES DE ARMAS (v2.0) ===
+	"damage_mult": {"name": "Danio", "icon": "!", "description": "Multiplicador de danio de armas"},
+	"attack_speed_mult": {"name": "Vel. Ataque", "icon": ">>", "description": "Ataques por segundo (mayor = mas rapido)"},
+	"cooldown_mult": {"name": "Vel. Ataque", "icon": ">>", "description": "(Legacy) Convertido a Vel. Ataque"},
 	"area_mult": {"name": "Area", "icon": "O", "description": "Tamanio de area de efecto"},
-	"projectile_speed_mult": {"name": "Vel. Proyectil", "icon": ">>", "description": "Velocidad de proyectiles"},
+	"projectile_speed_mult": {"name": "Vel. Proyectil", "icon": "->", "description": "Velocidad de proyectiles"},
 	"duration_mult": {"name": "Duracion", "icon": ":", "description": "Duracion de efectos"},
 	"extra_projectiles": {"name": "Proyectiles Extra", "icon": "x", "description": "Proyectiles adicionales"},
 	"knockback_mult": {"name": "Empuje", "icon": "<-", "description": "Fuerza de empuje"},
-	# Criticos
+	# === CRITICOS ===
 	"crit_chance": {"name": "Prob. Critico", "icon": "*", "description": "Probabilidad de critico"},
 	"crit_damage": {"name": "Danio Critico", "icon": "**", "description": "Multiplicador de danio critico"},
-	# Utilidad
+	# === UTILIDAD ===
 	"move_speed": {"name": "Velocidad", "icon": "->", "description": "Velocidad de movimiento"},
 	"pickup_range": {"name": "Rango Recogida", "icon": "()", "description": "Rango para recoger items"},
 	"xp_mult": {"name": "Experiencia", "icon": "^", "description": "Experiencia ganada"},
@@ -601,22 +602,27 @@ const DEFAULT_STAT_METADATA = {
 	"luck": {"name": "Suerte", "icon": "?", "description": "Afecta drops y criticos"}
 }
 
-# Valores base para stats
+# Valores base para stats - ACTUALIZADO v2.0
 const DEFAULT_STAT_VALUES = {
+	# Jugador
 	"max_health": 100.0,
 	"health_regen": 0.0,
 	"armor": 0.0,
 	"dodge_chance": 0.0,
 	"life_steal": 0.0,
+	# Armas globales
 	"damage_mult": 1.0,
-	"cooldown_mult": 1.0,
+	"attack_speed_mult": 1.0,
+	"cooldown_mult": 1.0,  # Legacy, convertido a attack_speed
 	"area_mult": 1.0,
 	"projectile_speed_mult": 1.0,
 	"duration_mult": 1.0,
 	"extra_projectiles": 0.0,
 	"knockback_mult": 1.0,
+	# Criticos
 	"crit_chance": 0.05,
 	"crit_damage": 2.0,
+	# Utilidad
 	"move_speed": 1.0,
 	"pickup_range": 1.0,
 	"xp_mult": 1.0,
@@ -637,7 +643,7 @@ func _get_stat_base_value(stat_name: String) -> float:
 	return 0.0
 
 func _get_stats_for_category(category: String) -> Array:
-	"""Obtener stats de una categoría"""
+	"""Obtener stats de una categoría - ACTUALIZADO v2.0"""
 	if player_stats and player_stats.has_method("get_stats_by_category"):
 		return player_stats.get_stats_by_category(category)
 
@@ -646,7 +652,8 @@ func _get_stats_for_category(category: String) -> Array:
 		"defensive":
 			return ["max_health", "health_regen", "armor", "dodge_chance", "life_steal"]
 		"offensive":
-			return ["damage_mult", "cooldown_mult", "area_mult", "projectile_speed_mult", "duration_mult", "extra_projectiles", "knockback_mult"]
+			# Cambiado: attack_speed_mult en lugar de cooldown_mult
+			return ["damage_mult", "attack_speed_mult", "area_mult", "projectile_speed_mult", "duration_mult", "extra_projectiles", "knockback_mult"]
 		"critical":
 			return ["crit_chance", "crit_damage"]
 		"utility":
@@ -654,14 +661,22 @@ func _get_stats_for_category(category: String) -> Array:
 	return []
 
 func _format_stat_value_fallback(stat_name: String, value: float) -> String:
-	"""Formatear valor cuando no hay PlayerStats"""
+	"""Formatear valor cuando no hay PlayerStats - ACTUALIZADO v2.0"""
 	if stat_name in ["crit_chance", "dodge_chance", "life_steal"]:
 		return "%.0f%%" % (value * 100)
-	elif stat_name in ["damage_mult", "cooldown_mult", "area_mult", "move_speed", "pickup_range", "xp_mult", "coin_value_mult", "crit_damage", "projectile_speed_mult", "duration_mult", "knockback_mult"]:
+	elif stat_name in ["damage_mult", "attack_speed_mult", "area_mult", "move_speed", "pickup_range", "xp_mult", "coin_value_mult", "crit_damage", "projectile_speed_mult", "duration_mult", "knockback_mult"]:
+		# attack_speed_mult: >1 es mejor (más ataques/segundo)
 		if value >= 1.0:
 			return "+%.0f%%" % ((value - 1.0) * 100)
 		else:
 			return "%.0f%%" % ((value - 1.0) * 100)
+	elif stat_name == "cooldown_mult":
+		# Legacy: convertir a attack_speed para mostrar
+		var attack_speed = 1.0 / value if value > 0 else 1.0
+		if attack_speed >= 1.0:
+			return "+%.0f%%" % ((attack_speed - 1.0) * 100)
+		else:
+			return "%.0f%%" % ((attack_speed - 1.0) * 100)
 	elif stat_name == "extra_projectiles":
 		return "+%d" % int(value)
 	else:
@@ -670,13 +685,22 @@ func _format_stat_value_fallback(stat_name: String, value: float) -> String:
 		return "%.1f" % value
 
 func _get_value_color(stat_name: String, value: float) -> Color:
-	"""Obtener color según el valor del stat"""
-	# Para cooldown, menos es mejor
+	"""Obtener color según el valor del stat - ACTUALIZADO v2.0"""
+	# Para cooldown_mult legacy, convertir a attack_speed
 	if stat_name == "cooldown_mult":
-		if value < 1.0:
-			return Color(0.3, 1.0, 0.4)  # Verde si es menor
-		elif value > 1.0:
-			return Color(1.0, 0.4, 0.3)  # Rojo si es mayor
+		var attack_speed = 1.0 / value if value > 0 else 1.0
+		if attack_speed > 1.0:
+			return Color(0.3, 1.0, 0.4)  # Verde si más rápido
+		elif attack_speed < 1.0:
+			return Color(1.0, 0.4, 0.3)  # Rojo si más lento
+		return Color(0.8, 0.8, 0.8)
+	
+	# Para attack_speed_mult, más es mejor
+	if stat_name == "attack_speed_mult":
+		if value > 1.0:
+			return Color(0.3, 1.0, 0.4)  # Verde
+		elif value < 1.0:
+			return Color(1.0, 0.4, 0.3)  # Rojo
 		return Color(0.8, 0.8, 0.8)
 
 	# Para el resto, más es mejor
@@ -968,7 +992,7 @@ func _create_weapon_card(weapon) -> Control:
 	stars_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2) if weapon_level > 0 else Color(0.4, 0.4, 0.4))
 	level_vbox.add_child(stars_label)
 
-	# === STATS DEL ARMA ===
+	# === STATS DEL ARMA (v2.0: Velocidad de Ataque) ===
 	var stats_grid = GridContainer.new()
 	stats_grid.columns = 3
 	stats_grid.add_theme_constant_override("h_separation", 15)
@@ -979,9 +1003,10 @@ func _create_weapon_card(weapon) -> Control:
 	if "damage" in weapon:
 		_add_weapon_stat(stats_grid, "⚔️", "Daño", "%.0f" % weapon.damage)
 
-	# Cooldown
+	# Velocidad de Ataque (convertir cooldown a ataques/segundo)
 	if "cooldown" in weapon:
-		_add_weapon_stat(stats_grid, "⏱️", "Cooldown", "%.2fs" % weapon.cooldown)
+		var attack_speed = 1.0 / weapon.cooldown if weapon.cooldown > 0 else 1.0
+		_add_weapon_stat(stats_grid, "⚡", "Vel. Ataque", "%.2f/s" % attack_speed)
 
 	# Proyectiles
 	if "projectile_count" in weapon and weapon.projectile_count > 0:

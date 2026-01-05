@@ -1594,7 +1594,7 @@ func get_attack_accuracy() -> float:
 
 func die() -> void:
 	emit_signal("enemy_died", self, enemy_id, exp_value, enemy_tier, is_elite, is_boss)
-	queue_free()
+		queue_free()
 
 func _on_health_died() -> void:
 	"""Manejar muerte desde HealthComponent"""

@@ -708,14 +708,55 @@ func generate_options() -> void:
 	_update_button_counts()
 
 func _get_player_upgrade_options(luck: float) -> Array:
+	"""
+	Obtiene opciones de mejora para el jugador.
+	
+	NUEVO SISTEMA (v2.0):
+	- Mejoras GLOBALES DE ARMAS (daño, velocidad de ataque, área, etc.)
+	  → Vienen de WeaponUpgradeDatabase.GLOBAL_UPGRADES
+	  → Se aplican via attack_manager.apply_global_upgrade()
+	
+	- Mejoras DEL JUGADOR (vida, armadura, velocidad de movimiento, etc.)
+	  → Vienen de PassiveDatabase
+	  → Se aplican a player_stats
+	"""
 	var upgrade_options: Array = []
-
+	
+	# Obtener tiempo de juego para el sistema de tiers
+	var game_time_minutes = _get_game_time_minutes()
+	
+	# 1. MEJORAS GLOBALES DE ARMAS (WeaponUpgradeDatabase)
+	var WeaponUpgradeDB = load("res://scripts/data/WeaponUpgradeDatabase.gd")
+	if WeaponUpgradeDB:
+		var weapon_db = WeaponUpgradeDB.new()
+		if weapon_db.has_method("get_random_global_upgrades"):
+			# Obtener 3 mejoras globales de armas
+			var global_upgrades = weapon_db.get_random_global_upgrades(3, game_time_minutes, luck)
+			for upgrade in global_upgrades:
+				upgrade_options.append({
+					"type": OPTION_TYPES.PLAYER_UPGRADE,  # Reutilizamos el tipo
+					"upgrade_id": upgrade.get("id", ""),
+					"name": upgrade.get("name", "???"),
+					"description": upgrade.get("description", ""),
+					"icon": upgrade.get("icon", "⚔️"),
+					"rarity": upgrade.get("tier", "common"),
+					"category": "weapon_global",  # Marca especial para aplicar a GlobalWeaponStats
+					"effects": upgrade.get("effects", []),
+					"priority": 0.9
+				})
+	
+	# 2. MEJORAS DEL JUGADOR (PassiveDatabase) - Solo stats defensivos/utilidad
 	var PassiveDB = load("res://scripts/data/PassiveDatabase.gd")
 	if PassiveDB:
 		var db = PassiveDB.new()
 		if db.has_method("get_random_passives"):
-			var passives = db.get_random_passives(6, [], luck)
+			var passives = db.get_random_passives(4, [], luck)
 			for p in passives:
+				# Filtrar: solo incluir mejoras que NO sean de armas
+				var is_weapon_stat = _is_weapon_upgrade(p)
+				if is_weapon_stat:
+					continue  # Saltamos, estas ahora vienen de WeaponUpgradeDatabase
+				
 				# Convertir effect singular a effects array
 				var effects_array = p.get("effects", [])
 				if effects_array.is_empty() and p.has("effect"):
@@ -752,7 +793,7 @@ func _get_player_upgrade_options(luck: float) -> Array:
 					"description": p.get("description", ""),
 					"icon": p.get("icon", "✨"),
 					"rarity": p.get("rarity", "common"),
-					"category": p.get("category", ""),
+					"category": p.get("category", "player"),
 					"effects": effects_array,
 					"priority": 0.8
 				})
@@ -760,25 +801,80 @@ func _get_player_upgrade_options(luck: float) -> Array:
 
 	return upgrade_options
 
+func _is_weapon_upgrade(passive: Dictionary) -> bool:
+	"""Determina si una mejora es de armas (para filtrarla de PassiveDatabase)"""
+	var weapon_stats = [
+		"damage_mult", "cooldown_mult", "attack_speed_mult",
+		"area_mult", "projectile_speed_mult", "duration_mult",
+		"extra_projectiles", "knockback_mult", "crit_chance", "crit_damage"
+	]
+	
+	var effects = passive.get("effects", [])
+	if effects.is_empty() and passive.has("effect"):
+		var eff = passive.effect
+		if eff.get("type", "") == "multi" and eff.has("effects"):
+			for sub_eff in eff.effects:
+				if sub_eff.get("stat", "") in weapon_stats:
+					return true
+		elif eff.get("stat", "") in weapon_stats:
+			return true
+	else:
+		for effect in effects:
+			if effect.get("stat", "") in weapon_stats:
+				return true
+	
+	return false
+
+func _get_game_time_minutes() -> float:
+	"""Obtener tiempo de juego en minutos para el sistema de tiers"""
+	# Buscar GameManager para obtener el tiempo
+	var game_manager = get_tree().root.get_node_or_null("Game")
+	if game_manager and "game_time" in game_manager:
+		return game_manager.game_time / 60.0
+	
+	# Alternativa: buscar por grupo
+	var managers = get_tree().get_nodes_in_group("game_manager")
+	if not managers.is_empty():
+		var gm = managers[0]
+		if "game_time" in gm:
+			return gm.game_time / 60.0
+	
+	# Fallback: asumir partida temprana
+	return 3.0
+
 func _get_fallback_options() -> Array:
+	"""Opciones de respaldo si no hay suficientes mejoras disponibles"""
 	return [
 		{
 			"type": OPTION_TYPES.PLAYER_UPGRADE,
 			"upgrade_id": "damage_boost",
 			"name": "Daño Mágico +",
-			"description": "Aumenta el daño en un 10%",
+			"description": "Aumenta el daño de todas las armas en un 10%",
 			"icon": "⚡",
 			"rarity": "common",
-			"effects": [{"stat": "damage_mult", "value": 0.10, "operation": "add"}],
+			"category": "weapon_global",  # Va a GlobalWeaponStats
+			"effects": [{"stat": "damage_mult", "value": 1.10, "operation": "multiply"}],
+			"priority": 0.8
+		},
+		{
+			"type": OPTION_TYPES.PLAYER_UPGRADE,
+			"upgrade_id": "attack_speed_boost",
+			"name": "Velocidad de Ataque +",
+			"description": "Aumenta la velocidad de ataque en un 10%",
+			"icon": "⚡",
+			"rarity": "common",
+			"category": "weapon_global",  # Va a GlobalWeaponStats
+			"effects": [{"stat": "attack_speed_mult", "value": 1.10, "operation": "multiply"}],
 			"priority": 0.8
 		},
 		{
 			"type": OPTION_TYPES.PLAYER_UPGRADE,
 			"upgrade_id": "speed_boost",
 			"name": "Velocidad +",
-			"description": "Aumenta la velocidad en un 10%",
+			"description": "Aumenta tu velocidad de movimiento en un 10%",
 			"icon": "💨",
 			"rarity": "common",
+			"category": "player",  # Va a PlayerStats
 			"effects": [{"stat": "move_speed", "value": 0.10, "operation": "add"}],
 			"priority": 0.8
 		},
@@ -786,20 +882,11 @@ func _get_fallback_options() -> Array:
 			"type": OPTION_TYPES.PLAYER_UPGRADE,
 			"upgrade_id": "health_boost",
 			"name": "Vida Máxima +",
-			"description": "Aumenta la vida máxima en 20",
+			"description": "Aumenta tu vida máxima en 20",
 			"icon": "❤️",
 			"rarity": "common",
+			"category": "player",  # Va a PlayerStats
 			"effects": [{"stat": "max_health", "value": 20, "operation": "add"}],
-			"priority": 0.8
-		},
-		{
-			"type": OPTION_TYPES.PLAYER_UPGRADE,
-			"upgrade_id": "cooldown_reduction",
-			"name": "Recarga Rápida",
-			"description": "Reduce el cooldown en un 5%",
-			"icon": "⏰",
-			"rarity": "uncommon",
-			"effects": [{"stat": "cooldown_mult", "value": -0.05, "operation": "add"}],
 			"priority": 0.8
 		}
 	]
@@ -936,13 +1023,30 @@ func _apply_option(option: Dictionary) -> void:
 			_apply_player_upgrade(option)
 
 func _apply_player_upgrade(option: Dictionary) -> void:
-	# PlayerStats.apply_upgrade ahora acepta tanto String (ID) como Dictionary completo
-	if player_stats and player_stats.has_method("apply_upgrade"):
-		var success = player_stats.apply_upgrade(option)
-		if success:
-			print("[LevelUpPanel] Mejora aplicada correctamente")
+	"""
+	Aplicar mejora seleccionada.
+	
+	NUEVO SISTEMA (v2.0):
+	- Si category == "weapon_global" → AttackManager.apply_global_upgrade()
+	- Si category es otra cosa → PlayerStats.apply_upgrade()
+	"""
+	var category = option.get("category", "player")
+	
+	if category == "weapon_global":
+		# Mejora GLOBAL de armas → va a GlobalWeaponStats
+		if attack_manager and attack_manager.has_method("apply_global_upgrade"):
+			attack_manager.apply_global_upgrade(option)
+			print("[LevelUpPanel] ⚔️ Mejora global de armas aplicada: %s" % option.get("name", "???"))
 		else:
-			push_warning("[LevelUpPanel] No se pudo aplicar mejora: %s" % option.get("name", "???"))
+			push_warning("[LevelUpPanel] AttackManager no tiene apply_global_upgrade()")
+	else:
+		# Mejora del JUGADOR → va a PlayerStats
+		if player_stats and player_stats.has_method("apply_upgrade"):
+			var success = player_stats.apply_upgrade(option)
+			if success:
+				print("[LevelUpPanel] 🛡️ Mejora del jugador aplicada: %s" % option.get("name", "???"))
+			else:
+				push_warning("[LevelUpPanel] No se pudo aplicar mejora: %s" % option.get("name", "???"))
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # API PÚBLICA
