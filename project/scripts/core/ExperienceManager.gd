@@ -68,6 +68,19 @@ func _load_coin_scene() -> void:
 	else:
 		push_warning("[ExperienceManager] No se encontró CoinPickup.tscn")
 
+func _find_player() -> CharacterBody2D:
+	"""Buscar referencia al player"""
+	if player and is_instance_valid(player):
+		return player
+	# Buscar en el árbol si no tenemos referencia
+	var tree = get_tree()
+	if tree and tree.root:
+		var game = tree.root.get_node_or_null("Game")
+		if game and "player" in game:
+			player = game.player
+			return player
+	return null
+
 func setup_level_curve():
 	"""Configurar curva de experiencia por nivel"""
 	# Curva base: xp_to_level = 5 + level * 3
@@ -297,8 +310,6 @@ func _has_flag(flag_name: String) -> bool:
 			return flag_name in game.player_flags
 	return false
 
-	print("🪙 Moneda: +%d (streak: %d, total: %d)" % [final_value, streak_count, total_coins])
-
 func _save_coins_to_progression(amount: int) -> void:
 	"""Guardar monedas en la progresión del jugador"""
 	var tree = get_tree()
@@ -430,7 +441,7 @@ func get_stats() -> Dictionary:
 		"current_exp": current_exp,
 		"exp_to_next": exp_to_next_level,
 		"progress": get_level_progress(),
-		"active_orbs": active_orbs.size()
+		"active_coins": active_coins.size()
 	}
 
 # Clase para orbes de experiencia

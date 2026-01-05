@@ -31,52 +31,65 @@ OUTPUT_NAMES = [
     "gem_purple_spin.png"
 ]
 
-def find_sprite_bounds(img, start_x, start_y, cell_width, cell_height):
-    """Encuentra los límites del sprite dentro de una celda (bounding box del contenido no transparente)"""
-    min_x, min_y = cell_width, cell_height
-    max_x, max_y = 0, 0
+def find_sprite_columns_in_row(img, start_y, row_height, min_gap=5):
+    """Encuentra las regiones de sprites en una fila detectando gaps"""
+    row = img.crop((0, int(start_y), img.width, int(start_y + row_height)))
 
-    for y in range(int(cell_height)):
-        for x in range(int(cell_width)):
-            px = int(start_x + x)
-            py = int(start_y + y)
-            if px < img.width and py < img.height:
-                pixel = img.getpixel((px, py))
-                # Verificar si el pixel tiene alpha > 0
-                if len(pixel) == 4 and pixel[3] > 10:
-                    min_x = min(min_x, x)
-                    min_y = min(min_y, y)
-                    max_x = max(max_x, x)
-                    max_y = max(max_y, y)
+    # Encontrar todas las columnas con contenido
+    cols_with_content = []
+    for x in range(row.width):
+        col = row.crop((x, 0, x+1, row.height))
+        if col.getbbox():
+            cols_with_content.append(x)
 
-    if max_x < min_x:  # No se encontró contenido
-        return None
+    if not cols_with_content:
+        return []
 
-    return (int(min_x), int(min_y), int(max_x + 1), int(max_y + 1))
+    # Agrupar columnas contiguas en regiones
+    regions = []
+    region_start = cols_with_content[0]
+    prev = cols_with_content[0]
+
+    for x in cols_with_content[1:]:
+        if x - prev > min_gap:
+            # Gap detectado, cerrar región actual
+            regions.append((region_start, prev + 1))
+            region_start = x
+        prev = x
+
+    # Cerrar última región
+    regions.append((region_start, prev + 1))
+
+    return regions
 
 def extract_and_center_sprite(img, start_x, start_y, cell_width, cell_height, output_size):
     """Extrae un sprite y lo centra en un frame de output_size x output_size"""
     # Crear imagen de salida con fondo transparente
     output = Image.new('RGBA', (output_size, output_size), (0, 0, 0, 0))
 
-    # Encontrar bounds del sprite
-    bounds = find_sprite_bounds(img, start_x, start_y, cell_width, cell_height)
+    # Extraer la celda completa primero
+    cell = img.crop((
+        int(start_x),
+        int(start_y),
+        int(start_x + cell_width),
+        int(start_y + cell_height)
+    ))
 
-    if bounds is None:
+    # Encontrar bounds del sprite dentro de la celda
+    bbox = cell.getbbox()
+
+    if bbox is None:
         print(f"  Warning: Celda vacia en ({start_x}, {start_y})")
         return output
 
-    min_x, min_y, max_x, max_y = bounds
+    min_x, min_y, max_x, max_y = bbox
     sprite_width = max_x - min_x
     sprite_height = max_y - min_y
 
-    # Extraer el sprite
-    sprite = img.crop((
-        int(start_x + min_x),
-        int(start_y + min_y),
-        int(start_x + max_x),
-        int(start_y + max_y)
-    ))
+    print(f"      Bounds en celda: {bbox}, size: {sprite_width}x{sprite_height}")
+
+    # Extraer solo el sprite (recortar de la celda, no de la imagen original)
+    sprite = cell.crop(bbox)
 
     # Escalar si es necesario para que quepa en 32x32 con padding
     max_dim = max(sprite_width, sprite_height)
@@ -84,12 +97,12 @@ def extract_and_center_sprite(img, start_x, start_y, cell_width, cell_height, ou
 
     if max_dim > target_size:
         scale = target_size / max_dim
-        new_width = int(sprite_width * scale)
-        new_height = int(sprite_height * scale)
+        new_width = max(1, int(sprite_width * scale))
+        new_height = max(1, int(sprite_height * scale))
         sprite = sprite.resize((new_width, new_height), Image.Resampling.LANCZOS)
         sprite_width, sprite_height = new_width, new_height
 
-    # Calcular posición para centrar
+    # Calcular posición para centrar EN EL FRAME DE SALIDA
     paste_x = (output_size - sprite_width) // 2
     paste_y = (output_size - sprite_height) // 2
 
@@ -119,12 +132,9 @@ def process_coins():
     img = Image.open(input_path).convert('RGBA')
     print(f"   Tamano original: {img.width}x{img.height}")
 
-    # Calcular tamaño de cada celda
-    cols = 4
     rows = 5
-    cell_width = img.width / cols
-    cell_height = img.height / rows
-    print(f"   Tamano de celda: {cell_width}x{cell_height}")
+    row_height = img.height / rows
+    print(f"   Altura de fila: {row_height}")
 
     # Crear directorio de salida si no existe
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -133,24 +143,34 @@ def process_coins():
     for row in range(rows):
         print(f"\nProcesando fila {row + 1}: {OUTPUT_NAMES[row]}")
 
+        start_y = row * row_height
+
+        # Detectar regiones de sprites en esta fila
+        regions = find_sprite_columns_in_row(img, start_y, row_height, min_gap=8)
+        print(f"   Regiones detectadas: {regions}")
+
         # Crear spritesheet horizontal (4 frames de 32x32 = 128x32)
         spritesheet = Image.new('RGBA', (OUTPUT_SIZE * OUTPUT_FRAMES, OUTPUT_SIZE), (0, 0, 0, 0))
 
-        for col in range(cols):
-            # Calcular posición de la celda en la imagen original
-            start_x = col * cell_width
-            start_y = row * cell_height
-
-            # Extraer y centrar sprite
+        # Extraer cada región como un frame
+        frames = []
+        for i, (rx_start, rx_end) in enumerate(regions[:4]):  # Max 4 frames
+            # Extraer y centrar este sprite
             sprite = extract_and_center_sprite(
-                img, start_x, start_y,
-                cell_width, cell_height,
+                img, rx_start, start_y,
+                rx_end - rx_start, row_height,
                 OUTPUT_SIZE
             )
+            frames.append(sprite)
+            print(f"   Frame {i + 1}: region ({rx_start}-{rx_end})")
 
-            # Pegar en el spritesheet
-            spritesheet.paste(sprite, (col * OUTPUT_SIZE, 0))
-            print(f"   Frame {col + 1}: OK")
+        # Si tenemos menos de 4 frames, duplicar para llenar
+        while len(frames) < 4:
+            frames.append(frames[len(frames) % len(frames)] if frames else Image.new('RGBA', (OUTPUT_SIZE, OUTPUT_SIZE), (0, 0, 0, 0)))
+
+        # Colocar frames en el spritesheet
+        for i, frame in enumerate(frames[:4]):
+            spritesheet.paste(frame, (i * OUTPUT_SIZE, 0))
 
         # Guardar spritesheet
         output_path = os.path.join(OUTPUT_DIR, OUTPUT_NAMES[row])
