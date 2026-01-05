@@ -338,16 +338,15 @@ func _on_body_entered(body: Node2D) -> void:
 
 func _collect(collector: Node2D) -> void:
 	"""Recolectar la moneda"""
-	# Emitir señal
+	# Emitir señal (ExperienceManager ya está conectado via coin_collected signal)
 	coin_collected.emit(coin_value)
 
 	# Efecto visual de recolección
 	_spawn_collection_effect()
 
-	# Notificar al ExperienceManager si existe
-	var exp_manager = _find_experience_manager()
-	if exp_manager and exp_manager.has_method("on_coin_collected"):
-		exp_manager.on_coin_collected(coin_value, global_position)
+	# NOTA: NO llamar directamente a exp_manager.on_coin_collected()
+	# porque la señal coin_collected ya está conectada en ExperienceManager
+	# y eso causaría conteo doble
 
 	print("🪙 Moneda recogida: +%d" % coin_value)
 
