@@ -22,6 +22,7 @@ var experience_manager_ref: Node = null
 # Estado
 var game_time: float = 0.0
 var current_tab: int = 0  # 0=Stats, 1=Armas, 2=Mejoras
+var _options_open: bool = false  # Bloquear input cuando opciones está abierto
 
 # UI Nodes creados dinámicamente
 var main_panel: PanelContainer = null
@@ -299,21 +300,21 @@ func _show_stats_tab() -> void:
 	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	content_container.add_child(scroll)
-	
+
 	var main_vbox = VBoxContainer.new()
 	main_vbox.add_theme_constant_override("separation", 20)
 	scroll.add_child(main_vbox)
-	
+
 	# === HEADER CON VIDA Y NIVEL ===
 	_create_player_header(main_vbox)
-	
+
 	# === GRID DE CATEGORÍAS (2x2) ===
 	var categories_grid = GridContainer.new()
 	categories_grid.columns = 2
 	categories_grid.add_theme_constant_override("h_separation", 15)
 	categories_grid.add_theme_constant_override("v_separation", 15)
 	main_vbox.add_child(categories_grid)
-	
+
 	# Crear panel para cada categoría
 	if player_stats and player_stats.has_method("get_stat"):
 		for category in ["defensive", "offensive", "critical", "utility"]:
@@ -324,7 +325,7 @@ func _show_stats_tab() -> void:
 		no_data.text = "No hay datos del jugador disponibles"
 		no_data.add_theme_color_override("font_color", Color(0.6, 0.5, 0.5))
 		main_vbox.add_child(no_data)
-	
+
 	# === BUFFS ACTIVOS ===
 	_create_active_buffs_section(main_vbox)
 
@@ -339,19 +340,19 @@ func _create_player_header(parent: VBoxContainer) -> void:
 	style.set_content_margin_all(12)
 	header_panel.add_theme_stylebox_override("panel", style)
 	parent.add_child(header_panel)
-	
+
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 30)
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	header_panel.add_child(hbox)
-	
+
 	# Obtener datos
 	var current_hp = 100
 	var max_hp = 100
 	var level = 1
 	var current_xp = 0.0
 	var xp_to_next = 10.0
-	
+
 	if player_ref:
 		if player_ref.has_method("get_hp"):
 			current_hp = player_ref.get_hp()
@@ -361,7 +362,7 @@ func _create_player_header(parent: VBoxContainer) -> void:
 			max_hp = player_ref.get_max_hp()
 		elif "max_hp" in player_ref:
 			max_hp = player_ref.max_hp
-	
+
 	if player_stats:
 		if "level" in player_stats:
 			level = player_stats.level
@@ -376,83 +377,83 @@ func _create_player_header(parent: VBoxContainer) -> void:
 			current_xp = experience_manager_ref.current_exp
 		if "exp_to_next_level" in experience_manager_ref:
 			xp_to_next = experience_manager_ref.exp_to_next_level
-	
+
 	# === VIDA ===
 	var hp_vbox = VBoxContainer.new()
 	hp_vbox.add_theme_constant_override("separation", 4)
 	hbox.add_child(hp_vbox)
-	
+
 	var hp_label = Label.new()
 	hp_label.text = "❤️ VIDA"
 	hp_label.add_theme_font_size_override("font_size", 12)
 	hp_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
 	hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hp_vbox.add_child(hp_label)
-	
+
 	var hp_value = Label.new()
 	hp_value.text = "%d / %d" % [current_hp, max_hp]
 	hp_value.add_theme_font_size_override("font_size", 20)
 	hp_value.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
 	hp_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hp_vbox.add_child(hp_value)
-	
+
 	# Barra de vida
 	var hp_bar_bg = ColorRect.new()
 	hp_bar_bg.custom_minimum_size = Vector2(120, 8)
 	hp_bar_bg.color = Color(0.2, 0.15, 0.15)
 	hp_vbox.add_child(hp_bar_bg)
-	
+
 	var hp_bar = ColorRect.new()
 	hp_bar.custom_minimum_size = Vector2(120 * (float(current_hp) / float(max_hp)), 8)
 	hp_bar.color = Color(1.0, 0.3, 0.3)
 	hp_bar.position = Vector2.ZERO
 	hp_bar_bg.add_child(hp_bar)
-	
+
 	# === NIVEL ===
 	var level_vbox = VBoxContainer.new()
 	level_vbox.add_theme_constant_override("separation", 4)
 	hbox.add_child(level_vbox)
-	
+
 	var level_label = Label.new()
 	level_label.text = "📈 NIVEL"
 	level_label.add_theme_font_size_override("font_size", 12)
 	level_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
 	level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	level_vbox.add_child(level_label)
-	
+
 	var level_value = Label.new()
 	level_value.text = "%d" % level
 	level_value.add_theme_font_size_override("font_size", 24)
 	level_value.add_theme_color_override("font_color", SELECTED_TAB)
 	level_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	level_vbox.add_child(level_value)
-	
+
 	# === XP ===
 	var xp_vbox = VBoxContainer.new()
 	xp_vbox.add_theme_constant_override("separation", 4)
 	hbox.add_child(xp_vbox)
-	
+
 	var xp_label = Label.new()
 	xp_label.text = "⭐ EXPERIENCIA"
 	xp_label.add_theme_font_size_override("font_size", 12)
 	xp_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
 	xp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	xp_vbox.add_child(xp_label)
-	
+
 	var xp_value = Label.new()
 	xp_value.text = "%.0f / %.0f" % [current_xp, xp_to_next]
 	xp_value.add_theme_font_size_override("font_size", 16)
 	xp_value.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 	xp_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	xp_vbox.add_child(xp_value)
-	
+
 	# Barra de XP
 	var xp_percent = current_xp / xp_to_next if xp_to_next > 0 else 0
 	var xp_bar_bg = ColorRect.new()
 	xp_bar_bg.custom_minimum_size = Vector2(150, 6)
 	xp_bar_bg.color = Color(0.15, 0.2, 0.15)
 	xp_vbox.add_child(xp_bar_bg)
-	
+
 	var xp_bar = ColorRect.new()
 	xp_bar.custom_minimum_size = Vector2(150 * xp_percent, 6)
 	xp_bar.color = Color(0.3, 0.9, 0.4)
@@ -463,7 +464,7 @@ func _create_category_panel(category: String) -> Control:
 	"""Crear panel para una categoría de stats"""
 	var panel = PanelContainer.new()
 	panel.custom_minimum_size = Vector2(400, 0)
-	
+
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.1, 0.1, 0.14)
 	style.border_color = CATEGORY_COLORS.get(category, Color.WHITE).darkened(0.3)
@@ -471,37 +472,37 @@ func _create_category_panel(category: String) -> Control:
 	style.set_corner_radius_all(10)
 	style.set_content_margin_all(12)
 	panel.add_theme_stylebox_override("panel", style)
-	
+
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 8)
 	panel.add_child(vbox)
-	
+
 	# Header de categoría
 	var header = Label.new()
 	header.text = CATEGORY_NAMES.get(category, category.to_upper())
 	header.add_theme_font_size_override("font_size", 14)
 	header.add_theme_color_override("font_color", CATEGORY_COLORS.get(category, Color.WHITE))
 	vbox.add_child(header)
-	
+
 	# Separador
 	var sep = HSeparator.new()
 	sep.add_theme_color_override("separator", CATEGORY_COLORS.get(category, Color.WHITE).darkened(0.5))
 	vbox.add_child(sep)
-	
+
 	# Stats de esta categoría
 	var stats_in_category = _get_stats_for_category(category)
-	
+
 	for stat_name in stats_in_category:
 		var stat_row = _create_stat_row_visual(stat_name)
 		vbox.add_child(stat_row)
-	
+
 	return panel
 
 func _get_stats_for_category(category: String) -> Array:
 	"""Obtener stats de una categoría"""
 	if player_stats and player_stats.has_method("get_stats_by_category"):
 		return player_stats.get_stats_by_category(category)
-	
+
 	# Fallback manual
 	match category:
 		"defensive":
@@ -518,7 +519,7 @@ func _create_stat_row_visual(stat_name: String) -> Control:
 	"""Crear una fila visual para un stat con tooltip"""
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 8)
-	
+
 	# Obtener metadatos
 	var meta = {}
 	if player_stats and player_stats.has_method("get_stat_metadata"):
@@ -530,14 +531,14 @@ func _create_stat_row_visual(stat_name: String) -> Control:
 			"color": Color.WHITE,
 			"description": ""
 		}
-	
+
 	# Icono
 	var icon = Label.new()
 	icon.text = meta.get("icon", "❓")
 	icon.add_theme_font_size_override("font_size", 16)
 	icon.custom_minimum_size = Vector2(24, 0)
 	hbox.add_child(icon)
-	
+
 	# Nombre
 	var name_label = Label.new()
 	name_label.text = meta.get("name", stat_name)
@@ -545,29 +546,29 @@ func _create_stat_row_visual(stat_name: String) -> Control:
 	name_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.9))
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(name_label)
-	
+
 	# Valor
 	var value = 0.0
 	if player_stats and player_stats.has_method("get_stat"):
 		value = player_stats.get_stat(stat_name)
-	
+
 	var value_label = Label.new()
 	if player_stats and player_stats.has_method("format_stat_value"):
 		value_label.text = player_stats.format_stat_value(stat_name, value)
 	else:
 		value_label.text = _format_stat_value_fallback(stat_name, value)
-	
+
 	value_label.add_theme_font_size_override("font_size", 13)
-	
+
 	# Color según si es positivo/negativo
 	var stat_color = _get_value_color(stat_name, value)
 	value_label.add_theme_color_override("font_color", stat_color)
 	hbox.add_child(value_label)
-	
+
 	# Tooltip con descripción
 	if meta.has("description") and meta.description != "":
 		hbox.tooltip_text = meta.description
-	
+
 	return hbox
 
 func _format_stat_value_fallback(stat_name: String, value: float) -> String:
@@ -595,7 +596,7 @@ func _get_value_color(stat_name: String, value: float) -> Color:
 		elif value > 1.0:
 			return Color(1.0, 0.4, 0.3)  # Rojo si es mayor
 		return Color(0.8, 0.8, 0.8)
-	
+
 	# Para el resto, más es mejor
 	var base_value = 1.0 if stat_name.ends_with("_mult") else 0.0
 	if stat_name == "crit_chance":
@@ -604,7 +605,7 @@ func _get_value_color(stat_name: String, value: float) -> Color:
 		base_value = 2.0
 	elif stat_name == "max_health":
 		base_value = 100.0
-	
+
 	if value > base_value:
 		return Color(0.3, 1.0, 0.4)  # Verde
 	elif value < base_value:
@@ -615,15 +616,15 @@ func _create_active_buffs_section(parent: VBoxContainer) -> void:
 	"""Crear sección de buffs/debuffs activos"""
 	if not player_stats:
 		return
-	
+
 	# Verificar si hay buffs temporales
 	var has_temp_modifiers = false
 	if "temp_modifiers" in player_stats and not player_stats.temp_modifiers.is_empty():
 		has_temp_modifiers = true
-	
+
 	if not has_temp_modifiers:
 		return
-	
+
 	var buffs_panel = PanelContainer.new()
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.15, 0.1, 0.2)
@@ -633,21 +634,21 @@ func _create_active_buffs_section(parent: VBoxContainer) -> void:
 	style.set_content_margin_all(10)
 	buffs_panel.add_theme_stylebox_override("panel", style)
 	parent.add_child(buffs_panel)
-	
+
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 6)
 	buffs_panel.add_child(vbox)
-	
+
 	var header = Label.new()
 	header.text = "✨ EFECTOS ACTIVOS"
 	header.add_theme_font_size_override("font_size", 14)
 	header.add_theme_color_override("font_color", Color(0.8, 0.6, 1.0))
 	vbox.add_child(header)
-	
+
 	var buffs_hbox = HBoxContainer.new()
 	buffs_hbox.add_theme_constant_override("separation", 10)
 	vbox.add_child(buffs_hbox)
-	
+
 	for stat_name in player_stats.temp_modifiers:
 		for mod in player_stats.temp_modifiers[stat_name]:
 			var buff_chip = _create_buff_chip(stat_name, mod)
@@ -661,33 +662,33 @@ func _create_buff_chip(stat_name: String, mod: Dictionary) -> Control:
 	style.set_corner_radius_all(12)
 	style.set_content_margin_all(6)
 	chip.add_theme_stylebox_override("panel", style)
-	
+
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 4)
 	chip.add_child(hbox)
-	
+
 	var meta = {}
 	if player_stats and player_stats.has_method("get_stat_metadata"):
 		meta = player_stats.get_stat_metadata(stat_name)
-	
+
 	var icon = Label.new()
 	icon.text = meta.get("icon", "✨")
 	icon.add_theme_font_size_override("font_size", 14)
 	hbox.add_child(icon)
-	
+
 	var info = Label.new()
 	var amount_text = "+%.0f%%" % (mod.amount * 100) if mod.amount < 1 else "+%.0f" % mod.amount
 	info.text = "%s %.1fs" % [amount_text, mod.duration]
 	info.add_theme_font_size_override("font_size", 11)
 	info.add_theme_color_override("font_color", Color(0.7, 0.9, 0.7))
 	hbox.add_child(info)
-	
+
 	chip.tooltip_text = "%s: %s durante %.1f segundos" % [
 		meta.get("name", stat_name),
 		amount_text,
 		mod.duration
 	]
-	
+
 	return chip
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -732,12 +733,12 @@ func _show_weapons_tab() -> void:
 	var main_vbox = VBoxContainer.new()
 	main_vbox.add_theme_constant_override("separation", 12)
 	scroll.add_child(main_vbox)
-	
+
 	# Header con contador de armas
 	var header = HBoxContainer.new()
 	header.add_theme_constant_override("separation", 10)
 	main_vbox.add_child(header)
-	
+
 	var title = Label.new()
 	title.text = "⚔️ ARSENAL"
 	title.add_theme_font_size_override("font_size", 16)
@@ -752,7 +753,7 @@ func _show_weapons_tab() -> void:
 		return
 
 	var weapons = attack_manager.get_weapons()
-	
+
 	# Contador de slots
 	var max_slots = attack_manager.max_weapon_slots if "max_weapon_slots" in attack_manager else 6
 	var slots_label = Label.new()
@@ -785,13 +786,13 @@ func _create_weapon_card(weapon) -> Control:
 	"""Crear tarjeta detallada de arma"""
 	var card = PanelContainer.new()
 	card.custom_minimum_size = Vector2(400, 0)
-	
+
 	# Obtener elemento y rareza
 	var element = str(weapon.element if "element" in weapon else weapon.element_type if "element_type" in weapon else "physical").to_lower()
 	var rarity = str(weapon.rarity if "rarity" in weapon else "common").to_lower()
 	var weapon_level = weapon.level if "level" in weapon else 1
 	var max_level = weapon.max_level if "max_level" in weapon else 8
-	
+
 	# Estilo con borde del elemento
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.1, 0.1, 0.14)
@@ -800,16 +801,16 @@ func _create_weapon_card(weapon) -> Control:
 	style.set_corner_radius_all(10)
 	style.set_content_margin_all(12)
 	card.add_theme_stylebox_override("panel", style)
-	
+
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 8)
 	card.add_child(vbox)
-	
+
 	# === HEADER: Icono + Nombre + Nivel ===
 	var header_hbox = HBoxContainer.new()
 	header_hbox.add_theme_constant_override("separation", 10)
 	vbox.add_child(header_hbox)
-	
+
 	# Icono grande
 	var icon_container = PanelContainer.new()
 	var icon_style = StyleBoxFlat.new()
@@ -818,25 +819,25 @@ func _create_weapon_card(weapon) -> Control:
 	icon_style.set_content_margin_all(8)
 	icon_container.add_theme_stylebox_override("panel", icon_style)
 	header_hbox.add_child(icon_container)
-	
+
 	var icon = Label.new()
 	icon.text = weapon.icon if "icon" in weapon else ELEMENT_ICONS.get(element, "🔮")
 	icon.add_theme_font_size_override("font_size", 32)
 	icon_container.add_child(icon)
-	
+
 	# Info del nombre
 	var info_vbox = VBoxContainer.new()
 	info_vbox.add_theme_constant_override("separation", 2)
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header_hbox.add_child(info_vbox)
-	
+
 	var weapon_name = weapon.weapon_name_es if "weapon_name_es" in weapon else weapon.weapon_name if "weapon_name" in weapon else "Arma"
 	var name_label = Label.new()
 	name_label.text = weapon_name
 	name_label.add_theme_font_size_override("font_size", 16)
 	name_label.add_theme_color_override("font_color", RARITY_COLORS.get(rarity, Color.WHITE))
 	info_vbox.add_child(name_label)
-	
+
 	# Elemento y tipo
 	var type_label = Label.new()
 	var element_display = ELEMENT_ICONS.get(element, "❓") + " " + element.capitalize()
@@ -844,23 +845,23 @@ func _create_weapon_card(weapon) -> Control:
 	type_label.add_theme_font_size_override("font_size", 12)
 	type_label.add_theme_color_override("font_color", ELEMENT_COLORS.get(element, Color.GRAY))
 	info_vbox.add_child(type_label)
-	
+
 	# === NIVEL Y BARRA DE PROGRESO ===
 	var level_hbox = HBoxContainer.new()
 	level_hbox.add_theme_constant_override("separation", 8)
 	header_hbox.add_child(level_hbox)
-	
+
 	var level_vbox = VBoxContainer.new()
 	level_vbox.add_theme_constant_override("separation", 2)
 	level_hbox.add_child(level_vbox)
-	
+
 	var level_label = Label.new()
 	level_label.text = "Nv.%d" % weapon_level
 	level_label.add_theme_font_size_override("font_size", 18)
 	level_label.add_theme_color_override("font_color", SELECTED_TAB if weapon_level >= max_level else Color.WHITE)
 	level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	level_vbox.add_child(level_label)
-	
+
 	# Indicador de nivel máximo o estrellas
 	var stars = ""
 	for i in range(max_level):
@@ -868,96 +869,96 @@ func _create_weapon_card(weapon) -> Control:
 			stars += "★"
 		else:
 			stars += "☆"
-	
+
 	var stars_label = Label.new()
 	stars_label.text = stars.substr(0, 8)  # Mostrar máximo 8 estrellas
 	stars_label.add_theme_font_size_override("font_size", 8)
 	stars_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2) if weapon_level > 0 else Color(0.4, 0.4, 0.4))
 	level_vbox.add_child(stars_label)
-	
+
 	# === STATS DEL ARMA ===
 	var stats_grid = GridContainer.new()
 	stats_grid.columns = 3
 	stats_grid.add_theme_constant_override("h_separation", 15)
 	stats_grid.add_theme_constant_override("v_separation", 4)
 	vbox.add_child(stats_grid)
-	
+
 	# Daño
 	if "damage" in weapon:
 		_add_weapon_stat(stats_grid, "⚔️", "Daño", "%.0f" % weapon.damage)
-	
+
 	# Cooldown
 	if "cooldown" in weapon:
 		_add_weapon_stat(stats_grid, "⏱️", "Cooldown", "%.2fs" % weapon.cooldown)
-	
+
 	# Proyectiles
 	if "projectile_count" in weapon and weapon.projectile_count > 0:
 		_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "x%d" % weapon.projectile_count)
-	
+
 	# Pierce
 	if "pierce" in weapon and weapon.pierce > 0:
 		_add_weapon_stat(stats_grid, "🗡️", "Atravesar", "%d" % weapon.pierce)
-	
+
 	# Área
 	if "area" in weapon and weapon.area != 1.0:
 		_add_weapon_stat(stats_grid, "🌀", "Área", "%.0f%%" % (weapon.area * 100))
-	
+
 	# Velocidad de proyectil
 	if "projectile_speed" in weapon:
 		_add_weapon_stat(stats_grid, "➡️", "Velocidad", "%.0f" % weapon.projectile_speed)
-	
+
 	# Knockback
 	if "knockback" in weapon and weapon.knockback > 0:
 		_add_weapon_stat(stats_grid, "💥", "Empuje", "%.0f" % weapon.knockback)
-	
+
 	# === EFECTO ESPECIAL ===
 	var special_effect = _get_weapon_special_effect(weapon)
 	if special_effect != "":
 		var sep = HSeparator.new()
 		vbox.add_child(sep)
-		
+
 		var effect_label = Label.new()
 		effect_label.text = "✨ " + special_effect
 		effect_label.add_theme_font_size_override("font_size", 11)
 		effect_label.add_theme_color_override("font_color", ELEMENT_COLORS.get(element, Color(0.7, 0.9, 0.7)))
 		effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		vbox.add_child(effect_label)
-	
+
 	# Tooltip con descripción completa
 	var description = weapon.description if "description" in weapon else ""
 	if description != "":
 		card.tooltip_text = description
-	
+
 	return card
 
 func _add_weapon_stat(grid: GridContainer, icon: String, stat_name: String, value: String) -> void:
 	"""Añadir stat de arma al grid"""
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 4)
-	
+
 	var icon_label = Label.new()
 	icon_label.text = icon
 	icon_label.add_theme_font_size_override("font_size", 12)
 	hbox.add_child(icon_label)
-	
+
 	var name_label = Label.new()
 	name_label.text = stat_name
 	name_label.add_theme_font_size_override("font_size", 11)
 	name_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 	hbox.add_child(name_label)
-	
+
 	var value_label = Label.new()
 	value_label.text = value
 	value_label.add_theme_font_size_override("font_size", 11)
 	value_label.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
 	hbox.add_child(value_label)
-	
+
 	grid.add_child(hbox)
 
 func _get_weapon_special_effect(weapon) -> String:
 	"""Obtener descripción del efecto especial del arma"""
 	var element = str(weapon.element if "element" in weapon else weapon.element_type if "element_type" in weapon else "").to_lower()
-	
+
 	# Efectos por defecto según elemento
 	match element:
 		"ice":
@@ -983,7 +984,7 @@ func _get_weapon_special_effect(weapon) -> String:
 			return "Atrae enemigos hacia el impacto"
 		"wind":
 			return "Gran empuje a los enemigos"
-	
+
 	return ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1069,6 +1070,10 @@ func _create_upgrade_panel(upgrade: Dictionary) -> Control:
 func _input(event: InputEvent) -> void:
 	if not visible:
 		return
+	
+	# Si el menú de opciones está abierto, no procesar input del menú de pausa
+	if _options_open:
+		return
 
 	# ESC o Pause para cerrar
 	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
@@ -1108,6 +1113,12 @@ func _on_options_pressed() -> void:
 	_show_options()
 
 func _show_options() -> void:
+	# Marcar que opciones está abierto para bloquear input
+	_options_open = true
+	
+	# Deshabilitar todos los botones del menú de pausa
+	_set_pause_menu_buttons_enabled(false)
+	
 	# Buscar o crear el menú de opciones
 	var options_menu = get_node_or_null("OptionsMenu")
 	if not options_menu:
@@ -1116,24 +1127,63 @@ func _show_options() -> void:
 			options_menu = options_scene.instantiate()
 			options_menu.name = "OptionsMenu"
 			add_child(options_menu)
-	
+
 	if options_menu:
 		options_menu.visible = true
+		# Dar foco al primer elemento del menú de opciones
+		var close_btn = options_menu.get_node_or_null("Panel/VBox/CloseButton")
+		if close_btn:
+			close_btn.grab_focus()
 		if options_menu.has_signal("closed"):
 			if not options_menu.closed.is_connected(_on_options_closed):
 				options_menu.closed.connect(_on_options_closed)
 
 func _on_options_closed() -> void:
+	# Marcar que opciones está cerrado
+	_options_open = false
+	
+	# Rehabilitar todos los botones del menú de pausa
+	_set_pause_menu_buttons_enabled(true)
+	
 	# Volver el foco al botón de continuar
 	var resume_btn = main_panel.find_child("ResumeButton", true, false)
 	if resume_btn:
 		resume_btn.grab_focus()
 
+func _set_pause_menu_buttons_enabled(enabled: bool) -> void:
+	"""Habilitar o deshabilitar los botones del menú de pausa"""
+	for btn in tab_buttons:
+		btn.disabled = not enabled
+		btn.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+	
+	# También los botones de acción
+	var resume_btn = main_panel.find_child("ResumeButton", true, false)
+	if resume_btn:
+		resume_btn.disabled = not enabled
+		resume_btn.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
+	
+	# Buscar todos los botones en buttons_row
+	for child in main_panel.get_children():
+		_disable_buttons_recursive(child, not enabled)
+
 func _on_quit_pressed() -> void:
 	_play_button_sound()
 	quit_to_menu_pressed.emit()
+	
+	# Guardar que hay una partida en curso para poder reanudar
+	GameState.has_active_game = true
+	GameState.paused_game_time = game_time
+	
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
+
+func _disable_buttons_recursive(node: Node, disabled: bool) -> void:
+	"""Deshabilitar/habilitar botones recursivamente"""
+	if node is Button:
+		node.disabled = disabled
+		node.focus_mode = Control.FOCUS_NONE if disabled else Control.FOCUS_ALL
+	for child in node.get_children():
+		_disable_buttons_recursive(child, disabled)
 
 func _play_button_sound() -> void:
 	var tree = get_tree()

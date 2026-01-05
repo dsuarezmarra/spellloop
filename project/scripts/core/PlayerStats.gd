@@ -77,7 +77,7 @@ const STAT_METADATA: Dictionary = {
 		"format": "percent",
 		"color": Color(0.8, 0.2, 0.4)
 	},
-	
+
 	# === STATS OFENSIVOS ===
 	"damage_mult": {
 		"name": "Daño",
@@ -135,7 +135,7 @@ const STAT_METADATA: Dictionary = {
 		"format": "multiplier",
 		"color": Color(0.9, 0.5, 0.3)
 	},
-	
+
 	# === STATS CRÍTICOS ===
 	"crit_chance": {
 		"name": "Prob. Crítico",
@@ -153,7 +153,7 @@ const STAT_METADATA: Dictionary = {
 		"format": "multiplier",
 		"color": Color(1.0, 0.7, 0.1)
 	},
-	
+
 	# === STATS DE UTILIDAD ===
 	"move_speed": {
 		"name": "Velocidad",
@@ -212,7 +212,7 @@ const BASE_STATS: Dictionary = {
 	"armor": 0.0,
 	"dodge_chance": 0.0,        # Nuevo: probabilidad de esquivar (máx 0.6)
 	"life_steal": 0.0,          # Nuevo: % de daño que recupera como vida
-	
+
 	# Ofensivos
 	"damage_mult": 1.0,
 	"cooldown_mult": 1.0,
@@ -221,11 +221,11 @@ const BASE_STATS: Dictionary = {
 	"duration_mult": 1.0,          # Nuevo
 	"extra_projectiles": 0,        # Nuevo: proyectiles adicionales
 	"knockback_mult": 1.0,         # Nuevo
-	
+
 	# Críticos
 	"crit_chance": 0.05,
 	"crit_damage": 2.0,
-	
+
 	# Utilidad
 	"move_speed": 1.0,
 	"pickup_range": 1.0,
@@ -348,7 +348,7 @@ func format_stat_value(stat_name: String, value: float) -> String:
 	"""Formatear el valor de un stat para mostrar en UI"""
 	var meta = get_stat_metadata(stat_name)
 	var format_type = meta.get("format", "flat")
-	
+
 	match format_type:
 		"percent":
 			return "%.0f%%" % (value * 100)
