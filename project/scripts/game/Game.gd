@@ -115,13 +115,13 @@ func _create_player_stats() -> void:
 		player_stats = ps_script.new()
 		player_stats.name = "PlayerStats"
 		add_child(player_stats)
-		
+
 		# Conectar señales de stats
 		if player_stats.has_signal("stat_changed"):
 			player_stats.stat_changed.connect(_on_stat_changed)
 		if player_stats.has_signal("level_changed"):
 			player_stats.level_changed.connect(_on_player_level_changed)
-		
+
 		print("📊 [Game] PlayerStats creado")
 	else:
 		push_error("[Game] No se pudo cargar PlayerStats.gd")
@@ -240,7 +240,7 @@ func _initialize_systems() -> void:
 			attack_mgr = player.get_attack_manager()
 		elif player and "wizard_player" in player and player.wizard_player:
 			attack_mgr = player.wizard_player.get("attack_manager")
-		
+
 		if player_stats.has_method("initialize"):
 			player_stats.initialize(attack_mgr)
 		print("📊 [Game] PlayerStats inicializado")
@@ -422,7 +422,7 @@ func _show_level_up_panel(level: int) -> void:
 func _on_level_up_option_selected(option: Dictionary) -> void:
 	"""Callback cuando se selecciona una mejora en el level up"""
 	print("🆙 [Game] Mejora seleccionada: %s" % option.get("name", "???"))
-	
+
 	# Aplicar la mejora a PlayerStats si es un objeto pasivo (no arma)
 	if player_stats and option.get("type", "") != "weapon":
 		if player_stats.has_method("apply_upgrade"):
