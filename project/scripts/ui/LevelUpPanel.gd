@@ -616,7 +616,7 @@ func _update_control_buttons() -> void:
 	var reroll_text = _get_localized("ui.level_up.reroll", "Reroll")
 	var banish_text = _get_localized("ui.level_up.banish", "Banish")
 	var skip_text = _get_localized("ui.level_up.skip", "Skip")
-	
+
 	if reroll_button:
 		reroll_button.text = "🎲 %s (%d)" % [reroll_text, reroll_count]
 		reroll_button.disabled = reroll_count <= 0
@@ -775,14 +775,14 @@ func _get_localized(key: String, fallback: String) -> String:
 	"""Obtener texto localizado con fallback"""
 	if Engine.has_singleton("Localization"):
 		return Engine.get_singleton("Localization").tr(key)
-	
+
 	# Intentar acceder al autoload
 	var loc = get_node_or_null("/root/Localization")
 	if loc and loc.has_method("tr"):
 		var result = loc.tr(key)
 		if result != key:  # Si no es la key misma, encontró traducción
 			return result
-	
+
 	return fallback
 
 func _update_localized_texts() -> void:
@@ -790,19 +790,19 @@ func _update_localized_texts() -> void:
 	# Título
 	if title_label:
 		title_label.text = "⬆️ %s ⬆️" % _get_localized("ui.level_up.title", "LEVEL UP!")
-	
+
 	# Subtítulo
 	var subtitle = main_container.find_child("SubtitleLabel", true, false) as Label
 	if subtitle:
 		subtitle.text = _get_localized("ui.level_up.subtitle", "Choose an upgrade")
-	
+
 	# Botones de opciones
 	var select_text = _get_localized("ui.level_up.select", "Select")
 	for panel in option_buttons:
 		var select_btn = panel.find_child("SelectButton", true, false) as Button
 		if select_btn:
 			select_btn.text = select_text
-	
+
 	# Botones de control
 	_update_control_buttons()
 
