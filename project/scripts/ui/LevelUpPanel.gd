@@ -716,6 +716,20 @@ func _get_player_upgrade_options(luck: float) -> Array:
 		if db.has_method("get_random_passives"):
 			var passives = db.get_random_passives(6, [], luck)
 			for p in passives:
+				# Convertir effect singular a effects array
+				var effects_array = p.get("effects", [])
+				if effects_array.is_empty() and p.has("effect"):
+					var eff = p.effect
+					var operation = "add"
+					if eff.get("type", "") == "multiply_stat":
+						operation = "multiply"
+					elif eff.get("type", "") == "set_stat":
+						operation = "set"
+					effects_array = [{
+						"stat": eff.get("stat", ""),
+						"value": eff.get("value", 0),
+						"operation": operation
+					}]
 				upgrade_options.append({
 					"type": OPTION_TYPES.PLAYER_UPGRADE,
 					"upgrade_id": p.get("id", ""),
@@ -723,7 +737,7 @@ func _get_player_upgrade_options(luck: float) -> Array:
 					"description": p.get("description", ""),
 					"icon": p.get("icon", "✨"),
 					"rarity": p.get("rarity", "common"),
-					"effects": p.get("effects", []),
+					"effects": effects_array,
 					"priority": 0.8
 				})
 			db.queue_free()

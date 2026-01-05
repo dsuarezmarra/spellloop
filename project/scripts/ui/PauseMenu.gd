@@ -1141,10 +1141,20 @@ func _create_upgrade_panel(upgrade: Dictionary) -> Control:
 	header.add_theme_constant_override("separation", 8)
 	vbox.add_child(header)
 
-	var icon = Label.new()
-	icon.text = str(upgrade.get("icon", "✨"))
-	icon.add_theme_font_size_override("font_size", 24)
-	header.add_child(icon)
+	# Icono: cargar textura si es ruta, o mostrar emoji
+	var icon_path = str(upgrade.get("icon", "✨"))
+	if icon_path.begins_with("res://") and ResourceLoader.exists(icon_path):
+		var tex_rect = TextureRect.new()
+		tex_rect.texture = load(icon_path)
+		tex_rect.custom_minimum_size = Vector2(32, 32)
+		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		header.add_child(tex_rect)
+	else:
+		var icon = Label.new()
+		icon.text = icon_path
+		icon.add_theme_font_size_override("font_size", 24)
+		header.add_child(icon)
 
 	var name_label = Label.new()
 	name_label.text = upgrade.get("name", "???")
