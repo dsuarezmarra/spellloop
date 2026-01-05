@@ -906,50 +906,13 @@ func _apply_option(option: Dictionary) -> void:
 			_apply_player_upgrade(option)
 
 func _apply_player_upgrade(option: Dictionary) -> void:
-	# Aplicar la mejora usando el ID (puede venir como "id" o "upgrade_id")
-	var upgrade_id = option.get("upgrade_id", option.get("id", ""))
-
-	if player_stats and player_stats.has_method("apply_upgrade") and upgrade_id != "":
-		var success = player_stats.apply_upgrade(upgrade_id)
+	# PlayerStats.apply_upgrade ahora acepta tanto String (ID) como Dictionary completo
+	if player_stats and player_stats.has_method("apply_upgrade"):
+		var success = player_stats.apply_upgrade(option)
 		if success:
-			print("[LevelUpPanel] Mejora aplicada: %s" % upgrade_id)
-			return
-
-	# Fallback: aplicar efectos directamente si existen
-	if option.has("effects") and player_stats:
-		for effect in option.effects:
-			var stat = effect.get("stat", "")
-			var value = effect.get("value", 0)
-			var op = effect.get("operation", "add")
-
-			if player_stats.has_method("modify_stat"):
-				player_stats.modify_stat(stat, value, op)
-			elif stat in player_stats:
-				match op:
-					"add": player_stats[stat] += value
-					"multiply": player_stats[stat] *= value
-					"set": player_stats[stat] = value
-
-		# Registrar la mejora manualmente
-		if player_stats.has_method("add_upgrade"):
-			player_stats.add_upgrade(option)
-		return
-
-	# Fallback: si tiene stat y amount directamente (formato de PLAYER_UPGRADES)
-	if option.has("stat") and option.has("amount") and player_stats:
-		var stat = option.get("stat", "")
-		var amount = option.get("amount", 0)
-
-		if player_stats.has_method("add_stat"):
-			player_stats.add_stat(stat, amount)
-			print("[LevelUpPanel] Stat modificado: %s += %s" % [stat, amount])
-
-		# Registrar la mejora
-		if player_stats.has_method("add_upgrade"):
-			player_stats.add_upgrade(option)
-		return
-
-	push_warning("[LevelUpPanel] No se pudo aplicar mejora: %s" % option)
+			print("[LevelUpPanel] Mejora aplicada correctamente")
+		else:
+			push_warning("[LevelUpPanel] No se pudo aplicar mejora: %s" % option.get("name", "???"))
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # API PÚBLICA
