@@ -429,8 +429,27 @@ func _on_level_up_panel_closed() -> void:
 	print("🆙 [Game] Panel de level up cerrado")
 
 func _on_stat_changed(stat_name: String, _old_value: float, new_value: float) -> void:
-	"""Callback cuando cambia un stat del jugador"""
+	"""Callback cuando cambia un stat del jugador - propagar al player"""
 	print("📊 [Game] Stat cambiado: %s = %.2f" % [stat_name, new_value])
+
+	# Propagar cambios relevantes al player
+	if player and player.has_method("modify_stat"):
+		match stat_name:
+			"move_speed":
+				# PlayerStats usa multiplicador relativo al base (1.0), convertir a absoluto
+				var base_speed = 220.0
+				player.wizard_player.move_speed = base_speed * new_value
+				player.move_speed = player.wizard_player.move_speed
+				print("📊 [Game] Velocidad del player actualizada: %.1f" % player.move_speed)
+			"max_health":
+				if player.has_method("increase_max_hp"):
+					var diff = new_value - player.wizard_player.max_hp
+					if diff != 0:
+						player.increase_max_hp(int(diff))
+			"pickup_range":
+				player.modify_stat("pickup_range", new_value)
+			"pickup_range_flat":
+				player.modify_stat("pickup_range_flat", new_value)
 
 func _on_player_level_changed(new_level: int) -> void:
 	"""Callback cuando sube el nivel del jugador (desde PlayerStats)"""
