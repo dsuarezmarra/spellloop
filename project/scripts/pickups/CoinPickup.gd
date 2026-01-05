@@ -70,6 +70,7 @@ func _ready() -> void:
 
 	# Conectar señales
 	body_entered.connect(_on_body_entered)
+	print("🪙 [CoinPickup] _ready: conectado body_entered, monitoring=%s, layer=%d, mask=%d" % [monitoring, collision_layer, collision_mask])
 
 	# Añadir al grupo para fácil acceso
 	add_to_group("coins")
@@ -325,6 +326,7 @@ func _blink_warning() -> void:
 
 func _on_body_entered(body: Node2D) -> void:
 	"""Cuando el player toca la moneda"""
+	print("🪙 [CoinPickup] body_entered: %s, in_player_group=%s" % [body.name, body.is_in_group("player")])
 	if body.is_in_group("player"):
 		_collect(body)
 
