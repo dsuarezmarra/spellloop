@@ -101,7 +101,7 @@ func _create_ui() -> void:
 	# Container principal con estilo
 	main_container = PanelContainer.new()
 	main_container.custom_minimum_size = Vector2(850, 450)
-	
+
 	# Crear StyleBox para el panel
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.12, 0.12, 0.18, 0.98)
@@ -192,7 +192,7 @@ func _create_option_panel(index: int) -> Control:
 	var panel = PanelContainer.new()
 	panel.custom_minimum_size = Vector2(190, 300)
 	panel.name = "Option_%d" % index
-	
+
 	# Estilo del panel de opción
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.15, 0.15, 0.22, 0.95)
@@ -230,7 +230,7 @@ func _create_option_panel(index: int) -> Control:
 	var icon_container = CenterContainer.new()
 	icon_container.custom_minimum_size = Vector2(64, 64)
 	inner_vbox.add_child(icon_container)
-	
+
 	# Icono como TextureRect
 	var icon_texture = TextureRect.new()
 	icon_texture.name = "IconTexture"
@@ -238,7 +238,7 @@ func _create_option_panel(index: int) -> Control:
 	icon_texture.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 	icon_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon_container.add_child(icon_texture)
-	
+
 	# Label de icono como fallback (para emojis)
 	var icon_label = Label.new()
 	icon_label.name = "IconLabel"
@@ -579,13 +579,13 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 	# Icono - intentar cargar imagen, fallback a emoji
 	var icon_value = option.get("icon", "✨")
 	var loaded_texture = false
-	
+
 	if icon_texture:
 		icon_texture.texture = null
 		icon_texture.visible = false
 	if icon_label:
 		icon_label.visible = false
-	
+
 	# Si el icono es una ruta de archivo, cargar textura
 	if icon_value is String and icon_value.begins_with("res://"):
 		var tex = load(icon_value)
@@ -593,7 +593,7 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 			icon_texture.texture = tex
 			icon_texture.visible = true
 			loaded_texture = true
-	
+
 	# Si no se cargó textura, usar emoji
 	if not loaded_texture and icon_label:
 		# Si es una ruta que no se cargó, usar emoji por defecto
