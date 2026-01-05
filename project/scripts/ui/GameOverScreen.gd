@@ -133,34 +133,34 @@ func _activate_current() -> void:
 func _display_stats() -> void:
 	if not stats_container:
 		return
-	
+
 	# Limpiar stats anteriores
 	for child in stats_container.get_children():
 		child.queue_free()
-	
+
 	# Tiempo sobrevivido
 	var time_survived = final_stats.get("time", 0.0)
 	var minutes = int(time_survived) / 60
 	var seconds = int(time_survived) % 60
 	_add_stat_line("⏱️ Tiempo", "%02d:%02d" % [minutes, seconds])
-	
+
 	# Nivel alcanzado
 	var level = final_stats.get("level", 1)
 	_add_stat_line("⭐ Nivel", str(level))
-	
+
 	# Enemigos eliminados
 	var kills = final_stats.get("kills", 0)
 	_add_stat_line("💀 Enemigos", str(kills))
-	
+
 	# XP total obtenida
 	var xp = final_stats.get("xp_total", 0)
 	_add_stat_line("✨ XP Total", str(xp))
-	
+
 	# Oro recogido
 	var gold = final_stats.get("gold", 0)
 	if gold > 0:
 		_add_stat_line("🪙 Oro", str(gold))
-	
+
 	# Daño total
 	var damage = final_stats.get("damage_dealt", 0)
 	if damage > 0:
@@ -169,18 +169,18 @@ func _display_stats() -> void:
 func _add_stat_line(label_text: String, value_text: String) -> void:
 	var hbox = HBoxContainer.new()
 	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	
+
 	var label = Label.new()
 	label.text = label_text
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	label.add_theme_font_size_override("font_size", 18)
-	
+
 	var value = Label.new()
 	value.text = value_text
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	value.add_theme_font_size_override("font_size", 18)
 	value.add_theme_color_override("font_color", Color(1, 0.9, 0.5))
-	
+
 	hbox.add_child(label)
 	hbox.add_child(value)
 	stats_container.add_child(hbox)
