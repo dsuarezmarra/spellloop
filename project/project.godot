@@ -27,6 +27,7 @@ ScaleManager="*res://scripts/core/ScaleManager.gd"
 MagicDefinitions="*res://scripts/magic/magic_definitions.gd"
 ItemsDefinitions="*res://scripts/items/items_definitions.gd"
 SpriteDB="*res://scripts/core/SpriteDB.gd"
+SessionState="*res://scripts/core/SessionState.gd"
 
 [display]
 

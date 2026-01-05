@@ -8,8 +8,8 @@ func _ready():
 	# Wire sliders to AudioManager if available
 	var am = _get_audio_manager()
 	if am:
-		var music_slider = get_node_or_null("MusicSlider")
-		var sfx_slider = get_node_or_null("SFXSlider")
+		var music_slider = get_node_or_null("Panel/VBox/MusicContainer/MusicSlider")
+		var sfx_slider = get_node_or_null("Panel/VBox/SFXContainer/SFXSlider")
 		
 		if music_slider and am.has_method("get_music_volume"):
 			music_slider.value = am.get_music_volume()
@@ -19,10 +19,13 @@ func _ready():
 			sfx_slider.value = am.get_sfx_volume()
 			sfx_slider.value_changed.connect(_on_sfx_volume_changed)
 	
-	# Conectar botón de cerrar si existe
-	var close_button = get_node_or_null("CloseButton")
+	# Conectar botón de cerrar - buscar en ruta correcta
+	var close_button = get_node_or_null("Panel/VBox/CloseButton")
 	if close_button:
-		close_button.pressed.connect(_on_close_pressed)
+		if not close_button.pressed.is_connected(_on_close_pressed):
+			close_button.pressed.connect(_on_close_pressed)
+		# Dar foco al botón de cerrar
+		close_button.grab_focus()
 
 func _get_audio_manager() -> Node:
 	if get_tree() and get_tree().root:
