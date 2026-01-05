@@ -4,21 +4,21 @@ signal closed
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	
+
 	# Wire sliders to AudioManager if available
 	var am = _get_audio_manager()
 	if am:
 		var music_slider = get_node_or_null("Panel/VBox/MusicContainer/MusicSlider")
 		var sfx_slider = get_node_or_null("Panel/VBox/SFXContainer/SFXSlider")
-		
+
 		if music_slider and am.has_method("get_music_volume"):
 			music_slider.value = am.get_music_volume()
 			music_slider.value_changed.connect(_on_music_volume_changed)
-		
+
 		if sfx_slider and am.has_method("get_sfx_volume"):
 			sfx_slider.value = am.get_sfx_volume()
 			sfx_slider.value_changed.connect(_on_sfx_volume_changed)
-	
+
 	# Conectar botón de cerrar - buscar en ruta correcta
 	var close_button = get_node_or_null("Panel/VBox/CloseButton")
 	if close_button:

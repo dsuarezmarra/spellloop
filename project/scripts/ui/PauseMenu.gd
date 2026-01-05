@@ -329,7 +329,7 @@ func _show_stats_tab() -> void:
 		# Columna izquierda
 		_create_stats_section(left_column, "defensive", "🛡️ Defensivo")
 		_create_stats_section(left_column, "critical", "💥 Críticos")
-		
+
 		# Columna derecha
 		_create_stats_section(right_column, "offensive", "⚔️ Ofensivo")
 		_create_stats_section(right_column, "utility", "🔧 Utilidad")
