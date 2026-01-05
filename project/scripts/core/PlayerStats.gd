@@ -831,26 +831,64 @@ func get_random_upgrades(count: int = 3, luck_bonus: float = 0.0) -> Array:
 
 	return selected.slice(0, count)
 
-func apply_upgrade(upgrade_id: String) -> bool:
-	"""Aplicar un upgrade del jugador"""
-	if not PLAYER_UPGRADES.has(upgrade_id):
-		push_error("[PlayerStats] Upgrade no encontrado: %s" % upgrade_id)
+func apply_upgrade(upgrade_data) -> bool:
+	"""Aplicar un upgrade del jugador. Acepta String (ID) o Dictionary (datos completos)"""
+	var upgrade_id: String = ""
+	var upgrade_dict: Dictionary = {}
+
+	# Determinar si es un ID o un Dictionary completo
+	if upgrade_data is String:
+		upgrade_id = upgrade_data
+	elif upgrade_data is Dictionary:
+		upgrade_id = upgrade_data.get("upgrade_id", upgrade_data.get("id", ""))
+		upgrade_dict = upgrade_data
+	else:
+		push_error("[PlayerStats] apply_upgrade: tipo invalido %s" % typeof(upgrade_data))
 		return false
 
-	var upgrade = PLAYER_UPGRADES[upgrade_id]
-	add_stat(upgrade.stat, upgrade.amount)
+	# Si tenemos un ID valido, buscar en PLAYER_UPGRADES
+	if upgrade_id != "" and PLAYER_UPGRADES.has(upgrade_id):
+		var upgrade = PLAYER_UPGRADES[upgrade_id]
+		add_stat(upgrade.stat, upgrade.amount)
 
-	# Registrar la mejora en el historial
-	add_upgrade({
-		"id": upgrade_id,
-		"name": upgrade.name,
-		"icon": upgrade.get("icon", ""),
-		"description": upgrade.description,
-		"effects": [{"stat": upgrade.stat, "value": upgrade.amount, "operation": "add"}]
-	})
+		# Registrar la mejora en el historial
+		add_upgrade({
+			"id": upgrade_id,
+			"name": upgrade.name,
+			"icon": upgrade.get("icon", ""),
+			"description": upgrade.description,
+			"effects": [{"stat": upgrade.stat, "value": upgrade.amount, "operation": "add"}]
+		})
 
-	print("[PlayerStats] Upgrade aplicado: %s (%s)" % [upgrade.name, upgrade.description])
-	return true
+		print("[PlayerStats] Upgrade aplicado (por ID): %s" % upgrade.name)
+		return true
+
+	# Fallback: aplicar efectos directamente desde el Dictionary
+	if upgrade_dict.has("effects"):
+		for effect in upgrade_dict.effects:
+			var stat = effect.get("stat", "")
+			var value = effect.get("value", 0)
+			var op = effect.get("operation", "add")
+			if stat != "":
+				match op:
+					"add": add_stat(stat, value)
+					"multiply": multiply_stat(stat, value)
+					"set": set_stat(stat, value)
+					_: add_stat(stat, value)
+
+		add_upgrade(upgrade_dict)
+		print("[PlayerStats] Upgrade aplicado (por efectos): %s" % upgrade_dict.get("name", "???"))
+		return true
+
+	# Fallback: stat y amount directamente
+	if upgrade_dict.has("stat") and upgrade_dict.has("amount"):
+		add_stat(upgrade_dict.stat, upgrade_dict.amount)
+		add_upgrade(upgrade_dict)
+		print("[PlayerStats] Upgrade aplicado (stat+amount): %s" % upgrade_dict.get("name", "???"))
+		return true
+
+	push_warning("[PlayerStats] No se pudo aplicar upgrade: %s" % str(upgrade_data))
+	return false
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SERIALIZACIÓN

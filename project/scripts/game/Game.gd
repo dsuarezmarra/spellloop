@@ -422,12 +422,7 @@ func _show_level_up_panel(level: int) -> void:
 func _on_level_up_option_selected(option: Dictionary) -> void:
 	"""Callback cuando se selecciona una mejora en el level up"""
 	print("🆙 [Game] Mejora seleccionada: %s" % option.get("name", "???"))
-
-	# Aplicar la mejora a PlayerStats si es un objeto pasivo (no arma)
-	if player_stats and option.get("type", "") != "weapon":
-		if player_stats.has_method("apply_upgrade"):
-			player_stats.apply_upgrade(option)
-			print("📊 [Game] Mejora aplicada a PlayerStats")
+	# Nota: La mejora ya se aplica en LevelUpPanel._apply_option()
 
 func _on_level_up_panel_closed() -> void:
 	"""Callback cuando se cierra el panel de level up"""

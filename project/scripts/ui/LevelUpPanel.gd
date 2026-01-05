@@ -906,8 +906,8 @@ func _apply_option(option: Dictionary) -> void:
 			_apply_player_upgrade(option)
 
 func _apply_player_upgrade(option: Dictionary) -> void:
-	# Aplicar la mejora usando el ID
-	var upgrade_id = option.get("id", "")
+	# Aplicar la mejora usando el ID (puede venir como "id" o "upgrade_id")
+	var upgrade_id = option.get("upgrade_id", option.get("id", ""))
 
 	if player_stats and player_stats.has_method("apply_upgrade") and upgrade_id != "":
 		var success = player_stats.apply_upgrade(upgrade_id)

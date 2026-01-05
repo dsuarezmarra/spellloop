@@ -1166,6 +1166,12 @@ func _create_upgrade_panel(upgrade: Dictionary) -> Control:
 # SISTEMA DE NAVEGACION CON WASD
 # ===============================================================================
 
+func _safe_handle_input() -> void:
+	"""Marcar input como manejado de forma segura"""
+	var vp = get_viewport()
+	if vp:
+		vp.set_input_as_handled()
+
 func _input(event: InputEvent) -> void:
 	if not visible:
 		return
@@ -1177,27 +1183,27 @@ func _input(event: InputEvent) -> void:
 	# ESC o Pause para cerrar
 	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause"):
 		_on_resume_pressed()
-		get_viewport().set_input_as_handled()
+		_safe_handle_input()
 		return
 
 	# Navegacion con WASD
 	if event.is_action_pressed("move_up"):
 		_navigate_vertical(-1)
-		get_viewport().set_input_as_handled()
+		_safe_handle_input()
 	elif event.is_action_pressed("move_down"):
 		_navigate_vertical(1)
-		get_viewport().set_input_as_handled()
+		_safe_handle_input()
 	elif event.is_action_pressed("move_left"):
 		_navigate_horizontal(-1)
-		get_viewport().set_input_as_handled()
+		_safe_handle_input()
 	elif event.is_action_pressed("move_right"):
 		_navigate_horizontal(1)
-		get_viewport().set_input_as_handled()
+		_safe_handle_input()
 
 	# Seleccionar con espacio o enter
 	if event.is_action_pressed("cast_spell") or event.is_action_pressed("ui_accept"):
 		_activate_current_selection()
-		get_viewport().set_input_as_handled()
+		_safe_handle_input()
 
 func _navigate_vertical(direction: int) -> void:
 	"""Navegar arriba/abajo entre filas (tabs, contenido, acciones)"""
