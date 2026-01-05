@@ -12,7 +12,7 @@
 ## 🎯 PROMPT BASE (Usar al inicio de cada sesión)
 
 ```
-I need you to create Cartoon sprites for a roguelike video game. 
+I need you to create Cartoon sprites for a roguelike video game.
 
 STYLE REQUIREMENTS:
 - Art style: Cartoon/Funko Pop - cute, round shapes with big cute features
@@ -435,7 +435,7 @@ Effects:
 # ═══════════════════════════════════════════════════════════════════════════════
 # 🎯 SECCIÓN AOE (ÁREA DE EFECTO)
 # ═══════════════════════════════════════════════════════════════════════════════
-# 
+#
 # INSTRUCCIONES PARA GENERAR SPRITES AOE:
 # 1. Todos los AOE son vista TOP-DOWN (desde arriba)
 # 2. Solo el EFECTO VISUAL: partículas, energía, fracturas luminosas, etc.
@@ -523,7 +523,7 @@ VIEW: TOP-DOWN (looking straight down)
 
 SUBJECT: Delicate void singularity - ethereal dark energy with wispy purple tendrils spiraling gently inward. Small, elegant, NOT heavy or chunky.
 
-⚠️ CRITICAL: 
+⚠️ CRITICAL:
 - Do NOT draw any ground, floor, terrain or surface
 - Keep it LIGHT and AIRY - thin wispy energy, NOT solid masses
 - Small delicate core with flowing tendrils
@@ -744,7 +744,7 @@ VIEW: TOP-DOWN (looking straight down)
 
 SUBJECT: Delicate frozen void singularity - ethereal dark core with suspended ice crystals and frost wisps. Small, elegant, NOT heavy or chunky.
 
-⚠️ CRITICAL: 
+⚠️ CRITICAL:
 - Do NOT draw any ground, floor, terrain or surface
 - Keep it LIGHT and AIRY - delicate crystals, NOT solid ice blocks
 - Small ethereal core with floating frozen particles
@@ -852,7 +852,7 @@ VIEW: TOP-DOWN (looking straight down)
 
 SUBJECT: Delicate void flames - ethereal purple-crimson fire wisps with dark energy tendrils. Small, elegant, NOT heavy or chunky.
 
-⚠️ CRITICAL: 
+⚠️ CRITICAL:
 - Do NOT draw any ground, floor, terrain or surface
 - FORMAT: 3 columns x 2 rows grid (will be processed into 6 frames)
 - Keep it LIGHT and AIRY - wispy flames, NOT solid fire masses
@@ -3398,7 +3398,7 @@ Después de generar los sprites:
 1. **Redimensionar si es necesario**: A 64x64 exactos por frame
 2. **Verificar transparencia**: Fondo completamente transparente
 3. **Guardar como PNG**: En carpetas correspondientes
-4. **Nomenclatura de archivos**: 
+4. **Nomenclatura de archivos**:
    - Proyectiles normales:
      - `flight_spritesheet_[weapon_id].png` - animación de vuelo
      - `impact_spritesheet_[weapon_id].png` - animación de impacto
@@ -3557,7 +3557,7 @@ Animation: Gentle pulse/glow effect
 ```
 assets/sprites/pickups/coins/
 ├── coin_bronze_spin.png      (128x32 - 4 frames)
-├── coin_silver_spin.png      (128x32 - 4 frames)  
+├── coin_silver_spin.png      (128x32 - 4 frames)
 ├── coin_gold_spin.png        (128x32 - 4 frames)
 ├── gem_diamond_spin.png      (128x32 - 4 frames)
 └── gem_purple_spin.png       (128x32 - 4 frames)

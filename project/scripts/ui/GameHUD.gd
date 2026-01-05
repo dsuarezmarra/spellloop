@@ -62,7 +62,7 @@ func _ready():
 				right_box.add_child(gold_label)
 			else:
 				gold_label = right_box.get_node("GoldLabel")
-		
+
 		# Coins label (monedas de la partida actual)
 		if not right_box.has_node("CoinsLabel"):
 			coins_label = Label.new()
@@ -349,11 +349,11 @@ func _update_player_stats_display() -> void:
 	# Actualizar display de stats basado en fuentes disponibles
 	if not player_stats:
 		return
-	
+
 	var hp_str = "HP: ???"
 	var xp_str = "XP: ???"
 	var lvl_str = "LVL: 1"
-	
+
 	# Intentar obtener datos del ExperienceManager y Player
 	var tree = get_tree()
 	if tree and tree.current_scene:
@@ -370,7 +370,7 @@ func _update_player_stats_display() -> void:
 				var max_hp = player.get("max_hp") if player.get("max_hp") != null else player.get("max_health")
 				if hp != null and max_hp != null:
 					hp_str = "HP: %d/%d" % [hp, max_hp]
-		
+
 		# Obtener datos del ExperienceManager
 		var exp_mgr = tree.current_scene.get_node_or_null("ExperienceManager")
 		if exp_mgr:
@@ -379,5 +379,5 @@ func _update_player_stats_display() -> void:
 			var exp_next = exp_mgr.get("exp_to_next_level") if exp_mgr.get("exp_to_next_level") else 10
 			xp_str = "XP: %d/%d" % [exp, exp_next]
 			lvl_str = "LVL: %d" % lvl
-	
+
 	player_stats.text = "%s  %s  %s" % [hp_str, xp_str, lvl_str]

@@ -19,7 +19,7 @@ const PASSIVES: Dictionary = {
 	# ───────────────────────────────────────────────────────────────────────────
 	# UTILITY - Mejoras de utilidad
 	# ───────────────────────────────────────────────────────────────────────────
-	
+
 	"magnet_1": {
 		"id": "magnet_1",
 		"name": "Imán Menor",
@@ -34,7 +34,7 @@ const PASSIVES: Dictionary = {
 			"value": 1.25
 		}
 	},
-	
+
 	"magnet_2": {
 		"id": "magnet_2",
 		"name": "Imán Mayor",
@@ -49,7 +49,7 @@ const PASSIVES: Dictionary = {
 			"value": 1.5
 		}
 	},
-	
+
 	"vacuum": {
 		"id": "vacuum",
 		"name": "Vacío Magnético",
@@ -64,7 +64,7 @@ const PASSIVES: Dictionary = {
 			"value": 100.0
 		}
 	},
-	
+
 	"xp_boost_1": {
 		"id": "xp_boost_1",
 		"name": "Sabiduría",
@@ -79,7 +79,7 @@ const PASSIVES: Dictionary = {
 			"value": 1.15
 		}
 	},
-	
+
 	"speed_boost_1": {
 		"id": "speed_boost_1",
 		"name": "Botas Ligeras",
@@ -94,7 +94,7 @@ const PASSIVES: Dictionary = {
 			"value": 1.1
 		}
 	},
-	
+
 	"luck_1": {
 		"id": "luck_1",
 		"name": "Trébol de 4 Hojas",
@@ -109,11 +109,11 @@ const PASSIVES: Dictionary = {
 			"value": 0.1
 		}
 	},
-	
+
 	# ───────────────────────────────────────────────────────────────────────────
 	# COMBAT - Mejoras de combate
 	# ───────────────────────────────────────────────────────────────────────────
-	
+
 	"damage_1": {
 		"id": "damage_1",
 		"name": "Fuerza Interior",
@@ -128,7 +128,7 @@ const PASSIVES: Dictionary = {
 			"value": 1.1
 		}
 	},
-	
+
 	"crit_chance_1": {
 		"id": "crit_chance_1",
 		"name": "Ojo Certero",
@@ -143,7 +143,7 @@ const PASSIVES: Dictionary = {
 			"value": 0.05
 		}
 	},
-	
+
 	"crit_damage_1": {
 		"id": "crit_damage_1",
 		"name": "Golpe Devastador",
@@ -158,7 +158,7 @@ const PASSIVES: Dictionary = {
 			"value": 0.25
 		}
 	},
-	
+
 	"attack_speed_1": {
 		"id": "attack_speed_1",
 		"name": "Velocidad Arcana",
@@ -173,7 +173,7 @@ const PASSIVES: Dictionary = {
 			"value": 0.92
 		}
 	},
-	
+
 	"area_1": {
 		"id": "area_1",
 		"name": "Expansión Mágica",
@@ -188,11 +188,11 @@ const PASSIVES: Dictionary = {
 			"value": 1.1
 		}
 	},
-	
+
 	# ───────────────────────────────────────────────────────────────────────────
 	# DEFENSE - Mejoras defensivas
 	# ───────────────────────────────────────────────────────────────────────────
-	
+
 	"max_health_1": {
 		"id": "max_health_1",
 		"name": "Vitalidad",
@@ -207,7 +207,7 @@ const PASSIVES: Dictionary = {
 			"value": 15.0
 		}
 	},
-	
+
 	"armor_1": {
 		"id": "armor_1",
 		"name": "Piel de Hierro",
@@ -222,7 +222,7 @@ const PASSIVES: Dictionary = {
 			"value": 2.0
 		}
 	},
-	
+
 	"health_regen_1": {
 		"id": "health_regen_1",
 		"name": "Regeneración",
@@ -237,11 +237,11 @@ const PASSIVES: Dictionary = {
 			"value": 0.5
 		}
 	},
-	
+
 	# ───────────────────────────────────────────────────────────────────────────
 	# SPECIAL - Mejoras especiales y sinergias
 	# ───────────────────────────────────────────────────────────────────────────
-	
+
 	"coin_value_1": {
 		"id": "coin_value_1",
 		"name": "Avaricia",
@@ -256,7 +256,7 @@ const PASSIVES: Dictionary = {
 			"value": 1.2
 		}
 	},
-	
+
 	"coin_magnet_combo": {
 		"id": "coin_magnet_combo",
 		"name": "Rey Midas",
@@ -273,7 +273,7 @@ const PASSIVES: Dictionary = {
 			]
 		}
 	},
-	
+
 	"streak_master": {
 		"id": "streak_master",
 		"name": "Maestro de Racha",
@@ -339,45 +339,45 @@ static func get_passives_by_rarity(rarity: String) -> Array:
 static func get_random_passives(count: int, exclude_ids: Array = [], luck_bonus: float = 0.0) -> Array:
 	"""Obtener pasivos aleatorios respetando pesos de rareza"""
 	var available = []
-	
+
 	# Recopilar pasivos disponibles
 	for id in PASSIVES:
 		if id not in exclude_ids:
 			available.append(PASSIVES[id])
-	
+
 	if available.is_empty():
 		return []
-	
+
 	# Calcular pesos totales con bonus de suerte
 	var weighted_pool = []
 	for passive in available:
 		var weight = RARITY_WEIGHTS.get(passive.rarity, 10)
-		
+
 		# La suerte aumenta las probabilidades de rarezas altas
 		if passive.rarity == "rare":
 			weight *= (1.0 + luck_bonus * 0.5)
 		elif passive.rarity == "legendary":
 			weight *= (1.0 + luck_bonus)
-		
+
 		weighted_pool.append({"passive": passive, "weight": weight})
-	
+
 	# Seleccionar pasivos
 	var selected = []
 	for i in range(min(count, weighted_pool.size())):
 		var total_weight = 0.0
 		for item in weighted_pool:
 			total_weight += item.weight
-		
+
 		var roll = randf() * total_weight
 		var cumulative = 0.0
-		
+
 		for j in range(weighted_pool.size()):
 			cumulative += weighted_pool[j].weight
 			if roll <= cumulative:
 				selected.append(weighted_pool[j].passive)
 				weighted_pool.remove_at(j)
 				break
-	
+
 	return selected
 
 static func get_rarity_color(rarity: String) -> Color:

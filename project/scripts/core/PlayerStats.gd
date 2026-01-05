@@ -1,6 +1,6 @@
 # PlayerStats.gd
 # Sistema de estadísticas del jugador
-# 
+#
 # IMPORTANTE: No hay items pasivos separados
 # Las mejoras van directamente al jugador o a las armas
 #
@@ -111,7 +111,7 @@ func _sync_with_attack_manager() -> void:
 	"""Sincronizar stats relevantes con AttackManager"""
 	if attack_manager == null:
 		return
-	
+
 	attack_manager.set_player_stat("damage_mult", get_stat("damage_mult"))
 	attack_manager.set_player_stat("cooldown_mult", get_stat("cooldown_mult"))
 	attack_manager.set_player_stat("crit_chance", get_stat("crit_chance"))
@@ -126,12 +126,12 @@ func get_stat(stat_name: String) -> float:
 	var base_value = stats.get(stat_name, 0.0)
 	var temp_bonus = _get_temp_modifier_total(stat_name)
 	var final_value = base_value + temp_bonus
-	
+
 	# Aplicar límites si existen
 	if STAT_LIMITS.has(stat_name):
 		var limits = STAT_LIMITS[stat_name]
 		final_value = clampf(final_value, limits.min, limits.max)
-	
+
 	return final_value
 
 func get_base_stat(stat_name: String) -> float:
@@ -142,7 +142,7 @@ func _get_temp_modifier_total(stat_name: String) -> float:
 	"""Obtener suma de modificadores temporales"""
 	if not temp_modifiers.has(stat_name):
 		return 0.0
-	
+
 	var total = 0.0
 	for mod in temp_modifiers[stat_name]:
 		total += mod.amount
@@ -156,35 +156,35 @@ func add_stat(stat_name: String, amount: float) -> void:
 	"""Añadir valor a un stat (permanente)"""
 	if not stats.has(stat_name):
 		stats[stat_name] = 0.0
-	
+
 	var old_value = stats[stat_name]
 	stats[stat_name] += amount
-	
+
 	# Aplicar límites
 	if STAT_LIMITS.has(stat_name):
 		var limits = STAT_LIMITS[stat_name]
 		stats[stat_name] = clampf(stats[stat_name], limits.min, limits.max)
-	
+
 	var new_value = stats[stat_name]
-	
+
 	if old_value != new_value:
 		stat_changed.emit(stat_name, old_value, new_value)
 		_on_stat_changed(stat_name, old_value, new_value)
-	
+
 	print("[PlayerStats] %s: %.2f → %.2f (+%.2f)" % [stat_name, old_value, new_value, amount])
 
 func set_stat(stat_name: String, value: float) -> void:
 	"""Establecer valor exacto de un stat"""
 	var old_value = stats.get(stat_name, 0.0)
 	stats[stat_name] = value
-	
+
 	# Aplicar límites
 	if STAT_LIMITS.has(stat_name):
 		var limits = STAT_LIMITS[stat_name]
 		stats[stat_name] = clampf(stats[stat_name], limits.min, limits.max)
-	
+
 	var new_value = stats[stat_name]
-	
+
 	if old_value != new_value:
 		stat_changed.emit(stat_name, old_value, new_value)
 		_on_stat_changed(stat_name, old_value, new_value)
@@ -203,7 +203,7 @@ func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> 
 			var ratio = current_health / old_value if old_value > 0 else 1.0
 			current_health = new_value * ratio
 			health_changed.emit(current_health, new_value)
-		
+
 		"damage_mult", "cooldown_mult", "crit_chance", "area_mult":
 			# Sincronizar con AttackManager
 			_sync_with_attack_manager()
@@ -216,14 +216,14 @@ func add_temp_modifier(stat_name: String, amount: float, duration: float, source
 	"""Añadir modificador temporal"""
 	if not temp_modifiers.has(stat_name):
 		temp_modifiers[stat_name] = []
-	
+
 	temp_modifiers[stat_name].append({
 		"amount": amount,
 		"duration": duration,
 		"source": source,
 		"time_added": Time.get_ticks_msec() / 1000.0
 	})
-	
+
 	print("[PlayerStats] Buff temporal: %s +%.2f por %.1fs (%s)" % [
 		stat_name, amount, duration, source
 	])
@@ -245,16 +245,16 @@ func _update_temp_modifiers(delta: float) -> void:
 	for stat_name in temp_modifiers.keys():
 		var mods = temp_modifiers[stat_name]
 		var to_remove = []
-		
+
 		for i in range(mods.size()):
 			mods[i].duration -= delta
 			if mods[i].duration <= 0:
 				to_remove.append(i)
-		
+
 		# Remover expirados (en orden inverso)
 		for i in range(to_remove.size() - 1, -1, -1):
 			mods.remove_at(to_remove[i])
-		
+
 		# Limpiar array vacío
 		if mods.is_empty():
 			temp_modifiers.erase(stat_name)
@@ -276,12 +276,12 @@ func take_damage(amount: float) -> float:
 	"""
 	var armor = get_stat("armor")
 	var effective_damage = maxf(1.0, amount - armor)  # Mínimo 1 de daño
-	
+
 	current_health -= effective_damage
 	current_health = maxf(0.0, current_health)
-	
+
 	health_changed.emit(current_health, get_stat("max_health"))
-	
+
 	return effective_damage
 
 func heal(amount: float) -> float:
@@ -291,13 +291,13 @@ func heal(amount: float) -> float:
 	"""
 	var max_hp = get_stat("max_health")
 	var old_health = current_health
-	
+
 	current_health = minf(current_health + amount, max_hp)
 	var healed = current_health - old_health
-	
+
 	if healed > 0:
 		health_changed.emit(current_health, max_hp)
-	
+
 	return healed
 
 func is_dead() -> bool:
@@ -319,24 +319,24 @@ func gain_xp(amount: float) -> int:
 	"""
 	var xp_bonus = get_stat("xp_mult")
 	var effective_xp = amount * xp_bonus
-	
+
 	current_xp += effective_xp
 	xp_gained.emit(effective_xp, current_xp)
-	
+
 	var levels_gained = 0
-	
+
 	# Subir niveles mientras haya suficiente XP
 	while current_xp >= xp_to_next_level and level < MAX_LEVEL:
 		current_xp -= xp_to_next_level
 		level += 1
 		levels_gained += 1
-		
+
 		# Calcular XP para siguiente nivel
 		xp_to_next_level = BASE_XP_TO_LEVEL * pow(XP_SCALING, level - 1)
-		
+
 		print("[PlayerStats] ⬆️ ¡Nivel %d alcanzado!" % level)
 		level_changed.emit(level)
-	
+
 	return levels_gained
 
 func get_xp_progress() -> float:
@@ -470,17 +470,17 @@ func get_random_upgrades(count: int = 3, luck_bonus: float = 0.0) -> Array:
 	"""
 	var upgrades_list = PLAYER_UPGRADES.keys()
 	upgrades_list.shuffle()
-	
+
 	var selected = []
 	var actual_luck = get_stat("luck") + luck_bonus
-	
+
 	for upgrade_id in upgrades_list:
 		if selected.size() >= count:
 			break
-		
+
 		var upgrade = PLAYER_UPGRADES[upgrade_id].duplicate()
 		upgrade["id"] = upgrade_id
-		
+
 		# Filtrar por rareza según luck
 		var rarity_roll = randf()
 		match upgrade.rarity:
@@ -492,7 +492,7 @@ func get_random_upgrades(count: int = 3, luck_bonus: float = 0.0) -> Array:
 			"rare":
 				if rarity_roll < 0.2 + actual_luck * 0.4:
 					selected.append(upgrade)
-	
+
 	# Si no hay suficientes, llenar con comunes
 	while selected.size() < count:
 		for upgrade_id in upgrades_list:
@@ -503,11 +503,11 @@ func get_random_upgrades(count: int = 3, luck_bonus: float = 0.0) -> Array:
 				if dup not in selected:
 					selected.append(dup)
 					break
-		
+
 		# Prevenir loop infinito
 		if selected.size() < count:
 			break
-	
+
 	return selected.slice(0, count)
 
 func apply_upgrade(upgrade_id: String) -> bool:
@@ -515,10 +515,10 @@ func apply_upgrade(upgrade_id: String) -> bool:
 	if not PLAYER_UPGRADES.has(upgrade_id):
 		push_error("[PlayerStats] Upgrade no encontrado: %s" % upgrade_id)
 		return false
-	
+
 	var upgrade = PLAYER_UPGRADES[upgrade_id]
 	add_stat(upgrade.stat, upgrade.amount)
-	
+
 	print("[PlayerStats] ✨ Upgrade aplicado: %s (%s)" % [upgrade.name, upgrade.description])
 	return true
 
@@ -548,7 +548,7 @@ func from_dict(data: Dictionary) -> void:
 		current_xp = data.current_xp
 	if data.has("xp_to_next_level"):
 		xp_to_next_level = data.xp_to_next_level
-	
+
 	_sync_with_attack_manager()
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -563,17 +563,17 @@ func get_debug_info() -> String:
 		"",
 		"Stats:"
 	]
-	
+
 	for stat_name in stats:
 		var base = stats[stat_name]
 		var final = get_stat(stat_name)
 		var temp = _get_temp_modifier_total(stat_name)
-		
+
 		if temp != 0:
 			lines.append("  %s: %.2f (base: %.2f, temp: %+.2f)" % [stat_name, final, base, temp])
 		else:
 			lines.append("  %s: %.2f" % [stat_name, final])
-	
+
 	if not temp_modifiers.is_empty():
 		lines.append("")
 		lines.append("Buffs activos:")
@@ -582,5 +582,5 @@ func get_debug_info() -> String:
 				lines.append("  %s: %+.2f (%.1fs restantes) [%s]" % [
 					stat_name, mod.amount, mod.duration, mod.source
 				])
-	
+
 	return "\n".join(lines)

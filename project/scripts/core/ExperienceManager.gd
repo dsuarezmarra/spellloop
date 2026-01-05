@@ -56,7 +56,7 @@ func initialize(player_ref: CharacterBody2D):
 	exp_to_next_level = get_exp_for_level(2)
 	total_coins = 0
 	active_coins.clear()
-	
+
 	print("⭐ Sistema de experiencia y monedas inicializado")
 
 func _load_coin_scene() -> void:
@@ -99,24 +99,24 @@ func grant_exp_from_kill(exp_value: int) -> void:
 func create_coin(position: Vector2, base_value: int = 1) -> Node2D:
 	"""Crear una moneda en el escenario"""
 	var coin: Node2D = null
-	
+
 	# Aplicar variación al valor
 	var variance = randf_range(-coin_value_variance, coin_value_variance)
 	var final_value = max(1, int(base_value * (1.0 + variance)))
-	
+
 	# Usar escena si está cargada
 	if coin_scene:
 		coin = coin_scene.instantiate()
 	else:
 		# Fallback: crear moneda simple
 		coin = _create_fallback_coin()
-	
+
 	if coin:
 		# Añadir al mundo
 		var parent = get_tree().current_scene
 		if parent:
 			parent.add_child(coin)
-		
+
 		# Inicializar
 		if coin.has_method("initialize"):
 			coin.initialize(position, final_value, player)
@@ -124,14 +124,14 @@ func create_coin(position: Vector2, base_value: int = 1) -> Node2D:
 			coin.global_position = position
 			if "coin_value" in coin:
 				coin.coin_value = final_value
-		
+
 		# Conectar señal de recolección
 		if coin.has_signal("coin_collected"):
 			coin.coin_collected.connect(_on_coin_collected)
-		
+
 		active_coins.append(coin)
 		coin_created.emit(coin)
-	
+
 	return coin
 
 func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
@@ -142,14 +142,14 @@ func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bo
 		drop_chance = 1.0  # Bosses siempre dropean
 	elif is_elite:
 		drop_chance = 1.0  # Élites siempre dropean
-	
+
 	if randf() > drop_chance:
 		return  # No drop
-	
+
 	# Calcular cantidad y valor de monedas
 	var coin_count = 1
 	var base_value = 1
-	
+
 	match enemy_tier:
 		1:
 			coin_count = randi_range(1, 2)
@@ -166,7 +166,7 @@ func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bo
 		5:  # Boss
 			coin_count = randi_range(8, 15)
 			base_value = 10
-	
+
 	# Multiplicadores especiales
 	if is_elite:
 		coin_count = int(coin_count * 2.5)
@@ -174,7 +174,7 @@ func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bo
 	if is_boss:
 		coin_count = int(coin_count * 1.5)
 		base_value = int(base_value * 1.5)
-	
+
 	# Crear las monedas con pequeño offset aleatorio
 	for i in range(coin_count):
 		var offset = Vector2(randf_range(-20, 20), randf_range(-20, 20))
@@ -184,14 +184,14 @@ func _create_fallback_coin() -> Node2D:
 	"""Crear moneda simple si no hay escena"""
 	var coin = Area2D.new()
 	coin.name = "CoinFallback"
-	
+
 	# Colisión
 	var collision = CollisionShape2D.new()
 	var shape = CircleShape2D.new()
 	shape.radius = 10.0
 	collision.shape = shape
 	coin.add_child(collision)
-	
+
 	# Sprite simple
 	var sprite = Sprite2D.new()
 	var size = 12
@@ -206,10 +206,10 @@ func _create_fallback_coin() -> Node2D:
 				img.set_pixel(x, y, Color.TRANSPARENT)
 	sprite.texture = ImageTexture.create_from_image(img)
 	coin.add_child(sprite)
-	
+
 	# Añadir propiedades necesarias
 	coin.set_meta("coin_value", 1)
-	
+
 	return coin
 
 func on_coin_collected(value: int, _position: Vector2 = Vector2.ZERO) -> void:
@@ -225,29 +225,29 @@ func _on_coin_collected(value: int) -> void:
 	else:
 		streak_count = 1
 	last_coin_time = now
-	
+
 	# Aplicar multiplicador de streak (5% por cada streak adicional)
 	# El flag "double_coin_streak" duplica este bonus
 	var streak_bonus_per = 0.05
 	if _has_flag("double_coin_streak"):
 		streak_bonus_per = 0.10
 	var streak_multiplier = 1.0 + streak_bonus_per * float(max(0, streak_count - 1))
-	
+
 	# Aplicar multiplicador de valor de monedas del player
 	var coin_mult = _get_player_coin_mult()
-	
+
 	var final_value = int(ceil(float(value) * streak_multiplier * coin_mult))
-	
+
 	# Añadir al total
 	total_coins += final_value
-	
+
 	# Emitir señales
 	streak_updated.emit(streak_count)
 	coin_collected.emit(final_value, total_coins)
-	
+
 	# Guardar en SaveManager si existe
 	_save_coins_to_progression(final_value)
-	
+
 	if coin_mult > 1.0 or streak_multiplier > 1.0:
 		print("🪙 Moneda: +%d (base: %d, streak: x%.2f, coin_mult: x%.2f, total: %d)" % [final_value, value, streak_multiplier, coin_mult, total_coins])
 	else:
@@ -274,7 +274,7 @@ func _has_flag(flag_name: String) -> bool:
 		if game and "player_flags" in game:
 			return flag_name in game.player_flags
 	return false
-	
+
 	print("🪙 Moneda: +%d (streak: %d, total: %d)" % [final_value, streak_count, total_coins])
 
 func _save_coins_to_progression(amount: int) -> void:
@@ -282,7 +282,7 @@ func _save_coins_to_progression(amount: int) -> void:
 	var tree = get_tree()
 	if not tree or not tree.root:
 		return
-	
+
 	var save_manager = tree.root.get_node_or_null("SaveManager")
 	if save_manager and save_manager.has_method("get_player_progression"):
 		var progression = save_manager.get_player_progression()
@@ -297,7 +297,7 @@ func _process(delta):
 	for coin in active_coins:
 		if not is_instance_valid(coin):
 			coins_to_remove.append(coin)
-	
+
 	for coin in coins_to_remove:
 		active_coins.erase(coin)
 
@@ -311,13 +311,13 @@ func create_collection_effect(_position: Vector2):
 func gain_experience(amount: int):
 	"""Ganar experiencia"""
 	current_exp += amount
-	
+
 	# Emitir señal
 	exp_gained.emit(amount, current_exp)
-	
+
 	# Verificar subida de nivel
 	check_level_up()
-	
+
 	print("⭐ EXP ganada: +", amount, " Total: ", current_exp, "/", exp_to_next_level)
 
 func check_level_up():
@@ -330,19 +330,19 @@ func level_up_player():
 	current_exp -= exp_to_next_level
 	current_level += 1
 	exp_to_next_level = get_exp_for_level(current_level + 1)
-	
+
 	# Generar opciones de mejora
 	var upgrade_options = generate_upgrade_options()
-	
+
 	# Emitir señal de subida de nivel
 	level_up.emit(current_level, upgrade_options)
-	
+
 	print("🆙 ¡LEVEL UP! Nuevo nivel: ", current_level)
 
 func generate_upgrade_options() -> Array:
 	"""Generar opciones de mejora para selección"""
 	var options = []
-	
+
 	# Opciones básicas de ejemplo
 	options.append({
 		"id": "damage_boost",
@@ -350,28 +350,28 @@ func generate_upgrade_options() -> Array:
 		"description": "Aumenta el daño de los proyectiles mágicos",
 		"icon": "⚡"
 	})
-	
+
 	options.append({
-		"id": "speed_boost", 
+		"id": "speed_boost",
 		"name": "Velocidad +",
 		"description": "Aumenta la velocidad de movimiento",
 		"icon": "💨"
 	})
-	
+
 	options.append({
 		"id": "health_boost",
 		"name": "Vida Máxima +",
 		"description": "Aumenta la vida máxima",
 		"icon": "❤️"
 	})
-	
+
 	options.append({
 		"id": "cooldown_reduction",
 		"name": "Recarga Rápida",
 		"description": "Reduce el tiempo de recarga de armas",
 		"icon": "⏰"
 	})
-	
+
 	# Shuffle y devolver 3-4 opciones aleatorias
 	options.shuffle()
 	return options.slice(0, min(3, options.size()))

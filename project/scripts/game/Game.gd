@@ -47,25 +47,25 @@ func _ready() -> void:
 func _setup_game() -> void:
 	# Crear player
 	_create_player()
-	
+
 	# Crear arena (debe ser antes de otros sistemas para que tengan contexto)
 	_create_arena_manager()
-	
+
 	# Crear sistemas
 	_create_enemy_manager()
 	_create_wave_manager()
 	_create_weapon_manager()
 	_create_experience_manager()
-	
+
 	# Crear UI
 	_create_ui()
-	
+
 	# Configurar cámara
 	_setup_camera()
-	
+
 	# Inicializar sistemas
 	_initialize_systems()
-	
+
 	# Comenzar partida
 	_start_game()
 
@@ -85,16 +85,16 @@ func _create_arena_manager() -> void:
 		arena_manager = am_script.new()
 		arena_manager.name = "ArenaManager"
 		add_child(arena_manager)
-		
+
 		# Inicializar con player y nodo raíz de arena
 		arena_manager.initialize(player, arena_root)
-		
+
 		# Conectar señales
 		if arena_manager.has_signal("player_zone_changed"):
 			arena_manager.player_zone_changed.connect(_on_player_zone_changed)
 		if arena_manager.has_signal("player_hit_boundary"):
 			arena_manager.player_hit_boundary.connect(_on_player_hit_boundary)
-		
+
 		print("🏟️ [Game] ArenaManager creado")
 	else:
 		push_error("[Game] No se pudo cargar ArenaManager.gd")
@@ -105,11 +105,11 @@ func _create_enemy_manager() -> void:
 		enemy_manager = em_script.new()
 		enemy_manager.name = "EnemyManager"
 		add_child(enemy_manager)
-		
+
 		# Conectar señales
 		if enemy_manager.has_signal("enemy_died"):
 			enemy_manager.enemy_died.connect(_on_enemy_died)
-		
+
 		print("👹 [Game] EnemyManager creado")
 
 func _create_wave_manager() -> void:
@@ -118,7 +118,7 @@ func _create_wave_manager() -> void:
 		wave_manager = wm_script.new()
 		wave_manager.name = "WaveManager"
 		add_child(wave_manager)
-		
+
 		# Conectar señales de WaveManager
 		if wave_manager.has_signal("phase_changed"):
 			wave_manager.phase_changed.connect(_on_phase_changed)
@@ -138,7 +138,7 @@ func _create_wave_manager() -> void:
 			wave_manager.special_event_ended.connect(_on_special_event_ended)
 		if wave_manager.has_signal("game_phase_infinite"):
 			wave_manager.game_phase_infinite.connect(_on_game_phase_infinite)
-		
+
 		print("🌊 [Game] WaveManager creado")
 	else:
 		push_warning("[Game] No se pudo cargar WaveManager.gd - usando spawn básico")
@@ -157,7 +157,7 @@ func _create_experience_manager() -> void:
 		experience_manager = em_script.new()
 		experience_manager.name = "ExperienceManager"
 		add_child(experience_manager)
-		
+
 		# Conectar señales
 		if experience_manager.has_signal("level_up"):
 			experience_manager.level_up.connect(_on_level_up)
@@ -165,7 +165,7 @@ func _create_experience_manager() -> void:
 			experience_manager.exp_gained.connect(_on_exp_gained)
 		if experience_manager.has_signal("coin_collected"):
 			experience_manager.coin_collected.connect(_on_coin_collected)
-		
+
 		print("⭐ [Game] ExperienceManager creado")
 
 func _create_ui() -> void:
@@ -175,7 +175,7 @@ func _create_ui() -> void:
 		hud = hud_scene.instantiate()
 		ui_layer.add_child(hud)
 		print("📊 [Game] HUD creado")
-	
+
 	# Menú de pausa
 	var pause_scene = load("res://scenes/ui/PauseMenu.tscn")
 	if pause_scene:
@@ -183,7 +183,7 @@ func _create_ui() -> void:
 		ui_layer.add_child(pause_menu)
 		pause_menu.resume_pressed.connect(_on_resume_game)
 		print("⏸️ [Game] PauseMenu creado")
-	
+
 	# Pantalla de Game Over
 	var gameover_scene = load("res://scenes/ui/GameOverScreen.tscn")
 	if gameover_scene:
@@ -207,39 +207,39 @@ func _initialize_systems() -> void:
 	# Inicializar con referencias
 	if enemy_manager and player:
 		enemy_manager.initialize(player)
-		
+
 		# Si WaveManager está activo, deshabilitar spawn automático del EnemyManager
 		# WaveManager controlará los spawns
 		if wave_manager:
 			enemy_manager.enable_spawning(false)
-	
+
 	if weapon_manager and player:
 		weapon_manager.initialize(player)
 		weapon_manager.enemy_manager = enemy_manager
-	
+
 	if experience_manager and player:
 		experience_manager.initialize(player)
-	
+
 	# Configurar WaveManager con referencias
 	if wave_manager:
 		wave_manager.enemy_manager = enemy_manager
 		wave_manager.player = player
-	
+
 	# Conectar HUD con el player
 	_connect_hud_to_player()
-	
+
 	print("✅ [Game] Sistemas inicializados")
 
 func _connect_hud_to_player() -> void:
 	## Conectar el HUD para que reciba actualizaciones del player
 	if not hud or not player:
 		return
-	
+
 	# Conectar señales del player al HUD si existen
 	if player.has_signal("health_changed") and hud.has_method("update_health"):
 		if not player.health_changed.is_connected(hud.update_health):
 			player.health_changed.connect(hud.update_health)
-	
+
 	# Actualización inicial del HUD
 	if player.has_method("get_health") and hud.has_method("update_stats"):
 		var health = player.get_health()
@@ -249,14 +249,14 @@ func _connect_hud_to_player() -> void:
 			exp_data.max = experience_manager.exp_to_next_level
 			exp_data.level = experience_manager.current_level
 		hud.update_stats(health.current, health.max, exp_data.current, exp_data.max, exp_data.level)
-	
+
 	print("📊 [Game] HUD conectado al player")
 
 func _start_game() -> void:
 	game_running = true
 	game_time = 0.0
 	is_paused = false
-	
+
 	# Resetear stats
 	run_stats = {
 		"time": 0.0,
@@ -266,17 +266,17 @@ func _start_game() -> void:
 		"gold": 0,
 		"damage_dealt": 0
 	}
-	
+
 	print("🚀 [Game] ¡Partida iniciada!")
 
 func _process(delta: float) -> void:
 	if not game_running or is_paused:
 		return
-	
+
 	# Actualizar tiempo
 	game_time += delta
 	run_stats["time"] = game_time
-	
+
 	# Actualizar HUD
 	_update_hud()
 
@@ -296,28 +296,28 @@ func _on_resume_game() -> void:
 func _update_hud() -> void:
 	if not hud:
 		return
-	
+
 	# Actualizar stats en el HUD
 	if hud.has_method("update_time"):
 		hud.update_time(game_time)
-	
+
 	if hud.has_method("update_level") and experience_manager:
 		hud.update_level(experience_manager.current_level)
-	
+
 	if hud.has_method("update_exp") and experience_manager:
 		hud.update_exp(experience_manager.current_exp, experience_manager.exp_to_next_level)
-	
+
 	if hud.has_method("update_health") and player and player.has_method("get_health"):
 		var health_data = player.get_health()
 		hud.update_health(health_data.current, health_data.max)
 
 func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
 	run_stats["kills"] += 1
-	
+
 	# XP AUTOMÁTICO - Se da directamente al matar
 	if experience_manager:
 		experience_manager.grant_exp_from_kill(exp_value)
-	
+
 	# MONEDAS - Caen al suelo para que el player las recoja
 	if experience_manager:
 		experience_manager.spawn_coins_from_enemy(position, enemy_tier, is_elite, is_boss)
@@ -327,14 +327,14 @@ func _on_exp_gained(amount: int, total: int) -> void:
 
 func _on_level_up(new_level: int, upgrades: Array) -> void:
 	run_stats["level"] = new_level
-	
+
 	# Mostrar panel de level up
 	# TODO: Implementar selección de mejoras
 
 func _on_coin_collected(value: int, total: int) -> void:
 	## Callback cuando se recoge una moneda
 	run_stats["coins"] = total
-	
+
 	# Actualizar HUD
 	if hud and hud.has_method("update_coins"):
 		hud.update_coins(value, total)
@@ -342,7 +342,7 @@ func _on_coin_collected(value: int, total: int) -> void:
 func _on_player_zone_changed(zone_id: int, zone_name: String) -> void:
 	## Callback cuando el player cambia de zona
 	print("🏟️ [Game] Player cambió a zona: %s (id=%d)" % [zone_name, zone_id])
-	
+
 	# Actualizar UI si es necesario
 	if hud and hud.has_method("update_zone"):
 		var biome_name = ""
@@ -358,7 +358,7 @@ func _on_player_hit_boundary(damage: float) -> void:
 func player_died() -> void:
 	## Llamar cuando el player muere
 	game_running = false
-	
+
 	if game_over_screen:
 		game_over_screen.show_game_over(run_stats)
 
@@ -376,7 +376,7 @@ func _on_phase_changed(phase_num: int, phase_config: Dictionary) -> void:
 	"""Callback cuando cambia la fase del juego"""
 	var phase_name = phase_config.get("name", "Fase %d" % phase_num)
 	print("🌊 [Game] Fase cambiada: %s" % phase_name)
-	
+
 	if hud and hud.has_method("show_wave_message"):
 		var msg = "═══ FASE %d: %s ═══" % [phase_num, phase_name.to_upper()]
 		hud.show_wave_message(msg, 5.0)
@@ -390,7 +390,7 @@ func _on_wave_started(wave_type: String, wave_config: Dictionary) -> void:
 func _on_boss_incoming(boss_id: String, seconds_until: float) -> void:
 	"""Callback de advertencia de boss"""
 	print("⚠️ [Game] ¡Boss %s llegando en %.1f segundos!" % [boss_id, seconds_until])
-	
+
 	if hud and hud.has_method("show_wave_message"):
 		var boss_name = _get_boss_display_name(boss_id)
 		hud.show_wave_message("⚠️ ¡%s SE APROXIMA!" % boss_name.to_upper(), 5.0)
@@ -398,12 +398,12 @@ func _on_boss_incoming(boss_id: String, seconds_until: float) -> void:
 func _on_boss_spawned(boss_id: String) -> void:
 	"""Callback cuando aparece un boss"""
 	print("👹 [Game] ¡BOSS SPAWNEADO: %s!" % boss_id)
-	
+
 	var boss_name = _get_boss_display_name(boss_id)
-	
+
 	if hud and hud.has_method("show_wave_message"):
 		hud.show_wave_message("👹 ¡%s HA APARECIDO!" % boss_name.to_upper(), 4.0)
-	
+
 	# Mostrar barra de HP del boss
 	if hud and hud.has_method("show_boss_bar") and wave_manager:
 		var boss_node = wave_manager.get_current_boss()
@@ -413,26 +413,26 @@ func _on_boss_spawned(boss_id: String) -> void:
 func _on_boss_defeated(boss_id: String) -> void:
 	"""Callback cuando se derrota a un boss"""
 	print("🏆 [Game] ¡BOSS DERROTADO: %s!" % boss_id)
-	
+
 	var boss_name = _get_boss_display_name(boss_id)
-	
+
 	if hud and hud.has_method("show_wave_message"):
 		hud.show_wave_message("🏆 ¡%s DERROTADO!" % boss_name.to_upper(), 4.0)
-	
+
 	if hud and hud.has_method("hide_boss_bar"):
 		hud.hide_boss_bar()
 
 func _on_elite_spawned(enemy_id: String) -> void:
 	"""Callback cuando aparece un élite"""
 	print("⭐ [Game] ¡ÉLITE SPAWNEADO: %s!" % enemy_id)
-	
+
 	if hud and hud.has_method("show_wave_message"):
 		hud.show_wave_message("⭐ ¡ENEMIGO LEGENDARIO!", 3.0)
 
 func _on_special_event_started(event_name: String, event_config: Dictionary) -> void:
 	"""Callback cuando inicia un evento especial"""
 	print("🎪 [Game] Evento especial: %s" % event_name)
-	
+
 	var announcement = event_config.get("announcement", "")
 	if announcement != "" and hud and hud.has_method("show_wave_message"):
 		hud.show_wave_message(announcement, 4.0)
@@ -444,7 +444,7 @@ func _on_special_event_ended(event_name: String) -> void:
 func _on_game_phase_infinite() -> void:
 	"""Callback cuando entramos en fase infinita"""
 	print("♾️ [Game] ¡MODO INFINITO ACTIVADO!")
-	
+
 	if hud and hud.has_method("show_wave_message"):
 		hud.show_wave_message("♾️ ═══ MODO INFINITO ═══ ♾️\n¡Sobrevive todo lo que puedas!", 6.0)
 

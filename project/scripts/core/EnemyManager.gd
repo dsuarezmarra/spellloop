@@ -63,7 +63,7 @@ func _ready() -> void:
 	randomize()
 	_load_enemy_scripts()
 	_find_difficulty_manager()
-	
+
 	if debug_spawns:
 		print("👹 [EnemyManager] Inicializado")
 		print("   - Max enemigos base: %d" % max_enemies)
@@ -85,7 +85,7 @@ func initialize(player_ref: Node2D, _world_ref: Node = null) -> void:
 	game_time_seconds = 0.0
 	last_boss_minute = -1
 	elites_spawned_this_run = 0
-	
+
 	if debug_spawns:
 		print("[EnemyManager] Inicializado con player: %s" % player)
 
@@ -96,9 +96,9 @@ func initialize(player_ref: Node2D, _world_ref: Node = null) -> void:
 func _process(delta: float) -> void:
 	if not spawning_enabled or player == null:
 		return
-	
+
 	game_time_seconds += delta
-	
+
 	_update_spawn_timer(delta)
 	_check_boss_spawn()
 	_check_elite_spawn(delta)
@@ -106,10 +106,10 @@ func _process(delta: float) -> void:
 
 func _update_spawn_timer(delta: float) -> void:
 	spawn_timer += delta
-	
+
 	var current_spawn_rate = _get_current_spawn_rate()
 	var interval = 1.0 / max(0.1, current_spawn_rate)
-	
+
 	if spawn_timer >= interval:
 		spawn_timer = 0.0
 		_attempt_spawn()
@@ -118,23 +118,23 @@ func _get_current_spawn_rate() -> float:
 	"""Calcular spawn rate actual basado en tiempo y dificultad"""
 	var minute = game_time_seconds / 60.0
 	var rate = base_spawn_rate * (1.0 + minute * spawn_rate_increase_per_minute)
-	
+
 	# Aplicar multiplicador de DifficultyManager si existe
 	if difficulty_manager:
 		rate *= difficulty_manager.enemy_count_multiplier
-	
+
 	return rate
 
 func _get_current_max_enemies() -> int:
 	"""Calcular máximo de enemigos actual"""
 	var minute = int(game_time_seconds / 60.0)
 	var current_max = max_enemies + (minute * max_enemies_increase_per_minute)
-	
+
 	# Después del minuto 20, escala más agresivamente
 	if minute > 20:
 		var extra_periods = (minute - 20) / 5
 		current_max += extra_periods * 10
-	
+
 	return current_max
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -144,13 +144,13 @@ func _get_current_max_enemies() -> int:
 func _attempt_spawn() -> void:
 	if active_enemies.size() >= _get_current_max_enemies():
 		return
-	
+
 	# Obtener posición de spawn primero para determinar la zona
 	var pos = _get_spawn_position()
-	
+
 	# Determinar el tier basado en la zona donde va a spawnear
 	var selected_tier = _get_tier_for_spawn_position(pos)
-	
+
 	# DEBUG: Siempre mostrar info de spawn por zona
 	if DEBUG_ZONE_SPAWNS:
 		var arena_manager = _get_arena_manager()
@@ -159,24 +159,24 @@ func _attempt_spawn() -> void:
 			var zone = arena_manager.get_zone_at_position(pos)
 			zone_name = str(zone)
 		print("[EnemyManager] 🎯 Spawn: pos=%s, zona=%s, tier=%d" % [pos, zone_name, selected_tier])
-	
+
 	# Verificar que tenemos enemigos disponibles para este tier
 	var enemy_data = EnemyDatabase.get_random_enemy_for_tier(selected_tier)
-	
+
 	if enemy_data.is_empty():
 		# Si no hay enemigos para este tier, intentar con tier 1 como fallback
 		enemy_data = EnemyDatabase.get_random_enemy_for_tier(1)
 		if enemy_data.is_empty():
 			return
-	
+
 	# Aplicar escalado de dificultad
 	var minute = game_time_seconds / 60.0
 	var difficulty_mult = 1.0
 	if difficulty_manager:
 		difficulty_mult = difficulty_manager.enemy_health_multiplier
-	
+
 	enemy_data = EnemyDatabase.apply_difficulty_scaling(enemy_data, minute, difficulty_mult)
-	
+
 	spawn_enemy(enemy_data, pos)
 
 func _get_tier_for_spawn_position(pos: Vector2) -> int:
@@ -187,10 +187,10 @@ func _get_tier_for_spawn_position(pos: Vector2) -> int:
 		if DEBUG_ZONE_SPAWNS:
 			print("[EnemyManager] 📍 Tier para pos %s = %d (ArenaManager OK)" % [pos, tier])
 		return tier
-	
+
 	if DEBUG_ZONE_SPAWNS:
 		print("[EnemyManager] ⚠️ ArenaManager no encontrado, usando fallback por tiempo")
-	
+
 	# Fallback: usar el sistema basado en tiempo
 	var minute = game_time_seconds / 60.0
 	var available_tiers = EnemyDatabase.get_available_tiers_for_minute(minute)
@@ -209,39 +209,39 @@ func _select_weighted_tier(available_tiers: Array, minute: float) -> int:
 	"""Seleccionar tier con pesos - tiers más altos menos comunes"""
 	# Pesos base: tier 1 = 100%, tier 2 = 60%, tier 3 = 35%, tier 4 = 15%
 	var weights = {1: 1.0, 2: 0.6, 3: 0.35, 4: 0.15}
-	
+
 	# Después del minuto 20, los tiers altos son más comunes
 	if minute > 20:
 		var bonus = (minute - 20) / 20.0  # +5% por minuto después del 20
 		weights[2] = min(1.0, weights[2] + bonus * 0.5)
 		weights[3] = min(0.8, weights[3] + bonus * 0.4)
 		weights[4] = min(0.6, weights[4] + bonus * 0.3)
-	
+
 	var total_weight = 0.0
 	for tier in available_tiers:
 		total_weight += weights.get(tier, 0.1)
-	
+
 	var roll = randf() * total_weight
 	var cumulative = 0.0
-	
+
 	for tier in available_tiers:
 		cumulative += weights.get(tier, 0.1)
 		if roll <= cumulative:
 			return tier
-	
+
 	return available_tiers[0]
 
 func _get_spawn_position() -> Vector2:
 	var ppos: Vector2 = Vector2.ZERO
 	if player and player is Node2D:
 		ppos = player.global_position
-	
+
 	# Spawn en un círculo alrededor del jugador
 	var angle = randf() * TAU
 	var distance = spawn_distance + randf() * 100.0  # Algo de variación
-	
+
 	var spawn_pos = ppos + Vector2(cos(angle), sin(angle)) * distance
-	
+
 	# Verificar que la posición está en una zona desbloqueada
 	var arena_manager = _get_arena_manager()
 	if arena_manager:
@@ -250,15 +250,15 @@ func _get_spawn_position() -> Vector2:
 			var zone_at_pos = arena_manager.get_zone_at_position(spawn_pos)
 			if arena_manager.is_zone_unlocked(zone_at_pos):
 				return spawn_pos
-			
+
 			# Intentar una nueva posición más cercana al player
 			angle = randf() * TAU
 			distance = spawn_distance * 0.5 + randf() * (spawn_distance * 0.5)
 			spawn_pos = ppos + Vector2(cos(angle), sin(angle)) * distance
-		
+
 		# Si todos los intentos fallan, spawnear cerca del player (zona SAFE)
 		return ppos + Vector2(cos(randf() * TAU), sin(randf() * TAU)) * (spawn_distance * 0.3)
-	
+
 	return spawn_pos
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -267,7 +267,7 @@ func _get_spawn_position() -> Vector2:
 
 func _check_boss_spawn() -> void:
 	var current_minute = int(game_time_seconds / 60.0)
-	
+
 	# Solo spawn en múltiplos de 5 minutos
 	if current_minute > 0 and current_minute % 5 == 0 and current_minute != last_boss_minute:
 		last_boss_minute = current_minute
@@ -275,23 +275,23 @@ func _check_boss_spawn() -> void:
 
 func _spawn_boss(minute: int) -> void:
 	var boss_data = EnemyDatabase.get_boss_for_minute(minute)
-	
+
 	if boss_data.is_empty():
 		if debug_spawns:
 			print("[EnemyManager] No hay boss para el minuto %d" % minute)
 		return
-	
+
 	# Aplicar escalado
 	var difficulty_mult = 1.0
 	if difficulty_manager:
 		difficulty_mult = difficulty_manager.enemy_health_multiplier
-	
+
 	boss_data = EnemyDatabase.apply_difficulty_scaling(boss_data, float(minute), difficulty_mult)
 	boss_data["is_boss"] = true
-	
+
 	var pos = _get_spawn_position()
 	var boss = spawn_enemy(boss_data, pos)
-	
+
 	if boss:
 		emit_signal("boss_spawned", boss)
 		print("🔥 [EnemyManager] ¡BOSS SPAWNEADO: %s (Minuto %d)!" % [boss_data.name, minute])
@@ -302,47 +302,47 @@ func _spawn_boss(minute: int) -> void:
 
 func _check_elite_spawn(delta: float) -> void:
 	elite_check_timer += delta
-	
+
 	# Revisar cada 10 segundos
 	if elite_check_timer < 10.0:
 		return
-	
+
 	elite_check_timer = 0.0
-	
+
 	# Verificar si ya hay un élite activo
 	for enemy in active_enemies:
 		if is_instance_valid(enemy) and enemy.get("is_elite"):
 			return  # Ya hay un élite, no spawneamos otro
-	
+
 	var minute = game_time_seconds / 60.0
-	
+
 	if EnemyDatabase.should_spawn_elite(minute, elites_spawned_this_run):
 		_spawn_elite()
 
 func _spawn_elite() -> void:
 	var minute = game_time_seconds / 60.0
 	var available_tiers = EnemyDatabase.get_available_tiers_for_minute(minute)
-	
+
 	# Los élites pueden ser de cualquier tier disponible
 	var tier = available_tiers[randi() % available_tiers.size()]
 	var base_enemy = EnemyDatabase.get_random_enemy_for_tier(tier)
-	
+
 	if base_enemy.is_empty():
 		return
-	
+
 	# Convertir a élite
 	var elite_data = EnemyDatabase.create_elite_version(base_enemy)
-	
+
 	# Aplicar escalado normal también
 	var difficulty_mult = 1.0
 	if difficulty_manager:
 		difficulty_mult = difficulty_manager.enemy_health_multiplier
-	
+
 	elite_data = EnemyDatabase.apply_difficulty_scaling(elite_data, minute, difficulty_mult)
-	
+
 	var pos = _get_spawn_position()
 	var elite = spawn_enemy(elite_data, pos)
-	
+
 	if elite:
 		elites_spawned_this_run += 1
 		emit_signal("elite_spawned", elite)
@@ -356,14 +356,14 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 	if not EnemyBaseScript:
 		push_warning("⚠️ [EnemyManager] EnemyBaseScript no cargado")
 		return null
-	
+
 	var type_id = str(enemy_data.get("id", "unknown"))
-	
+
 	# Crear CharacterBody2D con script EnemyBase
 	var enemy = CharacterBody2D.new()
 	enemy.set_script(EnemyBaseScript)
 	enemy.name = "Enemy_%s" % type_id
-	
+
 	# Inicializar con datos de la base de datos
 	if enemy.has_method("initialize_from_database"):
 		enemy.initialize_from_database(enemy_data, player)
@@ -379,7 +379,7 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 			"damage": enemy_data.get("final_damage", enemy_data.get("base_damage", 5))
 		}
 		enemy.initialize(legacy_data, player)
-	
+
 	# Configurar propiedades adicionales desde enemy_data
 	if enemy_data.get("is_elite", false):
 		enemy.set("is_elite", true)
@@ -387,18 +387,18 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 			enemy.set("aura_color", enemy_data.aura_color)
 		if enemy_data.has("size_scale"):
 			enemy.set("elite_size_scale", enemy_data.size_scale)
-	
+
 	if enemy_data.get("is_boss", false):
 		enemy.set("is_boss", true)
-	
+
 	# Conectar señal de muerte
 	if enemy.has_signal("enemy_died"):
 		enemy.enemy_died.connect(_on_enemy_died)
-	
+
 	# Asegurar visibilidad
 	enemy.visible = true
 	enemy.z_index = 0
-	
+
 	# Añadir al árbol de escena
 	var root_scene = get_tree().current_scene if get_tree() else null
 	if root_scene and root_scene.has_node("WorldRoot/EnemiesRoot"):
@@ -408,19 +408,19 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 	else:
 		add_child(enemy)
 		enemy.global_position = world_pos
-	
+
 	active_enemies.append(enemy)
 	emit_signal("enemy_spawned", enemy)
-	
+
 	# Emitir señal de boss si aplica
 	if enemy_data.get("is_boss", false) or type_id.find("boss") != -1:
 		emit_signal("boss_spawned", enemy)
-	
+
 	if debug_spawns:
 		var tier = enemy_data.get("tier", 1)
 		var hp = enemy_data.get("final_hp", enemy_data.get("base_hp", 0))
 		print("[EnemyManager] Spawned T%d %s (HP:%d) at %s" % [tier, enemy_data.get("name", "?"), hp, world_pos])
-	
+
 	return enemy
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -430,13 +430,13 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 func _on_enemy_died(enemy: Node, type_id: String = "", exp_value: int = 0, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
 	if enemy in active_enemies:
 		active_enemies.erase(enemy)
-	
+
 	var pos = Vector2.ZERO
 	if is_instance_valid(enemy) and enemy is Node2D:
 		pos = enemy.global_position
-	
+
 	emit_signal("enemy_died", pos, type_id, exp_value, enemy_tier, is_elite, is_boss)
-	
+
 	if debug_spawns:
 		var elite_str = " [ELITE]" if is_elite else ""
 		var boss_str = " [BOSS]" if is_boss else ""
@@ -447,7 +447,7 @@ func _cleanup_dead_enemies() -> void:
 	for enemy in active_enemies:
 		if not is_instance_valid(enemy):
 			to_remove.append(enemy)
-	
+
 	for e in to_remove:
 		active_enemies.erase(e)
 
@@ -525,88 +525,88 @@ func set_max_enemies(new_max: int) -> void:
 func spawn_specific_enemy(enemy_id: String, world_pos: Vector2, multipliers: Dictionary = {}) -> Node:
 	"""Spawnear un enemigo específico por su ID en una posición dada"""
 	var enemy_data = EnemyDatabase.get_enemy_by_id(enemy_id)
-	
+
 	if enemy_data.is_empty():
 		push_warning("[EnemyManager] No se encontró enemigo con ID: %s" % enemy_id)
 		return null
-	
+
 	# Aplicar escalado base
 	var minute = game_time_seconds / 60.0
 	var difficulty_mult = 1.0
 	if difficulty_manager:
 		difficulty_mult = difficulty_manager.enemy_health_multiplier
-	
+
 	enemy_data = EnemyDatabase.apply_difficulty_scaling(enemy_data, minute, difficulty_mult)
-	
+
 	# Aplicar multiplicadores adicionales del WaveManager (escalado infinito)
 	if multipliers.has("hp_multiplier"):
 		enemy_data["final_hp"] = int(enemy_data.get("final_hp", enemy_data.get("base_hp", 20)) * multipliers.hp_multiplier)
 	if multipliers.has("damage_multiplier"):
 		enemy_data["final_damage"] = int(enemy_data.get("final_damage", enemy_data.get("base_damage", 5)) * multipliers.damage_multiplier)
-	
+
 	return spawn_enemy(enemy_data, world_pos)
 
 func spawn_boss(boss_id: String, world_pos: Vector2, multipliers: Dictionary = {}) -> Node:
 	"""Spawnear un boss específico - usado por WaveManager"""
 	var boss_data = EnemyDatabase.get_enemy_by_id(boss_id)
-	
+
 	if boss_data.is_empty():
 		push_warning("[EnemyManager] No se encontró boss con ID: %s" % boss_id)
 		return null
-	
+
 	# Aplicar escalado
 	var minute = game_time_seconds / 60.0
 	var difficulty_mult = 1.0
 	if difficulty_manager:
 		difficulty_mult = difficulty_manager.enemy_health_multiplier
-	
+
 	boss_data = EnemyDatabase.apply_difficulty_scaling(boss_data, minute, difficulty_mult)
 	boss_data["is_boss"] = true
-	
+
 	# Aplicar multiplicadores adicionales (escalado infinito)
 	if multipliers.has("hp_multiplier"):
 		boss_data["final_hp"] = int(boss_data.get("final_hp", boss_data.get("base_hp", 100)) * multipliers.hp_multiplier)
 	if multipliers.has("damage_multiplier"):
 		boss_data["final_damage"] = int(boss_data.get("final_damage", boss_data.get("base_damage", 20)) * multipliers.damage_multiplier)
-	
+
 	var boss = spawn_enemy(boss_data, world_pos)
-	
+
 	if boss:
 		emit_signal("boss_spawned", boss)
 		print("🔥 [EnemyManager] ¡BOSS SPAWNEADO: %s!" % boss_data.name)
-	
+
 	return boss
 
 func spawn_elite(enemy_id: String, world_pos: Vector2, multipliers: Dictionary = {}) -> Node:
 	"""Spawnear un élite de un tipo específico - usado por WaveManager"""
 	var base_enemy = EnemyDatabase.get_enemy_by_id(enemy_id)
-	
+
 	if base_enemy.is_empty():
 		push_warning("[EnemyManager] No se encontró enemigo para élite con ID: %s" % enemy_id)
 		return null
-	
+
 	# Convertir a élite
 	var elite_data = EnemyDatabase.create_elite_version(base_enemy)
-	
+
 	# Aplicar escalado normal
 	var minute = game_time_seconds / 60.0
 	var difficulty_mult = 1.0
 	if difficulty_manager:
 		difficulty_mult = difficulty_manager.enemy_health_multiplier
-	
+
 	elite_data = EnemyDatabase.apply_difficulty_scaling(elite_data, minute, difficulty_mult)
-	
+
 	# Aplicar multiplicadores adicionales (escalado infinito)
 	if multipliers.has("hp_multiplier"):
 		elite_data["final_hp"] = int(elite_data.get("final_hp", elite_data.get("base_hp", 50)) * multipliers.hp_multiplier)
 	if multipliers.has("damage_multiplier"):
 		elite_data["final_damage"] = int(elite_data.get("final_damage", elite_data.get("base_damage", 10)) * multipliers.damage_multiplier)
-	
+
 	var elite = spawn_enemy(elite_data, world_pos)
-	
+
 	if elite:
 		elites_spawned_this_run += 1
 		emit_signal("elite_spawned", elite)
 		print("⭐ [EnemyManager] ¡ÉLITE SPAWNEADO: %s!" % elite_data.name)
-	
+
 	return elite
