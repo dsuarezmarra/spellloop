@@ -1071,6 +1071,10 @@ func _attempt_attack() -> void:
 	can_attack = false
 	attack_timer = attack_cooldown
 
+	# Verificar que tenemos referencia al jugador
+	if not player_ref or not is_instance_valid(player_ref):
+		return
+
 	# Calcular daño según arquetipo
 	var final_damage = damage
 
@@ -1085,8 +1089,16 @@ func _attempt_attack() -> void:
 		var counter_damage = modifiers.get("counter_damage", 1.5)
 		# El contraataque se aplicaría aquí si el jugador acaba de atacar
 
-	# Implementación base: sin efecto visual, solo daño
-	# TODO: Conectar con sistema de daño al jugador
+	# Determinar elemento del ataque
+	var attack_element = _determine_element_from_id(enemy_id)
+
+	# Aplicar daño al jugador
+	if player_ref.has_method("take_damage"):
+		player_ref.take_damage(final_damage, attack_element)
+		print("[EnemyBase] ⚔️ %s ataca al jugador: %d daño (%s)" % [enemy_id, final_damage, attack_element])
+
+		# Efecto visual de ataque en el enemigo
+		_play_attack_animation()
 
 func take_damage(amount: int) -> void:
 	"""Recibir daño del enemigo"""
@@ -1129,6 +1141,43 @@ func _flash_block() -> void:
 		var tween = create_tween()
 		tween.tween_property(sprite, "modulate", Color(0.5, 0.7, 1.0), 0.05)
 		tween.tween_property(sprite, "modulate", original, 0.15)
+
+func _play_attack_animation() -> void:
+	"""Efecto visual cuando el enemigo ataca"""
+	var sprite = animated_sprite if animated_sprite else _find_sprite_node(self)
+	if not sprite:
+		return
+
+	# Color del flash según elemento
+	var attack_element = _determine_element_from_id(enemy_id)
+	var flash_color: Color
+	match attack_element:
+		"fire":
+			flash_color = Color(1.5, 0.5, 0.2)
+		"ice":
+			flash_color = Color(0.5, 0.8, 1.5)
+		"dark", "void", "shadow":
+			flash_color = Color(0.8, 0.3, 1.2)
+		"poison":
+			flash_color = Color(0.5, 1.2, 0.3)
+		"lightning":
+			flash_color = Color(1.5, 1.5, 0.4)
+		"arcane":
+			flash_color = Color(0.8, 0.5, 1.5)
+		_:
+			flash_color = Color(1.3, 0.3, 0.3)  # Rojo por defecto
+
+	# Animación de ataque: escala y flash
+	var original_scale = sprite.scale
+	var attack_scale = original_scale * 1.15
+
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(sprite, "scale", attack_scale, 0.08)
+	tween.tween_property(sprite, "modulate", flash_color, 0.08)
+	tween.set_parallel(false)
+	tween.tween_property(sprite, "scale", original_scale, 0.12)
+	tween.tween_property(sprite, "modulate", Color.WHITE, 0.12)
 
 func apply_knockback(knockback_force: Vector2) -> void:
 	"""Aplicar knockback (empujón) al enemigo desde un impacto"""

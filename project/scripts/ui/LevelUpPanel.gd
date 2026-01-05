@@ -753,7 +753,7 @@ func _get_fallback_options() -> Array:
 			"description": "Aumenta el daño en un 10%",
 			"icon": "⚡",
 			"rarity": "common",
-			"effects": [{"stat": "damage_multiplier", "value": 0.10, "operation": "add"}],
+			"effects": [{"stat": "damage_mult", "value": 0.10, "operation": "add"}],
 			"priority": 0.8
 		},
 		{
@@ -763,7 +763,7 @@ func _get_fallback_options() -> Array:
 			"description": "Aumenta la velocidad en un 10%",
 			"icon": "💨",
 			"rarity": "common",
-			"effects": [{"stat": "speed_multiplier", "value": 0.10, "operation": "add"}],
+			"effects": [{"stat": "move_speed", "value": 0.10, "operation": "add"}],
 			"priority": 0.8
 		},
 		{
@@ -783,7 +783,7 @@ func _get_fallback_options() -> Array:
 			"description": "Reduce el cooldown en un 5%",
 			"icon": "⏰",
 			"rarity": "uncommon",
-			"effects": [{"stat": "cooldown_reduction", "value": 0.05, "operation": "add"}],
+			"effects": [{"stat": "cooldown_mult", "value": -0.05, "operation": "add"}],
 			"priority": 0.8
 		}
 	]
