@@ -298,6 +298,8 @@ func _reset_stats() -> void:
 func initialize(attack_mgr: AttackManager = null) -> void:
 	"""Inicializar con referencia al AttackManager"""
 	attack_manager = attack_mgr
+	# Agregar a grupo para facilitar busqueda desde PauseMenu
+	add_to_group("player_stats")
 	_sync_with_attack_manager()
 	print("[PlayerStats] Inicializado - Nivel %d" % level)
 

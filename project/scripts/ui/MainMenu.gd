@@ -1,8 +1,9 @@
 extends Control
 class_name MainMenu
 
-## Menú principal del juego
-## Gestiona: Jugar/Reanudar, Opciones, Créditos, Salir
+## Menu principal del juego
+## Gestiona: Jugar/Reanudar, Opciones, Creditos, Salir
+## NAVEGACION: Solo WASD y gamepad (NO flechas de direccion)
 
 signal play_pressed
 signal resume_pressed
@@ -18,6 +19,10 @@ signal quit_pressed
 # Se crea dinámicamente si hay partida activa
 var resume_button: Button = null
 
+# Sistema de navegacion WASD
+var menu_buttons: Array[Button] = []
+var current_button_index: int = 0
+
 const GAME_VERSION = "0.1.0-alpha"
 
 func _ready() -> void:
@@ -25,6 +30,7 @@ func _ready() -> void:
 	_connect_signals()
 	_play_menu_music()
 	_update_resume_button()
+	_setup_wasd_navigation()
 
 func _setup_ui() -> void:
 	if version_label:
@@ -88,23 +94,62 @@ func _create_resume_button() -> void:
 
 func _set_initial_focus() -> void:
 	"""Establecer foco en el boton apropiado"""
+	if not is_inside_tree():
+		return
 	await get_tree().process_frame
+	_update_button_list()
+	_highlight_current_button()
 
-	var can_resume = SessionState.has_active_game if SessionState else false
+func _setup_wasd_navigation() -> void:
+	"""Configurar navegacion WASD y desactivar flechas"""
+	if not is_inside_tree():
+		return
+	await get_tree().process_frame
+	_update_button_list()
 
-	if can_resume and resume_button and resume_button.visible:
-		resume_button.grab_focus()
-	elif play_button:
-		play_button.grab_focus()
+	# Desactivar navegacion por flechas en todos los botones
+	for btn in menu_buttons:
+		if btn and is_instance_valid(btn):
+			btn.focus_neighbor_top = btn.get_path()
+			btn.focus_neighbor_bottom = btn.get_path()
+			btn.focus_neighbor_left = btn.get_path()
+			btn.focus_neighbor_right = btn.get_path()
+
+	_highlight_current_button()
+
+func _update_button_list() -> void:
+	"""Actualizar lista de botones navegables"""
+	menu_buttons.clear()
+
+	# Agregar botones en orden (verificar que existan y sean validos)
+	if resume_button and is_instance_valid(resume_button) and resume_button.visible:
+		menu_buttons.append(resume_button)
+	if play_button and is_instance_valid(play_button):
+		menu_buttons.append(play_button)
+	if options_button and is_instance_valid(options_button):
+		menu_buttons.append(options_button)
+	if quit_button and is_instance_valid(quit_button):
+		menu_buttons.append(quit_button)
+
+	# Resetear indice si es necesario
+	if current_button_index >= menu_buttons.size():
+		current_button_index = 0
+
+func _highlight_current_button() -> void:
+	"""Dar foco al boton actual"""
+	if menu_buttons.size() > 0 and current_button_index < menu_buttons.size():
+		var btn = menu_buttons[current_button_index]
+		if btn and is_instance_valid(btn):
+			btn.grab_focus()
 
 func _connect_signals() -> void:
-	if play_button:
+	if play_button and not play_button.pressed.is_connected(_on_play_pressed):
 		play_button.pressed.connect(_on_play_pressed)
-	if resume_button:
+	if resume_button and not resume_button.pressed.is_connected(_on_resume_pressed):
 		resume_button.pressed.connect(_on_resume_pressed)
-	if options_button:
+	if options_button and not options_button.pressed.is_connected(_on_options_pressed):
 		options_button.pressed.connect(_on_options_pressed)
-	if quit_button:
+	if quit_button and not quit_button.pressed.is_connected(_on_quit_pressed):
 		quit_button.pressed.connect(_on_quit_pressed)
 
 func _play_menu_music() -> void:
@@ -189,10 +234,79 @@ func _show_options() -> void:
 				options_menu.closed.connect(_on_options_closed)
 
 func _on_options_closed() -> void:
-	if play_button:
-		play_button.grab_focus()
+	_update_button_list()
+	_highlight_current_button()
 
 func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel"):
-		if quit_button:
-			quit_button.grab_focus()
+	# Si hay un submenu de opciones abierto, no procesar
+	var options_menu = get_node_or_null("OptionsMenu")
+	if options_menu and options_menu.visible:
+		return
+
+	# Navegacion con teclado WASD
+	if event is InputEventKey and event.pressed:
+		var handled = false
+
+		match event.keycode:
+			KEY_W:
+				_navigate_menu(-1)
+				handled = true
+			KEY_S:
+				_navigate_menu(1)
+				handled = true
+			KEY_SPACE, KEY_ENTER:
+				_activate_current_button()
+				handled = true
+			KEY_ESCAPE:
+				if quit_button:
+					current_button_index = menu_buttons.find(quit_button)
+					_highlight_current_button()
+				handled = true
+
+		if handled:
+			get_viewport().set_input_as_handled()
+
+	# Soporte para gamepad - botones
+	if event is InputEventJoypadButton and event.pressed:
+		var handled = false
+
+		match event.button_index:
+			JOY_BUTTON_DPAD_UP:
+				_navigate_menu(-1)
+				handled = true
+			JOY_BUTTON_DPAD_DOWN:
+				_navigate_menu(1)
+				handled = true
+			JOY_BUTTON_A:
+				_activate_current_button()
+				handled = true
+
+		if handled:
+			get_viewport().set_input_as_handled()
+
+	# Soporte para joystick analogico
+	if event is InputEventJoypadMotion:
+		if event.axis == JOY_AXIS_LEFT_Y:
+			if event.axis_value < -0.5:
+				_navigate_menu(-1)
+				get_viewport().set_input_as_handled()
+			elif event.axis_value > 0.5:
+				_navigate_menu(1)
+				get_viewport().set_input_as_handled()
+
+func _navigate_menu(direction: int) -> void:
+	"""Navegar entre botones del menu"""
+	if menu_buttons.is_empty():
+		return
+
+	current_button_index = wrapi(current_button_index + direction, 0, menu_buttons.size())
+	_highlight_current_button()
+
+func _activate_current_button() -> void:
+	"""Activar el boton actualmente seleccionado"""
+	if menu_buttons.is_empty():
+		return
+
+	var current = menu_buttons[current_button_index]
+	if current:
+		current.emit_signal("pressed")

@@ -314,38 +314,72 @@ func _input(event: InputEvent) -> void:
 
 	var handled = false
 
-	# Navegación IZQUIERDA (← o A)
-	if event.is_action_pressed("ui_left") or event.is_action_pressed("move_left"):
-		_navigate_horizontal(-1)
-		handled = true
+	# === NAVEGACION SOLO CON WASD (NO FLECHAS) ===
+	if event is InputEventKey and event.pressed:
+		match event.keycode:
+			KEY_A:
+				_navigate_horizontal(-1)
+				handled = true
+			KEY_D:
+				_navigate_horizontal(1)
+				handled = true
+			KEY_W:
+				_navigate_vertical(-1)
+				handled = true
+			KEY_S:
+				_navigate_vertical(1)
+				handled = true
+			KEY_SPACE, KEY_ENTER:
+				_confirm_selection()
+				handled = true
+			KEY_ESCAPE:
+				if banish_mode:
+					_cancel_banish_mode()
+				else:
+					_on_skip()
+				handled = true
 
-	# Navegación DERECHA (→ o D)
-	elif event.is_action_pressed("ui_right") or event.is_action_pressed("move_right"):
-		_navigate_horizontal(1)
-		handled = true
+	# === SOPORTE PARA GAMEPAD ===
+	if event is InputEventJoypadButton and event.pressed:
+		match event.button_index:
+			JOY_BUTTON_DPAD_LEFT:
+				_navigate_horizontal(-1)
+				handled = true
+			JOY_BUTTON_DPAD_RIGHT:
+				_navigate_horizontal(1)
+				handled = true
+			JOY_BUTTON_DPAD_UP:
+				_navigate_vertical(-1)
+				handled = true
+			JOY_BUTTON_DPAD_DOWN:
+				_navigate_vertical(1)
+				handled = true
+			JOY_BUTTON_A:
+				_confirm_selection()
+				handled = true
+			JOY_BUTTON_B:
+				if banish_mode:
+					_cancel_banish_mode()
+				else:
+					_on_skip()
+				handled = true
 
-	# Navegación ARRIBA (↑ o W)
-	elif event.is_action_pressed("ui_up") or event.is_action_pressed("move_up"):
-		_navigate_vertical(-1)
-		handled = true
-
-	# Navegación ABAJO (↓ o S)
-	elif event.is_action_pressed("ui_down") or event.is_action_pressed("move_down"):
-		_navigate_vertical(1)
-		handled = true
-
-	# CONFIRMAR (Enter/Espacio)
-	elif event.is_action_pressed("ui_accept"):
-		_confirm_selection()
-		handled = true
-
-	# CANCELAR (Escape) - cancelar modo eliminar o saltar
-	elif event.is_action_pressed("ui_cancel"):
-		if banish_mode:
-			_cancel_banish_mode()
-		else:
-			_on_skip()
-		handled = true
+	# === SOPORTE PARA JOYSTICK ANALOGICO ===
+	if event is InputEventJoypadMotion:
+		if event.axis == JOY_AXIS_LEFT_X:
+			if event.axis_value < -0.5:
+				_navigate_horizontal(-1)
+				handled = true
+			elif event.axis_value > 0.5:
+				_navigate_horizontal(1)
+				handled = true
+		elif event.axis == JOY_AXIS_LEFT_Y:
+			if event.axis_value < -0.5:
+				_navigate_vertical(-1)
+				handled = true
+			elif event.axis_value > 0.5:
+				_navigate_vertical(1)
+				handled = true
 
 	if handled:
 		get_viewport().set_input_as_handled()

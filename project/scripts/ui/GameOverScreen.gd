@@ -2,7 +2,8 @@ extends Control
 class_name GameOverScreen
 
 ## Pantalla de Game Over
-## Muestra estadísticas de la partida y opciones
+## Muestra estadisticas de la partida y opciones
+## NAVEGACION: Solo WASD y gamepad (NO flechas de direccion)
 
 signal retry_pressed
 signal menu_pressed
@@ -14,6 +15,10 @@ signal menu_pressed
 
 # Stats de la partida
 var final_stats: Dictionary = {}
+
+# Sistema de navegacion WASD
+var buttons: Array[Button] = []
+var current_button_index: int = 0
 
 func _ready() -> void:
 	_connect_signals()
@@ -30,19 +35,100 @@ func show_game_over(stats: Dictionary = {}) -> void:
 	final_stats = stats
 	visible = true
 	get_tree().paused = true
-	
+
 	_display_stats()
-	
-	if retry_button:
-		retry_button.grab_focus()
-	
-	# Animación de entrada
+	_setup_wasd_navigation()
+
+	# Animacion de entrada
 	modulate.a = 0
 	var tween = create_tween()
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.tween_property(self, "modulate:a", 1.0, 0.5)
-	
+
 	_play_game_over_sound()
+
+func _setup_wasd_navigation() -> void:
+	"""Configurar navegacion WASD"""
+	buttons.clear()
+
+	if retry_button:
+		buttons.append(retry_button)
+		# Desactivar navegacion por flechas
+		retry_button.focus_neighbor_top = retry_button.get_path()
+		retry_button.focus_neighbor_bottom = retry_button.get_path()
+		retry_button.focus_neighbor_left = retry_button.get_path()
+		retry_button.focus_neighbor_right = retry_button.get_path()
+
+	if menu_button:
+		buttons.append(menu_button)
+		menu_button.focus_neighbor_top = menu_button.get_path()
+		menu_button.focus_neighbor_bottom = menu_button.get_path()
+		menu_button.focus_neighbor_left = menu_button.get_path()
+		menu_button.focus_neighbor_right = menu_button.get_path()
+
+	current_button_index = 0
+	if buttons.size() > 0:
+		buttons[0].grab_focus()
+
+func _input(event: InputEvent) -> void:
+	if not visible:
+		return
+
+	var handled = false
+
+	# Navegacion con teclado WASD
+	if event is InputEventKey and event.pressed:
+		match event.keycode:
+			KEY_A, KEY_W:
+				_navigate(-1)
+				handled = true
+			KEY_D, KEY_S:
+				_navigate(1)
+				handled = true
+			KEY_SPACE, KEY_ENTER:
+				_activate_current()
+				handled = true
+
+	# Soporte para gamepad
+	if event is InputEventJoypadButton and event.pressed:
+		match event.button_index:
+			JOY_BUTTON_DPAD_LEFT, JOY_BUTTON_DPAD_UP:
+				_navigate(-1)
+				handled = true
+			JOY_BUTTON_DPAD_RIGHT, JOY_BUTTON_DPAD_DOWN:
+				_navigate(1)
+				handled = true
+			JOY_BUTTON_A:
+				_activate_current()
+				handled = true
+
+	# Soporte para joystick analogico
+	if event is InputEventJoypadMotion:
+		if event.axis == JOY_AXIS_LEFT_X or event.axis == JOY_AXIS_LEFT_Y:
+			if event.axis_value < -0.5:
+				_navigate(-1)
+				handled = true
+			elif event.axis_value > 0.5:
+				_navigate(1)
+				handled = true
+
+	if handled:
+		get_viewport().set_input_as_handled()
+
+func _navigate(direction: int) -> void:
+	if buttons.is_empty():
+		return
+
+	current_button_index = wrapi(current_button_index + direction, 0, buttons.size())
+	buttons[current_button_index].grab_focus()
+
+func _activate_current() -> void:
+	if buttons.is_empty():
+		return
+
+	var current = buttons[current_button_index]
+	if current:
+		current.emit_signal("pressed")
 
 func _display_stats() -> void:
 	if not stats_container:

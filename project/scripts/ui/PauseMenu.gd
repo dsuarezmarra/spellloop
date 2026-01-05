@@ -14,8 +14,8 @@ signal options_pressed
 signal quit_to_menu_pressed
 
 # Referencias externas (se obtienen automáticamente)
-var player_stats: PlayerStats = null
-var attack_manager: AttackManager = null
+var player_stats: Node = null  # Tipo Node para evitar errores de asignacion
+var attack_manager: Node = null  # Tipo Node para evitar errores de asignacion
 var player_ref: Node = null
 var experience_manager_ref: Node = null
 
@@ -185,25 +185,38 @@ func initialize(stats: PlayerStats, attack_mgr: AttackManager) -> void:
 	attack_manager = attack_mgr
 
 func _find_references() -> void:
-	"""Busca referencias a sistemas del juego automáticamente"""
+	"""Busca referencias a sistemas del juego automaticamente"""
 	var tree = get_tree()
 	if not tree:
 		return
 
-	# Buscar PlayerStats en el árbol
+	# Buscar PlayerStats en el arbol
 	if not player_stats:
-		player_stats = tree.root.get_node_or_null("Game/PlayerStats")
+		# Buscar en rutas comunes (nodo con nombre exacto)
+		var found = tree.root.get_node_or_null("Game/PlayerStats")
+		if found and _is_player_stats(found):
+			player_stats = found
 		if not player_stats:
-			# Buscar en cualquier lugar
+			found = tree.root.get_node_or_null("PlayerStats")
+			if found and _is_player_stats(found):
+				player_stats = found
+		if not player_stats:
+			# Buscar en grupo
 			var nodes = tree.get_nodes_in_group("player_stats")
-			if nodes.size() > 0:
-				player_stats = nodes[0]
+			for n in nodes:
+				if _is_player_stats(n):
+					player_stats = n
+					break
 
 	# Buscar AttackManager
 	if not attack_manager:
-		attack_manager = tree.root.get_node_or_null("Game/AttackManager")
+		var found = tree.root.get_node_or_null("Game/AttackManager")
+		if found and _is_attack_manager(found):
+			attack_manager = found
 		if not attack_manager:
-			attack_manager = tree.root.get_node_or_null("AttackManager")
+			found = tree.root.get_node_or_null("AttackManager")
+			if found and _is_attack_manager(found):
+				attack_manager = found
 
 	# Buscar Player para obtener stats directamente
 	if not player_ref:
@@ -213,13 +226,77 @@ func _find_references() -> void:
 			# Intentar obtener attack_manager del player
 			if not attack_manager and player_ref:
 				if "wizard_player" in player_ref and player_ref.wizard_player:
-					attack_manager = player_ref.wizard_player.attack_manager
+					var am = player_ref.wizard_player.get("attack_manager")
+					if am and _is_attack_manager(am):
+						attack_manager = am
+				# Tambien intentar obtener player_stats del player
+				if not player_stats and player_ref:
+					if "player_stats" in player_ref:
+						var ps = player_ref.get("player_stats")
+						if ps and _is_player_stats(ps):
+							player_stats = ps
 
 	# Buscar ExperienceManager para nivel/XP
 	if not experience_manager_ref:
 		experience_manager_ref = tree.root.get_node_or_null("Game/ExperienceManager")
 		if not experience_manager_ref:
 			experience_manager_ref = tree.root.get_node_or_null("ExperienceManager")
+
+	# Debug
+	print("[PauseMenu] Referencias encontradas:")
+	print("  - player_stats: ", player_stats != null, " (", player_stats.get_class() if player_stats else "null", ")")
+	print("  - attack_manager: ", attack_manager != null)
+	print("  - player_ref: ", player_ref != null)
+	print("  - experience_manager: ", experience_manager_ref != null)
+
+func _is_player_stats(node: Node) -> bool:
+	"""Verificar si un nodo es realmente un PlayerStats"""
+	if node == null:
+		return false
+	# Verificar por script
+	var script = node.get_script()
+	if script:
+		var path = script.resource_path if script.resource_path else ""
+		if path.ends_with("PlayerStats.gd"):
+			return true
+	# Verificar por metodos caracteristicos
+	if node.has_method("get_stat") and node.has_method("get_stat_metadata"):
+		return true
+	return false
+
+func _is_attack_manager(node: Node) -> bool:
+	"""Verificar si un nodo es realmente un AttackManager"""
+	if node == null:
+		return false
+	# Verificar por script
+	var script = node.get_script()
+	if script:
+		var path = script.resource_path if script.resource_path else ""
+		if path.ends_with("AttackManager.gd"):
+			return true
+	# Verificar por metodos caracteristicos
+	if node.has_method("get_equipped_weapons"):
+		return true
+	return false
+	"""Buscar un nodo por nombre de clase recursivamente"""
+	# Solo buscar por nombre exacto del nodo
+	if node.name == class_name_str:
+		return node
+
+	# Verificar si es una instancia del script correcto (nombre de archivo debe coincidir)
+	var script = node.get_script()
+	if script:
+		var script_path = script.resource_path if script.resource_path else ""
+		# El archivo debe llamarse exactamente ClassNombre.gd
+		if script_path.ends_with("/" + class_name_str + ".gd"):
+			return node
+
+	for child in node.get_children():
+		var found = _find_node_by_class(child, class_name_str)
+		if found:
+			return found
+
+	return null
 
 func show_pause_menu(current_time: float = 0.0) -> void:
 	game_time = current_time
@@ -354,7 +431,7 @@ func _show_stats_tab() -> void:
 	columns_hbox.add_theme_constant_override("separation", 20)
 	main_vbox.add_child(columns_hbox)
 
-	# Columna izquierda (Defensivo + Críticos)
+	# Columna izquierda (Defensivo + Criticos)
 	var left_column = VBoxContainer.new()
 	left_column.add_theme_constant_override("separation", 8)
 	left_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -366,19 +443,14 @@ func _show_stats_tab() -> void:
 	right_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	columns_hbox.add_child(right_column)
 
-	if player_stats and player_stats.has_method("get_stat"):
-		# Columna izquierda
-		_create_stats_section(left_column, "defensive", "🛡️ Defensivo")
-		_create_stats_section(left_column, "critical", "💥 Críticos")
+	# SIEMPRE mostrar los stats (con valores por defecto si no hay player_stats)
+	# Columna izquierda
+	_create_stats_section(left_column, "defensive", "Defensivo")
+	_create_stats_section(left_column, "critical", "Criticos")
 
-		# Columna derecha
-		_create_stats_section(right_column, "offensive", "⚔️ Ofensivo")
-		_create_stats_section(right_column, "utility", "🔧 Utilidad")
-	else:
-		var no_data = Label.new()
-		no_data.text = "No hay datos del jugador"
-		no_data.add_theme_color_override("font_color", Color(0.6, 0.5, 0.5))
-		main_vbox.add_child(no_data)
+	# Columna derecha
+	_create_stats_section(right_column, "offensive", "Ofensivo")
+	_create_stats_section(right_column, "utility", "Utilidad")
 
 	# === BUFFS ACTIVOS (si los hay) ===
 	_create_active_buffs_section(main_vbox)
@@ -474,16 +546,16 @@ func _create_compact_stat_row(stat_name: String) -> Control:
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 6)
 
-	# Obtener metadatos
-	var meta = {}
+	# Obtener metadatos (usar fallback si no hay player_stats)
+	var meta = _get_stat_metadata_fallback(stat_name)
 	if player_stats and player_stats.has_method("get_stat_metadata"):
-		meta = player_stats.get_stat_metadata(stat_name)
-	else:
-		meta = {"name": stat_name, "icon": "•", "description": ""}
+		var ps_meta = player_stats.get_stat_metadata(stat_name)
+		if ps_meta and not ps_meta.is_empty():
+			meta = ps_meta
 
-	# Icono pequeño
+	# Icono pequenio
 	var icon = Label.new()
-	icon.text = meta.get("icon", "•")
+	icon.text = meta.get("icon", "o")
 	icon.add_theme_font_size_override("font_size", 12)
 	icon.custom_minimum_size = Vector2(18, 0)
 	hbox.add_child(icon)
@@ -496,8 +568,8 @@ func _create_compact_stat_row(stat_name: String) -> Control:
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(name_label)
 
-	# Valor
-	var value = 0.0
+	# Valor - obtener de player_stats o usar valor base
+	var value = _get_stat_base_value(stat_name)
 	if player_stats and player_stats.has_method("get_stat"):
 		value = player_stats.get_stat(stat_name)
 
@@ -517,6 +589,68 @@ func _create_compact_stat_row(stat_name: String) -> Control:
 		hbox.tooltip_text = meta.description
 
 	return hbox
+
+# Metadatos por defecto para todos los stats
+const DEFAULT_STAT_METADATA = {
+	# Defensivos
+	"max_health": {"name": "Vida Maxima", "icon": "<3", "description": "Puntos de vida maximos"},
+	"health_regen": {"name": "Regeneracion", "icon": "+", "description": "Vida regenerada por segundo"},
+	"armor": {"name": "Armadura", "icon": "[=]", "description": "Reduce el danio recibido"},
+	"dodge_chance": {"name": "Esquivar", "icon": "~", "description": "Probabilidad de esquivar ataques"},
+	"life_steal": {"name": "Robo de Vida", "icon": "<", "description": "Vida robada al atacar"},
+	# Ofensivos
+	"damage_mult": {"name": "Danio", "icon": "!", "description": "Multiplicador de danio"},
+	"cooldown_mult": {"name": "Enfriamiento", "icon": "o", "description": "Velocidad de recarga"},
+	"area_mult": {"name": "Area", "icon": "O", "description": "Tamanio de area de efecto"},
+	"projectile_speed_mult": {"name": "Vel. Proyectil", "icon": ">>", "description": "Velocidad de proyectiles"},
+	"duration_mult": {"name": "Duracion", "icon": ":", "description": "Duracion de efectos"},
+	"extra_projectiles": {"name": "Proyectiles Extra", "icon": "x", "description": "Proyectiles adicionales"},
+	"knockback_mult": {"name": "Empuje", "icon": "<-", "description": "Fuerza de empuje"},
+	# Criticos
+	"crit_chance": {"name": "Prob. Critico", "icon": "*", "description": "Probabilidad de critico"},
+	"crit_damage": {"name": "Danio Critico", "icon": "**", "description": "Multiplicador de danio critico"},
+	# Utilidad
+	"move_speed": {"name": "Velocidad", "icon": "->", "description": "Velocidad de movimiento"},
+	"pickup_range": {"name": "Rango Recogida", "icon": "()", "description": "Rango para recoger items"},
+	"xp_mult": {"name": "Experiencia", "icon": "^", "description": "Experiencia ganada"},
+	"coin_value_mult": {"name": "Valor Monedas", "icon": "$", "description": "Valor de monedas"},
+	"luck": {"name": "Suerte", "icon": "?", "description": "Afecta drops y criticos"}
+}
+
+# Valores base para stats
+const DEFAULT_STAT_VALUES = {
+	"max_health": 100.0,
+	"health_regen": 0.0,
+	"armor": 0.0,
+	"dodge_chance": 0.0,
+	"life_steal": 0.0,
+	"damage_mult": 1.0,
+	"cooldown_mult": 1.0,
+	"area_mult": 1.0,
+	"projectile_speed_mult": 1.0,
+	"duration_mult": 1.0,
+	"extra_projectiles": 0.0,
+	"knockback_mult": 1.0,
+	"crit_chance": 0.05,
+	"crit_damage": 2.0,
+	"move_speed": 1.0,
+	"pickup_range": 1.0,
+	"xp_mult": 1.0,
+	"coin_value_mult": 1.0,
+	"luck": 0.0
+}
+
+func _get_stat_metadata_fallback(stat_name: String) -> Dictionary:
+	"""Obtener metadatos de un stat"""
+	if DEFAULT_STAT_METADATA.has(stat_name):
+		return DEFAULT_STAT_METADATA[stat_name]
+	return {"name": stat_name, "icon": "o", "description": ""}
+
+func _get_stat_base_value(stat_name: String) -> float:
+	"""Obtener valor base de un stat"""
+	if DEFAULT_STAT_VALUES.has(stat_name):
+		return DEFAULT_STAT_VALUES[stat_name]
+	return 0.0
 
 func _get_stats_for_category(category: String) -> Array:
 	"""Obtener stats de una categoría"""
