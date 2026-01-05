@@ -57,6 +57,7 @@ enum Row { OPTIONS, BUTTONS }
 var current_row: Row = Row.OPTIONS
 var option_index: int = 0      # Índice en fila de opciones (0-3)
 var button_index: int = 0      # Índice en fila de botones (0=Reroll, 1=Eliminar, 2=Saltar)
+var banish_mode: bool = false  # Modo selección para eliminar
 
 var options: Array = []
 var option_panels: Array = []
@@ -127,6 +128,7 @@ func _create_ui() -> void:
 
 	# === INSTRUCCIONES ===
 	hint_label = Label.new()
+	hint_label.name = "HintLabel"
 	hint_label.text = "Elige una mejora para continuar"
 	hint_label.add_theme_font_size_override("font_size", 14)
 	hint_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
@@ -337,16 +339,27 @@ func _input(event: InputEvent) -> void:
 		_confirm_selection()
 		handled = true
 
-	# CANCELAR (Escape) - atajo directo para saltar
+	# CANCELAR (Escape) - cancelar modo eliminar o saltar
 	elif event.is_action_pressed("ui_cancel"):
-		_on_skip()
+		if banish_mode:
+			_cancel_banish_mode()
+		else:
+			_on_skip()
 		handled = true
 
 	if handled:
 		get_viewport().set_input_as_handled()
 
 func _navigate_horizontal(direction: int) -> void:
-	if current_row == Row.OPTIONS:
+	# En modo eliminar, solo navegar opciones
+	if banish_mode:
+		var count = options.size()
+		if count == 0:
+			return
+		option_index = (option_index + direction) % count
+		if option_index < 0:
+			option_index = count - 1
+	elif current_row == Row.OPTIONS:
 		var count = options.size()
 		if count == 0:
 			return
@@ -362,6 +375,10 @@ func _navigate_horizontal(direction: int) -> void:
 	_update_all_visuals()
 
 func _navigate_vertical(direction: int) -> void:
+	# En modo eliminar, no permitir cambiar de fila
+	if banish_mode:
+		return
+
 	if direction > 0:
 		# Bajar a botones
 		current_row = Row.BUTTONS
@@ -372,6 +389,11 @@ func _navigate_vertical(direction: int) -> void:
 	_update_all_visuals()
 
 func _confirm_selection() -> void:
+	# En modo eliminar, confirmar = eliminar la opción seleccionada
+	if banish_mode:
+		_confirm_banish()
+		return
+
 	if current_row == Row.OPTIONS:
 		# Seleccionar opción actual
 		_select_option()
@@ -412,22 +434,37 @@ func _on_banish() -> void:
 	if locked or banish_count <= 0 or options.size() == 0:
 		return
 
-	# Eliminar la opción actualmente seleccionada en la fila de opciones
-	var idx_to_remove = option_index
-	if idx_to_remove >= options.size():
-		idx_to_remove = options.size() - 1
+	# Activar modo de selección para eliminar
+	banish_mode = true
+	current_row = Row.OPTIONS  # Forzar a la fila de opciones
+	_update_hint_text()
+	_update_all_visuals()
 
-	options.remove_at(idx_to_remove)
+func _confirm_banish() -> void:
+	# Eliminar la opción seleccionada
+	if option_index >= options.size():
+		option_index = options.size() - 1
+
+	options.remove_at(option_index)
 	banish_count -= 1
-	banish_used.emit(idx_to_remove)
+	banish_used.emit(option_index)
+
+	# Salir del modo eliminar
+	banish_mode = false
 
 	# Ajustar índice
 	if option_index >= options.size() and options.size() > 0:
 		option_index = options.size() - 1
 
+	_update_hint_text()
 	_update_options_ui()
 	_update_all_visuals()
 	_update_button_counts()
+
+func _cancel_banish_mode() -> void:
+	banish_mode = false
+	_update_hint_text()
+	_update_all_visuals()
 
 func _on_skip() -> void:
 	if locked:
@@ -445,11 +482,22 @@ func _close_panel() -> void:
 # ACTUALIZACIÓN VISUAL
 # ═══════════════════════════════════════════════════════════════════════════════
 
+const BANISH_COLOR = Color(1.0, 0.3, 0.3)  # Rojo para modo eliminar
+
+func _update_hint_text() -> void:
+	if hint_label:
+		if banish_mode:
+			hint_label.text = "❌ MODO ELIMINAR: Selecciona qué mejora quitar (ESC para cancelar)"
+			hint_label.add_theme_color_override("font_color", BANISH_COLOR)
+		else:
+			hint_label.text = "Elige una mejora para continuar"
+			hint_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+
 func _update_all_visuals() -> void:
 	# Actualizar opciones
 	for i in range(option_panels.size()):
 		var panel = option_panels[i]
-		var is_selected = (current_row == Row.OPTIONS and i == option_index and i < options.size())
+		var is_selected = ((current_row == Row.OPTIONS or banish_mode) and i == option_index and i < options.size())
 		var is_visible = (i < options.size())
 
 		panel.visible = is_visible
@@ -459,7 +507,8 @@ func _update_all_visuals() -> void:
 
 		var style = panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 		if is_selected:
-			style.border_color = SELECTED_COLOR
+			# En modo eliminar, borde rojo
+			style.border_color = BANISH_COLOR if banish_mode else SELECTED_COLOR
 			style.set_border_width_all(3)
 		else:
 			style.border_color = UNSELECTED_COLOR
@@ -469,12 +518,24 @@ func _update_all_visuals() -> void:
 		var indicator = panel.find_child("Indicator", true, false) as Label
 		if indicator:
 			indicator.visible = is_selected
+			if banish_mode:
+				indicator.text = "❌ ELIMINAR ❌"
+				indicator.add_theme_color_override("font_color", BANISH_COLOR)
+			else:
+				indicator.text = "▲ ENTER ▲"
+				indicator.add_theme_color_override("font_color", SELECTED_COLOR)
 
-	# Actualizar botones
+	# Actualizar botones (ocultos en modo eliminar)
 	for i in range(button_panels.size()):
 		var panel = button_panels[i]
-		var is_selected = (current_row == Row.BUTTONS and i == button_index)
+		var is_selected = (current_row == Row.BUTTONS and i == button_index and not banish_mode)
 		var is_disabled = _is_button_disabled(i)
+
+		# En modo eliminar, atenuar los botones
+		if banish_mode:
+			panel.modulate = Color(0.5, 0.5, 0.5, 0.5)
+		else:
+			panel.modulate = Color.WHITE
 
 		var style = panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 		if is_disabled:
@@ -801,6 +862,10 @@ func _apply_option(option: Dictionary) -> void:
 			_apply_player_upgrade(option)
 
 func _apply_player_upgrade(option: Dictionary) -> void:
+	# Registrar la mejora en el historial
+	if player_stats and player_stats.has_method("add_upgrade"):
+		player_stats.add_upgrade(option)
+
 	if option.has("effects") and player_stats:
 		for effect in option.effects:
 			var stat = effect.get("stat", "")

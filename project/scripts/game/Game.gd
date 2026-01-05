@@ -190,6 +190,9 @@ func _create_ui() -> void:
 		pause_menu = pause_scene.instantiate()
 		ui_layer.add_child(pause_menu)
 		pause_menu.resume_pressed.connect(_on_resume_game)
+		# Inicializar con referencias
+		if pause_menu.has_method("initialize"):
+			pause_menu.initialize(player_stats, attack_manager)
 		print("⏸️ [Game] PauseMenu creado")
 
 	# Pantalla de Game Over

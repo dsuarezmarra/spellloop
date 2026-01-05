@@ -74,6 +74,9 @@ var stats: Dictionary = {}
 # Modificadores temporales (por buffs/debuffs)
 var temp_modifiers: Dictionary = {}  # stat_name -> [{amount, duration, source}]
 
+# Historial de mejoras aplicadas (para mostrar en pausa)
+var collected_upgrades: Array = []  # [{id, name, icon, description, effects}]
+
 # Vida actual
 var current_health: float = 100.0
 
@@ -96,6 +99,7 @@ func _reset_stats() -> void:
 	"""Resetear a stats base"""
 	stats = BASE_STATS.duplicate()
 	temp_modifiers.clear()
+	collected_upgrades.clear()
 	current_health = stats.max_health
 	level = 1
 	current_xp = 0.0
@@ -584,3 +588,34 @@ func get_debug_info() -> String:
 				])
 
 	return "\n".join(lines)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE MEJORAS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func add_upgrade(upgrade_data: Dictionary) -> void:
+	"""Registrar una mejora aplicada"""
+	collected_upgrades.append({
+		"id": upgrade_data.get("upgrade_id", upgrade_data.get("id", "")),
+		"name": upgrade_data.get("name", "???"),
+		"icon": upgrade_data.get("icon", "✨"),
+		"description": upgrade_data.get("description", ""),
+		"effects": upgrade_data.get("effects", [])
+	})
+	print("[PlayerStats] Mejora añadida: %s" % upgrade_data.get("name", "???"))
+
+func get_collected_upgrades() -> Array:
+	"""Obtener lista de mejoras recolectadas"""
+	return collected_upgrades.duplicate()
+
+func modify_stat(stat_name: String, value: float, operation: String = "add") -> void:
+	"""Modificar un stat con operación específica"""
+	match operation:
+		"add":
+			add_stat(stat_name, value)
+		"multiply":
+			multiply_stat(stat_name, value)
+		"set":
+			set_stat(stat_name, value)
+		_:
+			add_stat(stat_name, value)
