@@ -148,7 +148,7 @@ func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bo
 
 	# Determinar tipo de moneda según tier/elite/boss
 	var coin_type = _get_coin_type_for_enemy(enemy_tier, is_elite, is_boss)
-	
+
 	# Calcular cantidad de monedas
 	var coin_count = 1
 	match enemy_tier:

@@ -137,7 +137,7 @@ func _setup_visual() -> void:
 
 	# Intentar cargar spritesheet según tipo
 	_load_spritesheet_for_type()
-	
+
 	sprite.centered = true
 
 	# Iniciar animación de flotación
@@ -146,7 +146,7 @@ func _setup_visual() -> void:
 func _load_spritesheet_for_type() -> void:
 	"""Cargar el spritesheet correcto para el tipo de moneda"""
 	var sprite_path = COIN_SPRITES.get(coin_type, COIN_SPRITES[CoinType.BRONZE])
-	
+
 	if ResourceLoader.exists(sprite_path):
 		var texture = load(sprite_path)
 		sprite.texture = texture
@@ -161,7 +161,7 @@ func _update_visual_for_type() -> void:
 	"""Actualizar visual cuando cambia el tipo"""
 	if sprite:
 		_load_spritesheet_for_type()
-		
+
 		# Escalar según tipo
 		var scale_factor = 1.0
 		match coin_type:
@@ -173,9 +173,9 @@ func _update_visual_for_type() -> void:
 				scale_factor = 1.1
 			_:
 				scale_factor = 1.0
-		
+
 		sprite.scale = Vector2(scale_factor, scale_factor)
-		
+
 		# Añadir glow para monedas valiosas
 		if coin_type >= CoinType.GOLD:
 			_add_glow_effect()
@@ -255,7 +255,7 @@ func _add_glow_effect() -> void:
 func _process(delta: float) -> void:
 	# Actualizar timer de vida
 	life_timer += delta
-	
+
 	# Animar spritesheet (solo si tiene múltiples frames)
 	if sprite and sprite.hframes > 1:
 		animation_timer += delta
