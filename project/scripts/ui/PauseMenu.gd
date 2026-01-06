@@ -1932,12 +1932,16 @@ func _save_game_state_for_resume() -> void:
 	# Tiempo de juego
 	game_state["game_time"] = game_time
 	
-	# Arena seed - IMPORTANTE para mantener el mismo mapa
+	# Arena seed y estado completo - IMPORTANTE para mantener el mismo mapa y zonas desbloqueadas
 	var game_node = get_tree().current_scene
 	if game_node and game_node.has_node("ArenaManager"):
 		var arena_mgr = game_node.get_node("ArenaManager")
 		if "arena_seed" in arena_mgr:
 			game_state["arena_seed"] = arena_mgr.arena_seed
+		# Guardar estado completo del ArenaManager (zonas desbloqueadas, biomas)
+		if arena_mgr.has_method("to_save_data"):
+			game_state["arena_manager_state"] = arena_mgr.to_save_data()
+			print("[PauseMenu] DEBUG - ArenaManager guardado")
 	
 	# Estado del jugador
 	if player_ref:
@@ -2043,6 +2047,28 @@ func _save_game_state_for_resume() -> void:
 		print("  - total_coins: %d" % saved_coins)
 	else:
 		print("[PauseMenu] WARNING - ExperienceManager NO encontrado!")
+	
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# NUEVO: Guardar estado del WaveManager (fase, oleadas, boss, elites, eventos)
+	# ═══════════════════════════════════════════════════════════════════════════════
+	if game_node and game_node.has_node("WaveManager"):
+		var wave_mgr = game_node.get_node("WaveManager")
+		if wave_mgr.has_method("to_save_data"):
+			game_state["wave_manager_state"] = wave_mgr.to_save_data()
+			print("[PauseMenu] DEBUG - WaveManager guardado")
+		else:
+			print("[PauseMenu] WARNING - WaveManager sin método to_save_data!")
+	
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# NUEVO: Guardar estado del EnemyManager (todos los enemigos activos)
+	# ═══════════════════════════════════════════════════════════════════════════════
+	if game_node and game_node.has_node("EnemyManager"):
+		var enemy_mgr = game_node.get_node("EnemyManager")
+		if enemy_mgr.has_method("to_save_data"):
+			game_state["enemy_manager_state"] = enemy_mgr.to_save_data()
+			print("[PauseMenu] DEBUG - EnemyManager guardado (%d enemigos)" % game_state["enemy_manager_state"].get("enemies", []).size())
+		else:
+			print("[PauseMenu] WARNING - EnemyManager sin método to_save_data!")
 	
 	# Guardar en SessionState
 	SessionState.save_full_game_state(game_state)

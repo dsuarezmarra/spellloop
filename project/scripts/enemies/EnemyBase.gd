@@ -234,6 +234,13 @@ func initialize(data: Dictionary, player):
 	if attack_system:
 		attack_system.player = player_ref
 
+	# CRÍTICO: Re-inicializar HealthComponent con el HP correcto
+	if health_component:
+		health_component.initialize(max_hp)
+	else:
+		# HealthComponent se creará en _ready(), así que diferimos
+		call_deferred("_reinitialize_health_component")
+
 	# Intentar usar AnimatedEnemySprite si no está ya cargado
 	if not animated_sprite:
 		var spritesheet_loaded = _try_load_animated_sprite()
@@ -332,9 +339,29 @@ func initialize_from_database(data: Dictionary, player) -> void:
 		if is_boss and data.has("ability_cooldowns"):
 			attack_system.modifiers["ability_cooldowns"] = data.ability_cooldowns
 
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# CRÍTICO: Re-inicializar HealthComponent con el HP correcto
+	# Nota: Si el HealthComponent aún no existe (antes de _ready), se usará call_deferred
+	# para reinicializarlo después de que _ready() lo haya creado
+	# ═══════════════════════════════════════════════════════════════════════════════
+	if health_component:
+		health_component.initialize(max_hp)
+		if is_boss:
+			print("[EnemyBase] 🔥 BOSS HP reinicializado: %d/%d" % [health_component.current_health, health_component.max_health])
+	else:
+		# HealthComponent se creará en _ready(), así que diferimos la reinicialización
+		call_deferred("_reinitialize_health_component")
+
 	print("[EnemyBase] ✓ Inicializado desde DB: %s (T%d, %s) HP:%d SPD:%.0f DMG:%d" % [
 		data.get("name", enemy_id), enemy_tier, archetype, max_hp, speed, damage
 	])
+
+func _reinitialize_health_component() -> void:
+	"""Reinicializar el HealthComponent con el HP correcto (llamado después de _ready)"""
+	if health_component:
+		health_component.initialize(max_hp)
+		if is_boss:
+			print("[EnemyBase] 🔥 BOSS HP reinicializado (deferred): %d/%d" % [health_component.current_health, health_component.max_health])
 
 func _determine_element_from_id(id: String) -> String:
 	"""Determinar elemento del enemigo basado en su ID"""

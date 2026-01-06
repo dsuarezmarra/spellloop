@@ -893,3 +893,65 @@ func get_spawn_tier_at_position(pos: Vector2) -> int:
 		return 1
 	
 	return get_tier_for_zone(zone)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SERIALIZACIÓN PARA GUARDADO/REANUDACIÓN DE PARTIDA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func to_save_data() -> Dictionary:
+	"""Serializar estado del ArenaManager para guardado"""
+	# Convertir unlocked_zones a formato serializable (ZoneType enum a int)
+	var unlocked_zones_serialized: Dictionary = {}
+	for zone_type in unlocked_zones.keys():
+		unlocked_zones_serialized[int(zone_type)] = unlocked_zones[zone_type]
+	
+	# Convertir selected_biomes a formato serializable
+	var selected_biomes_serialized: Dictionary = {}
+	for zone_type in selected_biomes.keys():
+		selected_biomes_serialized[int(zone_type)] = selected_biomes[zone_type]
+	
+	return {
+		"arena_seed": arena_seed,
+		"unlocked_zones": unlocked_zones_serialized,
+		"selected_biomes": selected_biomes_serialized,
+		"player_current_zone": int(player_current_zone)
+	}
+
+func from_save_data(data: Dictionary) -> void:
+	"""Restaurar estado del ArenaManager desde datos guardados"""
+	if data.is_empty():
+		return
+	
+	print("🏟️ [ArenaManager] Restaurando desde save data...")
+	
+	# Restaurar zonas desbloqueadas
+	if data.has("unlocked_zones"):
+		var saved_zones = data["unlocked_zones"]
+		for zone_type_str in saved_zones.keys():
+			var zone_type = int(zone_type_str)
+			unlocked_zones[zone_type] = saved_zones[zone_type_str]
+			# Actualizar barreras según estado
+			if saved_zones[zone_type_str]:
+				_unlock_zone_barrier(zone_type)
+	
+	# Restaurar zona actual del jugador
+	if data.has("player_current_zone"):
+		player_current_zone = data["player_current_zone"]
+	
+	print("🏟️ [ArenaManager] Estado restaurado:")
+	print("   - Seed: %d" % arena_seed)
+	print("   - Zonas desbloqueadas: SAFE=%s, MEDIUM=%s, DANGER=%s, DEATH=%s" % [
+		unlocked_zones.get(ZoneType.SAFE, false),
+		unlocked_zones.get(ZoneType.MEDIUM, false),
+		unlocked_zones.get(ZoneType.DANGER, false),
+		unlocked_zones.get(ZoneType.DEATH, false)
+	])
+
+func _unlock_zone_barrier(zone_type: int) -> void:
+	"""Desbloquear la barrera de una zona (si existe)"""
+	if zone_barriers.has(zone_type):
+		var barrier = zone_barriers[zone_type]
+		if is_instance_valid(barrier):
+			barrier.queue_free()
+			zone_barriers.erase(zone_type)
+			print("🏟️ [ArenaManager] Barrera de zona %d removida" % zone_type)

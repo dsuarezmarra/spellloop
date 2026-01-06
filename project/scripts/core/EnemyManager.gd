@@ -610,3 +610,134 @@ func spawn_elite(enemy_id: String, world_pos: Vector2, multipliers: Dictionary =
 		print("⭐ [EnemyManager] ¡ÉLITE SPAWNEADO: %s!" % elite_data.name)
 
 	return elite
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SERIALIZACIÓN PARA GUARDADO/REANUDACIÓN DE PARTIDA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func to_save_data() -> Dictionary:
+	"""Serializar estado completo del EnemyManager para guardado"""
+	var data: Dictionary = {
+		"game_time_seconds": game_time_seconds,
+		"last_boss_minute": last_boss_minute,
+		"elites_spawned_this_run": elites_spawned_this_run,
+		"spawn_timer": spawn_timer,
+		"elite_check_timer": elite_check_timer,
+		"spawning_enabled": spawning_enabled,
+		"enemies": []
+	}
+	
+	# Serializar todos los enemigos activos
+	for enemy in active_enemies:
+		if not is_instance_valid(enemy):
+			continue
+		
+		var enemy_data: Dictionary = {
+			"enemy_id": enemy.enemy_id if "enemy_id" in enemy else "",
+			"position": {
+				"x": enemy.global_position.x,
+				"y": enemy.global_position.y
+			},
+			"is_elite": enemy.is_elite if "is_elite" in enemy else false,
+			"is_boss": enemy.is_boss if "is_boss" in enemy else false,
+			"tier": enemy.tier if "tier" in enemy else 1
+		}
+		
+		# Guardar HP si tiene HealthComponent
+		if "health_component" in enemy and enemy.health_component:
+			enemy_data["current_hp"] = enemy.health_component.current_health
+			enemy_data["max_hp"] = enemy.health_component.max_health
+		elif enemy.has_method("get_health"):
+			enemy_data["current_hp"] = enemy.get_health()
+			enemy_data["max_hp"] = enemy.max_health if "max_health" in enemy else 100
+		
+		# Guardar stats escalados si existen
+		if "final_hp" in enemy:
+			enemy_data["final_hp"] = enemy.final_hp
+		if "final_damage" in enemy:
+			enemy_data["final_damage"] = enemy.final_damage
+		if "final_speed" in enemy:
+			enemy_data["final_speed"] = enemy.final_speed
+		
+		data["enemies"].append(enemy_data)
+	
+	print("👹 [EnemyManager] Guardados %d enemigos" % data["enemies"].size())
+	return data
+
+func from_save_data(data: Dictionary) -> void:
+	"""Restaurar estado del EnemyManager desde datos guardados"""
+	if data.is_empty():
+		return
+	
+	print("👹 [EnemyManager] Restaurando desde save data...")
+	
+	# Restaurar estado interno
+	game_time_seconds = data.get("game_time_seconds", 0.0)
+	last_boss_minute = data.get("last_boss_minute", -1)
+	elites_spawned_this_run = data.get("elites_spawned_this_run", 0)
+	spawn_timer = data.get("spawn_timer", 0.0)
+	elite_check_timer = data.get("elite_check_timer", 0.0)
+	spawning_enabled = data.get("spawning_enabled", true)
+	
+	# Limpiar enemigos existentes
+	clear_all_enemies()
+	
+	# Restaurar enemigos guardados
+	var enemies_data = data.get("enemies", [])
+	var restored_count = 0
+	var boss_restored = false
+	
+	for enemy_info in enemies_data:
+		var enemy_id = enemy_info.get("enemy_id", "")
+		if enemy_id == "":
+			continue
+		
+		# Obtener datos base del enemigo de la base de datos
+		var base_data = EnemyDatabase.get_enemy_by_id(enemy_id)
+		if base_data.is_empty():
+			print("⚠️ [EnemyManager] No se encontró enemigo con ID: %s" % enemy_id)
+			continue
+		
+		# Sobrescribir con valores guardados
+		if enemy_info.has("final_hp"):
+			base_data["final_hp"] = enemy_info.get("final_hp")
+		if enemy_info.has("final_damage"):
+			base_data["final_damage"] = enemy_info.get("final_damage")
+		if enemy_info.has("final_speed"):
+			base_data["final_speed"] = enemy_info.get("final_speed")
+		
+		base_data["is_elite"] = enemy_info.get("is_elite", false)
+		base_data["is_boss"] = enemy_info.get("is_boss", false)
+		
+		# Si es élite, aplicar modificadores de élite
+		if base_data["is_elite"] and not base_data["is_boss"]:
+			base_data = EnemyDatabase.create_elite_version(base_data)
+		
+		# Restaurar posición
+		var pos_data = enemy_info.get("position", {"x": 0, "y": 0})
+		var position = Vector2(pos_data.get("x", 0), pos_data.get("y", 0))
+		
+		# Crear el enemigo
+		var enemy = spawn_enemy(base_data, position)
+		
+		if enemy:
+			# Restaurar HP específico
+			var saved_hp = enemy_info.get("current_hp", -1)
+			var saved_max_hp = enemy_info.get("max_hp", -1)
+			
+			if saved_hp > 0:
+				if "health_component" in enemy and enemy.health_component:
+					if saved_max_hp > 0:
+						enemy.health_component.max_health = saved_max_hp
+					enemy.health_component.current_health = min(saved_hp, enemy.health_component.max_health)
+			
+			restored_count += 1
+			
+			if base_data["is_boss"]:
+				boss_restored = true
+				print("🔥 [EnemyManager] Boss restaurado: %s (HP: %d)" % [enemy_id, saved_hp])
+	
+	print("👹 [EnemyManager] Estado restaurado:")
+	print("   - Enemigos restaurados: %d / %d" % [restored_count, enemies_data.size()])
+	print("   - Élites spawneados total: %d" % elites_spawned_this_run)
+	print("   - Boss restaurado: %s" % boss_restored)

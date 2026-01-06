@@ -76,6 +76,9 @@ var infinite_scaling_multipliers: Dictionary = {
 	"xp": 1.0
 }
 
+# Bandera para saltar inicialización automática (usada cuando restauramos desde guardado)
+var skip_auto_init: bool = false
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -89,8 +92,12 @@ func _ready() -> void:
 	if not enemy_manager or not player:
 		_find_references()
 	
-	# Inicializar primera fase
-	_enter_phase(1)
+	# Solo inicializar fase si NO estamos restaurando desde un guardado
+	# La bandera skip_auto_init es seteada por Game.gd antes de añadir al árbol
+	if not skip_auto_init:
+		_enter_phase(1)
+	else:
+		print("🌊 [WaveManager] Skip auto init - será restaurado desde save data")
 
 func _find_references() -> void:
 	"""Buscar referencias si no fueron asignadas por Game.gd (fallback)"""
@@ -756,3 +763,157 @@ func skip_to_phase(phase_num: int) -> void:
 		game_time_seconds = phase_cfg.start_minute * 60.0
 		game_time_minutes = phase_cfg.start_minute
 		_enter_phase(phase_num)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SERIALIZACIÓN PARA GUARDADO/REANUDACIÓN DE PARTIDA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func to_save_data() -> Dictionary:
+	"""Serializar estado completo del WaveManager para guardado"""
+	var data: Dictionary = {
+		# Tiempo
+		"game_time_seconds": game_time_seconds,
+		"game_time_minutes": game_time_minutes,
+		
+		# Estado de fases
+		"current_phase": current_phase,
+		
+		# Estado de oleadas
+		"current_wave_index": current_wave_index,
+		"time_since_last_wave": time_since_last_wave,
+		"wave_in_progress": wave_in_progress,
+		"enemies_to_spawn_in_wave": enemies_to_spawn_in_wave,
+		"wave_spawn_timer": wave_spawn_timer,
+		
+		# Estado de bosses
+		"boss_active": boss_active,
+		"boss_warning_shown": boss_warning_shown,
+		"next_boss_minute": next_boss_minute,
+		
+		# Estado de élites
+		"elites_spawned_this_game": elites_spawned_this_game,
+		"time_since_last_elite": time_since_last_elite,
+		
+		# Estado de eventos especiales
+		"active_event": active_event,
+		"event_time_remaining": event_time_remaining,
+		"last_event_minute": last_event_minute,
+		
+		# Spawn rates
+		"current_spawn_rate": current_spawn_rate,
+		"spawn_rate_override": spawn_rate_override,
+		"continuous_spawn_accumulator": continuous_spawn_accumulator,
+		
+		# Escalado infinito
+		"infinite_scaling_multipliers": infinite_scaling_multipliers.duplicate()
+	}
+	
+	# Guardar boss actual si existe
+	if boss_active and current_boss and is_instance_valid(current_boss):
+		data["current_boss_data"] = {
+			"enemy_id": current_boss.enemy_id if "enemy_id" in current_boss else "",
+			"position": {"x": current_boss.global_position.x, "y": current_boss.global_position.y},
+			"current_hp": current_boss.health_component.current_health if current_boss.get("health_component") else 0,
+			"max_hp": current_boss.health_component.max_health if current_boss.get("health_component") else 0
+		}
+	
+	return data
+
+func from_save_data(data: Dictionary) -> void:
+	"""Restaurar estado del WaveManager desde datos guardados"""
+	if data.is_empty():
+		return
+	
+	print("🌊 [WaveManager] Restaurando desde save data...")
+	
+	# Tiempo
+	game_time_seconds = data.get("game_time_seconds", 0.0)
+	game_time_minutes = data.get("game_time_minutes", 0.0)
+	
+	# Estado de fases - entrar a la fase guardada sin reiniciar oleadas
+	current_phase = data.get("current_phase", 1)
+	phase_config = SpawnConfig.get_phase_config(current_phase)
+	wave_sequence = SpawnConfig.get_wave_sequence_for_phase(current_phase)
+	
+	# Estado de oleadas
+	current_wave_index = data.get("current_wave_index", 0)
+	time_since_last_wave = data.get("time_since_last_wave", 0.0)
+	wave_in_progress = data.get("wave_in_progress", false)
+	enemies_to_spawn_in_wave = data.get("enemies_to_spawn_in_wave", 0)
+	wave_spawn_timer = data.get("wave_spawn_timer", 0.0)
+	
+	if wave_in_progress and wave_sequence.size() > 0:
+		# Restaurar la configuración de la oleada actual
+		var wave_idx = (current_wave_index - 1 + wave_sequence.size()) % wave_sequence.size()
+		var wave_type = wave_sequence[wave_idx]
+		current_wave_config = SpawnConfig.get_wave_config(wave_type)
+	
+	# Estado de bosses
+	boss_active = data.get("boss_active", false)
+	boss_warning_shown = data.get("boss_warning_shown", false)
+	next_boss_minute = data.get("next_boss_minute", 5)
+	
+	# Estado de élites
+	elites_spawned_this_game = data.get("elites_spawned_this_game", 0)
+	time_since_last_elite = data.get("time_since_last_elite", 0.0)
+	
+	# Estado de eventos especiales
+	active_event = data.get("active_event", "")
+	event_time_remaining = data.get("event_time_remaining", 0.0)
+	last_event_minute = data.get("last_event_minute", -1.0)
+	
+	if active_event != "" and SpawnConfig.SPECIAL_EVENTS.has(active_event):
+		event_config = SpawnConfig.SPECIAL_EVENTS[active_event]
+	
+	# Spawn rates
+	current_spawn_rate = data.get("current_spawn_rate", 0.8)
+	spawn_rate_override = data.get("spawn_rate_override", -1.0)
+	continuous_spawn_accumulator = data.get("continuous_spawn_accumulator", 0.0)
+	
+	# Escalado infinito
+	if data.has("infinite_scaling_multipliers"):
+		infinite_scaling_multipliers = data.get("infinite_scaling_multipliers", {
+			"hp": 1.0,
+			"damage": 1.0,
+			"spawn_rate": 1.0,
+			"xp": 1.0
+		})
+	
+	# Actualizar max_enemies en EnemyManager
+	if enemy_manager:
+		enemy_manager.max_enemies = phase_config.max_enemies
+	
+	# Buscar el boss restaurado en los enemigos (si boss_active)
+	# Esto se hace DESPUÉS de que EnemyManager haya restaurado los enemigos
+	# Por eso usamos call_deferred
+	if boss_active:
+		call_deferred("_find_restored_boss")
+	
+	print("🌊 [WaveManager] Estado restaurado:")
+	print("   - Fase: %d" % current_phase)
+	print("   - Tiempo: %.1f seg (%.1f min)" % [game_time_seconds, game_time_minutes])
+	print("   - Boss activo: %s" % boss_active)
+	print("   - Próximo boss: minuto %d" % next_boss_minute)
+	print("   - Evento activo: %s" % active_event)
+
+func _find_restored_boss() -> void:
+	"""Buscar el boss restaurado en active_enemies de EnemyManager"""
+	if not enemy_manager:
+		return
+	
+	for enemy in enemy_manager.active_enemies:
+		if not is_instance_valid(enemy):
+			continue
+		if "is_boss" in enemy and enemy.is_boss:
+			current_boss = enemy
+			# Conectar señal de muerte
+			if current_boss.has_signal("died") and not current_boss.died.is_connected(_on_boss_died):
+				var boss_id = current_boss.enemy_id if "enemy_id" in current_boss else "unknown_boss"
+				current_boss.died.connect(_on_boss_died.bind(boss_id))
+			print("🔥 [WaveManager] Boss restaurado encontrado: %s" % current_boss.name)
+			return
+	
+	# Si no encontramos el boss pero boss_active es true, algo falló
+	if boss_active:
+		print("⚠️ [WaveManager] boss_active=true pero no se encontró boss en enemigos")
+		boss_active = false

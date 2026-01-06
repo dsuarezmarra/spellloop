@@ -81,7 +81,7 @@ func _setup_game() -> void:
 	# Crear sistemas
 	_create_player_stats()  # IMPORTANTE: Crear antes que otros sistemas
 	_create_enemy_manager()
-	_create_wave_manager()
+	_create_wave_manager()  # Pasa _is_resuming para skip_auto_init
 	_create_weapon_manager()
 	_create_experience_manager()
 
@@ -184,6 +184,13 @@ func _create_wave_manager() -> void:
 	if wm_script:
 		wave_manager = wm_script.new()
 		wave_manager.name = "WaveManager"
+		
+		# Si estamos reanudando, establecer bandera para saltar inicialización automática
+		# El estado será restaurado luego por _resume_saved_game()
+		if _is_resuming and _saved_state.has("wave_manager_state"):
+			wave_manager.skip_auto_init = true
+			print("🌊 [Game] WaveManager creado con skip_auto_init=true (será restaurado)")
+		
 		add_child(wave_manager)
 
 		# Conectar señales de WaveManager
@@ -415,6 +422,38 @@ func _resume_saved_game() -> void:
 			if attack_manager.global_weapon_stats.has_method("from_dict"):
 				attack_manager.global_weapon_stats.from_dict(_saved_state.get("global_weapon_stats", {}))
 				print("⚔️ [Game] Mejoras globales restauradas")
+	
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# NUEVO: Restaurar estado del EnemyManager PRIMERO (todos los enemigos activos)
+	# Esto debe hacerse antes de WaveManager para que el boss esté disponible
+	# ═══════════════════════════════════════════════════════════════════════════════
+	if enemy_manager and _saved_state.has("enemy_manager_state"):
+		if enemy_manager.has_method("from_save_data"):
+			enemy_manager.from_save_data(_saved_state.get("enemy_manager_state", {}))
+			print("👹 [Game] Estado de EnemyManager restaurado")
+		else:
+			print("⚠️ [Game] EnemyManager no tiene método from_save_data")
+	
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# NUEVO: Restaurar estado del WaveManager (fase, oleadas, boss, elites, eventos)
+	# Debe hacerse DESPUÉS de EnemyManager para encontrar el boss restaurado
+	# ═══════════════════════════════════════════════════════════════════════════════
+	if wave_manager and _saved_state.has("wave_manager_state"):
+		if wave_manager.has_method("from_save_data"):
+			wave_manager.from_save_data(_saved_state.get("wave_manager_state", {}))
+			print("🌊 [Game] Estado de WaveManager restaurado")
+		else:
+			print("⚠️ [Game] WaveManager no tiene método from_save_data")
+	
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# NUEVO: Restaurar estado del ArenaManager (zonas desbloqueadas, biomas)
+	# ═══════════════════════════════════════════════════════════════════════════════
+	if arena_manager and _saved_state.has("arena_manager_state"):
+		if arena_manager.has_method("from_save_data"):
+			arena_manager.from_save_data(_saved_state.get("arena_manager_state", {}))
+			print("🏟️ [Game] Estado de ArenaManager restaurado")
+		else:
+			print("⚠️ [Game] ArenaManager no tiene método from_save_data")
 	
 	# TODO: Si queremos restaurar armas adicionales más allá de la inicial, se haría aquí
 	
