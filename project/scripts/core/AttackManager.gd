@@ -691,7 +691,20 @@ func get_player_stat(stat_name: String) -> float:
 		var attack_speed = get_global_stat("attack_speed_mult")
 		# Devolver como cooldown_mult para compatibilidad
 		return 1.0 / attack_speed if attack_speed > 0 else 1.0
-	return get_global_stat(stat_name)
+	
+	# Primero buscar en GlobalWeaponStats
+	var value = get_global_stat(stat_name)
+	
+	# Si es 0 o no existe, buscar en PlayerStats (nodo del juego)
+	# Esto es necesario para stats como life_steal que están en PlayerStats
+	if value == 0.0:
+		var game_stats = get_tree().get_first_node_in_group("player_stats")
+		if game_stats and game_stats.has_method("get_stat"):
+			var ps_value = game_stats.get_stat(stat_name)
+			if ps_value != 0.0:
+				return ps_value
+	
+	return value
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # UTILIDADES

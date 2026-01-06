@@ -669,7 +669,7 @@ func _process_special_events(delta: float) -> void:
 		"breather":
 			# Curar al jugador durante el respiro
 			if player and player.has_method("heal"):
-				var heal_per_second = (event_config.get("heal_player_percent", 0.1) * player.max_health) / event_config.duration_seconds
+				var heal_per_second = (event_config.get("heal_player_percent", 0.1) * player.max_hp) / event_config.duration_seconds
 				player.heal(heal_per_second * delta)
 	
 	if event_time_remaining <= 0:

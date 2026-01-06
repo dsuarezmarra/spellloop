@@ -275,7 +275,7 @@ func _initialize_systems() -> void:
 			attack_mgr = player.wizard_player.get("attack_manager")
 
 		if player_stats.has_method("initialize"):
-			player_stats.initialize(attack_mgr)
+			player_stats.initialize(attack_mgr, player)  # Pasar player para que health_regen funcione
 		print("📊 [Game] PlayerStats inicializado")
 
 	# Inicializar con referencias
