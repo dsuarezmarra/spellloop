@@ -50,16 +50,17 @@ static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
 		return
 	
 	var heal_amount = damage_dealt * life_steal
-	if heal_amount > 0:
+	if heal_amount >= 0.5:  # Solo curar si al menos 0.5 HP
 		# Intentar curar al jugador
+		var heal_int = int(ceil(heal_amount))  # Redondear hacia arriba
 		if player.has_method("heal"):
-			player.heal(heal_amount)
+			player.heal(heal_int)
 		elif player.has_node("PlayerStats"):
 			var stats = player.get_node("PlayerStats")
 			if stats.has_method("heal"):
-				stats.heal(heal_amount)
+				stats.heal(heal_int)
 		# Debug log (comentar en producción)
-		# print("[LifeSteal] Curado %.1f (%.0f%% de %d daño)" % [heal_amount, life_steal * 100, damage_dealt])
+		# print("[LifeSteal] Curado %d (%.0f%% de %d daño)" % [heal_int, life_steal * 100, damage_dealt])
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CREACIÓN DE PROYECTILES

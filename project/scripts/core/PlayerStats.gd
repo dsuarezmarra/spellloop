@@ -280,6 +280,9 @@ var xp_to_next_level: float = BASE_XP_TO_LEVEL
 # Referencia al AttackManager para sincronizar stats
 var attack_manager: AttackManager = null
 
+# Referencia al player para sincronizar vida
+var player_ref: Node = null
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -297,13 +300,14 @@ func _reset_stats() -> void:
 	current_xp = 0.0
 	xp_to_next_level = BASE_XP_TO_LEVEL
 
-func initialize(attack_mgr: AttackManager = null) -> void:
-	"""Inicializar con referencia al AttackManager"""
+func initialize(attack_mgr: AttackManager = null, player: Node = null) -> void:
+	"""Inicializar con referencia al AttackManager y al player"""
 	attack_manager = attack_mgr
+	player_ref = player
 	# Agregar a grupo para facilitar busqueda desde PauseMenu
 	add_to_group("player_stats")
 	_sync_with_attack_manager()
-	print("[PlayerStats] Inicializado - Nivel %d" % level)
+	print("[PlayerStats] Inicializado - Nivel %d, Player: %s" % [level, player_ref != null])
 
 func _sync_with_attack_manager() -> void:
 	"""
@@ -545,10 +549,39 @@ func _update_temp_modifiers(delta: float) -> void:
 			temp_modifiers.erase(stat_name)
 
 func _update_health_regen(delta: float) -> void:
-	"""Aplicar regeneración de vida"""
+	"""Aplicar regeneración de vida al player real"""
 	var regen = get_stat("health_regen")
-	if regen > 0 and current_health < get_stat("max_health"):
-		heal(regen * delta)
+	if regen > 0:
+		# Si tenemos referencia al player, curar directamente
+		if player_ref and player_ref.has_method("heal"):
+			var player_hp = _get_player_current_health()
+			var max_hp = get_stat("max_health")
+			if player_hp < max_hp:
+				var heal_amount = regen * delta
+				player_ref.heal(int(ceil(heal_amount)))  # Redondear hacia arriba para que cure algo
+		else:
+			# Fallback: curar el current_health local (para compatibilidad)
+			if current_health < get_stat("max_health"):
+				heal(regen * delta)
+
+func _get_player_current_health() -> float:
+	"""Obtener HP actual del player real"""
+	if player_ref == null:
+		return current_health
+	
+	# Intentar obtener del wizard_player interno
+	var wizard = player_ref.get_node_or_null("WizardPlayer")
+	if wizard and wizard.has_node("HealthComponent"):
+		var hc = wizard.get_node("HealthComponent")
+		return hc.current_health
+	
+	# Fallback directo
+	if player_ref.has_method("get_health_component"):
+		var hc = player_ref.get_health_component()
+		if hc:
+			return hc.current_health
+	
+	return current_health
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SISTEMA DE VIDA

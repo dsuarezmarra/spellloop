@@ -362,17 +362,9 @@ func _resume_saved_game() -> void:
 	run_stats["time"] = game_time
 	run_stats["level"] = _saved_state.get("player_level", 1)
 	
-	# Restaurar HP del jugador
-	if player and _saved_state.has("player_hp"):
-		var health_component = player.get_node_or_null("HealthComponent")
-		if health_component:
-			var saved_hp = _saved_state.get("player_hp", 100)
-			var saved_max_hp = _saved_state.get("player_max_hp", 100)
-			if health_component.has_method("set_health"):
-				health_component.set_health(saved_hp, saved_max_hp)
-			elif "current_hp" in health_component:
-				health_component.current_hp = saved_hp
-				health_component.max_hp = saved_max_hp
+	# IMPORTANTE: Esperar un frame para que HealthComponent._ready() ya haya ejecutado
+	# antes de restaurar el HP (evita que _ready() sobrescriba nuestro valor)
+	call_deferred("_restore_player_hp_deferred")
 	
 	# Restaurar stats del jugador
 	if player_stats and _saved_state.has("player_stats"):
@@ -411,6 +403,69 @@ func _resume_saved_game() -> void:
 	print("   - Tiempo: %.1f segundos" % game_time)
 	print("   - Nivel: %d" % _saved_state.get("player_level", 1))
 	print("   - HP: %d/%d" % [_saved_state.get("player_hp", 100), _saved_state.get("player_max_hp", 100)])
+
+func _restore_player_hp_deferred() -> void:
+	"""
+	Restaurar HP del jugador de forma diferida.
+	Se llama después de que HealthComponent._ready() haya ejecutado.
+	"""
+	if not player or _saved_state.is_empty():
+		return
+	
+	if not _saved_state.has("player_hp"):
+		return
+	
+	var saved_hp = _saved_state.get("player_hp", 100)
+	var saved_max_hp = _saved_state.get("player_max_hp", 100)
+	
+	print("🔄 [Game] _restore_player_hp_deferred() - Restaurando HP: %d/%d" % [saved_hp, saved_max_hp])
+	
+	# Buscar HealthComponent en las ubicaciones posibles
+	var health_component = null
+	
+	# 1. En SpellloopPlayer.health_component (referencia directa)
+	if "health_component" in player and player.health_component:
+		health_component = player.health_component
+	
+	# 2. En wizard_player
+	if not health_component and "wizard_player" in player and player.wizard_player:
+		if "health_component" in player.wizard_player:
+			health_component = player.wizard_player.health_component
+		else:
+			health_component = player.wizard_player.get_node_or_null("HealthComponent")
+	
+	# 3. Como nodo hijo directo
+	if not health_component:
+		health_component = player.get_node_or_null("HealthComponent")
+	
+	# 4. Dentro de WizardPlayer como nodo
+	if not health_component:
+		var wp = player.get_node_or_null("WizardPlayer")
+		if wp:
+			health_component = wp.get_node_or_null("HealthComponent")
+	
+	if health_component:
+		# HealthComponent usa current_health/max_health, NO current_hp/max_hp
+		if health_component.has_method("set_health"):
+			health_component.set_health(saved_hp, saved_max_hp)
+		else:
+			if "max_health" in health_component:
+				health_component.max_health = saved_max_hp
+			elif "max_hp" in health_component:
+				health_component.max_hp = saved_max_hp
+			
+			if "current_health" in health_component:
+				health_component.current_health = saved_hp
+			elif "current_hp" in health_component:
+				health_component.current_hp = saved_hp
+		
+		# Emitir señal de cambio de salud para actualizar UI
+		if health_component.has_signal("health_changed"):
+			health_component.health_changed.emit(saved_hp, saved_max_hp)
+		
+		print("✅ [Game] HP restaurado correctamente: %d/%d" % [health_component.current_health, health_component.max_health])
+	else:
+		print("⚠️ [Game] WARNING - No se pudo encontrar HealthComponent para restaurar HP")
 
 func _process(delta: float) -> void:
 	if not game_running or is_paused:

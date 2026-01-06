@@ -49,7 +49,7 @@ func _create_player_stats() -> void:
 	player_stats = PlayerStats.new()
 	player_stats.name = "PlayerStats"
 	game_root.add_child(player_stats)
-	player_stats.initialize(attack_manager)
+	player_stats.initialize(attack_manager, player)  # Pasar player para regeneración
 	
 	print("[CombatSystem] 📊 PlayerStats creado")
 

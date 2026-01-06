@@ -505,8 +505,11 @@ func _apply_global_stats_to_legacy_weapon(weapon, gs: Dictionary) -> void:
 	var base_pierce = weapon.get_meta("_original_pierce", weapon.pierce if "pierce" in weapon else 0)
 	
 	# Aplicar multiplicadores globales
+	# FÓRMULA CORRECTA: (base + flat) * mult
 	if "damage" in weapon:
-		weapon.damage = int(base_damage * gs.get("damage_mult", 1.0) + gs.get("damage_flat", 0))
+		var damage_flat = gs.get("damage_flat", 0)
+		var damage_mult = gs.get("damage_mult", 1.0)
+		weapon.damage = int((base_damage + damage_flat) * damage_mult)
 	if "projectile_speed" in weapon:
 		weapon.projectile_speed = base_proj_speed * gs.get("projectile_speed_mult", 1.0)
 	if "projectile_count" in weapon:
@@ -755,7 +758,9 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	var crit_damage = gs.get("crit_damage", 2.0)
 	
 	# Calcular valores finales
-	var final_damage = base_damage * damage_mult
+	# FÓRMULA CORRECTA: (base + flat) * mult
+	var damage_flat = gs.get("damage_flat", 0)
+	var final_damage = (base_damage + damage_flat) * damage_mult
 	var final_attack_speed = base_attack_speed * attack_speed_mult
 	var final_cooldown = 1.0 / final_attack_speed if final_attack_speed > 0 else 1.0
 	var final_projectile_speed = base_projectile_speed * projectile_speed_mult
@@ -856,8 +861,9 @@ func get_info() -> Dictionary:
 			var base_cooldown = weapon.cooldown
 			var base_attack_speed = 1.0 / base_cooldown if base_cooldown > 0 else 1.0
 			
-			# Aplicar mejoras globales
-			var final_damage = base_damage * global_stats.get("damage_mult", 1.0)
+			# Aplicar mejoras globales - FÓRMULA: (base + flat) * mult
+			var damage_flat = global_stats.get("damage_flat", 0)
+			var final_damage = (base_damage + damage_flat) * global_stats.get("damage_mult", 1.0)
 			var final_attack_speed = base_attack_speed * global_stats.get("attack_speed_mult", 1.0)
 			
 			# Aplicar mejoras específicas del arma si existen
@@ -1026,7 +1032,9 @@ func get_debug_info() -> String:
 		var base_cooldown = w.cooldown if w is BaseWeapon else (w.base_cooldown if "base_cooldown" in w else 1.0)
 		var base_attack_speed = 1.0 / base_cooldown if base_cooldown > 0 else 1.0
 		
-		var final_damage = base_damage * global_stats.get("damage_mult", 1.0)
+		# FÓRMULA CORRECTA: (base + flat) * mult
+		var damage_flat_val = global_stats.get("damage_flat", 0)
+		var final_damage = (base_damage + damage_flat_val) * global_stats.get("damage_mult", 1.0)
 		var final_attack_speed = base_attack_speed * global_stats.get("attack_speed_mult", 1.0)
 		
 		if ws:

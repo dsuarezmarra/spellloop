@@ -1968,9 +1968,20 @@ func _save_game_state_for_resume() -> void:
 				health_component = wp.get_node_or_null("HealthComponent")
 		
 		if health_component:
-			game_state["player_hp"] = health_component.current_hp if "current_hp" in health_component else 100
-			game_state["player_max_hp"] = health_component.max_hp if "max_hp" in health_component else 100
-			print("[PauseMenu] DEBUG - HP guardado: %d/%d" % [game_state["player_hp"], game_state["player_max_hp"]])
+			# HealthComponent usa current_health/max_health, NO current_hp/max_hp
+			var hp_val = 100
+			var max_hp_val = 100
+			if "current_health" in health_component:
+				hp_val = health_component.current_health
+			elif "current_hp" in health_component:
+				hp_val = health_component.current_hp
+			if "max_health" in health_component:
+				max_hp_val = health_component.max_health
+			elif "max_hp" in health_component:
+				max_hp_val = health_component.max_hp
+			game_state["player_hp"] = hp_val
+			game_state["player_max_hp"] = max_hp_val
+			print("[PauseMenu] DEBUG - HP guardado: %d/%d" % [hp_val, max_hp_val])
 		else:
 			game_state["player_hp"] = 100
 			game_state["player_max_hp"] = 100
