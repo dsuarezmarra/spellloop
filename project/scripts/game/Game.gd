@@ -108,7 +108,14 @@ func _create_player() -> void:
 		
 		# Si estamos reanudando, restaurar posición
 		if _is_resuming and _saved_state.has("player_position"):
-			player.global_position = _saved_state["player_position"]
+			var pos_data = _saved_state["player_position"]
+			# Convertir de diccionario {x, y} a Vector2
+			if pos_data is Dictionary:
+				player.global_position = Vector2(pos_data.get("x", 0), pos_data.get("y", 0))
+			elif pos_data is Vector2:
+				player.global_position = pos_data
+			else:
+				player.global_position = Vector2.ZERO
 		else:
 			player.global_position = Vector2.ZERO
 		
@@ -358,6 +365,12 @@ func _resume_saved_game() -> void:
 	# Restaurar tiempo de juego
 	game_time = _saved_state.get("game_time", 0.0)
 	
+	# Restaurar tiempo en WaveManager para que la dificultad sea correcta
+	if wave_manager:
+		wave_manager.game_time_seconds = game_time
+		wave_manager.game_time_minutes = game_time / 60.0
+		print("🌊 [Game] WaveManager tiempo restaurado: %.1f segundos" % game_time)
+	
 	# Restaurar stats de la partida
 	run_stats["time"] = game_time
 	run_stats["level"] = _saved_state.get("player_level", 1)
@@ -388,21 +401,36 @@ func _resume_saved_game() -> void:
 		if "current_level" in experience_manager:
 			experience_manager.current_level = _saved_state.get("player_level", 1)
 	
-	# Restaurar monedas
+	# Restaurar monedas - ExperienceManager usa total_coins
 	if experience_manager and _saved_state.has("coins"):
-		if "coins" in experience_manager:
-			experience_manager.coins = _saved_state.get("coins", 0)
+		var saved_coins = _saved_state.get("coins", 0)
+		if "total_coins" in experience_manager:
+			experience_manager.total_coins = saved_coins
+			print("🪙 [Game] Monedas restauradas: %d" % saved_coins)
 	
-	# NO restauramos armas ya que el player las equipa automáticamente
-	# Si queremos restaurar armas adicionales, se haría aquí
+	# Restaurar mejoras globales de armas (GlobalWeaponStats)
+	var attack_manager = get_tree().get_first_node_in_group("attack_manager")
+	if attack_manager and _saved_state.has("global_weapon_stats"):
+		if "global_weapon_stats" in attack_manager and attack_manager.global_weapon_stats:
+			if attack_manager.global_weapon_stats.has_method("from_dict"):
+				attack_manager.global_weapon_stats.from_dict(_saved_state.get("global_weapon_stats", {}))
+				print("⚔️ [Game] Mejoras globales restauradas")
 	
-	# Limpiar el estado guardado para evitar que se reanude de nuevo
-	SessionState.clear_game_state()
+	# TODO: Si queremos restaurar armas adicionales más allá de la inicial, se haría aquí
+	
+	# Actualizar HUD con los valores restaurados
+	call_deferred("_update_hud_after_restore")
+	
+	# Limpiar el estado guardado DESPUÉS de restaurar todo (diferido)
+	# No lo limpiamos aquí porque _restore_player_hp_deferred necesita _saved_state
+	call_deferred("_clear_saved_state_deferred")
 	
 	print("🔄 [Game] ¡Partida reanudada!")
 	print("   - Tiempo: %.1f segundos" % game_time)
 	print("   - Nivel: %d" % _saved_state.get("player_level", 1))
 	print("   - HP: %d/%d" % [_saved_state.get("player_hp", 100), _saved_state.get("player_max_hp", 100)])
+	print("   - Monedas: %d" % _saved_state.get("coins", 0))
+	print("   - XP: %d/%d" % [_saved_state.get("current_exp", 0), _saved_state.get("exp_to_next_level", 10)])
 
 func _restore_player_hp_deferred() -> void:
 	"""
@@ -466,6 +494,39 @@ func _restore_player_hp_deferred() -> void:
 		print("✅ [Game] HP restaurado correctamente: %d/%d" % [health_component.current_health, health_component.max_health])
 	else:
 		print("⚠️ [Game] WARNING - No se pudo encontrar HealthComponent para restaurar HP")
+
+func _update_hud_after_restore() -> void:
+	"""Actualizar HUD después de restaurar partida guardada"""
+	if not hud:
+		return
+	
+	# Actualizar nivel
+	var level = _saved_state.get("player_level", 1)
+	if hud.has_method("update_level"):
+		hud.update_level(level)
+	elif "level_label" in hud and hud.level_label:
+		hud.level_label.text = "Lv. %d" % level
+	
+	# Actualizar XP
+	var current_exp = _saved_state.get("current_exp", 0)
+	var exp_to_next = _saved_state.get("exp_to_next_level", 10)
+	if hud.has_method("update_exp"):
+		hud.update_exp(current_exp, exp_to_next)
+	elif "exp_bar" in hud and hud.exp_bar:
+		hud.exp_bar.value = float(current_exp) / float(exp_to_next) * 100.0
+	
+	# Actualizar monedas - update_coins(amount, total)
+	var coins = _saved_state.get("coins", 0)
+	if hud.has_method("update_coins"):
+		hud.update_coins(0, coins)  # amount=0 porque no es una moneda nueva, solo actualizar total
+	elif "coins_label" in hud and hud.coins_label:
+		hud.coins_label.text = str(coins)
+	
+	print("📊 [Game] HUD actualizado después de restaurar")
+
+func _clear_saved_state_deferred() -> void:
+	"""Limpiar estado guardado después de que todo se haya restaurado"""
+	SessionState.clear_game_state()
 
 func _process(delta: float) -> void:
 	if not game_running or is_paused:

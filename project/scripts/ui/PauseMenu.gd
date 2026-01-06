@@ -1941,7 +1941,9 @@ func _save_game_state_for_resume() -> void:
 	
 	# Estado del jugador
 	if player_ref:
-		game_state["player_position"] = player_ref.global_position
+		# Convertir Vector2 a diccionario para serialización JSON
+		var pos = player_ref.global_position
+		game_state["player_position"] = {"x": pos.x, "y": pos.y}
 		
 		# HP del jugador - buscar en varias ubicaciones posibles
 		var health_component = null
@@ -2007,6 +2009,12 @@ func _save_game_state_for_resume() -> void:
 		elif "stats" in player_stats:
 			game_state["player_stats"] = player_stats.stats.duplicate()
 	
+	# Mejoras globales de armas (GlobalWeaponStats)
+	if attack_manager and "global_weapon_stats" in attack_manager and attack_manager.global_weapon_stats:
+		if attack_manager.global_weapon_stats.has_method("to_dict"):
+			game_state["global_weapon_stats"] = attack_manager.global_weapon_stats.to_dict()
+			print("[PauseMenu] DEBUG - GlobalWeaponStats guardado")
+	
 	# Armas equipadas
 	if attack_manager and attack_manager.has_method("get_weapons"):
 		var weapons_data: Array = []
@@ -2026,16 +2034,15 @@ func _save_game_state_for_resume() -> void:
 		game_state["current_exp"] = experience_manager_ref.current_exp if "current_exp" in experience_manager_ref else 0
 		game_state["exp_to_next_level"] = experience_manager_ref.exp_to_next_level if "exp_to_next_level" in experience_manager_ref else 10
 		game_state["total_exp"] = experience_manager_ref.total_exp if "total_exp" in experience_manager_ref else 0
+		# IMPORTANTE: ExperienceManager usa total_coins, no coins
+		var saved_coins = experience_manager_ref.total_coins if "total_coins" in experience_manager_ref else 0
+		game_state["coins"] = saved_coins
 		print("[PauseMenu] DEBUG - ExperienceManager encontrado:")
 		print("  - current_level: ", experience_manager_ref.current_level if "current_level" in experience_manager_ref else "N/A")
 		print("  - current_exp: ", experience_manager_ref.current_exp if "current_exp" in experience_manager_ref else "N/A")
-		print("  - coins: ", experience_manager_ref.coins if "coins" in experience_manager_ref else "N/A")
+		print("  - total_coins: %d" % saved_coins)
 	else:
 		print("[PauseMenu] WARNING - ExperienceManager NO encontrado!")
-	
-	# Monedas
-	if experience_manager_ref and "coins" in experience_manager_ref:
-		game_state["coins"] = experience_manager_ref.coins
 	
 	# Guardar en SessionState
 	SessionState.save_full_game_state(game_state)
