@@ -55,10 +55,17 @@ var _saved_state: Dictionary = {}
 
 func _ready() -> void:
 	# Verificar si hay una partida guardada para reanudar
+	print("🎮 [Game] _ready() - Verificando SessionState...")
+	print("   - SessionState existe: %s" % (SessionState != null))
+	if SessionState:
+		print("   - has_active_game: %s" % SessionState.has_active_game)
+		print("   - can_resume(): %s" % SessionState.can_resume())
+	
 	if SessionState and SessionState.can_resume():
 		_is_resuming = true
 		_saved_state = SessionState.get_saved_state()
 		print("🔄 [Game] Reanudando partida guardada...")
+		print("   - Estado recibido con %d claves" % _saved_state.size())
 	else:
 		print("🎮 [Game] Iniciando partida nueva...")
 	
@@ -338,6 +345,13 @@ func _start_game() -> void:
 
 func _resume_saved_game() -> void:
 	"""Restaurar el estado de una partida guardada"""
+	print("🔄 [Game] _resume_saved_game() iniciando...")
+	print("   - _saved_state tiene %d claves" % _saved_state.size())
+	if not _saved_state.is_empty():
+		print("   - Claves: %s" % str(_saved_state.keys()))
+		print("   - player_level en state: %d" % _saved_state.get("player_level", -1))
+		print("   - game_time en state: %.1f" % _saved_state.get("game_time", -1.0))
+	
 	game_running = true
 	is_paused = false
 	

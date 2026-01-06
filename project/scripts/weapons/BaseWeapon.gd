@@ -309,6 +309,13 @@ func _get_enemies_in_range(player: Node2D) -> Array:
 	if not player or not player.get_tree():
 		return enemies
 	
+	# Obtener range_mult de GlobalWeaponStats
+	var range_mult = 1.0
+	var gws = Engine.get_singleton("GlobalWeaponStats") if Engine.has_singleton("GlobalWeaponStats") else null
+	if gws and gws.has_method("get_stat"):
+		range_mult = gws.get_stat("range_mult")
+	var effective_range = weapon_range * range_mult
+	
 	var enemy_group = player.get_tree().get_nodes_in_group("enemies")
 	
 	for enemy in enemy_group:
@@ -316,7 +323,7 @@ func _get_enemies_in_range(player: Node2D) -> Array:
 			continue
 		
 		var dist = player.global_position.distance_to(enemy.global_position)
-		if dist <= weapon_range:
+		if dist <= effective_range:
 			enemies.append(enemy)
 	
 	return enemies

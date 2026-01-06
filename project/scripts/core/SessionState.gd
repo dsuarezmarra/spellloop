@@ -39,8 +39,12 @@ func save_full_game_state(game_state: Dictionary) -> void:
 	print("  - Monedas: %d" % game_state.get("coins", 0))
 
 func get_saved_state() -> Dictionary:
-	"""Obtener el estado guardado"""
-	return saved_game_state
+	"""Obtener el estado guardado - retorna una copia para evitar modificaciones"""
+	print("[SessionState] get_saved_state() llamado - has_active_game: %s, state size: %d" % [has_active_game, saved_game_state.size()])
+	if not saved_game_state.is_empty():
+		print("  - Nivel guardado: %d" % saved_game_state.get("player_level", 1))
+		print("  - Tiempo guardado: %.1f" % saved_game_state.get("game_time", 0.0))
+	return saved_game_state.duplicate(true)  # Retornar copia profunda para evitar problemas
 
 func clear_game_state() -> void:
 	has_active_game = false

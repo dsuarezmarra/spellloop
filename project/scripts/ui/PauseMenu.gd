@@ -1509,8 +1509,8 @@ func _handle_weapon_popup_input(event: InputEvent) -> bool:
 	if not _weapon_details_popup or not is_instance_valid(_weapon_details_popup):
 		return false
 	
-	# Cerrar con ESC, Enter, Space o Pause
-	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("ui_accept") or event.is_action_pressed("pause"):
+	# Cerrar con ESC, Enter, Space, Pause o cast_spell
+	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("ui_accept") or event.is_action_pressed("pause") or event.is_action_pressed("cast_spell"):
 		_close_weapon_details()
 		return true
 	
@@ -1657,8 +1657,8 @@ func _input(event: InputEvent) -> void:
 
 	# Si el popup de detalles de arma está abierto, manejar su input primero
 	if _weapon_details_popup and is_instance_valid(_weapon_details_popup):
-		if event.is_action_pressed("ui_cancel") or event.is_action_pressed("ui_accept") or event.is_action_pressed("pause") or event.is_action_pressed("cast_spell"):
-			_close_weapon_details()
+		# Usar la función dedicada para manejar el input del popup
+		if _handle_weapon_popup_input(event):
 			_safe_handle_input()
 			return
 		# Bloquear cualquier otro input mientras el popup está abierto
