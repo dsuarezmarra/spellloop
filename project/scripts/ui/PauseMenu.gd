@@ -1924,6 +1924,9 @@ func _on_quit_pressed() -> void:
 
 func _save_game_state_for_resume() -> void:
 	"""Guardar todo el estado necesario para reanudar la partida"""
+	# Actualizar referencias antes de guardar
+	_find_references()
+	
 	var game_state: Dictionary = {}
 	
 	# Tiempo de juego
@@ -1940,19 +1943,53 @@ func _save_game_state_for_resume() -> void:
 	if player_ref:
 		game_state["player_position"] = player_ref.global_position
 		
-		# HP del jugador
-		var health_component = player_ref.get_node_or_null("HealthComponent")
+		# HP del jugador - buscar en varias ubicaciones posibles
+		var health_component = null
+		
+		# 1. Propiedad directa en player_ref (SpellloopPlayer guarda referencia)
+		if "health_component" in player_ref and player_ref.health_component:
+			health_component = player_ref.health_component
+		
+		# 2. Buscar en wizard_player
+		if not health_component and "wizard_player" in player_ref and player_ref.wizard_player:
+			if "health_component" in player_ref.wizard_player:
+				health_component = player_ref.wizard_player.health_component
+			else:
+				health_component = player_ref.wizard_player.get_node_or_null("HealthComponent")
+		
+		# 3. Buscar como nodo hijo directo
+		if not health_component:
+			health_component = player_ref.get_node_or_null("HealthComponent")
+		
+		# 4. Buscar en WizardPlayer como nodo
+		if not health_component:
+			var wp = player_ref.get_node_or_null("WizardPlayer")
+			if wp:
+				health_component = wp.get_node_or_null("HealthComponent")
+		
 		if health_component:
 			game_state["player_hp"] = health_component.current_hp if "current_hp" in health_component else 100
 			game_state["player_max_hp"] = health_component.max_hp if "max_hp" in health_component else 100
+			print("[PauseMenu] DEBUG - HP guardado: %d/%d" % [game_state["player_hp"], game_state["player_max_hp"]])
 		else:
 			game_state["player_hp"] = 100
 			game_state["player_max_hp"] = 100
+			print("[PauseMenu] WARNING - HealthComponent NO encontrado!")
+	
+	# Nivel del jugador - obtener de ExperienceManager primero (fuente de verdad)
+	var player_level: int = 1
+	if experience_manager_ref:
+		if "current_level" in experience_manager_ref:
+			player_level = experience_manager_ref.current_level
+		elif "level" in experience_manager_ref:
+			player_level = experience_manager_ref.level
+	elif player_stats and "level" in player_stats:
+		player_level = player_stats.level
+	
+	game_state["player_level"] = player_level
 	
 	# Stats del jugador
 	if player_stats:
-		game_state["player_level"] = player_stats.level if "level" in player_stats else 1
-		
 		# Guardar todos los stats
 		if player_stats.has_method("get_all_stats"):
 			game_state["player_stats"] = player_stats.get_all_stats()
@@ -1978,6 +2015,12 @@ func _save_game_state_for_resume() -> void:
 		game_state["current_exp"] = experience_manager_ref.current_exp if "current_exp" in experience_manager_ref else 0
 		game_state["exp_to_next_level"] = experience_manager_ref.exp_to_next_level if "exp_to_next_level" in experience_manager_ref else 10
 		game_state["total_exp"] = experience_manager_ref.total_exp if "total_exp" in experience_manager_ref else 0
+		print("[PauseMenu] DEBUG - ExperienceManager encontrado:")
+		print("  - current_level: ", experience_manager_ref.current_level if "current_level" in experience_manager_ref else "N/A")
+		print("  - current_exp: ", experience_manager_ref.current_exp if "current_exp" in experience_manager_ref else "N/A")
+		print("  - coins: ", experience_manager_ref.coins if "coins" in experience_manager_ref else "N/A")
+	else:
+		print("[PauseMenu] WARNING - ExperienceManager NO encontrado!")
 	
 	# Monedas
 	if experience_manager_ref and "coins" in experience_manager_ref:
