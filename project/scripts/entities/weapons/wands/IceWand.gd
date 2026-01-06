@@ -12,6 +12,9 @@ var base_cooldown: float = 1.2  # Balanceado: antes 0.5, ahora más lento
 var current_cooldown: float = 0.0
 var projectile_speed: float = 400.0
 var projectile_count: int = 1
+var pierce: int = 0  # Cantidad de enemigos que atraviesa (0 = ninguno)
+var crit_chance: float = 0.05  # Probabilidad de crítico (aplicada por AttackManager)
+var crit_damage: float = 2.0   # Multiplicador de daño crítico
 var is_active: bool = true
 var element_type: String = "ice"
 
@@ -58,12 +61,17 @@ func perform_attack(owner: Node2D) -> void:
 		projectile.speed = projectile_speed
 		projectile.element_type = element_type  # "ice" - esquirla de hielo
 		projectile.knockback_force = 120.0
+		projectile.pierce_count = pierce  # Penetración (atravesar enemigos)
 		projectile.set_meta("weapon_id", id)
 		
 		# Configurar efecto slow (30% por 2 segundos)
 		projectile.set_meta("effect", "slow")
 		projectile.set_meta("effect_value", 0.30)
 		projectile.set_meta("effect_duration", 2.0)
+		
+		# Configurar críticos
+		projectile.set_meta("crit_chance", crit_chance)
+		projectile.set_meta("crit_damage", crit_damage)
 		
 		print("[IceWand] DEBUG: Configurado weapon_id='%s' antes de add_child" % id)
 		print("[IceWand] DEBUG: get_meta('weapon_id')='%s'" % projectile.get_meta("weapon_id", "NULL"))

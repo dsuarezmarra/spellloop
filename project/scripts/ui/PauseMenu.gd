@@ -428,12 +428,12 @@ func _show_stats_tab() -> void:
 	columns_hbox.add_child(right_column)
 
 	# SIEMPRE mostrar los stats (con valores por defecto si no hay player_stats)
-	# Columna izquierda
+	# Columna izquierda - Stats defensivos del jugador
 	_create_stats_section(left_column, "defensive", "Defensivo")
-	_create_stats_section(left_column, "critical", "Criticos")
+	# NOTA: Los críticos (crit_chance, crit_damage) son stats de ARMAS
+	# Se muestran en el popup de cada arma, no aquí
 
-	# Columna derecha
-	_create_stats_section(right_column, "offensive", "Ofensivo")
+	# Columna derecha - Utilidad del jugador
 	_create_stats_section(right_column, "utility", "Utilidad")
 
 	# === BUFFS ACTIVOS (si los hay) ===
@@ -505,16 +505,20 @@ func _create_player_header_compact(parent: VBoxContainer) -> void:
 	parent.add_child(sep)
 
 func _create_stats_section(parent: VBoxContainer, category: String, title: String) -> void:
-	"""Crear sección de stats compacta"""
+	"""Crear sección de stats compacta (no muestra nada si la categoría está vacía)"""
+	# Stats de esta categoría
+	var stats_list = _get_stats_for_category(category)
+	
+	# No mostrar nada si no hay stats en esta categoría
+	if stats_list.is_empty():
+		return
+	
 	# Título de sección
 	var title_label = Label.new()
 	title_label.text = title
 	title_label.add_theme_font_size_override("font_size", 14)
 	title_label.add_theme_color_override("font_color", CATEGORY_COLORS.get(category, Color.WHITE))
 	parent.add_child(title_label)
-
-	# Stats de esta categoría
-	var stats_list = _get_stats_for_category(category)
 
 	for stat_name in stats_list:
 		var row = _create_compact_stat_row(stat_name)
@@ -647,15 +651,20 @@ func _get_stats_for_category(category: String) -> Array:
 	if player_stats and player_stats.has_method("get_stats_by_category"):
 		return player_stats.get_stats_by_category(category)
 
-	# Fallback manual
+	# Fallback manual - Solo stats del JUGADOR
+	# Los stats de armas (damage_mult, attack_speed, area, etc.) se muestran en el popup de armas
+	# Los críticos (crit_chance, crit_damage) también son de armas y se muestran en el popup
 	match category:
 		"defensive":
 			return ["max_health", "health_regen", "armor", "dodge_chance", "life_steal"]
 		"offensive":
-			# Cambiado: attack_speed_mult en lugar de cooldown_mult
-			return ["damage_mult", "attack_speed_mult", "area_mult", "projectile_speed_mult", "duration_mult", "extra_projectiles", "knockback_mult"]
+			# NOTA: Los stats ofensivos de armas ahora se muestran en el popup de cada arma
+			# Aquí solo se mostrarían stats ofensivos del JUGADOR (ninguno actualmente)
+			return []
 		"critical":
-			return ["crit_chance", "crit_damage"]
+			# Los críticos son stats de ARMAS, no del jugador
+			# Se muestran en el popup de cada arma, no aquí
+			return []
 		"utility":
 			return ["move_speed", "pickup_range", "xp_mult", "coin_value_mult", "luck"]
 	return []
@@ -889,13 +898,13 @@ func _show_weapons_tab() -> void:
 		var weapon_card = _create_weapon_card(weapon)
 		weapons_grid.add_child(weapon_card)
 
-		# Registrar como elemento navegable
+		# Registrar como elemento navegable con callback para mostrar detalles
 		content_items.append({
 			"panel": weapon_card,
 			"type": "weapon",
 			"index": i,
 			"weapon": weapon,
-			"callback": Callable()  # Sin callback por ahora
+			"callback": Callable(self, "_show_weapon_details").bind(weapon)
 		})
 
 func _create_weapon_card(weapon) -> Control:
@@ -992,41 +1001,71 @@ func _create_weapon_card(weapon) -> Control:
 	stars_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2) if weapon_level > 0 else Color(0.4, 0.4, 0.4))
 	level_vbox.add_child(stars_label)
 
-	# === STATS DEL ARMA (v2.0: Velocidad de Ataque) ===
+	# === STATS DEL ARMA (con mejoras globales aplicadas) ===
 	var stats_grid = GridContainer.new()
 	stats_grid.columns = 3
 	stats_grid.add_theme_constant_override("h_separation", 15)
 	stats_grid.add_theme_constant_override("v_separation", 4)
 	vbox.add_child(stats_grid)
 
-	# Daño
-	if "damage" in weapon:
-		_add_weapon_stat(stats_grid, "⚔️", "Daño", "%.0f" % weapon.damage)
+	# Obtener stats completos con mejoras globales
+	var full_stats = {}
+	if attack_manager and attack_manager.has_method("get_weapon_full_stats"):
+		full_stats = attack_manager.get_weapon_full_stats(weapon)
+	
+	# Daño (mostrar con mejora si aplica)
+	if not full_stats.is_empty():
+		var dmg_base = full_stats.get("damage_base", 0)
+		var dmg_final = full_stats.get("damage_final", 0)
+		if dmg_final != dmg_base:
+			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%d→%d" % [dmg_base, dmg_final], Color(0.3, 1.0, 0.4))
+		else:
+			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%.0f" % dmg_final)
+		
+		# Velocidad de Ataque
+		var as_base = full_stats.get("attack_speed_base", 1.0)
+		var as_final = full_stats.get("attack_speed_final", 1.0)
+		if abs(as_final - as_base) > 0.01:
+			_add_weapon_stat(stats_grid, "⚡", "Vel. Ataque", "%.2f→%.2f/s" % [as_base, as_final], Color(0.3, 1.0, 0.4))
+		else:
+			_add_weapon_stat(stats_grid, "⚡", "Vel. Ataque", "%.2f/s" % as_final)
+		
+		# Proyectiles
+		var proj_final = full_stats.get("projectile_count_final", 1)
+		var proj_extra = full_stats.get("extra_projectiles", 0)
+		if proj_extra > 0:
+			_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "%d(+%d)" % [proj_final, proj_extra], Color(0.3, 1.0, 0.4))
+		elif proj_final > 1:
+			_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "x%d" % proj_final)
+	else:
+		# Fallback: usar datos del weapon directamente
+		if "damage" in weapon:
+			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%.0f" % weapon.damage)
 
-	# Velocidad de Ataque (convertir cooldown a ataques/segundo)
-	if "cooldown" in weapon:
-		var attack_speed = 1.0 / weapon.cooldown if weapon.cooldown > 0 else 1.0
-		_add_weapon_stat(stats_grid, "⚡", "Vel. Ataque", "%.2f/s" % attack_speed)
+		# Velocidad de Ataque (convertir cooldown a ataques/segundo)
+		if "cooldown" in weapon:
+			var attack_speed = 1.0 / weapon.cooldown if weapon.cooldown > 0 else 1.0
+			_add_weapon_stat(stats_grid, "⚡", "Vel. Ataque", "%.2f/s" % attack_speed)
 
-	# Proyectiles
-	if "projectile_count" in weapon and weapon.projectile_count > 0:
-		_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "x%d" % weapon.projectile_count)
+		# Proyectiles
+		if "projectile_count" in weapon and weapon.projectile_count > 0:
+			_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "x%d" % weapon.projectile_count)
 
-	# Pierce
-	if "pierce" in weapon and weapon.pierce > 0:
-		_add_weapon_stat(stats_grid, "🗡️", "Atravesar", "%d" % weapon.pierce)
+		# Pierce
+		if "pierce" in weapon and weapon.pierce > 0:
+			_add_weapon_stat(stats_grid, "🗡️", "Atravesar", "%d" % weapon.pierce)
 
-	# Área
-	if "area" in weapon and weapon.area != 1.0:
-		_add_weapon_stat(stats_grid, "🌀", "Área", "%.0f%%" % (weapon.area * 100))
+		# Área
+		if "area" in weapon and weapon.area != 1.0:
+			_add_weapon_stat(stats_grid, "🌀", "Área", "%.0f%%" % (weapon.area * 100))
 
-	# Velocidad de proyectil
-	if "projectile_speed" in weapon:
-		_add_weapon_stat(stats_grid, "➡️", "Velocidad", "%.0f" % weapon.projectile_speed)
+		# Velocidad de proyectil
+		if "projectile_speed" in weapon:
+			_add_weapon_stat(stats_grid, "➡️", "Velocidad", "%.0f" % weapon.projectile_speed)
 
-	# Knockback
-	if "knockback" in weapon and weapon.knockback > 0:
-		_add_weapon_stat(stats_grid, "💥", "Empuje", "%.0f" % weapon.knockback)
+		# Knockback
+		if "knockback" in weapon and weapon.knockback > 0:
+			_add_weapon_stat(stats_grid, "💥", "Empuje", "%.0f" % weapon.knockback)
 
 	# === EFECTO ESPECIAL ===
 	var special_effect = _get_weapon_special_effect(weapon)
@@ -1048,7 +1087,7 @@ func _create_weapon_card(weapon) -> Control:
 
 	return card
 
-func _add_weapon_stat(grid: GridContainer, icon: String, stat_name: String, value: String) -> void:
+func _add_weapon_stat(grid: GridContainer, icon: String, stat_name: String, value: String, value_color: Color = Color(0.9, 0.9, 1.0)) -> void:
 	"""Añadir stat de arma al grid"""
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 4)
@@ -1067,7 +1106,7 @@ func _add_weapon_stat(grid: GridContainer, icon: String, stat_name: String, valu
 	var value_label = Label.new()
 	value_label.text = value
 	value_label.add_theme_font_size_override("font_size", 11)
-	value_label.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
+	value_label.add_theme_color_override("font_color", value_color)
 	hbox.add_child(value_label)
 
 	grid.add_child(hbox)
@@ -1103,6 +1142,389 @@ func _get_weapon_special_effect(weapon) -> String:
 			return "Gran empuje a los enemigos"
 
 	return ""
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# POPUP: DETALLES DE ARMA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+var _weapon_details_popup: Control = null
+var _weapon_popup_scroll: ScrollContainer = null  # Scroll del popup para navegación WASD
+
+func _show_weapon_details(weapon) -> void:
+	"""Mostrar popup con todos los stats detallados del arma"""
+	# Cerrar popup anterior si existe
+	if _weapon_details_popup and is_instance_valid(_weapon_details_popup):
+		_weapon_details_popup.queue_free()
+	
+	# Crear el popup
+	_weapon_details_popup = _create_weapon_details_popup(weapon)
+	add_child(_weapon_details_popup)
+
+func _create_weapon_details_popup(weapon) -> Control:
+	"""Crear el popup de detalles del arma con TODOS los stats incluidos globales"""
+	# Contenedor principal que cubre toda la pantalla
+	var overlay = Control.new()
+	overlay.name = "WeaponDetailsPopup"
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	# Fondo oscuro semi-transparente
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0, 0, 0, 0.7)
+	overlay.add_child(bg)
+	
+	# Panel central con scroll
+	var center_container = CenterContainer.new()
+	center_container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center_container)
+	
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(600, 550)
+	
+	# Obtener stats completos del arma (con globales aplicados)
+	var stats = {}
+	if attack_manager and attack_manager.has_method("get_weapon_full_stats"):
+		stats = attack_manager.get_weapon_full_stats(weapon)
+	
+	# Fallback a datos básicos del weapon si no hay stats
+	var element = stats.get("element", str(weapon.element if "element" in weapon else weapon.element_type if "element_type" in weapon else "physical")).to_lower()
+	var element_color = ELEMENT_COLORS.get(element, Color.WHITE)
+	
+	# Estilo del panel
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.08, 0.12)
+	style.border_color = element_color
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(12)
+	style.set_content_margin_all(20)
+	panel.add_theme_stylebox_override("panel", style)
+	center_container.add_child(panel)
+	
+	# Scroll container para contenido largo
+	var scroll = ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(scroll)
+	_weapon_popup_scroll = scroll  # Guardar referencia para navegación WASD
+	
+	var main_vbox = VBoxContainer.new()
+	main_vbox.add_theme_constant_override("separation", 10)
+	main_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(main_vbox)
+	
+	# === HEADER ===
+	var header = HBoxContainer.new()
+	header.add_theme_constant_override("separation", 15)
+	main_vbox.add_child(header)
+	
+	# Icono grande
+	var icon_container = PanelContainer.new()
+	var icon_style = StyleBoxFlat.new()
+	icon_style.bg_color = element_color.darkened(0.6)
+	icon_style.set_corner_radius_all(10)
+	icon_style.set_content_margin_all(12)
+	icon_container.add_theme_stylebox_override("panel", icon_style)
+	header.add_child(icon_container)
+	
+	var icon = Label.new()
+	icon.text = stats.get("icon", weapon.icon if "icon" in weapon else ELEMENT_ICONS.get(element, "🔮"))
+	icon.add_theme_font_size_override("font_size", 48)
+	icon_container.add_child(icon)
+	
+	# Info del nombre
+	var info_vbox = VBoxContainer.new()
+	info_vbox.add_theme_constant_override("separation", 4)
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(info_vbox)
+	
+	var weapon_name = stats.get("weapon_name_es", weapon.weapon_name_es if "weapon_name_es" in weapon else weapon.weapon_name if "weapon_name" in weapon else "Arma")
+	var name_label = Label.new()
+	name_label.text = weapon_name
+	name_label.add_theme_font_size_override("font_size", 24)
+	name_label.add_theme_color_override("font_color", element_color)
+	info_vbox.add_child(name_label)
+	
+	# Nivel y elemento
+	var weapon_level = stats.get("level", weapon.level if "level" in weapon else 1)
+	var max_level = stats.get("max_level", weapon.max_level if "max_level" in weapon else 8)
+	var level_text = "Nivel %d/%d • %s" % [weapon_level, max_level, element.capitalize()]
+	var level_label = Label.new()
+	level_label.text = level_text
+	level_label.add_theme_font_size_override("font_size", 14)
+	level_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
+	info_vbox.add_child(level_label)
+	
+	# Separador
+	var sep1 = HSeparator.new()
+	main_vbox.add_child(sep1)
+	
+	# === ESTADÍSTICAS BASE DEL ARMA ===
+	var stats_label = Label.new()
+	stats_label.text = "📊 STATS DEL ARMA"
+	stats_label.add_theme_font_size_override("font_size", 16)
+	stats_label.add_theme_color_override("font_color", SELECTED_TAB)
+	main_vbox.add_child(stats_label)
+	
+	var stats_grid = GridContainer.new()
+	stats_grid.columns = 2
+	stats_grid.add_theme_constant_override("h_separation", 30)
+	stats_grid.add_theme_constant_override("v_separation", 6)
+	main_vbox.add_child(stats_grid)
+	
+	# Usar stats calculados si están disponibles, sino fallback
+	if not stats.is_empty():
+		# Daño (base → final)
+		_add_stat_with_bonus(stats_grid, "⚔️ Daño", 
+			stats.get("damage_base", 0), 
+			stats.get("damage_final", 0),
+			stats.get("damage_mult", 1.0))
+		
+		# Velocidad de Ataque
+		_add_stat_with_bonus(stats_grid, "⚡ Vel. Ataque", 
+			stats.get("attack_speed_base", 1.0), 
+			stats.get("attack_speed_final", 1.0),
+			stats.get("attack_speed_mult", 1.0),
+			"/s")
+		
+		# Cooldown
+		_add_detail_stat(stats_grid, "⏱️ Cooldown", "%.2fs" % stats.get("cooldown_final", 1.0))
+		
+		# Proyectiles
+		var proj_base = stats.get("projectile_count_base", 1)
+		var proj_final = stats.get("projectile_count_final", 1)
+		var proj_extra = stats.get("extra_projectiles", 0)
+		if proj_extra > 0:
+			_add_detail_stat(stats_grid, "🎯 Proyectiles", "%d (+%d)" % [proj_final, proj_extra])
+		else:
+			_add_detail_stat(stats_grid, "🎯 Proyectiles", "%d" % proj_final)
+		
+		# Velocidad de Proyectil
+		_add_stat_with_bonus(stats_grid, "➡️ Vel. Proyectil", 
+			stats.get("projectile_speed_base", 400), 
+			stats.get("projectile_speed_final", 400),
+			stats.get("projectile_speed_mult", 1.0))
+		
+		# Penetración
+		var pierce_final = stats.get("pierce_final", 0)
+		var pierce_extra = stats.get("extra_pierce", 0)
+		if pierce_final > 0 or pierce_extra > 0:
+			if pierce_extra > 0:
+				_add_detail_stat(stats_grid, "🗡️ Penetración", "%d (+%d)" % [pierce_final, pierce_extra])
+			else:
+				_add_detail_stat(stats_grid, "🗡️ Penetración", "%d" % pierce_final)
+		
+		# Área
+		_add_stat_with_bonus(stats_grid, "🌀 Área", 
+			stats.get("area_base", 1.0) * 100, 
+			stats.get("area_final", 1.0) * 100,
+			stats.get("area_mult", 1.0),
+			"%")
+		
+		# Alcance
+		_add_stat_with_bonus(stats_grid, "🎯 Alcance", 
+			stats.get("range_base", 500), 
+			stats.get("range_final", 500),
+			stats.get("range_mult", 1.0))
+		
+		# Empuje
+		_add_stat_with_bonus(stats_grid, "💥 Empuje", 
+			stats.get("knockback_base", 100), 
+			stats.get("knockback_final", 100),
+			stats.get("knockback_mult", 1.0))
+		
+		# Duración
+		_add_stat_with_bonus(stats_grid, "⌛ Duración", 
+			stats.get("duration_base", 1.0), 
+			stats.get("duration_final", 1.0),
+			stats.get("duration_mult", 1.0),
+			"s")
+	else:
+		# Fallback: mostrar datos básicos del weapon
+		if "damage" in weapon:
+			_add_detail_stat(stats_grid, "⚔️ Daño Base", "%.0f" % weapon.damage)
+		if "cooldown" in weapon or "base_cooldown" in weapon:
+			var cd = weapon.cooldown if "cooldown" in weapon else weapon.base_cooldown
+			_add_detail_stat(stats_grid, "⏱️ Cooldown", "%.2f s" % cd)
+		if "projectile_count" in weapon:
+			_add_detail_stat(stats_grid, "🎯 Proyectiles", "%d" % weapon.projectile_count)
+		if "projectile_speed" in weapon:
+			_add_detail_stat(stats_grid, "➡️ Vel. Proyectil", "%.0f" % weapon.projectile_speed)
+	
+	# === STATS GLOBALES (CRÍTICOS) ===
+	var sep_crit = HSeparator.new()
+	main_vbox.add_child(sep_crit)
+	
+	var crit_label = Label.new()
+	crit_label.text = "🎲 CRÍTICOS (Global)"
+	crit_label.add_theme_font_size_override("font_size", 16)
+	crit_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
+	main_vbox.add_child(crit_label)
+	
+	var crit_grid = GridContainer.new()
+	crit_grid.columns = 2
+	crit_grid.add_theme_constant_override("h_separation", 30)
+	crit_grid.add_theme_constant_override("v_separation", 6)
+	main_vbox.add_child(crit_grid)
+	
+	var crit_chance = stats.get("crit_chance", 0.05)
+	var crit_damage = stats.get("crit_damage", 2.0)
+	_add_detail_stat(crit_grid, "🎲 Prob. Crítico", "%.0f%%" % (crit_chance * 100))
+	_add_detail_stat(crit_grid, "💢 Daño Crítico", "x%.1f" % crit_damage)
+	
+	# === MEJORAS GLOBALES ACTIVAS ===
+	var global_upgrades = stats.get("global_upgrades", [])
+	if not global_upgrades.is_empty():
+		var sep_upgrades = HSeparator.new()
+		main_vbox.add_child(sep_upgrades)
+		
+		var upgrades_title = Label.new()
+		upgrades_title.text = "📦 MEJORAS GLOBALES (%d)" % global_upgrades.size()
+		upgrades_title.add_theme_font_size_override("font_size", 16)
+		upgrades_title.add_theme_color_override("font_color", Color(0.5, 0.8, 1.0))
+		main_vbox.add_child(upgrades_title)
+		
+		var upgrades_container = VBoxContainer.new()
+		upgrades_container.add_theme_constant_override("separation", 2)
+		main_vbox.add_child(upgrades_container)
+		
+		for upgrade in global_upgrades:
+			var upgrade_name = upgrade.get("name", "Mejora")
+			var upgrade_label = Label.new()
+			upgrade_label.text = "• " + upgrade_name
+			upgrade_label.add_theme_font_size_override("font_size", 12)
+			upgrade_label.add_theme_color_override("font_color", Color(0.7, 0.9, 0.7))
+			upgrades_container.add_child(upgrade_label)
+	
+	# === EFECTO ESPECIAL ===
+	var special_effect = _get_weapon_special_effect(weapon)
+	if special_effect != "":
+		var sep2 = HSeparator.new()
+		main_vbox.add_child(sep2)
+		
+		var effect_title = Label.new()
+		effect_title.text = "✨ EFECTO ESPECIAL"
+		effect_title.add_theme_font_size_override("font_size", 16)
+		effect_title.add_theme_color_override("font_color", element_color)
+		main_vbox.add_child(effect_title)
+		
+		var effect_label = Label.new()
+		effect_label.text = special_effect
+		effect_label.add_theme_font_size_override("font_size", 14)
+		effect_label.add_theme_color_override("font_color", Color(0.8, 0.9, 0.8))
+		effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		main_vbox.add_child(effect_label)
+	
+	# === DESCRIPCIÓN ===
+	var description = weapon.description if "description" in weapon else ""
+	if description != "":
+		var sep3 = HSeparator.new()
+		main_vbox.add_child(sep3)
+		
+		var desc_label = Label.new()
+		desc_label.text = description
+		desc_label.add_theme_font_size_override("font_size", 12)
+		desc_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+		desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		main_vbox.add_child(desc_label)
+	
+	# === BOTÓN CERRAR ===
+	var close_container = CenterContainer.new()
+	main_vbox.add_child(close_container)
+	
+	var close_btn = Button.new()
+	close_btn.text = "Cerrar [ESC / Espacio]"
+	close_btn.custom_minimum_size = Vector2(200, 40)
+	close_btn.pressed.connect(_close_weapon_details)
+	close_container.add_child(close_btn)
+	
+	# Dar foco al botón
+	close_btn.call_deferred("grab_focus")
+	
+	return overlay
+
+func _add_detail_stat(grid: GridContainer, stat_name: String, value: String) -> void:
+	"""Añadir stat al grid de detalles"""
+	var name_label = Label.new()
+	name_label.text = stat_name
+	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
+	grid.add_child(name_label)
+	
+	var value_label = Label.new()
+	value_label.text = value
+	value_label.add_theme_font_size_override("font_size", 14)
+	value_label.add_theme_color_override("font_color", Color(0.95, 0.95, 1.0))
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	grid.add_child(value_label)
+
+func _add_stat_with_bonus(grid: GridContainer, stat_name: String, base_value: float, final_value: float, multiplier: float, suffix: String = "") -> void:
+	"""Añadir stat al grid mostrando valor base y final si hay bonus"""
+	var name_label = Label.new()
+	name_label.text = stat_name
+	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
+	grid.add_child(name_label)
+	
+	var value_label = Label.new()
+	var has_bonus = abs(multiplier - 1.0) > 0.001 or abs(final_value - base_value) > 0.1
+	
+	if has_bonus:
+		# Mostrar base → final en verde
+		var bonus_percent = (multiplier - 1.0) * 100
+		if suffix == "/s":
+			value_label.text = "%.2f → %.2f%s" % [base_value, final_value, suffix]
+		elif suffix == "s":
+			value_label.text = "%.1f → %.1f%s" % [base_value, final_value, suffix]
+		elif suffix == "%":
+			value_label.text = "%.0f → %.0f%s" % [base_value, final_value, suffix]
+		else:
+			value_label.text = "%.0f → %.0f" % [base_value, final_value]
+		value_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.4))  # Verde
+	else:
+		# Sin bonus, mostrar solo valor
+		if suffix == "/s":
+			value_label.text = "%.2f%s" % [final_value, suffix]
+		elif suffix == "s":
+			value_label.text = "%.1f%s" % [final_value, suffix]
+		elif suffix == "%":
+			value_label.text = "%.0f%s" % [final_value, suffix]
+		else:
+			value_label.text = "%.0f" % final_value
+		value_label.add_theme_color_override("font_color", Color(0.95, 0.95, 1.0))
+	
+	value_label.add_theme_font_size_override("font_size", 14)
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	grid.add_child(value_label)
+
+func _close_weapon_details() -> void:
+	"""Cerrar el popup de detalles del arma"""
+	if _weapon_details_popup and is_instance_valid(_weapon_details_popup):
+		_weapon_details_popup.queue_free()
+		_weapon_details_popup = null
+		_weapon_popup_scroll = null  # Limpiar referencia del scroll
+
+func _handle_weapon_popup_input(event: InputEvent) -> bool:
+	"""Manejar input cuando el popup está abierto (incluye WASD scroll)"""
+	if not _weapon_details_popup or not is_instance_valid(_weapon_details_popup):
+		return false
+	
+	# Cerrar con ESC, Enter, Space o Pause
+	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("ui_accept") or event.is_action_pressed("pause"):
+		_close_weapon_details()
+		return true
+	
+	# Scroll con W/S o flechas arriba/abajo
+	if _weapon_popup_scroll and is_instance_valid(_weapon_popup_scroll):
+		var scroll_amount = 50.0  # Píxeles por pulsación
+		if event.is_action_pressed("ui_up") or event.is_action_pressed("move_up"):
+			_weapon_popup_scroll.scroll_vertical -= scroll_amount
+			return true
+		if event.is_action_pressed("ui_down") or event.is_action_pressed("move_down"):
+			_weapon_popup_scroll.scroll_vertical += scroll_amount
+			return true
+	
+	return false
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TAB: OBJETOS (Items pasivos recolectados)
@@ -1231,6 +1653,16 @@ func _safe_handle_input() -> void:
 
 func _input(event: InputEvent) -> void:
 	if not visible:
+		return
+
+	# Si el popup de detalles de arma está abierto, manejar su input primero
+	if _weapon_details_popup and is_instance_valid(_weapon_details_popup):
+		if event.is_action_pressed("ui_cancel") or event.is_action_pressed("ui_accept") or event.is_action_pressed("pause") or event.is_action_pressed("cast_spell"):
+			_close_weapon_details()
+			_safe_handle_input()
+			return
+		# Bloquear cualquier otro input mientras el popup está abierto
+		_safe_handle_input()
 		return
 
 	# Si el menu de opciones esta abierto, no procesar input del menu de pausa
@@ -1484,12 +1916,75 @@ func _on_quit_pressed() -> void:
 	_play_button_sound()
 	quit_to_menu_pressed.emit()
 
-	# Guardar que hay una partida en curso para poder reanudar
-	SessionState.has_active_game = true
-	SessionState.paused_game_time = game_time
+	# Guardar el estado completo del juego para poder reanudarlo
+	_save_game_state_for_resume()
 
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
+
+func _save_game_state_for_resume() -> void:
+	"""Guardar todo el estado necesario para reanudar la partida"""
+	var game_state: Dictionary = {}
+	
+	# Tiempo de juego
+	game_state["game_time"] = game_time
+	
+	# Arena seed - IMPORTANTE para mantener el mismo mapa
+	var game_node = get_tree().current_scene
+	if game_node and game_node.has_node("ArenaManager"):
+		var arena_mgr = game_node.get_node("ArenaManager")
+		if "arena_seed" in arena_mgr:
+			game_state["arena_seed"] = arena_mgr.arena_seed
+	
+	# Estado del jugador
+	if player_ref:
+		game_state["player_position"] = player_ref.global_position
+		
+		# HP del jugador
+		var health_component = player_ref.get_node_or_null("HealthComponent")
+		if health_component:
+			game_state["player_hp"] = health_component.current_hp if "current_hp" in health_component else 100
+			game_state["player_max_hp"] = health_component.max_hp if "max_hp" in health_component else 100
+		else:
+			game_state["player_hp"] = 100
+			game_state["player_max_hp"] = 100
+	
+	# Stats del jugador
+	if player_stats:
+		game_state["player_level"] = player_stats.level if "level" in player_stats else 1
+		
+		# Guardar todos los stats
+		if player_stats.has_method("get_all_stats"):
+			game_state["player_stats"] = player_stats.get_all_stats()
+		elif "stats" in player_stats:
+			game_state["player_stats"] = player_stats.stats.duplicate()
+	
+	# Armas equipadas
+	if attack_manager and attack_manager.has_method("get_weapons"):
+		var weapons_data: Array = []
+		for weapon in attack_manager.get_weapons():
+			var weapon_info = {
+				"weapon_id": weapon.weapon_id if "weapon_id" in weapon else "",
+				"level": weapon.level if "level" in weapon else 1,
+			}
+			# Guardar stats del arma si existen
+			if weapon.has_method("get_stats"):
+				weapon_info["stats"] = weapon.get_stats()
+			weapons_data.append(weapon_info)
+		game_state["weapons"] = weapons_data
+	
+	# Experiencia
+	if experience_manager_ref:
+		game_state["current_exp"] = experience_manager_ref.current_exp if "current_exp" in experience_manager_ref else 0
+		game_state["exp_to_next_level"] = experience_manager_ref.exp_to_next_level if "exp_to_next_level" in experience_manager_ref else 10
+		game_state["total_exp"] = experience_manager_ref.total_exp if "total_exp" in experience_manager_ref else 0
+	
+	# Monedas
+	if experience_manager_ref and "coins" in experience_manager_ref:
+		game_state["coins"] = experience_manager_ref.coins
+	
+	# Guardar en SessionState
+	SessionState.save_full_game_state(game_state)
 
 func _disable_buttons_recursive(node: Node, disabled: bool) -> void:
 	"""Deshabilitar/habilitar botones recursivamente"""

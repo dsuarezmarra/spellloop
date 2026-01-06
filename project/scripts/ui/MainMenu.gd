@@ -50,17 +50,17 @@ func _update_resume_button() -> void:
 	if not resume_button:
 		_create_resume_button()
 
-	# Verificar si hay partida activa
-	var can_resume = SessionState.has_active_game if SessionState else false
+	# Verificar si hay partida activa que se pueda reanudar
+	var can_resume_game = SessionState.can_resume() if SessionState else false
 
 	if resume_button:
-		resume_button.visible = can_resume
-		if can_resume and SessionState:
+		resume_button.visible = can_resume_game
+		if can_resume_game and SessionState:
 			resume_button.text = ">> Reanudar (%s)" % SessionState.get_paused_time_formatted()
 
 	# Actualizar texto del botón de jugar
 	if play_button:
-		if can_resume:
+		if can_resume_game:
 			play_button.text = "🎮 Nueva Partida"
 		else:
 			play_button.text = "🎮 Jugar"

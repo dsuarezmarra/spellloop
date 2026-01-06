@@ -78,11 +78,13 @@ const STAT_METADATA: Dictionary = {
 		"color": Color(0.8, 0.2, 0.4)
 	},
 
-	# === STATS OFENSIVOS ===
+	# === STATS OFENSIVOS GLOBALES DE ARMAS ===
+	# NOTA: Estos stats afectan a TODAS las armas y se muestran en el popup de cada arma
+	# NO se muestran en la pestaña de Stats del jugador
 	"damage_mult": {
 		"name": "Daño",
 		"icon": "⚔️",
-		"category": "offensive",
+		"category": "weapon_global",  # Cambiado de "offensive" - ahora se muestra solo en armas
 		"description": "Multiplicador global de todo el daño que infliges.",
 		"format": "multiplier",
 		"color": Color(1.0, 0.5, 0.2)
@@ -90,7 +92,7 @@ const STAT_METADATA: Dictionary = {
 	"cooldown_mult": {
 		"name": "Cooldown",
 		"icon": "⏱️",
-		"category": "offensive",
+		"category": "weapon_global",  # Cambiado de "offensive" - ahora se muestra solo en armas
 		"description": "Multiplicador de tiempo entre ataques. Menor es mejor.",
 		"format": "multiplier_inverse",
 		"color": Color(0.3, 0.7, 1.0)
@@ -98,7 +100,7 @@ const STAT_METADATA: Dictionary = {
 	"area_mult": {
 		"name": "Área de Efecto",
 		"icon": "🌀",
-		"category": "offensive",
+		"category": "weapon_global",  # Cambiado de "offensive" - ahora se muestra solo en armas
 		"description": "Tamaño de todas las áreas de efecto y explosiones.",
 		"format": "multiplier",
 		"color": Color(0.8, 0.4, 1.0)
@@ -106,7 +108,7 @@ const STAT_METADATA: Dictionary = {
 	"projectile_speed_mult": {
 		"name": "Vel. Proyectiles",
 		"icon": "➡️",
-		"category": "offensive",
+		"category": "weapon_global",  # Cambiado de "offensive" - ahora se muestra solo en armas
 		"description": "Velocidad de todos tus proyectiles.",
 		"format": "multiplier",
 		"color": Color(0.4, 0.9, 0.6)
@@ -114,7 +116,7 @@ const STAT_METADATA: Dictionary = {
 	"duration_mult": {
 		"name": "Duración",
 		"icon": "⌛",
-		"category": "offensive",
+		"category": "weapon_global",  # Cambiado de "offensive" - ahora se muestra solo en armas
 		"description": "Duración de efectos, proyectiles y habilidades.",
 		"format": "multiplier",
 		"color": Color(0.9, 0.8, 0.3)
@@ -122,7 +124,7 @@ const STAT_METADATA: Dictionary = {
 	"extra_projectiles": {
 		"name": "Proyectiles Extra",
 		"icon": "🎯",
-		"category": "offensive",
+		"category": "weapon_global",  # Cambiado de "offensive" - ahora se muestra solo en armas
 		"description": "Proyectiles adicionales en cada ataque.",
 		"format": "flat",
 		"color": Color(1.0, 0.6, 0.8)
@@ -130,17 +132,17 @@ const STAT_METADATA: Dictionary = {
 	"knockback_mult": {
 		"name": "Empuje",
 		"icon": "💥",
-		"category": "offensive",
+		"category": "weapon_global",  # Cambiado de "offensive" - ahora se muestra solo en armas
 		"description": "Fuerza con la que empujas a los enemigos.",
 		"format": "multiplier",
 		"color": Color(0.9, 0.5, 0.3)
 	},
 
-	# === STATS CRÍTICOS ===
+	# === STATS CRÍTICOS (GLOBALES DE ARMAS) ===
 	"crit_chance": {
 		"name": "Prob. Crítico",
 		"icon": "🎯",
-		"category": "critical",
+		"category": "weapon_global",  # Movido de 'critical' - ahora se muestra solo en popup de armas
 		"description": "Probabilidad de infligir un golpe crítico.",
 		"format": "percent",
 		"color": Color(1.0, 0.9, 0.2)
@@ -148,7 +150,7 @@ const STAT_METADATA: Dictionary = {
 	"crit_damage": {
 		"name": "Daño Crítico",
 		"icon": "💢",
-		"category": "critical",
+		"category": "weapon_global",  # Movido de 'critical' - ahora se muestra solo en popup de armas
 		"description": "Multiplicador de daño en golpes críticos.",
 		"format": "multiplier",
 		"color": Color(1.0, 0.7, 0.1)
@@ -172,9 +174,9 @@ const STAT_METADATA: Dictionary = {
 		"color": Color(0.8, 0.5, 1.0)
 	},
 	"pickup_range_flat": {
-		"name": "Rango Extra",
+		"name": "Recogida Extra",
 		"icon": "🧲",
-		"category": "utility",
+		"category": "hidden",  # Ocultar - se combina con pickup_range en la UI
 		"description": "Bonus plano al rango de recogida (píxeles).",
 		"format": "flat",
 		"color": Color(0.8, 0.5, 1.0)
@@ -554,9 +556,16 @@ func _update_health_regen(delta: float) -> void:
 
 func take_damage(amount: float) -> float:
 	"""
-	Recibir daño (aplicando armor)
-	Retorna: daño efectivo recibido
+	Recibir daño (aplicando dodge y armor)
+	Retorna: daño efectivo recibido (0 si esquivó)
 	"""
+	# Verificar esquiva primero
+	var dodge = get_stat("dodge_chance")
+	if dodge > 0 and randf() < minf(dodge, 0.6):  # Máximo 60% de esquiva
+		print("[PlayerStats] ¡ESQUIVADO! (%.0f%% chance)" % (dodge * 100))
+		# Emitir señal de esquiva (la UI puede mostrar "DODGE!")
+		return 0.0
+	
 	var armor = get_stat("armor")
 	var effective_damage = maxf(1.0, amount - armor)  # Mínimo 1 de daño
 

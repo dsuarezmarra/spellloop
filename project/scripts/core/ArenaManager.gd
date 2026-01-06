@@ -113,13 +113,18 @@ var boundary_node: Node2D = null
 func _ready() -> void:
 	print("🏟️ [ArenaManager] Inicializando...")
 
-func initialize(player: Node2D, root: Node2D) -> void:
-	"""Inicializar la arena con un player y nodo raíz"""
+func initialize(player: Node2D, root: Node2D, resume_seed: int = -1) -> void:
+	"""Inicializar la arena con un player y nodo raíz
+	   resume_seed: -1 = generar nuevo seed, otro valor = usar ese seed (para reanudar partida)"""
 	player_ref = player
 	arena_root = root
 	
-	# Generar seed
-	if use_random_seed:
+	# Generar o usar seed proporcionado
+	if resume_seed >= 0:
+		# Usar seed de partida guardada
+		arena_seed = resume_seed
+		print("🏟️ [ArenaManager] Usando seed de partida guardada: %d" % arena_seed)
+	elif use_random_seed:
 		randomize()
 		arena_seed = randi()
 	else:

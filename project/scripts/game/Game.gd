@@ -49,8 +49,19 @@ var run_stats: Dictionary = {
 	"damage_dealt": 0
 }
 
+# Flag para saber si estamos reanudando una partida
+var _is_resuming: bool = false
+var _saved_state: Dictionary = {}
+
 func _ready() -> void:
-	print("🎮 [Game] Iniciando partida...")
+	# Verificar si hay una partida guardada para reanudar
+	if SessionState and SessionState.can_resume():
+		_is_resuming = true
+		_saved_state = SessionState.get_saved_state()
+		print("🔄 [Game] Reanudando partida guardada...")
+	else:
+		print("🎮 [Game] Iniciando partida nueva...")
+	
 	_setup_game()
 
 func _setup_game() -> void:
@@ -76,15 +87,24 @@ func _setup_game() -> void:
 	# Inicializar sistemas
 	_initialize_systems()
 
-	# Comenzar partida
-	_start_game()
+	# Comenzar o reanudar partida
+	if _is_resuming:
+		_resume_saved_game()
+	else:
+		_start_game()
 
 func _create_player() -> void:
 	var player_scene = load("res://scenes/player/SpellloopPlayer.tscn")
 	if player_scene:
 		player = player_scene.instantiate()
 		player_container.add_child(player)
-		player.global_position = Vector2.ZERO
+		
+		# Si estamos reanudando, restaurar posición
+		if _is_resuming and _saved_state.has("player_position"):
+			player.global_position = _saved_state["player_position"]
+		else:
+			player.global_position = Vector2.ZERO
+		
 		print("🧙 [Game] Player creado")
 	else:
 		push_error("[Game] No se pudo cargar SpellloopPlayer.tscn")
@@ -96,8 +116,14 @@ func _create_arena_manager() -> void:
 		arena_manager.name = "ArenaManager"
 		add_child(arena_manager)
 
+		# Si estamos reanudando, usar el seed guardado
+		var seed_to_use: int = -1  # -1 significa generar aleatorio
+		if _is_resuming and _saved_state.has("arena_seed"):
+			seed_to_use = _saved_state["arena_seed"]
+			print("🏟️ [Game] Usando seed guardado: %d" % seed_to_use)
+		
 		# Inicializar con player y nodo raíz de arena
-		arena_manager.initialize(player, arena_root)
+		arena_manager.initialize(player, arena_root, seed_to_use)
 
 		# Conectar señales
 		if arena_manager.has_signal("player_zone_changed"):
@@ -309,6 +335,68 @@ func _start_game() -> void:
 	}
 
 	print("🚀 [Game] ¡Partida iniciada!")
+
+func _resume_saved_game() -> void:
+	"""Restaurar el estado de una partida guardada"""
+	game_running = true
+	is_paused = false
+	
+	# Restaurar tiempo de juego
+	game_time = _saved_state.get("game_time", 0.0)
+	
+	# Restaurar stats de la partida
+	run_stats["time"] = game_time
+	run_stats["level"] = _saved_state.get("player_level", 1)
+	
+	# Restaurar HP del jugador
+	if player and _saved_state.has("player_hp"):
+		var health_component = player.get_node_or_null("HealthComponent")
+		if health_component:
+			var saved_hp = _saved_state.get("player_hp", 100)
+			var saved_max_hp = _saved_state.get("player_max_hp", 100)
+			if health_component.has_method("set_health"):
+				health_component.set_health(saved_hp, saved_max_hp)
+			elif "current_hp" in health_component:
+				health_component.current_hp = saved_hp
+				health_component.max_hp = saved_max_hp
+	
+	# Restaurar stats del jugador
+	if player_stats and _saved_state.has("player_stats"):
+		var saved_stats = _saved_state.get("player_stats", {})
+		for stat_name in saved_stats:
+			if player_stats.has_method("set_stat"):
+				player_stats.set_stat(stat_name, saved_stats[stat_name])
+			elif "stats" in player_stats and stat_name in player_stats.stats:
+				player_stats.stats[stat_name] = saved_stats[stat_name]
+		
+		# Restaurar nivel
+		if "level" in player_stats:
+			player_stats.level = _saved_state.get("player_level", 1)
+	
+	# Restaurar experiencia
+	if experience_manager and _saved_state.has("current_exp"):
+		experience_manager.current_exp = _saved_state.get("current_exp", 0)
+		experience_manager.exp_to_next_level = _saved_state.get("exp_to_next_level", 10)
+		if "total_exp" in experience_manager:
+			experience_manager.total_exp = _saved_state.get("total_exp", 0)
+		if "current_level" in experience_manager:
+			experience_manager.current_level = _saved_state.get("player_level", 1)
+	
+	# Restaurar monedas
+	if experience_manager and _saved_state.has("coins"):
+		if "coins" in experience_manager:
+			experience_manager.coins = _saved_state.get("coins", 0)
+	
+	# NO restauramos armas ya que el player las equipa automáticamente
+	# Si queremos restaurar armas adicionales, se haría aquí
+	
+	# Limpiar el estado guardado para evitar que se reanude de nuevo
+	SessionState.clear_game_state()
+	
+	print("🔄 [Game] ¡Partida reanudada!")
+	print("   - Tiempo: %.1f segundos" % game_time)
+	print("   - Nivel: %d" % _saved_state.get("player_level", 1))
+	print("   - HP: %d/%d" % [_saved_state.get("player_hp", 100), _saved_state.get("player_max_hp", 100)])
 
 func _process(delta: float) -> void:
 	if not game_running or is_paused:

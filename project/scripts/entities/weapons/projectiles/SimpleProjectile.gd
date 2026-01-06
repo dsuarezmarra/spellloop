@@ -375,16 +375,21 @@ func _handle_hit(target: Node) -> void:
 	# Calcular daño final (con crítico si aplica)
 	var final_damage = damage
 	var crit_chance = get_meta("crit_chance", 0.0)
+	var crit_damage_mult = get_meta("crit_damage", 2.0)  # Obtener multiplicador de crítico
 	if randf() < crit_chance:
-		final_damage *= 2
+		final_damage *= crit_damage_mult  # Usar multiplicador variable
 	
 	# Aplicar daño
 	if target.has_method("take_damage"):
 		target.take_damage(final_damage)
+		# Aplicar life steal
+		ProjectileFactory.apply_life_steal(get_tree(), final_damage)
 	elif target.has_node("HealthComponent"):
 		var hc = target.get_node("HealthComponent")
 		if hc.has_method("take_damage"):
 			hc.take_damage(final_damage, "physical")
+			# Aplicar life steal
+			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
 	
 	# Calcular knockback real (con bonus si aplica)
 	var final_knockback = knockback_force

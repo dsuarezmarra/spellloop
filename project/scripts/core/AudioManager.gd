@@ -102,6 +102,11 @@ func _create_music_tracks() -> void:
 			"loop": true,
 			"volume": 0.8
 		},
+		"menu": {  # Alias para main_menu
+			"file": "res://assets/audio/music/main_menu.ogg",
+			"loop": true,
+			"volume": 0.8
+		},
 		"gameplay": {
 			"file": "res://assets/audio/music/gameplay.ogg", 
 			"loop": true,
@@ -164,6 +169,7 @@ func _create_sfx_sounds() -> void:
 	sfx_sounds = {
 		# UI Sounds
 		"ui_select": {"volume": 0.8, "pitch": 1.0},
+		"ui_click": {"volume": 0.8, "pitch": 1.0},  # Alias para ui_select
 		"ui_hover": {"volume": 0.6, "pitch": 1.2},
 		"ui_error": {"volume": 0.9, "pitch": 0.8},
 		"ui_confirm": {"volume": 0.8, "pitch": 1.0},
@@ -285,13 +291,19 @@ func play_music(track_name: String, fade_time: float = 1.0) -> void:
 	
 	print("[AudioManager] Playing music: ", track_name)
 	
+	# Verify the track is a valid AudioStream (not metadata dictionary)
+	var track = music_tracks[track_name]
+	if not track is AudioStream:
+		print("[AudioManager] Warning: Track '%s' is not loaded (no audio file found)" % track_name)
+		return
+	
 	# Stop current music if playing
 	if is_music_playing:
 		stop_music(fade_time * 0.5)
 		await get_tree().create_timer(fade_time * 0.5).timeout
 	
 	# Play new track
-	music_player.stream = music_tracks[track_name]
+	music_player.stream = track
 	music_player.play()
 	
 	current_music_track = track_name
@@ -334,8 +346,14 @@ func play_sfx(sfx_name: String, volume: float = 1.0) -> void:
 		available_player = sfx_players[0]
 		print("[AudioManager] Warning: All SFX players busy, interrupting oldest")
 	
+	# Verify the SFX is a valid AudioStream (not metadata dictionary)
+	var sfx = sfx_sounds[sfx_name]
+	if not sfx is AudioStream:
+		print("[AudioManager] Warning: SFX '%s' is not loaded (no audio file found)" % sfx_name)
+		return
+	
 	# Play the sound
-	available_player.stream = sfx_sounds[sfx_name]
+	available_player.stream = sfx
 	available_player.volume_db = linear_to_db(volume * sfx_volume)
 	available_player.play()
 
@@ -607,9 +625,11 @@ func play_dramatic_sting(sting_type: String = "level_up") -> void:
 	var sting_track = "sting_" + sting_type
 	var sting_player = _get_available_sfx_player()
 	if sting_player and sfx_sounds.has(sting_track):
-		sting_player.stream = sfx_sounds[sting_track]
-		sting_player.volume_db = linear_to_db(sfx_volume)
-		sting_player.play()
+		var sfx = sfx_sounds[sting_track]
+		if sfx is AudioStream:
+			sting_player.stream = sfx
+			sting_player.volume_db = linear_to_db(sfx_volume)
+			sting_player.play()
 
 func set_dynamic_music_intensity(intensity: float) -> void:
 	"""Adjust music intensity based on gameplay situation (0.0 - 1.0)"""
@@ -642,8 +662,12 @@ func crossfade_to_track(track_name: String, fade_duration: float = 2.0) -> void:
 		tween.tween_property(music_player, "volume_db", -80.0, fade_duration * 0.5)
 	
 	# Switch track at halfway point
+	var new_track = music_tracks[track_name]
+	if not new_track is AudioStream:
+		print("[AudioManager] Warning: Track '%s' is not loaded" % track_name)
+		return
 	tween.tween_callback(func():
-		music_player.stream = music_tracks[track_name]
+		music_player.stream = new_track
 		music_player.play()
 		current_music_track = track_name
 	).set_delay(fade_duration * 0.5)
@@ -730,4 +754,3 @@ func _get_available_sfx_player() -> AudioStreamPlayer:
 			return player
 	
 	return sfx_players[0] if sfx_players.size() > 0 else null
-

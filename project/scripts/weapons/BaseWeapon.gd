@@ -477,10 +477,17 @@ func _create_chain_projectile(player: Node2D, first_target: Node2D, dmg: float, 
 
 func _build_projectile_data(dmg: float, crit: float) -> Dictionary:
 	"""Construir datos base para proyectiles"""
+	# Obtener crit_damage de GlobalWeaponStats
+	var crit_dmg = 2.0
+	var gws = Engine.get_singleton("GlobalWeaponStats") if Engine.has_singleton("GlobalWeaponStats") else null
+	if gws and gws.has_method("get_crit_damage"):
+		crit_dmg = gws.get_crit_damage()
+	
 	return {
 		"weapon_id": id,
 		"damage": dmg,
 		"crit_chance": crit,
+		"crit_damage": crit_dmg,  # Añadido multiplicador de crítico
 		"speed": projectile_speed,
 		"pierce": pierce,
 		"range": weapon_range,

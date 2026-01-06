@@ -731,7 +731,7 @@ func _get_player_upgrade_options(luck: float) -> Array:
 		var weapon_db = WeaponUpgradeDB.new()
 		if weapon_db.has_method("get_random_global_upgrades"):
 			# Obtener 3 mejoras globales de armas
-			var global_upgrades = weapon_db.get_random_global_upgrades(3, game_time_minutes, luck)
+			var global_upgrades = weapon_db.get_random_global_upgrades(3, [], luck, game_time_minutes)
 			for upgrade in global_upgrades:
 				upgrade_options.append({
 					"type": OPTION_TYPES.PLAYER_UPGRADE,  # Reutilizamos el tipo

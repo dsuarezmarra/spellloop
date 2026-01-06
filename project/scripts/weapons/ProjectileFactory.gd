@@ -27,6 +27,41 @@ const ELEMENT_TO_STRING: Dictionary = {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# HELPER: LIFE STEAL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
+	"""Aplicar life steal al jugador basado en el daño causado"""
+	if tree == null:
+		return
+	
+	# Obtener life_steal de AttackManager
+	var attack_manager = tree.get_first_node_in_group("attack_manager")
+	if attack_manager == null:
+		return
+	
+	var life_steal = attack_manager.get_player_stat("life_steal") if attack_manager.has_method("get_player_stat") else 0.0
+	if life_steal <= 0:
+		return
+	
+	# Obtener el jugador y curarlo
+	var player = tree.get_first_node_in_group("player")
+	if player == null:
+		return
+	
+	var heal_amount = damage_dealt * life_steal
+	if heal_amount > 0:
+		# Intentar curar al jugador
+		if player.has_method("heal"):
+			player.heal(heal_amount)
+		elif player.has_node("PlayerStats"):
+			var stats = player.get_node("PlayerStats")
+			if stats.has_method("heal"):
+				stats.heal(heal_amount)
+		# Debug log (comentar en producción)
+		# print("[LifeSteal] Curado %.1f (%.0f%% de %d daño)" % [heal_amount, life_steal * 100, damage_dealt])
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # CREACIÓN DE PROYECTILES
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -175,6 +210,7 @@ class BeamEffect extends Node2D:
 	var effect_value: float = 0.0
 	var effect_duration: float = 0.0
 	var crit_chance: float = 0.0
+	var crit_damage: float = 2.0  # Multiplicador de daño crítico
 	var direction: Vector2 = Vector2.RIGHT
 	var weapon_id: String = ""  # Para visuales mejorados
 
@@ -193,6 +229,7 @@ class BeamEffect extends Node2D:
 		effect_value = data.get("effect_value", 0.0)
 		effect_duration = data.get("effect_duration", 0.0)
 		crit_chance = data.get("crit_chance", 0.0)
+		crit_damage = data.get("crit_damage", 2.0)
 		weapon_id = data.get("weapon_id", "")
 
 	func fire(owner: Node2D) -> void:
@@ -238,10 +275,12 @@ class BeamEffect extends Node2D:
 
 		# Verificar crítico
 		if randf() < crit_chance:
-			final_damage *= 2.0
+			final_damage *= crit_damage  # Usar multiplicador de crítico variable
 
 		if enemy.has_method("take_damage"):
 			enemy.take_damage(int(final_damage))
+			# Aplicar life steal
+			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
 
 		# Aplicar knockback
 		if knockback != 0 and enemy.has_method("apply_knockback"):
@@ -364,6 +403,7 @@ class AOEEffect extends Node2D:
 	var effect_value: float = 0.0
 	var effect_duration: float = 0.0
 	var crit_chance: float = 0.0
+	var crit_damage: float = 2.0  # Multiplicador de daño crítico
 	var weapon_id: String = ""  # Para visuales mejorados
 	
 	# Sistema de tics de daño
@@ -412,6 +452,7 @@ class AOEEffect extends Node2D:
 		effect_value = data.get("effect_value", 0.0)
 		effect_duration = data.get("effect_duration", 0.0)
 		crit_chance = data.get("crit_chance", 0.0)
+		crit_damage = data.get("crit_damage", 2.0)
 		weapon_id = data.get("weapon_id", "")
 		
 		# Configurar tics según el arma
@@ -495,11 +536,13 @@ class AOEEffect extends Node2D:
 		var is_crit = false
 		
 		if randf() < crit_chance:
-			final_damage *= 2.0
+			final_damage *= crit_damage  # Usar multiplicador de crítico variable
 			is_crit = true
 
 		if enemy.has_method("take_damage"):
 			enemy.take_damage(int(final_damage))
+			# Aplicar life steal
+			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
 			if is_crit:
 				print("[AOE] ⚡ CRIT! %s recibe %d daño (tick %d/%d)" % [enemy.name, int(final_damage), _ticks_applied, total_ticks])
 
@@ -696,6 +739,7 @@ class OrbitalManager extends Node2D:
 	var orbital_speed: float = 200.0
 	var color: Color = Color(0.7, 0.3, 1.0)
 	var crit_chance: float = 0.0
+	var crit_damage: float = 2.0  # Multiplicador de daño crítico
 	var knockback: float = 20.0  # Knockback base de orbitales
 	
 	# Efectos especiales
@@ -733,6 +777,7 @@ class OrbitalManager extends Node2D:
 		orbital_speed = data.get("speed", 200.0)
 		color = data.get("color", Color(0.7, 0.3, 1.0))
 		crit_chance = data.get("crit_chance", 0.0)
+		crit_damage = data.get("crit_damage", 2.0)
 		knockback = data.get("knockback", 20.0)
 		
 		# Efectos especiales
@@ -852,10 +897,12 @@ class OrbitalManager extends Node2D:
 
 		var final_damage = orbital_damage
 		if randf() < crit_chance:
-			final_damage *= 2.0
+			final_damage *= crit_damage  # Usar multiplicador de crítico variable
 
 		if enemy.has_method("take_damage"):
 			enemy.take_damage(int(final_damage))
+			# Aplicar life steal
+			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
 		
 		# Calcular knockback real (con bonus si aplica)
 		var final_knockback = knockback
@@ -1011,6 +1058,7 @@ class ChainProjectile extends Node2D:
 	var color: Color = Color(1.0, 1.0, 0.3)
 	var knockback: float = 40.0
 	var crit_chance: float = 0.0
+	var crit_damage: float = 2.0  # Multiplicador de daño crítico
 	var effect: String = "none"
 	var effect_value: float = 0.0
 	var effect_duration: float = 2.0  # Duración de efectos
@@ -1030,6 +1078,7 @@ class ChainProjectile extends Node2D:
 		color = data.get("color", Color(1.0, 1.0, 0.3))
 		knockback = data.get("knockback", 40.0)
 		crit_chance = data.get("crit_chance", 0.0)
+		crit_damage = data.get("crit_damage", 2.0)
 		effect = data.get("effect", "chain")
 		effect_value = data.get("effect_value", 2)
 		effect_duration = data.get("effect_duration", 2.0)
@@ -1106,10 +1155,12 @@ class ChainProjectile extends Node2D:
 
 		var final_damage = damage
 		if randf() < crit_chance:
-			final_damage *= 2.0
+			final_damage *= crit_damage  # Usar multiplicador de crítico variable
 
 		if target.has_method("take_damage"):
 			target.take_damage(int(final_damage))
+			# Aplicar life steal
+			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
 
 		# Aplicar knockback
 		if knockback != 0 and target.has_method("apply_knockback"):
