@@ -2059,6 +2059,18 @@ func _save_game_state_for_resume() -> void:
 		print("[PauseMenu] WARNING - ExperienceManager NO encontrado!")
 	
 	# ═══════════════════════════════════════════════════════════════════════════════
+	# Guardar contadores de Reroll y Banish del LevelUpPanel
+	# ═══════════════════════════════════════════════════════════════════════════════
+	if game_node and "remaining_rerolls" in game_node:
+		game_state["remaining_rerolls"] = game_node.remaining_rerolls
+	if game_node and "remaining_banishes" in game_node:
+		game_state["remaining_banishes"] = game_node.remaining_banishes
+	print("[PauseMenu] DEBUG - Rerolls/Banishes guardados: %d/%d" % [
+		game_state.get("remaining_rerolls", 3), 
+		game_state.get("remaining_banishes", 2)
+	])
+	
+	# ═══════════════════════════════════════════════════════════════════════════════
 	# NUEVO: Guardar estado del WaveManager (fase, oleadas, boss, elites, eventos)
 	# ═══════════════════════════════════════════════════════════════════════════════
 	if game_node and game_node.has_node("WaveManager"):

@@ -541,6 +541,15 @@ func _resume_saved_game() -> void:
 		else:
 			print("⚠️ [Game] ArenaManager no tiene método from_save_data")
 	
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# Restaurar contadores de Reroll y Banish del LevelUpPanel
+	# ═══════════════════════════════════════════════════════════════════════════════
+	if _saved_state.has("remaining_rerolls"):
+		remaining_rerolls = _saved_state.get("remaining_rerolls", 3)
+	if _saved_state.has("remaining_banishes"):
+		remaining_banishes = _saved_state.get("remaining_banishes", 2)
+	print("🎲 [Game] Rerolls/Banishes restaurados: %d/%d" % [remaining_rerolls, remaining_banishes])
+	
 	# TODO: Si queremos restaurar armas adicionales más allá de la inicial, se haría aquí
 	
 	# Actualizar HUD con los valores restaurados

@@ -632,17 +632,18 @@ func _physics_process(delta: float) -> void:
 	# Ejecutar habilidades especiales si aplica
 	_try_special_abilities(distance_to_player, delta)
 
-	# Lógica de ataque si está lo suficientemente cerca
-	if distance_to_player <= attack_range:
-		if can_attack:
-			_attempt_attack()
+	# NOTA: El ataque ahora lo maneja EnemyAttackSystem para evitar daño duplicado
+	# La lógica legacy de _attempt_attack() está deshabilitada
+	# if distance_to_player <= attack_range:
+	#	if can_attack:
+	#		_attempt_attack()
 
-	# Actualizar cooldown de ataque
-	if not can_attack:
-		attack_timer -= delta
-		if attack_timer <= 0:
-			can_attack = true
-			attack_timer = 0.0
+	# Actualizar cooldown de ataque (legacy, ya no se usa)
+	# if not can_attack:
+	#	attack_timer -= delta
+	#	if attack_timer <= 0:
+	#		can_attack = true
+	#		attack_timer = 0.0
 
 func _update_ability_cooldowns(delta: float) -> void:
 	"""Actualizar cooldowns de habilidades especiales"""
@@ -1155,6 +1156,11 @@ func take_damage(amount: int) -> void:
 	var final_damage = amount
 	var is_blocked = false
 
+	# Debug para bosses
+	if is_boss:
+		var current_hp = health_component.current_health if health_component else hp
+		print("[Boss] 🎯 Recibiendo daño: %d (HP actual: %d)" % [amount, current_hp])
+
 	# BLOCKER: Chance de bloquear
 	if archetype == "blocker":
 		var block_chance = modifiers.get("block_chance", 0.25)
@@ -1638,11 +1644,20 @@ func get_attack_accuracy() -> float:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func die() -> void:
+	if is_boss:
+		print("[Boss] 💀 BOSS MURIENDO: %s" % enemy_id)
+	
+	# Limpiar sistema de ataque (orbitales, etc.)
+	if attack_system and attack_system.has_method("cleanup_boss"):
+		attack_system.cleanup_boss()
+	
 	emit_signal("enemy_died", self, enemy_id, exp_value, enemy_tier, is_elite, is_boss)
 	queue_free()
 
 func _on_health_died() -> void:
 	"""Manejar muerte desde HealthComponent"""
+	if is_boss:
+		print("[Boss] 💀 HealthComponent reportó muerte para: %s" % enemy_id)
 	die()
 
 func get_info() -> Dictionary:

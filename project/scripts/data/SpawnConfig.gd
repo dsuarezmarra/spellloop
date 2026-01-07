@@ -157,43 +157,71 @@ const BOSS_POOL = [
 ]
 
 # Escalado de dificultad según el minuto de aparición
-# El mismo boss será más difícil si aparece en minuto 15 que en minuto 5
+# BOSSES PROGRESIVOS - Dificultad escalada gradualmente
 const BOSS_MINUTE_SCALING = {
 	5: {
 		"hp_mult": 1.0,
 		"damage_mult": 1.0,
-		"cooldown_mult": 1.3,           # Cooldowns 30% más largos
-		"abilities_unlocked": 2,         # Solo 2 habilidades desbloqueadas
-		"max_combo": 1,                  # Solo 1 habilidad a la vez
-		"combo_delay": 3.0,              # 3s entre habilidades
-		"phase_threshold_mult": 0.8      # Fases se activan antes (más fácil)
+		"cooldown_mult": 1.0,             # Cooldowns normales
+		"abilities_unlocked": 2,          # Solo 2 habilidades básicas
+		"max_combo": 2,                   # Combos de 2 habilidades
+		"combo_delay": 1.5,               # 1.5s entre habilidades
+		"phase_threshold_mult": 0.9,
+		"attack_interval": 1.2,           # Ataca cada 1.2s (más lento)
+		"aoe_spawn_interval": 5.0,        # AOE random cada 5s
+		"homing_interval": 6.0,           # Homing cada 6s
+		"spread_interval": 8.0,           # Spread cada 8s
+		"orbital_count": 2,               # Solo 2 orbitales
+		"enable_homing": false,           # Sin homing al principio
+		"enable_spread": false            # Sin spread al principio
 	},
 	10: {
-		"hp_mult": 1.5,
-		"damage_mult": 1.3,
-		"cooldown_mult": 1.0,           # Cooldowns normales
-		"abilities_unlocked": 3,         # 3 habilidades desbloqueadas
-		"max_combo": 2,                  # Puede hacer combos de 2
-		"combo_delay": 1.5,              # 1.5s entre habilidades del combo
-		"phase_threshold_mult": 1.0      # Fases normales
+		"hp_mult": 1.4,
+		"damage_mult": 1.2,
+		"cooldown_mult": 0.8,             # Cooldowns reducidos
+		"abilities_unlocked": 3,          # 3 habilidades
+		"max_combo": 3,                   # Combos de 3
+		"combo_delay": 1.2,               # 1.2s entre habilidades
+		"phase_threshold_mult": 1.0,
+		"attack_interval": 1.0,           # Ataca cada 1s
+		"aoe_spawn_interval": 4.0,        # AOE random cada 4s
+		"homing_interval": 5.0,           # Homing cada 5s
+		"spread_interval": 7.0,           # Spread cada 7s
+		"orbital_count": 3,               # 3 orbitales
+		"enable_homing": true,            # Habilitar homing
+		"enable_spread": false            # Sin spread todavía
 	},
 	15: {
-		"hp_mult": 2.0,
-		"damage_mult": 1.6,
-		"cooldown_mult": 0.8,           # Cooldowns 20% más cortos
-		"abilities_unlocked": 4,         # 4 habilidades desbloqueadas
-		"max_combo": 3,                  # Puede hacer combos de 3
-		"combo_delay": 1.0,              # 1s entre habilidades del combo
-		"phase_threshold_mult": 1.2      # Fases se activan más tarde (más difícil)
+		"hp_mult": 1.8,
+		"damage_mult": 1.5,
+		"cooldown_mult": 0.6,             # Cooldowns más cortos
+		"abilities_unlocked": 4,          # 4 habilidades
+		"max_combo": 4,                   # Combos de 4
+		"combo_delay": 0.8,               # 0.8s entre habilidades
+		"phase_threshold_mult": 1.2,
+		"attack_interval": 0.8,           # Ataca cada 0.8s
+		"aoe_spawn_interval": 3.0,        # AOE random cada 3s
+		"homing_interval": 4.0,           # Homing cada 4s
+		"spread_interval": 5.0,           # Spread cada 5s
+		"orbital_count": 4,               # 4 orbitales
+		"enable_homing": true,
+		"enable_spread": true             # Habilitar spread
 	},
 	20: {
-		"hp_mult": 2.5,
-		"damage_mult": 2.0,
-		"cooldown_mult": 0.6,           # Cooldowns 40% más cortos
-		"abilities_unlocked": 6,         # Todas las habilidades
-		"max_combo": 4,                  # Puede hacer combos de 4
-		"combo_delay": 0.5,              # 0.5s entre habilidades del combo
-		"phase_threshold_mult": 1.5      # Fases se activan muy tarde
+		"hp_mult": 2.2,
+		"damage_mult": 1.8,
+		"cooldown_mult": 0.4,             # Cooldowns muy cortos
+		"abilities_unlocked": 6,          # Todas las habilidades
+		"max_combo": 5,                   # Combos de 5
+		"combo_delay": 0.5,               # 0.5s entre habilidades
+		"phase_threshold_mult": 1.5,
+		"attack_interval": 0.6,           # Ataca cada 0.6s
+		"aoe_spawn_interval": 2.0,        # AOE random cada 2s
+		"homing_interval": 3.0,           # Homing cada 3s
+		"spread_interval": 4.0,           # Spread cada 4s
+		"orbital_count": 5,               # 5 orbitales
+		"enable_homing": true,
+		"enable_spread": true
 	}
 }
 
@@ -363,13 +391,20 @@ static func get_boss_scaling_for_minute(minute: int) -> Dictionary:
 	# Para minutos > 20, escalar progresivamente
 	var intervals = (minute - 20) / 5
 	return {
-		"hp_mult": 2.5 + intervals * 0.5,
-		"damage_mult": 2.0 + intervals * 0.3,
-		"cooldown_mult": max(0.4, 0.6 - intervals * 0.05),
-		"abilities_unlocked": 6,         # Todas desbloqueadas
-		"max_combo": min(5, 4 + intervals),  # Combos cada vez más largos
+		"hp_mult": 2.2 + intervals * 0.4,
+		"damage_mult": 1.8 + intervals * 0.2,
+		"cooldown_mult": max(0.3, 0.4 - intervals * 0.02),
+		"abilities_unlocked": min(8, 6 + intervals),
+		"max_combo": min(6, 5 + intervals),
 		"combo_delay": max(0.3, 0.5 - intervals * 0.05),
-		"phase_threshold_mult": 1.5 + intervals * 0.2
+		"phase_threshold_mult": 1.5 + intervals * 0.1,
+		"attack_interval": max(0.4, 0.6 - intervals * 0.05),
+		"aoe_spawn_interval": max(1.5, 2.0 - intervals * 0.1),
+		"homing_interval": max(2.0, 3.0 - intervals * 0.2),
+		"spread_interval": max(3.0, 4.0 - intervals * 0.2),
+		"orbital_count": min(6, 5 + intervals),
+		"enable_homing": true,
+		"enable_spread": true
 	}
 
 static func reset_boss_tracking() -> void:

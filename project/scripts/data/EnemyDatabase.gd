@@ -34,35 +34,50 @@ const TIER_SCALING = {
 	2: {"hp": 2.5, "damage": 1.8, "speed": 1.1, "xp": 3.0},
 	3: {"hp": 5.0, "damage": 3.0, "speed": 1.2, "xp": 7.0},
 	4: {"hp": 10.0, "damage": 5.0, "speed": 1.3, "xp": 15.0},
-	5: {"hp": 30.0, "damage": 2.5, "speed": 0.9, "xp": 75.0}  # Bosses - daño reducido para no matar de un golpe
+	5: {"hp": 1.0, "damage": 1.0, "speed": 1.0, "xp": 50.0}  # Bosses - NO multiplicar HP/daño (ya tienen base_hp alto)
 }
 
 # Escalado exponencial post-minuto 20 (cada 5 minutos)
 const EXPONENTIAL_SCALING_BASE = 1.5  # 50% más fuerte cada 5 min después de min 20
 
-# Configuración de élites/legendarios - MUY BUFFADOS
+# Configuración de élites/legendarios - EXTREMADAMENTE BUFFADOS
 const ELITE_CONFIG = {
-	"hp_multiplier": 6.0,           # 6x HP base (antes 3.0)
-	"damage_multiplier": 2.5,       # 2.5x daño (antes 2.0)
-	"size_multiplier": 1.7,         # 70% más grandes
-	"xp_multiplier": 15.0,          # 15x XP (recompensa por el reto)
-	"speed_multiplier": 1.1,        # 10% más rápidos (antes 0.85)
-	"attack_speed_multiplier": 0.7, # Atacan 30% más rápido
+	"hp_multiplier": 10.0,          # 10x HP base - son mini-bosses
+	"damage_multiplier": 3.5,       # 3.5x daño - duelen mucho
+	"size_multiplier": 1.8,         # 80% más grandes - imponentes
+	"xp_multiplier": 20.0,          # 20x XP - gran recompensa
+	"speed_multiplier": 1.35,       # 35% más rápidos - agresivos
+	"attack_speed_multiplier": 0.55,# Atacan 45% más rápido
 	"spawn_chance_per_minute": 0.025, # 2.5% por minuto
 	"max_per_run": 10,
 	"min_spawn_minute": 2,
 	"aura_color": Color(1.0, 0.85, 0.1, 0.95),  # Dorado brillante
-	"aura_pulse_speed": 3.0,        # Aura pulsante
-	# Habilidades especiales para élites
-	"extra_abilities": ["elite_slam", "elite_rage", "elite_shield"],
-	"slam_cooldown": 5.0,
-	"slam_radius": 80.0,
-	"slam_damage_mult": 1.5,
-	"rage_hp_threshold": 0.4,       # Se enfurece al 40% HP
-	"rage_damage_bonus": 0.5,       # +50% daño en rage
-	"rage_speed_bonus": 0.3,        # +30% velocidad en rage
-	"shield_charges": 3,            # 3 hits absorbidos
-	"shield_cooldown": 15.0
+	"aura_pulse_speed": 4.0,        # Aura pulsante más rápida
+	# Habilidades especiales para élites - MUCHAS MÁS
+	"extra_abilities": ["elite_slam", "elite_rage", "elite_shield", "elite_dash", "elite_nova", "elite_summon"],
+	# Elite Slam - Golpe de área devastador
+	"slam_cooldown": 4.0,           # Más frecuente
+	"slam_radius": 100.0,           # Radio más grande
+	"slam_damage_mult": 2.0,        # El doble de daño
+	# Elite Rage - Furia al estar bajo de vida
+	"rage_hp_threshold": 0.5,       # Se enfurece al 50% HP (antes)
+	"rage_damage_bonus": 0.75,      # +75% daño en rage
+	"rage_speed_bonus": 0.5,        # +50% velocidad en rage
+	# Elite Shield - Escudo protector
+	"shield_charges": 5,            # 5 hits absorbidos
+	"shield_cooldown": 12.0,        # Cooldown más corto
+	# Elite Dash - Embestida hacia el jugador
+	"dash_cooldown": 3.0,
+	"dash_speed": 600.0,
+	"dash_damage_mult": 1.8,
+	# Elite Nova - Explosión de proyectiles en círculo
+	"nova_cooldown": 6.0,
+	"nova_projectile_count": 12,
+	"nova_damage_mult": 0.8,
+	# Elite Summon - Invoca minions temporales
+	"summon_cooldown": 10.0,
+	"summon_count": 3,
+	"ability_use_chance": 0.50      # 50% de usar habilidad por ataque
 }
 
 # Tiempo de aparición de tiers
@@ -540,12 +555,12 @@ const BOSSES = {
 		"name": "El Conjurador Primigenio",
 		"tier": 5,
 		"archetype": "boss",
-		"base_hp": 800,
-		"base_damage": 15,
-		"base_speed": 30.0,
-		"base_xp": 100,
-		"attack_range": 280.0,
-		"attack_cooldown": 2.0,
+		"base_hp": 1200,         # Más HP
+		"base_damage": 22,       # Más daño
+		"base_speed": 50.0,      # Más rápido (era 30)
+		"base_xp": 150,
+		"attack_range": 700.0,   # Rango enorme - ataca desde lejos
+		"attack_cooldown": 0.9,  # Cooldown muy bajo
 		"collision_radius": 32.0,
 		"description": "El primer mago. Domina la invocación y la magia arcana.",
 		"phases": 3,
@@ -557,31 +572,31 @@ const BOSSES = {
 			"curse_aura"
 		],
 		"ability_cooldowns": {
-			"arcane_barrage": 3.0,
-			"summon_minions": 12.0,
-			"teleport_strike": 8.0,
-			"arcane_nova": 10.0,
-			"curse_aura": 15.0
+			"arcane_barrage": 2.0,    # Reducido
+			"summon_minions": 8.0,    # Reducido
+			"teleport_strike": 5.0,   # Reducido
+			"arcane_nova": 6.0,       # Reducido
+			"curse_aura": 10.0        # Reducido
 		},
 		"modifiers": {
-			"barrage_count": 5,
-			"barrage_damage": 12,
-			"barrage_spread": 30.0,
-			"summon_count": 2,
-			"summon_tier": 1,
-			"teleport_range": 200.0,
-			"teleport_damage_mult": 1.5,
-			"nova_radius": 120.0,
-			"nova_damage": 30,
-			"curse_radius": 150.0,
-			"curse_reduction": 0.5,
-			"curse_duration": 8.0,
-			"phase_2_hp": 0.6,
+			"barrage_count": 8,       # Más proyectiles
+			"barrage_damage": 18,     # Más daño
+			"barrage_spread": 45.0,   # Mayor dispersión
+			"summon_count": 3,        # Más invocaciones
+			"summon_tier": 2,         # Invocaciones más fuertes
+			"teleport_range": 300.0,  # Mayor rango de teleport
+			"teleport_damage_mult": 2.0,
+			"nova_radius": 180.0,     # Mayor radio
+			"nova_damage": 45,        # Más daño
+			"curse_radius": 200.0,    # Mayor radio de maldición
+			"curse_reduction": 0.6,   # Mayor reducción
+			"curse_duration": 10.0,
+			"phase_2_hp": 0.65,
 			"phase_3_hp": 0.3,
-			"phase_2_summon_count": 3,
-			"phase_2_barrage_count": 7,
-			"phase_3_summon_tier": 2,
-			"phase_3_nova_damage": 45
+			"phase_2_summon_count": 5,
+			"phase_2_barrage_count": 12,
+			"phase_3_summon_tier": 3,
+			"phase_3_nova_damage": 70
 		}
 	},
 	"el_corazon_del_vacio": {
@@ -589,13 +604,13 @@ const BOSSES = {
 		"name": "El Corazón del Vacío",
 		"tier": 5,
 		"archetype": "boss",
-		"base_hp": 800,
-		"base_damage": 15,
-		"base_speed": 18.0,
-		"base_xp": 100,
-		"attack_range": 250.0,
-		"attack_cooldown": 2.5,
-		"collision_radius": 40.0,
+		"base_hp": 1200,          # Más HP
+		"base_damage": 25,        # Más daño
+		"base_speed": 55.0,       # MUCHO más rápido (era 18)
+		"base_xp": 150,
+		"attack_range": 800.0,    # Rango enorme - ataca desde lejos
+		"attack_cooldown": 0.8,   # Cooldown muy bajo
+		"collision_radius": 45.0,
 		"description": "Núcleo de energía del vacío. Distorsiona la realidad a su alrededor.",
 		"phases": 3,
 		"special_abilities": [
@@ -607,37 +622,37 @@ const BOSSES = {
 			"void_beam"
 		],
 		"ability_cooldowns": {
-			"void_pull": 6.0,
-			"void_explosion": 10.0,
-			"void_orbs": 5.0,
-			"reality_tear": 12.0,
+			"void_pull": 4.0,          # Reducido
+			"void_explosion": 6.0,     # Reducido
+			"void_orbs": 3.0,          # Reducido
+			"reality_tear": 8.0,       # Reducido
 			"damage_aura": 0.0,
-			"void_beam": 15.0
+			"void_beam": 10.0          # Reducido
 		},
 		"modifiers": {
-			"pull_radius": 350.0,
-			"pull_force": 150.0,
-			"pull_duration": 2.5,
-			"explosion_radius": 180.0,
-			"explosion_damage": 50,
-			"orb_count": 3,
-			"orb_damage": 20,
-			"orb_speed": 120.0,
-			"orb_duration": 5.0,
-			"tear_radius": 80.0,
-			"tear_damage": 12,
-			"tear_duration": 6.0,
-			"aura_radius": 100.0,
-			"aura_damage": 6,
-			"beam_damage": 25,
-			"beam_duration": 3.0,
-			"beam_width": 40.0,
-			"phase_2_hp": 0.5,
-			"phase_3_hp": 0.2,
-			"phase_2_pull_force": 200.0,
-			"phase_2_orb_count": 5,
-			"phase_3_aura_radius": 150.0,
-			"phase_3_explosion_damage": 75
+			"pull_radius": 450.0,      # Mayor radio
+			"pull_force": 200.0,       # Mayor fuerza
+			"pull_duration": 3.0,
+			"explosion_radius": 220.0, # Mayor radio
+			"explosion_damage": 70,    # Más daño
+			"orb_count": 5,            # Más orbes
+			"orb_damage": 30,          # Más daño
+			"orb_speed": 180.0,        # Más rápidos
+			"orb_duration": 6.0,
+			"tear_radius": 100.0,
+			"tear_damage": 18,
+			"tear_duration": 7.0,
+			"aura_radius": 130.0,
+			"aura_damage": 10,
+			"beam_damage": 35,
+			"beam_duration": 3.5,
+			"beam_width": 50.0,
+			"phase_2_hp": 0.6,         # Fase 2 antes
+			"phase_3_hp": 0.3,
+			"phase_2_pull_force": 280.0,
+			"phase_2_orb_count": 7,
+			"phase_3_aura_radius": 180.0,
+			"phase_3_explosion_damage": 100
 		}
 	},
 	"el_guardian_de_runas": {
@@ -645,13 +660,13 @@ const BOSSES = {
 		"name": "El Guardián de Runas",
 		"tier": 5,
 		"archetype": "boss",
-		"base_hp": 800,
-		"base_damage": 15,
-		"base_speed": 25.0,
-		"base_xp": 100,
-		"attack_range": 200.0,
-		"attack_cooldown": 1.8,
-		"collision_radius": 38.0,
+		"base_hp": 1200,
+		"base_damage": 20,
+		"base_speed": 50.0,       # Más rápido (era 25)
+		"base_xp": 150,
+		"attack_range": 600.0,    # Mayor rango
+		"attack_cooldown": 1.0,   # Más rápido
+		"collision_radius": 42.0,
 		"description": "Protector ancestral cubierto de runas de poder. Casi indestructible.",
 		"phases": 3,
 		"special_abilities": [
@@ -697,12 +712,12 @@ const BOSSES = {
 		"name": "Minotauro de Fuego",
 		"tier": 5,
 		"archetype": "boss",
-		"base_hp": 800,
-		"base_damage": 15,
-		"base_speed": 35.0,
-		"base_xp": 100,
-		"attack_range": 65.0,
-		"attack_cooldown": 1.5,
+		"base_hp": 1400,          # Más HP (tanque)
+		"base_damage": 28,        # Más daño
+		"base_speed": 55.0,       # Más rápido (era 35)
+		"base_xp": 150,
+		"attack_range": 500.0,    # Mayor rango
+		"attack_cooldown": 0.8,   # Cooldown muy bajo
 		"collision_radius": 36.0,
 		"description": "La bestia definitiva. Furia y fuego encarnados.",
 		"phases": 3,
@@ -715,40 +730,40 @@ const BOSSES = {
 			"fire_trail"
 		],
 		"ability_cooldowns": {
-			"charge_attack": 5.0,
-			"fire_stomp": 6.0,
-			"flame_breath": 8.0,
-			"meteor_call": 15.0,
+			"charge_attack": 3.0,     # Reducido
+			"fire_stomp": 4.0,        # Reducido
+			"flame_breath": 5.0,      # Reducido
+			"meteor_call": 8.0,       # Reducido
 			"enrage": 0.0,
 			"fire_trail": 0.0
 		},
 		"modifiers": {
-			"charge_speed": 450.0,
-			"charge_damage_mult": 2.5,
-			"charge_stun": 0.8,
-			"stomp_radius": 140.0,
-			"stomp_damage": 45,
-			"stomp_burn": 10.0,
-			"stomp_burn_duration": 4.0,
-			"breath_angle": 50.0,
-			"breath_range": 180.0,
-			"breath_damage": 20,
-			"breath_duration": 2.0,
-			"meteor_count": 5,
-			"meteor_damage": 40,
-			"meteor_radius": 60.0,
-			"meteor_delay": 1.5,
-			"enrage_threshold": 0.3,
-			"enrage_damage_bonus": 0.5,
-			"enrage_speed_bonus": 0.3,
-			"trail_damage": 8,
-			"trail_duration": 3.0,
-			"phase_2_hp": 0.5,
-			"phase_3_hp": 0.2,
-			"phase_2_charge_damage_mult": 3.0,
-			"phase_2_stomp_radius": 180.0,
-			"phase_3_meteor_count": 8,
-			"phase_3_breath_damage": 35
+			"charge_speed": 550.0,    # Más rápido
+			"charge_damage_mult": 3.0,
+			"charge_stun": 1.0,
+			"stomp_radius": 200.0,    # Mayor radio
+			"stomp_damage": 60,       # Más daño
+			"stomp_burn": 15.0,
+			"stomp_burn_duration": 5.0,
+			"breath_angle": 65.0,     # Más ancho
+			"breath_range": 250.0,    # Más alcance
+			"breath_damage": 30,      # Más daño
+			"breath_duration": 3.0,
+			"meteor_count": 8,        # Más meteoros
+			"meteor_damage": 55,      # Más daño
+			"meteor_radius": 80.0,    # Mayor radio
+			"meteor_delay": 1.2,      # Más rápido
+			"enrage_threshold": 0.35, # Enrage antes
+			"enrage_damage_bonus": 0.7,
+			"enrage_speed_bonus": 0.4,
+			"trail_damage": 12,
+			"trail_duration": 4.0,
+			"phase_2_hp": 0.6,
+			"phase_3_hp": 0.25,
+			"phase_2_charge_damage_mult": 4.0,
+			"phase_2_stomp_radius": 250.0,
+			"phase_3_meteor_count": 12,
+			"phase_3_breath_damage": 50
 		}
 	}
 }
@@ -905,34 +920,73 @@ static func create_elite_version(enemy_data: Dictionary) -> Dictionary:
 	var attack_cd = elite.get("attack_cooldown", 1.5)
 	elite["attack_cooldown"] = attack_cd * ELITE_CONFIG.get("attack_speed_multiplier", 0.7)
 	
-	# AÑADIR HABILIDADES ESPECIALES DE ÉLITE
+	# AÑADIR HABILIDADES ESPECIALES DE ÉLITE - SISTEMA MEJORADO
 	var existing_abilities = elite.get("special_abilities", []).duplicate()
+	var tier = elite.get("tier", 1)
 	
-	# Todos los élites tienen slam de área
+	# Todos los élites tienen slam de área y dash
 	if not "elite_slam" in existing_abilities:
 		existing_abilities.append("elite_slam")
+	if not "elite_dash" in existing_abilities:
+		existing_abilities.append("elite_dash")
 	
-	# Élites de tier 2+ tienen rage
-	var tier = elite.get("tier", 1)
-	if tier >= 2 and not "elite_rage" in existing_abilities:
-		existing_abilities.append("elite_rage")
+	# Élites de tier 2+ tienen rage y nova
+	if tier >= 2:
+		if not "elite_rage" in existing_abilities:
+			existing_abilities.append("elite_rage")
+		if not "elite_nova" in existing_abilities:
+			existing_abilities.append("elite_nova")
 	
-	# Élites de tier 3+ tienen escudo temporal
-	if tier >= 3 and not "elite_shield" in existing_abilities:
-		existing_abilities.append("elite_shield")
+	# Élites de tier 3+ tienen escudo y summon
+	if tier >= 3:
+		if not "elite_shield" in existing_abilities:
+			existing_abilities.append("elite_shield")
+		if not "elite_summon" in existing_abilities:
+			existing_abilities.append("elite_summon")
+	
+	# Tier 4 tiene TODAS las habilidades + stats mejorados
+	if tier >= 4:
+		for ability in ELITE_CONFIG.extra_abilities:
+			if not ability in existing_abilities:
+				existing_abilities.append(ability)
 	
 	elite["special_abilities"] = existing_abilities
 	
-	# Añadir modifiers para las habilidades élite
+	# Añadir modifiers para TODAS las habilidades élite (escaladas por tier)
 	var mods = elite.get("modifiers", {}).duplicate()
-	mods["elite_slam_cooldown"] = ELITE_CONFIG.get("slam_cooldown", 5.0)
-	mods["elite_slam_radius"] = ELITE_CONFIG.get("slam_radius", 80.0) * (1.0 + (tier - 1) * 0.15)
-	mods["elite_slam_damage_mult"] = ELITE_CONFIG.get("slam_damage_mult", 1.5)
-	mods["elite_rage_threshold"] = ELITE_CONFIG.get("rage_hp_threshold", 0.4)
-	mods["elite_rage_damage_bonus"] = ELITE_CONFIG.get("rage_damage_bonus", 0.5)
-	mods["elite_rage_speed_bonus"] = ELITE_CONFIG.get("rage_speed_bonus", 0.3)
-	mods["elite_shield_charges"] = ELITE_CONFIG.get("shield_charges", 3) + (tier - 1)
-	mods["elite_shield_cooldown"] = ELITE_CONFIG.get("shield_cooldown", 15.0)
+	var tier_bonus = 1.0 + (tier - 1) * 0.2  # +20% por tier
+	
+	# Slam - escala con tier
+	mods["elite_slam_cooldown"] = ELITE_CONFIG.get("slam_cooldown", 4.0) / tier_bonus
+	mods["elite_slam_radius"] = ELITE_CONFIG.get("slam_radius", 100.0) * tier_bonus
+	mods["elite_slam_damage_mult"] = ELITE_CONFIG.get("slam_damage_mult", 2.0) * tier_bonus
+	
+	# Rage - umbrales y bonuses escalados
+	mods["elite_rage_threshold"] = min(0.7, ELITE_CONFIG.get("rage_hp_threshold", 0.5) + (tier - 1) * 0.05)
+	mods["elite_rage_damage_bonus"] = ELITE_CONFIG.get("rage_damage_bonus", 0.75) * tier_bonus
+	mods["elite_rage_speed_bonus"] = ELITE_CONFIG.get("rage_speed_bonus", 0.5) * tier_bonus
+	
+	# Shield - más cargas por tier
+	mods["elite_shield_charges"] = ELITE_CONFIG.get("shield_charges", 5) + (tier - 1) * 2
+	mods["elite_shield_cooldown"] = ELITE_CONFIG.get("shield_cooldown", 12.0) / tier_bonus
+	
+	# Dash - nuevo
+	mods["elite_dash_cooldown"] = ELITE_CONFIG.get("dash_cooldown", 3.0) / tier_bonus
+	mods["elite_dash_speed"] = ELITE_CONFIG.get("dash_speed", 600.0) * tier_bonus
+	mods["elite_dash_damage_mult"] = ELITE_CONFIG.get("dash_damage_mult", 1.8) * tier_bonus
+	
+	# Nova - nuevo
+	mods["elite_nova_cooldown"] = ELITE_CONFIG.get("nova_cooldown", 6.0) / tier_bonus
+	mods["elite_nova_projectile_count"] = ELITE_CONFIG.get("nova_projectile_count", 12) + (tier - 1) * 4
+	mods["elite_nova_damage_mult"] = ELITE_CONFIG.get("nova_damage_mult", 0.8) * tier_bonus
+	
+	# Summon - nuevo
+	mods["elite_summon_cooldown"] = ELITE_CONFIG.get("summon_cooldown", 10.0) / tier_bonus
+	mods["elite_summon_count"] = ELITE_CONFIG.get("summon_count", 3) + (tier - 1)
+	
+	# Chance de usar habilidades
+	mods["elite_ability_chance"] = ELITE_CONFIG.get("ability_use_chance", 0.50)
+	
 	elite["modifiers"] = mods
 	
 	return elite

@@ -1,6 +1,10 @@
 # EnemyAttackSystem.gd
 # Sistema de ataque para enemigos - Soporta todos los arquetipos
 # Gestiona cooldowns, targeting y ejecución de ataques
+#
+# Nota: Este archivo usa lambdas con variables capturadas que se reasignan
+# intencionalmente para mantener estado local en animaciones y timers.
+@warning_ignore("confusable_capture_reassignment")
 
 extends Node
 class_name EnemyAttackSystem
@@ -82,6 +86,13 @@ func initialize_full(config: Dictionary) -> void:
 	
 	print("[EnemyAttackSystem] Full config: %s (arch=%s, elem=%s)" % [enemy.name, archetype, element_type])
 
+# Variables para el sistema de boss agresivo
+var is_boss_enemy: bool = false
+var boss_attack_timer: float = 0.0
+var boss_aoe_timer: float = 0.0
+var boss_orbital_spawned: bool = false
+var boss_trail_timer: float = 0.0
+
 func _process(delta: float) -> void:
 	"""Procesar cooldown y ataque automático"""
 	if not enemy or not is_instance_valid(enemy):
@@ -96,7 +107,17 @@ func _process(delta: float) -> void:
 				print("[EnemyAttackSystem] ⚠️ No se encontró player para %s" % enemy.name)
 			return
 	
-	# Decrementar cooldown
+	# Detectar si es boss
+	if not is_boss_enemy and archetype == "boss":
+		is_boss_enemy = true
+		_init_boss_aggressive_mode()
+	
+	# SISTEMA ESPECIAL PARA BOSSES - Atacan constantemente SIN depender del rango
+	if is_boss_enemy:
+		_process_boss_aggressive_attacks(delta)
+		return
+	
+	# Sistema normal para enemigos comunes
 	if attack_timer > 0:
 		attack_timer -= delta
 	else:
@@ -177,7 +198,8 @@ func _perform_attack() -> void:
 		"teleporter":
 			_perform_ranged_attack()  # Los teleporters también disparan
 		"boss":
-			_perform_boss_attack()
+			# Los bosses usan el sistema agresivo en _process(), aquí solo disparan
+			_perform_ranged_attack()
 		_:
 			# Melee por defecto
 			if is_ranged:
@@ -186,13 +208,18 @@ func _perform_attack() -> void:
 				_perform_melee_attack()
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SISTEMA DE HABILIDADES ÉLITE
+# SISTEMA DE HABILIDADES ÉLITE - EXTREMADAMENTE MEJORADO
 # ═══════════════════════════════════════════════════════════════════════════════
 
 var elite_slam_cooldown: float = 0.0
 var elite_rage_active: bool = false
 var elite_shield_charges: int = 0
 var elite_shield_cooldown: float = 0.0
+var elite_dash_cooldown: float = 0.0
+var elite_nova_cooldown: float = 0.0
+var elite_summon_cooldown: float = 0.0
+var elite_is_dashing: bool = false
+var elite_dash_target: Vector2 = Vector2.ZERO
 
 func _process_elite_cooldowns(delta: float) -> void:
 	"""Procesar cooldowns de habilidades élite"""
@@ -200,6 +227,12 @@ func _process_elite_cooldowns(delta: float) -> void:
 		elite_slam_cooldown -= delta
 	if elite_shield_cooldown > 0:
 		elite_shield_cooldown -= delta
+	if elite_dash_cooldown > 0:
+		elite_dash_cooldown -= delta
+	if elite_nova_cooldown > 0:
+		elite_nova_cooldown -= delta
+	if elite_summon_cooldown > 0:
+		elite_summon_cooldown -= delta
 
 func _try_elite_ability() -> bool:
 	"""Intentar usar una habilidad élite. Retorna true si usó una."""
@@ -208,26 +241,46 @@ func _try_elite_ability() -> bool:
 	
 	# Verificar rage (se activa automáticamente al bajar HP)
 	if not elite_rage_active:
-		var rage_threshold = modifiers.get("elite_rage_threshold", 0.4)
+		var rage_threshold = modifiers.get("elite_rage_threshold", 0.5)
 		var current_hp_percent = _get_enemy_hp_percent()
 		if current_hp_percent <= rage_threshold and "elite_rage" in special_abilities:
 			_activate_elite_rage()
 	
-	# Probabilidad de usar habilidad élite (30% por ataque)
-	if randf() > 0.30:
+	# Probabilidad de usar habilidad élite (configurable, default 50%)
+	var ability_chance = modifiers.get("elite_ability_chance", 0.50)
+	if randf() > ability_chance:
 		return false
 	
-	# Intentar slam si está disponible
+	var dist = enemy.global_position.distance_to(player.global_position)
+	
+	# PRIORIDAD 1: Dash si el jugador está lejos (más agresivo)
+	if "elite_dash" in special_abilities and elite_dash_cooldown <= 0:
+		if dist > 100 and dist < 400:  # Entre 100 y 400 unidades
+			_perform_elite_dash()
+			return true
+	
+	# PRIORIDAD 2: Nova si hay jugador cerca (defensivo/ofensivo)
+	if "elite_nova" in special_abilities and elite_nova_cooldown <= 0:
+		if dist < 180:
+			_perform_elite_nova()
+			return true
+	
+	# PRIORIDAD 3: Slam si está muy cerca
 	if "elite_slam" in special_abilities and elite_slam_cooldown <= 0:
-		var dist = enemy.global_position.distance_to(player.global_position)
-		if dist < 120:  # Solo si está cerca
+		if dist < 150:
 			_perform_elite_slam()
 			return true
 	
-	# Activar escudo si está bajo y disponible
+	# PRIORIDAD 4: Summon si el jugador está a distancia media
+	if "elite_summon" in special_abilities and elite_summon_cooldown <= 0:
+		if dist > 80 and dist < 300:
+			_perform_elite_summon()
+			return true
+	
+	# PRIORIDAD 5: Activar escudo si está bajo de vida
 	if "elite_shield" in special_abilities and elite_shield_cooldown <= 0 and elite_shield_charges <= 0:
 		var current_hp_percent = _get_enemy_hp_percent()
-		if current_hp_percent < 0.6:  # Menos del 60% HP
+		if current_hp_percent < 0.7:
 			_activate_elite_shield()
 			return true
 	
@@ -472,6 +525,365 @@ func _spawn_elite_shield_visual() -> void:
 			visual.queue_free()
 	)
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# NUEVAS HABILIDADES ÉLITE - DASH, NOVA, SUMMON
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _perform_elite_dash() -> void:
+	"""Habilidad élite: Dash/embestida hacia el jugador"""
+	if not is_instance_valid(enemy) or not is_instance_valid(player):
+		return
+	
+	var _dash_speed = modifiers.get("elite_dash_speed", 600.0)
+	var dash_damage_mult = modifiers.get("elite_dash_damage_mult", 1.8)
+	var dash_damage = int(attack_damage * dash_damage_mult)
+	
+	elite_is_dashing = true
+	elite_dash_target = player.global_position
+	
+	# Visual de preparación
+	_spawn_elite_dash_visual_start()
+	
+	# Después de 0.3s de "wind-up", ejecutar dash
+	get_tree().create_timer(0.3).timeout.connect(func():
+		if not is_instance_valid(enemy) or not is_instance_valid(player):
+			elite_is_dashing = false
+			return
+		
+		# Calcular dirección y posición final
+		var direction = (elite_dash_target - enemy.global_position).normalized()
+		var dash_distance = min(400.0, enemy.global_position.distance_to(elite_dash_target) + 50)
+		var final_pos = enemy.global_position + direction * dash_distance
+		
+		# Crear tween para el movimiento
+		var tween = enemy.create_tween()
+		tween.tween_property(enemy, "global_position", final_pos, 0.25).set_ease(Tween.EASE_IN_OUT)
+		
+		# Spawn visual de estela
+		_spawn_elite_dash_trail(enemy.global_position, final_pos)
+		
+		# Verificar colisión con el jugador durante el dash
+		tween.finished.connect(func():
+			elite_is_dashing = false
+			if is_instance_valid(player):
+				var dist = enemy.global_position.distance_to(player.global_position)
+				if dist < 60:  # Impactó
+					if player.has_method("take_damage"):
+						var elem = _get_enemy_element()
+						player.call("take_damage", dash_damage, elem)
+						attacked_player.emit(dash_damage, true)
+						print("[Elite] 👑💨 %s DASH IMPACTO! %d daño" % [enemy.name, dash_damage])
+					if player.has_method("apply_knockback"):
+						player.apply_knockback(direction * 200)
+		)
+	)
+	
+	elite_dash_cooldown = modifiers.get("elite_dash_cooldown", 3.0)
+	print("[Elite] 👑💨 %s prepara DASH hacia el jugador!" % enemy.name)
+
+func _spawn_elite_dash_visual_start() -> void:
+	"""Visual de preparación de dash"""
+	if not is_instance_valid(enemy):
+		return
+	
+	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 60
+	effect.global_position = enemy.global_position
+	
+	var parent = enemy.get_parent()
+	if parent:
+		parent.add_child(effect)
+	
+	var anim = 0.0
+	var gold = Color(1.0, 0.85, 0.1)
+	var visual = Node2D.new()
+	effect.add_child(visual)
+	
+	visual.draw.connect(func():
+		# Círculo de carga creciente
+		var radius = 40 * anim
+		for i in range(3):
+			var r = radius * (1.0 - i * 0.2)
+			visual.draw_arc(Vector2.ZERO, r, 0, TAU * anim, 32, Color(gold.r, gold.g, gold.b, 0.8 - i * 0.2), 3.0)
+		
+		# Flecha direccional
+		if is_instance_valid(player) and is_instance_valid(enemy):
+			var dir = (player.global_position - enemy.global_position).normalized()
+			var arrow_len = 50 * anim
+			var arrow_end = dir * arrow_len
+			visual.draw_line(Vector2.ZERO, arrow_end, Color(1, 0.9, 0.3, 0.9), 4.0)
+			# Punta de flecha
+			var perp = Vector2(-dir.y, dir.x) * 12
+			visual.draw_line(arrow_end, arrow_end - dir * 20 + perp, gold, 3.0)
+			visual.draw_line(arrow_end, arrow_end - dir * 20 - perp, gold, 3.0)
+	)
+	
+	var tween = effect.create_tween()
+	tween.tween_method(func(v):
+		anim = v
+		if is_instance_valid(visual):
+			visual.queue_redraw()
+	, 0.0, 1.0, 0.3)
+	tween.tween_callback(func():
+		if is_instance_valid(effect):
+			effect.queue_free()
+	)
+
+func _spawn_elite_dash_trail(from: Vector2, to: Vector2) -> void:
+	"""Estela visual del dash"""
+	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 55
+	effect.global_position = from
+	
+	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
+	if parent:
+		parent.add_child(effect)
+	else:
+		return
+	
+	var gold = Color(1.0, 0.85, 0.1)
+	var direction = (to - from).normalized()
+	var length = from.distance_to(to)
+	var anim = 0.0
+	
+	var visual = Node2D.new()
+	effect.add_child(visual)
+	
+	visual.draw.connect(func():
+		# Estela dorada
+		var perp = Vector2(-direction.y, direction.x)
+		var width = 30 * (1.0 - anim)
+		var current_len = length * min(1.0, anim * 2)
+		
+		var p1 = perp * width
+		var p2 = -perp * width
+		var p3 = direction * current_len - perp * width * 0.5
+		var p4 = direction * current_len + perp * width * 0.5
+		
+		visual.draw_colored_polygon(PackedVector2Array([p1, p2, p3, p4]), Color(gold.r, gold.g, gold.b, 0.6 * (1.0 - anim)))
+		
+		# Partículas de chispa
+		for i in range(8):
+			var spark_pos = direction * (length * randf()) + perp * (randf() - 0.5) * width * 2
+			visual.draw_circle(spark_pos, 4 * (1.0 - anim), Color(1, 1, 0.8, 0.8 * (1.0 - anim)))
+	)
+	
+	var tween = effect.create_tween()
+	tween.tween_method(func(v):
+		anim = v
+		if is_instance_valid(visual):
+			visual.queue_redraw()
+	, 0.0, 1.0, 0.4)
+	tween.tween_callback(func():
+		if is_instance_valid(effect):
+			effect.queue_free()
+	)
+
+func _perform_elite_nova() -> void:
+	"""Habilidad élite: Explosión de proyectiles en círculo"""
+	if not is_instance_valid(enemy):
+		return
+	
+	var projectile_count = modifiers.get("elite_nova_projectile_count", 12)
+	var nova_damage_mult = modifiers.get("elite_nova_damage_mult", 0.8)
+	var nova_damage = int(attack_damage * nova_damage_mult)
+	
+	# Visual de carga
+	_spawn_elite_nova_visual(enemy.global_position)
+	
+	# Después de 0.4s, disparar todos los proyectiles
+	get_tree().create_timer(0.4).timeout.connect(func():
+		if not is_instance_valid(enemy):
+			return
+		
+		for i in range(projectile_count):
+			var angle = (TAU / projectile_count) * i
+			var direction = Vector2(cos(angle), sin(angle))
+			_spawn_elite_nova_projectile(enemy.global_position, direction, nova_damage)
+		
+		print("[Elite] 👑💫 %s dispara NOVA! %d proyectiles" % [enemy.name, projectile_count])
+	)
+	
+	elite_nova_cooldown = modifiers.get("elite_nova_cooldown", 6.0)
+
+func _spawn_elite_nova_visual(center: Vector2) -> void:
+	"""Visual de carga de nova"""
+	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 65
+	effect.global_position = center
+	
+	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
+	if parent:
+		parent.add_child(effect)
+	else:
+		return
+	
+	var anim = 0.0
+	var gold = Color(1.0, 0.85, 0.1)
+	var visual = Node2D.new()
+	effect.add_child(visual)
+	
+	visual.draw.connect(func():
+		# Anillos que se contraen
+		for i in range(4):
+			var r = 80 * (1.0 - anim) + i * 20
+			visual.draw_arc(Vector2.ZERO, r, 0, TAU, 32, Color(gold.r, gold.g, gold.b, 0.7 * anim), 3.0)
+		
+		# Centro brillante
+		visual.draw_circle(Vector2.ZERO, 20 * anim, Color(1, 0.95, 0.5, 0.9))
+		visual.draw_circle(Vector2.ZERO, 12 * anim, gold)
+	)
+	
+	var tween = effect.create_tween()
+	tween.tween_method(func(v):
+		anim = v
+		if is_instance_valid(visual):
+			visual.queue_redraw()
+	, 0.0, 1.0, 0.4)
+	tween.tween_callback(func():
+		if is_instance_valid(effect):
+			effect.queue_free()
+	)
+
+func _spawn_elite_nova_projectile(from: Vector2, direction: Vector2, damage: int) -> void:
+	"""Crear un proyectil de la nova élite"""
+	# Intentar usar el sistema de proyectiles existente
+	if EnemyProjectileScript:
+		var projectile = Area2D.new()
+		projectile.set_script(EnemyProjectileScript)
+		projectile.global_position = from
+		
+		var parent = enemy.get_parent() if is_instance_valid(enemy) else null
+		if parent:
+			parent.add_child(projectile)
+			
+			if projectile.has_method("initialize"):
+				var elem = _get_enemy_element()
+				projectile.initialize(direction, 280.0, damage, 3.0, elem)
+			
+			# Visual dorado especial
+			var sprite = projectile.get_node_or_null("Sprite2D")
+			if sprite:
+				sprite.modulate = Color(1.0, 0.85, 0.1)
+
+func _perform_elite_summon() -> void:
+	"""Habilidad élite: Invocar minions temporales"""
+	if not is_instance_valid(enemy):
+		return
+	
+	var summon_count = modifiers.get("elite_summon_count", 3)
+	
+	# Visual de invocación
+	_spawn_elite_summon_visual(enemy.global_position)
+	
+	# Después de 0.5s, spawner los minions
+	get_tree().create_timer(0.5).timeout.connect(func():
+		if not is_instance_valid(enemy):
+			return
+		
+		# Buscar el EnemyManager
+		var enemy_manager = _find_enemy_manager()
+		if not enemy_manager:
+			print("[Elite] ⚠️ No se encontró EnemyManager para summon")
+			return
+		
+		for i in range(summon_count):
+			var angle = (TAU / summon_count) * i
+			var offset = Vector2(cos(angle), sin(angle)) * 60
+			var spawn_pos = enemy.global_position + offset
+			
+			# Spawner un minion tier 1 temporal
+			if enemy_manager.has_method("spawn_enemy"):
+				var minion = enemy_manager.spawn_enemy("tier_1_slime_arcano", spawn_pos)
+				if minion:
+					# Hacer el minion temporal (se destruye después de 8 segundos)
+					minion.modulate = Color(1.0, 0.85, 0.1, 0.8)  # Tinte dorado
+					get_tree().create_timer(8.0).timeout.connect(func():
+						if is_instance_valid(minion):
+							minion.queue_free()
+					)
+		
+		print("[Elite] 👑👥 %s invocó %d minions!" % [enemy.name, summon_count])
+	)
+	
+	elite_summon_cooldown = modifiers.get("elite_summon_cooldown", 10.0)
+
+func _spawn_elite_summon_visual(center: Vector2) -> void:
+	"""Visual de invocación élite"""
+	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 60
+	effect.global_position = center
+	
+	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
+	if parent:
+		parent.add_child(effect)
+	else:
+		return
+	
+	var anim = 0.0
+	var gold = Color(1.0, 0.85, 0.1)
+	var purple = Color(0.7, 0.3, 1.0)
+	var visual = Node2D.new()
+	effect.add_child(visual)
+	
+	visual.draw.connect(func():
+		# Círculo mágico
+		var radius = 70
+		visual.draw_arc(Vector2.ZERO, radius, 0, TAU * anim, 48, gold, 3.0)
+		visual.draw_arc(Vector2.ZERO, radius * 0.7, 0, TAU * anim, 36, purple, 2.0)
+		
+		# Runas girando
+		var rune_count = 6
+		for i in range(rune_count):
+			var angle = (TAU / rune_count) * i + anim * PI * 2
+			var pos = Vector2(cos(angle), sin(angle)) * radius * 0.85
+			visual.draw_circle(pos, 8, Color(gold.r, gold.g, gold.b, anim))
+			
+		# Pentáculo central
+		var penta_radius = 35 * anim
+		for i in range(5):
+			var a1 = (TAU / 5) * i - PI/2
+			var a2 = (TAU / 5) * ((i + 2) % 5) - PI/2
+			var p1 = Vector2(cos(a1), sin(a1)) * penta_radius
+			var p2 = Vector2(cos(a2), sin(a2)) * penta_radius
+			visual.draw_line(p1, p2, purple, 2.0)
+	)
+	
+	var tween = effect.create_tween()
+	tween.tween_method(func(v):
+		anim = v
+		if is_instance_valid(visual):
+			visual.queue_redraw()
+	, 0.0, 1.0, 0.5)
+	tween.tween_callback(func():
+		if is_instance_valid(effect):
+			effect.queue_free()
+	)
+
+func _find_enemy_manager() -> Node:
+	"""Buscar el EnemyManager en el árbol"""
+	# Método 1: GameManager
+	if GameManager and GameManager.has_method("get") and "enemy_manager" in GameManager:
+		return GameManager.enemy_manager
+	
+	# Método 2: Buscar en el árbol
+	var tree = Engine.get_main_loop()
+	if tree and tree.root:
+		var em = tree.root.get_node_or_null("Game/EnemyManager")
+		if em:
+			return em
+	
+	# Método 3: Buscar por clase
+	var nodes = get_tree().get_nodes_in_group("enemy_managers")
+	if nodes.size() > 0:
+		return nodes[0]
+	
+	return null
+
 func _perform_melee_attack() -> void:
 	"""Ataque melee: daño directo al jugador"""
 	if not player.has_method("take_damage"):
@@ -487,8 +899,8 @@ func _perform_melee_attack() -> void:
 	# Emitir señal
 	attacked_player.emit(attack_damage, true)
 	
-	# Efecto visual
-	_emit_melee_effect()
+	# Efecto visual removido - el feedback ahora es vía DamageVignette
+	# _emit_melee_effect()
 
 func _apply_melee_effects() -> void:
 	"""Aplicar efectos de estado según arquetipo y elemento"""
@@ -672,7 +1084,7 @@ func _perform_breath_attack() -> void:
 
 func _apply_breath_effects() -> void:
 	"""Aplicar efectos del ataque breath"""
-	var elem = _get_enemy_element()
+	var _elem = _get_enemy_element()
 	
 	# Dragón Etéreo es de tipo 'fire' o 'etereo'
 	# Aplicar burn siempre en breath de dragón
@@ -698,7 +1110,8 @@ func _perform_multi_attack() -> void:
 	attacked_player.emit(attack_damage, false)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SISTEMA DE BOSS COMPLETO - Habilidades escaladas por minuto de aparición
+# SISTEMA DE BOSS COMPLETO - ESTILO BINDING OF ISAAC
+# Ataques constantes, AOE aleatorios, proyectiles perseguidores, orbitales
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Tracking de cooldowns de habilidades de boss (por enemigo)
@@ -715,60 +1128,546 @@ var boss_combo_count: int = 0                # Habilidades usadas en el combo ac
 var boss_combo_timer: float = 0.0            # Timer para resetear combo
 var boss_global_cooldown: float = 0.0        # Cooldown global entre habilidades
 
-func _perform_boss_attack() -> void:
-	"""Sistema de ataque de boss con habilidades limitadas según minuto de spawn"""
-	if not enemy or not player:
-		return
+# Nuevas variables para boss agresivo
+var boss_homing_projectile_timer: float = 0.0
+var boss_random_aoe_timer: float = 0.0
+var boss_spread_shot_timer: float = 0.0
+var boss_orbitals: Array = []
+var boss_active_effects: Array = []  # Track de TODOS los efectos del boss (AOE, trails, etc.)
+
+func cleanup_boss() -> void:
+	"""Limpiar todos los nodos del boss (orbitales, trails, AOE warnings, etc.)"""
+	print("[Boss] 🧹 Limpiando orbitales y efectos del boss...")
 	
-	# Inicializar sistema si es necesario
+	# Limpiar orbitales
+	for orbital in boss_orbitals:
+		if is_instance_valid(orbital):
+			orbital.queue_free()
+	boss_orbitals.clear()
+	
+	# Limpiar todos los efectos activos (AOE warnings, explosiones, trails, etc.)
+	for effect in boss_active_effects:
+		if is_instance_valid(effect):
+			effect.queue_free()
+	boss_active_effects.clear()
+	
+	# Limpiar también cualquier homing orb del boss en la escena
+	var tree = get_tree()
+	if tree:
+		for node in tree.get_nodes_in_group("boss_effects"):
+			if is_instance_valid(node):
+				node.queue_free()
+	
+	is_boss_enemy = false
+	print("[Boss] 🧹 Limpieza completada")
+
+func _track_boss_effect(effect: Node) -> void:
+	"""Añadir un efecto a la lista de tracking para limpieza posterior"""
+	if effect and is_instance_valid(effect):
+		boss_active_effects.append(effect)
+		effect.add_to_group("boss_effects")
+
+func _init_boss_aggressive_mode() -> void:
+	"""Inicializar modo agresivo del boss - estilo Binding of Isaac"""
 	_init_boss_system()
 	
-	# Actualizar timers
-	var delta = get_process_delta_time()
+	# Spawn orbitales iniciales
+	var orbital_count = boss_scaling_config.get("orbital_count", 2)
+	_spawn_boss_orbitals(orbital_count)
+	
+	print("[Boss] 👹🔥 MODO AGRESIVO ACTIVADO - Orbitales: %d" % orbital_count)
+
+func _process_boss_aggressive_attacks(delta: float) -> void:
+	"""Procesar ataques constantes del boss - NO depende del rango"""
+	if not enemy or not player or not is_instance_valid(enemy) or not is_instance_valid(player):
+		return
+	
+	# Inicializar si es necesario
+	if boss_scaling_config.is_empty():
+		_init_boss_system()
+	
+	# Actualizar fase según HP
+	_update_boss_phase()
+	
+	# Actualizar orbitales
+	_update_boss_orbitals(delta)
+	
+	# === SISTEMA DE ATAQUES CONSTANTES ===
+	
+	# 1. Proyectiles hacia el jugador (ataque principal - siempre activo)
+	boss_attack_timer -= delta
+	if boss_attack_timer <= 0:
+		_boss_fire_at_player()
+		var interval = boss_scaling_config.get("attack_interval", 1.2)
+		boss_attack_timer = interval * (0.8 if boss_current_phase >= 2 else 1.0)
+	
+	# 2. AOE aleatorios por el mapa (siempre activo)
+	boss_aoe_timer -= delta
+	if boss_aoe_timer <= 0:
+		_boss_spawn_random_aoe()
+		var aoe_interval = boss_scaling_config.get("aoe_spawn_interval", 5.0)
+		boss_aoe_timer = aoe_interval * (0.7 if boss_current_phase >= 2 else 1.0)
+	
+	# 3. Proyectiles homing (solo si está habilitado en la config)
+	var enable_homing = boss_scaling_config.get("enable_homing", false)
+	if enable_homing:
+		boss_homing_projectile_timer -= delta
+		if boss_homing_projectile_timer <= 0:
+			_boss_spawn_homing_projectile()
+			var homing_interval = boss_scaling_config.get("homing_interval", 6.0)
+			boss_homing_projectile_timer = homing_interval * (0.7 if boss_current_phase >= 2 else 1.0)
+	
+	# 4. Spread shot (solo si está habilitado en la config)
+	var enable_spread = boss_scaling_config.get("enable_spread", false)
+	if enable_spread:
+		boss_spread_shot_timer -= delta
+		if boss_spread_shot_timer <= 0:
+			_boss_spread_shot()
+			var spread_interval = boss_scaling_config.get("spread_interval", 8.0)
+			boss_spread_shot_timer = spread_interval * (0.6 if boss_current_phase >= 3 else 1.0)
+	
+	# 5. Trail de daño solo en fase 2+ (para todos los bosses)
+	if boss_current_phase >= 2:
+		boss_trail_timer -= delta
+		if boss_trail_timer <= 0:
+			_boss_leave_damage_trail()
+			boss_trail_timer = 0.4
+	
+	# 6. Habilidades especiales del boss (sistema original mejorado)
+	_process_boss_special_abilities(delta)
+
+func _boss_fire_at_player() -> void:
+	"""Disparar proyectil directo al jugador"""
+	if not is_instance_valid(player) or not is_instance_valid(enemy):
+		return
+	
+	var direction = (player.global_position - enemy.global_position).normalized()
+	var damage = int(attack_damage * 0.5)  # Proyectiles hacen 50% del daño base
+	
+	_spawn_boss_projectile(enemy.global_position, direction, damage, 350.0)
+
+func _boss_spawn_random_aoe() -> void:
+	"""Spawn un AOE en posición aleatoria cerca del jugador"""
+	if not is_instance_valid(player):
+		return
+	
+	# Posición aleatoria dentro de un radio del jugador
+	var offset = Vector2(randf_range(-200, 200), randf_range(-200, 200))
+	var target_pos = player.global_position + offset
+	
+	# Warning visual antes del impacto
+	_spawn_aoe_warning(target_pos, 80.0, 1.0)
+	
+	# Después de 1 segundo, hacer daño
+	get_tree().create_timer(1.0).timeout.connect(func():
+		if is_instance_valid(player):
+			var dist = target_pos.distance_to(player.global_position)
+			if dist < 80:
+				var damage = int(attack_damage * 0.7)
+				if player.has_method("take_damage"):
+					var elem = _get_enemy_element()
+					player.call("take_damage", damage, elem)
+					print("[Boss] 💥 AOE RANDOM impactó! %d daño" % damage)
+		# Visual de explosión
+		_spawn_aoe_explosion(target_pos, 80.0)
+	)
+
+func _boss_spawn_homing_projectile() -> void:
+	"""Spawn proyectil que persigue al jugador"""
+	if not is_instance_valid(player) or not is_instance_valid(enemy):
+		return
+	
+	var count = 1 + boss_current_phase  # Más proyectiles en fases avanzadas
+	
+	for i in range(count):
+		var angle_offset = (TAU / count) * i
+		var spawn_offset = Vector2(cos(angle_offset), sin(angle_offset)) * 50
+		var spawn_pos = enemy.global_position + spawn_offset
+		
+		_create_homing_projectile(spawn_pos)
+	
+	print("[Boss] 🎯 %d proyectiles HOMING lanzados!" % count)
+
+func _create_homing_projectile(spawn_pos: Vector2) -> void:
+	"""Crear un proyectil que persigue al jugador"""
+	var projectile = Area2D.new()
+	projectile.name = "BossHomingProjectile"
+	projectile.collision_layer = 0
+	projectile.collision_mask = 1  # Colisiona con player
+	projectile.global_position = spawn_pos
+	projectile.top_level = true
+	
+	# Collision shape
+	var shape = CollisionShape2D.new()
+	var circle = CircleShape2D.new()
+	circle.radius = 12
+	shape.shape = circle
+	projectile.add_child(shape)
+	
+	# Visual
+	var visual = Node2D.new()
+	projectile.add_child(visual)
+	
+	var elem = _get_enemy_element()
+	var color = _get_element_color(elem)
+	
+	visual.draw.connect(func():
+		visual.draw_circle(Vector2.ZERO, 15, Color(color.r, color.g, color.b, 0.3))
+		visual.draw_circle(Vector2.ZERO, 10, color)
+		visual.draw_circle(Vector2.ZERO, 5, Color(1, 1, 1, 0.9))
+	)
+	visual.queue_redraw()
+	
+	var parent = enemy.get_parent()
+	if parent:
+		parent.add_child(projectile)
+	
+	# Comportamiento homing
+	var lifetime = 6.0
+	var speed = 180.0
+	var homing_strength = 2.5
+	var damage = int(attack_damage * 0.4)
+	var hit = false
+	
+	# Timer de update
+	var timer = Timer.new()
+	timer.wait_time = 0.016
+	timer.autostart = true
+	projectile.add_child(timer)
+	
+	timer.timeout.connect(func():
+		if hit or not is_instance_valid(projectile):
+			return
+		
+		lifetime -= 0.016
+		if lifetime <= 0:
+			projectile.queue_free()
+			return
+		
+		if not is_instance_valid(player):
+			projectile.queue_free()
+			return
+		
+		# Movimiento homing
+		var target_dir = (player.global_position - projectile.global_position).normalized()
+		var current_dir = Vector2.RIGHT.rotated(projectile.rotation)
+		var new_dir = current_dir.lerp(target_dir, homing_strength * 0.016)
+		
+		projectile.rotation = new_dir.angle()
+		projectile.global_position += new_dir * speed * 0.016
+		
+		# Check colisión manual
+		var dist = projectile.global_position.distance_to(player.global_position)
+		if dist < 20:
+			hit = true
+			if player.has_method("take_damage"):
+				var elem_type = _get_enemy_element()
+				player.call("take_damage", damage, elem_type)
+			projectile.queue_free()
+	)
+
+func _boss_spread_shot() -> void:
+	"""Ráfaga de proyectiles en abanico"""
+	if not is_instance_valid(player) or not is_instance_valid(enemy):
+		return
+	
+	var count = 5 + boss_current_phase * 2  # Más proyectiles en fases avanzadas
+	var spread_angle = PI * 0.6  # 108 grados
+	var base_direction = (player.global_position - enemy.global_position).normalized()
+	var damage = int(attack_damage * 0.35)
+	
+	for i in range(count):
+		var angle_offset = spread_angle * (float(i) / float(count - 1) - 0.5)
+		var direction = base_direction.rotated(angle_offset)
+		_spawn_boss_projectile(enemy.global_position, direction, damage, 280.0)
+	
+	print("[Boss] 🔥 SPREAD SHOT: %d proyectiles!" % count)
+
+func _boss_leave_damage_trail() -> void:
+	"""Dejar trail de daño donde pasa el boss"""
+	if not is_instance_valid(enemy):
+		return
+	
+	var trail_pos = enemy.global_position
+	var elem = _get_enemy_element()
+	var color = _get_element_color(elem)
+	
+	# Crear zona de daño temporal
+	var trail = Area2D.new()
+	trail.name = "BossTrail"
+	trail.collision_layer = 0
+	trail.collision_mask = 1
+	trail.global_position = trail_pos
+	trail.top_level = true
+	
+	var shape = CollisionShape2D.new()
+	var circle = CircleShape2D.new()
+	circle.radius = 30
+	shape.shape = circle
+	trail.add_child(shape)
+	
+	# Visual
+	var visual = Node2D.new()
+	trail.add_child(visual)
+	var alpha = 0.6
+	
+	visual.draw.connect(func():
+		visual.draw_circle(Vector2.ZERO, 30, Color(color.r, color.g, color.b, alpha * 0.3))
+		visual.draw_circle(Vector2.ZERO, 20, Color(color.r, color.g, color.b, alpha * 0.5))
+	)
+	visual.queue_redraw()
+	
+	var parent = enemy.get_parent()
+	if parent:
+		parent.add_child(trail)
+	
+	# Trackear el efecto para limpieza
+	_track_boss_effect(trail)
+	
+	# Daño y fade out
+	var trail_damage = int(attack_damage * 0.2)
+	var lifetime = 3.0
+	var damage_cooldown = 0.0
+	
+	var timer = Timer.new()
+	timer.wait_time = 0.05
+	timer.autostart = true
+	trail.add_child(timer)
+	
+	timer.timeout.connect(func():
+		if not is_instance_valid(trail):
+			return
+		
+		lifetime -= 0.05
+		alpha = lifetime / 3.0
+		visual.queue_redraw()
+		
+		if lifetime <= 0:
+			trail.queue_free()
+			return
+		
+		damage_cooldown -= 0.05
+		if damage_cooldown <= 0 and is_instance_valid(player):
+			var dist = trail_pos.distance_to(player.global_position)
+			if dist < 30:
+				if player.has_method("take_damage"):
+					player.call("take_damage", trail_damage, elem)
+				damage_cooldown = 0.5
+	)
+
+func _spawn_boss_orbitals(count: int) -> void:
+	"""Crear orbitales que giran alrededor del boss"""
+	if not is_instance_valid(enemy):
+		return
+	
+	# Limpiar orbitales anteriores
+	for orb in boss_orbitals:
+		if is_instance_valid(orb):
+			orb.queue_free()
+	boss_orbitals.clear()
+	
+	var elem = _get_enemy_element()
+	var color = _get_element_color(elem)
+	var damage = int(attack_damage * 0.3)
+	
+	for i in range(count):
+		var orbital = Area2D.new()
+		orbital.name = "BossOrbital_%d" % i
+		orbital.collision_layer = 0
+		orbital.collision_mask = 1
+		orbital.top_level = true
+		
+		var shape = CollisionShape2D.new()
+		var circle = CircleShape2D.new()
+		circle.radius = 15
+		shape.shape = circle
+		orbital.add_child(shape)
+		
+		# Visual
+		var visual = Node2D.new()
+		orbital.add_child(visual)
+		
+		visual.draw.connect(func():
+			visual.draw_circle(Vector2.ZERO, 18, Color(color.r, color.g, color.b, 0.4))
+			visual.draw_circle(Vector2.ZERO, 12, color)
+			visual.draw_circle(Vector2.ZERO, 6, Color(1, 1, 1, 0.9))
+		)
+		visual.queue_redraw()
+		
+		# Metadata para movimiento
+		orbital.set_meta("angle", (TAU / count) * i)
+		orbital.set_meta("radius", 80.0)
+		orbital.set_meta("damage", damage)
+		orbital.set_meta("damage_cooldown", 0.0)
+		
+		enemy.add_child(orbital)
+		boss_orbitals.append(orbital)
+
+func _update_boss_orbitals(delta: float) -> void:
+	"""Actualizar posición y daño de orbitales"""
+	var rotation_speed = 2.5 + boss_current_phase * 0.5
+	var base_radius = 80.0 + boss_current_phase * 10
+	
+	for orbital in boss_orbitals:
+		if not is_instance_valid(orbital):
+			continue
+		
+		# Rotar
+		var angle = orbital.get_meta("angle") + rotation_speed * delta
+		orbital.set_meta("angle", angle)
+		
+		# Posicionar
+		var radius = base_radius
+		orbital.position = Vector2(cos(angle), sin(angle)) * radius
+		
+		# Check daño al jugador
+		if is_instance_valid(player):
+			var dist = orbital.global_position.distance_to(player.global_position)
+			var cd = orbital.get_meta("damage_cooldown") - delta
+			orbital.set_meta("damage_cooldown", max(0, cd))
+			
+			if dist < 25 and cd <= 0:
+				var damage = orbital.get_meta("damage")
+				if player.has_method("take_damage"):
+					var elem = _get_enemy_element()
+					player.call("take_damage", damage, elem)
+				orbital.set_meta("damage_cooldown", 0.8)
+
+func _spawn_aoe_warning(pos: Vector2, radius: float, duration: float) -> void:
+	"""Mostrar warning de AOE antes del impacto"""
+	var warning = Node2D.new()
+	warning.name = "AOEWarning"
+	warning.top_level = true
+	warning.z_index = 50
+	warning.global_position = pos
+	
+	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
+	if parent:
+		parent.add_child(warning)
+	else:
+		return
+	
+	# Trackear el efecto para limpieza
+	_track_boss_effect(warning)
+	
+	var elem = _get_enemy_element()
+	var color = _get_element_color(elem)
+	var anim = 0.0
+	
+	var visual = Node2D.new()
+	warning.add_child(visual)
+	
+	visual.draw.connect(func():
+		# Círculo pulsante
+		var pulse = 0.5 + sin(anim * PI * 4) * 0.2
+		warning.draw_arc(Vector2.ZERO, radius * pulse, 0, TAU, 32, Color(color.r, color.g, color.b, 0.5), 3.0)
+		warning.draw_arc(Vector2.ZERO, radius * 0.7 * pulse, 0, TAU, 24, Color(1, 0.3, 0.3, 0.6), 2.0)
+		# Símbolo de peligro
+		warning.draw_circle(Vector2.ZERO, 10, Color(1, 0.2, 0.2, 0.8 * (1.0 - anim)))
+	)
+	
+	var tween = warning.create_tween()
+	tween.tween_method(func(v):
+		anim = v
+		if is_instance_valid(visual):
+			visual.queue_redraw()
+	, 0.0, 1.0, duration)
+	tween.tween_callback(func():
+		if is_instance_valid(warning):
+			warning.queue_free()
+	)
+
+func _spawn_aoe_explosion(pos: Vector2, radius: float) -> void:
+	"""Visual de explosión AOE"""
+	var explosion = Node2D.new()
+	explosion.name = "AOEExplosion"
+	explosion.top_level = true
+	explosion.z_index = 55
+	explosion.global_position = pos
+	
+	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
+	if parent:
+		parent.add_child(explosion)
+	else:
+		return
+	
+	# Trackear el efecto para limpieza
+	_track_boss_effect(explosion)
+	
+	var elem = _get_enemy_element()
+	var color = _get_element_color(elem)
+	var anim = 0.0
+	
+	var visual = Node2D.new()
+	explosion.add_child(visual)
+	
+	visual.draw.connect(func():
+		var expand = radius * (0.5 + anim * 0.8)
+		var alpha = 1.0 - anim
+		
+		# Ondas de explosión
+		for i in range(3):
+			var r = expand * (1.0 - i * 0.2)
+			explosion.draw_arc(Vector2.ZERO, r, 0, TAU, 32, Color(color.r, color.g, color.b, alpha * (1.0 - i * 0.3)), 4.0 - i)
+		
+		# Relleno
+		explosion.draw_circle(Vector2.ZERO, expand * 0.5, Color(color.r, color.g, color.b, alpha * 0.4))
+		explosion.draw_circle(Vector2.ZERO, expand * 0.2, Color(1, 1, 1, alpha * 0.7))
+	)
+	
+	var tween = explosion.create_tween()
+	tween.tween_method(func(v):
+		anim = v
+		if is_instance_valid(visual):
+			visual.queue_redraw()
+	, 0.0, 1.0, 0.4)
+	tween.tween_callback(func():
+		if is_instance_valid(explosion):
+			explosion.queue_free()
+	)
+
+func _spawn_boss_projectile(from: Vector2, direction: Vector2, damage: int, speed: float) -> void:
+	"""Crear un proyectil del boss"""
+	if EnemyProjectileScript:
+		var projectile = Area2D.new()
+		projectile.set_script(EnemyProjectileScript)
+		projectile.global_position = from
+		
+		var parent = enemy.get_parent() if is_instance_valid(enemy) else null
+		if parent:
+			parent.add_child(projectile)
+			
+			if projectile.has_method("initialize"):
+				var elem = _get_enemy_element()
+				projectile.initialize(direction, speed, damage, 4.0, elem)
+
+func _process_boss_special_abilities(delta: float) -> void:
+	"""Procesar habilidades especiales del boss (sistema original)"""
 	if boss_global_cooldown > 0:
 		boss_global_cooldown -= delta
+		return
+	
 	if boss_combo_timer > 0:
 		boss_combo_timer -= delta
 	else:
-		boss_combo_count = 0  # Resetear combo si pasó el tiempo
+		boss_combo_count = 0
 	
-	# Actualizar fase del boss según HP
-	_update_boss_phase()
-	
-	# Actualizar efectos pasivos (auras, trails)
-	_update_boss_passive_effects()
-	
-	# Verificar si puede atacar (global cooldown)
-	if boss_global_cooldown > 0:
-		return
-	
-	# Verificar límite de combo
-	var max_combo = boss_scaling_config.get("max_combo", 1)
+	var max_combo = boss_scaling_config.get("max_combo", 3)
 	if boss_combo_count >= max_combo:
-		# Esperar a que se resetee el combo
 		return
 	
-	# Obtener habilidades disponibles (desbloqueadas y fuera de cooldown)
 	var available_abilities = _get_available_boss_abilities()
-	
 	if available_abilities.is_empty():
-		# Ataque básico si no hay habilidades disponibles
-		_perform_boss_melee_attack()
-		boss_global_cooldown = 1.5
 		return
 	
-	# Seleccionar y ejecutar habilidad
 	var selected_ability = _select_boss_ability(available_abilities)
 	_execute_boss_ability(selected_ability)
-	
-	# Actualizar cooldowns
 	_apply_ability_cooldown(selected_ability)
 	
-	# Actualizar combo
 	boss_combo_count += 1
-	var combo_delay = boss_scaling_config.get("combo_delay", 2.0)
-	boss_combo_timer = 4.0  # Ventana de combo
-	boss_global_cooldown = combo_delay  # Delay hasta la siguiente habilidad
+	var combo_delay = boss_scaling_config.get("combo_delay", 1.0)
+	boss_combo_timer = 4.0
+	boss_global_cooldown = combo_delay
 	
 	print("[Boss] 👹 %s usó %s (combo %d/%d, fase %d)" % [
 		enemy.name, selected_ability, boss_combo_count, max_combo, boss_current_phase
@@ -912,7 +1811,7 @@ func _update_boss_phase() -> void:
 		boss_current_phase = new_phase
 		_on_boss_phase_change(old_phase, new_phase)
 
-func _on_boss_phase_change(old_phase: int, new_phase: int) -> void:
+func _on_boss_phase_change(_old_phase: int, new_phase: int) -> void:
 	"""Evento cuando el boss cambia de fase"""
 	print("[EnemyAttackSystem] 👹💀 %s CAMBIÓ A FASE %d!" % [enemy.name, new_phase])
 	
@@ -1144,7 +2043,7 @@ func _boss_arcane_barrage() -> void:
 	for i in range(count):
 		var angle_offset = spread_rad * (float(i) / float(count - 1) - 0.5) if count > 1 else 0.0
 		var proj_dir = direction.rotated(angle_offset)
-		_spawn_boss_projectile(proj_dir, damage, "arcane", 0.05 * i)
+		_spawn_boss_projectile_delayed(proj_dir, damage, "arcane", 0.05 * i)
 	
 	print("[EnemyAttackSystem] ✨ Arcane Barrage: %d proyectiles" % count)
 
@@ -1171,7 +2070,7 @@ func _boss_summon_minions() -> void:
 
 func _boss_teleport_strike() -> void:
 	"""Teleport hacia el jugador + ataque inmediato"""
-	var teleport_range = modifiers.get("teleport_range", 200.0)
+	var _teleport_range = modifiers.get("teleport_range", 200.0)
 	var damage_mult = modifiers.get("teleport_damage_mult", 1.5)
 	
 	# Calcular posición de teleport (detrás del jugador)
@@ -1285,7 +2184,7 @@ func _boss_void_beam() -> void:
 	"""Rayo canalizado de alto daño"""
 	var damage = modifiers.get("beam_damage", 30)
 	var duration = modifiers.get("beam_duration", 3.0)
-	var width = modifiers.get("beam_width", 40.0)
+	var _width = modifiers.get("beam_width", 40.0)
 	
 	# Este ataque es canalizado - simplificado para aplicar daño por tick
 	var direction = (player.global_position - enemy.global_position).normalized()
@@ -1368,7 +2267,7 @@ func _boss_rune_barrage() -> void:
 	for i in range(count):
 		var angle_offset = spread_rad * (float(i) / float(count - 1) - 0.5) if count > 1 else 0.0
 		var proj_dir = direction.rotated(angle_offset)
-		_spawn_boss_projectile(proj_dir, damage, "arcane", 0.08 * i)
+		_spawn_boss_projectile_delayed(proj_dir, damage, "arcane", 0.08 * i)
 	
 	print("[EnemyAttackSystem] ✨ Rune Barrage: %d proyectiles" % count)
 
@@ -2366,8 +3265,8 @@ func _apply_knockback_to_player(direction: Vector2, force: float) -> void:
 	if player and player.has_method("apply_knockback"):
 		player.apply_knockback(direction, force)
 
-func _spawn_boss_projectile(direction: Vector2, damage: int, element: String, delay: float = 0.0) -> void:
-	"""Crear proyectil de boss"""
+func _spawn_boss_projectile_delayed(direction: Vector2, damage: int, element: String, delay: float = 0.0) -> void:
+	"""Crear proyectil de boss con delay opcional"""
 	if delay > 0:
 		get_tree().create_timer(delay).timeout.connect(func():
 			_create_boss_projectile_internal(direction, damage, element)
@@ -2451,6 +3350,9 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	var parent = enemy.get_parent()
 	if parent:
 		parent.add_child(orb)
+	
+	# Trackear el efecto para limpieza cuando muera el boss
+	_track_boss_effect(orb)
 	
 	# Variables para tracking
 	var time_alive = 0.0
