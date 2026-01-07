@@ -1,29 +1,42 @@
 # WeaponUpgradeDatabase.gd
-# Base de datos de mejoras para armas
+# Base de datos de mejoras para armas - VERSIÓN 2.0 EXPANDIDA
 #
-# TIPOS DE MEJORAS:
-# - Genéricas (LevelUpPanel): Se aplican a TODAS las armas via GlobalWeaponStats
-# - Específicas (Cofres/Bosses/Élites): Se aplican a UN arma específica
-# - Por Arma (Cofres/Bosses): Mejoras que solo funcionan con un arma concreta
+# SISTEMA DE MEJORAS:
+# ═══════════════════════════════════════════════════════════════════════════════
+# TIPOS:
+# - GLOBAL: Afecta TODAS las armas (GlobalWeaponStats)
+# - SPECIFIC: Se asigna a UN arma específica
+# - WEAPON_ONLY: Solo funciona con un arma concreta
+# - UNIQUE: Solo puedes tener 1 de esta mejora por run
+# - CURSED: Tiene beneficio y penalización
+# - CONDITIONAL: Efecto depende de una condición
+# - CONSUMABLE: Se usa una vez y desaparece
 #
-# SISTEMA DE TIERS:
-# - Tier 1 (Común): Mejoras básicas, aparecen desde el minuto 0
-# - Tier 2 (Poco común): Mejoras medias, empiezan a aparecer minuto 3
-# - Tier 3 (Raro): Mejoras buenas, empiezan minuto 8
-# - Tier 4 (Épico): Mejoras muy buenas, empiezan minuto 15
-# - Tier 5 (Legendario): Mejoras excepcionales, muy raras incluso tarde
+# TIERS (colores en UI):
+# - Tier 1: Blanco - Común (aparece minuto 0+)
+# - Tier 2: Verde - Poco común (aparece minuto 3+)
+# - Tier 3: Azul - Raro (aparece minuto 8+)
+# - Tier 4: Amarillo - Épico (aparece minuto 15+)
+# - Tier 5: Naranja - Legendario (muy raro, minuto 20+)
+# - Único: Rojo - Solo 1 por run
+# - Cursed: Púrpura - Trade-off
+# ═══════════════════════════════════════════════════════════════════════════════
 
 extends Node
 class_name WeaponUpgradeDatabase
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# CONSTANTES
+# ENUMS Y CONSTANTES
 # ═══════════════════════════════════════════════════════════════════════════════
 
 enum UpgradeType {
-	GLOBAL,       # Afecta a todas las armas (via GlobalWeaponStats)
-	SPECIFIC,     # Se puede asignar a un arma específica (via WeaponStats)
-	WEAPON_ONLY   # Solo funciona con un arma concreta
+	GLOBAL,       # Afecta a todas las armas
+	SPECIFIC,     # Se asigna a un arma
+	WEAPON_ONLY,  # Solo para un arma concreta
+	UNIQUE,       # Solo 1 por run
+	CURSED,       # Trade-off
+	CONDITIONAL,  # Efecto condicional
+	CONSUMABLE    # Se consume al usarse
 }
 
 enum UpgradeRarity {
@@ -34,16 +47,27 @@ enum UpgradeRarity {
 	LEGENDARY = 5
 }
 
-# Colores por rareza
-const RARITY_COLORS: Dictionary = {
-	"common": Color(0.7, 0.7, 0.7),
-	"uncommon": Color(0.3, 0.8, 0.3),
-	"rare": Color(0.3, 0.5, 1.0),
-	"epic": Color(0.7, 0.3, 0.9),
-	"legendary": Color(1.0, 0.7, 0.2)
+# Colores por tier (nuevos)
+const TIER_COLORS: Dictionary = {
+	1: Color(0.9, 0.9, 0.9),      # Blanco
+	2: Color(0.3, 0.9, 0.3),      # Verde
+	3: Color(0.4, 0.6, 1.0),      # Azul
+	4: Color(1.0, 0.85, 0.2),     # Amarillo
+	5: Color(1.0, 0.5, 0.1),      # Naranja
 }
 
-# Nombres de rareza en español
+const UNIQUE_COLOR = Color(1.0, 0.3, 0.3)   # Rojo
+const CURSED_COLOR = Color(0.7, 0.2, 0.8)   # Púrpura
+
+# Colores legacy por rarity (compatibilidad)
+const RARITY_COLORS: Dictionary = {
+	"common": Color(0.9, 0.9, 0.9),
+	"uncommon": Color(0.3, 0.9, 0.3),
+	"rare": Color(0.4, 0.6, 1.0),
+	"epic": Color(1.0, 0.85, 0.2),
+	"legendary": Color(1.0, 0.5, 0.1)
+}
+
 const RARITY_NAMES: Dictionary = {
 	"common": "Común",
 	"uncommon": "Poco común",
@@ -370,6 +394,169 @@ const GLOBAL_UPGRADES: Dictionary = {
 		"effects": [
 			{"stat": "range_mult", "value": 1.15, "operation": "multiply"}
 		]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# TIER 1 - MEJORAS COMUNES ADICIONALES
+	# ─────────────────────────────────────────────────────────────────────────────
+	"global_damage_4": {
+		"id": "global_damage_4",
+		"name": "Poder Superior",
+		"description": "Todas las armas hacen +50% de daño.",
+		"icon": "⚔️",
+		"type": UpgradeType.GLOBAL,
+		"rarity": "epic",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [{"stat": "damage_mult", "value": 1.50, "operation": "multiply"}]
+	},
+	"global_damage_5": {
+		"id": "global_damage_5",
+		"name": "Poder Absoluto",
+		"description": "Todas las armas hacen +75% de daño.",
+		"icon": "⚔️",
+		"type": UpgradeType.GLOBAL,
+		"rarity": "legendary",
+		"tier": 5,
+		"max_stacks": 1,
+		"effects": [{"stat": "damage_mult", "value": 1.75, "operation": "multiply"}]
+	},
+	"global_damage_flat_3": {
+		"id": "global_damage_flat_3",
+		"name": "Filo Letal",
+		"description": "Todas las armas hacen +15 de daño.",
+		"icon": "➕",
+		"type": UpgradeType.GLOBAL,
+		"rarity": "epic",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [{"stat": "damage_flat", "value": 15, "operation": "add"}]
+	},
+	"global_damage_flat_4": {
+		"id": "global_damage_flat_4",
+		"name": "Filo Legendario",
+		"description": "Todas las armas hacen +25 de daño.",
+		"icon": "➕",
+		"type": UpgradeType.GLOBAL,
+		"rarity": "legendary",
+		"tier": 5,
+		"max_stacks": 1,
+		"effects": [{"stat": "damage_flat", "value": 25, "operation": "add"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# ÁREA - TIERS ADICIONALES
+	# ─────────────────────────────────────────────────────────────────────────────
+	"global_area_3": {
+		"id": "global_area_3",
+		"name": "Detonación",
+		"description": "Todas las áreas de efecto +50% más grandes.",
+		"icon": "🌀",
+		"type": UpgradeType.GLOBAL,
+		"rarity": "epic",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [{"stat": "area_mult", "value": 1.50, "operation": "multiply"}]
+	},
+	"global_area_4": {
+		"id": "global_area_4",
+		"name": "Cataclismo",
+		"description": "Todas las áreas de efecto +75% más grandes.",
+		"icon": "🌀",
+		"type": UpgradeType.GLOBAL,
+		"rarity": "legendary",
+		"tier": 5,
+		"max_stacks": 1,
+		"effects": [{"stat": "area_mult", "value": 1.75, "operation": "multiply"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# VELOCIDAD DE ATAQUE - TIERS ADICIONALES
+	# ─────────────────────────────────────────────────────────────────────────────
+	"global_attack_speed_4": {
+		"id": "global_attack_speed_4",
+		"name": "Frenesí",
+		"description": "Todas las armas atacan +60% más rápido.",
+		"icon": "⚡",
+		"type": UpgradeType.GLOBAL,
+		"rarity": "legendary",
+		"tier": 5,
+		"max_stacks": 1,
+		"effects": [{"stat": "attack_speed_mult", "value": 1.60, "operation": "multiply"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# COOLDOWN
+	# ─────────────────────────────────────────────────────────────────────────────
+	"global_cooldown_1": {
+		"id": "global_cooldown_1",
+		"name": "Fluidez",
+		"description": "-10% tiempo de recarga.",
+		"icon": "⏱️",
+		"type": UpgradeType.GLOBAL,
+		"rarity": "common",
+		"tier": 1,
+		"max_stacks": 5,
+		"effects": [{"stat": "cooldown_mult", "value": 0.90, "operation": "multiply"}]
+	},
+	"global_cooldown_2": {
+		"id": "global_cooldown_2",
+		"name": "Eficiencia",
+		"description": "-20% tiempo de recarga.",
+		"icon": "⏱️",
+		"type": UpgradeType.GLOBAL,
+		"rarity": "uncommon",
+		"tier": 2,
+		"max_stacks": 3,
+		"effects": [{"stat": "cooldown_mult", "value": 0.80, "operation": "multiply"}]
+	},
+	"global_cooldown_3": {
+		"id": "global_cooldown_3",
+		"name": "Maestría",
+		"description": "-30% tiempo de recarga.",
+		"icon": "⏱️",
+		"type": UpgradeType.GLOBAL,
+		"rarity": "rare",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "cooldown_mult", "value": 0.70, "operation": "multiply"}]
+	},
+	"global_cooldown_4": {
+		"id": "global_cooldown_4",
+		"name": "Perfección",
+		"description": "-40% tiempo de recarga.",
+		"icon": "⏱️",
+		"type": UpgradeType.GLOBAL,
+		"rarity": "epic",
+		"tier": 4,
+		"max_stacks": 1,
+		"effects": [{"stat": "cooldown_mult", "value": 0.60, "operation": "multiply"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# CRÍTICOS - TIERS ADICIONALES
+	# ─────────────────────────────────────────────────────────────────────────────
+	"global_crit_chance_3": {
+		"id": "global_crit_chance_3",
+		"name": "Ojo del Francotirador",
+		"description": "+20% probabilidad de crítico.",
+		"icon": "🎯",
+		"type": UpgradeType.GLOBAL,
+		"rarity": "epic",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [{"stat": "crit_chance", "value": 0.20, "operation": "add"}]
+	},
+	"global_crit_damage_3": {
+		"id": "global_crit_damage_3",
+		"name": "Aniquilación",
+		"description": "+100% daño crítico.",
+		"icon": "💢",
+		"type": UpgradeType.GLOBAL,
+		"rarity": "legendary",
+		"tier": 5,
+		"max_stacks": 1,
+		"effects": [{"stat": "crit_damage", "value": 1.0, "operation": "add"}]
 	}
 }
 

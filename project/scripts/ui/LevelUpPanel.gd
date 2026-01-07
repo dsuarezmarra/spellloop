@@ -31,13 +31,27 @@ const OPTION_TYPES = {
 	PLAYER_UPGRADE = "player_upgrade"
 }
 
-# Colores
+# Colores por TIER (sistema visual mejorado)
+const TIER_COLORS = {
+	1: Color(0.9, 0.9, 0.9),      # Tier 1 - Blanco
+	2: Color(0.3, 0.9, 0.3),      # Tier 2 - Verde
+	3: Color(0.4, 0.6, 1.0),      # Tier 3 - Azul
+	4: Color(1.0, 0.85, 0.2),     # Tier 4 - Amarillo
+	5: Color(1.0, 0.5, 0.1),      # Tier 5 - Naranja (Legendario)
+}
+
+# Colores especiales
+const UNIQUE_COLOR = Color(1.0, 0.3, 0.3)     # Rojo para mejoras únicas
+const CURSED_COLOR = Color(0.7, 0.2, 0.8)     # Púrpura para mejoras cursed
+const WEAPON_COLOR = Color(1.0, 0.5, 0.1)     # Naranja para armas
+
+# Colores legacy por rarity (compatibilidad)
 const RARITY_COLORS = {
-	"common": Color(0.7, 0.7, 0.7),
+	"common": Color(0.9, 0.9, 0.9),
 	"uncommon": Color(0.3, 0.9, 0.3),
 	"rare": Color(0.4, 0.6, 1.0),
-	"epic": Color(0.8, 0.4, 1.0),
-	"legendary": Color(1.0, 0.8, 0.2)
+	"epic": Color(1.0, 0.85, 0.2),
+	"legendary": Color(1.0, 0.5, 0.1)
 }
 
 const SELECTED_COLOR = Color(1.0, 0.85, 0.3)
@@ -672,15 +686,45 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 			icon_texture.visible = false
 			icon_label.text = str(icon_value)
 
-	# Nombre
+	# Nombre con color basado en TIER y tipo especial
 	if name_label:
 		name_label.text = option.get("name", "???")
-		var rarity = option.get("rarity", "common")
-		name_label.add_theme_color_override("font_color", RARITY_COLORS.get(rarity, Color.WHITE))
+		var name_color = _get_option_color(option)
+		name_label.add_theme_color_override("font_color", name_color)
 
 	# Descripción
 	if desc_label:
 		desc_label.text = option.get("description", "")
+
+func _get_option_color(option: Dictionary) -> Color:
+	"""Determina el color del nombre basado en tier, tipo especial, etc."""
+	var option_type = option.get("type", "")
+	
+	# Armas tienen color naranja
+	if option_type == OPTION_TYPES.NEW_WEAPON:
+		return WEAPON_COLOR
+	
+	# Mejoras únicas tienen color rojo
+	if option.get("is_unique", false):
+		return UNIQUE_COLOR
+	
+	# Mejoras cursed tienen color púrpura
+	if option.get("is_cursed", false):
+		return CURSED_COLOR
+	
+	# Por tier
+	var tier = option.get("tier", 1)
+	if typeof(tier) == TYPE_STRING:
+		# Convertir rarity string a tier number
+		match tier:
+			"common": tier = 1
+			"uncommon": tier = 2
+			"rare": tier = 3
+			"epic": tier = 4
+			"legendary": tier = 5
+			_: tier = 1
+	
+	return TIER_COLORS.get(tier, TIER_COLORS[1])
 
 func _get_type_text(option_type: String) -> String:
 	match option_type:
@@ -735,18 +779,11 @@ func _get_player_upgrade_options(luck: float) -> Array:
 	"""
 	Obtiene opciones de mejora para el jugador.
 	
-	NUEVO SISTEMA (v2.0):
-	- Mejoras GLOBALES DE ARMAS (daño, velocidad de ataque, área, etc.)
-	  → Vienen de WeaponUpgradeDatabase.GLOBAL_UPGRADES
-	  → Se aplican via attack_manager.apply_global_upgrade()
-	
-	- Mejoras DEL JUGADOR (vida, armadura, velocidad de movimiento, etc.)
-	  → Vienen de PassiveDatabase
-	  → Se aplican a player_stats
+	SISTEMA v3.0:
+	- Mejoras GLOBALES DE ARMAS → WeaponUpgradeDatabase.GLOBAL_UPGRADES
+	- Mejoras DEL JUGADOR → PlayerUpgradeDatabase (defensivas, utilidad, cursed, únicas)
 	"""
 	var upgrade_options: Array = []
-	
-	# Obtener tiempo de juego para el sistema de tiers
 	var game_time_minutes = _get_game_time_minutes()
 	
 	# 1. MEJORAS GLOBALES DE ARMAS (WeaponUpgradeDatabase)
@@ -754,76 +791,52 @@ func _get_player_upgrade_options(luck: float) -> Array:
 	if WeaponUpgradeDB:
 		var weapon_db = WeaponUpgradeDB.new()
 		if weapon_db.has_method("get_random_global_upgrades"):
-			# Obtener 3 mejoras globales de armas
 			var global_upgrades = weapon_db.get_random_global_upgrades(3, [], luck, game_time_minutes)
 			for upgrade in global_upgrades:
 				upgrade_options.append({
-					"type": OPTION_TYPES.PLAYER_UPGRADE,  # Reutilizamos el tipo
+					"type": OPTION_TYPES.PLAYER_UPGRADE,
 					"upgrade_id": upgrade.get("id", ""),
 					"name": upgrade.get("name", "???"),
 					"description": upgrade.get("description", ""),
 					"icon": upgrade.get("icon", "⚔️"),
-					"rarity": upgrade.get("tier", "common"),
-					"category": "weapon_global",  # Marca especial para aplicar a GlobalWeaponStats
+					"tier": upgrade.get("tier", 1),
+					"category": "weapon_global",
 					"effects": upgrade.get("effects", []),
+					"is_cursed": upgrade.get("is_cursed", false),
+					"is_unique": upgrade.get("is_unique", false),
 					"priority": 0.9
 				})
 	
-	# 2. MEJORAS DEL JUGADOR (PassiveDatabase) - Solo stats defensivos/utilidad
-	var PassiveDB = load("res://scripts/data/PassiveDatabase.gd")
-	if PassiveDB:
-		var db = PassiveDB.new()
-		if db.has_method("get_random_passives"):
-			var passives = db.get_random_passives(4, [], luck)
-			for p in passives:
-				# Filtrar: solo incluir mejoras que NO sean de armas
-				var is_weapon_stat = _is_weapon_upgrade(p)
-				if is_weapon_stat:
-					continue  # Saltamos, estas ahora vienen de WeaponUpgradeDatabase
-				
-				# Convertir effect singular a effects array
-				var effects_array = p.get("effects", [])
-				if effects_array.is_empty() and p.has("effect"):
-					var eff = p.effect
-					# Manejar efectos "multi" que contienen array de efectos
-					if eff.get("type", "") == "multi" and eff.has("effects"):
-						for sub_eff in eff.effects:
-							var sub_op = "add"
-							if sub_eff.get("type", "") == "multiply_stat":
-								sub_op = "multiply"
-							elif sub_eff.get("type", "") == "set_stat":
-								sub_op = "set"
-							effects_array.append({
-								"stat": sub_eff.get("stat", ""),
-								"value": sub_eff.get("value", 0),
-								"operation": sub_op
-							})
-					else:
-						# Efecto simple
-						var operation = "add"
-						if eff.get("type", "") == "multiply_stat":
-							operation = "multiply"
-						elif eff.get("type", "") == "set_stat":
-							operation = "set"
-						effects_array = [{
-							"stat": eff.get("stat", ""),
-							"value": eff.get("value", 0),
-							"operation": operation
-						}]
-				upgrade_options.append({
-					"type": OPTION_TYPES.PLAYER_UPGRADE,
-					"upgrade_id": p.get("id", ""),
-					"name": p.get("name", "???"),
-					"description": p.get("description", ""),
-					"icon": p.get("icon", "✨"),
-					"rarity": p.get("rarity", "common"),
-					"category": p.get("category", "player"),
-					"effects": effects_array,
-					"priority": 0.8
-				})
-			db.queue_free()
+	# 2. MEJORAS DEL JUGADOR (PlayerUpgradeDatabase) - NUEVO SISTEMA
+	var PlayerUpgradeDB = load("res://scripts/data/PlayerUpgradeDatabase.gd")
+	if PlayerUpgradeDB:
+		# Obtener IDs de mejoras únicas que ya tiene el jugador
+		var owned_unique_ids = _get_owned_unique_upgrade_ids()
+		
+		var player_upgrades = PlayerUpgradeDB.get_random_player_upgrades(4, [], luck, game_time_minutes, owned_unique_ids)
+		for upgrade in player_upgrades:
+			upgrade_options.append({
+				"type": OPTION_TYPES.PLAYER_UPGRADE,
+				"upgrade_id": upgrade.get("id", ""),
+				"name": upgrade.get("name", "???"),
+				"description": upgrade.get("description", ""),
+				"icon": upgrade.get("icon", "✨"),
+				"tier": upgrade.get("tier", 1),
+				"category": upgrade.get("category", "player"),
+				"effects": upgrade.get("effects", []),
+				"is_cursed": upgrade.get("is_cursed", false),
+				"is_unique": upgrade.get("is_unique", false),
+				"is_consumable": upgrade.get("is_consumable", false),
+				"priority": 0.8
+			})
 
 	return upgrade_options
+
+func _get_owned_unique_upgrade_ids() -> Array:
+	"""Obtiene IDs de mejoras únicas que el jugador ya posee"""
+	if player_stats and player_stats.has_method("get_owned_unique_ids"):
+		return player_stats.get_owned_unique_ids()
+	return []
 
 func _is_weapon_upgrade(passive: Dictionary) -> bool:
 	"""Determina si una mejora es de armas (para filtrarla de PassiveDatabase)"""
@@ -1050,17 +1063,30 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 	"""
 	Aplicar mejora seleccionada.
 	
-	NUEVO SISTEMA (v2.0):
+	SISTEMA v3.0:
 	- Si category == "weapon_global" → AttackManager.apply_global_upgrade()
-	- Si category es otra cosa → PlayerStats.apply_upgrade()
+	- Si es una mejora del jugador → PlayerStats.apply_upgrade()
+	- Maneja mejoras únicas, cursed y consumables
 	"""
 	var category = option.get("category", "player")
+	var is_unique = option.get("is_unique", false)
+	var is_cursed = option.get("is_cursed", false)
+	var is_consumable = option.get("is_consumable", false)
+	var upgrade_name = option.get("name", "???")
+	
+	# Log especial para mejoras especiales
+	if is_unique:
+		print("[LevelUpPanel] 🔴 MEJORA ÚNICA obtenida: %s" % upgrade_name)
+	if is_cursed:
+		print("[LevelUpPanel] 💜 Mejora CURSED aplicada: %s" % upgrade_name)
+	if is_consumable:
+		print("[LevelUpPanel] 🟡 Mejora CONSUMIBLE usada: %s" % upgrade_name)
 	
 	if category == "weapon_global":
 		# Mejora GLOBAL de armas → va a GlobalWeaponStats
 		if attack_manager and attack_manager.has_method("apply_global_upgrade"):
 			attack_manager.apply_global_upgrade(option)
-			print("[LevelUpPanel] ⚔️ Mejora global de armas aplicada: %s" % option.get("name", "???"))
+			print("[LevelUpPanel] ⚔️ Mejora global de armas aplicada: %s" % upgrade_name)
 		else:
 			push_warning("[LevelUpPanel] AttackManager no tiene apply_global_upgrade()")
 	else:
@@ -1068,9 +1094,12 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 		if player_stats and player_stats.has_method("apply_upgrade"):
 			var success = player_stats.apply_upgrade(option)
 			if success:
-				print("[LevelUpPanel] 🛡️ Mejora del jugador aplicada: %s" % option.get("name", "???"))
+				# Registrar mejora única para evitar duplicados
+				if is_unique and player_stats.has_method("register_unique_upgrade"):
+					player_stats.register_unique_upgrade(option.get("upgrade_id", ""))
+				print("[LevelUpPanel] 🛡️ Mejora del jugador aplicada: %s" % upgrade_name)
 			else:
-				push_warning("[LevelUpPanel] No se pudo aplicar mejora: %s" % option.get("name", "???"))
+				push_warning("[LevelUpPanel] No se pudo aplicar mejora: %s" % upgrade_name)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # API PÚBLICA

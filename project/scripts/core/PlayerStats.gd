@@ -204,6 +204,220 @@ const STAT_METADATA: Dictionary = {
 		"description": "Afecta la rareza de drops y mejoras ofrecidas.",
 		"format": "flat",
 		"color": Color(0.2, 0.9, 0.4)
+	},
+	
+	# === NUEVOS STATS DEFENSIVOS ===
+	"damage_taken_mult": {
+		"name": "Daño Recibido",
+		"icon": "💔",
+		"category": "defensive",
+		"description": "Multiplicador del daño que recibes. Menor es mejor.",
+		"format": "multiplier_inverse",
+		"color": Color(0.8, 0.3, 0.3)
+	},
+	"thorns": {
+		"name": "Espinas",
+		"icon": "🌵",
+		"category": "defensive",
+		"description": "Daño reflejado a enemigos que te golpean.",
+		"format": "flat",
+		"color": Color(0.6, 0.4, 0.2)
+	},
+	"thorns_percent": {
+		"name": "Espinas %",
+		"icon": "🌵",
+		"category": "defensive",
+		"description": "% del daño recibido que se refleja.",
+		"format": "percent",
+		"color": Color(0.6, 0.4, 0.2)
+	},
+	"shield_amount": {
+		"name": "Escudo",
+		"icon": "🛡️",
+		"category": "defensive",
+		"description": "Puntos de escudo que absorben daño.",
+		"format": "flat",
+		"color": Color(0.3, 0.6, 0.9)
+	},
+	"shield_regen": {
+		"name": "Regen. Escudo",
+		"icon": "🔄",
+		"category": "defensive",
+		"description": "Puntos de escudo regenerados por segundo.",
+		"format": "per_second",
+		"color": Color(0.3, 0.6, 0.9)
+	},
+	"revives": {
+		"name": "Revivir",
+		"icon": "💫",
+		"category": "defensive",
+		"description": "Veces que puedes revivir al morir.",
+		"format": "flat",
+		"color": Color(1.0, 0.9, 0.3)
+	},
+	
+	# === NUEVOS STATS OFENSIVOS ===
+	"kill_heal": {
+		"name": "Curar al Matar",
+		"icon": "💀",
+		"category": "offensive",
+		"description": "HP recuperado por cada enemigo eliminado.",
+		"format": "flat",
+		"color": Color(0.8, 0.2, 0.4)
+	},
+	"damage_flat": {
+		"name": "Daño Plano",
+		"icon": "➕",
+		"category": "weapon_global",
+		"description": "Daño adicional en cada ataque.",
+		"format": "flat",
+		"color": Color(1.0, 0.5, 0.2)
+	},
+	"burn_damage": {
+		"name": "Daño Fuego",
+		"icon": "🔥",
+		"category": "weapon_global",
+		"description": "Daño de quemadura adicional por segundo.",
+		"format": "flat",
+		"color": Color(1.0, 0.4, 0.1)
+	},
+	"freeze_chance": {
+		"name": "Prob. Congelar",
+		"icon": "❄️",
+		"category": "weapon_global",
+		"description": "Probabilidad de congelar enemigos.",
+		"format": "percent",
+		"color": Color(0.4, 0.8, 1.0)
+	},
+	"bleed_chance": {
+		"name": "Prob. Sangrado",
+		"icon": "🩸",
+		"category": "weapon_global",
+		"description": "Probabilidad de causar sangrado.",
+		"format": "percent",
+		"color": Color(0.8, 0.2, 0.2)
+	},
+	"execute_threshold": {
+		"name": "Umbral Ejecución",
+		"icon": "⚰️",
+		"category": "weapon_global",
+		"description": "Mata instantáneamente enemigos bajo este % de HP.",
+		"format": "percent",
+		"color": Color(0.3, 0.1, 0.1)
+	},
+	"overkill_damage": {
+		"name": "Daño Exceso",
+		"icon": "💥",
+		"category": "weapon_global",
+		"description": "% del daño excedente que pasa al siguiente enemigo.",
+		"format": "percent",
+		"color": Color(1.0, 0.3, 0.1)
+	},
+	"attack_speed_mult": {
+		"name": "Vel. Ataque",
+		"icon": "⚡",
+		"category": "weapon_global",
+		"description": "Multiplicador de velocidad de ataque.",
+		"format": "multiplier",
+		"color": Color(1.0, 0.8, 0.2)
+	},
+	"extra_pierce": {
+		"name": "Penetración",
+		"icon": "🔱",
+		"category": "weapon_global",
+		"description": "Enemigos adicionales que atraviesan los proyectiles.",
+		"format": "flat",
+		"color": Color(0.5, 0.5, 0.8)
+	},
+	"chain_count": {
+		"name": "Rebotes",
+		"icon": "⚡",
+		"category": "weapon_global",
+		"description": "Veces que los proyectiles rebotan entre enemigos.",
+		"format": "flat",
+		"color": Color(0.8, 0.8, 0.2)
+	},
+	"explosion_chance": {
+		"name": "Prob. Explosión",
+		"icon": "💣",
+		"category": "weapon_global",
+		"description": "Probabilidad de causar explosión al matar.",
+		"format": "percent",
+		"color": Color(1.0, 0.5, 0.1)
+	},
+	"explosion_damage": {
+		"name": "Daño Explosión",
+		"icon": "💣",
+		"category": "weapon_global",
+		"description": "Daño de las explosiones.",
+		"format": "flat",
+		"color": Color(1.0, 0.5, 0.1)
+	},
+	"range_mult": {
+		"name": "Alcance",
+		"icon": "🎯",
+		"category": "weapon_global",
+		"description": "Multiplicador del alcance de ataques.",
+		"format": "multiplier",
+		"color": Color(0.4, 0.7, 0.9)
+	},
+	
+	# === NUEVOS STATS DE UTILIDAD ===
+	"gold_mult": {
+		"name": "Oro",
+		"icon": "🪙",
+		"category": "utility",
+		"description": "Multiplicador del oro obtenido.",
+		"format": "multiplier",
+		"color": Color(1.0, 0.85, 0.2)
+	},
+	"reroll_count": {
+		"name": "Rerolls Extra",
+		"icon": "🔄",
+		"category": "utility",
+		"description": "Rerolls adicionales en level up.",
+		"format": "flat",
+		"color": Color(0.5, 0.8, 1.0)
+	},
+	"banish_count": {
+		"name": "Banish Extra",
+		"icon": "❌",
+		"category": "utility",
+		"description": "Banishes adicionales en level up.",
+		"format": "flat",
+		"color": Color(1.0, 0.4, 0.4)
+	},
+	"curse": {
+		"name": "Maldición",
+		"icon": "☠️",
+		"category": "utility",
+		"description": "Aumenta enemigos y dificultad, pero también recompensas.",
+		"format": "percent",
+		"color": Color(0.5, 0.1, 0.5)
+	},
+	"growth": {
+		"name": "Crecimiento",
+		"icon": "📈",
+		"category": "utility",
+		"description": "Bonus a TODOS los stats que aumenta con el tiempo.",
+		"format": "percent",
+		"color": Color(0.3, 0.9, 0.5)
+	},
+	"magnet_strength": {
+		"name": "Fuerza Imán",
+		"icon": "🧲",
+		"category": "utility",
+		"description": "Velocidad a la que se atraen los objetos.",
+		"format": "multiplier",
+		"color": Color(0.8, 0.5, 1.0)
+	},
+	"levelup_options": {
+		"name": "Opciones Extra",
+		"icon": "📋",
+		"category": "utility",
+		"description": "Opciones adicionales al subir de nivel.",
+		"format": "flat",
+		"color": Color(0.6, 0.8, 1.0)
 	}
 }
 
@@ -212,29 +426,59 @@ const BASE_STATS: Dictionary = {
 	"max_health": 100.0,
 	"health_regen": 0.0,
 	"armor": 0.0,
-	"dodge_chance": 0.0,        # Nuevo: probabilidad de esquivar (máx 0.6)
-	"life_steal": 0.0,          # Nuevo: % de daño que recupera como vida
+	"dodge_chance": 0.0,           # Probabilidad de esquivar (máx 0.6)
+	"life_steal": 0.0,             # % de daño que recupera como vida
+	"damage_taken_mult": 1.0,      # Multiplicador de daño recibido (menor = mejor)
+	"thorns": 0.0,                 # Daño plano reflejado
+	"thorns_percent": 0.0,         # % del daño reflejado
+	"shield_amount": 0.0,          # Escudo que absorbe daño
+	"shield_regen": 0.0,           # Regeneración de escudo/s
+	"revives": 0,                  # Vidas extra
 
-	# Ofensivos
+	# Ofensivos - Stats globales de armas
 	"damage_mult": 1.0,
+	"damage_flat": 0.0,            # Daño plano adicional
 	"cooldown_mult": 1.0,
+	"attack_speed_mult": 1.0,      # Multiplicador de velocidad de ataque
 	"area_mult": 1.0,
-	"projectile_speed_mult": 1.0,  # Nuevo
-	"duration_mult": 1.0,          # Nuevo
-	"extra_projectiles": 0,        # Nuevo: proyectiles adicionales
-	"knockback_mult": 1.0,         # Nuevo
+	"projectile_speed_mult": 1.0,
+	"duration_mult": 1.0,
+	"extra_projectiles": 0,        # Proyectiles adicionales
+	"extra_pierce": 0,             # Penetración adicional
+	"knockback_mult": 1.0,
+	"range_mult": 1.0,             # Alcance de ataques
+	"chain_count": 0,              # Rebotes entre enemigos
+	
+	# Efectos especiales de ataque
+	"burn_damage": 0.0,            # Daño de quemadura/s
+	"freeze_chance": 0.0,          # Prob. de congelar
+	"bleed_chance": 0.0,           # Prob. de sangrado
+	"explosion_chance": 0.0,       # Prob. de explosión al matar
+	"explosion_damage": 0.0,       # Daño de explosiones
+	"execute_threshold": 0.0,      # Umbral de ejecución (%)
+	"overkill_damage": 0.0,        # % de daño excedente transferido
 
 	# Críticos
 	"crit_chance": 0.05,
 	"crit_damage": 2.0,
+	
+	# Curación
+	"kill_heal": 0.0,              # HP por kill
 
 	# Utilidad
 	"move_speed": 1.0,
 	"pickup_range": 1.0,
 	"pickup_range_flat": 0.0,
+	"magnet_strength": 1.0,        # Velocidad de atracción
 	"xp_mult": 1.0,
 	"coin_value_mult": 1.0,
-	"luck": 0.0
+	"gold_mult": 1.0,              # Multiplicador de oro
+	"luck": 0.0,
+	"curse": 0.0,                  # Dificultad extra = más recompensas
+	"growth": 0.0,                 # Bonus que escala con tiempo
+	"reroll_count": 0,             # Rerolls extra
+	"banish_count": 0,             # Banishes extra
+	"levelup_options": 0           # Opciones extra en levelup
 }
 
 const MAX_LEVEL: int = 99
@@ -243,17 +487,43 @@ const XP_SCALING: float = 1.15  # Cada nivel requiere 15% más XP
 
 # Límites de stats
 const STAT_LIMITS: Dictionary = {
+	# Multiplicadores
 	"cooldown_mult": {"min": 0.1, "max": 2.0},
-	"crit_chance": {"min": 0.0, "max": 1.0},
 	"damage_mult": {"min": 0.1, "max": 10.0},
+	"damage_taken_mult": {"min": 0.1, "max": 3.0},
 	"move_speed": {"min": 0.3, "max": 3.0},
 	"pickup_range": {"min": 0.5, "max": 5.0},
-	"dodge_chance": {"min": 0.0, "max": 0.6},  # Máximo 60%
-	"life_steal": {"min": 0.0, "max": 0.5},    # Máximo 50%
 	"area_mult": {"min": 0.5, "max": 3.0},
 	"projectile_speed_mult": {"min": 0.5, "max": 3.0},
 	"duration_mult": {"min": 0.5, "max": 3.0},
 	"knockback_mult": {"min": 0.0, "max": 5.0},
+	"attack_speed_mult": {"min": 0.1, "max": 5.0},
+	"range_mult": {"min": 0.5, "max": 3.0},
+	"magnet_strength": {"min": 0.5, "max": 5.0},
+	"xp_mult": {"min": 0.5, "max": 5.0},
+	"gold_mult": {"min": 0.5, "max": 5.0},
+	
+	# Probabilidades (0-100%)
+	"crit_chance": {"min": 0.0, "max": 1.0},
+	"dodge_chance": {"min": 0.0, "max": 0.75},      # Máximo 75%
+	"life_steal": {"min": 0.0, "max": 0.5},          # Máximo 50%
+	"freeze_chance": {"min": 0.0, "max": 0.5},       # Máximo 50%
+	"bleed_chance": {"min": 0.0, "max": 0.5},        # Máximo 50%
+	"explosion_chance": {"min": 0.0, "max": 0.5},    # Máximo 50%
+	"execute_threshold": {"min": 0.0, "max": 0.15},  # Máximo 15% HP
+	"overkill_damage": {"min": 0.0, "max": 1.0},     # Máximo 100%
+	"thorns_percent": {"min": 0.0, "max": 2.0},      # Máximo 200%
+	"curse": {"min": 0.0, "max": 2.0},               # Máximo 200%
+	"growth": {"min": 0.0, "max": 1.0},              # Máximo 100%
+	
+	# Valores planos con límite
+	"extra_projectiles": {"min": 0, "max": 10},
+	"extra_pierce": {"min": 0, "max": 20},
+	"chain_count": {"min": 0, "max": 10},
+	"revives": {"min": 0, "max": 3},
+	"levelup_options": {"min": 0, "max": 3},
+	"reroll_count": {"min": 0, "max": 5},
+	"banish_count": {"min": 0, "max": 5},
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -268,6 +538,9 @@ var temp_modifiers: Dictionary = {}  # stat_name -> [{amount, duration, source}]
 
 # Historial de mejoras aplicadas (para mostrar en pausa)
 var collected_upgrades: Array = []  # [{id, name, icon, description, effects}]
+
+# IDs de mejoras ÚNICAS obtenidas (para evitar duplicados)
+var owned_unique_ids: Array = []  # ["phoenix_heart", "critical_mastery", ...]
 
 # Vida actual
 var current_health: float = 100.0
@@ -298,6 +571,7 @@ func _reset_stats() -> void:
 	stats = BASE_STATS.duplicate()
 	temp_modifiers.clear()
 	collected_upgrades.clear()
+	owned_unique_ids.clear()
 	current_health = stats.max_health
 	level = 1
 	current_xp = 0.0
@@ -1137,6 +1411,22 @@ func add_upgrade(upgrade_data: Dictionary) -> void:
 func get_collected_upgrades() -> Array:
 	"""Obtener lista de mejoras recolectadas"""
 	return collected_upgrades.duplicate()
+
+func register_unique_upgrade(upgrade_id: String) -> void:
+	"""Registrar una mejora única como obtenida (para evitar duplicados)"""
+	if upgrade_id.is_empty():
+		return
+	if upgrade_id not in owned_unique_ids:
+		owned_unique_ids.append(upgrade_id)
+		print("[PlayerStats] 🔴 Mejora única registrada: %s" % upgrade_id)
+
+func get_owned_unique_ids() -> Array:
+	"""Obtener IDs de mejoras únicas obtenidas"""
+	return owned_unique_ids.duplicate()
+
+func has_unique_upgrade(upgrade_id: String) -> bool:
+	"""Verificar si ya tiene una mejora única"""
+	return upgrade_id in owned_unique_ids
 
 func modify_stat(stat_name: String, value: float, operation: String = "add") -> void:
 	"""Modificar un stat con operación específica"""
