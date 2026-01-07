@@ -39,6 +39,10 @@ var is_paused: bool = false
 var remaining_rerolls: int = 3
 var remaining_banishes: int = 2
 
+# Cola de level ups pendientes (para manejar múltiples subidas de nivel consecutivas)
+var pending_level_ups: Array = []
+var level_up_panel_active: bool = false
+
 # Estadísticas de la partida
 var run_stats: Dictionary = {
 	"time": 0.0,
@@ -54,6 +58,9 @@ var _is_resuming: bool = false
 var _saved_state: Dictionary = {}
 
 func _ready() -> void:
+	# Game debe procesar siempre para manejar input de pausa
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	
 	# Verificar si hay una partida guardada para reanudar
 	print("🎮 [Game] _ready() - Verificando SessionState...")
 	print("   - SessionState existe: %s" % (SessionState != null))
@@ -585,11 +592,13 @@ func _input(event: InputEvent) -> void:
 
 func _pause_game() -> void:
 	is_paused = true
+	get_tree().paused = true  # Pausar el árbol del juego
 	if pause_menu:
 		pause_menu.show_pause_menu(game_time)
 
 func _on_resume_game() -> void:
 	is_paused = false
+	get_tree().paused = false  # Reanudar el árbol del juego
 
 func _update_hud() -> void:
 	if not hud:
@@ -626,8 +635,25 @@ func _on_exp_gained(amount: int, total: int) -> void:
 func _on_level_up(new_level: int, _upgrades: Array) -> void:
 	run_stats["level"] = new_level
 
-	# Mostrar panel de level up
-	_show_level_up_panel(new_level)
+	# Añadir a la cola de level ups pendientes
+	pending_level_ups.append(new_level)
+	
+	# Solo mostrar panel si no hay uno activo
+	if not level_up_panel_active:
+		_process_next_level_up()
+
+func _process_next_level_up() -> void:
+	"""Procesar el siguiente level up de la cola"""
+	if pending_level_ups.is_empty():
+		# No hay más level ups pendientes - reanudar juego
+		level_up_panel_active = false
+		get_tree().paused = false
+		return
+	
+	# Tomar el siguiente nivel de la cola
+	var level = pending_level_ups.pop_front()
+	level_up_panel_active = true
+	_show_level_up_panel(level)
 
 func _show_level_up_panel(level: int) -> void:
 	"""Mostrar el panel de selección de mejoras al subir nivel"""
@@ -684,6 +710,10 @@ func _on_level_up_option_selected(option: Dictionary) -> void:
 func _on_level_up_panel_closed() -> void:
 	"""Callback cuando se cierra el panel de level up"""
 	print("🆙 [Game] Panel de level up cerrado")
+	
+	# Procesar el siguiente level up de la cola (si hay)
+	# Esto también reanudará el juego si no hay más pendientes
+	_process_next_level_up()
 
 func _on_stat_changed(stat_name: String, _old_value: float, new_value: float) -> void:
 	"""Callback cuando cambia un stat del jugador - propagar al player"""

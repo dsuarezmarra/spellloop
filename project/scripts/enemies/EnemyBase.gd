@@ -1108,6 +1108,13 @@ func _attempt_attack() -> void:
 	# Verificar que tenemos referencia al jugador
 	if not player_ref or not is_instance_valid(player_ref):
 		return
+	
+	# Verificar precisión (afectada por ceguera)
+	var accuracy = get_attack_accuracy()
+	if accuracy < 1.0 and randf() > accuracy:
+		# ¡Falló el ataque debido a ceguera!
+		print("[EnemyBase] 👁️ %s falló ataque (cegado, %.0f%% precisión)" % [enemy_id, accuracy * 100])
+		return
 
 	# Calcular daño según arquetipo
 	var final_damage = damage

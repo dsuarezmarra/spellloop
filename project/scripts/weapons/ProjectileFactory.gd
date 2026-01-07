@@ -670,9 +670,10 @@ class AOEEffect extends Node2D:
 					_enhanced_visual.play_appear()
 					_use_enhanced = true
 					print("[AOEEffect] ✓ Visual mejorado creado para: %s" % weapon_id)
-					# Auto-destruir después de la duración
+					# Auto-destruir después de la duración (con verificación de validez)
 					await get_tree().create_timer(duration + 0.5).timeout
-					queue_free()
+					if is_instance_valid(self):
+						queue_free()
 					return
 				else:
 					print("[AOEEffect] ✗ create_aoe_visual retornó null para: %s" % weapon_id)
@@ -1147,7 +1148,8 @@ class ChainProjectile extends Node2D:
 
 		# Esperar a que el visual termine y destruir
 		await get_tree().create_timer(0.3).timeout
-		queue_free()
+		if is_instance_valid(self):
+			queue_free()
 
 	func _apply_damage_to_target(target: Node2D) -> void:
 		"""Aplicar daño a un objetivo"""

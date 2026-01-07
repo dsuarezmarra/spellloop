@@ -374,6 +374,8 @@ func create_chain_sequence(targets: Array[Vector2], delay_between: float = 0.08)
 	for i in range(targets.size() - 1):
 		if i > 0:
 			await get_tree().create_timer(delay_between).timeout
+			if not is_instance_valid(self):
+				return
 
 		_start_pos = targets[i]
 		_end_pos = targets[i + 1]
@@ -389,7 +391,8 @@ func create_chain_sequence(targets: Array[Vector2], delay_between: float = 0.08)
 
 	# Auto-destruir después de mostrar
 	await get_tree().create_timer(0.4).timeout
-	fade_out()
+	if is_instance_valid(self):
+		fade_out()
 
 func fade_out(duration: float = 0.2) -> void:
 	"""Desvanecer el rayo"""

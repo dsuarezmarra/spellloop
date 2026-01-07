@@ -309,9 +309,10 @@ func _get_enemies_in_range(player: Node2D) -> Array:
 	if not player or not player.get_tree():
 		return enemies
 	
-	# Obtener range_mult de GlobalWeaponStats
+	# Obtener range_mult de GlobalWeaponStats (buscar por grupo)
 	var range_mult = 1.0
-	var gws = Engine.get_singleton("GlobalWeaponStats") if Engine.has_singleton("GlobalWeaponStats") else null
+	var gws_nodes = player.get_tree().get_nodes_in_group("global_weapon_stats")
+	var gws = gws_nodes[0] if gws_nodes.size() > 0 else null
 	if gws and gws.has_method("get_stat"):
 		range_mult = gws.get_stat("range_mult")
 	var effective_range = weapon_range * range_mult
@@ -484,11 +485,13 @@ func _create_chain_projectile(player: Node2D, first_target: Node2D, dmg: float, 
 
 func _build_projectile_data(dmg: float, crit: float) -> Dictionary:
 	"""Construir datos base para proyectiles"""
-	# Obtener crit_damage de GlobalWeaponStats
+	# Obtener crit_damage de GlobalWeaponStats (buscar por grupo)
 	var crit_dmg = 2.0
-	var gws = Engine.get_singleton("GlobalWeaponStats") if Engine.has_singleton("GlobalWeaponStats") else null
-	if gws and gws.has_method("get_crit_damage"):
-		crit_dmg = gws.get_crit_damage()
+	if get_tree():
+		var gws_nodes = get_tree().get_nodes_in_group("global_weapon_stats")
+		var gws = gws_nodes[0] if gws_nodes.size() > 0 else null
+		if gws and gws.has_method("get_crit_damage"):
+			crit_dmg = gws.get_crit_damage()
 	
 	return {
 		"weapon_id": id,

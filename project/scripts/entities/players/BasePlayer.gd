@@ -488,24 +488,49 @@ func _draw_down_arrow(pos: Vector2, col: Color) -> void:
 var _last_damage_element: String = "physical"
 
 func take_damage(amount: int, element: String = "physical") -> void:
-	"""Recibir daño (aplica weakness si está activo)"""
+	"""Recibir daño (aplica dodge, armor y weakness)"""
 	_last_damage_element = element
-	if health_component:
-		var final_damage = amount
-		# Aplicar weakness si está activo
-		if _is_weakened:
-			final_damage = int(amount * (1.0 + _weakness_amount))
-		health_component.take_damage(final_damage)
-		
-		# Mostrar texto flotante de daño sobre el player
-		FloatingText.spawn_player_damage(global_position + Vector2(0, -35), final_damage, element)
-		
-		# Efecto visual de impacto
-		_play_damage_flash(element)
-		
-		print("[%s] 💥 Daño recibido: %d (%s) (HP: %d/%d)%s" % [character_class, final_damage, element, health_component.current_health, max_hp, " [WEAKENED]" if _is_weakened else ""])
-	else:
+	if not health_component:
 		print("[%s] ⚠️ HealthComponent no disponible" % character_class)
+		return
+	
+	# Obtener PlayerStats para dodge y armor
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	
+	# 1. Verificar esquiva (dodge) primero
+	if player_stats and player_stats.has_method("get_stat"):
+		var dodge_chance = player_stats.get_stat("dodge_chance")
+		if dodge_chance > 0 and randf() < minf(dodge_chance, 0.6):  # Máximo 60% de esquiva
+			# ¡Esquivó el daño!
+			print("[%s] ✨ ¡ESQUIVADO! (%.0f%% chance)" % [character_class, dodge_chance * 100])
+			FloatingText.spawn_text(global_position + Vector2(0, -35), "DODGE!", Color(0.3, 0.9, 1.0))
+			return
+	
+	var final_damage = amount
+	
+	# 2. Aplicar armor (reducción de daño)
+	var effective_armor = armor  # Usar armor local primero
+	if player_stats and player_stats.has_method("get_stat"):
+		effective_armor = player_stats.get_stat("armor")
+	
+	if effective_armor > 0:
+		final_damage = maxi(1, amount - int(effective_armor))  # Mínimo 1 de daño
+	
+	# 3. Aplicar weakness si está activo (multiplicador de daño recibido)
+	if _is_weakened:
+		final_damage = int(final_damage * (1.0 + _weakness_amount))
+	
+	# Aplicar daño al HealthComponent
+	health_component.take_damage(final_damage)
+	
+	# Mostrar texto flotante de daño sobre el player
+	FloatingText.spawn_player_damage(global_position + Vector2(0, -35), final_damage, element)
+	
+	# Efecto visual de impacto
+	_play_damage_flash(element)
+	
+	var armor_text = " [ARMOR: -%d]" % (amount - final_damage) if effective_armor > 0 and amount > final_damage else ""
+	print("[%s] 💥 Daño recibido: %d → %d (%s) (HP: %d/%d)%s%s" % [character_class, amount, final_damage, element, health_component.current_health, max_hp, " [WEAKENED]" if _is_weakened else "", armor_text])
 
 func _play_damage_flash(element: String) -> void:
 	"""Flash de daño según el elemento"""
@@ -578,6 +603,7 @@ func _spawn_heal_particles() -> void:
 func _on_health_changed(current: int, max_val: int) -> void:
 	"""Callback cuando la salud cambia"""
 	hp = current
+	max_hp = max_val  # Sincronizar también max_hp
 	player_damaged.emit(current, max_val)
 
 func _on_health_died() -> void:

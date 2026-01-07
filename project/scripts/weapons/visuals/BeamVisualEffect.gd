@@ -357,7 +357,8 @@ func fire(duration: float = 0.5) -> void:
 	
 	# Mantener por duración
 	await get_tree().create_timer(duration).timeout
-	dissipate()
+	if is_instance_valid(self):
+		dissipate()
 
 func _update_beam_points(current_length: float) -> void:
 	"""Actualizar puntos del rayo con efecto zigzag"""

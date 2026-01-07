@@ -640,7 +640,7 @@ func to_save_data() -> Dictionary:
 			},
 			"is_elite": enemy.is_elite if "is_elite" in enemy else false,
 			"is_boss": enemy.is_boss if "is_boss" in enemy else false,
-			"tier": enemy.tier if "tier" in enemy else 1
+			"tier": enemy.enemy_tier if "enemy_tier" in enemy else 1
 		}
 		
 		# Guardar HP si tiene HealthComponent

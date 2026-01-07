@@ -576,10 +576,24 @@ func _apply_ability_cooldown(ability: String) -> void:
 
 func _update_boss_phase() -> void:
 	"""Actualizar la fase del boss según su HP actual"""
-	if not enemy or not "current_hp" in enemy or not "max_hp" in enemy:
+	if not enemy:
 		return
 	
-	var hp_percent = float(enemy.current_hp) / float(enemy.max_hp)
+	# Obtener HP actual - usar health_component si existe, sino variable hp directa
+	var current_hp: float = 0.0
+	var max_hp_val: float = 1.0  # Evitar división por cero
+	
+	if enemy.has_node("HealthComponent"):
+		var hc = enemy.get_node("HealthComponent")
+		current_hp = hc.current_health
+		max_hp_val = max(1.0, hc.max_health)
+	elif "hp" in enemy and "max_hp" in enemy:
+		current_hp = enemy.hp
+		max_hp_val = max(1.0, enemy.max_hp)
+	else:
+		return
+	
+	var hp_percent = current_hp / max_hp_val
 	
 	# Obtener umbrales de fase (ajustados por escalado del minuto)
 	var phase_mult = boss_scaling_config.get("phase_threshold_mult", 1.0)

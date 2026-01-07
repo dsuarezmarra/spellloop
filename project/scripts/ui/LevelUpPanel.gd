@@ -66,6 +66,10 @@ var reroll_count: int = 3
 var banish_count: int = 2
 var locked: bool = false
 
+# Cache de estilos para evitar memory leaks
+var _option_styles: Array[StyleBoxFlat] = []  # Un estilo por panel de opción
+var _button_styles: Array[StyleBoxFlat] = []  # Un estilo por botón
+
 # Referencias
 var attack_manager: AttackManager = null
 var player_stats: PlayerStats = null
@@ -314,19 +318,19 @@ func _input(event: InputEvent) -> void:
 
 	var handled = false
 
-	# === NAVEGACION SOLO CON WASD (NO FLECHAS) ===
+	# === NAVEGACION CON WASD Y FLECHAS ===
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
-			KEY_A:
+			KEY_A, KEY_LEFT:
 				_navigate_horizontal(-1)
 				handled = true
-			KEY_D:
+			KEY_D, KEY_RIGHT:
 				_navigate_horizontal(1)
 				handled = true
-			KEY_W:
+			KEY_W, KEY_UP:
 				_navigate_vertical(-1)
 				handled = true
-			KEY_S:
+			KEY_S, KEY_DOWN:
 				_navigate_vertical(1)
 				handled = true
 			KEY_SPACE, KEY_ENTER:
@@ -508,7 +512,8 @@ func _on_skip() -> void:
 	_close_panel()
 
 func _close_panel() -> void:
-	get_tree().paused = false
+	# NOTA: NO despausamos aquí - Game.gd se encarga de eso
+	# después de verificar si hay más level ups pendientes
 	panel_closed.emit()
 	queue_free()
 
@@ -539,7 +544,14 @@ func _update_all_visuals() -> void:
 		if not is_visible:
 			continue
 
-		var style = panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+		# Usar estilo cacheado o crear uno nuevo si no existe
+		if i >= _option_styles.size():
+			var new_style = StyleBoxFlat.new()
+			new_style.bg_color = PANEL_BG
+			new_style.set_corner_radius_all(8)
+			_option_styles.append(new_style)
+		
+		var style = _option_styles[i]
 		if is_selected:
 			# En modo eliminar, borde rojo
 			style.border_color = BANISH_COLOR if banish_mode else SELECTED_COLOR
@@ -571,10 +583,17 @@ func _update_all_visuals() -> void:
 		else:
 			panel.modulate = Color.WHITE
 
-		var style = panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+		# Usar estilo cacheado o crear uno nuevo si no existe
+		if i >= _button_styles.size():
+			var new_style = StyleBoxFlat.new()
+			new_style.set_corner_radius_all(6)
+			_button_styles.append(new_style)
+		
+		var style = _button_styles[i]
 		if is_disabled:
 			style.border_color = DISABLED_COLOR
 			style.bg_color = Color(0.1, 0.1, 0.12)
+			style.set_border_width_all(2)
 		elif is_selected:
 			style.border_color = SELECTED_COLOR
 			style.bg_color = BUTTON_HOVER
