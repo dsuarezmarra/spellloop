@@ -593,12 +593,17 @@ func _input(event: InputEvent) -> void:
 func _pause_game() -> void:
 	is_paused = true
 	get_tree().paused = true  # Pausar el árbol del juego
+	print("⏸️ [Game] Juego pausado - is_paused=%s, tree.paused=%s" % [is_paused, get_tree().paused])
 	if pause_menu:
 		pause_menu.show_pause_menu(game_time)
 
 func _on_resume_game() -> void:
+	# Solo reanudar si no hay level up activo
+	if level_up_panel_active:
+		return
 	is_paused = false
 	get_tree().paused = false  # Reanudar el árbol del juego
+	print("▶️ [Game] Juego reanudado - is_paused=%s, tree.paused=%s" % [is_paused, get_tree().paused])
 
 func _update_hud() -> void:
 	if not hud:
@@ -647,6 +652,7 @@ func _process_next_level_up() -> void:
 	if pending_level_ups.is_empty():
 		# No hay más level ups pendientes - reanudar juego
 		level_up_panel_active = false
+		is_paused = false
 		get_tree().paused = false
 		return
 	
@@ -696,7 +702,11 @@ func _show_level_up_panel(level: int) -> void:
 	if panel.has_signal("banish_used"):
 		panel.banish_used.connect(_on_banish_used)
 
-	# Mostrar panel (pausa el juego internamente)
+	# Pausar el juego y actualizar estado interno
+	is_paused = true
+	get_tree().paused = true
+	
+	# Mostrar panel
 	if panel.has_method("show_panel"):
 		panel.show_panel()
 

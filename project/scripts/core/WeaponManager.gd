@@ -39,6 +39,9 @@ func increase_weapon_cap(amount: int = 1, cap_limit: int = 8) -> bool:
 var auto_target_range: float = 400.0
 
 func _ready():
+	# Asegurar que WeaponManager respete la pausa del juego
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	
 	print("⚔️ WeaponManager inicializado")
 	# Cargar script del proyectil mágico
 	if ResourceLoader.exists("res://scripts/magic/SpellloopMagicProjectile.gd"):

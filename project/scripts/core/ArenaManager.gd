@@ -111,6 +111,8 @@ var zone_sprites: Array[Node2D] = []
 var boundary_node: Node2D = null
 
 func _ready() -> void:
+	# Asegurar que ArenaManager respete la pausa del juego
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	print("🏟️ [ArenaManager] Inicializando...")
 
 func initialize(player: Node2D, root: Node2D, resume_seed: int = -1) -> void:

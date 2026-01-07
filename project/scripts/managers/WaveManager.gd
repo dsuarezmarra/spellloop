@@ -124,6 +124,10 @@ func _find_references() -> void:
 # PROCESO PRINCIPAL
 # ═══════════════════════════════════════════════════════════════════════════════
 
+func _ready() -> void:
+	# Asegurar que WaveManager respete la pausa del juego
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+
 func _process(delta: float) -> void:
 	if not enemy_manager or not player:
 		_find_references()

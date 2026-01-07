@@ -494,6 +494,10 @@ func take_damage(amount: int, element: String = "physical") -> void:
 		print("[%s] ⚠️ HealthComponent no disponible" % character_class)
 		return
 	
+	# No recibir daño si ya está muerto
+	if not health_component.is_alive:
+		return
+	
 	# Obtener PlayerStats para dodge y armor
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	

@@ -60,6 +60,9 @@ var difficulty_manager = null
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _ready() -> void:
+	# Asegurar que EnemyManager respete la pausa del juego
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	
 	randomize()
 	_load_enemy_scripts()
 	_find_difficulty_manager()

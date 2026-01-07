@@ -123,6 +123,9 @@ func _get_weapon_name(weapon) -> String:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _ready() -> void:
+	# Asegurar que AttackManager respete la pausa del juego
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	
 	# Añadir al grupo para que ProjectileFactory pueda encontrarnos
 	add_to_group("attack_manager")
 	

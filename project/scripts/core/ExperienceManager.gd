@@ -44,6 +44,9 @@ var streak_timeout: float = 2.0  # Segundos para mantener streak
 var level_exp_curve: Array[int] = []
 
 func _ready():
+	# Asegurar que ExperienceManager respete la pausa del juego
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	
 	print("⭐ ExperienceManager inicializado")
 	setup_level_curve()
 	_load_coin_scene()

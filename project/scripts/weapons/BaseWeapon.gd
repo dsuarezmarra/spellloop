@@ -489,8 +489,9 @@ func _build_projectile_data(dmg: float, crit: float) -> Dictionary:
 	"""Construir datos base para proyectiles"""
 	# Obtener crit_damage de GlobalWeaponStats (buscar por grupo)
 	var crit_dmg = 2.0
-	if get_tree():
-		var gws_nodes = get_tree().get_nodes_in_group("global_weapon_stats")
+	var tree = Engine.get_main_loop() as SceneTree
+	if tree:
+		var gws_nodes = tree.get_nodes_in_group("global_weapon_stats")
 		var gws = gws_nodes[0] if gws_nodes.size() > 0 else null
 		if gws and gws.has_method("get_crit_damage"):
 			crit_dmg = gws.get_crit_damage()

@@ -300,6 +300,10 @@ func _reset_stats() -> void:
 	current_xp = 0.0
 	xp_to_next_level = BASE_XP_TO_LEVEL
 
+func _ready() -> void:
+	# Asegurar que PlayerStats respete la pausa del juego
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+
 func initialize(attack_mgr: AttackManager = null, player: Node = null) -> void:
 	"""Inicializar con referencia al AttackManager y al player"""
 	attack_manager = attack_mgr
