@@ -107,7 +107,7 @@ func _ready() -> void:
 	# Añadir a grupo de enemigos para detección
 	add_to_group("enemies")
 
-	print("[EnemyBase] ✓ _ready() tier=%d animated=%s" % [enemy_tier, spritesheet_loaded])
+	# print("[EnemyBase] ✓ _ready() tier=%d animated=%s" % [enemy_tier, spritesheet_loaded])
 
 	# Configurar z_index
 	self.z_index = 0
@@ -121,7 +121,7 @@ func _ready() -> void:
 			false,  # is_ranged
 			null    # projectile_scene
 		)
-		print("[EnemyBase] ✓ Sistema de ataque inicializado para %s" % name)
+		# print("[EnemyBase] ✓ Sistema de ataque inicializado para %s" % name)
 
 func _get_scale_for_tier() -> float:
 	"""Obtener escala según tier del enemigo"""
@@ -263,7 +263,8 @@ func initialize(data: Dictionary, player):
 		# Ya tiene animated_sprite, actualizar escala por si el tier cambió
 		animated_sprite.sprite_scale = _get_scale_for_tier()
 
-	print("[EnemyBase] ✓ Inicializado %s tier=%d animated=%s" % [enemy_id, enemy_tier, animated_sprite != null])
+	# Debug de inicialización (comentado para producción)
+	# print("[EnemyBase] ✓ Inicializado %s tier=%d animated=%s" % [enemy_id, enemy_tier, animated_sprite != null])
 
 func initialize_from_database(data: Dictionary, player) -> void:
 	"""Inicializar desde EnemyDatabase con todos los datos completos"""
@@ -346,22 +347,22 @@ func initialize_from_database(data: Dictionary, player) -> void:
 	# ═══════════════════════════════════════════════════════════════════════════════
 	if health_component:
 		health_component.initialize(max_hp)
-		if is_boss:
-			print("[EnemyBase] 🔥 BOSS HP reinicializado: %d/%d" % [health_component.current_health, health_component.max_health])
+		# if is_boss:
+		#	print("[EnemyBase] 🔥 BOSS HP reinicializado: %d/%d" % [health_component.current_health, health_component.max_health])
 	else:
 		# HealthComponent se creará en _ready(), así que diferimos la reinicialización
 		call_deferred("_reinitialize_health_component")
 
-	print("[EnemyBase] ✓ Inicializado desde DB: %s (T%d, %s) HP:%d SPD:%.0f DMG:%d" % [
-		data.get("name", enemy_id), enemy_tier, archetype, max_hp, speed, damage
-	])
+	# print("[EnemyBase] ✓ Inicializado desde DB: %s (T%d, %s) HP:%d SPD:%.0f DMG:%d" % [
+	#	data.get("name", enemy_id), enemy_tier, archetype, max_hp, speed, damage
+	# ])
 
 func _reinitialize_health_component() -> void:
 	"""Reinicializar el HealthComponent con el HP correcto (llamado después de _ready)"""
 	if health_component:
 		health_component.initialize(max_hp)
-		if is_boss:
-			print("[EnemyBase] 🔥 BOSS HP reinicializado (deferred): %d/%d" % [health_component.current_health, health_component.max_health])
+		# if is_boss:
+		#	print("[EnemyBase] 🔥 BOSS HP reinicializado (deferred): %d/%d" % [health_component.current_health, health_component.max_health])
 
 func _determine_element_from_id(id: String) -> String:
 	"""Determinar elemento del enemigo basado en su ID"""
@@ -784,7 +785,7 @@ func _start_charge() -> void:
 		var tween = create_tween()
 		tween.tween_property(sprite, "modulate", Color(1.0, 0.3, 0.3), 0.2)
 
-	print("[EnemyBase] ⚡ %s inicia carga!" % enemy_id)
+	# print("[EnemyBase] ⚡ %s inicia carga!" % enemy_id)
 
 func _process_charge(delta: float) -> void:
 	"""Procesar movimiento de carga"""
@@ -806,11 +807,11 @@ func _process_charge(delta: float) -> void:
 			if player_ref.has_method("take_damage"):
 				var elem = _determine_element_from_id(enemy_id)
 				player_ref.call("take_damage", charge_damage, elem)
-				print("[EnemyBase] ⚡ %s impacta carga por %d daño!" % [enemy_id, charge_damage])
+				# print("[EnemyBase] ⚡ %s impacta carga por %d daño!" % [enemy_id, charge_damage])
 				# Aplicar stun en carga
 				if player_ref.has_method("apply_stun"):
 					player_ref.apply_stun(0.5)  # 0.5s stun
-					print("[EnemyBase] ⚡ Carga aplica Stun!")
+					# print("[EnemyBase] ⚡ Carga aplica Stun!")
 			_end_charge()
 
 func _end_charge() -> void:
@@ -837,11 +838,14 @@ func _start_phase() -> void:
 	# Desactivar colisión temporalmente
 	set_collision_layer_value(2, false)
 
-	# Timer para terminar fase
+	# Timer para terminar fase (con verificación de validez)
 	var phase_duration = modifiers.get("phase_duration", 1.5)
-	get_tree().create_timer(phase_duration).timeout.connect(_end_phase)
+	get_tree().create_timer(phase_duration).timeout.connect(func():
+		if is_instance_valid(self):
+			_end_phase()
+	)
 
-	print("[EnemyBase] 👻 %s entra en fase!" % enemy_id)
+	# print("[EnemyBase] 👻 %s entra en fase!" % enemy_id)
 
 func _process_phase_movement(delta: float) -> void:
 	"""Movimiento durante fase (más rápido, atraviesa)"""
@@ -892,7 +896,7 @@ func _do_teleport() -> void:
 	else:
 		global_position = new_pos
 
-	print("[EnemyBase] ✨ %s se teletransporta!" % enemy_id)
+	# print("[EnemyBase] ✨ %s se teletransporta!" % enemy_id)
 
 func _spawn_fire_trail() -> void:
 	"""Crear una zona de fuego en la posición actual que daña al player"""
@@ -900,7 +904,7 @@ func _spawn_fire_trail() -> void:
 	var trail_duration = modifiers.get("trail_duration", 2.0)
 	var trail_radius = modifiers.get("trail_radius", 30.0)
 
-	print("[EnemyBase] 🔥 %s crea fire trail (damage=%d, dur=%.1fs, radius=%.0f)" % [enemy_id, trail_damage, trail_duration, trail_radius])
+	# print("[EnemyBase] 🔥 %s crea fire trail (damage=%d, dur=%.1fs, radius=%.0f)" % [enemy_id, trail_damage, trail_duration, trail_radius])
 
 	# Crear nodo de trail
 	var trail = Area2D.new()
@@ -994,7 +998,7 @@ func _spawn_fire_trail() -> void:
 				if dist <= trail_radius:
 					if p.has_method("take_damage"):
 						p.call("take_damage", trail_damage, "fire")
-						print("[EnemyBase] 🔥 Fire trail daña a player: %d" % trail_damage)
+						# print("[EnemyBase] 🔥 Fire trail daña a player: %d" % trail_damage)
 	)
 
 	# Auto-destruir después de duration
@@ -1022,7 +1026,7 @@ func _buff_nearby_allies() -> void:
 			if enemy.has_method("apply_speed_buff"):
 				enemy.apply_speed_buff(speed_bonus, modifiers.get("buff_duration", 5.0))
 
-	print("[EnemyBase] 💪 %s buffea aliados cercanos!" % enemy_id)
+	# print("[EnemyBase] 💪 %s buffea aliados cercanos!" % enemy_id)
 
 func apply_speed_buff(amount: float, duration: float) -> void:
 	"""Recibir buff de velocidad de un support"""
@@ -1031,8 +1035,10 @@ func apply_speed_buff(amount: float, duration: float) -> void:
 
 	speed = _base_speed * (1.0 + amount)
 
-	# Timer para quitar el buff
+	# Timer para quitar el buff (con verificación de validez)
 	get_tree().create_timer(duration).timeout.connect(func():
+		if not is_instance_valid(self):
+			return
 		if _base_speed > 0:
 			speed = _base_speed * (1.0 - _slow_amount if _is_slowed else 1.0)
 	)
@@ -1113,7 +1119,7 @@ func _attempt_attack() -> void:
 	var accuracy = get_attack_accuracy()
 	if accuracy < 1.0 and randf() > accuracy:
 		# ¡Falló el ataque debido a ceguera!
-		print("[EnemyBase] 👁️ %s falló ataque (cegado, %.0f%% precisión)" % [enemy_id, accuracy * 100])
+		# print("[EnemyBase] 👁️ %s falló ataque (cegado, %.0f%% precisión)" % [enemy_id, accuracy * 100])
 		return
 
 	# Calcular daño según arquetipo
@@ -1136,7 +1142,7 @@ func _attempt_attack() -> void:
 	# Aplicar daño al jugador
 	if player_ref.has_method("take_damage"):
 		player_ref.take_damage(final_damage, attack_element)
-		print("[EnemyBase] ⚔️ %s ataca al jugador: %d daño (%s)" % [enemy_id, final_damage, attack_element])
+		# print("[EnemyBase] ⚔️ %s ataca al jugador: %d daño (%s)" % [enemy_id, final_damage, attack_element])
 
 		# Efecto visual de ataque en el enemigo
 		_play_attack_animation()
@@ -1231,7 +1237,8 @@ func apply_knockback(knockback_force: Vector2) -> void:
 	"""Aplicar knockback (empujón) al enemigo desde un impacto"""
 	# El knockback es un impulso instantáneo que aleja al enemigo
 	# Se aplica solo una vez y se disipa gradualmente
-	print("[EnemyBase] 💨 Knockback recibido: %s por %.1f" % [name, knockback_force.length()])
+	# Debug de knockback (comentado para producción)
+	# print("[EnemyBase] 💨 Knockback recibido: %s por %.1f" % [name, knockback_force.length()])
 
 	# Aplicar el knockback directamente a la posición
 	# (alternativa: usar una velocidad temporal)
@@ -1316,7 +1323,8 @@ func apply_slow(amount: float, duration: float) -> void:
 	speed = _base_speed * (1.0 - _slow_amount)
 
 	_update_status_visual()
-	print("[EnemyBase] ❄️ %s ralentizado %.0f%% por %.1fs" % [name, _slow_amount * 100, duration])
+	# Debug de slow (comentado para producción)
+	# print("[EnemyBase] ❄️ %s ralentizado %.0f%% por %.1fs" % [name, _slow_amount * 100, duration])
 
 func apply_freeze(amount: float, duration: float) -> void:
 	"""Aplicar efecto de congelación (slow extremo)
@@ -1356,7 +1364,7 @@ func apply_burn(damage_per_tick: float, duration: float) -> void:
 		_is_burning = true
 
 	_update_status_visual()
-	print("[EnemyBase] 🔥 %s quemándose %.1f daño/tick por %.1fs" % [name, damage_per_tick, duration])
+	# print("[EnemyBase] 🔥 %s quemándose %.1f daño/tick por %.1fs" % [name, damage_per_tick, duration])
 
 func apply_stun(duration: float) -> void:
 	"""Aplicar efecto de aturdimiento (paraliza completamente)
@@ -1375,7 +1383,7 @@ func apply_stun(duration: float) -> void:
 		can_attack = false  # No puede atacar
 
 	_update_status_visual()
-	print("[EnemyBase] ⭐ %s aturdido por %.1fs" % [name, duration])
+	# print("[EnemyBase] ⭐ %s aturdido por %.1fs" % [name, duration])
 
 func apply_pull(target_position: Vector2, force: float, duration: float) -> void:
 	"""Aplicar efecto de atracción hacia un punto
@@ -1389,7 +1397,7 @@ func apply_pull(target_position: Vector2, force: float, duration: float) -> void
 	_is_pulled = true
 
 	_update_status_visual()
-	print("[EnemyBase] 🌀 %s atraído hacia %s por %.1fs" % [name, target_position, duration])
+	# print("[EnemyBase] 🌀 %s atraído hacia %s por %.1fs" % [name, target_position, duration])
 
 func apply_blind(duration: float) -> void:
 	"""Aplicar efecto de ceguera (reduce precisión de ataques)
@@ -1399,7 +1407,7 @@ func apply_blind(duration: float) -> void:
 	_is_blinded = true
 
 	_update_status_visual()
-	print("[EnemyBase] 👁️ %s cegado por %.1fs" % [name, duration])
+	# print("[EnemyBase] 👁️ %s cegado por %.1fs" % [name, duration])
 
 func apply_bleed(damage_per_tick: float, duration: float) -> void:
 	"""Aplicar efecto de sangrado (DoT diferente al burn)
@@ -1417,7 +1425,7 @@ func apply_bleed(damage_per_tick: float, duration: float) -> void:
 		_is_bleeding = true
 
 	_update_status_visual()
-	print("[EnemyBase] 🩸 %s sangrando %.1f daño/tick por %.1fs" % [name, damage_per_tick, duration])
+	# print("[EnemyBase] 🩸 %s sangrando %.1f daño/tick por %.1fs" % [name, damage_per_tick, duration])
 
 func apply_shadow_mark(bonus_damage: float, duration: float) -> void:
 	"""Aplicar marca de sombra (enemigos marcados reciben daño extra)
@@ -1434,7 +1442,7 @@ func apply_shadow_mark(bonus_damage: float, duration: float) -> void:
 		_is_shadow_marked = true
 
 	_update_status_visual()
-	print("[EnemyBase] 👤 %s marcado! +%.0f%% daño por %.1fs" % [name, bonus_damage * 100, duration])
+	# print("[EnemyBase] 👤 %s marcado! +%.0f%% daño por %.1fs" % [name, bonus_damage * 100, duration])
 
 func _update_status_visual() -> void:
 	"""Actualizar el color del sprite según los efectos activos (prioridad)"""

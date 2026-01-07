@@ -611,6 +611,30 @@ func _on_health_died() -> void:
 	print("[%s] ✗ Personaje muerto" % character_class)
 	player_died.emit()
 
+# ========== ACCESO A COMPONENTES ==========
+
+func get_health_component() -> Node:
+	"""Obtener referencia al HealthComponent"""
+	return health_component
+
+func is_alive() -> bool:
+	"""Verificar si el personaje está vivo"""
+	if health_component and "is_alive" in health_component:
+		return health_component.is_alive
+	return hp > 0
+
+func get_current_health() -> int:
+	"""Obtener HP actual"""
+	if health_component and "current_health" in health_component:
+		return health_component.current_health
+	return hp
+
+func get_max_health() -> int:
+	"""Obtener HP máximo"""
+	if health_component and "max_health" in health_component:
+		return health_component.max_health
+	return max_hp
+
 # ========== EQUIPAMIENTO DE ARMAS ==========
 
 func equip_weapon(weapon) -> bool:

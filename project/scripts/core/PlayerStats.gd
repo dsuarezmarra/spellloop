@@ -307,7 +307,31 @@ func initialize(attack_mgr: AttackManager = null, player: Node = null) -> void:
 	# Agregar a grupo para facilitar busqueda desde PauseMenu
 	add_to_group("player_stats")
 	_sync_with_attack_manager()
+	
+	# Conectar a la señal de salud del player para mantener sincronizado
+	_connect_to_player_health()
+	
 	print("[PlayerStats] Inicializado - Nivel %d, Player: %s" % [level, player_ref != null])
+
+func _connect_to_player_health() -> void:
+	"""Conectar a la señal de salud del player para sincronizar current_health"""
+	if not player_ref:
+		return
+	
+	var hc = _get_health_component()
+	if hc and hc.has_signal("health_changed"):
+		if not hc.health_changed.is_connected(_on_player_health_changed):
+			hc.health_changed.connect(_on_player_health_changed)
+			# Sincronizar HP inicial
+			if "current_health" in hc:
+				current_health = hc.current_health
+			print("[PlayerStats] Conectado a HealthComponent del player")
+
+func _on_player_health_changed(new_health: int, max_health: int) -> void:
+	"""Callback cuando la salud del player cambia - mantener sincronizado"""
+	current_health = new_health
+	# Emitir nuestra propia señal para que otros sistemas se enteren
+	health_changed.emit(new_health, max_health)
 
 func _sync_with_attack_manager() -> void:
 	"""
@@ -640,12 +664,49 @@ func heal(amount: float) -> float:
 	return healed
 
 func is_dead() -> bool:
-	"""Verificar si el jugador está muerto"""
+	"""Verificar si el jugador está muerto - usa HealthComponent como fuente de verdad"""
+	# Primero intentar obtener del HealthComponent real
+	if player_ref:
+		var hc = _get_health_component()
+		if hc and "is_alive" in hc:
+			return not hc.is_alive
+	# Fallback a variable local
 	return current_health <= 0
 
+func _get_health_component() -> Node:
+	"""Obtener el HealthComponent del player real"""
+	if not player_ref:
+		return null
+	
+	# Buscar en el wizard_player interno
+	var wizard = player_ref.get_node_or_null("WizardPlayer")
+	if wizard and wizard.has_node("HealthComponent"):
+		return wizard.get_node("HealthComponent")
+	
+	# Buscar directamente en player_ref
+	if player_ref.has_node("HealthComponent"):
+		return player_ref.get_node("HealthComponent")
+	
+	# Buscar con método
+	if player_ref.has_method("get_health_component"):
+		return player_ref.get_health_component()
+	
+	return null
+
 func get_health_percent() -> float:
-	"""Obtener porcentaje de vida"""
-	return current_health / get_stat("max_health")
+	"""Obtener porcentaje de vida - usa HealthComponent como fuente de verdad"""
+	var max_hp = get_stat("max_health")
+	if max_hp <= 0:
+		return 0.0
+	
+	# Intentar obtener HP actual del HealthComponent real
+	var current_hp = current_health
+	if player_ref:
+		var hc = _get_health_component()
+		if hc and "current_health" in hc:
+			current_hp = hc.current_health
+	
+	return current_hp / max_hp
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SISTEMA DE NIVELES

@@ -221,6 +221,18 @@ func get_health() -> Dictionary:
 	## Retorna un diccionario con la salud actual y máxima
 	return {"current": hp, "max": max_hp}
 
+func get_health_component() -> Node:
+	"""Obtener el HealthComponent del wizard_player interno"""
+	if wizard_player:
+		return wizard_player.get_health_component()
+	return null
+
+func is_alive() -> bool:
+	"""Verificar si el jugador está vivo"""
+	if wizard_player:
+		return wizard_player.is_alive()
+	return hp > 0
+
 func increase_max_health(amount: int) -> void:
 	if wizard_player:
 		wizard_player.max_hp += amount

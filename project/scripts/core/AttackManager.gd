@@ -445,7 +445,7 @@ func _process(delta: float) -> void:
 				_restore_legacy_weapon_base_stats(weapon)
 				
 				# Para armas NO-BaseWeapon, resetear cooldown manualmente con mejora de atk speed
-				var attack_speed_mult = gs.get("attack_speed_mult", 1.0)
+				var attack_speed_mult = maxf(gs.get("attack_speed_mult", 1.0), 0.1)
 				if weapon.has_method("reset_cooldown"):
 					weapon.reset_cooldown()
 					# Ajustar cooldown por velocidad de ataque
@@ -462,8 +462,8 @@ func _process_legacy_weapon(weapon, delta: float) -> void:
 		# Obtener stats globales para aplicar
 		var gs = global_weapon_stats.get_all_stats() if global_weapon_stats else _legacy_player_stats
 		
-		# Aplicar multiplicador de velocidad de ataque al cooldown
-		var attack_speed_mult = gs.get("attack_speed_mult", 1.0)
+		# Aplicar multiplicador de velocidad de ataque al cooldown (evitar división por cero)
+		var attack_speed_mult = maxf(gs.get("attack_speed_mult", 1.0), 0.1)
 		var effective_cooldown = weapon.base_cooldown / attack_speed_mult if "base_cooldown" in weapon else 1.0 / attack_speed_mult
 		
 		if "current_cooldown" in weapon:

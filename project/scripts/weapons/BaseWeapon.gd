@@ -217,6 +217,8 @@ func get_cooldown_progress() -> float:
 	"""Obtener progreso del cooldown (0.0 = recién disparó, 1.0 = listo)"""
 	if ready_to_fire:
 		return 1.0
+	if cooldown <= 0:
+		return 1.0
 	return 1.0 - (current_cooldown / cooldown)
 
 # ═══════════════════════════════════════════════════════════════════════════════

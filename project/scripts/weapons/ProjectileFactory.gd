@@ -169,7 +169,9 @@ static func _create_base_projectile(data: Dictionary) -> SimpleProjectile:
 	# Stats básicos
 	projectile.damage = int(data.get("damage", 10))
 	projectile.speed = data.get("speed", 300.0)
-	projectile.lifetime = data.get("range", 300.0) / data.get("speed", 300.0)  # Calcular lifetime basado en rango
+	# Calcular lifetime basado en rango (evitar división por cero)
+	var proj_speed = maxf(data.get("speed", 300.0), 1.0)
+	projectile.lifetime = data.get("range", 300.0) / proj_speed
 	projectile.knockback_force = data.get("knockback", 50.0)
 	projectile.pierce_count = data.get("pierce", 0)
 
@@ -472,13 +474,14 @@ class AOEEffect extends Node2D:
 			tick_interval = duration / float(total_ticks)
 			damage_per_tick = damage / float(total_ticks)
 		
-		print("[AOE] Tick config para %s: %d daño/tick, %.2fs intervalo, %d ticks (total: %d)" % [
-			weapon_id if weapon_id != "" else "default",
-			int(damage_per_tick),
-			tick_interval,
-			total_ticks,
-			int(damage_per_tick * total_ticks)
-		])
+		# Debug de tick config (desactivado en producción)
+		# print("[AOE] Tick config para %s: %d daño/tick, %.2fs intervalo, %d ticks (total: %d)" % [
+		#	weapon_id if weapon_id != "" else "default",
+		#	int(damage_per_tick),
+		#	tick_interval,
+		#	total_ticks,
+		#	int(damage_per_tick * total_ticks)
+		# ])
 
 	func _ready() -> void:
 		# Activar automáticamente cuando entre al árbol
@@ -493,7 +496,7 @@ class AOEEffect extends Node2D:
 			return
 		_activated = true
 
-		print("[AOE] Activado en posición: %s, radio: %.1f" % [global_position, aoe_radius])
+		# print("[AOE] Activado en posición: %s, radio: %.1f" % [global_position, aoe_radius])
 
 		# Crear visual (mejorado si está disponible)
 		_create_aoe_visual()
@@ -507,7 +510,7 @@ class AOEEffect extends Node2D:
 			var enemy_id = body.get_instance_id()
 			if not _enemies_in_area.has(enemy_id):
 				_enemies_in_area[enemy_id] = 0.0  # Puede recibir daño inmediatamente
-				print("[AOE] Body entered: %s" % body.name)
+				# print("[AOE] Body entered: %s" % body.name)
 
 	func _on_area_entered(area: Area2D) -> void:
 		var parent = area.get_parent()
@@ -515,7 +518,7 @@ class AOEEffect extends Node2D:
 			var enemy_id = parent.get_instance_id()
 			if not _enemies_in_area.has(enemy_id):
 				_enemies_in_area[enemy_id] = 0.0
-				print("[AOE] Area entered: %s" % parent.name)
+				# print("[AOE] Area entered: %s" % parent.name)
 
 	func _apply_tick_damage() -> void:
 		"""Aplicar un tic de daño a todos los enemigos en el área"""
@@ -544,8 +547,9 @@ class AOEEffect extends Node2D:
 			enemy.take_damage(int(final_damage))
 			# Aplicar life steal
 			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
-			if is_crit:
-				print("[AOE] ⚡ CRIT! %s recibe %d daño (tick %d/%d)" % [enemy.name, int(final_damage), _ticks_applied, total_ticks])
+			# Debug de crítico (desactivado en producción)
+			# if is_crit:
+			#	print("[AOE] ⚡ CRIT! %s recibe %d daño (tick %d/%d)" % [enemy.name, int(final_damage), _ticks_applied, total_ticks])
 
 		# Aplicar knockback solo en el primer tic (para no empujar continuamente)
 		var enemy_id = enemy.get_instance_id()

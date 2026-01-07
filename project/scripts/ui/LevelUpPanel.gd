@@ -479,7 +479,12 @@ func _on_banish() -> void:
 	_update_all_visuals()
 
 func _confirm_banish() -> void:
-	# Eliminar la opción seleccionada
+	# Verificar que hay opciones para eliminar
+	if options.is_empty():
+		banish_mode = false
+		return
+	
+	# Ajustar índice si está fuera de rango
 	if option_index >= options.size():
 		option_index = options.size() - 1
 
