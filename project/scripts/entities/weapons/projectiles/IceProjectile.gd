@@ -40,7 +40,7 @@ var impact_vfx_enabled: bool = true
 var impact_scale: Vector2 = Vector2(1.2, 1.2)
 
 # DEBUG
-var debug_mode: bool = true
+var debug_mode: bool = false
 
 func _ready() -> void:
 	"""Inicializar proyectil"""

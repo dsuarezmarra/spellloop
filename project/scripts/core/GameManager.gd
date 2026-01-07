@@ -297,31 +297,12 @@ func equip_initial_weapons() -> void:
 	var ice_proj_scene = load("res://scripts/entities/weapons/projectiles/IceProjectile.tscn")
 	if ice_proj_scene:
 		weapon.projectile_scene = ice_proj_scene
-		print("[GameManager] ✓ IceProjectile.tscn cargado")
 	else:
-		print("[GameManager] ⚠️ No se pudo cargar IceProjectile.tscn - probando ProjectileBase.tscn")
 		var fallback_scene = load("res://scripts/entities/ProjectileBase.tscn")
 		if fallback_scene:
 			weapon.projectile_scene = fallback_scene
-			print("[GameManager] ✓ Usando ProjectileBase.tscn como fallback")
-	
-	print("[GameManager] === ANTES DE add_weapon() ===")
-	print("[GameManager] DEBUG: Equipando varita de hielo...")
-	print("[GameManager] DEBUG: attack_manager válido:", attack_manager != null)
-	print("[GameManager] DEBUG: weapon válido:", weapon != null)
-	print("[GameManager] DEBUG: weapon.name:", weapon.name)
-	print("[GameManager] DEBUG: weapon.id:", weapon.id)
-	print("[GameManager] DEBUG: weapon.projectile_scene válido:", weapon.projectile_scene != null)
-	print("[GameManager] DEBUG: weapon in weapons array ANTES:", weapon in attack_manager.weapons)
-	print("[GameManager] DEBUG: attack_manager.weapons size ANTES:", attack_manager.weapons.size())
 	
 	equip_weapon(weapon)
-	
-	print("[GameManager] === DESPUÉS DE equip_weapon() ===")
-	print("[GameManager] DEBUG: Armas después de equip:", attack_manager.get_weapon_count())
-	print("[GameManager] DEBUG: weapon in weapons array DESPUÉS:", weapon in attack_manager.weapons)
-	print("[GameManager] DEBUG: attack_manager.weapons:", attack_manager.weapons)
-	print("[GameManager] ✓ Arma inicial equipada: %s (damage=%d, cooldown=%.2f, elemento=%s)" % [weapon.name, weapon.damage, weapon.base_cooldown, weapon.element_type])
 
 # ========== MÉTODOS PARA SISTEMA DE ENEMIGOS ==========
 

@@ -67,7 +67,6 @@ static func spawn_player_damage(pos: Vector2, amount: int, element: String = "ph
 		_:
 			col = Color(1.0, 0.3, 0.3)  # Rojo por defecto
 	
-	print("[FloatingText] Player damage: %d (%s) at %s" % [amount, element, str(pos)])
 	_spawn_text(pos, "%s%d" % [prefix, amount], col, 20, 1.0)
 
 static func spawn_dot_tick(pos: Vector2, amount: int, dot_type: String) -> void:
@@ -89,7 +88,6 @@ static func spawn_dot_tick(pos: Vector2, amount: int, dot_type: String) -> void:
 			col = Color(0.8, 0.3, 0.3, 0.9)
 			icon = ""
 	
-	print("[FloatingText] DoT tick: %s %d at %s" % [dot_type, amount, str(pos)])
 	_spawn_text(pos, "%s-%d" % [icon, amount], col, 14, 0.8)
 
 static func spawn_status_applied(pos: Vector2, status: String) -> void:
@@ -120,7 +118,6 @@ static func spawn_status_applied(pos: Vector2, status: String) -> void:
 			col = Color(0.8, 0.8, 0.8)
 			text = status.to_upper()
 	
-	print("[FloatingText] Status: %s at %s" % [status, str(pos)])
 	_spawn_text(pos, text, col, 14, 1.2)
 
 static func spawn_text(pos: Vector2, txt: String, col: Color = Color.WHITE) -> void:

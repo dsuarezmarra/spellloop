@@ -243,13 +243,6 @@ func _find_references() -> void:
 		if not experience_manager_ref:
 			experience_manager_ref = tree.root.get_node_or_null("ExperienceManager")
 
-	# Debug
-	print("[PauseMenu] Referencias encontradas:")
-	print("  - player_stats: ", player_stats != null, " (", player_stats.get_class() if player_stats else "null", ")")
-	print("  - attack_manager: ", attack_manager != null)
-	print("  - player_ref: ", player_ref != null)
-	print("  - experience_manager: ", experience_manager_ref != null)
-
 func _is_player_stats(node: Node) -> bool:
 	"""Verificar si un nodo es realmente un PlayerStats"""
 	if node == null:
@@ -1997,7 +1990,6 @@ func _save_game_state_for_resume() -> void:
 		# Guardar estado completo del ArenaManager (zonas desbloqueadas, biomas)
 		if arena_mgr.has_method("to_save_data"):
 			game_state["arena_manager_state"] = arena_mgr.to_save_data()
-			print("[PauseMenu] DEBUG - ArenaManager guardado")
 	
 	# Estado del jugador
 	if player_ref:
@@ -2043,11 +2035,9 @@ func _save_game_state_for_resume() -> void:
 				max_hp_val = health_component.max_hp
 			game_state["player_hp"] = hp_val
 			game_state["player_max_hp"] = max_hp_val
-			print("[PauseMenu] DEBUG - HP guardado: %d/%d" % [hp_val, max_hp_val])
 		else:
 			game_state["player_hp"] = 100
 			game_state["player_max_hp"] = 100
-			print("[PauseMenu] WARNING - HealthComponent NO encontrado!")
 	
 	# Nivel del jugador - obtener de ExperienceManager primero (fuente de verdad)
 	var player_level: int = 1
@@ -2076,14 +2066,11 @@ func _save_game_state_for_resume() -> void:
 			# También guardar collected_upgrades si existe
 			if "collected_upgrades" in player_stats:
 				game_state["player_stats"]["collected_upgrades"] = player_stats.collected_upgrades.duplicate(true)
-		
-		print("[PauseMenu] DEBUG - PlayerStats guardado (collected_upgrades: %d)" % game_state["player_stats"].get("collected_upgrades", []).size())
 	
 	# Mejoras globales de armas (GlobalWeaponStats)
 	if attack_manager and "global_weapon_stats" in attack_manager and attack_manager.global_weapon_stats:
 		if attack_manager.global_weapon_stats.has_method("to_dict"):
 			game_state["global_weapon_stats"] = attack_manager.global_weapon_stats.to_dict()
-			print("[PauseMenu] DEBUG - GlobalWeaponStats guardado")
 	
 	# Armas equipadas
 	if attack_manager and attack_manager.has_method("get_weapons"):
@@ -2107,12 +2094,6 @@ func _save_game_state_for_resume() -> void:
 		# IMPORTANTE: ExperienceManager usa total_coins, no coins
 		var saved_coins = experience_manager_ref.total_coins if "total_coins" in experience_manager_ref else 0
 		game_state["coins"] = saved_coins
-		print("[PauseMenu] DEBUG - ExperienceManager encontrado:")
-		print("  - current_level: ", experience_manager_ref.current_level if "current_level" in experience_manager_ref else "N/A")
-		print("  - current_exp: ", experience_manager_ref.current_exp if "current_exp" in experience_manager_ref else "N/A")
-		print("  - total_coins: %d" % saved_coins)
-	else:
-		print("[PauseMenu] WARNING - ExperienceManager NO encontrado!")
 	
 	# ═══════════════════════════════════════════════════════════════════════════════
 	# Guardar contadores de Reroll y Banish del LevelUpPanel
@@ -2121,10 +2102,6 @@ func _save_game_state_for_resume() -> void:
 		game_state["remaining_rerolls"] = game_node.remaining_rerolls
 	if game_node and "remaining_banishes" in game_node:
 		game_state["remaining_banishes"] = game_node.remaining_banishes
-	print("[PauseMenu] DEBUG - Rerolls/Banishes guardados: %d/%d" % [
-		game_state.get("remaining_rerolls", 3), 
-		game_state.get("remaining_banishes", 2)
-	])
 	
 	# ═══════════════════════════════════════════════════════════════════════════════
 	# NUEVO: Guardar estado del WaveManager (fase, oleadas, boss, elites, eventos)
@@ -2133,9 +2110,6 @@ func _save_game_state_for_resume() -> void:
 		var wave_mgr = game_node.get_node("WaveManager")
 		if wave_mgr.has_method("to_save_data"):
 			game_state["wave_manager_state"] = wave_mgr.to_save_data()
-			print("[PauseMenu] DEBUG - WaveManager guardado")
-		else:
-			print("[PauseMenu] WARNING - WaveManager sin método to_save_data!")
 	
 	# ═══════════════════════════════════════════════════════════════════════════════
 	# NUEVO: Guardar estado del EnemyManager (todos los enemigos activos)
@@ -2144,9 +2118,6 @@ func _save_game_state_for_resume() -> void:
 		var enemy_mgr = game_node.get_node("EnemyManager")
 		if enemy_mgr.has_method("to_save_data"):
 			game_state["enemy_manager_state"] = enemy_mgr.to_save_data()
-			print("[PauseMenu] DEBUG - EnemyManager guardado (%d enemigos)" % game_state["enemy_manager_state"].get("enemies", []).size())
-		else:
-			print("[PauseMenu] WARNING - EnemyManager sin método to_save_data!")
 	
 	# Guardar en SessionState
 	SessionState.save_full_game_state(game_state)

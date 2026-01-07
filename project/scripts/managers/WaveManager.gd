@@ -304,11 +304,9 @@ func _get_tier_for_position(pos: Vector2) -> int:
 	var arena_manager = _get_arena_manager()
 	if arena_manager and arena_manager.has_method("get_spawn_tier_at_position"):
 		var tier = arena_manager.get_spawn_tier_at_position(pos)
-		print("[WaveManager] 🎯 Spawn en pos=%s → Tier %d (zona)" % [pos, tier])
 		return tier
 	
 	# Fallback: usar sistema basado en fase
-	print("[WaveManager] ⚠️ Sin ArenaManager, usando tier por fase")
 	return _get_wave_enemy_tier()
 
 func _select_weighted_tier(weights: Dictionary) -> int:
@@ -891,13 +889,6 @@ func from_save_data(data: Dictionary) -> void:
 	# Por eso usamos call_deferred
 	if boss_active:
 		call_deferred("_find_restored_boss")
-	
-	print("🌊 [WaveManager] Estado restaurado:")
-	print("   - Fase: %d" % current_phase)
-	print("   - Tiempo: %.1f seg (%.1f min)" % [game_time_seconds, game_time_minutes])
-	print("   - Boss activo: %s" % boss_active)
-	print("   - Próximo boss: minuto %d" % next_boss_minute)
-	print("   - Evento activo: %s" % active_event)
 
 func _find_restored_boss() -> void:
 	"""Buscar el boss restaurado en active_enemies de EnemyManager"""
@@ -913,10 +904,8 @@ func _find_restored_boss() -> void:
 			if current_boss.has_signal("died") and not current_boss.died.is_connected(_on_boss_died):
 				var boss_id = current_boss.enemy_id if "enemy_id" in current_boss else "unknown_boss"
 				current_boss.died.connect(_on_boss_died.bind(boss_id))
-			print("🔥 [WaveManager] Boss restaurado encontrado: %s" % current_boss.name)
 			return
 	
 	# Si no encontramos el boss pero boss_active es true, algo falló
 	if boss_active:
-		print("⚠️ [WaveManager] boss_active=true pero no se encontró boss en enemigos")
 		boss_active = false

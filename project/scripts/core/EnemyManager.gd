@@ -28,7 +28,7 @@ signal wave_cleared()
 @export var debug_spawns: bool = false  # Normal: desactivado
 
 # DEBUG TEMPORAL - Activar para ver spawns de zona
-const DEBUG_ZONE_SPAWNS: bool = true
+const DEBUG_ZONE_SPAWNS: bool = false
 
 @export_group("Scaling")
 @export var spawn_rate_increase_per_minute: float = 0.1  # +10% por minuto

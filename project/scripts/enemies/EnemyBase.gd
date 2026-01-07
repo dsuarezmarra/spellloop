@@ -145,7 +145,7 @@ func _try_load_animated_sprite() -> bool:
 	# Cargar el script de AnimatedEnemySprite
 	var aes_script = load("res://scripts/components/AnimatedEnemySprite.gd")
 	if not aes_script:
-		print("[EnemyBase] No se pudo cargar AnimatedEnemySprite.gd")
+		push_warning("[EnemyBase] No se pudo cargar AnimatedEnemySprite.gd")
 		return false
 
 	# Crear instancia
@@ -159,7 +159,7 @@ func _try_load_animated_sprite() -> bool:
 
 	# Cargar spritesheet
 	if animated_sprite.load_spritesheet(spritesheet_path):
-		print("[EnemyBase] ✓ Spritesheet cargado: %s" % spritesheet_path)
+		# Spritesheet cargado exitosamente
 
 		# Eliminar Sprite2D existente si hay
 		var old_sprite = _find_sprite_node(self)
@@ -168,7 +168,7 @@ func _try_load_animated_sprite() -> bool:
 
 		return true
 	else:
-		print("[EnemyBase] ✗ Error cargando spritesheet: %s" % spritesheet_path)
+		push_warning("[EnemyBase] Error cargando spritesheet: %s" % spritesheet_path)
 		animated_sprite.queue_free()
 		animated_sprite = null
 		return false
@@ -576,9 +576,9 @@ func _load_enemy_sprite(sprite: Sprite2D) -> void:
 			if texture:
 				sprite.texture = texture
 			else:
-				print("[EnemyBase] Error cargando textura: ", sprite_path)
+				push_warning("[EnemyBase] Error cargando textura: %s" % sprite_path)
 		else:
-			print("[EnemyBase] Ruta de sprite no existe: ", sprite_path)
+			push_warning("[EnemyBase] Ruta de sprite no existe: %s" % sprite_path)
 
 func _physics_process(delta: float) -> void:
 	# Procesar efectos de estado primero
@@ -1163,7 +1163,7 @@ func take_damage(amount: int) -> void:
 	# Debug para bosses
 	if is_boss:
 		var current_hp = health_component.current_health if health_component else hp
-		print("[Boss] 🎯 Recibiendo daño: %d (HP actual: %d)" % [amount, current_hp])
+		# print("[Boss] Daño recibido: %d (HP actual: %d)" % [amount, current_hp])
 
 	# BLOCKER: Chance de bloquear
 	if archetype == "blocker":
@@ -1172,7 +1172,6 @@ func take_damage(amount: int) -> void:
 			var block_reduction = modifiers.get("block_reduction", 0.7)
 			final_damage = int(amount * (1.0 - block_reduction))
 			is_blocked = true
-			print("[EnemyBase] 🛡️ %s bloquea! Daño reducido: %d → %d" % [enemy_id, amount, final_damage])
 			# Visual de bloqueo
 			_flash_block()
 
@@ -1184,7 +1183,6 @@ func take_damage(amount: int) -> void:
 	# Aplicar bonus de shadow_mark si está marcado
 	if _is_shadow_marked:
 		final_damage = int(final_damage * (1.0 + _shadow_mark_bonus))
-		print("[EnemyBase] 🎯 Shadow Mark! Daño aumentado: %d → %d" % [amount, final_damage])
 
 	# Mostrar texto flotante de daño
 	if final_damage > 0:
@@ -1358,7 +1356,7 @@ func apply_freeze(amount: float, duration: float) -> void:
 	speed = _base_speed * (1.0 - _slow_amount)
 
 	_update_status_visual()
-	print("[EnemyBase] 🧊 %s congelado %.0f%% por %.1fs" % [name, amount * 100, duration])
+	# print("[EnemyBase] Congelado %.0f%% por %.1fs" % [amount * 100, duration])
 
 func apply_burn(damage_per_tick: float, duration: float) -> void:
 	"""Aplicar efecto de quemadura (DoT)
@@ -1649,7 +1647,6 @@ func get_attack_accuracy() -> float:
 
 func die() -> void:
 	if is_boss:
-		print("[Boss] 💀 BOSS MURIENDO: %s" % enemy_id)
 		# Solo limpiar efectos de boss si ES un boss
 		if attack_system and attack_system.has_method("cleanup_boss"):
 			attack_system.cleanup_boss()
@@ -1659,8 +1656,6 @@ func die() -> void:
 
 func _on_health_died() -> void:
 	"""Manejar muerte desde HealthComponent"""
-	if is_boss:
-		print("[Boss] 💀 HealthComponent reportó muerte para: %s" % enemy_id)
 	die()
 
 func get_info() -> Dictionary:

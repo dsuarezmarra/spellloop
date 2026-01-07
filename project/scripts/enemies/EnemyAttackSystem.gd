@@ -1,6 +1,6 @@
-# EnemyAttackSystem.gd
+﻿# EnemyAttackSystem.gd
 # Sistema de ataque para enemigos - Soporta todos los arquetipos
-# Gestiona cooldowns, targeting y ejecución de ataques
+# Gestiona cooldowns, targeting y ejecuciÃ³n de ataques
 #
 # Nota: Este archivo usa lambdas con variables capturadas que se reasignan
 # intencionalmente para mantener estado local en animaciones y timers.
@@ -45,25 +45,25 @@ var player: Node = null
 var EnemyProjectileScript = null
 
 func _ready() -> void:
-	# CRÍTICO: Respetar la pausa del juego
+	# CRÃTICO: Respetar la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	
 	enemy = get_parent()
 	# Precargar script de proyectil
 	EnemyProjectileScript = load("res://scripts/enemies/EnemyProjectile.gd")
-	print("[EnemyAttackSystem] Inicializado para: %s" % enemy.name)
+	# print("[EnemyAttackSystem] Inicializado para: %s" % enemy.name)
 
 func initialize(p_attack_cooldown: float, p_attack_range: float, p_damage: int, p_is_ranged: bool = false, p_projectile_scene: PackedScene = null) -> void:
-	"""Configurar parámetros de ataque"""
+	"""Configurar parÃ¡metros de ataque"""
 	attack_cooldown = p_attack_cooldown
 	attack_range = p_attack_range
 	attack_damage = p_damage
 	is_ranged = p_is_ranged
 	projectile_scene = p_projectile_scene
-	print("[EnemyAttackSystem] Configurado: cooldown=%.2f, range=%.0f, damage=%d, ranged=%s" % [attack_cooldown, attack_range, attack_damage, is_ranged])
+	# print("[EnemyAttackSystem] Configurado: cooldown=%.2f, range=%.0f, damage=%d, ranged=%s" % [attack_cooldown, attack_range, attack_damage, is_ranged])
 
 func initialize_full(config: Dictionary) -> void:
-	"""Inicialización completa con todos los parámetros"""
+	"""InicializaciÃ³n completa con todos los parÃ¡metros"""
 	attack_cooldown = config.get("attack_cooldown", 1.5)
 	attack_range = config.get("attack_range", 32.0)
 	attack_damage = config.get("damage", 5)
@@ -73,7 +73,7 @@ func initialize_full(config: Dictionary) -> void:
 	special_abilities = config.get("special_abilities", [])
 	modifiers = config.get("modifiers", {})
 	
-	# Configurar según arquetipo
+	# Configurar segÃºn arquetipo
 	match archetype:
 		"aoe":
 			aoe_radius = modifiers.get("aoe_radius", 100.0)
@@ -84,7 +84,7 @@ func initialize_full(config: Dictionary) -> void:
 		"multi":
 			multi_attack_count = modifiers.get("attack_count", 3)
 	
-	print("[EnemyAttackSystem] Full config: %s (arch=%s, elem=%s)" % [enemy.name, archetype, element_type])
+	# print("[EnemyAttackSystem] Full config: %s (arch=%s, elem=%s)" % [enemy.name, archetype, element_type])
 
 # Variables para el sistema de boss agresivo
 var is_boss_enemy: bool = false
@@ -94,7 +94,7 @@ var boss_orbital_spawned: bool = false
 var boss_trail_timer: float = 0.0
 
 func _process(delta: float) -> void:
-	"""Procesar cooldown y ataque automático"""
+	"""Procesar cooldown y ataque automÃ¡tico"""
 	if not enemy or not is_instance_valid(enemy):
 		return
 	
@@ -104,7 +104,7 @@ func _process(delta: float) -> void:
 		if not player:
 			# Solo debug una vez cada 60 frames para no saturar
 			if Engine.get_process_frames() % 60 == 0:
-				print("[EnemyAttackSystem] ⚠️ No se encontró player para %s" % enemy.name)
+				# print("[EnemyAttackSystem] âš ï¸ No se encontrÃ³ player para %s" % enemy.name)
 			return
 	
 	# Detectar si es boss
@@ -121,27 +121,27 @@ func _process(delta: float) -> void:
 	if attack_timer > 0:
 		attack_timer -= delta
 	else:
-		# Comprobar si el jugador está en rango
+		# Comprobar si el jugador estÃ¡ en rango
 		if _player_in_range():
 			_perform_attack()
 			attack_timer = attack_cooldown
 
 func _get_player() -> Node:
 	"""Obtener referencia al jugador"""
-	# Método 1: Desde el enemigo padre (más directo y fiable)
+	# MÃ©todo 1: Desde el enemigo padre (mÃ¡s directo y fiable)
 	if enemy and enemy.has_method("get") and enemy.get("player_ref"):
 		return enemy.player_ref
 	
-	# Método 2: Buscar en GameManager
+	# MÃ©todo 2: Buscar en GameManager
 	if GameManager and GameManager.player_ref:
 		return GameManager.player_ref
 	
-	# Método 3: Buscar por grupos
+	# MÃ©todo 3: Buscar por grupos
 	var players = get_tree().get_nodes_in_group("player")
 	if players.size() > 0:
 		return players[0]
 	
-	# Método 4: Buscar en la estructura del árbol
+	# MÃ©todo 4: Buscar en la estructura del Ã¡rbol
 	var tree = Engine.get_main_loop()
 	if tree and tree.root:
 		# Buscar Game/PlayerContainer/SpellloopPlayer
@@ -152,7 +152,7 @@ func _get_player() -> Node:
 	return null
 
 func _player_in_range() -> bool:
-	"""Comprobar si el jugador está dentro del rango de ataque"""
+	"""Comprobar si el jugador estÃ¡ dentro del rango de ataque"""
 	if not enemy or not player:
 		return false
 	
@@ -166,7 +166,7 @@ func _player_in_range() -> bool:
 	return in_range
 
 func _perform_attack() -> void:
-	"""Ejecutar el ataque según arquetipo"""
+	"""Ejecutar el ataque segÃºn arquetipo"""
 	if not enemy or not player:
 		return
 	
@@ -178,14 +178,14 @@ func _perform_attack() -> void:
 	if enemy.has_method("get") and "special_abilities" in enemy:
 		special_abilities = enemy.special_abilities
 	
-	# SISTEMA DE HABILIDADES ÉLITE - Verificar si es élite y usar habilidades especiales
+	# SISTEMA DE HABILIDADES Ã‰LITE - Verificar si es Ã©lite y usar habilidades especiales
 	var is_elite = enemy.get("is_elite") if "is_elite" in enemy else false
 	if is_elite:
 		var elite_ability = _try_elite_ability()
 		if elite_ability:
-			return  # Usó una habilidad élite, no hacer ataque normal
+			return  # UsÃ³ una habilidad Ã©lite, no hacer ataque normal
 	
-	# Ejecutar ataque según arquetipo
+	# Ejecutar ataque segÃºn arquetipo
 	match archetype:
 		"ranged":
 			_perform_ranged_attack()
@@ -196,9 +196,9 @@ func _perform_attack() -> void:
 		"multi":
 			_perform_multi_attack()
 		"teleporter":
-			_perform_ranged_attack()  # Los teleporters también disparan
+			_perform_ranged_attack()  # Los teleporters tambiÃ©n disparan
 		"boss":
-			# Los bosses usan el sistema agresivo en _process(), aquí solo disparan
+			# Los bosses usan el sistema agresivo en _process(), aquÃ­ solo disparan
 			_perform_ranged_attack()
 		_:
 			# Melee por defecto
@@ -207,9 +207,9 @@ func _perform_attack() -> void:
 			else:
 				_perform_melee_attack()
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SISTEMA DE HABILIDADES ÉLITE - EXTREMADAMENTE MEJORADO
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# SISTEMA DE HABILIDADES Ã‰LITE - EXTREMADAMENTE MEJORADO
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 var elite_slam_cooldown: float = 0.0
 var elite_rage_active: bool = false
@@ -222,7 +222,7 @@ var elite_is_dashing: bool = false
 var elite_dash_target: Vector2 = Vector2.ZERO
 
 func _process_elite_cooldowns(delta: float) -> void:
-	"""Procesar cooldowns de habilidades élite"""
+	"""Procesar cooldowns de habilidades Ã©lite"""
 	if elite_slam_cooldown > 0:
 		elite_slam_cooldown -= delta
 	if elite_shield_cooldown > 0:
@@ -235,25 +235,25 @@ func _process_elite_cooldowns(delta: float) -> void:
 		elite_summon_cooldown -= delta
 
 func _try_elite_ability() -> bool:
-	"""Intentar usar una habilidad élite. Retorna true si usó una."""
+	"""Intentar usar una habilidad Ã©lite. Retorna true si usÃ³ una."""
 	var delta = get_process_delta_time()
 	_process_elite_cooldowns(delta)
 	
-	# Verificar rage (se activa automáticamente al bajar HP)
+	# Verificar rage (se activa automÃ¡ticamente al bajar HP)
 	if not elite_rage_active:
 		var rage_threshold = modifiers.get("elite_rage_threshold", 0.5)
 		var current_hp_percent = _get_enemy_hp_percent()
 		if current_hp_percent <= rage_threshold and "elite_rage" in special_abilities:
 			_activate_elite_rage()
 	
-	# Probabilidad de usar habilidad élite (configurable, default 50%)
+	# Probabilidad de usar habilidad Ã©lite (configurable, default 50%)
 	var ability_chance = modifiers.get("elite_ability_chance", 0.50)
 	if randf() > ability_chance:
 		return false
 	
 	var dist = enemy.global_position.distance_to(player.global_position)
 	
-	# PRIORIDAD 1: Dash si el jugador está lejos (más agresivo)
+	# PRIORIDAD 1: Dash si el jugador estÃ¡ lejos (mÃ¡s agresivo)
 	if "elite_dash" in special_abilities and elite_dash_cooldown <= 0:
 		if dist > 100 and dist < 400:  # Entre 100 y 400 unidades
 			_perform_elite_dash()
@@ -265,19 +265,19 @@ func _try_elite_ability() -> bool:
 			_perform_elite_nova()
 			return true
 	
-	# PRIORIDAD 3: Slam si está muy cerca
+	# PRIORIDAD 3: Slam si estÃ¡ muy cerca
 	if "elite_slam" in special_abilities and elite_slam_cooldown <= 0:
 		if dist < 150:
 			_perform_elite_slam()
 			return true
 	
-	# PRIORIDAD 4: Summon si el jugador está a distancia media
+	# PRIORIDAD 4: Summon si el jugador estÃ¡ a distancia media
 	if "elite_summon" in special_abilities and elite_summon_cooldown <= 0:
 		if dist > 80 and dist < 300:
 			_perform_elite_summon()
 			return true
 	
-	# PRIORIDAD 5: Activar escudo si está bajo de vida
+	# PRIORIDAD 5: Activar escudo si estÃ¡ bajo de vida
 	if "elite_shield" in special_abilities and elite_shield_cooldown <= 0 and elite_shield_charges <= 0:
 		var current_hp_percent = _get_enemy_hp_percent()
 		if current_hp_percent < 0.7:
@@ -296,12 +296,12 @@ func _get_enemy_hp_percent() -> float:
 	return 1.0
 
 func _perform_elite_slam() -> void:
-	"""Habilidad élite: Slam de área"""
+	"""Habilidad Ã©lite: Slam de Ã¡rea"""
 	var slam_radius = modifiers.get("elite_slam_radius", 80.0)
 	var slam_damage_mult = modifiers.get("elite_slam_damage_mult", 1.5)
 	var slam_damage = int(attack_damage * slam_damage_mult)
 	
-	# Aplicar daño si el player está en rango
+	# Aplicar daÃ±o si el player estÃ¡ en rango
 	var dist = enemy.global_position.distance_to(player.global_position)
 	if dist <= slam_radius:
 		if player.has_method("take_damage"):
@@ -310,15 +310,15 @@ func _perform_elite_slam() -> void:
 		if player.has_method("apply_stun"):
 			player.apply_stun(0.4)
 	
-	# Visual épico
+	# Visual Ã©pico
 	_spawn_elite_slam_visual(enemy.global_position, slam_radius)
 	
 	# Aplicar cooldown
 	elite_slam_cooldown = modifiers.get("elite_slam_cooldown", 5.0)
-	print("[Elite] 👑💥 %s usó Elite Slam! (daño: %d, radio: %.0f)" % [enemy.name, slam_damage, slam_radius])
+	# print("[Elite] ðŸ‘‘ðŸ’¥ %s usÃ³ Elite Slam! (daÃ±o: %d, radio: %.0f)" % [enemy.name, slam_damage, slam_radius])
 
 func _activate_elite_rage() -> void:
-	"""Activar modo rage de élite"""
+	"""Activar modo rage de Ã©lite"""
 	elite_rage_active = true
 	
 	var damage_bonus = modifiers.get("elite_rage_damage_bonus", 0.5)
@@ -329,21 +329,21 @@ func _activate_elite_rage() -> void:
 	if "base_speed" in enemy:
 		enemy.base_speed *= (1 + speed_bonus)
 	
-	# Visual épico
+	# Visual Ã©pico
 	_spawn_elite_rage_visual()
-	print("[Elite] 👑🔥 %s entró en RAGE! (+%.0f%% daño, +%.0f%% velocidad)" % [enemy.name, damage_bonus * 100, speed_bonus * 100])
+	# print("[Elite] ðŸ‘‘ðŸ”¥ %s entrÃ³ en RAGE! (+%.0f%% daÃ±o, +%.0f%% velocidad)" % [enemy.name, damage_bonus * 100, speed_bonus * 100])
 
 func _activate_elite_shield() -> void:
-	"""Activar escudo élite"""
+	"""Activar escudo Ã©lite"""
 	elite_shield_charges = modifiers.get("elite_shield_charges", 3)
 	elite_shield_cooldown = modifiers.get("elite_shield_cooldown", 15.0)
 	
 	# Visual de escudo
 	_spawn_elite_shield_visual()
-	print("[Elite] 👑🛡️ %s activó Elite Shield! (%d cargas)" % [enemy.name, elite_shield_charges])
+	# print("[Elite] ðŸ‘‘ðŸ›¡ï¸ %s activÃ³ Elite Shield! (%d cargas)" % [enemy.name, elite_shield_charges])
 
 func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
-	"""Visual épico de slam élite"""
+	"""Visual Ã©pico de slam Ã©lite"""
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 65
@@ -357,7 +357,7 @@ func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
 	var visual = Node2D.new()
 	effect.add_child(visual)
 	
-	# Color dorado para élites
+	# Color dorado para Ã©lites
 	var gold = Color(1.0, 0.85, 0.1)
 	var bright_gold = Color(1.0, 0.95, 0.5)
 	
@@ -408,7 +408,7 @@ func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
 	)
 
 func _spawn_elite_rage_visual() -> void:
-	"""Visual épico de rage élite"""
+	"""Visual Ã©pico de rage Ã©lite"""
 	if not is_instance_valid(enemy):
 		return
 	
@@ -448,10 +448,10 @@ func _spawn_elite_rage_visual() -> void:
 				PackedVector2Array([flame_tip, pos + Vector2(-size * 0.4, 0), pos + Vector2(size * 0.4, 0)]),
 				Color(1, 0.4, 0, 0.85 * (1.0 - anim * 0.5))
 			)
-			# Núcleo
+			# NÃºcleo
 			visual.draw_circle(pos, size * 0.35, Color(1, 0.9, 0.3, 0.9 * (1.0 - anim * 0.5)))
 		
-		# Texto "RAGE" simulado con símbolo
+		# Texto "RAGE" simulado con sÃ­mbolo
 		var rage_size = 25 * (1.0 - anim * 0.3)
 		visual.draw_circle(Vector2.ZERO, rage_size, Color(1, 0.2, 0, 0.8 * (1.0 - anim)))
 		# X de rabia
@@ -472,7 +472,7 @@ func _spawn_elite_rage_visual() -> void:
 	)
 
 func _spawn_elite_shield_visual() -> void:
-	"""Visual de escudo élite"""
+	"""Visual de escudo Ã©lite"""
 	if not is_instance_valid(enemy):
 		return
 	
@@ -485,7 +485,7 @@ func _spawn_elite_shield_visual() -> void:
 	var gold = Color(1.0, 0.85, 0.1)
 	
 	visual.draw.connect(func():
-		# Hexágono de escudo dorado
+		# HexÃ¡gono de escudo dorado
 		var radius = 50
 		var pulse = 1.0 + sin(anim * 8) * 0.1
 		var points = PackedVector2Array()
@@ -497,7 +497,7 @@ func _spawn_elite_shield_visual() -> void:
 		# Relleno semi-transparente
 		visual.draw_circle(Vector2.ZERO, radius * 0.85 * pulse, Color(gold.r, gold.g, gold.b, 0.15))
 		
-		# Runas en cada vértice
+		# Runas en cada vÃ©rtice
 		for i in range(6):
 			var angle = (TAU / 6) * i + anim * 0.8
 			var pos = Vector2(cos(angle), sin(angle)) * radius * pulse
@@ -519,18 +519,18 @@ func _spawn_elite_shield_visual() -> void:
 			visual.queue_redraw()
 	)
 	
-	# Auto-destruir después de 12 segundos (duración del escudo)
+	# Auto-destruir despuÃ©s de 12 segundos (duraciÃ³n del escudo)
 	get_tree().create_timer(12.0).timeout.connect(func():
 		if is_instance_valid(visual):
 			visual.queue_free()
 	)
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# NUEVAS HABILIDADES ÉLITE - DASH, NOVA, SUMMON
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# NUEVAS HABILIDADES Ã‰LITE - DASH, NOVA, SUMMON
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 func _perform_elite_dash() -> void:
-	"""Habilidad élite: Dash/embestida hacia el jugador"""
+	"""Habilidad Ã©lite: Dash/embestida hacia el jugador"""
 	if not is_instance_valid(enemy) or not is_instance_valid(player):
 		return
 	
@@ -541,16 +541,16 @@ func _perform_elite_dash() -> void:
 	elite_is_dashing = true
 	elite_dash_target = player.global_position
 	
-	# Visual de preparación
+	# Visual de preparaciÃ³n
 	_spawn_elite_dash_visual_start()
 	
-	# Después de 0.3s de "wind-up", ejecutar dash
+	# DespuÃ©s de 0.3s de "wind-up", ejecutar dash
 	get_tree().create_timer(0.3).timeout.connect(func():
 		if not is_instance_valid(enemy) or not is_instance_valid(player):
 			elite_is_dashing = false
 			return
 		
-		# Calcular dirección y posición final
+		# Calcular direcciÃ³n y posiciÃ³n final
 		var direction = (elite_dash_target - enemy.global_position).normalized()
 		var dash_distance = min(400.0, enemy.global_position.distance_to(elite_dash_target) + 50)
 		var final_pos = enemy.global_position + direction * dash_distance
@@ -562,27 +562,27 @@ func _perform_elite_dash() -> void:
 		# Spawn visual de estela
 		_spawn_elite_dash_trail(enemy.global_position, final_pos)
 		
-		# Verificar colisión con el jugador durante el dash
+		# Verificar colisiÃ³n con el jugador durante el dash
 		tween.finished.connect(func():
 			elite_is_dashing = false
 			if is_instance_valid(player):
 				var dist = enemy.global_position.distance_to(player.global_position)
-				if dist < 60:  # Impactó
+				if dist < 60:  # ImpactÃ³
 					if player.has_method("take_damage"):
 						var elem = _get_enemy_element()
 						player.call("take_damage", dash_damage, elem, enemy)
 						attacked_player.emit(dash_damage, true)
-						print("[Elite] 👑💨 %s DASH IMPACTO! %d daño" % [enemy.name, dash_damage])
+						# print("[Elite] ðŸ‘‘ðŸ’¨ %s DASH IMPACTO! %d daÃ±o" % [enemy.name, dash_damage])
 					if player.has_method("apply_knockback"):
 						player.apply_knockback(direction * 200)
 		)
 	)
 	
 	elite_dash_cooldown = modifiers.get("elite_dash_cooldown", 3.0)
-	print("[Elite] 👑💨 %s prepara DASH hacia el jugador!" % enemy.name)
+	# print("[Elite] ðŸ‘‘ðŸ’¨ %s prepara DASH hacia el jugador!" % enemy.name)
 
 func _spawn_elite_dash_visual_start() -> void:
-	"""Visual de preparación de dash"""
+	"""Visual de preparaciÃ³n de dash"""
 	if not is_instance_valid(enemy):
 		return
 	
@@ -601,7 +601,7 @@ func _spawn_elite_dash_visual_start() -> void:
 	effect.add_child(visual)
 	
 	visual.draw.connect(func():
-		# Círculo de carga creciente
+		# CÃ­rculo de carga creciente
 		var radius = 40 * anim
 		for i in range(3):
 			var r = radius * (1.0 - i * 0.2)
@@ -664,7 +664,7 @@ func _spawn_elite_dash_trail(from: Vector2, to: Vector2) -> void:
 		
 		visual.draw_colored_polygon(PackedVector2Array([p1, p2, p3, p4]), Color(gold.r, gold.g, gold.b, 0.6 * (1.0 - anim)))
 		
-		# Partículas de chispa
+		# PartÃ­culas de chispa
 		for i in range(8):
 			var spark_pos = direction * (length * randf()) + perp * (randf() - 0.5) * width * 2
 			visual.draw_circle(spark_pos, 4 * (1.0 - anim), Color(1, 1, 0.8, 0.8 * (1.0 - anim)))
@@ -682,7 +682,7 @@ func _spawn_elite_dash_trail(from: Vector2, to: Vector2) -> void:
 	)
 
 func _perform_elite_nova() -> void:
-	"""Habilidad élite: Explosión de proyectiles en círculo"""
+	"""Habilidad Ã©lite: ExplosiÃ³n de proyectiles en cÃ­rculo"""
 	if not is_instance_valid(enemy):
 		return
 	
@@ -693,7 +693,7 @@ func _perform_elite_nova() -> void:
 	# Visual de carga
 	_spawn_elite_nova_visual(enemy.global_position)
 	
-	# Después de 0.4s, disparar todos los proyectiles
+	# DespuÃ©s de 0.4s, disparar todos los proyectiles
 	get_tree().create_timer(0.4).timeout.connect(func():
 		if not is_instance_valid(enemy):
 			return
@@ -703,7 +703,7 @@ func _perform_elite_nova() -> void:
 			var direction = Vector2(cos(angle), sin(angle))
 			_spawn_elite_nova_projectile(enemy.global_position, direction, nova_damage)
 		
-		print("[Elite] 👑💫 %s dispara NOVA! %d proyectiles" % [enemy.name, projectile_count])
+		# print("[Elite] ðŸ‘‘ðŸ’« %s dispara NOVA! %d proyectiles" % [enemy.name, projectile_count])
 	)
 	
 	elite_nova_cooldown = modifiers.get("elite_nova_cooldown", 6.0)
@@ -749,7 +749,7 @@ func _spawn_elite_nova_visual(center: Vector2) -> void:
 	)
 
 func _spawn_elite_nova_projectile(from: Vector2, direction: Vector2, damage: int) -> void:
-	"""Crear un proyectil de la nova élite"""
+	"""Crear un proyectil de la nova Ã©lite"""
 	# Intentar usar el sistema de proyectiles existente
 	if EnemyProjectileScript:
 		var projectile = Area2D.new()
@@ -770,16 +770,16 @@ func _spawn_elite_nova_projectile(from: Vector2, direction: Vector2, damage: int
 				sprite.modulate = Color(1.0, 0.85, 0.1)
 
 func _perform_elite_summon() -> void:
-	"""Habilidad élite: Invocar minions temporales"""
+	"""Habilidad Ã©lite: Invocar minions temporales"""
 	if not is_instance_valid(enemy):
 		return
 	
 	var summon_count = modifiers.get("elite_summon_count", 3)
 	
-	# Visual de invocación
+	# Visual de invocaciÃ³n
 	_spawn_elite_summon_visual(enemy.global_position)
 	
-	# Después de 0.5s, spawner los minions
+	# DespuÃ©s de 0.5s, spawner los minions
 	get_tree().create_timer(0.5).timeout.connect(func():
 		if not is_instance_valid(enemy):
 			return
@@ -787,7 +787,7 @@ func _perform_elite_summon() -> void:
 		# Buscar el EnemyManager
 		var enemy_manager = _find_enemy_manager()
 		if not enemy_manager:
-			print("[Elite] ⚠️ No se encontró EnemyManager para summon")
+			# print("[Elite] âš ï¸ No se encontrÃ³ EnemyManager para summon")
 			return
 		
 		for i in range(summon_count):
@@ -799,20 +799,20 @@ func _perform_elite_summon() -> void:
 			if enemy_manager.has_method("spawn_specific_enemy"):
 				var minion = enemy_manager.spawn_specific_enemy("tier_1_slime_arcano", spawn_pos)
 				if minion:
-					# Hacer el minion temporal (se destruye después de 8 segundos)
+					# Hacer el minion temporal (se destruye despuÃ©s de 8 segundos)
 					minion.modulate = Color(1.0, 0.85, 0.1, 0.8)  # Tinte dorado
 					get_tree().create_timer(8.0).timeout.connect(func():
 						if is_instance_valid(minion):
 							minion.queue_free()
 					)
 		
-		print("[Elite] 👑👥 %s invocó %d minions!" % [enemy.name, summon_count])
+		# print("[Elite] ðŸ‘‘ðŸ‘¥ %s invocÃ³ %d minions!" % [enemy.name, summon_count])
 	)
 	
 	elite_summon_cooldown = modifiers.get("elite_summon_cooldown", 10.0)
 
 func _spawn_elite_summon_visual(center: Vector2) -> void:
-	"""Visual de invocación élite"""
+	"""Visual de invocaciÃ³n Ã©lite"""
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 60
@@ -831,7 +831,7 @@ func _spawn_elite_summon_visual(center: Vector2) -> void:
 	effect.add_child(visual)
 	
 	visual.draw.connect(func():
-		# Círculo mágico
+		# CÃ­rculo mÃ¡gico
 		var radius = 70
 		visual.draw_arc(Vector2.ZERO, radius, 0, TAU * anim, 48, gold, 3.0)
 		visual.draw_arc(Vector2.ZERO, radius * 0.7, 0, TAU * anim, 36, purple, 2.0)
@@ -843,7 +843,7 @@ func _spawn_elite_summon_visual(center: Vector2) -> void:
 			var pos = Vector2(cos(angle), sin(angle)) * radius * 0.85
 			visual.draw_circle(pos, 8, Color(gold.r, gold.g, gold.b, anim))
 			
-		# Pentáculo central
+		# PentÃ¡culo central
 		var penta_radius = 35 * anim
 		for i in range(5):
 			var a1 = (TAU / 5) * i - PI/2
@@ -865,19 +865,19 @@ func _spawn_elite_summon_visual(center: Vector2) -> void:
 	)
 
 func _find_enemy_manager() -> Node:
-	"""Buscar el EnemyManager en el árbol"""
-	# Método 1: GameManager
+	"""Buscar el EnemyManager en el Ã¡rbol"""
+	# MÃ©todo 1: GameManager
 	if GameManager and GameManager.has_method("get") and "enemy_manager" in GameManager:
 		return GameManager.enemy_manager
 	
-	# Método 2: Buscar en el árbol
+	# MÃ©todo 2: Buscar en el Ã¡rbol
 	var tree = Engine.get_main_loop()
 	if tree and tree.root:
 		var em = tree.root.get_node_or_null("Game/EnemyManager")
 		if em:
 			return em
 	
-	# Método 3: Buscar por clase
+	# MÃ©todo 3: Buscar por clase
 	var nodes = get_tree().get_nodes_in_group("enemy_managers")
 	if nodes.size() > 0:
 		return nodes[0]
@@ -885,31 +885,31 @@ func _find_enemy_manager() -> Node:
 	return null
 
 func _perform_melee_attack() -> void:
-	"""Ataque melee: daño directo al jugador"""
+	"""Ataque melee: daÃ±o directo al jugador"""
 	if not player.has_method("take_damage"):
 		return
 	
 	var elem = _get_enemy_element()
 	# Pasar referencia del enemigo para sistema de thorns
 	player.call("take_damage", attack_damage, elem, enemy)
-	print("[EnemyAttackSystem] ⚔️ %s atacó melee a player por %d daño (%s)" % [enemy.name, attack_damage, elem])
+	# print("[EnemyAttackSystem] âš”ï¸ %s atacÃ³ melee a player por %d daÃ±o (%s)" % [enemy.name, attack_damage, elem])
 	
-	# Aplicar efectos según arquetipo y elemento
+	# Aplicar efectos segÃºn arquetipo y elemento
 	_apply_melee_effects()
 	
-	# Emitir señal
+	# Emitir seÃ±al
 	attacked_player.emit(attack_damage, true)
 	
-	# Efecto visual removido - el feedback ahora es vía DamageVignette
+	# Efecto visual removido - el feedback ahora es vÃ­a DamageVignette
 	# _emit_melee_effect()
 
 func _apply_melee_effects() -> void:
-	"""Aplicar efectos de estado según arquetipo y elemento"""
+	"""Aplicar efectos de estado segÃºn arquetipo y elemento"""
 	var elem = _get_enemy_element()
 	
 	# Efectos por arquetipo
 	match archetype:
-		"debuffer":  # Araña Venenosa
+		"debuffer":  # AraÃ±a Venenosa
 			if player.has_method("apply_poison"):
 				var poison_dmg = modifiers.get("poison_damage", 2.0)
 				var poison_dur = modifiers.get("poison_duration", 3.0)
@@ -923,8 +923,8 @@ func _apply_melee_effects() -> void:
 				player.apply_burn(2.0, 2.0)  # Bleed como burn menor
 		"phase":  # Sombra Flotante - aplica curse
 			if player.has_method("apply_curse"):
-				player.apply_curse(0.3, 4.0)  # -30% curación por 4s
-		"charger":  # Caballero del Vacío - stun en carga
+				player.apply_curse(0.3, 4.0)  # -30% curaciÃ³n por 4s
+		"charger":  # Caballero del VacÃ­o - stun en carga
 			# El stun se aplica en el ataque de carga, no en melee normal
 			pass
 	
@@ -932,26 +932,26 @@ func _apply_melee_effects() -> void:
 	match elem:
 		"fire":
 			if player.has_method("apply_burn"):
-				player.apply_burn(3.0, 2.0)  # 3 daño/tick por 2s
+				player.apply_burn(3.0, 2.0)  # 3 daÃ±o/tick por 2s
 		"ice":
 			if player.has_method("apply_slow"):
 				player.apply_slow(0.25, 2.0)  # 25% slow por 2s
 		"dark", "void":
 			if player.has_method("apply_weakness"):
-				player.apply_weakness(0.2, 3.0)  # +20% daño recibido por 3s
+				player.apply_weakness(0.2, 3.0)  # +20% daÃ±o recibido por 3s
 		"poison":
 			if player.has_method("apply_poison"):
 				player.apply_poison(2.0, 4.0)
 
 func _perform_ranged_attack() -> void:
 	"""Ataque ranged: disparar proyectil al jugador"""
-	# Crear proyectil dinámicamente si no hay escena
+	# Crear proyectil dinÃ¡micamente si no hay escena
 	if not projectile_scene and EnemyProjectileScript:
 		_create_dynamic_projectile()
 		return
 	
 	if not projectile_scene:
-		print("[EnemyAttackSystem] Warning: %s no tiene projectile_scene ni script" % enemy.name)
+		# print("[EnemyAttackSystem] Warning: %s no tiene projectile_scene ni script" % enemy.name)
 		# Fallback a melee
 		_perform_melee_attack()
 		return
@@ -963,14 +963,14 @@ func _perform_ranged_attack() -> void:
 	# Posicionar en enemigo
 	projectile.global_position = enemy.global_position
 	
-	# Calcular dirección hacia jugador
+	# Calcular direcciÃ³n hacia jugador
 	var direction = (player.global_position - enemy.global_position).normalized()
 	
 	# Configurar proyectil
 	if projectile.has_method("initialize"):
 		projectile.initialize(direction, projectile_speed, attack_damage, 5.0, element_type)
 	else:
-		# Asignación directa
+		# AsignaciÃ³n directa
 		if "direction" in projectile:
 			projectile.direction = direction
 		if "speed" in projectile:
@@ -978,28 +978,28 @@ func _perform_ranged_attack() -> void:
 		if "damage" in projectile:
 			projectile.damage = attack_damage
 	
-	# Añadir al árbol
+	# AÃ±adir al Ã¡rbol
 	var parent = enemy.get_parent()
 	if parent:
 		parent.add_child(projectile)
 	else:
 		get_tree().root.add_child(projectile)
 	
-	print("[EnemyAttackSystem] 🎯 %s disparó proyectil hacia player" % enemy.name)
+	# print("[EnemyAttackSystem] ðŸŽ¯ %s disparÃ³ proyectil hacia player" % enemy.name)
 	attacked_player.emit(attack_damage, false)
 
 func _create_dynamic_projectile() -> void:
-	"""Crear proyectil dinámico usando EnemyProjectile.gd"""
+	"""Crear proyectil dinÃ¡mico usando EnemyProjectile.gd"""
 	var projectile = Area2D.new()
 	projectile.set_script(EnemyProjectileScript)
 	projectile.global_position = enemy.global_position
 	
 	var direction = (player.global_position - enemy.global_position).normalized()
 	
-	# Determinar elemento según enemigo
+	# Determinar elemento segÃºn enemigo
 	var elem = _get_enemy_element()
 	
-	# Añadir al árbol ANTES de initialize (necesario para _ready)
+	# AÃ±adir al Ã¡rbol ANTES de initialize (necesario para _ready)
 	var parent = enemy.get_parent()
 	if parent:
 		parent.add_child(projectile)
@@ -1010,28 +1010,28 @@ func _create_dynamic_projectile() -> void:
 	if projectile.has_method("initialize"):
 		projectile.initialize(direction, projectile_speed, attack_damage, 5.0, elem)
 	
-	print("[EnemyAttackSystem] 🎯 %s disparó proyectil dinámico (%s)" % [enemy.name, elem])
+	# print("[EnemyAttackSystem] ðŸŽ¯ %s disparÃ³ proyectil dinÃ¡mico (%s)" % [enemy.name, elem])
 	attacked_player.emit(attack_damage, false)
 
 func _perform_aoe_attack() -> void:
-	"""Ataque de área: daño en zona alrededor del enemigo o player"""
+	"""Ataque de Ã¡rea: daÃ±o en zona alrededor del enemigo o player"""
 	if not player:
 		return
 	
-	# Posición del AoE (en el player o en el enemigo)
+	# PosiciÃ³n del AoE (en el player o en el enemigo)
 	var aoe_center = player.global_position
 	var radius = modifiers.get("aoe_radius", 100.0)
 	var aoe_damage = int(attack_damage * modifiers.get("aoe_damage_mult", 1.0))
 	var elem = _get_enemy_element()
 	
-	# Verificar si player está en rango del AoE
+	# Verificar si player estÃ¡ en rango del AoE
 	var dist_to_player = aoe_center.distance_to(player.global_position)
 	if dist_to_player <= radius:
 		if player.has_method("take_damage"):
 			player.call("take_damage", aoe_damage, elem)
-			print("[EnemyAttackSystem] 💥 %s AoE hit player por %d daño (%s, radio=%.0f)" % [enemy.name, aoe_damage, elem, radius])
+			# print("[EnemyAttackSystem] ðŸ’¥ %s AoE hit player por %d daÃ±o (%s, radio=%.0f)" % [enemy.name, aoe_damage, elem, radius])
 			attacked_player.emit(aoe_damage, false)
-			# Aplicar efectos según elemento del AoE
+			# Aplicar efectos segÃºn elemento del AoE
 			_apply_aoe_effects()
 	
 	# Efecto visual del AoE
@@ -1041,24 +1041,24 @@ func _apply_aoe_effects() -> void:
 	"""Aplicar efectos de estado en ataques AoE"""
 	var elem = _get_enemy_element()
 	
-	# Señor de las Llamas - Burn
+	# SeÃ±or de las Llamas - Burn
 	if elem == "fire":
 		if player.has_method("apply_burn"):
-			player.apply_burn(5.0, 3.0)  # 5 daño/tick por 3s
-			print("[EnemyAttackSystem] 🔥 AoE aplica Burn!")
+			player.apply_burn(5.0, 3.0)  # 5 daÃ±o/tick por 3s
+			# print("[EnemyAttackSystem] ðŸ”¥ AoE aplica Burn!")
 	# Reina del Hielo - Slow/Freeze
 	elif elem == "ice":
 		if player.has_method("apply_slow"):
 			player.apply_slow(0.4, 3.0)  # 40% slow por 3s
-			print("[EnemyAttackSystem] ❄️ AoE aplica Slow!")
-	# Titán Arcano - Stun
+			# print("[EnemyAttackSystem] â„ï¸ AoE aplica Slow!")
+	# TitÃ¡n Arcano - Stun
 	elif "arcane" in enemy.name.to_lower() or "titan" in enemy.name.to_lower():
 		if player.has_method("apply_stun"):
 			player.apply_stun(0.5)  # 0.5s stun
-			print("[EnemyAttackSystem] ⚡ AoE aplica Stun!")
+			# print("[EnemyAttackSystem] âš¡ AoE aplica Stun!")
 
 func _perform_breath_attack() -> void:
-	"""Ataque de aliento: daño en cono hacia el player"""
+	"""Ataque de aliento: daÃ±o en cono hacia el player"""
 	if not player:
 		return
 	
@@ -1067,7 +1067,7 @@ func _perform_breath_attack() -> void:
 	var cone_range = modifiers.get("breath_range", 150.0)
 	var breath_damage = int(attack_damage * modifiers.get("breath_damage_mult", 1.2))
 	
-	# Verificar si player está en el cono
+	# Verificar si player estÃ¡ en el cono
 	var to_player = player.global_position - enemy.global_position
 	var dist = to_player.length()
 	var angle_to_player = direction.angle_to(to_player.normalized())
@@ -1075,7 +1075,7 @@ func _perform_breath_attack() -> void:
 	if dist <= cone_range and abs(angle_to_player) <= cone_angle / 2:
 		if player.has_method("take_damage"):
 			player.take_damage(breath_damage, "fire", enemy)
-			print("[EnemyAttackSystem] 🐉 %s Breath hit player por %d daño" % [enemy.name, breath_damage])
+			# print("[EnemyAttackSystem] ðŸ‰ %s Breath hit player por %d daÃ±o" % [enemy.name, breath_damage])
 			attacked_player.emit(breath_damage, false)
 			# Aplicar efectos de breath
 			_apply_breath_effects()
@@ -1087,33 +1087,33 @@ func _apply_breath_effects() -> void:
 	"""Aplicar efectos del ataque breath"""
 	var _elem = _get_enemy_element()
 	
-	# Dragón Etéreo es de tipo 'fire' o 'etereo'
-	# Aplicar burn siempre en breath de dragón
+	# DragÃ³n EtÃ©reo es de tipo 'fire' o 'etereo'
+	# Aplicar burn siempre en breath de dragÃ³n
 	if player.has_method("apply_burn"):
-		player.apply_burn(6.0, 2.5)  # 6 daño/tick por 2.5s
-		print("[EnemyAttackSystem] 🔥 Breath aplica Burn!")
+		player.apply_burn(6.0, 2.5)  # 6 daÃ±o/tick por 2.5s
+		# print("[EnemyAttackSystem] ðŸ”¥ Breath aplica Burn!")
 
 func _perform_multi_attack() -> void:
-	"""Ataque múltiple: varios proyectiles o ataques en secuencia"""
+	"""Ataque mÃºltiple: varios proyectiles o ataques en secuencia"""
 	var count = modifiers.get("attack_count", 3)
 	var spread_angle = deg_to_rad(modifiers.get("spread_angle", 30.0))
 	var base_direction = (player.global_position - enemy.global_position).normalized()
 	
 	for i in range(count):
-		# Calcular ángulo para este proyectil
+		# Calcular Ã¡ngulo para este proyectil
 		var angle_offset = spread_angle * (float(i) / float(count - 1) - 0.5) if count > 1 else 0.0
 		var direction = base_direction.rotated(angle_offset)
 		
 		# Crear proyectil con delay visual
 		_spawn_multi_projectile(direction, i * 0.1)
 	
-	print("[EnemyAttackSystem] 🔥 %s Multi-attack: %d proyectiles" % [enemy.name, count])
+	# print("[EnemyAttackSystem] ðŸ”¥ %s Multi-attack: %d proyectiles" % [enemy.name, count])
 	attacked_player.emit(attack_damage, false)
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # SISTEMA DE BOSS COMPLETO - ESTILO BINDING OF ISAAC
 # Ataques constantes, AOE aleatorios, proyectiles perseguidores, orbitales
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 # Tracking de cooldowns de habilidades de boss (por enemigo)
 var boss_ability_cooldowns: Dictionary = {}  # {ability_name: tiempo_restante}
@@ -1123,7 +1123,7 @@ var boss_fire_trail_active: bool = false
 var boss_damage_aura_timer: float = 0.0
 
 # Sistema de habilidades limitadas por minuto
-var boss_scaling_config: Dictionary = {}     # Configuración de escalado del minuto
+var boss_scaling_config: Dictionary = {}     # ConfiguraciÃ³n de escalado del minuto
 var boss_unlocked_abilities: Array = []      # Habilidades desbloqueadas para este boss
 var boss_combo_count: int = 0                # Habilidades usadas en el combo actual
 var boss_combo_timer: float = 0.0            # Timer para resetear combo
@@ -1138,7 +1138,7 @@ var boss_active_effects: Array = []  # Track de TODOS los efectos del boss (AOE,
 
 func cleanup_boss() -> void:
 	"""Limpiar todos los nodos del boss (orbitales, trails, AOE warnings, etc.)"""
-	print("[Boss] 🧹 Limpiando orbitales y efectos del boss...")
+	# print("[Boss] ðŸ§¹ Limpiando orbitales y efectos del boss...")
 	
 	# Limpiar orbitales
 	for orbital in boss_orbitals:
@@ -1152,7 +1152,7 @@ func cleanup_boss() -> void:
 			effect.queue_free()
 	boss_active_effects.clear()
 	
-	# Limpiar también cualquier homing orb del boss en la escena
+	# Limpiar tambiÃ©n cualquier homing orb del boss en la escena
 	var tree = get_tree()
 	if tree:
 		for node in tree.get_nodes_in_group("boss_effects"):
@@ -1160,10 +1160,10 @@ func cleanup_boss() -> void:
 				node.queue_free()
 	
 	is_boss_enemy = false
-	print("[Boss] 🧹 Limpieza completada")
+	# print("[Boss] ðŸ§¹ Limpieza completada")
 
 func _track_boss_effect(effect: Node) -> void:
-	"""Añadir un efecto a la lista de tracking para limpieza posterior"""
+	"""AÃ±adir un efecto a la lista de tracking para limpieza posterior"""
 	if effect and is_instance_valid(effect):
 		boss_active_effects.append(effect)
 		effect.add_to_group("boss_effects")
@@ -1176,7 +1176,7 @@ func _init_boss_aggressive_mode() -> void:
 	var orbital_count = boss_scaling_config.get("orbital_count", 2)
 	_spawn_boss_orbitals(orbital_count)
 	
-	print("[Boss] 👹🔥 MODO AGRESIVO ACTIVADO - Orbitales: %d" % orbital_count)
+	# print("[Boss] ðŸ‘¹ðŸ”¥ MODO AGRESIVO ACTIVADO - Orbitales: %d" % orbital_count)
 
 func _process_boss_aggressive_attacks(delta: float) -> void:
 	"""Procesar ataques constantes del boss - NO depende del rango"""
@@ -1187,7 +1187,7 @@ func _process_boss_aggressive_attacks(delta: float) -> void:
 	if boss_scaling_config.is_empty():
 		_init_boss_system()
 	
-	# Actualizar fase según HP
+	# Actualizar fase segÃºn HP
 	_update_boss_phase()
 	
 	# Actualizar orbitales
@@ -1209,7 +1209,7 @@ func _process_boss_aggressive_attacks(delta: float) -> void:
 		var aoe_interval = boss_scaling_config.get("aoe_spawn_interval", 5.0)
 		boss_aoe_timer = aoe_interval * (0.7 if boss_current_phase >= 2 else 1.0)
 	
-	# 3. Proyectiles homing (solo si está habilitado en la config)
+	# 3. Proyectiles homing (solo si estÃ¡ habilitado en la config)
 	var enable_homing = boss_scaling_config.get("enable_homing", false)
 	if enable_homing:
 		boss_homing_projectile_timer -= delta
@@ -1218,7 +1218,7 @@ func _process_boss_aggressive_attacks(delta: float) -> void:
 			var homing_interval = boss_scaling_config.get("homing_interval", 6.0)
 			boss_homing_projectile_timer = homing_interval * (0.7 if boss_current_phase >= 2 else 1.0)
 	
-	# 4. Spread shot (solo si está habilitado en la config)
+	# 4. Spread shot (solo si estÃ¡ habilitado en la config)
 	var enable_spread = boss_scaling_config.get("enable_spread", false)
 	if enable_spread:
 		boss_spread_shot_timer -= delta
@@ -1227,7 +1227,7 @@ func _process_boss_aggressive_attacks(delta: float) -> void:
 			var spread_interval = boss_scaling_config.get("spread_interval", 8.0)
 			boss_spread_shot_timer = spread_interval * (0.6 if boss_current_phase >= 3 else 1.0)
 	
-	# 5. Trail de daño solo en fase 2+ (para todos los bosses)
+	# 5. Trail de daÃ±o solo en fase 2+ (para todos los bosses)
 	if boss_current_phase >= 2:
 		boss_trail_timer -= delta
 		if boss_trail_timer <= 0:
@@ -1243,23 +1243,23 @@ func _boss_fire_at_player() -> void:
 		return
 	
 	var direction = (player.global_position - enemy.global_position).normalized()
-	var damage = int(attack_damage * 0.5)  # Proyectiles hacen 50% del daño base
+	var damage = int(attack_damage * 0.5)  # Proyectiles hacen 50% del daÃ±o base
 	
 	_spawn_boss_projectile(enemy.global_position, direction, damage, 350.0)
 
 func _boss_spawn_random_aoe() -> void:
-	"""Spawn un AOE en posición aleatoria cerca del jugador"""
+	"""Spawn un AOE en posiciÃ³n aleatoria cerca del jugador"""
 	if not is_instance_valid(player):
 		return
 	
-	# Posición aleatoria dentro de un radio del jugador
+	# PosiciÃ³n aleatoria dentro de un radio del jugador
 	var offset = Vector2(randf_range(-200, 200), randf_range(-200, 200))
 	var target_pos = player.global_position + offset
 	
 	# Warning visual antes del impacto
 	_spawn_aoe_warning(target_pos, 80.0, 1.0)
 	
-	# Después de 1 segundo, hacer daño
+	# DespuÃ©s de 1 segundo, hacer daÃ±o
 	get_tree().create_timer(1.0).timeout.connect(func():
 		if is_instance_valid(player):
 			var dist = target_pos.distance_to(player.global_position)
@@ -1268,8 +1268,8 @@ func _boss_spawn_random_aoe() -> void:
 				if player.has_method("take_damage"):
 					var elem = _get_enemy_element()
 					player.call("take_damage", damage, elem)
-					print("[Boss] 💥 AOE RANDOM impactó! %d daño" % damage)
-		# Visual de explosión
+					# print("[Boss] ðŸ’¥ AOE RANDOM impactÃ³! %d daÃ±o" % damage)
+		# Visual de explosiÃ³n
 		_spawn_aoe_explosion(target_pos, 80.0)
 	)
 
@@ -1278,7 +1278,7 @@ func _boss_spawn_homing_projectile() -> void:
 	if not is_instance_valid(player) or not is_instance_valid(enemy):
 		return
 	
-	var count = 1 + boss_current_phase  # Más proyectiles en fases avanzadas
+	var count = 1 + boss_current_phase  # MÃ¡s proyectiles en fases avanzadas
 	
 	for i in range(count):
 		var angle_offset = (TAU / count) * i
@@ -1287,7 +1287,7 @@ func _boss_spawn_homing_projectile() -> void:
 		
 		_create_homing_projectile(spawn_pos)
 	
-	print("[Boss] 🎯 %d proyectiles HOMING lanzados!" % count)
+	# print("[Boss] ðŸŽ¯ %d proyectiles HOMING lanzados!" % count)
 
 func _create_homing_projectile(spawn_pos: Vector2) -> void:
 	"""Crear un proyectil que persigue al jugador"""
@@ -1357,7 +1357,7 @@ func _create_homing_projectile(spawn_pos: Vector2) -> void:
 		projectile.rotation = new_dir.angle()
 		projectile.global_position += new_dir * speed * 0.016
 		
-		# Check colisión manual
+		# Check colisiÃ³n manual
 		var dist = projectile.global_position.distance_to(player.global_position)
 		if dist < 20:
 			hit = true
@@ -1368,11 +1368,11 @@ func _create_homing_projectile(spawn_pos: Vector2) -> void:
 	)
 
 func _boss_spread_shot() -> void:
-	"""Ráfaga de proyectiles en abanico"""
+	"""RÃ¡faga de proyectiles en abanico"""
 	if not is_instance_valid(player) or not is_instance_valid(enemy):
 		return
 	
-	var count = 5 + boss_current_phase * 2  # Más proyectiles en fases avanzadas
+	var count = 5 + boss_current_phase * 2  # MÃ¡s proyectiles en fases avanzadas
 	var spread_angle = PI * 0.6  # 108 grados
 	var base_direction = (player.global_position - enemy.global_position).normalized()
 	var damage = int(attack_damage * 0.35)
@@ -1382,10 +1382,10 @@ func _boss_spread_shot() -> void:
 		var direction = base_direction.rotated(angle_offset)
 		_spawn_boss_projectile(enemy.global_position, direction, damage, 280.0)
 	
-	print("[Boss] 🔥 SPREAD SHOT: %d proyectiles!" % count)
+	# print("[Boss] ðŸ”¥ SPREAD SHOT: %d proyectiles!" % count)
 
 func _boss_leave_damage_trail() -> void:
-	"""Dejar trail de daño donde pasa el boss"""
+	"""Dejar trail de daÃ±o donde pasa el boss"""
 	if not is_instance_valid(enemy):
 		return
 	
@@ -1393,7 +1393,7 @@ func _boss_leave_damage_trail() -> void:
 	var elem = _get_enemy_element()
 	var color = _get_element_color(elem)
 	
-	# Crear zona de daño temporal
+	# Crear zona de daÃ±o temporal
 	var trail = Area2D.new()
 	trail.name = "BossTrail"
 	trail.collision_layer = 0
@@ -1425,7 +1425,7 @@ func _boss_leave_damage_trail() -> void:
 	# Trackear el efecto para limpieza
 	_track_boss_effect(trail)
 	
-	# Daño y fade out
+	# DaÃ±o y fade out
 	var trail_damage = int(attack_damage * 0.2)
 	var lifetime = 3.0
 	var damage_cooldown = 0.0
@@ -1505,7 +1505,7 @@ func _spawn_boss_orbitals(count: int) -> void:
 		boss_orbitals.append(orbital)
 
 func _update_boss_orbitals(delta: float) -> void:
-	"""Actualizar posición y daño de orbitales"""
+	"""Actualizar posiciÃ³n y daÃ±o de orbitales"""
 	var rotation_speed = 2.5 + boss_current_phase * 0.5
 	var base_radius = 80.0 + boss_current_phase * 10
 	
@@ -1521,7 +1521,7 @@ func _update_boss_orbitals(delta: float) -> void:
 		var radius = base_radius
 		orbital.position = Vector2(cos(angle), sin(angle)) * radius
 		
-		# Check daño al jugador
+		# Check daÃ±o al jugador
 		if is_instance_valid(player):
 			var dist = orbital.global_position.distance_to(player.global_position)
 			var cd = orbital.get_meta("damage_cooldown") - delta
@@ -1559,11 +1559,11 @@ func _spawn_aoe_warning(pos: Vector2, radius: float, duration: float) -> void:
 	warning.add_child(visual)
 	
 	visual.draw.connect(func():
-		# Círculo pulsante
+		# CÃ­rculo pulsante
 		var pulse = 0.5 + sin(anim * PI * 4) * 0.2
 		warning.draw_arc(Vector2.ZERO, radius * pulse, 0, TAU, 32, Color(color.r, color.g, color.b, 0.5), 3.0)
 		warning.draw_arc(Vector2.ZERO, radius * 0.7 * pulse, 0, TAU, 24, Color(1, 0.3, 0.3, 0.6), 2.0)
-		# Símbolo de peligro
+		# SÃ­mbolo de peligro
 		warning.draw_circle(Vector2.ZERO, 10, Color(1, 0.2, 0.2, 0.8 * (1.0 - anim)))
 	)
 	
@@ -1579,7 +1579,7 @@ func _spawn_aoe_warning(pos: Vector2, radius: float, duration: float) -> void:
 	)
 
 func _spawn_aoe_explosion(pos: Vector2, radius: float) -> void:
-	"""Visual de explosión AOE"""
+	"""Visual de explosiÃ³n AOE"""
 	var explosion = Node2D.new()
 	explosion.name = "AOEExplosion"
 	explosion.top_level = true
@@ -1606,7 +1606,7 @@ func _spawn_aoe_explosion(pos: Vector2, radius: float) -> void:
 		var expand = radius * (0.5 + anim * 0.8)
 		var alpha = 1.0 - anim
 		
-		# Ondas de explosión
+		# Ondas de explosiÃ³n
 		for i in range(3):
 			var r = expand * (1.0 - i * 0.2)
 			explosion.draw_arc(Vector2.ZERO, r, 0, TAU, 32, Color(color.r, color.g, color.b, alpha * (1.0 - i * 0.3)), 4.0 - i)
@@ -1670,12 +1670,12 @@ func _process_boss_special_abilities(delta: float) -> void:
 	boss_combo_timer = 4.0
 	boss_global_cooldown = combo_delay
 	
-	print("[Boss] 👹 %s usó %s (combo %d/%d, fase %d)" % [
+	# print("[Boss] ðŸ‘¹ %s usÃ³ %s (combo %d/%d, fase %d)" % [
 		enemy.name, selected_ability, boss_combo_count, max_combo, boss_current_phase
 	])
 
 func _init_boss_system() -> void:
-	"""Inicializar sistema de boss con configuración de escalado"""
+	"""Inicializar sistema de boss con configuraciÃ³n de escalado"""
 	if not boss_scaling_config.is_empty():
 		return
 	
@@ -1686,7 +1686,7 @@ func _init_boss_system() -> void:
 	elif modifiers.has("spawn_minute"):
 		spawn_minute = modifiers.get("spawn_minute", 5)
 	
-	# Obtener configuración de escalado
+	# Obtener configuraciÃ³n de escalado
 	boss_scaling_config = SpawnConfig.get_boss_scaling_for_minute(spawn_minute)
 	
 	# Determinar habilidades desbloqueadas
@@ -1697,23 +1697,23 @@ func _init_boss_system() -> void:
 	for ability in boss_unlocked_abilities:
 		boss_ability_cooldowns[ability] = 0.0
 	
-	print("[Boss] 👹 Inicializado para minuto %d: %d habilidades, combo max %d" % [
+	# print("[Boss] ðŸ‘¹ Inicializado para minuto %d: %d habilidades, combo max %d" % [
 		spawn_minute, boss_unlocked_abilities.size(), boss_scaling_config.get("max_combo", 1)
 	])
-	print("[Boss] 👹 Habilidades: %s" % str(boss_unlocked_abilities))
+	# print("[Boss] ðŸ‘¹ Habilidades: %s" % str(boss_unlocked_abilities))
 
 func _get_prioritized_abilities(max_count: int) -> Array:
 	"""Obtener las habilidades priorizadas para desbloquear"""
-	# Prioridad de habilidades (las básicas primero, las más poderosas después)
+	# Prioridad de habilidades (las bÃ¡sicas primero, las mÃ¡s poderosas despuÃ©s)
 	var priority_order = {
-		# Conjurador - básicas primero
+		# Conjurador - bÃ¡sicas primero
 		"arcane_barrage": 1,
 		"summon_minions": 3,
 		"teleport_strike": 2,
 		"arcane_nova": 4,
 		"curse_aura": 5,
 		
-		# Corazón del Vacío
+		# CorazÃ³n del VacÃ­o
 		"void_orbs": 1,
 		"void_pull": 2,
 		"void_explosion": 3,
@@ -1721,7 +1721,7 @@ func _get_prioritized_abilities(max_count: int) -> Array:
 		"void_beam": 5,
 		"damage_aura": 6,
 		
-		# Guardián de Runas
+		# GuardiÃ¡n de Runas
 		"rune_blast": 1,
 		"rune_barrage": 2,
 		"ground_slam": 3,
@@ -1772,13 +1772,13 @@ func _apply_ability_cooldown(ability: String) -> void:
 	boss_ability_cooldowns[ability] = base_cd * cooldown_mult * phase_mult
 
 func _update_boss_phase() -> void:
-	"""Actualizar la fase del boss según su HP actual"""
+	"""Actualizar la fase del boss segÃºn su HP actual"""
 	if not enemy:
 		return
 	
 	# Obtener HP actual - usar health_component si existe, sino variable hp directa
 	var current_hp: float = 0.0
-	var max_hp_val: float = 1.0  # Evitar división por cero
+	var max_hp_val: float = 1.0  # Evitar divisiÃ³n por cero
 	
 	if enemy.has_node("HealthComponent"):
 		var hc = enemy.get_node("HealthComponent")
@@ -1814,7 +1814,7 @@ func _update_boss_phase() -> void:
 
 func _on_boss_phase_change(_old_phase: int, new_phase: int) -> void:
 	"""Evento cuando el boss cambia de fase"""
-	print("[EnemyAttackSystem] 👹💀 %s CAMBIÓ A FASE %d!" % [enemy.name, new_phase])
+	# print("[EnemyAttackSystem] ðŸ‘¹ðŸ’€ %s CAMBIÃ“ A FASE %d!" % [enemy.name, new_phase])
 	
 	# Efecto visual de cambio de fase
 	_spawn_phase_change_effect()
@@ -1826,7 +1826,7 @@ func _on_boss_phase_change(_old_phase: int, new_phase: int) -> void:
 	if "minotauro" in enemy_id.to_lower() and new_phase == 3:
 		_activate_boss_enrage()
 	
-	# Corazón del Vacío activa aura de daño permanente en fase 2+
+	# CorazÃ³n del VacÃ­o activa aura de daÃ±o permanente en fase 2+
 	if "corazon" in enemy_id.to_lower() and new_phase >= 2:
 		boss_damage_aura_timer = 999.0  # Aura permanente
 	
@@ -1839,7 +1839,7 @@ func _update_boss_passive_effects() -> void:
 	if not enemy or not player:
 		return
 	
-	# Damage Aura (Corazón del Vacío)
+	# Damage Aura (CorazÃ³n del VacÃ­o)
 	if boss_damage_aura_timer > 0:
 		var aura_radius = modifiers.get("aura_radius", 100.0)
 		if boss_current_phase >= 3:
@@ -1867,17 +1867,17 @@ func _get_available_boss_abilities() -> Array:
 		if ability in boss_ability_cooldowns:
 			boss_ability_cooldowns[ability] = max(0, boss_ability_cooldowns[ability] - delta)
 		
-		# Verificar si está disponible
+		# Verificar si estÃ¡ disponible
 		if boss_ability_cooldowns.get(ability, 0) <= 0:
-			# Algunas habilidades solo están disponibles en ciertas fases
+			# Algunas habilidades solo estÃ¡n disponibles en ciertas fases
 			if _is_ability_available_in_phase(ability):
 				available.append(ability)
 	
 	return available
 
 func _is_ability_available_in_phase(ability: String) -> bool:
-	"""Verificar si una habilidad está disponible en la fase actual"""
-	# Habilidades más poderosas solo en fases avanzadas
+	"""Verificar si una habilidad estÃ¡ disponible en la fase actual"""
+	# Habilidades mÃ¡s poderosas solo en fases avanzadas
 	match ability:
 		"void_beam", "meteor_call", "ground_slam":
 			return boss_current_phase >= 2
@@ -1887,7 +1887,7 @@ func _is_ability_available_in_phase(ability: String) -> bool:
 			return true
 
 func _select_boss_ability(available: Array) -> String:
-	"""Seleccionar habilidad con pesos basados en situación"""
+	"""Seleccionar habilidad con pesos basados en situaciÃ³n"""
 	if available.is_empty():
 		return ""
 	
@@ -1897,7 +1897,7 @@ func _select_boss_ability(available: Array) -> String:
 	for ability in available:
 		var weight = 1.0
 		
-		# Ajustar peso según distancia
+		# Ajustar peso segÃºn distancia
 		match ability:
 			# Habilidades de rango cercano
 			"fire_stomp", "void_explosion", "ground_slam", "arcane_nova":
@@ -1935,14 +1935,14 @@ func _select_boss_ability(available: Array) -> String:
 			"rune_prison", "void_pull", "curse_aura":
 				weight = 2.0
 		
-		# Bonus en fases avanzadas para habilidades más agresivas
+		# Bonus en fases avanzadas para habilidades mÃ¡s agresivas
 		if boss_current_phase >= 2:
 			if ability in ["void_explosion", "fire_stomp", "charge_attack", "meteor_call"]:
 				weight *= 1.5
 		
 		weights[ability] = weight
 	
-	# Selección ponderada
+	# SelecciÃ³n ponderada
 	var total_weight = 0.0
 	for w in weights.values():
 		total_weight += w
@@ -1958,7 +1958,7 @@ func _select_boss_ability(available: Array) -> String:
 	return available[0]  # Fallback
 
 func _execute_boss_ability(ability: String) -> void:
-	"""Ejecutar una habilidad de boss específica"""
+	"""Ejecutar una habilidad de boss especÃ­fica"""
 	match ability:
 		# El Conjurador Primigenio
 		"arcane_barrage":
@@ -1972,7 +1972,7 @@ func _execute_boss_ability(ability: String) -> void:
 		"curse_aura":
 			_boss_curse_aura()
 		
-		# El Corazón del Vacío
+		# El CorazÃ³n del VacÃ­o
 		"void_pull":
 			_boss_void_pull()
 		"void_explosion":
@@ -1984,7 +1984,7 @@ func _execute_boss_ability(ability: String) -> void:
 		"void_beam":
 			_boss_void_beam()
 		
-		# El Guardián de Runas
+		# El GuardiÃ¡n de Runas
 		"rune_shield":
 			_boss_rune_shield()
 		"rune_blast":
@@ -2009,7 +2009,7 @@ func _execute_boss_ability(ability: String) -> void:
 			_boss_meteor_call()
 		
 		_:
-			# Habilidad no implementada, usar ataque básico
+			# Habilidad no implementada, usar ataque bÃ¡sico
 			_perform_boss_melee_attack()
 
 func _get_boss_data() -> Dictionary:
@@ -2025,12 +2025,12 @@ func _get_boss_data() -> Dictionary:
 	
 	return {}
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # HABILIDADES DE EL CONJURADOR PRIMIGENIO
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 func _boss_arcane_barrage() -> void:
-	"""Ráfaga de múltiples proyectiles arcanos"""
+	"""RÃ¡faga de mÃºltiples proyectiles arcanos"""
 	var count = modifiers.get("barrage_count", 5)
 	var damage = modifiers.get("barrage_damage", 15)
 	var spread = modifiers.get("barrage_spread", 30.0)
@@ -2046,7 +2046,7 @@ func _boss_arcane_barrage() -> void:
 		var proj_dir = direction.rotated(angle_offset)
 		_spawn_boss_projectile_delayed(proj_dir, damage, "arcane", 0.05 * i)
 	
-	print("[EnemyAttackSystem] ✨ Arcane Barrage: %d proyectiles" % count)
+	# print("[EnemyAttackSystem] âœ¨ Arcane Barrage: %d proyectiles" % count)
 
 func _boss_summon_minions() -> void:
 	"""Invocar enemigos menores"""
@@ -2058,44 +2058,44 @@ func _boss_summon_minions() -> void:
 	if boss_current_phase >= 3:
 		tier = modifiers.get("phase_3_summon_tier", 2)
 	
-	# Efecto visual de invocación
+	# Efecto visual de invocaciÃ³n
 	_spawn_summon_visual()
 	
 	# Notificar al spawner para crear enemigos
 	var spawner = _get_enemy_spawner()
 	if spawner and spawner.has_method("spawn_minions_around"):
 		spawner.spawn_minions_around(enemy.global_position, count, tier)
-		print("[EnemyAttackSystem] 👹 Summon: %d minions tier %d" % [count, tier])
+		# print("[EnemyAttackSystem] ðŸ‘¹ Summon: %d minions tier %d" % [count, tier])
 	else:
-		print("[EnemyAttackSystem] ⚠️ No se encontró spawner para summon")
+		# print("[EnemyAttackSystem] âš ï¸ No se encontrÃ³ spawner para summon")
 
 func _boss_teleport_strike() -> void:
 	"""Teleport hacia el jugador + ataque inmediato"""
 	var _teleport_range = modifiers.get("teleport_range", 200.0)
 	var damage_mult = modifiers.get("teleport_damage_mult", 1.5)
 	
-	# Calcular posición de teleport (detrás del jugador)
+	# Calcular posiciÃ³n de teleport (detrÃ¡s del jugador)
 	var to_player = (player.global_position - enemy.global_position).normalized()
 	var teleport_pos = player.global_position - to_player * 50  # Aparecer cerca
 	
-	# Efecto de desaparición
+	# Efecto de desapariciÃ³n
 	_spawn_teleport_effect(enemy.global_position, false)
 	
 	# Mover al enemigo
 	enemy.global_position = teleport_pos
 	
-	# Efecto de aparición
+	# Efecto de apariciÃ³n
 	_spawn_teleport_effect(teleport_pos, true)
 	
-	# Ataque inmediato con daño bonus
+	# Ataque inmediato con daÃ±o bonus
 	if player.has_method("take_damage"):
 		var damage = int(attack_damage * damage_mult)
 		player.take_damage(damage)
 		attacked_player.emit(damage, true)
-		print("[EnemyAttackSystem] ⚡ Teleport Strike por %d daño" % damage)
+		# print("[EnemyAttackSystem] âš¡ Teleport Strike por %d daÃ±o" % damage)
 
 func _boss_arcane_nova() -> void:
-	"""Nova de daño arcano en área"""
+	"""Nova de daÃ±o arcano en Ã¡rea"""
 	var radius = modifiers.get("nova_radius", 120.0)
 	var damage = modifiers.get("nova_damage", 40)
 	
@@ -2110,10 +2110,10 @@ func _boss_arcane_nova() -> void:
 	
 	# Visual
 	_spawn_arcane_nova_visual(enemy.global_position, radius)
-	print("[EnemyAttackSystem] 💜 Arcane Nova por %d daño (radio %.0f)" % [damage, radius])
+	# print("[EnemyAttackSystem] ðŸ’œ Arcane Nova por %d daÃ±o (radio %.0f)" % [damage, radius])
 
 func _boss_curse_aura() -> void:
-	"""Aplicar aura de maldición que reduce curación"""
+	"""Aplicar aura de maldiciÃ³n que reduce curaciÃ³n"""
 	var radius = modifiers.get("curse_radius", 150.0)
 	var reduction = modifiers.get("curse_reduction", 0.5)
 	var duration = modifiers.get("curse_duration", 8.0)
@@ -2122,14 +2122,14 @@ func _boss_curse_aura() -> void:
 	if dist <= radius:
 		if player.has_method("apply_curse"):
 			player.apply_curse(reduction, duration)
-			print("[EnemyAttackSystem] ☠️ Curse Aura: -%.0f%% curación por %.1fs" % [reduction * 100, duration])
+			# print("[EnemyAttackSystem] â˜ ï¸ Curse Aura: -%.0f%% curaciÃ³n por %.1fs" % [reduction * 100, duration])
 	
 	# Visual
 	_spawn_curse_aura_visual(enemy.global_position, radius)
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# HABILIDADES DE EL CORAZÓN DEL VACÍO
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# HABILIDADES DE EL CORAZÃ“N DEL VACÃO
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 func _boss_void_pull() -> void:
 	"""Atraer al jugador hacia el boss"""
@@ -2145,7 +2145,7 @@ func _boss_void_pull() -> void:
 		# Aplicar efecto de pull al jugador
 		if player.has_method("apply_pull"):
 			player.apply_pull(enemy.global_position, pull_force, pull_duration)
-			print("[EnemyAttackSystem] 🌀 Void Pull activado")
+			# print("[EnemyAttackSystem] ðŸŒ€ Void Pull activado")
 		else:
 			# Fallback: mover directamente al jugador
 			var pull_dir = (enemy.global_position - player.global_position).normalized()
@@ -2169,40 +2169,40 @@ func _boss_void_orbs() -> void:
 		var spawn_offset = Vector2(cos(angle), sin(angle)) * 30
 		_spawn_homing_orb(enemy.global_position + spawn_offset, damage, speed, duration, "dark")
 	
-	print("[EnemyAttackSystem] 💜 Void Orbs: %d orbes perseguidores" % count)
+	# print("[EnemyAttackSystem] ðŸ’œ Void Orbs: %d orbes perseguidores" % count)
 
 func _boss_reality_tear() -> void:
-	"""Crear zona de daño persistente"""
+	"""Crear zona de daÃ±o persistente"""
 	var radius = modifiers.get("tear_radius", 80.0)
 	var damage = modifiers.get("tear_damage", 15)
 	var duration = modifiers.get("tear_duration", 6.0)
 	
-	# Crear en la posición del jugador
+	# Crear en la posiciÃ³n del jugador
 	_spawn_damage_zone(player.global_position, radius, damage, duration, "dark")
-	print("[EnemyAttackSystem] 🌌 Reality Tear creado")
+	# print("[EnemyAttackSystem] ðŸŒŒ Reality Tear creado")
 
 func _boss_void_beam() -> void:
-	"""Rayo canalizado de alto daño"""
+	"""Rayo canalizado de alto daÃ±o"""
 	var damage = modifiers.get("beam_damage", 30)
 	var duration = modifiers.get("beam_duration", 3.0)
 	var _width = modifiers.get("beam_width", 40.0)
 	
-	# Este ataque es canalizado - simplificado para aplicar daño por tick
+	# Este ataque es canalizado - simplificado para aplicar daÃ±o por tick
 	var direction = (player.global_position - enemy.global_position).normalized()
 	
 	# Crear visual del beam
 	_spawn_void_beam_visual(enemy.global_position, direction, 300.0, duration)
 	
-	# Aplicar daño inicial
+	# Aplicar daÃ±o inicial
 	if player.has_method("take_damage"):
 		player.take_damage(damage)
 		attacked_player.emit(damage, false)
 	
-	print("[EnemyAttackSystem] 💜 Void Beam: %d DPS por %.1fs" % [damage, duration])
+	# print("[EnemyAttackSystem] ðŸ’œ Void Beam: %d DPS por %.1fs" % [damage, duration])
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# HABILIDADES DE EL GUARDIÁN DE RUNAS
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# HABILIDADES DE EL GUARDIÃN DE RUNAS
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 func _boss_rune_shield() -> void:
 	"""Activar escudo que absorbe hits"""
@@ -2215,7 +2215,7 @@ func _boss_rune_shield() -> void:
 	# Aplicar escudo al enemigo
 	if enemy.has_method("apply_shield"):
 		enemy.apply_shield(charges, duration)
-		print("[EnemyAttackSystem] 🛡️ Rune Shield: %d cargas por %.1fs" % [charges, duration])
+		# print("[EnemyAttackSystem] ðŸ›¡ï¸ Rune Shield: %d cargas por %.1fs" % [charges, duration])
 	
 	# Visual
 	_spawn_rune_shield_visual()
@@ -2231,7 +2231,7 @@ func _boss_rune_prison() -> void:
 	elif player.has_method("apply_stun"):
 		player.apply_stun(duration)
 	
-	# Daño al escapar (al final)
+	# DaÃ±o al escapar (al final)
 	get_tree().create_timer(duration).timeout.connect(func():
 		if is_instance_valid(player) and player.has_method("take_damage"):
 			player.take_damage(damage)
@@ -2239,7 +2239,7 @@ func _boss_rune_prison() -> void:
 	
 	# Visual
 	_spawn_rune_prison_visual(player.global_position, duration)
-	print("[EnemyAttackSystem] ⛓️ Rune Prison: %.1fs" % duration)
+	# print("[EnemyAttackSystem] â›“ï¸ Rune Prison: %.1fs" % duration)
 
 func _boss_counter_stance() -> void:
 	"""Postura de contraataque"""
@@ -2255,10 +2255,10 @@ func _boss_counter_stance() -> void:
 	
 	# Visual
 	_spawn_counter_stance_visual()
-	print("[EnemyAttackSystem] ⚔️ Counter Stance: %.1fs window, x%.1f daño" % [window, damage_mult])
+	# print("[EnemyAttackSystem] âš”ï¸ Counter Stance: %.1fs window, x%.1f daÃ±o" % [window, damage_mult])
 
 func _boss_rune_barrage() -> void:
-	"""Múltiples runas disparadas"""
+	"""MÃºltiples runas disparadas"""
 	var count = modifiers.get("barrage_count", 6)
 	var damage = modifiers.get("barrage_damage", 20)
 	
@@ -2270,7 +2270,7 @@ func _boss_rune_barrage() -> void:
 		var proj_dir = direction.rotated(angle_offset)
 		_spawn_boss_projectile_delayed(proj_dir, damage, "arcane", 0.08 * i)
 	
-	print("[EnemyAttackSystem] ✨ Rune Barrage: %d proyectiles" % count)
+	# print("[EnemyAttackSystem] âœ¨ Rune Barrage: %d proyectiles" % count)
 
 func _boss_ground_slam() -> void:
 	"""Golpe de tierra con ondas expansivas"""
@@ -2291,11 +2291,11 @@ func _boss_ground_slam() -> void:
 	
 	# Visual
 	_spawn_ground_slam_visual(enemy.global_position, radius)
-	print("[EnemyAttackSystem] 💥 Ground Slam por %d daño" % damage)
+	# print("[EnemyAttackSystem] ðŸ’¥ Ground Slam por %d daÃ±o" % damage)
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # HABILIDADES DE MINOTAURO DE FUEGO
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 func _boss_charge_attack() -> void:
 	"""Carga devastadora hacia el jugador"""
@@ -2306,19 +2306,19 @@ func _boss_charge_attack() -> void:
 	if boss_current_phase >= 2:
 		damage_mult = modifiers.get("phase_2_charge_damage_mult", 3.0)
 	
-	# Calcular dirección y distancia
+	# Calcular direcciÃ³n y distancia
 	var direction = (player.global_position - enemy.global_position).normalized()
 	var charge_distance = enemy.global_position.distance_to(player.global_position) + 100
 	
-	# Marcar que el boss está cargando
+	# Marcar que el boss estÃ¡ cargando
 	if enemy.has_method("start_charge"):
 		enemy.start_charge(direction, charge_speed, charge_distance)
 	
-	# Visual de preparación
+	# Visual de preparaciÃ³n
 	_spawn_charge_warning_visual(enemy.global_position, direction)
 	
-	# El daño se aplica cuando el boss impacta (manejado por el enemy)
-	# Aquí aplicamos el efecto si está cerca
+	# El daÃ±o se aplica cuando el boss impacta (manejado por el enemy)
+	# AquÃ­ aplicamos el efecto si estÃ¡ cerca
 	var dist = enemy.global_position.distance_to(player.global_position)
 	if dist < 80:
 		var damage = int(attack_damage * damage_mult)
@@ -2328,7 +2328,7 @@ func _boss_charge_attack() -> void:
 		if player.has_method("apply_stun"):
 			player.apply_stun(stun)
 	
-	print("[EnemyAttackSystem] 🐂 Charge Attack: velocidad %.0f" % charge_speed)
+	# print("[EnemyAttackSystem] ðŸ‚ Charge Attack: velocidad %.0f" % charge_speed)
 
 func _boss_flame_breath() -> void:
 	"""Aliento de fuego en cono"""
@@ -2342,7 +2342,7 @@ func _boss_flame_breath() -> void:
 	
 	var direction = (player.global_position - enemy.global_position).normalized()
 	
-	# Verificar si player está en el cono
+	# Verificar si player estÃ¡ en el cono
 	var to_player = player.global_position - enemy.global_position
 	var dist = to_player.length()
 	var angle_to_player = abs(rad_to_deg(direction.angle_to(to_player.normalized())))
@@ -2356,7 +2356,7 @@ func _boss_flame_breath() -> void:
 	
 	# Visual
 	_spawn_flame_breath_visual(enemy.global_position, direction, range_dist)
-	print("[EnemyAttackSystem] 🔥 Flame Breath: %d daño en cono" % damage)
+	# print("[EnemyAttackSystem] ðŸ”¥ Flame Breath: %d daÃ±o en cono" % damage)
 
 func _boss_meteor_call() -> void:
 	"""Invocar meteoros del cielo"""
@@ -2376,12 +2376,12 @@ func _boss_meteor_call() -> void:
 		# Indicador de impacto
 		_spawn_meteor_warning(target_pos, radius, delay)
 		
-		# Meteoro real después del delay
+		# Meteoro real despuÃ©s del delay
 		get_tree().create_timer(delay + i * 0.2).timeout.connect(func():
 			_spawn_meteor_impact(target_pos, radius, damage)
 		)
 	
-	print("[EnemyAttackSystem] ☄️ Meteor Call: %d meteoros" % count)
+	# print("[EnemyAttackSystem] â˜„ï¸ Meteor Call: %d meteoros" % count)
 
 func _activate_boss_enrage() -> void:
 	"""Activar estado de furia del boss"""
@@ -2404,7 +2404,7 @@ func _activate_boss_enrage() -> void:
 	
 	# Visual
 	_spawn_enrage_visual()
-	print("[EnemyAttackSystem] 🔥💢 BOSS ENRAGED! +%.0f%% daño, +%.0f%% velocidad" % [damage_bonus * 100, speed_bonus * 100])
+	# print("[EnemyAttackSystem] ðŸ”¥ðŸ’¢ BOSS ENRAGED! +%.0f%% daÃ±o, +%.0f%% velocidad" % [damage_bonus * 100, speed_bonus * 100])
 
 func _spawn_fire_trail() -> void:
 	"""Dejar rastro de fuego al caminar"""
@@ -2422,16 +2422,16 @@ func _perform_boss_melee_attack() -> void:
 	if not player or not player.has_method("take_damage"):
 		return
 	
-	var boss_damage = int(attack_damage * 1.2)  # Bosses hacen más daño
+	var boss_damage = int(attack_damage * 1.2)  # Bosses hacen mÃ¡s daÃ±o
 	player.take_damage(boss_damage)
-	print("[EnemyAttackSystem] 👹 %s (Boss) melee devastador por %d daño" % [enemy.name, boss_damage])
+	# print("[EnemyAttackSystem] ðŸ‘¹ %s (Boss) melee devastador por %d daÃ±o" % [enemy.name, boss_damage])
 	
-	# Aplicar efecto según el boss
+	# Aplicar efecto segÃºn el boss
 	_apply_boss_melee_effects()
 	
 	attacked_player.emit(boss_damage, true)
 	
-	# Efecto visual de impacto de boss (más grande)
+	# Efecto visual de impacto de boss (mÃ¡s grande)
 	_spawn_boss_impact_effect()
 
 func _apply_boss_melee_effects() -> void:
@@ -2441,45 +2441,45 @@ func _apply_boss_melee_effects() -> void:
 	# Minotauro - Burn
 	if "minotauro" in enemy_name_lower or "fuego" in enemy_name_lower:
 		if player.has_method("apply_burn"):
-			player.apply_burn(8.0, 3.0)  # 8 daño/tick por 3s
-	# Corazón del Vacío - Weakness
+			player.apply_burn(8.0, 3.0)  # 8 daÃ±o/tick por 3s
+	# CorazÃ³n del VacÃ­o - Weakness
 	elif "corazon" in enemy_name_lower or "vacio" in enemy_name_lower:
 		if player.has_method("apply_weakness"):
-			player.apply_weakness(0.3, 4.0)  # +30% daño recibido por 4s
-	# Guardián de Runas - Stun breve
+			player.apply_weakness(0.3, 4.0)  # +30% daÃ±o recibido por 4s
+	# GuardiÃ¡n de Runas - Stun breve
 	elif "guardian" in enemy_name_lower or "runas" in enemy_name_lower:
 		if player.has_method("apply_stun"):
 			player.apply_stun(0.3)  # 0.3s stun
 	# Conjurador - Curse
 	elif "conjurador" in enemy_name_lower:
 		if player.has_method("apply_curse"):
-			player.apply_curse(0.4, 5.0)  # -40% curación por 5s
+			player.apply_curse(0.4, 5.0)  # -40% curaciÃ³n por 5s
 
 func _perform_boss_void_explosion() -> void:
-	"""El Corazón del Vacío - explosión de vacío"""
+	"""El CorazÃ³n del VacÃ­o - explosiÃ³n de vacÃ­o"""
 	if not player:
 		return
 	
 	var explosion_radius = modifiers.get("explosion_radius", 150.0)
 	var explosion_damage = modifiers.get("explosion_damage", 60)
 	
-	# Verificar si player está en rango
+	# Verificar si player estÃ¡ en rango
 	var dist = enemy.global_position.distance_to(player.global_position)
 	if dist <= explosion_radius:
 		if player.has_method("take_damage"):
 			player.take_damage(explosion_damage)
-			print("[EnemyAttackSystem] 💜 %s Void Explosion por %d daño!" % [enemy.name, explosion_damage])
+			# print("[EnemyAttackSystem] ðŸ’œ %s Void Explosion por %d daÃ±o!" % [enemy.name, explosion_damage])
 			attacked_player.emit(explosion_damage, false)
 			# Aplicar Weakness fuerte
 			if player.has_method("apply_weakness"):
-				player.apply_weakness(0.4, 5.0)  # +40% daño recibido por 5s
-				print("[EnemyAttackSystem] 💜 Void Explosion aplica Weakness!")
+				player.apply_weakness(0.4, 5.0)  # +40% daÃ±o recibido por 5s
+				# print("[EnemyAttackSystem] ðŸ’œ Void Explosion aplica Weakness!")
 	
-	# Visual de explosión de vacío
+	# Visual de explosiÃ³n de vacÃ­o
 	_spawn_void_explosion_visual(enemy.global_position, explosion_radius)
 
 func _perform_boss_rune_blast() -> void:
-	"""El Guardián de Runas - explosión de runas"""
+	"""El GuardiÃ¡n de Runas - explosiÃ³n de runas"""
 	if not player:
 		return
 	
@@ -2490,18 +2490,18 @@ func _perform_boss_rune_blast() -> void:
 	if dist <= blast_radius:
 		if player.has_method("take_damage"):
 			player.take_damage(blast_damage)
-			print("[EnemyAttackSystem] ✨ %s Rune Blast por %d daño!" % [enemy.name, blast_damage])
+			# print("[EnemyAttackSystem] âœ¨ %s Rune Blast por %d daÃ±o!" % [enemy.name, blast_damage])
 			attacked_player.emit(blast_damage, false)
 			# Aplicar Stun
 			if player.has_method("apply_stun"):
 				player.apply_stun(0.5)  # 0.5s stun
-				print("[EnemyAttackSystem] ✨ Rune Blast aplica Stun!")
+				# print("[EnemyAttackSystem] âœ¨ Rune Blast aplica Stun!")
 	
 	# Visual de runas
 	_spawn_rune_blast_visual(enemy.global_position, blast_radius)
 
 func _perform_boss_fire_stomp() -> void:
-	"""Minotauro de Fuego - pisotón de fuego"""
+	"""Minotauro de Fuego - pisotÃ³n de fuego"""
 	if not player:
 		return
 	
@@ -2512,16 +2512,16 @@ func _perform_boss_fire_stomp() -> void:
 	if dist <= stomp_radius:
 		if player.has_method("take_damage"):
 			player.take_damage(stomp_damage)
-			print("[EnemyAttackSystem] 🔥 %s Fire Stomp por %d daño!" % [enemy.name, stomp_damage])
+			# print("[EnemyAttackSystem] ðŸ”¥ %s Fire Stomp por %d daÃ±o!" % [enemy.name, stomp_damage])
 			attacked_player.emit(stomp_damage, false)
 			# Aplicar Burn fuerte + Stun breve
 			if player.has_method("apply_burn"):
-				player.apply_burn(10.0, 4.0)  # 10 daño/tick por 4s (muy fuerte)
-				print("[EnemyAttackSystem] 🔥 Fire Stomp aplica Burn!")
+				player.apply_burn(10.0, 4.0)  # 10 daÃ±o/tick por 4s (muy fuerte)
+				# print("[EnemyAttackSystem] ðŸ”¥ Fire Stomp aplica Burn!")
 			if player.has_method("apply_stun"):
 				player.apply_stun(0.3)  # 0.3s stun
 	
-	# Visual de pisotón de fuego
+	# Visual de pisotÃ³n de fuego
 	_spawn_fire_stomp_visual(enemy.global_position, stomp_radius)
 
 func _spawn_boss_impact_effect() -> void:
@@ -2574,7 +2574,7 @@ func _spawn_boss_impact_effect() -> void:
 	)
 
 func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
-	"""Visual de explosión de vacío ÉPICA - púrpura con absorción"""
+	"""Visual de explosiÃ³n de vacÃ­o Ã‰PICA - pÃºrpura con absorciÃ³n"""
 	var effect = Node2D.new()
 	effect.top_level = true  # Independiente del enemigo
 	effect.z_index = 60  # MUY alto para boss
@@ -2589,15 +2589,15 @@ func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 	effect.add_child(visual)
 	
 	visual.draw.connect(func():
-		# Explosión inversa (desde fuera hacia dentro, luego explota)
+		# ExplosiÃ³n inversa (desde fuera hacia dentro, luego explota)
 		var phase = anim_progress
 		
 		if phase < 0.35:
-			# Fase de absorción - MÁS DRAMÁTICA
+			# Fase de absorciÃ³n - MÃS DRAMÃTICA
 			var absorb_phase = phase / 0.35
 			var absorb_radius = radius * (1.2 - absorb_phase * 0.8)
 			
-			# Múltiples capas de absorción
+			# MÃºltiples capas de absorciÃ³n
 			for i in range(5):
 				var layer_r = absorb_radius * (1.0 + i * 0.15)
 				var layer_alpha = 0.3 * absorb_phase * (1.0 - i * 0.15)
@@ -2615,7 +2615,7 @@ func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 				if spiral_points.size() > 1:
 					visual.draw_polyline(spiral_points, Color(0.7, 0.2, 1.0, 0.7 * absorb_phase), 3.0)
 			
-			# Partículas siendo absorbidas - MÁS
+			# PartÃ­culas siendo absorbidas - MÃS
 			var particle_count = 16
 			for i in range(particle_count):
 				var angle = (TAU / particle_count) * i + phase * PI * 2
@@ -2624,23 +2624,23 @@ func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 				visual.draw_circle(pos, 6, Color(0.85, 0.4, 1.0, 0.9))
 				visual.draw_circle(pos, 9, Color(0.85, 0.4, 1.0, 0.3))
 		else:
-			# Fase de explosión - MUCHO MÁS ÉPICA
+			# Fase de explosiÃ³n - MUCHO MÃS Ã‰PICA
 			var explode_phase = (phase - 0.35) / 0.65
 			var explode_radius = radius * 1.3 * explode_phase
 			
-			# Ondas de vacío múltiples
+			# Ondas de vacÃ­o mÃºltiples
 			for i in range(5):
 				var wave_r = explode_radius * (0.25 + i * 0.2)
 				var wave_alpha = (1.0 - explode_phase) * (0.7 - i * 0.12)
 				visual.draw_arc(Vector2.ZERO, wave_r, 0, TAU, 48, Color(0.6, 0.1, 0.95, wave_alpha), 5.0 - i)
 			
-			# Relleno de explosión
+			# Relleno de explosiÃ³n
 			for i in range(4):
 				var fill_r = explode_radius * (1.0 - i * 0.2)
 				var fill_alpha = (1.0 - explode_phase) * (0.4 - i * 0.08)
 				visual.draw_circle(Vector2.ZERO, fill_r, Color(0.5, 0.1, 0.8, fill_alpha))
 			
-			# Rayos de energía oscura
+			# Rayos de energÃ­a oscura
 			var ray_count = 12
 			for i in range(ray_count):
 				var ray_angle = (TAU / ray_count) * i + explode_phase * PI * 0.5
@@ -2660,14 +2660,14 @@ func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 		anim_progress = val
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.9)  # Más largo para ser épico
+	, 0.0, 1.0, 0.9)  # MÃ¡s largo para ser Ã©pico
 	tween.tween_callback(func():
 		if is_instance_valid(effect):
 			effect.queue_free()
 	)
 
 func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
-	"""Visual de explosión de runas ÉPICA - símbolos brillantes"""
+	"""Visual de explosiÃ³n de runas Ã‰PICA - sÃ­mbolos brillantes"""
 	var effect = Node2D.new()
 	effect.top_level = true  # Independiente del enemigo
 	effect.z_index = 60  # MUY alto para boss
@@ -2685,7 +2685,7 @@ func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 	visual.draw.connect(func():
 		var expand = radius * 1.2 * anim_progress
 		
-		# Círculos mágicos concéntricos (nuevo)
+		# CÃ­rculos mÃ¡gicos concÃ©ntricos (nuevo)
 		for c in range(3):
 			var circle_r = expand * (0.4 + c * 0.25)
 			var circle_alpha = 0.5 * (1.0 - anim_progress) * (1.0 - c * 0.25)
@@ -2697,16 +2697,16 @@ func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 			var fill_alpha = (1.0 - anim_progress) * (0.3 - i * 0.06)
 			visual.draw_circle(Vector2.ZERO, fill_r, Color(1, 0.9, 0.2, fill_alpha))
 		
-		# Runas individuales que se expanden - MÁS Y MÁS GRANDES
+		# Runas individuales que se expanden - MÃS Y MÃS GRANDES
 		for i in range(rune_count):
 			var angle = (TAU / rune_count) * i + anim_progress * PI * 0.7
 			var dist = expand * (0.45 + anim_progress * 0.55)
 			var pos = Vector2(cos(angle), sin(angle)) * dist
 			
-			# Dibujar runa como forma geométrica - MÁS GRANDE
+			# Dibujar runa como forma geomÃ©trica - MÃS GRANDE
 			var rune_size = 18 * (1.0 - anim_progress * 0.4)
 			
-			# Triángulo exterior
+			# TriÃ¡ngulo exterior
 			var rune_points = PackedVector2Array([
 				pos + Vector2(0, -rune_size),
 				pos + Vector2(rune_size * 0.85, rune_size * 0.6),
@@ -2714,7 +2714,7 @@ func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 			])
 			visual.draw_colored_polygon(rune_points, Color(1, 0.92, 0.35, 0.9 * (1.0 - anim_progress)))
 			
-			# Triángulo interior invertido
+			# TriÃ¡ngulo interior invertido
 			var inner_size = rune_size * 0.5
 			var inner_points = PackedVector2Array([
 				pos + Vector2(0, inner_size * 0.5),
@@ -2723,11 +2723,11 @@ func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 			])
 			visual.draw_colored_polygon(inner_points, Color(1, 1, 0.8, 0.95 * (1.0 - anim_progress)))
 			
-			# Brillo alrededor - MÁS GRANDE
+			# Brillo alrededor - MÃS GRANDE
 			visual.draw_circle(pos, rune_size * 2.0, Color(1, 1, 0.5, 0.25 * (1.0 - anim_progress)))
 			visual.draw_circle(pos, rune_size * 1.3, Color(1, 0.95, 0.4, 0.4 * (1.0 - anim_progress)))
 		
-		# Líneas de conexión entre runas (nuevo)
+		# LÃ­neas de conexiÃ³n entre runas (nuevo)
 		for i in range(rune_count):
 			var angle1 = (TAU / rune_count) * i + anim_progress * PI * 0.7
 			var angle2 = (TAU / rune_count) * ((i + 1) % rune_count) + anim_progress * PI * 0.7
@@ -2743,7 +2743,7 @@ func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 			var ray_end = Vector2(cos(ray_angle), sin(ray_angle)) * ray_length
 			visual.draw_line(Vector2.ZERO, ray_end, Color(1, 1, 0.7, 0.5 * (1.0 - anim_progress)), 2.0)
 		
-		# Onda de expansión final - MÁS BRILLANTE
+		# Onda de expansiÃ³n final - MÃS BRILLANTE
 		visual.draw_arc(Vector2.ZERO, expand, 0, TAU, 64, Color(1, 1, 1, 0.7 * (1.0 - anim_progress)), 4.0)
 		
 		# Centro brillante
@@ -2757,14 +2757,14 @@ func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 		anim_progress = val
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.6)  # Más largo
+	, 0.0, 1.0, 0.6)  # MÃ¡s largo
 	tween.tween_callback(func():
 		if is_instance_valid(effect):
 			effect.queue_free()
 	)
 
 func _spawn_fire_stomp_visual(center: Vector2, radius: float) -> void:
-	"""Visual de pisotón de fuego ÉPICO - onda de fuego expansiva"""
+	"""Visual de pisotÃ³n de fuego Ã‰PICO - onda de fuego expansiva"""
 	var effect = Node2D.new()
 	effect.top_level = true  # Independiente del enemigo
 	effect.z_index = 60  # MUY alto para boss
@@ -2781,12 +2781,12 @@ func _spawn_fire_stomp_visual(center: Vector2, radius: float) -> void:
 	visual.draw.connect(func():
 		var expand = radius * 1.2 * anim_progress
 		
-		# Cráter central - MÁS DETALLADO
+		# CrÃ¡ter central - MÃS DETALLADO
 		var crater_size = expand * 0.35
 		visual.draw_circle(Vector2.ZERO, crater_size, Color(0.2, 0.05, 0, 0.8 * (1.0 - anim_progress)))
 		visual.draw_arc(Vector2.ZERO, crater_size * 0.7, 0, TAU, 24, Color(0.4, 0.1, 0, 0.6), 3.0)
 		
-		# Anillos de fuego - MÁS Y MÁS GRUESOS
+		# Anillos de fuego - MÃS Y MÃS GRUESOS
 		for i in range(5):
 			var ring_r = expand * (0.35 + i * 0.18)
 			var ring_alpha = (1.0 - anim_progress) * (0.85 - i * 0.14)
@@ -2799,14 +2799,14 @@ func _spawn_fire_stomp_visual(center: Vector2, radius: float) -> void:
 			var fill_alpha = (1.0 - anim_progress) * (0.35 - i * 0.07)
 			visual.draw_circle(Vector2.ZERO, fill_r, Color(1.0, 0.3, 0.05, fill_alpha))
 		
-		# Llamas alrededor - MÁS Y MÁS GRANDES
+		# Llamas alrededor - MÃS Y MÃS GRANDES
 		var flame_count = 16
 		for i in range(flame_count):
 			var angle = (TAU / flame_count) * i
 			var flame_dist = expand * 0.75
 			var flame_base = Vector2(cos(angle), sin(angle)) * flame_dist
 			
-			# Altura de llama animada - más dramática
+			# Altura de llama animada - mÃ¡s dramÃ¡tica
 			var flame_height = 25 * (1.0 - anim_progress * 0.6) * (0.7 + sin(anim_progress * PI * 5 + i * 1.2) * 0.3)
 			var flame_width = 10
 			
@@ -2820,7 +2820,7 @@ func _spawn_fire_stomp_visual(center: Vector2, radius: float) -> void:
 				Color(1, 0.35, 0.08, 0.85 * (1.0 - anim_progress))
 			)
 			
-			# Núcleo de llama (amarillo)
+			# NÃºcleo de llama (amarillo)
 			var inner_tip = flame_base + Vector2(0, -flame_height * 0.6)
 			var inner_left = flame_base + Vector2(-flame_width * 0.5, 0)
 			var inner_right = flame_base + Vector2(flame_width * 0.5, 0)
@@ -2849,7 +2849,7 @@ func _spawn_fire_stomp_visual(center: Vector2, radius: float) -> void:
 		anim_progress = val
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.7)  # Más largo para ser épico
+	, 0.0, 1.0, 0.7)  # MÃ¡s largo para ser Ã©pico
 	tween.tween_callback(func():
 		if is_instance_valid(effect):
 			effect.queue_free()
@@ -2863,7 +2863,7 @@ func _spawn_multi_projectile(direction: Vector2, delay: float) -> void:
 		_create_single_projectile(direction)
 
 func _create_single_projectile(direction: Vector2) -> void:
-	"""Crear un único proyectil"""
+	"""Crear un Ãºnico proyectil"""
 	if not EnemyProjectileScript or not is_instance_valid(enemy):
 		return
 	
@@ -2872,7 +2872,7 @@ func _create_single_projectile(direction: Vector2) -> void:
 	projectile.global_position = enemy.global_position
 	
 	var elem = _get_enemy_element()
-	var proj_damage = int(attack_damage * 0.7)  # Multi tiene menos daño por proyectil
+	var proj_damage = int(attack_damage * 0.7)  # Multi tiene menos daÃ±o por proyectil
 	
 	var parent = enemy.get_parent()
 	if parent:
@@ -2891,7 +2891,7 @@ func _get_enemy_element() -> String:
 	var enemy_id = enemy.get("enemy_id") if "enemy_id" in enemy else ""
 	var name_lower = enemy_id.to_lower()
 	
-	# Casos especiales primero (antes de la detección genérica)
+	# Casos especiales primero (antes de la detecciÃ³n genÃ©rica)
 	# Hechicero Desgastado es un mago de fuego corrupto
 	if "hechicero_desgastado" in name_lower or "hechicero" in name_lower:
 		return "fire"
@@ -2912,7 +2912,7 @@ func _get_enemy_element() -> String:
 	return "physical"
 
 func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
-	"""Crear efecto visual de AoE ÉPICO con animación de expansión"""
+	"""Crear efecto visual de AoE Ã‰PICO con animaciÃ³n de expansiÃ³n"""
 	var elem = _get_enemy_element()
 	var base_color = _get_element_color(elem)
 	var bright_color = Color(min(base_color.r + 0.4, 1.0), min(base_color.g + 0.4, 1.0), min(base_color.b + 0.4, 1.0), 1.0)
@@ -2928,12 +2928,12 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 	if parent:
 		parent.add_child(container)
 	
-	# Determinar si es élite para efectos más grandes
+	# Determinar si es Ã©lite para efectos mÃ¡s grandes
 	var is_elite = enemy.get("is_elite") if "is_elite" in enemy else false
 	var size_mult = 1.3 if is_elite else 1.0
 	var actual_radius = radius * size_mult
 	
-	# Variables de animación
+	# Variables de animaciÃ³n
 	var anim_progress = 0.0
 	var ring_count = 4
 	
@@ -2942,7 +2942,7 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 	container.add_child(visual)
 	
 	visual.draw.connect(func():
-		# Círculo de impacto central que se expande
+		# CÃ­rculo de impacto central que se expande
 		var expand_radius = actual_radius * anim_progress
 		
 		# GLOW EXTERIOR GRANDE (nuevo)
@@ -2952,14 +2952,14 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 			if glow_r > 0:
 				visual.draw_circle(Vector2.ZERO, glow_r, Color(base_color.r, base_color.g, base_color.b, glow_alpha))
 		
-		# Círculo exterior con gradiente simulado (múltiples capas)
+		# CÃ­rculo exterior con gradiente simulado (mÃºltiples capas)
 		for i in range(6):
 			var layer_radius = expand_radius * (1.0 - i * 0.12)
 			var layer_alpha = (0.5 - i * 0.07) * (1.0 - anim_progress * 0.4)
 			if layer_radius > 0:
 				visual.draw_circle(Vector2.ZERO, layer_radius, Color(base_color.r, base_color.g, base_color.b, layer_alpha))
 		
-		# Anillos de onda expansiva - MÁS GRUESOS
+		# Anillos de onda expansiva - MÃS GRUESOS
 		for i in range(ring_count):
 			var ring_phase = fmod(anim_progress * 2.5 + i * 0.25, 1.0)
 			var ring_radius = actual_radius * ring_phase
@@ -2967,7 +2967,7 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 			if ring_radius > 0:
 				visual.draw_arc(Vector2.ZERO, ring_radius, 0, TAU, 48, Color(bright_color.r, bright_color.g, bright_color.b, ring_alpha), 4.0)
 		
-		# Partículas decorativas alrededor - MÁS Y MÁS GRANDES
+		# PartÃ­culas decorativas alrededor - MÃS Y MÃS GRANDES
 		var particle_count = 12
 		for i in range(particle_count):
 			var angle = (TAU / particle_count) * i + anim_progress * PI * 1.5
@@ -2975,7 +2975,7 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 			var particle_pos = Vector2(cos(angle), sin(angle)) * dist
 			var particle_size = (5.0 + sin(anim_progress * PI * 5 + i) * 3.0) * size_mult
 			visual.draw_circle(particle_pos, particle_size, bright_color)
-			# Glow de partícula
+			# Glow de partÃ­cula
 			visual.draw_circle(particle_pos, particle_size * 1.5, Color(bright_color.r, bright_color.g, bright_color.b, 0.3))
 		
 		# Rayos desde el centro (nuevo)
@@ -2986,7 +2986,7 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 			var ray_end = Vector2(cos(ray_angle), sin(ray_angle)) * ray_length
 			visual.draw_line(Vector2.ZERO, ray_end, Color(1, 1, 1, 0.5 * (1.0 - anim_progress)), 2.0)
 		
-		# Borde exterior final - MÁS BRILLANTE
+		# Borde exterior final - MÃS BRILLANTE
 		if expand_radius > 0:
 			visual.draw_arc(Vector2.ZERO, expand_radius, 0, TAU, 64, Color(1, 1, 1, 0.8 * (1.0 - anim_progress)), 4.0)
 		
@@ -2996,7 +2996,7 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 			visual.draw_circle(Vector2.ZERO, core_size, Color(1, 1, 1, 0.9 * (1.0 - anim_progress)))
 	)
 	
-	# Animación de expansión - MÁS LARGA para ser muy visible
+	# AnimaciÃ³n de expansiÃ³n - MÃS LARGA para ser muy visible
 	# IMPORTANTE: Usar container.create_tween() para que el tween se limpie con el nodo
 	var tween = container.create_tween()
 	tween.tween_method(func(val):
@@ -3013,7 +3013,7 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 	)
 
 func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float) -> void:
-	"""Crear efecto visual de breath attack ÉPICO con animación de expansión"""
+	"""Crear efecto visual de breath attack Ã‰PICO con animaciÃ³n de expansiÃ³n"""
 	var container = Node2D.new()
 	container.name = "Breath_Visual"
 	container.top_level = true  # No se mueve con el padre
@@ -3029,7 +3029,7 @@ func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float
 	if parent:
 		parent.add_child(container)
 	
-	# Determinar si es élite/boss para efectos más grandes
+	# Determinar si es Ã©lite/boss para efectos mÃ¡s grandes
 	var is_elite = enemy.get("is_elite") if "is_elite" in enemy else false
 	var is_boss = enemy.get("archetype") == "boss" if "archetype" in enemy else false
 	var size_mult = 1.5 if is_boss else (1.3 if is_elite else 1.0)
@@ -3041,7 +3041,7 @@ func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float
 	
 	visual.draw.connect(func():
 		var current_range = actual_range * anim_progress
-		var cone_width = 0.45  # Ancho del cono más amplio
+		var cone_width = 0.45  # Ancho del cono mÃ¡s amplio
 		
 		if current_range < 5:
 			return
@@ -3059,7 +3059,7 @@ func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float
 			])
 			visual.draw_colored_polygon(glow_points, Color(base_color.r, base_color.g, base_color.b, glow_alpha))
 		
-		# Múltiples capas del cono para efecto de gradiente
+		# MÃºltiples capas del cono para efecto de gradiente
 		for i in range(6):
 			var layer_mult = 1.0 - i * 0.12
 			var layer_range = current_range * layer_mult
@@ -3074,7 +3074,7 @@ func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float
 			])
 			visual.draw_colored_polygon(cone_points, Color(base_color.r, base_color.g, base_color.b, layer_alpha))
 		
-		# Núcleo brillante central - MÁS INTENSO
+		# NÃºcleo brillante central - MÃS INTENSO
 		var core_points = PackedVector2Array([
 			Vector2.ZERO,
 			Vector2(current_range * 0.85, -current_range * cone_width * 0.35),
@@ -3092,7 +3092,7 @@ func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float
 		])
 		visual.draw_colored_polygon(inner_core, Color(1, 1, 1, 0.7 * (1.0 - anim_progress * 0.5)))
 		
-		# Partículas a lo largo del breath - MÁS Y MÁS GRANDES
+		# PartÃ­culas a lo largo del breath - MÃS Y MÃS GRANDES
 		var particle_count = int(15 * anim_progress)
 		for i in range(particle_count):
 			var t = float(i) / max(particle_count, 1)
@@ -3104,7 +3104,7 @@ func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float
 			# Mini glow
 			visual.draw_circle(particle_pos, particle_size * 1.4, Color(bright_color.r, bright_color.g, bright_color.b, 0.3))
 		
-		# Borde brillante del cono - MÁS GRUESO
+		# Borde brillante del cono - MÃS GRUESO
 		visual.draw_line(Vector2.ZERO, Vector2(current_range, -current_range * cone_width), Color(1, 1, 1, 0.7), 3.0)
 		visual.draw_line(Vector2.ZERO, Vector2(current_range, current_range * cone_width), Color(1, 1, 1, 0.7), 3.0)
 		
@@ -3113,14 +3113,14 @@ func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float
 		visual.draw_arc(Vector2(current_range, 0), arc_radius, -PI/2, PI/2, 12, Color(1, 1, 1, 0.5 * (1.0 - anim_progress)), 2.0)
 	)
 	
-	# Animación de expansión - MÁS LARGA
+	# AnimaciÃ³n de expansiÃ³n - MÃS LARGA
 	# IMPORTANTE: Usar container.create_tween() para que el tween se limpie con el nodo
 	var tween = container.create_tween()
 	tween.tween_method(func(val):
 		anim_progress = val
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.45)  # Más tiempo para la expansión
+	, 0.0, 1.0, 0.45)  # MÃ¡s tiempo para la expansiÃ³n
 	
 	# Mantener un momento y fade out suave
 	tween.tween_interval(0.25)
@@ -3131,18 +3131,18 @@ func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float
 	)
 
 func _get_element_color(elem: String) -> Color:
-	"""Obtener color según elemento - Colores más vibrantes y atractivos"""
+	"""Obtener color segÃºn elemento - Colores mÃ¡s vibrantes y atractivos"""
 	match elem:
 		"fire": return Color(1.0, 0.3, 0.05, 0.8)      # Rojo fuego brillante
 		"ice": return Color(0.2, 0.7, 1.0, 0.8)        # Azul hielo claro
-		"dark": return Color(0.6, 0.1, 0.9, 0.8)       # Púrpura oscuro
+		"dark": return Color(0.6, 0.1, 0.9, 0.8)       # PÃºrpura oscuro
 		"arcane": return Color(0.9, 0.3, 1.0, 0.8)     # Magenta arcano
 		"poison": return Color(0.2, 0.9, 0.2, 0.8)     # Verde venenoso
-		"lightning": return Color(1.0, 1.0, 0.2, 0.8)  # Amarillo eléctrico
-		_: return Color(0.9, 0.9, 0.9, 0.8)            # Blanco físico
+		"lightning": return Color(1.0, 1.0, 0.2, 0.8)  # Amarillo elÃ©ctrico
+		_: return Color(0.9, 0.9, 0.9, 0.8)            # Blanco fÃ­sico
 
 func _emit_melee_effect() -> void:
-	"""Emitir efecto visual de ataque melee ÉPICO con slash animado"""
+	"""Emitir efecto visual de ataque melee Ã‰PICO con slash animado"""
 	if not enemy or not player:
 		return
 	
@@ -3166,7 +3166,7 @@ func _emit_melee_effect() -> void:
 	var bright_color = Color(min(base_color.r + 0.4, 1.0), min(base_color.g + 0.4, 1.0), min(base_color.b + 0.4, 1.0), 1.0)
 	var anim_progress = 0.0
 	
-	# Determinar si es élite para efectos más grandes
+	# Determinar si es Ã©lite para efectos mÃ¡s grandes
 	var is_elite = enemy.get("is_elite") if "is_elite" in enemy else false
 	var size_mult = 1.5 if is_elite else 1.0
 	
@@ -3174,7 +3174,7 @@ func _emit_melee_effect() -> void:
 	slash.add_child(visual)
 	
 	visual.draw.connect(func():
-		var arc_angle = PI * 0.85  # Ángulo del arco de slash más amplio
+		var arc_angle = PI * 0.85  # Ãngulo del arco de slash mÃ¡s amplio
 		var arc_radius = 45.0 * (0.5 + anim_progress * 0.5) * size_mult
 		var arc_start = -arc_angle / 2 + (1.0 - anim_progress) * arc_angle * 0.3
 		var arc_end = arc_angle / 2 - (1.0 - anim_progress) * arc_angle * 0.3
@@ -3186,7 +3186,7 @@ func _emit_melee_effect() -> void:
 			if glow_radius > 0:
 				visual.draw_arc(Vector2.ZERO, glow_radius, arc_start, arc_end, 20, Color(base_color.r, base_color.g, base_color.b, glow_alpha), 8.0 - g * 2)
 		
-		# Múltiples arcos para efecto de estela - MÁS GRUESOS
+		# MÃºltiples arcos para efecto de estela - MÃS GRUESOS
 		for i in range(5):
 			var layer_radius = arc_radius * (1.0 - i * 0.12)
 			var layer_alpha = (1.0 - i * 0.18) * (1.0 - anim_progress * 0.5)
@@ -3194,16 +3194,16 @@ func _emit_melee_effect() -> void:
 			if layer_width > 0:
 				visual.draw_arc(Vector2.ZERO, layer_radius, arc_start, arc_end, 20, Color(base_color.r, base_color.g, base_color.b, layer_alpha), layer_width)
 		
-		# Núcleo brillante blanco
+		# NÃºcleo brillante blanco
 		visual.draw_arc(Vector2.ZERO, arc_radius * 0.7, arc_start * 0.8, arc_end * 0.8, 16, Color(1, 1, 1, 0.9 * (1.0 - anim_progress)), 4.0 * size_mult)
 		
-		# Destello en el borde del slash - MÁS GRANDE
+		# Destello en el borde del slash - MÃS GRANDE
 		var flash_pos = Vector2(cos(arc_end), sin(arc_end)) * arc_radius
 		var flash_size = 12.0 * (1.0 - anim_progress) * size_mult
 		visual.draw_circle(flash_pos, flash_size, Color(1, 1, 1, 0.95 * (1.0 - anim_progress)))
 		visual.draw_circle(flash_pos, flash_size * 0.5, bright_color)
 		
-		# Chispas múltiples que vuelan
+		# Chispas mÃºltiples que vuelan
 		var spark_count = 8
 		for i in range(spark_count):
 			var spark_angle = arc_start + (arc_end - arc_start) * (float(i) / spark_count)
@@ -3212,14 +3212,14 @@ func _emit_melee_effect() -> void:
 			var spark_size = (4.0 - i * 0.3) * (1.0 - anim_progress) * size_mult
 			visual.draw_circle(spark_pos, spark_size, Color(1, 1, 0.7, 0.8 * (1.0 - anim_progress)))
 		
-		# Líneas de energía desde el centro (nuevo)
+		# LÃ­neas de energÃ­a desde el centro (nuevo)
 		for i in range(5):
 			var line_angle = arc_start + (arc_end - arc_start) * (float(i) / 4)
 			var line_end = Vector2(cos(line_angle), sin(line_angle)) * arc_radius * (0.5 + anim_progress * 0.5)
 			visual.draw_line(Vector2.ZERO, line_end, Color(bright_color.r, bright_color.g, bright_color.b, 0.5 * (1.0 - anim_progress)), 2.0)
 	)
 	
-	# Animación MÁS LARGA para ser visible
+	# AnimaciÃ³n MÃS LARGA para ser visible
 	# IMPORTANTE: Usar slash.create_tween() para que el tween se limpie con el nodo
 	var tween = slash.create_tween()
 	tween.tween_method(func(val):
@@ -3248,9 +3248,9 @@ func reset_cooldown() -> void:
 	"""Resetear el cooldown de ataque"""
 	attack_timer = attack_cooldown
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # FUNCIONES AUXILIARES PARA BOSSES
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 func _get_enemy_spawner() -> Node:
 	"""Obtener referencia al spawner de enemigos"""
@@ -3291,11 +3291,11 @@ func _create_boss_projectile_internal(direction: Vector2, damage: int, element: 
 		projectile.initialize(direction, projectile_speed * 1.2, damage, 5.0, element)
 
 func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float, element: String) -> void:
-	"""Crear orbe ÉPICO que persigue al jugador"""
+	"""Crear orbe Ã‰PICO que persigue al jugador"""
 	if not is_instance_valid(enemy) or not is_instance_valid(player):
 		return
 	
-	var orb = Node2D.new()  # Usar Node2D simple, colisión por distancia
+	var orb = Node2D.new()  # Usar Node2D simple, colisiÃ³n por distancia
 	orb.name = "HomingOrb"
 	orb.top_level = true  # No se mueve con el enemigo si este muere
 	orb.global_position = pos
@@ -3315,7 +3315,7 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	visual.draw.connect(func():
 		var pulse = 1.0 + sin(orb_time * 8) * 0.25
 		
-		# Dibujar trail primero (detrás del orbe)
+		# Dibujar trail primero (detrÃ¡s del orbe)
 		for i in range(trail_positions.size()):
 			var trail_pos = trail_positions[i] - orb.global_position
 			var trail_alpha = float(i) / max_trail * 0.5
@@ -3327,20 +3327,20 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 		visual.draw_circle(Vector2.ZERO, 28 * pulse, Color(color.r, color.g, color.b, 0.25))
 		visual.draw_circle(Vector2.ZERO, 22 * pulse, Color(color.r, color.g, color.b, 0.4))
 		
-		# Cuerpo principal más grande
+		# Cuerpo principal mÃ¡s grande
 		visual.draw_circle(Vector2.ZERO, 18 * pulse, color)
 		
-		# Anillo de energía rotando
+		# Anillo de energÃ­a rotando
 		var ring_angle = orb_time * 5
 		visual.draw_arc(Vector2.ZERO, 22 * pulse, ring_angle, ring_angle + PI * 1.5, 16, bright_color, 2.0)
 		
-		# Núcleo brillante
+		# NÃºcleo brillante
 		visual.draw_circle(Vector2.ZERO, 12 * pulse, bright_color)
 		
 		# Centro blanco brillante
 		visual.draw_circle(Vector2.ZERO, 6, Color(1, 1, 1, 0.98))
 		
-		# Partículas orbitando
+		# PartÃ­culas orbitando
 		for i in range(4):
 			var orbit_angle = orb_time * 6 + (TAU / 4) * i
 			var orbit_pos = Vector2(cos(orbit_angle), sin(orbit_angle)) * 25 * pulse
@@ -3359,9 +3359,9 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	var time_alive = 0.0
 	var player_ref = player
 	var has_hit = false
-	var hit_radius = 28.0  # Radio de colisión más grande
+	var hit_radius = 28.0  # Radio de colisiÃ³n mÃ¡s grande
 	
-	# Usar timer para movimiento y colisión por distancia
+	# Usar timer para movimiento y colisiÃ³n por distancia
 	var timer = Timer.new()
 	timer.wait_time = 0.016
 	timer.autostart = true
@@ -3377,12 +3377,12 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 		time_alive += 0.016
 		orb_time += 0.016
 		
-		# Guardar posición para trail
+		# Guardar posiciÃ³n para trail
 		trail_positions.push_front(orb.global_position)
 		if trail_positions.size() > max_trail:
 			trail_positions.pop_back()
 		
-		# Check duración
+		# Check duraciÃ³n
 		if time_alive >= duration:
 			# Efecto de desvanecimiento
 			var tween = orb.create_tween()
@@ -3390,7 +3390,7 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 			tween.tween_callback(orb.queue_free)
 			return
 		
-		# Mover hacia player con aceleración
+		# Mover hacia player con aceleraciÃ³n
 		var dir = (player_ref.global_position - orb.global_position).normalized()
 		var current_speed = speed * (1.0 + time_alive * 0.3)  # Acelera con el tiempo
 		orb.global_position += dir * current_speed * 0.016
@@ -3398,21 +3398,21 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 		# Actualizar visual
 		visual.queue_redraw()
 		
-		# CHECK POR DISTANCIA (más fiable que Area2D)
+		# CHECK POR DISTANCIA (mÃ¡s fiable que Area2D)
 		var dist = orb.global_position.distance_to(player_ref.global_position)
 		if dist < hit_radius:
 			has_hit = true
 			if player_ref.has_method("take_damage"):
 				player_ref.call("take_damage", damage, element)
-				print("[HomingOrb] 🔮 Impacto en player: %d daño (%s)" % [damage, element])
-			# Efecto de impacto ÉPICO
+				# print("[HomingOrb] ðŸ”® Impacto en player: %d daÃ±o (%s)" % [damage, element])
+			# Efecto de impacto Ã‰PICO
 			_spawn_orb_impact_effect(orb.global_position, color)
 			orb.queue_free()
 			return
 	)
 
 func _spawn_orb_impact_effect(pos: Vector2, color: Color) -> void:
-	"""Crear efecto visual de impacto de orbe ÉPICO"""
+	"""Crear efecto visual de impacto de orbe Ã‰PICO"""
 	var effect = Node2D.new()
 	effect.global_position = pos
 	effect.top_level = true
@@ -3430,13 +3430,13 @@ func _spawn_orb_impact_effect(pos: Vector2, color: Color) -> void:
 		var radius = 45 * anim_progress
 		var alpha = (1.0 - anim_progress) * 0.9
 		
-		# Múltiples ondas de expansión
+		# MÃºltiples ondas de expansiÃ³n
 		for i in range(4):
 			var wave_r = radius * (0.4 + i * 0.2)
 			var wave_alpha = alpha * (1.0 - i * 0.2)
 			effect.draw_circle(Vector2.ZERO, wave_r, Color(color.r, color.g, color.b, wave_alpha * 0.4))
 		
-		# Anillos de energía
+		# Anillos de energÃ­a
 		for i in range(3):
 			var ring_r = radius * (0.7 + i * 0.15)
 			effect.draw_arc(Vector2.ZERO, ring_r, 0, TAU, 24, Color(bright_color.r, bright_color.g, bright_color.b, alpha * (0.8 - i * 0.2)), 3.0 - i)
@@ -3466,7 +3466,7 @@ func _spawn_orb_impact_effect(pos: Vector2, color: Color) -> void:
 	)
 
 func _spawn_damage_zone(pos: Vector2, radius: float, dps: int, duration: float, element: String) -> void:
-	"""Crear zona de daño persistente"""
+	"""Crear zona de daÃ±o persistente"""
 	if not is_instance_valid(enemy) or not is_instance_valid(player):
 		return
 	
@@ -3491,7 +3491,7 @@ func _spawn_damage_zone(pos: Vector2, radius: float, dps: int, duration: float, 
 	if parent:
 		parent.add_child(zone)
 	
-	# Daño por tick
+	# DaÃ±o por tick
 	var player_ref = player
 	var time_alive = 0.0
 	var damage_accumulator = 0.0
@@ -3523,12 +3523,12 @@ func _spawn_damage_zone(pos: Vector2, radius: float, dps: int, duration: float, 
 				damage_accumulator = fmod(damage_accumulator, 1.0)
 	)
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # EFECTOS VISUALES DE BOSS
-# ═══════════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 func _spawn_phase_change_effect() -> void:
-	"""Efecto visual de cambio de fase ÉPICO"""
+	"""Efecto visual de cambio de fase Ã‰PICO"""
 	if not is_instance_valid(enemy):
 		return
 	
@@ -3552,28 +3552,28 @@ func _spawn_phase_change_effect() -> void:
 			var a = (1.0 - anim) * (0.9 - i * 0.15)
 			visual.draw_arc(Vector2.ZERO, r, 0, TAU, 48, Color(1, 0.15, 0.15, a), 6.0 - i)
 		
-		# Relleno de energía
+		# Relleno de energÃ­a
 		for i in range(3):
 			var fill_r = 100 * anim * (1.0 - i * 0.25)
 			var fill_a = (1.0 - anim) * (0.4 - i * 0.1)
 			visual.draw_circle(Vector2.ZERO, fill_r, Color(1, 0.3, 0.1, fill_a))
 		
-		# Rayos desde el centro - MÁS Y MÁS BRILLANTES
+		# Rayos desde el centro - MÃS Y MÃS BRILLANTES
 		var ray_count = 12
 		for i in range(ray_count):
 			var angle = (TAU / ray_count) * i + anim * PI * 1.5
 			var length = 200 * anim
 			var end = Vector2(cos(angle), sin(angle)) * length
 			visual.draw_line(Vector2.ZERO, end, Color(1, 0.6, 0.1, (1.0 - anim) * 0.9), 4.0)
-			# Línea interior blanca
+			# LÃ­nea interior blanca
 			visual.draw_line(Vector2.ZERO, end * 0.8, Color(1, 1, 0.8, (1.0 - anim) * 0.7), 2.0)
 		
-		# Texto de fase (simulado con círculos)
+		# Texto de fase (simulado con cÃ­rculos)
 		var text_radius = 50 * (1.0 - anim * 0.3)
 		visual.draw_circle(Vector2.ZERO, text_radius, Color(1, 0.2, 0.1, (1.0 - anim) * 0.8))
 		visual.draw_arc(Vector2.ZERO, text_radius, 0, TAU, 32, Color(1, 1, 0.5, (1.0 - anim)), 4.0)
 		
-		# Partículas de energía volando
+		# PartÃ­culas de energÃ­a volando
 		var particle_count = 16
 		for i in range(particle_count):
 			var p_angle = (TAU / particle_count) * i
@@ -3589,14 +3589,14 @@ func _spawn_phase_change_effect() -> void:
 		anim = v
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.8)  # Más largo para ser épico
+	, 0.0, 1.0, 0.8)  # MÃ¡s largo para ser Ã©pico
 	tween.tween_callback(func():
 		if is_instance_valid(effect):
 			effect.queue_free()
 	)
 
 func _spawn_summon_visual() -> void:
-	"""Efecto de invocación"""
+	"""Efecto de invocaciÃ³n"""
 	if not is_instance_valid(enemy):
 		return
 	
@@ -3614,9 +3614,9 @@ func _spawn_summon_visual() -> void:
 	effect.add_child(visual)
 	
 	visual.draw.connect(func():
-		# Círculo mágico
+		# CÃ­rculo mÃ¡gico
 		visual.draw_arc(Vector2.ZERO, 80, 0, TAU, 32, Color(0.5, 0, 0.8, 0.6 * (1.0 - anim)), 3.0)
-		# Pentágono
+		# PentÃ¡gono
 		var points = 5
 		for i in range(points):
 			var a1 = (TAU / points) * i - PI/2 + anim * PI
@@ -3658,11 +3658,11 @@ func _spawn_teleport_effect(pos: Vector2, is_arrival: bool) -> void:
 	
 	visual.draw.connect(func():
 		if is_arrival:
-			# Expansión
+			# ExpansiÃ³n
 			var r = 50 * anim
 			visual.draw_circle(Vector2.ZERO, r, Color(color.r, color.g, color.b, 0.5 * (1.0 - anim)))
 		else:
-			# Contracción
+			# ContracciÃ³n
 			var r = 50 * (1.0 - anim)
 			visual.draw_circle(Vector2.ZERO, r, Color(color.r, color.g, color.b, 0.5 * anim))
 	)
@@ -3718,7 +3718,7 @@ func _spawn_arcane_nova_visual(center: Vector2, radius: float) -> void:
 	)
 
 func _spawn_curse_aura_visual(center: Vector2, radius: float) -> void:
-	"""Visual de aura de maldición"""
+	"""Visual de aura de maldiciÃ³n"""
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 50
@@ -3738,7 +3738,7 @@ func _spawn_curse_aura_visual(center: Vector2, radius: float) -> void:
 		# Aura oscura pulsante
 		var pulse = 0.9 + sin(anim * PI * 4) * 0.1
 		visual.draw_circle(Vector2.ZERO, radius * pulse, Color(0.2, 0, 0.2, 0.3 * (1.0 - anim)))
-		# Símbolos de maldición
+		# SÃ­mbolos de maldiciÃ³n
 		var symbol_count = 6
 		for i in range(symbol_count):
 			var angle = (TAU / symbol_count) * i + anim * PI * 2
@@ -3826,7 +3826,7 @@ func _spawn_void_beam_visual(origin: Vector2, direction: Vector2, length: float,
 		var width = 30 * (0.8 + sin(anim * PI * 8) * 0.2)
 		# Beam principal
 		visual.draw_rect(Rect2(0, -width/2, length, width), Color(0.5, 0, 0.8, 0.7))
-		# Núcleo brillante
+		# NÃºcleo brillante
 		visual.draw_rect(Rect2(0, -width/4, length, width/2), Color(0.8, 0.5, 1, 0.9))
 	)
 	
@@ -3855,7 +3855,7 @@ func _spawn_rune_shield_visual() -> void:
 	var anim = 0.0
 	
 	visual.draw.connect(func():
-		# Hexágono de escudo
+		# HexÃ¡gono de escudo
 		var radius = 40
 		var points = PackedVector2Array()
 		for i in range(7):
@@ -3863,7 +3863,7 @@ func _spawn_rune_shield_visual() -> void:
 			points.append(Vector2(cos(angle), sin(angle)) * radius)
 		visual.draw_polyline(points, Color(0.9, 0.8, 0.2, 0.8), 3.0)
 		
-		# Runas en cada vértice
+		# Runas en cada vÃ©rtice
 		for i in range(6):
 			var angle = (TAU / 6) * i + anim * 0.5
 			var pos = Vector2(cos(angle), sin(angle)) * radius
@@ -3881,14 +3881,14 @@ func _spawn_rune_shield_visual() -> void:
 			visual.queue_redraw()
 	)
 	
-	# Auto-destruir después de 10 segundos
+	# Auto-destruir despuÃ©s de 10 segundos
 	get_tree().create_timer(10.0).timeout.connect(func():
 		if is_instance_valid(visual):
 			visual.queue_free()
 	)
 
 func _spawn_rune_prison_visual(pos: Vector2, duration: float) -> void:
-	"""Visual de prisión de runas"""
+	"""Visual de prisiÃ³n de runas"""
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 55  # Encima del jugador
@@ -3945,7 +3945,7 @@ func _spawn_counter_stance_visual() -> void:
 		# Aura amenazante
 		var pulse = 0.8 + sin(anim * 10) * 0.2
 		visual.draw_arc(Vector2.ZERO, 35 * pulse, 0, TAU, 16, Color(1, 0.3, 0.1, 0.6), 3.0)
-		# Símbolo de espada
+		# SÃ­mbolo de espada
 		visual.draw_line(Vector2(0, -25), Vector2(0, 15), Color(1, 1, 1, 0.8), 3.0)
 		visual.draw_line(Vector2(-10, -10), Vector2(10, -10), Color(1, 1, 1, 0.8), 3.0)
 	)
@@ -3961,14 +3961,14 @@ func _spawn_counter_stance_visual() -> void:
 			visual.queue_redraw()
 	)
 	
-	# Auto-destruir después de 2 segundos
+	# Auto-destruir despuÃ©s de 2 segundos
 	get_tree().create_timer(2.0).timeout.connect(func():
 		if is_instance_valid(visual):
 			visual.queue_free()
 	)
 
 func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
-	"""Visual de golpe de tierra ÉPICO"""
+	"""Visual de golpe de tierra Ã‰PICO"""
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 60
@@ -3987,7 +3987,7 @@ func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
 	visual.draw.connect(func():
 		var expand_radius = radius * 1.2 * anim
 		
-		# Ondas de choque - MÁS Y MÁS GRUESAS
+		# Ondas de choque - MÃS Y MÃS GRUESAS
 		for i in range(5):
 			var r = expand_radius * (0.3 + i * 0.18)
 			var a = (1.0 - anim) * (0.85 - i * 0.14)
@@ -3999,7 +3999,7 @@ func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
 			var fill_a = (1.0 - anim) * (0.35 - i * 0.08)
 			visual.draw_circle(Vector2.ZERO, fill_r, Color(0.5, 0.35, 0.15, fill_a))
 		
-		# Grietas radiales - MÁS Y MÁS DETALLADAS
+		# Grietas radiales - MÃS Y MÃS DETALLADAS
 		var crack_count = 12
 		for i in range(crack_count):
 			var angle = (TAU / crack_count) * i
@@ -4025,7 +4025,7 @@ func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
 			rock_pos.y -= anim * 35 * (1.0 + sin(i * 1.3))  # Rocas que vuelan
 			var rock_size = (8 - anim * 4) * (0.7 + float(i % 3) * 0.2)
 			
-			# Dibujar roca como polígono irregular
+			# Dibujar roca como polÃ­gono irregular
 			var rock_points = PackedVector2Array([
 				rock_pos + Vector2(-rock_size, -rock_size * 0.5),
 				rock_pos + Vector2(rock_size * 0.3, -rock_size * 0.8),
@@ -4034,7 +4034,7 @@ func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
 			])
 			visual.draw_colored_polygon(rock_points, Color(0.45, 0.35, 0.25, (1.0 - anim) * 0.9))
 		
-		# Polvo levantándose
+		# Polvo levantÃ¡ndose
 		var dust_count = 16
 		for i in range(dust_count):
 			var dust_angle = (TAU / dust_count) * i
@@ -4055,7 +4055,7 @@ func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
 		anim = v
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.7)  # Más largo
+	, 0.0, 1.0, 0.7)  # MÃ¡s largo
 	tween.tween_callback(func():
 		if is_instance_valid(effect):
 			effect.queue_free()
@@ -4080,7 +4080,7 @@ func _spawn_charge_warning_visual(pos: Vector2, direction: Vector2) -> void:
 	effect.add_child(visual)
 	
 	visual.draw.connect(func():
-		# Flecha indicando dirección
+		# Flecha indicando direcciÃ³n
 		var flash = (sin(anim * PI * 8) + 1) / 2
 		var color = Color(1, 0.3, 0, 0.5 + flash * 0.3)
 		
@@ -4128,7 +4128,7 @@ func _spawn_meteor_warning(pos: Vector2, radius: float, delay: float) -> void:
 	effect.add_child(visual)
 	
 	visual.draw.connect(func():
-		# Círculo de advertencia parpadeante
+		# CÃ­rculo de advertencia parpadeante
 		var flash = (sin(anim * PI * 6) + 1) / 2
 		visual.draw_circle(Vector2.ZERO, radius, Color(1, 0.2, 0, 0.2 + flash * 0.3))
 		visual.draw_arc(Vector2.ZERO, radius, 0, TAU, 32, Color(1, 0.5, 0, 0.5 + flash * 0.4), 2.0)
@@ -4147,11 +4147,11 @@ func _spawn_meteor_warning(pos: Vector2, radius: float, delay: float) -> void:
 	)
 
 func _spawn_meteor_impact(pos: Vector2, radius: float, damage: int) -> void:
-	"""Impacto real del meteoro con daño"""
+	"""Impacto real del meteoro con daÃ±o"""
 	if not is_instance_valid(player):
 		return
 	
-	# Verificar daño
+	# Verificar daÃ±o
 	var dist = pos.distance_to(player.global_position)
 	if dist <= radius:
 		if player.has_method("take_damage"):
@@ -4174,7 +4174,7 @@ func _spawn_meteor_impact(pos: Vector2, radius: float, damage: int) -> void:
 	effect.add_child(visual)
 	
 	visual.draw.connect(func():
-		# Explosión de fuego
+		# ExplosiÃ³n de fuego
 		var r = radius * (0.5 + anim * 0.5)
 		for i in range(4):
 			var layer_r = r * (1.0 - i * 0.2)

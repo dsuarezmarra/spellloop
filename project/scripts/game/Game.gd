@@ -63,19 +63,9 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
 	# Verificar si hay una partida guardada para reanudar
-	print("🎮 [Game] _ready() - Verificando SessionState...")
-	print("   - SessionState existe: %s" % (SessionState != null))
-	if SessionState:
-		print("   - has_active_game: %s" % SessionState.has_active_game)
-		print("   - can_resume(): %s" % SessionState.can_resume())
-	
 	if SessionState and SessionState.can_resume():
 		_is_resuming = true
 		_saved_state = SessionState.get_saved_state()
-		print("🔄 [Game] Reanudando partida guardada...")
-		print("   - Estado recibido con %d claves" % _saved_state.size())
-	else:
-		print("🎮 [Game] Iniciando partida nueva...")
 	
 	_setup_game()
 
@@ -142,7 +132,6 @@ func _create_arena_manager() -> void:
 		var seed_to_use: int = -1  # -1 significa generar aleatorio
 		if _is_resuming and _saved_state.has("arena_seed"):
 			seed_to_use = _saved_state["arena_seed"]
-			print("🏟️ [Game] Usando seed guardado: %d" % seed_to_use)
 		
 		# Inicializar con player y nodo raíz de arena
 		arena_manager.initialize(player, arena_root, seed_to_use)
@@ -152,8 +141,6 @@ func _create_arena_manager() -> void:
 			arena_manager.player_zone_changed.connect(_on_player_zone_changed)
 		if arena_manager.has_signal("player_hit_boundary"):
 			arena_manager.player_hit_boundary.connect(_on_player_hit_boundary)
-
-		print("🏟️ [Game] ArenaManager creado")
 	else:
 		push_error("[Game] No se pudo cargar ArenaManager.gd")
 
@@ -169,8 +156,6 @@ func _create_player_stats() -> void:
 			player_stats.stat_changed.connect(_on_stat_changed)
 		if player_stats.has_signal("level_changed"):
 			player_stats.level_changed.connect(_on_player_level_changed)
-
-		print("📊 [Game] PlayerStats creado")
 	else:
 		push_error("[Game] No se pudo cargar PlayerStats.gd")
 
@@ -185,8 +170,6 @@ func _create_enemy_manager() -> void:
 		if enemy_manager.has_signal("enemy_died"):
 			enemy_manager.enemy_died.connect(_on_enemy_died)
 
-		print("👹 [Game] EnemyManager creado")
-
 func _create_wave_manager() -> void:
 	var wm_script = load("res://scripts/managers/WaveManager.gd")
 	if wm_script:
@@ -197,7 +180,6 @@ func _create_wave_manager() -> void:
 		# El estado será restaurado luego por _resume_saved_game()
 		if _is_resuming and _saved_state.has("wave_manager_state"):
 			wave_manager.skip_auto_init = true
-			print("🌊 [Game] WaveManager creado con skip_auto_init=true (será restaurado)")
 		
 		add_child(wave_manager)
 
@@ -220,8 +202,6 @@ func _create_wave_manager() -> void:
 			wave_manager.special_event_ended.connect(_on_special_event_ended)
 		if wave_manager.has_signal("game_phase_infinite"):
 			wave_manager.game_phase_infinite.connect(_on_game_phase_infinite)
-
-		print("🌊 [Game] WaveManager creado")
 	else:
 		push_warning("[Game] No se pudo cargar WaveManager.gd - usando spawn básico")
 
@@ -231,7 +211,6 @@ func _create_weapon_manager() -> void:
 		weapon_manager = wm_script.new()
 		weapon_manager.name = "WeaponManager"
 		add_child(weapon_manager)
-		print("⚔️ [Game] WeaponManager creado")
 
 func _create_experience_manager() -> void:
 	var em_script = load("res://scripts/core/ExperienceManager.gd")
@@ -248,15 +227,12 @@ func _create_experience_manager() -> void:
 		if experience_manager.has_signal("coin_collected"):
 			experience_manager.coin_collected.connect(_on_coin_collected)
 
-		print("⭐ [Game] ExperienceManager creado")
-
 func _create_ui() -> void:
 	# HUD
 	var hud_scene = load("res://scenes/ui/GameHUD.tscn")
 	if hud_scene:
 		hud = hud_scene.instantiate()
 		ui_layer.add_child(hud)
-		print("📊 [Game] HUD creado")
 
 	# Menú de pausa
 	var pause_scene = load("res://scenes/ui/PauseMenu.tscn")
@@ -265,21 +241,18 @@ func _create_ui() -> void:
 		ui_layer.add_child(pause_menu)
 		pause_menu.resume_pressed.connect(_on_resume_game)
 		# Las referencias se inicializarán después en _initialize_systems()
-		print("⏸️ [Game] PauseMenu creado")
 
 	# Pantalla de Game Over
 	var gameover_scene = load("res://scenes/ui/GameOverScreen.tscn")
 	if gameover_scene:
 		game_over_screen = gameover_scene.instantiate()
 		ui_layer.add_child(game_over_screen)
-		print("💀 [Game] GameOverScreen creado")
 
 func _setup_camera() -> void:
 	if camera:
 		camera.enabled = true
 		camera.position_smoothing_enabled = true
 		camera.position_smoothing_speed = 5.0
-		print("📷 [Game] Cámara configurada")
 	
 	# Crear sistema de feedback de daño (vignette + partículas en bordes)
 	_setup_damage_feedback()
@@ -292,7 +265,6 @@ func _setup_damage_feedback() -> void:
 		damage_vignette = DamageVignetteScript.new()
 		damage_vignette.name = "DamageVignette"
 		add_child(damage_vignette)
-		print("🎨 [Game] DamageVignette creado")
 	
 	# Conectar señal de daño del player
 	if player:
@@ -300,7 +272,6 @@ func _setup_damage_feedback() -> void:
 		var base_player = _get_base_player()
 		if base_player and base_player.has_signal("player_took_damage"):
 			base_player.player_took_damage.connect(_on_player_took_damage)
-			print("🔗 [Game] Conectado player_took_damage para feedback visual")
 
 func _get_base_player() -> Node:
 	"""Obtener referencia al BasePlayer (puede estar dentro de SpellloopPlayer)"""
@@ -428,13 +399,6 @@ func _start_game() -> void:
 
 func _resume_saved_game() -> void:
 	"""Restaurar el estado de una partida guardada"""
-	print("🔄 [Game] _resume_saved_game() iniciando...")
-	print("   - _saved_state tiene %d claves" % _saved_state.size())
-	if not _saved_state.is_empty():
-		print("   - Claves: %s" % str(_saved_state.keys()))
-		print("   - player_level en state: %d" % _saved_state.get("player_level", -1))
-		print("   - game_time en state: %.1f" % _saved_state.get("game_time", -1.0))
-	
 	game_running = true
 	is_paused = false
 	
@@ -445,7 +409,6 @@ func _resume_saved_game() -> void:
 	if wave_manager:
 		wave_manager.game_time_seconds = game_time
 		wave_manager.game_time_minutes = game_time / 60.0
-		print("🌊 [Game] WaveManager tiempo restaurado: %.1f segundos" % game_time)
 	
 	# Restaurar stats de la partida
 	run_stats["time"] = game_time

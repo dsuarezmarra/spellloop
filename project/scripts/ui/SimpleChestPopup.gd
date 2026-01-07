@@ -12,18 +12,14 @@ var current_selected_index: int = -1
 var popup_locked: bool = false  # Evitar múltiples selecciones
 
 func _ready():
-	print("[SimpleChestPopup] _ready() llamado - CanvasLayer")
-	
 	# CanvasLayer siempre está al frente (no afectado por cámara)
 	layer = 100
 	
 	# CRUCIAL: Procesar SIEMPRE aunque el juego esté pausado
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	print("[SimpleChestPopup] process_mode = ALWAYS configurado")
 	
 	# Asegurar que puede recibir input
 	set_process_input(true)
-	print("[SimpleChestPopup] set_process_input(true) configurado")
 	
 	# Crear control que cubre toda la pantalla
 	main_control = Control.new()
@@ -75,12 +71,9 @@ func _ready():
 	await get_tree().process_frame
 	var screen_size = get_viewport().get_visible_rect().size
 	popup_bg.position = (screen_size - popup_bg.size) / 2
-	
-	print("[SimpleChestPopup] _ready() completado")
 
 func setup_items(items: Array):
 	"""Configurar los items disponibles para selección"""
-	print("[SimpleChestPopup] setup_items() llamado con ", items.size(), " items")
 	available_items = items
 	
 	# Limpiar items previos
@@ -106,8 +99,6 @@ func setup_items(items: Array):
 		# Aplicar estilos
 		apply_button_style(button, i)
 		
-		print("[SimpleChestPopup] Creando botón para: ", item_name)
-		
 		# Guardar índice y item en metadatos del botón
 		button.set_meta("item_index", i)
 		button.set_meta("item_data", item.duplicate())
@@ -121,21 +112,15 @@ func setup_items(items: Array):
 		items_vbox.add_child(button)
 		item_buttons.append(button)
 	
-	print("[SimpleChestPopup] Se crearon ", items_vbox.get_child_count(), " botones - LISTO PARA SELECCIONAR")
-	
 	# Doble await para renderizado
 	await get_tree().process_frame
 	await get_tree().process_frame
 
 func _on_button_pressed(button_index: int, item_data: Dictionary):
 	"""Callback cuando se presiona un botón"""
-	print("[SimpleChestPopup] *** BOTÓN PRESIONADO - INDEX: ", button_index, " ITEM: ", item_data.get("type"), " ***")
-	
 	if popup_locked:
-		print("[SimpleChestPopup] ⚠️ Popup bloqueado, ignorando selección")
 		return
 	
-	print("[SimpleChestPopup] Procesando selección...")
 	_process_item_selection(item_data, button_index)
 
 func _on_button_hover(button_index: int):
@@ -150,20 +135,16 @@ func _process_item_selection(item: Dictionary, button_index: int):
 	
 	popup_locked = true
 	
-	print("[SimpleChestPopup] ¡¡¡ SELECCIONANDO ITEM !!! Index: ", button_index)
 	current_selected_index = button_index
 	_update_button_selection()
 	
 	# Pequeño delay para ver la selección
 	await get_tree().create_timer(0.2).timeout
 	
-	print("[SimpleChestPopup] Emitiendo señal item_selected...")
 	item_selected.emit(item)
 	
-	print("[SimpleChestPopup] Reanudando juego...")
 	get_tree().paused = false
 	
-	print("[SimpleChestPopup] Cerrando popup...")
 	queue_free()
 
 func _update_button_selection():
@@ -253,13 +234,9 @@ func _input(event: InputEvent):
 func _select_item_at_index(index: int):
 	"""Seleccionar un item por índice (desde teclado)"""
 	if popup_locked:
-		print("[SimpleChestPopup] ⚠️ Popup bloqueado, ignorando tecla")
 		return
 	
 	if index >= 0 and index < available_items.size():
-		print("[SimpleChestPopup] *** SELECCIONADO POR TECLADO - INDEX ", index, " ***")
 		var selected_item = available_items[index]
 		_process_item_selection(selected_item, index)
-	else:
-		print("[SimpleChestPopup] ⚠️ Índice fuera de rango: ", index)
 
