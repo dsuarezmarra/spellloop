@@ -24,6 +24,9 @@ var _lifetime_timer: float = 0.0
 var _time: float = 0.0
 
 func _ready() -> void:
+	# CRÍTICO: Respetar la pausa del juego
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	
 	# Configurar colisión: layer 4 (EnemyProjectile), mask 1 (Player)
 	collision_layer = 0
 	set_collision_layer_value(4, true)

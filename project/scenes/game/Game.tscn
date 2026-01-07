@@ -9,16 +9,22 @@ script = ExtResource("1_game")
 position = Vector2(0, 0)
 
 [node name="WorldRoot" type="Node2D" parent="."]
+process_mode = 1
 
 [node name="ArenaRoot" type="Node2D" parent="WorldRoot"]
+process_mode = 1
 
 [node name="EnemiesRoot" type="Node2D" parent="WorldRoot"]
+process_mode = 1
 
 [node name="PickupsRoot" type="Node2D" parent="WorldRoot"]
+process_mode = 1
 
 [node name="ProjectilesRoot" type="Node2D" parent="WorldRoot"]
+process_mode = 1
 
 [node name="PlayerContainer" type="Node2D" parent="."]
+process_mode = 1
 position = Vector2(0, 0)
 
 [node name="UILayer" type="CanvasLayer" parent="."]

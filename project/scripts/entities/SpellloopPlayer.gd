@@ -26,6 +26,9 @@ var health_bar_container: Node2D = null
 
 func _ready() -> void:
 	print("\n[SpellloopPlayer] ===== INICIANDO SPELLLOOP PLAYER =====")
+	
+	# CRÍTICO: Respetar la pausa del juego
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 
 	# Añadir al grupo "player" para que otros sistemas puedan encontrarnos
 	add_to_group("player")

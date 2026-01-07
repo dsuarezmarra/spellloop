@@ -79,6 +79,9 @@ var character_sprites_key: String = "wizard"  # Sobrescribir en subclases
 
 func _ready() -> void:
 	"""Inicialización del personaje"""
+	# CRÍTICO: Respetar la pausa del juego
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	
 	print("[%s] Inicializando %s en posición: %s" % [character_class, character_class, global_position])
 	
 	# Añadir al grupo "player" para que otros sistemas puedan encontrarnos

@@ -51,6 +51,9 @@ const ELEMENT_COLORS = {
 }
 
 func _ready() -> void:
+	# CRÍTICO: Respetar la pausa del juego
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	
 	# Configuración básica
 	z_index = 10
 	pierces_remaining = pierce_count

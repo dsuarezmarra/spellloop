@@ -56,6 +56,9 @@ var current_direction: Vector2 = Vector2.DOWN
 
 func _ready() -> void:
 	"""Inicializar al cargar la escena. Ejecutado ANTES de las subclases."""
+	# CRÍTICO: Respetar la pausa del juego (Game.gd tiene ALWAYS, pero enemigos deben pausarse)
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	
 	# Capas/máscaras: layer=2 (Enemy), mask=3 (PlayerProjectiles) y 1 (Player)
 	set_collision_layer_value(2, true)
 	set_collision_mask_value(3, true)

@@ -41,6 +41,9 @@ var player: Node = null
 var EnemyProjectileScript = null
 
 func _ready() -> void:
+	# CRÍTICO: Respetar la pausa del juego
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	
 	enemy = get_parent()
 	# Precargar script de proyectil
 	EnemyProjectileScript = load("res://scripts/enemies/EnemyProjectile.gd")

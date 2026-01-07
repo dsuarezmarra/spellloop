@@ -84,6 +84,9 @@ var skip_auto_init: bool = false
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _ready() -> void:
+	# Asegurar que WaveManager respete la pausa del juego
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	
 	# Las referencias son asignadas por Game.gd
 	# Esperar un frame para que las referencias estén asignadas
 	await get_tree().process_frame
@@ -123,10 +126,6 @@ func _find_references() -> void:
 # ═══════════════════════════════════════════════════════════════════════════════
 # PROCESO PRINCIPAL
 # ═══════════════════════════════════════════════════════════════════════════════
-
-func _ready() -> void:
-	# Asegurar que WaveManager respete la pausa del juego
-	process_mode = Node.PROCESS_MODE_PAUSABLE
 
 func _process(delta: float) -> void:
 	if not enemy_manager or not player:
