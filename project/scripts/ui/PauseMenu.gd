@@ -2007,11 +2007,21 @@ func _save_game_state_for_resume() -> void:
 	
 	# Stats del jugador
 	if player_stats:
-		# Guardar todos los stats
-		if player_stats.has_method("get_all_stats"):
+		# Guardar todos los stats usando to_dict() que incluye collected_upgrades
+		if player_stats.has_method("to_dict"):
+			game_state["player_stats"] = player_stats.to_dict()
+		elif player_stats.has_method("get_all_stats"):
 			game_state["player_stats"] = player_stats.get_all_stats()
+			# También guardar collected_upgrades si existe
+			if "collected_upgrades" in player_stats:
+				game_state["player_stats"]["collected_upgrades"] = player_stats.collected_upgrades.duplicate(true)
 		elif "stats" in player_stats:
 			game_state["player_stats"] = player_stats.stats.duplicate()
+			# También guardar collected_upgrades si existe
+			if "collected_upgrades" in player_stats:
+				game_state["player_stats"]["collected_upgrades"] = player_stats.collected_upgrades.duplicate(true)
+		
+		print("[PauseMenu] DEBUG - PlayerStats guardado (collected_upgrades: %d)" % game_state["player_stats"].get("collected_upgrades", []).size())
 	
 	# Mejoras globales de armas (GlobalWeaponStats)
 	if attack_manager and "global_weapon_stats" in attack_manager and attack_manager.global_weapon_stats:

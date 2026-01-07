@@ -1381,6 +1381,8 @@ func _spawn_boss_impact_effect() -> void:
 func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 	"""Visual de explosión de vacío - púrpura con absorción"""
 	var effect = Node2D.new()
+	effect.top_level = true  # Independiente del enemigo
+	effect.z_index = 50
 	effect.global_position = center
 	
 	var parent = enemy.get_parent()
@@ -1437,6 +1439,8 @@ func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 	"""Visual de explosión de runas - símbolos brillantes"""
 	var effect = Node2D.new()
+	effect.top_level = true  # Independiente del enemigo
+	effect.z_index = 50
 	effect.global_position = center
 	
 	var parent = enemy.get_parent()
@@ -1490,6 +1494,8 @@ func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 func _spawn_fire_stomp_visual(center: Vector2, radius: float) -> void:
 	"""Visual de pisotón de fuego - onda de fuego expansiva"""
 	var effect = Node2D.new()
+	effect.top_level = true  # Independiente del enemigo
+	effect.z_index = 50
 	effect.global_position = center
 	
 	var parent = enemy.get_parent()
@@ -1607,9 +1613,11 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 	var base_color = _get_element_color(elem)
 	var bright_color = Color(base_color.r + 0.3, base_color.g + 0.3, base_color.b + 0.3, 0.9)
 	
-	# Crear contenedor principal
+	# Crear contenedor principal - INDEPENDIENTE del enemigo
 	var container = Node2D.new()
 	container.name = "AoE_Visual"
+	container.top_level = true  # No se mueve con el padre
+	container.z_index = 50  # Visible encima de otros elementos
 	container.global_position = center
 	
 	var parent = enemy.get_parent()
@@ -1657,16 +1665,16 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 			visual.draw_arc(Vector2.ZERO, expand_radius, 0, TAU, 48, Color(1, 1, 1, 0.6 * (1.0 - anim_progress)), 3.0)
 	)
 	
-	# Animación de expansión
+	# Animación de expansión - MÁS LARGA para ser visible
 	var tween = create_tween()
 	tween.tween_method(func(val):
 		anim_progress = val
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.4)
+	, 0.0, 1.0, 0.6)
 	
 	# Fade out y destruir
-	tween.tween_property(container, "modulate:a", 0.0, 0.2)
+	tween.tween_property(container, "modulate:a", 0.0, 0.3)
 	tween.tween_callback(func():
 		if is_instance_valid(container):
 			container.queue_free()
@@ -1676,6 +1684,8 @@ func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float
 	"""Crear efecto visual de breath attack mejorado con animación de expansión"""
 	var container = Node2D.new()
 	container.name = "Breath_Visual"
+	container.top_level = true  # No se mueve con el padre
+	container.z_index = 50  # Visible encima de otros elementos
 	container.global_position = origin
 	container.rotation = direction.angle()
 	
@@ -1772,9 +1782,11 @@ func _emit_melee_effect() -> void:
 	var direction = (player.global_position - enemy.global_position).normalized()
 	var slash_pos = enemy.global_position + direction * 25
 	
-	# Crear visual de slash
+	# Crear visual de slash - INDEPENDIENTE del enemigo
 	var slash = Node2D.new()
 	slash.name = "MeleeSlash"
+	slash.top_level = true  # No se mueve con el padre
+	slash.z_index = 50  # Visible encima de otros elementos
 	slash.global_position = slash_pos
 	slash.rotation = direction.angle()
 	
@@ -1818,13 +1830,13 @@ func _emit_melee_effect() -> void:
 			visual.draw_circle(spark_pos, spark_size, Color(1, 1, 0.8, 0.7 * (1.0 - anim_progress)))
 	)
 	
-	# Animación rápida
+	# Animación más larga para ser visible
 	var tween = create_tween()
 	tween.tween_method(func(val):
 		anim_progress = val
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.15)
+	, 0.0, 1.0, 0.35)
 	
 	tween.tween_callback(func():
 		if is_instance_valid(slash):
@@ -1895,25 +1907,27 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	
 	var orb = Node2D.new()  # Usar Node2D simple, colisión por distancia
 	orb.name = "HomingOrb"
+	orb.top_level = true  # No se mueve con el enemigo si este muere
 	orb.global_position = pos
-	orb.z_index = 10
+	orb.z_index = 60  # MUY visible, encima de casi todo
 	
-	# Visual mejorado
+	# Visual mejorado - MÁS GRANDE Y BRILLANTE
 	var visual = Node2D.new()
 	orb.add_child(visual)
 	var color = _get_element_color(element)
 	var orb_time = 0.0
 	
 	visual.draw.connect(func():
-		var pulse = 1.0 + sin(orb_time * 6) * 0.15
-		# Glow exterior
-		visual.draw_circle(Vector2.ZERO, 16 * pulse, Color(color.r, color.g, color.b, 0.2))
-		# Cuerpo principal
-		visual.draw_circle(Vector2.ZERO, 12 * pulse, color)
+		var pulse = 1.0 + sin(orb_time * 6) * 0.2
+		# Glow exterior grande
+		visual.draw_circle(Vector2.ZERO, 24 * pulse, Color(color.r, color.g, color.b, 0.3))
+		visual.draw_circle(Vector2.ZERO, 20 * pulse, Color(color.r, color.g, color.b, 0.4))
+		# Cuerpo principal más grande
+		visual.draw_circle(Vector2.ZERO, 16 * pulse, color)
 		# Núcleo brillante
-		visual.draw_circle(Vector2.ZERO, 7 * pulse, Color(color.r + 0.3, color.g + 0.3, color.b + 0.3, 0.9).clamp())
-		# Centro blanco
-		visual.draw_circle(Vector2.ZERO, 3, Color(1, 1, 1, 0.9))
+		visual.draw_circle(Vector2.ZERO, 10 * pulse, Color(color.r + 0.3, color.g + 0.3, color.b + 0.3, 0.95).clamp())
+		# Centro blanco brillante
+		visual.draw_circle(Vector2.ZERO, 5, Color(1, 1, 1, 0.95))
 	)
 	visual.queue_redraw()
 	
@@ -2112,6 +2126,8 @@ func _spawn_summon_visual() -> void:
 		return
 	
 	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 50
 	effect.global_position = enemy.global_position
 	
 	var parent = enemy.get_parent()
@@ -2149,6 +2165,8 @@ func _spawn_summon_visual() -> void:
 func _spawn_teleport_effect(pos: Vector2, is_arrival: bool) -> void:
 	"""Efecto de teleport"""
 	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 50
 	effect.global_position = pos
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -2187,6 +2205,8 @@ func _spawn_teleport_effect(pos: Vector2, is_arrival: bool) -> void:
 func _spawn_arcane_nova_visual(center: Vector2, radius: float) -> void:
 	"""Visual de nova arcana"""
 	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 50
 	effect.global_position = center
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -2222,6 +2242,8 @@ func _spawn_arcane_nova_visual(center: Vector2, radius: float) -> void:
 func _spawn_curse_aura_visual(center: Vector2, radius: float) -> void:
 	"""Visual de aura de maldición"""
 	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 50
 	effect.global_position = center
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -2260,6 +2282,8 @@ func _spawn_curse_aura_visual(center: Vector2, radius: float) -> void:
 func _spawn_void_pull_visual(center: Vector2, radius: float) -> void:
 	"""Visual de void pull - espiral hacia el centro"""
 	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 50
 	effect.global_position = center
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -2303,6 +2327,8 @@ func _spawn_void_pull_visual(center: Vector2, radius: float) -> void:
 func _spawn_void_beam_visual(origin: Vector2, direction: Vector2, length: float, duration: float) -> void:
 	"""Visual de void beam"""
 	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 50
 	effect.global_position = origin
 	effect.rotation = direction.angle()
 	
@@ -2383,6 +2409,8 @@ func _spawn_rune_shield_visual() -> void:
 func _spawn_rune_prison_visual(pos: Vector2, duration: float) -> void:
 	"""Visual de prisión de runas"""
 	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 55  # Encima del jugador
 	effect.global_position = pos
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -2460,6 +2488,8 @@ func _spawn_counter_stance_visual() -> void:
 func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
 	"""Visual de golpe de tierra"""
 	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 50
 	effect.global_position = center
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -2502,6 +2532,8 @@ func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
 func _spawn_charge_warning_visual(pos: Vector2, direction: Vector2) -> void:
 	"""Visual de advertencia de carga"""
 	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 55  # Muy visible - es advertencia
 	effect.global_position = pos
 	effect.rotation = direction.angle()
 	
@@ -2548,6 +2580,8 @@ func _spawn_flame_breath_visual(origin: Vector2, direction: Vector2, range_dist:
 func _spawn_meteor_warning(pos: Vector2, radius: float, delay: float) -> void:
 	"""Visual de advertencia de meteoro"""
 	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 55  # Muy visible - es advertencia
 	effect.global_position = pos
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -2635,6 +2669,8 @@ func _spawn_enrage_visual() -> void:
 		return
 	
 	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 55
 	effect.global_position = enemy.global_position
 	
 	var parent = enemy.get_parent()

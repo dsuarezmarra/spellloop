@@ -396,13 +396,30 @@ func _resume_saved_game() -> void:
 	# Restaurar stats del jugador
 	if player_stats and _saved_state.has("player_stats"):
 		var saved_stats = _saved_state.get("player_stats", {})
-		for stat_name in saved_stats:
-			if player_stats.has_method("set_stat"):
-				player_stats.set_stat(stat_name, saved_stats[stat_name])
-			elif "stats" in player_stats and stat_name in player_stats.stats:
-				player_stats.stats[stat_name] = saved_stats[stat_name]
 		
-		# Restaurar nivel
+		# Usar from_dict() si está disponible (método preferido)
+		if player_stats.has_method("from_dict"):
+			player_stats.from_dict(saved_stats)
+			print("🎒 [Game] PlayerStats restaurado via from_dict()")
+		else:
+			# Fallback: restaurar manualmente
+			# Restaurar historial de mejoras PRIMERO
+			if saved_stats.has("collected_upgrades") and "collected_upgrades" in player_stats:
+				player_stats.collected_upgrades = saved_stats.get("collected_upgrades", []).duplicate(true)
+				print("🎒 [Game] Mejoras coleccionadas restauradas: %d items" % player_stats.collected_upgrades.size())
+			
+			# Restaurar stats desde el sub-diccionario "stats" si existe
+			var actual_stats = saved_stats.get("stats", saved_stats)
+			for stat_name in actual_stats:
+				var value = actual_stats[stat_name]
+				# Solo procesar valores numéricos
+				if typeof(value) in [TYPE_INT, TYPE_FLOAT]:
+					if player_stats.has_method("set_stat"):
+						player_stats.set_stat(stat_name, value)
+					elif "stats" in player_stats and stat_name in player_stats.stats:
+						player_stats.stats[stat_name] = value
+		
+		# Restaurar nivel (siempre, desde el estado principal)
 		if "level" in player_stats:
 			player_stats.level = _saved_state.get("player_level", 1)
 	

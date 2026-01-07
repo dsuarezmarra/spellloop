@@ -34,7 +34,7 @@ const TIER_SCALING = {
 	2: {"hp": 2.5, "damage": 1.8, "speed": 1.1, "xp": 3.0},
 	3: {"hp": 5.0, "damage": 3.0, "speed": 1.2, "xp": 7.0},
 	4: {"hp": 10.0, "damage": 5.0, "speed": 1.3, "xp": 15.0},
-	5: {"hp": 30.0, "damage": 8.0, "speed": 0.9, "xp": 75.0}  # Bosses
+	5: {"hp": 30.0, "damage": 2.5, "speed": 0.9, "xp": 75.0}  # Bosses - daño reducido para no matar de un golpe
 }
 
 # Escalado exponencial post-minuto 20 (cada 5 minutos)
@@ -451,7 +451,7 @@ const TIER_4_ENEMIES = {
 		"tier": 4,
 		"archetype": "aoe",
 		"base_hp": 130,
-		"base_damage": 35,
+		"base_damage": 18,
 		"base_speed": 32.0,
 		"base_xp": 16,
 		"attack_range": 220.0,
@@ -529,7 +529,7 @@ const BOSSES = {
 		"tier": 5,
 		"archetype": "boss",
 		"base_hp": 800,
-		"base_damage": 35,
+		"base_damage": 15,
 		"base_speed": 30.0,
 		"base_xp": 100,
 		"attack_range": 280.0,
@@ -578,7 +578,7 @@ const BOSSES = {
 		"tier": 5,
 		"archetype": "boss",
 		"base_hp": 800,
-		"base_damage": 35,
+		"base_damage": 15,
 		"base_speed": 18.0,
 		"base_xp": 100,
 		"attack_range": 250.0,
@@ -634,7 +634,7 @@ const BOSSES = {
 		"tier": 5,
 		"archetype": "boss",
 		"base_hp": 800,
-		"base_damage": 35,
+		"base_damage": 15,
 		"base_speed": 25.0,
 		"base_xp": 100,
 		"attack_range": 200.0,
@@ -686,7 +686,7 @@ const BOSSES = {
 		"tier": 5,
 		"archetype": "boss",
 		"base_hp": 800,
-		"base_damage": 35,
+		"base_damage": 15,
 		"base_speed": 35.0,
 		"base_xp": 100,
 		"attack_range": 65.0,

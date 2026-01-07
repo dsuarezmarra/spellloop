@@ -1049,7 +1049,8 @@ func to_dict() -> Dictionary:
 		"current_health": current_health,
 		"level": level,
 		"current_xp": current_xp,
-		"xp_to_next_level": xp_to_next_level
+		"xp_to_next_level": xp_to_next_level,
+		"collected_upgrades": collected_upgrades.duplicate(true)  # Historial de mejoras para pestaña Objetos
 	}
 
 func from_dict(data: Dictionary) -> void:
@@ -1064,6 +1065,8 @@ func from_dict(data: Dictionary) -> void:
 		current_xp = data.current_xp
 	if data.has("xp_to_next_level"):
 		xp_to_next_level = data.xp_to_next_level
+	if data.has("collected_upgrades"):
+		collected_upgrades = data.collected_upgrades.duplicate(true)
 
 	_sync_with_attack_manager()
 
