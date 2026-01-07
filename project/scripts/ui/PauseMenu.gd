@@ -606,14 +606,20 @@ const DEFAULT_STAT_METADATA = {
 	"luck": {"name": "Suerte", "icon": "?", "description": "Afecta drops y criticos"}
 }
 
-# Valores base para stats - ACTUALIZADO v2.0
+# Valores base para stats - ACTUALIZADO v3.0
 const DEFAULT_STAT_VALUES = {
-	# Jugador
+	# Jugador - Defensivos
 	"max_health": 100.0,
 	"health_regen": 0.0,
 	"armor": 0.0,
 	"dodge_chance": 0.0,
 	"life_steal": 0.0,
+	"damage_taken_mult": 1.0,
+	"thorns": 0.0,
+	"thorns_percent": 0.0,
+	"shield_amount": 0.0,
+	"shield_regen": 0.0,
+	"revives": 0.0,
 	# Armas globales
 	"damage_mult": 1.0,
 	"attack_speed_mult": 1.0,
@@ -631,7 +637,14 @@ const DEFAULT_STAT_VALUES = {
 	"pickup_range": 1.0,
 	"xp_mult": 1.0,
 	"coin_value_mult": 1.0,
-	"luck": 0.0
+	"luck": 0.0,
+	"gold_mult": 1.0,
+	"reroll_count": 0.0,
+	"banish_count": 0.0,
+	"curse": 0.0,
+	"growth": 0.0,
+	"magnet_strength": 1.0,
+	"levelup_options": 0.0
 }
 
 func _get_stat_metadata_fallback(stat_name: String) -> Dictionary:
@@ -647,7 +660,7 @@ func _get_stat_base_value(stat_name: String) -> float:
 	return 0.0
 
 func _get_stats_for_category(category: String) -> Array:
-	"""Obtener stats de una categoría - ACTUALIZADO v2.0"""
+	"""Obtener stats de una categoría - ACTUALIZADO v3.0"""
 	if player_stats and player_stats.has_method("get_stats_by_category"):
 		return player_stats.get_stats_by_category(category)
 
@@ -656,7 +669,9 @@ func _get_stats_for_category(category: String) -> Array:
 	# Los críticos (crit_chance, crit_damage) también son de armas y se muestran en el popup
 	match category:
 		"defensive":
-			return ["max_health", "health_regen", "armor", "dodge_chance", "life_steal"]
+			return ["max_health", "health_regen", "armor", "dodge_chance", "life_steal", 
+			        "damage_taken_mult", "thorns", "thorns_percent", "shield_amount", 
+			        "shield_regen", "revives"]
 		"offensive":
 			# NOTA: Los stats ofensivos de armas ahora se muestran en el popup de cada arma
 			# Aquí solo se mostrarían stats ofensivos del JUGADOR (ninguno actualmente)
@@ -666,66 +681,107 @@ func _get_stats_for_category(category: String) -> Array:
 			# Se muestran en el popup de cada arma, no aquí
 			return []
 		"utility":
-			return ["move_speed", "pickup_range", "xp_mult", "coin_value_mult", "luck"]
+			return ["move_speed", "pickup_range", "xp_mult", "coin_value_mult", "luck",
+			        "gold_mult", "reroll_count", "banish_count", "curse", "growth",
+			        "magnet_strength", "levelup_options"]
 	return []
 
 func _format_stat_value_fallback(stat_name: String, value: float) -> String:
-	"""Formatear valor cuando no hay PlayerStats - ACTUALIZADO v2.0"""
-	if stat_name in ["crit_chance", "dodge_chance", "life_steal"]:
+	"""Formatear valor cuando no hay PlayerStats - ACTUALIZADO v3.0"""
+	# Stats porcentuales (0.0 - 1.0 → 0% - 100%)
+	if stat_name in ["crit_chance", "dodge_chance", "life_steal", "thorns_percent", "curse", "growth"]:
 		return "%.0f%%" % (value * 100)
-	elif stat_name in ["damage_mult", "attack_speed_mult", "area_mult", "move_speed", "pickup_range", "xp_mult", "coin_value_mult", "crit_damage", "projectile_speed_mult", "duration_mult", "knockback_mult"]:
-		# attack_speed_mult: >1 es mejor (más ataques/segundo)
+	
+	# Stats multiplicadores (base 1.0)
+	if stat_name in ["damage_mult", "attack_speed_mult", "area_mult", "move_speed", "pickup_range", 
+	                  "xp_mult", "coin_value_mult", "crit_damage", "projectile_speed_mult", 
+	                  "duration_mult", "knockback_mult", "damage_taken_mult", "gold_mult", "magnet_strength"]:
 		if value >= 1.0:
 			return "+%.0f%%" % ((value - 1.0) * 100)
 		else:
 			return "%.0f%%" % ((value - 1.0) * 100)
-	elif stat_name == "cooldown_mult":
-		# Legacy: convertir a attack_speed para mostrar
+	
+	# Cooldown legacy
+	if stat_name == "cooldown_mult":
 		var attack_speed = 1.0 / value if value > 0 else 1.0
 		if attack_speed >= 1.0:
 			return "+%.0f%%" % ((attack_speed - 1.0) * 100)
 		else:
 			return "%.0f%%" % ((attack_speed - 1.0) * 100)
-	elif stat_name == "extra_projectiles":
-		return "+%d" % int(value)
-	else:
-		if value == int(value):
-			return "%d" % int(value)
-		return "%.1f" % value
+	
+	# Stats enteros
+	if stat_name in ["extra_projectiles", "thorns", "revives", "reroll_count", "banish_count", "levelup_options"]:
+		return "+%d" % int(value) if value > 0 else "%d" % int(value)
+	
+	# Stats con decimales especiales (por segundo)
+	if stat_name in ["health_regen", "shield_regen"]:
+		return "%.1f/s" % value
+	
+	# Default
+	if value == int(value):
+		return "%d" % int(value)
+	return "%.1f" % value
 
 func _get_value_color(stat_name: String, value: float) -> Color:
-	"""Obtener color según el valor del stat - ACTUALIZADO v2.0"""
-	# Para cooldown_mult legacy, convertir a attack_speed
+	"""Obtener color según el valor del stat - ACTUALIZADO v3.0
+	
+	Sistema de colores:
+	- Verde: El stat está MEJOR que el valor base (buff)
+	- Rojo: El stat está PEOR que el valor base (debuff)
+	- Gris: El stat está en su valor base (neutral)
+	
+	Stats especiales donde MENOS es MEJOR:
+	- damage_taken_mult: menor = menos daño recibido
+	- curse: mayor es peor (más dificultad)
+	"""
+	const COLOR_BUFF = Color(0.3, 1.0, 0.4)    # Verde - mejora
+	const COLOR_DEBUFF = Color(1.0, 0.4, 0.3)  # Rojo - empeora
+	const COLOR_NEUTRAL = Color(0.8, 0.8, 0.8) # Gris - base
+	
+	# === STATS DONDE MENOS ES MEJOR ===
+	var less_is_better = ["damage_taken_mult", "curse"]
+	
+	# === STATS DONDE MÁS ES PEOR (pero se muestran como positivos) ===
+	# curse es especial: más curse = más dificultad = malo
+	if stat_name == "curse":
+		if value > 0.0:
+			return COLOR_DEBUFF  # Rojo porque curse es malo
+		return COLOR_NEUTRAL
+	
+	# === STATS DE DAÑO RECIBIDO ===
+	if stat_name == "damage_taken_mult":
+		if value < 1.0:
+			return COLOR_BUFF  # Verde - recibes menos daño
+		elif value > 1.0:
+			return COLOR_DEBUFF  # Rojo - recibes más daño
+		return COLOR_NEUTRAL
+	
+	# === COOLDOWN (legacy) ===
 	if stat_name == "cooldown_mult":
 		var attack_speed = 1.0 / value if value > 0 else 1.0
 		if attack_speed > 1.0:
-			return Color(0.3, 1.0, 0.4)  # Verde si más rápido
+			return COLOR_BUFF  # Verde si más rápido
 		elif attack_speed < 1.0:
-			return Color(1.0, 0.4, 0.3)  # Rojo si más lento
-		return Color(0.8, 0.8, 0.8)
+			return COLOR_DEBUFF  # Rojo si más lento
+		return COLOR_NEUTRAL
 	
-	# Para attack_speed_mult, más es mejor
-	if stat_name == "attack_speed_mult":
+	# === OBTENER VALOR BASE DEL STAT ===
+	var base_value = _get_stat_base_value(stat_name)
+	
+	# === STATS CON MULTIPLICADOR (base 1.0) ===
+	if stat_name.ends_with("_mult"):
 		if value > 1.0:
-			return Color(0.3, 1.0, 0.4)  # Verde
+			return COLOR_BUFF
 		elif value < 1.0:
-			return Color(1.0, 0.4, 0.3)  # Rojo
-		return Color(0.8, 0.8, 0.8)
-
-	# Para el resto, más es mejor
-	var base_value = 1.0 if stat_name.ends_with("_mult") else 0.0
-	if stat_name == "crit_chance":
-		base_value = 0.05
-	elif stat_name == "crit_damage":
-		base_value = 2.0
-	elif stat_name == "max_health":
-		base_value = 100.0
-
+			return COLOR_DEBUFF
+		return COLOR_NEUTRAL
+	
+	# === STATS NORMALES (más es mejor) ===
 	if value > base_value:
-		return Color(0.3, 1.0, 0.4)  # Verde
+		return COLOR_BUFF
 	elif value < base_value:
-		return Color(1.0, 0.4, 0.3)  # Rojo
-	return Color(0.8, 0.8, 0.8)  # Gris neutro
+		return COLOR_DEBUFF
+	return COLOR_NEUTRAL
 
 func _create_active_buffs_section(parent: VBoxContainer) -> void:
 	"""Crear sección de buffs/debuffs activos"""

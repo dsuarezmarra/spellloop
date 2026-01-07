@@ -1143,9 +1143,9 @@ func _attempt_attack() -> void:
 	# Determinar elemento del ataque
 	var attack_element = _determine_element_from_id(enemy_id)
 
-	# Aplicar daño al jugador
+	# Aplicar daño al jugador (pasando self para thorns)
 	if player_ref.has_method("take_damage"):
-		player_ref.take_damage(final_damage, attack_element)
+		player_ref.take_damage(final_damage, attack_element, self)
 		# print("[EnemyBase] ⚔️ %s ataca al jugador: %d daño (%s)" % [enemy_id, final_damage, attack_element])
 
 		# Efecto visual de ataque en el enemigo

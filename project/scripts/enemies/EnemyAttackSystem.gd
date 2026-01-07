@@ -305,7 +305,7 @@ func _perform_elite_slam() -> void:
 	var dist = enemy.global_position.distance_to(player.global_position)
 	if dist <= slam_radius:
 		if player.has_method("take_damage"):
-			player.take_damage(slam_damage)
+			player.take_damage(slam_damage, "physical", enemy)
 			attacked_player.emit(slam_damage, false)
 		if player.has_method("apply_stun"):
 			player.apply_stun(0.4)
@@ -570,7 +570,7 @@ func _perform_elite_dash() -> void:
 				if dist < 60:  # Impactó
 					if player.has_method("take_damage"):
 						var elem = _get_enemy_element()
-						player.call("take_damage", dash_damage, elem)
+						player.call("take_damage", dash_damage, elem, enemy)
 						attacked_player.emit(dash_damage, true)
 						print("[Elite] 👑💨 %s DASH IMPACTO! %d daño" % [enemy.name, dash_damage])
 					if player.has_method("apply_knockback"):
@@ -890,7 +890,8 @@ func _perform_melee_attack() -> void:
 		return
 	
 	var elem = _get_enemy_element()
-	player.call("take_damage", attack_damage, elem)
+	# Pasar referencia del enemigo para sistema de thorns
+	player.call("take_damage", attack_damage, elem, enemy)
 	print("[EnemyAttackSystem] ⚔️ %s atacó melee a player por %d daño (%s)" % [enemy.name, attack_damage, elem])
 	
 	# Aplicar efectos según arquetipo y elemento
@@ -1073,7 +1074,7 @@ func _perform_breath_attack() -> void:
 	
 	if dist <= cone_range and abs(angle_to_player) <= cone_angle / 2:
 		if player.has_method("take_damage"):
-			player.take_damage(breath_damage)
+			player.take_damage(breath_damage, "fire", enemy)
 			print("[EnemyAttackSystem] 🐉 %s Breath hit player por %d daño" % [enemy.name, breath_damage])
 			attacked_player.emit(breath_damage, false)
 			# Aplicar efectos de breath

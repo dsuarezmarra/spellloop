@@ -491,8 +491,8 @@ func _draw_down_arrow(pos: Vector2, col: Color) -> void:
 
 var _last_damage_element: String = "physical"
 
-func take_damage(amount: int, element: String = "physical") -> void:
-	"""Recibir daño (aplica dodge, armor y weakness)"""
+func take_damage(amount: int, element: String = "physical", attacker: Node = null) -> void:
+	"""Recibir daño (aplica dodge, armor, weakness y thorns)"""
 	_last_damage_element = element
 	if not health_component:
 		print("[%s] ⚠️ HealthComponent no disponible" % character_class)
@@ -502,7 +502,7 @@ func take_damage(amount: int, element: String = "physical") -> void:
 	if not health_component.is_alive:
 		return
 	
-	# Obtener PlayerStats para dodge y armor
+	# Obtener PlayerStats para dodge, armor y thorns
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	
 	# 1. Verificar esquiva (dodge) primero
@@ -524,12 +524,22 @@ func take_damage(amount: int, element: String = "physical") -> void:
 	if effective_armor > 0:
 		final_damage = maxi(1, amount - int(effective_armor))  # Mínimo 1 de daño
 	
-	# 3. Aplicar weakness si está activo (multiplicador de daño recibido)
+	# 3. Aplicar damage_taken_mult si existe
+	if player_stats and player_stats.has_method("get_stat"):
+		var damage_taken_mult = player_stats.get_stat("damage_taken_mult")
+		if damage_taken_mult != 1.0:
+			final_damage = int(final_damage * damage_taken_mult)
+	
+	# 4. Aplicar weakness si está activo (multiplicador de daño recibido)
 	if _is_weakened:
 		final_damage = int(final_damage * (1.0 + _weakness_amount))
 	
 	# Aplicar daño al HealthComponent
 	health_component.take_damage(final_damage)
+	
+	# 5. THORNS - Reflejar daño al atacante
+	if attacker and is_instance_valid(attacker) and player_stats:
+		_apply_thorns_damage(attacker, amount, player_stats)
 	
 	# Emitir señal para feedback visual (screen shake, vignette, etc.)
 	player_took_damage.emit(final_damage, element)
@@ -542,6 +552,26 @@ func take_damage(amount: int, element: String = "physical") -> void:
 	
 	var armor_text = " [ARMOR: -%d]" % (amount - final_damage) if effective_armor > 0 and amount > final_damage else ""
 	print("[%s] 💥 Daño recibido: %d → %d (%s) (HP: %d/%d)%s%s" % [character_class, amount, final_damage, element, health_component.current_health, max_hp, " [WEAKENED]" if _is_weakened else "", armor_text])
+
+func _apply_thorns_damage(attacker: Node, damage_received: int, player_stats: Node) -> void:
+	"""Aplicar daño de espinas al atacante"""
+	var thorns_flat = player_stats.get_stat("thorns") if player_stats.has_method("get_stat") else 0.0
+	var thorns_percent = player_stats.get_stat("thorns_percent") if player_stats.has_method("get_stat") else 0.0
+	
+	# Calcular daño total de espinas
+	var thorns_damage = int(thorns_flat + (damage_received * thorns_percent))
+	
+	if thorns_damage <= 0:
+		return
+	
+	# Aplicar daño al atacante
+	if attacker.has_method("take_damage"):
+		attacker.take_damage(thorns_damage)
+		print("[%s] 🌵 THORNS: Reflejado %d daño a %s" % [character_class, thorns_damage, attacker.name])
+		
+		# Mostrar texto flotante sobre el enemigo
+		if "global_position" in attacker:
+			FloatingText.spawn_damage(attacker.global_position + Vector2(0, -20), thorns_damage, false, "thorns")
 
 func _play_damage_flash(element: String) -> void:
 	"""Flash de daño según el elemento"""
