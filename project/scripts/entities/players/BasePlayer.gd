@@ -8,6 +8,7 @@ class_name BasePlayer
 
 # ========== SEÑALES ==========
 signal player_damaged(amount: int, current_hp: int)
+signal player_took_damage(damage: int, element: String)  # Para efectos de feedback visual
 signal player_died
 signal weapon_equipped(weapon)
 signal weapon_unequipped(weapon)
@@ -529,6 +530,9 @@ func take_damage(amount: int, element: String = "physical") -> void:
 	
 	# Aplicar daño al HealthComponent
 	health_component.take_damage(final_damage)
+	
+	# Emitir señal para feedback visual (screen shake, vignette, etc.)
+	player_took_damage.emit(final_damage, element)
 	
 	# Mostrar texto flotante de daño sobre el player
 	FloatingText.spawn_player_damage(global_position + Vector2(0, -35), final_damage, element)

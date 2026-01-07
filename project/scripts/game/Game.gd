@@ -25,6 +25,7 @@ var wave_manager: Node = null
 var hud: CanvasLayer = null
 var pause_menu: Control = null
 var game_over_screen: Control = null
+var damage_vignette: CanvasLayer = null  # Efecto de daño estilo Binding of Isaac
 
 # Estado del juego
 var game_running: bool = false
@@ -279,6 +280,67 @@ func _setup_camera() -> void:
 		camera.position_smoothing_enabled = true
 		camera.position_smoothing_speed = 5.0
 		print("📷 [Game] Cámara configurada")
+	
+	# Crear sistema de feedback de daño (vignette + partículas en bordes)
+	_setup_damage_feedback()
+
+func _setup_damage_feedback() -> void:
+	"""Configurar el sistema de feedback visual de daño estilo Binding of Isaac"""
+	# Cargar y crear DamageVignette
+	var DamageVignetteScript = load("res://scripts/ui/DamageVignette.gd")
+	if DamageVignetteScript:
+		damage_vignette = DamageVignetteScript.new()
+		damage_vignette.name = "DamageVignette"
+		add_child(damage_vignette)
+		print("🎨 [Game] DamageVignette creado")
+	
+	# Conectar señal de daño del player
+	if player:
+		# Buscar el BasePlayer dentro de SpellloopPlayer
+		var base_player = _get_base_player()
+		if base_player and base_player.has_signal("player_took_damage"):
+			base_player.player_took_damage.connect(_on_player_took_damage)
+			print("🔗 [Game] Conectado player_took_damage para feedback visual")
+
+func _get_base_player() -> Node:
+	"""Obtener referencia al BasePlayer (puede estar dentro de SpellloopPlayer)"""
+	if player:
+		# Si es SpellloopPlayer, el wizard_player es el BasePlayer
+		if "wizard_player" in player and player.wizard_player:
+			return player.wizard_player
+		# Si ya es BasePlayer
+		if player.has_signal("player_took_damage"):
+			return player
+	return null
+
+func _on_player_took_damage(damage: int, element: String) -> void:
+	"""Callback cuando el player recibe daño - activa feedback visual"""
+	# Screen shake
+	if camera and camera.has_method("damage_shake"):
+		camera.damage_shake(damage)
+	elif camera:
+		# Shake manual si no es GameCamera
+		_manual_camera_shake(damage)
+	
+	# Vignette y partículas
+	if damage_vignette and damage_vignette.has_method("show_damage_effect"):
+		damage_vignette.show_damage_effect(damage, element)
+
+func _manual_camera_shake(damage: int) -> void:
+	"""Screen shake manual para Camera2D estándar"""
+	var intensity = clampf(float(damage) / 30.0, 0.15, 0.6)
+	var shake_offset = Vector2(
+		randf_range(-12, 12) * intensity,
+		randf_range(-12, 12) * intensity
+	)
+	
+	var original_offset = camera.offset
+	camera.offset = shake_offset
+	
+	# Crear tween para restaurar
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(camera, "offset", original_offset, 0.2)
 
 func _physics_process(_delta: float) -> void:
 	# La cámara sigue al player

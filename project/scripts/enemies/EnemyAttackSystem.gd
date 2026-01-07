@@ -342,7 +342,8 @@ func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
 		visual.draw_arc(Vector2.ZERO, expand, 0, TAU, 64, Color(1, 1, 1, 0.7 * (1.0 - anim)), 4.0)
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
@@ -405,7 +406,8 @@ func _spawn_elite_rage_visual() -> void:
 		visual.draw_line(Vector2(rage_size * 0.5, -rage_size * 0.5), Vector2(-rage_size * 0.5, rage_size * 0.5), Color(1, 1, 0.5, (1.0 - anim)), 4.0)
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
@@ -1659,7 +1661,8 @@ func _spawn_boss_impact_effect() -> void:
 		visual.draw_line(Vector2(0, -cross_size), Vector2(0, cross_size), Color(1, 1, 1, cross_alpha), 3.0)
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(val):
 		anim_progress = val
 		if is_instance_valid(visual):
@@ -1751,7 +1754,8 @@ func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 			visual.draw_circle(Vector2.ZERO, core_size * 0.5, Color(0.3, 0, 0.5, 0.8))
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(val):
 		anim_progress = val
 		if is_instance_valid(visual):
@@ -1847,7 +1851,8 @@ func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 		visual.draw_circle(Vector2.ZERO, core_size, Color(1, 1, 0.9, 0.9 * (1.0 - anim_progress)))
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(val):
 		anim_progress = val
 		if is_instance_valid(visual):
@@ -1938,7 +1943,8 @@ func _spawn_fire_stomp_visual(center: Vector2, radius: float) -> void:
 		visual.draw_arc(Vector2.ZERO, expand, 0, TAU, 64, Color(1, 0.5, 0.1, 0.5 * (1.0 - anim_progress)), 4.0)
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(val):
 		anim_progress = val
 		if is_instance_valid(visual):
@@ -2091,7 +2097,8 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 	)
 	
 	# Animación de expansión - MÁS LARGA para ser muy visible
-	var tween = create_tween()
+	# IMPORTANTE: Usar container.create_tween() para que el tween se limpie con el nodo
+	var tween = container.create_tween()
 	tween.tween_method(func(val):
 		anim_progress = val
 		if is_instance_valid(visual):
@@ -2207,7 +2214,8 @@ func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float
 	)
 	
 	# Animación de expansión - MÁS LARGA
-	var tween = create_tween()
+	# IMPORTANTE: Usar container.create_tween() para que el tween se limpie con el nodo
+	var tween = container.create_tween()
 	tween.tween_method(func(val):
 		anim_progress = val
 		if is_instance_valid(visual):
@@ -2312,7 +2320,8 @@ func _emit_melee_effect() -> void:
 	)
 	
 	# Animación MÁS LARGA para ser visible
-	var tween = create_tween()
+	# IMPORTANTE: Usar slash.create_tween() para que el tween se limpie con el nodo
+	var tween = slash.create_tween()
 	tween.tween_method(func(val):
 		anim_progress = val
 		if is_instance_valid(visual):
@@ -2671,7 +2680,8 @@ func _spawn_phase_change_effect() -> void:
 			visual.draw_circle(p_pos, 6 * (1.0 - anim * 0.5), Color(1, 0.8, 0.2, (1.0 - anim) * 0.9))
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
@@ -2713,7 +2723,8 @@ func _spawn_summon_visual() -> void:
 			visual.draw_line(p1, p2, Color(0.8, 0.2, 1, 0.7 * (1.0 - anim)), 2.0)
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
@@ -2753,7 +2764,8 @@ func _spawn_teleport_effect(pos: Vector2, is_arrival: bool) -> void:
 			visual.draw_circle(Vector2.ZERO, r, Color(color.r, color.g, color.b, 0.5 * anim))
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
@@ -2790,7 +2802,8 @@ func _spawn_arcane_nova_visual(center: Vector2, radius: float) -> void:
 			visual.draw_arc(Vector2.ZERO, layer_r, 0, TAU, 32, Color(0.9, 0.5, 1, a), 2.0)
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
@@ -2830,7 +2843,8 @@ func _spawn_curse_aura_visual(center: Vector2, radius: float) -> void:
 			visual.draw_circle(pos, 5, Color(0.5, 0, 0.5, 0.8 * (1.0 - anim)))
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
@@ -2875,7 +2889,8 @@ func _spawn_void_pull_visual(center: Vector2, radius: float) -> void:
 		visual.draw_circle(Vector2.ZERO, 20 * (1.0 + anim * 0.5), Color(0.1, 0, 0.2, 0.8 * (1.0 - anim * 0.5)))
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
@@ -2912,7 +2927,8 @@ func _spawn_void_beam_visual(origin: Vector2, direction: Vector2, length: float,
 		visual.draw_rect(Rect2(0, -width/4, length, width/2), Color(0.8, 0.5, 1, 0.9))
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
@@ -2999,7 +3015,8 @@ func _spawn_rune_prison_visual(pos: Vector2, duration: float) -> void:
 		visual.draw_arc(Vector2(0, 30), radius, 0, TAU, 16, Color(1, 0.9, 0.3, 0.7), 2.0)
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
@@ -3129,7 +3146,8 @@ func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
 		visual.draw_circle(Vector2.ZERO, crater_size, Color(0.2, 0.12, 0.05, (1.0 - anim) * 0.8))
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
@@ -3173,7 +3191,8 @@ func _spawn_charge_warning_visual(pos: Vector2, direction: Vector2) -> void:
 		visual.draw_colored_polygon(points, color)
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
@@ -3212,7 +3231,8 @@ func _spawn_meteor_warning(pos: Vector2, radius: float, delay: float) -> void:
 		visual.draw_arc(Vector2.ZERO, radius, 0, TAU, 32, Color(1, 0.5, 0, 0.5 + flash * 0.4), 2.0)
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
@@ -3263,7 +3283,8 @@ func _spawn_meteor_impact(pos: Vector2, radius: float, damage: int) -> void:
 		visual.draw_circle(Vector2.ZERO, r * 0.3, Color(1, 1, 0.5, (1.0 - anim) * 0.9))
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
@@ -3309,7 +3330,8 @@ func _spawn_enrage_visual() -> void:
 			visual.draw_circle(pos, size, Color(1, 0.5, 0, 0.8 * (1.0 - anim * 0.5)))
 	)
 	
-	var tween = create_tween()
+	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
+	var tween = effect.create_tween()
 	tween.tween_method(func(v):
 		anim = v
 		if is_instance_valid(visual):
