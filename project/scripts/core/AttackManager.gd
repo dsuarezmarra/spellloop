@@ -138,7 +138,7 @@ func _ready() -> void:
 	global_weapon_stats = GlobalWeaponStats.new()
 	global_weapon_stats.global_stat_changed.connect(_on_global_stats_changed)
 
-	print("[AttackManager] Inicializado con sistema de fusiones y GlobalWeaponStats")
+	# Debug desactivado: print("[AttackManager] Inicializado con sistema de fusiones y GlobalWeaponStats")
 
 func _on_global_stats_changed(stat_name: String, _old_value: float, _new_value: float) -> void:
 	"""Callback cuando cambian los stats globales"""
@@ -147,8 +147,8 @@ func _on_global_stats_changed(stat_name: String, _old_value: float, _new_value: 
 func initialize(player_ref: CharacterBody2D) -> void:
 	"""Inicializar con referencia al jugador"""
 	player = player_ref
-	print("[AttackManager] Inicializado para player: %s" % player.name)
-	print("[AttackManager] Slots disponibles: %d/%d" % [current_weapon_count, max_weapon_slots])
+	# Debug desactivado: print("[AttackManager] Inicializado para player: %s" % player.name)
+	# Debug desactivado: print("[AttackManager] Slots disponibles: %d/%d" % [current_weapon_count, max_weapon_slots])
 
 	# Iniciar actualización de cooldowns
 	set_process(true)
@@ -169,7 +169,7 @@ func add_weapon(weapon) -> bool:
 
 	# Verificar si hay slots disponibles
 	if not has_available_slot:
-		print("[AttackManager] ⚠️ No hay slots disponibles (%d/%d)" % [current_weapon_count, max_weapon_slots])
+		# Debug desactivado: print("[AttackManager] ⚠️ No hay slots disponibles (%d/%d)" % [current_weapon_count, max_weapon_slots])
 		return false
 
 	# Obtener ID del arma (compatible con ambos sistemas)
@@ -179,7 +179,7 @@ func add_weapon(weapon) -> bool:
 	# Verificar si ya tenemos esta arma
 	for existing in weapons:
 		if _get_weapon_id(existing) == weapon_id:
-			print("[AttackManager] ℹ️ Ya tienes %s, subiendo de nivel..." % weapon_display_name)
+			# Debug desactivado: print("[AttackManager] ℹ️ Ya tienes %s, subiendo de nivel..." % weapon_display_name)
 			return level_up_weapon_by_id(weapon_id)
 
 	# Añadir a la lista
@@ -193,9 +193,9 @@ func add_weapon(weapon) -> bool:
 	if weapon is BaseWeapon and weapon.has_signal("weapon_leveled_up"):
 		weapon.weapon_leveled_up.connect(_on_weapon_leveled_up)
 
-	print("[AttackManager] ⚔️ Arma equipada: %s [Slot %d] (total: %d/%d)" % [
-		weapon_display_name, slot_index, current_weapon_count, max_weapon_slots
-	])
+	# Debug desactivado: print("[AttackManager] ⚔️ Arma equipada: %s [Slot %d] (total: %d/%d)" % [
+	#	weapon_display_name, slot_index, current_weapon_count, max_weapon_slots
+	# ])
 
 	weapon_added.emit(weapon, slot_index)
 	slots_updated.emit(current_weapon_count, max_weapon_slots)
@@ -230,9 +230,9 @@ func remove_weapon(weapon) -> bool:
 		if weapon.weapon_leveled_up.is_connected(_on_weapon_leveled_up):
 			weapon.weapon_leveled_up.disconnect(_on_weapon_leveled_up)
 
-	print("[AttackManager] ⚔️ Arma removida: %s (total: %d/%d)" % [
-		_get_weapon_name(weapon), current_weapon_count, max_weapon_slots
-	])
+	# Debug desactivado: print("[AttackManager] ⚔️ Arma removida: %s (total: %d/%d)" % [
+	#	_get_weapon_name(weapon), current_weapon_count, max_weapon_slots
+	# ])
 
 	weapon_removed.emit(weapon, slot_index)
 	slots_updated.emit(current_weapon_count, max_weapon_slots)
@@ -264,9 +264,9 @@ func replace_weapon(old_weapon, new_weapon) -> bool:
 	if new_weapon is BaseWeapon and new_weapon.has_signal("weapon_leveled_up"):
 		new_weapon.weapon_leveled_up.connect(_on_weapon_leveled_up)
 
-	print("[AttackManager] ⚔️ Arma reemplazada: %s -> %s" % [
-		_get_weapon_name(old_weapon), _get_weapon_name(new_weapon)
-	])
+	# Debug desactivado: print("[AttackManager] ⚔️ Arma reemplazada: %s -> %s" % [
+	#	_get_weapon_name(old_weapon), _get_weapon_name(new_weapon)
+	# ])
 	return true
 
 func get_weapon_count() -> int:
@@ -302,12 +302,12 @@ func level_up_weapon(weapon) -> bool:
 	# Solo armas BaseWeapon soportan level_up
 	if weapon is BaseWeapon:
 		if not weapon.can_level_up():
-			print("[AttackManager] %s ya está al nivel máximo" % _get_weapon_name(weapon))
+			# Debug desactivado: print("[AttackManager] %s ya está al nivel máximo" % _get_weapon_name(weapon))
 			return false
 		return weapon.level_up()
 
 	# Armas legacy no tienen sistema de niveles
-	print("[AttackManager] %s es un arma legacy sin sistema de niveles" % _get_weapon_name(weapon))
+	# Debug desactivado: print("[AttackManager] %s es un arma legacy sin sistema de niveles" % _get_weapon_name(weapon))
 	return false
 
 func level_up_weapon_by_id(weapon_id: String) -> bool:
@@ -393,17 +393,18 @@ func _on_weapon_leveled_up(weapon_id: String, new_level: int) -> void:
 	var weapon = get_weapon_by_id(weapon_id)
 	if weapon:
 		weapon_leveled_up.emit(weapon, new_level)
-		print("[AttackManager] ⬆️ %s subió a nivel %d" % [_get_weapon_name(weapon), new_level])
+		# Debug desactivado: print("[AttackManager] ⬆️ %s subió a nivel %d" % [_get_weapon_name(weapon), new_level])
 
 func _on_fusion_completed(fused_weapon, lost_slot: bool) -> void:
 	"""Callback cuando se completa una fusión"""
-	print("[AttackManager] 🔥 Fusión completada: %s" % _get_weapon_name(fused_weapon))
+	# Debug desactivado: print("[AttackManager] 🔥 Fusión completada: %s" % _get_weapon_name(fused_weapon))
 	if lost_slot:
-		print("[AttackManager] ⚠️ Slots reducidos: %d/%d" % [current_weapon_count, max_weapon_slots])
+		# Debug desactivado: print("[AttackManager] ⚠️ Slots reducidos: %d/%d" % [current_weapon_count, max_weapon_slots])
+		pass
 
 func _on_fusion_failed(reason: String) -> void:
 	"""Callback cuando falla una fusión"""
-	print("[AttackManager] ❌ Fusión fallida: %s" % reason)
+	# Debug desactivado: print("[AttackManager] ❌ Fusión fallida: %s" % reason)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PROCESAMIENTO
@@ -546,13 +547,13 @@ func enable() -> void:
 	"""Activar ataque automático"""
 	is_active = true
 	set_process(true)
-	print("[AttackManager] Ataque activado")
+	# Debug desactivado: print("[AttackManager] Ataque activado")
 
 func disable() -> void:
 	"""Desactivar ataque automático"""
 	is_active = false
 	set_process(false)
-	print("[AttackManager] Ataque desactivado")
+	# Debug desactivado: print("[AttackManager] Ataque desactivado")
 
 func clear_weapons() -> void:
 	"""Remover todas las armas y limpiar orbitales activos"""
@@ -567,9 +568,9 @@ func clear_weapons() -> void:
 		var orbital_manager = player.get_node_or_null("OrbitalManager")
 		if orbital_manager:
 			orbital_manager.queue_free()
-			print("[AttackManager] OrbitalManager eliminado")
+			# Debug desactivado: print("[AttackManager] OrbitalManager eliminado")
 
-	print("[AttackManager] Todas las armas removidas")
+	# Debug desactivado: print("[AttackManager] Todas las armas removidas")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STATS GLOBALES DE ARMAS (Nuevo sistema)
@@ -582,7 +583,7 @@ func apply_global_upgrade(upgrade_data: Dictionary) -> void:
 	"""
 	if global_weapon_stats:
 		global_weapon_stats.apply_upgrade(upgrade_data)
-		print("[AttackManager] ⬆️ Mejora global aplicada: %s" % upgrade_data.get("id", "unknown"))
+		# Debug desactivado: print("[AttackManager] ⬆️ Mejora global aplicada: %s" % upgrade_data.get("id", "unknown"))
 
 func get_global_weapon_stats() -> GlobalWeaponStats:
 	"""Obtener referencia a los stats globales"""
@@ -613,7 +614,7 @@ func apply_weapon_upgrade(weapon_id: String, upgrade_data: Dictionary) -> bool:
 	
 	var ws: WeaponStats = weapon_stats_map[weapon_id]
 	ws.apply_upgrade(upgrade_data)
-	print("[AttackManager] ⬆️ Mejora específica aplicada a %s: %s" % [weapon_id, upgrade_data.get("id", "unknown")])
+	# Debug desactivado: print("[AttackManager] ⬆️ Mejora específica aplicada a %s: %s" % [weapon_id, upgrade_data.get("id", "unknown")])
 	return true
 
 func _create_weapon_stats_for(weapon) -> void:
@@ -645,7 +646,7 @@ func _create_weapon_stats_for(weapon) -> void:
 			ws.base_stats["attack_speed"] = 1.0 / weapon.base_cooldown if weapon.base_cooldown > 0 else 1.0
 	
 	weapon_stats_map[weapon_id] = ws
-	print("[AttackManager] WeaponStats creado para: %s" % weapon_id)
+	# Debug desactivado: print("[AttackManager] WeaponStats creado para: %s" % weapon_id)
 
 func _remove_weapon_stats_for(weapon) -> void:
 	"""Remover WeaponStats de un arma al quitarla"""
@@ -669,7 +670,7 @@ func set_player_stat(stat_name: String, value: float) -> void:
 		global_weapon_stats.set_stat(stat_name, value)
 	else:
 		_legacy_player_stats[stat_name] = value
-	print("[AttackManager] Stat actualizado: %s = %.2f" % [stat_name, value])
+	# Debug desactivado: print("[AttackManager] Stat actualizado: %s = %.2f" % [stat_name, value])
 
 func modify_player_stat(stat_name: String, delta: float) -> void:
 	"""Modificar stat del jugador (sumar/restar)"""
@@ -685,7 +686,7 @@ func modify_player_stat(stat_name: String, delta: float) -> void:
 		if not _legacy_player_stats.has(stat_name):
 			_legacy_player_stats[stat_name] = 0.0
 		_legacy_player_stats[stat_name] += delta
-	print("[AttackManager] Stat modificado: %s += %.2f" % [stat_name, delta])
+	# Debug desactivado: print("[AttackManager] Stat modificado: %s += %.2f" % [stat_name, delta])
 
 func get_player_stat(stat_name: String) -> float:
 	"""Obtener stat del jugador"""

@@ -43,7 +43,7 @@ func create_effect(effect_type: int, position: Vector2, lifetime: float = 1.0):
 	
 	if effect:
 		active_effects.append(effect)
-		emit_signal("particle_effect_created", effect, EffectType.keys()[effect_type])
+		particle_effect_created.emit(effect, EffectType.keys()[effect_type])
 	
 	return effect
 

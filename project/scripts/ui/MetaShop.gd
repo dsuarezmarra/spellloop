@@ -57,7 +57,7 @@ func _on_buy_pressed():
     if sm.has_method("save_game_data"):
         sm.save_game_data()
 
-    emit_signal("purchase_made", cost, 1)
+    purchase_made.emit(cost, 1)
     refresh()
 
     # small confirmation

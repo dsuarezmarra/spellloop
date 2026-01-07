@@ -179,16 +179,18 @@ func _on_player_stat_changed(stat: String, old_val: float, new_val: float) -> vo
 	print("[CombatSystem] 📈 %s: %.2f → %.2f" % [stat, old_val, new_val])
 
 func _on_upgrade_selected(option: Dictionary) -> void:
-	print("[CombatSystem] ✨ Upgrade seleccionado: %s (%s)" % [option.name, option.type])
+	# Debug desactivado: print("[CombatSystem] Upgrade seleccionado")
+	pass
 
 func _on_level_up_panel_closed() -> void:
-	print("[CombatSystem] Panel de level up cerrado")
+	# Debug desactivado: print("[CombatSystem] Panel de level up cerrado")
+	pass
 
 func _on_player_died() -> void:
-	print("[CombatSystem] 💀 Player murió")
+	# Debug desactivado: print("[CombatSystem] Player murió")
 	# Emitir señal al Game para game over
 	if game_root.has_signal("game_over"):
-		game_root.emit_signal("game_over")
+		game_root.game_over.emit()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # HUD UPDATES

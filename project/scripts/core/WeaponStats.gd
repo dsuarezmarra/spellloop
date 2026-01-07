@@ -337,7 +337,7 @@ func _recalculate_stats() -> void:
 	if is_fused:
 		_apply_fusion_multiplier()
 	
-	emit_signal("stats_changed", weapon_id)
+	stats_changed.emit(weapon_id)
 
 func _apply_fusion_multiplier() -> void:
 	"""Aplicar multiplicador de fusión a stats relevantes"""
@@ -429,8 +429,8 @@ func apply_upgrade(upgrade: Dictionary) -> bool:
 	applied_upgrades.append(upgrade.duplicate(true))
 	_recalculate_stats()
 	
-	emit_signal("upgrade_applied", weapon_id, upgrade.get("id", "unknown"))
-	print("[WeaponStats] Mejora '%s' aplicada a %s" % [upgrade.get("name", "?"), weapon_id])
+	upgrade_applied.emit(weapon_id, upgrade.get("id", "unknown"))
+	# Debug desactivado: print("[WeaponStats] Mejora aplicada")
 	return true
 
 func remove_upgrade(upgrade_id: String) -> bool:

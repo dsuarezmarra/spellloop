@@ -38,7 +38,7 @@ var crossfade_tween: Tween
 
 
 func _ready() -> void:
-	print("[AudioManager] Initializing AudioManager...")
+	# Debug desactivado: print("[AudioManager] Initializing AudioManager...")
 	
 	# Setup audio buses
 	_setup_audio_buses()
@@ -52,7 +52,7 @@ func _ready() -> void:
 	# Load volume settings
 	_load_volume_settings()
 	
-	print("[AudioManager] AudioManager initialized successfully")
+	# Debug desactivado: print("[AudioManager] AudioManager initialized successfully")
 
 func _setup_audio_buses() -> void:
 	"""Setup audio buses for volume control"""
@@ -84,7 +84,7 @@ func _create_audio_players() -> void:
 
 func _load_audio_resources() -> void:
 	"""Load and create procedural audio resources"""
-	print("[AudioManager] Loading audio resources...")
+	# Debug desactivado: print("[AudioManager] Loading audio resources...")
 	
 	# Create placeholder audio streams for different types
 	_create_music_tracks()
@@ -92,7 +92,7 @@ func _load_audio_resources() -> void:
 	_create_spell_sounds()
 	_create_biome_tracks()
 	
-	print("[AudioManager] Audio resources loaded successfully")
+	# Debug desactivado: print("[AudioManager] Audio resources loaded successfully")
 
 func _create_music_tracks() -> void:
 	"""Create music track data"""
@@ -226,7 +226,7 @@ func _create_spell_sounds() -> void:
 	# Load SFX sounds
 	_load_sfx_sounds()
 	
-	print("[AudioManager] Audio resources loaded: ", music_tracks.size(), " music tracks, ", sfx_sounds.size(), " SFX sounds")
+	# Debug desactivado: print("[AudioManager] Audio resources loaded")
 
 func _load_music_tracks() -> void:
 	"""Load music tracks from assets/audio/music/"""
@@ -234,7 +234,7 @@ func _load_music_tracks() -> void:
 	var dir = DirAccess.open(music_dir)
 	
 	if dir == null:
-		print("[AudioManager] Music directory not found: ", music_dir)
+		push_warning("[AudioManager] Music directory not found: " + music_dir)
 		return
 	
 	dir.list_dir_begin()
@@ -248,9 +248,9 @@ func _load_music_tracks() -> void:
 			var audio_stream = load(track_path)
 			if audio_stream:
 				music_tracks[track_name] = audio_stream
-				print("[AudioManager] Loaded music track: ", track_name)
+				# Debug desactivado: print("[AudioManager] Loaded music track: ", track_name)
 			else:
-				print("[AudioManager] Failed to load music track: ", track_path)
+				push_warning("[AudioManager] Failed to load music track: " + track_path)
 		
 		file_name = dir.get_next()
 
@@ -260,7 +260,7 @@ func _load_sfx_sounds() -> void:
 	var dir = DirAccess.open(sfx_dir)
 	
 	if dir == null:
-		print("[AudioManager] SFX directory not found: ", sfx_dir)
+		push_warning("[AudioManager] SFX directory not found: " + sfx_dir)
 		return
 	
 	dir.list_dir_begin()
@@ -274,9 +274,9 @@ func _load_sfx_sounds() -> void:
 			var audio_stream = load(sfx_path)
 			if audio_stream:
 				sfx_sounds[sfx_name] = audio_stream
-				print("[AudioManager] Loaded SFX: ", sfx_name)
+				# Debug desactivado: print("[AudioManager] Loaded SFX: ", sfx_name)
 			else:
-				print("[AudioManager] Failed to load SFX: ", sfx_path)
+				push_warning("[AudioManager] Failed to load SFX: " + sfx_path)
 		
 		file_name = dir.get_next()
 
@@ -286,15 +286,15 @@ func play_music(track_name: String, fade_time: float = 1.0) -> void:
 		return  # Already playing this track
 	
 	if not music_tracks.has(track_name):
-		print("[AudioManager] Warning: Music track not found: ", track_name)
+		push_warning("[AudioManager] Music track not found: " + track_name)
 		return
 	
-	print("[AudioManager] Playing music: ", track_name)
+	# Debug desactivado: print("[AudioManager] Playing music: ", track_name)
 	
 	# Verify the track is a valid AudioStream (not metadata dictionary)
 	var track = music_tracks[track_name]
 	if not track is AudioStream:
-		print("[AudioManager] Warning: Track '%s' is not loaded (no audio file found)" % track_name)
+		push_warning("[AudioManager] Track '%s' is not loaded (no audio file found)" % track_name)
 		return
 	
 	# Stop current music if playing
@@ -318,7 +318,7 @@ func stop_music(_fade_time: float = 1.0) -> void:
 	if not is_music_playing:
 		return
 	
-	print("[AudioManager] Stopping music")
+	# Debug desactivado: print("[AudioManager] Stopping music")
 	
 	# TODO: Implement fade out effect
 	music_player.stop()
@@ -331,7 +331,7 @@ func stop_music(_fade_time: float = 1.0) -> void:
 func play_sfx(sfx_name: String, volume: float = 1.0) -> void:
 	"""Play a sound effect"""
 	if not sfx_sounds.has(sfx_name):
-		print("[AudioManager] Warning: SFX not found: ", sfx_name)
+		push_warning("[AudioManager] SFX not found: " + sfx_name)
 		return
 	
 	# Find available SFX player
@@ -344,12 +344,12 @@ func play_sfx(sfx_name: String, volume: float = 1.0) -> void:
 	if available_player == null:
 		# All players busy, use the first one (interrupt)
 		available_player = sfx_players[0]
-		print("[AudioManager] Warning: All SFX players busy, interrupting oldest")
+		# Debug desactivado: print("[AudioManager] All SFX players busy")
 	
 	# Verify the SFX is a valid AudioStream (not metadata dictionary)
 	var sfx = sfx_sounds[sfx_name]
 	if not sfx is AudioStream:
-		print("[AudioManager] Warning: SFX '%s' is not loaded (no audio file found)" % sfx_name)
+		push_warning("[AudioManager] SFX '%s' is not loaded (no audio file found)" % sfx_name)
 		return
 	
 	# Play the sound
@@ -364,7 +364,7 @@ func set_master_volume(volume: float) -> void:
 	AudioServer.set_bus_volume_db(bus_index, linear_to_db(master_volume))
 	
 	volume_changed.emit(MASTER_BUS, master_volume)
-	print("[AudioManager] Master volume set to: ", master_volume)
+	# Debug desactivado: print("[AudioManager] Master volume set to: ", master_volume)
 
 func set_music_volume(volume: float) -> void:
 	"""Set music volume (0.0 to 1.0)"""
@@ -373,7 +373,7 @@ func set_music_volume(volume: float) -> void:
 	AudioServer.set_bus_volume_db(bus_index, linear_to_db(music_volume))
 	
 	volume_changed.emit(MUSIC_BUS, music_volume)
-	print("[AudioManager] Music volume set to: ", music_volume)
+	# Debug desactivado: print("[AudioManager] Music volume set to: ", music_volume)
 
 func set_sfx_volume(volume: float) -> void:
 	"""Set SFX volume (0.0 to 1.0)"""
@@ -382,7 +382,7 @@ func set_sfx_volume(volume: float) -> void:
 	AudioServer.set_bus_volume_db(bus_index, linear_to_db(sfx_volume))
 	
 	volume_changed.emit(SFX_BUS, sfx_volume)
-	print("[AudioManager] SFX volume set to: ", sfx_volume)
+	# Debug desactivado: print("[AudioManager] SFX volume set to: ", sfx_volume)
 
 func get_master_volume() -> float:
 	"""Get current master volume"""

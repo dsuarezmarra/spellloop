@@ -1651,7 +1651,7 @@ func die() -> void:
 		if attack_system and attack_system.has_method("cleanup_boss"):
 			attack_system.cleanup_boss()
 	
-	emit_signal("enemy_died", self, enemy_id, exp_value, enemy_tier, is_elite, is_boss)
+	enemy_died.emit(self, enemy_id, exp_value, enemy_tier, is_elite, is_boss)
 	queue_free()
 
 func _on_health_died() -> void:

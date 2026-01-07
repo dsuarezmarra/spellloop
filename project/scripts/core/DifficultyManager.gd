@@ -63,8 +63,8 @@ func _update_difficulty() -> void:
 	# Cambio de nivel cada minuto
 	if new_difficulty_level > current_difficulty_level:
 		current_difficulty_level = new_difficulty_level
-		emit_signal("difficulty_changed", current_difficulty_level)
-		print("[DifficultyManager] Dificultad aumentada a nivel %d" % current_difficulty_level)
+		difficulty_changed.emit(current_difficulty_level)
+		# Debug desactivado: print("[DifficultyManager] Dificultad aumentada")
 		_on_difficulty_level_up()
 	
 	# Boss event cada 5 minutos
@@ -81,8 +81,8 @@ func _on_difficulty_level_up() -> void:
 func _trigger_boss_event() -> void:
 	"""Desencadenar evento de boss"""
 	var boss_time_minutes = int(elapsed_time / 60.0)
-	emit_signal("boss_event_triggered", boss_time_minutes)
-	print("[DifficultyManager] ¡Evento de Boss en minuto %d!" % boss_time_minutes)
+	boss_event_triggered.emit(boss_time_minutes)
+	# Debug desactivado: print("[DifficultyManager] Evento de Boss")
 
 func get_difficulty_level() -> int:
 	return current_difficulty_level

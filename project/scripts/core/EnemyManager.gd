@@ -296,8 +296,8 @@ func _spawn_boss(minute: int) -> void:
 	var boss = spawn_enemy(boss_data, pos)
 
 	if boss:
-		emit_signal("boss_spawned", boss)
-		print("🔥 [EnemyManager] ¡BOSS SPAWNEADO: %s (Minuto %d)!" % [boss_data.name, minute])
+		boss_spawned.emit(boss)
+		# Debug desactivado: print("[EnemyManager] BOSS SPAWNEADO")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SPAWN DE ÉLITES
@@ -413,11 +413,11 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 		enemy.global_position = world_pos
 
 	active_enemies.append(enemy)
-	emit_signal("enemy_spawned", enemy)
+	enemy_spawned.emit(enemy)
 
 	# Emitir señal de boss si aplica
 	if enemy_data.get("is_boss", false) or type_id.find("boss") != -1:
-		emit_signal("boss_spawned", enemy)
+		boss_spawned.emit(enemy)
 
 	if debug_spawns:
 		var tier = enemy_data.get("tier", 1)
@@ -438,7 +438,7 @@ func _on_enemy_died(enemy: Node, type_id: String = "", exp_value: int = 0, enemy
 	if is_instance_valid(enemy) and enemy is Node2D:
 		pos = enemy.global_position
 
-	emit_signal("enemy_died", pos, type_id, exp_value, enemy_tier, is_elite, is_boss)
+	enemy_died.emit(pos, type_id, exp_value, enemy_tier, is_elite, is_boss)
 
 	if debug_spawns:
 		var elite_str = " [ELITE]" if is_elite else ""
@@ -575,8 +575,8 @@ func spawn_boss(boss_id: String, world_pos: Vector2, multipliers: Dictionary = {
 	var boss = spawn_enemy(boss_data, world_pos)
 
 	if boss:
-		emit_signal("boss_spawned", boss)
-		print("🔥 [EnemyManager] ¡BOSS SPAWNEADO: %s!" % boss_data.name)
+		boss_spawned.emit(boss)
+		# Debug desactivado: print("[EnemyManager] BOSS SPAWNEADO")
 
 	return boss
 
@@ -609,8 +609,8 @@ func spawn_elite(enemy_id: String, world_pos: Vector2, multipliers: Dictionary =
 
 	if elite:
 		elites_spawned_this_run += 1
-		emit_signal("elite_spawned", elite)
-		print("⭐ [EnemyManager] ¡ÉLITE SPAWNEADO: %s!" % elite_data.name)
+		elite_spawned.emit(elite)
+		# Debug desactivado: print("[EnemyManager] ÉLITE SPAWNEADO")
 
 	return elite
 

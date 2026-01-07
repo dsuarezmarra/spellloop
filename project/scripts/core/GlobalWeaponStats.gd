@@ -181,21 +181,21 @@ func add_stat(stat_name: String, value: float) -> void:
 	if stat_name in stats:
 		var old_value = stats[stat_name]
 		stats[stat_name] += value
-		emit_signal("global_stat_changed", stat_name, old_value, stats[stat_name])
+		global_stat_changed.emit(stat_name, old_value, stats[stat_name])
 
 func multiply_stat(stat_name: String, value: float) -> void:
 	"""Multiplicar un stat (para multiplicadores)"""
 	if stat_name in stats:
 		var old_value = stats[stat_name]
 		stats[stat_name] *= value
-		emit_signal("global_stat_changed", stat_name, old_value, stats[stat_name])
+		global_stat_changed.emit(stat_name, old_value, stats[stat_name])
 
 func set_stat(stat_name: String, value: float) -> void:
 	"""Establecer valor directo de un stat"""
 	if stat_name in stats:
 		var old_value = stats[stat_name]
 		stats[stat_name] = value
-		emit_signal("global_stat_changed", stat_name, old_value, stats[stat_name])
+		global_stat_changed.emit(stat_name, old_value, stats[stat_name])
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MEJORAS GLOBALES
@@ -224,9 +224,9 @@ func apply_upgrade(upgrade: Dictionary) -> bool:
 					set_stat(stat, value)
 	
 	applied_upgrades.append(upgrade.duplicate(true))
-	emit_signal("global_upgrade_applied", upgrade.get("id", "unknown"))
+	global_upgrade_applied.emit(upgrade.get("id", "unknown"))
 	
-	print("[GlobalWeaponStats] Mejora global '%s' aplicada" % upgrade.get("name", "?"))
+	# Debug desactivado: print("[GlobalWeaponStats] Mejora global aplicada")
 	return true
 
 func get_upgrades() -> Array:

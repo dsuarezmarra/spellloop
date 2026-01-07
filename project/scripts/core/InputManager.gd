@@ -38,7 +38,7 @@ var custom_bindings: Dictionary = {}
 var default_bindings: Dictionary = {}
 
 func _ready() -> void:
-	print("[InputManager] Initializing InputManager...")
+	# Debug desactivado: print("[InputManager] Initializing InputManager...")
 	
 	# Store default bindings
 	_store_default_bindings()
@@ -75,9 +75,9 @@ func _ready() -> void:
 	set_process_unhandled_input(true)
 	# Ensure _process is called to update movement_vector
 	set_process(true)
-	print("[InputManager] set_process(true) called - will update movement_vector each frame")
+	# Debug desactivado: print("[InputManager] set_process(true) called - will update movement_vector each frame")
 	
-	print("[InputManager] InputManager initialized successfully")
+	# Debug desactivado: print("[InputManager] InputManager initialized successfully")
 
 func _store_default_bindings() -> void:
 	"""Store the default input map for reset functionality"""
@@ -131,7 +131,7 @@ func _detect_device_change(event: InputEvent) -> void:
 		last_used_device = new_device
 		current_device_type = new_device
 		input_device_changed.emit(new_device)
-		print("[InputManager] Input device changed to: ", new_device)
+		# Debug desactivado: print("[InputManager] Input device changed to: ", new_device)
 
 func _handle_action_events(_event: InputEvent) -> void:
 	"""Handle action press/release events"""
@@ -194,7 +194,7 @@ func get_gamepad_direction() -> Vector2:
 func remap_action(action: String, new_event: InputEvent) -> bool:
 	"""Remap an action to a new input event"""
 	if not InputMap.has_action(action):
-		print("[InputManager] Warning: Action does not exist: ", action)
+		push_warning("[InputManager] Action does not exist: %s" % action)
 		return false
 	
 	# Clear existing events for this action
@@ -214,13 +214,13 @@ func remap_action(action: String, new_event: InputEvent) -> bool:
 	# Save to settings
 	_save_custom_bindings()
 	
-	print("[InputManager] Remapped action '", action, "' to new input")
+	# Debug desactivado: print("[InputManager] Remapped action '", action, "' to new input")
 	return true
 
 func add_action_event(action: String, new_event: InputEvent) -> bool:
 	"""Add an additional input event to an existing action"""
 	if not InputMap.has_action(action):
-		print("[InputManager] Warning: Action does not exist: ", action)
+		push_warning("[InputManager] Action does not exist: %s" % action)
 		return false
 	
 	# Add event to input map
@@ -235,13 +235,13 @@ func add_action_event(action: String, new_event: InputEvent) -> bool:
 	# Save to settings
 	_save_custom_bindings()
 	
-	print("[InputManager] Added input event to action: ", action)
+	# Debug desactivado: print("[InputManager] Added input event to action: ", action)
 	return true
 
 func reset_action_to_default(action: String) -> bool:
 	"""Reset a specific action to its default binding"""
 	if not default_bindings.has(action):
-		print("[InputManager] Warning: No default binding for action: ", action)
+		push_warning("[InputManager] No default binding for action: %s" % action)
 		return false
 	
 	# Clear current events
@@ -258,7 +258,7 @@ func reset_action_to_default(action: String) -> bool:
 	# Save settings
 	_save_custom_bindings()
 	
-	print("[InputManager] Reset action to default: ", action)
+	# Debug desactivado: print("[InputManager] Reset action to default: ", action)
 	return true
 
 func reset_to_defaults() -> void:
@@ -266,7 +266,7 @@ func reset_to_defaults() -> void:
 	for action in default_bindings:
 		reset_action_to_default(action)
 	
-	print("[InputManager] All input actions reset to defaults")
+	# Debug desactivado: print("[InputManager] All input actions reset to defaults")
 
 func get_action_events(action: String) -> Array:
 	"""Get all input events for an action"""

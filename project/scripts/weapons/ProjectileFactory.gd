@@ -77,7 +77,7 @@ static func check_execute(tree: SceneTree, enemy: Node) -> bool:
 			enemy.take_damage(current_hp)  # Hacer daño igual al HP restante
 			# Mostrar texto de ejecución (usar class_name FloatingText)
 			FloatingText.spawn_damage(enemy.global_position + Vector2(0, -30), current_hp, true)
-			print("[Execute] ☠️ Enemigo ejecutado a %d%% HP (umbral: %d%%)" % [int(hp_percent * 100), int(execute_threshold * 100)])
+			# Debug desactivado: print("[Execute] ☠️ Enemigo ejecutado")
 		return true
 	
 	return false
@@ -117,12 +117,12 @@ static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
 		# Intentar curar al jugador
 		if player.has_method("heal"):
 			player.heal(heal_int)
-			print("[LifeSteal] 🩸 Curado +%d HP (acumulado de múltiples ataques)" % heal_int)
+			# Debug desactivado: print("[LifeSteal] Curado +%d HP" % heal_int)
 		elif player.has_node("PlayerStats"):
 			var stats = player.get_node("PlayerStats")
 			if stats.has_method("heal"):
 				stats.heal(heal_int)
-				print("[LifeSteal] 🩸 Curado +%d HP (acumulado de múltiples ataques)" % heal_int)
+				# Debug desactivado: print("[LifeSteal] Curado +%d HP" % heal_int)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CREACIÓN DE PROYECTILES
@@ -424,17 +424,16 @@ class BeamEffect extends Node2D:
 				if _enhanced_visual:
 					add_child(_enhanced_visual)
 					_enhanced_visual.fire(duration)
-					print("[BeamEffect] ✓ Visual mejorado creado para: %s" % weapon_id)
 					return
 				else:
-					print("[BeamEffect] ✗ create_beam_visual retornó null para: %s" % weapon_id)
+					push_warning("[BeamEffect] create_beam_visual retornó null para: %s" % weapon_id)
 			else:
-				print("[BeamEffect] ✗ weapon_data vacío para: %s" % weapon_id)
+				push_warning("[BeamEffect] weapon_data vacío para: %s" % weapon_id)
 		else:
 			if weapon_id == "":
-				print("[BeamEffect] ✗ weapon_id vacío")
+				push_warning("[BeamEffect] weapon_id vacío")
 			if not ProjectileVisualManager.instance:
-				print("[BeamEffect] ✗ ProjectileVisualManager.instance es null")
+				push_warning("[BeamEffect] ProjectileVisualManager.instance es null")
 
 		# Fallback: visual simple
 		var line = Line2D.new()
@@ -552,7 +551,7 @@ class AOEEffect extends Node2D:
 		_do_activate()
 
 	func activate(_owner: Node2D) -> void:
-		# Método legacy, ahora se activa en _ready
+		# DEPRECATED: Método legacy, ahora se activa automáticamente en _ready via _do_activate()
 		pass
 
 	func _do_activate() -> void:
@@ -632,7 +631,7 @@ class AOEEffect extends Node2D:
 		_apply_damage_tick(enemy)
 
 	func _damage_enemies_in_area() -> void:
-		"""Legacy: ahora se usa _apply_tick_damage"""
+		# DEPRECATED: Ahora se usa _apply_tick_damage() que itera sobre enemigos en rango
 		pass
 
 	func _apply_effect(enemy: Node) -> void:
@@ -700,7 +699,7 @@ class AOEEffect extends Node2D:
 					if hp_percent <= effect_value:  # effect_value es el umbral (ej: 0.2 = 20%)
 						if enemy.has_method("take_damage"):
 							enemy.take_damage(hp)  # Matar instantáneamente
-							print("[AOE] ⚔️ EXECUTE! %s eliminado (%.0f%% HP)" % [enemy.name, hp_percent * 100])
+							# Debug desactivado: print("[AOE] EXECUTE!")
 			"knockback_bonus":
 				# Ya se maneja el knockback en otro lugar, esto solo incrementa
 				pass
@@ -739,21 +738,20 @@ class AOEEffect extends Node2D:
 					add_child(_enhanced_visual)
 					_enhanced_visual.play_appear()
 					_use_enhanced = true
-					print("[AOEEffect] ✓ Visual mejorado creado para: %s" % weapon_id)
 					# Auto-destruir después de la duración (con verificación de validez)
 					await get_tree().create_timer(duration + 0.5).timeout
 					if is_instance_valid(self):
 						queue_free()
 					return
 				else:
-					print("[AOEEffect] ✗ create_aoe_visual retornó null para: %s" % weapon_id)
+					push_warning("[AOEEffect] create_aoe_visual retornó null para: %s" % weapon_id)
 			else:
-				print("[AOEEffect] ✗ weapon_data vacío para: %s" % weapon_id)
+				push_warning("[AOEEffect] weapon_data vacío para: %s" % weapon_id)
 		else:
 			if weapon_id == "":
-				print("[AOEEffect] ✗ weapon_id vacío")
+				push_warning("[AOEEffect] weapon_id vacío")
 			if not ProjectileVisualManager.instance:
-				print("[AOEEffect] ✗ ProjectileVisualManager.instance es null")
+				push_warning("[AOEEffect] ProjectileVisualManager.instance es null")
 
 		# Fallback: visual simple
 		scale = Vector2(0.1, 0.1)
@@ -881,16 +879,15 @@ class OrbitalManager extends Node2D:
 				if _enhanced_visual:
 					add_child(_enhanced_visual)
 					_use_enhanced = true
-					print("[OrbitalManager] ✓ Visual mejorado creado para: %s" % orbital_weapon_id)
 				else:
-					print("[OrbitalManager] ✗ create_orbit_visual retornó null para: %s" % orbital_weapon_id)
+					push_warning("[OrbitalManager] create_orbit_visual retornó null para: %s" % orbital_weapon_id)
 			else:
-				print("[OrbitalManager] ✗ weapon_data vacío para: %s" % orbital_weapon_id)
+				push_warning("[OrbitalManager] weapon_data vacío para: %s" % orbital_weapon_id)
 		else:
 			if orbital_weapon_id == "":
-				print("[OrbitalManager] ✗ weapon_id vacío")
+				push_warning("[OrbitalManager] weapon_id vacío")
 			if not ProjectileVisualManager.instance:
-				print("[OrbitalManager] ✗ ProjectileVisualManager.instance es null")
+				push_warning("[OrbitalManager] ProjectileVisualManager.instance es null")
 
 		# Crear nuevos orbitales (siempre necesarios para detección de colisión)
 		for i in range(orbital_count):

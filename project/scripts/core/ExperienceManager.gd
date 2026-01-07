@@ -47,7 +47,7 @@ func _ready():
 	# Asegurar que ExperienceManager respete la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	
-	print("⭐ ExperienceManager inicializado")
+	# Debug desactivado: print("⭐ ExperienceManager inicializado")
 	setup_level_curve()
 	_load_coin_scene()
 
@@ -60,14 +60,14 @@ func initialize(player_ref: CharacterBody2D):
 	total_coins = 0
 	active_coins.clear()
 
-	print("⭐ Sistema de experiencia y monedas inicializado")
+	# Debug desactivado: print("⭐ Sistema de experiencia y monedas inicializado")
 
 func _load_coin_scene() -> void:
 	"""Cargar la escena de monedas"""
 	var coin_path = "res://scenes/pickups/CoinPickup.tscn"
 	if ResourceLoader.exists(coin_path):
 		coin_scene = load(coin_path)
-		print("🪙 Escena de monedas cargada")
+		# Debug desactivado: print("🪙 Escena de monedas cargada")
 	else:
 		push_warning("[ExperienceManager] No se encontró CoinPickup.tscn")
 
@@ -106,7 +106,7 @@ func get_exp_for_level(level: int) -> int:
 func grant_exp_from_kill(exp_value: int) -> void:
 	"""Dar XP directamente al matar un enemigo (sin orbes)"""
 	gain_experience(exp_value)
-	print("⭐ XP automático: +%d" % exp_value)
+	# Debug desactivado: print("⭐ XP automático: +%d" % exp_value)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SISTEMA DE MONEDAS
@@ -313,10 +313,7 @@ func _on_coin_collected(value: int) -> void:
 	# Guardar en SaveManager si existe
 	_save_coins_to_progression(final_value)
 
-	if coin_mult > 1.0 or streak_multiplier > 1.0:
-		print("🪙 Moneda: +%d (base: %d, streak: x%.2f, coin_mult: x%.2f, total: %d)" % [final_value, value, streak_multiplier, coin_mult, total_coins])
-	else:
-		print("🪙 Moneda: +%d (streak: %d, total: %d)" % [final_value, streak_count, total_coins])
+	# Debug desactivado: prints de monedas con streak/multiplicadores
 
 func _get_player_coin_mult() -> float:
 	"""Obtener multiplicador de monedas del player"""
@@ -380,7 +377,7 @@ func gain_experience(amount: int):
 	# Verificar subida de nivel
 	check_level_up()
 
-	print("⭐ EXP ganada: +", amount, " Total: ", current_exp, "/", exp_to_next_level)
+	# Debug desactivado: print("⭐ EXP ganada: +", amount)
 
 func check_level_up():
 	"""Verificar si el player sube de nivel"""
@@ -399,7 +396,7 @@ func level_up_player():
 	# Emitir señal de subida de nivel
 	level_up.emit(current_level, upgrade_options)
 
-	print("🆙 ¡LEVEL UP! Nuevo nivel: ", current_level)
+	# Debug desactivado: print("🆙 ¡LEVEL UP! Nuevo nivel: ", current_level)
 
 func generate_upgrade_options() -> Array:
 	"""Generar opciones de mejora para selección usando PassiveDatabase"""

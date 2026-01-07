@@ -187,7 +187,7 @@ func _create_sprite_bolt(from: Vector2, to: Vector2) -> void:
 	if is_instance_valid(bolt_sprite):
 		bolt_sprite.queue_free()
 
-	emit_signal("chain_complete")
+	chain_complete.emit()
 
 func _create_sprite_zap(at_pos: Vector2) -> void:
 	"""Crear sprite animado de impacto de tormenta"""
@@ -291,7 +291,7 @@ func _cleanup() -> void:
 			sprite.queue_free()
 	_zap_sprites.clear()
 
-	emit_signal("all_chains_finished")
+	all_chains_finished.emit()
 
 func reset() -> void:
 	"""Resetear el efecto para reutilización"""
@@ -314,4 +314,4 @@ func create_chain_sequence(targets: Array[Vector2], delay_between: float = 0.08)
 
 		fire_chain(targets[i], targets[i + 1])
 
-	emit_signal("all_chains_finished")
+	all_chains_finished.emit()

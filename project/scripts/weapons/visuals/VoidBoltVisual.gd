@@ -142,7 +142,7 @@ func fire_chain(start: Vector2, end: Vector2) -> void:
 	else:
 		_update_bolt_points()
 
-	emit_signal("chain_complete")
+	chain_complete.emit()
 
 func _fire_with_sprites(start: Vector2, end: Vector2) -> void:
 	"""Disparar usando sprites personalizados"""
@@ -283,7 +283,7 @@ func _process(delta: float) -> void:
 	# Terminar
 	if _fade_timer >= _max_duration:
 		_cleanup()
-		emit_signal("all_chains_finished")
+		all_chains_finished.emit()
 		queue_free()
 
 func _cleanup() -> void:
@@ -362,5 +362,5 @@ func fade_out(duration: float = 0.2) -> void:
 
 	_bolt_sprites.clear()
 	_zap_sprites.clear()
-	emit_signal("all_chains_finished")
+	all_chains_finished.emit()
 	queue_free()
