@@ -157,6 +157,13 @@ func _perform_attack() -> void:
 	if enemy.has_method("get") and "special_abilities" in enemy:
 		special_abilities = enemy.special_abilities
 	
+	# SISTEMA DE HABILIDADES ÉLITE - Verificar si es élite y usar habilidades especiales
+	var is_elite = enemy.get("is_elite") if "is_elite" in enemy else false
+	if is_elite:
+		var elite_ability = _try_elite_ability()
+		if elite_ability:
+			return  # Usó una habilidad élite, no hacer ataque normal
+	
 	# Ejecutar ataque según arquetipo
 	match archetype:
 		"ranged":
@@ -177,6 +184,291 @@ func _perform_attack() -> void:
 				_perform_ranged_attack()
 			else:
 				_perform_melee_attack()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE HABILIDADES ÉLITE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+var elite_slam_cooldown: float = 0.0
+var elite_rage_active: bool = false
+var elite_shield_charges: int = 0
+var elite_shield_cooldown: float = 0.0
+
+func _process_elite_cooldowns(delta: float) -> void:
+	"""Procesar cooldowns de habilidades élite"""
+	if elite_slam_cooldown > 0:
+		elite_slam_cooldown -= delta
+	if elite_shield_cooldown > 0:
+		elite_shield_cooldown -= delta
+
+func _try_elite_ability() -> bool:
+	"""Intentar usar una habilidad élite. Retorna true si usó una."""
+	var delta = get_process_delta_time()
+	_process_elite_cooldowns(delta)
+	
+	# Verificar rage (se activa automáticamente al bajar HP)
+	if not elite_rage_active:
+		var rage_threshold = modifiers.get("elite_rage_threshold", 0.4)
+		var current_hp_percent = _get_enemy_hp_percent()
+		if current_hp_percent <= rage_threshold and "elite_rage" in special_abilities:
+			_activate_elite_rage()
+	
+	# Probabilidad de usar habilidad élite (30% por ataque)
+	if randf() > 0.30:
+		return false
+	
+	# Intentar slam si está disponible
+	if "elite_slam" in special_abilities and elite_slam_cooldown <= 0:
+		var dist = enemy.global_position.distance_to(player.global_position)
+		if dist < 120:  # Solo si está cerca
+			_perform_elite_slam()
+			return true
+	
+	# Activar escudo si está bajo y disponible
+	if "elite_shield" in special_abilities and elite_shield_cooldown <= 0 and elite_shield_charges <= 0:
+		var current_hp_percent = _get_enemy_hp_percent()
+		if current_hp_percent < 0.6:  # Menos del 60% HP
+			_activate_elite_shield()
+			return true
+	
+	return false
+
+func _get_enemy_hp_percent() -> float:
+	"""Obtener porcentaje de HP del enemigo"""
+	if enemy.has_node("HealthComponent"):
+		var hc = enemy.get_node("HealthComponent")
+		return hc.current_health / max(1.0, hc.max_health)
+	elif "hp" in enemy and "max_hp" in enemy:
+		return float(enemy.hp) / max(1.0, float(enemy.max_hp))
+	return 1.0
+
+func _perform_elite_slam() -> void:
+	"""Habilidad élite: Slam de área"""
+	var slam_radius = modifiers.get("elite_slam_radius", 80.0)
+	var slam_damage_mult = modifiers.get("elite_slam_damage_mult", 1.5)
+	var slam_damage = int(attack_damage * slam_damage_mult)
+	
+	# Aplicar daño si el player está en rango
+	var dist = enemy.global_position.distance_to(player.global_position)
+	if dist <= slam_radius:
+		if player.has_method("take_damage"):
+			player.take_damage(slam_damage)
+			attacked_player.emit(slam_damage, false)
+		if player.has_method("apply_stun"):
+			player.apply_stun(0.4)
+	
+	# Visual épico
+	_spawn_elite_slam_visual(enemy.global_position, slam_radius)
+	
+	# Aplicar cooldown
+	elite_slam_cooldown = modifiers.get("elite_slam_cooldown", 5.0)
+	print("[Elite] 👑💥 %s usó Elite Slam! (daño: %d, radio: %.0f)" % [enemy.name, slam_damage, slam_radius])
+
+func _activate_elite_rage() -> void:
+	"""Activar modo rage de élite"""
+	elite_rage_active = true
+	
+	var damage_bonus = modifiers.get("elite_rage_damage_bonus", 0.5)
+	var speed_bonus = modifiers.get("elite_rage_speed_bonus", 0.3)
+	
+	# Aplicar buffs
+	attack_damage = int(attack_damage * (1 + damage_bonus))
+	if "base_speed" in enemy:
+		enemy.base_speed *= (1 + speed_bonus)
+	
+	# Visual épico
+	_spawn_elite_rage_visual()
+	print("[Elite] 👑🔥 %s entró en RAGE! (+%.0f%% daño, +%.0f%% velocidad)" % [enemy.name, damage_bonus * 100, speed_bonus * 100])
+
+func _activate_elite_shield() -> void:
+	"""Activar escudo élite"""
+	elite_shield_charges = modifiers.get("elite_shield_charges", 3)
+	elite_shield_cooldown = modifiers.get("elite_shield_cooldown", 15.0)
+	
+	# Visual de escudo
+	_spawn_elite_shield_visual()
+	print("[Elite] 👑🛡️ %s activó Elite Shield! (%d cargas)" % [enemy.name, elite_shield_charges])
+
+func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
+	"""Visual épico de slam élite"""
+	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 65
+	effect.global_position = center
+	
+	var parent = enemy.get_parent()
+	if parent:
+		parent.add_child(effect)
+	
+	var anim = 0.0
+	var visual = Node2D.new()
+	effect.add_child(visual)
+	
+	# Color dorado para élites
+	var gold = Color(1.0, 0.85, 0.1)
+	var bright_gold = Color(1.0, 0.95, 0.5)
+	
+	visual.draw.connect(func():
+		var expand = radius * 1.3 * anim
+		
+		# Ondas doradas
+		for i in range(5):
+			var r = expand * (0.3 + i * 0.18)
+			var a = (1.0 - anim) * (0.9 - i * 0.15)
+			visual.draw_arc(Vector2.ZERO, r, 0, TAU, 48, Color(gold.r, gold.g, gold.b, a), 5.0 - i)
+		
+		# Relleno dorado
+		for i in range(3):
+			var fill_r = expand * (0.85 - i * 0.2)
+			var fill_a = (1.0 - anim) * (0.4 - i * 0.1)
+			visual.draw_circle(Vector2.ZERO, fill_r, Color(gold.r, gold.g, gold.b, fill_a))
+		
+		# Corona de estrellas
+		var star_count = 8
+		for i in range(star_count):
+			var star_angle = (TAU / star_count) * i + anim * PI
+			var star_dist = expand * 0.7
+			var star_pos = Vector2(cos(star_angle), sin(star_angle)) * star_dist
+			var star_size = 10 * (1.0 - anim * 0.5)
+			
+			# Estrella de 4 puntas
+			for j in range(4):
+				var point_angle = (TAU / 4) * j + anim * PI * 2
+				var point_end = star_pos + Vector2(cos(point_angle), sin(point_angle)) * star_size
+				visual.draw_line(star_pos, point_end, bright_gold, 2.0)
+			visual.draw_circle(star_pos, star_size * 0.4, bright_gold)
+		
+		# Borde exterior
+		visual.draw_arc(Vector2.ZERO, expand, 0, TAU, 64, Color(1, 1, 1, 0.7 * (1.0 - anim)), 4.0)
+	)
+	
+	var tween = create_tween()
+	tween.tween_method(func(v):
+		anim = v
+		if is_instance_valid(visual):
+			visual.queue_redraw()
+	, 0.0, 1.0, 0.6)
+	tween.tween_callback(func():
+		if is_instance_valid(effect):
+			effect.queue_free()
+	)
+
+func _spawn_elite_rage_visual() -> void:
+	"""Visual épico de rage élite"""
+	if not is_instance_valid(enemy):
+		return
+	
+	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 65
+	effect.global_position = enemy.global_position
+	
+	var parent = enemy.get_parent()
+	if parent:
+		parent.add_child(effect)
+	
+	var anim = 0.0
+	var visual = Node2D.new()
+	effect.add_child(visual)
+	
+	visual.draw.connect(func():
+		# Aura de furia dorada/roja
+		for i in range(6):
+			var r = 70 + i * 18 + sin(anim * PI * 5 + i) * 12
+			var a = (0.7 - i * 0.1) * (1.0 - anim * 0.4)
+			var color_blend = float(i) / 6.0
+			var aura_color = Color(1, 0.5 * (1.0 - color_blend), 0.1, a)
+			visual.draw_arc(Vector2.ZERO, r, 0, TAU, 48, aura_color, 4.0)
+		
+		# Llamas de furia
+		var flame_count = 16
+		for i in range(flame_count):
+			var angle = (TAU / flame_count) * i + anim * PI * 1.5
+			var dist = 55 + sin(anim * PI * 8 + i * 0.8) * 20
+			var pos = Vector2(cos(angle), sin(angle)) * dist
+			var size = 12 + sin(anim * PI * 10 + i) * 6
+			
+			# Llama exterior
+			var flame_tip = pos + Vector2(0, -size)
+			visual.draw_colored_polygon(
+				PackedVector2Array([flame_tip, pos + Vector2(-size * 0.4, 0), pos + Vector2(size * 0.4, 0)]),
+				Color(1, 0.4, 0, 0.85 * (1.0 - anim * 0.5))
+			)
+			# Núcleo
+			visual.draw_circle(pos, size * 0.35, Color(1, 0.9, 0.3, 0.9 * (1.0 - anim * 0.5)))
+		
+		# Texto "RAGE" simulado con símbolo
+		var rage_size = 25 * (1.0 - anim * 0.3)
+		visual.draw_circle(Vector2.ZERO, rage_size, Color(1, 0.2, 0, 0.8 * (1.0 - anim)))
+		# X de rabia
+		visual.draw_line(Vector2(-rage_size * 0.5, -rage_size * 0.5), Vector2(rage_size * 0.5, rage_size * 0.5), Color(1, 1, 0.5, (1.0 - anim)), 4.0)
+		visual.draw_line(Vector2(rage_size * 0.5, -rage_size * 0.5), Vector2(-rage_size * 0.5, rage_size * 0.5), Color(1, 1, 0.5, (1.0 - anim)), 4.0)
+	)
+	
+	var tween = create_tween()
+	tween.tween_method(func(v):
+		anim = v
+		if is_instance_valid(visual):
+			visual.queue_redraw()
+	, 0.0, 1.0, 1.2)
+	tween.tween_callback(func():
+		if is_instance_valid(effect):
+			effect.queue_free()
+	)
+
+func _spawn_elite_shield_visual() -> void:
+	"""Visual de escudo élite"""
+	if not is_instance_valid(enemy):
+		return
+	
+	# El efecto se adjunta al enemigo
+	var visual = Node2D.new()
+	visual.name = "EliteShieldVisual"
+	enemy.add_child(visual)
+	
+	var anim = 0.0
+	var gold = Color(1.0, 0.85, 0.1)
+	
+	visual.draw.connect(func():
+		# Hexágono de escudo dorado
+		var radius = 50
+		var pulse = 1.0 + sin(anim * 8) * 0.1
+		var points = PackedVector2Array()
+		for i in range(7):
+			var angle = (TAU / 6) * i + anim * 0.8
+			points.append(Vector2(cos(angle), sin(angle)) * radius * pulse)
+		visual.draw_polyline(points, Color(gold.r, gold.g, gold.b, 0.9), 4.0)
+		
+		# Relleno semi-transparente
+		visual.draw_circle(Vector2.ZERO, radius * 0.85 * pulse, Color(gold.r, gold.g, gold.b, 0.15))
+		
+		# Runas en cada vértice
+		for i in range(6):
+			var angle = (TAU / 6) * i + anim * 0.8
+			var pos = Vector2(cos(angle), sin(angle)) * radius * pulse
+			visual.draw_circle(pos, 8, Color(1, 0.95, 0.5, 0.95))
+			visual.draw_circle(pos, 5, gold)
+		
+		# Corona interior
+		visual.draw_arc(Vector2.ZERO, radius * 0.5 * pulse, 0, TAU, 24, Color(1, 1, 0.8, 0.5), 2.0)
+	)
+	
+	var timer = Timer.new()
+	timer.wait_time = 0.033
+	timer.autostart = true
+	visual.add_child(timer)
+	
+	timer.timeout.connect(func():
+		anim += 0.033
+		if is_instance_valid(visual):
+			visual.queue_redraw()
+	)
+	
+	# Auto-destruir después de 12 segundos (duración del escudo)
+	get_tree().create_timer(12.0).timeout.connect(func():
+		if is_instance_valid(visual):
+			visual.queue_free()
+	)
 
 func _perform_melee_attack() -> void:
 	"""Ataque melee: daño directo al jugador"""
@@ -1379,10 +1671,10 @@ func _spawn_boss_impact_effect() -> void:
 	)
 
 func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
-	"""Visual de explosión de vacío - púrpura con absorción"""
+	"""Visual de explosión de vacío ÉPICA - púrpura con absorción"""
 	var effect = Node2D.new()
 	effect.top_level = true  # Independiente del enemigo
-	effect.z_index = 50
+	effect.z_index = 60  # MUY alto para boss
 	effect.global_position = center
 	
 	var parent = enemy.get_parent()
@@ -1397,32 +1689,66 @@ func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 		# Explosión inversa (desde fuera hacia dentro, luego explota)
 		var phase = anim_progress
 		
-		if phase < 0.4:
-			# Fase de absorción
-			var absorb_phase = phase / 0.4
-			var absorb_radius = radius * (1.0 - absorb_phase * 0.7)
-			visual.draw_circle(Vector2.ZERO, absorb_radius, Color(0.5, 0.1, 0.8, 0.4 * absorb_phase))
+		if phase < 0.35:
+			# Fase de absorción - MÁS DRAMÁTICA
+			var absorb_phase = phase / 0.35
+			var absorb_radius = radius * (1.2 - absorb_phase * 0.8)
 			
-			# Partículas siendo absorbidas
-			var particle_count = 12
+			# Múltiples capas de absorción
+			for i in range(5):
+				var layer_r = absorb_radius * (1.0 + i * 0.15)
+				var layer_alpha = 0.3 * absorb_phase * (1.0 - i * 0.15)
+				visual.draw_circle(Vector2.ZERO, layer_r, Color(0.4, 0.05, 0.7, layer_alpha))
+			
+			# Espirales siendo absorbidas
+			var spiral_count = 6
+			for s in range(spiral_count):
+				var spiral_points = PackedVector2Array()
+				for i in range(20):
+					var t = float(i) / 20.0
+					var r = absorb_radius * (1.3 - t) * (1.0 - absorb_phase * 0.6)
+					var angle = t * PI * 3 + (TAU / spiral_count) * s + phase * PI * 4
+					spiral_points.append(Vector2(cos(angle), sin(angle)) * r)
+				if spiral_points.size() > 1:
+					visual.draw_polyline(spiral_points, Color(0.7, 0.2, 1.0, 0.7 * absorb_phase), 3.0)
+			
+			# Partículas siendo absorbidas - MÁS
+			var particle_count = 16
 			for i in range(particle_count):
-				var angle = (TAU / particle_count) * i + phase * PI
-				var dist = absorb_radius * (1.2 - absorb_phase * 0.5)
+				var angle = (TAU / particle_count) * i + phase * PI * 2
+				var dist = absorb_radius * (1.4 - absorb_phase * 0.7)
 				var pos = Vector2(cos(angle), sin(angle)) * dist
-				visual.draw_circle(pos, 4, Color(0.8, 0.3, 1.0, 0.8))
+				visual.draw_circle(pos, 6, Color(0.85, 0.4, 1.0, 0.9))
+				visual.draw_circle(pos, 9, Color(0.85, 0.4, 1.0, 0.3))
 		else:
-			# Fase de explosión
-			var explode_phase = (phase - 0.4) / 0.6
-			var explode_radius = radius * explode_phase
+			# Fase de explosión - MUCHO MÁS ÉPICA
+			var explode_phase = (phase - 0.35) / 0.65
+			var explode_radius = radius * 1.3 * explode_phase
 			
-			# Ondas de vacío
+			# Ondas de vacío múltiples
+			for i in range(5):
+				var wave_r = explode_radius * (0.25 + i * 0.2)
+				var wave_alpha = (1.0 - explode_phase) * (0.7 - i * 0.12)
+				visual.draw_arc(Vector2.ZERO, wave_r, 0, TAU, 48, Color(0.6, 0.1, 0.95, wave_alpha), 5.0 - i)
+			
+			# Relleno de explosión
 			for i in range(4):
-				var wave_r = explode_radius * (0.3 + i * 0.2)
-				var wave_alpha = (1.0 - explode_phase) * (0.5 - i * 0.1)
-				visual.draw_arc(Vector2.ZERO, wave_r, 0, TAU, 32, Color(0.6, 0.15, 0.9, wave_alpha), 3.0)
+				var fill_r = explode_radius * (1.0 - i * 0.2)
+				var fill_alpha = (1.0 - explode_phase) * (0.4 - i * 0.08)
+				visual.draw_circle(Vector2.ZERO, fill_r, Color(0.5, 0.1, 0.8, fill_alpha))
 			
-			# Centro oscuro
-			visual.draw_circle(Vector2.ZERO, 20 * (1.0 - explode_phase), Color(0.2, 0, 0.3, 0.8))
+			# Rayos de energía oscura
+			var ray_count = 12
+			for i in range(ray_count):
+				var ray_angle = (TAU / ray_count) * i + explode_phase * PI * 0.5
+				var ray_length = explode_radius * (0.8 + sin(explode_phase * PI * 3 + i) * 0.3)
+				var ray_end = Vector2(cos(ray_angle), sin(ray_angle)) * ray_length
+				visual.draw_line(Vector2.ZERO, ray_end, Color(0.9, 0.5, 1.0, (1.0 - explode_phase) * 0.8), 3.0)
+			
+			# Centro oscuro pulsante
+			var core_size = 30 * (1.0 - explode_phase * 0.7)
+			visual.draw_circle(Vector2.ZERO, core_size, Color(0.15, 0, 0.25, 0.95 * (1.0 - explode_phase)))
+			visual.draw_circle(Vector2.ZERO, core_size * 0.5, Color(0.3, 0, 0.5, 0.8))
 	)
 	
 	var tween = create_tween()
@@ -1430,17 +1756,17 @@ func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 		anim_progress = val
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.6)
+	, 0.0, 1.0, 0.9)  # Más largo para ser épico
 	tween.tween_callback(func():
 		if is_instance_valid(effect):
 			effect.queue_free()
 	)
 
 func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
-	"""Visual de explosión de runas - símbolos brillantes"""
+	"""Visual de explosión de runas ÉPICA - símbolos brillantes"""
 	var effect = Node2D.new()
 	effect.top_level = true  # Independiente del enemigo
-	effect.z_index = 50
+	effect.z_index = 60  # MUY alto para boss
 	effect.global_position = center
 	
 	var parent = enemy.get_parent()
@@ -1448,36 +1774,77 @@ func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 		parent.add_child(effect)
 	
 	var anim_progress = 0.0
-	var rune_count = 6
+	var rune_count = 8
 	var visual = Node2D.new()
 	effect.add_child(visual)
 	
 	visual.draw.connect(func():
-		var expand = radius * anim_progress
+		var expand = radius * 1.2 * anim_progress
 		
-		# Círculo central de runas
-		visual.draw_arc(Vector2.ZERO, expand * 0.5, 0, TAU, 32, Color(0.9, 0.8, 0.2, 0.6 * (1.0 - anim_progress)), 2.0)
+		# Círculos mágicos concéntricos (nuevo)
+		for c in range(3):
+			var circle_r = expand * (0.4 + c * 0.25)
+			var circle_alpha = 0.5 * (1.0 - anim_progress) * (1.0 - c * 0.25)
+			visual.draw_arc(Vector2.ZERO, circle_r, 0, TAU, 48, Color(0.95, 0.85, 0.15, circle_alpha), 3.0)
 		
-		# Runas individuales que se expanden
+		# Relleno dorado con gradiente
+		for i in range(4):
+			var fill_r = expand * (0.9 - i * 0.15)
+			var fill_alpha = (1.0 - anim_progress) * (0.3 - i * 0.06)
+			visual.draw_circle(Vector2.ZERO, fill_r, Color(1, 0.9, 0.2, fill_alpha))
+		
+		# Runas individuales que se expanden - MÁS Y MÁS GRANDES
 		for i in range(rune_count):
-			var angle = (TAU / rune_count) * i + anim_progress * PI * 0.5
-			var dist = expand * (0.5 + anim_progress * 0.5)
+			var angle = (TAU / rune_count) * i + anim_progress * PI * 0.7
+			var dist = expand * (0.45 + anim_progress * 0.55)
 			var pos = Vector2(cos(angle), sin(angle)) * dist
 			
-			# Dibujar runa como forma geométrica
-			var rune_size = 10 * (1.0 - anim_progress * 0.5)
+			# Dibujar runa como forma geométrica - MÁS GRANDE
+			var rune_size = 18 * (1.0 - anim_progress * 0.4)
+			
+			# Triángulo exterior
 			var rune_points = PackedVector2Array([
 				pos + Vector2(0, -rune_size),
-				pos + Vector2(rune_size * 0.7, rune_size * 0.5),
-				pos + Vector2(-rune_size * 0.7, rune_size * 0.5)
+				pos + Vector2(rune_size * 0.85, rune_size * 0.6),
+				pos + Vector2(-rune_size * 0.85, rune_size * 0.6)
 			])
-			visual.draw_colored_polygon(rune_points, Color(1, 0.9, 0.3, 0.8 * (1.0 - anim_progress)))
+			visual.draw_colored_polygon(rune_points, Color(1, 0.92, 0.35, 0.9 * (1.0 - anim_progress)))
 			
-			# Brillo alrededor
-			visual.draw_circle(pos, rune_size * 1.5, Color(1, 1, 0.5, 0.3 * (1.0 - anim_progress)))
+			# Triángulo interior invertido
+			var inner_size = rune_size * 0.5
+			var inner_points = PackedVector2Array([
+				pos + Vector2(0, inner_size * 0.5),
+				pos + Vector2(inner_size * 0.4, -inner_size * 0.3),
+				pos + Vector2(-inner_size * 0.4, -inner_size * 0.3)
+			])
+			visual.draw_colored_polygon(inner_points, Color(1, 1, 0.8, 0.95 * (1.0 - anim_progress)))
+			
+			# Brillo alrededor - MÁS GRANDE
+			visual.draw_circle(pos, rune_size * 2.0, Color(1, 1, 0.5, 0.25 * (1.0 - anim_progress)))
+			visual.draw_circle(pos, rune_size * 1.3, Color(1, 0.95, 0.4, 0.4 * (1.0 - anim_progress)))
 		
-		# Onda de expansión final
-		visual.draw_arc(Vector2.ZERO, expand, 0, TAU, 48, Color(1, 1, 1, 0.5 * (1.0 - anim_progress)), 3.0)
+		# Líneas de conexión entre runas (nuevo)
+		for i in range(rune_count):
+			var angle1 = (TAU / rune_count) * i + anim_progress * PI * 0.7
+			var angle2 = (TAU / rune_count) * ((i + 1) % rune_count) + anim_progress * PI * 0.7
+			var dist = expand * (0.45 + anim_progress * 0.55)
+			var pos1 = Vector2(cos(angle1), sin(angle1)) * dist
+			var pos2 = Vector2(cos(angle2), sin(angle2)) * dist
+			visual.draw_line(pos1, pos2, Color(1, 0.9, 0.3, 0.4 * (1.0 - anim_progress)), 2.0)
+		
+		# Rayos desde el centro (nuevo)
+		for i in range(rune_count):
+			var ray_angle = (TAU / rune_count) * i + anim_progress * PI * 0.3
+			var ray_length = expand * 0.9
+			var ray_end = Vector2(cos(ray_angle), sin(ray_angle)) * ray_length
+			visual.draw_line(Vector2.ZERO, ray_end, Color(1, 1, 0.7, 0.5 * (1.0 - anim_progress)), 2.0)
+		
+		# Onda de expansión final - MÁS BRILLANTE
+		visual.draw_arc(Vector2.ZERO, expand, 0, TAU, 64, Color(1, 1, 1, 0.7 * (1.0 - anim_progress)), 4.0)
+		
+		# Centro brillante
+		var core_size = 20 * (1.0 - anim_progress * 0.5)
+		visual.draw_circle(Vector2.ZERO, core_size, Color(1, 1, 0.9, 0.9 * (1.0 - anim_progress)))
 	)
 	
 	var tween = create_tween()
@@ -1485,17 +1852,17 @@ func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 		anim_progress = val
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.4)
+	, 0.0, 1.0, 0.6)  # Más largo
 	tween.tween_callback(func():
 		if is_instance_valid(effect):
 			effect.queue_free()
 	)
 
 func _spawn_fire_stomp_visual(center: Vector2, radius: float) -> void:
-	"""Visual de pisotón de fuego - onda de fuego expansiva"""
+	"""Visual de pisotón de fuego ÉPICO - onda de fuego expansiva"""
 	var effect = Node2D.new()
 	effect.top_level = true  # Independiente del enemigo
-	effect.z_index = 50
+	effect.z_index = 60  # MUY alto para boss
 	effect.global_position = center
 	
 	var parent = enemy.get_parent()
@@ -1507,37 +1874,68 @@ func _spawn_fire_stomp_visual(center: Vector2, radius: float) -> void:
 	effect.add_child(visual)
 	
 	visual.draw.connect(func():
-		var expand = radius * anim_progress
+		var expand = radius * 1.2 * anim_progress
 		
-		# Cráter central
-		visual.draw_circle(Vector2.ZERO, expand * 0.3, Color(0.3, 0.1, 0, 0.7 * (1.0 - anim_progress)))
+		# Cráter central - MÁS DETALLADO
+		var crater_size = expand * 0.35
+		visual.draw_circle(Vector2.ZERO, crater_size, Color(0.2, 0.05, 0, 0.8 * (1.0 - anim_progress)))
+		visual.draw_arc(Vector2.ZERO, crater_size * 0.7, 0, TAU, 24, Color(0.4, 0.1, 0, 0.6), 3.0)
 		
-		# Anillos de fuego
+		# Anillos de fuego - MÁS Y MÁS GRUESOS
+		for i in range(5):
+			var ring_r = expand * (0.35 + i * 0.18)
+			var ring_alpha = (1.0 - anim_progress) * (0.85 - i * 0.14)
+			var ring_color = Color(1.0 - i * 0.08, 0.45 - i * 0.08, 0.05, ring_alpha)
+			visual.draw_arc(Vector2.ZERO, ring_r, 0, TAU, 48, ring_color, 6.0 - i)
+		
+		# Relleno de fuego con gradiente
 		for i in range(4):
-			var ring_r = expand * (0.4 + i * 0.2)
-			var ring_alpha = (1.0 - anim_progress) * (0.7 - i * 0.15)
-			var ring_color = Color(1.0 - i * 0.1, 0.4 - i * 0.1, 0.05, ring_alpha)
-			visual.draw_arc(Vector2.ZERO, ring_r, 0, TAU, 32, ring_color, 4.0 - i)
+			var fill_r = expand * (0.9 - i * 0.15)
+			var fill_alpha = (1.0 - anim_progress) * (0.35 - i * 0.07)
+			visual.draw_circle(Vector2.ZERO, fill_r, Color(1.0, 0.3, 0.05, fill_alpha))
 		
-		# Llamas alrededor
-		var flame_count = 12
+		# Llamas alrededor - MÁS Y MÁS GRANDES
+		var flame_count = 16
 		for i in range(flame_count):
 			var angle = (TAU / flame_count) * i
-			var flame_dist = expand * 0.8
+			var flame_dist = expand * 0.75
 			var flame_base = Vector2(cos(angle), sin(angle)) * flame_dist
 			
-			# Altura de llama animada
-			var flame_height = 15 * (1.0 - anim_progress) * (0.8 + sin(anim_progress * PI * 4 + i) * 0.2)
-			var flame_width = 6
+			# Altura de llama animada - más dramática
+			var flame_height = 25 * (1.0 - anim_progress * 0.6) * (0.7 + sin(anim_progress * PI * 5 + i * 1.2) * 0.3)
+			var flame_width = 10
 			
 			var flame_tip = flame_base + Vector2(0, -flame_height)
 			var flame_left = flame_base + Vector2(-flame_width, 0)
 			var flame_right = flame_base + Vector2(flame_width, 0)
 			
+			# Llama exterior (roja)
 			visual.draw_colored_polygon(
 				PackedVector2Array([flame_tip, flame_left, flame_right]),
-				Color(1, 0.5, 0.1, 0.8 * (1.0 - anim_progress))
+				Color(1, 0.35, 0.08, 0.85 * (1.0 - anim_progress))
 			)
+			
+			# Núcleo de llama (amarillo)
+			var inner_tip = flame_base + Vector2(0, -flame_height * 0.6)
+			var inner_left = flame_base + Vector2(-flame_width * 0.5, 0)
+			var inner_right = flame_base + Vector2(flame_width * 0.5, 0)
+			visual.draw_colored_polygon(
+				PackedVector2Array([inner_tip, inner_left, inner_right]),
+				Color(1, 0.8, 0.2, 0.9 * (1.0 - anim_progress))
+			)
+		
+		# Chispas voladoras (nuevo)
+		var spark_count = 20
+		for i in range(spark_count):
+			var spark_angle = (TAU / spark_count) * i + anim_progress * PI
+			var spark_dist = expand * (0.5 + anim_progress * 0.8)
+			var spark_pos = Vector2(cos(spark_angle), sin(spark_angle)) * spark_dist
+			spark_pos.y -= anim_progress * 30 * sin(i * 0.7)  # Chispas que suben
+			var spark_size = 4.0 * (1.0 - anim_progress * 0.6)
+			visual.draw_circle(spark_pos, spark_size, Color(1, 0.9, 0.3, 0.8 * (1.0 - anim_progress)))
+		
+		# Onda de calor exterior
+		visual.draw_arc(Vector2.ZERO, expand, 0, TAU, 64, Color(1, 0.5, 0.1, 0.5 * (1.0 - anim_progress)), 4.0)
 	)
 	
 	var tween = create_tween()
@@ -1545,7 +1943,7 @@ func _spawn_fire_stomp_visual(center: Vector2, radius: float) -> void:
 		anim_progress = val
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.5)
+	, 0.0, 1.0, 0.7)  # Más largo para ser épico
 	tween.tween_callback(func():
 		if is_instance_valid(effect):
 			effect.queue_free()
@@ -1608,25 +2006,30 @@ func _get_enemy_element() -> String:
 	return "physical"
 
 func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
-	"""Crear efecto visual de AoE mejorado con animación de expansión"""
+	"""Crear efecto visual de AoE ÉPICO con animación de expansión"""
 	var elem = _get_enemy_element()
 	var base_color = _get_element_color(elem)
-	var bright_color = Color(base_color.r + 0.3, base_color.g + 0.3, base_color.b + 0.3, 0.9)
+	var bright_color = Color(min(base_color.r + 0.4, 1.0), min(base_color.g + 0.4, 1.0), min(base_color.b + 0.4, 1.0), 1.0)
 	
 	# Crear contenedor principal - INDEPENDIENTE del enemigo
 	var container = Node2D.new()
 	container.name = "AoE_Visual"
 	container.top_level = true  # No se mueve con el padre
-	container.z_index = 50  # Visible encima de otros elementos
+	container.z_index = 55  # MUY visible encima de otros elementos
 	container.global_position = center
 	
 	var parent = enemy.get_parent()
 	if parent:
 		parent.add_child(container)
 	
+	# Determinar si es élite para efectos más grandes
+	var is_elite = enemy.get("is_elite") if "is_elite" in enemy else false
+	var size_mult = 1.3 if is_elite else 1.0
+	var actual_radius = radius * size_mult
+	
 	# Variables de animación
 	var anim_progress = 0.0
-	var ring_count = 3
+	var ring_count = 4
 	
 	# Nodo visual para dibujar
 	var visual = Node2D.new()
@@ -1634,86 +2037,127 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 	
 	visual.draw.connect(func():
 		# Círculo de impacto central que se expande
-		var expand_radius = radius * anim_progress
+		var expand_radius = actual_radius * anim_progress
+		
+		# GLOW EXTERIOR GRANDE (nuevo)
+		for g in range(4):
+			var glow_r = expand_radius * (1.0 + g * 0.1)
+			var glow_alpha = 0.15 * (1.0 - anim_progress) * (1.0 - g * 0.2)
+			if glow_r > 0:
+				visual.draw_circle(Vector2.ZERO, glow_r, Color(base_color.r, base_color.g, base_color.b, glow_alpha))
 		
 		# Círculo exterior con gradiente simulado (múltiples capas)
-		for i in range(5):
-			var layer_radius = expand_radius * (1.0 - i * 0.15)
-			var layer_alpha = (0.4 - i * 0.08) * (1.0 - anim_progress * 0.5)
+		for i in range(6):
+			var layer_radius = expand_radius * (1.0 - i * 0.12)
+			var layer_alpha = (0.5 - i * 0.07) * (1.0 - anim_progress * 0.4)
 			if layer_radius > 0:
 				visual.draw_circle(Vector2.ZERO, layer_radius, Color(base_color.r, base_color.g, base_color.b, layer_alpha))
 		
-		# Anillos de onda expansiva
+		# Anillos de onda expansiva - MÁS GRUESOS
 		for i in range(ring_count):
-			var ring_phase = fmod(anim_progress * 2 + i * 0.3, 1.0)
-			var ring_radius = radius * ring_phase
-			var ring_alpha = (1.0 - ring_phase) * 0.8
+			var ring_phase = fmod(anim_progress * 2.5 + i * 0.25, 1.0)
+			var ring_radius = actual_radius * ring_phase
+			var ring_alpha = (1.0 - ring_phase) * 0.9
 			if ring_radius > 0:
-				visual.draw_arc(Vector2.ZERO, ring_radius, 0, TAU, 32, Color(bright_color.r, bright_color.g, bright_color.b, ring_alpha), 2.0)
+				visual.draw_arc(Vector2.ZERO, ring_radius, 0, TAU, 48, Color(bright_color.r, bright_color.g, bright_color.b, ring_alpha), 4.0)
 		
-		# Partículas decorativas alrededor
-		var particle_count = 8
+		# Partículas decorativas alrededor - MÁS Y MÁS GRANDES
+		var particle_count = 12
 		for i in range(particle_count):
-			var angle = (TAU / particle_count) * i + anim_progress * PI
-			var dist = expand_radius * 0.8
+			var angle = (TAU / particle_count) * i + anim_progress * PI * 1.5
+			var dist = expand_radius * (0.7 + sin(anim_progress * PI * 3 + i) * 0.2)
 			var particle_pos = Vector2(cos(angle), sin(angle)) * dist
-			var particle_size = 3.0 + sin(anim_progress * PI * 4 + i) * 2.0
+			var particle_size = (5.0 + sin(anim_progress * PI * 5 + i) * 3.0) * size_mult
 			visual.draw_circle(particle_pos, particle_size, bright_color)
+			# Glow de partícula
+			visual.draw_circle(particle_pos, particle_size * 1.5, Color(bright_color.r, bright_color.g, bright_color.b, 0.3))
 		
-		# Borde exterior final
+		# Rayos desde el centro (nuevo)
+		var ray_count = 8
+		for i in range(ray_count):
+			var ray_angle = (TAU / ray_count) * i + anim_progress * PI * 0.5
+			var ray_length = expand_radius * (0.3 + anim_progress * 0.7)
+			var ray_end = Vector2(cos(ray_angle), sin(ray_angle)) * ray_length
+			visual.draw_line(Vector2.ZERO, ray_end, Color(1, 1, 1, 0.5 * (1.0 - anim_progress)), 2.0)
+		
+		# Borde exterior final - MÁS BRILLANTE
 		if expand_radius > 0:
-			visual.draw_arc(Vector2.ZERO, expand_radius, 0, TAU, 48, Color(1, 1, 1, 0.6 * (1.0 - anim_progress)), 3.0)
+			visual.draw_arc(Vector2.ZERO, expand_radius, 0, TAU, 64, Color(1, 1, 1, 0.8 * (1.0 - anim_progress)), 4.0)
+		
+		# Centro de impacto
+		var core_size = expand_radius * 0.15 * (1.0 - anim_progress * 0.5)
+		if core_size > 0:
+			visual.draw_circle(Vector2.ZERO, core_size, Color(1, 1, 1, 0.9 * (1.0 - anim_progress)))
 	)
 	
-	# Animación de expansión - MÁS LARGA para ser visible
+	# Animación de expansión - MÁS LARGA para ser muy visible
 	var tween = create_tween()
 	tween.tween_method(func(val):
 		anim_progress = val
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.6)
+	, 0.0, 1.0, 0.8)  # 0.8 segundos (antes 0.6)
 	
-	# Fade out y destruir
-	tween.tween_property(container, "modulate:a", 0.0, 0.3)
+	# Fade out suave y destruir
+	tween.tween_property(container, "modulate:a", 0.0, 0.35)
 	tween.tween_callback(func():
 		if is_instance_valid(container):
 			container.queue_free()
 	)
 
 func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float) -> void:
-	"""Crear efecto visual de breath attack mejorado con animación de expansión"""
+	"""Crear efecto visual de breath attack ÉPICO con animación de expansión"""
 	var container = Node2D.new()
 	container.name = "Breath_Visual"
 	container.top_level = true  # No se mueve con el padre
-	container.z_index = 50  # Visible encima de otros elementos
+	container.z_index = 55  # MUY visible encima de otros elementos
 	container.global_position = origin
 	container.rotation = direction.angle()
 	
 	var elem = _get_enemy_element()
 	var base_color = _get_element_color(elem)
-	var bright_color = Color(base_color.r + 0.4, base_color.g + 0.4, base_color.b + 0.2, 0.9)
+	var bright_color = Color(min(base_color.r + 0.5, 1.0), min(base_color.g + 0.5, 1.0), min(base_color.b + 0.3, 1.0), 1.0)
 	
 	var parent = enemy.get_parent()
 	if parent:
 		parent.add_child(container)
+	
+	# Determinar si es élite/boss para efectos más grandes
+	var is_elite = enemy.get("is_elite") if "is_elite" in enemy else false
+	var is_boss = enemy.get("archetype") == "boss" if "archetype" in enemy else false
+	var size_mult = 1.5 if is_boss else (1.3 if is_elite else 1.0)
+	var actual_range = range_dist * size_mult
 	
 	var anim_progress = 0.0
 	var visual = Node2D.new()
 	container.add_child(visual)
 	
 	visual.draw.connect(func():
-		var current_range = range_dist * anim_progress
-		var cone_width = 0.35  # Ancho del cono (porcentaje del rango)
+		var current_range = actual_range * anim_progress
+		var cone_width = 0.45  # Ancho del cono más amplio
 		
 		if current_range < 5:
 			return
 		
+		# GLOW EXTERIOR DEL CONO (nuevo)
+		for g in range(3):
+			var glow_range = current_range * (1.0 + g * 0.08)
+			var glow_width = cone_width * (1.0 + g * 0.15)
+			var glow_alpha = 0.2 * (1.0 - anim_progress * 0.3) * (1.0 - g * 0.3)
+			var glow_points = PackedVector2Array([
+				Vector2.ZERO,
+				Vector2(glow_range, -glow_range * glow_width),
+				Vector2(glow_range * 1.1, 0),
+				Vector2(glow_range, glow_range * glow_width)
+			])
+			visual.draw_colored_polygon(glow_points, Color(base_color.r, base_color.g, base_color.b, glow_alpha))
+		
 		# Múltiples capas del cono para efecto de gradiente
-		for i in range(5):
-			var layer_mult = 1.0 - i * 0.15
+		for i in range(6):
+			var layer_mult = 1.0 - i * 0.12
 			var layer_range = current_range * layer_mult
-			var layer_width = cone_width * (1.0 + i * 0.1)
-			var layer_alpha = (0.5 - i * 0.08) * (1.0 - anim_progress * 0.3)
+			var layer_width = cone_width * (1.0 + i * 0.08)
+			var layer_alpha = (0.6 - i * 0.08) * (1.0 - anim_progress * 0.25)
 			
 			var cone_points = PackedVector2Array([
 				Vector2.ZERO,
@@ -1723,41 +2167,56 @@ func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float
 			])
 			visual.draw_colored_polygon(cone_points, Color(base_color.r, base_color.g, base_color.b, layer_alpha))
 		
-		# Núcleo brillante central
+		# Núcleo brillante central - MÁS INTENSO
 		var core_points = PackedVector2Array([
 			Vector2.ZERO,
-			Vector2(current_range * 0.9, -current_range * cone_width * 0.3),
-			Vector2(current_range * 0.95, 0),
-			Vector2(current_range * 0.9, current_range * cone_width * 0.3)
+			Vector2(current_range * 0.85, -current_range * cone_width * 0.35),
+			Vector2(current_range * 0.9, 0),
+			Vector2(current_range * 0.85, current_range * cone_width * 0.35)
 		])
-		visual.draw_colored_polygon(core_points, Color(bright_color.r, bright_color.g, bright_color.b, 0.7))
+		visual.draw_colored_polygon(core_points, Color(bright_color.r, bright_color.g, bright_color.b, 0.85))
 		
-		# Partículas a lo largo del breath
-		var particle_count = int(8 * anim_progress)
+		# Centro super brillante
+		var inner_core = PackedVector2Array([
+			Vector2.ZERO,
+			Vector2(current_range * 0.6, -current_range * cone_width * 0.15),
+			Vector2(current_range * 0.65, 0),
+			Vector2(current_range * 0.6, current_range * cone_width * 0.15)
+		])
+		visual.draw_colored_polygon(inner_core, Color(1, 1, 1, 0.7 * (1.0 - anim_progress * 0.5)))
+		
+		# Partículas a lo largo del breath - MÁS Y MÁS GRANDES
+		var particle_count = int(15 * anim_progress)
 		for i in range(particle_count):
 			var t = float(i) / max(particle_count, 1)
 			var particle_dist = current_range * t
-			var wobble = sin(anim_progress * PI * 4 + i * 0.8) * cone_width * particle_dist * 0.3
+			var wobble = sin(anim_progress * PI * 5 + i * 1.2) * cone_width * particle_dist * 0.35
 			var particle_pos = Vector2(particle_dist, wobble)
-			var particle_size = 4.0 * (1.0 - t * 0.5)
+			var particle_size = (7.0 * (1.0 - t * 0.4)) * size_mult
 			visual.draw_circle(particle_pos, particle_size, bright_color)
+			# Mini glow
+			visual.draw_circle(particle_pos, particle_size * 1.4, Color(bright_color.r, bright_color.g, bright_color.b, 0.3))
 		
-		# Borde brillante del cono
-		visual.draw_line(Vector2.ZERO, Vector2(current_range, -current_range * cone_width), Color(1, 1, 1, 0.5), 2.0)
-		visual.draw_line(Vector2.ZERO, Vector2(current_range, current_range * cone_width), Color(1, 1, 1, 0.5), 2.0)
+		# Borde brillante del cono - MÁS GRUESO
+		visual.draw_line(Vector2.ZERO, Vector2(current_range, -current_range * cone_width), Color(1, 1, 1, 0.7), 3.0)
+		visual.draw_line(Vector2.ZERO, Vector2(current_range, current_range * cone_width), Color(1, 1, 1, 0.7), 3.0)
+		
+		# Arco frontal del cono (nuevo)
+		var arc_radius = current_range * cone_width * 0.3
+		visual.draw_arc(Vector2(current_range, 0), arc_radius, -PI/2, PI/2, 12, Color(1, 1, 1, 0.5 * (1.0 - anim_progress)), 2.0)
 	)
 	
-	# Animación de expansión rápida
+	# Animación de expansión - MÁS LARGA
 	var tween = create_tween()
 	tween.tween_method(func(val):
 		anim_progress = val
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.3)
+	, 0.0, 1.0, 0.45)  # Más tiempo para la expansión
 	
-	# Mantener un momento y fade out
-	tween.tween_interval(0.15)
-	tween.tween_property(container, "modulate:a", 0.0, 0.25)
+	# Mantener un momento y fade out suave
+	tween.tween_interval(0.25)
+	tween.tween_property(container, "modulate:a", 0.0, 0.35)
 	tween.tween_callback(func():
 		if is_instance_valid(container):
 			container.queue_free()
@@ -1775,7 +2234,7 @@ func _get_element_color(elem: String) -> Color:
 		_: return Color(0.9, 0.9, 0.9, 0.8)            # Blanco físico
 
 func _emit_melee_effect() -> void:
-	"""Emitir efecto visual de ataque melee con slash animado"""
+	"""Emitir efecto visual de ataque melee ÉPICO con slash animado"""
 	if not enemy or not player:
 		return
 	
@@ -1786,7 +2245,7 @@ func _emit_melee_effect() -> void:
 	var slash = Node2D.new()
 	slash.name = "MeleeSlash"
 	slash.top_level = true  # No se mueve con el padre
-	slash.z_index = 50  # Visible encima de otros elementos
+	slash.z_index = 55  # MUY visible encima de otros elementos
 	slash.global_position = slash_pos
 	slash.rotation = direction.angle()
 	
@@ -1796,47 +2255,69 @@ func _emit_melee_effect() -> void:
 	
 	var elem = _get_enemy_element()
 	var base_color = _get_element_color(elem)
+	var bright_color = Color(min(base_color.r + 0.4, 1.0), min(base_color.g + 0.4, 1.0), min(base_color.b + 0.4, 1.0), 1.0)
 	var anim_progress = 0.0
+	
+	# Determinar si es élite para efectos más grandes
+	var is_elite = enemy.get("is_elite") if "is_elite" in enemy else false
+	var size_mult = 1.5 if is_elite else 1.0
 	
 	var visual = Node2D.new()
 	slash.add_child(visual)
 	
 	visual.draw.connect(func():
-		var arc_angle = PI * 0.7  # Ángulo del arco de slash
-		var arc_radius = 30.0 * (0.5 + anim_progress * 0.5)
+		var arc_angle = PI * 0.85  # Ángulo del arco de slash más amplio
+		var arc_radius = 45.0 * (0.5 + anim_progress * 0.5) * size_mult
 		var arc_start = -arc_angle / 2 + (1.0 - anim_progress) * arc_angle * 0.3
 		var arc_end = arc_angle / 2 - (1.0 - anim_progress) * arc_angle * 0.3
 		
-		# Múltiples arcos para efecto de estela
-		for i in range(4):
-			var layer_radius = arc_radius * (1.0 - i * 0.15)
-			var layer_alpha = (0.9 - i * 0.2) * (1.0 - anim_progress * 0.7)
-			var layer_width = (5.0 - i * 1.0) * (1.0 - anim_progress * 0.5)
+		# GLOW EXTERIOR (nuevo)
+		for g in range(3):
+			var glow_radius = arc_radius * (1.2 + g * 0.15)
+			var glow_alpha = 0.2 * (1.0 - anim_progress) * (1.0 - g * 0.25)
+			if glow_radius > 0:
+				visual.draw_arc(Vector2.ZERO, glow_radius, arc_start, arc_end, 20, Color(base_color.r, base_color.g, base_color.b, glow_alpha), 8.0 - g * 2)
+		
+		# Múltiples arcos para efecto de estela - MÁS GRUESOS
+		for i in range(5):
+			var layer_radius = arc_radius * (1.0 - i * 0.12)
+			var layer_alpha = (1.0 - i * 0.18) * (1.0 - anim_progress * 0.5)
+			var layer_width = (8.0 - i * 1.5) * (1.0 - anim_progress * 0.3) * size_mult
 			if layer_width > 0:
-				visual.draw_arc(Vector2.ZERO, layer_radius, arc_start, arc_end, 16, Color(base_color.r, base_color.g, base_color.b, layer_alpha), layer_width)
+				visual.draw_arc(Vector2.ZERO, layer_radius, arc_start, arc_end, 20, Color(base_color.r, base_color.g, base_color.b, layer_alpha), layer_width)
 		
-		# Destello en el borde del slash
+		# Núcleo brillante blanco
+		visual.draw_arc(Vector2.ZERO, arc_radius * 0.7, arc_start * 0.8, arc_end * 0.8, 16, Color(1, 1, 1, 0.9 * (1.0 - anim_progress)), 4.0 * size_mult)
+		
+		# Destello en el borde del slash - MÁS GRANDE
 		var flash_pos = Vector2(cos(arc_end), sin(arc_end)) * arc_radius
-		var flash_size = 6.0 * (1.0 - anim_progress)
-		visual.draw_circle(flash_pos, flash_size, Color(1, 1, 1, 0.8 * (1.0 - anim_progress)))
+		var flash_size = 12.0 * (1.0 - anim_progress) * size_mult
+		visual.draw_circle(flash_pos, flash_size, Color(1, 1, 1, 0.95 * (1.0 - anim_progress)))
+		visual.draw_circle(flash_pos, flash_size * 0.5, bright_color)
 		
-		# Chispas
-		var spark_count = 4
+		# Chispas múltiples que vuelan
+		var spark_count = 8
 		for i in range(spark_count):
 			var spark_angle = arc_start + (arc_end - arc_start) * (float(i) / spark_count)
-			var spark_dist = arc_radius * (0.7 + anim_progress * 0.5)
+			var spark_dist = arc_radius * (0.6 + anim_progress * 0.8)
 			var spark_pos = Vector2(cos(spark_angle), sin(spark_angle)) * spark_dist
-			var spark_size = 2.0 * (1.0 - anim_progress)
-			visual.draw_circle(spark_pos, spark_size, Color(1, 1, 0.8, 0.7 * (1.0 - anim_progress)))
+			var spark_size = (4.0 - i * 0.3) * (1.0 - anim_progress) * size_mult
+			visual.draw_circle(spark_pos, spark_size, Color(1, 1, 0.7, 0.8 * (1.0 - anim_progress)))
+		
+		# Líneas de energía desde el centro (nuevo)
+		for i in range(5):
+			var line_angle = arc_start + (arc_end - arc_start) * (float(i) / 4)
+			var line_end = Vector2(cos(line_angle), sin(line_angle)) * arc_radius * (0.5 + anim_progress * 0.5)
+			visual.draw_line(Vector2.ZERO, line_end, Color(bright_color.r, bright_color.g, bright_color.b, 0.5 * (1.0 - anim_progress)), 2.0)
 	)
 	
-	# Animación más larga para ser visible
+	# Animación MÁS LARGA para ser visible
 	var tween = create_tween()
 	tween.tween_method(func(val):
 		anim_progress = val
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.35)
+	, 0.0, 1.0, 0.5)  # 0.5 segundos (antes 0.35)
 	
 	tween.tween_callback(func():
 		if is_instance_valid(slash):
@@ -1901,7 +2382,7 @@ func _create_boss_projectile_internal(direction: Vector2, damage: int, element: 
 		projectile.initialize(direction, projectile_speed * 1.2, damage, 5.0, element)
 
 func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float, element: String) -> void:
-	"""Crear orbe que persigue al jugador"""
+	"""Crear orbe ÉPICO que persigue al jugador"""
 	if not is_instance_valid(enemy) or not is_instance_valid(player):
 		return
 	
@@ -1909,25 +2390,52 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	orb.name = "HomingOrb"
 	orb.top_level = true  # No se mueve con el enemigo si este muere
 	orb.global_position = pos
-	orb.z_index = 60  # MUY visible, encima de casi todo
+	orb.z_index = 65  # MUY visible, encima de casi todo
 	
-	# Visual mejorado - MÁS GRANDE Y BRILLANTE
+	# Visual mejorado - MUY GRANDE Y BRILLANTE
 	var visual = Node2D.new()
 	orb.add_child(visual)
 	var color = _get_element_color(element)
+	var bright_color = Color(min(color.r + 0.4, 1.0), min(color.g + 0.4, 1.0), min(color.b + 0.4, 1.0), 1.0)
 	var orb_time = 0.0
 	
+	# Trail del orbe
+	var trail_positions: Array = []
+	var max_trail = 12
+	
 	visual.draw.connect(func():
-		var pulse = 1.0 + sin(orb_time * 6) * 0.2
-		# Glow exterior grande
-		visual.draw_circle(Vector2.ZERO, 24 * pulse, Color(color.r, color.g, color.b, 0.3))
-		visual.draw_circle(Vector2.ZERO, 20 * pulse, Color(color.r, color.g, color.b, 0.4))
+		var pulse = 1.0 + sin(orb_time * 8) * 0.25
+		
+		# Dibujar trail primero (detrás del orbe)
+		for i in range(trail_positions.size()):
+			var trail_pos = trail_positions[i] - orb.global_position
+			var trail_alpha = float(i) / max_trail * 0.5
+			var trail_size = 8 * (float(i) / max_trail)
+			visual.draw_circle(trail_pos, trail_size, Color(color.r, color.g, color.b, trail_alpha))
+		
+		# Glow exterior MUY grande
+		visual.draw_circle(Vector2.ZERO, 35 * pulse, Color(color.r, color.g, color.b, 0.15))
+		visual.draw_circle(Vector2.ZERO, 28 * pulse, Color(color.r, color.g, color.b, 0.25))
+		visual.draw_circle(Vector2.ZERO, 22 * pulse, Color(color.r, color.g, color.b, 0.4))
+		
 		# Cuerpo principal más grande
-		visual.draw_circle(Vector2.ZERO, 16 * pulse, color)
+		visual.draw_circle(Vector2.ZERO, 18 * pulse, color)
+		
+		# Anillo de energía rotando
+		var ring_angle = orb_time * 5
+		visual.draw_arc(Vector2.ZERO, 22 * pulse, ring_angle, ring_angle + PI * 1.5, 16, bright_color, 2.0)
+		
 		# Núcleo brillante
-		visual.draw_circle(Vector2.ZERO, 10 * pulse, Color(color.r + 0.3, color.g + 0.3, color.b + 0.3, 0.95).clamp())
+		visual.draw_circle(Vector2.ZERO, 12 * pulse, bright_color)
+		
 		# Centro blanco brillante
-		visual.draw_circle(Vector2.ZERO, 5, Color(1, 1, 1, 0.95))
+		visual.draw_circle(Vector2.ZERO, 6, Color(1, 1, 1, 0.98))
+		
+		# Partículas orbitando
+		for i in range(4):
+			var orbit_angle = orb_time * 6 + (TAU / 4) * i
+			var orbit_pos = Vector2(cos(orbit_angle), sin(orbit_angle)) * 25 * pulse
+			visual.draw_circle(orbit_pos, 4, bright_color)
 	)
 	visual.queue_redraw()
 	
@@ -1939,7 +2447,7 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	var time_alive = 0.0
 	var player_ref = player
 	var has_hit = false
-	var hit_radius = 25.0  # Radio de colisión
+	var hit_radius = 28.0  # Radio de colisión más grande
 	
 	# Usar timer para movimiento y colisión por distancia
 	var timer = Timer.new()
@@ -1957,17 +2465,23 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 		time_alive += 0.016
 		orb_time += 0.016
 		
+		# Guardar posición para trail
+		trail_positions.push_front(orb.global_position)
+		if trail_positions.size() > max_trail:
+			trail_positions.pop_back()
+		
 		# Check duración
 		if time_alive >= duration:
 			# Efecto de desvanecimiento
 			var tween = orb.create_tween()
-			tween.tween_property(orb, "modulate:a", 0.0, 0.3)
+			tween.tween_property(orb, "modulate:a", 0.0, 0.4)
 			tween.tween_callback(orb.queue_free)
 			return
 		
-		# Mover hacia player
+		# Mover hacia player con aceleración
 		var dir = (player_ref.global_position - orb.global_position).normalized()
-		orb.global_position += dir * speed * 0.016
+		var current_speed = speed * (1.0 + time_alive * 0.3)  # Acelera con el tiempo
+		orb.global_position += dir * current_speed * 0.016
 		
 		# Actualizar visual
 		visual.queue_redraw()
@@ -1979,17 +2493,18 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 			if player_ref.has_method("take_damage"):
 				player_ref.call("take_damage", damage, element)
 				print("[HomingOrb] 🔮 Impacto en player: %d daño (%s)" % [damage, element])
-			# Efecto de impacto
+			# Efecto de impacto ÉPICO
 			_spawn_orb_impact_effect(orb.global_position, color)
 			orb.queue_free()
 			return
 	)
 
 func _spawn_orb_impact_effect(pos: Vector2, color: Color) -> void:
-	"""Crear efecto visual de impacto de orbe"""
+	"""Crear efecto visual de impacto de orbe ÉPICO"""
 	var effect = Node2D.new()
 	effect.global_position = pos
 	effect.top_level = true
+	effect.z_index = 65
 	
 	if is_instance_valid(enemy):
 		var parent = enemy.get_parent()
@@ -1997,11 +2512,34 @@ func _spawn_orb_impact_effect(pos: Vector2, color: Color) -> void:
 			parent.add_child(effect)
 	
 	var anim_progress = 0.0
+	var bright_color = Color(min(color.r + 0.4, 1.0), min(color.g + 0.4, 1.0), min(color.b + 0.4, 1.0), 1.0)
+	
 	effect.draw.connect(func():
-		var radius = 25 * anim_progress
-		var alpha = (1.0 - anim_progress) * 0.8
-		effect.draw_circle(Vector2.ZERO, radius, Color(color.r, color.g, color.b, alpha * 0.4))
-		effect.draw_arc(Vector2.ZERO, radius * 0.8, 0, TAU, 16, Color(1, 1, 1, alpha), 2.0)
+		var radius = 45 * anim_progress
+		var alpha = (1.0 - anim_progress) * 0.9
+		
+		# Múltiples ondas de expansión
+		for i in range(4):
+			var wave_r = radius * (0.4 + i * 0.2)
+			var wave_alpha = alpha * (1.0 - i * 0.2)
+			effect.draw_circle(Vector2.ZERO, wave_r, Color(color.r, color.g, color.b, wave_alpha * 0.4))
+		
+		# Anillos de energía
+		for i in range(3):
+			var ring_r = radius * (0.7 + i * 0.15)
+			effect.draw_arc(Vector2.ZERO, ring_r, 0, TAU, 24, Color(bright_color.r, bright_color.g, bright_color.b, alpha * (0.8 - i * 0.2)), 3.0 - i)
+		
+		# Rayos de impacto
+		var ray_count = 8
+		for i in range(ray_count):
+			var ray_angle = (TAU / ray_count) * i + anim_progress * PI * 0.5
+			var ray_length = radius * 0.9
+			var ray_end = Vector2(cos(ray_angle), sin(ray_angle)) * ray_length
+			effect.draw_line(Vector2.ZERO, ray_end, Color(1, 1, 1, alpha * 0.7), 2.0)
+		
+		# Centro brillante
+		var core_size = 15 * (1.0 - anim_progress)
+		effect.draw_circle(Vector2.ZERO, core_size, Color(1, 1, 1, alpha))
 	)
 	
 	var tween = effect.create_tween()
@@ -2009,7 +2547,7 @@ func _spawn_orb_impact_effect(pos: Vector2, color: Color) -> void:
 		anim_progress = val
 		if is_instance_valid(effect):
 			effect.queue_redraw()
-	, 0.0, 1.0, 0.25)
+	, 0.0, 1.0, 0.4)
 	tween.tween_callback(func():
 		if is_instance_valid(effect):
 			effect.queue_free()
@@ -2078,11 +2616,13 @@ func _spawn_damage_zone(pos: Vector2, radius: float, dps: int, duration: float, 
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _spawn_phase_change_effect() -> void:
-	"""Efecto visual de cambio de fase"""
+	"""Efecto visual de cambio de fase ÉPICO"""
 	if not is_instance_valid(enemy):
 		return
 	
 	var effect = Node2D.new()
+	effect.top_level = true
+	effect.z_index = 70  # Encima de todo
 	effect.global_position = enemy.global_position
 	
 	var parent = enemy.get_parent()
@@ -2094,19 +2634,41 @@ func _spawn_phase_change_effect() -> void:
 	effect.add_child(visual)
 	
 	visual.draw.connect(func():
-		# Ondas expansivas rojas
-		for i in range(3):
-			var r = 100 * anim * (1 + i * 0.3)
-			var a = (1.0 - anim) * (0.8 - i * 0.2)
-			visual.draw_arc(Vector2.ZERO, r, 0, TAU, 32, Color(1, 0.2, 0.2, a), 4.0 - i)
+		# Ondas expansivas rojas MASIVAS
+		for i in range(5):
+			var r = 150 * anim * (1 + i * 0.25)
+			var a = (1.0 - anim) * (0.9 - i * 0.15)
+			visual.draw_arc(Vector2.ZERO, r, 0, TAU, 48, Color(1, 0.15, 0.15, a), 6.0 - i)
 		
-		# Rayos desde el centro
-		var ray_count = 8
+		# Relleno de energía
+		for i in range(3):
+			var fill_r = 100 * anim * (1.0 - i * 0.25)
+			var fill_a = (1.0 - anim) * (0.4 - i * 0.1)
+			visual.draw_circle(Vector2.ZERO, fill_r, Color(1, 0.3, 0.1, fill_a))
+		
+		# Rayos desde el centro - MÁS Y MÁS BRILLANTES
+		var ray_count = 12
 		for i in range(ray_count):
-			var angle = (TAU / ray_count) * i + anim * PI
-			var length = 150 * anim
+			var angle = (TAU / ray_count) * i + anim * PI * 1.5
+			var length = 200 * anim
 			var end = Vector2(cos(angle), sin(angle)) * length
-			visual.draw_line(Vector2.ZERO, end, Color(1, 0.5, 0, (1.0 - anim) * 0.8), 3.0)
+			visual.draw_line(Vector2.ZERO, end, Color(1, 0.6, 0.1, (1.0 - anim) * 0.9), 4.0)
+			# Línea interior blanca
+			visual.draw_line(Vector2.ZERO, end * 0.8, Color(1, 1, 0.8, (1.0 - anim) * 0.7), 2.0)
+		
+		# Texto de fase (simulado con círculos)
+		var text_radius = 50 * (1.0 - anim * 0.3)
+		visual.draw_circle(Vector2.ZERO, text_radius, Color(1, 0.2, 0.1, (1.0 - anim) * 0.8))
+		visual.draw_arc(Vector2.ZERO, text_radius, 0, TAU, 32, Color(1, 1, 0.5, (1.0 - anim)), 4.0)
+		
+		# Partículas de energía volando
+		var particle_count = 16
+		for i in range(particle_count):
+			var p_angle = (TAU / particle_count) * i
+			var p_dist = 80 * anim + sin(anim * PI * 4 + i) * 20
+			var p_pos = Vector2(cos(p_angle), sin(p_angle)) * p_dist
+			p_pos.y -= anim * 40 * (float(i % 3) / 2)  # Algunas suben
+			visual.draw_circle(p_pos, 6 * (1.0 - anim * 0.5), Color(1, 0.8, 0.2, (1.0 - anim) * 0.9))
 	)
 	
 	var tween = create_tween()
@@ -2114,7 +2676,7 @@ func _spawn_phase_change_effect() -> void:
 		anim = v
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.5)
+	, 0.0, 1.0, 0.8)  # Más largo para ser épico
 	tween.tween_callback(func():
 		if is_instance_valid(effect):
 			effect.queue_free()
@@ -2486,10 +3048,10 @@ func _spawn_counter_stance_visual() -> void:
 	)
 
 func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
-	"""Visual de golpe de tierra"""
+	"""Visual de golpe de tierra ÉPICO"""
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 50
+	effect.z_index = 60
 	effect.global_position = center
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -2503,19 +3065,68 @@ func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
 	effect.add_child(visual)
 	
 	visual.draw.connect(func():
-		# Ondas de choque
-		for i in range(4):
-			var r = radius * anim * (1.0 - i * 0.2)
-			var a = (1.0 - anim) * (0.7 - i * 0.15)
-			visual.draw_arc(Vector2.ZERO, r, 0, TAU, 32, Color(0.6, 0.4, 0.2, a), 4.0 - i)
+		var expand_radius = radius * 1.2 * anim
 		
-		# Grietas radiales
-		var crack_count = 8
+		# Ondas de choque - MÁS Y MÁS GRUESAS
+		for i in range(5):
+			var r = expand_radius * (0.3 + i * 0.18)
+			var a = (1.0 - anim) * (0.85 - i * 0.14)
+			visual.draw_arc(Vector2.ZERO, r, 0, TAU, 48, Color(0.65, 0.45, 0.2, a), 6.0 - i)
+		
+		# Relleno de tierra
+		for i in range(3):
+			var fill_r = expand_radius * (0.8 - i * 0.2)
+			var fill_a = (1.0 - anim) * (0.35 - i * 0.08)
+			visual.draw_circle(Vector2.ZERO, fill_r, Color(0.5, 0.35, 0.15, fill_a))
+		
+		# Grietas radiales - MÁS Y MÁS DETALLADAS
+		var crack_count = 12
 		for i in range(crack_count):
 			var angle = (TAU / crack_count) * i
-			var length = radius * anim * 0.9
+			var length = expand_radius * 0.95
 			var end = Vector2(cos(angle), sin(angle)) * length
-			visual.draw_line(Vector2.ZERO, end, Color(0.3, 0.2, 0.1, (1.0 - anim) * 0.8), 2.0)
+			
+			# Grieta principal
+			visual.draw_line(Vector2.ZERO, end, Color(0.25, 0.15, 0.05, (1.0 - anim) * 0.9), 3.0)
+			
+			# Sub-grietas
+			if i % 2 == 0:
+				var sub_start = end * 0.5
+				var sub_angle = angle + PI / 8
+				var sub_end = sub_start + Vector2(cos(sub_angle), sin(sub_angle)) * length * 0.3
+				visual.draw_line(sub_start, sub_end, Color(0.3, 0.2, 0.1, (1.0 - anim) * 0.7), 2.0)
+		
+		# Rocas voladoras (nuevo)
+		var rock_count = 10
+		for i in range(rock_count):
+			var rock_angle = (TAU / rock_count) * i + anim * 0.5
+			var rock_dist = expand_radius * (0.4 + anim * 0.5)
+			var rock_pos = Vector2(cos(rock_angle), sin(rock_angle)) * rock_dist
+			rock_pos.y -= anim * 35 * (1.0 + sin(i * 1.3))  # Rocas que vuelan
+			var rock_size = (8 - anim * 4) * (0.7 + float(i % 3) * 0.2)
+			
+			# Dibujar roca como polígono irregular
+			var rock_points = PackedVector2Array([
+				rock_pos + Vector2(-rock_size, -rock_size * 0.5),
+				rock_pos + Vector2(rock_size * 0.3, -rock_size * 0.8),
+				rock_pos + Vector2(rock_size, rock_size * 0.2),
+				rock_pos + Vector2(-rock_size * 0.2, rock_size * 0.6)
+			])
+			visual.draw_colored_polygon(rock_points, Color(0.45, 0.35, 0.25, (1.0 - anim) * 0.9))
+		
+		# Polvo levantándose
+		var dust_count = 16
+		for i in range(dust_count):
+			var dust_angle = (TAU / dust_count) * i
+			var dust_dist = expand_radius * (0.6 + anim * 0.3)
+			var dust_pos = Vector2(cos(dust_angle), sin(dust_angle)) * dust_dist
+			dust_pos.y -= anim * 20
+			var dust_size = 5 * (1.0 - anim * 0.6)
+			visual.draw_circle(dust_pos, dust_size, Color(0.6, 0.5, 0.4, (1.0 - anim) * 0.5))
+		
+		# Centro de impacto
+		var crater_size = expand_radius * 0.2
+		visual.draw_circle(Vector2.ZERO, crater_size, Color(0.2, 0.12, 0.05, (1.0 - anim) * 0.8))
 	)
 	
 	var tween = create_tween()
@@ -2523,7 +3134,7 @@ func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
 		anim = v
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.5)
+	, 0.0, 1.0, 0.7)  # Más largo
 	tween.tween_callback(func():
 		if is_instance_valid(effect):
 			effect.queue_free()

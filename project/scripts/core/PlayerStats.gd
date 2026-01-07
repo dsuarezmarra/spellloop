@@ -272,6 +272,9 @@ var collected_upgrades: Array = []  # [{id, name, icon, description, effects}]
 # Vida actual
 var current_health: float = 100.0
 
+# Acumulador de regeneración para aplicar HP enteros
+var _regen_accumulator: float = 0.0
+
 # Sistema de nivel
 var level: int = 1
 var current_xp: float = 0.0
@@ -577,34 +580,46 @@ func _update_temp_modifiers(delta: float) -> void:
 			temp_modifiers.erase(stat_name)
 
 func _update_health_regen(delta: float) -> void:
-	"""Aplicar regeneración de vida al player real"""
+	"""Aplicar regeneración de vida al player real - acumula hasta 1 HP entero"""
 	var regen = get_stat("health_regen")
-	if regen > 0:
-		# Si tenemos referencia al player, curar directamente
-		if player_ref and player_ref.has_method("heal"):
-			# IMPORTANTE: Verificar que el jugador esté vivo antes de regenerar
-			var is_alive = true
-			if player_ref.has_method("is_alive"):
-				is_alive = player_ref.is_alive()
-			elif "is_alive" in player_ref:
-				is_alive = player_ref.is_alive
-			elif player_ref.has_method("get_health_component"):
-				var hc = player_ref.get_health_component()
-				if hc and "is_alive" in hc:
-					is_alive = hc.is_alive
-			
-			if not is_alive:
-				return  # No regenerar si el jugador está muerto
-			
-			var player_hp = _get_player_current_health()
-			var max_hp = get_stat("max_health")
-			if player_hp < max_hp and player_hp > 0:
-				var heal_amount = regen * delta
-				player_ref.heal(int(ceil(heal_amount)))  # Redondear hacia arriba para que cure algo
-		else:
-			# Fallback: curar el current_health local (para compatibilidad)
-			if current_health < get_stat("max_health") and current_health > 0:
-				heal(regen * delta)
+	if regen <= 0:
+		return
+	
+	# Acumular regeneración parcial
+	_regen_accumulator += regen * delta
+	
+	# Solo curar cuando tengamos al menos 1 HP completo
+	if _regen_accumulator < 1.0:
+		return
+	
+	var heal_int = int(_regen_accumulator)
+	_regen_accumulator -= heal_int  # Guardar el residuo para el siguiente tick
+	
+	# Si tenemos referencia al player, curar directamente
+	if player_ref and player_ref.has_method("heal"):
+		# IMPORTANTE: Verificar que el jugador esté vivo antes de regenerar
+		var is_alive = true
+		if player_ref.has_method("is_alive"):
+			is_alive = player_ref.is_alive()
+		elif "is_alive" in player_ref:
+			is_alive = player_ref.is_alive
+		elif player_ref.has_method("get_health_component"):
+			var hc = player_ref.get_health_component()
+			if hc and "is_alive" in hc:
+				is_alive = hc.is_alive
+		
+		if not is_alive:
+			_regen_accumulator = 0.0  # Reset al morir
+			return  # No regenerar si el jugador está muerto
+		
+		var player_hp = _get_player_current_health()
+		var max_hp = get_stat("max_health")
+		if player_hp < max_hp and player_hp > 0:
+			player_ref.heal(heal_int)
+	else:
+		# Fallback: curar el current_health local (para compatibilidad)
+		if current_health < get_stat("max_health") and current_health > 0:
+			heal(float(heal_int))
 
 func _get_player_current_health() -> float:
 	"""Obtener HP actual del player real"""

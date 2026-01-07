@@ -8,6 +8,9 @@ class_name ProjectileFactory
 # Referencia a la escena de proyectil base
 static var _projectile_scene: PackedScene = null
 
+# Acumulador de life steal para curar cuando llegue a 1+
+static var _life_steal_accumulator: float = 0.0
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # MAPEO DE ELEMENTOS
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -31,7 +34,7 @@ const ELEMENT_TO_STRING: Dictionary = {
 # ═══════════════════════════════════════════════════════════════════════════════
 
 static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
-	"""Aplicar life steal al jugador basado en el daño causado"""
+	"""Aplicar life steal al jugador basado en el daño causado - acumula hasta 1 HP"""
 	if tree == null:
 		return
 	
@@ -44,23 +47,29 @@ static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
 	if life_steal <= 0:
 		return
 	
-	# Obtener el jugador y curarlo
+	# Obtener el jugador
 	var player = tree.get_first_node_in_group("player")
 	if player == null:
 		return
 	
+	# Acumular el heal parcial
 	var heal_amount = damage_dealt * life_steal
-	if heal_amount >= 0.5:  # Solo curar si al menos 0.5 HP
+	_life_steal_accumulator += heal_amount
+	
+	# Solo curar cuando acumulemos al menos 1 HP completo
+	if _life_steal_accumulator >= 1.0:
+		var heal_int = int(_life_steal_accumulator)
+		_life_steal_accumulator -= heal_int  # Guardar el residuo
+		
 		# Intentar curar al jugador
-		var heal_int = int(ceil(heal_amount))  # Redondear hacia arriba
 		if player.has_method("heal"):
 			player.heal(heal_int)
+			print("[LifeSteal] 🩸 Curado +%d HP (acumulado de múltiples ataques)" % heal_int)
 		elif player.has_node("PlayerStats"):
 			var stats = player.get_node("PlayerStats")
 			if stats.has_method("heal"):
 				stats.heal(heal_int)
-		# Debug log (comentar en producción)
-		# print("[LifeSteal] Curado %d (%.0f%% de %d daño)" % [heal_int, life_steal * 100, damage_dealt])
+				print("[LifeSteal] 🩸 Curado +%d HP (acumulado de múltiples ataques)" % heal_int)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CREACIÓN DE PROYECTILES

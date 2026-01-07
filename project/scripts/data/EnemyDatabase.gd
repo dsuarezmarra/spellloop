@@ -40,17 +40,29 @@ const TIER_SCALING = {
 # Escalado exponencial post-minuto 20 (cada 5 minutos)
 const EXPONENTIAL_SCALING_BASE = 1.5  # 50% más fuerte cada 5 min después de min 20
 
-# Configuración de élites/legendarios
+# Configuración de élites/legendarios - MUY BUFFADOS
 const ELITE_CONFIG = {
-	"hp_multiplier": 3.0,
-	"damage_multiplier": 2.0,
-	"size_multiplier": 1.5,
-	"xp_multiplier": 10.0,
-	"speed_multiplier": 0.85,  # Un poco más lentos pero más peligrosos
-	"spawn_chance_per_minute": 0.02,  # 2% por minuto base
-	"max_per_run": 8,
-	"min_spawn_minute": 2,  # No antes del minuto 2
-	"aura_color": Color(1.0, 0.8, 0.2, 0.8)  # Dorado
+	"hp_multiplier": 6.0,           # 6x HP base (antes 3.0)
+	"damage_multiplier": 2.5,       # 2.5x daño (antes 2.0)
+	"size_multiplier": 1.7,         # 70% más grandes
+	"xp_multiplier": 15.0,          # 15x XP (recompensa por el reto)
+	"speed_multiplier": 1.1,        # 10% más rápidos (antes 0.85)
+	"attack_speed_multiplier": 0.7, # Atacan 30% más rápido
+	"spawn_chance_per_minute": 0.025, # 2.5% por minuto
+	"max_per_run": 10,
+	"min_spawn_minute": 2,
+	"aura_color": Color(1.0, 0.85, 0.1, 0.95),  # Dorado brillante
+	"aura_pulse_speed": 3.0,        # Aura pulsante
+	# Habilidades especiales para élites
+	"extra_abilities": ["elite_slam", "elite_rage", "elite_shield"],
+	"slam_cooldown": 5.0,
+	"slam_radius": 80.0,
+	"slam_damage_mult": 1.5,
+	"rage_hp_threshold": 0.4,       # Se enfurece al 40% HP
+	"rage_damage_bonus": 0.5,       # +50% daño en rage
+	"rage_speed_bonus": 0.3,        # +30% velocidad en rage
+	"shield_charges": 3,            # 3 hits absorbidos
+	"shield_cooldown": 15.0
 }
 
 # Tiempo de aparición de tiers
@@ -876,17 +888,52 @@ static func apply_difficulty_scaling(enemy_data: Dictionary, minute: float, diff
 	return scaled
 
 static func create_elite_version(enemy_data: Dictionary) -> Dictionary:
-	"""Crear versión élite/legendaria de un enemigo"""
+	"""Crear versión élite/legendaria de un enemigo - MUY MEJORADA"""
 	var elite = enemy_data.duplicate(true)
 	
 	elite["is_elite"] = true
-	elite["name"] = "⭐ " + elite.get("name", "Enemigo") + " Legendario"
+	elite["name"] = "👑 " + elite.get("name", "Enemigo") + " Legendario"
 	elite["base_hp"] = int(elite.base_hp * ELITE_CONFIG.hp_multiplier)
 	elite["base_damage"] = int(elite.base_damage * ELITE_CONFIG.damage_multiplier)
 	elite["base_speed"] = elite.base_speed * ELITE_CONFIG.speed_multiplier
 	elite["base_xp"] = int(elite.base_xp * ELITE_CONFIG.xp_multiplier)
 	elite["size_scale"] = ELITE_CONFIG.size_multiplier
 	elite["aura_color"] = ELITE_CONFIG.aura_color
+	elite["aura_pulse_speed"] = ELITE_CONFIG.get("aura_pulse_speed", 3.0)
+	
+	# Reducir cooldown de ataque (atacan más rápido)
+	var attack_cd = elite.get("attack_cooldown", 1.5)
+	elite["attack_cooldown"] = attack_cd * ELITE_CONFIG.get("attack_speed_multiplier", 0.7)
+	
+	# AÑADIR HABILIDADES ESPECIALES DE ÉLITE
+	var existing_abilities = elite.get("special_abilities", []).duplicate()
+	
+	# Todos los élites tienen slam de área
+	if not "elite_slam" in existing_abilities:
+		existing_abilities.append("elite_slam")
+	
+	# Élites de tier 2+ tienen rage
+	var tier = elite.get("tier", 1)
+	if tier >= 2 and not "elite_rage" in existing_abilities:
+		existing_abilities.append("elite_rage")
+	
+	# Élites de tier 3+ tienen escudo temporal
+	if tier >= 3 and not "elite_shield" in existing_abilities:
+		existing_abilities.append("elite_shield")
+	
+	elite["special_abilities"] = existing_abilities
+	
+	# Añadir modifiers para las habilidades élite
+	var mods = elite.get("modifiers", {}).duplicate()
+	mods["elite_slam_cooldown"] = ELITE_CONFIG.get("slam_cooldown", 5.0)
+	mods["elite_slam_radius"] = ELITE_CONFIG.get("slam_radius", 80.0) * (1.0 + (tier - 1) * 0.15)
+	mods["elite_slam_damage_mult"] = ELITE_CONFIG.get("slam_damage_mult", 1.5)
+	mods["elite_rage_threshold"] = ELITE_CONFIG.get("rage_hp_threshold", 0.4)
+	mods["elite_rage_damage_bonus"] = ELITE_CONFIG.get("rage_damage_bonus", 0.5)
+	mods["elite_rage_speed_bonus"] = ELITE_CONFIG.get("rage_speed_bonus", 0.3)
+	mods["elite_shield_charges"] = ELITE_CONFIG.get("shield_charges", 3) + (tier - 1)
+	mods["elite_shield_cooldown"] = ELITE_CONFIG.get("shield_cooldown", 15.0)
+	elite["modifiers"] = mods
 	
 	return elite
 
