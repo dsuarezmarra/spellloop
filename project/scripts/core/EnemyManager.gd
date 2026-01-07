@@ -325,6 +325,9 @@ func _check_elite_spawn(delta: float) -> void:
 func _spawn_elite() -> void:
 	var minute = game_time_seconds / 60.0
 	var available_tiers = EnemyDatabase.get_available_tiers_for_minute(minute)
+	
+	if available_tiers.is_empty():
+		return
 
 	# Los élites pueden ser de cualquier tier disponible
 	var tier = available_tiers[randi() % available_tiers.size()]

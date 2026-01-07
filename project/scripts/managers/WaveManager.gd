@@ -530,13 +530,14 @@ func _spawn_boss(boss_id: String) -> void:
 	
 	if current_boss:
 		# Conectar señal de muerte
-		if current_boss.has_signal("died"):
-			current_boss.died.connect(_on_boss_died.bind(boss_id))
+		if current_boss.has_signal("enemy_died"):
+			current_boss.enemy_died.connect(_on_boss_enemy_died.bind(boss_id))
 		
 		boss_spawned.emit(boss_id)
 		_show_boss_spawn_announcement(boss_id)
 
-func _on_boss_died(boss_id: String) -> void:
+func _on_boss_enemy_died(_enemy_node, _enemy_type_id, _exp_value, _enemy_tier, _is_elite, _is_boss, boss_id: String) -> void:
+	"""Callback cuando el boss muere - recibe todos los parámetros de enemy_died más boss_id bindeado"""
 	boss_active = false
 	current_boss = null
 	boss_defeated.emit(boss_id)
@@ -597,6 +598,9 @@ func _spawn_elite() -> void:
 	
 	# Seleccionar un enemigo aleatorio de los tiers disponibles
 	var available_tiers = phase_config.available_tiers.duplicate()
+	if available_tiers.is_empty():
+		return
+	
 	# Élites son preferiblemente de tiers altos
 	if available_tiers.size() > 1:
 		available_tiers.sort()
@@ -624,10 +628,11 @@ func _spawn_elite() -> void:
 		_show_wave_announcement(SpawnConfig.ELITE_CONFIG.spawn_announcement)
 		
 		# Conectar señal de muerte
-		if active_elite.has_signal("died"):
-			active_elite.died.connect(_on_elite_died)
+		if active_elite.has_signal("enemy_died"):
+			active_elite.enemy_died.connect(_on_elite_enemy_died)
 
-func _on_elite_died() -> void:
+func _on_elite_enemy_died(_enemy_node, _enemy_type_id, _exp_value, _enemy_tier, _is_elite, _is_boss) -> void:
+	"""Callback cuando el élite muere - recibe todos los parámetros de enemy_died"""
 	active_elite = null
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -904,9 +909,9 @@ func _find_restored_boss() -> void:
 		if "is_boss" in enemy and enemy.is_boss:
 			current_boss = enemy
 			# Conectar señal de muerte
-			if current_boss.has_signal("died") and not current_boss.died.is_connected(_on_boss_died):
-				var boss_id = current_boss.enemy_id if "enemy_id" in current_boss else "unknown_boss"
-				current_boss.died.connect(_on_boss_died.bind(boss_id))
+			if current_boss.has_signal("enemy_died") and not current_boss.enemy_died.is_connected(_on_boss_enemy_died):
+				var boss_id_restore = current_boss.enemy_id if "enemy_id" in current_boss else "unknown_boss"
+				current_boss.enemy_died.connect(_on_boss_enemy_died.bind(boss_id_restore))
 			return
 	
 	# Si no encontramos el boss pero boss_active es true, algo falló
