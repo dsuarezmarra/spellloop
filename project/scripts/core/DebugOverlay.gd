@@ -59,12 +59,12 @@ func _unhandled_input(event):
 				var ppos = player_ref.global_position
 				var offs = [Vector2(0, -400), Vector2(400, 0), Vector2(0, 400), Vector2(-400, 0)]
 				for i in range(4):
-					if enemy_manager.has_method("spawn_enemy"):
-						var et = null
+					if enemy_manager.has_method("spawn_specific_enemy"):
+						var et = "tier_1_slime_arcano"  # Usar un enemigo por defecto
 						if enemy_manager.enemy_types and enemy_manager.enemy_types.size() > 0:
 							et = enemy_manager.enemy_types[0]
 						var sp = ppos + offs[i]
-						enemy_manager.spawn_enemy(et, sp)
+						enemy_manager.spawn_specific_enemy(et, sp)
 		
 		# QA hotkeys
 		if event.ctrl_pressed:

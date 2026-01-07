@@ -420,14 +420,18 @@ func _setup_enemy_visual() -> void:
 			_load_enemy_sprite(sprite)
 
 			var enemy_scale = _get_scale_for_tier()
-			if is_elite:
+			if is_boss:
+				enemy_scale *= 2.5  # Los bosses son 2.5x más grandes
+			elif is_elite:
 				enemy_scale *= elite_size_scale
 			if sprite:
 				sprite.scale = Vector2(enemy_scale, enemy_scale)
 				sprite.centered = true
 	else:
 		var enemy_scale = _get_scale_for_tier()
-		if is_elite:
+		if is_boss:
+			enemy_scale *= 2.5  # Los bosses son 2.5x más grandes
+		elif is_elite:
 			enemy_scale *= elite_size_scale
 		animated_sprite.sprite_scale = enemy_scale
 
@@ -1646,10 +1650,9 @@ func get_attack_accuracy() -> float:
 func die() -> void:
 	if is_boss:
 		print("[Boss] 💀 BOSS MURIENDO: %s" % enemy_id)
-	
-	# Limpiar sistema de ataque (orbitales, etc.)
-	if attack_system and attack_system.has_method("cleanup_boss"):
-		attack_system.cleanup_boss()
+		# Solo limpiar efectos de boss si ES un boss
+		if attack_system and attack_system.has_method("cleanup_boss"):
+			attack_system.cleanup_boss()
 	
 	emit_signal("enemy_died", self, enemy_id, exp_value, enemy_tier, is_elite, is_boss)
 	queue_free()

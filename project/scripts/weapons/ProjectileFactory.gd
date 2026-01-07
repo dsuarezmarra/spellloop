@@ -30,6 +30,59 @@ const ELEMENT_TO_STRING: Dictionary = {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# HELPER: EXECUTE THRESHOLD
+# ═══════════════════════════════════════════════════════════════════════════════
+
+static func check_execute(tree: SceneTree, enemy: Node) -> bool:
+	"""
+	Verificar si un enemigo debería ser ejecutado instantáneamente.
+	Retorna true si el enemigo fue ejecutado.
+	"""
+	if not is_instance_valid(enemy):
+		return false
+	
+	# Obtener execute_threshold de AttackManager/PlayerStats
+	var attack_manager = tree.get_first_node_in_group("attack_manager")
+	if attack_manager == null:
+		return false
+	
+	var execute_threshold = attack_manager.get_player_stat("execute_threshold") if attack_manager.has_method("get_player_stat") else 0.0
+	if execute_threshold <= 0:
+		return false
+	
+	# Verificar HP del enemigo
+	var current_hp = 0
+	var max_hp = 1
+	
+	if enemy.has_method("get_health"):
+		var health_data = enemy.get_health()
+		current_hp = health_data.get("current", 0)
+		max_hp = health_data.get("max", 1)
+	elif "health_component" in enemy and is_instance_valid(enemy.health_component):
+		current_hp = enemy.health_component.current_health
+		max_hp = enemy.health_component.max_health
+	elif "hp" in enemy and "max_hp" in enemy:
+		current_hp = enemy.hp
+		max_hp = enemy.max_hp
+	else:
+		return false
+	
+	# Calcular porcentaje de HP
+	var hp_percent = float(current_hp) / float(max_hp) if max_hp > 0 else 0.0
+	
+	# Si está bajo el umbral, ejecutar
+	if hp_percent <= execute_threshold and hp_percent > 0:
+		# Matar instantáneamente
+		if enemy.has_method("take_damage"):
+			enemy.take_damage(current_hp)  # Hacer daño igual al HP restante
+			# Mostrar texto de ejecución (usar class_name FloatingText)
+			FloatingText.spawn_damage(enemy.global_position + Vector2(0, -30), current_hp, true)
+			print("[Execute] ☠️ Enemigo ejecutado a %d%% HP (umbral: %d%%)" % [int(hp_percent * 100), int(execute_threshold * 100)])
+		return true
+	
+	return false
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # HELPER: LIFE STEAL
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -293,6 +346,8 @@ class BeamEffect extends Node2D:
 			enemy.take_damage(int(final_damage))
 			# Aplicar life steal
 			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
+			# Verificar execute threshold después del daño
+			ProjectileFactory.check_execute(get_tree(), enemy)
 
 		# Aplicar knockback
 		if knockback != 0 and enemy.has_method("apply_knockback"):
@@ -556,6 +611,8 @@ class AOEEffect extends Node2D:
 			enemy.take_damage(int(final_damage))
 			# Aplicar life steal
 			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
+			# Verificar execute threshold después del daño
+			ProjectileFactory.check_execute(get_tree(), enemy)
 			# Debug de crítico (desactivado en producción)
 			# if is_crit:
 			#	print("[AOE] ⚡ CRIT! %s recibe %d daño (tick %d/%d)" % [enemy.name, int(final_damage), _ticks_applied, total_ticks])
@@ -918,6 +975,8 @@ class OrbitalManager extends Node2D:
 			enemy.take_damage(int(final_damage))
 			# Aplicar life steal
 			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
+			# Verificar execute threshold después del daño
+			ProjectileFactory.check_execute(get_tree(), enemy)
 		
 		# Calcular knockback real (con bonus si aplica)
 		var final_knockback = knockback
@@ -988,6 +1047,9 @@ class OrbitalManager extends Node2D:
 			# Aplicar daño al siguiente objetivo
 			if next_target.has_method("take_damage"):
 				next_target.take_damage(int(chain_damage))
+				# Aplicar life steal y execute para chains
+				ProjectileFactory.apply_life_steal(get_tree(), chain_damage)
+				ProjectileFactory.check_execute(get_tree(), next_target)
 			
 			# Crear efecto visual de rayo entre objetivos
 			_spawn_chain_lightning_visual(current_pos, next_target.global_position)
@@ -1089,6 +1151,16 @@ class ChainProjectile extends Node2D:
 	func setup(data: Dictionary) -> void:
 		damage = data.get("damage", 15.0)
 		chain_count = data.get("chain_count", 2)
+		
+		# Agregar bonus global de chain_count de PlayerStats
+		var tree = Engine.get_main_loop() as SceneTree
+		if tree:
+			var attack_manager = tree.get_first_node_in_group("attack_manager")
+			if attack_manager and attack_manager.has_method("get_player_stat"):
+				var bonus_chains = attack_manager.get_player_stat("chain_count")
+				if bonus_chains > 0:
+					chain_count += int(bonus_chains)
+		
 		chain_range = data.get("range", 150.0) * 0.5
 		color = data.get("color", Color(1.0, 1.0, 0.3))
 		knockback = data.get("knockback", 40.0)

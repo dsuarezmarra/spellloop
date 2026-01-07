@@ -721,6 +721,69 @@ func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy
 	# MONEDAS - Caen al suelo para que el player las recoja
 	if experience_manager:
 		experience_manager.spawn_coins_from_enemy(position, enemy_tier, is_elite, is_boss)
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# EFECTOS ESPECIALES DE KILL
+	# ═══════════════════════════════════════════════════════════════════════════
+	
+	# KILL HEAL - Curar al matar enemigos
+	if player_stats and player:
+		var kill_heal_amount = player_stats.get_stat("kill_heal") if player_stats.has_method("get_stat") else 0
+		if kill_heal_amount > 0 and player.has_method("heal"):
+			player.heal(int(kill_heal_amount))
+			# Mostrar texto flotante de curación (usar class_name FloatingText)
+			FloatingText.spawn_heal(player.global_position + Vector2(0, -30), int(kill_heal_amount))
+	
+	# EXPLOSION ON KILL - Explosión al matar
+	if player_stats and is_instance_valid(player):
+		var explosion_chance = player_stats.get_stat("explosion_chance") if player_stats.has_method("get_stat") else 0.0
+		if explosion_chance > 0.0 and randf() < explosion_chance:
+			var explosion_damage = player_stats.get_stat("explosion_damage") if player_stats.has_method("get_stat") else 50.0
+			_trigger_kill_explosion(position, explosion_damage)
+
+func _trigger_kill_explosion(pos: Vector2, damage: float) -> void:
+	"""Explosión al matar enemigos (kill_explosion effect)"""
+	var explosion_radius = 100.0  # Radio de explosión fijo
+	
+	# Encontrar enemigos cercanos
+	if enemy_manager and enemy_manager.has_method("get_enemies_in_range"):
+		var enemies_hit = enemy_manager.get_enemies_in_range(pos, explosion_radius)
+		for enemy in enemies_hit:
+			if is_instance_valid(enemy) and enemy.has_method("take_damage"):
+				enemy.take_damage(int(damage), "explosion", null)
+	
+	# Crear efecto visual de explosión
+	var explosion = Node2D.new()
+	explosion.name = "KillExplosion"
+	explosion.top_level = true
+	explosion.z_index = 50
+	explosion.global_position = pos
+	
+	var root_scene = get_tree().current_scene
+	if root_scene:
+		root_scene.add_child(explosion)
+	else:
+		add_child(explosion)
+	
+	# Crear sprite visual
+	var visual = Sprite2D.new()
+	visual.name = "ExplosionVisual"
+	var texture_path = "res://assets/sprites/effects/explosion_effect.png"
+	if ResourceLoader.exists(texture_path):
+		visual.texture = load(texture_path)
+	else:
+		# Crear un círculo simple si no hay textura
+		var circle = CircleShape2D.new()
+		circle.radius = explosion_radius
+	explosion.add_child(visual)
+	
+	# Animación de expansión y desvanecimiento
+	var tween = explosion.create_tween()
+	explosion.scale = Vector2(0.3, 0.3)
+	explosion.modulate = Color(1.0, 0.5, 0.0, 1.0)  # Naranja
+	tween.tween_property(explosion, "scale", Vector2(1.5, 1.5), 0.3)
+	tween.parallel().tween_property(explosion, "modulate", Color(1.0, 0.3, 0.0, 0.0), 0.3)
+	tween.tween_callback(explosion.queue_free)
 
 func _on_exp_gained(amount: int, total: int) -> void:
 	run_stats["xp_total"] = total

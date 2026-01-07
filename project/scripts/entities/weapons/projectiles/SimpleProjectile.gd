@@ -387,12 +387,16 @@ func _handle_hit(target: Node) -> void:
 		target.take_damage(final_damage)
 		# Aplicar life steal
 		ProjectileFactory.apply_life_steal(get_tree(), final_damage)
+		# Verificar execute threshold después del daño
+		ProjectileFactory.check_execute(get_tree(), target)
 	elif target.has_node("HealthComponent"):
 		var hc = target.get_node("HealthComponent")
 		if hc.has_method("take_damage"):
 			hc.take_damage(final_damage, "physical")
 			# Aplicar life steal
 			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
+			# Verificar execute threshold después del daño
+			ProjectileFactory.check_execute(get_tree(), target)
 	
 	# Calcular knockback real (con bonus si aplica)
 	var final_knockback = knockback_force
@@ -524,6 +528,9 @@ func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
 		# Aplicar daño al siguiente objetivo
 		if next_target.has_method("take_damage"):
 			next_target.take_damage(int(chain_damage))
+			# Aplicar life steal y execute para chains
+			ProjectileFactory.apply_life_steal(get_tree(), chain_damage)
+			ProjectileFactory.check_execute(get_tree(), next_target)
 		
 		# Crear efecto visual de rayo entre objetivos
 		_spawn_chain_lightning_visual(current_pos, next_target.global_position)

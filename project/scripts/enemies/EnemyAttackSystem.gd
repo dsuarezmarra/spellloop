@@ -796,8 +796,8 @@ func _perform_elite_summon() -> void:
 			var spawn_pos = enemy.global_position + offset
 			
 			# Spawner un minion tier 1 temporal
-			if enemy_manager.has_method("spawn_enemy"):
-				var minion = enemy_manager.spawn_enemy("tier_1_slime_arcano", spawn_pos)
+			if enemy_manager.has_method("spawn_specific_enemy"):
+				var minion = enemy_manager.spawn_specific_enemy("tier_1_slime_arcano", spawn_pos)
 				if minion:
 					# Hacer el minion temporal (se destruye después de 8 segundos)
 					minion.modulate = Color(1.0, 0.85, 0.1, 0.8)  # Tinte dorado

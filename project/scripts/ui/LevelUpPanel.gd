@@ -780,55 +780,47 @@ func _get_player_upgrade_options(luck: float) -> Array:
 	Obtiene opciones de mejora para el jugador.
 	
 	SISTEMA v3.0:
-	- Mejoras GLOBALES DE ARMAS → WeaponUpgradeDatabase.GLOBAL_UPGRADES
-	- Mejoras DEL JUGADOR → PlayerUpgradeDatabase (defensivas, utilidad, cursed, únicas)
+	- Mejoras GLOBALES DE ARMAS → WeaponUpgradeDatabase.GLOBAL_UPGRADES (estático)
+	- Mejoras DEL JUGADOR → PlayerUpgradeDatabase (defensivas, utilidad, cursed, únicas) (estático)
 	"""
 	var upgrade_options: Array = []
 	var game_time_minutes = _get_game_time_minutes()
 	
-	# 1. MEJORAS GLOBALES DE ARMAS (WeaponUpgradeDatabase)
-	var WeaponUpgradeDB = load("res://scripts/data/WeaponUpgradeDatabase.gd")
-	if WeaponUpgradeDB:
-		var weapon_db = WeaponUpgradeDB.new()
-		if weapon_db.has_method("get_random_global_upgrades"):
-			var global_upgrades = weapon_db.get_random_global_upgrades(3, [], luck, game_time_minutes)
-			for upgrade in global_upgrades:
-				upgrade_options.append({
-					"type": OPTION_TYPES.PLAYER_UPGRADE,
-					"upgrade_id": upgrade.get("id", ""),
-					"name": upgrade.get("name", "???"),
-					"description": upgrade.get("description", ""),
-					"icon": upgrade.get("icon", "⚔️"),
-					"tier": upgrade.get("tier", 1),
-					"category": "weapon_global",
-					"effects": upgrade.get("effects", []),
-					"is_cursed": upgrade.get("is_cursed", false),
-					"is_unique": upgrade.get("is_unique", false),
-					"priority": 0.9
-				})
+	# 1. MEJORAS GLOBALES DE ARMAS (WeaponUpgradeDatabase) - Función estática
+	var global_upgrades = WeaponUpgradeDatabase.get_random_global_upgrades(3, [], luck, game_time_minutes)
+	for upgrade in global_upgrades:
+		upgrade_options.append({
+			"type": OPTION_TYPES.PLAYER_UPGRADE,
+			"upgrade_id": upgrade.get("id", ""),
+			"name": upgrade.get("name", "???"),
+			"description": upgrade.get("description", ""),
+			"icon": upgrade.get("icon", "⚔️"),
+			"tier": upgrade.get("tier", 1),
+			"category": "weapon_global",
+			"effects": upgrade.get("effects", []),
+			"is_cursed": upgrade.get("is_cursed", false),
+			"is_unique": upgrade.get("is_unique", false),
+			"priority": 0.9
+		})
 	
-	# 2. MEJORAS DEL JUGADOR (PlayerUpgradeDatabase) - NUEVO SISTEMA
-	var PlayerUpgradeDB = load("res://scripts/data/PlayerUpgradeDatabase.gd")
-	if PlayerUpgradeDB:
-		# Obtener IDs de mejoras únicas que ya tiene el jugador
-		var owned_unique_ids = _get_owned_unique_upgrade_ids()
-		
-		var player_upgrades = PlayerUpgradeDB.get_random_player_upgrades(4, [], luck, game_time_minutes, owned_unique_ids)
-		for upgrade in player_upgrades:
-			upgrade_options.append({
-				"type": OPTION_TYPES.PLAYER_UPGRADE,
-				"upgrade_id": upgrade.get("id", ""),
-				"name": upgrade.get("name", "???"),
-				"description": upgrade.get("description", ""),
-				"icon": upgrade.get("icon", "✨"),
-				"tier": upgrade.get("tier", 1),
-				"category": upgrade.get("category", "player"),
-				"effects": upgrade.get("effects", []),
-				"is_cursed": upgrade.get("is_cursed", false),
-				"is_unique": upgrade.get("is_unique", false),
-				"is_consumable": upgrade.get("is_consumable", false),
-				"priority": 0.8
-			})
+	# 2. MEJORAS DEL JUGADOR (PlayerUpgradeDatabase) - Función estática
+	var owned_unique_ids = _get_owned_unique_upgrade_ids()
+	var player_upgrades = PlayerUpgradeDatabase.get_random_player_upgrades(4, [], luck, game_time_minutes, owned_unique_ids)
+	for upgrade in player_upgrades:
+		upgrade_options.append({
+			"type": OPTION_TYPES.PLAYER_UPGRADE,
+			"upgrade_id": upgrade.get("id", ""),
+			"name": upgrade.get("name", "???"),
+			"description": upgrade.get("description", ""),
+			"icon": upgrade.get("icon", "✨"),
+			"tier": upgrade.get("tier", 1),
+			"category": upgrade.get("category", "player"),
+			"effects": upgrade.get("effects", []),
+			"is_cursed": upgrade.get("is_cursed", false),
+			"is_unique": upgrade.get("is_unique", false),
+			"is_consumable": upgrade.get("is_consumable", false),
+			"priority": 0.8
+		})
 
 	return upgrade_options
 
@@ -1064,15 +1056,16 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 	Aplicar mejora seleccionada.
 	
 	SISTEMA v3.0:
-	- Si category == "weapon_global" → AttackManager.apply_global_upgrade()
-	- Si es una mejora del jugador → PlayerStats.apply_upgrade()
-	- Maneja mejoras únicas, cursed y consumables
+	- Efectos de armas (damage_mult, attack_speed_mult, etc.) → AttackManager.apply_global_upgrade()
+	- Efectos del jugador (max_health, armor, etc.) → PlayerStats.apply_upgrade()
+	- Las mejoras CURSED pueden tener AMBOS tipos de efectos
 	"""
-	var category = option.get("category", "player")
 	var is_unique = option.get("is_unique", false)
 	var is_cursed = option.get("is_cursed", false)
 	var is_consumable = option.get("is_consumable", false)
 	var upgrade_name = option.get("name", "???")
+	var category = option.get("category", "player")
+	var effects = option.get("effects", [])
 	
 	# Log especial para mejoras especiales
 	if is_unique:
@@ -1082,24 +1075,47 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 	if is_consumable:
 		print("[LevelUpPanel] 🟡 Mejora CONSUMIBLE usada: %s" % upgrade_name)
 	
-	if category == "weapon_global":
-		# Mejora GLOBAL de armas → va a GlobalWeaponStats
-		if attack_manager and attack_manager.has_method("apply_global_upgrade"):
-			attack_manager.apply_global_upgrade(option)
-			print("[LevelUpPanel] ⚔️ Mejora global de armas aplicada: %s" % upgrade_name)
+	# Stats que van a GlobalWeaponStats (armas) - NO incluye crit porque está en PlayerStats
+	var weapon_stats = [
+		"damage_mult", "damage_flat", "attack_speed_mult", "cooldown_mult",
+		"area_mult", "projectile_speed_mult", "duration_mult", "knockback_mult",
+		"extra_projectiles", "extra_pierce", "range_mult"
+	]
+	# NOTA: crit_chance y crit_damage van a PlayerStats y se sincronizan al AttackManager
+	
+	# Separar efectos en dos grupos
+	var weapon_effects = []
+	var player_effects = []
+	
+	for effect in effects:
+		var stat = effect.get("stat", "")
+		if stat in weapon_stats:
+			weapon_effects.append(effect)
 		else:
-			push_warning("[LevelUpPanel] AttackManager no tiene apply_global_upgrade()")
-	else:
-		# Mejora del JUGADOR → va a PlayerStats
+			player_effects.append(effect)
+	
+	# Aplicar efectos de ARMAS a GlobalWeaponStats
+	if not weapon_effects.is_empty():
+		if attack_manager and attack_manager.has_method("apply_global_upgrade"):
+			var weapon_option = option.duplicate()
+			weapon_option["effects"] = weapon_effects
+			attack_manager.apply_global_upgrade(weapon_option)
+			print("[LevelUpPanel] ⚔️ Efectos de armas aplicados (%d): %s" % [weapon_effects.size(), upgrade_name])
+	
+	# Aplicar efectos de JUGADOR a PlayerStats
+	if not player_effects.is_empty():
 		if player_stats and player_stats.has_method("apply_upgrade"):
-			var success = player_stats.apply_upgrade(option)
+			var player_option = option.duplicate()
+			player_option["effects"] = player_effects
+			var success = player_stats.apply_upgrade(player_option)
 			if success:
-				# Registrar mejora única para evitar duplicados
-				if is_unique and player_stats.has_method("register_unique_upgrade"):
-					player_stats.register_unique_upgrade(option.get("upgrade_id", ""))
-				print("[LevelUpPanel] 🛡️ Mejora del jugador aplicada: %s" % upgrade_name)
+				print("[LevelUpPanel] 🛡️ Efectos de jugador aplicados (%d): %s" % [player_effects.size(), upgrade_name])
 			else:
 				push_warning("[LevelUpPanel] No se pudo aplicar mejora: %s" % upgrade_name)
+	
+	# Registrar mejora única para evitar duplicados
+	if is_unique and player_stats and player_stats.has_method("register_unique_upgrade"):
+		player_stats.register_unique_upgrade(option.get("upgrade_id", ""))
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # API PÚBLICA
