@@ -117,7 +117,7 @@ func _create_player() -> void:
 		else:
 			player.global_position = Vector2.ZERO
 		
-		print("🧙 [Game] Player creado")
+		# Debug desactivado: print("🧙 [Game] Player creado")
 	else:
 		push_error("[Game] No se pudo cargar SpellloopPlayer.tscn")
 
@@ -330,7 +330,7 @@ func _initialize_systems() -> void:
 
 		if player_stats.has_method("initialize"):
 			player_stats.initialize(attack_mgr, player)  # Pasar player para que health_regen funcione
-		print("📊 [Game] PlayerStats inicializado")
+		# Debug desactivado: print("📊 [Game] PlayerStats inicializado")
 
 	# Inicializar con referencias
 	if enemy_manager and player:
@@ -356,7 +356,7 @@ func _initialize_systems() -> void:
 	# Conectar HUD con el player
 	_connect_hud_to_player()
 
-	print("✅ [Game] Sistemas inicializados")
+	# Debug desactivado: print("✅ [Game] Sistemas inicializados")
 
 func _connect_hud_to_player() -> void:
 	## Conectar el HUD para que reciba actualizaciones del player
@@ -378,7 +378,7 @@ func _connect_hud_to_player() -> void:
 			exp_data.level = experience_manager.current_level
 		hud.update_stats(health.current, health.max, exp_data.current, exp_data.max, exp_data.level)
 
-	print("📊 [Game] HUD conectado al player")
+	# Debug desactivado: print("📊 [Game] HUD conectado al player")
 
 func _start_game() -> void:
 	game_running = true
@@ -395,7 +395,7 @@ func _start_game() -> void:
 		"damage_dealt": 0
 	}
 
-	print("🚀 [Game] ¡Partida iniciada!")
+	# Debug desactivado: print("🚀 [Game] ¡Partida iniciada!")
 
 func _resume_saved_game() -> void:
 	"""Restaurar el estado de una partida guardada"""
@@ -425,13 +425,13 @@ func _resume_saved_game() -> void:
 		# Usar from_dict() si está disponible (método preferido)
 		if player_stats.has_method("from_dict"):
 			player_stats.from_dict(saved_stats)
-			print("🎒 [Game] PlayerStats restaurado via from_dict()")
+			# Debug desactivado: print("🎒 [Game] PlayerStats restaurado via from_dict()")
 		else:
 			# Fallback: restaurar manualmente
 			# Restaurar historial de mejoras PRIMERO
 			if saved_stats.has("collected_upgrades") and "collected_upgrades" in player_stats:
 				player_stats.collected_upgrades = saved_stats.get("collected_upgrades", []).duplicate(true)
-				print("🎒 [Game] Mejoras coleccionadas restauradas: %d items" % player_stats.collected_upgrades.size())
+				# Debug desactivado: print("🎒 [Game] Mejoras coleccionadas restauradas: %d items" % player_stats.collected_upgrades.size())
 			
 			# Restaurar stats desde el sub-diccionario "stats" si existe
 			var actual_stats = saved_stats.get("stats", saved_stats)
@@ -462,7 +462,7 @@ func _resume_saved_game() -> void:
 		var saved_coins = _saved_state.get("coins", 0)
 		if "total_coins" in experience_manager:
 			experience_manager.total_coins = saved_coins
-			print("🪙 [Game] Monedas restauradas: %d" % saved_coins)
+			# Debug desactivado: print("🪙 [Game] Monedas restauradas: %d" % saved_coins)
 	
 	# Restaurar mejoras globales de armas (GlobalWeaponStats)
 	var attack_manager = get_tree().get_first_node_in_group("attack_manager")
@@ -470,7 +470,7 @@ func _resume_saved_game() -> void:
 		if "global_weapon_stats" in attack_manager and attack_manager.global_weapon_stats:
 			if attack_manager.global_weapon_stats.has_method("from_dict"):
 				attack_manager.global_weapon_stats.from_dict(_saved_state.get("global_weapon_stats", {}))
-				print("⚔️ [Game] Mejoras globales restauradas")
+				# Debug desactivado: print("⚔️ [Game] Mejoras globales restauradas")
 	
 	# ═══════════════════════════════════════════════════════════════════════════════
 	# NUEVO: Restaurar estado del EnemyManager PRIMERO (todos los enemigos activos)
@@ -479,9 +479,9 @@ func _resume_saved_game() -> void:
 	if enemy_manager and _saved_state.has("enemy_manager_state"):
 		if enemy_manager.has_method("from_save_data"):
 			enemy_manager.from_save_data(_saved_state.get("enemy_manager_state", {}))
-			print("👹 [Game] Estado de EnemyManager restaurado")
+			# Debug desactivado: print("👹 [Game] Estado de EnemyManager restaurado")
 		else:
-			print("⚠️ [Game] EnemyManager no tiene método from_save_data")
+			push_warning("[Game] EnemyManager no tiene método from_save_data")
 	
 	# ═══════════════════════════════════════════════════════════════════════════════
 	# NUEVO: Restaurar estado del WaveManager (fase, oleadas, boss, elites, eventos)
@@ -490,9 +490,9 @@ func _resume_saved_game() -> void:
 	if wave_manager and _saved_state.has("wave_manager_state"):
 		if wave_manager.has_method("from_save_data"):
 			wave_manager.from_save_data(_saved_state.get("wave_manager_state", {}))
-			print("🌊 [Game] Estado de WaveManager restaurado")
+			# Debug desactivado: print("🌊 [Game] Estado de WaveManager restaurado")
 		else:
-			print("⚠️ [Game] WaveManager no tiene método from_save_data")
+			push_warning("[Game] WaveManager no tiene método from_save_data")
 	
 	# ═══════════════════════════════════════════════════════════════════════════════
 	# NUEVO: Restaurar estado del ArenaManager (zonas desbloqueadas, biomas)
@@ -500,9 +500,9 @@ func _resume_saved_game() -> void:
 	if arena_manager and _saved_state.has("arena_manager_state"):
 		if arena_manager.has_method("from_save_data"):
 			arena_manager.from_save_data(_saved_state.get("arena_manager_state", {}))
-			print("🏟️ [Game] Estado de ArenaManager restaurado")
+			# Debug desactivado: print("🏟️ [Game] Estado de ArenaManager restaurado")
 		else:
-			print("⚠️ [Game] ArenaManager no tiene método from_save_data")
+			push_warning("[Game] ArenaManager no tiene método from_save_data")
 	
 	# ═══════════════════════════════════════════════════════════════════════════════
 	# Restaurar contadores de Reroll y Banish del LevelUpPanel
@@ -511,7 +511,7 @@ func _resume_saved_game() -> void:
 		remaining_rerolls = _saved_state.get("remaining_rerolls", 3)
 	if _saved_state.has("remaining_banishes"):
 		remaining_banishes = _saved_state.get("remaining_banishes", 2)
-	print("🎲 [Game] Rerolls/Banishes restaurados: %d/%d" % [remaining_rerolls, remaining_banishes])
+	# Debug desactivado: print("🎲 [Game] Rerolls/Banishes restaurados: %d/%d" % [remaining_rerolls, remaining_banishes])
 	
 	# TODO: Si queremos restaurar armas adicionales más allá de la inicial, se haría aquí
 	
@@ -522,12 +522,12 @@ func _resume_saved_game() -> void:
 	# No lo limpiamos aquí porque _restore_player_hp_deferred necesita _saved_state
 	call_deferred("_clear_saved_state_deferred")
 	
-	print("🔄 [Game] ¡Partida reanudada!")
-	print("   - Tiempo: %.1f segundos" % game_time)
-	print("   - Nivel: %d" % _saved_state.get("player_level", 1))
-	print("   - HP: %d/%d" % [_saved_state.get("player_hp", 100), _saved_state.get("player_max_hp", 100)])
-	print("   - Monedas: %d" % _saved_state.get("coins", 0))
-	print("   - XP: %d/%d" % [_saved_state.get("current_exp", 0), _saved_state.get("exp_to_next_level", 10)])
+	# Debug desactivado: print("🔄 [Game] ¡Partida reanudada!")
+	# Debug desactivado: print("   - Tiempo: %.1f segundos" % game_time)
+	# Debug desactivado: print("   - Nivel: %d" % _saved_state.get("player_level", 1))
+	# Debug desactivado: print("   - HP: %d/%d" % [_saved_state.get("player_hp", 100), _saved_state.get("player_max_hp", 100)])
+	# Debug desactivado: print("   - Monedas: %d" % _saved_state.get("coins", 0))
+	# Debug desactivado: print("   - XP: %d/%d" % [_saved_state.get("current_exp", 0), _saved_state.get("exp_to_next_level", 10)])
 
 func _restore_player_hp_deferred() -> void:
 	"""
@@ -543,7 +543,7 @@ func _restore_player_hp_deferred() -> void:
 	var saved_hp = _saved_state.get("player_hp", 100)
 	var saved_max_hp = _saved_state.get("player_max_hp", 100)
 	
-	print("🔄 [Game] _restore_player_hp_deferred() - Restaurando HP: %d/%d" % [saved_hp, saved_max_hp])
+	# Debug desactivado: print("🔄 [Game] _restore_player_hp_deferred() - Restaurando HP: %d/%d" % [saved_hp, saved_max_hp])
 	
 	# Buscar HealthComponent en las ubicaciones posibles
 	var health_component = null
@@ -588,9 +588,9 @@ func _restore_player_hp_deferred() -> void:
 		if health_component.has_signal("health_changed"):
 			health_component.health_changed.emit(saved_hp, saved_max_hp)
 		
-		print("✅ [Game] HP restaurado correctamente: %d/%d" % [health_component.current_health, health_component.max_health])
+		# Debug desactivado: print("✅ [Game] HP restaurado correctamente: %d/%d" % [health_component.current_health, health_component.max_health])
 	else:
-		print("⚠️ [Game] WARNING - No se pudo encontrar HealthComponent para restaurar HP")
+		push_warning("[Game] WARNING - No se pudo encontrar HealthComponent para restaurar HP")
 
 func _update_hud_after_restore() -> void:
 	"""Actualizar HUD después de restaurar partida guardada"""
@@ -610,7 +610,7 @@ func _update_hud_after_restore() -> void:
 	if hud.has_method("update_exp"):
 		hud.update_exp(current_exp, exp_to_next)
 	elif "exp_bar" in hud and hud.exp_bar:
-		hud.exp_bar.value = float(current_exp) / float(exp_to_next) * 100.0
+		hud.exp_bar.value = float(current_exp) / maxf(float(exp_to_next), 1.0) * 100.0
 	
 	# Actualizar monedas - update_coins(amount, total)
 	var coins = _saved_state.get("coins", 0)
@@ -619,7 +619,7 @@ func _update_hud_after_restore() -> void:
 	elif "coins_label" in hud and hud.coins_label:
 		hud.coins_label.text = str(coins)
 	
-	print("📊 [Game] HUD actualizado después de restaurar")
+	# Debug desactivado: print("📊 [Game] HUD actualizado después de restaurar")
 
 func _clear_saved_state_deferred() -> void:
 	"""Limpiar estado guardado después de que todo se haya restaurado"""
@@ -644,7 +644,7 @@ func _input(event: InputEvent) -> void:
 func _pause_game() -> void:
 	is_paused = true
 	get_tree().paused = true  # Pausar el árbol del juego
-	print("⏸️ [Game] Juego pausado - is_paused=%s, tree.paused=%s" % [is_paused, get_tree().paused])
+	# Debug desactivado: print("⏸️ [Game] Juego pausado - is_paused=%s, tree.paused=%s" % [is_paused, get_tree().paused])
 	if pause_menu:
 		pause_menu.show_pause_menu(game_time)
 
@@ -654,7 +654,7 @@ func _on_resume_game() -> void:
 		return
 	is_paused = false
 	get_tree().paused = false  # Reanudar el árbol del juego
-	print("▶️ [Game] Juego reanudado - is_paused=%s, tree.paused=%s" % [is_paused, get_tree().paused])
+	# Debug desactivado: print("▶️ [Game] Juego reanudado - is_paused=%s, tree.paused=%s" % [is_paused, get_tree().paused])
 
 func _update_hud() -> void:
 	if not hud:
@@ -824,16 +824,17 @@ func _show_level_up_panel(level: int) -> void:
 	if panel.has_method("show_panel"):
 		panel.show_panel()
 
-	print("🆙 [Game] Panel de level up mostrado (nivel %d)" % level)
+	# Debug desactivado: print("🆙 [Game] Panel de level up mostrado (nivel %d)" % level)
 
 func _on_level_up_option_selected(option: Dictionary) -> void:
 	"""Callback cuando se selecciona una mejora en el level up"""
-	print("🆙 [Game] Mejora seleccionada: %s" % option.get("name", "???"))
+	# Debug desactivado: print("🆙 [Game] Mejora seleccionada: %s" % option.get("name", "???"))
 	# Nota: La mejora ya se aplica en LevelUpPanel._apply_option()
+	pass
 
 func _on_level_up_panel_closed() -> void:
 	"""Callback cuando se cierra el panel de level up"""
-	print("🆙 [Game] Panel de level up cerrado")
+	# Debug desactivado: print("🆙 [Game] Panel de level up cerrado")
 	
 	# Procesar el siguiente level up de la cola (si hay)
 	# Esto también reanudará el juego si no hay más pendientes
@@ -841,7 +842,7 @@ func _on_level_up_panel_closed() -> void:
 
 func _on_stat_changed(stat_name: String, _old_value: float, new_value: float) -> void:
 	"""Callback cuando cambia un stat del jugador - propagar al player"""
-	print("📊 [Game] Stat cambiado: %s = %.2f" % [stat_name, new_value])
+	# Debug desactivado: print("📊 [Game] Stat cambiado: %s = %.2f" % [stat_name, new_value])
 
 	# Propagar cambios relevantes al player
 	if player and player.has_method("modify_stat"):
@@ -851,7 +852,7 @@ func _on_stat_changed(stat_name: String, _old_value: float, new_value: float) ->
 				var base_speed = 220.0
 				player.wizard_player.move_speed = base_speed * new_value
 				player.move_speed = player.wizard_player.move_speed
-				print("📊 [Game] Velocidad del player actualizada: %.1f" % player.move_speed)
+				# Debug desactivado: print("📊 [Game] Velocidad del player actualizada: %.1f" % player.move_speed)
 			"max_health":
 				if player.has_method("increase_max_hp"):
 					var diff = new_value - player.wizard_player.max_hp
@@ -865,17 +866,17 @@ func _on_stat_changed(stat_name: String, _old_value: float, new_value: float) ->
 func _on_player_level_changed(new_level: int) -> void:
 	"""Callback cuando sube el nivel del jugador (desde PlayerStats)"""
 	run_stats["level"] = new_level
-	print("📊 [Game] Nivel del jugador: %d" % new_level)
+	# Debug desactivado: print("📊 [Game] Nivel del jugador: %d" % new_level)
 
 func _on_reroll_used() -> void:
 	"""Callback cuando se usa un reroll"""
 	remaining_rerolls = maxi(0, remaining_rerolls - 1)
-	print("🎲 [Game] Reroll usado (restantes: %d)" % remaining_rerolls)
+	# Debug desactivado: print("🎲 [Game] Reroll usado (restantes: %d)" % remaining_rerolls)
 
 func _on_banish_used(_option_index: int) -> void:
 	"""Callback cuando se usa un banish"""
 	remaining_banishes = maxi(0, remaining_banishes - 1)
-	print("🚫 [Game] Banish usado (restantes: %d)" % remaining_banishes)
+	# Debug desactivado: print("🚫 [Game] Banish usado (restantes: %d)" % remaining_banishes)
 
 func _on_coin_collected(value: int, total: int) -> void:
 	## Callback cuando se recoge una moneda
@@ -887,7 +888,7 @@ func _on_coin_collected(value: int, total: int) -> void:
 
 func _on_player_zone_changed(zone_id: int, zone_name: String) -> void:
 	## Callback cuando el player cambia de zona
-	print("🏟️ [Game] Player cambió a zona: %s (id=%d)" % [zone_name, zone_id])
+	# Debug desactivado: print("🏟️ [Game] Player cambió a zona: %s (id=%d)" % [zone_name, zone_id])
 
 	# Actualizar UI si es necesario
 	if hud and hud.has_method("update_zone"):
@@ -921,7 +922,7 @@ func add_gold_stat(amount: int) -> void:
 func _on_phase_changed(phase_num: int, phase_config: Dictionary) -> void:
 	"""Callback cuando cambia la fase del juego"""
 	var phase_name = phase_config.get("name", "Fase %d" % phase_num)
-	print("🌊 [Game] Fase cambiada: %s" % phase_name)
+	# Debug desactivado: print("🌊 [Game] Fase cambiada: %s" % phase_name)
 
 	if hud and hud.has_method("show_wave_message"):
 		var msg = "═══ FASE %d: %s ═══" % [phase_num, phase_name.to_upper()]
@@ -935,7 +936,7 @@ func _on_wave_started(wave_type: String, wave_config: Dictionary) -> void:
 
 func _on_boss_incoming(boss_id: String, seconds_until: float) -> void:
 	"""Callback de advertencia de boss"""
-	print("⚠️ [Game] ¡Boss %s llegando en %.1f segundos!" % [boss_id, seconds_until])
+	# Debug desactivado: print("⚠️ [Game] ¡Boss %s llegando en %.1f segundos!" % [boss_id, seconds_until])
 
 	if hud and hud.has_method("show_wave_message"):
 		var boss_name = _get_boss_display_name(boss_id)
@@ -943,7 +944,7 @@ func _on_boss_incoming(boss_id: String, seconds_until: float) -> void:
 
 func _on_boss_spawned(boss_id: String) -> void:
 	"""Callback cuando aparece un boss"""
-	print("👹 [Game] ¡BOSS SPAWNEADO: %s!" % boss_id)
+	# Debug desactivado: print("👹 [Game] ¡BOSS SPAWNEADO: %s!" % boss_id)
 
 	var boss_name = _get_boss_display_name(boss_id)
 
@@ -958,7 +959,7 @@ func _on_boss_spawned(boss_id: String) -> void:
 
 func _on_boss_defeated(boss_id: String) -> void:
 	"""Callback cuando se derrota a un boss"""
-	print("🏆 [Game] ¡BOSS DERROTADO: %s!" % boss_id)
+	# Debug desactivado: print("🏆 [Game] ¡BOSS DERROTADO: %s!" % boss_id)
 
 	var boss_name = _get_boss_display_name(boss_id)
 
@@ -970,14 +971,14 @@ func _on_boss_defeated(boss_id: String) -> void:
 
 func _on_elite_spawned(enemy_id: String) -> void:
 	"""Callback cuando aparece un élite"""
-	print("⭐ [Game] ¡ÉLITE SPAWNEADO: %s!" % enemy_id)
+	# Debug desactivado: print("⭐ [Game] ¡ÉLITE SPAWNEADO: %s!" % enemy_id)
 
 	if hud and hud.has_method("show_wave_message"):
 		hud.show_wave_message("⭐ ¡ENEMIGO LEGENDARIO!", 3.0)
 
 func _on_special_event_started(event_name: String, event_config: Dictionary) -> void:
 	"""Callback cuando inicia un evento especial"""
-	print("🎪 [Game] Evento especial: %s" % event_name)
+	# Debug desactivado: print("🎪 [Game] Evento especial: %s" % event_name)
 
 	var announcement = event_config.get("announcement", "")
 	if announcement != "" and hud and hud.has_method("show_wave_message"):
@@ -985,11 +986,11 @@ func _on_special_event_started(event_name: String, event_config: Dictionary) -> 
 
 func _on_special_event_ended(event_name: String) -> void:
 	"""Callback cuando termina un evento especial"""
-	print("🎪 [Game] Evento terminado: %s" % event_name)
+	# Debug desactivado: print("🎪 [Game] Evento terminado: %s" % event_name)
 
 func _on_game_phase_infinite() -> void:
 	"""Callback cuando entramos en fase infinita"""
-	print("♾️ [Game] ¡MODO INFINITO ACTIVADO!")
+	# Debug desactivado: print("♾️ [Game] ¡MODO INFINITO ACTIVADO!")
 
 	if hud and hud.has_method("show_wave_message"):
 		hud.show_wave_message("♾️ ═══ MODO INFINITO ═══ ♾️\n¡Sobrevive todo lo que puedas!", 6.0)

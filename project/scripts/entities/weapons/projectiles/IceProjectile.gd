@@ -80,7 +80,7 @@ func _ready() -> void:
 	# Crear visual
 	_create_animated_visual()
 	
-	print("[IceProjectile] ✅ Proyectil inicializado (autodirigido, impacto visual, knockback)")
+	# print("[IceProjectile] ✅ Proyectil inicializado (autodirigido, impacto visual, knockback)")
 
 func _create_animated_visual() -> void:
 	"""Crear AnimatedSprite2D"""

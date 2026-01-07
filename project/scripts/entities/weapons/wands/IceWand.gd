@@ -37,7 +37,7 @@ func perform_attack(owner: Node2D) -> void:
 			SimpleProjectileScript = load("res://scripts/entities/weapons/projectiles/SimpleProjectile.gd")
 	
 	if not SimpleProjectileScript:
-		print("[IceWand] ✗ Error: SimpleProjectile.gd no disponible")
+		push_warning("[IceWand] ✗ Error: SimpleProjectile.gd no disponible")
 		return
 	
 	# Obtener enemigo más cercano
@@ -48,7 +48,7 @@ func perform_attack(owner: Node2D) -> void:
 	var start_pos = owner.global_position
 	var target_pos = target.global_position
 	
-	print("[IceWand] ⚡ Disparando hacia enemigo en %s" % target_pos)
+	# print("[IceWand] ⚡ Disparando hacia enemigo en %s" % target_pos)
 	
 	# Crear proyectil
 	for i in range(projectile_count):
@@ -73,8 +73,8 @@ func perform_attack(owner: Node2D) -> void:
 		projectile.set_meta("crit_chance", crit_chance)
 		projectile.set_meta("crit_damage", crit_damage)
 		
-		print("[IceWand] DEBUG: Configurado weapon_id='%s' antes de add_child" % id)
-		print("[IceWand] DEBUG: get_meta('weapon_id')='%s'" % projectile.get_meta("weapon_id", "NULL"))
+		# print("[IceWand] DEBUG: Configurado weapon_id='%s' antes de add_child" % id)
+		# print("[IceWand] DEBUG: get_meta('weapon_id')='%s'" % projectile.get_meta("weapon_id", "NULL"))
 		
 		# Calcular dirección
 		var direction = (target_pos - start_pos).normalized()
@@ -86,7 +86,7 @@ func perform_attack(owner: Node2D) -> void:
 		# AHORA añadir al árbol de escena (después de configurar todo)
 		var game_root = owner.get_tree().current_scene
 		if not game_root:
-			print("[IceWand] ✗ Error: No se pudo obtener current_scene")
+			push_warning("[IceWand] ✗ Error: No se pudo obtener current_scene")
 			projectile.queue_free()
 			return
 		

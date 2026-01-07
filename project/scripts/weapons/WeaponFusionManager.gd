@@ -164,10 +164,10 @@ func fuse_weapons(weapon_a: BaseWeapon, weapon_b: BaseWeapon) -> BaseWeapon:
 	# Incrementar slots perdidos
 	slots_lost += 1
 	
-	print("[WeaponFusionManager] ¡Fusión exitosa! %s + %s = %s" % [
-		weapon_a.weapon_name, weapon_b.weapon_name, fused_weapon.weapon_name
-	])
-	print("[WeaponFusionManager] Slots actuales: %d/%d" % [current_max_slots, STARTING_MAX_SLOTS])
+	# print("[WeaponFusionManager] ¡Fusión exitosa! %s + %s = %s" % [
+	# 	weapon_a.weapon_name, weapon_b.weapon_name, fused_weapon.weapon_name
+	# ])
+	# print("[WeaponFusionManager] Slots actuales: %d/%d" % [current_max_slots, STARTING_MAX_SLOTS])
 	
 	fusion_completed.emit(fused_weapon, true)
 	

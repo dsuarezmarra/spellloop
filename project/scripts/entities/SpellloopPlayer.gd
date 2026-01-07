@@ -25,7 +25,7 @@ var last_dir: String = "down"
 var health_bar_container: Node2D = null
 
 func _ready() -> void:
-	print("\n[SpellloopPlayer] ===== INICIANDO SPELLLOOP PLAYER =====")
+	# print("\n[SpellloopPlayer] ===== INICIANDO SPELLLOOP PLAYER =====")
 	
 	# CRÍTICO: Respetar la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -44,20 +44,20 @@ func _ready() -> void:
 
 	var wizard_script = load("res://scripts/entities/players/WizardPlayer.gd")
 	if not wizard_script:
-		print("[SpellloopPlayer] ERROR: No se pudo cargar WizardPlayer.gd")
+		push_warning("[SpellloopPlayer] ERROR: No se pudo cargar WizardPlayer.gd")
 		return
 
-	print("[SpellloopPlayer] OK: WizardPlayer.gd cargado")
+	# print("[SpellloopPlayer] OK: WizardPlayer.gd cargado")
 
 	wizard_player = wizard_script.new()
 	if not wizard_player:
-		print("[SpellloopPlayer] ERROR: No se pudo instanciar WizardPlayer")
+		push_warning("[SpellloopPlayer] ERROR: No se pudo instanciar WizardPlayer")
 		return
 
 	# Pasar referencia al AnimatedSprite2D ANTES de add_child() para que _ready() la tenga disponible
 	wizard_player.animated_sprite = get_node_or_null("AnimatedSprite2D")
 	if not wizard_player.animated_sprite:
-		print("[SpellloopPlayer] ERROR: No se pudo encontrar AnimatedSprite2D")
+		push_warning("[SpellloopPlayer] ERROR: No se pudo encontrar AnimatedSprite2D")
 		return
 
 	# CRÍTICO: Anexar WizardPlayer como nodo hijo
@@ -86,7 +86,7 @@ func _ready() -> void:
 	max_hp = wizard_player.max_hp
 	move_speed = wizard_player.move_speed
 
-	print("[SpellloopPlayer] ===== OK: SPELLLOOP PLAYER LISTO =====\n")
+	# print("[SpellloopPlayer] ===== OK: SPELLLOOP PLAYER LISTO =====\n")
 
 func _physics_process(_delta: float) -> void:
 	# Obtener input del jugador
@@ -133,7 +133,7 @@ func _enforce_zone_barriers() -> void:
 		# Feedback visual/sonoro opcional
 		if not _barrier_hit_cooldown:
 			_barrier_hit_cooldown = true
-			print("🚧 [Player] Barrera de zona! Radio actual: %.0f, máximo permitido: %.0f" % [dist_from_center, max_allowed_radius])
+			# print("🚧 [Player] Barrera de zona! Radio actual: %.0f, máximo permitido: %.0f" % [dist_from_center, max_allowed_radius])
 			# Pequeño efecto de rebote
 			velocity = direction_to_center * 100.0
 			# Reset cooldown después de 0.5s
@@ -278,19 +278,19 @@ func add_pickup_range(amount: float) -> void:
 	"""Añade rango de recolección base en píxeles"""
 	pickup_radius += amount
 	pickup_range_changed.emit(get_pickup_range())
-	print("🧲 [Player] Pickup range: %.0f (base: %.0f, mult: %.2fx, flat: +%.0f)" % [get_pickup_range(), pickup_radius, magnet, pickup_range_flat])
+	# print("🧲 [Player] Pickup range: %.0f (base: %.0f, mult: %.2fx, flat: +%.0f)" % [get_pickup_range(), pickup_radius, magnet, pickup_range_flat])
 
 func multiply_pickup_range(multiplier: float) -> void:
 	"""Multiplica el rango de recolección"""
 	magnet *= multiplier
 	pickup_range_changed.emit(get_pickup_range())
-	print("🧲 [Player] Pickup range: %.0f (base: %.0f, mult: %.2fx, flat: +%.0f)" % [get_pickup_range(), pickup_radius, magnet, pickup_range_flat])
+	# print("🧲 [Player] Pickup range: %.0f (base: %.0f, mult: %.2fx, flat: +%.0f)" % [get_pickup_range(), pickup_radius, magnet, pickup_range_flat])
 
 func add_pickup_range_flat(amount: float) -> void:
 	"""Añade bonus plano de rango de recolección"""
 	pickup_range_flat += amount
 	pickup_range_changed.emit(get_pickup_range())
-	print("🧲 [Player] Pickup range: %.0f (base: %.0f, mult: %.2fx, flat: +%.0f)" % [get_pickup_range(), pickup_radius, magnet, pickup_range_flat])
+	# print("🧲 [Player] Pickup range: %.0f (base: %.0f, mult: %.2fx, flat: +%.0f)" % [get_pickup_range(), pickup_radius, magnet, pickup_range_flat])
 
 func apply_special_effect(_effect_name: String, _item_data: Dictionary) -> void:
 	pass

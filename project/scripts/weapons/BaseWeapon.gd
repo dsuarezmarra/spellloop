@@ -143,7 +143,7 @@ func level_up() -> bool:
 	_recalculate_stats()
 	weapon_leveled_up.emit(id, level)
 	
-	print("[BaseWeapon] %s subió a nivel %d" % [weapon_name, level])
+	# print("[BaseWeapon] %s subió a nivel %d" % [weapon_name, level])
 	return true
 
 func _recalculate_stats() -> void:
@@ -258,8 +258,8 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> void:
 			modified_crit += effect_value
 	
 	# Log de disparo
-	var target_info = "posición player" if targets.is_empty() else str(targets[0].global_position)
-	print("[%s] ⚡ Disparando (%s) → %s" % [weapon_name, WeaponDatabase.ProjectileType.keys()[projectile_type], target_info])
+	# var target_info = "posición player" if targets.is_empty() else str(targets[0].global_position)
+	# print("[%s] ⚡ Disparando (%s) → %s" % [weapon_name, WeaponDatabase.ProjectileType.keys()[projectile_type], target_info])
 	
 	# Crear proyectil(es) según el tipo
 	_spawn_projectiles(player, targets, modified_damage, modified_crit)
@@ -442,10 +442,10 @@ func _create_projectile(player: Node2D, direction: Vector2, dmg: float, crit: fl
 	projectile_data["start_position"] = player.global_position
 	
 	# DEBUG: Verificar que los datos de efecto se pasan
-	if projectile_data.get("effect", "none") != "none":
-		print("[BaseWeapon] 📤 Creando proyectil para %s - effect: %s, val: %.2f, dur: %.2f" % [
-			id, projectile_data.effect, projectile_data.effect_value, projectile_data.effect_duration
-		])
+	# if projectile_data.get("effect", "none") != "none":
+	# 	print("[BaseWeapon] 📤 Creando proyectil para %s - effect: %s, val: %.2f, dur: %.2f" % [
+	# 		id, projectile_data.effect, projectile_data.effect_value, projectile_data.effect_duration
+	# 	])
 	
 	# Emitir para que el AttackManager maneje la creación
 	ProjectileFactory.create_projectile(player, projectile_data)
@@ -626,7 +626,7 @@ func _apply_execute(target: Node2D) -> void:
 	if hp_percent <= effect_value:
 		if target.has_method("take_damage"):
 			target.take_damage(hp)  # Daño letal
-			print("[BaseWeapon] ⚔️ EXECUTE! Enemigo eliminado (%.0f%% HP)" % [hp_percent * 100])
+			# print("[BaseWeapon] ⚔️ EXECUTE! Enemigo eliminado (%.0f%% HP)" % [hp_percent * 100])
 
 func _apply_bleed(target: Node2D) -> void:
 	"""Aplicar sangrado al objetivo (DoT)"""

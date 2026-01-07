@@ -124,7 +124,7 @@ func load_spritesheet(path: String) -> bool:
 	flip_h = false
 	_update_frame()
 	
-	print("[AnimatedEnemySprite] ✓ Cargado: %s (3 sprites detectados)" % path)
+	# print("[AnimatedEnemySprite] ✓ Cargado: %s (3 sprites detectados)" % path)
 	return true
 
 func _detect_sprite_regions(img: Image) -> Array[Rect2]:

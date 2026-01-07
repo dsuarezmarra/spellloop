@@ -100,7 +100,8 @@ func _ready() -> void:
 	if not skip_auto_init:
 		_enter_phase(1)
 	else:
-		print("🌊 [WaveManager] Skip auto init - será restaurado desde save data")
+		# Debug desactivado: print("🌊 [WaveManager] Skip auto init - será restaurado desde save data")
+		pass
 
 func _find_references() -> void:
 	"""Buscar referencias si no fueron asignadas por Game.gd (fallback)"""
@@ -211,7 +212,7 @@ func _enter_phase(phase_num: int) -> void:
 	if phase_num == 5:
 		game_phase_infinite.emit()
 	
-	print("WaveManager: Entrando en Fase %d - %s" % [phase_num, phase_config.name])
+	# Debug desactivado: print("WaveManager: Entrando en Fase %d - %s" % [phase_num, phase_config.name])
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # GESTIÓN DE OLEADAS
@@ -475,8 +476,7 @@ func _clamp_spawn_to_unlocked_zones(pos: Vector2) -> Vector2:
 	var direction = pos.normalized()
 	var clamped_pos = direction * clamped_radius
 	
-	print("[WaveManager] 🚧 Spawn clampado: %s → %s (radio %d → %d)" % [
-		pos, clamped_pos, int(dist_from_center), int(clamped_radius)])
+	# Debug desactivado: print("[WaveManager] 🚧 Spawn clampado: %s → %s (radio %d → %d)" % [pos, clamped_pos, int(dist_from_center), int(clamped_radius)])
 	
 	return clamped_pos
 
@@ -540,15 +540,17 @@ func _on_boss_died(boss_id: String) -> void:
 	boss_active = false
 	current_boss = null
 	boss_defeated.emit(boss_id)
-	print("WaveManager: Boss derrotado - %s" % boss_id)
+	# Debug desactivado: print("WaveManager: Boss derrotado - %s" % boss_id)
 
 func _show_boss_warning(boss_id: String) -> void:
-	print("⚠️ ¡BOSS INCOMING: %s!" % boss_id)
+	# Debug desactivado: print("⚠️ ¡BOSS INCOMING: %s!" % boss_id)
 	# Aquí se conectaría con el sistema de UI
+	pass
 
 func _show_boss_spawn_announcement(boss_id: String) -> void:
-	print("👹 ¡BOSS APARECIÓ: %s!" % boss_id)
+	# Debug desactivado: print("👹 ¡BOSS APARECIÓ: %s!" % boss_id)
 	# Aquí se conectaría con el sistema de UI
+	pass
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # GESTIÓN DE ÉLITES
@@ -661,7 +663,7 @@ func _start_special_event(event_name: String) -> void:
 		_show_wave_announcement(event_config.announcement)
 	
 	special_event_started.emit(event_name, event_config)
-	print("WaveManager: Evento especial iniciado - %s" % event_name)
+	# Debug desactivado: print("WaveManager: Evento especial iniciado - %s" % event_name)
 
 func _process_special_events(delta: float) -> void:
 	if active_event == "":
@@ -687,14 +689,15 @@ func _end_special_event() -> void:
 	spawn_rate_override = -1.0  # Restaurar spawn rate normal
 	
 	special_event_ended.emit(active_event)
-	print("WaveManager: Evento especial terminado - %s" % active_event)
+	# Debug desactivado: print("WaveManager: Evento especial terminado - %s" % active_event)
 	
 	active_event = ""
 	event_config = {}
 
 func _show_wave_announcement(text: String) -> void:
-	print("📢 %s" % text)
+	# Debug desactivado: print("📢 %s" % text)
 	# Aquí se conectaría con el sistema de UI para mostrar el anuncio
+	pass
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ESCALADO INFINITO
@@ -825,7 +828,7 @@ func from_save_data(data: Dictionary) -> void:
 	if data.is_empty():
 		return
 	
-	print("🌊 [WaveManager] Restaurando desde save data...")
+	# Debug desactivado: print("🌊 [WaveManager] Restaurando desde save data...")
 	
 	# Tiempo
 	game_time_seconds = data.get("game_time_seconds", 0.0)

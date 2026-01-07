@@ -33,7 +33,7 @@ func setup(game: Node, player_ref: CharacterBody2D) -> void:
 	_connect_signals()
 	_give_starting_weapon()
 	
-	print("[CombatSystem] ✅ Sistema de combate inicializado")
+	# Debug desactivado: print("[CombatSystem] ✅ Sistema de combate inicializado")
 
 func _create_attack_manager() -> void:
 	"""Crear y configurar el AttackManager"""
@@ -42,7 +42,7 @@ func _create_attack_manager() -> void:
 	game_root.add_child(attack_manager)
 	attack_manager.initialize(player)
 	
-	print("[CombatSystem] ⚔️ AttackManager creado")
+	# Debug desactivado: print("[CombatSystem] ⚔️ AttackManager creado")
 
 func _create_player_stats() -> void:
 	"""Crear y configurar PlayerStats"""
@@ -51,7 +51,7 @@ func _create_player_stats() -> void:
 	game_root.add_child(player_stats)
 	player_stats.initialize(attack_manager, player)  # Pasar player para regeneración
 	
-	print("[CombatSystem] 📊 PlayerStats creado")
+	# Debug desactivado: print("[CombatSystem] 📊 PlayerStats creado")
 
 func _connect_signals() -> void:
 	"""Conectar señales entre sistemas"""
@@ -72,7 +72,7 @@ func _give_starting_weapon() -> void:
 	# Empezar con Ice Wand como arma por defecto
 	attack_manager.add_weapon_by_id("ice_wand")
 	
-	print("[CombatSystem] 🎁 Arma inicial equipada: Ice Wand")
+	# Debug desactivado: print("[CombatSystem] 🎁 Arma inicial equipada: Ice Wand")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LEVEL UP
@@ -149,34 +149,37 @@ func player_heal(amount: float) -> void:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _on_weapon_added(weapon: BaseWeapon, slot: int) -> void:
-	print("[CombatSystem] 🆕 Arma añadida: %s (slot %d)" % [weapon.weapon_name, slot])
+	# Debug desactivado: print("[CombatSystem] 🆕 Arma añadida: %s (slot %d)" % [weapon.weapon_name, slot])
 	_update_hud_weapons()
 
 func _on_weapon_removed(weapon: BaseWeapon, slot: int) -> void:
-	print("[CombatSystem] ❌ Arma removida: %s" % weapon.weapon_name)
+	# Debug desactivado: print("[CombatSystem] ❌ Arma removida: %s" % weapon.weapon_name)
 	_update_hud_weapons()
 
 func _on_weapon_leveled_up(weapon: BaseWeapon, new_level: int) -> void:
-	print("[CombatSystem] ⬆️ %s subió a nivel %d" % [weapon.weapon_name, new_level])
+	# Debug desactivado: print("[CombatSystem] ⬆️ %s subió a nivel %d" % [weapon.weapon_name, new_level])
 	_update_hud_weapons()
 
 func _on_fusion_available(weapon_a: BaseWeapon, weapon_b: BaseWeapon, result: Dictionary) -> void:
-	print("[CombatSystem] 🔥 Fusión disponible: %s + %s = %s" % [
-		weapon_a.weapon_name, weapon_b.weapon_name, result.get("name", "???")
-	])
+	# Debug desactivado: print("[CombatSystem] 🔥 Fusión disponible: %s + %s = %s" % [
+	# Debug desactivado: 	weapon_a.weapon_name, weapon_b.weapon_name, result.get("name", "???")
+	# Debug desactivado: ])
+	pass
 
 func _on_slots_updated(current: int, max_slots: int) -> void:
-	print("[CombatSystem] 📦 Slots: %d/%d" % [current, max_slots])
+	# Debug desactivado: print("[CombatSystem] 📦 Slots: %d/%d" % [current, max_slots])
 	_update_hud_slots()
 
 func _on_player_level_changed(new_level: int) -> void:
-	print("[CombatSystem] 🎉 ¡Nivel %d alcanzado!" % new_level)
+	# Debug desactivado: print("[CombatSystem] 🎉 ¡Nivel %d alcanzado!" % new_level)
+	pass
 
 func _on_player_health_changed(current: float, maximum: float) -> void:
 	_update_hud_health(current, maximum)
 
 func _on_player_stat_changed(stat: String, old_val: float, new_val: float) -> void:
-	print("[CombatSystem] 📈 %s: %.2f → %.2f" % [stat, old_val, new_val])
+	# Debug desactivado: print("[CombatSystem] 📈 %s: %.2f → %.2f" % [stat, old_val, new_val])
+	pass
 
 func _on_upgrade_selected(option: Dictionary) -> void:
 	# Debug desactivado: print("[CombatSystem] Upgrade seleccionado")
@@ -225,11 +228,11 @@ func get_player_stats() -> PlayerStats:
 
 func print_debug_info() -> void:
 	"""Imprimir información de debug de todos los sistemas"""
-	print("\n" + "=" * 60)
-	print(attack_manager.get_debug_info())
-	print("")
-	print(player_stats.get_debug_info())
-	print("=" * 60 + "\n")
+	# print("\n" + "=" * 60)
+	# print(attack_manager.get_debug_info())
+	# print("")
+	# print(player_stats.get_debug_info())
+	# print("=" * 60 + "\n")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SERIALIZACIÓN

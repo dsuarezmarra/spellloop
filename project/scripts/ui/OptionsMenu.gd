@@ -186,4 +186,4 @@ func _activate_current() -> void:
 
 	var current = focusable_controls[current_focus_index]
 	if current is Button:
-		current.emit_signal("pressed")
+		current.pressed.emit()

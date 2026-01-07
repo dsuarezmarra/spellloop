@@ -1069,11 +1069,14 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 	
 	# Log especial para mejoras especiales
 	if is_unique:
-		print("[LevelUpPanel] 🔴 MEJORA ÚNICA obtenida: %s" % upgrade_name)
+		# print("[LevelUpPanel] 🔴 MEJORA ÚNICA obtenida: %s" % upgrade_name)
+		pass
 	if is_cursed:
-		print("[LevelUpPanel] 💜 Mejora CURSED aplicada: %s" % upgrade_name)
+		# print("[LevelUpPanel] 💜 Mejora CURSED aplicada: %s" % upgrade_name)
+		pass
 	if is_consumable:
-		print("[LevelUpPanel] 🟡 Mejora CONSUMIBLE usada: %s" % upgrade_name)
+		# print("[LevelUpPanel] 🟡 Mejora CONSUMIBLE usada: %s" % upgrade_name)
+		pass
 	
 	# Stats que van a GlobalWeaponStats (armas) - NO incluye crit porque está en PlayerStats
 	var weapon_stats = [
@@ -1100,7 +1103,7 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 			var weapon_option = option.duplicate()
 			weapon_option["effects"] = weapon_effects
 			attack_manager.apply_global_upgrade(weapon_option)
-			print("[LevelUpPanel] ⚔️ Efectos de armas aplicados (%d): %s" % [weapon_effects.size(), upgrade_name])
+			# print("[LevelUpPanel] ⚔️ Efectos de armas aplicados (%d): %s" % [weapon_effects.size(), upgrade_name])
 	
 	# Aplicar efectos de JUGADOR a PlayerStats
 	if not player_effects.is_empty():
@@ -1109,7 +1112,8 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 			player_option["effects"] = player_effects
 			var success = player_stats.apply_upgrade(player_option)
 			if success:
-				print("[LevelUpPanel] 🛡️ Efectos de jugador aplicados (%d): %s" % [player_effects.size(), upgrade_name])
+				# print("[LevelUpPanel] 🛡️ Efectos de jugador aplicados (%d): %s" % [player_effects.size(), upgrade_name])
+				pass
 			else:
 				push_warning("[LevelUpPanel] No se pudo aplicar mejora: %s" % upgrade_name)
 	

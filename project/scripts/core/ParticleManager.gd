@@ -17,7 +17,8 @@ var active_effects: Array = []
 var max_simultaneous_effects: int = 150
 
 func _ready() -> void:
-	print("[ParticleManager] Inicializado")
+	# print("[ParticleManager] Inicializado")
+	pass
 
 func create_effect(effect_type: int, position: Vector2, lifetime: float = 1.0):
 	"""Crear un efecto de partículas en la posición especificada"""

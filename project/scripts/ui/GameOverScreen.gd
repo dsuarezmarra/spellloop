@@ -128,7 +128,7 @@ func _activate_current() -> void:
 
 	var current = buttons[current_button_index]
 	if current:
-		current.emit_signal("pressed")
+		current.pressed.emit()
 
 func _display_stats() -> void:
 	if not stats_container:

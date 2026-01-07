@@ -42,7 +42,7 @@ const TRANSLATION_DIR = "res://assets/data/localization/"
 const FALLBACK_LANGUAGE = "en"
 
 func _ready() -> void:
-	print("[Localization] Initializing Localization...")
+	# print("[Localization] Initializing Localization...")
 
 	# Load translation files
 	_load_all_translations()
@@ -50,7 +50,7 @@ func _ready() -> void:
 	# Set initial language from settings
 	_load_language_from_settings()
 
-	print("[Localization] Localization initialized with language: ", current_language)
+	# print("[Localization] Localization initialized with language: ", current_language)
 
 func _load_all_translations() -> void:
 	"""Load all available translation files"""
@@ -62,7 +62,7 @@ func _load_translation_file(language_code: String) -> bool:
 	var file_path = TRANSLATION_DIR + language_code + ".json"
 
 	if not FileAccess.file_exists(file_path):
-		print("[Localization] Translation file not found: ", file_path)
+		push_warning("[Localization] Translation file not found: %s" % file_path)
 
 		# Create default translation file
 		_create_default_translation_file(language_code)
@@ -70,7 +70,7 @@ func _load_translation_file(language_code: String) -> bool:
 
 	var file = FileAccess.open(file_path, FileAccess.READ)
 	if file == null:
-		print("[Localization] Failed to open translation file: ", file_path)
+		push_warning("[Localization] Failed to open translation file: %s" % file_path)
 		return false
 
 	var json_string = file.get_as_text()
@@ -80,11 +80,11 @@ func _load_translation_file(language_code: String) -> bool:
 	var parse_result = json.parse(json_string)
 
 	if parse_result != OK:
-		print("[Localization] Failed to parse translation file: ", file_path)
+		push_warning("[Localization] Failed to parse translation file: %s" % file_path)
 		return false
 
 	translations[language_code] = json.data
-	print("[Localization] Loaded translations for: ", language_code)
+	# print("[Localization] Loaded translations for: ", language_code)
 	translation_loaded.emit(language_code)
 
 	return true
@@ -101,7 +101,7 @@ func _create_default_translation_file(language_code: String) -> void:
 	if file:
 		file.store_string(JSON.stringify(default_translations, "\t"))
 		file.close()
-		print("[Localization] Created default translation file: ", file_path)
+		# print("[Localization] Created default translation file: ", file_path)
 
 		# Load the created file
 		translations[language_code] = default_translations
@@ -283,7 +283,7 @@ func _format_string(text: String, args: Array) -> String:
 func set_language(language_code: String) -> bool:
 	"""Set the current language"""
 	if not is_language_available(language_code):
-		print("[Localization] Language not available: ", language_code)
+		push_warning("[Localization] Language not available: %s" % language_code)
 		return false
 
 	var old_language = current_language
@@ -293,7 +293,7 @@ func set_language(language_code: String) -> bool:
 	_save_language_to_settings()
 
 	language_changed.emit(old_language, current_language)
-	print("[Localization] Language changed from '", old_language, "' to '", current_language, "'")
+	# print("[Localization] Language changed from '", old_language, "' to '", current_language, "'")
 
 	return true
 
@@ -351,7 +351,7 @@ func _load_language_from_settings() -> void:
 				if is_language_available(saved_language):
 					current_language = saved_language
 				else:
-					print("[Localization] Invalid language in settings: ", saved_language, ", using default")
+				push_warning("[Localization] Invalid language in settings: %s, using default" % saved_language)
 
 func _save_language_to_settings() -> void:
 	"""Save current language to settings"""

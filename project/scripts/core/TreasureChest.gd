@@ -145,7 +145,7 @@ func generate_contents():
 			"source": "chest"
 		})
 	
-	print("[TreasureChest] Contenido del cofre generado: ", items_inside.size(), " items")
+	# Debug desactivado: print("[TreasureChest] Contenido del cofre generado: ", items_inside.size(), " items")
 
 func get_item_rarity_for_chest() -> int:
 	"""Obtener rareza de item con progresión temporal (cada 5 minutos)"""
@@ -160,7 +160,7 @@ func get_item_rarity_for_chest() -> int:
 	# Calcular "ronda" de dificultad (cada 5 minutos = 1 ronda)
 	var difficulty_round = minutes_elapsed / 5.0
 	
-	print("[TreasureChest] Rareza calculada - Minutos: ", minutes_elapsed, " Ronda: ", difficulty_round)
+	# Debug desactivado: print("[TreasureChest] Rareza calculada - Minutos: ", minutes_elapsed, " Ronda: ", difficulty_round)
 	
 	# TABLA DE PROGRESIÓN DE RAREZA POR RONDA (cada 5 minutos)
 	#
@@ -223,7 +223,7 @@ func get_item_rarity_for_chest() -> int:
 			else:
 				rarity = 3
 	
-	print("[TreasureChest] Rareza seleccionada: ", rarity, " (Ronda: ", difficulty_round, ")")
+	# Debug desactivado: print("[TreasureChest] Rareza seleccionada: ", rarity, " (Ronda: ", difficulty_round, ")")
 	return rarity
 
 func get_random_chest_item() -> String:
@@ -244,7 +244,7 @@ func _process(_delta):
 		return
 	var distance = global_position.distance_to(player_ref.global_position)
 	if distance <= interaction_range:
-		print("[TreasureChest] ¡COFRE TOCADO! Distancia: ", distance)
+		# Debug desactivado: print("[TreasureChest] ¡COFRE TOCADO! Distancia: ", distance)
 		popup_shown = true  # Marcar que ya se mostró el popup
 		trigger_chest_interaction()
 
@@ -270,14 +270,14 @@ func trigger_chest_interaction():
 
 func create_chest_popup():
 	"""Crear popup de selección de mejoras - CON 3 ITEMS ALEATORIOS"""
-	print("[TreasureChest] Intentando crear popup...")
+	# Debug desactivado: print("[TreasureChest] Intentando crear popup...")
 	
 	# Usar popup simple directo en lugar de escena
 	var popup_instance = SimpleChestPopup.new()
-	print("[TreasureChest] SimpleChestPopup instanciado")
+	# Debug desactivado: print("[TreasureChest] SimpleChestPopup instanciado")
 	
 	get_tree().current_scene.add_child(popup_instance)
-	print("[TreasureChest] Popup añadido a escena - layer 100")
+	# Debug desactivado: print("[TreasureChest] Popup añadido a escena - layer 100")
 	
 	# Preparar items con información completa (los 3 items del cofre)
 	var items_with_names = []
@@ -293,12 +293,12 @@ func create_chest_popup():
 		item_display["name"] = "%s (%s)" % [item_name, rarity_name]
 		items_with_names.append(item_display)
 		
-		print("[TreasureChest] Item %d - Type: %s, Name: %s, Rarity: %s" % [i + 1, item_type, item_name, rarity_name])
+		# Debug desactivado: print("[TreasureChest] Item %d - Type: %s, Name: %s, Rarity: %s" % [i + 1, item_type, item_name, rarity_name])
 	
 	popup_instance.setup_items(items_with_names)
-	print("[TreasureChest] Items configurados en popup (%d items)" % items_with_names.size())
+	# Debug desactivado: print("[TreasureChest] Items configurados en popup (%d items)" % items_with_names.size())
 	popup_instance.item_selected.connect(_on_popup_item_selected)
-	print("[TreasureChest] Señal conectada a _on_popup_item_selected")
+	# Debug desactivado: print("[TreasureChest] Señal conectada a _on_popup_item_selected")
 
 func get_item_display_name(item_type: String) -> String:
 	"""Obtener nombre legible del item"""
@@ -327,7 +327,7 @@ func get_rarity_name(rarity: int) -> String:
 
 func _on_popup_item_selected(selected_item: Dictionary):
 	"""Manejar selección de item del popup"""
-	print("[TreasureChest] ¡¡¡ CALLBACK RECIBIDO !!! Item: ", selected_item)
+	# Debug desactivado: print("[TreasureChest] ¡¡¡ CALLBACK RECIBIDO !!! Item: ", selected_item)
 	is_opened = true
 	
 	# Efecto visual de apertura
@@ -335,7 +335,7 @@ func _on_popup_item_selected(selected_item: Dictionary):
 	
 	# Emitir señal solo con el item seleccionado
 	chest_opened.emit(self, [selected_item])
-	print("[TreasureChest] Señal chest_opened emitida")
+	# Debug desactivado: print("[TreasureChest] Señal chest_opened emitida")
 	
 	# Remover después de un delay
 	var timer = Timer.new()

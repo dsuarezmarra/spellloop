@@ -35,8 +35,7 @@ var elite_size_scale: float = 1.5
 var attack_range: float = 32.0
 var separation_radius: float = 40.0
 var attack_cooldown: float = 1.0
-var can_attack: bool = true
-var attack_timer: float = 0.0
+# NOTA: can_attack y attack_timer ya no se usan - el ataque lo maneja EnemyAttackSystem
 
 # Comportamiento específico por arquetipo
 var preferred_distance: float = 0.0  # Para ranged
@@ -135,6 +134,12 @@ func _get_scale_for_tier() -> float:
 		4: return 0.65
 		5: return 1.20  # Boss
 		_: return 0.35
+
+func _get_sprite() -> Node2D:
+	"""Helper centralizado para obtener el sprite del enemigo (AnimatedEnemySprite o Sprite2D)"""
+	if animated_sprite and is_instance_valid(animated_sprite):
+		return animated_sprite
+	return _find_sprite_node(self)
 
 func _try_load_animated_sprite() -> bool:
 	"""Intentar cargar AnimatedEnemySprite con spritesheet. Retorna true si tuvo éxito."""

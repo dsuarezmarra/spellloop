@@ -478,7 +478,7 @@ func play_sfx_enhanced(_sfx_name: String, volume: float = 1.0, pitch: float = 1.
 func play_biome_music(biome: String) -> void:
 	"""Play biome-specific music and ambient sounds"""
 	if not biome_tracks.has(biome):
-		print("[AudioManager] Warning: Biome music not found: ", biome)
+		push_warning("[AudioManager] Biome music not found: %s" % biome)
 		return
 	
 	var biome_data = biome_tracks[biome]
@@ -494,7 +494,7 @@ func play_biome_music(biome: String) -> void:
 		play_ambient_sound(ambient_track)
 	
 	current_biome_track = biome
-	print("[AudioManager] Playing biome music: ", biome)
+	# print("[AudioManager] Playing biome music: ", biome)
 
 func crossfade_to_biome_music(track_name: String, intensity: float) -> void:
 	"""Crossfade between biome music tracks"""
@@ -650,7 +650,7 @@ func set_dynamic_music_intensity(intensity: float) -> void:
 func crossfade_to_track(track_name: String, fade_duration: float = 2.0) -> void:
 	"""Smoothly crossfade to a new music track"""
 	if not music_tracks.has(track_name):
-		print("[AudioManager] Track not found: ", track_name)
+		push_warning("[AudioManager] Track not found: %s" % track_name)
 		return
 	
 	# Create tween for crossfade
@@ -664,7 +664,7 @@ func crossfade_to_track(track_name: String, fade_duration: float = 2.0) -> void:
 	# Switch track at halfway point
 	var new_track = music_tracks[track_name]
 	if not new_track is AudioStream:
-		print("[AudioManager] Warning: Track '%s' is not loaded" % track_name)
+		push_warning("[AudioManager] Track '%s' is not loaded" % track_name)
 		return
 	tween.tween_callback(func():
 		music_player.stream = new_track
@@ -694,7 +694,7 @@ func add_audio_filter_effect(effect_type: String, duration: float = 1.0) -> void
 		"muffled":
 			_apply_muffled_effect(duration)
 		_:
-			print("[AudioManager] Unknown audio effect: ", effect_type)
+			push_warning("[AudioManager] Unknown audio effect: %s" % effect_type)
 
 func _apply_underwater_effect(duration: float) -> void:
 	"""Apply underwater-like audio effect"""
@@ -714,7 +714,7 @@ func _apply_underwater_effect(duration: float) -> void:
 func _apply_echo_effect(duration: float) -> void:
 	"""Apply echo-like audio effect"""
 	# This would typically require audio effects nodes in a real implementation
-	print("[AudioManager] Echo effect applied for ", duration, " seconds")
+	# print("[AudioManager] Echo effect applied for ", duration, " seconds")
 
 func _apply_muffled_effect(duration: float) -> void:
 	"""Apply muffled audio effect (like being in a different room)"""

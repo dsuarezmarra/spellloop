@@ -122,7 +122,7 @@ func _create_nodes() -> void:
 func _setup_from_sprites() -> void:
 	"""Configurar desde spritesheets"""
 	var frame_size = visual_data.frame_size if visual_data else Vector2i(64, 64)
-	print("[BeamVisualEffect] Configurando sprites con frame_size: " + str(frame_size))
+	# print("[BeamVisualEffect] Configurando sprites con frame_size: " + str(frame_size))
 	
 	# Escala base de visual_data
 	var sprite_scale = visual_data.base_scale if visual_data else 1.0
@@ -137,7 +137,7 @@ func _setup_from_sprites() -> void:
 		start_sprite.z_index = 10  # Encima del Line2D
 		start_sprite.visible = true
 		start_sprite.play("active")  # Iniciar animación inmediatamente
-		print("  ✓ Start sprite configurado: " + str(visual_data.beam_frames) + " frames, scale: " + str(sprite_scale))
+		# print("  ✓ Start sprite configurado: " + str(visual_data.beam_frames) + " frames, scale: " + str(sprite_scale))
 	
 	# Body texture para el Line2D
 	if visual_data.beam_body_spritesheet:
@@ -149,7 +149,7 @@ func _setup_from_sprites() -> void:
 		body_line.gradient = null
 		# OCULTAR el glow completamente cuando hay textura de body
 		glow_line.visible = false
-		print("  ✓ Body texture configurada: " + str(visual_data.beam_body_spritesheet.get_width()) + "x" + str(visual_data.beam_body_spritesheet.get_height()))
+		# print("  ✓ Body texture configurada: " + str(visual_data.beam_body_spritesheet.get_width()) + "x" + str(visual_data.beam_body_spritesheet.get_height()))
 	else:
 		# Sin body sprite, hacer el Line2D más sutil para no tapar los otros sprites
 		body_line.modulate.a = 0.3
@@ -165,9 +165,10 @@ func _setup_from_sprites() -> void:
 		tip_sprite.z_index = 10  # Encima del Line2D
 		tip_sprite.visible = true
 		tip_sprite.play("active")  # Iniciar animación inmediatamente
-		print("  ✓ Tip sprite configurado: " + str(visual_data.beam_frames) + " frames, scale: " + str(sprite_scale))
+		# print("  ✓ Tip sprite configurado: " + str(visual_data.beam_frames) + " frames, scale: " + str(sprite_scale))
 	else:
-		print("  ✗ Tip sprite NO TIENE SPRITESHEET")
+		# print("  ✗ Tip sprite NO TIENE SPRITESHEET")
+		pass
 	
 	# Configurar gradiente del body (si no hay textura)
 	if not visual_data.beam_body_spritesheet:
@@ -389,8 +390,8 @@ func _update_beam_points(current_length: float) -> void:
 		tip_sprite.position = points[-1]
 		tip_sprite.rotation = _direction.angle()
 		# Debug: verificar posición del tip
-		if Engine.get_frames_drawn() % 60 == 0:  # Solo cada 60 frames para no saturar
-			print("[BeamVisualEffect] Tip en posición: " + str(tip_sprite.position) + ", visible: " + str(tip_sprite.visible))
+		# if Engine.get_frames_drawn() % 60 == 0:  # Solo cada 60 frames para no saturar
+		# 	print("[BeamVisualEffect] Tip en posición: " + str(tip_sprite.position) + ", visible: " + str(tip_sprite.visible))
 
 func dissipate() -> void:
 	"""Desvanecer el rayo"""

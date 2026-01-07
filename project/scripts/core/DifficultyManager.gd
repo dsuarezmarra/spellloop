@@ -32,7 +32,7 @@ var health_increase_per_minute: float = 0.04  # 4% por minuto
 var boss_events_triggered: int = 0
 
 func _ready() -> void:
-	print("[DifficultyManager] Inicializado")
+	# print("[DifficultyManager] Inicializado")
 	_find_managers()
 
 func _find_managers() -> void:
@@ -99,5 +99,5 @@ func reset() -> void:
 	enemy_damage_multiplier = 1.0
 	enemy_health_multiplier = 1.0
 	boss_events_triggered = 0
-	print("[DifficultyManager] Reiniciado")
+	# print("[DifficultyManager] Reiniciado")
 

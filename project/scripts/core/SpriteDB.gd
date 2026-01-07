@@ -12,20 +12,20 @@ func _ready():
 func load_index():
 	var path = "res://assets/sprites/sprites_index.json"
 	if not FileAccess.file_exists(path):
-		print("[SpriteDB] sprites_index.json no encontrado: ", path)
+		push_warning("[SpriteDB] sprites_index.json no encontrado: %s" % path)
 		return
 	var file = FileAccess.open(path, FileAccess.READ)
 	if not file:
-		print("[SpriteDB] Error abriendo sprites_index.json")
+		push_warning("[SpriteDB] Error abriendo sprites_index.json")
 		return
 	var json = JSON.new()
 	var parse_result = json.parse(file.get_as_text())
 	file.close()
 	if parse_result != OK:
-		print("[SpriteDB] Error parseando JSON: ", json.get_error_message())
+		push_warning("[SpriteDB] Error parseando JSON: %s" % json.get_error_message())
 		return
 	sprites_index = json.get_data()
-	print("[SpriteDB] sprites_index cargado, llaves: ", sprites_index.keys())
+	# print("[SpriteDB] sprites_index cargado, llaves: ", sprites_index.keys())
 
 func get_player_sprites() -> Dictionary:
 	if sprites_index.has("players/wizard"):

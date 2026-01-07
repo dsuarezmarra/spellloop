@@ -31,7 +31,7 @@ func increase_weapon_cap(amount: int = 1, cap_limit: int = 8) -> bool:
 	var new_cap = min(cap_limit, max_weapons + amount)
 	if new_cap != max_weapons:
 		max_weapons = new_cap
-		print("⚔️ Weapon capacity increased to: ", max_weapons)
+		# print("⚔️ Weapon capacity increased to: ", max_weapons)
 		return true
 	return false
 
@@ -42,7 +42,7 @@ func _ready():
 	# Asegurar que WeaponManager respete la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	
-	print("⚔️ WeaponManager inicializado")
+	# print("⚔️ WeaponManager inicializado")
 	# Cargar script del proyectil mágico
 	if ResourceLoader.exists("res://scripts/magic/SpellloopMagicProjectile.gd"):
 		MagicProjectileScript = load("res://scripts/magic/SpellloopMagicProjectile.gd")
@@ -63,7 +63,7 @@ func initialize(player_ref: CharacterBody2D):
 	# Equipar arma inicial (varita mágica)
 	equip_initial_weapon()
 	
-	print("🪄 Sistema de armas inicializado")
+	# print("🪄 Sistema de armas inicializado")
 	# Start the auto-fire timer if present
 	if auto_fire_timer and not auto_fire_timer.is_stopped():
 		auto_fire_timer.start()
@@ -202,7 +202,7 @@ func add_weapon(weapon_data: WeaponData) -> bool:
 		return false
 	
 	equipped_weapons.append(weapon_data)
-	print("⚔️ Nueva arma equipada: ", weapon_data.name)
+	# print("⚔️ Nueva arma equipada: ", weapon_data.name)
 	return true
 
 func _on_auto_fire_tick() -> void:
@@ -225,7 +225,7 @@ func upgrade_weapon(weapon_id: String, upgrade_data: Dictionary) -> bool:
 	for weapon in equipped_weapons:
 		if weapon.id == weapon_id:
 			weapon.apply_upgrade(upgrade_data)
-			print("⬆️ Arma mejorada: ", weapon.name)
+			# print("⬆️ Arma mejorada: ", weapon.name)
 			return true
 	return false
 

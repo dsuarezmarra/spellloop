@@ -90,7 +90,7 @@ var current_settings: Dictionary = {}
 var is_data_loaded: bool = false
 
 func _ready() -> void:
-	print("[SaveManager] Initializing SaveManager...")
+	# Debug desactivado: print("[SaveManager] Initializing SaveManager...")
 	
 	# Create save directory if it doesn't exist
 	_ensure_save_directory()
@@ -101,13 +101,13 @@ func _ready() -> void:
 	# Load meta persistence (shop)
 	_load_meta()
 	
-	print("[SaveManager] SaveManager initialized successfully")
+	# Debug desactivado: print("[SaveManager] SaveManager initialized successfully")
 
 func _ensure_save_directory() -> void:
 	"""Ensure the save directory exists"""
 	if not DirAccess.dir_exists_absolute(SAVE_DIR):
 		DirAccess.open("user://").make_dir_recursive("saves")
-		print("[SaveManager] Created save directory: ", SAVE_DIR)
+		# Debug desactivado: print("[SaveManager] Created save directory: ", SAVE_DIR)
 
 func _load_all_data() -> void:
 	"""Load all game data on startup"""
@@ -121,12 +121,12 @@ func _load_all_data() -> void:
 
 func save_game_data() -> bool:
 	"""Save current game data to file"""
-	print("[SaveManager] Saving game data...")
+	# Debug desactivado: print("[SaveManager] Saving game data...")
 	
 	var file = FileAccess.open(SAVE_FILE, FileAccess.WRITE)
 	if file == null:
 		var error = "Failed to open save file for writing: " + SAVE_FILE
-		print("[SaveManager] Error: ", error)
+		push_warning("[SaveManager] Error: " + error)
 		save_failed.emit(error)
 		return false
 	
@@ -134,7 +134,7 @@ func save_game_data() -> bool:
 	file.store_string(json_string)
 	file.close()
 	
-	print("[SaveManager] Game data saved successfully")
+	# Debug desactivado: print("[SaveManager] Game data saved successfully")
 	save_completed.emit()
 	# Emit player data changed so UI can sync authoritative values
 	if current_save_data.has("player_data"):
@@ -167,7 +167,7 @@ func _load_meta() -> void:
 func _save_meta() -> bool:
 	var f = FileAccess.open(META_FILE, FileAccess.WRITE)
 	if not f:
-		print("[SaveManager] Error al abrir meta file para escribir")
+		push_warning("[SaveManager] Error al abrir meta file para escribir")
 		return false
 	f.store_string(JSON.stringify(meta_data))
 	f.close()
@@ -206,10 +206,10 @@ func spend_meta_currency_from_meta(amount: int) -> bool:
 
 func load_game_data() -> Dictionary:
 	"""Load game data from file"""
-	print("[SaveManager] Loading game data...")
+	# Debug desactivado: print("[SaveManager] Loading game data...")
 	
 	if not FileAccess.file_exists(SAVE_FILE):
-		print("[SaveManager] No save file found, using default data")
+		# Debug desactivado: print("[SaveManager] No save file found, using default data")
 		current_save_data = DEFAULT_SAVE_DATA.duplicate(true)
 		save_game_data()  # Create initial save file
 		return current_save_data
@@ -217,7 +217,7 @@ func load_game_data() -> Dictionary:
 	var file = FileAccess.open(SAVE_FILE, FileAccess.READ)
 	if file == null:
 		var error = "Failed to open save file for reading: " + SAVE_FILE
-		print("[SaveManager] Error: ", error)
+		push_warning("[SaveManager] Error: " + error)
 		load_failed.emit(error)
 		return DEFAULT_SAVE_DATA.duplicate(true)
 	
@@ -229,7 +229,7 @@ func load_game_data() -> Dictionary:
 	
 	if parse_result != OK:
 		var error = "Failed to parse save file JSON"
-		print("[SaveManager] Error: ", error)
+		push_warning("[SaveManager] Error: " + error)
 		load_failed.emit(error)
 		return DEFAULT_SAVE_DATA.duplicate(true)
 	
@@ -238,14 +238,14 @@ func load_game_data() -> Dictionary:
 	# Validate and merge with default structure
 	current_save_data = _validate_save_data(loaded_data)
 	
-	print("[SaveManager] Game data loaded successfully")
+	# Debug desactivado: print("[SaveManager] Game data loaded successfully")
 	load_completed.emit(current_save_data)
 	
 	return current_save_data
 
 func save_run_data(run_data: Dictionary) -> void:
 	"""Save completed run data for progression"""
-	print("[SaveManager] Saving run data...")
+	# Debug desactivado: print("[SaveManager] Saving run data...")
 	
 	# Update player progression based on run
 	_process_run_progression(run_data)
@@ -338,36 +338,36 @@ func _save_run_history(run_data: Dictionary) -> void:
 
 func save_settings(settings: Dictionary) -> bool:
 	"""Save game settings"""
-	print("[SaveManager] Saving settings...")
+	# Debug desactivado: print("[SaveManager] Saving settings...")
 	
 	current_settings = settings
 	
 	var settings_file = FileAccess.open(SETTINGS_FILE, FileAccess.WRITE)
 	if settings_file == null:
 		var error = "Failed to open settings file for writing"
-		print("[SaveManager] Error: ", error)
+		push_warning("[SaveManager] Error: " + error)
 		return false
 	
 	var json_string = JSON.stringify(settings)
 	settings_file.store_string(json_string)
 	settings_file.close()
 	
-	print("[SaveManager] Settings saved successfully")
+	# Debug desactivado: print("[SaveManager] Settings saved successfully")
 	return true
 
 func load_settings() -> Dictionary:
 	"""Load game settings"""
-	print("[SaveManager] Loading settings...")
+	# Debug desactivado: print("[SaveManager] Loading settings...")
 	
 	if not FileAccess.file_exists(SETTINGS_FILE):
-		print("[SaveManager] No settings file found, using defaults")
+		# Debug desactivado: print("[SaveManager] No settings file found, using defaults")
 		current_settings = DEFAULT_SETTINGS.duplicate(true)
 		save_settings(current_settings)
 		return current_settings
 	
 	var file = FileAccess.open(SETTINGS_FILE, FileAccess.READ)
 	if file == null:
-		print("[SaveManager] Failed to open settings file, using defaults")
+		# Debug desactivado: print("[SaveManager] Failed to open settings file, using defaults")
 		return DEFAULT_SETTINGS.duplicate(true)
 	
 	var json_string = file.get_as_text()
@@ -377,11 +377,11 @@ func load_settings() -> Dictionary:
 	var parse_result = json.parse(json_string)
 	
 	if parse_result != OK:
-		print("[SaveManager] Failed to parse settings JSON, using defaults")
+		# Debug desactivado: print("[SaveManager] Failed to parse settings JSON, using defaults")
 		return DEFAULT_SETTINGS.duplicate(true)
 	
 	current_settings = _validate_settings(json.data)
-	print("[SaveManager] Settings loaded successfully")
+	# Debug desactivado: print("[SaveManager] Settings loaded successfully")
 	
 	return current_settings
 
@@ -397,7 +397,7 @@ func unlock_mage(mage_id: String) -> void:
 	if mage_id not in player_data["unlocked_mages"]:
 		player_data["unlocked_mages"].append(mage_id)
 		save_game_data()
-		print("[SaveManager] Unlocked mage: ", mage_id)
+		# Debug desactivado: print("[SaveManager] Unlocked mage: ", mage_id)
 
 func unlock_spell(spell_id: String) -> void:
 	"""Unlock a new spell"""
@@ -405,7 +405,7 @@ func unlock_spell(spell_id: String) -> void:
 	if spell_id not in player_data["unlocked_spells"]:
 		player_data["unlocked_spells"].append(spell_id)
 		save_game_data()
-		print("[SaveManager] Unlocked spell: ", spell_id)
+		# Debug desactivado: print("[SaveManager] Unlocked spell: ", spell_id)
 
 func spend_meta_currency(amount: int) -> bool:
 	"""Spend meta currency if available"""
@@ -418,7 +418,7 @@ func spend_meta_currency(amount: int) -> bool:
 
 func save_dungeon_completion(dungeon_seed: int, rewards: Dictionary) -> void:
 	"""Save dungeon completion data"""
-	print("[SaveManager] Saving dungeon completion...")
+	# Debug desactivado: print("[SaveManager] Saving dungeon completion...")
 	
 	var ts = null
 	# Try dynamic Time.get_unix_time_from_system() if available
@@ -467,5 +467,5 @@ func _validate_settings(data: Dictionary) -> Dictionary:
 func _sync_steam_cloud() -> void:
 	"""Sync save data with Steam Cloud (placeholder)"""
 	# TODO: Implement Steam Cloud sync
-	print("[SaveManager] Steam Cloud sync placeholder - not implemented yet")
+	# Debug desactivado: print("[SaveManager] Steam Cloud sync placeholder - not implemented yet")
 

@@ -83,7 +83,7 @@ func _ready() -> void:
 	# CRÍTICO: Respetar la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	
-	print("[%s] Inicializando %s en posición: %s" % [character_class, character_class, global_position])
+	# Debug desactivado: print("[%s] Inicializando %s en posición: %s" % [character_class, character_class, global_position])
 	
 	# Añadir al grupo "player" para que otros sistemas puedan encontrarnos
 	add_to_group("player")
@@ -107,7 +107,7 @@ func _ready() -> void:
 	_setup_weapons_deferred()
 	
 	z_index = 50
-	print("[%s] ✓ Inicialización completada" % character_class)
+	# Debug desactivado: print("[%s] ✓ Inicialización completada" % character_class)
 
 func _initialize_health_component() -> void:
 	"""Crear e inicializar componente de salud"""
@@ -124,9 +124,9 @@ func _initialize_health_component() -> void:
 		if health_component.has_signal("died"):
 			health_component.died.connect(_on_health_died)
 		
-		print("[%s] ✓ Health component inicializado (HP: %d/%d)" % [character_class, hp, max_hp])
+		# Debug desactivado: print("[%s] ✓ Health component inicializado (HP: %d/%d)" % [character_class, hp, max_hp])
 	else:
-		print("[%s] ⚠️ No se pudo cargar HealthComponent" % character_class)
+		push_warning("[%s] No se pudo cargar HealthComponent" % character_class)
 
 func _initialize_visual() -> void:
 	"""Inicializar sprite y animaciones"""
@@ -159,13 +159,13 @@ func _initialize_visual() -> void:
 		if animated_sprite.sprite_frames:
 			animated_sprite.play()
 		
-		print("[%s] ✓ Sprite configurado: escala=%.3f" % [character_class, scale_to_apply])
+		# Debug desactivado: print("[%s] ✓ Sprite configurado: escala=%.3f" % [character_class, scale_to_apply])
 
 func _setup_animations() -> void:
 	"""Configurar animaciones del personaje - SOBRESCRIBIR EN SUBCLASES"""
 	# Implementación por defecto vacía
 	# Las subclases deben sobrescribir este método
-	print("[%s] ⚠️ _setup_animations() no implementado en subclase" % character_class)
+	# Debug desactivado: print("[%s] ⚠️ _setup_animations() no implementado en subclase" % character_class)
 
 func _initialize_physics() -> void:
 	"""Configurar física del personaje"""
@@ -176,13 +176,13 @@ func _initialize_physics() -> void:
 	set_collision_mask_value(5, true)    # Pickups
 	set_collision_mask_value(8, true)    # Barreras de zona
 	
-	print("[%s] ✓ Física configurada" % character_class)
+	# Debug desactivado: print("[%s] ✓ Física configurada" % character_class)
 
 func _find_global_managers() -> void:
 	"""Encontrar referencias a managers globales"""
 	var _gt = get_tree()
 	if not _gt or not _gt.root:
-		print("[%s] ⚠️ No se pudo acceder a tree" % character_class)
+		push_warning("[%s] No se pudo acceder a tree" % character_class)
 		return
 	
 	# Buscar GameManager
@@ -195,11 +195,7 @@ func _find_global_managers() -> void:
 	if not attack_manager and game_manager:
 		attack_manager = game_manager.get_node_or_null("AttackManager")
 	
-	print("[%s] GameManager: %s | AttackManager: %s" % [
-		character_class,
-		"✓" if game_manager else "✗",
-		"✓" if attack_manager else "✗"
-	])
+	# Debug desactivado: print("[%s] GameManager: %s | AttackManager: %s" % [character_class, "✓" if game_manager else "✗", "✓" if attack_manager else "✗"])
 
 func _setup_weapons_deferred() -> void:
 	"""Configurar armas después de que todo esté listo"""
@@ -208,17 +204,17 @@ func _setup_weapons_deferred() -> void:
 	
 	if attack_manager:
 		attack_manager.initialize(self)
-		print("[%s] ✓ AttackManager inicializado" % character_class)
+		# Debug desactivado: print("[%s] ✓ AttackManager inicializado" % character_class)
 		
 		# Las subclases deben sobrescribir _equip_starting_weapons()
 		_equip_starting_weapons()
 	else:
-		print("[%s] ⚠️ AttackManager no disponible" % character_class)
+		push_warning("[%s] AttackManager no disponible" % character_class)
 
 func _equip_starting_weapons() -> void:
 	"""Equipar armas iniciales - SOBRESCRIBIR EN SUBCLASES"""
 	# Implementación por defecto vacía
-	print("[%s] ⚠️ _equip_starting_weapons() no implementado en subclase" % character_class)
+	# Debug desactivado: print("[%s] ⚠️ _equip_starting_weapons() no implementado en subclase" % character_class)
 
 # ========== MOVIMIENTO ==========
 
@@ -495,7 +491,7 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	"""Recibir daño (aplica dodge, armor, weakness y thorns)"""
 	_last_damage_element = element
 	if not health_component:
-		print("[%s] ⚠️ HealthComponent no disponible" % character_class)
+		push_warning("[%s] HealthComponent no disponible" % character_class)
 		return
 	
 	# No recibir daño si ya está muerto
@@ -510,7 +506,7 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 		var dodge_chance = player_stats.get_stat("dodge_chance")
 		if dodge_chance > 0 and randf() < minf(dodge_chance, 0.6):  # Máximo 60% de esquiva
 			# ¡Esquivó el daño!
-			print("[%s] ✨ ¡ESQUIVADO! (%.0f%% chance)" % [character_class, dodge_chance * 100])
+			# Debug desactivado: print("[%s] ✨ ¡ESQUIVADO! (%.0f%% chance)" % [character_class, dodge_chance * 100])
 			FloatingText.spawn_text(global_position + Vector2(0, -35), "DODGE!", Color(0.3, 0.9, 1.0))
 			return
 	
@@ -551,7 +547,7 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	_play_damage_flash(element)
 	
 	var armor_text = " [ARMOR: -%d]" % (amount - final_damage) if effective_armor > 0 and amount > final_damage else ""
-	print("[%s] 💥 Daño recibido: %d → %d (%s) (HP: %d/%d)%s%s" % [character_class, amount, final_damage, element, health_component.current_health, max_hp, " [WEAKENED]" if _is_weakened else "", armor_text])
+	# Debug desactivado: print("[%s] 💥 Daño recibido: %d → %d (%s) (HP: %d/%d)%s%s" % [character_class, amount, final_damage, element, health_component.current_health, max_hp, " [WEAKENED]" if _is_weakened else "", armor_text])
 
 func _apply_thorns_damage(attacker: Node, damage_received: int, player_stats: Node) -> void:
 	"""Aplicar daño de espinas al atacante"""
@@ -567,7 +563,7 @@ func _apply_thorns_damage(attacker: Node, damage_received: int, player_stats: No
 	# Aplicar daño al atacante
 	if attacker.has_method("take_damage"):
 		attacker.take_damage(thorns_damage)
-		print("[%s] 🌵 THORNS: Reflejado %d daño a %s" % [character_class, thorns_damage, attacker.name])
+		# Debug desactivado: print("[%s] 🌵 THORNS: Reflejado %d daño a %s" % [character_class, thorns_damage, attacker.name])
 		
 		# Mostrar texto flotante sobre el enemigo
 		if "global_position" in attacker:
@@ -613,7 +609,7 @@ func heal(amount: int) -> void:
 			FloatingText.spawn_heal(global_position + Vector2(0, -30), healed)
 			_spawn_heal_particles()
 		
-		print("[%s] Curación: +%d (HP: %d/%d)%s" % [character_class, healed, health_component.current_health, max_hp, " [CURSED]" if _is_cursed else ""])
+		# Debug desactivado: print("[%s] Curación: +%d (HP: %d/%d)%s" % [character_class, healed, health_component.current_health, max_hp, " [CURSED]" if _is_cursed else ""])
 
 func _spawn_heal_particles() -> void:
 	"""Crear partículas de curación verde"""
@@ -649,7 +645,7 @@ func _on_health_changed(current: int, max_val: int) -> void:
 
 func _on_health_died() -> void:
 	"""Callback cuando el personaje muere"""
-	print("[%s] ✗ Personaje muerto" % character_class)
+	# Debug desactivado: print("[%s] ✗ Personaje muerto" % character_class)
 	player_died.emit()
 
 # ========== ACCESO A COMPONENTES ==========
@@ -681,16 +677,16 @@ func get_max_health() -> int:
 func equip_weapon(weapon) -> bool:
 	"""Equipar un arma"""
 	if not attack_manager:
-		print("[%s] ⚠️ AttackManager no disponible" % character_class)
+		push_warning("[%s] AttackManager no disponible" % character_class)
 		return false
 	
 	if not weapon:
-		print("[%s] ⚠️ Intento de equipar arma nula" % character_class)
+		push_warning("[%s] Intento de equipar arma nula" % character_class)
 		return false
 	
 	attack_manager.add_weapon(weapon)
 	weapon_equipped.emit(weapon)
-	print("[%s] ⚔️ Arma equipada: %s" % [character_class, weapon.name])
+	# Debug desactivado: print("[%s] ⚔️ Arma equipada: %s" % [character_class, weapon.name])
 	return true
 
 func unequip_weapon(weapon) -> bool:
@@ -775,7 +771,7 @@ func apply_slow(amount: float, duration: float) -> void:
 	if not was_slowed:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "slow")
 	
-	print("[%s] ❄️ Ralentizado %.0f%% por %.1fs" % [character_class, _slow_amount * 100, duration])
+	# Debug desactivado: print("[%s] ❄️ Ralentizado %.0f%% por %.1fs" % [character_class, _slow_amount * 100, duration])
 
 func _clear_slow() -> void:
 	_is_slowed = false
@@ -783,7 +779,7 @@ func _clear_slow() -> void:
 	move_speed = base_move_speed
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE
-	print("[%s] ❄️ Slow terminado" % character_class)
+	# Debug desactivado: print("[%s] ❄️ Slow terminado" % character_class)
 
 func apply_burn(damage_per_tick: float, duration: float) -> void:
 	"""Aplicar burn al jugador (DoT de fuego)"""
@@ -796,7 +792,7 @@ func apply_burn(damage_per_tick: float, duration: float) -> void:
 	if not was_burning:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "burn")
 	
-	print("[%s] 🔥 Quemándose por %.1f daño/tick durante %.1fs" % [character_class, damage_per_tick, duration])
+	# Debug desactivado: print("[%s] 🔥 Quemándose por %.1f daño/tick durante %.1fs" % [character_class, damage_per_tick, duration])
 
 func _apply_burn_tick() -> void:
 	if health_component:
@@ -811,7 +807,7 @@ func _clear_burn() -> void:
 	_burn_damage = 0.0
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE
-	print("[%s] 🔥 Burn terminado" % character_class)
+	# Debug desactivado: print("[%s] 🔥 Burn terminado" % character_class)
 
 func _spawn_burn_particle() -> void:
 	"""Partícula de fuego cuando está quemándose"""
@@ -844,7 +840,7 @@ func apply_poison(damage_per_tick: float, duration: float) -> void:
 	if not was_poisoned:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "poison")
 	
-	print("[%s] ☠️ Envenenado por %.1f daño/tick durante %.1fs" % [character_class, damage_per_tick, duration])
+	# Debug desactivado: print("[%s] ☠️ Envenenado por %.1f daño/tick durante %.1fs" % [character_class, damage_per_tick, duration])
 
 func _apply_poison_tick() -> void:
 	if health_component:
@@ -858,7 +854,7 @@ func _clear_poison() -> void:
 	_poison_damage = 0.0
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE
-	print("[%s] ☠️ Poison terminado" % character_class)
+	# Debug desactivado: print("[%s] ☠️ Poison terminado" % character_class)
 
 func _spawn_poison_particle() -> void:
 	"""Partícula de veneno"""
@@ -890,13 +886,13 @@ func apply_stun(duration: float) -> void:
 	if not was_stunned:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "stun")
 	
-	print("[%s] ⚡ Aturdido por %.1fs" % [character_class, duration])
+	# Debug desactivado: print("[%s] ⚡ Aturdido por %.1fs" % [character_class, duration])
 
 func _clear_stun() -> void:
 	_is_stunned = false
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE
-	print("[%s] ⚡ Stun terminado" % character_class)
+	# Debug desactivado: print("[%s] ⚡ Stun terminado" % character_class)
 
 func apply_weakness(amount: float, duration: float) -> void:
 	"""Aplicar weakness al jugador (recibe más daño)"""
@@ -909,14 +905,14 @@ func apply_weakness(amount: float, duration: float) -> void:
 	if not was_weakened:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "weakness")
 	
-	print("[%s] 💀 Debilitado +%.0f%% daño recibido por %.1fs" % [character_class, _weakness_amount * 100, duration])
+	# Debug desactivado: print("[%s] 💀 Debilitado +%.0f%% daño recibido por %.1fs" % [character_class, _weakness_amount * 100, duration])
 
 func _clear_weakness() -> void:
 	_is_weakened = false
 	_weakness_amount = 0.0
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE
-	print("[%s] 💀 Weakness terminado" % character_class)
+	# Debug desactivado: print("[%s] 💀 Weakness terminado" % character_class)
 
 func apply_curse(amount: float, duration: float) -> void:
 	"""Aplicar curse al jugador (reduce curación)"""
@@ -929,14 +925,14 @@ func apply_curse(amount: float, duration: float) -> void:
 	if not was_cursed:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "curse")
 	
-	print("[%s] 👻 Maldito -%.0f%% curación por %.1fs" % [character_class, _curse_amount * 100, duration])
+	# Debug desactivado: print("[%s] 👻 Maldito -%.0f%% curación por %.1fs" % [character_class, _curse_amount * 100, duration])
 
 func _clear_curse() -> void:
 	_is_cursed = false
 	_curse_amount = 0.0
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE
-	print("[%s] 👻 Curse terminado" % character_class)
+	# Debug desactivado: print("[%s] 👻 Curse terminado" % character_class)
 
 func is_stunned() -> bool:
 	return _is_stunned

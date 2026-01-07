@@ -346,7 +346,7 @@ func _collect(collector: Node2D) -> void:
 	# porque la señal coin_collected ya está conectada en ExperienceManager
 	# y eso causaría conteo doble
 
-	print("🪙 Moneda recogida: +%d" % coin_value)
+	# print("🪙 Moneda recogida: +%d" % coin_value)
 
 	# Destruir
 	queue_free()

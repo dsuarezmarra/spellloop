@@ -259,7 +259,7 @@ func _on_shop_pressed():
 			if inst.has_signal("purchase_made"):
 				inst.connect("purchase_made", Callable(self, "_on_purchase_made"))
 	else:
-		print("[GameHUD] MetaShop scene not found: ", shop_path)
+		push_warning("[GameHUD] MetaShop scene not found: " + shop_path)
 
 func _on_purchase_made(_cost: int, _luck_points: int):
 	# Refresh HUD values (simple approach: if UIManager provides metadata refresh it, otherwise no-op)

@@ -309,4 +309,4 @@ func _activate_current_button() -> void:
 
 	var current = menu_buttons[current_button_index]
 	if current:
-		current.emit_signal("pressed")
+		current.pressed.emit()

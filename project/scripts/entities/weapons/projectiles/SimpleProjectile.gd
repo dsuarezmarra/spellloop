@@ -64,7 +64,8 @@ func _ready() -> void:
 	var _effect_dur = get_meta("effect_duration", 0.0)
 	var _wid = get_meta("weapon_id", "")
 	if _effect != "none":
-		print("[SimpleProjectile] 🆕 Creado - weapon: %s, effect: %s (val=%.2f, dur=%.2f)" % [_wid, _effect, _effect_value, _effect_dur])
+		# Debug desactivado: print("[SimpleProjectile] 🆕 Creado - weapon: %s, effect: %s (val=%.2f, dur=%.2f)" % [_wid, _effect, _effect_value, _effect_dur])
+		pass
 	
 	# Obtener color: priorizar color del arma sobre color del elemento
 	if has_meta("weapon_color"):
@@ -93,25 +94,25 @@ func _try_create_animated_visual() -> bool:
 	# Obtener weapon_id desde metadata
 	_weapon_id = get_meta("weapon_id", "")
 	if _weapon_id.is_empty():
-		print("[SimpleProjectile] ✗ No weapon_id en metadata")
+		# Debug desactivado: print("[SimpleProjectile] ✗ No weapon_id en metadata")
 		return false
 	
 	# Buscar el ProjectileVisualManager
 	var visual_manager = ProjectileVisualManager.instance
 	if visual_manager == null:
-		print("[SimpleProjectile] ✗ ProjectileVisualManager.instance es null")
+		# Debug desactivado: print("[SimpleProjectile] ✗ ProjectileVisualManager.instance es null")
 		return false
 	
 	# Obtener weapon_data para el visual
 	var weapon_data = WeaponDatabase.get_weapon_data(_weapon_id)
 	if weapon_data.is_empty():
-		print("[SimpleProjectile] ✗ weapon_data vacío para: %s" % _weapon_id)
+		# Debug desactivado: print("[SimpleProjectile] ✗ weapon_data vacío para: %s" % _weapon_id)
 		return false
 	
 	# Crear el visual animado
 	animated_sprite = visual_manager.create_projectile_visual(_weapon_id, weapon_data)
 	if animated_sprite == null:
-		print("[SimpleProjectile] ✗ create_projectile_visual retornó null")
+		# Debug desactivado: print("[SimpleProjectile] ✗ create_projectile_visual retornó null")
 		return false
 	
 	add_child(animated_sprite)
@@ -434,7 +435,8 @@ func _apply_effect(target: Node) -> void:
 	
 	# Debug: imprimir el efecto que se intenta aplicar
 	if effect != "none":
-		print("[SimpleProjectile] 🎯 Aplicando efecto '%s' (valor=%.2f, dur=%.2f) a %s" % [effect, effect_value, effect_duration, target.name])
+		# Debug desactivado: print("[SimpleProjectile] 🎯 Aplicando efecto '%s' (valor=%.2f, dur=%.2f) a %s" % [effect, effect_value, effect_duration, target.name])
+		pass
 	
 	if effect == "none":
 		return

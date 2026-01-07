@@ -40,7 +40,7 @@ var current_scene_node: Node
 var modal_container: Control
 
 func _ready() -> void:
-	print("[UIManager] Initializing UIManager...")
+	# Debug desactivado: print("[UIManager] Initializing UIManager...")
 	
 	# Create UI canvas layer
 	_setup_ui_canvas()
@@ -48,7 +48,7 @@ func _ready() -> void:
 	# Connect to game state changes
 	_connect_game_signals()
 	
-	print("[UIManager] UIManager initialized successfully")
+	# Debug desactivado: print("[UIManager] UIManager initialized successfully")
 
 func _setup_ui_canvas() -> void:
 	"""Setup the main UI canvas layer"""
@@ -171,12 +171,12 @@ func show_game_over_menu(run_data: Dictionary = {}) -> void:
 func show_modal(modal_scene: PackedScene, data: Dictionary = {}) -> void:
 	"""Show a modal dialog"""
 	if not modal_scene:
-		print("[UIManager] Error: Modal scene is null")
+		push_warning("[UIManager] Error: Modal scene is null")
 		return
 	
 	var modal_instance = modal_scene.instantiate()
 	if not modal_instance:
-		print("[UIManager] Error: Failed to instantiate modal scene")
+		push_warning("[UIManager] Error: Failed to instantiate modal scene")
 		return
 	
 	# Setup modal
@@ -197,7 +197,7 @@ func show_modal(modal_scene: PackedScene, data: Dictionary = {}) -> void:
 	is_modal_open = true
 	modal_opened.emit(modal_instance.name)
 	
-	print("[UIManager] Opened modal: ", modal_instance.name)
+	# Debug desactivado: print("[UIManager] Opened modal: ", modal_instance.name)
 
 func close_current_modal() -> void:
 	"""Close the topmost modal"""
@@ -212,7 +212,7 @@ func close_current_modal() -> void:
 	is_modal_open = not modal_stack.is_empty()
 	modal_closed.emit(modal_name)
 	
-	print("[UIManager] Closed modal: ", modal_name)
+	# Debug desactivado: print("[UIManager] Closed modal: ", modal_name)
 
 func close_all_modals() -> void:
 	"""Close all open modals"""
@@ -229,13 +229,13 @@ func _change_scene(scene_path: String, scene_name: String) -> void:
 	# Load new scene
 	var new_scene = load(scene_path)
 	if not new_scene:
-		print("[UIManager] Error: Failed to load scene: ", scene_path)
+		push_warning("[UIManager] Error: Failed to load scene: " + scene_path)
 		return
 	
 	# Instantiate and add new scene
 	current_scene_node = new_scene.instantiate()
 	if not current_scene_node:
-		print("[UIManager] Error: Failed to instantiate scene: ", scene_path)
+		push_warning("[UIManager] Error: Failed to instantiate scene: " + scene_path)
 		return
 	
 	ui_canvas.add_child(current_scene_node)
@@ -245,7 +245,7 @@ func _change_scene(scene_path: String, scene_name: String) -> void:
 	current_scene_name = scene_name
 	
 	scene_changed.emit(old_scene, scene_name)
-	print("[UIManager] Changed scene from '", old_scene, "' to '", scene_name, "'")
+	# Debug desactivado: print("[UIManager] Changed scene from '", old_scene, "' to '", scene_name, "'")
 
 func get_current_scene_name() -> String:
 	"""Get the name of the current scene"""
@@ -263,17 +263,17 @@ func get_modal_count() -> int:
 func show_notification(message: String, _duration: float = 3.0) -> void:
 	"""Show a temporary notification"""
 	# TODO: Implement notification system
-	print("[UIManager] Notification: ", message)
+	# Debug desactivado: print("[UIManager] Notification: ", message)
 
 func show_confirmation_dialog(title: String, message: String, _callback: Callable) -> void:
 	"""Show a confirmation dialog"""
 	# TODO: Implement confirmation dialog
-	print("[UIManager] Confirmation needed: ", title, " - ", message)
+	# Debug desactivado: print("[UIManager] Confirmation needed: ", title, " - ", message)
 
 func update_loading_progress(progress: float, message: String = "") -> void:
 	"""Update loading screen progress"""
 	# TODO: Implement loading screen
-	print("[UIManager] Loading progress: ", progress * 100, "% - ", message)
+	# Debug desactivado: print("[UIManager] Loading progress: ", progress * 100, "% - ", message)
 
 # Signal handlers
 func _on_game_state_changed(_old_state, new_state) -> void:

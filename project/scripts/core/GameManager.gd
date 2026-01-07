@@ -52,7 +52,7 @@ const STEAM_APP_ID = "PLACEHOLDER_STEAM_APPID"  # Replace with real Steam AppID
 var steam_initialized: bool = false
 
 func _ready() -> void:
-	print("[GameManager] Initializing GameManager...")
+	# Debug desactivado: print("[GameManager] Initializing GameManager...")
 	
 	# Initialize Steam if available
 	_initialize_steam()
@@ -60,13 +60,13 @@ func _ready() -> void:
 	# Connect to other managers
 	_setup_manager_connections()
 	
-	print("[GameManager] GameManager initialized successfully")
+	# print("[GameManager] GameManager initialized successfully")
 
 func _initialize_steam() -> void:
 	"""Initialize Steam API if available"""
 	# TODO: Implement actual Steam initialization
 	# This is a placeholder for Steam integration
-	print("[GameManager] Steam initialization placeholder - AppID: ", STEAM_APP_ID)
+	# Debug desactivado: print("[GameManager] Steam initialization placeholder - AppID: ", STEAM_APP_ID)
 	steam_initialized = false  # Will be true when real Steam integration is added
 
 func _setup_manager_connections() -> void:
@@ -97,20 +97,20 @@ func _initialize_dungeon_system() -> void:
 		attack_manager = am_script.new()
 		attack_manager.name = "AttackManager"
 		add_child(attack_manager)
-		print("[GameManager] ⚔️ AttackManager creado")
+		# Debug desactivado: print("[GameManager] ⚔️ AttackManager creado")
 	
 	# Crear ProjectileVisualManager para efectos visuales de proyectiles
 	projectile_visual_manager = ProjectileVisualManager.new()
 	projectile_visual_manager.name = "ProjectileVisualManager"
 	add_child(projectile_visual_manager)
-	print("[GameManager] 🎨 ProjectileVisualManager creado")
+	# Debug desactivado: print("[GameManager] 🎨 ProjectileVisualManager creado")
 	
 	# Sistema de mazmorra desactivado temporalmente
-	print("[GameManager] Sistema básico inicializado")
+	# Debug desactivado: print("[GameManager] Sistema básico inicializado")
 
 func start_new_run() -> void:
 	"""Start a new game run"""
-	print("[GameManager] Starting new run...")
+	# Debug desactivado: print("[GameManager] Starting new run...")
 	
 	var old_state = current_state
 	current_state = GameState.IN_RUN
@@ -149,26 +149,26 @@ func start_new_run() -> void:
 		if player:
 			attack_manager.initialize(player)
 			player_ref = player
-			print("[GameManager] ✓ AttackManager inicializado con player")
+			# Debug desactivado: print("[GameManager] ✓ AttackManager inicializado con player")
 			# NOTA: Las armas iniciales las equipa el propio Player (_equip_starting_weapons)
 			# No duplicar aquí para evitar armas duplicadas
 			# equip_initial_weapons()  # DESACTIVADO - ver WizardPlayer._equip_starting_weapons()
 		else:
-			print("[GameManager] ⚠️ No se encontró el player en la escena")
+			push_warning("[GameManager] No se encontró el player en la escena")
 	
 	game_state_changed.emit(old_state, current_state)
 	run_started.emit()
 	
 	# Sistema de mazmorra desactivado temporalmente
-	print("[GameManager] Nueva partida iniciada")
+	# Debug desactivado: print("[GameManager] Nueva partida iniciada")
 
 func end_current_run(reason: String) -> void:
 	"""End the current game run with a given reason"""
 	if not is_run_active:
-		print("[GameManager] Warning: Attempted to end run but no run is active")
+		push_warning("[GameManager] Warning: Attempted to end run but no run is active")
 		return
 	
-	print("[GameManager] Ending run. Reason: ", reason)
+	# Debug desactivado: print("[GameManager] Ending run. Reason: ", reason)
 	
 	var old_state = current_state
 	current_state = GameState.GAME_OVER
@@ -232,7 +232,7 @@ func update_run_stat(stat_name: String, value) -> void:
 	if stat_name in current_run_data:
 		current_run_data[stat_name] = value
 	else:
-		print("[GameManager] Warning: Unknown stat: ", stat_name)
+		push_warning("[GameManager] Warning: Unknown stat: " + str(stat_name))
 
 func increment_run_stat(stat_name: String, amount: int = 1) -> void:
 	"""Increment a statistic for the current run"""
@@ -242,14 +242,15 @@ func increment_run_stat(stat_name: String, amount: int = 1) -> void:
 	if stat_name in current_run_data:
 		current_run_data[stat_name] += amount
 	else:
-		print("[GameManager] Warning: Unknown stat: ", stat_name)
+		push_warning("[GameManager] Warning: Unknown stat: " + str(stat_name))
 
 # Signal handlers
 func _on_save_completed() -> void:
-	print("[GameManager] Save completed successfully")
+	# Debug desactivado: print("[GameManager] Save completed successfully")
+	pass
 
 func _on_save_failed(error: String) -> void:
-	print("[GameManager] Save failed: ", error)
+	push_warning("[GameManager] Save failed: " + error)
 
 func _on_pause_requested() -> void:
 	if current_state == GameState.IN_RUN:
@@ -262,7 +263,7 @@ func _on_pause_requested() -> void:
 func equip_weapon(weapon) -> bool:
 	"""Equipar un arma en el AttackManager"""
 	if not attack_manager:
-		print("[GameManager] Error: AttackManager no disponible")
+		push_warning("[GameManager] Error: AttackManager no disponible")
 		return false
 	
 	attack_manager.add_weapon(weapon)
@@ -271,24 +272,24 @@ func equip_weapon(weapon) -> bool:
 func equip_initial_weapons() -> void:
 	"""Equipar armas iniciales del jugador"""
 	if not attack_manager or not player_ref:
-		print("[GameManager] Warning: Equipo incompleto para armas iniciales")
+		push_warning("[GameManager] Warning: Equipo incompleto para armas iniciales")
 		return
 	
-	print("[GameManager] === INICIANDO EQUIP INICIAL ===")
-	print("[GameManager] attack_manager:", attack_manager)
-	print("[GameManager] player_ref:", player_ref)
+	# Debug desactivado: print("[GameManager] === INICIANDO EQUIP INICIAL ===")
+	# Debug desactivado: print("[GameManager] attack_manager:", attack_manager)
+	# Debug desactivado: print("[GameManager] player_ref:", player_ref)
 	
 	# Crear arma inicial: Varita de Hielo
 	var ice_wand_script = load("res://scripts/entities/weapons/wands/IceWand.gd")
 	if not ice_wand_script:
-		print("[GameManager] Error: No se pudo cargar IceWand.gd - usando fallback")
+		push_warning("[GameManager] Error: No se pudo cargar IceWand.gd - usando fallback")
 		ice_wand_script = load("res://scripts/entities/WeaponBase.gd")
 	
-	print("[GameManager] Script cargado:", ice_wand_script)
+	# Debug desactivado: print("[GameManager] Script cargado:", ice_wand_script)
 	
 	var weapon = ice_wand_script.new()
-	print("[GameManager] Weapon creado:", weapon)
-	print("[GameManager] Weapon type:", typeof(weapon))
+	# Debug desactivado: print("[GameManager] Weapon creado:", weapon)
+	# Debug desactivado: print("[GameManager] Weapon type:", typeof(weapon))
 	
 	weapon.name = "Varita de Hielo"
 	weapon.is_active = true

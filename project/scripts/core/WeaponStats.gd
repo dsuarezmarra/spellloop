@@ -481,9 +481,9 @@ static func create_fusion(weapon1: WeaponStats, weapon2: WeaponStats, fusion_dat
 	
 	fused._recalculate_stats()
 	
-	print("[WeaponStats] Fusión creada: %s (de %s + %s) con multiplicador %.1fx" % [
-		fused.weapon_id, weapon1.weapon_id, weapon2.weapon_id, fused.fusion_multiplier
-	])
+	# print("[WeaponStats] Fusión creada: %s (de %s + %s) con multiplicador %.1fx" % [
+	# 	fused.weapon_id, weapon1.weapon_id, weapon2.weapon_id, fused.fusion_multiplier
+	# ])
 	
 	return fused
 

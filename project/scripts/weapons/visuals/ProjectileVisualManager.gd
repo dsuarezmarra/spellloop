@@ -1267,7 +1267,7 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 				if config.has("sprite_scale"):
 					data.base_scale = config.get("sprite_scale", 1.0)
 				
-				print("[ProjectileVisualManager] Sprites orbitales cargados para: " + weapon_id)
+				# Debug desactivado: print("[ProjectileVisualManager] Sprites orbitales cargados para: " + weapon_id)
 				return
 			else:
 				push_warning("[ProjectileVisualManager] No se pudo cargar orbit_spritesheet_" + weapon_id + ".png")
@@ -1282,10 +1282,10 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 		var body_path = base_path + "beam_body_" + weapon_id + ".png"
 		var tip_path = base_path + "beam_tip_" + weapon_id + ".png"
 		
-		print("[ProjectileVisualManager] Buscando BEAM sprites para: " + weapon_id)
-		print("  Start path: " + start_path + " - Existe: " + str(ResourceLoader.exists(start_path)))
-		print("  Body path: " + body_path + " - Existe: " + str(ResourceLoader.exists(body_path)))
-		print("  Tip path: " + tip_path + " - Existe: " + str(ResourceLoader.exists(tip_path)))
+		# Debug desactivado: print("[ProjectileVisualManager] Buscando BEAM sprites para: " + weapon_id)
+		# Debug desactivado: print("  Start path: " + start_path + " - Existe: " + str(ResourceLoader.exists(start_path)))
+		# Debug desactivado: print("  Body path: " + body_path + " - Existe: " + str(ResourceLoader.exists(body_path)))
+		# Debug desactivado: print("  Tip path: " + tip_path + " - Existe: " + str(ResourceLoader.exists(tip_path)))
 		
 		var start_tex = load(start_path) as Texture2D if ResourceLoader.exists(start_path) else null
 		var body_tex = load(body_path) as Texture2D if ResourceLoader.exists(body_path) else null
@@ -1299,14 +1299,14 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 			if start_tex:
 				data.beam_start_spritesheet = start_tex
 				data.beam_frames = beam_frames_count
-				print("  Start spritesheet: " + str(start_tex.get_width()) + "x" + str(start_tex.get_height()))
+				# Debug desactivado: print("  Start spritesheet: " + str(start_tex.get_width()) + "x" + str(start_tex.get_height()))
 			if body_tex:
 				data.beam_body_spritesheet = body_tex
-				print("  Body spritesheet: " + str(body_tex.get_width()) + "x" + str(body_tex.get_height()))
+				# Debug desactivado: print("  Body spritesheet: " + str(body_tex.get_width()) + "x" + str(body_tex.get_height()))
 			if tip_tex:
 				data.beam_tip_spritesheet = tip_tex
 				data.beam_frames = beam_frames_count
-				print("  Tip spritesheet: " + str(tip_tex.get_width()) + "x" + str(tip_tex.get_height()))
+				# Debug desactivado: print("  Tip spritesheet: " + str(tip_tex.get_width()) + "x" + str(tip_tex.get_height()))
 			
 			data.beam_fps = config.get("beam_fps", 12.0)
 			# Configurar frame_size para BEAM sprites
@@ -1316,8 +1316,8 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 			if config.has("sprite_scale"):
 				data.base_scale = config.get("sprite_scale", 1.0)
 			
-			print("[ProjectileVisualManager] Sprites BEAM cargados para: " + weapon_id)
-			print("  frame_size: " + str(data.frame_size) + ", frames: " + str(beam_frames_count))
+			# Debug desactivado: print("[ProjectileVisualManager] Sprites BEAM cargados para: " + weapon_id)
+			# Debug desactivado: print("  frame_size: " + str(data.frame_size) + ", frames: " + str(beam_frames_count))
 			return
 		# Si no hay sprites BEAM, usar procedural
 		return
@@ -1357,11 +1357,7 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 			if config.has("sprite_scale"):
 				data.base_scale = config.get("sprite_scale", 1.0)
 			
-			print("[ProjectileVisualManager] Sprites AOE cargados para: " + weapon_id)
-			return
-		# Si no hay sprites AOE, usar procedural
-		return
-
+		# Debug desactivado: print("[ProjectileVisualManager] Sprites AOE cargados para: " + weapon_id)
 	# ═══════════════════════════════════════════════════════════════════════════
 	# SPRITES DE PROYECTIL NORMAL (flight + impact)
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1401,7 +1397,7 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 		var fs = config.get("frame_size", 64)
 		data.frame_size = Vector2i(fs, fs)
 
-	print("[ProjectileVisualManager] Sprites personalizados cargados para: " + weapon_id)
+	# Debug desactivado: print("[ProjectileVisualManager] Sprites personalizados cargados para: " + weapon_id)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # OBTENER DATOS VISUALES

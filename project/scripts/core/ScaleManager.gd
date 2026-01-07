@@ -27,7 +27,7 @@ func calculate_scale() -> float:
 	var scale_y = current_viewport_size.y / BASE_RESOLUTION_HEIGHT
 	current_scale = min(scale_x, scale_y)
 	
-	print("📐 ScaleManager: ", current_viewport_size, " → escala=", current_scale)
+	# print("📐 ScaleManager: ", current_viewport_size, " → escala=", current_scale)
 	return current_scale
 
 func get_scale() -> float:

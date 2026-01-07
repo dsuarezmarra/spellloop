@@ -23,7 +23,7 @@ var fire_wand = null  # Future
 
 func _ready() -> void:
 	"""Inicialización específica del Wizard"""
-	print("\n[WizardPlayer] ===== INICIALIZANDO WIZARD =====")
+	# print("\n[WizardPlayer] ===== INICIALIZANDO WIZARD =====")
 	
 	# Asignar valores específicos del Wizard ANTES de llamar a super
 	character_class = "Wizard"
@@ -32,12 +32,12 @@ func _ready() -> void:
 	# Llamar a inicialización base
 	super._ready()
 	
-	print("[WizardPlayer] ===== WIZARD INICIALIZADO =====\n")
+	# print("[WizardPlayer] ===== WIZARD INICIALIZADO =====\n")
 
 func _setup_animations() -> void:
 	"""Configurar animaciones del Wizard - COPIA EXACTA DEL SISTEMA ORIGINAL QUE FUNCIONA"""
 	if not animated_sprite:
-		print("[WizardPlayer] ⚠️ AnimatedSprite2D no disponible")
+		# print("[WizardPlayer] ⚠️ AnimatedSprite2D no disponible")
 		return
 	
 	# Obtener SpriteDB para cargar sprites reales
@@ -102,26 +102,26 @@ func _setup_animations() -> void:
 				animated_sprite.animation = anims[0]
 		animated_sprite.centered = true
 	
-	print("[WizardPlayer] ✓ Animaciones configuradas para Wizard (con sprites reales)")
+	# print("[WizardPlayer] ✓ Animaciones configuradas para Wizard (con sprites reales)")
 
 func _equip_starting_weapons() -> void:
 	"""Equipar armas iniciales del Wizard"""
-	print("[WizardPlayer] === EQUIPANDO ARMAS INICIALES ===")
+	# print("[WizardPlayer] === EQUIPANDO ARMAS INICIALES ===")
 	
 	if not attack_manager:
-		print("[WizardPlayer] ⚠️ AttackManager no disponible")
+		# print("[WizardPlayer] ⚠️ AttackManager no disponible")
 		return
 	
 	# Crear Varita de Hielo
 	var ice_wand_script = load("res://scripts/entities/weapons/wands/IceWand.gd")
 	
 	if not ice_wand_script:
-		print("[WizardPlayer] ✗ Error: No se pudo cargar IceWand.gd")
+		push_warning("[WizardPlayer] ✗ Error: No se pudo cargar IceWand.gd")
 		return
 	
 	ice_wand = ice_wand_script.new()
 	if not ice_wand:
-		print("[WizardPlayer] ✗ Error: No se pudo instanciar IceWand")
+		push_warning("[WizardPlayer] ✗ Error: No se pudo instanciar IceWand")
 		return
 	
 	# Configurar propiedades básicas
@@ -132,9 +132,11 @@ func _equip_starting_weapons() -> void:
 	var result = equip_weapon(ice_wand)
 	
 	if result:
-		print("[WizardPlayer] ✓ Ice Wand equipada correctamente")
+		# print("[WizardPlayer] ✓ Ice Wand equipada correctamente")
+		pass
 	else:
-		print("[WizardPlayer] ⚠️ Error al equipar Ice Wand")
+		# print("[WizardPlayer] ⚠️ Error al equipar Ice Wand")
+		pass
 
 # ========== HABILIDADES DEL WIZARD ==========
 

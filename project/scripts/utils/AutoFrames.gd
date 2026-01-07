@@ -103,8 +103,8 @@ static func from_sheet(sheet_path: String, default_fps: float = 10.0, duplicate_
 
 	# Si ya está en caché, retornar copia profunda
 	if _interpolated_cache.has(cache_key):
-		if OS.is_debug_build():
-			print("[AutoFrames] 🚀 Cargado desde caché: %s" % sheet_path.get_file())
+		# if OS.is_debug_build():
+		# 	print("[AutoFrames] 🚀 Cargado desde caché: %s" % sheet_path.get_file())
 		# Deep copy para evitar compartir animaciones
 		return _interpolated_cache[cache_key].duplicate(true)
 
@@ -135,12 +135,12 @@ static func from_sheet(sheet_path: String, default_fps: float = 10.0, duplicate_
 
 	if abs(total_w - expected_width_with_padding) <= 4:
 		padding_px = 4
-		if OS.is_debug_build():
-			print("[AutoFrames] 📐 Spritesheet CON padding de 4px detectado")
+		# if OS.is_debug_build():
+		# 	print("[AutoFrames] 📐 Spritesheet CON padding de 4px detectado")
 	elif abs(total_w - expected_width_no_padding) <= 4:
 		padding_px = 0
-		if OS.is_debug_build():
-			print("[AutoFrames] 📐 Spritesheet SIN padding detectado")
+		# if OS.is_debug_build():
+		# 	print("[AutoFrames] 📐 Spritesheet SIN padding detectado")
 	else:
 		push_warning("⚠️ [AutoFrames] Dimensiones no coinciden. Esperado: %d (padding 4px) o %d (sin padding), Real: %d (%s)" % [
 			expected_width_with_padding, expected_width_no_padding, total_w, sheet_path
@@ -185,11 +185,11 @@ static func from_sheet(sheet_path: String, default_fps: float = 10.0, duplicate_
 			frames.add_frame("default", atlas)
 
 	var total_frames := frames_count * duplicate_frames
-	if OS.is_debug_build():
-		var mode = "interpolados" if duplicate_frames > 1 else "originales"
-		print("[AutoFrames] ✅ Cargado: %s (%d frames %s @ %d FPS = %d frames totales)" % [
-			sheet_path.get_file(), frames_count, mode, default_fps, total_frames
-		])
+	# if OS.is_debug_build():
+	# 	var mode = "interpolados" if duplicate_frames > 1 else "originales"
+	# 	print("[AutoFrames] ✅ Cargado: %s (%d frames %s @ %d FPS = %d frames totales)" % [
+	# 		sheet_path.get_file(), frames_count, mode, default_fps, total_frames
+	# 	])
 
 	# Guardar en caché
 	_interpolated_cache[cache_key] = frames

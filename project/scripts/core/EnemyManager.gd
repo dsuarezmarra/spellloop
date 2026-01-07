@@ -348,8 +348,8 @@ func _spawn_elite() -> void:
 
 	if elite:
 		elites_spawned_this_run += 1
-		emit_signal("elite_spawned", elite)
-		print("⭐ [EnemyManager] ¡ÉLITE SPAWNEADO: %s!" % elite_data.name)
+		elite_spawned.emit(elite)
+		# print("⭐ [EnemyManager] ¡ÉLITE SPAWNEADO: %s!" % elite_data.name)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # FUNCIÓN PRINCIPAL DE SPAWN

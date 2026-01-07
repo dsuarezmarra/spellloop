@@ -35,12 +35,12 @@ var min_chest_distance: float = 300.0  # Distancia mínima entre cofres
 var item_types: Dictionary = {}
 
 func _ready():
-	print("📦 ItemManager inicializado")
+	# Debug desactivado: print("📦 ItemManager inicializado")
 	setup_item_types()
 
 func initialize(player_ref: CharacterBody2D):
 	"""Inicializar sistema de items"""
-	print("📦 Inicializando ItemManager...")
+	# Debug desactivado: print("📦 Inicializando ItemManager...")
 	player = player_ref
 	last_player_position = player.global_position
 	
@@ -49,7 +49,7 @@ func initialize(player_ref: CharacterBody2D):
 	# Crear cofres iniciales de prueba
 	create_initial_test_chests()
 	
-	print("📦 Sistema de items inicializado")
+	# Debug desactivado: print("📦 Sistema de items inicializado")
 
 func setup_item_types():
 	"""Configurar tipos de items disponibles"""
@@ -105,7 +105,7 @@ func setup_item_types():
 		"icon": "🧪"
 	}
 	
-	print("📦 ", item_types.size(), " tipos de items configurados")
+	# Debug desactivado: print("📦 ", item_types.size(), " tipos de items configurados")
 
 func _process(_delta):
 	"""Actualizar sistema de cofres"""
@@ -117,7 +117,7 @@ func _process(_delta):
 
 func create_initial_test_chests():
 	"""Crear cofres de prueba cerca del centro del mapa"""
-	print("📦 Creando cofres de prueba...")
+	# Debug desactivado: print("📦 Creando cofres de prueba...")
 	
 	# Crear 3 cofres de prueba en posiciones específicas cerca del origen
 	var chunk_pos = Vector2i(0, 0)
@@ -132,7 +132,7 @@ func create_initial_test_chests():
 	for pos in test_positions:
 		spawn_chest_at_position(chunk_pos, pos)
 	
-	print("📦 Cofres de prueba creados: ", test_positions.size())
+	# Debug desactivado: print("📦 Cofres de prueba creados: ", test_positions.size())
 
 func _on_chunk_generated(_chunk_pos: Vector2i):
 	"""DEPRECATED: Manejar generación de nuevo chunk - Será reemplazado por ArenaManager"""
@@ -164,7 +164,7 @@ func spawn_chest_at_position(_chunk_pos: Vector2i, world_position: Vector2):
 	# Emitir señal
 	chest_spawned.emit(chest)
 	
-	print("📦 Cofre generado en posición: ", world_position)
+	# Debug desactivado: print("📦 Cofre generado en posición: ", world_position)
 
 func _on_chest_opened(chest: Node2D, items: Array):
 	"""Manejar apertura de cofre"""
@@ -180,7 +180,7 @@ func _on_chest_opened(chest: Node2D, items: Array):
 	for item_data in items:
 		process_item_collected(item_data)
 	
-	print("📦 Cofre abierto - Items obtenidos: ", items.size())
+	# Debug desactivado: print("📦 Cofre abierto - Items obtenidos: ", items.size())
 
 func process_item_collected(item_data: Dictionary):
 	"""Procesar item recolectado"""
@@ -196,7 +196,7 @@ func apply_item_effect(item_type: String, _item_data: Dictionary):
 	"""Aplicar efecto de un item"""
 	match item_type:
 		"weapon_damage":
-			print("⚡ Daño de armas aumentado")
+			# Debug desactivado: print("⚡ Daño de armas aumentado")
 			var _cs = null
 			var _gt = get_tree()
 			if _gt:
@@ -206,7 +206,7 @@ func apply_item_effect(item_type: String, _item_data: Dictionary):
 				if wm and wm.has_method("upgrade_weapon"):
 					wm.upgrade_weapon("magic_wand", {"damage": 5})
 		"weapon_speed":
-			print("⚡ Velocidad de ataque aumentada")
+			# Debug desactivado: print("⚡ Velocidad de ataque aumentada")
 			var _cs = null
 			var _gt = get_tree()
 			if _gt:
@@ -218,15 +218,15 @@ func apply_item_effect(item_type: String, _item_data: Dictionary):
 		"health_boost":
 			if player and player.has_method("increase_max_health"):
 				player.increase_max_health(20)
-			print("❤️ Vida máxima aumentada")
+			# Debug desactivado: print("❤️ Vida máxima aumentada")
 		"speed_boost":
-			print("👢 Velocidad de movimiento aumentada")
+			# Debug desactivado: print("👢 Velocidad de movimiento aumentada")
 		"heal_full":
 			if player and player.has_method("heal"):
 				player.heal(999)
-			print("🧪 Vida completamente restaurada")
+			# Debug desactivado: print("🧪 Vida completamente restaurada")
 		"new_weapon":
-			print("⚔️ Nueva arma desbloqueada")
+			# Debug desactivado: print("⚔️ Nueva arma desbloqueada")
 			var _cs = null
 			var _gt = get_tree()
 			if _gt:
@@ -288,7 +288,7 @@ func create_boss_drop(position: Vector2, _boss_type: String):
 	# Emitir señal para que otros sistemas (minimap/UI) sepan del cofre
 	chest_spawned.emit(chest)
 
-	print("👑 Cofre de boss creado en: ", position, " rarity:", chest_rarity)
+	# Debug desactivado: print("👑 Cofre de boss creado en: ", position, " rarity:", chest_rarity)
 
 
 func compute_boss_chest_rarity() -> int:

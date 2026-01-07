@@ -592,7 +592,7 @@ func initialize(attack_mgr: AttackManager = null, player: Node = null) -> void:
 	# Conectar a la señal de salud del player para mantener sincronizado
 	_connect_to_player_health()
 	
-	print("[PlayerStats] Inicializado - Nivel %d, Player: %s" % [level, player_ref != null])
+	# print("[PlayerStats] Inicializado - Nivel %d, Player: %s" % [level, player_ref != null])
 
 func _connect_to_player_health() -> void:
 	"""Conectar a la señal de salud del player para sincronizar current_health"""
@@ -606,7 +606,7 @@ func _connect_to_player_health() -> void:
 			# Sincronizar HP inicial
 			if "current_health" in hc:
 				current_health = hc.current_health
-			print("[PlayerStats] Conectado a HealthComponent del player")
+			# print("[PlayerStats] Conectado a HealthComponent del player")
 
 func _on_player_health_changed(new_health: int, max_health: int) -> void:
 	"""Callback cuando la salud del player cambia - mantener sincronizado"""
@@ -765,7 +765,7 @@ func add_stat(stat_name: String, amount: float) -> void:
 		stat_changed.emit(stat_name, old_value, new_value)
 		_on_stat_changed(stat_name, old_value, new_value)
 
-	print("[PlayerStats] %s: %.2f → %.2f (+%.2f)" % [stat_name, old_value, new_value, amount])
+	# print("[PlayerStats] %s: %.2f → %.2f (+%.2f)" % [stat_name, old_value, new_value, amount])
 
 func set_stat(stat_name: String, value: float) -> void:
 	"""Establecer valor exacto de un stat"""
@@ -818,9 +818,9 @@ func add_temp_modifier(stat_name: String, amount: float, duration: float, source
 		"time_added": Time.get_ticks_msec() / 1000.0
 	})
 
-	print("[PlayerStats] Buff temporal: %s +%.2f por %.1fs (%s)" % [
-		stat_name, amount, duration, source
-	])
+	# print("[PlayerStats] Buff temporal: %s +%.2f por %.1fs (%s)" % [
+	#	stat_name, amount, duration, source
+	# ])
 
 func remove_temp_modifiers_by_source(source: String) -> void:
 	"""Remover todos los modificadores de una fuente específica"""
@@ -926,7 +926,7 @@ func take_damage(amount: float) -> float:
 	# Verificar esquiva primero
 	var dodge = get_stat("dodge_chance")
 	if dodge > 0 and randf() < minf(dodge, 0.6):  # Máximo 60% de esquiva
-		print("[PlayerStats] ¡ESQUIVADO! (%.0f%% chance)" % (dodge * 100))
+		# print("[PlayerStats] ¡ESQUIVADO! (%.0f%% chance)" % (dodge * 100))
 		# Emitir señal de esquiva (la UI puede mostrar "DODGE!")
 		return 0.0
 	
@@ -1027,7 +1027,7 @@ func gain_xp(amount: float) -> int:
 		# Calcular XP para siguiente nivel
 		xp_to_next_level = BASE_XP_TO_LEVEL * pow(XP_SCALING, level - 1)
 
-		print("[PlayerStats] ⬆️ ¡Nivel %d alcanzado!" % level)
+		# print("[PlayerStats] ⬆️ ¡Nivel %d alcanzado!" % level)
 		level_changed.emit(level)
 
 	return levels_gained
@@ -1297,7 +1297,7 @@ func apply_upgrade(upgrade_data) -> bool:
 			"effects": [{"stat": upgrade.stat, "value": upgrade.amount, "operation": "add"}]
 		})
 
-		print("[PlayerStats] Upgrade aplicado (por ID): %s" % upgrade.name)
+		# print("[PlayerStats] Upgrade aplicado (por ID): %s" % upgrade.name)
 		return true
 
 	# Fallback: aplicar efectos directamente desde el Dictionary
@@ -1314,14 +1314,14 @@ func apply_upgrade(upgrade_data) -> bool:
 					_: add_stat(stat, value)
 
 		add_upgrade(upgrade_dict)
-		print("[PlayerStats] Upgrade aplicado (por efectos): %s" % upgrade_dict.get("name", "???"))
+		# print("[PlayerStats] Upgrade aplicado (por efectos): %s" % upgrade_dict.get("name", "???"))
 		return true
 
 	# Fallback: stat y amount directamente
 	if upgrade_dict.has("stat") and upgrade_dict.has("amount"):
 		add_stat(upgrade_dict.stat, upgrade_dict.amount)
 		add_upgrade(upgrade_dict)
-		print("[PlayerStats] Upgrade aplicado (stat+amount): %s" % upgrade_dict.get("name", "???"))
+		# print("[PlayerStats] Upgrade aplicado (stat+amount): %s" % upgrade_dict.get("name", "???"))
 		return true
 
 	push_warning("[PlayerStats] No se pudo aplicar upgrade: %s" % str(upgrade_data))
@@ -1406,7 +1406,7 @@ func add_upgrade(upgrade_data: Dictionary) -> void:
 		"description": upgrade_data.get("description", ""),
 		"effects": upgrade_data.get("effects", [])
 	})
-	print("[PlayerStats] Mejora añadida: %s" % upgrade_data.get("name", "???"))
+	# print("[PlayerStats] Mejora añadida: %s" % upgrade_data.get("name", "???"))
 
 func get_collected_upgrades() -> Array:
 	"""Obtener lista de mejoras recolectadas"""
@@ -1418,7 +1418,7 @@ func register_unique_upgrade(upgrade_id: String) -> void:
 		return
 	if upgrade_id not in owned_unique_ids:
 		owned_unique_ids.append(upgrade_id)
-		print("[PlayerStats] 🔴 Mejora única registrada: %s" % upgrade_id)
+		# print("[PlayerStats] 🔴 Mejora única registrada: %s" % upgrade_id)
 
 func get_owned_unique_ids() -> Array:
 	"""Obtener IDs de mejoras únicas obtenidas"""
