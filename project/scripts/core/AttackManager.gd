@@ -162,13 +162,17 @@ func _ready() -> void:
 	# Añadir al grupo para que ProjectileFactory pueda encontrarnos
 	add_to_group("attack_manager")
 	
-	# Crear el manager de fusiones
+	# Crear el manager de fusiones (como hijo para gestión automática de memoria)
 	fusion_manager = WeaponFusionManager.new()
+	fusion_manager.name = "FusionManager"
+	add_child(fusion_manager)
 	fusion_manager.fusion_completed.connect(_on_fusion_completed)
 	fusion_manager.fusion_failed.connect(_on_fusion_failed)
 	
-	# Crear sistema de stats globales
+	# Crear sistema de stats globales (como hijo para gestión automática de memoria)
 	global_weapon_stats = GlobalWeaponStats.new()
+	global_weapon_stats.name = "GlobalWeaponStats"
+	add_child(global_weapon_stats)
 	global_weapon_stats.global_stat_changed.connect(_on_global_stats_changed)
 
 	# Debug desactivado: print("[AttackManager] Inicializado con sistema de fusiones y GlobalWeaponStats")
@@ -176,6 +180,13 @@ func _ready() -> void:
 func _on_global_stats_changed(stat_name: String, _old_value: float, _new_value: float) -> void:
 	"""Callback cuando cambian los stats globales"""
 	global_stats_changed.emit()
+
+func _exit_tree() -> void:
+	"""Limpiar referencias cuando el nodo se elimina del árbol"""
+	# Los hijos se liberan automáticamente, solo limpiamos referencias
+	fusion_manager = null
+	global_weapon_stats = null
+	player = null
 
 func initialize(player_ref: CharacterBody2D) -> void:
 	"""Inicializar con referencia al jugador"""
