@@ -387,4 +387,3 @@ func detect_system_language() -> String:
 		return language_code
 	else:
 		return FALLBACK_LANGUAGE
-
