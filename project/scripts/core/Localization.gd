@@ -351,7 +351,7 @@ func _load_language_from_settings() -> void:
 				if is_language_available(saved_language):
 					current_language = saved_language
 				else:
-				push_warning("[Localization] Invalid language in settings: %s, using default" % saved_language)
+					push_warning("[Localization] Invalid language in settings: %s, using default" % saved_language)
 
 func _save_language_to_settings() -> void:
 	"""Save current language to settings"""
