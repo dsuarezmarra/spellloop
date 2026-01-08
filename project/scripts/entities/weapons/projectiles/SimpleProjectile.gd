@@ -436,8 +436,7 @@ func _apply_effect(target: Node) -> void:
 	
 	# Debug: imprimir el efecto que se intenta aplicar
 	if effect != "none":
-		# Debug desactivado: print("[SimpleProjectile] 🎯 Aplicando efecto '%s' (valor=%.2f, dur=%.2f) a %s" % [effect, effect_value, effect_duration, target.name])
-		pass
+		print("[SimpleProjectile] 🎯 Aplicando efecto '%s' (valor=%.2f, dur=%.2f) a %s" % [effect, effect_value, effect_duration, target.name])
 	
 	if effect == "none":
 		return
@@ -445,10 +444,16 @@ func _apply_effect(target: Node) -> void:
 	match effect:
 		"slow":
 			if target.has_method("apply_slow"):
+				print("[SimpleProjectile] ✅ Llamando target.apply_slow(%.2f, %.2f)" % [effect_value, effect_duration])
 				target.apply_slow(effect_value, effect_duration)
+			else:
+				print("[SimpleProjectile] ❌ target NO tiene apply_slow! target=%s" % target)
 		"burn":
 			if target.has_method("apply_burn"):
+				print("[SimpleProjectile] ✅ Llamando target.apply_burn(%.2f, %.2f)" % [effect_value, effect_duration])
 				target.apply_burn(effect_value, effect_duration)
+			else:
+				print("[SimpleProjectile] ❌ target NO tiene apply_burn! target=%s" % target)
 		"freeze":
 			if target.has_method("apply_freeze"):
 				target.apply_freeze(effect_value, effect_duration)

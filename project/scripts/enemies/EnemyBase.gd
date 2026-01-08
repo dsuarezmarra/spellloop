@@ -1385,6 +1385,7 @@ func apply_slow(amount: float, duration: float) -> void:
 	amount: porcentaje de reducción de velocidad (0.0 - 1.0)
 	duration: duración del efecto en segundos
 	"""
+	print("[EnemyBase] ❄️ apply_slow llamado: %.2f por %.2fs en %s" % [amount, duration, name])
 	if _is_stunned:
 		return  # No aplicar slow si está stunneado
 
@@ -1405,8 +1406,7 @@ func apply_slow(amount: float, duration: float) -> void:
 	speed = _base_speed * (1.0 - _slow_amount)
 
 	_update_status_visual()
-	# Debug de slow (comentado para producción)
-	# print("[EnemyBase] ❄️ %s ralentizado %.0f%% por %.1fs" % [name, _slow_amount * 100, duration])
+	print("[EnemyBase] ❄️ %s ralentizado %.0f%% por %.1fs (speed: %.1f → %.1f)" % [name, _slow_amount * 100, duration, _base_speed, speed])
 
 func apply_freeze(amount: float, duration: float) -> void:
 	"""Aplicar efecto de congelación (slow extremo)
@@ -1434,6 +1434,7 @@ func apply_burn(damage_per_tick: float, duration: float) -> void:
 	damage_per_tick: daño por cada tick
 	duration: duración total del efecto
 	"""
+	print("[EnemyBase] 🔥 apply_burn llamado: %.2f daño/tick por %.2fs en %s" % [damage_per_tick, duration, name])
 	# Si ya está quemando, refrescar/apilar
 	if _is_burning:
 		# Aplicar el daño más alto y refrescar duración
@@ -1446,7 +1447,7 @@ func apply_burn(damage_per_tick: float, duration: float) -> void:
 		_is_burning = true
 
 	_update_status_visual()
-	# print("[EnemyBase] 🔥 %s quemándose %.1f daño/tick por %.1fs" % [name, damage_per_tick, duration])
+	print("[EnemyBase] 🔥 %s quemándose %.1f daño/tick por %.1fs" % [name, _burn_damage, _burn_timer])
 
 func apply_stun(duration: float) -> void:
 	"""Aplicar efecto de aturdimiento (paraliza completamente)
