@@ -135,12 +135,34 @@ func get_info() -> Dictionary:
 		"element": element_type
 	}
 
-func apply_upgrade(upgrade_type: String, amount: float) -> void:
-	"""Aplicar mejora al arma"""
+func apply_upgrade(upgrade_data, amount: float = 0.0) -> void:
+	"""Aplicar mejora al arma. Acepta String+amount (legacy) o Dictionary (nuevo)"""
+	var upgrade_type: String = ""
+	var upgrade_amount: float = amount
+	
+	# Soportar ambos formatos
+	if upgrade_data is String:
+		upgrade_type = upgrade_data
+	elif upgrade_data is Dictionary:
+		# Formato nuevo con effects
+		var effects = upgrade_data.get("effects", [])
+		for effect in effects:
+			var stat = effect.get("stat", "")
+			var value = effect.get("value", 0.0)
+			match stat:
+				"damage", "damage_mult", "damage_flat":
+					damage += int(value) if stat == "damage_flat" else int(damage * value)
+				"projectile_speed", "projectile_speed_mult":
+					projectile_speed += value * 50
+				"cooldown_mult", "attack_speed_mult":
+					base_cooldown = max(0.1, base_cooldown * (1.0 / value if value > 0 else 1.0))
+		return
+	
+	# Formato legacy
 	match upgrade_type:
 		"damage":
-			damage += int(amount)
+			damage += int(upgrade_amount)
 		"speed":
-			projectile_speed += amount * 50
+			projectile_speed += upgrade_amount * 50
 		"cooldown":
-			base_cooldown = max(0.1, base_cooldown - amount * 0.1)
+			base_cooldown = max(0.1, base_cooldown - upgrade_amount * 0.1)

@@ -116,10 +116,15 @@ func _create_test_systems() -> void:
 		global_weapon_stats = GlobalWeaponStats.new()
 		add_child(global_weapon_stats)
 		print("🧪 ✓ GlobalWeaponStats creado")
+	
+	# Conectar PlayerStats con GlobalWeaponStats para sincronización
+	if player_stats and global_weapon_stats:
+		player_stats.global_weapon_stats = global_weapon_stats
+		print("🧪 ✓ PlayerStats conectado con GlobalWeaponStats")
 
 func _run_automated_tests_sync() -> void:
-	"""Versión síncrona de tests para modo headless"""
-	print("🧪 Iniciando tests síncronos...")
+	"""Versión síncrona de tests para modo headless - TESTS EXHAUSTIVOS"""
+	print("🧪 Iniciando tests síncronos EXHAUSTIVOS...")
 	print("🧪 player_stats: %s" % (player_stats != null))
 	print("🧪 global_weapon_stats: %s" % (global_weapon_stats != null))
 	print("🧪 attack_manager: %s" % (attack_manager != null))
@@ -132,10 +137,15 @@ func _run_automated_tests_sync() -> void:
 	var results_failed = 0
 	var errors: Array = []
 	
+	# Stats que pertenecen a GlobalWeaponStats (armas)
+	const WEAPON_STATS = ["damage_mult", "damage_flat", "attack_speed_mult", "cooldown_mult",
+		"area_mult", "projectile_speed_mult", "duration_mult", "extra_projectiles",
+		"extra_pierce", "knockback_mult", "range_mult", "crit_chance", "crit_damage"]
+	
 	# ═══════════════════════════════════════════════════════════════════════════
-	# TEST: Mejoras de armas GLOBALES
+	# TEST 1: Mejoras de armas GLOBALES
 	# ═══════════════════════════════════════════════════════════════════════════
-	print("\n📋 TEST: Mejoras de Armas GLOBALES (%d mejoras)" % all_weapon_global_upgrades.size())
+	print("\n📋 TEST 1: Mejoras de Armas GLOBALES (%d mejoras)" % all_weapon_global_upgrades.size())
 	print("-".repeat(50))
 	
 	for upgrade in all_weapon_global_upgrades:
@@ -167,50 +177,137 @@ func _run_automated_tests_sync() -> void:
 		else:
 			print("❌ %s - Sin cambios" % upgrade.get("name", "?"))
 			results_failed += 1
-			errors.append(upgrade.get("name", "?"))
+			errors.append("[GLOBAL] " + upgrade.get("name", "?"))
 	
 	# ═══════════════════════════════════════════════════════════════════════════
-	# TEST: Mejoras de JUGADOR (primeras 15)
+	# TEST 2: TODAS las Mejoras de JUGADOR (incluyendo CURSED)
 	# ═══════════════════════════════════════════════════════════════════════════
-	print("\n📋 TEST: Mejoras de JUGADOR (primeras 15 de %d)" % all_player_upgrades.size())
+	print("\n📋 TEST 2: TODAS las Mejoras de JUGADOR (%d mejoras)" % all_player_upgrades.size())
 	print("-".repeat(50))
 	
+	# Resetear stats para test limpio
+	var ps_backup = player_stats.stats.duplicate()
+	var gws_backup = global_weapon_stats.get_all_stats().duplicate()
+	
 	if player_stats:
-		for upgrade in all_player_upgrades.slice(0, 15):
+		for upgrade in all_player_upgrades:
 			var effects = upgrade.get("effects", [])
 			if effects.is_empty():
 				continue
 			
-			var before = {}
+			# Guardar antes - tanto PlayerStats como GlobalWeaponStats
+			var before_ps = {}
+			var before_gws = {}
 			for e in effects:
 				var s = e.get("stat", "")
 				if s != "":
-					before[s] = player_stats.get_stat(s)
+					before_ps[s] = player_stats.get_stat(s)
+					# Para stats de armas, también chequear GlobalWeaponStats
+					if s in WEAPON_STATS or s == "cooldown_mult":
+						var gs = s
+						if gs == "cooldown_mult":
+							gs = "attack_speed_mult"
+						before_gws[gs] = global_weapon_stats.get_stat(gs)
 			
+			# Aplicar mejora
 			player_stats.apply_upgrade(upgrade)
 			
+			# Verificar cambios
 			var changes = []
+			var has_weapon_stat = false
+			var weapon_stat_failed = false
+			
 			for e in effects:
 				var s = e.get("stat", "")
-				if s != "":
-					var val_before = before.get(s, 0)
-					var val_after = player_stats.get_stat(s)
-					if abs(val_before - val_after) > 0.001:
-						changes.append("%s: %.2f→%.2f" % [s, val_before, val_after])
+				if s == "":
+					continue
+				
+				# Verificar en PlayerStats
+				var val_before = before_ps.get(s, 0)
+				var val_after = player_stats.get_stat(s)
+				
+				if abs(val_before - val_after) > 0.001:
+					changes.append("%s: %.2f→%.2f" % [s, val_before, val_after])
+				
+				# Si es stat de arma, verificar también GlobalWeaponStats
+				if s in WEAPON_STATS or s == "cooldown_mult":
+					has_weapon_stat = true
+					var gs = s
+					if gs == "cooldown_mult":
+						gs = "attack_speed_mult"
+					var gws_before = before_gws.get(gs, 0)
+					var gws_after = global_weapon_stats.get_stat(gs)
+					
+					# Para CURSED, el stat de arma debería cambiar en GWS
+					if abs(gws_before - gws_after) < 0.001:
+						weapon_stat_failed = true
+						changes.append("⚠️ %s NO cambió en GWS!" % gs)
 			
-			if changes.size() > 0:
-				print("✅ %s: %s" % [upgrade.get("name", "?"), ", ".join(changes)])
+			var upgrade_name = upgrade.get("name", "?")
+			var is_cursed = upgrade.get("is_cursed", false)
+			
+			if changes.size() > 0 and not weapon_stat_failed:
+				var prefix = "🟣" if is_cursed else "✅"
+				print("%s %s: %s" % [prefix, upgrade_name, ", ".join(changes)])
+				results_passed += 1
+			elif has_weapon_stat and weapon_stat_failed:
+				print("❌ %s - Stats de arma NO sincronizados: %s" % [upgrade_name, ", ".join(changes)])
+				results_failed += 1
+				errors.append("[PLAYER-WEAPON] " + upgrade_name)
+			elif changes.size() > 0:
+				print("✅ %s: %s" % [upgrade_name, ", ".join(changes)])
 				results_passed += 1
 			else:
-				print("❌ %s - Sin cambios" % upgrade.get("name", "?"))
+				print("❌ %s - Sin cambios" % upgrade_name)
 				results_failed += 1
-				errors.append(upgrade.get("name", "?"))
+				errors.append("[PLAYER] " + upgrade_name)
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# TEST 3: Verificar sincronización PlayerStats → GlobalWeaponStats
+	# ═══════════════════════════════════════════════════════════════════════════
+	print("\n📋 TEST 3: Verificar sincronización de stats de armas")
+	print("-".repeat(50))
+	
+	# Reset para test limpio
+	player_stats.stats = ps_backup.duplicate()
+	global_weapon_stats.reset()
+	
+	# Test específico: aplicar Cañón de Cristal y verificar damage_mult en ambos sistemas
+	var glass_cannon = null
+	for u in all_player_upgrades:
+		if u.get("id") == "cursed_glass_cannon_1":
+			glass_cannon = u
+			break
+	
+	if glass_cannon:
+		print("🧪 Test: Cañón de Cristal (damage_mult 1.25x)")
+		var ps_dmg_before = player_stats.get_stat("damage_mult")
+		var gws_dmg_before = global_weapon_stats.get_stat("damage_mult")
+		print("   Antes - PlayerStats: %.2f, GlobalWeaponStats: %.2f" % [ps_dmg_before, gws_dmg_before])
+		
+		player_stats.apply_upgrade(glass_cannon)
+		
+		var ps_dmg_after = player_stats.get_stat("damage_mult")
+		var gws_dmg_after = global_weapon_stats.get_stat("damage_mult")
+		print("   Después - PlayerStats: %.2f, GlobalWeaponStats: %.2f" % [ps_dmg_after, gws_dmg_after])
+		
+		if abs(gws_dmg_after - 1.25) < 0.01:
+			print("   ✅ GlobalWeaponStats sincronizado correctamente")
+			results_passed += 1
+		else:
+			print("   ❌ GlobalWeaponStats NO sincronizado! Esperado: 1.25, Actual: %.2f" % gws_dmg_after)
+			results_failed += 1
+			errors.append("[SYNC] Cañón de Cristal → GWS")
 	
 	# Resumen
 	print("\n" + "═".repeat(60))
-	print("📊 RESUMEN: ✅ %d pasados, ❌ %d fallidos" % [results_passed, results_failed])
+	print("📊 RESUMEN EXHAUSTIVO:")
+	print("   ✅ Pasados: %d" % results_passed)
+	print("   ❌ Fallidos: %d" % results_failed)
 	if errors.size() > 0:
-		print("🔴 Fallidos: %s" % ", ".join(errors))
+		print("\n🔴 ERRORES DETECTADOS:")
+		for err in errors:
+			print("   - %s" % err)
 	print("═".repeat(60))
 
 func _setup_background() -> void:

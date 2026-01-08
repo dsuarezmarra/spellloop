@@ -563,6 +563,9 @@ var xp_to_next_level: float = BASE_XP_TO_LEVEL
 # Referencia al AttackManager para sincronizar stats
 var attack_manager: AttackManager = null
 
+# Referencia directa a GlobalWeaponStats para sincronización de stats de armas
+var global_weapon_stats: GlobalWeaponStats = null
+
 # Referencia al player para sincronizar vida
 var player_ref: Node = null
 
@@ -596,6 +599,11 @@ func initialize(attack_mgr: AttackManager = null, player: Node = null) -> void:
 	"""Inicializar con referencia al AttackManager y al player"""
 	attack_manager = attack_mgr
 	player_ref = player
+	
+	# Obtener referencia a GlobalWeaponStats desde AttackManager
+	if attack_manager and attack_manager.has_method("get_global_weapon_stats"):
+		global_weapon_stats = attack_manager.get_global_weapon_stats()
+	
 	# Agregar a grupo para facilitar busqueda desde PauseMenu
 	add_to_group("player_stats")
 	_sync_with_attack_manager()
@@ -1135,8 +1143,18 @@ func get_xp_progress() -> float:
 # APLICAR UPGRADES
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# Stats que pertenecen a GlobalWeaponStats y deben sincronizarse
+const WEAPON_STATS = ["damage_mult", "damage_flat", "attack_speed_mult", "cooldown_mult",
+	"area_mult", "projectile_speed_mult", "duration_mult", "extra_projectiles",
+	"extra_pierce", "knockback_mult", "range_mult", "crit_chance", "crit_damage"]
+
 func apply_upgrade(upgrade_data) -> bool:
-	"""Aplicar un upgrade del jugador. Acepta Dictionary con formato effects."""
+	"""
+	Aplicar un upgrade del jugador. Acepta Dictionary con formato effects.
+	
+	IMPORTANTE: Las mejoras con stats de armas (damage_mult, attack_speed_mult, etc.)
+	se envían TAMBIÉN a GlobalWeaponStats para que afecten a todas las armas.
+	"""
 	var upgrade_dict: Dictionary = {}
 
 	# Determinar si es un ID o un Dictionary completo
@@ -1149,16 +1167,30 @@ func apply_upgrade(upgrade_data) -> bool:
 	# Aplicar efectos desde el Dictionary (formato nuevo con effects)
 	if upgrade_dict.has("effects"):
 		var effects = upgrade_dict.get("effects", [])
+		var weapon_effects: Array = []  # Efectos que van a GlobalWeaponStats
+		
 		for effect in effects:
 			var stat = effect.get("stat", "")
 			var value = effect.get("value", 0)
 			var op = effect.get("operation", "add")
-			if stat != "":
-				match op:
-					"add": add_stat(stat, value)
-					"multiply": multiply_stat(stat, value)
-					"set": set_stat(stat, value)
-					_: add_stat(stat, value)
+			
+			if stat == "":
+				continue
+			
+			# Aplicar a PlayerStats (todos los stats)
+			match op:
+				"add": add_stat(stat, value)
+				"multiply": multiply_stat(stat, value)
+				"set": set_stat(stat, value)
+				_: add_stat(stat, value)
+			
+			# Si es un stat de arma, también enviarlo a GlobalWeaponStats
+			if stat in WEAPON_STATS:
+				weapon_effects.append(effect.duplicate())
+		
+		# Enviar stats de armas a GlobalWeaponStats
+		if weapon_effects.size() > 0:
+			_apply_weapon_effects_to_global(weapon_effects, upgrade_dict)
 
 		add_upgrade(upgrade_dict)
 		return true
@@ -1171,6 +1203,41 @@ func apply_upgrade(upgrade_data) -> bool:
 
 	push_warning("[PlayerStats] No se pudo aplicar upgrade: %s" % str(upgrade_data))
 	return false
+
+func _apply_weapon_effects_to_global(effects: Array, upgrade_dict: Dictionary) -> void:
+	"""Enviar efectos de armas a GlobalWeaponStats"""
+	# Buscar GlobalWeaponStats
+	var gws = null
+	
+	# 1. Usar referencia directa si existe
+	if global_weapon_stats != null:
+		gws = global_weapon_stats
+	
+	# 2. Intentar a través de attack_manager
+	if gws == null and attack_manager and attack_manager.has_method("get_global_weapon_stats"):
+		gws = attack_manager.get_global_weapon_stats()
+	
+	# 3. Buscar en grupos si estamos en el árbol
+	if gws == null and is_inside_tree():
+		var nodes = get_tree().get_nodes_in_group("global_weapon_stats")
+		if nodes.size() > 0:
+			gws = nodes[0]
+	
+	if gws == null:
+		# No hay GlobalWeaponStats, los stats se quedan solo en PlayerStats
+		push_warning("[PlayerStats] No se encontró GlobalWeaponStats para sincronizar stats de armas")
+		return
+	
+	# Crear una mini-mejora solo con los efectos de armas
+	var weapon_upgrade = {
+		"id": upgrade_dict.get("id", "") + "_weapon_sync",
+		"name": upgrade_dict.get("name", ""),
+		"effects": effects
+	}
+	
+	# Aplicar a GlobalWeaponStats
+	if gws.has_method("apply_upgrade"):
+		gws.apply_upgrade(weapon_upgrade)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SERIALIZACIÓN
