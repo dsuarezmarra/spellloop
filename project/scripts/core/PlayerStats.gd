@@ -1378,28 +1378,21 @@ func apply_upgrade(upgrade_data) -> bool:
 		push_error("[PlayerStats] apply_upgrade: tipo invalido %s" % typeof(upgrade_data))
 		return false
 
-	print("[PlayerStats] apply_upgrade: id='%s', has_effects=%s" % [upgrade_id, upgrade_dict.has("effects")])
-
 	# Primero intentar aplicar efectos directamente desde el Dictionary (formato nuevo)
 	if upgrade_dict.has("effects"):
 		var effects = upgrade_dict.get("effects", [])
-		print("[PlayerStats] Aplicando %d efectos..." % effects.size())
 		for effect in effects:
 			var stat = effect.get("stat", "")
 			var value = effect.get("value", 0)
 			var op = effect.get("operation", "add")
 			if stat != "":
-				var old_val = get_stat(stat)
 				match op:
 					"add": add_stat(stat, value)
 					"multiply": multiply_stat(stat, value)
 					"set": set_stat(stat, value)
 					_: add_stat(stat, value)
-				var new_val = get_stat(stat)
-				print("[PlayerStats]   %s: %s %.2f → %.2f (op=%s, val=%.2f)" % [stat, op, old_val, new_val, op, value])
 
 		add_upgrade(upgrade_dict)
-		print("[PlayerStats] ✓ Upgrade aplicado: %s" % upgrade_dict.get("name", "???"))
 		return true
 
 	# Fallback: buscar en PLAYER_UPGRADES (formato viejo)
@@ -1413,14 +1406,12 @@ func apply_upgrade(upgrade_data) -> bool:
 			"description": upgrade.description,
 			"effects": [{"stat": upgrade.stat, "value": upgrade.amount, "operation": "add"}]
 		})
-		print("[PlayerStats] ✓ Upgrade aplicado (PLAYER_UPGRADES): %s" % upgrade.name)
 		return true
 
 	# Fallback: stat y amount directamente
 	if upgrade_dict.has("stat") and upgrade_dict.has("amount"):
 		add_stat(upgrade_dict.stat, upgrade_dict.amount)
 		add_upgrade(upgrade_dict)
-		print("[PlayerStats] ✓ Upgrade aplicado (stat+amount): %s" % upgrade_dict.get("name", "???"))
 		return true
 
 	push_warning("[PlayerStats] No se pudo aplicar upgrade: %s" % str(upgrade_data))
