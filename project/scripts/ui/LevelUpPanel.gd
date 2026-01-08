@@ -106,6 +106,22 @@ func _ready() -> void:
 func initialize(attack_mgr: AttackManager, stats: PlayerStats) -> void:
 	attack_manager = attack_mgr
 	player_stats = stats
+	_sync_counts_from_player_stats()
+
+func _sync_counts_from_player_stats() -> void:
+	"""Sincronizar reroll/banish counts con PlayerStats"""
+	if player_stats and player_stats.has_method("get_stat"):
+		var extra_rerolls = int(player_stats.get_stat("reroll_count"))
+		var extra_banishes = int(player_stats.get_stat("banish_count"))
+		reroll_count = 2 + extra_rerolls  # Base 2 + mejoras
+		banish_count = 2 + extra_banishes  # Base 2 + mejoras
+
+func _get_max_options() -> int:
+	"""Obtener número máximo de opciones (base + mejoras)"""
+	var extra = 0
+	if player_stats and player_stats.has_method("get_stat"):
+		extra = int(player_stats.get_stat("levelup_options"))
+	return MAX_OPTIONS + extra
 
 func _create_ui() -> void:
 	# Fondo oscuro
@@ -740,6 +756,9 @@ func _get_type_text(option_type: String) -> String:
 
 func generate_options() -> void:
 	options.clear()
+	
+	# Sincronizar reroll/banish con PlayerStats si hay mejoras
+	_sync_counts_from_player_stats()
 
 	var luck = 0.0
 	if player_stats and player_stats.has_method("get_stat"):
@@ -1004,6 +1023,7 @@ func _get_fusion_options() -> Array:
 func _balance_options(all_options: Array) -> Array:
 	var balanced: Array = []
 	var by_type: Dictionary = {}
+	var max_opts = _get_max_options()
 
 	for opt in all_options:
 		var t = opt.type
@@ -1015,7 +1035,7 @@ func _balance_options(all_options: Array) -> Array:
 		by_type[t].sort_custom(func(a, b): return a.priority > b.priority)
 
 	for t in by_type:
-		if balanced.size() >= MAX_OPTIONS:
+		if balanced.size() >= max_opts:
 			break
 		if not by_type[t].is_empty():
 			balanced.append(by_type[t].pop_front())
@@ -1025,7 +1045,7 @@ func _balance_options(all_options: Array) -> Array:
 		remaining.append_array(by_type[t])
 	remaining.shuffle()
 
-	while balanced.size() < MAX_OPTIONS and not remaining.is_empty():
+	while balanced.size() < max_opts and not remaining.is_empty():
 		balanced.append(remaining.pop_front())
 
 	return balanced

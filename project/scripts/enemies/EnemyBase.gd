@@ -1165,7 +1165,7 @@ func _attempt_attack() -> void:
 		# Efecto visual de ataque en el enemigo
 		_play_attack_animation()
 
-func take_damage(amount: int) -> void:
+func take_damage(amount: int, _element: String = "physical", _attacker: Node = null) -> void:
 	"""Recibir daño del enemigo"""
 	var final_damage = amount
 	var is_blocked = false

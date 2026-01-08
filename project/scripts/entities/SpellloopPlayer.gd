@@ -271,8 +271,15 @@ func get_pickup_range() -> float:
 	return (pickup_radius * magnet) + pickup_range_flat
 
 func get_coin_value_mult() -> float:
-	"""Retorna el multiplicador de valor de monedas"""
-	return coin_value_mult
+	"""Retorna el multiplicador de valor de monedas (coin_value_mult + gold_mult de PlayerStats)"""
+	var base_mult = coin_value_mult
+	# También incluir gold_mult de PlayerStats si existe
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.has_method("get_stat"):
+		var gold_mult = player_stats.get_stat("gold_mult")
+		if gold_mult > 0:
+			base_mult *= gold_mult
+	return base_mult
 
 func add_pickup_range(amount: float) -> void:
 	"""Añade rango de recolección base en píxeles"""

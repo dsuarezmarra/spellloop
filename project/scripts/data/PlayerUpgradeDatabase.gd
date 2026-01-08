@@ -1195,17 +1195,15 @@ const UNIQUE_UPGRADES: Dictionary = {
 	"unique_berserker_rage": {
 		"id": "unique_berserker_rage",
 		"name": "Furia del Berserker",
-		"description": "Bajo 50% HP: +100% daño, +50% velocidad ataque.",
+		"description": "+50% daño, +25% velocidad ataque. Modo agresivo permanente.",
 		"icon": "😡",
 		"category": "unique",
 		"tier": 5,
 		"is_unique": true,
-		"is_conditional": true,
-		"condition": "health_below_50",
 		"max_stacks": 1,
 		"effects": [
-			{"stat": "damage_mult", "value": 2.0, "operation": "multiply"},
-			{"stat": "attack_speed_mult", "value": 1.50, "operation": "multiply"}
+			{"stat": "damage_mult", "value": 1.50, "operation": "multiply"},
+			{"stat": "attack_speed_mult", "value": 1.25, "operation": "multiply"}
 		]
 	}
 }
