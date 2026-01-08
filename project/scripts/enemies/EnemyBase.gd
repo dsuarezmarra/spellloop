@@ -35,7 +35,8 @@ var elite_size_scale: float = 1.5
 var attack_range: float = 32.0
 var separation_radius: float = 40.0
 var attack_cooldown: float = 1.0
-# NOTA: can_attack y attack_timer ya no se usan - el ataque lo maneja EnemyAttackSystem
+var can_attack: bool = true
+var attack_timer: float = 0.0
 
 # Comportamiento específico por arquetipo
 var preferred_distance: float = 0.0  # Para ranged

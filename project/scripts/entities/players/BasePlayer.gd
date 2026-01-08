@@ -590,7 +590,7 @@ func _apply_thorns_damage(attacker: Node, damage_received: int, player_stats: No
 		
 		# Mostrar texto flotante sobre el enemigo
 		if "global_position" in attacker:
-			FloatingText.spawn_damage(attacker.global_position + Vector2(0, -20), thorns_damage, false, "thorns")
+			FloatingText.spawn_damage(attacker.global_position + Vector2(0, -20), thorns_damage, false)
 
 func _play_damage_flash(element: String) -> void:
 	"""Flash de daño según el elemento"""
