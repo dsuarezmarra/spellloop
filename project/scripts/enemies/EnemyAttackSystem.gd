@@ -104,7 +104,8 @@ func _process(delta: float) -> void:
 		if not player:
 			# Solo debug una vez cada 60 frames para no saturar
 			if Engine.get_process_frames() % 60 == 0:
-				# print("[EnemyAttackSystem] âš ï¸ No se encontrÃ³ player para %s" % enemy.name)
+				pass  # Debug
+			# print("[EnemyAttackSystem] âš ï¸ No se encontrÃ³ player para %s" % enemy.name)
 			return
 	
 	# Detectar si es boss
@@ -2063,6 +2064,7 @@ func _boss_summon_minions() -> void:
 		spawner.spawn_minions_around(enemy.global_position, count, tier)
 		# print("[EnemyAttackSystem] ðŸ‘¹ Summon: %d minions tier %d" % [count, tier])
 	else:
+		pass
 		# print("[EnemyAttackSystem] âš ï¸ No se encontrÃ³ spawner para summon")
 
 func _boss_teleport_strike() -> void:
