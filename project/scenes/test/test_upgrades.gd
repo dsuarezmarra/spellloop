@@ -730,13 +730,19 @@ func _update_stats_display() -> void:
 		["pickup_range", "🧲 Recogida"],
 		["xp_mult", "⭐ XP"],
 		["luck", "🍀 Suerte"],
+		["growth", "📈 Crecimiento"],
 	]
 	for s in p_stats:
 		var val = _get_player_stat(s[0])
 		txt += "%s: [color=white]%.2f[/color]\n" % [s[1], val]
 	
-	txt += "\n[color=yellow]═ ARMAS GLOBAL ═[/color]\n"
-	var w_stats = [
+	# Mostrar tiempo de juego para Growth
+	if player_stats and "_game_time_minutes" in player_stats:
+		var mins = player_stats._game_time_minutes
+		txt += "[color=gray]⏱️ Tiempo: %.1f min[/color]\n" % mins
+	
+	txt += "\n[color=yellow]═ OFENSIVO (PlayerStats) ═[/color]\n"
+	var offensive_stats = [
 		["damage_mult", "⚔️ Daño×"],
 		["damage_flat", "➕ Daño+"],
 		["attack_speed_mult", "⚡ Vel.Atq"],
@@ -744,9 +750,12 @@ func _update_stats_display() -> void:
 		["crit_chance", "🎯 Crit%"],
 		["crit_damage", "💢 CritDmg"],
 		["extra_projectiles", "🎯 Proyec+"],
+		["chain_count", "⛓️ Cadena"],
+		["execute_threshold", "⚰️ Ejecutar%"],
+		["explosion_chance", "💣 Explos%"],
 	]
-	for s in w_stats:
-		var val = _get_weapon_stat(s[0])
+	for s in offensive_stats:
+		var val = _get_player_stat(s[0])
 		txt += "%s: [color=white]%.2f[/color]\n" % [s[1], val]
 	
 	stats_label.text = txt

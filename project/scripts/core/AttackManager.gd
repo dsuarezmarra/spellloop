@@ -46,9 +46,8 @@ var weapon_stats_map: Dictionary = {}
 # Este dict se sincroniza automáticamente con global_weapon_stats
 var player_stats: Dictionary:
 	get:
-		if global_weapon_stats:
-			return global_weapon_stats.get_all_stats()
-		return _legacy_player_stats
+		return _get_combined_global_stats()
+		# Legacy fallback handled in _get_combined_global_stats
 	set(value):
 		# Para compatibilidad con código que asigna al dict directamente
 		_legacy_player_stats = value
@@ -97,6 +96,40 @@ func _sync_legacy_to_global(legacy: Dictionary) -> void:
 	for key in legacy:
 		if key in global_weapon_stats.stats:
 			global_weapon_stats.stats[key] = legacy[key]
+
+func _get_combined_global_stats() -> Dictionary:
+	"""
+	Obtener stats globales COMBINADOS de GlobalWeaponStats y PlayerStats.
+	Los multiplicadores se multiplican entre sí, los valores planos se suman.
+	"""
+	var gs = global_weapon_stats.get_all_stats() if global_weapon_stats else _legacy_player_stats.duplicate()
+	
+	# Buscar PlayerStats para combinar sus stats ofensivos
+	var ps = get_tree().get_first_node_in_group("player_stats") if is_inside_tree() else null
+	if ps and ps.has_method("get_stat"):
+		# Multiplicadores: se multiplican
+		gs["damage_mult"] = gs.get("damage_mult", 1.0) * ps.get_stat("damage_mult")
+		gs["attack_speed_mult"] = gs.get("attack_speed_mult", 1.0) * ps.get_stat("attack_speed_mult")
+		gs["area_mult"] = gs.get("area_mult", 1.0) * ps.get_stat("area_mult")
+		gs["projectile_speed_mult"] = gs.get("projectile_speed_mult", 1.0) * ps.get_stat("projectile_speed_mult")
+		gs["duration_mult"] = gs.get("duration_mult", 1.0) * ps.get_stat("duration_mult")
+		gs["knockback_mult"] = gs.get("knockback_mult", 1.0) * ps.get_stat("knockback_mult")
+		gs["range_mult"] = gs.get("range_mult", 1.0) * ps.get_stat("range_mult")
+		
+		# Valores planos: se suman
+		gs["damage_flat"] = gs.get("damage_flat", 0.0) + ps.get_stat("damage_flat")
+		gs["extra_projectiles"] = int(gs.get("extra_projectiles", 0)) + int(ps.get_stat("extra_projectiles"))
+		gs["extra_pierce"] = int(gs.get("extra_pierce", 0)) + int(ps.get_stat("extra_pierce"))
+		gs["chain_count"] = int(gs.get("chain_count", 0)) + int(ps.get_stat("chain_count"))
+		
+		# Críticos: se suman (son porcentajes)
+		gs["crit_chance"] = gs.get("crit_chance", 0.05) + ps.get_stat("crit_chance") - 0.05  # Restar el base de PlayerStats
+		gs["crit_damage"] = gs.get("crit_damage", 2.0) + ps.get_stat("crit_damage") - 2.0  # Restar el base de PlayerStats
+		
+		# Life steal
+		gs["life_steal"] = gs.get("life_steal", 0.0) + ps.get_stat("life_steal")
+	
+	return gs
 
 func _get_weapon_id(weapon) -> String:
 	"""Obtener ID del arma de forma compatible con ambos sistemas"""
@@ -452,7 +485,7 @@ func _process(delta: float) -> void:
 			else:
 				pass  # Bloque else
 				# Arma NO-BaseWeapon pero con métodos tick_cooldown/is_ready_to_fire
-				var gs = global_weapon_stats.get_all_stats() if global_weapon_stats else _legacy_player_stats
+				var gs = _get_combined_global_stats()
 				_apply_global_stats_to_legacy_weapon(weapon, gs)
 				weapon.perform_attack(player)
 				_restore_legacy_weapon_base_stats(weapon)
@@ -472,8 +505,8 @@ func _process_legacy_weapon(weapon, delta: float) -> void:
 	"""Procesar arma legacy (como IceWand original) con stats globales aplicados"""
 	# Las armas legacy tienen current_cooldown y base_cooldown
 	if weapon.has_method("perform_attack"):
-		# Obtener stats globales para aplicar
-		var gs = global_weapon_stats.get_all_stats() if global_weapon_stats else _legacy_player_stats
+		# Obtener stats globales para aplicar (incluye PlayerStats)
+		var gs = _get_combined_global_stats()
 		
 		# Aplicar multiplicador de velocidad de ataque al cooldown (evitar división por cero)
 		var attack_speed_mult = maxf(gs.get("attack_speed_mult", 1.0), 0.1)
@@ -749,7 +782,7 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 		return {}
 	
 	var weapon_id = _get_weapon_id(weapon)
-	var gs = global_weapon_stats.get_all_stats() if global_weapon_stats else _legacy_player_stats
+	var gs = _get_combined_global_stats()
 	var ws = weapon_stats_map.get(weapon_id, null)
 	
 	# Obtener valores base del arma
@@ -876,7 +909,7 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 func get_info() -> Dictionary:
 	"""Obtener información del atacante para UI"""
 	var weapon_infos = []
-	var global_stats = global_weapon_stats.get_all_stats() if global_weapon_stats else _legacy_player_stats
+	var global_stats = _get_combined_global_stats()
 	
 	for weapon in weapons:
 		var weapon_id = _get_weapon_id(weapon)
@@ -1027,7 +1060,7 @@ func _notification(what: int) -> void:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func get_debug_info() -> String:
-	var global_stats = global_weapon_stats.get_all_stats() if global_weapon_stats else _legacy_player_stats
+	var global_stats = _get_combined_global_stats()
 	
 	var lines = [
 		"=== ATTACK MANAGER (v2.0) ===",

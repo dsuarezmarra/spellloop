@@ -959,12 +959,14 @@ func _update_shield_regen(delta: float) -> void:
 
 func _update_growth(delta: float) -> void:
 	"""Aplicar bonus de Growth por minuto de juego"""
+	# SIEMPRE actualizar tiempo de juego (incluso si growth es 0)
+	_game_time_minutes += delta / 60.0
+	
 	var growth_rate = get_stat("growth")
 	if growth_rate <= 0:
+		# Aunque no tengamos growth, mantener _last_growth_minute sincronizado
+		_last_growth_minute = int(_game_time_minutes)
 		return
-	
-	# Actualizar tiempo de juego
-	_game_time_minutes += delta / 60.0
 	
 	# Cada minuto completo, aplicar bonus de growth
 	var current_minute = int(_game_time_minutes)
@@ -972,7 +974,7 @@ func _update_growth(delta: float) -> void:
 		_apply_growth_bonus(growth_rate, current_minute - _last_growth_minute)
 		_last_growth_minute = current_minute
 
-func _apply_growth_bonus(growth_rate: float, minutes: int) -> void:
+func _apply_growth_bonus(growth_rate: float, _minutes: int) -> void:
 	"""Aplicar bonus de growth a todos los stats relevantes"""
 	# Stats que escalan con growth (no aplicar a stats negativos como damage_taken_mult)
 	var growth_stats = [
@@ -981,14 +983,21 @@ func _apply_growth_bonus(growth_rate: float, minutes: int) -> void:
 		"health_regen", "armor", "pickup_range", "move_speed", "xp_mult"
 	]
 	
-	# Calcular multiplicador acumulativo
-	var multiplier = 1.0 + (growth_rate * minutes)
+	# Limpiar modificadores de growth anteriores antes de aplicar nuevos
+	remove_temp_modifiers_by_source("growth_bonus")
+	
+	# Calcular multiplicador total basado en el tiempo total transcurrido
+	var total_minutes = int(_game_time_minutes)
+	var total_growth_bonus = growth_rate * total_minutes  # ej: 0.01 * 5 = 0.05 (5%)
+	
+	if total_growth_bonus <= 0:
+		return
 	
 	for stat_name in growth_stats:
 		var base_value = get_base_stat(stat_name)
 		if base_value > 0:
-			# Solo aplicar a stats positivos
-			var bonus = base_value * (multiplier - 1.0) * 0.01  # 1% por growth por minuto
+			# Aplicar % del valor base como bonus
+			var bonus = base_value * total_growth_bonus
 			add_temp_modifier(stat_name, bonus, 9999.0, "growth_bonus")
 	
 	# Mostrar notificación visual si tenemos player
@@ -996,7 +1005,7 @@ func _apply_growth_bonus(growth_rate: float, minutes: int) -> void:
 		if "global_position" in player_ref:
 			FloatingText.spawn_text(
 				player_ref.global_position + Vector2(0, -60),
-				"📈 GROWTH +%d%%" % int(growth_rate * 100 * _game_time_minutes),
+				"📈 GROWTH +%d%%" % int(total_growth_bonus * 100),
 				Color(0.3, 1.0, 0.5)
 			)
 
@@ -1369,12 +1378,34 @@ func apply_upgrade(upgrade_data) -> bool:
 		push_error("[PlayerStats] apply_upgrade: tipo invalido %s" % typeof(upgrade_data))
 		return false
 
-	# Si tenemos un ID valido, buscar en PLAYER_UPGRADES
+	print("[PlayerStats] apply_upgrade: id='%s', has_effects=%s" % [upgrade_id, upgrade_dict.has("effects")])
+
+	# Primero intentar aplicar efectos directamente desde el Dictionary (formato nuevo)
+	if upgrade_dict.has("effects"):
+		var effects = upgrade_dict.get("effects", [])
+		print("[PlayerStats] Aplicando %d efectos..." % effects.size())
+		for effect in effects:
+			var stat = effect.get("stat", "")
+			var value = effect.get("value", 0)
+			var op = effect.get("operation", "add")
+			if stat != "":
+				var old_val = get_stat(stat)
+				match op:
+					"add": add_stat(stat, value)
+					"multiply": multiply_stat(stat, value)
+					"set": set_stat(stat, value)
+					_: add_stat(stat, value)
+				var new_val = get_stat(stat)
+				print("[PlayerStats]   %s: %s %.2f → %.2f (op=%s, val=%.2f)" % [stat, op, old_val, new_val, op, value])
+
+		add_upgrade(upgrade_dict)
+		print("[PlayerStats] ✓ Upgrade aplicado: %s" % upgrade_dict.get("name", "???"))
+		return true
+
+	# Fallback: buscar en PLAYER_UPGRADES (formato viejo)
 	if upgrade_id != "" and PLAYER_UPGRADES.has(upgrade_id):
 		var upgrade = PLAYER_UPGRADES[upgrade_id]
 		add_stat(upgrade.stat, upgrade.amount)
-
-		# Registrar la mejora en el historial
 		add_upgrade({
 			"id": upgrade_id,
 			"name": upgrade.name,
@@ -1382,32 +1413,14 @@ func apply_upgrade(upgrade_data) -> bool:
 			"description": upgrade.description,
 			"effects": [{"stat": upgrade.stat, "value": upgrade.amount, "operation": "add"}]
 		})
-
-		# print("[PlayerStats] Upgrade aplicado (por ID): %s" % upgrade.name)
-		return true
-
-	# Fallback: aplicar efectos directamente desde el Dictionary
-	if upgrade_dict.has("effects"):
-		for effect in upgrade_dict.effects:
-			var stat = effect.get("stat", "")
-			var value = effect.get("value", 0)
-			var op = effect.get("operation", "add")
-			if stat != "":
-				match op:
-					"add": add_stat(stat, value)
-					"multiply": multiply_stat(stat, value)
-					"set": set_stat(stat, value)
-					_: add_stat(stat, value)
-
-		add_upgrade(upgrade_dict)
-		# print("[PlayerStats] Upgrade aplicado (por efectos): %s" % upgrade_dict.get("name", "???"))
+		print("[PlayerStats] ✓ Upgrade aplicado (PLAYER_UPGRADES): %s" % upgrade.name)
 		return true
 
 	# Fallback: stat y amount directamente
 	if upgrade_dict.has("stat") and upgrade_dict.has("amount"):
 		add_stat(upgrade_dict.stat, upgrade_dict.amount)
 		add_upgrade(upgrade_dict)
-		# print("[PlayerStats] Upgrade aplicado (stat+amount): %s" % upgrade_dict.get("name", "???"))
+		print("[PlayerStats] ✓ Upgrade aplicado (stat+amount): %s" % upgrade_dict.get("name", "???"))
 		return true
 
 	push_warning("[PlayerStats] No se pudo aplicar upgrade: %s" % str(upgrade_data))
