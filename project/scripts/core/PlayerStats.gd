@@ -548,6 +548,13 @@ var current_health: float = 100.0
 # Acumulador de regeneración para aplicar HP enteros
 var _regen_accumulator: float = 0.0
 
+# Acumulador de regeneración de escudo
+var _shield_regen_accumulator: float = 0.0
+
+# Sistema de Growth - tiempo acumulado en minutos
+var _game_time_minutes: float = 0.0
+var _last_growth_minute: int = 0
+
 # Sistema de nivel
 var level: int = 1
 var current_xp: float = 0.0
@@ -576,6 +583,10 @@ func _reset_stats() -> void:
 	level = 1
 	current_xp = 0.0
 	xp_to_next_level = BASE_XP_TO_LEVEL
+	_regen_accumulator = 0.0
+	_shield_regen_accumulator = 0.0
+	_game_time_minutes = 0.0
+	_last_growth_minute = 0
 
 func _ready() -> void:
 	# Asegurar que PlayerStats respete la pausa del juego
@@ -830,9 +841,11 @@ func remove_temp_modifiers_by_source(source: String) -> void:
 		)
 
 func _process(delta: float) -> void:
-	"""Actualizar modificadores temporales y regeneración"""
+	"""Actualizar modificadores temporales, regeneración, growth y shield"""
 	_update_temp_modifiers(delta)
 	_update_health_regen(delta)
+	_update_shield_regen(delta)
+	_update_growth(delta)
 
 func _update_temp_modifiers(delta: float) -> void:
 	"""Reducir duración de modificadores temporales"""
@@ -913,6 +926,78 @@ func _get_player_current_health() -> float:
 			return hc.current_health
 	
 	return current_health
+
+func _update_shield_regen(delta: float) -> void:
+	"""Regenerar escudo con el tiempo"""
+	var shield_regen = get_stat("shield_regen")
+	if shield_regen <= 0:
+		return
+	
+	# No regenerar escudo si no tiene max_shield definido o está lleno
+	var current_shield = get_stat("shield_amount")
+	var max_shield = get_base_stat("shield_amount")  # El máximo es el valor base + mejoras
+	
+	# Si no hay escudo definido, no regenerar
+	if max_shield <= 0:
+		return
+	
+	# Acumular regeneración parcial
+	_shield_regen_accumulator += shield_regen * delta
+	
+	# Solo regenerar cuando tengamos al menos 1 punto de escudo
+	if _shield_regen_accumulator < 1.0:
+		return
+	
+	var regen_int = int(_shield_regen_accumulator)
+	_shield_regen_accumulator -= regen_int
+	
+	# No exceder el máximo de escudo
+	var new_shield = mini(int(current_shield) + regen_int, int(max_shield))
+	if new_shield > current_shield:
+		set_stat("shield_amount", new_shield)
+
+func _update_growth(delta: float) -> void:
+	"""Aplicar bonus de Growth por minuto de juego"""
+	var growth_rate = get_stat("growth")
+	if growth_rate <= 0:
+		return
+	
+	# Actualizar tiempo de juego
+	_game_time_minutes += delta / 60.0
+	
+	# Cada minuto completo, aplicar bonus de growth
+	var current_minute = int(_game_time_minutes)
+	if current_minute > _last_growth_minute:
+		_apply_growth_bonus(growth_rate, current_minute - _last_growth_minute)
+		_last_growth_minute = current_minute
+
+func _apply_growth_bonus(growth_rate: float, minutes: int) -> void:
+	"""Aplicar bonus de growth a todos los stats relevantes"""
+	# Stats que escalan con growth (no aplicar a stats negativos como damage_taken_mult)
+	var growth_stats = [
+		"max_health", "damage_mult", "attack_speed_mult", "area_mult",
+		"projectile_speed_mult", "duration_mult", "crit_chance", "crit_damage",
+		"health_regen", "armor", "pickup_range", "move_speed", "xp_mult"
+	]
+	
+	# Calcular multiplicador acumulativo
+	var multiplier = 1.0 + (growth_rate * minutes)
+	
+	for stat_name in growth_stats:
+		var base_value = get_base_stat(stat_name)
+		if base_value > 0:
+			# Solo aplicar a stats positivos
+			var bonus = base_value * (multiplier - 1.0) * 0.01  # 1% por growth por minuto
+			add_temp_modifier(stat_name, bonus, 9999.0, "growth_bonus")
+	
+	# Mostrar notificación visual si tenemos player
+	if player_ref and is_instance_valid(player_ref):
+		if "global_position" in player_ref:
+			FloatingText.spawn_text(
+				player_ref.global_position + Vector2(0, -60),
+				"📈 GROWTH +%d%%" % int(growth_rate * 100 * _game_time_minutes),
+				Color(0.3, 1.0, 0.5)
+			)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SISTEMA DE VIDA

@@ -107,12 +107,12 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 	"regen_1": {
 		"id": "regen_1",
 		"name": "Regeneración Menor",
-		"description": "+0.5 HP/segundo.",
+		"description": "+1.0 HP/segundo.",
 		"icon": "💚",
 		"category": "defensive",
 		"tier": 1,
 		"max_stacks": 6,
-		"effects": [{"stat": "health_regen", "value": 0.5, "operation": "add"}]
+		"effects": [{"stat": "health_regen", "value": 1.0, "operation": "add"}]
 	},
 	"regen_2": {
 		"id": "regen_2",
@@ -151,12 +151,12 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 	"armor_1": {
 		"id": "armor_1",
 		"name": "Piel Dura",
-		"description": "+2 Armadura (reduce daño recibido).",
+		"description": "+3 Armadura (reduce daño recibido).",
 		"icon": "🛡️",
 		"category": "defensive",
 		"tier": 1,
 		"max_stacks": 8,
-		"effects": [{"stat": "armor", "value": 2, "operation": "add"}]
+		"effects": [{"stat": "armor", "value": 3, "operation": "add"}]
 	},
 	"armor_2": {
 		"id": "armor_2",
@@ -533,22 +533,22 @@ const UTILITY_UPGRADES: Dictionary = {
 	"luck_1": {
 		"id": "luck_1",
 		"name": "Fortuna Menor",
-		"description": "+5% suerte (mejores drops).",
+		"description": "+8% suerte (mejores drops).",
 		"icon": "🍀",
 		"category": "utility",
 		"tier": 1,
 		"max_stacks": 6,
-		"effects": [{"stat": "luck", "value": 0.05, "operation": "add"}]
+		"effects": [{"stat": "luck", "value": 0.08, "operation": "add"}]
 	},
 	"luck_2": {
 		"id": "luck_2",
 		"name": "Fortuna",
-		"description": "+10% suerte.",
+		"description": "+15% suerte.",
 		"icon": "🍀",
 		"category": "utility",
 		"tier": 2,
 		"max_stacks": 4,
-		"effects": [{"stat": "luck", "value": 0.10, "operation": "add"}]
+		"effects": [{"stat": "luck", "value": 0.15, "operation": "add"}]
 	},
 	"luck_3": {
 		"id": "luck_3",
@@ -1010,15 +1010,15 @@ const UNIQUE_UPGRADES: Dictionary = {
 	"unique_critical_mastery": {
 		"id": "unique_critical_mastery",
 		"name": "Maestría Crítica",
-		"description": "Los golpes críticos siempre hacen daño máximo (+50% prob, +100% daño crit).",
+		"description": "Los golpes críticos siempre hacen daño máximo (+35% prob, +75% daño crit).",
 		"icon": "⚡",
 		"category": "unique",
 		"tier": 5,
 		"is_unique": true,
 		"max_stacks": 1,
 		"effects": [
-			{"stat": "crit_chance", "value": 0.50, "operation": "add"},
-			{"stat": "crit_damage", "value": 1.0, "operation": "add"}
+			{"stat": "crit_chance", "value": 0.35, "operation": "add"},
+			{"stat": "crit_damage", "value": 0.75, "operation": "add"}
 		]
 	},
 	"unique_executioner": {
@@ -1060,15 +1060,15 @@ const UNIQUE_UPGRADES: Dictionary = {
 	"unique_immortal": {
 		"id": "unique_immortal",
 		"name": "Inmortal",
-		"description": "-30% daño recibido, +50% vida máxima.",
+		"description": "-20% daño recibido, +40% vida máxima.",
 		"icon": "👑",
 		"category": "unique",
 		"tier": 5,
 		"is_unique": true,
 		"max_stacks": 1,
 		"effects": [
-			{"stat": "damage_taken_mult", "value": 0.70, "operation": "multiply"},
-			{"stat": "max_health", "value": 1.50, "operation": "multiply"}
+			{"stat": "damage_taken_mult", "value": 0.80, "operation": "multiply"},
+			{"stat": "max_health", "value": 1.40, "operation": "multiply"}
 		]
 	},
 	"unique_speed_demon": {
@@ -1112,6 +1112,100 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"effects": [
 			{"stat": "extra_projectiles", "value": 3, "operation": "add"},
 			{"stat": "damage_mult", "value": 0.90, "operation": "multiply"}
+		]
+	},
+	# ─────────────────────────────────────────────────────────────────────────────
+	# NUEVAS MEJORAS ÚNICAS (v2.0)
+	# ─────────────────────────────────────────────────────────────────────────────
+	"unique_arcane_barrier": {
+		"id": "unique_arcane_barrier",
+		"name": "Barrera Arcana",
+		"description": "Ganas un escudo de 50 HP que se regenera 5/s.",
+		"icon": "🔮",
+		"category": "unique",
+		"tier": 4,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "shield_amount", "value": 50, "operation": "add"},
+			{"stat": "shield_regen", "value": 5.0, "operation": "add"}
+		]
+	},
+	"unique_combo_master": {
+		"id": "unique_combo_master",
+		"name": "Combo Master",
+		"description": "+50% daño crítico, +10% prob. crítico, +20% velocidad ataque.",
+		"icon": "🎯",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "crit_damage", "value": 0.50, "operation": "add"},
+			{"stat": "crit_chance", "value": 0.10, "operation": "add"},
+			{"stat": "attack_speed_mult", "value": 1.20, "operation": "multiply"}
+		]
+	},
+	"unique_glass_sword": {
+		"id": "unique_glass_sword",
+		"name": "Espada de Cristal",
+		"description": "+150% daño, pero -75% vida máxima.",
+		"icon": "🗡️",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"is_cursed": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "damage_mult", "value": 2.50, "operation": "multiply"},
+			{"stat": "max_health", "value": 0.25, "operation": "multiply"}
+		]
+	},
+	"unique_slow_power": {
+		"id": "unique_slow_power",
+		"name": "Poder Concentrado",
+		"description": "+80% daño y área, pero -40% velocidad ataque.",
+		"icon": "💪",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"is_cursed": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "damage_mult", "value": 1.80, "operation": "multiply"},
+			{"stat": "area_mult", "value": 1.80, "operation": "multiply"},
+			{"stat": "attack_speed_mult", "value": 0.60, "operation": "multiply"}
+		]
+	},
+	"unique_magnet_lord": {
+		"id": "unique_magnet_lord",
+		"name": "Señor del Magnetismo",
+		"description": "+200% rango recogida, +50% XP, +30% velocidad.",
+		"icon": "🧲",
+		"category": "unique",
+		"tier": 4,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "pickup_range", "value": 3.0, "operation": "multiply"},
+			{"stat": "xp_mult", "value": 1.50, "operation": "multiply"},
+			{"stat": "move_speed", "value": 1.30, "operation": "multiply"}
+		]
+	},
+	"unique_berserker_rage": {
+		"id": "unique_berserker_rage",
+		"name": "Furia del Berserker",
+		"description": "Bajo 50% HP: +100% daño, +50% velocidad ataque.",
+		"icon": "😡",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"is_conditional": true,
+		"condition": "health_below_50",
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "damage_mult", "value": 2.0, "operation": "multiply"},
+			{"stat": "attack_speed_mult", "value": 1.50, "operation": "multiply"}
 		]
 	}
 }

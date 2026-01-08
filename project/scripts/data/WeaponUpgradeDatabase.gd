@@ -256,14 +256,14 @@ const GLOBAL_UPGRADES: Dictionary = {
 	"global_projectile_speed_1": {
 		"id": "global_projectile_speed_1",
 		"name": "Velocidad Proyectil",
-		"description": "Todos los proyectiles +20% más rápidos.",
+		"description": "Todos los proyectiles +30% más rápidos.",
 		"icon": "➡️",
 		"type": UpgradeType.GLOBAL,
 		"rarity": "common",
 		"tier": 1,
 		"max_stacks": 4,
 		"effects": [
-			{"stat": "projectile_speed_mult", "value": 1.20, "operation": "multiply"}
+			{"stat": "projectile_speed_mult", "value": 1.30, "operation": "multiply"}
 		]
 	},
 
@@ -461,13 +461,13 @@ const GLOBAL_UPGRADES: Dictionary = {
 	"global_area_4": {
 		"id": "global_area_4",
 		"name": "Cataclismo",
-		"description": "Todas las áreas de efecto +75% más grandes.",
+		"description": "Todas las áreas de efecto +60% más grandes.",
 		"icon": "🌀",
 		"type": UpgradeType.GLOBAL,
 		"rarity": "legendary",
 		"tier": 5,
 		"max_stacks": 1,
-		"effects": [{"stat": "area_mult", "value": 1.75, "operation": "multiply"}]
+		"effects": [{"stat": "area_mult", "value": 1.60, "operation": "multiply"}]
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -524,13 +524,13 @@ const GLOBAL_UPGRADES: Dictionary = {
 	"global_cooldown_4": {
 		"id": "global_cooldown_4",
 		"name": "Perfección",
-		"description": "-40% tiempo de recarga.",
+		"description": "-30% tiempo de recarga.",
 		"icon": "⏱️",
 		"type": UpgradeType.GLOBAL,
 		"rarity": "epic",
 		"tier": 4,
 		"max_stacks": 1,
-		"effects": [{"stat": "cooldown_mult", "value": 0.60, "operation": "multiply"}]
+		"effects": [{"stat": "cooldown_mult", "value": 0.70, "operation": "multiply"}]
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────

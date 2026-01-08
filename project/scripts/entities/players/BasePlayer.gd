@@ -264,6 +264,7 @@ func _physics_process(delta: float) -> void:
 	# El movimiento se maneja en SpellloopPlayer para evitar duplicación
 	_process_debuffs(delta)
 	_update_status_visuals(delta)
+	_update_revive_immunity(delta)
 
 func _process_debuffs(delta: float) -> void:
 	"""Procesar todos los debuffs activos"""
@@ -488,7 +489,7 @@ func _draw_down_arrow(pos: Vector2, col: Color) -> void:
 var _last_damage_element: String = "physical"
 
 func take_damage(amount: int, element: String = "physical", attacker: Node = null) -> void:
-	"""Recibir daño (aplica dodge, armor, weakness y thorns)"""
+	"""Recibir daño (aplica inmunidad, shield, dodge, armor, weakness y thorns)"""
 	_last_damage_element = element
 	if not health_component:
 		push_warning("[%s] HealthComponent no disponible" % character_class)
@@ -498,7 +499,12 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	if not health_component.is_alive:
 		return
 	
-	# Obtener PlayerStats para dodge, armor y thorns
+	# 0. Verificar inmunidad de revive
+	if _revive_immunity_timer > 0:
+		FloatingText.spawn_text(global_position + Vector2(0, -35), "INMUNE", Color(1.0, 0.9, 0.3, 0.8))
+		return
+	
+	# Obtener PlayerStats para dodge, armor, shield y thorns
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	
 	# 1. Verificar esquiva (dodge) primero
@@ -512,28 +518,45 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	
 	var final_damage = amount
 	
-	# 2. Aplicar armor (reducción de daño)
+	# 2. SHIELD - Absorber daño con escudo primero
+	if player_stats and player_stats.has_method("get_stat"):
+		var current_shield = player_stats.get_stat("shield_amount")
+		if current_shield > 0:
+			var shield_absorbed = mini(final_damage, int(current_shield))
+			final_damage -= shield_absorbed
+			player_stats.add_stat("shield_amount", -shield_absorbed)
+			
+			# Mostrar texto de escudo
+			if shield_absorbed > 0:
+				FloatingText.spawn_text(global_position + Vector2(0, -45), "🛡️ -%d" % shield_absorbed, Color(0.3, 0.6, 1.0))
+			
+			# Si el escudo absorbió todo el daño, no hay más
+			if final_damage <= 0:
+				_play_shield_absorb_effect()
+				return
+	
+	# 3. Aplicar armor (reducción de daño)
 	var effective_armor = armor  # Usar armor local primero
 	if player_stats and player_stats.has_method("get_stat"):
 		effective_armor = player_stats.get_stat("armor")
 	
 	if effective_armor > 0:
-		final_damage = maxi(1, amount - int(effective_armor))  # Mínimo 1 de daño
+		final_damage = maxi(1, final_damage - int(effective_armor))  # Mínimo 1 de daño
 	
-	# 3. Aplicar damage_taken_mult si existe
+	# 4. Aplicar damage_taken_mult si existe
 	if player_stats and player_stats.has_method("get_stat"):
 		var damage_taken_mult = player_stats.get_stat("damage_taken_mult")
 		if damage_taken_mult != 1.0:
 			final_damage = int(final_damage * damage_taken_mult)
 	
-	# 4. Aplicar weakness si está activo (multiplicador de daño recibido)
+	# 5. Aplicar weakness si está activo (multiplicador de daño recibido)
 	if _is_weakened:
 		final_damage = int(final_damage * (1.0 + _weakness_amount))
 	
 	# Aplicar daño al HealthComponent
 	health_component.take_damage(final_damage)
 	
-	# 5. THORNS - Reflejar daño al atacante
+	# 6. THORNS - Reflejar daño al atacante
 	if attacker and is_instance_valid(attacker) and player_stats:
 		_apply_thorns_damage(attacker, amount, player_stats)
 	
@@ -593,6 +616,16 @@ func _play_damage_flash(element: String) -> void:
 	var tween = create_tween()
 	tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.2)
 
+func _play_shield_absorb_effect() -> void:
+	"""Efecto visual cuando el escudo absorbe todo el daño"""
+	if not animated_sprite:
+		return
+	
+	# Flash azul de escudo
+	var tween = create_tween()
+	tween.tween_property(animated_sprite, "modulate", Color(0.5, 0.8, 2.0, 1.0), 0.1)
+	tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.2)
+
 func heal(amount: int) -> void:
 	"""Curar al personaje (aplica curse si está activo)"""
 	if health_component:
@@ -644,9 +677,108 @@ func _on_health_changed(current: int, max_val: int) -> void:
 	player_damaged.emit(current, max_val)
 
 func _on_health_died() -> void:
-	"""Callback cuando el personaje muere"""
+	"""Callback cuando el personaje muere - verifica revives primero"""
+	# Verificar si tiene revives disponibles
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.has_method("get_stat"):
+		var revives = int(player_stats.get_stat("revives"))
+		if revives > 0:
+			# ¡Tiene revive disponible! Consumir y revivir
+			_trigger_revive(player_stats, revives)
+			return
+	
+	# Sin revives - muerte definitiva
 	# Debug desactivado: print("[%s] ✗ Personaje muerto" % character_class)
 	player_died.emit()
+
+func _trigger_revive(player_stats: Node, current_revives: int) -> void:
+	"""Activar revive: consumir una vida extra y restaurar HP"""
+	# Consumir un revive
+	player_stats.add_stat("revives", -1)
+	
+	# Determinar cuánto HP restaurar (50% por defecto, 30% si es Segunda Vida)
+	var max_health = player_stats.get_stat("max_health")
+	var revive_hp_percent = 0.5  # 50% por defecto (Corazón de Fénix)
+	if current_revives == 1:
+		# Si solo tenía 1, podría ser Segunda Vida (30%)
+		revive_hp_percent = 0.3
+	
+	var revive_hp = int(max_health * revive_hp_percent)
+	
+	# Restaurar vida
+	if health_component:
+		health_component.current_health = revive_hp
+		health_component.is_alive = true
+		hp = revive_hp
+	
+	# Efectos visuales de revive
+	_play_revive_effects()
+	
+	# Mostrar mensaje
+	FloatingText.spawn_text(global_position + Vector2(0, -50), "¡REVIVE!", Color(1.0, 0.9, 0.3))
+	
+	# Inmunidad temporal (2 segundos)
+	_grant_revive_immunity(2.0)
+	
+	# Notificar cambio de salud
+	if health_component:
+		health_component.health_changed.emit(revive_hp, int(max_health))
+	
+	print("[%s] 💫 ¡REVIVIDO! HP: %d/%d (Revives restantes: %d)" % [
+		character_class, revive_hp, int(max_health), current_revives - 1
+	])
+
+func _play_revive_effects() -> void:
+	"""Efectos visuales de revive"""
+	if not animated_sprite:
+		return
+	
+	# Flash dorado brillante
+	var tween = create_tween()
+	tween.tween_property(animated_sprite, "modulate", Color(2.0, 1.8, 0.5, 1.0), 0.1)
+	tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.5)
+	
+	# Partículas de resurrección
+	var particles = CPUParticles2D.new()
+	particles.emitting = true
+	particles.one_shot = true
+	particles.explosiveness = 0.9
+	particles.amount = 20
+	particles.lifetime = 1.0
+	particles.direction = Vector2(0, -1)
+	particles.spread = 180.0
+	particles.gravity = Vector2(0, -50)
+	particles.initial_velocity_min = 50.0
+	particles.initial_velocity_max = 100.0
+	particles.scale_amount_min = 4.0
+	particles.scale_amount_max = 8.0
+	particles.color = Color(1.0, 0.9, 0.3, 1.0)
+	add_child(particles)
+	
+	# Auto-destruir partículas
+	get_tree().create_timer(1.5).timeout.connect(func():
+		if is_instance_valid(particles):
+			particles.queue_free()
+	)
+	
+	# Sonido de revive
+	var audio_manager = get_tree().get_first_node_in_group("audio_manager")
+	if audio_manager and audio_manager.has_method("play_sfx"):
+		audio_manager.play_sfx("phoenix_resurrection")
+
+var _revive_immunity_timer: float = 0.0
+
+func _grant_revive_immunity(duration: float) -> void:
+	"""Otorgar inmunidad temporal tras revivir"""
+	_revive_immunity_timer = duration
+
+func _update_revive_immunity(delta: float) -> void:
+	"""Actualizar timer de inmunidad de revive"""
+	if _revive_immunity_timer > 0:
+		_revive_immunity_timer -= delta
+		# Efecto visual de parpadeo durante inmunidad
+		if animated_sprite:
+			animated_sprite.modulate.a = 0.5 + 0.5 * sin(_revive_immunity_timer * 10.0)
 
 # ========== ACCESO A COMPONENTES ==========
 
