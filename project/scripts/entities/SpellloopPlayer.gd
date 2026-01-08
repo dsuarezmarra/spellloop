@@ -152,9 +152,9 @@ func _on_wizard_damaged(amount: int, current_hp: int) -> void:
 func _on_wizard_died() -> void:
 	player_died.emit()
 
-func take_damage(amount: int, element: String = "physical") -> void:
+func take_damage(amount: int, element: String = "physical", attacker: Node = null) -> void:
 	if wizard_player:
-		wizard_player.take_damage(amount, element)
+		wizard_player.take_damage(amount, element, attacker)
 	hp = wizard_player.hp if wizard_player else hp
 
 func heal(amount: int) -> void:
