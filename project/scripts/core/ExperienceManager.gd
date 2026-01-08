@@ -368,16 +368,24 @@ func create_collection_effect(_position: Vector2):
 	pass
 
 func gain_experience(amount: int):
-	"""Ganar experiencia"""
-	current_exp += amount
+	"""Ganar experiencia, aplicando multiplicador de PlayerStats"""
+	# Aplicar xp_mult de PlayerStats si existe
+	var final_amount = amount
+	var player_stats = get_tree().get_first_node_in_group("player_stats") if is_inside_tree() else null
+	if player_stats and player_stats.has_method("get_stat"):
+		var xp_mult = player_stats.get_stat("xp_mult")
+		if xp_mult > 0:
+			final_amount = int(amount * xp_mult)
+	
+	current_exp += final_amount
 
 	# Emitir señal
-	exp_gained.emit(amount, current_exp)
+	exp_gained.emit(final_amount, current_exp)
 
 	# Verificar subida de nivel
 	check_level_up()
 
-	# Debug desactivado: print("⭐ EXP ganada: +", amount)
+	# Debug desactivado: print("⭐ EXP ganada: +", final_amount)
 
 func check_level_up():
 	"""Verificar si el player sube de nivel"""

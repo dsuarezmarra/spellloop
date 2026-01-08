@@ -594,6 +594,8 @@ func _reset_stats() -> void:
 func _ready() -> void:
 	# Asegurar que PlayerStats respete la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	# Añadir al grupo siempre, no solo en initialize()
+	add_to_group("player_stats")
 
 func initialize(attack_mgr: AttackManager = null, player: Node = null) -> void:
 	"""Inicializar con referencia al AttackManager y al player"""
