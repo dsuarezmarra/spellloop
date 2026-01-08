@@ -95,8 +95,14 @@ func _physics_process(_delta: float) -> void:
 		return
 
 	# Sincronizar velocidad desde WizardPlayer (puede estar modificada por slow)
+	# y aplicar multiplicador de PlayerStats
 	if wizard_player:
-		move_speed = wizard_player.move_speed
+		var base_speed = wizard_player.move_speed
+		var speed_mult = 1.0
+		var ps = get_tree().get_first_node_in_group("player_stats")
+		if ps and ps.has_method("get_stat"):
+			speed_mult = ps.get_stat("move_speed")
+		move_speed = base_speed * speed_mult
 
 	# No moverse si está stunneado
 	if wizard_player and wizard_player.is_stunned():
