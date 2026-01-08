@@ -253,6 +253,12 @@ func is_alive() -> bool:
 func increase_max_health(amount: int) -> void:
 	if wizard_player:
 		wizard_player.max_hp += amount
+		# También actualizar el HealthComponent para que refleje el nuevo max_health
+		if wizard_player.health_component:
+			var new_max = wizard_player.max_hp
+			wizard_player.health_component.set_max_health(new_max)
+			# Curar la cantidad aumentada (para que no quede HP parcial)
+			wizard_player.health_component.heal(amount)
 	max_hp = wizard_player.max_hp if wizard_player else max_hp
 	hp = wizard_player.hp if wizard_player else hp
 	update_health_bar()

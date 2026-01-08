@@ -251,6 +251,7 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> void:
 	
 	if not player_stats.is_empty():
 		modified_damage *= player_stats.get("damage_mult", 1.0)
+		modified_damage += player_stats.get("damage_flat", 0.0)  # Sumar daño plano
 		modified_crit = player_stats.get("crit_chance", 0.0)
 		
 		# Agregar crit del efecto del arma

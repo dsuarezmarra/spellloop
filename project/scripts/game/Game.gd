@@ -870,10 +870,10 @@ func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> 
 				player.move_speed = player.wizard_player.move_speed
 				# Debug desactivado: print("📊 [Game] Velocidad del player actualizada: %.1f" % player.move_speed)
 			"max_health":
-				if player.has_method("increase_max_hp"):
+				if player.has_method("increase_max_health"):
 					var diff = new_value - player.wizard_player.max_hp
 					if diff != 0:
-						player.increase_max_hp(int(diff))
+						player.increase_max_health(int(diff))
 			"pickup_range":
 				player.modify_stat("pickup_range", new_value)
 			"pickup_range_flat":
