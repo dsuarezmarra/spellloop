@@ -58,8 +58,7 @@ var selected_upgrade_idx: int = 0
 var applied_upgrades: Array[Dictionary] = []
 
 # Armas
-var available_weapons: Array[String] = []
-var equipped_weapons: Array = []  # BaseWeapon objects
+var available_weapons: Array = []
 var selected_weapon_slot: int = -1
 var fusion_slot_a: int = -1
 var fusion_slot_b: int = -1
@@ -145,6 +144,7 @@ func _wait_for_systems() -> void:
 		if player_stats and attack_manager:
 			print("🧪 [TestUpgrades] ✓ Sistemas listos")
 			_connect_damage_signals()
+			_replace_legacy_weapons()
 			return
 	
 	# Fallback
@@ -154,6 +154,31 @@ func _wait_for_systems() -> void:
 	if global_weapon_stats == null:
 		global_weapon_stats = GlobalWeaponStats.new()
 		add_child(global_weapon_stats)
+
+func _replace_legacy_weapons() -> void:
+	"""Reemplazar armas legacy por BaseWeapon para que funcione la fusión"""
+	if not attack_manager:
+		return
+	
+	# Obtener armas actuales (pueden ser legacy)
+	var current_weapons = _get_equipped_weapons().duplicate()
+	var weapon_ids: Array[String] = []
+	
+	# Guardar los IDs y remover
+	for w in current_weapons:
+		if w:
+			var wid = w.id if "id" in w else ""
+			if wid != "":
+				weapon_ids.append(wid)
+			if attack_manager.has_method("remove_weapon"):
+				attack_manager.remove_weapon(w)
+	
+	# Re-añadir usando add_weapon_by_id (crea BaseWeapon)
+	for wid in weapon_ids:
+		if attack_manager.has_method("add_weapon_by_id"):
+			attack_manager.add_weapon_by_id(wid)
+	
+	print("🧪 [TestUpgrades] ✓ Armas legacy reemplazadas por BaseWeapon")
 
 func _connect_damage_signals() -> void:
 	# Conectar señales de daño del AttackManager si existen
@@ -208,9 +233,9 @@ func _load_all_upgrades() -> void:
 		all_player_upgrades.size(), all_weapon_global_upgrades.size(), all_weapon_specific_upgrades.size()])
 
 func _load_available_weapons() -> void:
-	if WeaponDatabase.has_method("get_all_weapon_ids"):
-		available_weapons = WeaponDatabase.get_all_weapon_ids()
-	else:
+	# Usar función estática de WeaponDatabase
+	available_weapons = WeaponDatabase.get_all_base_weapons()
+	if available_weapons.is_empty():
 		# Fallback: armas base conocidas
 		available_weapons = [
 			"ice_wand", "fire_wand", "lightning_wand", "arcane_orb",
@@ -702,6 +727,7 @@ func _update_stats_display() -> void:
 	stats_label.text = txt
 
 func _update_weapons_display() -> void:
+	var weapons = _get_equipped_weapons()
 	for i in range(6):
 		var slot = weapons_container.get_node_or_null("Slot_%d" % i)
 		if not slot: continue
@@ -710,9 +736,9 @@ func _update_weapons_display() -> void:
 		var name_lbl = slot.get_node_or_null("Name")
 		var style = slot.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 		
-		if i < equipped_weapons.size() and equipped_weapons[i] != null:
-			var w = equipped_weapons[i]
-			var wdata = WeaponDatabase.get_weapon(w.id) if WeaponDatabase.has_method("get_weapon") else {}
+		if i < weapons.size() and weapons[i] != null:
+			var w = weapons[i]
+			var wdata = WeaponDatabase.get_weapon_data(w.id)
 			icon_lbl.text = wdata.get("icon", "⚔")
 			name_lbl.text = w.id.substr(0, 6)
 			name_lbl.add_theme_color_override("font_color", Color.WHITE)
@@ -736,25 +762,26 @@ func _update_weapons_display() -> void:
 	_update_fusion_display()
 
 func _update_fusion_display() -> void:
+	var weapons = _get_equipped_weapons()
 	if fusion_slot_a < 0 or fusion_slot_b < 0:
 		fusion_label.text = "[color=gray]Selecciona slot con ← →\nMarca para fusión con SHIFT+← o SHIFT+→[/color]"
 		return
 	
-	if fusion_slot_a >= equipped_weapons.size() or fusion_slot_b >= equipped_weapons.size():
+	if fusion_slot_a >= weapons.size() or fusion_slot_b >= weapons.size():
 		fusion_label.text = "[color=red]Slots vacíos seleccionados[/color]"
 		return
 	
-	var wa = equipped_weapons[fusion_slot_a]
-	var wb = equipped_weapons[fusion_slot_b]
+	var wa = weapons[fusion_slot_a]
+	var wb = weapons[fusion_slot_b]
 	if wa == null or wb == null:
 		fusion_label.text = "[color=red]Armas no válidas[/color]"
 		return
 	
-	var result = WeaponDatabase.get_fusion_result(wa.id, wb.id) if WeaponDatabase.has_method("get_fusion_result") else null
-	if result:
-		var fdata = WeaponDatabase.get_weapon(result) if WeaponDatabase.has_method("get_weapon") else {}
+	var result = WeaponDatabase.get_fusion_result(wa.id, wb.id)
+	if not result.is_empty():
+		var result_id = result.get("id", "")
 		fusion_label.text = "[color=green]✓ Fusión disponible:[/color]\n"
-		fusion_label.text += "%s + %s = [color=yellow]%s %s[/color]\n" % [wa.id, wb.id, fdata.get("icon", "?"), result]
+		fusion_label.text += "%s + %s = [color=yellow]%s %s[/color]\n" % [wa.id, wb.id, result.get("icon", "?"), result_id]
 		fusion_label.text += "[color=cyan]Presiona F para fusionar[/color]"
 	else:
 		fusion_label.text = "[color=red]✗ No se pueden fusionar[/color]\n%s + %s" % [wa.id, wb.id]
@@ -810,8 +837,9 @@ func _apply_selected_upgrade() -> void:
 			elif global_weapon_stats and global_weapon_stats.has_method("apply_upgrade"):
 				ok = global_weapon_stats.apply_upgrade(u)
 		UpgradeSource.WEAPON_SPECIFIC:
-			if selected_weapon_slot >= 0 and selected_weapon_slot < equipped_weapons.size():
-				var w = equipped_weapons[selected_weapon_slot]
+			var weaps = _get_equipped_weapons()
+			if selected_weapon_slot >= 0 and selected_weapon_slot < weaps.size():
+				var w = weaps[selected_weapon_slot]
 				if w and w.has_method("apply_upgrade"):
 					w.apply_upgrade(u)
 					ok = true
@@ -832,100 +860,97 @@ func _apply_selected_upgrade() -> void:
 # SISTEMA DE ARMAS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+func _get_equipped_weapons() -> Array:
+	"""Obtener armas del AttackManager (fuente única de verdad)"""
+	if attack_manager and attack_manager.has_method("get_weapons"):
+		return attack_manager.get_weapons()
+	return []
+
 func _equip_weapon(weapon_id: String) -> void:
-	if equipped_weapons.size() >= 6:
+	var current = _get_equipped_weapons()
+	if current.size() >= 6:
 		_log("[color=red]✗ Sin slots disponibles[/color]")
 		return
 	
 	# Check if already equipped
-	for w in equipped_weapons:
+	for w in current:
 		if w and w.id == weapon_id:
 			_log("[color=yellow]⚠ %s ya está equipada[/color]" % weapon_id)
 			return
 	
-	# Create weapon
-	var weapon = null
+	# Usar AttackManager para crear y añadir
 	if attack_manager and attack_manager.has_method("add_weapon_by_id"):
-		attack_manager.add_weapon_by_id(weapon_id)
-		# Get the weapon from attack_manager
-		if attack_manager.has_method("get_weapons"):
-			var ws = attack_manager.get_weapons()
-			for w in ws:
-				if w.id == weapon_id:
-					weapon = w
-					break
-	
-	if weapon == null:
-		# Fallback: create manually
-		var BaseWeapon = load("res://scripts/weapons/BaseWeapon.gd")
-		if BaseWeapon:
-			weapon = BaseWeapon.new()
-			if weapon.has_method("initialize"):
-				weapon.initialize(weapon_id)
-			else:
-				weapon.id = weapon_id
-	
-	if weapon:
-		equipped_weapons.append(weapon)
-		selected_weapon_slot = equipped_weapons.size() - 1
-		_log("[color=green]✓ Equipada: %s[/color]" % weapon_id)
+		var success = attack_manager.add_weapon_by_id(weapon_id)
+		if success:
+			selected_weapon_slot = _get_equipped_weapons().size() - 1
+			_log("[color=green]✓ Equipada: %s[/color]" % weapon_id)
+		else:
+			_log("[color=red]✗ No se pudo equipar arma[/color]")
 	else:
-		_log("[color=red]✗ No se pudo crear arma[/color]")
+		_log("[color=red]✗ AttackManager no disponible[/color]")
 	
 	_update_weapons_display()
 
 func _unequip_weapon(slot: int) -> void:
-	if slot < 0 or slot >= equipped_weapons.size():
+	var weapons = _get_equipped_weapons()
+	if slot < 0 or slot >= weapons.size():
 		return
-	var w = equipped_weapons[slot]
-	equipped_weapons.remove_at(slot)
+	var w = weapons[slot]
 	if attack_manager and attack_manager.has_method("remove_weapon"):
 		attack_manager.remove_weapon(w)
 	_log("[color=orange]✗ Desequipada: %s[/color]" % (w.id if w else "?"))
 	
-	if selected_weapon_slot >= equipped_weapons.size():
-		selected_weapon_slot = equipped_weapons.size() - 1
+	var new_weapons = _get_equipped_weapons()
+	if selected_weapon_slot >= new_weapons.size():
+		selected_weapon_slot = new_weapons.size() - 1
 	
 	_update_weapons_display()
 
 func _fuse_weapons() -> void:
+	var weapons = _get_equipped_weapons()
+	
 	if fusion_slot_a < 0 or fusion_slot_b < 0:
 		_log("[color=red]✗ Selecciona 2 armas para fusionar[/color]")
 		return
 	
-	if fusion_slot_a >= equipped_weapons.size() or fusion_slot_b >= equipped_weapons.size():
+	if fusion_slot_a >= weapons.size() or fusion_slot_b >= weapons.size():
 		_log("[color=red]✗ Slots inválidos[/color]")
 		return
 	
-	var wa = equipped_weapons[fusion_slot_a]
-	var wb = equipped_weapons[fusion_slot_b]
+	if fusion_slot_a == fusion_slot_b:
+		_log("[color=red]✗ Selecciona 2 armas diferentes[/color]")
+		return
+	
+	var wa = weapons[fusion_slot_a]
+	var wb = weapons[fusion_slot_b]
 	
 	if wa == null or wb == null:
 		_log("[color=red]✗ Armas no válidas[/color]")
 		return
 	
-	var result_id = WeaponDatabase.get_fusion_result(wa.id, wb.id) if WeaponDatabase.has_method("get_fusion_result") else null
-	if result_id == null:
-		_log("[color=red]✗ No existe fusión para %s + %s[/color]" % [wa.id, wb.id])
+	# Verificar tipos antes de fusionar
+	if not wa is BaseWeapon:
+		_log("[color=red]✗ %s no es BaseWeapon (legacy)[/color]" % wa.id)
+		return
+	if not wb is BaseWeapon:
+		_log("[color=red]✗ %s no es BaseWeapon (legacy)[/color]" % wb.id)
 		return
 	
-	# Perform fusion
-	if attack_manager and attack_manager.has_method("fuse_weapons"):
-		var fused = attack_manager.fuse_weapons(wa, wb)
+	var fusion_data = WeaponDatabase.get_fusion_result(wa.id, wb.id)
+	if fusion_data.is_empty():
+		_log("[color=red]✗ No existe fusión para %s + %s[/color]" % [wa.id, wb.id])
+		return
+	var result_id = fusion_data.get("id", "")
+	
+	# Perform fusion via AttackManager usando IDs (evita problemas de tipos)
+	if attack_manager and attack_manager.has_method("fuse_weapons_by_ids"):
+		var fused = attack_manager.fuse_weapons_by_ids(wa.id, wb.id)
 		if fused:
-			# Update local list
-			equipped_weapons.erase(wa)
-			equipped_weapons.erase(wb)
-			equipped_weapons.append(fused)
 			_log("[color=magenta]🔥 FUSIÓN: %s + %s = %s[/color]" % [wa.id, wb.id, fused.id])
 		else:
 			_log("[color=red]✗ Fusión falló[/color]")
 	else:
-		# Manual fusion
-		equipped_weapons.erase(wa)
-		equipped_weapons.erase(wb)
-		_equip_weapon(result_id)
-		_log("[color=magenta]🔥 FUSIÓN: %s + %s = %s[/color]" % [wa.id, wb.id, result_id])
+		_log("[color=red]✗ AttackManager no disponible[/color]")
 	
 	fusion_slot_a = -1
 	fusion_slot_b = -1
@@ -939,7 +964,12 @@ func _reset_all() -> void:
 	if global_weapon_stats and global_weapon_stats.has_method("reset"):
 		global_weapon_stats.reset()
 	
-	equipped_weapons.clear()
+	# Quitar todas las armas del AttackManager
+	var weaps = _get_equipped_weapons().duplicate()
+	for w in weaps:
+		if attack_manager and attack_manager.has_method("remove_weapon"):
+			attack_manager.remove_weapon(w)
+	
 	applied_upgrades.clear()
 	total_damage = 0
 	hits_count = 0
@@ -1024,11 +1054,9 @@ func _handle_input() -> void:
 	
 	# TAB to cycle through weapons
 	if _just_pressed(KEY_TAB):
-		var next_idx = 0
-		for w in equipped_weapons:
-			if w: next_idx += 1
-		if next_idx < available_weapons.size():
-			_equip_weapon(available_weapons[next_idx % available_weapons.size()])
+		var current_count = _get_equipped_weapons().size()
+		if current_count < available_weapons.size():
+			_equip_weapon(available_weapons[current_count % available_weapons.size()])
 	
 	# Delete to remove weapon
 	if _just_pressed(KEY_DELETE) or _just_pressed(KEY_BACKSPACE):
@@ -1052,4 +1080,3 @@ func _just_pressed(key: int) -> bool:
 	var was = _key_held.get(key, false)
 	_key_held[key] = pressed
 	return pressed and not was
-

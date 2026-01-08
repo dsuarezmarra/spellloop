@@ -110,13 +110,19 @@ func get_available_fusions(weapons: Array) -> Array:
 	"""
 	var available = []
 	
-	for i in range(weapons.size()):
-		for j in range(i + 1, weapons.size()):
-			var check = can_fuse_weapons(weapons[i], weapons[j])
+	# Filtrar solo BaseWeapon (ignorar armas legacy)
+	var base_weapons: Array[BaseWeapon] = []
+	for w in weapons:
+		if w is BaseWeapon:
+			base_weapons.append(w)
+	
+	for i in range(base_weapons.size()):
+		for j in range(i + 1, base_weapons.size()):
+			var check = can_fuse_weapons(base_weapons[i], base_weapons[j])
 			if check.can_fuse:
 				available.append({
-					"weapon_a": weapons[i],
-					"weapon_b": weapons[j],
+					"weapon_a": base_weapons[i],
+					"weapon_b": base_weapons[j],
 					"result": check.result
 				})
 	

@@ -368,6 +368,14 @@ func fuse_weapons_by_ids(weapon_id_a: String, weapon_id_b: String) -> BaseWeapon
 		push_error("[AttackManager] No se encontraron las armas para fusionar")
 		return null
 
+	# Verificar que sean BaseWeapon antes de fusionar
+	if not weapon_a is BaseWeapon:
+		push_error("[AttackManager] %s es un arma legacy y no puede fusionarse" % weapon_id_a)
+		return null
+	if not weapon_b is BaseWeapon:
+		push_error("[AttackManager] %s es un arma legacy y no puede fusionarse" % weapon_id_b)
+		return null
+
 	return fuse_weapons(weapon_a, weapon_b)
 
 func get_available_fusions() -> Array:
