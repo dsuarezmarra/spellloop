@@ -1254,7 +1254,7 @@ func _apply_overkill_damage(excess_damage: int) -> void:
 	for enemy in nearby_enemies:
 		enemy.take_damage(transfer_damage, "physical", null)
 		# Efecto visual de overkill
-		FloatingText.spawn_text(enemy.global_position + Vector2(0, -30), "OVERKILL", Color(1.0, 0.5, 0.0), 0.5)
+		FloatingText.spawn_text(enemy.global_position + Vector2(0, -30), "OVERKILL", Color(1.0, 0.5, 0.0))
 
 func _flash_block() -> void:
 	"""Flash visual cuando bloquea un ataque"""
