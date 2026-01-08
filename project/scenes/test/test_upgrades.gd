@@ -144,6 +144,8 @@ func _wait_for_systems() -> void:
 		if player_stats and attack_manager:
 			print("🧪 [TestUpgrades] ✓ Sistemas listos")
 			_connect_damage_signals()
+			# Esperar un poco más para que WizardPlayer termine de equipar armas
+			await get_tree().create_timer(0.5).timeout
 			_replace_legacy_weapons()
 			return
 	
@@ -158,25 +160,45 @@ func _wait_for_systems() -> void:
 func _replace_legacy_weapons() -> void:
 	"""Reemplazar armas legacy por BaseWeapon para que funcione la fusión"""
 	if not attack_manager:
+		print("🧪 [TestUpgrades] ⚠️ No hay AttackManager para reemplazar armas")
 		return
 	
 	# Obtener armas actuales (pueden ser legacy)
 	var current_weapons = _get_equipped_weapons().duplicate()
-	var weapon_ids: Array[String] = []
+	print("🧪 [TestUpgrades] Verificando %d armas equipadas" % current_weapons.size())
 	
-	# Guardar los IDs y remover
+	var legacy_weapons: Array = []
+	var legacy_ids: Array[String] = []
+	
+	# Identificar armas legacy (no son BaseWeapon)
 	for w in current_weapons:
-		if w:
+		if w == null:
+			continue
+		if not w is BaseWeapon:
 			var wid = w.id if "id" in w else ""
+			print("🧪 [TestUpgrades] ⚠️ Arma legacy detectada: %s" % wid)
 			if wid != "":
-				weapon_ids.append(wid)
-			if attack_manager.has_method("remove_weapon"):
-				attack_manager.remove_weapon(w)
+				legacy_weapons.append(w)
+				legacy_ids.append(wid)
+	
+	if legacy_weapons.is_empty():
+		print("🧪 [TestUpgrades] ✓ No hay armas legacy, todas son BaseWeapon")
+		return
+	
+	# Remover armas legacy
+	for w in legacy_weapons:
+		if attack_manager.has_method("remove_weapon"):
+			attack_manager.remove_weapon(w)
+			print("🧪 [TestUpgrades] Removida arma legacy: %s" % (w.id if "id" in w else "?"))
 	
 	# Re-añadir usando add_weapon_by_id (crea BaseWeapon)
-	for wid in weapon_ids:
+	for wid in legacy_ids:
 		if attack_manager.has_method("add_weapon_by_id"):
-			attack_manager.add_weapon_by_id(wid)
+			var success = attack_manager.add_weapon_by_id(wid)
+			if success:
+				print("🧪 [TestUpgrades] ✓ Reemplazada %s como BaseWeapon" % wid)
+			else:
+				print("🧪 [TestUpgrades] ✗ Error al crear BaseWeapon para %s" % wid)
 	
 	print("🧪 [TestUpgrades] ✓ Armas legacy reemplazadas por BaseWeapon")
 
