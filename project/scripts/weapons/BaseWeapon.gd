@@ -373,7 +373,10 @@ func _spawn_single_projectile(player: Node2D, targets: Array, dmg: float, crit: 
 
 func _spawn_multi_projectiles(player: Node2D, targets: Array, dmg: float, crit: float) -> void:
 	"""Crear múltiples proyectiles en abanico o hacia múltiples objetivos"""
-	var count = projectile_count
+	# Aplicar extra_projectiles global
+	var global_stats = _get_global_weapon_stats()
+	var extra = int(global_stats.get("extra_projectiles", 0))
+	var count = projectile_count + extra
 	
 	# Si hay menos objetivos que proyectiles, disparar en abanico
 	if targets.size() < count:
@@ -487,33 +490,49 @@ func _create_chain_projectile(player: Node2D, first_target: Node2D, dmg: float, 
 	ProjectileFactory.create_chain_projectile(player, chain_data)
 
 func _build_projectile_data(dmg: float, crit: float) -> Dictionary:
-	"""Construir datos base para proyectiles"""
-	# Obtener crit_damage de GlobalWeaponStats (buscar por grupo)
-	var crit_dmg = 2.0
-	var tree = Engine.get_main_loop() as SceneTree
-	if tree:
-		var gws_nodes = tree.get_nodes_in_group("global_weapon_stats")
-		var gws = gws_nodes[0] if gws_nodes.size() > 0 else null
-		if gws and gws.has_method("get_crit_damage"):
-			crit_dmg = gws.get_crit_damage()
+	"""Construir datos base para proyectiles aplicando multiplicadores globales"""
+	# Obtener GlobalWeaponStats para aplicar multiplicadores
+	var global_stats = _get_global_weapon_stats()
+	
+	# Obtener multiplicadores globales (default 1.0 si no existe)
+	var area_mult = global_stats.get("area_mult", 1.0)
+	var speed_mult = global_stats.get("projectile_speed_mult", 1.0)
+	var duration_mult = global_stats.get("duration_mult", 1.0)
+	var knockback_mult = global_stats.get("knockback_mult", 1.0)
+	var crit_dmg = global_stats.get("crit_damage", 2.0)
+	var extra_pierce = int(global_stats.get("extra_pierce", 0))
 	
 	return {
 		"weapon_id": id,
 		"damage": dmg,
 		"crit_chance": crit,
-		"crit_damage": crit_dmg,  # Añadido multiplicador de crítico
-		"speed": projectile_speed,
-		"pierce": pierce,
+		"crit_damage": crit_dmg,
+		"speed": projectile_speed * speed_mult,
+		"pierce": pierce + extra_pierce,
 		"range": weapon_range,
-		"area": area,
-		"duration": duration,
-		"knockback": knockback,
+		"area": area * area_mult,
+		"duration": duration * duration_mult,
+		"knockback": knockback * knockback_mult,
 		"element": element,
 		"color": color,
 		"effect": effect,
 		"effect_value": effect_value,
 		"effect_duration": effect_duration
 	}
+
+func _get_global_weapon_stats() -> Dictionary:
+	"""Obtener stats globales de armas desde GlobalWeaponStats"""
+	var tree = Engine.get_main_loop() as SceneTree
+	if not tree:
+		return {}
+	
+	var gws_nodes = tree.get_nodes_in_group("global_weapon_stats")
+	var gws = gws_nodes[0] if gws_nodes.size() > 0 else null
+	
+	if gws and gws.has_method("get_all_stats"):
+		return gws.get_all_stats()
+	
+	return {}
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # APLICACIÓN DE EFECTOS

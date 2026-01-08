@@ -214,6 +214,13 @@ func apply_upgrade(upgrade: Dictionary) -> bool:
 		var value = effect.get("value", 0)
 		var operation = effect.get("operation", "add")
 		
+		# Convertir cooldown_mult → attack_speed_mult
+		# cooldown_mult 0.90 (10% menos cooldown) = attack_speed_mult 1/0.90 = 1.11
+		if stat == "cooldown_mult":
+			stat = "attack_speed_mult"
+			if operation == "multiply" and value > 0:
+				value = 1.0 / value  # Invertir: menos cooldown = más velocidad
+		
 		if stat in stats:
 			match operation:
 				"add":

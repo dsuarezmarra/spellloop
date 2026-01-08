@@ -273,8 +273,21 @@ func modify_stat(stat: String, value) -> void:
 			coin_value_mult *= value
 
 func get_pickup_range() -> float:
-	"""Retorna el rango efectivo de recolección (base * magnet + flat bonus)"""
-	return (pickup_radius * magnet) + pickup_range_flat
+	"""Retorna el rango efectivo de recolección combinando sistema local + PlayerStats"""
+	var base_range = (pickup_radius * magnet) + pickup_range_flat
+	
+	# Multiplicar por pickup_range de PlayerStats si existe
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.has_method("get_stat"):
+		var ps_mult = player_stats.get_stat("pickup_range")
+		if ps_mult > 0:
+			base_range *= ps_mult
+		# Añadir pickup_range_flat de PlayerStats
+		var ps_flat = player_stats.get_stat("pickup_range_flat")
+		if ps_flat > 0:
+			base_range += ps_flat
+	
+	return base_range
 
 func get_coin_value_mult() -> float:
 	"""Retorna el multiplicador de valor de monedas (coin_value_mult + gold_mult de PlayerStats)"""
