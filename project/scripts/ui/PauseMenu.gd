@@ -1087,6 +1087,7 @@ func _create_weapon_card(weapon) -> Control:
 		elif proj_final > 1:
 			_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "x%d" % proj_final)
 	else:
+		pass  # Bloque else
 		# Fallback: usar datos del weapon directamente
 		if "damage" in weapon:
 			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%.0f" % weapon.damage)
@@ -1389,6 +1390,7 @@ func _create_weapon_details_popup(weapon) -> Control:
 			stats.get("duration_mult", 1.0),
 			"s")
 	else:
+		pass  # Bloque else
 		# Fallback: mostrar datos básicos del weapon
 		if "damage" in weapon:
 			_add_detail_stat(stats_grid, "⚔️ Daño Base", "%.0f" % weapon.damage)
@@ -1531,6 +1533,7 @@ func _add_stat_with_bonus(grid: GridContainer, stat_name: String, base_value: fl
 			value_label.text = "%.0f → %.0f" % [base_value, final_value]
 		value_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.4))  # Verde
 	else:
+		pass  # Bloque else
 		# Sin bonus, mostrar solo valor
 		if suffix == "/s":
 			value_label.text = "%.2f%s" % [final_value, suffix]
@@ -1758,6 +1761,7 @@ func _navigate_vertical(direction: int) -> void:
 				content_scroll.scroll_vertical = maxi(0, current_v - scroll_amount)
 				return
 			else:
+				pass  # Bloque else
 				# Ya estamos arriba, ir a tabs
 				current_nav_row = NavRow.TABS
 		else:  # S - Scroll abajo
@@ -1765,6 +1769,7 @@ func _navigate_vertical(direction: int) -> void:
 				content_scroll.scroll_vertical = mini(int(max_v), current_v + scroll_amount)
 				return
 			else:
+				pass  # Bloque else
 				# Ya estamos abajo, ir a actions
 				current_nav_row = NavRow.ACTIONS
 	elif direction < 0:  # Arriba (W)

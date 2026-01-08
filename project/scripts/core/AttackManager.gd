@@ -442,6 +442,7 @@ func _process(delta: float) -> void:
 			if weapon is BaseWeapon:
 				weapon.perform_attack(player, player_stats)
 			else:
+				pass  # Bloque else
 				# Arma NO-BaseWeapon pero con métodos tick_cooldown/is_ready_to_fire
 				var gs = global_weapon_stats.get_all_stats() if global_weapon_stats else _legacy_player_stats
 				_apply_global_stats_to_legacy_weapon(weapon, gs)
@@ -638,6 +639,7 @@ func _create_weapon_stats_for(weapon) -> void:
 		ws.base_stats["duration"] = weapon.duration
 		ws.base_stats["knockback"] = weapon.knockback
 	else:
+		pass  # Bloque else
 		# Arma legacy
 		ws.weapon_id = weapon_id
 		if "damage" in weapon:
@@ -907,6 +909,7 @@ func get_info() -> Dictionary:
 				"specific_upgrades": ws.get_upgrades() if ws else []
 			})
 		else:
+			pass  # Bloque else
 			# Arma legacy
 			var base_cd = weapon.base_cooldown if "base_cooldown" in weapon else 1.0
 			var base_as = 1.0 / base_cd if base_cd > 0 else 1.0
@@ -952,6 +955,7 @@ func to_dict() -> Dictionary:
 		if weapon is BaseWeapon:
 			weapons_data.append(weapon.to_dict())
 		else:
+			pass  # Bloque else
 			# Arma legacy - serialización básica
 			weapons_data.append({
 				"id": _get_weapon_id(weapon),

@@ -122,6 +122,7 @@ func _process(delta: float) -> void:
 	if attack_timer > 0:
 		attack_timer -= delta
 	else:
+		pass  # Bloque else
 		# Comprobar si el jugador estÃ¡ en rango
 		if _player_in_range():
 			_perform_attack()
@@ -971,6 +972,7 @@ func _perform_ranged_attack() -> void:
 	if projectile.has_method("initialize"):
 		projectile.initialize(direction, projectile_speed, attack_damage, 5.0, element_type)
 	else:
+		pass  # Bloque else
 		# AsignaciÃ³n directa
 		if "direction" in projectile:
 			projectile.direction = direction
@@ -2145,6 +2147,7 @@ func _boss_void_pull() -> void:
 			player.apply_pull(enemy.global_position, pull_force, pull_duration)
 			# print("[EnemyAttackSystem] ðŸŒ€ Void Pull activado")
 		else:
+			pass  # Bloque else
 			# Fallback: mover directamente al jugador
 			var pull_dir = (enemy.global_position - player.global_position).normalized()
 			_apply_knockback_to_player(pull_dir, pull_force * 0.5)
@@ -2395,6 +2398,7 @@ func _activate_boss_enrage() -> void:
 	if enemy.has_method("apply_enrage"):
 		enemy.apply_enrage(damage_bonus, speed_bonus)
 	else:
+		pass  # Bloque else
 		# Fallback: modificar stats directamente
 		attack_damage = int(attack_damage * (1 + damage_bonus))
 		if "base_speed" in enemy:
@@ -2622,6 +2626,7 @@ func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 				visual.draw_circle(pos, 6, Color(0.85, 0.4, 1.0, 0.9))
 				visual.draw_circle(pos, 9, Color(0.85, 0.4, 1.0, 0.3))
 		else:
+			pass  # Bloque else
 			# Fase de explosiÃ³n - MUCHO MÃS Ã‰PICA
 			var explode_phase = (phase - 0.35) / 0.65
 			var explode_radius = radius * 1.3 * explode_phase
@@ -3660,6 +3665,7 @@ func _spawn_teleport_effect(pos: Vector2, is_arrival: bool) -> void:
 			var r = 50 * anim
 			visual.draw_circle(Vector2.ZERO, r, Color(color.r, color.g, color.b, 0.5 * (1.0 - anim)))
 		else:
+			pass  # Bloque else
 			# ContracciÃ³n
 			var r = 50 * (1.0 - anim)
 			visual.draw_circle(Vector2.ZERO, r, Color(color.r, color.g, color.b, 0.5 * anim))

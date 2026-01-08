@@ -904,6 +904,7 @@ func _update_health_regen(delta: float) -> void:
 		if player_hp < max_hp and player_hp > 0:
 			player_ref.heal(heal_int)
 	else:
+		pass  # Bloque else
 		# Fallback: curar el current_health local (para compatibilidad)
 		if current_health < get_stat("max_health") and current_health > 0:
 			heal(float(heal_int))

@@ -155,6 +155,7 @@ func fire_at(from: Vector2, to: Vector2) -> void:
 		_create_bolt_sprite(from, to)
 		_create_zap_sprite(to)
 	else:
+		pass  # Bloque else
 		# Modo procedural
 		_generate_bolt_points()
 		_create_impact_effect(to)
@@ -418,6 +419,7 @@ func fade_out(duration: float = 0.2) -> void:
 		_bolt_sprites.clear()
 		_zap_sprites.clear()
 	else:
+		pass  # Bloque else
 		# Modo procedural
 		var tween = create_tween()
 		if _main_bolt:
@@ -450,6 +452,7 @@ func _process(delta: float) -> void:
 			if is_instance_valid(bolt):
 				bolt.scale.y = pulse
 	else:
+		pass  # Bloque else
 		# Modo procedural: efecto de "chisporroteo"
 		if int(_time * 20) != int((_time - delta) * 20):
 			_generate_bolt_points()

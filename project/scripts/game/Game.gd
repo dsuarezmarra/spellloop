@@ -427,6 +427,7 @@ func _resume_saved_game() -> void:
 			player_stats.from_dict(saved_stats)
 			# Debug desactivado: print("🎒 [Game] PlayerStats restaurado via from_dict()")
 		else:
+			pass  # Bloque else
 			# Fallback: restaurar manualmente
 			# Restaurar historial de mejoras PRIMERO
 			if saved_stats.has("collected_upgrades") and "collected_upgrades" in player_stats:
@@ -735,6 +736,7 @@ func _trigger_kill_explosion(pos: Vector2, damage: float) -> void:
 	if ResourceLoader.exists(texture_path):
 		visual.texture = load(texture_path)
 	else:
+		pass  # Bloque else
 		# Crear un círculo simple si no hay textura
 		var circle = CircleShape2D.new()
 		circle.radius = explosion_radius

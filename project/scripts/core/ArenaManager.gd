@@ -265,6 +265,7 @@ func _create_zone(parent: Node2D, zone_type: ZoneType, radius: float) -> void:
 		# Usar textura seamless con shader de tiling circular
 		_create_circular_tiled_zone(zone_node, base_texture, radius, inner_radius, zone_type)
 	else:
+		pass  # Bloque else
 		# Fallback: círculo de color sólido
 		_create_colored_zone(zone_node, biome_name, radius, inner_radius)
 	
@@ -351,6 +352,7 @@ func _draw():
 			points.append(Vector2(cos(angle), sin(angle)) * outer_radius)
 		draw_colored_polygon(points, circle_color)
 	else:
+		pass  # Bloque else
 		# Anillo (dibujar como triángulos)
 		for i in range(segments):
 			var angle1 = i * TAU / segments

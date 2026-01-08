@@ -66,6 +66,7 @@ static func make_decor(
 		return anim
 		
 	else:
+		pass  # Bloque else
 		# Decoración estática (PNG normal)
 		var spr := Sprite2D.new()
 		var tex: Texture2D = load(tex_path)

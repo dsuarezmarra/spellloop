@@ -393,6 +393,7 @@ func _spawn_multi_projectiles(player: Node2D, targets: Array, dmg: float, crit: 
 			var direction = base_direction.rotated(angle)
 			_create_projectile(player, direction, dmg, crit)
 	else:
+		pass  # Bloque else
 		# Disparar a múltiples objetivos
 		for i in range(min(count, targets.size())):
 			var direction = (targets[i].global_position - player.global_position).normalized()

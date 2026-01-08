@@ -372,6 +372,7 @@ func _process(delta: float) -> void:
 			if is_instance_valid(bolt):
 				bolt.scale.y = pulse
 	else:
+		pass  # Bloque else
 		# Modo procedural: menos "chisporroteo" para efecto helado
 		if int(_time * 10) != int((_time - delta) * 10):
 			_generate_bolt_points()

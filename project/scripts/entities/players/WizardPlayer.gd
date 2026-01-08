@@ -71,6 +71,7 @@ func _setup_animations() -> void:
 			frames.add_frame(walk_anim, tex)
 			frames.add_frame(idle_anim, tex)
 		else:
+			pass  # Bloque else
 			# Crear placeholder si no existe textura
 			if not placeholder_tex:
 				var size = 16
@@ -135,6 +136,7 @@ func _equip_starting_weapons() -> void:
 		# print("[WizardPlayer] ✓ Ice Wand equipada correctamente")
 		pass
 	else:
+		pass  # Bloque else
 		# print("[WizardPlayer] ⚠️ Error al equipar Ice Wand")
 		pass
 

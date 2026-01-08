@@ -247,6 +247,7 @@ func initialize(data: Dictionary, player):
 	if health_component:
 		health_component.initialize(max_hp)
 	else:
+		pass  # Bloque else
 		# HealthComponent se creará en _ready(), así que diferimos
 		call_deferred("_reinitialize_health_component")
 
@@ -269,6 +270,7 @@ func initialize(data: Dictionary, player):
 				sprite.scale = Vector2(enemy_scale, enemy_scale)
 				sprite.centered = true
 	else:
+		pass  # Bloque else
 		# Ya tiene animated_sprite, actualizar escala por si el tier cambió
 		animated_sprite.sprite_scale = _get_scale_for_tier()
 
@@ -359,6 +361,7 @@ func initialize_from_database(data: Dictionary, player) -> void:
 		# if is_boss:
 		#	print("[EnemyBase] 🔥 BOSS HP reinicializado: %d/%d" % [health_component.current_health, health_component.max_health])
 	else:
+		pass  # Bloque else
 		# HealthComponent se creará en _ready(), así que diferimos la reinicialización
 		call_deferred("_reinitialize_health_component")
 
@@ -702,6 +705,7 @@ func _calculate_archetype_movement(direction: Vector2, distance: float, delta: f
 				# Acercarse
 				movement = direction * speed * 0.5
 			else:
+				pass  # Bloque else
 				# Movimiento lateral para esquivar
 				var perpendicular = Vector2(-direction.y, direction.x)
 				movement = perpendicular * sin(Time.get_ticks_msec() * 0.003) * speed * 0.3
@@ -1199,6 +1203,7 @@ func take_damage(amount: int) -> void:
 	if health_component:
 		health_component.take_damage(final_damage, "physical")
 	else:
+		pass  # Bloque else
 		# Fallback si no hay HealthComponent (no debería pasar)
 		hp -= final_damage
 		if hp <= 0:

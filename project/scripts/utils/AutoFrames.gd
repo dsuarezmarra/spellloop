@@ -180,6 +180,7 @@ static func from_sheet(sheet_path: String, default_fps: float = 10.0, duplicate_
 				var interpolated = _create_interpolated_frame(current_frame, next_frame, blend_factor, frame_size, total_h)
 				frames.add_frame("default", interpolated)
 	else:
+		pass  # Bloque else
 		# Sin interpolación, añadir frames normalmente
 		for atlas in original_frames:
 			frames.add_frame("default", atlas)

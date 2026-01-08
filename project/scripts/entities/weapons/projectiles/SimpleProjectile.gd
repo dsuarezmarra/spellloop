@@ -264,6 +264,7 @@ func _draw_dark_orb(image: Image, size: int, center: Vector2) -> void:
 					# Núcleo oscuro
 					image.set_pixel(x, y, Color(0.15, 0.05, 0.2, 1.0))
 				else:
+					pass  # Bloque else
 					# Aura púrpura
 					var alpha = 1.0 - (t - 0.5) * 1.5
 					image.set_pixel(x, y, Color(0.5, 0.1, 0.6, alpha))
