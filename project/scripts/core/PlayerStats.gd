@@ -1132,253 +1132,21 @@ func get_xp_progress() -> float:
 	return current_xp / xp_to_next_level
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# UPGRADES DISPONIBLES (para Level Up Panel)
+# APLICAR UPGRADES
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Definición de upgrades disponibles para el jugador
-const PLAYER_UPGRADES: Dictionary = {
-	"max_health_small": {
-		"name": "Vitalidad I",
-		"description": "+10 Vida máxima",
-		"stat": "max_health",
-		"amount": 10.0,
-		"icon": "❤️",
-		"rarity": "common"
-	},
-	"max_health_large": {
-		"name": "Vitalidad II",
-		"description": "+25 Vida máxima",
-		"stat": "max_health",
-		"amount": 25.0,
-		"icon": "❤️",
-		"rarity": "uncommon"
-	},
-	"health_regen": {
-		"name": "Regeneración",
-		"description": "+0.5 HP/s",
-		"stat": "health_regen",
-		"amount": 0.5,
-		"icon": "💚",
-		"rarity": "uncommon"
-	},
-	"damage_small": {
-		"name": "Poder I",
-		"description": "+10% Daño",
-		"stat": "damage_mult",
-		"amount": 0.10,
-		"icon": "⚔️",
-		"rarity": "common"
-	},
-	"damage_large": {
-		"name": "Poder II",
-		"description": "+20% Daño",
-		"stat": "damage_mult",
-		"amount": 0.20,
-		"icon": "⚔️",
-		"rarity": "uncommon"
-	},
-	"cooldown": {
-		"name": "Celeridad",
-		"description": "-10% Cooldown de armas",
-		"stat": "cooldown_mult",
-		"amount": -0.10,
-		"icon": "⏱️",
-		"rarity": "uncommon"
-	},
-	"crit_chance": {
-		"name": "Precisión",
-		"description": "+5% Probabilidad de crítico",
-		"stat": "crit_chance",
-		"amount": 0.05,
-		"icon": "🎯",
-		"rarity": "uncommon"
-	},
-	"crit_damage": {
-		"name": "Devastación",
-		"description": "+25% Daño crítico",
-		"stat": "crit_damage",
-		"amount": 0.25,
-		"icon": "💥",
-		"rarity": "rare"
-	},
-	"area": {
-		"name": "Expansión",
-		"description": "+15% Área de efecto",
-		"stat": "area_mult",
-		"amount": 0.15,
-		"icon": "🔵",
-		"rarity": "uncommon"
-	},
-	"move_speed": {
-		"name": "Velocidad",
-		"description": "+10% Velocidad de movimiento",
-		"stat": "move_speed",
-		"amount": 0.10,
-		"icon": "👟",
-		"rarity": "common"
-	},
-	"pickup_range": {
-		"name": "Magnetismo",
-		"description": "+25% Rango de recolección",
-		"stat": "pickup_range",
-		"amount": 0.25,
-		"icon": "🧲",
-		"rarity": "common"
-	},
-	"xp_mult": {
-		"name": "Sabiduría",
-		"description": "+15% Experiencia ganada",
-		"stat": "xp_mult",
-		"amount": 0.15,
-		"icon": "📚",
-		"rarity": "uncommon"
-	},
-	"armor": {
-		"name": "Armadura",
-		"description": "+3 Reducción de daño",
-		"stat": "armor",
-		"amount": 3.0,
-		"icon": "🛡️",
-		"rarity": "uncommon"
-	},
-	"luck": {
-		"name": "Fortuna",
-		"description": "+10% Suerte",
-		"stat": "luck",
-		"amount": 0.10,
-		"icon": "🍀",
-		"rarity": "rare"
-	},
-	# === NUEVOS STATS ===
-	"dodge_small": {
-		"name": "Evasión I",
-		"description": "+5% Esquivar ataques",
-		"stat": "dodge_chance",
-		"amount": 0.05,
-		"icon": "💨",
-		"rarity": "uncommon"
-	},
-	"dodge_large": {
-		"name": "Evasión II",
-		"description": "+10% Esquivar ataques",
-		"stat": "dodge_chance",
-		"amount": 0.10,
-		"icon": "💨",
-		"rarity": "rare"
-	},
-	"life_steal_small": {
-		"name": "Vampirismo I",
-		"description": "+3% Robo de vida",
-		"stat": "life_steal",
-		"amount": 0.03,
-		"icon": "🩸",
-		"rarity": "uncommon"
-	},
-	"life_steal_large": {
-		"name": "Vampirismo II",
-		"description": "+7% Robo de vida",
-		"stat": "life_steal",
-		"amount": 0.07,
-		"icon": "🩸",
-		"rarity": "rare"
-	},
-	"projectile_speed": {
-		"name": "Velocidad Proyectil",
-		"description": "+15% Vel. proyectiles",
-		"stat": "projectile_speed_mult",
-		"amount": 0.15,
-		"icon": "➡️",
-		"rarity": "common"
-	},
-	"duration": {
-		"name": "Persistencia",
-		"description": "+15% Duración efectos",
-		"stat": "duration_mult",
-		"amount": 0.15,
-		"icon": "⌛",
-		"rarity": "common"
-	},
-	"extra_projectile": {
-		"name": "Proyectil Extra",
-		"description": "+1 Proyectil adicional",
-		"stat": "extra_projectiles",
-		"amount": 1,
-		"icon": "🎯",
-		"rarity": "rare"
-	},
-	"knockback": {
-		"name": "Empuje",
-		"description": "+25% Fuerza de empuje",
-		"stat": "knockback_mult",
-		"amount": 0.25,
-		"icon": "💥",
-		"rarity": "common"
-	}
-}
-
-func get_random_upgrades(count: int = 3, luck_bonus: float = 0.0) -> Array:
-	"""
-	Obtener upgrades aleatorios para el panel de level up
-	luck_bonus aumenta probabilidad de upgrades raros
-	"""
-	var upgrades_list = PLAYER_UPGRADES.keys()
-	upgrades_list.shuffle()
-
-	var selected = []
-	var actual_luck = get_stat("luck") + luck_bonus
-
-	for upgrade_id in upgrades_list:
-		if selected.size() >= count:
-			break
-
-		var upgrade = PLAYER_UPGRADES[upgrade_id].duplicate()
-		upgrade["id"] = upgrade_id
-
-		# Filtrar por rareza según luck
-		var rarity_roll = randf()
-		match upgrade.rarity:
-			"common":
-				selected.append(upgrade)
-			"uncommon":
-				if rarity_roll < 0.5 + actual_luck * 0.3:
-					selected.append(upgrade)
-			"rare":
-				if rarity_roll < 0.2 + actual_luck * 0.4:
-					selected.append(upgrade)
-
-	# Si no hay suficientes, llenar con comunes
-	while selected.size() < count:
-		for upgrade_id in upgrades_list:
-			var upgrade = PLAYER_UPGRADES[upgrade_id]
-			if upgrade.rarity == "common":
-				var dup = upgrade.duplicate()
-				dup["id"] = upgrade_id
-				if dup not in selected:
-					selected.append(dup)
-					break
-
-		# Prevenir loop infinito
-		if selected.size() < count:
-			break
-
-	return selected.slice(0, count)
-
 func apply_upgrade(upgrade_data) -> bool:
-	"""Aplicar un upgrade del jugador. Acepta String (ID) o Dictionary (datos completos)"""
-	var upgrade_id: String = ""
+	"""Aplicar un upgrade del jugador. Acepta Dictionary con formato effects."""
 	var upgrade_dict: Dictionary = {}
 
 	# Determinar si es un ID o un Dictionary completo
-	if upgrade_data is String:
-		upgrade_id = upgrade_data
-	elif upgrade_data is Dictionary:
-		upgrade_id = upgrade_data.get("upgrade_id", upgrade_data.get("id", ""))
+	if upgrade_data is Dictionary:
 		upgrade_dict = upgrade_data
 	else:
-		push_error("[PlayerStats] apply_upgrade: tipo invalido %s" % typeof(upgrade_data))
+		push_error("[PlayerStats] apply_upgrade: tipo invalido %s, se espera Dictionary" % typeof(upgrade_data))
 		return false
 
-	# Primero intentar aplicar efectos directamente desde el Dictionary (formato nuevo)
+	# Aplicar efectos desde el Dictionary (formato nuevo con effects)
 	if upgrade_dict.has("effects"):
 		var effects = upgrade_dict.get("effects", [])
 		for effect in effects:
@@ -1395,20 +1163,7 @@ func apply_upgrade(upgrade_data) -> bool:
 		add_upgrade(upgrade_dict)
 		return true
 
-	# Fallback: buscar en PLAYER_UPGRADES (formato viejo)
-	if upgrade_id != "" and PLAYER_UPGRADES.has(upgrade_id):
-		var upgrade = PLAYER_UPGRADES[upgrade_id]
-		add_stat(upgrade.stat, upgrade.amount)
-		add_upgrade({
-			"id": upgrade_id,
-			"name": upgrade.name,
-			"icon": upgrade.get("icon", ""),
-			"description": upgrade.description,
-			"effects": [{"stat": upgrade.stat, "value": upgrade.amount, "operation": "add"}]
-		})
-		return true
-
-	# Fallback: stat y amount directamente
+	# Fallback: stat y amount directamente (formato legacy simple)
 	if upgrade_dict.has("stat") and upgrade_dict.has("amount"):
 		add_stat(upgrade_dict.stat, upgrade_dict.amount)
 		add_upgrade(upgrade_dict)
