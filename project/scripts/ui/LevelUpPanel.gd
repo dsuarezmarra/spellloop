@@ -757,8 +757,8 @@ func _get_type_text(option_type: String) -> String:
 func generate_options() -> void:
 	options.clear()
 	
-	# Sincronizar reroll/banish con PlayerStats si hay mejoras
-	_sync_counts_from_player_stats()
+	# NOTA: NO sincronizar aquí - Game.gd gestiona los contadores
+	# y los incrementa cuando se obtienen mejoras de reroll/banish
 
 	var luck = 0.0
 	if player_stats and player_stats.has_method("get_stat"):

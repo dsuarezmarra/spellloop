@@ -299,6 +299,13 @@ func add_pickup_range_flat(amount: float) -> void:
 	pickup_range_changed.emit(get_pickup_range())
 	# print("🧲 [Player] Pickup range: %.0f (base: %.0f, mult: %.2fx, flat: +%.0f)" % [get_pickup_range(), pickup_radius, magnet, pickup_range_flat])
 
+func get_magnet_strength() -> float:
+	"""Retorna la fuerza de imán (velocidad de atracción) desde PlayerStats"""
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.has_method("get_stat"):
+		return player_stats.get_stat("magnet_strength")
+	return 1.0
+
 func apply_special_effect(_effect_name: String, _item_data: Dictionary) -> void:
 	pass
 

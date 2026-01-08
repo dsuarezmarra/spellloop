@@ -842,9 +842,23 @@ func _on_level_up_panel_closed() -> void:
 	# Esto también reanudará el juego si no hay más pendientes
 	_process_next_level_up()
 
-func _on_stat_changed(stat_name: String, _old_value: float, new_value: float) -> void:
+func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> void:
 	"""Callback cuando cambia un stat del jugador - propagar al player"""
 	# Debug desactivado: print("📊 [Game] Stat cambiado: %s = %.2f" % [stat_name, new_value])
+
+	# Manejar mejoras de reroll/banish - incrementar contadores cuando se obtienen
+	if stat_name == "reroll_count":
+		var diff = int(new_value) - int(old_value)
+		if diff > 0:
+			remaining_rerolls += diff
+			# Debug desactivado: print("🎲 [Game] +%d rerolls por mejora (total: %d)" % [diff, remaining_rerolls])
+		return
+	elif stat_name == "banish_count":
+		var diff = int(new_value) - int(old_value)
+		if diff > 0:
+			remaining_banishes += diff
+			# Debug desactivado: print("🚫 [Game] +%d banishes por mejora (total: %d)" % [diff, remaining_banishes])
+		return
 
 	# Propagar cambios relevantes al player
 	if player and player.has_method("modify_stat"):

@@ -301,9 +301,18 @@ func _process(delta: float) -> void:
 		is_being_attracted = true
 		var direction = (player_ref.global_position - global_position).normalized()
 
-		# Velocidad aumenta mientras más cerca
+		# Obtener magnet_strength del player (velocidad de atracción)
+		var magnet_str = _get_player_magnet_strength()
+		
+		# Velocidad aumenta mientras más cerca, multiplicada por magnet_strength
 		var speed_multiplier = 1.0 + (1.0 - distance / attraction_range) * 2.0
-		global_position += direction * attraction_speed * speed_multiplier * delta
+		global_position += direction * attraction_speed * speed_multiplier * magnet_str * delta
+
+func _get_player_magnet_strength() -> float:
+	"""Obtener la fuerza de imán del player (para velocidad de atracción)"""
+	if player_ref and player_ref.has_method("get_magnet_strength"):
+		return player_ref.get_magnet_strength()
+	return 1.0
 
 func _get_player_pickup_range() -> float:
 	"""Obtener el rango de recolección del player (respeta mejoras)"""

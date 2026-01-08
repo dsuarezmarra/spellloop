@@ -1199,6 +1199,9 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 		var is_crit = final_damage >= amount * 1.5  # Detectar crítico
 		FloatingText.spawn_damage(global_position + Vector2(0, -20), final_damage, is_crit)
 
+	# Calcular HP actual antes del daño para overkill
+	var hp_before = health_component.current_health if health_component else hp
+
 	# Aplicar daño a través del HealthComponent
 	if health_component:
 		health_component.take_damage(final_damage, "physical")
@@ -1208,6 +1211,50 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 		hp -= final_damage
 		if hp <= 0:
 			die()
+	
+	# Sistema de OVERKILL: Transferir daño excedente a enemigos cercanos
+	var hp_after = health_component.current_health if health_component else hp
+	if hp_after <= 0 and final_damage > hp_before:
+		_apply_overkill_damage(final_damage - hp_before)
+
+func _apply_overkill_damage(excess_damage: int) -> void:
+	"""Transferir daño excedente a enemigos cercanos según overkill_damage stat"""
+	# Obtener el stat overkill_damage del PlayerStats
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if not player_stats or not player_stats.has_method("get_stat"):
+		return
+	
+	var overkill_percent = player_stats.get_stat("overkill_damage")
+	if overkill_percent <= 0:
+		return
+	
+	# Calcular daño a transferir (% del exceso)
+	var transfer_damage = int(excess_damage * overkill_percent)
+	if transfer_damage <= 0:
+		return
+	
+	# Buscar enemigos cercanos (excluyéndonos)
+	const OVERKILL_RANGE: float = 100.0
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var nearby_enemies: Array = []
+	
+	for enemy in enemies:
+		if enemy == self or not is_instance_valid(enemy):
+			continue
+		if not enemy.has_method("take_damage"):
+			continue
+		var dist = global_position.distance_to(enemy.global_position)
+		if dist <= OVERKILL_RANGE:
+			nearby_enemies.append(enemy)
+	
+	if nearby_enemies.is_empty():
+		return
+	
+	# Aplicar daño a todos los enemigos cercanos
+	for enemy in nearby_enemies:
+		enemy.take_damage(transfer_damage, "physical", null)
+		# Efecto visual de overkill
+		FloatingText.spawn_text(enemy.global_position + Vector2(0, -30), "OVERKILL", Color(1.0, 0.5, 0.0), 0.5)
 
 func _flash_block() -> void:
 	"""Flash visual cuando bloquea un ataque"""

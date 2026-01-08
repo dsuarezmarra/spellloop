@@ -661,6 +661,74 @@ const UTILITY_UPGRADES: Dictionary = {
 		"tier": 4,
 		"max_stacks": 2,
 		"effects": [{"stat": "growth", "value": 0.02, "operation": "add"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# FUERZA DE IMÁN (Velocidad de atracción de pickups)
+	# ─────────────────────────────────────────────────────────────────────────────
+	"magnet_strength_1": {
+		"id": "magnet_strength_1",
+		"name": "Atracción Menor",
+		"description": "+20% velocidad de atracción de pickups.",
+		"icon": "🧲",
+		"category": "utility",
+		"tier": 1,
+		"max_stacks": 5,
+		"effects": [{"stat": "magnet_strength", "value": 1.20, "operation": "multiply"}]
+	},
+	"magnet_strength_2": {
+		"id": "magnet_strength_2",
+		"name": "Atracción",
+		"description": "+40% velocidad de atracción de pickups.",
+		"icon": "🧲",
+		"category": "utility",
+		"tier": 2,
+		"max_stacks": 3,
+		"effects": [{"stat": "magnet_strength", "value": 1.40, "operation": "multiply"}]
+	},
+	"magnet_strength_3": {
+		"id": "magnet_strength_3",
+		"name": "Imán Poderoso",
+		"description": "+75% velocidad de atracción de pickups.",
+		"icon": "🧲",
+		"category": "utility",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "magnet_strength", "value": 1.75, "operation": "multiply"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# OVERKILL (Daño excedente transferido)
+	# ─────────────────────────────────────────────────────────────────────────────
+	"overkill_1": {
+		"id": "overkill_1",
+		"name": "Explosión de Daño",
+		"description": "25% del daño excedente se transfiere a enemigos cercanos.",
+		"icon": "💥",
+		"category": "utility",
+		"tier": 2,
+		"max_stacks": 4,
+		"effects": [{"stat": "overkill_damage", "value": 0.25, "operation": "add"}]
+	},
+	"overkill_2": {
+		"id": "overkill_2",
+		"name": "Reacción en Cadena",
+		"description": "50% del daño excedente se transfiere a enemigos cercanos.",
+		"icon": "💥",
+		"category": "utility",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "overkill_damage", "value": 0.50, "operation": "add"}]
+	},
+	"overkill_3": {
+		"id": "overkill_3",
+		"name": "Devastación",
+		"description": "100% del daño excedente se transfiere a enemigos cercanos.",
+		"icon": "💥",
+		"category": "utility",
+		"tier": 4,
+		"max_stacks": 1,
+		"effects": [{"stat": "overkill_damage", "value": 1.0, "operation": "add"}]
 	}
 }
 
