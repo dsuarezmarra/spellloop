@@ -299,6 +299,46 @@ func _run_automated_tests_sync() -> void:
 			results_failed += 1
 			errors.append("[SYNC] Cañón de Cristal → GWS")
 	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# TEST 4: Mejoras ESPECÍFICAS de armas
+	# ═══════════════════════════════════════════════════════════════════════════
+	print("\n📋 TEST 4: Mejoras ESPECÍFICAS de armas (%d mejoras)" % all_weapon_specific_upgrades.size())
+	print("-".repeat(50))
+	
+	for upgrade in all_weapon_specific_upgrades:
+		var weapon_id = upgrade.get("weapon_id", "ice_wand")  # Default a ice_wand
+		var ws = WeaponStats.new()
+		ws.weapon_id = weapon_id
+		
+		# Obtener stats antes
+		var before_stats = ws.modified_stats.duplicate()
+		
+		# Aplicar mejora específica al WeaponStats
+		ws.apply_upgrade(upgrade)
+		
+		# Obtener stats después
+		var after_stats = ws.modified_stats.duplicate()
+		
+		# Verificar cambios
+		var effects = upgrade.get("effects", [])
+		var changes = []
+		for effect in effects:
+			var stat = effect.get("stat", "")
+			var val_before = before_stats.get(stat, 0.0)
+			var val_after = after_stats.get(stat, 0.0)
+			if abs(val_before - val_after) > 0.001:
+				changes.append("%s: %.2f→%.2f" % [stat, val_before, val_after])
+		
+		if changes.size() > 0:
+			print("✅ %s [%s]: %s" % [upgrade.get("name", "?"), weapon_id, ", ".join(changes)])
+			results_passed += 1
+		else:
+			print("❌ %s [%s] - Sin cambios" % [upgrade.get("name", "?"), weapon_id])
+			results_failed += 1
+			errors.append("[SPECIFIC] " + upgrade.get("name", "?"))
+		
+		# WeaponStats es RefCounted, no necesita queue_free
+	
 	# Resumen
 	print("\n" + "═".repeat(60))
 	print("📊 RESUMEN EXHAUSTIVO:")
@@ -1055,7 +1095,10 @@ func _update_applied_display() -> void:
 
 func _get_player_stat(stat: String) -> float:
 	if player_stats and player_stats.has_method("get_stat"):
-		return player_stats.get_stat(stat)
+		var val = player_stats.get_stat(stat)
+		if stat == "move_speed":
+			print("[TEST] 🏃 get_stat(move_speed) = %.2f (raw stats dict = %.2f)" % [val, player_stats.stats.get("move_speed", -1)])
+		return val
 	return 0.0
 
 func _get_weapon_stat(stat: String) -> float:

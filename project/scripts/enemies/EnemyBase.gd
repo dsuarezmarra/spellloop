@@ -1215,28 +1215,36 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 	# Sistema de OVERKILL: Transferir daño excedente a enemigos cercanos
 	var hp_after = health_component.current_health if health_component else hp
 	if hp_after <= 0 and final_damage > hp_before:
-		_apply_overkill_damage(final_damage - hp_before)
+		var excess = final_damage - hp_before
+		print("[OVERKILL] 💥 Enemigo %s murió con exceso de %d (daño: %d, HP antes: %d)" % [enemy_id, excess, final_damage, hp_before])
+		_apply_overkill_damage(excess)
 
 func _apply_overkill_damage(excess_damage: int) -> void:
 	"""Transferir daño excedente a enemigos cercanos según overkill_damage stat"""
 	# Obtener el stat overkill_damage del PlayerStats
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	if not player_stats or not player_stats.has_method("get_stat"):
+		print("[OVERKILL] ❌ No se encontró player_stats o no tiene get_stat")
 		return
 	
 	var overkill_percent = player_stats.get_stat("overkill_damage")
+	print("[OVERKILL] 📊 overkill_damage stat = %.2f" % overkill_percent)
 	if overkill_percent <= 0:
+		print("[OVERKILL] ❌ overkill_percent <= 0, abortando")
 		return
 	
 	# Calcular daño a transferir (% del exceso)
 	var transfer_damage = int(excess_damage * overkill_percent)
+	print("[OVERKILL] 🔢 Daño a transferir: %d (exceso: %d * %.2f)" % [transfer_damage, excess_damage, overkill_percent])
 	if transfer_damage <= 0:
 		return
 	
 	# Buscar enemigos cercanos (excluyéndonos)
-	const OVERKILL_RANGE: float = 100.0
+	const OVERKILL_RANGE: float = 150.0  # Aumentado de 100 a 150 para mejor alcance
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	var nearby_enemies: Array = []
+	
+	print("[OVERKILL] 🔍 Buscando enemigos cercanos (rango: %.0f). Total enemigos: %d" % [OVERKILL_RANGE, enemies.size()])
 	
 	for enemy in enemies:
 		if enemy == self or not is_instance_valid(enemy):
@@ -1246,11 +1254,16 @@ func _apply_overkill_damage(excess_damage: int) -> void:
 		var dist = global_position.distance_to(enemy.global_position)
 		if dist <= OVERKILL_RANGE:
 			nearby_enemies.append(enemy)
+			print("[OVERKILL]   ✓ Enemigo %s a distancia %.1f" % [enemy.name, dist])
+		# else:
+		#	print("[OVERKILL]   ✗ Enemigo %s muy lejos: %.1f" % [enemy.name, dist])
 	
 	if nearby_enemies.is_empty():
+		print("[OVERKILL] ❌ No hay enemigos cercanos en rango %.0f" % OVERKILL_RANGE)
 		return
 	
 	# Aplicar daño a todos los enemigos cercanos
+	print("[OVERKILL] ✅ Aplicando %d de daño a %d enemigos cercanos" % [transfer_damage, nearby_enemies.size()])
 	for enemy in nearby_enemies:
 		enemy.take_damage(transfer_damage, "physical", null)
 		# Efecto visual de overkill
