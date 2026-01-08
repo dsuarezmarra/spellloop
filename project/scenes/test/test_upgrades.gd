@@ -83,11 +83,135 @@ func _ready() -> void:
 	_create_dummies()
 	
 	start_time = Time.get_ticks_msec() / 1000.0
-	await _wait_for_systems()
 	
-	_update_all_ui()
-	_select_upgrade(0)
-	_log("[color=green]✓ Test listo. Usa ↑↓ navegar, ENTER aplicar, TAB armas[/color]")
+	# Detectar modo headless
+	var window_size = DisplayServer.window_get_size()
+	var is_headless = window_size.x == 0 or window_size.y == 0
+	print("🧪 Modo headless: %s (window: %s)" % [is_headless, window_size])
+	
+	if is_headless:
+		print("🧪 Ejecutando en modo headless - saltando _wait_for_systems")
+		# En modo headless, crear sistemas manualmente
+		_create_test_systems()
+		print("\n" + "═".repeat(60))
+		print("🧪 EJECUTANDO TESTS AUTOMÁTICOS...")
+		print("═".repeat(60) + "\n")
+		_run_automated_tests_sync()
+	else:
+		await _wait_for_systems()
+		_update_all_ui()
+		_select_upgrade(0)
+		_log("[color=green]✓ Test listo. Usa ↑↓ navegar, ENTER aplicar, TAB armas[/color]")
+
+func _create_test_systems() -> void:
+	"""Crear sistemas necesarios para tests en modo headless"""
+	print("🧪 Creando sistemas de test...")
+	
+	if player_stats == null:
+		player_stats = PlayerStats.new()
+		add_child(player_stats)
+		print("🧪 ✓ PlayerStats creado")
+	
+	if global_weapon_stats == null:
+		global_weapon_stats = GlobalWeaponStats.new()
+		add_child(global_weapon_stats)
+		print("🧪 ✓ GlobalWeaponStats creado")
+
+func _run_automated_tests_sync() -> void:
+	"""Versión síncrona de tests para modo headless"""
+	print("🧪 Iniciando tests síncronos...")
+	print("🧪 player_stats: %s" % (player_stats != null))
+	print("🧪 global_weapon_stats: %s" % (global_weapon_stats != null))
+	print("🧪 attack_manager: %s" % (attack_manager != null))
+	
+	if not global_weapon_stats:
+		print("❌ ERROR: global_weapon_stats es null!")
+		return
+	
+	var results_passed = 0
+	var results_failed = 0
+	var errors: Array = []
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# TEST: Mejoras de armas GLOBALES
+	# ═══════════════════════════════════════════════════════════════════════════
+	print("\n📋 TEST: Mejoras de Armas GLOBALES (%d mejoras)" % all_weapon_global_upgrades.size())
+	print("-".repeat(50))
+	
+	for upgrade in all_weapon_global_upgrades:
+		var before = global_weapon_stats.get_all_stats().duplicate()
+		
+		# Aplicar mejora
+		if attack_manager and attack_manager.has_method("apply_global_upgrade"):
+			attack_manager.apply_global_upgrade(upgrade)
+		elif global_weapon_stats:
+			global_weapon_stats.apply_upgrade(upgrade)
+		
+		var after = global_weapon_stats.get_all_stats().duplicate()
+		
+		# Verificar cambios
+		var effects = upgrade.get("effects", [])
+		var changes = []
+		for effect in effects:
+			var stat = effect.get("stat", "")
+			if stat == "cooldown_mult":
+				stat = "attack_speed_mult"
+			var val_before = before.get(stat, 0)
+			var val_after = after.get(stat, 0)
+			if abs(val_before - val_after) > 0.001:
+				changes.append("%s: %.2f→%.2f" % [stat, val_before, val_after])
+		
+		if changes.size() > 0:
+			print("✅ %s: %s" % [upgrade.get("name", "?"), ", ".join(changes)])
+			results_passed += 1
+		else:
+			print("❌ %s - Sin cambios" % upgrade.get("name", "?"))
+			results_failed += 1
+			errors.append(upgrade.get("name", "?"))
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# TEST: Mejoras de JUGADOR (primeras 15)
+	# ═══════════════════════════════════════════════════════════════════════════
+	print("\n📋 TEST: Mejoras de JUGADOR (primeras 15 de %d)" % all_player_upgrades.size())
+	print("-".repeat(50))
+	
+	if player_stats:
+		for upgrade in all_player_upgrades.slice(0, 15):
+			var effects = upgrade.get("effects", [])
+			if effects.is_empty():
+				continue
+			
+			var before = {}
+			for e in effects:
+				var s = e.get("stat", "")
+				if s != "":
+					before[s] = player_stats.get_stat(s)
+			
+			player_stats.apply_upgrade(upgrade)
+			
+			var changes = []
+			for e in effects:
+				var s = e.get("stat", "")
+				if s != "":
+					var val_before = before.get(s, 0)
+					var val_after = player_stats.get_stat(s)
+					if abs(val_before - val_after) > 0.001:
+						changes.append("%s: %.2f→%.2f" % [s, val_before, val_after])
+			
+			if changes.size() > 0:
+				print("✅ %s: %s" % [upgrade.get("name", "?"), ", ".join(changes)])
+				results_passed += 1
+			else:
+				print("❌ %s - Sin cambios" % upgrade.get("name", "?"))
+				results_failed += 1
+				errors.append(upgrade.get("name", "?"))
+	
+	# Resumen
+	print("\n" + "═".repeat(60))
+	print("📊 RESUMEN: ✅ %d pasados, ❌ %d fallidos" % [results_passed, results_failed])
+	if errors.size() > 0:
+		print("🔴 Fallidos: %s" % ", ".join(errors))
+	print("═".repeat(60))
 
 func _setup_background() -> void:
 	var bg = ColorRect.new()
@@ -1114,3 +1238,195 @@ func _just_pressed(key: int) -> bool:
 	var was = _key_held.get(key, false)
 	_key_held[key] = pressed
 	return pressed and not was
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTS AUTOMATIZADOS (modo headless)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _run_automated_tests() -> void:
+	"""Ejecutar tests automáticos de todas las mejoras"""
+	print("🧪 Iniciando _run_automated_tests...")
+	
+	var results = {
+		"passed": 0,
+		"failed": 0,
+		"errors": []
+	}
+	
+	# Verificar sistemas
+	print("🧪 player_stats: %s" % (player_stats != null))
+	print("🧪 global_weapon_stats: %s" % (global_weapon_stats != null))
+	print("🧪 attack_manager: %s" % (attack_manager != null))
+	
+	if not global_weapon_stats:
+		print("❌ ERROR: global_weapon_stats es null!")
+		return
+	
+	# Equipar un arma para tests
+	if available_weapons.size() > 0:
+		print("🧪 Equipando arma: %s" % available_weapons[0])
+		_equip_weapon(available_weapons[0])
+		await get_tree().create_timer(0.2).timeout
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# TEST 1: Mejoras de armas GLOBALES
+	# ═══════════════════════════════════════════════════════════════════════════
+	print("\n📋 TEST: Mejoras de Armas GLOBALES (%d mejoras)" % all_weapon_global_upgrades.size())
+	print("-".repeat(50))
+	
+	for upgrade in all_weapon_global_upgrades:
+		var test_result = await _test_global_upgrade(upgrade)
+		if test_result.passed:
+			results.passed += 1
+		else:
+			results.failed += 1
+			results.errors.append(test_result.error)
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# TEST 2: Mejoras de JUGADOR
+	# ═══════════════════════════════════════════════════════════════════════════
+	print("\n📋 TEST: Mejoras de JUGADOR (%d mejoras, testeando primeras 20)" % all_player_upgrades.size())
+	print("-".repeat(50))
+	
+	for upgrade in all_player_upgrades.slice(0, 20):  # Solo primeras 20 para no tardar mucho
+		var test_result = await _test_player_upgrade(upgrade)
+		if test_result.passed:
+			results.passed += 1
+		else:
+			results.failed += 1
+			results.errors.append(test_result.error)
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# RESUMEN
+	# ═══════════════════════════════════════════════════════════════════════════
+	print("\n" + "═".repeat(60))
+	print("📊 RESUMEN DE TESTS")
+	print("═".repeat(60))
+	print("✅ Pasados: %d" % results.passed)
+	print("❌ Fallidos: %d" % results.failed)
+	
+	if results.errors.size() > 0:
+		print("\n🔴 ERRORES:")
+		for err in results.errors:
+			print("   • %s" % err)
+	
+	print("\n" + "═".repeat(60))
+	
+	# Stats finales
+	_print_final_stats()
+
+func _test_global_upgrade(upgrade: Dictionary) -> Dictionary:
+	"""Testear una mejora global y verificar que se aplica"""
+	var upgrade_name = upgrade.get("name", "?")
+	var upgrade_id = upgrade.get("id", upgrade.get("upgrade_id", "?"))
+	var effects = upgrade.get("effects", [])
+	
+	if effects.is_empty():
+		return {"passed": true, "error": ""}  # Skip upgrades sin efectos
+	
+	# Guardar stats antes
+	var before = global_weapon_stats.get_all_stats().duplicate() if global_weapon_stats else {}
+	
+	# Aplicar mejora
+	var applied = false
+	if attack_manager and attack_manager.has_method("apply_global_upgrade"):
+		attack_manager.apply_global_upgrade(upgrade)
+		applied = true
+	elif global_weapon_stats and global_weapon_stats.has_method("apply_upgrade"):
+		applied = global_weapon_stats.apply_upgrade(upgrade)
+	
+	await get_tree().create_timer(0.05).timeout
+	
+	# Verificar cambios
+	var after = global_weapon_stats.get_all_stats().duplicate() if global_weapon_stats else {}
+	var changes_detected = false
+	var change_details = []
+	
+	for effect in effects:
+		var stat = effect.get("stat", "")
+		var expected_value = effect.get("value", 0)
+		var operation = effect.get("operation", "add")
+		
+		# Convertir cooldown_mult a attack_speed_mult para verificación
+		var check_stat = stat
+		if stat == "cooldown_mult":
+			check_stat = "attack_speed_mult"
+		
+		var val_before = before.get(check_stat, 0)
+		var val_after = after.get(check_stat, 0)
+		
+		if abs(val_before - val_after) > 0.001:
+			changes_detected = true
+			change_details.append("%s: %.3f → %.3f" % [check_stat, val_before, val_after])
+	
+	if changes_detected:
+		print("✅ %s: %s" % [upgrade_name, ", ".join(change_details)])
+		return {"passed": true, "error": ""}
+	else:
+		var err = "%s (%s) - Sin cambios detectados" % [upgrade_name, upgrade_id]
+		print("❌ %s" % err)
+		return {"passed": false, "error": err}
+
+func _test_player_upgrade(upgrade: Dictionary) -> Dictionary:
+	"""Testear una mejora de jugador y verificar que se aplica"""
+	var upgrade_name = upgrade.get("name", "?")
+	var upgrade_id = upgrade.get("id", upgrade.get("upgrade_id", "?"))
+	var effects = upgrade.get("effects", [])
+	
+	if effects.is_empty():
+		return {"passed": true, "error": ""}  # Skip
+	
+	# Guardar stats antes
+	var before = {}
+	if player_stats:
+		for effect in effects:
+			var stat = effect.get("stat", "")
+			if stat != "":
+				before[stat] = player_stats.get_stat(stat)
+	
+	# Aplicar mejora
+	var applied = false
+	if player_stats and player_stats.has_method("apply_upgrade"):
+		applied = player_stats.apply_upgrade(upgrade)
+	
+	await get_tree().create_timer(0.05).timeout
+	
+	# Verificar cambios
+	var changes_detected = false
+	var change_details = []
+	
+	for effect in effects:
+		var stat = effect.get("stat", "")
+		if stat == "":
+			continue
+		
+		var val_before = before.get(stat, 0)
+		var val_after = player_stats.get_stat(stat) if player_stats else 0
+		
+		if abs(val_before - val_after) > 0.001:
+			changes_detected = true
+			change_details.append("%s: %.3f → %.3f" % [stat, val_before, val_after])
+	
+	if changes_detected:
+		print("✅ %s: %s" % [upgrade_name, ", ".join(change_details)])
+		return {"passed": true, "error": ""}
+	else:
+		var err = "%s (%s) - Sin cambios detectados" % [upgrade_name, upgrade_id]
+		print("❌ %s" % err)
+		return {"passed": false, "error": err}
+
+func _print_final_stats() -> void:
+	"""Imprimir stats finales después de todos los tests"""
+	print("\n📊 STATS FINALES:")
+	
+	if global_weapon_stats:
+		print("\n🗡️ GlobalWeaponStats:")
+		var gs = global_weapon_stats.get_all_stats()
+		for key in gs:
+			print("   %s: %.3f" % [key, gs[key]])
+	
+	if player_stats:
+		print("\n🛡️ PlayerStats (seleccionados):")
+		for stat in ["max_health", "armor", "dodge_chance", "move_speed", "pickup_range", 
+					 "damage_mult", "crit_chance", "crit_damage", "life_steal"]:
+			print("   %s: %.3f" % [stat, player_stats.get_stat(stat)])
