@@ -1,4 +1,4 @@
-﻿# EnemyAttackSystem.gd
+# EnemyAttackSystem.gd
 # Sistema de ataque para enemigos - Soporta todos los arquetipos
 # Gestiona cooldowns, targeting y ejecuciÃ³n de ataques
 #
@@ -1670,9 +1670,7 @@ func _process_boss_special_abilities(delta: float) -> void:
 	boss_combo_timer = 4.0
 	boss_global_cooldown = combo_delay
 	
-	# print("[Boss] ðŸ‘¹ %s usÃ³ %s (combo %d/%d, fase %d)" % [
-		enemy.name, selected_ability, boss_combo_count, max_combo, boss_current_phase
-	])
+	# print("[Boss] debug")
 
 func _init_boss_system() -> void:
 	"""Inicializar sistema de boss con configuraciÃ³n de escalado"""
@@ -1697,9 +1695,7 @@ func _init_boss_system() -> void:
 	for ability in boss_unlocked_abilities:
 		boss_ability_cooldowns[ability] = 0.0
 	
-	# print("[Boss] ðŸ‘¹ Inicializado para minuto %d: %d habilidades, combo max %d" % [
-		spawn_minute, boss_unlocked_abilities.size(), boss_scaling_config.get("max_combo", 1)
-	])
+	# print("[Boss] debug")
 	# print("[Boss] ðŸ‘¹ Habilidades: %s" % str(boss_unlocked_abilities))
 
 func _get_prioritized_abilities(max_count: int) -> Array:
