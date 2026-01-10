@@ -808,9 +808,7 @@ func multiply_stat(stat_name: String, multiplier: float) -> void:
 	"""Multiplicar un stat por un valor"""
 	if not stats.has(stat_name):
 		return
-	var old = stats[stat_name]
 	add_stat(stat_name, stats[stat_name] * (multiplier - 1.0))
-	print("[PlayerStats] 🔢 multiply_stat %s: %.2f * %.2f = %.2f" % [stat_name, old, multiplier, stats[stat_name]])
 
 func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> void:
 	"""Manejar cambios especiales de stats"""

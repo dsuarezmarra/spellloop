@@ -1216,7 +1216,6 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 	var hp_after = health_component.current_health if health_component else hp
 	if hp_after <= 0 and final_damage > hp_before:
 		var excess = final_damage - hp_before
-		print("[OVERKILL] 💥 Enemigo %s murió con exceso de %d (daño: %d, HP antes: %d)" % [enemy_id, excess, final_damage, hp_before])
 		_apply_overkill_damage(excess)
 
 func _apply_overkill_damage(excess_damage: int) -> void:
@@ -1224,27 +1223,21 @@ func _apply_overkill_damage(excess_damage: int) -> void:
 	# Obtener el stat overkill_damage del PlayerStats
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	if not player_stats or not player_stats.has_method("get_stat"):
-		print("[OVERKILL] ❌ No se encontró player_stats o no tiene get_stat")
 		return
 	
 	var overkill_percent = player_stats.get_stat("overkill_damage")
-	print("[OVERKILL] 📊 overkill_damage stat = %.2f" % overkill_percent)
 	if overkill_percent <= 0:
-		print("[OVERKILL] ❌ overkill_percent <= 0, abortando")
 		return
 	
 	# Calcular daño a transferir (% del exceso)
 	var transfer_damage = int(excess_damage * overkill_percent)
-	print("[OVERKILL] 🔢 Daño a transferir: %d (exceso: %d * %.2f)" % [transfer_damage, excess_damage, overkill_percent])
 	if transfer_damage <= 0:
 		return
 	
 	# Buscar enemigos cercanos (excluyéndonos)
-	const OVERKILL_RANGE: float = 150.0  # Aumentado de 100 a 150 para mejor alcance
+	const OVERKILL_RANGE: float = 150.0
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	var nearby_enemies: Array = []
-	
-	print("[OVERKILL] 🔍 Buscando enemigos cercanos (rango: %.0f). Total enemigos: %d" % [OVERKILL_RANGE, enemies.size()])
 	
 	for enemy in enemies:
 		if enemy == self or not is_instance_valid(enemy):
@@ -1254,16 +1247,11 @@ func _apply_overkill_damage(excess_damage: int) -> void:
 		var dist = global_position.distance_to(enemy.global_position)
 		if dist <= OVERKILL_RANGE:
 			nearby_enemies.append(enemy)
-			print("[OVERKILL]   ✓ Enemigo %s a distancia %.1f" % [enemy.name, dist])
-		# else:
-		#	print("[OVERKILL]   ✗ Enemigo %s muy lejos: %.1f" % [enemy.name, dist])
 	
 	if nearby_enemies.is_empty():
-		print("[OVERKILL] ❌ No hay enemigos cercanos en rango %.0f" % OVERKILL_RANGE)
 		return
 	
 	# Aplicar daño a todos los enemigos cercanos
-	print("[OVERKILL] ✅ Aplicando %d de daño a %d enemigos cercanos" % [transfer_damage, nearby_enemies.size()])
 	for enemy in nearby_enemies:
 		enemy.take_damage(transfer_damage, "physical", null)
 		# Efecto visual de overkill
@@ -1385,7 +1373,6 @@ func apply_slow(amount: float, duration: float) -> void:
 	amount: porcentaje de reducción de velocidad (0.0 - 1.0)
 	duration: duración del efecto en segundos
 	"""
-	print("[EnemyBase] ❄️ apply_slow llamado: %.2f por %.2fs en %s" % [amount, duration, name])
 	if _is_stunned:
 		return  # No aplicar slow si está stunneado
 
@@ -1406,7 +1393,6 @@ func apply_slow(amount: float, duration: float) -> void:
 	speed = _base_speed * (1.0 - _slow_amount)
 
 	_update_status_visual()
-	print("[EnemyBase] ❄️ %s ralentizado %.0f%% por %.1fs (speed: %.1f → %.1f)" % [name, _slow_amount * 100, duration, _base_speed, speed])
 
 func apply_freeze(amount: float, duration: float) -> void:
 	"""Aplicar efecto de congelación (slow extremo)
@@ -1434,7 +1420,6 @@ func apply_burn(damage_per_tick: float, duration: float) -> void:
 	damage_per_tick: daño por cada tick
 	duration: duración total del efecto
 	"""
-	print("[EnemyBase] 🔥 apply_burn llamado: %.2f daño/tick por %.2fs en %s" % [damage_per_tick, duration, name])
 	# Si ya está quemando, refrescar/apilar
 	if _is_burning:
 		# Aplicar el daño más alto y refrescar duración
@@ -1447,7 +1432,6 @@ func apply_burn(damage_per_tick: float, duration: float) -> void:
 		_is_burning = true
 
 	_update_status_visual()
-	print("[EnemyBase] 🔥 %s quemándose %.1f daño/tick por %.1fs" % [name, _burn_damage, _burn_timer])
 
 func apply_stun(duration: float) -> void:
 	"""Aplicar efecto de aturdimiento (paraliza completamente)

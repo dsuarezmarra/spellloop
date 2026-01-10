@@ -615,6 +615,11 @@ func _get_dummy_script() -> String:
 extends CharacterBody2D
 signal damage_taken(amount)
 
+var _is_slowed: bool = false
+var _is_burning: bool = false
+var _is_frozen: bool = false
+var _is_stunned: bool = false
+
 func take_damage(amount, _type = "", _attacker = null):
 	var old_hp = get_meta("hp", 500)
 	var new_hp = maxi(0, old_hp - int(amount))
@@ -632,6 +637,52 @@ func take_damage(amount, _type = "", _attacker = null):
 	if new_hp <= 0:
 		_respawn()
 	return amount
+
+func apply_slow(amount: float, duration: float) -> void:
+	_is_slowed = true
+	var ts = get_meta("test_scene", null)
+	if ts and ts.has_method("_log"):
+		ts._log("[color=cyan]❄️ Dummy#%d: SLOW %.0f%% por %.1fs[/color]" % [get_meta("id", 0), amount * 100, duration])
+	await get_tree().create_timer(duration).timeout
+	_is_slowed = false
+
+func apply_burn(damage_per_tick: float, duration: float) -> void:
+	_is_burning = true
+	var ts = get_meta("test_scene", null)
+	if ts and ts.has_method("_log"):
+		ts._log("[color=orange]🔥 Dummy#%d: BURN %.1f/tick por %.1fs[/color]" % [get_meta("id", 0), damage_per_tick, duration])
+	var ticks = int(duration / 0.5)
+	for i in ticks:
+		await get_tree().create_timer(0.5).timeout
+		if not is_instance_valid(self): return
+		take_damage(damage_per_tick, "burn")
+	_is_burning = false
+
+func apply_freeze(amount: float, duration: float) -> void:
+	_is_frozen = true
+	var ts = get_meta("test_scene", null)
+	if ts and ts.has_method("_log"):
+		ts._log("[color=aqua]🧊 Dummy#%d: FREEZE por %.1fs[/color]" % [get_meta("id", 0), duration])
+	await get_tree().create_timer(duration).timeout
+	_is_frozen = false
+
+func apply_stun(duration: float) -> void:
+	_is_stunned = true
+	var ts = get_meta("test_scene", null)
+	if ts and ts.has_method("_log"):
+		ts._log("[color=yellow]⚡ Dummy#%d: STUN por %.1fs[/color]" % [get_meta("id", 0), duration])
+	await get_tree().create_timer(duration).timeout
+	_is_stunned = false
+
+func apply_pull(target_pos: Vector2, force: float, duration: float) -> void:
+	var ts = get_meta("test_scene", null)
+	if ts and ts.has_method("_log"):
+		ts._log("[color=purple]🌀 Dummy#%d: PULL fuerza %.1f[/color]" % [get_meta("id", 0), force])
+
+func apply_blind(duration: float) -> void:
+	var ts = get_meta("test_scene", null)
+	if ts and ts.has_method("_log"):
+		ts._log("[color=gray]👁️ Dummy#%d: BLIND por %.1fs[/color]" % [get_meta("id", 0), duration])
 
 func _respawn():
 	await get_tree().create_timer(1.5).timeout
@@ -1095,10 +1146,7 @@ func _update_applied_display() -> void:
 
 func _get_player_stat(stat: String) -> float:
 	if player_stats and player_stats.has_method("get_stat"):
-		var val = player_stats.get_stat(stat)
-		if stat == "move_speed":
-			print("[TEST] 🏃 get_stat(move_speed) = %.2f (raw stats dict = %.2f)" % [val, player_stats.stats.get("move_speed", -1)])
-		return val
+		return player_stats.get_stat(stat)
 	return 0.0
 
 func _get_weapon_stat(stat: String) -> float:
