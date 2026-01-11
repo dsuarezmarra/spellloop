@@ -50,8 +50,8 @@ func _setup_animations() -> void:
 		
 		frames.add_animation(walk_anim)
 		frames.add_animation(idle_anim)
-		frames.set_animation_speed(walk_anim, 4.0)  # FPS para walk (más lento para parecer caminar)
-		frames.set_animation_speed(idle_anim, 1.0)  # Idle más lento
+		frames.set_animation_speed(walk_anim, 2.5)  # FPS para walk (lento, natural)
+		frames.set_animation_speed(idle_anim, 1.0)  # Idle estático
 		frames.set_animation_loop(walk_anim, true)
 		frames.set_animation_loop(idle_anim, true)
 		
@@ -69,7 +69,7 @@ func _setup_animations() -> void:
 	
 	# ========== ANIMACIÓN DE CAST (4 frames) ==========
 	frames.add_animation("cast")
-	frames.set_animation_speed("cast", 10.0)
+	frames.set_animation_speed("cast", 3.0)  # Más lento para que se vea bien
 	frames.set_animation_loop("cast", false)
 	
 	for i in range(1, 5):
@@ -80,7 +80,7 @@ func _setup_animations() -> void:
 	
 	# ========== ANIMACIÓN DE HIT (2 frames) ==========
 	frames.add_animation("hit")
-	frames.set_animation_speed("hit", 8.0)
+	frames.set_animation_speed("hit", 2.0)  # Muy lento para que se note el impacto
 	frames.set_animation_loop("hit", false)
 	
 	for i in range(1, 3):
@@ -91,7 +91,7 @@ func _setup_animations() -> void:
 	
 	# ========== ANIMACIÓN DE DEATH (4 frames) ==========
 	frames.add_animation("death")
-	frames.set_animation_speed("death", 6.0)
+	frames.set_animation_speed("death", 2.0)  # Lento para dramatismo
 	frames.set_animation_loop("death", false)
 	
 	for i in range(1, 5):

@@ -225,6 +225,10 @@ func _process(delta: float) -> void:
 	if not animated_sprite or not animated_sprite.sprite_frames:
 		return
 	
+	# NO interrumpir animaciones especiales (cast, hit, death)
+	if _is_casting:
+		return
+	
 	# Obtener input del jugador
 	var input_manager = get_tree().root.get_node_or_null("InputManager")
 	if not input_manager:
@@ -855,18 +859,24 @@ var _is_casting: bool = false
 
 func play_cast_animation() -> void:
 	"""Reproduce la animación de lanzar hechizo (puede ser llamada por armas)"""
-	if _is_casting:
-		return  # Evitar interrumpir animación en curso
-	
 	if not animated_sprite or not animated_sprite.sprite_frames:
 		return
 	
-	if animated_sprite.sprite_frames.has_animation("cast"):
-		_is_casting = true
-		animated_sprite.play("cast")
-		
-		if not animated_sprite.animation_finished.is_connected(_on_cast_animation_finished):
-			animated_sprite.animation_finished.connect(_on_cast_animation_finished, CONNECT_ONE_SHOT)
+	if not animated_sprite.sprite_frames.has_animation("cast"):
+		return
+	
+	# Si ya está casteando, reiniciar la animación desde el principio
+	# para que cada ataque se vea
+	_is_casting = true
+	animated_sprite.stop()
+	animated_sprite.animation = "cast"
+	animated_sprite.frame = 0
+	animated_sprite.play("cast")
+	
+	# Desconectar señal previa si existe y reconectar
+	if animated_sprite.animation_finished.is_connected(_on_cast_animation_finished):
+		animated_sprite.animation_finished.disconnect(_on_cast_animation_finished)
+	animated_sprite.animation_finished.connect(_on_cast_animation_finished, CONNECT_ONE_SHOT)
 
 func _on_cast_animation_finished() -> void:
 	"""Callback cuando termina la animación de cast"""
