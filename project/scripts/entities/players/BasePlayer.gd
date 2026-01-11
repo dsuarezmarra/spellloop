@@ -988,17 +988,16 @@ func create_health_bar() -> void:
 		add_child(health_bar_container)
 		
 		# Calcular offset Y basado en la escala del sprite
-		# El sprite del wizard tiene ~512px de alto, escalado a ~0.25 = ~128px visibles
-		# El centro del sprite está en el centro, así que la cabeza está a ~-64px del centro
+		# La barra debe estar justo encima de la cabeza con un pequeño margen
 		var sprite_scale = player_sprite_scale
 		var visual_calibrator = get_tree().root.get_node_or_null("VisualCalibrator") if get_tree() else null
 		if visual_calibrator and visual_calibrator.has_method("get_player_scale"):
 			sprite_scale = visual_calibrator.get_player_scale()
 		
-		# Sprite original ~512px, la cabeza está aproximadamente a 40% desde arriba
-		# Con escala aplicada: offset = -(sprite_height * scale * 0.5) - margen
-		# Para que la barra flote sobre la cabeza: offset = -(256 * scale) - 8
-		var bar_offset_y = -(256.0 * sprite_scale) - 8.0
+		# Fórmula equilibrada: base + ajuste por escala
+		# Con escala 0.25 -> -55px (justo sobre la cabeza)
+		# Con escala 0.35 -> -63px (se adapta a sprites más grandes)
+		var bar_offset_y = -35.0 - (sprite_scale * 80.0)
 		
 		var bg_bar = ColorRect.new()
 		bg_bar.size = Vector2(40, 4)

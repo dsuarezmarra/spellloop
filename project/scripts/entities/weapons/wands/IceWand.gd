@@ -88,7 +88,7 @@ func perform_attack(owner: Node2D) -> bool:
 		if not game_root:
 			push_warning("[IceWand] ✗ Error: No se pudo obtener current_scene")
 			projectile.queue_free()
-			return
+			return false
 		
 		game_root.add_child(projectile)
 		projectile.global_position = start_pos
