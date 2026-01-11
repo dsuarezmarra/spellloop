@@ -995,9 +995,9 @@ func create_health_bar() -> void:
 			sprite_scale = visual_calibrator.get_player_scale()
 		
 		# Fórmula equilibrada: base + ajuste por escala
-		# Con escala 0.25 -> -55px (justo sobre la cabeza)
-		# Con escala 0.35 -> -63px (se adapta a sprites más grandes)
-		var bar_offset_y = -35.0 - (sprite_scale * 80.0)
+		# Con escala 0.25 -> -40px (justo sobre la cabeza)
+		# Con escala 0.35 -> -44px (se adapta a sprites más grandes)
+		var bar_offset_y = -30.0 - (sprite_scale * 40.0)
 		
 		var bg_bar = ColorRect.new()
 		bg_bar.size = Vector2(40, 4)
