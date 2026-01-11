@@ -820,6 +820,7 @@ class OrbitalManager extends Node2D:
 	var _rotation_angle: float = 0.0
 	var _last_hit_times: Dictionary = {}  # enemy_id -> last_hit_time
 	var _hit_cooldown: float = 0.5  # Tiempo entre hits al mismo enemigo
+	var _cleanup_counter: int = 0  # Contador para limpiar _last_hit_times periódicamente
 	var _enhanced_visual: OrbitalsVisualContainer = null
 	var _use_enhanced: bool = false
 
@@ -1118,6 +1119,22 @@ class OrbitalManager extends Node2D:
 				if is_instance_valid(orbital):
 					positions.append(orbital.position)
 			_enhanced_visual.update_orbital_positions(positions)
+		
+		# Limpiar _last_hit_times cada 60 frames (~1 segundo) para evitar memory leak
+		_cleanup_counter += 1
+		if _cleanup_counter >= 60:
+			_cleanup_counter = 0
+			_cleanup_invalid_hit_times()
+	
+	func _cleanup_invalid_hit_times() -> void:
+		"""Eliminar entradas de enemigos que ya no existen para prevenir memory leak"""
+		var keys_to_remove: Array = []
+		for enemy_id in _last_hit_times.keys():
+			# is_instance_id_valid verifica si el object ID sigue siendo válido
+			if not is_instance_id_valid(enemy_id):
+				keys_to_remove.append(enemy_id)
+		for key in keys_to_remove:
+			_last_hit_times.erase(key)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
