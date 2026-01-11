@@ -498,9 +498,11 @@ func _process(delta: float) -> void:
 				# Arma NO-BaseWeapon pero con métodos tick_cooldown/is_ready_to_fire
 				var gs = _get_combined_global_stats()
 				_apply_global_stats_to_legacy_weapon(weapon, gs)
-				weapon.perform_attack(player)
+				# Capturar si el arma realmente disparó (si retorna bool)
+				var result = weapon.perform_attack(player)
 				_restore_legacy_weapon_base_stats(weapon)
-				did_fire = true  # Legacy weapons siempre disparan
+				# Si perform_attack retorna bool, usar ese valor; si no, asumir que disparó
+				did_fire = result if typeof(result) == TYPE_BOOL else true
 				
 				# Para armas NO-BaseWeapon, resetear cooldown manualmente con mejora de atk speed
 				var attack_speed_mult = maxf(gs.get("attack_speed_mult", 1.0), 0.1)
@@ -539,7 +541,9 @@ func _process_legacy_weapon(weapon, delta: float) -> void:
 				# Aplicar stats globales ANTES de disparar
 				_apply_global_stats_to_legacy_weapon(weapon, gs)
 				
-				weapon.perform_attack(player)
+				# Capturar si el arma realmente disparó
+				var result = weapon.perform_attack(player)
+				var did_fire_legacy = result if typeof(result) == TYPE_BOOL else true
 				
 				# Restaurar valores base después de disparar
 				_restore_legacy_weapon_base_stats(weapon)
@@ -547,10 +551,11 @@ func _process_legacy_weapon(weapon, delta: float) -> void:
 				# Usar cooldown efectivo (con mejoras de velocidad)
 				weapon.current_cooldown = effective_cooldown
 				
-				# Solo activar animación de cast si no es orbital
-				if _should_play_cast_animation(weapon):
+				# Solo activar animación de cast si realmente disparó y no es orbital
+				if did_fire_legacy and _should_play_cast_animation(weapon):
 					_trigger_cast_animation()
-				weapon_fired.emit(weapon, player.global_position)
+				if did_fire_legacy:
+					weapon_fired.emit(weapon, player.global_position)
 
 func _should_play_cast_animation(weapon) -> bool:
 	"""Determinar si el arma debe activar la animación de cast al disparar"""

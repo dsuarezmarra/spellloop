@@ -26,10 +26,10 @@ func _init() -> void:
 	if ResourceLoader.exists("res://scripts/entities/weapons/projectiles/SimpleProjectile.gd"):
 		SimpleProjectileScript = load("res://scripts/entities/weapons/projectiles/SimpleProjectile.gd")
 
-func perform_attack(owner: Node2D) -> void:
-	"""Disparar proyectil hacia el enemigo más cercano"""
+func perform_attack(owner: Node2D) -> bool:
+	"""Disparar proyectil hacia el enemigo más cercano. Retorna true si disparó."""
 	if not owner or not is_active:
-		return
+		return false
 	
 	# Cargar script si aún no está cargado
 	if not SimpleProjectileScript:
@@ -38,12 +38,12 @@ func perform_attack(owner: Node2D) -> void:
 	
 	if not SimpleProjectileScript:
 		push_warning("[IceWand] ✗ Error: SimpleProjectile.gd no disponible")
-		return
+		return false
 	
 	# Obtener enemigo más cercano
 	var target = _find_nearest_enemy(owner)
 	if not target:
-		return
+		return false
 	
 	var start_pos = owner.global_position
 	var target_pos = target.global_position
@@ -92,6 +92,8 @@ func perform_attack(owner: Node2D) -> void:
 		
 		game_root.add_child(projectile)
 		projectile.global_position = start_pos
+	
+	return true  # Disparó exitosamente
 
 func _find_nearest_enemy(owner: Node2D) -> Node:
 	"""Encontrar el enemigo más cercano"""
