@@ -1,6 +1,7 @@
 # SaveManager.gd
 # Handles all game saving and loading operations including local storage and Steam Cloud sync
 # Manages player progression, settings, and run data persistence
+# SUPPORTS MULTIPLE SAVE SLOTS (like The Binding of Isaac)
 #
 # Public API:
 # - save_game_data() -> bool
@@ -9,12 +10,16 @@
 # - get_player_progression() -> Dictionary
 # - save_settings(settings: Dictionary) -> bool
 # - load_settings() -> Dictionary
+# - set_active_slot(slot_index: int) -> void
+# - get_slot_data(slot_index: int) -> Dictionary
+# - delete_slot(slot_index: int) -> void
 #
 # Signals:
 # - save_completed()
 # - save_failed(error: String)
 # - load_completed(data: Dictionary)
 # - load_failed(error: String)
+# - slot_changed(slot_index: int)
 
 extends Node
 
@@ -24,11 +29,22 @@ signal load_completed(data: Dictionary)
 signal load_failed(error: String)
 signal meta_changed(key: String, value)
 signal player_data_changed(data: Dictionary)
+signal slot_changed(slot_index: int)
+
+# Número de slots de guardado
+const NUM_SAVE_SLOTS = 3
+
+# Slot activo actual
+var active_slot: int = -1  # -1 = ninguno seleccionado
 
 # File paths
 const SAVE_DIR = "user://saves/"
-const SAVE_FILE = "user://saves/game_data.json"
+const SLOT_FILE_TEMPLATE = "user://saves/slot_%d.json"
 const SETTINGS_FILE = "user://settings.json"
+const SLOT_CONFIG_FILE = "user://saves/slot_config.json"
+
+# Legacy (para migración)
+const LEGACY_SAVE_FILE = "user://saves/game_data.json"
 const RUN_HISTORY_FILE = "user://saves/run_history.json"
 
 # Default save data structure
@@ -95,11 +111,17 @@ func _ready() -> void:
 	# Create save directory if it doesn't exist
 	_ensure_save_directory()
 	
-	# Load existing data
-	_load_all_data()
-
-	# Load meta persistence (shop)
+	# Migrar datos legacy si existe
+	_migrate_legacy_save()
+	
+	# Load meta persistence (shop) - compartido entre slots
 	_load_meta()
+	
+	# Cargar configuración de slot (último slot usado)
+	_load_slot_config()
+	
+	# Load settings
+	current_settings = load_settings()
 	
 	# Debug desactivado: print("[SaveManager] SaveManager initialized successfully")
 
@@ -110,32 +132,27 @@ func _ensure_save_directory() -> void:
 		# Debug desactivado: print("[SaveManager] Created save directory: ", SAVE_DIR)
 
 func _load_all_data() -> void:
-	"""Load all game data on startup"""
-	current_save_data = load_game_data()
+	"""Load all game data on startup - DEPRECATED, usar set_active_slot"""
+	# Ya no cargamos datos automáticamente - esperamos selección de slot
 	current_settings = load_settings()
-	is_data_loaded = true
 
 	# Ensure meta defaults applied
 	if meta_data == {}:
 		meta_data = DEFAULT_META.duplicate(true)
 
 func save_game_data() -> bool:
-	"""Save current game data to file"""
-	# Debug desactivado: print("[SaveManager] Saving game data...")
-	
-	var file = FileAccess.open(SAVE_FILE, FileAccess.WRITE)
-	if file == null:
-		var error = "Failed to open save file for writing: " + SAVE_FILE
-		push_warning("[SaveManager] Error: " + error)
-		save_failed.emit(error)
+	"""Save current game data to the active slot"""
+	if not has_active_slot():
+		push_warning("[SaveManager] No hay slot activo para guardar")
 		return false
 	
-	var json_string = JSON.stringify(current_save_data)
-	file.store_string(json_string)
-	file.close()
+	# Guardar en el slot activo
+	if not _save_slot_data(active_slot, current_save_data):
+		save_failed.emit("Error al guardar en slot %d" % active_slot)
+		return false
 	
-	# Debug desactivado: print("[SaveManager] Game data saved successfully")
 	save_completed.emit()
+	
 	# Emit player data changed so UI can sync authoritative values
 	if current_save_data.has("player_data"):
 		player_data_changed.emit(current_save_data["player_data"].duplicate(true))
@@ -205,42 +222,23 @@ func spend_meta_currency_from_meta(amount: int) -> bool:
 	return false
 
 func load_game_data() -> Dictionary:
-	"""Load game data from file"""
-	# Debug desactivado: print("[SaveManager] Loading game data...")
+	"""Load game data from active slot"""
+	if not has_active_slot():
+		push_warning("[SaveManager] No hay slot activo, usando datos por defecto")
+		return DEFAULT_SAVE_DATA.duplicate(true)
 	
-	if not FileAccess.file_exists(SAVE_FILE):
-		# Debug desactivado: print("[SaveManager] No save file found, using default data")
+	var slot_data = _load_slot_data(active_slot)
+	
+	if slot_data.is_empty():
+		# Slot vacío - crear datos nuevos
 		current_save_data = DEFAULT_SAVE_DATA.duplicate(true)
-		save_game_data()  # Create initial save file
+		save_game_data()  # Guardar datos iniciales
 		return current_save_data
 	
-	var file = FileAccess.open(SAVE_FILE, FileAccess.READ)
-	if file == null:
-		var error = "Failed to open save file for reading: " + SAVE_FILE
-		push_warning("[SaveManager] Error: " + error)
-		load_failed.emit(error)
-		return DEFAULT_SAVE_DATA.duplicate(true)
+	current_save_data = slot_data
+	is_data_loaded = true
 	
-	var json_string = file.get_as_text()
-	file.close()
-	
-	var json = JSON.new()
-	var parse_result = json.parse(json_string)
-	
-	if parse_result != OK:
-		var error = "Failed to parse save file JSON"
-		push_warning("[SaveManager] Error: " + error)
-		load_failed.emit(error)
-		return DEFAULT_SAVE_DATA.duplicate(true)
-	
-	var loaded_data = json.data
-	
-	# Validate and merge with default structure
-	current_save_data = _validate_save_data(loaded_data)
-	
-	# Debug desactivado: print("[SaveManager] Game data loaded successfully")
 	load_completed.emit(current_save_data)
-	
 	return current_save_data
 
 func save_run_data(run_data: Dictionary) -> void:
@@ -463,6 +461,156 @@ func _validate_settings(data: Dictionary) -> Dictionary:
 		validated_settings.merge(data, true)
 	
 	return validated_settings
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE SLOTS DE GUARDADO
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _get_slot_file_path(slot_index: int) -> String:
+	"""Obtener la ruta del archivo para un slot específico"""
+	return SLOT_FILE_TEMPLATE % slot_index
+
+func _load_slot_config() -> void:
+	"""Cargar configuración de slots (último slot usado, etc.)"""
+	if not FileAccess.file_exists(SLOT_CONFIG_FILE):
+		return
+	
+	var file = FileAccess.open(SLOT_CONFIG_FILE, FileAccess.READ)
+	if not file:
+		return
+	
+	var json = JSON.new()
+	var parse_result = json.parse(file.get_as_text())
+	file.close()
+	
+	if parse_result == OK and json.data is Dictionary:
+		# No cargar automáticamente el último slot - esperar selección del usuario
+		pass
+
+func _save_slot_config() -> void:
+	"""Guardar configuración de slots"""
+	var config = {
+		"last_active_slot": active_slot
+	}
+	
+	var file = FileAccess.open(SLOT_CONFIG_FILE, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(config))
+		file.close()
+
+func _migrate_legacy_save() -> void:
+	"""Migrar guardado legacy (pre-slots) al Slot 1"""
+	if not FileAccess.file_exists(LEGACY_SAVE_FILE):
+		return
+	
+	# Verificar si ya existe el Slot 0
+	var slot_0_path = _get_slot_file_path(0)
+	if FileAccess.file_exists(slot_0_path):
+		return  # Ya migrado
+	
+	# Migrar
+	var legacy_file = FileAccess.open(LEGACY_SAVE_FILE, FileAccess.READ)
+	if legacy_file:
+		var legacy_data = legacy_file.get_as_text()
+		legacy_file.close()
+		
+		# Guardar en Slot 0
+		var slot_file = FileAccess.open(slot_0_path, FileAccess.WRITE)
+		if slot_file:
+			slot_file.store_string(legacy_data)
+			slot_file.close()
+			print("[SaveManager] ✓ Datos legacy migrados al Slot 1")
+
+func set_active_slot(slot_index: int) -> void:
+	"""Establecer el slot activo y cargar sus datos"""
+	if slot_index < 0 or slot_index >= NUM_SAVE_SLOTS:
+		push_warning("[SaveManager] Índice de slot inválido: %d" % slot_index)
+		return
+	
+	active_slot = slot_index
+	_save_slot_config()
+	
+	# Cargar datos del slot
+	current_save_data = _load_slot_data(slot_index)
+	is_data_loaded = true
+	
+	slot_changed.emit(slot_index)
+	load_completed.emit(current_save_data)
+	
+	print("[SaveManager] ✓ Slot %d activado" % (slot_index + 1))
+
+func get_active_slot() -> int:
+	"""Obtener el índice del slot activo"""
+	return active_slot
+
+func has_active_slot() -> bool:
+	"""Verificar si hay un slot activo seleccionado"""
+	return active_slot >= 0 and active_slot < NUM_SAVE_SLOTS
+
+func get_slot_data(slot_index: int) -> Dictionary:
+	"""Obtener datos de un slot específico (para preview)"""
+	if slot_index < 0 or slot_index >= NUM_SAVE_SLOTS:
+		return {}
+	
+	return _load_slot_data(slot_index)
+
+func _load_slot_data(slot_index: int) -> Dictionary:
+	"""Cargar datos de un slot específico"""
+	var slot_path = _get_slot_file_path(slot_index)
+	
+	if not FileAccess.file_exists(slot_path):
+		return {}  # Slot vacío
+	
+	var file = FileAccess.open(slot_path, FileAccess.READ)
+	if not file:
+		return {}
+	
+	var json = JSON.new()
+	var parse_result = json.parse(file.get_as_text())
+	file.close()
+	
+	if parse_result != OK or not json.data is Dictionary:
+		return {}
+	
+	return _validate_save_data(json.data)
+
+func _save_slot_data(slot_index: int, data: Dictionary) -> bool:
+	"""Guardar datos en un slot específico"""
+	var slot_path = _get_slot_file_path(slot_index)
+	
+	var file = FileAccess.open(slot_path, FileAccess.WRITE)
+	if not file:
+		push_warning("[SaveManager] Error al abrir slot %d para escritura" % slot_index)
+		return false
+	
+	file.store_string(JSON.stringify(data))
+	file.close()
+	return true
+
+func delete_slot(slot_index: int) -> void:
+	"""Borrar un slot de guardado"""
+	if slot_index < 0 or slot_index >= NUM_SAVE_SLOTS:
+		return
+	
+	var slot_path = _get_slot_file_path(slot_index)
+	
+	if FileAccess.file_exists(slot_path):
+		DirAccess.remove_absolute(slot_path)
+		print("[SaveManager] ✓ Slot %d borrado" % (slot_index + 1))
+	
+	# Si era el slot activo, desactivar
+	if active_slot == slot_index:
+		active_slot = -1
+		current_save_data = {}
+		is_data_loaded = false
+
+func slot_has_data(slot_index: int) -> bool:
+	"""Verificar si un slot tiene datos guardados"""
+	if slot_index < 0 or slot_index >= NUM_SAVE_SLOTS:
+		return false
+	
+	var slot_path = _get_slot_file_path(slot_index)
+	return FileAccess.file_exists(slot_path)
 
 func _sync_steam_cloud() -> void:
 	"""Sync save data with Steam Cloud (placeholder)"""

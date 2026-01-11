@@ -225,13 +225,14 @@ func get_cooldown_progress() -> float:
 # SISTEMA DE ATAQUE
 # ═══════════════════════════════════════════════════════════════════════════════
 
-func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> void:
+func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> bool:
 	"""
 	Ejecutar ataque del arma
 	Override en subclases para comportamiento específico
+	Retorna true si disparó, false si no (sin targets, en cooldown, etc.)
 	"""
 	if not is_ready_to_fire():
-		return
+		return false
 	
 	var targets = _find_targets(player)
 	
@@ -243,7 +244,7 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> void:
 		and projectile_type != WeaponDatabase.ProjectileType.ORBIT
 	
 	if targets.is_empty() and needs_target:
-		return  # No hay objetivos y el arma necesita uno
+		return false  # No hay objetivos y el arma necesita uno
 	
 	# Aplicar modificadores del jugador
 	var modified_damage = damage
@@ -267,6 +268,7 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> void:
 	
 	start_cooldown()
 	weapon_fired.emit(id, player.global_position, targets[0] if not targets.is_empty() else null)
+	return true
 
 func _find_targets(player: Node2D) -> Array:
 	"""

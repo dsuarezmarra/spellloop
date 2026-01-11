@@ -491,15 +491,16 @@ func _process(delta: float) -> void:
 			if not player.get_tree():
 				return
 			# Disparar con stats del jugador (solo BaseWeapon soporta esto)
+			var did_fire = false
 			if weapon is BaseWeapon:
-				weapon.perform_attack(player, player_stats)
+				did_fire = weapon.perform_attack(player, player_stats)
 			else:
-				pass  # Bloque else
 				# Arma NO-BaseWeapon pero con métodos tick_cooldown/is_ready_to_fire
 				var gs = _get_combined_global_stats()
 				_apply_global_stats_to_legacy_weapon(weapon, gs)
 				weapon.perform_attack(player)
 				_restore_legacy_weapon_base_stats(weapon)
+				did_fire = true  # Legacy weapons siempre disparan
 				
 				# Para armas NO-BaseWeapon, resetear cooldown manualmente con mejora de atk speed
 				var attack_speed_mult = maxf(gs.get("attack_speed_mult", 1.0), 0.1)
@@ -510,8 +511,12 @@ func _process(delta: float) -> void:
 						weapon.current_cooldown = weapon.base_cooldown / attack_speed_mult
 				elif "current_cooldown" in weapon and "base_cooldown" in weapon:
 					weapon.current_cooldown = weapon.base_cooldown / attack_speed_mult
-			_trigger_cast_animation()
-			weapon_fired.emit(weapon, player.global_position)
+			
+			# Solo activar animación de cast si realmente disparó y NO es orbital
+			if did_fire and _should_play_cast_animation(weapon):
+				_trigger_cast_animation()
+			if did_fire:
+				weapon_fired.emit(weapon, player.global_position)
 
 func _process_legacy_weapon(weapon, delta: float) -> void:
 	"""Procesar arma legacy (como IceWand original) con stats globales aplicados"""
@@ -541,8 +546,32 @@ func _process_legacy_weapon(weapon, delta: float) -> void:
 				
 				# Usar cooldown efectivo (con mejoras de velocidad)
 				weapon.current_cooldown = effective_cooldown
-				_trigger_cast_animation()
+				
+				# Solo activar animación de cast si no es orbital
+				if _should_play_cast_animation(weapon):
+					_trigger_cast_animation()
 				weapon_fired.emit(weapon, player.global_position)
+
+func _should_play_cast_animation(weapon) -> bool:
+	"""Determinar si el arma debe activar la animación de cast al disparar"""
+	# Las armas orbitales no requieren animación de cast (orbitan automáticamente)
+	if weapon is BaseWeapon:
+		if weapon.projectile_type == WeaponDatabase.ProjectileType.ORBIT:
+			return false
+		if weapon.target_type == WeaponDatabase.TargetType.ORBIT:
+			return false
+	
+	# Para armas legacy, verificar por nombre o propiedades
+	if "projectile_type" in weapon:
+		var ptype = weapon.projectile_type
+		if ptype == WeaponDatabase.ProjectileType.ORBIT:
+			return false
+	
+	# También excluir armas de aura/pasivas si las hay
+	if weapon.has_method("is_passive_weapon") and weapon.is_passive_weapon():
+		return false
+	
+	return true
 
 func _trigger_cast_animation() -> void:
 	"""Activar animación de cast en el player si está disponible"""

@@ -71,6 +71,8 @@ const STATUS_AURA_PULSE_SPEED: float = 4.0
 # ========== CONFIGURACIÓN VISUAL ==========
 @export var player_sprite_scale: float = 1.0  # Escala del sprite
 var last_dir: String = "down"
+var _is_dying: bool = false  # Flag para evitar acciones durante la muerte
+var _is_casting: bool = false  # Flag para animación de cast
 
 # ========== CARACTERIZACIÓN (Sobrescribir en subclases) ==========
 var character_class: String = "BasePlayer"  # Sobrescribir en subclases: "Wizard", "Rogue", etc.
@@ -725,8 +727,6 @@ func _on_health_died() -> void:
 	# Reproducir animación de muerte antes de emitir señal
 	_play_death_animation()
 
-var _is_dying: bool = false  # Flag para evitar acciones durante la muerte
-
 func _play_death_animation() -> void:
 	"""Reproduce la animación de muerte y luego emite señal de muerte"""
 	_is_dying = true
@@ -873,7 +873,6 @@ func get_max_health() -> int:
 
 # ========== ANIMACIÓN DE CAST ==========
 
-var _is_casting: bool = false
 const CAST_ANIMATION_BASE_FPS: float = 2.0  # FPS base lento para que se vea bien
 const CAST_SCALE_COMPENSATION: float = 1.15  # El wizard en cast se ve más pequeño por el staff levantado
 

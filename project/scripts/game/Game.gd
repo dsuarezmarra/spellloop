@@ -945,17 +945,13 @@ func player_died() -> void:
 		if audio_manager.has_method("stop_music"):
 			audio_manager.stop_music()
 	
-	# Esperar un momento para que la animación de muerte se vea
-	await get_tree().create_timer(0.5).timeout
+	# La animación de muerte tiene 4 frames a 2 FPS = 2 segundos
+	# Esperamos ese tiempo antes de mostrar Game Over
+	await get_tree().create_timer(2.5).timeout
 	
 	# Mostrar pantalla de game over
 	if game_over_screen:
 		game_over_screen.show_game_over(run_stats)
-	else:
-		# Fallback: volver al menú principal
-		push_warning("[Game] GameOverScreen no disponible, volviendo al menú")
-		get_tree().paused = false
-		get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
 
 func _save_run_stats() -> void:
 	"""Guardar estadísticas de la run para persistencia"""

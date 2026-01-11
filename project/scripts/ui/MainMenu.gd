@@ -163,14 +163,79 @@ func _get_audio_manager() -> Node:
 		return tree.root.get_node_or_null("AudioManager")
 	return null
 
+# Referencia a la pantalla de selección de slot
+var slot_select_screen: Control = null
+
 func _on_play_pressed() -> void:
 	_play_button_sound()
 	play_pressed.emit()
 
+	# Mostrar pantalla de selección de slot
+	_show_slot_select()
+
+func _show_slot_select() -> void:
+	"""Mostrar pantalla de selección de slot de guardado"""
+	if slot_select_screen and is_instance_valid(slot_select_screen):
+		slot_select_screen.visible = true
+		slot_select_screen.refresh()
+		return
+	
+	# Cargar la escena de selección de slot
+	var slot_scene = load("res://scenes/ui/SaveSlotSelect.tscn")
+	if not slot_scene:
+		push_warning("[MainMenu] No se pudo cargar SaveSlotSelect.tscn")
+		# Fallback: iniciar juego directamente
+		_start_game_with_default_slot()
+		return
+	
+	slot_select_screen = slot_scene.instantiate()
+	add_child(slot_select_screen)
+	
+	# Conectar señales
+	slot_select_screen.slot_selected.connect(_on_slot_selected)
+	slot_select_screen.back_pressed.connect(_on_slot_back)
+	
+	# Ocultar el menú principal mientras se muestra la selección
+	$VBoxContainer.visible = false
+	$TitleLabel.visible = false
+	if has_node("SubtitleLabel"):
+		$SubtitleLabel.visible = false
+
+func _on_slot_selected(slot_index: int) -> void:
+	"""Callback cuando se selecciona un slot"""
+	# Activar el slot en SaveManager
+	var save_manager = get_tree().root.get_node_or_null("SaveManager")
+	if save_manager and save_manager.has_method("set_active_slot"):
+		save_manager.set_active_slot(slot_index)
+	
 	# Limpiar estado de partida anterior si existe
 	if SessionState:
 		SessionState.clear_game_state()
+	
+	# Iniciar juego
+	_start_game()
 
+func _on_slot_back() -> void:
+	"""Callback cuando se vuelve de la selección de slot"""
+	# Ocultar pantalla de slots
+	if slot_select_screen:
+		slot_select_screen.visible = false
+	
+	# Mostrar menú principal
+	$VBoxContainer.visible = true
+	$TitleLabel.visible = true
+	if has_node("SubtitleLabel"):
+		$SubtitleLabel.visible = true
+	
+	# Actualizar navegación
+	_update_button_list()
+	_highlight_current_button()
+
+func _start_game_with_default_slot() -> void:
+	"""Iniciar juego con slot por defecto (fallback)"""
+	var save_manager = get_tree().root.get_node_or_null("SaveManager")
+	if save_manager and save_manager.has_method("set_active_slot"):
+		save_manager.set_active_slot(0)
 	_start_game()
 
 func _on_resume_pressed() -> void:
