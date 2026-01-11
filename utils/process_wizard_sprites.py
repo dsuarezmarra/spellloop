@@ -78,14 +78,19 @@ def get_content_bounds(img, x_start, x_end):
     return (x_start + x_min, y_min, x_start + x_min + (x_max - x_min), y_max)
 
 
-def extract_and_resize_frame(img, bounds, target_size):
-    """Extrae un frame y lo redimensiona manteniendo aspecto, centrado en canvas cuadrado"""
+def extract_and_resize_frame(img, bounds, target_size, scale_factor=0.9):
+    """Extrae un frame y lo redimensiona manteniendo aspecto, centrado en canvas cuadrado
+    
+    scale_factor: qué porcentaje del canvas usar (0.9 = 90%)
+    """
     x1, y1, x2, y2 = bounds
     frame = img.crop((x1, y1, x2, y2))
     
-    # Calcular escala manteniendo aspecto
     w, h = frame.size
-    scale = min(target_size / w, target_size / h) * 0.9  # 90% para dejar margen
+    
+    # Calcular escala manteniendo aspecto
+    scale = min(target_size / w, target_size / h) * scale_factor
+    
     new_w = int(w * scale)
     new_h = int(h * scale)
     
@@ -120,6 +125,17 @@ def create_spritesheet(frames, direction="horizontal"):
     return sheet
 
 
+# Factores de escala por tipo de animación
+SCALE_FACTORS = {
+    "walk": 0.9,
+    "side": 0.9,
+    "down": 0.9,
+    "up": 0.9,
+    "cast": 0.9,  # Mismo que los demás, compensar en el juego
+    "hit": 0.9,
+    "death": 0.9,
+}
+
 def process_all_sprites():
     """Procesa todos los sprites según la configuración"""
     
@@ -143,12 +159,16 @@ def process_all_sprites():
             
             print(f"   Frames detectados: {len(frame_regions)}")
             
+            # Obtener factor de escala para este tipo de animación
+            scale_factor = SCALE_FACTORS.get(anim_type, 0.9)
+            print(f"   Factor de escala: {scale_factor}")
+            
             # Extraer frames individuales
             frames = []
             for i, (x_start, x_end) in enumerate(frame_regions):
                 bounds = get_content_bounds(img, x_start, x_end)
                 if bounds:
-                    frame = extract_and_resize_frame(img, bounds, TARGET_SIZE)
+                    frame = extract_and_resize_frame(img, bounds, TARGET_SIZE, scale_factor)
                     frames.append(frame)
                     print(f"   Frame {i+1}: extraído y redimensionado a {TARGET_SIZE}x{TARGET_SIZE}")
             

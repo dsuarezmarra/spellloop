@@ -856,6 +856,8 @@ func get_max_health() -> int:
 # ========== ANIMACIÓN DE CAST ==========
 
 var _is_casting: bool = false
+const CAST_ANIMATION_BASE_FPS: float = 2.0  # FPS base lento para que se vea bien
+const CAST_SCALE_COMPENSATION: float = 1.15  # El wizard en cast se ve más pequeño por el staff levantado
 
 func play_cast_animation() -> void:
 	"""Reproduce la animación de lanzar hechizo (puede ser llamada por armas)"""
@@ -865,6 +867,17 @@ func play_cast_animation() -> void:
 	if not animated_sprite.sprite_frames.has_animation("cast"):
 		return
 	
+	# Obtener velocidad de ataque para ajustar la animación
+	var attack_speed_mult: float = 1.0
+	var player_stats_node = get_tree().get_first_node_in_group("player_stats")
+	if player_stats_node and player_stats_node.has_method("get_stat"):
+		attack_speed_mult = player_stats_node.get_stat("attack_speed_mult")
+	
+	# Ajustar velocidad de animación según attack_speed
+	# Base lenta (2 FPS) * multiplicador de velocidad de ataque
+	var anim_speed = CAST_ANIMATION_BASE_FPS * attack_speed_mult
+	animated_sprite.sprite_frames.set_animation_speed("cast", anim_speed)
+	
 	# Si ya está casteando, reiniciar la animación desde el principio
 	# para que cada ataque se vea
 	_is_casting = true
@@ -872,6 +885,10 @@ func play_cast_animation() -> void:
 	animated_sprite.animation = "cast"
 	animated_sprite.frame = 0
 	animated_sprite.play("cast")
+	
+	# Compensar visualmente el tamaño - el wizard en cast parece más pequeño
+	var base_scale = player_sprite_scale * CAST_SCALE_COMPENSATION
+	animated_sprite.scale = Vector2(base_scale, base_scale)
 	
 	# Desconectar señal previa si existe y reconectar
 	if animated_sprite.animation_finished.is_connected(_on_cast_animation_finished):
@@ -881,6 +898,11 @@ func play_cast_animation() -> void:
 func _on_cast_animation_finished() -> void:
 	"""Callback cuando termina la animación de cast"""
 	_is_casting = false
+	
+	# Restaurar escala normal
+	if animated_sprite:
+		animated_sprite.scale = Vector2(player_sprite_scale, player_sprite_scale)
+	
 	if animated_sprite and animated_sprite.sprite_frames:
 		# Volver a la animación apropiada según estado de movimiento
 		var anim_prefix = "walk_" if _is_moving else "idle_"
