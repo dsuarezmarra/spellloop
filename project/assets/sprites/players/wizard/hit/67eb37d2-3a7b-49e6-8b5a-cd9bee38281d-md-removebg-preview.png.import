@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://coagknr8k3h3i"
-path="res://.godot/imported/wizard_up.png-813164bab8184f8d29731b783a72b2e2.ctex"
+uid="uid://divyxs688nnfe"
+path="res://.godot/imported/67eb37d2-3a7b-49e6-8b5a-cd9bee38281d-md-removebg-preview.png-3ca24592c7ab25bd273ca92773c14eaf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/players/wizard/wizard_up.png"
-dest_files=["res://.godot/imported/wizard_up.png-813164bab8184f8d29731b783a72b2e2.ctex"]
+source_file="res://assets/sprites/players/wizard/hit/67eb37d2-3a7b-49e6-8b5a-cd9bee38281d-md-removebg-preview.png"
+dest_files=["res://.godot/imported/67eb37d2-3a7b-49e6-8b5a-cd9bee38281d-md-removebg-preview.png-3ca24592c7ab25bd273ca92773c14eaf.ctex"]
 
 [params]
 

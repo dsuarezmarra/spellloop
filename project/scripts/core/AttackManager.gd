@@ -510,6 +510,7 @@ func _process(delta: float) -> void:
 						weapon.current_cooldown = weapon.base_cooldown / attack_speed_mult
 				elif "current_cooldown" in weapon and "base_cooldown" in weapon:
 					weapon.current_cooldown = weapon.base_cooldown / attack_speed_mult
+			_trigger_cast_animation()
 			weapon_fired.emit(weapon, player.global_position)
 
 func _process_legacy_weapon(weapon, delta: float) -> void:
@@ -540,7 +541,18 @@ func _process_legacy_weapon(weapon, delta: float) -> void:
 				
 				# Usar cooldown efectivo (con mejoras de velocidad)
 				weapon.current_cooldown = effective_cooldown
+				_trigger_cast_animation()
 				weapon_fired.emit(weapon, player.global_position)
+
+func _trigger_cast_animation() -> void:
+	"""Activar animación de cast en el player si está disponible"""
+	if player and player.has_method("play_cast_animation"):
+		player.play_cast_animation()
+	# También intentar con WizardPlayer si está anidado
+	elif player:
+		var wizard = player.get_node_or_null("WizardPlayer")
+		if wizard and wizard.has_method("play_cast_animation"):
+			wizard.play_cast_animation()
 
 func _apply_global_stats_to_legacy_weapon(weapon, gs: Dictionary) -> void:
 	"""Aplicar stats globales temporalmente a un arma legacy antes de disparar"""

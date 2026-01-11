@@ -69,7 +69,7 @@ const STATUS_FLASH_INTERVAL: float = 0.15
 const STATUS_AURA_PULSE_SPEED: float = 4.0
 
 # ========== CONFIGURACIÓN VISUAL ==========
-@export var player_sprite_scale: float = 0.25
+@export var player_sprite_scale: float = 1.0  # Escala del sprite
 var last_dir: String = "down"
 
 # ========== CARACTERIZACIÓN (Sobrescribir en subclases) ==========
@@ -218,6 +218,8 @@ func _equip_starting_weapons() -> void:
 
 # ========== MOVIMIENTO ==========
 
+var _is_moving: bool = false
+
 func _process(delta: float) -> void:
 	"""Actualizar animación según dirección de movimiento"""
 	if not animated_sprite or not animated_sprite.sprite_frames:
@@ -229,32 +231,36 @@ func _process(delta: float) -> void:
 		return
 	
 	var movement_input_vec = input_manager.get_movement_vector()
-	
-	# Si no hay movimiento, mantener la dirección anterior
-	if movement_input_vec.length() == 0:
-		return
+	var is_moving_now = movement_input_vec.length() > 0.1
 	
 	# Determinar dirección basada en input
-	var abs_x = abs(movement_input_vec.x)
-	var abs_y = abs(movement_input_vec.y)
 	var new_dir = last_dir
+	if is_moving_now:
+		var abs_x = abs(movement_input_vec.x)
+		var abs_y = abs(movement_input_vec.y)
+		
+		# Priorizar input en Y si es significativo
+		if abs_y > abs_x * 0.5:
+			if movement_input_vec.y < 0:
+				new_dir = "up"
+			elif movement_input_vec.y > 0:
+				new_dir = "down"
+		else:
+			if movement_input_vec.x < 0:
+				new_dir = "left"
+			elif movement_input_vec.x > 0:
+				new_dir = "right"
 	
-	# Priorizar input en Y si es significativo
-	if abs_y > abs_x * 0.5:
-		if movement_input_vec.y < 0:
-			new_dir = "up"
-		elif movement_input_vec.y > 0:
-			new_dir = "down"
-	else:
-		if movement_input_vec.x < 0:
-			new_dir = "left"
-		elif movement_input_vec.x > 0:
-			new_dir = "right"
+	# Decidir animación: walk si se mueve, idle si está quieto
+	var animation_prefix = "walk_" if is_moving_now else "idle_"
+	var animation_name = animation_prefix + new_dir
 	
-	# Solo cambiar animación si es diferente
-	if new_dir != last_dir:
+	# Solo cambiar si la animación es diferente o si el estado de movimiento cambió
+	var should_change = (new_dir != last_dir) or (is_moving_now != _is_moving)
+	
+	if should_change:
 		last_dir = new_dir
-		var animation_name = "idle_%s" % last_dir
+		_is_moving = is_moving_now
 		if animated_sprite.sprite_frames.has_animation(animation_name):
 			animated_sprite.animation = animation_name
 			animated_sprite.play()
@@ -615,6 +621,30 @@ func _play_damage_flash(element: String) -> void:
 	animated_sprite.modulate = flash_color
 	var tween = create_tween()
 	tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.2)
+	
+	# Reproducir animación de hit si está disponible
+	_play_hit_animation()
+
+func _play_hit_animation() -> void:
+	"""Reproduce la animación de recibir daño"""
+	if not animated_sprite or not animated_sprite.sprite_frames:
+		return
+	
+	if animated_sprite.sprite_frames.has_animation("hit"):
+		var previous_anim = animated_sprite.animation
+		animated_sprite.play("hit")
+		
+		# Volver a la animación anterior cuando termine
+		if not animated_sprite.animation_finished.is_connected(_on_hit_animation_finished):
+			animated_sprite.animation_finished.connect(_on_hit_animation_finished.bind(previous_anim), CONNECT_ONE_SHOT)
+
+func _on_hit_animation_finished(previous_anim: String) -> void:
+	"""Callback cuando termina la animación de hit"""
+	if animated_sprite and animated_sprite.sprite_frames:
+		# Volver a idle en la última dirección
+		var idle_anim = "idle_%s" % last_dir
+		if animated_sprite.sprite_frames.has_animation(idle_anim):
+			animated_sprite.play(idle_anim)
 
 func _play_shield_absorb_effect() -> void:
 	"""Efecto visual cuando el escudo absorbe todo el daño"""
@@ -688,7 +718,22 @@ func _on_health_died() -> void:
 			return
 	
 	# Sin revives - muerte definitiva
-	# Debug desactivado: print("[%s] ✗ Personaje muerto" % character_class)
+	# Reproducir animación de muerte antes de emitir señal
+	_play_death_animation()
+
+func _play_death_animation() -> void:
+	"""Reproduce la animación de muerte y luego emite señal de muerte"""
+	if animated_sprite and animated_sprite.sprite_frames and animated_sprite.sprite_frames.has_animation("death"):
+		animated_sprite.play("death")
+		# Conectar señal para emitir player_died cuando termine la animación
+		if not animated_sprite.animation_finished.is_connected(_on_death_animation_finished):
+			animated_sprite.animation_finished.connect(_on_death_animation_finished, CONNECT_ONE_SHOT)
+	else:
+		# Si no hay animación de muerte, emitir señal directamente
+		player_died.emit()
+
+func _on_death_animation_finished() -> void:
+	"""Callback cuando termina la animación de muerte"""
 	player_died.emit()
 
 func _trigger_revive(player_stats: Node, current_revives: int) -> void:
@@ -803,6 +848,35 @@ func get_max_health() -> int:
 	if health_component and "max_health" in health_component:
 		return health_component.max_health
 	return max_hp
+
+# ========== ANIMACIÓN DE CAST ==========
+
+var _is_casting: bool = false
+
+func play_cast_animation() -> void:
+	"""Reproduce la animación de lanzar hechizo (puede ser llamada por armas)"""
+	if _is_casting:
+		return  # Evitar interrumpir animación en curso
+	
+	if not animated_sprite or not animated_sprite.sprite_frames:
+		return
+	
+	if animated_sprite.sprite_frames.has_animation("cast"):
+		_is_casting = true
+		animated_sprite.play("cast")
+		
+		if not animated_sprite.animation_finished.is_connected(_on_cast_animation_finished):
+			animated_sprite.animation_finished.connect(_on_cast_animation_finished, CONNECT_ONE_SHOT)
+
+func _on_cast_animation_finished() -> void:
+	"""Callback cuando termina la animación de cast"""
+	_is_casting = false
+	if animated_sprite and animated_sprite.sprite_frames:
+		# Volver a la animación apropiada según estado de movimiento
+		var anim_prefix = "walk_" if _is_moving else "idle_"
+		var anim_name = anim_prefix + last_dir
+		if animated_sprite.sprite_frames.has_animation(anim_name):
+			animated_sprite.play(anim_name)
 
 # ========== EQUIPAMIENTO DE ARMAS ==========
 

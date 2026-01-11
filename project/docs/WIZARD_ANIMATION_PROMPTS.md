@@ -1,12 +1,12 @@
 # ?? Prompts para Animaciones del Wizard
 
-## ?? IMPORTANTE: CÛmo usar este documento
+## ?? IMPORTANTE: CÔøΩmo usar este documento
 
-**Las IAs de im·genes (DALL-E, Midjourney, etc.) NO pueden generar todos los sprites de una vez.**
+**Las IAs de imÔøΩgenes (DALL-E, Midjourney, etc.) NO pueden generar todos los sprites de una vez.**
 
 ### Estrategia recomendada:
-1. **DALL-E/ChatGPT:** Genera 1 imagen por prompt. Necesitar·s ejecutar cada prompt por separado.
-2. **Midjourney:** Genera 4 variaciones por prompt (˙til para los 4 frames de walk).
+1. **DALL-E/ChatGPT:** Genera 1 imagen por prompt. NecesitarÔøΩs ejecutar cada prompt por separado.
+2. **Midjourney:** Genera 4 variaciones por prompt (ÔøΩtil para los 4 frames de walk).
 
 ### Flujo de trabajo:
 1. Ejecuta el **Prompt #0** primero para establecer el estilo del personaje
@@ -15,38 +15,38 @@
 
 ---
 
-## ?? Especificaciones TÈcnicas
+## ?? Especificaciones TÔøΩcnicas
 
-- **TamaÒo:** 500x500 pÌxeles por frame
+- **TamaÔøΩo:** 500x500 pÔøΩxeles por frame
 - **Formato:** PNG con fondo transparente
-- **Estilo:** Cartoon/Funko Pop (ver guÌa de estilo abajo)
+- **Estilo:** Cartoon/Funko Pop (ver guÔøΩa de estilo abajo)
 - **Vista:** Top-down con ligera perspectiva 3/4
 
 ---
 
-## ?? GUÕA DE ESTILO - SPELLLOOP (MUY IMPORTANTE)
+## ?? GUÔøΩA DE ESTILO - SPELLLOOP (MUY IMPORTANTE)
 
-### CaracterÌsticas visuales del estilo Funko Pop/Cartoon:
+### CaracterÔøΩsticas visuales del estilo Funko Pop/Cartoon:
 
-| CaracterÌstica | DescripciÛn |
+| CaracterÔøΩstica | DescripciÔøΩn |
 |----------------|-------------|
 | **Proporciones** | Cabeza grande (~30% del cuerpo), cuerpo compacto estilizado |
-| **Formas** | Redondeadas y suaves, evitar ·ngulos agudos |
+| **Formas** | Redondeadas y suaves, evitar ÔøΩngulos agudos |
 | **Ojos** | Grandes, expresivos, brillantes (estilo anime/cartoon) |
-| **Outlines** | Contorno oscuro grueso (2-3px), ~20-25% de pÌxeles oscuros |
-| **Colores** | Saturados y vibrantes (~85% saturaciÛn), paleta limitada |
+| **Outlines** | Contorno oscuro grueso (2-3px), ~20-25% de pÔøΩxeles oscuros |
+| **Colores** | Saturados y vibrantes (~85% saturaciÔøΩn), paleta limitada |
 | **Sombreado** | Cel-shading simple (2-3 niveles de sombra), luz desde arriba-izquierda |
 | **Detalles** | Simplificados pero expresivos, sin texturas realistas |
 | **Expresiones** | Cute/adorable incluso en personajes serios |
 
 ### Paleta de colores del Wizard actual:
-- **T˙nica principal:** Azul profundo (#4A7A9C)
-- **T˙nica sombras:** Azul oscuro (#3A5A7C)
-- **T˙nica highlights:** Azul claro (#6A9ABC)
-- **Piel:** Beige c·lido (#E8D4B8)
-- **Barba/Pelo:** Blanco gris·ceo (#E0E0E0)
+- **TÔøΩnica principal:** Azul profundo (#4A7A9C)
+- **TÔøΩnica sombras:** Azul oscuro (#3A5A7C)
+- **TÔøΩnica highlights:** Azul claro (#6A9ABC)
+- **Piel:** Beige cÔøΩlido (#E8D4B8)
+- **Barba/Pelo:** Blanco grisÔøΩceo (#E0E0E0)
 - **Staff cristal:** Cian brillante (#66CCFF)
-- **Staff madera:** MarrÛn (#8B6914)
+- **Staff madera:** MarrÔøΩn (#8B6914)
 - **Outline:** Negro/Gris muy oscuro (#1A1A2E)
 
 ### Referencias de estilo (buscar en Google):
@@ -63,7 +63,7 @@
 
 ## PROMPT #0 - Referencia de Estilo (EJECUTAR PRIMERO)
 
-> **PropÛsito:** Establece el diseÒo base del personaje. Guarda esta imagen como referencia.
+> **PropÔøΩsito:** Establece el diseÔøΩo base del personaje. Guarda esta imagen como referencia.
 
 ```
 Character reference sheet for a 2D top-down roguelike game.
@@ -269,7 +269,7 @@ OUTPUT: Horizontal strip 2000x500 pixels (4 frames of 500x500 each), transparent
 
 ---
 
-## ? ANIMACI”N DE CASTING (Lanzar hechizo)
+## ? ANIMACIÔøΩN DE CASTING (Lanzar hechizo)
 
 ---
 
@@ -315,7 +315,7 @@ OUTPUT: Horizontal strip 2000x500 pixels (4 frames of 500x500 each), transparent
 
 ---
 
-## ?? ANIMACI”N DE DA—O (Hit)
+## ?? ANIMACIÔøΩN DE DAÔøΩO (Hit)
 
 ---
 
@@ -357,7 +357,7 @@ OUTPUT: Horizontal strip 1000x500 pixels (2 frames of 500x500 each), transparent
 
 ---
 
-## ?? ANIMACI”N DE MUERTE (Death)
+## ?? ANIMACIÔøΩN DE MUERTE (Death)
 
 ---
 
@@ -455,7 +455,7 @@ Si la IA no genera bien los sprite strips, usa estos prompts frame por frame:
 
 ---
 
-# ?? Resumen y Checklist
+# üìã Resumen y Checklist
 
 ## Sprites a generar:
 
@@ -466,48 +466,43 @@ Si la IA no genera bien los sprite strips, usa estos prompts frame por frame:
 | 2 | Walk Up | 1 strip | 4 sprites |
 | 3 | Walk Left | 1 strip | 4 sprites |
 | 4 | Walk Right | 1 strip | 4 sprites |
-| 5 | Idle Down | 1 strip | 3 sprites |
-| 6 | Idle Up | 1 strip | 3 sprites |
-| 7 | Idle Left | 1 strip | 3 sprites |
-| 8 | Idle Right | 1 strip | 3 sprites |
-| 9 | Cast | 1 strip | 4 sprites |
-| 10 | Hit | 1 strip | 2 sprites |
-| 11 | Death | 1 strip | 4 sprites |
-| **TOTAL** | **12 prompts** | **12 im·genes** | **38 sprites** |
+| 5 | Cast | 1 strip | 4 sprites |
+| 6 | Hit | 1 strip | 2 sprites |
+| 7 | Death | 1 strip | 4 sprites |
+| **TOTAL** | **8 prompts** | **8 im√°genes** | **26 sprites** |
 
-## Prioridad de ejecuciÛn:
+> **Nota:** Las animaciones Idle se omiten - se usar√° el primer frame de Walk como pose est√°tica.
 
-1. ?? **#0** ? Referencia (obligatorio primero)
-2. ?? **#1-4** ? Walk (16 sprites) - Mayor impacto
-3. ?? **#9** ? Cast (4 sprites) - Feedback combate
-4. ?? **#5-8** ? Idle (12 sprites) - Pulido
-5. ?? **#10** ? Hit (2 sprites) - Feedback daÒo
-6. ?? **#11** ? Death (4 sprites) - Completitud
+## Prioridad de ejecuci√≥n:
+
+1. üé® **#0** ‚Üí Referencia (obligatorio primero)
+2. üö∂ **#1-4** ‚Üí Walk (16 sprites) - Mayor impacto
+3. ‚ú® **#5** ‚Üí Cast (4 sprites) - Feedback combate
+4. üí• **#6** ‚Üí Hit (2 sprites) - Feedback da√±o
+5. üíÄ **#7** ‚Üí Death (4 sprites) - Completitud
 
 ---
 
-## ??? Post-procesamiento
+## ‚öôÔ∏è Post-procesamiento
 
-DespuÈs de generar las im·genes, necesitar·s:
+Despu√©s de generar las im√°genes, necesitar√°s:
 
-1. **Cortar los strips** en frames individuales (usa cualquier editor de im·genes)
-2. **Verificar consistencia** de colores y tamaÒos entre frames
+1. **Cortar los strips** en frames individuales (usa cualquier editor de im√°genes)
+2. **Verificar consistencia** de colores y tama√±os entre frames
 3. **Guardar** en `assets/sprites/players/wizard/` con la estructura:
    ```
    wizard/
-   ??? walk/
-   ?   ??? wizard_walk_down_1.png ... wizard_walk_down_4.png
-   ?   ??? wizard_walk_up_1.png ... wizard_walk_up_4.png
-   ?   ??? wizard_walk_left_1.png ... wizard_walk_left_4.png
-   ?   ??? wizard_walk_right_1.png ... wizard_walk_right_4.png
-   ??? idle/
-   ?   ??? ... (similar estructura)
-   ??? cast/
-   ?   ??? wizard_cast_1.png ... wizard_cast_4.png
-   ??? hit/
-   ?   ??? wizard_hit_1.png, wizard_hit_2.png
-   ??? death/
-       ??? wizard_death_1.png ... wizard_death_4.png
+   ‚îú‚îÄ‚îÄ walk/
+   ‚îÇ   ‚îú‚îÄ‚îÄ wizard_walk_down_1.png ... wizard_walk_down_4.png
+   ‚îÇ   ‚îú‚îÄ‚îÄ wizard_walk_up_1.png ... wizard_walk_up_4.png
+   ‚îÇ   ‚îú‚îÄ‚îÄ wizard_walk_left_1.png ... wizard_walk_left_4.png
+   ‚îÇ   ‚îî‚îÄ‚îÄ wizard_walk_right_1.png ... wizard_walk_right_4.png
+   ‚îú‚îÄ‚îÄ cast/
+   ‚îÇ   ‚îî‚îÄ‚îÄ wizard_cast_1.png ... wizard_cast_4.png
+   ‚îú‚îÄ‚îÄ hit/
+   ‚îÇ   ‚îî‚îÄ‚îÄ wizard_hit_1.png, wizard_hit_2.png
+   ‚îî‚îÄ‚îÄ death/
+       ‚îî‚îÄ‚îÄ wizard_death_1.png ... wizard_death_4.png
    ```
 
 ---
@@ -519,7 +514,7 @@ DespuÈs de generar las im·genes, necesitar·s:
 ```
 2D game sprite sheet for roguelike game, horizontal strip format.
 
-SUBJECT: [NOMBRE_PERSONAJE] character [TIPO_ANIMACI”N] animation - [DIRECCI”N]
+SUBJECT: [NOMBRE_PERSONAJE] character [TIPO_ANIMACIÔøΩN] animation - [DIRECCIÔøΩN]
 
 ART STYLE (CRITICAL - MATCH SPELLLOOP STYLE):
 - Funko Pop / Chibi cartoon style
@@ -532,17 +527,17 @@ ART STYLE (CRITICAL - MATCH SPELLLOOP STYLE):
 - Friendly cute appearance even for serious characters
 
 CHARACTER DESIGN:
-- [DESCRIPCI”N_ROPA_PRINCIPAL]
-- [DESCRIPCI”N_ACCESORIOS]
-- [DESCRIPCI”N_ARMA_O_ITEM]
+- [DESCRIPCIÔøΩN_ROPA_PRINCIPAL]
+- [DESCRIPCIÔøΩN_ACCESORIOS]
+- [DESCRIPCIÔøΩN_ARMA_O_ITEM]
 - [TIPO_CUERPO: compacto/esbelto/robusto]
-- [EXPRESI”N_FACIAL]
+- [EXPRESIÔøΩN_FACIAL]
 
 ANIMATION ([N_FRAMES] frames, [TIPO_MOVIMIENTO]):
-- Frame 1: [DESCRIPCI”N_FRAME_1]
-- Frame 2: [DESCRIPCI”N_FRAME_2]
-- Frame 3: [DESCRIPCI”N_FRAME_3]
-- Frame 4: [DESCRIPCI”N_FRAME_4] (si aplica)
+- Frame 1: [DESCRIPCIÔøΩN_FRAME_1]
+- Frame 2: [DESCRIPCIÔøΩN_FRAME_2]
+- Frame 3: [DESCRIPCIÔøΩN_FRAME_3]
+- Frame 4: [DESCRIPCIÔøΩN_FRAME_4] (si aplica)
 
 COLOR PALETTE:
 - Main color: [HEX_PRINCIPAL]
@@ -561,9 +556,9 @@ OUTPUT: Horizontal strip [ANCHO_TOTAL]x500 pixels ([N_FRAMES] frames of 500x500 
 - ROPA_PRINCIPAL: Dark hooded cloak with leather armor underneath
 - ACCESORIOS: Belt with pouches, face mask
 - ARMA: Twin daggers with purple poison glow
-- TIPO_CUERPO: Esbelto/·gil
+- TIPO_CUERPO: Esbelto/ÔøΩgil
 - COLOR_PRINCIPAL: #2D2D44 (gris oscuro)
-- COLOR_ACENTO: #9944FF (p˙rpura veneno)
+- COLOR_ACENTO: #9944FF (pÔøΩrpura veneno)
 
 ### Para un WARRIOR/KNIGHT:
 - NOMBRE_PERSONAJE: Knight
@@ -579,23 +574,23 @@ OUTPUT: Horizontal strip [ANCHO_TOTAL]x500 pixels ([N_FRAMES] frames of 500x500 
 - ROPA_PRINCIPAL: Green hooded tunic, brown leather vest
 - ACCESORIOS: Quiver of arrows on back
 - ARMA: Wooden bow with green magical string
-- TIPO_CUERPO: AtlÈtico/equilibrado
+- TIPO_CUERPO: AtlÔøΩtico/equilibrado
 - COLOR_PRINCIPAL: #4A7A4A (verde bosque)
-- COLOR_ACENTO: #8B4513 (marrÛn cuero)
+- COLOR_ACENTO: #8B4513 (marrÔøΩn cuero)
 
 ---
 
-## ?? Especificaciones TÈcnicas Est·ndar (TODOS los personajes)
+## ?? Especificaciones TÔøΩcnicas EstÔøΩndar (TODOS los personajes)
 
 | Propiedad | Valor | Notas |
 |-----------|-------|-------|
-| TamaÒo frame | 500x500 px | Contenido centrado |
+| TamaÔøΩo frame | 500x500 px | Contenido centrado |
 | Outline | 2-3 px | Color #1A1A2E |
-| ProporciÛn cabeza | ~30% altura | Estilo Funko/Chibi |
-| SaturaciÛn colores | 85%+ | Colores vibrantes |
+| ProporciÔøΩn cabeza | ~30% altura | Estilo Funko/Chibi |
+| SaturaciÔøΩn colores | 85%+ | Colores vibrantes |
 | Sombras | 2-3 niveles | Cel-shading, sin gradientes |
 | Ojos | Grandes, expresivos | Con brillo blanco |
-| Formas | Redondeadas | Sin ·ngulos agudos |
+| Formas | Redondeadas | Sin ÔøΩngulos agudos |
 
 ## ?? Referencia cruzada
 

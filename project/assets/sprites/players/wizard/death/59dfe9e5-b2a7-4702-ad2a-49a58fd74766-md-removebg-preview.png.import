@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://coagknr8k3h3i"
-path="res://.godot/imported/wizard_up.png-813164bab8184f8d29731b783a72b2e2.ctex"
+uid="uid://x83eylx6ga2u"
+path="res://.godot/imported/59dfe9e5-b2a7-4702-ad2a-49a58fd74766-md-removebg-preview.png-d41dd4671df8ea5d6300738308f80a73.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/players/wizard/wizard_up.png"
-dest_files=["res://.godot/imported/wizard_up.png-813164bab8184f8d29731b783a72b2e2.ctex"]
+source_file="res://assets/sprites/players/wizard/death/59dfe9e5-b2a7-4702-ad2a-49a58fd74766-md-removebg-preview.png"
+dest_files=["res://.godot/imported/59dfe9e5-b2a7-4702-ad2a-49a58fd74766-md-removebg-preview.png-d41dd4671df8ea5d6300738308f80a73.ctex"]
 
 [params]
 

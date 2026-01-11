@@ -35,75 +35,78 @@ func _ready() -> void:
 	# print("[WizardPlayer] ===== WIZARD INICIALIZADO =====\n")
 
 func _setup_animations() -> void:
-	"""Configurar animaciones del Wizard - COPIA EXACTA DEL SISTEMA ORIGINAL QUE FUNCIONA"""
+	"""Configurar animaciones del Wizard con spritesheets de múltiples frames"""
 	if not animated_sprite:
-		# print("[WizardPlayer] ⚠️ AnimatedSprite2D no disponible")
 		return
-	
-	# Obtener SpriteDB para cargar sprites reales
-	var sprite_db = null
-	var _gt = get_tree()
-	if _gt and _gt.root:
-		sprite_db = _gt.root.get_node_or_null("SpriteDB")
 	
 	var frames = SpriteFrames.new()
 	var dirs = ["down", "up", "left", "right"]
-	var player_sprites = sprite_db.get_player_sprites() if sprite_db else {}
-	var placeholder_tex: Texture2D = null
+	var base_path = "res://assets/sprites/players/wizard"
 	
+	# ========== ANIMACIONES DE CAMINAR (4 frames cada una) ==========
 	for dir in dirs:
-		var tex: Texture2D = null
-		if player_sprites and player_sprites.has(dir):
-			var path = player_sprites[dir]
-			if typeof(path) == TYPE_STRING and path != "":
-				tex = load(path)
-		
 		var walk_anim = "walk_%s" % dir
 		var idle_anim = "idle_%s" % dir
 		
-		if not frames.has_animation(walk_anim):
-			frames.add_animation(walk_anim)
-		if not frames.has_animation(idle_anim):
-			frames.add_animation(idle_anim)
+		frames.add_animation(walk_anim)
+		frames.add_animation(idle_anim)
+		frames.set_animation_speed(walk_anim, 4.0)  # FPS para walk (más lento para parecer caminar)
+		frames.set_animation_speed(idle_anim, 1.0)  # Idle más lento
+		frames.set_animation_loop(walk_anim, true)
+		frames.set_animation_loop(idle_anim, true)
 		
-		if tex:
-			frames.add_frame(walk_anim, tex)
-			frames.add_frame(walk_anim, tex)
-			frames.add_frame(idle_anim, tex)
-		else:
-			pass  # Bloque else
-			# Crear placeholder si no existe textura
-			if not placeholder_tex:
-				var size = 16
-				var img = Image.create(size, size, false, Image.FORMAT_RGBA8)
-				var center = Vector2(size / 2.0, size / 2.0)
-				var radius = size / 2.0 - 1.0
-				for x in range(size):
-					for y in range(size):
-						var p = Vector2(x, y)
-						var d = p.distance_to(center)
-						if d <= radius:
-							img.set_pixel(x, y, Color(0.1, 0.8, 0.1, 1.0))
-						else:
-							img.set_pixel(x, y, Color(0, 0, 0, 0))
-				placeholder_tex = ImageTexture.new()
-				placeholder_tex.set_image(img)
-			
-			frames.add_frame(walk_anim, placeholder_tex)
-			frames.add_frame(walk_anim, placeholder_tex)
-			frames.add_frame(idle_anim, placeholder_tex)
+		# Cargar frames individuales de walk
+		for i in range(1, 5):
+			var frame_path = "%s/walk/wizard_walk_%s_%d.png" % [base_path, dir, i]
+			var tex = load(frame_path)
+			if tex:
+				frames.add_frame(walk_anim, tex)
+				# Usar el primer frame como idle
+				if i == 1:
+					frames.add_frame(idle_anim, tex)
+			else:
+				push_warning("[WizardPlayer] No se encontró: %s" % frame_path)
 	
+	# ========== ANIMACIÓN DE CAST (4 frames) ==========
+	frames.add_animation("cast")
+	frames.set_animation_speed("cast", 10.0)
+	frames.set_animation_loop("cast", false)
+	
+	for i in range(1, 5):
+		var frame_path = "%s/cast/wizard_cast_%d.png" % [base_path, i]
+		var tex = load(frame_path)
+		if tex:
+			frames.add_frame("cast", tex)
+	
+	# ========== ANIMACIÓN DE HIT (2 frames) ==========
+	frames.add_animation("hit")
+	frames.set_animation_speed("hit", 8.0)
+	frames.set_animation_loop("hit", false)
+	
+	for i in range(1, 3):
+		var frame_path = "%s/hit/wizard_hit_%d.png" % [base_path, i]
+		var tex = load(frame_path)
+		if tex:
+			frames.add_frame("hit", tex)
+	
+	# ========== ANIMACIÓN DE DEATH (4 frames) ==========
+	frames.add_animation("death")
+	frames.set_animation_speed("death", 6.0)
+	frames.set_animation_loop("death", false)
+	
+	for i in range(1, 5):
+		var frame_path = "%s/death/wizard_death_%d.png" % [base_path, i]
+		var tex = load(frame_path)
+		if tex:
+			frames.add_frame("death", tex)
+	
+	# Asignar frames al sprite
 	if animated_sprite:
 		animated_sprite.sprite_frames = frames
 		if frames.has_animation("idle_down"):
 			animated_sprite.animation = "idle_down"
-		else:
-			var anims = frames.get_animation_names()
-			if anims.size() > 0:
-				animated_sprite.animation = anims[0]
 		animated_sprite.centered = true
-	
-	# print("[WizardPlayer] ✓ Animaciones configuradas para Wizard (con sprites reales)")
+		animated_sprite.play()
 
 func _equip_starting_weapons() -> void:
 	"""Equipar armas iniciales del Wizard"""

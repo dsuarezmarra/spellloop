@@ -50,8 +50,11 @@
   "auras/yellow": "res://assets/sprites/auras/yellow/yellow.png",
   "auras/orange": "res://assets/sprites/auras/orange/orange.png",
   "auras/purple": "res://assets/sprites/auras/purple/purple.png",
-  "players/wizard/down": "res://assets/sprites/players/wizard/wizard_down.png",
-  "players/wizard/up": "res://assets/sprites/players/wizard/wizard_up.png",
-  "players/wizard/left": "res://assets/sprites/players/wizard/wizard_left.png",
-  "players/wizard/right": "res://assets/sprites/players/wizard/wizard_right.png"
+  "players/wizard/walk/down": "res://assets/sprites/players/wizard/walk/wizard_walk_down.png",
+  "players/wizard/walk/up": "res://assets/sprites/players/wizard/walk/wizard_walk_up.png",
+  "players/wizard/walk/left": "res://assets/sprites/players/wizard/walk/wizard_walk_left.png",
+  "players/wizard/walk/right": "res://assets/sprites/players/wizard/walk/wizard_walk_right.png",
+  "players/wizard/cast": "res://assets/sprites/players/wizard/cast/wizard_cast.png",
+  "players/wizard/hit": "res://assets/sprites/players/wizard/hit/wizard_hit.png",
+  "players/wizard/death": "res://assets/sprites/players/wizard/death/wizard_death.png"
 }
