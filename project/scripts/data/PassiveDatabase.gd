@@ -162,15 +162,15 @@ const PASSIVES: Dictionary = {
 	"attack_speed_1": {
 		"id": "attack_speed_1",
 		"name": "Velocidad Arcana",
-		"description": "Reduce el cooldown de ataques en 8%",
+		"description": "Aumenta la velocidad de ataque en 8%",
 		"icon": "res://assets/sprites/ui/passives/attack_speed.png",
 		"category": "combat",
 		"rarity": "common",
 		"max_stacks": 8,
 		"effect": {
 			"type": "multiply_stat",
-			"stat": "cooldown_mult",
-			"value": 0.92
+			"stat": "attack_speed_mult",
+			"value": 1.08
 		}
 	},
 
@@ -471,7 +471,7 @@ const PASSIVES: Dictionary = {
 			"effects": [
 				{"type": "multiply_stat", "stat": "damage_mult", "value": 1.3},
 				{"type": "add_stat", "stat": "life_steal", "value": 0.10},
-				{"type": "multiply_stat", "stat": "cooldown_mult", "value": 0.8}
+				{"type": "multiply_stat", "stat": "attack_speed_mult", "value": 1.25}
 			]
 		}
 	},

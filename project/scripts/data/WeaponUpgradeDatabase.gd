@@ -486,54 +486,6 @@ const GLOBAL_UPGRADES: Dictionary = {
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
-	# COOLDOWN
-	# ─────────────────────────────────────────────────────────────────────────────
-	"global_cooldown_1": {
-		"id": "global_cooldown_1",
-		"name": "Fluidez",
-		"description": "-10% tiempo de recarga.",
-		"icon": "⏱️",
-		"type": UpgradeType.GLOBAL,
-		"rarity": "common",
-		"tier": 1,
-		"max_stacks": 5,
-		"effects": [{"stat": "cooldown_mult", "value": 0.90, "operation": "multiply"}]
-	},
-	"global_cooldown_2": {
-		"id": "global_cooldown_2",
-		"name": "Eficiencia",
-		"description": "-20% tiempo de recarga.",
-		"icon": "⏱️",
-		"type": UpgradeType.GLOBAL,
-		"rarity": "uncommon",
-		"tier": 2,
-		"max_stacks": 3,
-		"effects": [{"stat": "cooldown_mult", "value": 0.80, "operation": "multiply"}]
-	},
-	"global_cooldown_3": {
-		"id": "global_cooldown_3",
-		"name": "Maestría",
-		"description": "-30% tiempo de recarga.",
-		"icon": "⏱️",
-		"type": UpgradeType.GLOBAL,
-		"rarity": "rare",
-		"tier": 3,
-		"max_stacks": 2,
-		"effects": [{"stat": "cooldown_mult", "value": 0.70, "operation": "multiply"}]
-	},
-	"global_cooldown_4": {
-		"id": "global_cooldown_4",
-		"name": "Perfección",
-		"description": "-30% tiempo de recarga.",
-		"icon": "⏱️",
-		"type": UpgradeType.GLOBAL,
-		"rarity": "epic",
-		"tier": 4,
-		"max_stacks": 1,
-		"effects": [{"stat": "cooldown_mult", "value": 0.70, "operation": "multiply"}]
-	},
-	
-	# ─────────────────────────────────────────────────────────────────────────────
 	# CRÍTICOS - TIERS ADICIONALES
 	# ─────────────────────────────────────────────────────────────────────────────
 	"global_crit_chance_3": {

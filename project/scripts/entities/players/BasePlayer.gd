@@ -226,7 +226,7 @@ func _process(delta: float) -> void:
 		return
 	
 	# NO interrumpir animaciones especiales (cast, hit, death)
-	if _is_casting:
+	if _is_casting or _is_dying:
 		return
 	
 	# Obtener input del jugador
@@ -505,8 +505,8 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 		push_warning("[%s] HealthComponent no disponible" % character_class)
 		return
 	
-	# No recibir daño si ya está muerto
-	if not health_component.is_alive:
+	# No recibir daño si ya está muerto o muriendo
+	if not health_component.is_alive or _is_dying:
 		return
 	
 	# 0. Verificar inmunidad de revive
@@ -725,9 +725,27 @@ func _on_health_died() -> void:
 	# Reproducir animación de muerte antes de emitir señal
 	_play_death_animation()
 
+var _is_dying: bool = false  # Flag para evitar acciones durante la muerte
+
 func _play_death_animation() -> void:
 	"""Reproduce la animación de muerte y luego emite señal de muerte"""
+	_is_dying = true
+	
+	# Detener cualquier movimiento
+	velocity = Vector2.ZERO
+	
+	# Hacer al jugador invulnerable durante la animación de muerte
+	set_collision_layer_value(1, false)
+	
 	if animated_sprite and animated_sprite.sprite_frames and animated_sprite.sprite_frames.has_animation("death"):
+		# Detener animación actual y preparar la de muerte
+		animated_sprite.stop()
+		animated_sprite.animation = "death"
+		animated_sprite.frame = 0
+		
+		# Restaurar escala normal por si estaba casteando
+		animated_sprite.scale = Vector2(player_sprite_scale, player_sprite_scale)
+		
 		animated_sprite.play("death")
 		# Conectar señal para emitir player_died cuando termine la animación
 		if not animated_sprite.animation_finished.is_connected(_on_death_animation_finished):

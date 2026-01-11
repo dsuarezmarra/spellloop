@@ -272,6 +272,9 @@ func _setup_damage_feedback() -> void:
 		var base_player = _get_base_player()
 		if base_player and base_player.has_signal("player_took_damage"):
 			base_player.player_took_damage.connect(_on_player_took_damage)
+		# Conectar señal de muerte del player
+		if base_player and base_player.has_signal("player_died"):
+			base_player.player_died.connect(_on_player_died)
 
 func _get_base_player() -> Node:
 	"""Obtener referencia al BasePlayer (puede estar dentro de SpellloopPlayer)"""
@@ -918,12 +921,66 @@ func _on_player_hit_boundary(damage: float) -> void:
 	if player and player.has_method("take_damage"):
 		player.take_damage(damage)
 
-func player_died() -> void:
-	## Llamar cuando el player muere
-	game_running = false
+func _on_player_died() -> void:
+	"""Callback cuando el player muere - después de la animación de muerte"""
+	player_died()
 
+func player_died() -> void:
+	"""Llamar cuando el player muere - Game Over"""
+	if not game_running:
+		return  # Evitar múltiples llamadas
+	
+	game_running = false
+	
+	# Guardar estadísticas finales de la run
+	_save_run_stats()
+	
+	# Pausar el spawn de enemigos
+	if wave_manager and wave_manager.has_method("stop"):
+		wave_manager.stop()
+	
+	# Detener la música y reproducir sonido de game over
+	var audio_manager = get_tree().root.get_node_or_null("AudioManager")
+	if audio_manager:
+		if audio_manager.has_method("stop_music"):
+			audio_manager.stop_music()
+	
+	# Esperar un momento para que la animación de muerte se vea
+	await get_tree().create_timer(0.5).timeout
+	
+	# Mostrar pantalla de game over
 	if game_over_screen:
 		game_over_screen.show_game_over(run_stats)
+	else:
+		# Fallback: volver al menú principal
+		push_warning("[Game] GameOverScreen no disponible, volviendo al menú")
+		get_tree().paused = false
+		get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
+
+func _save_run_stats() -> void:
+	"""Guardar estadísticas de la run para persistencia"""
+	var save_manager = get_tree().root.get_node_or_null("SaveManager")
+	if save_manager and save_manager.has_method("save_run_data"):
+		# Convertir run_stats al formato esperado por SaveManager
+		var run_data = {
+			"time_survived": run_stats.get("time", 0.0),
+			"level_reached": run_stats.get("level", 1),
+			"enemies_defeated": run_stats.get("kills", 0),
+			"gold_collected": run_stats.get("gold", 0),
+			"damage_dealt": run_stats.get("damage_dealt", 0),
+			"xp_total": run_stats.get("xp_total", 0),
+			"score": _calculate_run_score()
+		}
+		save_manager.save_run_data(run_data)
+
+func _calculate_run_score() -> int:
+	"""Calcular puntuación de la run basada en estadísticas"""
+	var score = 0
+	score += int(run_stats.get("time", 0.0)) * 10  # 10 puntos por segundo
+	score += run_stats.get("level", 1) * 500  # 500 puntos por nivel
+	score += run_stats.get("kills", 0) * 25  # 25 puntos por kill
+	score += run_stats.get("gold", 0)  # 1 punto por oro
+	return score
 
 func add_damage_stat(amount: int) -> void:
 	run_stats["damage_dealt"] += amount

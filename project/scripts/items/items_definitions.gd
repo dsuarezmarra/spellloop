@@ -101,17 +101,7 @@ var items_database = {
 		"max_stacks": 3,
 		"drop_weight": 16
 	},
-	"focus_gem": {
-		"id": "focus_gem",
-		"name": "Gema de Concentración",
-		"type": ItemType.PASSIVE,
-		"rarity": ItemRarity.WHITE,
-		"description": "Reduce el tiempo de recarga de hechizos",
-		"stat_modifiers": {"cooldown_reduction": 0.08},
-		"stackable": true,
-		"max_stacks": 4,
-		"drop_weight": 17
-	},
+
 	"lucky_coin": {
 		"id": "lucky_coin",
 		"name": "Moneda de la Suerte",
@@ -306,8 +296,8 @@ var items_database = {
 		"name": "Tomo del Erudito",
 		"type": ItemType.PASSIVE,
 		"rarity": ItemRarity.BLUE,
-		"description": "Libro que aumenta la experiencia y reduce cooldowns",
-		"stat_modifiers": {"xp_multiplier": 1.25, "cooldown_reduction": 0.15},
+		"description": "Libro ancestral que aumenta la experiencia obtenida",
+		"stat_modifiers": {"xp_multiplier": 1.35},
 		"stackable": false,
 		"special_effect": "knowledge_boost",
 		"drop_weight": 9
