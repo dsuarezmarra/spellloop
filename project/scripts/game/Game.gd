@@ -247,6 +247,9 @@ func _create_ui() -> void:
 	if gameover_scene:
 		game_over_screen = gameover_scene.instantiate()
 		ui_layer.add_child(game_over_screen)
+		# Conectar señales del game over
+		game_over_screen.retry_pressed.connect(_on_game_over_retry)
+		game_over_screen.menu_pressed.connect(_on_game_over_menu)
 
 func _setup_camera() -> void:
 	if camera:
@@ -977,6 +980,16 @@ func _calculate_run_score() -> int:
 	score += run_stats.get("kills", 0) * 25  # 25 puntos por kill
 	score += run_stats.get("gold", 0)  # 1 punto por oro
 	return score
+
+func _on_game_over_retry() -> void:
+	"""Reintentar partida desde el game over"""
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://scenes/game/Game.tscn")
+
+func _on_game_over_menu() -> void:
+	"""Volver al menú desde el game over"""
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
 
 func add_damage_stat(amount: int) -> void:
 	run_stats["damage_dealt"] += amount

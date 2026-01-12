@@ -131,7 +131,7 @@ func gain_experience(amount: float) -> void:
 			await game_root.get_tree().create_timer(0.5).timeout
 		trigger_level_up()
 
-func player_take_damage(amount: float) -> void:
+func player_take_damage(amount: float) -> float:
 	"""El jugador recibe daño"""
 	var effective = player_stats.take_damage(amount)
 	

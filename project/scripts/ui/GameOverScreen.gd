@@ -188,14 +188,12 @@ func _add_stat_line(label_text: String, value_text: String) -> void:
 func _on_retry_pressed() -> void:
 	_play_button_sound()
 	retry_pressed.emit()
-	get_tree().paused = false
-	get_tree().change_scene_to_file("res://scenes/game/Game.tscn")
+	# La transición de escena se maneja en Game.gd
 
 func _on_menu_pressed() -> void:
 	_play_button_sound()
 	menu_pressed.emit()
-	get_tree().paused = false
-	get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
+	# La transición de escena se maneja en Game.gd
 
 func _play_button_sound() -> void:
 	var tree = get_tree()

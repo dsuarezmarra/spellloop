@@ -262,7 +262,9 @@ func apply_item_effect(item_type: String, _item_data: Dictionary):
 							"targeting": "nearest"
 						}
 						wm.add_weapon(new_w)
-
+		_:
+			# Tipo de item desconocido, ignorar
+			pass
 
 
 func create_boss_drop(position: Vector2, _boss_type: String):
