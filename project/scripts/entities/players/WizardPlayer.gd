@@ -115,39 +115,35 @@ func _setup_animations() -> void:
 		animated_sprite.play()
 
 func _equip_starting_weapons() -> void:
-	"""Equipar armas iniciales del Wizard"""
-	# print("[WizardPlayer] === EQUIPANDO ARMAS INICIALES ===")
-
+	"""Equipar armas iniciales basadas en el personaje seleccionado usando BaseWeapon"""
 	if not attack_manager:
-		# print("[WizardPlayer] ⚠️ AttackManager no disponible")
 		return
 
-	# Crear Varita de Hielo
-	var ice_wand_script = load("res://scripts/entities/weapons/wands/IceWand.gd")
-
-	if not ice_wand_script:
-		push_warning("[WizardPlayer] ✗ Error: No se pudo cargar IceWand.gd")
-		return
-
-	ice_wand = ice_wand_script.new()
-	if not ice_wand:
-		push_warning("[WizardPlayer] ✗ Error: No se pudo instanciar IceWand")
-		return
-
-	# Configurar propiedades básicas
-	ice_wand.name = "Varita de Hielo"
-	ice_wand.is_active = true
-
-	# Equipar arma (el IceWand ya carga SimpleProjectile internamente)
-	var result = equip_weapon(ice_wand)
-
-	if result:
-		# print("[WizardPlayer] ✓ Ice Wand equipada correctamente")
-		pass
+	# Obtener el arma inicial del personaje seleccionado
+	var weapon_id = "ice_wand"  # Default
+	if SessionState:
+		var character_id = SessionState.get_character()
+		weapon_id = CharacterDatabase.get_starting_weapon(character_id)
+		print("[WizardPlayer] Character: %s, Starting weapon: %s" % [character_id, weapon_id])
+	
+	# Usar el sistema de BaseWeapon + WeaponDatabase (igual que test_weapons)
+	if attack_manager.has_method("add_weapon_by_id"):
+		var result = attack_manager.add_weapon_by_id(weapon_id)
+		if result:
+			print("[WizardPlayer] ✓ Arma equipada: %s" % weapon_id)
+		else:
+			push_warning("[WizardPlayer] ⚠️ Error al equipar arma: %s" % weapon_id)
 	else:
-		pass  # Bloque else
-		# print("[WizardPlayer] ⚠️ Error al equipar Ice Wand")
-		pass
+		# Fallback: crear BaseWeapon manualmente
+		var weapon = BaseWeapon.new(weapon_id)
+		if weapon.id.is_empty():
+			push_warning("[WizardPlayer] ✗ Error: Arma no encontrada en WeaponDatabase: %s" % weapon_id)
+			return
+		var result = equip_weapon(weapon)
+		if result:
+			print("[WizardPlayer] ✓ Arma equipada (fallback): %s" % weapon_id)
+		else:
+			push_warning("[WizardPlayer] ⚠️ Error al equipar arma: %s" % weapon_id)
 
 # ========== HABILIDADES DEL WIZARD ==========
 
