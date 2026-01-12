@@ -113,7 +113,9 @@ func _input(event: InputEvent) -> void:
 				handled = true
 
 	if handled:
-		get_viewport().set_input_as_handled()
+		var vp = get_viewport()
+		if vp:
+			vp.set_input_as_handled()
 
 func _navigate(direction: int) -> void:
 	if buttons.is_empty():

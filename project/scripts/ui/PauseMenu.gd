@@ -663,8 +663,8 @@ func _get_stats_for_category(category: String) -> Array:
 	match category:
 		"defensive":
 			return ["max_health", "health_regen", "armor", "dodge_chance", "life_steal", 
-			        "damage_taken_mult", "thorns", "thorns_percent", "shield_amount", 
-			        "shield_regen", "revives"]
+					"damage_taken_mult", "thorns", "thorns_percent", "shield_amount", 
+					"shield_regen", "revives"]
 		"offensive":
 			# NOTA: Los stats ofensivos de armas ahora se muestran en el popup de cada arma
 			# Aquí solo se mostrarían stats ofensivos del JUGADOR (ninguno actualmente)
@@ -675,8 +675,8 @@ func _get_stats_for_category(category: String) -> Array:
 			return []
 		"utility":
 			return ["move_speed", "pickup_range", "xp_mult", "coin_value_mult", "luck",
-			        "gold_mult", "reroll_count", "banish_count", "curse", "growth",
-			        "magnet_strength", "levelup_options"]
+					"gold_mult", "reroll_count", "banish_count", "curse", "growth",
+					"magnet_strength", "levelup_options"]
 	return []
 
 func _format_stat_value_fallback(stat_name: String, value: float) -> String:
@@ -687,8 +687,8 @@ func _format_stat_value_fallback(stat_name: String, value: float) -> String:
 	
 	# Stats multiplicadores (base 1.0)
 	if stat_name in ["damage_mult", "attack_speed_mult", "area_mult", "move_speed", "pickup_range", 
-	                  "xp_mult", "coin_value_mult", "crit_damage", "projectile_speed_mult", 
-	                  "duration_mult", "knockback_mult", "damage_taken_mult", "gold_mult", "magnet_strength"]:
+					  "xp_mult", "coin_value_mult", "crit_damage", "projectile_speed_mult", 
+					  "duration_mult", "knockback_mult", "damage_taken_mult", "gold_mult", "magnet_strength"]:
 		if value >= 1.0:
 			return "+%.0f%%" % ((value - 1.0) * 100)
 		else:
