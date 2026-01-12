@@ -43,10 +43,10 @@ func _setup_language_selector() -> void:
 	var language_option = get_node_or_null("Panel/VBox/LanguageContainer/LanguageOption")
 	if not language_option:
 		return
-	
+
 	language_option.clear()
 	language_codes.clear()
-	
+
 	# Get available languages from Localization
 	var loc = _get_localization()
 	if not loc:
@@ -55,24 +55,24 @@ func _setup_language_selector() -> void:
 		language_option.add_item("Espanol", 1)
 		language_codes = ["en", "es"]
 		return
-	
+
 	# Add all available languages
 	var available = loc.get_available_languages()
 	var current_lang = loc.get_current_language()
 	var selected_idx = 0
-	
+
 	for i in range(available.size()):
 		var lang_code = available[i]
 		var lang_info = loc.SUPPORTED_LANGUAGES.get(lang_code, {})
 		var display_name = lang_info.get("native", lang_code)
 		language_option.add_item(display_name, i)
 		language_codes.append(lang_code)
-		
+
 		if lang_code == current_lang:
 			selected_idx = i
-	
+
 	language_option.selected = selected_idx
-	
+
 	if not language_option.item_selected.is_connected(_on_language_selected):
 		language_option.item_selected.connect(_on_language_selected)
 
@@ -86,7 +86,7 @@ func _on_language_selected(index: int) -> void:
 	"""Handle language selection change"""
 	if index < 0 or index >= language_codes.size():
 		return
-	
+
 	var lang_code = language_codes[index]
 	var loc = _get_localization()
 	if loc and loc.has_method("set_language"):
