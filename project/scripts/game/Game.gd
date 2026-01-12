@@ -148,7 +148,7 @@ func _configure_player_character() -> void:
 	var character_id = "frost_mage"  # Default
 	if SessionState:
 		character_id = SessionState.get_character()
-	
+
 	# Si esta vacio, usar default
 	if character_id.is_empty():
 		character_id = "frost_mage"

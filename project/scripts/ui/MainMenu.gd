@@ -240,7 +240,7 @@ func _show_character_select() -> void:
 
 	character_select_screen = char_scene.instantiate()
 	add_child(character_select_screen)
-	
+
 	# Mostrar la pantalla
 	character_select_screen.show_screen()
 

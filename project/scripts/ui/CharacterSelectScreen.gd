@@ -57,19 +57,19 @@ func _ready() -> void:
 	_create_carousel()
 	_update_carousel_positions(false)
 	_update_stats_display()
-	
+
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _load_characters() -> void:
 	"""Load all characters from database"""
 	all_characters = CharacterDatabase.get_all_characters()
-	
+
 	# For now, unlock all for testing
 	unlocked_character_ids = []
 	for char_data in all_characters:
 		unlocked_character_ids.append(char_data.id)
-	
+
 	# Set initial selection
 	if all_characters.size() > 0:
 		selected_character_id = all_characters[0].id
@@ -82,14 +82,14 @@ func _build_ui() -> void:
 	bg.color = Color(0.05, 0.05, 0.08, 0.98)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
-	
+
 	# Vignette effect (darker edges)
 	var vignette = ColorRect.new()
 	vignette.name = "Vignette"
 	vignette.set_anchors_preset(Control.PRESET_FULL_RECT)
 	vignette.color = Color(0, 0, 0, 0)
 	add_child(vignette)
-	
+
 	# Title at top
 	title_label = Label.new()
 	title_label.name = "Title"
@@ -101,14 +101,14 @@ func _build_ui() -> void:
 	title_label.add_theme_font_size_override("font_size", 48)
 	title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
 	add_child(title_label)
-	
+
 	# Carousel center point (middle of screen, slightly above center)
 	carousel_center = Control.new()
 	carousel_center.name = "CarouselCenter"
 	carousel_center.set_anchors_preset(Control.PRESET_CENTER)
 	carousel_center.position = Vector2(0, -60)
 	add_child(carousel_center)
-	
+
 	# Character name (above carousel)
 	character_name_label = Label.new()
 	character_name_label.name = "CharacterName"
@@ -123,7 +123,7 @@ func _build_ui() -> void:
 	character_name_label.add_theme_font_size_override("font_size", 36)
 	character_name_label.add_theme_color_override("font_color", Color(1, 1, 1))
 	add_child(character_name_label)
-	
+
 	# Character title (below name)
 	character_title_label = Label.new()
 	character_title_label.name = "CharacterTitle"
@@ -137,10 +137,10 @@ func _build_ui() -> void:
 	character_title_label.offset_right = 400
 	character_title_label.add_theme_font_size_override("font_size", 20)
 	add_child(character_title_label)
-	
+
 	# Stats panel (below carousel)
 	_build_stats_panel()
-	
+
 	# Navigation instructions
 	instructions_label = Label.new()
 	instructions_label.name = "Instructions"
@@ -152,7 +152,7 @@ func _build_ui() -> void:
 	instructions_label.add_theme_font_size_override("font_size", 16)
 	instructions_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 	add_child(instructions_label)
-	
+
 	# Buttons at bottom
 	var button_container = HBoxContainer.new()
 	button_container.name = "Buttons"
@@ -164,7 +164,7 @@ func _build_ui() -> void:
 	button_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	button_container.add_theme_constant_override("separation", 50)
 	add_child(button_container)
-	
+
 	back_button = Button.new()
 	back_button.name = "BackButton"
 	back_button.text = "BACK"
@@ -172,7 +172,7 @@ func _build_ui() -> void:
 	back_button.add_theme_font_size_override("font_size", 18)
 	back_button.pressed.connect(_on_back_pressed)
 	button_container.add_child(back_button)
-	
+
 	play_button = Button.new()
 	play_button.name = "PlayButton"
 	play_button.text = "START ADVENTURE"
@@ -192,7 +192,7 @@ func _build_stats_panel() -> void:
 	stats_panel.offset_right = 280
 	stats_panel.offset_top = 0
 	stats_panel.offset_bottom = 180
-	
+
 	# Style
 	var panel_style = StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.1, 0.1, 0.15, 0.9)
@@ -200,9 +200,9 @@ func _build_stats_panel() -> void:
 	panel_style.set_border_width_all(2)
 	panel_style.set_corner_radius_all(10)
 	stats_panel.add_theme_stylebox_override("panel", panel_style)
-	
+
 	add_child(stats_panel)
-	
+
 	# Content
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 20)
@@ -210,7 +210,7 @@ func _build_stats_panel() -> void:
 	margin.add_theme_constant_override("margin_top", 15)
 	margin.add_theme_constant_override("margin_bottom", 15)
 	stats_panel.add_child(margin)
-	
+
 	var vbox = VBoxContainer.new()
 	vbox.name = "StatsVBox"
 	vbox.add_theme_constant_override("separation", 8)
@@ -220,36 +220,36 @@ func _create_carousel() -> void:
 	"""Create character sprites for the carousel"""
 	character_nodes.clear()
 	character_sprites.clear()
-	
+
 	for i in range(all_characters.size()):
 		var char_data = all_characters[i]
-		
+
 		# Container for each character
 		var char_container = Control.new()
 		char_container.name = "Char_" + char_data.id
 		char_container.z_index = 0
 		carousel_center.add_child(char_container)
-		
+
 		# Animated sprite
 		var sprite = AnimatedSprite2D.new()
 		sprite.name = "Sprite"
 		sprite.centered = true
-		
+
 		# Load walk_down animation
 		var frames = _create_character_frames(char_data)
 		sprite.sprite_frames = frames
 		sprite.animation = "idle"
 		sprite.play()
-		
+
 		char_container.add_child(sprite)
-		
+
 		# Glow effect for selected (initially invisible)
 		var glow = Sprite2D.new()
 		glow.name = "Glow"
 		glow.modulate = Color(char_data.color_primary.r, char_data.color_primary.g, char_data.color_primary.b, 0)
 		glow.z_index = -1
 		char_container.add_child(glow)
-		
+
 		character_nodes.append(char_container)
 		character_sprites.append(sprite)
 
@@ -258,12 +258,12 @@ func _create_character_frames(char_data: Dictionary) -> SpriteFrames:
 	var frames = SpriteFrames.new()
 	var sprite_folder = char_data.get("sprite_folder", "wizard")
 	var base_path = "res://assets/sprites/players/" + sprite_folder
-	
+
 	# IDLE animation (single frame - first walk frame)
 	frames.add_animation("idle")
 	frames.set_animation_speed("idle", 1.0)
 	frames.set_animation_loop("idle", true)
-	
+
 	var idle_path = "%s/walk/%s_walk_down_1.png" % [base_path, sprite_folder]
 	var idle_tex = load(idle_path)
 	if idle_tex:
@@ -273,12 +273,12 @@ func _create_character_frames(char_data: Dictionary) -> SpriteFrames:
 		idle_tex = load("res://assets/sprites/players/wizard/walk/wizard_walk_down_1.png")
 		if idle_tex:
 			frames.add_frame("idle", idle_tex)
-	
+
 	# WALK animation (4 frames)
 	frames.add_animation("walk")
 	frames.set_animation_speed("walk", 6.0)
 	frames.set_animation_loop("walk", true)
-	
+
 	for i in range(1, 5):
 		var walk_path = "%s/walk/%s_walk_down_%d.png" % [base_path, sprite_folder, i]
 		var walk_tex = load(walk_path)
@@ -290,7 +290,7 @@ func _create_character_frames(char_data: Dictionary) -> SpriteFrames:
 			walk_tex = load(fallback_path)
 			if walk_tex:
 				frames.add_frame("walk", walk_tex)
-	
+
 	return frames
 
 # =============================================================================
@@ -301,11 +301,11 @@ func _update_carousel_positions(animate: bool = true) -> void:
 	"""Update positions of all characters in the carousel"""
 	if is_transitioning and animate:
 		return
-	
+
 	var total = character_nodes.size()
 	if total == 0:
 		return
-	
+
 	if animate:
 		is_transitioning = true
 		if carousel_tween:
@@ -314,33 +314,33 @@ func _update_carousel_positions(animate: bool = true) -> void:
 		carousel_tween.set_parallel(true)
 		carousel_tween.set_ease(Tween.EASE_OUT)
 		carousel_tween.set_trans(Tween.TRANS_CUBIC)
-	
+
 	for i in range(total):
 		var node = character_nodes[i]
 		var sprite = character_sprites[i]
-		
+
 		# Calculate position in carousel (relative to current_index)
 		var offset = i - current_index
-		
+
 		# Wrap around for circular effect
 		while offset > total / 2:
 			offset -= total
 		while offset < -total / 2:
 			offset += total
-		
+
 		# Calculate target position and properties
 		var target_pos: Vector2
 		var target_scale: float
 		var target_alpha: float
 		var target_z: int
-		
+
 		if offset == 0:
 			# Selected character - center, large, fully visible
 			target_pos = Vector2(0, 0)
 			target_scale = SELECTED_SCALE
 			target_alpha = 1.0
 			target_z = 10
-			
+
 			# Play walk animation
 			if sprite.animation != "walk":
 				sprite.animation = "walk"
@@ -349,26 +349,26 @@ func _update_carousel_positions(animate: bool = true) -> void:
 			# Calculate position on arc
 			var angle = offset * 0.4  # Spacing between characters
 			var distance = CAROUSEL_RADIUS * (1.0 + abs(offset) * 0.1)
-			
+
 			target_pos = Vector2(
 				sin(angle) * distance,
 				abs(offset) * 30 - 20  # Slight vertical offset
 			)
-			
+
 			# Scale and fade based on distance from center
 			var distance_factor = 1.0 - (abs(offset) * 0.25)
 			target_scale = UNSELECTED_SCALE * max(distance_factor, 0.5)
 			target_alpha = max(1.0 - abs(offset) * 0.3, 0.2)
 			target_z = 5 - abs(offset)
-			
+
 			# Play idle animation
 			if sprite.animation != "idle":
 				sprite.animation = "idle"
 				sprite.play()
-		
+
 		# Apply visibility for far characters
 		var is_visible = abs(offset) <= (VISIBLE_CHARACTERS / 2 + 1)
-		
+
 		if animate:
 			carousel_tween.tween_property(node, "position", target_pos, ANIMATION_DURATION)
 			carousel_tween.tween_property(sprite, "scale", Vector2(target_scale, target_scale), ANIMATION_DURATION)
@@ -380,14 +380,14 @@ func _update_carousel_positions(animate: bool = true) -> void:
 			sprite.scale = Vector2(target_scale, target_scale)
 			sprite.modulate.a = target_alpha if is_visible else 0.0
 			node.z_index = target_z
-	
+
 	if animate:
 		carousel_tween.tween_callback(_on_transition_complete).set_delay(ANIMATION_DURATION)
-	
+
 	# Update selected character
 	if current_index >= 0 and current_index < all_characters.size():
 		selected_character_id = all_characters[current_index].id
-	
+
 	_update_stats_display()
 
 func _on_transition_complete() -> void:
@@ -397,21 +397,21 @@ func _navigate(direction: int) -> void:
 	"""Navigate carousel left or right"""
 	if is_transitioning:
 		return
-	
+
 	var total = all_characters.size()
 	if total == 0:
 		return
-	
+
 	# Find next unlocked character
 	var new_index = current_index
 	var attempts = 0
-	
+
 	while attempts < total:
 		new_index = (new_index + direction + total) % total
 		if all_characters[new_index].id in unlocked_character_ids:
 			break
 		attempts += 1
-	
+
 	if new_index != current_index:
 		current_index = new_index
 		_update_carousel_positions(true)
@@ -421,38 +421,38 @@ func _update_stats_display() -> void:
 	"""Update the stats panel with current character info"""
 	if current_index < 0 or current_index >= all_characters.size():
 		return
-	
+
 	var char_data = all_characters[current_index]
 	var is_unlocked = char_data.id in unlocked_character_ids
-	
+
 	# Update name and title
 	if character_name_label:
 		character_name_label.text = char_data.name_es if is_unlocked else "???"
-	
+
 	if character_title_label:
 		character_title_label.text = char_data.title_es if is_unlocked else "LOCKED"
 		character_title_label.add_theme_color_override("font_color", char_data.color_primary if is_unlocked else Color(0.5, 0.5, 0.5))
-	
+
 	# Update stats panel
 	if not stats_panel:
 		return
-	
+
 	var margin = stats_panel.get_node_or_null("MarginContainer")
 	if not margin:
 		margin = stats_panel.get_child(0) if stats_panel.get_child_count() > 0 else null
 	if not margin:
 		return
-		
+
 	var vbox = margin.get_node_or_null("StatsVBox")
 	if not vbox:
 		vbox = margin.get_child(0) if margin.get_child_count() > 0 else null
 	if not vbox:
 		return
-	
+
 	# Clear previous stats
 	for child in vbox.get_children():
 		child.queue_free()
-	
+
 	if not is_unlocked:
 		var locked_label = Label.new()
 		locked_label.text = "Complete challenges to unlock this hero!"
@@ -460,7 +460,7 @@ func _update_stats_display() -> void:
 		locked_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 		vbox.add_child(locked_label)
 		return
-	
+
 	# Description
 	var desc_label = Label.new()
 	desc_label.text = char_data.description_es
@@ -469,22 +469,22 @@ func _update_stats_display() -> void:
 	desc_label.add_theme_font_size_override("font_size", 14)
 	desc_label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.9))
 	vbox.add_child(desc_label)
-	
+
 	# Separator
 	var sep1 = HSeparator.new()
 	vbox.add_child(sep1)
-	
+
 	# Weapon and Passive
 	var weapon_data = WeaponDatabase.WEAPONS.get(char_data.starting_weapon, {})
 	var weapon_name = weapon_data.get("name_es", char_data.starting_weapon)
-	
+
 	var weapon_label = Label.new()
 	weapon_label.text = "Starting Weapon: " + weapon_name
 	weapon_label.add_theme_font_size_override("font_size", 15)
 	weapon_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.6))
 	weapon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(weapon_label)
-	
+
 	var passive = char_data.get("passive", {})
 	var passive_label = Label.new()
 	passive_label.text = "Passive: " + passive.get("name_es", "None")
@@ -492,18 +492,18 @@ func _update_stats_display() -> void:
 	passive_label.add_theme_color_override("font_color", Color(0.6, 0.9, 1.0))
 	passive_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(passive_label)
-	
+
 	# Separator
 	var sep2 = HSeparator.new()
 	vbox.add_child(sep2)
-	
+
 	# Stats grid
 	var stats_grid = GridContainer.new()
 	stats_grid.columns = 3
 	stats_grid.add_theme_constant_override("h_separation", 25)
 	stats_grid.add_theme_constant_override("v_separation", 5)
 	vbox.add_child(stats_grid)
-	
+
 	var stats = char_data.get("stats", {})
 	var stat_display = [
 		{"key": "max_health", "name": "HP", "base": 100, "format": "%.0f", "invert": false},
@@ -513,23 +513,23 @@ func _update_stats_display() -> void:
 		{"key": "cooldown_mult", "name": "CD", "base": 1.0, "format": "x%.2f", "invert": true},
 		{"key": "pickup_range", "name": "RNG", "base": 50, "format": "%.0f", "invert": false},
 	]
-	
+
 	for stat_info in stat_display:
 		var value = stats.get(stat_info.key, stat_info.base)
 		var is_better = value > stat_info.base if not stat_info.invert else value < stat_info.base
 		var is_worse = value < stat_info.base if not stat_info.invert else value > stat_info.base
-		
+
 		var stat_label = Label.new()
 		stat_label.text = stat_info.name + ": " + (stat_info.format % value)
 		stat_label.add_theme_font_size_override("font_size", 13)
-		
+
 		if is_better:
 			stat_label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))
 		elif is_worse:
 			stat_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.4))
 		else:
 			stat_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.75))
-		
+
 		stats_grid.add_child(stat_label)
 
 # =============================================================================
@@ -539,9 +539,9 @@ func _update_stats_display() -> void:
 func _input(event: InputEvent) -> void:
 	if not visible:
 		return
-	
+
 	var handled = false
-	
+
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
 			KEY_A, KEY_LEFT:
@@ -556,7 +556,7 @@ func _input(event: InputEvent) -> void:
 			KEY_ESCAPE:
 				_on_back_pressed()
 				handled = true
-	
+
 	# Gamepad
 	if event is InputEventJoypadButton and event.pressed:
 		match event.button_index:
@@ -572,7 +572,7 @@ func _input(event: InputEvent) -> void:
 			JOY_BUTTON_B:
 				_on_back_pressed()
 				handled = true
-	
+
 	if handled:
 		get_viewport().set_input_as_handled()
 
@@ -583,10 +583,10 @@ func _input(event: InputEvent) -> void:
 func _on_play_pressed() -> void:
 	if selected_character_id.is_empty():
 		return
-	
+
 	if not (selected_character_id in unlocked_character_ids):
 		return
-	
+
 	_play_button_sound()
 	character_selected.emit(selected_character_id)
 
@@ -614,13 +614,13 @@ func show_screen() -> void:
 	"""Show the selection screen"""
 	visible = true
 	_load_characters()
-	
+
 	# Reset to first unlocked
 	for i in range(all_characters.size()):
 		if all_characters[i].id in unlocked_character_ids:
 			current_index = i
 			break
-	
+
 	_update_carousel_positions(false)
 	_update_stats_display()
 
