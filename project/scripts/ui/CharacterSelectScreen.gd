@@ -351,7 +351,7 @@ func _create_stat_row(stat_info: Dictionary, value: float) -> void:
 	"""Create a visual stat row with bar"""
 	var hbox = HBoxContainer.new()
 	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	
+
 	# Icon + Name
 	var name_label = Label.new()
 	name_label.text = stat_info.icon + " " + stat_info.name
@@ -359,42 +359,42 @@ func _create_stat_row(stat_info: Dictionary, value: float) -> void:
 	name_label.add_theme_font_size_override("font_size", 13)
 	name_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
 	hbox.add_child(name_label)
-	
+
 	# Progress bar container
 	var bar_container = Control.new()
 	bar_container.custom_minimum_size = Vector2(120, 16)
 	bar_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	
+
 	# Background bar
 	var bg_bar = ColorRect.new()
 	bg_bar.color = Color(0.15, 0.15, 0.2)
 	bg_bar.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bar_container.add_child(bg_bar)
-	
+
 	# Fill bar - calculate percentage
 	var fill_bar = ColorRect.new()
 	var percentage = clampf((value - 0) / (stat_info.max - 0), 0.0, 1.0)
-	
+
 	# Determine color based on comparison to base
 	var bar_color: Color
 	var is_better = value > stat_info.base if not stat_info.invert else value < stat_info.base
 	var is_worse = value < stat_info.base if not stat_info.invert else value > stat_info.base
-	
+
 	if is_better:
 		bar_color = Color(0.3, 0.8, 0.4)  # Green - better
 	elif is_worse:
 		bar_color = Color(0.9, 0.4, 0.3)  # Red - worse
 	else:
 		bar_color = Color(0.5, 0.5, 0.6)  # Gray - neutral
-	
+
 	fill_bar.color = bar_color
 	fill_bar.anchor_right = percentage
 	fill_bar.anchor_bottom = 1.0
 	fill_bar.offset_right = 0
 	bar_container.add_child(fill_bar)
-	
+
 	hbox.add_child(bar_container)
-	
+
 	# Value text
 	var value_label = Label.new()
 	var format_str = "%.0f" if value == int(value) else "%.2f"
@@ -404,14 +404,14 @@ func _create_stat_row(stat_info: Dictionary, value: float) -> void:
 	value_label.custom_minimum_size.x = 50
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	value_label.add_theme_font_size_override("font_size", 13)
-	
+
 	if is_better:
 		value_label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))
 	elif is_worse:
 		value_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.4))
 	else:
 		value_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8))
-	
+
 	hbox.add_child(value_label)
 	stats_container.add_child(hbox)
 
