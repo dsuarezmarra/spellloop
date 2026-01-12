@@ -27,12 +27,12 @@ func setup(game: Node, player_ref: CharacterBody2D) -> void:
 	"""
 	game_root = game
 	player = player_ref
-	
+
 	_create_attack_manager()
 	_create_player_stats()
 	_connect_signals()
 	_give_starting_weapon()
-	
+
 	# Debug desactivado: print("[CombatSystem] ✅ Sistema de combate inicializado")
 
 func _create_attack_manager() -> void:
@@ -41,7 +41,7 @@ func _create_attack_manager() -> void:
 	attack_manager.name = "AttackManager"
 	game_root.add_child(attack_manager)
 	attack_manager.initialize(player)
-	
+
 	# Debug desactivado: print("[CombatSystem] ⚔️ AttackManager creado")
 
 func _create_player_stats() -> void:
@@ -50,7 +50,7 @@ func _create_player_stats() -> void:
 	player_stats.name = "PlayerStats"
 	game_root.add_child(player_stats)
 	player_stats.initialize(attack_manager, player)  # Pasar player para regeneración
-	
+
 	# Debug desactivado: print("[CombatSystem] 📊 PlayerStats creado")
 
 func _connect_signals() -> void:
@@ -61,18 +61,24 @@ func _connect_signals() -> void:
 	attack_manager.weapon_leveled_up.connect(_on_weapon_leveled_up)
 	attack_manager.fusion_available.connect(_on_fusion_available)
 	attack_manager.slots_updated.connect(_on_slots_updated)
-	
+
 	# PlayerStats signals
 	player_stats.level_changed.connect(_on_player_level_changed)
 	player_stats.health_changed.connect(_on_player_health_changed)
 	player_stats.stat_changed.connect(_on_player_stat_changed)
 
 func _give_starting_weapon() -> void:
-	"""Dar arma inicial al jugador"""
-	# Empezar con Ice Wand como arma por defecto
-	attack_manager.add_weapon_by_id("ice_wand")
-	
-	# Debug desactivado: print("[CombatSystem] 🎁 Arma inicial equipada: Ice Wand")
+	"""Dar arma inicial al jugador basada en el personaje seleccionado"""
+	var weapon_id = "ice_wand"  # Default
+
+	# Obtener arma inicial del personaje seleccionado
+	if SessionState:
+		var character_id = SessionState.get_character()
+		weapon_id = CharacterDatabase.get_starting_weapon(character_id)
+
+	attack_manager.add_weapon_by_id(weapon_id)
+
+	# Debug desactivado: print("[CombatSystem] 🎁 Arma inicial equipada: " + weapon_id)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LEVEL UP
@@ -85,18 +91,18 @@ func trigger_level_up() -> void:
 		# Si no hay escena, crear instancia directa
 		_show_level_up_panel_direct()
 		return
-	
+
 	var panel = panel_scene.instantiate() as LevelUpPanel
 	panel.initialize(attack_manager, player_stats)
-	
+
 	var ui_layer = game_root.get_node_or_null("UILayer")
 	if ui_layer:
 		ui_layer.add_child(panel)
 	else:
 		game_root.add_child(panel)
-	
+
 	panel.show_panel()
-	
+
 	# Conectar señales
 	panel.option_selected.connect(_on_upgrade_selected)
 	panel.panel_closed.connect(_on_level_up_panel_closed)
@@ -105,13 +111,13 @@ func _show_level_up_panel_direct() -> void:
 	"""Crear panel de level up directamente sin escena"""
 	var panel = LevelUpPanel.new()
 	panel.initialize(attack_manager, player_stats)
-	
+
 	var ui_layer = game_root.get_node_or_null("UILayer")
 	if ui_layer:
 		ui_layer.add_child(panel)
 	else:
 		game_root.add_child(panel)
-	
+
 	panel.show_panel()
 	panel.option_selected.connect(_on_upgrade_selected)
 	panel.panel_closed.connect(_on_level_up_panel_closed)
@@ -123,7 +129,7 @@ func _show_level_up_panel_direct() -> void:
 func gain_experience(amount: float) -> void:
 	"""Dar experiencia al jugador"""
 	var levels = player_stats.gain_xp(amount)
-	
+
 	# Mostrar level up por cada nivel ganado
 	for i in range(levels):
 		# Pequeño delay entre múltiples level ups
@@ -134,10 +140,10 @@ func gain_experience(amount: float) -> void:
 func player_take_damage(amount: float) -> float:
 	"""El jugador recibe daño"""
 	var effective = player_stats.take_damage(amount)
-	
+
 	if player_stats.is_dead():
 		_on_player_died()
-	
+
 	return effective
 
 func player_heal(amount: float) -> void:

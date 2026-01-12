@@ -205,7 +205,7 @@ const STAT_METADATA: Dictionary = {
 		"format": "flat",
 		"color": Color(0.2, 0.9, 0.4)
 	},
-	
+
 	# === NUEVOS STATS DEFENSIVOS ===
 	"damage_taken_mult": {
 		"name": "Daño Recibido",
@@ -255,7 +255,7 @@ const STAT_METADATA: Dictionary = {
 		"format": "flat",
 		"color": Color(1.0, 0.9, 0.3)
 	},
-	
+
 	# === NUEVOS STATS OFENSIVOS ===
 	"kill_heal": {
 		"name": "Curar al Matar",
@@ -361,7 +361,7 @@ const STAT_METADATA: Dictionary = {
 		"format": "multiplier",
 		"color": Color(0.4, 0.7, 0.9)
 	},
-	
+
 	# === NUEVOS STATS DE UTILIDAD ===
 	"gold_mult": {
 		"name": "Oro",
@@ -448,7 +448,7 @@ const BASE_STATS: Dictionary = {
 	"knockback_mult": 1.0,
 	"range_mult": 1.0,             # Alcance de ataques
 	"chain_count": 0,              # Rebotes entre enemigos
-	
+
 	# Efectos especiales de ataque
 	"burn_damage": 0.0,            # Daño de quemadura/s
 	"freeze_chance": 0.0,          # Prob. de congelar
@@ -461,7 +461,7 @@ const BASE_STATS: Dictionary = {
 	# Críticos
 	"crit_chance": 0.05,
 	"crit_damage": 2.0,
-	
+
 	# Curación
 	"kill_heal": 0.0,              # HP por kill
 
@@ -502,7 +502,7 @@ const STAT_LIMITS: Dictionary = {
 	"magnet_strength": {"min": 0.5, "max": 5.0},
 	"xp_mult": {"min": 0.5, "max": 5.0},
 	"gold_mult": {"min": 0.5, "max": 5.0},
-	
+
 	# Probabilidades (0-100%)
 	"crit_chance": {"min": 0.0, "max": 1.0},
 	"dodge_chance": {"min": 0.0, "max": 0.75},      # Máximo 75%
@@ -515,7 +515,7 @@ const STAT_LIMITS: Dictionary = {
 	"thorns_percent": {"min": 0.0, "max": 2.0},      # Máximo 200%
 	"curse": {"min": 0.0, "max": 2.0},               # Máximo 200%
 	"growth": {"min": 0.0, "max": 1.0},              # Máximo 100%
-	
+
 	# Valores planos con límite
 	"extra_projectiles": {"min": 0, "max": 10},
 	"extra_pierce": {"min": 0, "max": 20},
@@ -591,6 +591,29 @@ func _reset_stats() -> void:
 	_game_time_minutes = 0.0
 	_last_growth_minute = 0
 
+func initialize_from_character(character_id: String) -> void:
+	"""Inicializar stats desde la base de datos de personajes"""
+	_reset_stats()
+
+	var char_stats = CharacterDatabase.get_character_stats(character_id)
+	if char_stats.is_empty():
+		push_warning("[PlayerStats] Character not found: " + character_id + ", using defaults")
+		return
+
+	# Aplicar stats del personaje
+	for stat_key in char_stats:
+		if stats.has(stat_key):
+			stats[stat_key] = char_stats[stat_key]
+
+	# Actualizar vida actual a la máxima
+	current_health = stats.max_health
+
+	# Debug
+	# print("[PlayerStats] Initialized from character: %s" % character_id)
+	# print("  - Max HP: %d" % stats.max_health)
+	# print("  - Move Speed: %.0f" % stats.move_speed)
+	# print("  - Damage Mult: %.2f" % stats.damage_mult)
+
 func _ready() -> void:
 	# Asegurar que PlayerStats respete la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -601,25 +624,25 @@ func initialize(attack_mgr: AttackManager = null, player: Node = null) -> void:
 	"""Inicializar con referencia al AttackManager y al player"""
 	attack_manager = attack_mgr
 	player_ref = player
-	
+
 	# Obtener referencia a GlobalWeaponStats desde AttackManager
 	if attack_manager and attack_manager.has_method("get_global_weapon_stats"):
 		global_weapon_stats = attack_manager.get_global_weapon_stats()
-	
+
 	# Agregar a grupo para facilitar busqueda desde PauseMenu
 	add_to_group("player_stats")
 	_sync_with_attack_manager()
-	
+
 	# Conectar a la señal de salud del player para mantener sincronizado
 	_connect_to_player_health()
-	
+
 	# print("[PlayerStats] Inicializado - Nivel %d, Player: %s" % [level, player_ref != null])
 
 func _connect_to_player_health() -> void:
 	"""Conectar a la señal de salud del player para sincronizar current_health"""
 	if not player_ref:
 		return
-	
+
 	var hc = _get_health_component()
 	if hc and hc.has_signal("health_changed"):
 		if not hc.health_changed.is_connected(_on_player_health_changed):
@@ -638,11 +661,11 @@ func _on_player_health_changed(new_health: int, max_health: int) -> void:
 func _sync_with_attack_manager() -> void:
 	"""
 	Sincronizar stats relevantes con AttackManager.
-	
+
 	NOTA (v2.0): Los stats de armas (damage_mult, cooldown_mult, area_mult, etc.)
 	ahora se manejan directamente en GlobalWeaponStats dentro de AttackManager.
 	Solo sincronizamos stats que son tanto del jugador como de las armas.
-	
+
 	Para mejoras de armas, usar:
 	- attack_manager.apply_global_upgrade() para mejoras globales
 	- attack_manager.apply_weapon_upgrade() para mejoras específicas
@@ -653,9 +676,9 @@ func _sync_with_attack_manager() -> void:
 	# Solo sincronizar stats que pertenecen a AMBOS sistemas
 	# life_steal afecta tanto la supervivencia del jugador como el combate
 	attack_manager.set_player_stat("life_steal", get_stat("life_steal"))
-	
+
 	# DEPRECADO: Estos stats ahora viven en GlobalWeaponStats
-	# Las mejoras genéricas del LevelUpPanel deben llamar a 
+	# Las mejoras genéricas del LevelUpPanel deben llamar a
 	# attack_manager.apply_global_upgrade() directamente
 	#
 	# Por compatibilidad temporal, seguimos sincronizando:
@@ -881,17 +904,17 @@ func _update_health_regen(delta: float) -> void:
 	var regen = get_stat("health_regen")
 	if regen <= 0:
 		return
-	
+
 	# Acumular regeneración parcial
 	_regen_accumulator += regen * delta
-	
+
 	# Solo curar cuando tengamos al menos 1 HP completo
 	if _regen_accumulator < 1.0:
 		return
-	
+
 	var heal_int = int(_regen_accumulator)
 	_regen_accumulator -= heal_int  # Guardar el residuo para el siguiente tick
-	
+
 	# Si tenemos referencia al player, curar directamente
 	if player_ref and player_ref.has_method("heal"):
 		# IMPORTANTE: Verificar que el jugador esté vivo antes de regenerar
@@ -904,11 +927,11 @@ func _update_health_regen(delta: float) -> void:
 			var hc = player_ref.get_health_component()
 			if hc and "is_alive" in hc:
 				is_alive = hc.is_alive
-		
+
 		if not is_alive:
 			_regen_accumulator = 0.0  # Reset al morir
 			return  # No regenerar si el jugador está muerto
-		
+
 		var player_hp = _get_player_current_health()
 		var max_hp = get_stat("max_health")
 		if player_hp < max_hp and player_hp > 0:
@@ -923,19 +946,19 @@ func _get_player_current_health() -> float:
 	"""Obtener HP actual del player real"""
 	if player_ref == null:
 		return current_health
-	
+
 	# Intentar obtener del wizard_player interno
 	var wizard = player_ref.get_node_or_null("WizardPlayer")
 	if wizard and wizard.has_node("HealthComponent"):
 		var hc = wizard.get_node("HealthComponent")
 		return hc.current_health
-	
+
 	# Fallback directo
 	if player_ref.has_method("get_health_component"):
 		var hc = player_ref.get_health_component()
 		if hc:
 			return hc.current_health
-	
+
 	return current_health
 
 func _update_shield_regen(delta: float) -> void:
@@ -943,25 +966,25 @@ func _update_shield_regen(delta: float) -> void:
 	var shield_regen = get_stat("shield_regen")
 	if shield_regen <= 0:
 		return
-	
+
 	# No regenerar escudo si no tiene max_shield definido o está lleno
 	var current_shield = get_stat("shield_amount")
 	var max_shield = get_base_stat("shield_amount")  # El máximo es el valor base + mejoras
-	
+
 	# Si no hay escudo definido, no regenerar
 	if max_shield <= 0:
 		return
-	
+
 	# Acumular regeneración parcial
 	_shield_regen_accumulator += shield_regen * delta
-	
+
 	# Solo regenerar cuando tengamos al menos 1 punto de escudo
 	if _shield_regen_accumulator < 1.0:
 		return
-	
+
 	var regen_int = int(_shield_regen_accumulator)
 	_shield_regen_accumulator -= regen_int
-	
+
 	# No exceder el máximo de escudo
 	var new_shield = mini(int(current_shield) + regen_int, int(max_shield))
 	if new_shield > current_shield:
@@ -971,13 +994,13 @@ func _update_growth(delta: float) -> void:
 	"""Aplicar bonus de Growth por minuto de juego"""
 	# SIEMPRE actualizar tiempo de juego (incluso si growth es 0)
 	_game_time_minutes += delta / 60.0
-	
+
 	var growth_rate = get_stat("growth")
 	if growth_rate <= 0:
 		# Aunque no tengamos growth, mantener _last_growth_minute sincronizado
 		_last_growth_minute = int(_game_time_minutes)
 		return
-	
+
 	# Cada minuto completo, aplicar bonus de growth
 	var current_minute = int(_game_time_minutes)
 	if current_minute > _last_growth_minute:
@@ -992,24 +1015,24 @@ func _apply_growth_bonus(growth_rate: float, _minutes: int) -> void:
 		"projectile_speed_mult", "duration_mult", "crit_chance", "crit_damage",
 		"health_regen", "armor", "pickup_range", "move_speed", "xp_mult"
 	]
-	
+
 	# Limpiar modificadores de growth anteriores antes de aplicar nuevos
 	remove_temp_modifiers_by_source("growth_bonus")
-	
+
 	# Calcular multiplicador total basado en el tiempo total transcurrido
 	var total_minutes = int(_game_time_minutes)
 	var total_growth_bonus = growth_rate * total_minutes  # ej: 0.01 * 5 = 0.05 (5%)
-	
+
 	if total_growth_bonus <= 0:
 		return
-	
+
 	for stat_name in growth_stats:
 		var base_value = get_base_stat(stat_name)
 		if base_value > 0:
 			# Aplicar % del valor base como bonus
 			var bonus = base_value * total_growth_bonus
 			add_temp_modifier(stat_name, bonus, 9999.0, "growth_bonus")
-	
+
 	# Mostrar notificación visual si tenemos player
 	if player_ref and is_instance_valid(player_ref):
 		if "global_position" in player_ref:
@@ -1034,7 +1057,7 @@ func take_damage(amount: float) -> float:
 		# print("[PlayerStats] ¡ESQUIVADO! (%.0f%% chance)" % (dodge * 100))
 		# Emitir señal de esquiva (la UI puede mostrar "DODGE!")
 		return 0.0
-	
+
 	var armor = get_stat("armor")
 	var effective_damage = maxf(1.0, amount - armor)  # Mínimo 1 de daño
 
@@ -1075,20 +1098,20 @@ func _get_health_component() -> Node:
 	"""Obtener el HealthComponent del player real"""
 	if not player_ref:
 		return null
-	
+
 	# Buscar en el wizard_player interno
 	var wizard = player_ref.get_node_or_null("WizardPlayer")
 	if wizard and wizard.has_node("HealthComponent"):
 		return wizard.get_node("HealthComponent")
-	
+
 	# Buscar directamente en player_ref
 	if player_ref.has_node("HealthComponent"):
 		return player_ref.get_node("HealthComponent")
-	
+
 	# Buscar con método
 	if player_ref.has_method("get_health_component"):
 		return player_ref.get_health_component()
-	
+
 	return null
 
 func get_health_percent() -> float:
@@ -1096,14 +1119,14 @@ func get_health_percent() -> float:
 	var max_hp = get_stat("max_health")
 	if max_hp <= 0:
 		return 0.0
-	
+
 	# Intentar obtener HP actual del HealthComponent real
 	var current_hp = current_health
 	if player_ref:
 		var hc = _get_health_component()
 		if hc and "current_health" in hc:
 			current_hp = hc.current_health
-	
+
 	return current_hp / max_hp
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1153,7 +1176,7 @@ const WEAPON_STATS = ["damage_mult", "damage_flat", "attack_speed_mult", "cooldo
 func apply_upgrade(upgrade_data) -> bool:
 	"""
 	Aplicar un upgrade del jugador. Acepta Dictionary con formato effects.
-	
+
 	IMPORTANTE: Las mejoras con stats de armas (damage_mult, attack_speed_mult, etc.)
 	se envían TAMBIÉN a GlobalWeaponStats para que afecten a todas las armas.
 	"""
@@ -1170,26 +1193,26 @@ func apply_upgrade(upgrade_data) -> bool:
 	if upgrade_dict.has("effects"):
 		var effects = upgrade_dict.get("effects", [])
 		var weapon_effects: Array = []  # Efectos que van a GlobalWeaponStats
-		
+
 		for effect in effects:
 			var stat = effect.get("stat", "")
 			var value = effect.get("value", 0)
 			var op = effect.get("operation", "add")
-			
+
 			if stat == "":
 				continue
-			
+
 			# Aplicar a PlayerStats (todos los stats)
 			match op:
 				"add": add_stat(stat, value)
 				"multiply": multiply_stat(stat, value)
 				"set": set_stat(stat, value)
 				_: add_stat(stat, value)
-			
+
 			# Si es un stat de arma, también enviarlo a GlobalWeaponStats
 			if stat in WEAPON_STATS:
 				weapon_effects.append(effect.duplicate())
-		
+
 		# Enviar stats de armas a GlobalWeaponStats
 		if weapon_effects.size() > 0:
 			_apply_weapon_effects_to_global(weapon_effects, upgrade_dict)
@@ -1210,33 +1233,33 @@ func _apply_weapon_effects_to_global(effects: Array, upgrade_dict: Dictionary) -
 	"""Enviar efectos de armas a GlobalWeaponStats"""
 	# Buscar GlobalWeaponStats
 	var gws = null
-	
+
 	# 1. Usar referencia directa si existe
 	if global_weapon_stats != null:
 		gws = global_weapon_stats
-	
+
 	# 2. Intentar a través de attack_manager
 	if gws == null and attack_manager and attack_manager.has_method("get_global_weapon_stats"):
 		gws = attack_manager.get_global_weapon_stats()
-	
+
 	# 3. Buscar en grupos si estamos en el árbol
 	if gws == null and is_inside_tree():
 		var nodes = get_tree().get_nodes_in_group("global_weapon_stats")
 		if nodes.size() > 0:
 			gws = nodes[0]
-	
+
 	if gws == null:
 		# No hay GlobalWeaponStats, los stats se quedan solo en PlayerStats
 		push_warning("[PlayerStats] No se encontró GlobalWeaponStats para sincronizar stats de armas")
 		return
-	
+
 	# Crear una mini-mejora solo con los efectos de armas
 	var weapon_upgrade = {
 		"id": upgrade_dict.get("id", "") + "_weapon_sync",
 		"name": upgrade_dict.get("name", ""),
 		"effects": effects
 	}
-	
+
 	# Aplicar a GlobalWeaponStats
 	if gws.has_method("apply_upgrade"):
 		gws.apply_upgrade(weapon_upgrade)

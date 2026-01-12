@@ -5,6 +5,8 @@
 # - Si hay una partida activa que se puede reanudar
 # - Tiempo de juego al pausar
 # - Estado completo de la partida para poder reanudarla
+# - Slot de guardado seleccionado
+# - Personaje seleccionado
 #
 # IMPORTANTE: Ahora persiste a disco para sobrevivir reinicios del juego
 
@@ -19,6 +21,10 @@ var paused_game_time: float = 0.0
 var game_scene_path: String = "res://scenes/game/Game.tscn"
 var saved_player_data: Dictionary = {}
 
+# Slot y personaje seleccionados
+var selected_save_slot: int = 0  # 0, 1, 2
+var selected_character_id: String = "frost_mage"  # ID del personaje seleccionado
+
 # Estado completo del juego para reanudar
 var saved_game_state: Dictionary = {}
 
@@ -31,29 +37,29 @@ func _load_from_disk() -> void:
 	"""Cargar estado de partida desde disco"""
 	if not FileAccess.file_exists(SAVE_FILE):
 		return
-	
+
 	var file = FileAccess.open(SAVE_FILE, FileAccess.READ)
 	if file == null:
 		# Debug desactivado: print("[SessionState] No se pudo abrir archivo de sesión")
 		return
-	
+
 	var json = JSON.new()
 	var parse_result = json.parse(file.get_as_text())
 	file.close()
-	
+
 	if parse_result != OK:
 		# Debug desactivado: print("[SessionState] Error parseando JSON de sesión")
 		return
-	
+
 	var data = json.data
 	if not data is Dictionary:
 		return
-	
+
 	has_active_game = data.get("has_active_game", false)
 	paused_game_time = data.get("paused_game_time", 0.0)
 	saved_game_state = data.get("saved_game_state", {})
 	saved_player_data = data.get("saved_player_data", {})
-	
+
 	if has_active_game:
 		# Debug desactivado: print("[SessionState] ✅ Partida guardada encontrada en disco:")
 		# Debug desactivado: print("  - Tiempo: %.1f segundos" % paused_game_time)
@@ -69,12 +75,12 @@ func _save_to_disk() -> void:
 		"saved_game_state": saved_game_state,
 		"saved_player_data": saved_player_data
 	}
-	
+
 	var file = FileAccess.open(SAVE_FILE, FileAccess.WRITE)
 	if file == null:
 		push_warning("[SessionState] Error: No se pudo guardar a disco")
 		return
-	
+
 	file.store_string(JSON.stringify(data))
 	file.close()
 	# Debug desactivado: print("[SessionState] 💾 Estado guardado a disco")
@@ -128,3 +134,29 @@ func get_paused_time_formatted() -> String:
 	var minutes = int(paused_game_time) / 60
 	var seconds = int(paused_game_time) % 60
 	return "%02d:%02d" % [minutes, seconds]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SELECCIÓN DE PERSONAJE Y SLOT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func set_save_slot(slot: int) -> void:
+	"""Establecer el slot de guardado seleccionado (0-2)"""
+	selected_save_slot = clampi(slot, 0, 2)
+
+func get_save_slot() -> int:
+	"""Obtener el slot de guardado actual"""
+	return selected_save_slot
+
+func set_character(character_id: String) -> void:
+	"""Establecer el personaje seleccionado"""
+	selected_character_id = character_id
+
+func get_character() -> String:
+	"""Obtener el ID del personaje seleccionado"""
+	return selected_character_id
+
+func start_new_game(slot: int, character_id: String) -> void:
+	"""Iniciar una nueva partida con slot y personaje específicos"""
+	selected_save_slot = clampi(slot, 0, 2)
+	selected_character_id = character_id
+	clear_game_state()

@@ -165,6 +165,8 @@ func _get_audio_manager() -> Node:
 
 # Referencia a la pantalla de selección de slot
 var slot_select_screen: Control = null
+var character_select_screen: Control = null
+var _pending_slot_index: int = 0
 
 func _on_play_pressed() -> void:
 	_play_button_sound()
@@ -179,7 +181,7 @@ func _show_slot_select() -> void:
 		slot_select_screen.visible = true
 		slot_select_screen.refresh()
 		return
-	
+
 	# Cargar la escena de selección de slot
 	var slot_scene = load("res://scenes/ui/SaveSlotSelect.tscn")
 	if not slot_scene:
@@ -187,14 +189,14 @@ func _show_slot_select() -> void:
 		# Fallback: iniciar juego directamente
 		_start_game_with_default_slot()
 		return
-	
+
 	slot_select_screen = slot_scene.instantiate()
 	add_child(slot_select_screen)
-	
+
 	# Conectar señales
 	slot_select_screen.slot_selected.connect(_on_slot_selected)
 	slot_select_screen.back_pressed.connect(_on_slot_back)
-	
+
 	# Ocultar el menú principal mientras se muestra la selección
 	$VBoxContainer.visible = false
 	$TitleLabel.visible = false
@@ -203,16 +205,71 @@ func _show_slot_select() -> void:
 
 func _on_slot_selected(slot_index: int) -> void:
 	"""Callback cuando se selecciona un slot"""
+	_pending_slot_index = slot_index
+
 	# Activar el slot en SaveManager
 	var save_manager = get_tree().root.get_node_or_null("SaveManager")
 	if save_manager and save_manager.has_method("set_active_slot"):
 		save_manager.set_active_slot(slot_index)
-	
-	# Limpiar estado de partida anterior si existe
+
+	# Guardar slot en SessionState
 	if SessionState:
-		SessionState.clear_game_state()
-	
+		SessionState.set_save_slot(slot_index)
+
+	# Ocultar pantalla de slots y mostrar selección de personaje
+	if slot_select_screen:
+		slot_select_screen.visible = false
+
+	_show_character_select()
+
+func _show_character_select() -> void:
+	"""Mostrar pantalla de selección de personaje"""
+	if character_select_screen and is_instance_valid(character_select_screen):
+		character_select_screen.visible = true
+		if character_select_screen.has_method("show_screen"):
+			character_select_screen.show_screen()
+		return
+
+	# Cargar la escena de selección de personaje
+	var char_scene = load("res://scenes/ui/CharacterSelectScreen.tscn")
+	if not char_scene:
+		push_warning("[MainMenu] No se pudo cargar CharacterSelectScreen.tscn")
+		# Fallback: iniciar juego con personaje por defecto
+		_start_game_with_default_character()
+		return
+
+	character_select_screen = char_scene.instantiate()
+	add_child(character_select_screen)
+
+	# Conectar señales
+	character_select_screen.character_selected.connect(_on_character_selected)
+	character_select_screen.back_pressed.connect(_on_character_back)
+
+func _on_character_selected(character_id: String) -> void:
+	"""Callback cuando se selecciona un personaje"""
+	# Guardar personaje en SessionState
+	if SessionState:
+		SessionState.start_new_game(_pending_slot_index, character_id)
+
 	# Iniciar juego
+	_start_game()
+
+func _on_character_back() -> void:
+	"""Callback cuando se vuelve de la selección de personaje"""
+	# Ocultar pantalla de personajes
+	if character_select_screen:
+		character_select_screen.visible = false
+
+	# Mostrar pantalla de slots
+	if slot_select_screen:
+		slot_select_screen.visible = true
+		if slot_select_screen.has_method("refresh"):
+			slot_select_screen.refresh()
+
+func _start_game_with_default_character() -> void:
+	"""Iniciar juego con personaje por defecto (fallback)"""
+	if SessionState:
+		SessionState.start_new_game(_pending_slot_index, "frost_mage")
 	_start_game()
 
 func _on_slot_back() -> void:
@@ -220,13 +277,13 @@ func _on_slot_back() -> void:
 	# Ocultar pantalla de slots
 	if slot_select_screen:
 		slot_select_screen.visible = false
-	
+
 	# Mostrar menú principal
 	$VBoxContainer.visible = true
 	$TitleLabel.visible = true
 	if has_node("SubtitleLabel"):
 		$SubtitleLabel.visible = true
-	
+
 	# Actualizar navegación
 	_update_button_list()
 	_highlight_current_button()

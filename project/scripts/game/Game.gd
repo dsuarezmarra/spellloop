@@ -64,12 +64,12 @@ var _paused_by_focus_loss: bool = false
 func _ready() -> void:
 	# Game debe procesar siempre para manejar input de pausa
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	
+
 	# Verificar si hay una partida guardada para reanudar
 	if SessionState and SessionState.can_resume():
 		_is_resuming = true
 		_saved_state = SessionState.get_saved_state()
-	
+
 	_setup_game()
 
 func _notification(what: int) -> void:
@@ -119,7 +119,7 @@ func _create_player() -> void:
 	if player_scene:
 		player = player_scene.instantiate()
 		player_container.add_child(player)
-		
+
 		# Si estamos reanudando, restaurar posición
 		if _is_resuming and _saved_state.has("player_position"):
 			var pos_data = _saved_state["player_position"]
@@ -132,10 +132,36 @@ func _create_player() -> void:
 				player.global_position = Vector2.ZERO
 		else:
 			player.global_position = Vector2.ZERO
-		
+
+		# Configurar el personaje seleccionado (sprites, etc.)
+		_configure_player_character()
+
 		# Debug desactivado: print("🧙 [Game] Player creado")
 	else:
 		push_error("[Game] No se pudo cargar SpellloopPlayer.tscn")
+
+func _configure_player_character() -> void:
+	"""Configurar el player según el personaje seleccionado"""
+	if not player:
+		return
+
+	var character_id = "frost_mage"  # Default
+	if SessionState:
+		character_id = SessionState.get_character()
+
+	# Obtener datos del personaje
+	var char_data = CharacterDatabase.get_character(character_id)
+	if char_data.is_empty():
+		push_warning("[Game] Character not found: " + character_id)
+		return
+
+	# Configurar la carpeta de sprites si el player tiene el método
+	if player.has_method("set_character_sprites"):
+		player.set_character_sprites(char_data.get("sprite_folder", "wizard"))
+
+	# Guardar el ID del personaje en el player para referencia
+	if "character_id" in player:
+		player.character_id = character_id
 
 func _create_arena_manager() -> void:
 	var am_script = load("res://scripts/core/ArenaManager.gd")
@@ -148,7 +174,7 @@ func _create_arena_manager() -> void:
 		var seed_to_use: int = -1  # -1 significa generar aleatorio
 		if _is_resuming and _saved_state.has("arena_seed"):
 			seed_to_use = _saved_state["arena_seed"]
-		
+
 		# Inicializar con player y nodo raíz de arena
 		arena_manager.initialize(player, arena_root, seed_to_use)
 
@@ -166,6 +192,14 @@ func _create_player_stats() -> void:
 		player_stats = ps_script.new()
 		player_stats.name = "PlayerStats"
 		add_child(player_stats)
+
+		# Inicializar stats desde el personaje seleccionado
+		var character_id = "frost_mage"  # Default
+		if SessionState:
+			character_id = SessionState.get_character()
+
+		if player_stats.has_method("initialize_from_character"):
+			player_stats.initialize_from_character(character_id)
 
 		# Conectar señales de stats
 		if player_stats.has_signal("stat_changed"):
@@ -191,12 +225,12 @@ func _create_wave_manager() -> void:
 	if wm_script:
 		wave_manager = wm_script.new()
 		wave_manager.name = "WaveManager"
-		
+
 		# Si estamos reanudando, establecer bandera para saltar inicialización automática
 		# El estado será restaurado luego por _resume_saved_game()
 		if _is_resuming and _saved_state.has("wave_manager_state"):
 			wave_manager.skip_auto_init = true
-		
+
 		add_child(wave_manager)
 
 		# Conectar señales de WaveManager
@@ -272,7 +306,7 @@ func _setup_camera() -> void:
 		camera.enabled = true
 		camera.position_smoothing_enabled = true
 		camera.position_smoothing_speed = 5.0
-	
+
 	# Crear sistema de feedback de daño (vignette + partículas en bordes)
 	_setup_damage_feedback()
 
@@ -284,7 +318,7 @@ func _setup_damage_feedback() -> void:
 		damage_vignette = DamageVignetteScript.new()
 		damage_vignette.name = "DamageVignette"
 		add_child(damage_vignette)
-	
+
 	# Conectar señal de daño del player
 	if player:
 		# Buscar el BasePlayer dentro de SpellloopPlayer
@@ -314,7 +348,7 @@ func _on_player_took_damage(damage: int, element: String) -> void:
 	elif camera:
 		# Shake manual si no es GameCamera
 		_manual_camera_shake(damage)
-	
+
 	# Vignette y partículas
 	if damage_vignette and damage_vignette.has_method("show_damage_effect"):
 		damage_vignette.show_damage_effect(damage, element)
@@ -326,10 +360,10 @@ func _manual_camera_shake(damage: int) -> void:
 		randf_range(-12, 12) * intensity,
 		randf_range(-12, 12) * intensity
 	)
-	
+
 	var original_offset = camera.offset
 	camera.offset = shake_offset
-	
+
 	# Crear tween para restaurar
 	var tween = create_tween()
 	tween.set_ease(Tween.EASE_OUT)
@@ -423,27 +457,27 @@ func _resume_saved_game() -> void:
 	"""Restaurar el estado de una partida guardada"""
 	game_running = true
 	is_paused = false
-	
+
 	# Restaurar tiempo de juego
 	game_time = _saved_state.get("game_time", 0.0)
-	
+
 	# Restaurar tiempo en WaveManager para que la dificultad sea correcta
 	if wave_manager:
 		wave_manager.game_time_seconds = game_time
 		wave_manager.game_time_minutes = game_time / 60.0
-	
+
 	# Restaurar stats de la partida
 	run_stats["time"] = game_time
 	run_stats["level"] = _saved_state.get("player_level", 1)
-	
+
 	# IMPORTANTE: Esperar un frame para que HealthComponent._ready() ya haya ejecutado
 	# antes de restaurar el HP (evita que _ready() sobrescriba nuestro valor)
 	call_deferred("_restore_player_hp_deferred")
-	
+
 	# Restaurar stats del jugador
 	if player_stats and _saved_state.has("player_stats"):
 		var saved_stats = _saved_state.get("player_stats", {})
-		
+
 		# Usar from_dict() si está disponible (método preferido)
 		if player_stats.has_method("from_dict"):
 			player_stats.from_dict(saved_stats)
@@ -455,7 +489,7 @@ func _resume_saved_game() -> void:
 			if saved_stats.has("collected_upgrades") and "collected_upgrades" in player_stats:
 				player_stats.collected_upgrades = saved_stats.get("collected_upgrades", []).duplicate(true)
 				# Debug desactivado: print("🎒 [Game] Mejoras coleccionadas restauradas: %d items" % player_stats.collected_upgrades.size())
-			
+
 			# Restaurar stats desde el sub-diccionario "stats" si existe
 			var actual_stats = saved_stats.get("stats", saved_stats)
 			for stat_name in actual_stats:
@@ -466,11 +500,11 @@ func _resume_saved_game() -> void:
 						player_stats.set_stat(stat_name, value)
 					elif "stats" in player_stats and stat_name in player_stats.stats:
 						player_stats.stats[stat_name] = value
-		
+
 		# Restaurar nivel (siempre, desde el estado principal)
 		if "level" in player_stats:
 			player_stats.level = _saved_state.get("player_level", 1)
-	
+
 	# Restaurar experiencia
 	if experience_manager and _saved_state.has("current_exp"):
 		experience_manager.current_exp = _saved_state.get("current_exp", 0)
@@ -479,14 +513,14 @@ func _resume_saved_game() -> void:
 			experience_manager.total_exp = _saved_state.get("total_exp", 0)
 		if "current_level" in experience_manager:
 			experience_manager.current_level = _saved_state.get("player_level", 1)
-	
+
 	# Restaurar monedas - ExperienceManager usa total_coins
 	if experience_manager and _saved_state.has("coins"):
 		var saved_coins = _saved_state.get("coins", 0)
 		if "total_coins" in experience_manager:
 			experience_manager.total_coins = saved_coins
 			# Debug desactivado: print("🪙 [Game] Monedas restauradas: %d" % saved_coins)
-	
+
 	# Restaurar mejoras globales de armas (GlobalWeaponStats)
 	var attack_manager = get_tree().get_first_node_in_group("attack_manager")
 	if attack_manager and _saved_state.has("global_weapon_stats"):
@@ -494,7 +528,7 @@ func _resume_saved_game() -> void:
 			if attack_manager.global_weapon_stats.has_method("from_dict"):
 				attack_manager.global_weapon_stats.from_dict(_saved_state.get("global_weapon_stats", {}))
 				# Debug desactivado: print("⚔️ [Game] Mejoras globales restauradas")
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════════
 	# NUEVO: Restaurar estado del EnemyManager PRIMERO (todos los enemigos activos)
 	# Esto debe hacerse antes de WaveManager para que el boss esté disponible
@@ -505,7 +539,7 @@ func _resume_saved_game() -> void:
 			# Debug desactivado: print("👹 [Game] Estado de EnemyManager restaurado")
 		else:
 			push_warning("[Game] EnemyManager no tiene método from_save_data")
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════════
 	# NUEVO: Restaurar estado del WaveManager (fase, oleadas, boss, elites, eventos)
 	# Debe hacerse DESPUÉS de EnemyManager para encontrar el boss restaurado
@@ -516,7 +550,7 @@ func _resume_saved_game() -> void:
 			# Debug desactivado: print("🌊 [Game] Estado de WaveManager restaurado")
 		else:
 			push_warning("[Game] WaveManager no tiene método from_save_data")
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════════
 	# NUEVO: Restaurar estado del ArenaManager (zonas desbloqueadas, biomas)
 	# ═══════════════════════════════════════════════════════════════════════════════
@@ -526,7 +560,7 @@ func _resume_saved_game() -> void:
 			# Debug desactivado: print("🏟️ [Game] Estado de ArenaManager restaurado")
 		else:
 			push_warning("[Game] ArenaManager no tiene método from_save_data")
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════════
 	# Restaurar contadores de Reroll y Banish del LevelUpPanel
 	# ═══════════════════════════════════════════════════════════════════════════════
@@ -535,16 +569,16 @@ func _resume_saved_game() -> void:
 	if _saved_state.has("remaining_banishes"):
 		remaining_banishes = _saved_state.get("remaining_banishes", 2)
 	# Debug desactivado: print("🎲 [Game] Rerolls/Banishes restaurados: %d/%d" % [remaining_rerolls, remaining_banishes])
-	
+
 	# TODO: Si queremos restaurar armas adicionales más allá de la inicial, se haría aquí
-	
+
 	# Actualizar HUD con los valores restaurados
 	call_deferred("_update_hud_after_restore")
-	
+
 	# Limpiar el estado guardado DESPUÉS de restaurar todo (diferido)
 	# No lo limpiamos aquí porque _restore_player_hp_deferred necesita _saved_state
 	call_deferred("_clear_saved_state_deferred")
-	
+
 	# Debug desactivado: print("🔄 [Game] ¡Partida reanudada!")
 	# Debug desactivado: print("   - Tiempo: %.1f segundos" % game_time)
 	# Debug desactivado: print("   - Nivel: %d" % _saved_state.get("player_level", 1))
@@ -559,39 +593,39 @@ func _restore_player_hp_deferred() -> void:
 	"""
 	if not player or _saved_state.is_empty():
 		return
-	
+
 	if not _saved_state.has("player_hp"):
 		return
-	
+
 	var saved_hp = _saved_state.get("player_hp", 100)
 	var saved_max_hp = _saved_state.get("player_max_hp", 100)
-	
+
 	# Debug desactivado: print("🔄 [Game] _restore_player_hp_deferred() - Restaurando HP: %d/%d" % [saved_hp, saved_max_hp])
-	
+
 	# Buscar HealthComponent en las ubicaciones posibles
 	var health_component = null
-	
+
 	# 1. En SpellloopPlayer.health_component (referencia directa)
 	if "health_component" in player and player.health_component:
 		health_component = player.health_component
-	
+
 	# 2. En wizard_player
 	if not health_component and "wizard_player" in player and player.wizard_player:
 		if "health_component" in player.wizard_player:
 			health_component = player.wizard_player.health_component
 		else:
 			health_component = player.wizard_player.get_node_or_null("HealthComponent")
-	
+
 	# 3. Como nodo hijo directo
 	if not health_component:
 		health_component = player.get_node_or_null("HealthComponent")
-	
+
 	# 4. Dentro de WizardPlayer como nodo
 	if not health_component:
 		var wp = player.get_node_or_null("WizardPlayer")
 		if wp:
 			health_component = wp.get_node_or_null("HealthComponent")
-	
+
 	if health_component:
 		# HealthComponent usa current_health/max_health, NO current_hp/max_hp
 		if health_component.has_method("set_health"):
@@ -601,16 +635,16 @@ func _restore_player_hp_deferred() -> void:
 				health_component.max_health = saved_max_hp
 			elif "max_hp" in health_component:
 				health_component.max_hp = saved_max_hp
-			
+
 			if "current_health" in health_component:
 				health_component.current_health = saved_hp
 			elif "current_hp" in health_component:
 				health_component.current_hp = saved_hp
-		
+
 		# Emitir señal de cambio de salud para actualizar UI
 		if health_component.has_signal("health_changed"):
 			health_component.health_changed.emit(saved_hp, saved_max_hp)
-		
+
 		# Debug desactivado: print("✅ [Game] HP restaurado correctamente: %d/%d" % [health_component.current_health, health_component.max_health])
 	else:
 		push_warning("[Game] WARNING - No se pudo encontrar HealthComponent para restaurar HP")
@@ -619,14 +653,14 @@ func _update_hud_after_restore() -> void:
 	"""Actualizar HUD después de restaurar partida guardada"""
 	if not hud:
 		return
-	
+
 	# Actualizar nivel
 	var level = _saved_state.get("player_level", 1)
 	if hud.has_method("update_level"):
 		hud.update_level(level)
 	elif "level_label" in hud and hud.level_label:
 		hud.level_label.text = "Lv. %d" % level
-	
+
 	# Actualizar XP
 	var current_exp = _saved_state.get("current_exp", 0)
 	var exp_to_next = _saved_state.get("exp_to_next_level", 10)
@@ -634,14 +668,14 @@ func _update_hud_after_restore() -> void:
 		hud.update_exp(current_exp, exp_to_next)
 	elif "exp_bar" in hud and hud.exp_bar:
 		hud.exp_bar.value = float(current_exp) / maxf(float(exp_to_next), 1.0) * 100.0
-	
+
 	# Actualizar monedas - update_coins(amount, total)
 	var coins = _saved_state.get("coins", 0)
 	if hud.has_method("update_coins"):
 		hud.update_coins(0, coins)  # amount=0 porque no es una moneda nueva, solo actualizar total
 	elif "coins_label" in hud and hud.coins_label:
 		hud.coins_label.text = str(coins)
-	
+
 	# Debug desactivado: print("📊 [Game] HUD actualizado después de restaurar")
 
 func _clear_saved_state_deferred() -> void:
@@ -714,11 +748,11 @@ func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy
 	# MONEDAS - Caen al suelo para que el player las recoja
 	if experience_manager:
 		experience_manager.spawn_coins_from_enemy(position, enemy_tier, is_elite, is_boss)
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# EFECTOS ESPECIALES DE KILL
 	# ═══════════════════════════════════════════════════════════════════════════
-	
+
 	# KILL HEAL - Curar al matar enemigos
 	if player_stats and player:
 		var kill_heal_amount = player_stats.get_stat("kill_heal") if player_stats.has_method("get_stat") else 0
@@ -726,7 +760,7 @@ func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy
 			player.heal(int(kill_heal_amount))
 			# Mostrar texto flotante de curación (usar class_name FloatingText)
 			FloatingText.spawn_heal(player.global_position + Vector2(0, -30), int(kill_heal_amount))
-	
+
 	# EXPLOSION ON KILL - Explosión al matar
 	if player_stats and is_instance_valid(player):
 		var explosion_chance = player_stats.get_stat("explosion_chance") if player_stats.has_method("get_stat") else 0.0
@@ -737,27 +771,27 @@ func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy
 func _trigger_kill_explosion(pos: Vector2, damage: float) -> void:
 	"""Explosión al matar enemigos (kill_explosion effect)"""
 	var explosion_radius = 100.0  # Radio de explosión fijo
-	
+
 	# Encontrar enemigos cercanos
 	if enemy_manager and enemy_manager.has_method("get_enemies_in_range"):
 		var enemies_hit = enemy_manager.get_enemies_in_range(pos, explosion_radius)
 		for enemy in enemies_hit:
 			if is_instance_valid(enemy) and enemy.has_method("take_damage"):
 				enemy.take_damage(int(damage), "explosion", null)
-	
+
 	# Crear efecto visual de explosión
 	var explosion = Node2D.new()
 	explosion.name = "KillExplosion"
 	explosion.top_level = true
 	explosion.z_index = 50
 	explosion.global_position = pos
-	
+
 	var root_scene = get_tree().current_scene
 	if root_scene:
 		root_scene.add_child(explosion)
 	else:
 		add_child(explosion)
-	
+
 	# Crear sprite visual
 	var visual = Sprite2D.new()
 	visual.name = "ExplosionVisual"
@@ -770,7 +804,7 @@ func _trigger_kill_explosion(pos: Vector2, damage: float) -> void:
 		var circle = CircleShape2D.new()
 		circle.radius = explosion_radius
 	explosion.add_child(visual)
-	
+
 	# Animación de expansión y desvanecimiento
 	var tween = explosion.create_tween()
 	explosion.scale = Vector2(0.3, 0.3)
@@ -787,7 +821,7 @@ func _on_level_up(new_level: int, _upgrades: Array) -> void:
 
 	# Añadir a la cola de level ups pendientes
 	pending_level_ups.append(new_level)
-	
+
 	# Solo mostrar panel si no hay uno activo
 	if not level_up_panel_active:
 		_process_next_level_up()
@@ -800,7 +834,7 @@ func _process_next_level_up() -> void:
 		is_paused = false
 		get_tree().paused = false
 		return
-	
+
 	# Tomar el siguiente nivel de la cola
 	var level = pending_level_ups.pop_front()
 	level_up_panel_active = true
@@ -850,7 +884,7 @@ func _show_level_up_panel(level: int) -> void:
 	# Pausar el juego y actualizar estado interno
 	is_paused = true
 	get_tree().paused = true
-	
+
 	# Mostrar panel
 	if panel.has_method("show_panel"):
 		panel.show_panel()
@@ -866,7 +900,7 @@ func _on_level_up_option_selected(option: Dictionary) -> void:
 func _on_level_up_panel_closed() -> void:
 	"""Callback cuando se cierra el panel de level up"""
 	# Debug desactivado: print("🆙 [Game] Panel de level up cerrado")
-	
+
 	# Procesar el siguiente level up de la cola (si hay)
 	# Esto también reanudará el juego si no hay más pendientes
 	_process_next_level_up()
@@ -955,26 +989,26 @@ func player_died() -> void:
 	"""Llamar cuando el player muere - Game Over"""
 	if not game_running:
 		return  # Evitar múltiples llamadas
-	
+
 	game_running = false
-	
+
 	# Guardar estadísticas finales de la run
 	_save_run_stats()
-	
+
 	# Pausar el spawn de enemigos
 	if wave_manager and wave_manager.has_method("stop"):
 		wave_manager.stop()
-	
+
 	# Detener la música y reproducir sonido de game over
 	var audio_manager = get_tree().root.get_node_or_null("AudioManager")
 	if audio_manager:
 		if audio_manager.has_method("stop_music"):
 			audio_manager.stop_music()
-	
+
 	# La animación de muerte tiene 4 frames a 2 FPS = 2 segundos
 	# Esperamos ese tiempo antes de mostrar Game Over
 	await get_tree().create_timer(2.5).timeout
-	
+
 	# Mostrar pantalla de game over
 	if game_over_screen:
 		game_over_screen.show_game_over(run_stats)

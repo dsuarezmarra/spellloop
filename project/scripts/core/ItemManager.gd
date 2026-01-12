@@ -43,17 +43,17 @@ func initialize(player_ref: CharacterBody2D):
 	# Debug desactivado: print("📦 Inicializando ItemManager...")
 	player = player_ref
 	last_player_position = player.global_position
-	
+
 	# TODO: Conectar con ArenaManager cuando exista
-	
+
 	# Crear cofres iniciales de prueba
 	create_initial_test_chests()
-	
+
 	# Debug desactivado: print("📦 Sistema de items inicializado")
 
 func setup_item_types():
 	"""Configurar tipos de items disponibles"""
-	
+
 	# Items de mejora de armas
 	item_types["weapon_damage"] = {
 		"name": "Cristal de Poder",
@@ -62,15 +62,15 @@ func setup_item_types():
 		"color": Color.RED,
 		"icon": "⚡"
 	}
-	
+
 	item_types["weapon_speed"] = {
 		"name": "Cristal de Velocidad",
 		"description": "Aumenta la velocidad de ataque",
-		"rarity": "common", 
+		"rarity": "common",
 		"color": Color.YELLOW,
 		"icon": "⚡"
 	}
-	
+
 	# Items de mejora del player
 	item_types["health_boost"] = {
 		"name": "Poción de Vida",
@@ -79,7 +79,7 @@ func setup_item_types():
 		"color": Color.GREEN,
 		"icon": "❤️"
 	}
-	
+
 	item_types["speed_boost"] = {
 		"name": "Botas Élficas",
 		"description": "Aumenta la velocidad de movimiento",
@@ -87,7 +87,7 @@ func setup_item_types():
 		"color": Color.CYAN,
 		"icon": "👢"
 	}
-	
+
 	# Items especiales
 	item_types["new_weapon"] = {
 		"name": "Arma Nueva",
@@ -96,7 +96,7 @@ func setup_item_types():
 		"color": Color.PURPLE,
 		"icon": "⚔️"
 	}
-	
+
 	item_types["heal_full"] = {
 		"name": "Elixir de Curación",
 		"description": "Restaura toda la vida",
@@ -104,34 +104,34 @@ func setup_item_types():
 		"color": Color.PINK,
 		"icon": "🧪"
 	}
-	
+
 	# Debug desactivado: print("📦 ", item_types.size(), " tipos de items configurados")
 
 func _process(_delta):
 	"""Actualizar sistema de cofres"""
 	if not player:
 		return
-	
+
 	# Limpiar cofres muy lejanos para optimizar
 	cleanup_distant_chests()
 
 func create_initial_test_chests():
 	"""Crear cofres de prueba cerca del centro del mapa"""
 	# Debug desactivado: print("📦 Creando cofres de prueba...")
-	
+
 	# Crear 3 cofres de prueba en posiciones específicas cerca del origen
 	var chunk_pos = Vector2i(0, 0)
-	
+
 	# Posiciones cerca del centro
 	var test_positions = [
 		Vector2(200, 200),
 		Vector2(500, 300),
 		Vector2(300, 600)
 	]
-	
+
 	for pos in test_positions:
 		spawn_chest_at_position(chunk_pos, pos)
-	
+
 	# Debug desactivado: print("📦 Cofres de prueba creados: ", test_positions.size())
 
 func _on_chunk_generated(_chunk_pos: Vector2i):
@@ -149,7 +149,7 @@ func spawn_chest_at_position(_chunk_pos: Vector2i, world_position: Vector2):
 	var chest = TreasureChest.new()
 	chest.initialize(world_position, "normal", player, rarity)
 	chest.chest_opened.connect(_on_chest_opened)
-	
+
 	# Añadir el cofre al mundo
 	var world_root = get_tree().current_scene.get_node_or_null("WorldRoot")
 	if world_root:
@@ -157,13 +157,13 @@ func spawn_chest_at_position(_chunk_pos: Vector2i, world_position: Vector2):
 	else:
 		get_tree().current_scene.add_child(chest)
 	chest.global_position = world_position
-	
+
 	# Registrar en tracking
 	all_chests.append(chest)
-	
+
 	# Emitir señal
 	chest_spawned.emit(chest)
-	
+
 	# Debug desactivado: print("📦 Cofre generado en posición: ", world_position)
 
 func _on_chest_opened(chest: Node2D, items: Array):
@@ -172,23 +172,23 @@ func _on_chest_opened(chest: Node2D, items: Array):
 	for chunk_pos in chests_by_chunk.keys():
 		if chest in chests_by_chunk[chunk_pos]:
 			chests_by_chunk[chunk_pos].erase(chest)
-	
+
 	if chest in all_chests:
 		all_chests.erase(chest)
-	
+
 	# Procesar items obtenidos
 	for item_data in items:
 		process_item_collected(item_data)
-	
+
 	# Debug desactivado: print("📦 Cofre abierto - Items obtenidos: ", items.size())
 
 func process_item_collected(item_data: Dictionary):
 	"""Procesar item recolectado"""
 	var item_type = item_data.get("type", "unknown")
-	
+
 	# Aplicar efecto del item
 	apply_item_effect(item_type, item_data)
-	
+
 	# Emitir señal
 	item_collected.emit(item_type, item_data)
 
