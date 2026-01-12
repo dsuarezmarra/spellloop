@@ -24,6 +24,16 @@
 
 ---
 
+## ?? NOTA CRÍTICA SOBRE ANIMACIÓN DE CAMINAR
+
+**MUY IMPORTANTE:** Al generar los frames de caminar, es ESENCIAL que:
+1. **Los pies se muevan claramente** - Cada frame debe mostrar una posición diferente de las piernas
+2. **Transición fluida** - Los 4 frames deben formar un ciclo de caminata natural
+3. **No solo mover la ropa** - El personaje debe DAR PASOS visibles, no solo balancearse
+4. **Pierna adelante/atrás** - Frame 1: neutral, Frame 2: pierna izquierda adelante, Frame 3: cruzando, Frame 4: pierna derecha adelante
+
+---
+
 ## ?? GUÍA DE ESTILO - PYROMANCER
 
 ### Características visuales del estilo Funko Pop/Cartoon:
