@@ -74,11 +74,12 @@ func _give_starting_weapon() -> void:
 	# Obtener arma inicial del personaje seleccionado
 	if SessionState:
 		var character_id = SessionState.get_character()
+		print("[CombatSystem] Character from SessionState: '%s'" % character_id)
 		weapon_id = CharacterDatabase.get_starting_weapon(character_id)
+		print("[CombatSystem] Starting weapon for %s: %s" % [character_id, weapon_id])
 
 	attack_manager.add_weapon_by_id(weapon_id)
-
-	# Debug desactivado: print("[CombatSystem] 🎁 Arma inicial equipada: " + weapon_id)
+	print("[CombatSystem] Weapon equipped: " + weapon_id)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LEVEL UP

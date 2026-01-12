@@ -513,21 +513,31 @@ func _update_stats_display() -> void:
 	var sep2 = HSeparator.new()
 	vbox.add_child(sep2)
 
-	# Stats grid
+	# Stats grid - First row (main stats)
 	var stats_grid = GridContainer.new()
 	stats_grid.columns = 3
-	stats_grid.add_theme_constant_override("h_separation", 25)
-	stats_grid.add_theme_constant_override("v_separation", 5)
+	stats_grid.add_theme_constant_override("h_separation", 20)
+	stats_grid.add_theme_constant_override("v_separation", 4)
 	vbox.add_child(stats_grid)
 
 	var stats = char_data.get("stats", {})
+	
+	# All character stats in display order
 	var stat_display = [
+		# Row 1: Core stats
 		{"key": "max_health", "name": "HP", "base": 100, "format": "%.0f", "invert": false},
 		{"key": "move_speed", "name": "SPD", "base": 200, "format": "%.0f", "invert": false},
 		{"key": "armor", "name": "ARM", "base": 0, "format": "%.0f", "invert": false},
+		# Row 2: Combat stats
 		{"key": "damage_mult", "name": "DMG", "base": 1.0, "format": "x%.2f", "invert": false},
 		{"key": "cooldown_mult", "name": "CD", "base": 1.0, "format": "x%.2f", "invert": true},
+		{"key": "area_mult", "name": "AREA", "base": 1.0, "format": "x%.2f", "invert": false},
+		# Row 3: Utility stats
 		{"key": "pickup_range", "name": "RNG", "base": 50, "format": "%.0f", "invert": false},
+		{"key": "health_regen", "name": "REGEN", "base": 0.0, "format": "%.1f", "invert": false},
+		{"key": "luck", "name": "LUCK", "base": 0.0, "format": "%.0f%%", "invert": false},
+		# Row 4: XP
+		{"key": "xp_mult", "name": "XP", "base": 1.0, "format": "x%.2f", "invert": false},
 	]
 
 	for stat_info in stat_display:
