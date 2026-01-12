@@ -3,7 +3,6 @@
 # Shows 10 characters with stats, starting weapon and unlock status
 
 extends Control
-class_name CharacterSelectScreen
 
 signal character_selected(character_id: String)
 signal back_pressed
