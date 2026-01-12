@@ -1,212 +1,554 @@
 # CharacterSelectScreen.gd
-# Character selection screen
-# Shows 10 characters with stats, starting weapon and unlock status
+# Character selection screen - Binding of Isaac style
+# Circular carousel with animated selected character and stats below
 
 extends Control
 
 signal character_selected(character_id: String)
 signal back_pressed
 
-# Main UI references
-@onready var title_label: Label = $Panel/VBoxContainer/TitleLabel
-@onready var characters_grid: GridContainer = $Panel/VBoxContainer/HBoxMain/CharactersScroll/CharactersGrid
-@onready var character_preview: Control = $Panel/VBoxContainer/HBoxMain/CharacterPreview
-@onready var back_button: Button = $Panel/VBoxContainer/HBoxButtons/BackButton
-@onready var play_button: Button = $Panel/VBoxContainer/HBoxButtons/PlayButton
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
 
-# Preview elements - new structure
-@onready var preview_portrait: TextureRect = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/HeaderMargin/HeaderBox/Portrait
-@onready var preview_name: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/HeaderMargin/HeaderBox/NameBox/NameLabel
-@onready var preview_title: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/HeaderMargin/HeaderBox/NameBox/TitleLabel
-@onready var preview_element: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/HeaderMargin/HeaderBox/NameBox/ElementLabel
-@onready var preview_description: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/ContentMargin/ContentVBox/DescriptionLabel
-@onready var preview_weapon: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/ContentMargin/ContentVBox/WeaponBox/WeaponLabel
-@onready var preview_passive: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/ContentMargin/ContentVBox/PassiveBox/PassiveLabel
-@onready var preview_passive_desc: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/ContentMargin/ContentVBox/PassiveDesc
-@onready var stats_container: VBoxContainer = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/ContentMargin/ContentVBox/StatsContainer
+const CAROUSEL_RADIUS: float = 280.0  # Distance from center to characters
+const SELECTED_SCALE: float = 2.5     # Scale of selected character
+const UNSELECTED_SCALE: float = 1.2   # Scale of unselected characters
+const ANIMATION_DURATION: float = 0.25 # Transition animation time
+const VISIBLE_CHARACTERS: int = 5     # How many characters visible at once
 
-# State
-var character_buttons: Array[Button] = []
-var current_character_index: int = 0
-var selected_character_id: String = ""
+# =============================================================================
+# NODES
+# =============================================================================
+
+var carousel_center: Control
+var stats_panel: Control
+var title_label: Label
+var character_name_label: Label
+var character_title_label: Label
+var back_button: Button
+var play_button: Button
+var instructions_label: Label
+
+# Character sprites in carousel
+var character_nodes: Array[Control] = []
+var character_sprites: Array[AnimatedSprite2D] = []
+
+# =============================================================================
+# STATE
+# =============================================================================
+
 var all_characters: Array = []
 var unlocked_character_ids: Array = []
+var current_index: int = 0
+var is_transitioning: bool = false
+var selected_character_id: String = ""
 
-# WASD Navigation
-var grid_columns: int = 5  # Characters per row
+# Tween for animations
+var carousel_tween: Tween
+
+# =============================================================================
+# LIFECYCLE
+# =============================================================================
 
 func _ready() -> void:
 	_load_characters()
-	_create_character_grid()
-	_setup_navigation()
-	_connect_signals()
-
-	# Select first unlocked character
-	_select_first_unlocked()
-
+	_build_ui()
+	_create_carousel()
+	_update_carousel_positions(false)
+	_update_stats_display()
+	
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _load_characters() -> void:
-	"""Load character data"""
+	"""Load all characters from database"""
 	all_characters = CharacterDatabase.get_all_characters()
-
-	# TODO: Load unlocked characters from SaveManager
-	# For now, all starters + for testing all unlocked
+	
+	# For now, unlock all for testing
 	unlocked_character_ids = []
 	for char_data in all_characters:
-		# For testing: all unlocked
-		# In production: check save data
 		unlocked_character_ids.append(char_data.id)
+	
+	# Set initial selection
+	if all_characters.size() > 0:
+		selected_character_id = all_characters[0].id
 
-func _create_character_grid() -> void:
-	"""Create character grid"""
-	if not characters_grid:
-		return
+func _build_ui() -> void:
+	"""Build the UI programmatically"""
+	# Background
+	var bg = ColorRect.new()
+	bg.name = "Background"
+	bg.color = Color(0.05, 0.05, 0.08, 0.98)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(bg)
+	
+	# Vignette effect (darker edges)
+	var vignette = ColorRect.new()
+	vignette.name = "Vignette"
+	vignette.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vignette.color = Color(0, 0, 0, 0)
+	add_child(vignette)
+	
+	# Title at top
+	title_label = Label.new()
+	title_label.name = "Title"
+	title_label.text = "CHOOSE YOUR HERO"
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	title_label.offset_top = 30
+	title_label.offset_bottom = 90
+	title_label.add_theme_font_size_override("font_size", 48)
+	title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
+	add_child(title_label)
+	
+	# Carousel center point (middle of screen, slightly above center)
+	carousel_center = Control.new()
+	carousel_center.name = "CarouselCenter"
+	carousel_center.set_anchors_preset(Control.PRESET_CENTER)
+	carousel_center.position = Vector2(0, -60)
+	add_child(carousel_center)
+	
+	# Character name (above carousel)
+	character_name_label = Label.new()
+	character_name_label.name = "CharacterName"
+	character_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	character_name_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	character_name_label.anchor_top = 0.15
+	character_name_label.anchor_bottom = 0.15
+	character_name_label.offset_top = 0
+	character_name_label.offset_bottom = 40
+	character_name_label.offset_left = -400
+	character_name_label.offset_right = 400
+	character_name_label.add_theme_font_size_override("font_size", 36)
+	character_name_label.add_theme_color_override("font_color", Color(1, 1, 1))
+	add_child(character_name_label)
+	
+	# Character title (below name)
+	character_title_label = Label.new()
+	character_title_label.name = "CharacterTitle"
+	character_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	character_title_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	character_title_label.anchor_top = 0.20
+	character_title_label.anchor_bottom = 0.20
+	character_title_label.offset_top = 0
+	character_title_label.offset_bottom = 30
+	character_title_label.offset_left = -400
+	character_title_label.offset_right = 400
+	character_title_label.add_theme_font_size_override("font_size", 20)
+	add_child(character_title_label)
+	
+	# Stats panel (below carousel)
+	_build_stats_panel()
+	
+	# Navigation instructions
+	instructions_label = Label.new()
+	instructions_label.name = "Instructions"
+	instructions_label.text = "A/D or Arrows to navigate  |  SPACE/ENTER to select  |  ESC to go back"
+	instructions_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	instructions_label.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	instructions_label.offset_top = -80
+	instructions_label.offset_bottom = -50
+	instructions_label.add_theme_font_size_override("font_size", 16)
+	instructions_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+	add_child(instructions_label)
+	
+	# Buttons at bottom
+	var button_container = HBoxContainer.new()
+	button_container.name = "Buttons"
+	button_container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	button_container.offset_top = -50
+	button_container.offset_bottom = -10
+	button_container.offset_left = 100
+	button_container.offset_right = -100
+	button_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	button_container.add_theme_constant_override("separation", 50)
+	add_child(button_container)
+	
+	back_button = Button.new()
+	back_button.name = "BackButton"
+	back_button.text = "BACK"
+	back_button.custom_minimum_size = Vector2(150, 45)
+	back_button.add_theme_font_size_override("font_size", 18)
+	back_button.pressed.connect(_on_back_pressed)
+	button_container.add_child(back_button)
+	
+	play_button = Button.new()
+	play_button.name = "PlayButton"
+	play_button.text = "START ADVENTURE"
+	play_button.custom_minimum_size = Vector2(200, 50)
+	play_button.add_theme_font_size_override("font_size", 20)
+	play_button.pressed.connect(_on_play_pressed)
+	button_container.add_child(play_button)
 
-	# Clear existing grid
-	for child in characters_grid.get_children():
-		child.queue_free()
+func _build_stats_panel() -> void:
+	"""Build the stats display panel"""
+	stats_panel = PanelContainer.new()
+	stats_panel.name = "StatsPanel"
+	stats_panel.set_anchors_preset(Control.PRESET_CENTER)
+	stats_panel.anchor_top = 0.62
+	stats_panel.anchor_bottom = 0.62
+	stats_panel.offset_left = -280
+	stats_panel.offset_right = 280
+	stats_panel.offset_top = 0
+	stats_panel.offset_bottom = 180
+	
+	# Style
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.1, 0.1, 0.15, 0.9)
+	panel_style.border_color = Color(0.3, 0.3, 0.4)
+	panel_style.set_border_width_all(2)
+	panel_style.set_corner_radius_all(10)
+	stats_panel.add_theme_stylebox_override("panel", panel_style)
+	
+	add_child(stats_panel)
+	
+	# Content
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_right", 20)
+	margin.add_theme_constant_override("margin_top", 15)
+	margin.add_theme_constant_override("margin_bottom", 15)
+	stats_panel.add_child(margin)
+	
+	var vbox = VBoxContainer.new()
+	vbox.name = "StatsVBox"
+	vbox.add_theme_constant_override("separation", 8)
+	margin.add_child(vbox)
 
-	character_buttons.clear()
-
-	# Configure grid
-	characters_grid.columns = grid_columns
-
+func _create_carousel() -> void:
+	"""Create character sprites for the carousel"""
+	character_nodes.clear()
+	character_sprites.clear()
+	
 	for i in range(all_characters.size()):
 		var char_data = all_characters[i]
-		var btn = _create_character_button(char_data, i)
-		characters_grid.add_child(btn)
-		character_buttons.append(btn)
+		
+		# Container for each character
+		var char_container = Control.new()
+		char_container.name = "Char_" + char_data.id
+		char_container.z_index = 0
+		carousel_center.add_child(char_container)
+		
+		# Animated sprite
+		var sprite = AnimatedSprite2D.new()
+		sprite.name = "Sprite"
+		sprite.centered = true
+		
+		# Load walk_down animation
+		var frames = _create_character_frames(char_data)
+		sprite.sprite_frames = frames
+		sprite.animation = "idle"
+		sprite.play()
+		
+		char_container.add_child(sprite)
+		
+		# Glow effect for selected (initially invisible)
+		var glow = Sprite2D.new()
+		glow.name = "Glow"
+		glow.modulate = Color(char_data.color_primary.r, char_data.color_primary.g, char_data.color_primary.b, 0)
+		glow.z_index = -1
+		char_container.add_child(glow)
+		
+		character_nodes.append(char_container)
+		character_sprites.append(sprite)
 
-func _create_character_button(char_data: Dictionary, index: int) -> Button:
-	"""Create character button"""
-	var btn = Button.new()
-	btn.name = "Char_" + char_data.id
-	btn.custom_minimum_size = Vector2(120, 140)
-	btn.focus_mode = Control.FOCUS_ALL
-
-	var is_unlocked = char_data.id in unlocked_character_ids
-
-	# Button content
-	var vbox = VBoxContainer.new()
-	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-	vbox.add_theme_constant_override("separation", 5)
-
-	# Large Icon/Emoji
-	var icon_label = Label.new()
-	icon_label.name = "Icon"
-	icon_label.text = char_data.icon if is_unlocked else "X"
-	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	icon_label.add_theme_font_size_override("font_size", 48)
-	icon_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(icon_label)
-
-	# Name
-	var name_label = Label.new()
-	name_label.name = "Name"
-	name_label.text = char_data.name_es if is_unlocked else "???"
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 14)
-	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	if not is_unlocked:
-		name_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
-
-	vbox.add_child(name_label)
-
-	# Element
-	var element_label = Label.new()
-	element_label.name = "Element"
-	element_label.text = _get_element_name(char_data.element) if is_unlocked else ""
-	element_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	element_label.add_theme_font_size_override("font_size", 11)
-	element_label.add_theme_color_override("font_color", char_data.color_primary if is_unlocked else Color(0.4, 0.4, 0.4))
-	element_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(element_label)
-
-	btn.add_child(vbox)
-
-	# Style based on state
-	if is_unlocked:
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.15, 0.15, 0.2, 0.9)
-		style.border_color = char_data.color_primary
-		style.set_border_width_all(2)
-		style.set_corner_radius_all(8)
-		btn.add_theme_stylebox_override("normal", style)
-
-		var style_hover = style.duplicate()
-		style_hover.bg_color = Color(0.2, 0.2, 0.3, 0.95)
-		style_hover.border_color = char_data.color_primary.lightened(0.3)
-		btn.add_theme_stylebox_override("hover", style_hover)
-
-		var style_focus = style.duplicate()
-		style_focus.bg_color = Color(0.25, 0.25, 0.35, 1.0)
-		style_focus.border_color = Color(1.0, 0.9, 0.5)
-		style_focus.set_border_width_all(3)
-		btn.add_theme_stylebox_override("focus", style_focus)
+func _create_character_frames(char_data: Dictionary) -> SpriteFrames:
+	"""Create SpriteFrames for a character with idle and walk animations"""
+	var frames = SpriteFrames.new()
+	var sprite_folder = char_data.get("sprite_folder", "wizard")
+	var base_path = "res://assets/sprites/players/" + sprite_folder
+	
+	# IDLE animation (single frame - first walk frame)
+	frames.add_animation("idle")
+	frames.set_animation_speed("idle", 1.0)
+	frames.set_animation_loop("idle", true)
+	
+	var idle_path = "%s/walk/%s_walk_down_1.png" % [base_path, sprite_folder]
+	var idle_tex = load(idle_path)
+	if idle_tex:
+		frames.add_frame("idle", idle_tex)
 	else:
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.1, 0.1, 0.1, 0.8)
-		style.border_color = Color(0.3, 0.3, 0.3)
-		style.set_border_width_all(1)
-		style.set_corner_radius_all(8)
-		btn.add_theme_stylebox_override("normal", style)
-		btn.add_theme_stylebox_override("hover", style)
-		btn.add_theme_stylebox_override("focus", style)
-		btn.disabled = true
+		# Fallback to wizard
+		idle_tex = load("res://assets/sprites/players/wizard/walk/wizard_walk_down_1.png")
+		if idle_tex:
+			frames.add_frame("idle", idle_tex)
+	
+	# WALK animation (4 frames)
+	frames.add_animation("walk")
+	frames.set_animation_speed("walk", 6.0)
+	frames.set_animation_loop("walk", true)
+	
+	for i in range(1, 5):
+		var walk_path = "%s/walk/%s_walk_down_%d.png" % [base_path, sprite_folder, i]
+		var walk_tex = load(walk_path)
+		if walk_tex:
+			frames.add_frame("walk", walk_tex)
+		else:
+			# Fallback
+			var fallback_path = "res://assets/sprites/players/wizard/walk/wizard_walk_down_%d.png" % i
+			walk_tex = load(fallback_path)
+			if walk_tex:
+				frames.add_frame("walk", walk_tex)
+	
+	return frames
 
-	# Connect signals
-	btn.pressed.connect(_on_character_pressed.bind(index))
-	btn.focus_entered.connect(_on_character_focused.bind(index))
-	btn.mouse_entered.connect(_on_character_hovered.bind(index))
+# =============================================================================
+# CAROUSEL LOGIC
+# =============================================================================
 
-	return btn
+func _update_carousel_positions(animate: bool = true) -> void:
+	"""Update positions of all characters in the carousel"""
+	if is_transitioning and animate:
+		return
+	
+	var total = character_nodes.size()
+	if total == 0:
+		return
+	
+	if animate:
+		is_transitioning = true
+		if carousel_tween:
+			carousel_tween.kill()
+		carousel_tween = create_tween()
+		carousel_tween.set_parallel(true)
+		carousel_tween.set_ease(Tween.EASE_OUT)
+		carousel_tween.set_trans(Tween.TRANS_CUBIC)
+	
+	for i in range(total):
+		var node = character_nodes[i]
+		var sprite = character_sprites[i]
+		
+		# Calculate position in carousel (relative to current_index)
+		var offset = i - current_index
+		
+		# Wrap around for circular effect
+		while offset > total / 2:
+			offset -= total
+		while offset < -total / 2:
+			offset += total
+		
+		# Calculate target position and properties
+		var target_pos: Vector2
+		var target_scale: float
+		var target_alpha: float
+		var target_z: int
+		
+		if offset == 0:
+			# Selected character - center, large, fully visible
+			target_pos = Vector2(0, 0)
+			target_scale = SELECTED_SCALE
+			target_alpha = 1.0
+			target_z = 10
+			
+			# Play walk animation
+			if sprite.animation != "walk":
+				sprite.animation = "walk"
+				sprite.play()
+		else:
+			# Calculate position on arc
+			var angle = offset * 0.4  # Spacing between characters
+			var distance = CAROUSEL_RADIUS * (1.0 + abs(offset) * 0.1)
+			
+			target_pos = Vector2(
+				sin(angle) * distance,
+				abs(offset) * 30 - 20  # Slight vertical offset
+			)
+			
+			# Scale and fade based on distance from center
+			var distance_factor = 1.0 - (abs(offset) * 0.25)
+			target_scale = UNSELECTED_SCALE * max(distance_factor, 0.5)
+			target_alpha = max(1.0 - abs(offset) * 0.3, 0.2)
+			target_z = 5 - abs(offset)
+			
+			# Play idle animation
+			if sprite.animation != "idle":
+				sprite.animation = "idle"
+				sprite.play()
+		
+		# Apply visibility for far characters
+		var is_visible = abs(offset) <= (VISIBLE_CHARACTERS / 2 + 1)
+		
+		if animate:
+			carousel_tween.tween_property(node, "position", target_pos, ANIMATION_DURATION)
+			carousel_tween.tween_property(sprite, "scale", Vector2(target_scale, target_scale), ANIMATION_DURATION)
+			carousel_tween.tween_property(sprite, "modulate:a", target_alpha if is_visible else 0.0, ANIMATION_DURATION)
+			# Z-index doesn't tween well, set directly
+			node.z_index = target_z
+		else:
+			node.position = target_pos
+			sprite.scale = Vector2(target_scale, target_scale)
+			sprite.modulate.a = target_alpha if is_visible else 0.0
+			node.z_index = target_z
+	
+	if animate:
+		carousel_tween.tween_callback(_on_transition_complete).set_delay(ANIMATION_DURATION)
+	
+	# Update selected character
+	if current_index >= 0 and current_index < all_characters.size():
+		selected_character_id = all_characters[current_index].id
+	
+	_update_stats_display()
 
-func _setup_navigation() -> void:
-	"""Setup WASD navigation"""
-	# Disable arrow key navigation on buttons
-	for btn in character_buttons:
-		btn.focus_neighbor_top = btn.get_path()
-		btn.focus_neighbor_bottom = btn.get_path()
-		btn.focus_neighbor_left = btn.get_path()
-		btn.focus_neighbor_right = btn.get_path()
+func _on_transition_complete() -> void:
+	is_transitioning = false
 
-func _connect_signals() -> void:
-	if back_button:
-		back_button.pressed.connect(_on_back_pressed)
-	if play_button:
-		play_button.pressed.connect(_on_play_pressed)
-
-func _select_first_unlocked() -> void:
-	"""Select the first unlocked character"""
-	for i in range(all_characters.size()):
-		if all_characters[i].id in unlocked_character_ids:
-			_select_character(i)
+func _navigate(direction: int) -> void:
+	"""Navigate carousel left or right"""
+	if is_transitioning:
+		return
+	
+	var total = all_characters.size()
+	if total == 0:
+		return
+	
+	# Find next unlocked character
+	var new_index = current_index
+	var attempts = 0
+	
+	while attempts < total:
+		new_index = (new_index + direction + total) % total
+		if all_characters[new_index].id in unlocked_character_ids:
 			break
+		attempts += 1
+	
+	if new_index != current_index:
+		current_index = new_index
+		_update_carousel_positions(true)
+		_play_navigate_sound()
+
+func _update_stats_display() -> void:
+	"""Update the stats panel with current character info"""
+	if current_index < 0 or current_index >= all_characters.size():
+		return
+	
+	var char_data = all_characters[current_index]
+	var is_unlocked = char_data.id in unlocked_character_ids
+	
+	# Update name and title
+	if character_name_label:
+		character_name_label.text = char_data.name_es if is_unlocked else "???"
+	
+	if character_title_label:
+		character_title_label.text = char_data.title_es if is_unlocked else "LOCKED"
+		character_title_label.add_theme_color_override("font_color", char_data.color_primary if is_unlocked else Color(0.5, 0.5, 0.5))
+	
+	# Update stats panel
+	if not stats_panel:
+		return
+	
+	var margin = stats_panel.get_node_or_null("MarginContainer")
+	if not margin:
+		margin = stats_panel.get_child(0) if stats_panel.get_child_count() > 0 else null
+	if not margin:
+		return
+		
+	var vbox = margin.get_node_or_null("StatsVBox")
+	if not vbox:
+		vbox = margin.get_child(0) if margin.get_child_count() > 0 else null
+	if not vbox:
+		return
+	
+	# Clear previous stats
+	for child in vbox.get_children():
+		child.queue_free()
+	
+	if not is_unlocked:
+		var locked_label = Label.new()
+		locked_label.text = "Complete challenges to unlock this hero!"
+		locked_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		locked_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+		vbox.add_child(locked_label)
+		return
+	
+	# Description
+	var desc_label = Label.new()
+	desc_label.text = char_data.description_es
+	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	desc_label.add_theme_font_size_override("font_size", 14)
+	desc_label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.9))
+	vbox.add_child(desc_label)
+	
+	# Separator
+	var sep1 = HSeparator.new()
+	vbox.add_child(sep1)
+	
+	# Weapon and Passive
+	var weapon_data = WeaponDatabase.WEAPONS.get(char_data.starting_weapon, {})
+	var weapon_name = weapon_data.get("name_es", char_data.starting_weapon)
+	
+	var weapon_label = Label.new()
+	weapon_label.text = "Starting Weapon: " + weapon_name
+	weapon_label.add_theme_font_size_override("font_size", 15)
+	weapon_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.6))
+	weapon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(weapon_label)
+	
+	var passive = char_data.get("passive", {})
+	var passive_label = Label.new()
+	passive_label.text = "Passive: " + passive.get("name_es", "None")
+	passive_label.add_theme_font_size_override("font_size", 15)
+	passive_label.add_theme_color_override("font_color", Color(0.6, 0.9, 1.0))
+	passive_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(passive_label)
+	
+	# Separator
+	var sep2 = HSeparator.new()
+	vbox.add_child(sep2)
+	
+	# Stats grid
+	var stats_grid = GridContainer.new()
+	stats_grid.columns = 3
+	stats_grid.add_theme_constant_override("h_separation", 25)
+	stats_grid.add_theme_constant_override("v_separation", 5)
+	vbox.add_child(stats_grid)
+	
+	var stats = char_data.get("stats", {})
+	var stat_display = [
+		{"key": "max_health", "name": "HP", "base": 100, "format": "%.0f", "invert": false},
+		{"key": "move_speed", "name": "SPD", "base": 200, "format": "%.0f", "invert": false},
+		{"key": "armor", "name": "ARM", "base": 0, "format": "%.0f", "invert": false},
+		{"key": "damage_mult", "name": "DMG", "base": 1.0, "format": "x%.2f", "invert": false},
+		{"key": "cooldown_mult", "name": "CD", "base": 1.0, "format": "x%.2f", "invert": true},
+		{"key": "pickup_range", "name": "RNG", "base": 50, "format": "%.0f", "invert": false},
+	]
+	
+	for stat_info in stat_display:
+		var value = stats.get(stat_info.key, stat_info.base)
+		var is_better = value > stat_info.base if not stat_info.invert else value < stat_info.base
+		var is_worse = value < stat_info.base if not stat_info.invert else value > stat_info.base
+		
+		var stat_label = Label.new()
+		stat_label.text = stat_info.name + ": " + (stat_info.format % value)
+		stat_label.add_theme_font_size_override("font_size", 13)
+		
+		if is_better:
+			stat_label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))
+		elif is_worse:
+			stat_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.4))
+		else:
+			stat_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.75))
+		
+		stats_grid.add_child(stat_label)
+
+# =============================================================================
+# INPUT
+# =============================================================================
 
 func _input(event: InputEvent) -> void:
 	if not visible:
 		return
-
+	
 	var handled = false
-
-	# WASD Navigation
-	if event is InputEventKey and event.pressed:
+	
+	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
-			KEY_W:
-				_navigate_grid(0, -1)
+			KEY_A, KEY_LEFT:
+				_navigate(-1)
 				handled = true
-			KEY_S:
-				_navigate_grid(0, 1)
-				handled = true
-			KEY_A:
-				_navigate_grid(-1, 0)
-				handled = true
-			KEY_D:
-				_navigate_grid(1, 0)
+			KEY_D, KEY_RIGHT:
+				_navigate(1)
 				handled = true
 			KEY_SPACE, KEY_ENTER:
 				_on_play_pressed()
@@ -214,21 +556,15 @@ func _input(event: InputEvent) -> void:
 			KEY_ESCAPE:
 				_on_back_pressed()
 				handled = true
-
+	
 	# Gamepad
 	if event is InputEventJoypadButton and event.pressed:
 		match event.button_index:
-			JOY_BUTTON_DPAD_UP:
-				_navigate_grid(0, -1)
-				handled = true
-			JOY_BUTTON_DPAD_DOWN:
-				_navigate_grid(0, 1)
-				handled = true
 			JOY_BUTTON_DPAD_LEFT:
-				_navigate_grid(-1, 0)
+				_navigate(-1)
 				handled = true
 			JOY_BUTTON_DPAD_RIGHT:
-				_navigate_grid(1, 0)
+				_navigate(1)
 				handled = true
 			JOY_BUTTON_A:
 				_on_play_pressed()
@@ -236,218 +572,21 @@ func _input(event: InputEvent) -> void:
 			JOY_BUTTON_B:
 				_on_back_pressed()
 				handled = true
-
+	
 	if handled:
-		var vp = get_viewport()
-		if vp:
-			vp.set_input_as_handled()
+		get_viewport().set_input_as_handled()
 
-func _navigate_grid(dx: int, dy: int) -> void:
-	"""Navigate in the character grid"""
-	var current_row = current_character_index / grid_columns
-	var current_col = current_character_index % grid_columns
-
-	var new_col = clampi(current_col + dx, 0, grid_columns - 1)
-	var new_row = clampi(current_row + dy, 0, (all_characters.size() - 1) / grid_columns)
-
-	var new_index = new_row * grid_columns + new_col
-	new_index = clampi(new_index, 0, all_characters.size() - 1)
-
-	# Only navigate to unlocked characters
-	if all_characters[new_index].id in unlocked_character_ids:
-		_select_character(new_index)
-	else:
-		# Search for next unlocked in direction
-		var search_dir = 1 if (dx > 0 or dy > 0) else -1
-		for i in range(1, all_characters.size()):
-			var check_index = (new_index + i * search_dir) % all_characters.size()
-			if check_index < 0:
-				check_index += all_characters.size()
-			if all_characters[check_index].id in unlocked_character_ids:
-				_select_character(check_index)
-				break
-
-func _select_character(index: int) -> void:
-	"""Select a character"""
-	if index < 0 or index >= all_characters.size():
-		return
-
-	current_character_index = index
-	selected_character_id = all_characters[index].id
-
-	# Update visual focus
-	if index < character_buttons.size():
-		character_buttons[index].grab_focus()
-
-	# Update preview
-	_update_preview(all_characters[index])
-
-func _update_preview(char_data: Dictionary) -> void:
-	"""Update preview panel with character data"""
-	if preview_name:
-		preview_name.text = char_data.name_es
-
-	if preview_title:
-		preview_title.text = char_data.title_es
-		preview_title.add_theme_color_override("font_color", char_data.color_primary)
-
-	if preview_element:
-		preview_element.text = "Element: " + _get_element_name(char_data.element)
-		preview_element.add_theme_color_override("font_color", char_data.color_primary)
-
-	if preview_description:
-		preview_description.text = char_data.description_es
-
-	if preview_weapon:
-		var weapon_data = WeaponDatabase.WEAPONS.get(char_data.starting_weapon, {})
-		var weapon_name = weapon_data.get("name_es", char_data.starting_weapon)
-		preview_weapon.text = "Starting Weapon: " + weapon_name
-
-	if preview_passive:
-		var passive = char_data.get("passive", {})
-		preview_passive.text = "Passive: " + passive.get("name_es", "None")
-
-	if preview_passive_desc:
-		var passive = char_data.get("passive", {})
-		preview_passive_desc.text = passive.get("description_es", "")
-
-	# Update stats
-	_update_stats_display(char_data.stats)
-
-	# Load portrait if exists
-	if preview_portrait:
-		var portrait_path = char_data.get("portrait", "")
-		if ResourceLoader.exists(portrait_path):
-			preview_portrait.texture = load(portrait_path)
-		else:
-			# Create colored placeholder
-			preview_portrait.texture = null
-
-func _update_stats_display(stats: Dictionary) -> void:
-	"""Update stats display with visual bars"""
-	if not stats_container:
-		return
-
-	# Clear previous stats
-	for child in stats_container.get_children():
-		child.queue_free()
-
-	# Stats to display with visual representation
-	var stat_display = [
-		{"key": "max_health", "name": "HP", "icon": "HP", "base": 100, "max": 150, "invert": false},
-		{"key": "move_speed", "name": "Speed", "icon": "SPD", "base": 200, "max": 280, "invert": false},
-		{"key": "armor", "name": "Armor", "icon": "ARM", "base": 0, "max": 20, "invert": false},
-		{"key": "damage_mult", "name": "Damage", "icon": "DMG", "base": 1.0, "max": 1.5, "invert": false},
-		{"key": "cooldown_mult", "name": "Cooldown", "icon": "CD", "base": 1.0, "max": 1.2, "invert": true},
-		{"key": "pickup_range", "name": "Range", "icon": "RNG", "base": 50, "max": 100, "invert": false},
-	]
-
-	for stat_info in stat_display:
-		var value = stats.get(stat_info.key, stat_info.base)
-		_create_stat_row(stat_info, value)
-
-func _create_stat_row(stat_info: Dictionary, value: float) -> void:
-	"""Create a visual stat row with bar"""
-	var hbox = HBoxContainer.new()
-	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
-	# Icon + Name
-	var name_label = Label.new()
-	name_label.text = stat_info.icon + " " + stat_info.name
-	name_label.custom_minimum_size.x = 100
-	name_label.add_theme_font_size_override("font_size", 13)
-	name_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
-	hbox.add_child(name_label)
-
-	# Progress bar container
-	var bar_container = Control.new()
-	bar_container.custom_minimum_size = Vector2(120, 16)
-	bar_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
-	# Background bar
-	var bg_bar = ColorRect.new()
-	bg_bar.color = Color(0.15, 0.15, 0.2)
-	bg_bar.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bar_container.add_child(bg_bar)
-
-	# Fill bar - calculate percentage
-	var fill_bar = ColorRect.new()
-	var percentage = clampf((value - 0) / (stat_info.max - 0), 0.0, 1.0)
-
-	# Determine color based on comparison to base
-	var bar_color: Color
-	var is_better = value > stat_info.base if not stat_info.invert else value < stat_info.base
-	var is_worse = value < stat_info.base if not stat_info.invert else value > stat_info.base
-
-	if is_better:
-		bar_color = Color(0.3, 0.8, 0.4)  # Green - better
-	elif is_worse:
-		bar_color = Color(0.9, 0.4, 0.3)  # Red - worse
-	else:
-		bar_color = Color(0.5, 0.5, 0.6)  # Gray - neutral
-
-	fill_bar.color = bar_color
-	fill_bar.anchor_right = percentage
-	fill_bar.anchor_bottom = 1.0
-	fill_bar.offset_right = 0
-	bar_container.add_child(fill_bar)
-
-	hbox.add_child(bar_container)
-
-	# Value text
-	var value_label = Label.new()
-	var format_str = "%.0f" if value == int(value) else "%.2f"
-	if stat_info.key.ends_with("_mult"):
-		format_str = "x%.2f"
-	value_label.text = format_str % value
-	value_label.custom_minimum_size.x = 50
-	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	value_label.add_theme_font_size_override("font_size", 13)
-
-	if is_better:
-		value_label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))
-	elif is_worse:
-		value_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.4))
-	else:
-		value_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8))
-
-	hbox.add_child(value_label)
-	stats_container.add_child(hbox)
-
-func _get_element_name(element: int) -> String:
-	"""Get element name"""
-	match element:
-		CharacterDatabase.Element.ICE: return "Ice"
-		CharacterDatabase.Element.FIRE: return "Fire"
-		CharacterDatabase.Element.LIGHTNING: return "Lightning"
-		CharacterDatabase.Element.ARCANE: return "Arcane"
-		CharacterDatabase.Element.SHADOW: return "Shadow"
-		CharacterDatabase.Element.NATURE: return "Nature"
-		CharacterDatabase.Element.WIND: return "Wind"
-		CharacterDatabase.Element.EARTH: return "Earth"
-		CharacterDatabase.Element.LIGHT: return "Light"
-		CharacterDatabase.Element.VOID: return "Void"
-		_: return "???"
-
-# ===============================================================================
+# =============================================================================
 # CALLBACKS
-# ===============================================================================
-
-func _on_character_pressed(index: int) -> void:
-	_select_character(index)
-	_on_play_pressed()
-
-func _on_character_focused(index: int) -> void:
-	_select_character(index)
-
-func _on_character_hovered(index: int) -> void:
-	if all_characters[index].id in unlocked_character_ids:
-		_update_preview(all_characters[index])
+# =============================================================================
 
 func _on_play_pressed() -> void:
 	if selected_character_id.is_empty():
 		return
-
+	
+	if not (selected_character_id in unlocked_character_ids):
+		return
+	
 	_play_button_sound()
 	character_selected.emit(selected_character_id)
 
@@ -456,21 +595,34 @@ func _on_back_pressed() -> void:
 	back_pressed.emit()
 
 func _play_button_sound() -> void:
-	var tree = get_tree()
-	if tree and tree.root:
-		var audio_manager = tree.root.get_node_or_null("AudioManager")
-		if audio_manager and audio_manager.has_method("play_sfx"):
-			audio_manager.play_sfx("ui_click")
+	if get_tree() and get_tree().root:
+		var audio = get_tree().root.get_node_or_null("AudioManager")
+		if audio and audio.has_method("play_sfx"):
+			audio.play_sfx("ui_click")
 
-# ===============================================================================
+func _play_navigate_sound() -> void:
+	if get_tree() and get_tree().root:
+		var audio = get_tree().root.get_node_or_null("AudioManager")
+		if audio and audio.has_method("play_sfx"):
+			audio.play_sfx("ui_hover")
+
+# =============================================================================
 # PUBLIC API
-# ===============================================================================
+# =============================================================================
 
 func show_screen() -> void:
 	"""Show the selection screen"""
 	visible = true
-	_load_characters()  # Reload in case of new unlocks
-	_select_first_unlocked()
+	_load_characters()
+	
+	# Reset to first unlocked
+	for i in range(all_characters.size()):
+		if all_characters[i].id in unlocked_character_ids:
+			current_index = i
+			break
+	
+	_update_carousel_positions(false)
+	_update_stats_display()
 
 func hide_screen() -> void:
 	"""Hide the screen"""

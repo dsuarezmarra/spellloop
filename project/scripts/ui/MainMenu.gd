@@ -240,6 +240,9 @@ func _show_character_select() -> void:
 
 	character_select_screen = char_scene.instantiate()
 	add_child(character_select_screen)
+	
+	# Mostrar la pantalla
+	character_select_screen.show_screen()
 
 	# Conectar señales
 	character_select_screen.character_selected.connect(_on_character_selected)

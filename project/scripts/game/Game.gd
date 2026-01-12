@@ -141,13 +141,17 @@ func _create_player() -> void:
 		push_error("[Game] No se pudo cargar SpellloopPlayer.tscn")
 
 func _configure_player_character() -> void:
-	"""Configurar el player según el personaje seleccionado"""
+	"""Configurar el player segun el personaje seleccionado"""
 	if not player:
 		return
 
 	var character_id = "frost_mage"  # Default
 	if SessionState:
 		character_id = SessionState.get_character()
+	
+	# Si esta vacio, usar default
+	if character_id.is_empty():
+		character_id = "frost_mage"
 
 	# Obtener datos del personaje
 	var char_data = CharacterDatabase.get_character(character_id)
@@ -155,7 +159,7 @@ func _configure_player_character() -> void:
 		push_warning("[Game] Character not found: " + character_id)
 		return
 
-	# Configurar la carpeta de sprites si el player tiene el método
+	# Configurar la carpeta de sprites si el player tiene el metodo
 	if player.has_method("set_character_sprites"):
 		player.set_character_sprites(char_data.get("sprite_folder", "wizard"))
 
