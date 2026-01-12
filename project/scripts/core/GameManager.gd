@@ -269,42 +269,6 @@ func equip_weapon(weapon) -> bool:
 	attack_manager.add_weapon(weapon)
 	return true
 
-func equip_initial_weapons() -> void:
-	"""Equipar armas iniciales del jugador"""
-	if not attack_manager or not player_ref:
-		push_warning("[GameManager] Warning: Equipo incompleto para armas iniciales")
-		return
-	
-	# Debug desactivado: print("[GameManager] === INICIANDO EQUIP INICIAL ===")
-	# Debug desactivado: print("[GameManager] attack_manager:", attack_manager)
-	# Debug desactivado: print("[GameManager] player_ref:", player_ref)
-	
-	# Crear arma inicial: Varita de Hielo
-	var ice_wand_script = load("res://scripts/entities/weapons/wands/IceWand.gd")
-	if not ice_wand_script:
-		push_warning("[GameManager] Error: No se pudo cargar IceWand.gd - usando fallback")
-		ice_wand_script = load("res://scripts/entities/WeaponBase.gd")
-	
-	# Debug desactivado: print("[GameManager] Script cargado:", ice_wand_script)
-	
-	var weapon = ice_wand_script.new()
-	# Debug desactivado: print("[GameManager] Weapon creado:", weapon)
-	# Debug desactivado: print("[GameManager] Weapon type:", typeof(weapon))
-	
-	weapon.name = "Varita de Hielo"
-	weapon.is_active = true
-	
-	# Cargar escena de proyectil de hielo
-	var ice_proj_scene = load("res://scripts/entities/weapons/projectiles/IceProjectile.tscn")
-	if ice_proj_scene:
-		weapon.projectile_scene = ice_proj_scene
-	else:
-		var fallback_scene = load("res://scripts/entities/ProjectileBase.tscn")
-		if fallback_scene:
-			weapon.projectile_scene = fallback_scene
-	
-	equip_weapon(weapon)
-
 # ========== MÉTODOS PARA SISTEMA DE ENEMIGOS ==========
 
 func get_elapsed_minutes() -> int:

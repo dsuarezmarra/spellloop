@@ -125,7 +125,7 @@ func _equip_starting_weapons() -> void:
 		var character_id = SessionState.get_character()
 		weapon_id = CharacterDatabase.get_starting_weapon(character_id)
 		print("[WizardPlayer] Character: %s, Starting weapon: %s" % [character_id, weapon_id])
-	
+
 	# Usar el sistema de BaseWeapon + WeaponDatabase (igual que test_weapons)
 	if attack_manager.has_method("add_weapon_by_id"):
 		var result = attack_manager.add_weapon_by_id(weapon_id)
