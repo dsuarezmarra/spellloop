@@ -1,22 +1,37 @@
 {
+	"meta": {
+		"language": "en",
+		"name": "English",
+		"native": "English"
+	},
 	"ui": {
 		"main_menu": {
 			"title": "SPELLLOOP",
-			"new_run": "New Run",
+			"new_game": "New Game",
 			"continue": "Continue",
-			"settings": "Settings",
+			"options": "Options",
 			"quit": "Quit",
-			"meta_shop": "Meta-Shop"
+			"credits": "Credits"
+		},
+		"character_select": {
+			"title": "CHOOSE YOUR HERO",
+			"instructions": "A/D or Arrows to navigate  |  SPACE/ENTER to select  |  ESC to go back",
+			"back": "BACK",
+			"start": "START ADVENTURE",
+			"locked": "LOCKED",
+			"unlock_hint": "Complete challenges to unlock this hero!",
+			"starting_weapon": "Starting Weapon",
+			"passive": "Passive"
 		},
 		"pause_menu": {
 			"title": "PAUSED",
 			"resume": "Resume",
-			"settings": "Settings",
+			"options": "Options",
 			"main_menu": "Main Menu",
 			"quit": "Quit Game"
 		},
-		"settings": {
-			"title": "Settings",
+		"options": {
+			"title": "Options",
 			"audio": "Audio",
 			"video": "Video",
 			"controls": "Controls",
@@ -27,147 +42,225 @@
 			"music_volume": "Music Volume",
 			"sfx_volume": "SFX Volume",
 			"fullscreen": "Fullscreen",
-			"vsync": "VSync"
+			"vsync": "VSync",
+			"resolution": "Resolution",
+			"apply": "Apply",
+			"cancel": "Cancel"
 		},
 		"game_over": {
-			"title": "Run Complete",
-			"victory": "Victory!",
-			"defeat": "Defeat",
+			"title": "RUN COMPLETE",
+			"victory": "VICTORY!",
+			"defeat": "DEFEAT",
 			"score": "Score",
 			"time": "Time",
-			"level": "Level",
-			"enemies_killed": "Enemies Killed",
-			"coins_collected": "Coins Collected",
+			"rooms": "Rooms Cleared",
+			"enemies": "Enemies Defeated",
+			"gold": "Gold Earned",
 			"continue": "Continue",
 			"retry": "Try Again",
 			"main_menu": "Main Menu"
 		},
 		"hud": {
-			"hp": "HP",
-			"xp": "XP",
-			"lvl": "LVL",
+			"level": "Lv.",
+			"health": "HP",
+			"exp": "EXP",
 			"time": "Time",
-			"weapons": "Weapons",
-			"streak": "Streak",
-			"meta": "Meta",
-			"coins": "Coins"
+			"gold": "Gold",
+			"kills": "Kills"
 		},
 		"level_up": {
 			"title": "LEVEL UP!",
-			"subtitle": "Choose an upgrade",
-			"nav_hint": "◀ ▶ Navigate  |  Enter/A Select  |  Esc/B Exit",
-			"select": "Select",
-			"buy": "Buy",
-			"cancel": "Cancel",
-			"reroll": "Reroll",
-			"banish": "Remove",
-			"skip": "Exit",
-			"new_weapon": "New Weapon",
-			"upgrade_weapon": "Upgrade",
-			"fusion": "Fusion",
-			"upgrade": "Upgrade"
+			"choose_upgrade": "Choose an upgrade",
+			"new_weapon": "NEW WEAPON",
+			"upgrade": "UPGRADE"
 		},
-		"chest": {
-			"title": "Treasure Chest",
-			"buy": "Buy",
-			"close": "Close",
-			"tier": "Tier {0}"
+		"save_slots": {
+			"title": "SELECT SAVE SLOT",
+			"empty": "Empty Slot",
+			"new_game": "New Game",
+			"continue_game": "Continue",
+			"delete": "Delete",
+			"confirm_delete": "Delete this save?",
+			"yes": "Yes",
+			"no": "No"
 		}
 	},
-	"gameplay": {
-		"weapons": {
-			"ice_wand": "Ice Wand",
-			"fire_wand": "Fire Wand",
-			"lightning_staff": "Lightning Staff",
-			"nature_staff": "Nature Staff",
-			"shadow_dagger": "Shadow Dagger",
-			"arcane_orb": "Arcane Orb",
-			"frost_nova": "Frost Nova",
-			"meteor_staff": "Meteor Staff",
-			"poison_blade": "Poison Blade",
-			"holy_light": "Holy Light"
+	"stats": {
+		"hp": "HP",
+		"max_health": "Max Health",
+		"speed": "Speed",
+		"spd": "SPD",
+		"armor": "Armor",
+		"arm": "ARM",
+		"damage": "Damage",
+		"dmg": "DMG",
+		"cooldown": "Cooldown",
+		"cd": "CD",
+		"range": "Range",
+		"rng": "RNG",
+		"pickup_range": "Pickup Range",
+		"crit_chance": "Crit Chance",
+		"crit_damage": "Crit Damage",
+		"luck": "Luck",
+		"exp_mult": "EXP Bonus",
+		"gold_mult": "Gold Bonus"
+	},
+	"elements": {
+		"ice": "Ice",
+		"fire": "Fire",
+		"lightning": "Lightning",
+		"arcane": "Arcane",
+		"shadow": "Shadow",
+		"nature": "Nature",
+		"wind": "Wind",
+		"earth": "Earth",
+		"light": "Light",
+		"void": "Void"
+	},
+	"characters": {
+		"frost_mage": {
+			"name": "Frost Mage",
+			"title": "The Frozen One",
+			"description": "A wise wizard who harnesses the power of ice to slow and freeze enemies."
 		},
-		"passives": {
-			"damage_boost": "Magic Damage +",
-			"damage_boost_desc": "Increases magic projectile damage by 10%",
-			"speed_boost": "Speed +",
-			"speed_boost_desc": "Increases movement speed by 10%",
-			"health_boost": "Max Health +",
-			"health_boost_desc": "Increases maximum health by 20",
-			"cooldown_reduction": "Quick Reload",
-			"cooldown_reduction_desc": "Reduces weapon cooldown by 5%",
-			"crit_chance": "Eagle Eye",
-			"crit_chance_desc": "Increases critical hit chance by 5%",
-			"crit_damage": "Critical Strike",
-			"crit_damage_desc": "Increases critical damage by 20%",
-			"pickup_range": "Magnetic Vacuum",
-			"pickup_range_desc": "Coins are attracted from much farther (+100 pixels)",
-			"streak_bonus": "Streak Master",
-			"streak_bonus_desc": "Coin streak bonus is doubled",
-			"coin_value": "Greed",
-			"coin_value_desc": "Coins are worth 20% more",
-			"xp_boost": "Fast Learner",
-			"xp_boost_desc": "Gain 15% more experience",
-			"armor": "Thick Skin",
-			"armor_desc": "Reduces incoming damage by 5%",
-			"regen": "Regeneration",
-			"regen_desc": "Regenerate 1 HP every 3 seconds",
-			"dodge": "Evasion",
-			"dodge_desc": "5% chance to dodge attacks",
-			"luck": "Lucky Charm",
-			"luck_desc": "Better rewards and rare drops"
+		"pyromancer": {
+			"name": "Pyromancer",
+			"title": "The Flame Bearer",
+			"description": "A fierce mage who uses devastating fire magic, burning everything in their path."
 		},
-		"enemies": {
-			"skeleton_apprentice": "Skeleton Apprentice",
-			"ethereal_bat": "Ethereal Bat",
-			"shadow_goblin": "Shadow Goblin",
-			"arcane_slime": "Arcane Slime",
-			"venomous_spider": "Venomous Spider"
+		"storm_caller": {
+			"name": "Storm Caller",
+			"title": "The Tempest",
+			"description": "Master of lightning who strikes multiple enemies with chained attacks."
 		},
-		"biomes": {
-			"grassland": "Grassland",
-			"desert": "Desert",
-			"lava": "Volcanic Wastes",
-			"death": "Death Realm",
-			"arcane_wastes": "Arcane Wastes",
-			"ice": "Frozen Peaks"
+		"arcanist": {
+			"name": "Arcanist",
+			"title": "The Mystic",
+			"description": "Scholar of arcane arts who manipulates raw magical energy."
 		},
-		"zones": {
-			"safe": "Safe Zone",
-			"medium": "Medium Zone",
-			"danger": "Danger Zone",
-			"death": "Death Zone"
+		"shadow_blade": {
+			"name": "Shadow Blade",
+			"title": "The Phantom",
+			"description": "Deadly assassin who attacks from the shadows with lethal precision."
+		},
+		"druid": {
+			"name": "Druid",
+			"title": "The Nature Guardian",
+			"description": "Protector of nature who commands plants and forest creatures."
+		},
+		"wind_runner": {
+			"name": "Wind Runner",
+			"title": "The Swift",
+			"description": "Swift warrior who uses the wind to move at incredible speeds."
+		},
+		"geomancer": {
+			"name": "Geomancer",
+			"title": "The Stone Shaper",
+			"description": "Master of earth who creates barriers and crushes enemies with rocks."
+		},
+		"paladin": {
+			"name": "Paladin",
+			"title": "The Holy Knight",
+			"description": "Holy warrior who heals allies and smites evil with divine light."
+		},
+		"void_walker": {
+			"name": "Void Walker",
+			"title": "The Abyss Touched",
+			"description": "Mysterious entity who harnesses the power of the void to devastate enemies."
+		}
+	},
+	"weapons": {
+		"ice_wand": {
+			"name": "Ice Wand",
+			"description": "Fires ice projectiles that slow enemies."
+		},
+		"fire_wand": {
+			"name": "Fire Wand",
+			"description": "Shoots fireballs that burn enemies over time."
+		},
+		"lightning_wand": {
+			"name": "Lightning Wand",
+			"description": "Fires lightning bolts that chain to nearby enemies."
+		},
+		"arcane_orb": {
+			"name": "Arcane Orb",
+			"description": "Fires homing arcane orbs."
+		},
+		"shadow_dagger": {
+			"name": "Shadow Dagger",
+			"description": "Throws daggers that pierce through enemies."
+		},
+		"nature_staff": {
+			"name": "Nature Staff",
+			"description": "Summons thorny vines that entangle enemies."
+		},
+		"wind_blade": {
+			"name": "Wind Blade",
+			"description": "Creates cutting wind slashes."
+		},
+		"stone_fang": {
+			"name": "Stone Fang",
+			"description": "Launches stone projectiles that stun."
+		},
+		"holy_light": {
+			"name": "Holy Light",
+			"description": "Emits beams of holy light."
+		},
+		"void_bolt": {
+			"name": "Void Bolt",
+			"description": "Fires void energy that ignores armor."
+		}
+	},
+	"passives": {
+		"frost_aura": {
+			"name": "Frost Aura",
+			"description": "Nearby enemies are slowed by 10%"
+		},
+		"burning_soul": {
+			"name": "Burning Soul",
+			"description": "Attacks have 15% chance to ignite enemies"
+		},
+		"static_field": {
+			"name": "Static Field",
+			"description": "Lightning damage chains to 1 additional enemy"
+		},
+		"mana_mastery": {
+			"name": "Mana Mastery",
+			"description": "All abilities have 10% reduced cooldown"
+		},
+		"shadow_step": {
+			"name": "Shadow Step",
+			"description": "10% chance to dodge attacks completely"
+		},
+		"natural_regeneration": {
+			"name": "Natural Regeneration",
+			"description": "Regenerate 1 HP every 5 seconds"
+		},
+		"tailwind": {
+			"name": "Tailwind",
+			"description": "Movement speed increases by 5% for each kill"
+		},
+		"stone_skin": {
+			"name": "Stone Skin",
+			"description": "Take 15% less damage when standing still"
+		},
+		"divine_protection": {
+			"name": "Divine Protection",
+			"description": "Survive fatal damage once per run"
+		},
+		"void_absorption": {
+			"name": "Void Absorption",
+			"description": "10% of damage dealt is converted to health"
 		}
 	},
 	"messages": {
 		"game_saved": "Game saved successfully",
 		"game_loaded": "Game loaded successfully",
-		"weapon_equipped": "Equipped: {0}",
-		"weapon_upgraded": "Upgraded: {0} to Lv.{1}",
-		"level_up": "Level Up! Now Lv.{0}",
-		"coin_collected": "+{0}",
-		"xp_gained": "+{0} XP",
-		"enemy_killed": "Enemy defeated!",
-		"boss_spawned": "Boss incoming!",
-		"wave_complete": "Wave Complete!",
-		"fusion_available": "Fusion available!"
-	},
-	"rarity": {
-		"common": "Common",
-		"uncommon": "Uncommon",
-		"rare": "Rare",
-		"epic": "Epic",
-		"legendary": "Legendary"
-	},
-	"stats": {
-		"damage": "Damage",
-		"speed": "Speed",
-		"health": "Health",
-		"cooldown": "Cooldown",
-		"range": "Range",
-		"luck": "Luck",
-		"armor": "Armor",
-		"crit_chance": "Crit Chance",
-		"crit_damage": "Crit Damage"
+		"spell_unlocked": "New spell unlocked: {0}",
+		"character_unlocked": "New character unlocked: {0}",
+		"achievement_unlocked": "Achievement unlocked: {0}",
+		"boss_incoming": "A powerful enemy approaches!",
+		"wave_complete": "Wave {0} complete!",
+		"new_record": "New Record!"
 	}
 }

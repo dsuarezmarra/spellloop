@@ -7,6 +7,9 @@ extends Control
 signal character_selected(character_id: String)
 signal back_pressed
 
+# Reference to Localization autoload
+var Localization: Node
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
@@ -52,6 +55,10 @@ var carousel_tween: Tween
 # =============================================================================
 
 func _ready() -> void:
+	# Get Localization autoload reference
+	if get_tree() and get_tree().root:
+		Localization = get_tree().root.get_node_or_null("Localization")
+	
 	_load_characters()
 	_build_ui()
 	_create_carousel()
@@ -60,6 +67,12 @@ func _ready() -> void:
 
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
+
+# Helper function for localization
+func L(key: String, args: Array = []) -> String:
+	if Localization and Localization.has_method("L"):
+		return Localization.L(key, args)
+	return key
 
 func _load_characters() -> void:
 	"""Load all characters from database"""
@@ -93,7 +106,7 @@ func _build_ui() -> void:
 	# Title at top
 	title_label = Label.new()
 	title_label.name = "Title"
-	title_label.text = "CHOOSE YOUR HERO"
+	title_label.text = L("ui.character_select.title")
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	title_label.offset_top = 30
@@ -144,7 +157,7 @@ func _build_ui() -> void:
 	# Navigation instructions
 	instructions_label = Label.new()
 	instructions_label.name = "Instructions"
-	instructions_label.text = "A/D or Arrows to navigate  |  SPACE/ENTER to select  |  ESC to go back"
+	instructions_label.text = L("ui.character_select.instructions")
 	instructions_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	instructions_label.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	instructions_label.offset_top = -80

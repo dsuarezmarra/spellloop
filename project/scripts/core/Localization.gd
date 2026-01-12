@@ -45,8 +45,15 @@ func _ready() -> void:
 	# Load translation files
 	_load_all_translations()
 
-	# Set initial language from settings
+	# Set initial language - first try settings, then auto-detect
 	_load_language_from_settings()
+	
+	# If still on default (no settings), auto-detect from system
+	if current_language == "en":
+		var detected = detect_system_language()
+		if detected != "en" and is_language_available(detected):
+			current_language = detected
+			print("[Localization] Auto-detected system language: %s" % detected)
 
 func _load_all_translations() -> void:
 	"""Load all available translation files"""

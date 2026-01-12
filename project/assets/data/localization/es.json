@@ -1,173 +1,266 @@
 {
+	"meta": {
+		"language": "es",
+		"name": "Spanish",
+		"native": "Español"
+	},
 	"ui": {
 		"main_menu": {
 			"title": "SPELLLOOP",
-			"new_run": "Nueva Partida",
+			"new_game": "Nueva Partida",
 			"continue": "Continuar",
-			"settings": "ConfiguraciÃ³n",
+			"options": "Opciones",
 			"quit": "Salir",
-			"meta_shop": "Meta-Tienda"
+			"credits": "Créditos"
+		},
+		"character_select": {
+			"title": "ELIGE TU HÉROE",
+			"instructions": "A/D o Flechas para navegar  |  ESPACIO/ENTER para seleccionar  |  ESC para volver",
+			"back": "ATRÁS",
+			"start": "COMENZAR AVENTURA",
+			"locked": "BLOQUEADO",
+			"unlock_hint": "¡Completa desafíos para desbloquear este héroe!",
+			"starting_weapon": "Arma Inicial",
+			"passive": "Pasiva"
 		},
 		"pause_menu": {
-			"title": "PAUSADO",
-			"resume": "Reanudar",
-			"settings": "ConfiguraciÃ³n",
-			"main_menu": "MenÃº Principal",
+			"title": "PAUSA",
+			"resume": "Continuar",
+			"options": "Opciones",
+			"main_menu": "Menú Principal",
 			"quit": "Salir del Juego"
 		},
-		"settings": {
-			"title": "ConfiguraciÃ³n",
+		"options": {
+			"title": "Opciones",
 			"audio": "Audio",
 			"video": "Video",
 			"controls": "Controles",
 			"language": "Idioma",
-			"back": "AtrÃ¡s",
+			"back": "Atrás",
 			"reset": "Restablecer",
 			"master_volume": "Volumen General",
-			"music_volume": "Volumen MÃºsica",
-			"sfx_volume": "Volumen Efectos",
+			"music_volume": "Volumen de Música",
+			"sfx_volume": "Volumen de Efectos",
 			"fullscreen": "Pantalla Completa",
-			"vsync": "VSync"
+			"vsync": "VSync",
+			"resolution": "Resolución",
+			"apply": "Aplicar",
+			"cancel": "Cancelar"
 		},
 		"game_over": {
-			"title": "Partida Completada",
-			"victory": "Â¡Victoria!",
-			"defeat": "Derrota",
-			"score": "PuntuaciÃ³n",
+			"title": "PARTIDA COMPLETA",
+			"victory": "¡VICTORIA!",
+			"defeat": "DERROTA",
+			"score": "Puntuación",
 			"time": "Tiempo",
-			"level": "Nivel",
-			"enemies_killed": "Enemigos Eliminados",
-			"coins_collected": "Monedas Recolectadas",
+			"rooms": "Salas Completadas",
+			"enemies": "Enemigos Derrotados",
+			"gold": "Oro Obtenido",
 			"continue": "Continuar",
 			"retry": "Reintentar",
-			"main_menu": "MenÃº Principal"
+			"main_menu": "Menú Principal"
 		},
 		"hud": {
-			"hp": "PV",
-			"xp": "EXP",
-			"lvl": "NVL",
+			"level": "Nv.",
+			"health": "HP",
+			"exp": "EXP",
 			"time": "Tiempo",
-			"weapons": "Armas",
-			"streak": "Racha",
-			"meta": "Meta",
-			"coins": "Monedas"
+			"gold": "Oro",
+			"kills": "Muertes"
 		},
 		"level_up": {
-			"title": "Â¡LEVEL UP!",
-			"subtitle": "Elige una mejora",
-			"nav_hint": "â—€ â–¶ Navegar  |  Enter/A Seleccionar  |  Esc/B Salir",
-			"select": "Seleccionar",
-			"buy": "Comprar",
-			"cancel": "Cancelar",
-			"reroll": "Reroll",
-			"banish": "Eliminar",
-			"skip": "Salir",
-			"new_weapon": "Nueva Arma",
-			"upgrade_weapon": "Subir Nivel",
-			"fusion": "FusiÃ³n",
-			"upgrade": "Mejora"
+			"title": "¡SUBISTE DE NIVEL!",
+			"choose_upgrade": "Elige una mejora",
+			"new_weapon": "NUEVA ARMA",
+			"upgrade": "MEJORA"
 		},
-		"chest": {
-			"title": "Cofre del Tesoro",
-			"buy": "Comprar",
-			"close": "Cerrar",
-			"tier": "Tier {0}"
+		"save_slots": {
+			"title": "SELECCIONA RANURA",
+			"empty": "Ranura Vacía",
+			"new_game": "Nueva Partida",
+			"continue_game": "Continuar",
+			"delete": "Eliminar",
+			"confirm_delete": "¿Eliminar esta partida?",
+			"yes": "Sí",
+			"no": "No"
 		}
 	},
-	"gameplay": {
-		"weapons": {
-			"ice_wand": "Varita de Hielo",
-			"fire_wand": "Varita de Fuego",
-			"lightning_staff": "BastÃ³n de Rayos",
-			"nature_staff": "BastÃ³n Natural",
-			"shadow_dagger": "Daga de Sombras",
-			"arcane_orb": "Orbe Arcano",
-			"frost_nova": "Nova de Escarcha",
-			"meteor_staff": "BastÃ³n de Meteoros",
-			"poison_blade": "Hoja Venenosa",
-			"holy_light": "Luz Sagrada"
+	"stats": {
+		"hp": "HP",
+		"max_health": "Vida Máxima",
+		"speed": "Velocidad",
+		"spd": "VEL",
+		"armor": "Armadura",
+		"arm": "ARM",
+		"damage": "Daño",
+		"dmg": "DMG",
+		"cooldown": "Enfriamiento",
+		"cd": "CD",
+		"range": "Alcance",
+		"rng": "ALC",
+		"pickup_range": "Radio de Recogida",
+		"crit_chance": "Prob. Crítico",
+		"crit_damage": "Daño Crítico",
+		"luck": "Suerte",
+		"exp_mult": "Bonus EXP",
+		"gold_mult": "Bonus Oro"
+	},
+	"elements": {
+		"ice": "Hielo",
+		"fire": "Fuego",
+		"lightning": "Rayo",
+		"arcane": "Arcano",
+		"shadow": "Sombra",
+		"nature": "Naturaleza",
+		"wind": "Viento",
+		"earth": "Tierra",
+		"light": "Luz",
+		"void": "Vacío"
+	},
+	"characters": {
+		"frost_mage": {
+			"name": "Mago de Hielo",
+			"title": "El Congelado",
+			"description": "Un sabio mago que aprovecha el poder del hielo para ralentizar y congelar enemigos."
 		},
-		"passives": {
-			"damage_boost": "DaÃ±o MÃ¡gico +",
-			"damage_boost_desc": "Aumenta el daÃ±o de los proyectiles mÃ¡gicos en un 10%",
-			"speed_boost": "Velocidad +",
-			"speed_boost_desc": "Aumenta la velocidad de movimiento en un 10%",
-			"health_boost": "Vida MÃ¡xima +",
-			"health_boost_desc": "Aumenta la vida mÃ¡xima en 20",
-			"cooldown_reduction": "Recarga RÃ¡pida",
-			"cooldown_reduction_desc": "Reduce el tiempo de recarga de armas en un 5%",
-			"crit_chance": "Ojo Certero",
-			"crit_chance_desc": "Aumenta la probabilidad de crÃ­tico en 5%",
-			"crit_damage": "Golpe CrÃ­tico",
-			"crit_damage_desc": "Aumenta el daÃ±o crÃ­tico en un 20%",
-			"pickup_range": "VacÃ­o MagnÃ©tico",
-			"pickup_range_desc": "Las monedas son atraÃ­das desde mucho mÃ¡s lejos (+100 pÃ­xeles)",
-			"streak_bonus": "Maestro de Racha",
-			"streak_bonus_desc": "El bonus de racha de monedas es el doble",
-			"coin_value": "Avaricia",
-			"coin_value_desc": "Las monedas valen 20% mÃ¡s",
-			"xp_boost": "Aprendiz RÃ¡pido",
-			"xp_boost_desc": "ObtÃ©n 15% mÃ¡s de experiencia",
-			"armor": "Piel Gruesa",
-			"armor_desc": "Reduce el daÃ±o recibido en un 5%",
-			"regen": "RegeneraciÃ³n",
-			"regen_desc": "Regenera 1 PV cada 3 segundos",
-			"dodge": "EvasiÃ³n",
-			"dodge_desc": "5% de probabilidad de esquivar ataques",
-			"luck": "Amuleto de Suerte",
-			"luck_desc": "Mejores recompensas y objetos raros"
+		"pyromancer": {
+			"name": "Piromante",
+			"title": "El Portador de la Llama",
+			"description": "Un feroz mago que usa devastadora magia de fuego, quemando todo a su paso."
 		},
-		"enemies": {
-			"skeleton_apprentice": "Esqueleto Aprendiz",
-			"ethereal_bat": "MurciÃ©lago EtÃ©reo",
-			"shadow_goblin": "Duende SombrÃ­o",
-			"arcane_slime": "Slime Arcano",
-			"venomous_spider": "AraÃ±a Venenosa"
+		"storm_caller": {
+			"name": "Invocador de Tormentas",
+			"title": "La Tempestad",
+			"description": "Maestro del rayo que golpea múltiples enemigos con ataques encadenados."
 		},
-		"biomes": {
-			"grassland": "Pradera",
-			"desert": "Desierto",
-			"lava": "PÃ¡ramo VolcÃ¡nico",
-			"death": "Reino de la Muerte",
-			"arcane_wastes": "PÃ¡ramo Arcano",
-			"ice": "Picos Helados"
+		"arcanist": {
+			"name": "Arcanista",
+			"title": "El Místico",
+			"description": "Erudito de las artes arcanas que manipula energía mágica pura."
 		},
-		"zones": {
-			"safe": "Zona Segura",
-			"medium": "Zona Media",
-			"danger": "Zona de Peligro",
-			"death": "Zona de Muerte"
+		"shadow_blade": {
+			"name": "Hoja Sombría",
+			"title": "El Fantasma",
+			"description": "Asesino mortal que ataca desde las sombras con precisión letal."
+		},
+		"druid": {
+			"name": "Druida",
+			"title": "El Guardián de la Naturaleza",
+			"description": "Protector de la naturaleza que comanda plantas y criaturas del bosque."
+		},
+		"wind_runner": {
+			"name": "Corredor del Viento",
+			"title": "El Veloz",
+			"description": "Guerrero veloz que usa el viento para moverse a velocidades increíbles."
+		},
+		"geomancer": {
+			"name": "Geomante",
+			"title": "El Moldeador de Piedra",
+			"description": "Maestro de la tierra que crea barreras y aplasta enemigos con rocas."
+		},
+		"paladin": {
+			"name": "Paladín",
+			"title": "El Caballero Sagrado",
+			"description": "Guerrero santo que sana aliados y castiga el mal con luz divina."
+		},
+		"void_walker": {
+			"name": "Caminante del Vacío",
+			"title": "El Tocado por el Abismo",
+			"description": "Entidad misteriosa que aprovecha el poder del vacío para devastar enemigos."
+		}
+	},
+	"weapons": {
+		"ice_wand": {
+			"name": "Varita de Hielo",
+			"description": "Dispara proyectiles de hielo que ralentizan enemigos."
+		},
+		"fire_wand": {
+			"name": "Varita de Fuego",
+			"description": "Lanza bolas de fuego que queman enemigos con el tiempo."
+		},
+		"lightning_wand": {
+			"name": "Varita de Rayo",
+			"description": "Dispara rayos que encadenan a enemigos cercanos."
+		},
+		"arcane_orb": {
+			"name": "Orbe Arcano",
+			"description": "Dispara orbes arcanos teledirigidos."
+		},
+		"shadow_dagger": {
+			"name": "Daga de Sombras",
+			"description": "Lanza dagas que atraviesan enemigos."
+		},
+		"nature_staff": {
+			"name": "Bastón Natural",
+			"description": "Invoca enredaderas espinosas que atrapan enemigos."
+		},
+		"wind_blade": {
+			"name": "Hoja de Viento",
+			"description": "Crea cortes de viento afilados."
+		},
+		"stone_fang": {
+			"name": "Colmillo de Piedra",
+			"description": "Lanza proyectiles de piedra que aturden."
+		},
+		"holy_light": {
+			"name": "Luz Sagrada",
+			"description": "Emite rayos de luz divina."
+		},
+		"void_bolt": {
+			"name": "Rayo del Vacío",
+			"description": "Dispara energía del vacío que ignora la armadura."
+		}
+	},
+	"passives": {
+		"frost_aura": {
+			"name": "Aura de Escarcha",
+			"description": "Los enemigos cercanos son ralentizados un 10%"
+		},
+		"burning_soul": {
+			"name": "Alma Ardiente",
+			"description": "Los ataques tienen 15% de probabilidad de incendiar enemigos"
+		},
+		"static_field": {
+			"name": "Campo Estático",
+			"description": "El daño de rayo encadena a 1 enemigo adicional"
+		},
+		"mana_mastery": {
+			"name": "Maestría del Maná",
+			"description": "Todas las habilidades tienen 10% menos de enfriamiento"
+		},
+		"shadow_step": {
+			"name": "Paso Sombrío",
+			"description": "10% de probabilidad de esquivar ataques completamente"
+		},
+		"natural_regeneration": {
+			"name": "Regeneración Natural",
+			"description": "Regenera 1 HP cada 5 segundos"
+		},
+		"tailwind": {
+			"name": "Viento a Favor",
+			"description": "La velocidad aumenta 5% por cada muerte"
+		},
+		"stone_skin": {
+			"name": "Piel de Piedra",
+			"description": "Recibe 15% menos daño al estar quieto"
+		},
+		"divine_protection": {
+			"name": "Protección Divina",
+			"description": "Sobrevive daño fatal una vez por partida"
+		},
+		"void_absorption": {
+			"name": "Absorción del Vacío",
+			"description": "10% del daño causado se convierte en vida"
 		}
 	},
 	"messages": {
-		"game_saved": "Juego guardado exitosamente",
-		"game_loaded": "Juego cargado exitosamente",
-		"weapon_equipped": "Equipado: {0}",
-		"weapon_upgraded": "Mejorado: {0} a Nv.{1}",
-		"level_up": "Â¡Subiste de nivel! Ahora Nv.{0}",
-		"coin_collected": "+{0}",
-		"xp_gained": "+{0} EXP",
-		"enemy_killed": "Â¡Enemigo derrotado!",
-		"boss_spawned": "Â¡Jefe en camino!",
-		"wave_complete": "Â¡Oleada Completada!",
-		"fusion_available": "Â¡FusiÃ³n disponible!"
-	},
-	"rarity": {
-		"common": "ComÃºn",
-		"uncommon": "Poco ComÃºn",
-		"rare": "Raro",
-		"epic": "Ã‰pico",
-		"legendary": "Legendario"
-	},
-	"stats": {
-		"damage": "DaÃ±o",
-		"speed": "Velocidad",
-		"health": "Vida",
-		"cooldown": "Recarga",
-		"range": "Alcance",
-		"luck": "Suerte",
-		"armor": "Armadura",
-		"crit_chance": "Prob. CrÃ­tico",
-		"crit_damage": "DaÃ±o CrÃ­tico"
+		"game_saved": "Partida guardada exitosamente",
+		"game_loaded": "Partida cargada exitosamente",
+		"spell_unlocked": "Nuevo hechizo desbloqueado: {0}",
+		"character_unlocked": "Nuevo personaje desbloqueado: {0}",
+		"achievement_unlocked": "Logro desbloqueado: {0}",
+		"boss_incoming": "¡Un enemigo poderoso se aproxima!",
+		"wave_complete": "¡Oleada {0} completada!",
+		"new_record": "¡Nuevo Récord!"
 	}
 }
