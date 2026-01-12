@@ -33,8 +33,8 @@ var selected_character_id: String = ""
 var all_characters: Array = []
 var unlocked_character_ids: Array = []
 
-# WASD Navigation
-var grid_columns: int = 5  # Characters per row
+# Navegación WASD
+var grid_columns: int = 5  # Personajes por fila
 
 func _ready() -> void:
 	_load_characters()
@@ -42,36 +42,36 @@ func _ready() -> void:
 	_setup_navigation()
 	_connect_signals()
 
-	# Select first unlocked character
+	# Seleccionar primer personaje desbloqueado
 	_select_first_unlocked()
 
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _load_characters() -> void:
-	"""Load character data"""
+	"""Cargar datos de personajes"""
 	all_characters = CharacterDatabase.get_all_characters()
 
-	# TODO: Load unlocked characters from SaveManager
-	# For now, all starters + for testing all unlocked
+	# TODO: Cargar personajes desbloqueados del SaveManager
+	# Por ahora, solo los starters + para testing todos desbloqueados
 	unlocked_character_ids = []
 	for char_data in all_characters:
-		# For testing: all unlocked
-		# In production: check save data
+		# Para testing: todos desbloqueados
+		# En producción: verificar save data
 		unlocked_character_ids.append(char_data.id)
 
 func _create_character_grid() -> void:
-	"""Create character grid"""
+	"""Crear grid de personajes"""
 	if not characters_grid:
 		return
 
-	# Clear existing grid
+	# Limpiar grid existente
 	for child in characters_grid.get_children():
 		child.queue_free()
 
 	character_buttons.clear()
 
-	# Configure grid
+	# Configurar grid
 	characters_grid.columns = grid_columns
 
 	for i in range(all_characters.size()):
@@ -81,7 +81,7 @@ func _create_character_grid() -> void:
 		character_buttons.append(btn)
 
 func _create_character_button(char_data: Dictionary, index: int) -> Button:
-	"""Create character button"""
+	"""Crear botón de personaje"""
 	var btn = Button.new()
 	btn.name = "Char_" + char_data.id
 	btn.custom_minimum_size = Vector2(120, 140)
@@ -89,22 +89,22 @@ func _create_character_button(char_data: Dictionary, index: int) -> Button:
 
 	var is_unlocked = char_data.id in unlocked_character_ids
 
-	# Button content
+	# Contenido del botón
 	var vbox = VBoxContainer.new()
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	vbox.add_theme_constant_override("separation", 5)
 
-	# Large Icon/Emoji
+	# Icono/Emoji grande
 	var icon_label = Label.new()
 	icon_label.name = "Icon"
-	icon_label.text = char_data.icon if is_unlocked else "X"
+	icon_label.text = char_data.icon if is_unlocked else "??"
 	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	icon_label.add_theme_font_size_override("font_size", 48)
 	icon_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(icon_label)
 
-	# Name
+	# Nombre
 	var name_label = Label.new()
 	name_label.name = "Name"
 	name_label.text = char_data.name_es if is_unlocked else "???"
@@ -117,7 +117,7 @@ func _create_character_button(char_data: Dictionary, index: int) -> Button:
 
 	vbox.add_child(name_label)
 
-	# Element
+	# Elemento
 	var element_label = Label.new()
 	element_label.name = "Element"
 	element_label.text = _get_element_name(char_data.element) if is_unlocked else ""
@@ -129,7 +129,7 @@ func _create_character_button(char_data: Dictionary, index: int) -> Button:
 
 	btn.add_child(vbox)
 
-	# Style based on state
+	# Estilo según estado
 	if is_unlocked:
 		var style = StyleBoxFlat.new()
 		style.bg_color = Color(0.15, 0.15, 0.2, 0.9)
@@ -159,7 +159,7 @@ func _create_character_button(char_data: Dictionary, index: int) -> Button:
 		btn.add_theme_stylebox_override("focus", style)
 		btn.disabled = true
 
-	# Connect signals
+	# Conectar señales
 	btn.pressed.connect(_on_character_pressed.bind(index))
 	btn.focus_entered.connect(_on_character_focused.bind(index))
 	btn.mouse_entered.connect(_on_character_hovered.bind(index))
@@ -167,8 +167,8 @@ func _create_character_button(char_data: Dictionary, index: int) -> Button:
 	return btn
 
 func _setup_navigation() -> void:
-	"""Setup WASD navigation"""
-	# Disable arrow key navigation on buttons
+	"""Configurar navegación WASD"""
+	# Desactivar navegación por flechas en botones
 	for btn in character_buttons:
 		btn.focus_neighbor_top = btn.get_path()
 		btn.focus_neighbor_bottom = btn.get_path()
@@ -182,7 +182,7 @@ func _connect_signals() -> void:
 		play_button.pressed.connect(_on_play_pressed)
 
 func _select_first_unlocked() -> void:
-	"""Select the first unlocked character"""
+	"""Seleccionar el primer personaje desbloqueado"""
 	for i in range(all_characters.size()):
 		if all_characters[i].id in unlocked_character_ids:
 			_select_character(i)
@@ -194,7 +194,7 @@ func _input(event: InputEvent) -> void:
 
 	var handled = false
 
-	# WASD Navigation
+	# Navegación WASD
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
 			KEY_W:
@@ -244,7 +244,7 @@ func _input(event: InputEvent) -> void:
 			vp.set_input_as_handled()
 
 func _navigate_grid(dx: int, dy: int) -> void:
-	"""Navigate in the character grid"""
+	"""Navegar en el grid de personajes"""
 	var current_row = current_character_index / grid_columns
 	var current_col = current_character_index % grid_columns
 
@@ -254,11 +254,11 @@ func _navigate_grid(dx: int, dy: int) -> void:
 	var new_index = new_row * grid_columns + new_col
 	new_index = clampi(new_index, 0, all_characters.size() - 1)
 
-	# Only navigate to unlocked characters
+	# Solo navegar a personajes desbloqueados
 	if all_characters[new_index].id in unlocked_character_ids:
 		_select_character(new_index)
 	else:
-		# Search for next unlocked in direction
+		# Buscar el siguiente desbloqueado en la dirección
 		var search_dir = 1 if (dx > 0 or dy > 0) else -1
 		for i in range(1, all_characters.size()):
 			var check_index = (new_index + i * search_dir) % all_characters.size()
@@ -269,7 +269,7 @@ func _navigate_grid(dx: int, dy: int) -> void:
 				break
 
 func _select_character(index: int) -> void:
-	"""Select a character"""
+	"""Seleccionar un personaje"""
 	if index < 0 or index >= all_characters.size():
 		return
 
@@ -335,12 +335,12 @@ func _update_stats_display(stats: Dictionary) -> void:
 
 	# Stats to display with visual representation
 	var stat_display = [
-		{"key": "max_health", "name": "HP", "icon": "HP", "base": 100, "max": 150, "invert": false},
-		{"key": "move_speed", "name": "Speed", "icon": "SPD", "base": 200, "max": 280, "invert": false},
-		{"key": "armor", "name": "Armor", "icon": "ARM", "base": 0, "max": 20, "invert": false},
-		{"key": "damage_mult", "name": "Damage", "icon": "DMG", "base": 1.0, "max": 1.5, "invert": false},
-		{"key": "cooldown_mult", "name": "Cooldown", "icon": "CD", "base": 1.0, "max": 1.2, "invert": true},
-		{"key": "pickup_range", "name": "Range", "icon": "RNG", "base": 50, "max": 100, "invert": false},
+		{"key": "max_health", "name": "HP", "icon": "??", "base": 100, "max": 150, "invert": false},
+		{"key": "move_speed", "name": "Speed", "icon": "??", "base": 200, "max": 280, "invert": false},
+		{"key": "armor", "name": "Armor", "icon": "???", "base": 0, "max": 20, "invert": false},
+		{"key": "damage_mult", "name": "Damage", "icon": "??", "base": 1.0, "max": 1.5, "invert": false},
+		{"key": "cooldown_mult", "name": "Cooldown", "icon": "??", "base": 1.0, "max": 1.2, "invert": true},
+		{"key": "pickup_range", "name": "Range", "icon": "??", "base": 50, "max": 100, "invert": false},
 	]
 
 	for stat_info in stat_display:
@@ -351,7 +351,7 @@ func _create_stat_row(stat_info: Dictionary, value: float) -> void:
 	"""Create a visual stat row with bar"""
 	var hbox = HBoxContainer.new()
 	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	
+
 	# Icon + Name
 	var name_label = Label.new()
 	name_label.text = stat_info.icon + " " + stat_info.name
@@ -359,42 +359,42 @@ func _create_stat_row(stat_info: Dictionary, value: float) -> void:
 	name_label.add_theme_font_size_override("font_size", 13)
 	name_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
 	hbox.add_child(name_label)
-	
+
 	# Progress bar container
 	var bar_container = Control.new()
 	bar_container.custom_minimum_size = Vector2(120, 16)
 	bar_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	
+
 	# Background bar
 	var bg_bar = ColorRect.new()
 	bg_bar.color = Color(0.15, 0.15, 0.2)
 	bg_bar.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bar_container.add_child(bg_bar)
-	
+
 	# Fill bar - calculate percentage
 	var fill_bar = ColorRect.new()
 	var percentage = clampf((value - 0) / (stat_info.max - 0), 0.0, 1.0)
-	
+
 	# Determine color based on comparison to base
 	var bar_color: Color
 	var is_better = value > stat_info.base if not stat_info.invert else value < stat_info.base
 	var is_worse = value < stat_info.base if not stat_info.invert else value > stat_info.base
-	
+
 	if is_better:
 		bar_color = Color(0.3, 0.8, 0.4)  # Green - better
 	elif is_worse:
 		bar_color = Color(0.9, 0.4, 0.3)  # Red - worse
 	else:
 		bar_color = Color(0.5, 0.5, 0.6)  # Gray - neutral
-	
+
 	fill_bar.color = bar_color
 	fill_bar.anchor_right = percentage
 	fill_bar.anchor_bottom = 1.0
 	fill_bar.offset_right = 0
 	bar_container.add_child(fill_bar)
-	
+
 	hbox.add_child(bar_container)
-	
+
 	# Value text
 	var value_label = Label.new()
 	var format_str = "%.0f" if value == int(value) else "%.2f"
@@ -404,14 +404,14 @@ func _create_stat_row(stat_info: Dictionary, value: float) -> void:
 	value_label.custom_minimum_size.x = 50
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	value_label.add_theme_font_size_override("font_size", 13)
-	
+
 	if is_better:
 		value_label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))
 	elif is_worse:
 		value_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.4))
 	else:
 		value_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8))
-	
+
 	hbox.add_child(value_label)
 	stats_container.add_child(hbox)
 
@@ -463,20 +463,21 @@ func _play_button_sound() -> void:
 		if audio_manager and audio_manager.has_method("play_sfx"):
 			audio_manager.play_sfx("ui_click")
 
-# ===============================================================================
-# PUBLIC API
-# ===============================================================================
+# ???????????????????????????????????????????????????????????????????????????????
+# API PÚBLICA
+# ???????????????????????????????????????????????????????????????????????????????
 
 func show_screen() -> void:
-	"""Show the selection screen"""
+	"""Mostrar la pantalla de selección"""
 	visible = true
-	_load_characters()  # Reload in case of new unlocks
+	_load_characters()  # Recargar por si hay nuevos desbloqueos
 	_select_first_unlocked()
 
 func hide_screen() -> void:
-	"""Hide the screen"""
+	"""Ocultar la pantalla"""
 	visible = false
 
 func get_selected_character() -> String:
-	"""Get selected character ID"""
+	"""Obtener ID del personaje seleccionado"""
 	return selected_character_id
+

@@ -21,16 +21,16 @@ signal translation_loaded(language: String)
 
 # Supported languages with display names and native names
 const SUPPORTED_LANGUAGES = {
-	"en": {"name": "English", "native": "English", "flag": "🇬🇧"},
-	"es": {"name": "Spanish", "native": "Español", "flag": "🇪🇸"},
-	"fr": {"name": "French", "native": "Français", "flag": "🇫🇷"},
-	"pt": {"name": "Portuguese", "native": "Português", "flag": "🇧🇷"},
-	"ru": {"name": "Russian", "native": "Русский", "flag": "🇷🇺"},
-	"de": {"name": "German", "native": "Deutsch", "flag": "🇩🇪"},
-	"it": {"name": "Italian", "native": "Italiano", "flag": "🇮🇹"},
-	"zh": {"name": "Chinese", "native": "中文", "flag": "🇨🇳"},
-	"ja": {"name": "Japanese", "native": "日本語", "flag": "🇯🇵"},
-	"ko": {"name": "Korean", "native": "한국어", "flag": "🇰🇷"}
+	"en": {"name": "English", "native": "English", "flag": "GB"},
+	"es": {"name": "Spanish", "native": "Espanol", "flag": "ES"},
+	"fr": {"name": "French", "native": "Francais", "flag": "FR"},
+	"pt": {"name": "Portuguese", "native": "Portugues", "flag": "BR"},
+	"ru": {"name": "Russian", "native": "Russian", "flag": "RU"},
+	"de": {"name": "German", "native": "Deutsch", "flag": "DE"},
+	"it": {"name": "Italian", "native": "Italiano", "flag": "IT"},
+	"zh": {"name": "Chinese", "native": "Chinese", "flag": "CN"},
+	"ja": {"name": "Japanese", "native": "Japanese", "flag": "JP"},
+	"ko": {"name": "Korean", "native": "Korean", "flag": "KR"}
 }
 
 # Translation data
@@ -42,15 +42,11 @@ const TRANSLATION_DIR = "res://assets/data/localization/"
 const FALLBACK_LANGUAGE = "en"
 
 func _ready() -> void:
-	# print("[Localization] Initializing Localization...")
-
 	# Load translation files
 	_load_all_translations()
 
 	# Set initial language from settings
 	_load_language_from_settings()
-
-	# print("[Localization] Localization initialized with language: ", current_language)
 
 func _load_all_translations() -> void:
 	"""Load all available translation files"""
@@ -84,7 +80,6 @@ func _load_translation_file(language_code: String) -> bool:
 		return false
 
 	translations[language_code] = json.data
-	# print("[Localization] Loaded translations for: ", language_code)
 	translation_loaded.emit(language_code)
 
 	return true
@@ -101,7 +96,6 @@ func _create_default_translation_file(language_code: String) -> void:
 	if file:
 		file.store_string(JSON.stringify(default_translations, "\t"))
 		file.close()
-		# print("[Localization] Created default translation file: ", file_path)
 
 		# Load the created file
 		translations[language_code] = default_translations
@@ -180,28 +174,28 @@ func _get_default_translations(language_code: String) -> Dictionary:
 						"title": "SPELLLOOP",
 						"new_run": "Nueva Partida",
 						"continue": "Continuar",
-						"settings": "Configuración",
+						"settings": "Configuracion",
 						"quit": "Salir"
 					},
 					"pause_menu": {
 						"title": "PAUSADO",
 						"resume": "Reanudar",
-						"settings": "Configuración",
-						"main_menu": "Menú Principal",
+						"settings": "Configuracion",
+						"main_menu": "Menu Principal",
 						"quit": "Salir del Juego"
 					},
 					"settings": {
-						"title": "Configuración",
+						"title": "Configuracion",
 						"audio": "Audio",
 						"video": "Video",
 						"controls": "Controles",
 						"language": "Idioma",
-						"back": "Atrás",
+						"back": "Atras",
 						"reset": "Restablecer"
 					},
 					"game_over": {
 						"title": "Partida Completada",
-						"score": "Puntuación",
+						"score": "Puntuacion",
 						"time": "Tiempo",
 						"rooms": "Salas Completadas",
 						"enemies": "Enemigos Derrotados",
@@ -219,7 +213,7 @@ func _get_default_translations(language_code: String) -> Dictionary:
 					"enemies": {
 						"basic_slime": "Slime",
 						"fire_imp": "Diablillo de Fuego",
-						"ice_golem": "Gólem de Hielo",
+						"ice_golem": "Golem de Hielo",
 						"shadow_wraith": "Espectro Sombra"
 					},
 					"biomes": {
@@ -293,7 +287,6 @@ func set_language(language_code: String) -> bool:
 	_save_language_to_settings()
 
 	language_changed.emit(old_language, current_language)
-	# print("[Localization] Language changed from '", old_language, "' to '", current_language, "'")
 
 	return true
 
@@ -315,25 +308,22 @@ func get_language_display_name(language_code: String) -> String:
 	return language_code
 
 func get_language_native_name(language_code: String) -> String:
-	"""Get native name for a language code (e.g., 'Español' for 'es')"""
+	"""Get native name for a language code"""
 	if SUPPORTED_LANGUAGES.has(language_code):
 		return SUPPORTED_LANGUAGES[language_code].get("native", language_code)
 	return language_code
 
 func get_language_flag(language_code: String) -> String:
-	"""Get flag emoji for a language code"""
+	"""Get flag code for a language code"""
 	if SUPPORTED_LANGUAGES.has(language_code):
-		return SUPPORTED_LANGUAGES[language_code].get("flag", "🏳️")
-	return "🏳️"
+		return SUPPORTED_LANGUAGES[language_code].get("flag", "XX")
+	return "XX"
 
 func is_language_available(language_code: String) -> bool:
 	"""Check if a language is available"""
 	return language_code in SUPPORTED_LANGUAGES
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SHORT ALIAS - Use L() for convenience (tr is reserved by Godot's Object class)
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# Short alias - Use L() for convenience (tr is reserved by Godot's Object class)
 func L(key: String, args: Array = []) -> String:
 	"""Short alias for get_text() - Use this in UI code
 	Named 'L' to avoid conflict with Godot's native tr() method"""
