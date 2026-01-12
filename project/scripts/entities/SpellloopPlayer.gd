@@ -26,7 +26,7 @@ var health_bar_container: Node2D = null
 
 func _ready() -> void:
 	# print("\n[SpellloopPlayer] ===== INICIANDO SPELLLOOP PLAYER =====")
-	
+
 	# CRÍTICO: Respetar la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 
@@ -99,17 +99,17 @@ func _physics_process(_delta: float) -> void:
 	if wizard_player:
 		var base_speed = wizard_player.base_move_speed  # Usar BASE siempre
 		var speed_mult = 1.0
-		
+
 		# Buscar PlayerStats
 		var ps = get_tree().get_first_node_in_group("player_stats")
 		if ps and ps.has_method("get_stat"):
 			speed_mult = ps.get_stat("move_speed")
-		
+
 		# Aplicar también slow temporal si hay
 		var slow_factor = 1.0
 		if wizard_player._is_slowed:
 			slow_factor = (1.0 - wizard_player._slow_amount)
-		
+
 		move_speed = base_speed * speed_mult * slow_factor
 
 	# No moverse si está stunneado
@@ -295,7 +295,7 @@ func modify_stat(stat: String, value) -> void:
 func get_pickup_range() -> float:
 	"""Retorna el rango efectivo de recolección combinando sistema local + PlayerStats"""
 	var base_range = (pickup_radius * magnet) + pickup_range_flat
-	
+
 	# Multiplicar por pickup_range de PlayerStats si existe
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	if player_stats and player_stats.has_method("get_stat"):
@@ -306,7 +306,7 @@ func get_pickup_range() -> float:
 		var ps_flat = player_stats.get_stat("pickup_range_flat")
 		if ps_flat > 0:
 			base_range += ps_flat
-	
+
 	return base_range
 
 func get_coin_value_mult() -> float:
@@ -373,13 +373,13 @@ func create_health_bar() -> void:
 		health_bar_container = Node2D.new()
 		health_bar_container.name = "HealthBarContainer"
 		add_child(health_bar_container)
-		
+
 		# Calcular offset Y basado en la escala del sprite
 		var sprite_scale = 0.25  # Default
 		var visual_calibrator = get_tree().root.get_node_or_null("VisualCalibrator") if get_tree() else null
 		if visual_calibrator and visual_calibrator.has_method("get_player_scale"):
 			sprite_scale = visual_calibrator.get_player_scale()
-		
+
 		# Fórmula equilibrada: base + ajuste por escala
 		var bar_offset_y = -30.0 - (sprite_scale * 40.0)
 

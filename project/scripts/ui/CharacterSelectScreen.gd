@@ -14,9 +14,9 @@ var Localization: Node
 # CONFIGURATION
 # =============================================================================
 
-const CAROUSEL_RADIUS: float = 280.0  # Distance from center to characters
-const SELECTED_SCALE: float = 2.5     # Scale of selected character
-const UNSELECTED_SCALE: float = 1.2   # Scale of unselected characters
+const CAROUSEL_RADIUS: float = 250.0  # Distance from center to characters
+const SELECTED_SCALE: float = 1.8     # Scale of selected character (reduced to prevent overlap)
+const UNSELECTED_SCALE: float = 0.9   # Scale of unselected characters
 const ANIMATION_DURATION: float = 0.25 # Transition animation time
 const VISIBLE_CHARACTERS: int = 5     # How many characters visible at once
 
@@ -115,11 +115,11 @@ func _build_ui() -> void:
 	title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
 	add_child(title_label)
 
-	# Carousel center point (middle of screen, slightly above center)
+	# Carousel center point (middle of screen, moved UP to avoid stats panel)
 	carousel_center = Control.new()
 	carousel_center.name = "CarouselCenter"
 	carousel_center.set_anchors_preset(Control.PRESET_CENTER)
-	carousel_center.position = Vector2(0, -60)
+	carousel_center.position = Vector2(0, -120)  # Moved higher to prevent overlap with stats
 	add_child(carousel_center)
 
 	# Character name (above carousel)
