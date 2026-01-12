@@ -521,7 +521,7 @@ func _update_stats_display() -> void:
 	vbox.add_child(stats_grid)
 
 	var stats = char_data.get("stats", {})
-	
+
 	# All character stats in display order
 	var stat_display = [
 		# Row 1: Core stats
