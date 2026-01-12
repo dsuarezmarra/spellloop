@@ -47,7 +47,7 @@ func _ready() -> void:
 
 	# Set initial language - first try settings, then auto-detect
 	_load_language_from_settings()
-	
+
 	# If still on default (no settings), auto-detect from system
 	if current_language == "en":
 		var detected = detect_system_language()

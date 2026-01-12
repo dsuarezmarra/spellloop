@@ -58,7 +58,7 @@ func _ready() -> void:
 	# Get Localization autoload reference
 	if get_tree() and get_tree().root:
 		Localization = get_tree().root.get_node_or_null("Localization")
-	
+
 	_load_characters()
 	_build_ui()
 	_create_carousel()
