@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1b3csmlt5ttw"
-path="res://.godot/imported/pyromancer_hit_2.png-76d55da52a92ec06804fd202ef2e66fd.ctex"
+uid="uid://b78m40y24pqnj"
+path="res://.godot/imported/pyromancer_walk_up.png-1e38a181dd3b9d364dce9263339e7770.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/players/pyromancer/hit/pyromancer_hit_2.png"
-dest_files=["res://.godot/imported/pyromancer_hit_2.png-76d55da52a92ec06804fd202ef2e66fd.ctex"]
+source_file="res://assets/sprites/players/pyromancer/walk/pyromancer_walk_up.png"
+dest_files=["res://.godot/imported/pyromancer_walk_up.png-1e38a181dd3b9d364dce9263339e7770.ctex"]
 
 [params]
 

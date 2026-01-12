@@ -487,20 +487,23 @@ func _update_stats_display() -> void:
 	var sep1 = HSeparator.new()
 	vbox.add_child(sep1)
 
-	# Weapon and Passive
+	# Weapon and Passive (localized)
 	var weapon_data = WeaponDatabase.WEAPONS.get(char_data.starting_weapon, {})
 	var weapon_name = weapon_data.get("name_es", char_data.starting_weapon)
+	var weapon_label_text = Localization.L("ui.character_select.starting_weapon")
 
 	var weapon_label = Label.new()
-	weapon_label.text = "Starting Weapon: " + weapon_name
+	weapon_label.text = weapon_label_text + ": " + weapon_name
 	weapon_label.add_theme_font_size_override("font_size", 15)
 	weapon_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.6))
 	weapon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(weapon_label)
 
 	var passive = char_data.get("passive", {})
+	var passive_name = passive.get("name_es", "None")
+	var passive_label_text = Localization.L("ui.character_select.passive")
 	var passive_label = Label.new()
-	passive_label.text = "Passive: " + passive.get("name_es", "None")
+	passive_label.text = passive_label_text + ": " + passive_name
 	passive_label.add_theme_font_size_override("font_size", 15)
 	passive_label.add_theme_color_override("font_color", Color(0.6, 0.9, 1.0))
 	passive_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

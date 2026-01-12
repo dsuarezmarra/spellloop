@@ -6,6 +6,9 @@ signal closed
 var focusable_controls: Array[Control] = []
 var current_focus_index: int = 0
 
+# Language options
+var language_codes: Array[String] = []
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -23,11 +26,72 @@ func _ready():
 			sfx_slider.value = am.get_sfx_volume()
 			sfx_slider.value_changed.connect(_on_sfx_volume_changed)
 
-	# Conectar botón de cerrar - buscar en ruta correcta
+	# Setup language selector
+	_setup_language_selector()
+
+	# Conectar boton de cerrar - buscar en ruta correcta
 	var close_button = get_node_or_null("Panel/VBox/CloseButton")
 	if close_button:
 		if not close_button.pressed.is_connected(_on_close_pressed):
 			close_button.pressed.connect(_on_close_pressed)
+
+	# Configurar navegacion WASD
+	_setup_wasd_navigation()
+
+func _setup_language_selector() -> void:
+	"""Setup the language dropdown with available languages"""
+	var language_option = get_node_or_null("Panel/VBox/LanguageContainer/LanguageOption")
+	if not language_option:
+		return
+	
+	language_option.clear()
+	language_codes.clear()
+	
+	# Get available languages from Localization
+	var loc = _get_localization()
+	if not loc:
+		# Fallback to basic options
+		language_option.add_item("English", 0)
+		language_option.add_item("Espanol", 1)
+		language_codes = ["en", "es"]
+		return
+	
+	# Add all available languages
+	var available = loc.get_available_languages()
+	var current_lang = loc.get_current_language()
+	var selected_idx = 0
+	
+	for i in range(available.size()):
+		var lang_code = available[i]
+		var lang_info = loc.SUPPORTED_LANGUAGES.get(lang_code, {})
+		var display_name = lang_info.get("native", lang_code)
+		language_option.add_item(display_name, i)
+		language_codes.append(lang_code)
+		
+		if lang_code == current_lang:
+			selected_idx = i
+	
+	language_option.selected = selected_idx
+	
+	if not language_option.item_selected.is_connected(_on_language_selected):
+		language_option.item_selected.connect(_on_language_selected)
+
+func _get_localization() -> Node:
+	"""Get the Localization singleton"""
+	if get_tree() and get_tree().root:
+		return get_tree().root.get_node_or_null("Localization")
+	return null
+
+func _on_language_selected(index: int) -> void:
+	"""Handle language selection change"""
+	if index < 0 or index >= language_codes.size():
+		return
+	
+	var lang_code = language_codes[index]
+	var loc = _get_localization()
+	if loc and loc.has_method("set_language"):
+		loc.set_language(lang_code)
+		print("[OptionsMenu] Language changed to: %s" % lang_code)
 
 	# Configurar navegacion WASD
 	_setup_wasd_navigation()
@@ -55,7 +119,7 @@ func _setup_wasd_navigation() -> void:
 
 func _collect_focusable_controls(node: Node) -> void:
 	"""Recolectar controles focusables en orden"""
-	if node is Button or node is HSlider or node is CheckBox or node is SpinBox:
+	if node is Button or node is HSlider or node is CheckBox or node is SpinBox or node is OptionButton:
 		focusable_controls.append(node as Control)
 
 	for child in node.get_children():
@@ -171,13 +235,17 @@ func _navigate(direction: int) -> void:
 	focusable_controls[current_focus_index].grab_focus()
 
 func _adjust_slider(direction: int) -> void:
-	"""Ajustar slider si el control actual es un slider"""
+	"""Ajustar slider o dropdown si el control actual lo soporta"""
 	if focusable_controls.is_empty():
 		return
 
 	var current = focusable_controls[current_focus_index]
 	if current is HSlider:
 		current.value += direction * current.step * 5  # 5 pasos por pulsacion
+	elif current is OptionButton:
+		var new_idx = wrapi(current.selected + direction, 0, current.item_count)
+		current.selected = new_idx
+		current.item_selected.emit(new_idx)
 
 func _activate_current() -> void:
 	"""Activar el control actual (para botones)"""
