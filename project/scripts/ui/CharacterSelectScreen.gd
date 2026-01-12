@@ -1,6 +1,6 @@
 # CharacterSelectScreen.gd
-# Pantalla de selección de personaje
-# Muestra los 10 personajes con sus stats, arma inicial y estado de desbloqueo
+# Character selection screen
+# Shows 10 characters with stats, starting weapon and unlock status
 
 extends Control
 class_name CharacterSelectScreen
@@ -8,23 +8,25 @@ class_name CharacterSelectScreen
 signal character_selected(character_id: String)
 signal back_pressed
 
-# Referencias UI principales
+# Main UI references
 @onready var title_label: Label = $Panel/VBoxContainer/TitleLabel
 @onready var characters_grid: GridContainer = $Panel/VBoxContainer/HBoxMain/CharactersScroll/CharactersGrid
 @onready var character_preview: Control = $Panel/VBoxContainer/HBoxMain/CharacterPreview
-@onready var back_button: Button = $Panel/VBoxContainer/BackButton
-@onready var play_button: Button = $Panel/VBoxContainer/PlayButton
+@onready var back_button: Button = $Panel/VBoxContainer/HBoxButtons/BackButton
+@onready var play_button: Button = $Panel/VBoxContainer/HBoxButtons/PlayButton
 
-# Preview elements
-@onready var preview_portrait: TextureRect = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/Portrait
-@onready var preview_name: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/NameLabel
-@onready var preview_title: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/TitleLabel
-@onready var preview_description: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/DescriptionLabel
-@onready var preview_weapon: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/WeaponLabel
-@onready var preview_passive: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/PassiveLabel
-@onready var stats_container: VBoxContainer = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/StatsContainer
+# Preview elements - new structure
+@onready var preview_portrait: TextureRect = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/HeaderMargin/HeaderBox/Portrait
+@onready var preview_name: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/HeaderMargin/HeaderBox/NameBox/NameLabel
+@onready var preview_title: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/HeaderMargin/HeaderBox/NameBox/TitleLabel
+@onready var preview_element: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/HeaderMargin/HeaderBox/NameBox/ElementLabel
+@onready var preview_description: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/ContentMargin/ContentVBox/DescriptionLabel
+@onready var preview_weapon: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/ContentMargin/ContentVBox/WeaponBox/WeaponLabel
+@onready var preview_passive: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/ContentMargin/ContentVBox/PassiveBox/PassiveLabel
+@onready var preview_passive_desc: Label = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/ContentMargin/ContentVBox/PassiveDesc
+@onready var stats_container: VBoxContainer = $Panel/VBoxContainer/HBoxMain/CharacterPreview/VBoxContainer/ContentMargin/ContentVBox/StatsContainer
 
-# Estado
+# State
 var character_buttons: Array[Button] = []
 var current_character_index: int = 0
 var selected_character_id: String = ""
@@ -274,15 +276,15 @@ func _select_character(index: int) -> void:
 	current_character_index = index
 	selected_character_id = all_characters[index].id
 
-	# Actualizar focus visual
+	# Update visual focus
 	if index < character_buttons.size():
 		character_buttons[index].grab_focus()
 
-	# Actualizar preview
+	# Update preview
 	_update_preview(all_characters[index])
 
 func _update_preview(char_data: Dictionary) -> void:
-	"""Actualizar panel de preview con datos del personaje"""
+	"""Update preview panel with character data"""
 	if preview_name:
 		preview_name.text = char_data.name_es
 
@@ -290,94 +292,147 @@ func _update_preview(char_data: Dictionary) -> void:
 		preview_title.text = char_data.title_es
 		preview_title.add_theme_color_override("font_color", char_data.color_primary)
 
+	if preview_element:
+		preview_element.text = "Element: " + _get_element_name(char_data.element)
+		preview_element.add_theme_color_override("font_color", char_data.color_primary)
+
 	if preview_description:
 		preview_description.text = char_data.description_es
 
 	if preview_weapon:
 		var weapon_data = WeaponDatabase.WEAPONS.get(char_data.starting_weapon, {})
 		var weapon_name = weapon_data.get("name_es", char_data.starting_weapon)
-		preview_weapon.text = "??? Arma inicial: " + weapon_name
+		preview_weapon.text = "Starting Weapon: " + weapon_name
 
 	if preview_passive:
 		var passive = char_data.get("passive", {})
-		preview_passive.text = "? Pasiva: " + passive.get("name_es", "None")
-		preview_passive.tooltip_text = passive.get("description_es", "")
+		preview_passive.text = "Passive: " + passive.get("name_es", "None")
 
-	# Actualizar stats
+	if preview_passive_desc:
+		var passive = char_data.get("passive", {})
+		preview_passive_desc.text = passive.get("description_es", "")
+
+	# Update stats
 	_update_stats_display(char_data.stats)
 
-	# Cargar portrait si existe
+	# Load portrait if exists
 	if preview_portrait:
 		var portrait_path = char_data.get("portrait", "")
 		if ResourceLoader.exists(portrait_path):
 			preview_portrait.texture = load(portrait_path)
 		else:
+			# Create colored placeholder
 			preview_portrait.texture = null
 
 func _update_stats_display(stats: Dictionary) -> void:
-	"""Actualizar display de stats"""
+	"""Update stats display with visual bars"""
 	if not stats_container:
 		return
 
-	# Limpiar stats anteriores
+	# Clear previous stats
 	for child in stats_container.get_children():
 		child.queue_free()
 
-	# Stats a mostrar con formato
+	# Stats to display with visual representation
 	var stat_display = [
-		{"key": "max_health", "name": "?? Vida", "format": "%d", "base": 100},
-		{"key": "move_speed", "name": "?? Velocidad", "format": "%.0f", "base": 200},
-		{"key": "armor", "name": "??? Armadura", "format": "%d", "base": 0},
-		{"key": "damage_mult", "name": "?? Daño", "format": "x%.2f", "base": 1.0},
-		{"key": "cooldown_mult", "name": "?? Cooldown", "format": "x%.2f", "base": 1.0},
-		{"key": "pickup_range", "name": "?? Rango", "format": "%.0f", "base": 50},
+		{"key": "max_health", "name": "HP", "icon": "??", "base": 100, "max": 150, "invert": false},
+		{"key": "move_speed", "name": "Speed", "icon": "??", "base": 200, "max": 280, "invert": false},
+		{"key": "armor", "name": "Armor", "icon": "???", "base": 0, "max": 20, "invert": false},
+		{"key": "damage_mult", "name": "Damage", "icon": "??", "base": 1.0, "max": 1.5, "invert": false},
+		{"key": "cooldown_mult", "name": "Cooldown", "icon": "??", "base": 1.0, "max": 1.2, "invert": true},
+		{"key": "pickup_range", "name": "Range", "icon": "??", "base": 50, "max": 100, "invert": false},
 	]
 
 	for stat_info in stat_display:
 		var value = stats.get(stat_info.key, stat_info.base)
-		var hbox = HBoxContainer.new()
-		hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_create_stat_row(stat_info, value)
 
-		var name_label = Label.new()
-		name_label.text = stat_info.name
-		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name_label.add_theme_font_size_override("font_size", 14)
-
-		var value_label = Label.new()
-		value_label.text = stat_info.format % value
-		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		value_label.add_theme_font_size_override("font_size", 14)
-
-		# Colorear según si es mejor o peor que base
-		if value > stat_info.base:
-			value_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.3))  # Verde
-		elif value < stat_info.base:
-			value_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))  # Rojo
-		else:
-			value_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))  # Gris
-
-		hbox.add_child(name_label)
-		hbox.add_child(value_label)
-		stats_container.add_child(hbox)
+func _create_stat_row(stat_info: Dictionary, value: float) -> void:
+	"""Create a visual stat row with bar"""
+	var hbox = HBoxContainer.new()
+	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	# Icon + Name
+	var name_label = Label.new()
+	name_label.text = stat_info.icon + " " + stat_info.name
+	name_label.custom_minimum_size.x = 100
+	name_label.add_theme_font_size_override("font_size", 13)
+	name_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
+	hbox.add_child(name_label)
+	
+	# Progress bar container
+	var bar_container = Control.new()
+	bar_container.custom_minimum_size = Vector2(120, 16)
+	bar_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	# Background bar
+	var bg_bar = ColorRect.new()
+	bg_bar.color = Color(0.15, 0.15, 0.2)
+	bg_bar.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bar_container.add_child(bg_bar)
+	
+	# Fill bar - calculate percentage
+	var fill_bar = ColorRect.new()
+	var percentage = clampf((value - 0) / (stat_info.max - 0), 0.0, 1.0)
+	
+	# Determine color based on comparison to base
+	var bar_color: Color
+	var is_better = value > stat_info.base if not stat_info.invert else value < stat_info.base
+	var is_worse = value < stat_info.base if not stat_info.invert else value > stat_info.base
+	
+	if is_better:
+		bar_color = Color(0.3, 0.8, 0.4)  # Green - better
+	elif is_worse:
+		bar_color = Color(0.9, 0.4, 0.3)  # Red - worse
+	else:
+		bar_color = Color(0.5, 0.5, 0.6)  # Gray - neutral
+	
+	fill_bar.color = bar_color
+	fill_bar.anchor_right = percentage
+	fill_bar.anchor_bottom = 1.0
+	fill_bar.offset_right = 0
+	bar_container.add_child(fill_bar)
+	
+	hbox.add_child(bar_container)
+	
+	# Value text
+	var value_label = Label.new()
+	var format_str = "%.0f" if value == int(value) else "%.2f"
+	if stat_info.key.ends_with("_mult"):
+		format_str = "x%.2f"
+	value_label.text = format_str % value
+	value_label.custom_minimum_size.x = 50
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	value_label.add_theme_font_size_override("font_size", 13)
+	
+	if is_better:
+		value_label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))
+	elif is_worse:
+		value_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.4))
+	else:
+		value_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8))
+	
+	hbox.add_child(value_label)
+	stats_container.add_child(hbox)
 
 func _get_element_name(element: int) -> String:
-	"""Obtener nombre del elemento"""
+	"""Get element name"""
 	match element:
-		CharacterDatabase.Element.ICE: return "Hielo"
-		CharacterDatabase.Element.FIRE: return "Fuego"
-		CharacterDatabase.Element.LIGHTNING: return "Rayo"
-		CharacterDatabase.Element.ARCANE: return "Arcano"
-		CharacterDatabase.Element.SHADOW: return "Sombra"
-		CharacterDatabase.Element.NATURE: return "Naturaleza"
-		CharacterDatabase.Element.WIND: return "Viento"
-		CharacterDatabase.Element.EARTH: return "Tierra"
-		CharacterDatabase.Element.LIGHT: return "Luz"
-		CharacterDatabase.Element.VOID: return "Vacío"
+		CharacterDatabase.Element.ICE: return "Ice"
+		CharacterDatabase.Element.FIRE: return "Fire"
+		CharacterDatabase.Element.LIGHTNING: return "Lightning"
+		CharacterDatabase.Element.ARCANE: return "Arcane"
+		CharacterDatabase.Element.SHADOW: return "Shadow"
+		CharacterDatabase.Element.NATURE: return "Nature"
+		CharacterDatabase.Element.WIND: return "Wind"
+		CharacterDatabase.Element.EARTH: return "Earth"
+		CharacterDatabase.Element.LIGHT: return "Light"
+		CharacterDatabase.Element.VOID: return "Void"
 		_: return "???"
 
-# ???????????????????????????????????????????????????????????????????????????????
+# ===============================================================================
 # CALLBACKS
-# ???????????????????????????????????????????????????????????????????????????????
+# ===============================================================================
 
 func _on_character_pressed(index: int) -> void:
 	_select_character(index)
