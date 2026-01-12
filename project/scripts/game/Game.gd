@@ -148,10 +148,14 @@ func _configure_player_character() -> void:
 	var character_id = "frost_mage"  # Default
 	if SessionState:
 		character_id = SessionState.get_character()
+		print("[Game] SessionState.get_character() returned: '%s'" % character_id)
 
 	# Si esta vacio, usar default
 	if character_id.is_empty():
 		character_id = "frost_mage"
+		print("[Game] Character ID was empty, using default: frost_mage")
+
+	print("[Game] Configuring player with character: %s" % character_id)
 
 	# Obtener datos del personaje
 	var char_data = CharacterDatabase.get_character(character_id)
@@ -159,9 +163,15 @@ func _configure_player_character() -> void:
 		push_warning("[Game] Character not found: " + character_id)
 		return
 
+	var sprite_folder = char_data.get("sprite_folder", "wizard")
+	print("[Game] Sprite folder for %s: %s" % [character_id, sprite_folder])
+
 	# Configurar la carpeta de sprites si el player tiene el metodo
 	if player.has_method("set_character_sprites"):
-		player.set_character_sprites(char_data.get("sprite_folder", "wizard"))
+		print("[Game] Calling player.set_character_sprites('%s')" % sprite_folder)
+		player.set_character_sprites(sprite_folder)
+	else:
+		push_warning("[Game] Player does not have set_character_sprites method!")
 
 	# Guardar el ID del personaje en el player para referencia
 	if "character_id" in player:
