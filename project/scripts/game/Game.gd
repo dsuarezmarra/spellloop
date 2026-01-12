@@ -58,6 +58,9 @@ var run_stats: Dictionary = {
 var _is_resuming: bool = false
 var _saved_state: Dictionary = {}
 
+# Flag para saber si la pausa fue por pérdida de foco (auto-pause)
+var _paused_by_focus_loss: bool = false
+
 func _ready() -> void:
 	# Game debe procesar siempre para manejar input de pausa
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -68,6 +71,19 @@ func _ready() -> void:
 		_saved_state = SessionState.get_saved_state()
 	
 	_setup_game()
+
+func _notification(what: int) -> void:
+	# Pausar automáticamente cuando el juego pierde el foco
+	match what:
+		NOTIFICATION_APPLICATION_FOCUS_OUT:
+			if game_running and not is_paused and not level_up_panel_active:
+				_paused_by_focus_loss = true
+				_pause_game()
+		NOTIFICATION_APPLICATION_FOCUS_IN:
+			# Solo despausar si fue pausado automáticamente por pérdida de foco
+			if _paused_by_focus_loss and is_paused:
+				_paused_by_focus_loss = false
+				_resume_game()
 
 func _setup_game() -> void:
 	# Crear player
@@ -652,8 +668,15 @@ func _pause_game() -> void:
 	is_paused = true
 	get_tree().paused = true  # Pausar el árbol del juego
 	# Debug desactivado: print("⏸️ [Game] Juego pausado - is_paused=%s, tree.paused=%s" % [is_paused, get_tree().paused])
-	if pause_menu:
+	if pause_menu and not _paused_by_focus_loss:
 		pause_menu.show_pause_menu(game_time)
+
+func _resume_game() -> void:
+	"""Reanudar el juego (usado por auto-pause al recuperar foco)"""
+	if level_up_panel_active:
+		return
+	is_paused = false
+	get_tree().paused = false
 
 func _on_resume_game() -> void:
 	# Solo reanudar si no hay level up activo
