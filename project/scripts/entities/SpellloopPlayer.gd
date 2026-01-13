@@ -94,23 +94,20 @@ func _physics_process(_delta: float) -> void:
 	if not input_manager:
 		return
 
-	# Sincronizar velocidad desde WizardPlayer (puede estar modificada por slow)
-	# y aplicar multiplicador de PlayerStats
+	# Obtener velocidad de movimiento desde PlayerStats (valor absoluto, no multiplicador)
 	if wizard_player:
-		var base_speed = wizard_player.base_move_speed  # Usar BASE siempre
-		var speed_mult = 1.0
+		var final_speed = wizard_player.base_move_speed  # Default fallback
 
-		# Buscar PlayerStats
+		# Buscar PlayerStats - move_speed es valor absoluto (ej: 50 = velocidad base)
 		var ps = get_tree().get_first_node_in_group("player_stats")
 		if ps and ps.has_method("get_stat"):
-			speed_mult = ps.get_stat("move_speed")
+			final_speed = ps.get_stat("move_speed")  # Valor directo, no multiplicador
 
-		# Aplicar también slow temporal si hay
-		var slow_factor = 1.0
+		# Aplicar slow temporal si hay
 		if wizard_player._is_slowed:
-			slow_factor = (1.0 - wizard_player._slow_amount)
+			final_speed = final_speed * (1.0 - wizard_player._slow_amount)
 
-		move_speed = base_speed * speed_mult * slow_factor
+		move_speed = final_speed
 
 	# No moverse si está stunneado
 	if wizard_player and wizard_player.is_stunned():
@@ -293,21 +290,17 @@ func modify_stat(stat: String, value) -> void:
 			coin_value_mult *= value
 
 func get_pickup_range() -> float:
-	"""Retorna el rango efectivo de recolección combinando sistema local + PlayerStats"""
-	var base_range = (pickup_radius * magnet) + pickup_range_flat
-
-	# Multiplicar por pickup_range de PlayerStats si existe
+	"""Retorna el rango efectivo de recolección desde PlayerStats (valor absoluto)"""
+	# pickup_range en PlayerStats es valor absoluto (ej: 50 = rango base en píxeles)
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	if player_stats and player_stats.has_method("get_stat"):
-		var ps_mult = player_stats.get_stat("pickup_range")
-		if ps_mult > 0:
-			base_range *= ps_mult
+		var range_value = player_stats.get_stat("pickup_range")
 		# Añadir pickup_range_flat de PlayerStats
 		var ps_flat = player_stats.get_stat("pickup_range_flat")
-		if ps_flat > 0:
-			base_range += ps_flat
-
-	return base_range
+		return range_value + ps_flat + pickup_range_flat
+	
+	# Fallback al sistema local si no hay PlayerStats
+	return (pickup_radius * magnet) + pickup_range_flat
 
 func get_coin_value_mult() -> float:
 	"""Retorna el multiplicador de valor de monedas (coin_value_mult + gold_mult de PlayerStats)"""

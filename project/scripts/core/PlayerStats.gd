@@ -162,7 +162,7 @@ const STAT_METADATA: Dictionary = {
 		"icon": "🏃",
 		"category": "utility",
 		"description": "Velocidad de movimiento del personaje.",
-		"format": "multiplier",
+		"format": "flat",  # Valor absoluto (50 = base)
 		"color": Color(0.4, 0.8, 1.0)
 	},
 	"pickup_range": {
@@ -170,7 +170,7 @@ const STAT_METADATA: Dictionary = {
 		"icon": "🧲",
 		"category": "utility",
 		"description": "Distancia a la que atraes XP y objetos.",
-		"format": "multiplier",
+		"format": "flat",  # Valor absoluto (50 = base)
 		"color": Color(0.8, 0.5, 1.0)
 	},
 	"pickup_range_flat": {

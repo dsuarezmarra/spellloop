@@ -685,26 +685,12 @@ func _format_stat_value_fallback(stat_name: String, value: float) -> String:
 	if stat_name in ["crit_chance", "dodge_chance", "life_steal", "thorns_percent", "curse", "growth"]:
 		return "%.0f%%" % (value * 100)
 	
-	# Stats de velocidad y rango son valores ABSOLUTOS (base 50)
+	# Stats de velocidad y rango son valores ABSOLUTOS - mostrar el valor directamente
 	if stat_name == "move_speed":
-		var base = 50.0
-		var diff_percent = ((value - base) / base) * 100
-		if diff_percent > 0:
-			return "+%.0f%%" % diff_percent
-		elif diff_percent < 0:
-			return "%.0f%%" % diff_percent
-		else:
-			return "+0%"
+		return "%.0f" % value  # Mostrar valor absoluto (ej: "50")
 	
 	if stat_name == "pickup_range":
-		var base = 50.0
-		var diff_percent = ((value - base) / base) * 100
-		if diff_percent > 0:
-			return "+%.0f%%" % diff_percent
-		elif diff_percent < 0:
-			return "%.0f%%" % diff_percent
-		else:
-			return "+0%"
+		return "%.0f" % value  # Mostrar valor absoluto (ej: "50")
 	
 	# Stats multiplicadores (base 1.0)
 	if stat_name in ["damage_mult", "attack_speed_mult", "area_mult",
