@@ -970,7 +970,7 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	# ═══════════════════════════════════════════════════════════════════════════
 	# SIEMPRE usar WeaponDatabase para valores originales para evitar cualquier
 	# posible modificación accidental de weapon.base_stats
-	var original_data = WeaponDatabase.get_weapon(weapon_id)
+	var original_data = WeaponDatabase.get_weapon_data(weapon_id)
 	if original_data.is_empty() and weapon is BaseWeapon and weapon.base_stats:
 		# Fallback solo si no existe en DB (armas custom/fusiones)
 		original_data = weapon.base_stats.duplicate()  # Copiar para seguridad
