@@ -745,6 +745,9 @@ func _create_weapon_stats_for(weapon) -> void:
 		if "base_cooldown" in weapon:
 			ws.base_stats["attack_speed"] = 1.0 / weapon.base_cooldown if weapon.base_cooldown > 0 else 1.0
 	
+	# CRÍTICO: Recalcular modified_stats después de establecer base_stats
+	ws._recalculate_stats()
+	
 	weapon_stats_map[weapon_id] = ws
 	# Debug desactivado: print("[AttackManager] WeaponStats creado para: %s" % weapon_id)
 
@@ -890,6 +893,34 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	
 	# Si tiene WeaponStats, usar esos valores más precisos
 	if ws:
+		# Verificar que WeaponStats tenga los stats base correctos
+		# (puede estar desincronizado si se creó antes de inicializar el arma)
+		var needs_recalc = false
+		
+		# Sincronizar daño
+		var ws_base_damage = ws.base_stats.get("damage", 0)
+		if ws_base_damage != base_damage and base_damage > 0:
+			ws.base_stats["damage"] = base_damage
+			needs_recalc = true
+		
+		# Sincronizar attack_speed
+		var ws_base_as = ws.base_stats.get("attack_speed", 1.0)
+		if abs(ws_base_as - base_attack_speed) > 0.01 and base_attack_speed > 0:
+			ws.base_stats["attack_speed"] = base_attack_speed
+			needs_recalc = true
+		
+		# Sincronizar otros stats importantes
+		if ws.base_stats.get("projectile_count", 1) != base_projectile_count:
+			ws.base_stats["projectile_count"] = base_projectile_count
+			needs_recalc = true
+		
+		if ws.base_stats.get("pierce", 0) != base_pierce:
+			ws.base_stats["pierce"] = base_pierce
+			needs_recalc = true
+		
+		if needs_recalc:
+			ws._recalculate_stats()
+		
 		final_damage = ws.get_final_stat("damage", gs)
 		final_attack_speed = ws.get_final_attack_speed(gs)
 		final_cooldown = ws.get_final_cooldown(gs)
