@@ -280,6 +280,8 @@ func _physics_process(delta: float) -> void:
 	_process_debuffs(delta)
 	_update_status_visuals(delta)
 	_update_revive_immunity(delta)
+	# Actualizar barra de escudo (para efecto de parpadeo)
+	_update_shield_bar()
 
 func _process_debuffs(delta: float) -> void:
 	"""Procesar todos los debuffs activos"""
@@ -629,6 +631,10 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	
 	# Aplicar daño al HealthComponent
 	health_component.take_damage(final_damage)
+	
+	# IMPORTANTE: Notificar a PlayerStats que recibió daño (para el delay del escudo)
+	if player_stats and player_stats.has_method("on_damage_taken"):
+		player_stats.on_damage_taken()
 	
 	# 6. THORNS - Reflejar daño al atacante
 	if attacker and is_instance_valid(attacker) and player_stats:
@@ -1043,7 +1049,7 @@ func get_info() -> Dictionary:
 	}
 
 func create_health_bar() -> void:
-	"""Crear barra de vida - SOBRESCRIBIR EN SUBCLASES SI NECESARIO"""
+	"""Crear barra de vida y escudo - SOBRESCRIBIR EN SUBCLASES SI NECESARIO"""
 	if not health_bar_container:
 		health_bar_container = Node2D.new()
 		health_bar_container.name = "HealthBarContainer"
@@ -1061,7 +1067,11 @@ func create_health_bar() -> void:
 		# Con escala 0.35 -> -44px (se adapta a sprites más grandes)
 		var bar_offset_y = -30.0 - (sprite_scale * 40.0)
 		
+		# ════════════════════════════════════════════════════════════════════
+		# BARRA DE VIDA (Verde)
+		# ════════════════════════════════════════════════════════════════════
 		var bg_bar = ColorRect.new()
+		bg_bar.name = "HealthBarBG"
 		bg_bar.size = Vector2(40, 4)
 		bg_bar.color = Color(0.3, 0.3, 0.3, 0.8)
 		bg_bar.position = Vector2(-20, bar_offset_y)
@@ -1073,18 +1083,119 @@ func create_health_bar() -> void:
 		health_bar.color = Color(0.0, 1.0, 0.0, 0.9)
 		health_bar.position = Vector2(-20, bar_offset_y)
 		health_bar_container.add_child(health_bar)
+		
+		# ════════════════════════════════════════════════════════════════════
+		# BARRA DE ESCUDO (Azul - encima de la vida)
+		# Solo se muestra si el jugador tiene escudo
+		# ════════════════════════════════════════════════════════════════════
+		var shield_bar_offset_y = bar_offset_y - 6  # 6px encima de la barra de vida
+		
+		var shield_bg_bar = ColorRect.new()
+		shield_bg_bar.name = "ShieldBarBG"
+		shield_bg_bar.size = Vector2(40, 4)
+		shield_bg_bar.color = Color(0.1, 0.2, 0.4, 0.8)  # Fondo azul oscuro
+		shield_bg_bar.position = Vector2(-20, shield_bar_offset_y)
+		shield_bg_bar.visible = false  # Oculta hasta que haya escudo
+		health_bar_container.add_child(shield_bg_bar)
+		
+		var shield_bar = ColorRect.new()
+		shield_bar.name = "ShieldBar"
+		shield_bar.size = Vector2(40, 4)
+		shield_bar.color = Color(0.2, 0.6, 1.0, 0.95)  # Azul brillante
+		shield_bar.position = Vector2(-20, shield_bar_offset_y)
+		shield_bar.visible = false  # Oculta hasta que haya escudo
+		health_bar_container.add_child(shield_bar)
 	
 	update_health_bar()
 
 func update_health_bar() -> void:
-	"""Actualizar la barra de vida"""
+	"""Actualizar la barra de vida y escudo"""
 	if not health_bar_container:
 		return
 	
+	# Actualizar barra de vida
 	var health_bar = health_bar_container.get_node_or_null("HealthBar")
 	if health_bar:
 		var health_percent = float(hp) / float(max_hp)
 		health_bar.size.x = 40.0 * health_percent
+	
+	# Actualizar barra de escudo
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.has_method("get_stat"):
+		var current_shield = player_stats.get_stat("shield_amount")
+		var max_shield = player_stats.get_stat("max_shield")
+		
+		var shield_bar = health_bar_container.get_node_or_null("ShieldBar")
+		var shield_bg = health_bar_container.get_node_or_null("ShieldBarBG")
+		
+		if shield_bar and shield_bg:
+			# Mostrar barra de escudo solo si el jugador tiene escudo máximo > 0
+			if max_shield > 0:
+				shield_bar.visible = true
+				shield_bg.visible = true
+				var shield_percent = current_shield / max_shield if max_shield > 0 else 0.0
+				shield_bar.size.x = 40.0 * shield_percent
+				
+				# Efecto de parpadeo cuando el escudo se está regenerando
+				var time_since_damage = player_stats._time_since_damage if "_time_since_damage" in player_stats else 999.0
+				var regen_delay = player_stats.get_stat("shield_regen_delay")
+				
+				if time_since_damage < regen_delay and current_shield < max_shield:
+					# Parpadeo mientras espera regeneración
+					var pulse = 0.6 + 0.4 * sin(Time.get_ticks_msec() * 0.01)
+					shield_bar.color = Color(0.2, 0.6, 1.0, pulse)
+				else:
+					shield_bar.color = Color(0.2, 0.6, 1.0, 0.95)
+			else:
+				shield_bar.visible = false
+				shield_bg.visible = false
+
+func _update_shield_bar() -> void:
+	"""Actualizar solo la barra de escudo (llamado cada frame para animación)"""
+	if not health_bar_container:
+		return
+	
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if not player_stats or not player_stats.has_method("get_stat"):
+		return
+	
+	var current_shield = player_stats.get_stat("shield_amount")
+	var max_shield = player_stats.get_stat("max_shield")
+	
+	var shield_bar = health_bar_container.get_node_or_null("ShieldBar")
+	var shield_bg = health_bar_container.get_node_or_null("ShieldBarBG")
+	
+	if not shield_bar or not shield_bg:
+		return
+	
+	# Mostrar barra de escudo solo si el jugador tiene escudo máximo > 0
+	if max_shield > 0:
+		shield_bar.visible = true
+		shield_bg.visible = true
+		var shield_percent = current_shield / max_shield if max_shield > 0 else 0.0
+		shield_bar.size.x = 40.0 * shield_percent
+		
+		# Efecto de parpadeo cuando el escudo está esperando regeneración
+		var time_since_damage = player_stats._time_since_damage if "_time_since_damage" in player_stats else 999.0
+		var regen_delay = player_stats.get_stat("shield_regen_delay")
+		
+		if time_since_damage < regen_delay and current_shield < max_shield:
+			# Parpadeo mientras espera regeneración (indica que no regenera aún)
+			var pulse = 0.5 + 0.5 * sin(Time.get_ticks_msec() * 0.006)
+			shield_bar.color = Color(0.4, 0.4, 0.8, pulse)
+			shield_bg.color = Color(0.1, 0.1, 0.3, 0.6 + pulse * 0.2)
+		elif current_shield < max_shield:
+			# Regenerando: brillo pulsante azul claro
+			var pulse = 0.8 + 0.2 * sin(Time.get_ticks_msec() * 0.008)
+			shield_bar.color = Color(0.3 * pulse, 0.7 * pulse, 1.0, 0.95)
+			shield_bg.color = Color(0.1, 0.2, 0.4, 0.8)
+		else:
+			# Lleno: azul brillante sólido
+			shield_bar.color = Color(0.2, 0.6, 1.0, 0.95)
+			shield_bg.color = Color(0.1, 0.2, 0.4, 0.8)
+	else:
+		shield_bar.visible = false
+		shield_bg.visible = false
 
 # ========== SISTEMA DE DEBUFFS - APLICACIÓN ==========
 

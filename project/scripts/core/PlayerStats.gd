@@ -239,6 +239,14 @@ const STAT_METADATA: Dictionary = {
 		"format": "flat",
 		"color": Color(0.3, 0.6, 0.9)
 	},
+	"max_shield": {
+		"name": "Escudo Máximo",
+		"icon": "🛡️",
+		"category": "defensive",
+		"description": "Cantidad máxima de escudo.",
+		"format": "flat",
+		"color": Color(0.3, 0.6, 0.9)
+	},
 	"shield_regen": {
 		"name": "Regen. Escudo",
 		"icon": "🔄",
@@ -246,6 +254,22 @@ const STAT_METADATA: Dictionary = {
 		"description": "Puntos de escudo regenerados por segundo.",
 		"format": "per_second",
 		"color": Color(0.3, 0.6, 0.9)
+	},
+	"shield_regen_delay": {
+		"name": "Delay Escudo",
+		"icon": "⏱️",
+		"category": "hidden",
+		"description": "Segundos sin recibir daño para empezar a regenerar escudo.",
+		"format": "seconds",
+		"color": Color(0.3, 0.6, 0.9)
+	},
+	"status_duration_mult": {
+		"name": "Duración Efectos",
+		"icon": "⌛",
+		"category": "offensive",
+		"description": "Duración de efectos de estado aplicados a enemigos (quemadura, ralentización, etc.).",
+		"format": "multiplier",
+		"color": Color(0.9, 0.5, 0.8)
 	},
 	"revives": {
 		"name": "Revivir",
@@ -432,8 +456,13 @@ const BASE_STATS: Dictionary = {
 	"thorns": 0.0,                 # Daño plano reflejado
 	"thorns_percent": 0.0,         # % del daño reflejado
 	"shield_amount": 0.0,          # Escudo que absorbe daño
+	"max_shield": 0.0,             # Escudo máximo (para regeneración)
 	"shield_regen": 0.0,           # Regeneración de escudo/s
+	"shield_regen_delay": 3.0,     # Segundos sin recibir daño para regenerar escudo (como PoE2)
 	"revives": 0,                  # Vidas extra
+	
+	# Duración de efectos de estado
+	"status_duration_mult": 1.0,   # Multiplicador de duración de efectos (slow, burn, etc.)
 
 	# Ofensivos - Stats globales de armas
 	"damage_mult": 1.0,
@@ -551,6 +580,9 @@ var _regen_accumulator: float = 0.0
 # Acumulador de regeneración de escudo
 var _shield_regen_accumulator: float = 0.0
 
+# Timer desde último daño recibido (para delay de regeneración de escudo)
+var _time_since_damage: float = 999.0  # Alto inicialmente para permitir regeneración
+
 # Sistema de Growth - tiempo acumulado en minutos
 var _game_time_minutes: float = 0.0
 var _last_growth_minute: int = 0
@@ -588,6 +620,7 @@ func _reset_stats() -> void:
 	xp_to_next_level = BASE_XP_TO_LEVEL
 	_regen_accumulator = 0.0
 	_shield_regen_accumulator = 0.0
+	_time_since_damage = 999.0  # Permitir regeneración de escudo inmediata al inicio
 	_game_time_minutes = 0.0
 	_last_growth_minute = 0
 
@@ -962,17 +995,34 @@ func _get_player_current_health() -> float:
 	return current_health
 
 func _update_shield_regen(delta: float) -> void:
-	"""Regenerar escudo con el tiempo"""
+	"""
+	Regenerar escudo con el tiempo.
+	Sistema estilo Path of Exile 2: El escudo solo regenera después de X segundos sin recibir daño.
+	"""
+	# Actualizar timer desde último daño
+	_time_since_damage += delta
+	
 	var shield_regen = get_stat("shield_regen")
 	if shield_regen <= 0:
 		return
+	
+	# Obtener delay de regeneración (por defecto 3 segundos como PoE2)
+	var regen_delay = get_stat("shield_regen_delay")
+	
+	# No regenerar si recibió daño recientemente
+	if _time_since_damage < regen_delay:
+		return
 
-	# No regenerar escudo si no tiene max_shield definido o está lleno
+	# Obtener escudo actual y máximo
 	var current_shield = get_stat("shield_amount")
-	var max_shield = get_base_stat("shield_amount")  # El máximo es el valor base + mejoras
-
-	# Si no hay escudo definido, no regenerar
+	var max_shield = get_stat("max_shield")  # Usar max_shield, no shield_amount base
+	
+	# Si no hay escudo máximo definido, no regenerar
 	if max_shield <= 0:
+		return
+	
+	# Si el escudo ya está lleno, no regenerar
+	if current_shield >= max_shield:
 		return
 
 	# Acumular regeneración parcial
@@ -989,6 +1039,14 @@ func _update_shield_regen(delta: float) -> void:
 	var new_shield = mini(int(current_shield) + regen_int, int(max_shield))
 	if new_shield > current_shield:
 		set_stat("shield_amount", new_shield)
+
+func on_damage_taken() -> void:
+	"""
+	Llamar cuando el jugador recibe daño.
+	Reinicia el timer de regeneración de escudo.
+	"""
+	_time_since_damage = 0.0
+	_shield_regen_accumulator = 0.0  # Resetear acumulador también
 
 func _update_growth(delta: float) -> void:
 	"""Aplicar bonus de Growth por minuto de juego"""

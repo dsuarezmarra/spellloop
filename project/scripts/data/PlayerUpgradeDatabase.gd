@@ -387,6 +387,86 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 		"tier": 4,
 		"max_stacks": 2,
 		"effects": [{"stat": "kill_heal", "value": 5, "operation": "add"}]
+	},
+	# ─────────────────────────────────────────────────────────────────────────────
+	# ESCUDO DE ENERGÍA (Sistema estilo Path of Exile 2)
+	# El escudo absorbe daño antes que la vida y se regenera después de no recibir daño
+	# ─────────────────────────────────────────────────────────────────────────────
+	"shield_1": {
+		"id": "shield_1",
+		"name": "Escudo Arcano Menor",
+		"description": "+20 Escudo máximo, +2 regen/s. Regenera tras 3s sin daño.",
+		"icon": "🛡️",
+		"category": "defensive",
+		"tier": 2,
+		"max_stacks": 5,
+		"effects": [
+			{"stat": "max_shield", "value": 20, "operation": "add"},
+			{"stat": "shield_amount", "value": 20, "operation": "add"},
+			{"stat": "shield_regen", "value": 2.0, "operation": "add"}
+		]
+	},
+	"shield_2": {
+		"id": "shield_2",
+		"name": "Escudo Arcano",
+		"description": "+40 Escudo máximo, +4 regen/s. Regenera tras 3s sin daño.",
+		"icon": "🛡️",
+		"category": "defensive",
+		"tier": 3,
+		"max_stacks": 3,
+		"effects": [
+			{"stat": "max_shield", "value": 40, "operation": "add"},
+			{"stat": "shield_amount", "value": 40, "operation": "add"},
+			{"stat": "shield_regen", "value": 4.0, "operation": "add"}
+		]
+	},
+	"shield_3": {
+		"id": "shield_3",
+		"name": "Barrera Mágica",
+		"description": "+70 Escudo máximo, +7 regen/s. Regenera tras 3s sin daño.",
+		"icon": "🔮",
+		"category": "defensive",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [
+			{"stat": "max_shield", "value": 70, "operation": "add"},
+			{"stat": "shield_amount", "value": 70, "operation": "add"},
+			{"stat": "shield_regen", "value": 7.0, "operation": "add"}
+		]
+	},
+	"shield_4": {
+		"id": "shield_4",
+		"name": "Égida del Archimago",
+		"description": "+100 Escudo máximo, +10 regen/s. Regenera tras 3s sin daño.",
+		"icon": "✨",
+		"category": "defensive",
+		"tier": 5,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "max_shield", "value": 100, "operation": "add"},
+			{"stat": "shield_amount", "value": 100, "operation": "add"},
+			{"stat": "shield_regen", "value": 10.0, "operation": "add"}
+		]
+	},
+	"shield_regen_delay_1": {
+		"id": "shield_regen_delay_1",
+		"name": "Recuperación Rápida",
+		"description": "-0.5s de delay para regenerar escudo.",
+		"icon": "⚡",
+		"category": "defensive",
+		"tier": 3,
+		"max_stacks": 3,
+		"effects": [{"stat": "shield_regen_delay", "value": -0.5, "operation": "add"}]
+	},
+	"shield_regen_delay_2": {
+		"id": "shield_regen_delay_2",
+		"name": "Regeneración Instantánea",
+		"description": "-1s de delay para regenerar escudo.",
+		"icon": "⚡",
+		"category": "defensive",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [{"stat": "shield_regen_delay", "value": -1.0, "operation": "add"}]
 	}
 }
 
@@ -729,6 +809,50 @@ const UTILITY_UPGRADES: Dictionary = {
 		"tier": 4,
 		"max_stacks": 1,
 		"effects": [{"stat": "overkill_damage", "value": 1.0, "operation": "add"}]
+	},
+	# ─────────────────────────────────────────────────────────────────────────────
+	# DURACIÓN DE EFECTOS DE ESTADO (quemadura, ralentización, congelación, etc.)
+	# Afecta a: slow, burn, freeze, stun, blind, bleed, poison
+	# ─────────────────────────────────────────────────────────────────────────────
+	"status_duration_1": {
+		"id": "status_duration_1",
+		"name": "Aflicción Persistente",
+		"description": "+15% duración de efectos de estado en enemigos.",
+		"icon": "⌛",
+		"category": "utility",
+		"tier": 2,
+		"max_stacks": 5,
+		"effects": [{"stat": "status_duration_mult", "value": 0.15, "operation": "add"}]
+	},
+	"status_duration_2": {
+		"id": "status_duration_2",
+		"name": "Tormento Prolongado",
+		"description": "+30% duración de efectos de estado en enemigos.",
+		"icon": "⌛",
+		"category": "utility",
+		"tier": 3,
+		"max_stacks": 3,
+		"effects": [{"stat": "status_duration_mult", "value": 0.30, "operation": "add"}]
+	},
+	"status_duration_3": {
+		"id": "status_duration_3",
+		"name": "Agonía Eterna",
+		"description": "+50% duración de efectos de estado en enemigos.",
+		"icon": "💀",
+		"category": "utility",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [{"stat": "status_duration_mult", "value": 0.50, "operation": "add"}]
+	},
+	"status_duration_4": {
+		"id": "status_duration_4",
+		"name": "Maldición del Tiempo",
+		"description": "+75% duración de efectos de estado en enemigos.",
+		"icon": "🕐",
+		"category": "utility",
+		"tier": 5,
+		"max_stacks": 1,
+		"effects": [{"stat": "status_duration_mult", "value": 0.75, "operation": "add"}]
 	}
 }
 
@@ -1188,13 +1312,14 @@ const UNIQUE_UPGRADES: Dictionary = {
 	"unique_arcane_barrier": {
 		"id": "unique_arcane_barrier",
 		"name": "Barrera Arcana",
-		"description": "Ganas un escudo de 50 HP que se regenera 5/s.",
+		"description": "Ganas un escudo de 50 HP que se regenera 5/s tras 3s sin daño.",
 		"icon": "🔮",
 		"category": "unique",
 		"tier": 4,
 		"is_unique": true,
 		"max_stacks": 1,
 		"effects": [
+			{"stat": "max_shield", "value": 50, "operation": "add"},
 			{"stat": "shield_amount", "value": 50, "operation": "add"},
 			{"stat": "shield_regen", "value": 5.0, "operation": "add"}
 		]
@@ -1272,6 +1397,89 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"effects": [
 			{"stat": "damage_mult", "value": 1.50, "operation": "multiply"},
 			{"stat": "attack_speed_mult", "value": 1.25, "operation": "multiply"}
+		]
+	},
+	# ─────────────────────────────────────────────────────────────────────────────
+	# NUEVAS MEJORAS ÚNICAS (v3.0) - Sistema de Escudo y Efectos de Estado
+	# ─────────────────────────────────────────────────────────────────────────────
+	"unique_energy_vampire": {
+		"id": "unique_energy_vampire",
+		"name": "Vampiro Energético",
+		"description": "+75 Escudo, +5% life steal, -1s delay regeneración escudo.",
+		"icon": "🧛",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "max_shield", "value": 75, "operation": "add"},
+			{"stat": "shield_amount", "value": 75, "operation": "add"},
+			{"stat": "shield_regen", "value": 8.0, "operation": "add"},
+			{"stat": "life_steal", "value": 0.05, "operation": "add"},
+			{"stat": "shield_regen_delay", "value": -1.0, "operation": "add"}
+		]
+	},
+	"unique_affliction_master": {
+		"id": "unique_affliction_master",
+		"name": "Maestro de Aflicciones",
+		"description": "+100% duración de efectos, +15% prob. congelar, +15% prob. sangrado.",
+		"icon": "☠️",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "status_duration_mult", "value": 1.0, "operation": "add"},
+			{"stat": "freeze_chance", "value": 0.15, "operation": "add"},
+			{"stat": "bleed_chance", "value": 0.15, "operation": "add"}
+		]
+	},
+	"unique_temporal_mage": {
+		"id": "unique_temporal_mage",
+		"name": "Mago Temporal",
+		"description": "+50% duración de efectos, -20% cooldowns, +20% duración habilidades.",
+		"icon": "🕐",
+		"category": "unique",
+		"tier": 4,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "status_duration_mult", "value": 0.50, "operation": "add"},
+			{"stat": "cooldown_mult", "value": 0.80, "operation": "multiply"},
+			{"stat": "duration_mult", "value": 1.20, "operation": "multiply"}
+		]
+	},
+	"unique_guardian_angel": {
+		"id": "unique_guardian_angel",
+		"name": "Ángel Guardián",
+		"description": "+100 Escudo, +50 HP, +1 revive, regenera escudo 2s más rápido.",
+		"icon": "👼",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "max_shield", "value": 100, "operation": "add"},
+			{"stat": "shield_amount", "value": 100, "operation": "add"},
+			{"stat": "shield_regen", "value": 12.0, "operation": "add"},
+			{"stat": "max_health", "value": 50, "operation": "add"},
+			{"stat": "revives", "value": 1, "operation": "add"},
+			{"stat": "shield_regen_delay", "value": -2.0, "operation": "add"}
+		]
+	},
+	"unique_frost_nova": {
+		"id": "unique_frost_nova",
+		"name": "Nova de Escarcha",
+		"description": "+30% prob. congelar, +75% duración congelación, +25% área.",
+		"icon": "❄️",
+		"category": "unique",
+		"tier": 4,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "freeze_chance", "value": 0.30, "operation": "add"},
+			{"stat": "status_duration_mult", "value": 0.75, "operation": "add"},
+			{"stat": "area_mult", "value": 1.25, "operation": "multiply"}
 		]
 	}
 }

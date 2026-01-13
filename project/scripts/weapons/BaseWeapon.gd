@@ -626,6 +626,27 @@ func _get_global_weapon_stats() -> Dictionary:
 	
 	return {}
 
+func _get_modified_effect_duration(base_duration: float) -> float:
+	"""
+	Obtener la duración del efecto modificada por status_duration_mult de PlayerStats.
+	Esto afecta a efectos como slow, burn, freeze, stun, etc.
+	"""
+	var tree = get_tree()
+	if not tree:
+		return base_duration
+	
+	var player_stats_nodes = tree.get_nodes_in_group("player_stats")
+	if player_stats_nodes.is_empty():
+		return base_duration
+	
+	var player_stats = player_stats_nodes[0]
+	if player_stats and player_stats.has_method("get_stat"):
+		var duration_mult = player_stats.get_stat("status_duration_mult")
+		if duration_mult > 0:
+			return base_duration * duration_mult
+	
+	return base_duration
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # APLICACIÓN DE EFECTOS
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -678,25 +699,29 @@ func apply_effect_to_target(target: Node2D) -> void:
 func _apply_slow(target: Node2D) -> void:
 	"""Aplicar slow al objetivo"""
 	if target.has_method("apply_slow"):
-		target.apply_slow(effect_value, effect_duration)
+		var duration = _get_modified_effect_duration(effect_duration)
+		target.apply_slow(effect_value, duration)
 
 func _apply_burn(target: Node2D) -> void:
 	"""Aplicar burn (DoT) al objetivo"""
 	if target.has_method("apply_burn"):
-		target.apply_burn(effect_value, effect_duration)
+		var duration = _get_modified_effect_duration(effect_duration)
+		target.apply_burn(effect_value, duration)
 
 func _apply_freeze(target: Node2D) -> void:
 	"""Aplicar freeze (slow extremo) al objetivo"""
+	var duration = _get_modified_effect_duration(effect_duration)
 	if target.has_method("apply_freeze"):
-		target.apply_freeze(effect_value, effect_duration)
+		target.apply_freeze(effect_value, duration)
 	elif target.has_method("apply_slow"):
 		# Fallback a slow si no hay método freeze
-		target.apply_slow(effect_value, effect_duration)
+		target.apply_slow(effect_value, duration)
 
 func _apply_stun(target: Node2D) -> void:
 	"""Aplicar stun al objetivo"""
 	if target.has_method("apply_stun"):
-		target.apply_stun(effect_value)  # effect_value = duración del stun
+		var duration = _get_modified_effect_duration(effect_value)  # effect_value = duración del stun
+		target.apply_stun(duration)
 
 func _apply_pull(target: Node2D, pull_position: Vector2 = Vector2.ZERO) -> void:
 	"""Atraer objetivo hacia una posición (por defecto el jugador)"""
@@ -708,21 +733,24 @@ func _apply_pull(target: Node2D, pull_position: Vector2 = Vector2.ZERO) -> void:
 		else:
 			return
 	if target.has_method("apply_pull"):
-		target.apply_pull(target_pos, effect_value, effect_duration)
+		var duration = _get_modified_effect_duration(effect_duration)
+		target.apply_pull(target_pos, effect_value, duration)
 
 func _apply_blind(target: Node2D) -> void:
 	"""Aplicar ceguera al objetivo"""
 	if target.has_method("apply_blind"):
-		target.apply_blind(effect_value)  # effect_value = duración del blind
+		var duration = _get_modified_effect_duration(effect_value)  # effect_value = duración del blind
+		target.apply_blind(duration)
 
 func _apply_steam(target: Node2D) -> void:
 	"""Aplicar efecto de vapor (slow + burn combinados)"""
+	var duration = _get_modified_effect_duration(effect_duration)
 	# Slow moderado
 	if target.has_method("apply_slow"):
-		target.apply_slow(0.3, effect_duration)  # 30% slow
+		target.apply_slow(0.3, duration)  # 30% slow
 	# Burn con el valor del efecto
 	if target.has_method("apply_burn"):
-		target.apply_burn(effect_value, effect_duration)
+		target.apply_burn(effect_value, duration)
 
 func _apply_execute(target: Node2D) -> void:
 	"""Ejecutar al objetivo si tiene poca vida"""

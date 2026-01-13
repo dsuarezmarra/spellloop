@@ -133,6 +133,30 @@ static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
 				# Debug desactivado: print("[LifeSteal] Curado +%d HP" % heal_int)
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# HELPER: STATUS DURATION MULTIPLIER
+# ═══════════════════════════════════════════════════════════════════════════════
+
+static func get_modified_effect_duration(tree: SceneTree, base_duration: float) -> float:
+	"""
+	Obtener la duración del efecto modificada por status_duration_mult de PlayerStats.
+	Esto afecta a efectos como slow, burn, freeze, stun, etc.
+	"""
+	if tree == null:
+		return base_duration
+	
+	var player_stats_nodes = tree.get_nodes_in_group("player_stats")
+	if player_stats_nodes.is_empty():
+		return base_duration
+	
+	var player_stats = player_stats_nodes[0]
+	if player_stats and player_stats.has_method("get_stat"):
+		var duration_mult = player_stats.get_stat("status_duration_mult")
+		if duration_mult > 0:
+			return base_duration * duration_mult
+	
+	return base_duration
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # CREACIÓN DE PROYECTILES
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -370,27 +394,31 @@ class BeamEffect extends Node2D:
 		if effect == "none":
 			return
 		
+		# Obtener duración modificada por status_duration_mult
+		var modified_duration = ProjectileFactory.get_modified_effect_duration(get_tree(), effect_duration)
+		var modified_value_as_duration = ProjectileFactory.get_modified_effect_duration(get_tree(), effect_value)
+		
 		match effect:
 			"burn":
 				if enemy.has_method("apply_burn"):
-					enemy.apply_burn(effect_value, effect_duration)
+					enemy.apply_burn(effect_value, modified_duration)
 			"freeze":
 				if enemy.has_method("apply_freeze"):
-					enemy.apply_freeze(effect_value, effect_duration)
+					enemy.apply_freeze(effect_value, modified_duration)
 				elif enemy.has_method("apply_slow"):
-					enemy.apply_slow(effect_value, effect_duration)
+					enemy.apply_slow(effect_value, modified_duration)
 			"slow":
 				if enemy.has_method("apply_slow"):
-					enemy.apply_slow(effect_value, effect_duration)
+					enemy.apply_slow(effect_value, modified_duration)
 			"stun":
 				if enemy.has_method("apply_stun"):
-					enemy.apply_stun(effect_value)  # effect_value = duración del stun
+					enemy.apply_stun(modified_value_as_duration)  # effect_value = duración del stun
 			"blind":
 				if enemy.has_method("apply_blind"):
-					enemy.apply_blind(effect_value)  # effect_value = duración del blind
+					enemy.apply_blind(modified_value_as_duration)  # effect_value = duración del blind
 			"pull":
 				if enemy.has_method("apply_pull"):
-					enemy.apply_pull(global_position, effect_value, effect_duration)
+					enemy.apply_pull(global_position, effect_value, modified_duration)
 			"execute":
 				if enemy.has_method("get_info"):
 					var info = enemy.get_info()
@@ -408,10 +436,10 @@ class BeamEffect extends Node2D:
 					FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
 			"bleed":
 				if enemy.has_method("apply_bleed"):
-					enemy.apply_bleed(effect_value, effect_duration)
+					enemy.apply_bleed(effect_value, modified_duration)
 			"shadow_mark":
 				if enemy.has_method("apply_shadow_mark"):
-					enemy.apply_shadow_mark(effect_value, effect_duration)
+					enemy.apply_shadow_mark(effect_value, modified_duration)
 	
 	func _get_player() -> Node:
 		"""Obtener referencia al jugador"""
@@ -646,43 +674,47 @@ class AOEEffect extends Node2D:
 		if effect == "none":
 			return
 
+		# Obtener duración modificada por status_duration_mult
+		var modified_duration = ProjectileFactory.get_modified_effect_duration(get_tree(), effect_duration)
+		var modified_value_as_duration = ProjectileFactory.get_modified_effect_duration(get_tree(), effect_value)
+
 		match effect:
 			"stun":
 				if enemy.has_method("apply_stun"):
-					enemy.apply_stun(effect_value)  # effect_value = duración del stun
+					enemy.apply_stun(modified_value_as_duration)  # effect_value = duración del stun
 			"pull":
 				if enemy.has_method("apply_pull"):
-					enemy.apply_pull(global_position, effect_value, effect_duration)
+					enemy.apply_pull(global_position, effect_value, modified_duration)
 			"freeze":
 				if enemy.has_method("apply_freeze"):
-					enemy.apply_freeze(effect_value, effect_duration)
+					enemy.apply_freeze(effect_value, modified_duration)
 				elif enemy.has_method("apply_slow"):
-					enemy.apply_slow(effect_value, effect_duration)
+					enemy.apply_slow(effect_value, modified_duration)
 			"slow":
 				if enemy.has_method("apply_slow"):
-					enemy.apply_slow(effect_value, effect_duration)
+					enemy.apply_slow(effect_value, modified_duration)
 			"burn":
 				if enemy.has_method("apply_burn"):
-					enemy.apply_burn(effect_value, effect_duration)
+					enemy.apply_burn(effect_value, modified_duration)
 			"blind":
 				if enemy.has_method("apply_blind"):
-					enemy.apply_blind(effect_value)  # effect_value = duración del blind
+					enemy.apply_blind(modified_value_as_duration)  # effect_value = duración del blind
 			"steam":
 				# Efecto combinado: slow + burn
 				if enemy.has_method("apply_slow"):
-					enemy.apply_slow(0.3, effect_duration)  # 30% slow
+					enemy.apply_slow(0.3, modified_duration)  # 30% slow
 				if enemy.has_method("apply_burn"):
-					enemy.apply_burn(effect_value, effect_duration)
+					enemy.apply_burn(effect_value, modified_duration)
 			"freeze_chain":
 				# Freeze que se propaga (el chain se maneja en otro lugar)
 				if enemy.has_method("apply_freeze"):
-					enemy.apply_freeze(effect_value, effect_duration)
+					enemy.apply_freeze(effect_value, modified_duration)
 				elif enemy.has_method("apply_slow"):
-					enemy.apply_slow(effect_value, effect_duration)
+					enemy.apply_slow(effect_value, modified_duration)
 			"burn_chain":
 				# Burn que se propaga
 				if enemy.has_method("apply_burn"):
-					enemy.apply_burn(effect_value, effect_duration)
+					enemy.apply_burn(effect_value, modified_duration)
 			"lifesteal":
 				# Curar al jugador por cada tick
 				var player = _get_player()
@@ -717,11 +749,11 @@ class AOEEffect extends Node2D:
 			"bleed":
 				# Efecto de sangrado (DoT separado del burn)
 				if enemy.has_method("apply_bleed"):
-					enemy.apply_bleed(effect_value, effect_duration)
+					enemy.apply_bleed(effect_value, modified_duration)
 			"shadow_mark":
 				# Marcar enemigo para daño extra
 				if enemy.has_method("apply_shadow_mark"):
-					enemy.apply_shadow_mark(effect_value, effect_duration)
+					enemy.apply_shadow_mark(effect_value, modified_duration)
 			"chain":
 				# El chain se maneja en ChainProjectile, no aquí
 				pass
@@ -1002,27 +1034,31 @@ class OrbitalManager extends Node2D:
 		if effect == "none":
 			return
 		
+		# Obtener duración modificada por status_duration_mult
+		var modified_duration = ProjectileFactory.get_modified_effect_duration(get_tree(), effect_duration)
+		var modified_value_as_duration = ProjectileFactory.get_modified_effect_duration(get_tree(), effect_value)
+		
 		match effect:
 			"slow":
 				if enemy.has_method("apply_slow"):
-					enemy.apply_slow(effect_value, effect_duration)
+					enemy.apply_slow(effect_value, modified_duration)
 			"burn":
 				if enemy.has_method("apply_burn"):
-					enemy.apply_burn(effect_value, effect_duration)
+					enemy.apply_burn(effect_value, modified_duration)
 			"freeze":
 				if enemy.has_method("apply_freeze"):	
-					enemy.apply_freeze(effect_value, effect_duration)
+					enemy.apply_freeze(effect_value, modified_duration)
 				elif enemy.has_method("apply_slow"):
-					enemy.apply_slow(effect_value, effect_duration)
+					enemy.apply_slow(effect_value, modified_duration)
 			"stun":
 				if enemy.has_method("apply_stun"):
-					enemy.apply_stun(effect_value)  # effect_value = duración del stun
+					enemy.apply_stun(modified_value_as_duration)  # effect_value = duración del stun
 			"pull":
 				if enemy.has_method("apply_pull"):
-					enemy.apply_pull(global_position, effect_value, effect_duration)
+					enemy.apply_pull(global_position, effect_value, modified_duration)
 			"blind":
 				if enemy.has_method("apply_blind"):
-					enemy.apply_blind(effect_value)  # effect_value = duración del blind
+					enemy.apply_blind(modified_value_as_duration)  # effect_value = duración del blind
 			"lifesteal":
 				var player = _get_orbital_player()
 				if player and player.has_method("heal"):
@@ -1031,10 +1067,10 @@ class OrbitalManager extends Node2D:
 					FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
 			"bleed":
 				if enemy.has_method("apply_bleed"):
-					enemy.apply_bleed(effect_value, effect_duration)
+					enemy.apply_bleed(effect_value, modified_duration)
 			"shadow_mark":
 				if enemy.has_method("apply_shadow_mark"):
-					enemy.apply_shadow_mark(effect_value, effect_duration)
+					enemy.apply_shadow_mark(effect_value, modified_duration)
 			"chain":
 				# Crear salto de daño a enemigos cercanos
 				_apply_chain_damage(enemy, int(effect_value))

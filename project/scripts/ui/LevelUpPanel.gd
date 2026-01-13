@@ -780,11 +780,14 @@ func generate_options() -> void:
 		if attack_manager.has_available_slot:
 			possible_options.append_array(_get_new_weapon_options())
 
-	# 2. Subir nivel de armas
+	# 2. Subir nivel de armas (con probabilidad basada en tiempo y suerte)
+	# Para evitar que SIEMPRE aparezca una mejora de arma
 	if attack_manager and attack_manager.has_method("get_weapons"):
-		possible_options.append_array(_get_weapon_level_up_options())
+		var weapon_upgrade_chance = _calculate_weapon_upgrade_chance(luck)
+		if randf() < weapon_upgrade_chance:
+			possible_options.append_array(_get_weapon_level_up_options())
 
-	# 3. Fusiones
+	# 3. Fusiones (siempre aparecen si están disponibles - son valiosas)
 	if attack_manager and attack_manager.has_method("get_available_fusions"):
 		possible_options.append_array(_get_fusion_options())
 
@@ -898,6 +901,34 @@ func _get_game_time_minutes() -> float:
 	
 	# Fallback: asumir partida temprana
 	return 3.0
+
+func _calculate_weapon_upgrade_chance(luck: float) -> float:
+	"""
+	Calcula la probabilidad de que aparezcan mejoras de nivel de arma.
+	
+	SISTEMA DE BALANCEO:
+	- Base: 40% de probabilidad de que aparezcan mejoras de arma
+	- Tiempo de juego: +5% por cada 5 minutos (hasta +15% en 15 min)
+	- Suerte: +10% por cada punto de suerte (máx +20%)
+	- Después de minuto 10: las armas son más valiosas, +10% adicional
+	- Máximo: 75% (siempre hay posibilidad de NO ver mejoras de arma)
+	
+	Esto balancea el juego para que el jugador vea más variedad de mejoras.
+	"""
+	var base_chance = 0.40  # 40% base
+	
+	# Bonus por tiempo de juego
+	var time_minutes = _get_game_time_minutes()
+	var time_bonus = minf(time_minutes / 5.0 * 0.05, 0.15)  # +5% por cada 5 min, máx +15%
+	
+	# Bonus extra después del minuto 10 (las armas de alto nivel son valiosas)
+	var late_game_bonus = 0.10 if time_minutes >= 10.0 else 0.0
+	
+	# Bonus por suerte (máximo +20%)
+	var luck_bonus = minf(luck * 0.10, 0.20)
+	
+	var total_chance = base_chance + time_bonus + late_game_bonus + luck_bonus
+	return minf(total_chance, 0.75)  # Máximo 75%
 
 func _get_fallback_options() -> Array:
 	"""Opciones de respaldo si no hay suficientes mejoras disponibles"""
