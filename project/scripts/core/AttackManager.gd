@@ -348,7 +348,14 @@ func level_up_weapon(weapon) -> bool:
 		if not weapon.can_level_up():
 			# Debug desactivado: print("[AttackManager] %s ya está al nivel máximo" % _get_weapon_name(weapon))
 			return false
-		return weapon.level_up()
+		
+		var success = weapon.level_up()
+		if success:
+			# CRÍTICO: Sincronizar WeaponStats con los nuevos valores del arma
+			_sync_weapon_stats_after_levelup(weapon)
+			# Actualizar metas de valores originales para aplicar stats globales correctamente
+			_update_weapon_original_metas(weapon)
+		return success
 
 	# Armas legacy no tienen sistema de niveles
 	# Debug desactivado: print("[AttackManager] %s es un arma legacy sin sistema de niveles" % _get_weapon_name(weapon))
@@ -756,6 +763,58 @@ func _remove_weapon_stats_for(weapon) -> void:
 	var weapon_id = _get_weapon_id(weapon)
 	if weapon_stats_map.has(weapon_id):
 		weapon_stats_map.erase(weapon_id)
+
+func _sync_weapon_stats_after_levelup(weapon) -> void:
+	"""Sincronizar WeaponStats con los nuevos valores del arma después de subir de nivel"""
+	var weapon_id = _get_weapon_id(weapon)
+	if weapon_id.is_empty():
+		return
+	
+	var ws = weapon_stats_map.get(weapon_id, null)
+	if ws == null:
+		# Si no existe, crearlo
+		_create_weapon_stats_for(weapon)
+		return
+	
+	# Actualizar base_stats con los nuevos valores del arma
+	if weapon is BaseWeapon:
+		ws.weapon_level = weapon.level
+		ws.base_stats["damage"] = weapon.damage
+		ws.base_stats["attack_speed"] = 1.0 / weapon.cooldown if weapon.cooldown > 0 else 1.0
+		ws.base_stats["projectile_speed"] = weapon.projectile_speed
+		ws.base_stats["area"] = weapon.area
+		ws.base_stats["range"] = weapon.weapon_range
+		ws.base_stats["projectile_count"] = weapon.projectile_count
+		ws.base_stats["pierce"] = weapon.pierce
+		ws.base_stats["duration"] = weapon.duration
+		ws.base_stats["knockback"] = weapon.knockback
+		ws.base_stats["effect_value"] = weapon.effect_value
+	
+	# Recalcular modified_stats
+	ws._recalculate_stats()
+	# print("[AttackManager] WeaponStats sincronizado para %s nivel %d" % [weapon_id, weapon.level])
+
+func _update_weapon_original_metas(weapon) -> void:
+	"""Actualizar los valores originales guardados en meta cuando el arma sube de nivel"""
+	# CRÍTICO: Cuando el arma sube de nivel y gana stats (ej: +1 proyectil),
+	# debemos actualizar los metas para que los stats globales se apliquen correctamente
+	if weapon is BaseWeapon:
+		weapon.set_meta("_original_damage", weapon.damage)
+		weapon.set_meta("_original_projectile_speed", weapon.projectile_speed)
+		weapon.set_meta("_original_projectile_count", weapon.projectile_count)
+		weapon.set_meta("_original_knockback", weapon.knockback)
+		weapon.set_meta("_original_pierce", weapon.pierce)
+	elif "damage" in weapon:
+		# Arma legacy
+		weapon.set_meta("_original_damage", weapon.damage)
+		if "projectile_speed" in weapon:
+			weapon.set_meta("_original_projectile_speed", weapon.projectile_speed)
+		if "projectile_count" in weapon:
+			weapon.set_meta("_original_projectile_count", weapon.projectile_count)
+		if "knockback_force" in weapon:
+			weapon.set_meta("_original_knockback", weapon.knockback_force)
+		if "pierce" in weapon:
+			weapon.set_meta("_original_pierce", weapon.pierce)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STATS DEL JUGADOR (Compatibilidad legacy)

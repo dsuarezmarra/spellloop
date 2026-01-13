@@ -365,14 +365,31 @@ func _spawn_projectiles(player: Node2D, targets: Array, final_damage: float, cri
 			_spawn_chain(player, targets, final_damage, crit_chance)
 
 func _spawn_single_projectile(player: Node2D, targets: Array, dmg: float, crit: float) -> void:
-	"""Crear un solo proyectil"""
+	"""Crear proyectil(es) - respeta projectile_count incluso para armas SINGLE"""
 	if targets.is_empty():
 		return
 	
 	var target = targets[0]
-	var direction = (target.global_position - player.global_position).normalized()
+	var base_direction = (target.global_position - player.global_position).normalized()
 	
-	_create_projectile(player, direction, dmg, crit)
+	# Aplicar extra_projectiles global
+	var global_stats = _get_global_weapon_stats()
+	var extra = int(global_stats.get("extra_projectiles", 0))
+	var count = projectile_count + extra
+	
+	# Si solo hay 1 proyectil, disparar directo al objetivo
+	if count <= 1:
+		_create_projectile(player, base_direction, dmg, crit)
+		return
+	
+	# Múltiples proyectiles: disparar en abanico hacia el objetivo
+	var spread_angle = deg_to_rad(12.0)  # 12 grados entre cada proyectil
+	var start_angle = -spread_angle * (count - 1) / 2.0
+	
+	for i in range(count):
+		var angle = start_angle + spread_angle * i
+		var direction = base_direction.rotated(angle)
+		_create_projectile(player, direction, dmg, crit)
 
 func _spawn_multi_projectiles(player: Node2D, targets: Array, dmg: float, crit: float) -> void:
 	"""Crear múltiples proyectiles en abanico o hacia múltiples objetivos"""
@@ -406,25 +423,66 @@ func _spawn_multi_projectiles(player: Node2D, targets: Array, dmg: float, crit: 
 			_create_projectile(player, direction, dmg, crit)
 
 func _spawn_beam(player: Node2D, targets: Array, dmg: float, crit: float) -> void:
-	"""Crear un rayo instantáneo"""
+	"""Crear rayo(s) instantáneo(s) - respeta projectile_count"""
 	if targets.is_empty():
 		return
 	
-	var target = targets[0]
-	var direction = (target.global_position - player.global_position).normalized()
+	# Aplicar extra_projectiles global
+	var global_stats = _get_global_weapon_stats()
+	var extra = int(global_stats.get("extra_projectiles", 0))
+	var count = projectile_count + extra
 	
-	# El beam daña instantáneamente en una línea
-	_create_beam(player, direction, dmg, crit)
+	if count <= 1:
+		# Un solo rayo
+		var direction = (targets[0].global_position - player.global_position).normalized()
+		_create_beam(player, direction, dmg, crit)
+	else:
+		# Múltiples rayos en abanico
+		var base_direction = (targets[0].global_position - player.global_position).normalized()
+		var spread_angle = deg_to_rad(15.0)
+		var start_angle = -spread_angle * (count - 1) / 2.0
+		
+		for i in range(count):
+			var angle = start_angle + spread_angle * i
+			var direction = base_direction.rotated(angle)
+			_create_beam(player, direction, dmg, crit)
 
 func _spawn_aoe(player: Node2D, targets: Array, dmg: float, crit: float) -> void:
-	"""Crear área de efecto"""
-	var spawn_position = player.global_position
+	"""Crear área(s) de efecto - respeta projectile_count"""
+	# Aplicar extra_projectiles global
+	var global_stats = _get_global_weapon_stats()
+	var extra = int(global_stats.get("extra_projectiles", 0))
+	var count = projectile_count + extra
 	
-	# Si hay target, centrar AOE en el target (para Earth Spike, etc.)
-	if not targets.is_empty() and target_type == WeaponDatabase.TargetType.RANDOM:
-		spawn_position = targets[randi() % targets.size()].global_position
-	
-	_create_aoe(player, spawn_position, dmg, crit)
+	if count <= 1:
+		# Una sola AOE
+		var spawn_position = player.global_position
+		if not targets.is_empty() and target_type == WeaponDatabase.TargetType.RANDOM:
+			spawn_position = targets[randi() % targets.size()].global_position
+		_create_aoe(player, spawn_position, dmg, crit)
+	else:
+		# Múltiples AOEs
+		var positions: Array = []
+		
+		if targets.is_empty():
+			# Sin targets: crear AOEs alrededor del player
+			for i in range(count):
+				var angle = (TAU / count) * i
+				var offset = Vector2.from_angle(angle) * weapon_range * 0.3
+				positions.append(player.global_position + offset)
+		else:
+			# Con targets: crear AOE en cada target (hasta count)
+			targets.shuffle()
+			for i in range(min(count, targets.size())):
+				positions.append(targets[i].global_position)
+			# Si hay más count que targets, añadir posiciones aleatorias
+			while positions.size() < count:
+				var angle = randf() * TAU
+				var offset = Vector2.from_angle(angle) * weapon_range * randf_range(0.2, 0.5)
+				positions.append(player.global_position + offset)
+		
+		for pos in positions:
+			_create_aoe(player, pos, dmg, crit)
 
 func _spawn_orbit(player: Node2D, dmg: float, crit: float) -> void:
 	"""Crear proyectiles orbitantes"""
@@ -432,11 +490,19 @@ func _spawn_orbit(player: Node2D, dmg: float, crit: float) -> void:
 	_create_orbitals(player, dmg, crit)
 
 func _spawn_chain(player: Node2D, targets: Array, dmg: float, crit: float) -> void:
-	"""Crear proyectil que encadena entre enemigos"""
+	"""Crear proyectil(es) que encadenan entre enemigos - respeta projectile_count"""
 	if targets.is_empty():
 		return
 	
-	_create_chain_projectile(player, targets[0], dmg, crit)
+	# Aplicar extra_projectiles global
+	var global_stats = _get_global_weapon_stats()
+	var extra = int(global_stats.get("extra_projectiles", 0))
+	var count = projectile_count + extra
+	
+	# Crear múltiples cadenas hacia diferentes objetivos si hay suficientes
+	targets.shuffle()
+	for i in range(min(count, targets.size())):
+		_create_chain_projectile(player, targets[i], dmg, crit)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CREACIÓN DE PROYECTILES (para override en subclases o usar ProjectileFactory)
@@ -477,7 +543,11 @@ func _create_aoe(player: Node2D, position: Vector2, dmg: float, crit: float) -> 
 func _create_orbitals(player: Node2D, dmg: float, crit: float) -> void:
 	"""Crear orbitales - usar ProjectileFactory"""
 	var orbital_data = _build_projectile_data(dmg, crit)
-	orbital_data["orbital_count"] = projectile_count
+	
+	# Aplicar extra_projectiles global al orbital_count
+	var global_stats = _get_global_weapon_stats()
+	var extra = int(global_stats.get("extra_projectiles", 0))
+	orbital_data["orbital_count"] = projectile_count + extra
 	orbital_data["orbital_radius"] = weapon_range
 	orbital_data["is_orbital"] = true
 	

@@ -716,8 +716,8 @@ func _get_option_color(option: Dictionary) -> Color:
 	"""Determina el color del nombre basado en tier, tipo especial, etc."""
 	var option_type = option.get("type", "")
 	
-	# Armas tienen color naranja
-	if option_type == OPTION_TYPES.NEW_WEAPON:
+	# Armas nuevas y mejoras de arma tienen color naranja
+	if option_type == OPTION_TYPES.NEW_WEAPON or option_type == OPTION_TYPES.LEVEL_UP_WEAPON:
 		return WEAPON_COLOR
 	
 	# Mejoras únicas tienen color rojo
