@@ -797,6 +797,7 @@ func _create_active_buffs_section(parent: VBoxContainer) -> void:
 		return
 
 	var buffs_panel = PanelContainer.new()
+	buffs_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.15, 0.1, 0.2)
 	style.border_color = Color(0.6, 0.4, 0.8)
@@ -816,20 +817,44 @@ func _create_active_buffs_section(parent: VBoxContainer) -> void:
 	header.add_theme_color_override("font_color", Color(0.8, 0.6, 1.0))
 	vbox.add_child(header)
 
-	var buffs_hbox = HBoxContainer.new()
-	buffs_hbox.add_theme_constant_override("separation", 10)
-	vbox.add_child(buffs_hbox)
+	# Usar GridContainer en lugar de HBoxContainer para que haga wrap
+	var buffs_grid = GridContainer.new()
+	buffs_grid.columns = 6  # Máximo 6 efectos por fila antes de hacer wrap
+	buffs_grid.add_theme_constant_override("h_separation", 8)
+	buffs_grid.add_theme_constant_override("v_separation", 6)
+	vbox.add_child(buffs_grid)
 
+	# Agrupar efectos por fuente para mostrar condensado
+	var effects_by_source: Dictionary = {}
 	for stat_name in player_stats.temp_modifiers:
 		for mod in player_stats.temp_modifiers[stat_name]:
-			var buff_chip = _create_buff_chip(stat_name, mod)
-			buffs_hbox.add_child(buff_chip)
+			var source = mod.get("source", "unknown")
+			if not effects_by_source.has(source):
+				effects_by_source[source] = []
+			effects_by_source[source].append({"stat": stat_name, "mod": mod})
 
-func _create_buff_chip(stat_name: String, mod: Dictionary) -> Control:
-	"""Crear chip visual para un buff"""
+	# Si es growth_bonus, mostrar condensado
+	if effects_by_source.has("growth_bonus") and effects_by_source["growth_bonus"].size() > 3:
+		# Mostrar un solo chip para growth
+		var growth_effects = effects_by_source["growth_bonus"]
+		var total_bonus = 0.0
+		for effect in growth_effects:
+			total_bonus += effect.mod.amount
+		var growth_chip = _create_growth_summary_chip(growth_effects.size(), total_bonus)
+		buffs_grid.add_child(growth_chip)
+		effects_by_source.erase("growth_bonus")
+
+	# Mostrar el resto de efectos normalmente
+	for source in effects_by_source:
+		for effect in effects_by_source[source]:
+			var buff_chip = _create_buff_chip(effect.stat, effect.mod)
+			buffs_grid.add_child(buff_chip)
+
+func _create_growth_summary_chip(count: int, total_bonus: float) -> Control:
+	"""Crear chip resumido para efectos de growth"""
 	var chip = PanelContainer.new()
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.2, 0.15, 0.3)
+	style.bg_color = Color(0.15, 0.25, 0.15)
 	style.set_corner_radius_all(12)
 	style.set_content_margin_all(6)
 	chip.add_theme_stylebox_override("panel", style)
@@ -838,26 +863,74 @@ func _create_buff_chip(stat_name: String, mod: Dictionary) -> Control:
 	hbox.add_theme_constant_override("separation", 4)
 	chip.add_child(hbox)
 
+	var icon = Label.new()
+	icon.text = "📈"
+	icon.add_theme_font_size_override("font_size", 14)
+	hbox.add_child(icon)
+
+	var info = Label.new()
+	info.text = "Growth x%d" % count
+	info.add_theme_font_size_override("font_size", 11)
+	info.add_theme_color_override("font_color", Color(0.5, 1.0, 0.5))
+	hbox.add_child(info)
+
+	chip.tooltip_text = "📈 Crecimiento: %d stats mejorados\nBonus total acumulado" % count
+
+	return chip
+
+func _create_buff_chip(stat_name: String, mod: Dictionary) -> Control:
+	"""Crear chip visual para un buff"""
+	var chip = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	
+	# Color diferente para growth vs otros buffs
+	var source = mod.get("source", "")
+	if source == "growth_bonus":
+		style.bg_color = Color(0.15, 0.25, 0.15)
+	else:
+		style.bg_color = Color(0.2, 0.15, 0.3)
+	
+	style.set_corner_radius_all(12)
+	style.set_content_margin_all(5)
+	chip.add_theme_stylebox_override("panel", style)
+
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 3)
+	chip.add_child(hbox)
+
 	var meta = {}
 	if player_stats and player_stats.has_method("get_stat_metadata"):
 		meta = player_stats.get_stat_metadata(stat_name)
 
 	var icon = Label.new()
 	icon.text = meta.get("icon", "✨")
-	icon.add_theme_font_size_override("font_size", 14)
+	icon.add_theme_font_size_override("font_size", 12)
 	hbox.add_child(icon)
 
 	var info = Label.new()
-	var amount_text = "+%.0f%%" % (mod.amount * 100) if mod.amount < 1 else "+%.0f" % mod.amount
-	info.text = "%s %.1fs" % [amount_text, mod.duration]
-	info.add_theme_font_size_override("font_size", 11)
+	# Formato más compacto
+	var amount_text = ""
+	if mod.amount < 1 and mod.amount > 0:
+		amount_text = "+%.0f%%" % (mod.amount * 100)
+	elif mod.amount >= 1:
+		amount_text = "+%.0f" % mod.amount
+	else:
+		amount_text = "%.0f%%" % (mod.amount * 100)
+	
+	# Si es growth_bonus (duración > 9000) no mostrar duración
+	if mod.duration > 9000:
+		info.text = amount_text
+	else:
+		info.text = "%s %.0fs" % [amount_text, mod.duration]
+	
+	info.add_theme_font_size_override("font_size", 10)
 	info.add_theme_color_override("font_color", Color(0.7, 0.9, 0.7))
 	hbox.add_child(info)
 
-	chip.tooltip_text = "%s: %s durante %.1f segundos" % [
+	chip.tooltip_text = "%s: %s%s" % [
 		meta.get("name", stat_name),
 		amount_text,
-		mod.duration
+		"" if mod.duration > 9000 else " (%.0fs)" % mod.duration
 	]
 
 	return chip

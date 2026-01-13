@@ -953,161 +953,154 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	"""
 	Obtener TODOS los stats de un arma con valores base y finales (con globales aplicados).
 	Para uso en UI de detalles de armas.
+	
+	IMPORTANTE:
+	- "base" = valores ORIGINALES del arma desde WeaponDatabase (nivel 1)
+	- "current" = valores ACTUALES del arma (con mejoras de nivel aplicadas)
+	- "final" = valores finales = current * multiplicadores globales
 	"""
 	if weapon == null:
 		return {}
 	
 	var weapon_id = _get_weapon_id(weapon)
 	var gs = _get_combined_global_stats()
-	var ws = weapon_stats_map.get(weapon_id, null)
 	
-	# Obtener valores base del arma
-	var base_damage = weapon.damage if "damage" in weapon else 0
-	var base_cooldown = 1.0
-	if weapon is BaseWeapon:
-		base_cooldown = weapon.cooldown
-	elif "base_cooldown" in weapon:
-		base_cooldown = weapon.base_cooldown
-	elif "cooldown" in weapon:
-		base_cooldown = weapon.cooldown
+	# ═══════════════════════════════════════════════════════════════════════════
+	# VALORES ORIGINALES (nivel 1 desde WeaponDatabase - FUENTE CANÓNICA)
+	# ═══════════════════════════════════════════════════════════════════════════
+	# SIEMPRE usar WeaponDatabase para valores originales para evitar cualquier
+	# posible modificación accidental de weapon.base_stats
+	var original_data = WeaponDatabase.get_weapon(weapon_id)
+	if original_data.is_empty() and weapon is BaseWeapon and weapon.base_stats:
+		# Fallback solo si no existe en DB (armas custom/fusiones)
+		original_data = weapon.base_stats.duplicate()  # Copiar para seguridad
 	
-	var base_attack_speed = 1.0 / base_cooldown if base_cooldown > 0 else 1.0
-	var base_projectile_speed = weapon.projectile_speed if "projectile_speed" in weapon else 400.0
-	var base_projectile_count = weapon.projectile_count if "projectile_count" in weapon else 1
-	var base_pierce = weapon.pierce if "pierce" in weapon else 0
-	var base_area = weapon.area if "area" in weapon else 1.0
-	var base_range = weapon.attack_range if "attack_range" in weapon else (weapon.weapon_range if "weapon_range" in weapon else 500.0)
-	var base_knockback = weapon.knockback_force if "knockback_force" in weapon else (weapon.knockback if "knockback" in weapon else 100.0)
-	var base_duration = weapon.duration if "duration" in weapon else 1.0
+	var original_damage = original_data.get("damage", 10)
+	var original_cooldown = original_data.get("cooldown", 1.0)
+	var original_attack_speed = 1.0 / original_cooldown if original_cooldown > 0 else 1.0
+	var original_projectile_count = original_data.get("projectile_count", 1)
+	var original_pierce = original_data.get("pierce", 0)
+	var original_area = original_data.get("area", 1.0)
+	var original_projectile_speed = original_data.get("projectile_speed", 300.0)
+	var original_range = original_data.get("range", 300.0)
+	var original_knockback = original_data.get("knockback", 50.0)
+	var original_duration = original_data.get("duration", 0.0)
 	
-	# Obtener multiplicadores globales
+	# ═══════════════════════════════════════════════════════════════════════════
+	# VALORES ACTUALES DEL ARMA (con mejoras de nivel ya aplicadas)
+	# ═══════════════════════════════════════════════════════════════════════════
+	var current_damage = weapon.damage if "damage" in weapon else original_damage
+	var current_cooldown = weapon.cooldown if "cooldown" in weapon else original_cooldown
+	var current_attack_speed = 1.0 / current_cooldown if current_cooldown > 0 else 1.0
+	var current_projectile_count = weapon.projectile_count if "projectile_count" in weapon else original_projectile_count
+	var current_pierce = weapon.pierce if "pierce" in weapon else original_pierce
+	var current_area = weapon.area if "area" in weapon else original_area
+	var current_projectile_speed = weapon.projectile_speed if "projectile_speed" in weapon else original_projectile_speed
+	var current_range = weapon.attack_range if "attack_range" in weapon else original_range
+	var current_knockback = weapon.knockback if "knockback" in weapon else original_knockback
+	var current_duration = weapon.duration if "duration" in weapon else original_duration
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# MULTIPLICADORES GLOBALES (de PlayerStats/mejoras globales)
+	# ═══════════════════════════════════════════════════════════════════════════
 	var damage_mult = gs.get("damage_mult", 1.0)
+	var damage_flat = gs.get("damage_flat", 0)
 	var attack_speed_mult = gs.get("attack_speed_mult", 1.0)
 	var projectile_speed_mult = gs.get("projectile_speed_mult", 1.0)
 	var area_mult = gs.get("area_mult", 1.0)
 	var range_mult = gs.get("range_mult", 1.0)
 	var knockback_mult = gs.get("knockback_mult", 1.0)
 	var duration_mult = gs.get("duration_mult", 1.0)
-	var extra_projectiles = gs.get("extra_projectiles", 0)
-	var extra_pierce = gs.get("extra_pierce", 0)
+	var extra_projectiles = int(gs.get("extra_projectiles", 0))
+	var extra_pierce = int(gs.get("extra_pierce", 0))
 	var crit_chance = gs.get("crit_chance", 0.05)
 	var crit_damage = gs.get("crit_damage", 2.0)
 	
-	# Calcular valores finales
-	# FÓRMULA CORRECTA: (base + flat) * mult
-	var damage_flat = gs.get("damage_flat", 0)
-	var final_damage = (base_damage + damage_flat) * damage_mult
-	var final_attack_speed = base_attack_speed * attack_speed_mult
+	# ═══════════════════════════════════════════════════════════════════════════
+	# VALORES FINALES = current * multiplicadores globales
+	# ═══════════════════════════════════════════════════════════════════════════
+	var final_damage = int((current_damage + damage_flat) * damage_mult)
+	var final_attack_speed = current_attack_speed * attack_speed_mult
 	var final_cooldown = 1.0 / final_attack_speed if final_attack_speed > 0 else 1.0
-	var final_projectile_speed = base_projectile_speed * projectile_speed_mult
-	var final_projectile_count = base_projectile_count + extra_projectiles
-	var final_pierce = base_pierce + extra_pierce
-	var final_area = base_area * area_mult
-	var final_range = base_range * range_mult
-	var final_knockback = base_knockback * knockback_mult
-	var final_duration = base_duration * duration_mult
-	
-	# Si tiene WeaponStats, usar esos valores más precisos
-	if ws:
-		# Verificar que WeaponStats tenga los stats base correctos
-		# (puede estar desincronizado si se creó antes de inicializar el arma)
-		var needs_recalc = false
-		
-		# Sincronizar daño
-		var ws_base_damage = ws.base_stats.get("damage", 0)
-		if ws_base_damage != base_damage and base_damage > 0:
-			ws.base_stats["damage"] = base_damage
-			needs_recalc = true
-		
-		# Sincronizar attack_speed
-		var ws_base_as = ws.base_stats.get("attack_speed", 1.0)
-		if abs(ws_base_as - base_attack_speed) > 0.01 and base_attack_speed > 0:
-			ws.base_stats["attack_speed"] = base_attack_speed
-			needs_recalc = true
-		
-		# Sincronizar otros stats importantes
-		if ws.base_stats.get("projectile_count", 1) != base_projectile_count:
-			ws.base_stats["projectile_count"] = base_projectile_count
-			needs_recalc = true
-		
-		if ws.base_stats.get("pierce", 0) != base_pierce:
-			ws.base_stats["pierce"] = base_pierce
-			needs_recalc = true
-		
-		if needs_recalc:
-			ws._recalculate_stats()
-		
-		final_damage = ws.get_final_stat("damage", gs)
-		final_attack_speed = ws.get_final_attack_speed(gs)
-		final_cooldown = ws.get_final_cooldown(gs)
-		final_projectile_count = ws.get_final_projectile_count(gs)
-		final_pierce = ws.get_final_pierce(gs)
+	var final_projectile_count = current_projectile_count + extra_projectiles
+	var final_pierce = current_pierce + extra_pierce
+	var final_area = current_area * area_mult
+	var final_projectile_speed = current_projectile_speed * projectile_speed_mult
+	var final_range = current_range * range_mult
+	var final_knockback = current_knockback * knockback_mult
+	var final_duration = current_duration * duration_mult
 	
 	return {
 		# Identificadores
 		"weapon_id": weapon_id,
 		"weapon_name": weapon.weapon_name if "weapon_name" in weapon else _get_weapon_name(weapon),
 		"weapon_name_es": weapon.weapon_name_es if "weapon_name_es" in weapon else _get_weapon_name(weapon),
-		"element": weapon.element if "element" in weapon else (weapon.element_type if "element_type" in weapon else "physical"),
+		"element": weapon.element if "element" in weapon else 0,
 		"icon": weapon.icon if "icon" in weapon else "🔮",
 		"level": weapon.level if "level" in weapon else 1,
 		"max_level": weapon.max_level if "max_level" in weapon else 8,
 		
-		# Daño
-		"damage_base": base_damage,
-		"damage_final": int(final_damage),
+		# Daño: original (nivel 1) → final (con todo aplicado)
+		"damage_base": original_damage,
+		"damage_current": current_damage,
+		"damage_final": final_damage,
 		"damage_mult": damage_mult,
+		"damage_flat": damage_flat,
 		
 		# Velocidad de ataque
-		"attack_speed_base": base_attack_speed,
+		"attack_speed_base": original_attack_speed,
+		"attack_speed_current": current_attack_speed,
 		"attack_speed_final": final_attack_speed,
 		"attack_speed_mult": attack_speed_mult,
-		"cooldown_base": base_cooldown,
+		"cooldown_base": original_cooldown,
+		"cooldown_current": current_cooldown,
 		"cooldown_final": final_cooldown,
 		
 		# Proyectiles
-		"projectile_count_base": base_projectile_count,
+		"projectile_count_base": original_projectile_count,
+		"projectile_count_current": current_projectile_count,
 		"projectile_count_final": final_projectile_count,
 		"extra_projectiles": extra_projectiles,
 		
 		# Velocidad de proyectil
-		"projectile_speed_base": base_projectile_speed,
+		"projectile_speed_base": original_projectile_speed,
+		"projectile_speed_current": current_projectile_speed,
 		"projectile_speed_final": final_projectile_speed,
 		"projectile_speed_mult": projectile_speed_mult,
 		
 		# Penetración
-		"pierce_base": base_pierce,
+		"pierce_base": original_pierce,
+		"pierce_current": current_pierce,
 		"pierce_final": final_pierce,
 		"extra_pierce": extra_pierce,
 		
 		# Área
-		"area_base": base_area,
+		"area_base": original_area,
+		"area_current": current_area,
 		"area_final": final_area,
 		"area_mult": area_mult,
 		
 		# Alcance
-		"range_base": base_range,
+		"range_base": original_range,
+		"range_current": current_range,
 		"range_final": final_range,
 		"range_mult": range_mult,
 		
 		# Empuje
-		"knockback_base": base_knockback,
+		"knockback_base": original_knockback,
+		"knockback_current": current_knockback,
 		"knockback_final": final_knockback,
 		"knockback_mult": knockback_mult,
 		
 		# Duración
-		"duration_base": base_duration,
+		"duration_base": original_duration,
+		"duration_current": current_duration,
 		"duration_final": final_duration,
 		"duration_mult": duration_mult,
 		
 		# Críticos (globales)
 		"crit_chance": crit_chance,
-		"crit_damage": crit_damage,
-		
-		# Mejoras aplicadas
-		"has_weapon_stats": ws != null,
-		"applied_upgrades": ws.get_upgrades() if ws else [],
-		"global_upgrades": global_weapon_stats.applied_upgrades if global_weapon_stats else []
+		"crit_damage": crit_damage
 	}
 
 func get_info() -> Dictionary:
@@ -1117,23 +1110,20 @@ func get_info() -> Dictionary:
 	
 	for weapon in weapons:
 		var weapon_id = _get_weapon_id(weapon)
-		var ws = weapon_stats_map.get(weapon_id, null)
 		
 		if weapon is BaseWeapon:
-			# Calcular stats finales con mejoras globales
-			var base_damage = weapon.damage
-			var base_cooldown = weapon.cooldown
-			var base_attack_speed = 1.0 / base_cooldown if base_cooldown > 0 else 1.0
+			# Valores actuales del arma (ya con mejoras de nivel aplicadas)
+			var current_damage = weapon.damage
+			var current_cooldown = weapon.cooldown
+			var current_attack_speed = 1.0 / current_cooldown if current_cooldown > 0 else 1.0
 			
-			# Aplicar mejoras globales - FÓRMULA: (base + flat) * mult
+			# Valores originales (nivel 1)
+			var original_damage = weapon.base_stats.get("damage", current_damage) if weapon.base_stats else current_damage
+			
+			# Aplicar mejoras globales - FÓRMULA: (current + flat) * mult
 			var damage_flat = global_stats.get("damage_flat", 0)
-			var final_damage = (base_damage + damage_flat) * global_stats.get("damage_mult", 1.0)
-			var final_attack_speed = base_attack_speed * global_stats.get("attack_speed_mult", 1.0)
-			
-			# Aplicar mejoras específicas del arma si existen
-			if ws:
-				final_damage = ws.get_final_stat("damage", global_stats)
-				final_attack_speed = ws.get_final_attack_speed(global_stats)
+			var final_damage = int((current_damage + damage_flat) * global_stats.get("damage_mult", 1.0))
+			var final_attack_speed = current_attack_speed * global_stats.get("attack_speed_mult", 1.0)
 			
 			weapon_infos.append({
 				"id": weapon.id,
@@ -1141,23 +1131,23 @@ func get_info() -> Dictionary:
 				"name_es": weapon.weapon_name_es,
 				"level": weapon.level,
 				"max_level": weapon.max_level,
-				"damage": base_damage,
-				"damage_final": final_damage,
-				"cooldown": base_cooldown,
-				"attack_speed": base_attack_speed,
+				"damage": current_damage,  # Daño actual (con mejoras de nivel)
+				"damage_base": original_damage,  # Daño original nivel 1
+				"damage_final": final_damage,  # Daño con multiplicadores globales
+				"cooldown": current_cooldown,
+				"attack_speed": current_attack_speed,
 				"attack_speed_final": final_attack_speed,
 				"icon": weapon.icon,
 				"is_fused": weapon.is_fused,
 				"can_level_up": weapon.can_level_up(),
-				"next_upgrade": weapon.get_next_upgrade_description(),
-				"has_specific_upgrades": ws != null and ws.get_upgrades().size() > 0,
-				"specific_upgrades": ws.get_upgrades() if ws else []
+				"next_upgrade": weapon.get_next_upgrade_description()
 			})
 		else:
-			pass  # Bloque else
 			# Arma legacy
 			var base_cd = weapon.base_cooldown if "base_cooldown" in weapon else 1.0
 			var base_as = 1.0 / base_cd if base_cd > 0 else 1.0
+			var legacy_damage = weapon.damage if "damage" in weapon else 0
+			var damage_flat = global_stats.get("damage_flat", 0)
 			
 			weapon_infos.append({
 				"id": weapon_id,
@@ -1165,17 +1155,16 @@ func get_info() -> Dictionary:
 				"name_es": _get_weapon_name(weapon),
 				"level": 1,
 				"max_level": 1,
-				"damage": weapon.damage if "damage" in weapon else 0,
-				"damage_final": (weapon.damage if "damage" in weapon else 0) * global_stats.get("damage_mult", 1.0),
+				"damage": legacy_damage,
+				"damage_base": legacy_damage,
+				"damage_final": int((legacy_damage + damage_flat) * global_stats.get("damage_mult", 1.0)),
 				"cooldown": base_cd,
 				"attack_speed": base_as,
 				"attack_speed_final": base_as * global_stats.get("attack_speed_mult", 1.0),
 				"icon": null,
 				"is_fused": false,
 				"can_level_up": false,
-				"next_upgrade": "N/A",
-				"has_specific_upgrades": false,
-				"specific_upgrades": []
+				"next_upgrade": "N/A"
 			})
 
 	return {

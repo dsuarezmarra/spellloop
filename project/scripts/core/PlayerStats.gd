@@ -1009,11 +1009,18 @@ func _update_growth(delta: float) -> void:
 
 func _apply_growth_bonus(growth_rate: float, _minutes: int) -> void:
 	"""Aplicar bonus de growth a todos los stats relevantes"""
-	# Stats que escalan con growth (no aplicar a stats negativos como damage_taken_mult)
-	var growth_stats = [
-		"max_health", "damage_mult", "attack_speed_mult", "area_mult",
-		"projectile_speed_mult", "duration_mult", "crit_chance", "crit_damage",
-		"health_regen", "armor", "pickup_range", "move_speed", "xp_mult"
+	# Stats que escalan con growth
+	# NOTA: Solo aplicamos a stats que tienen un valor base significativo
+	# Para multiplicadores (1.0 = base), aplicamos como porcentaje adicional
+	var growth_stats_mult = [
+		"damage_mult", "attack_speed_mult", "area_mult",
+		"projectile_speed_mult", "duration_mult", "xp_mult"
+	]
+	
+	# Stats que escalan aditivamente (basados en su valor actual)
+	var growth_stats_add = [
+		"max_health", "health_regen", "armor", "pickup_range", "move_speed",
+		"crit_chance", "crit_damage"
 	]
 
 	# Limpiar modificadores de growth anteriores antes de aplicar nuevos
@@ -1021,15 +1028,21 @@ func _apply_growth_bonus(growth_rate: float, _minutes: int) -> void:
 
 	# Calcular multiplicador total basado en el tiempo total transcurrido
 	var total_minutes = int(_game_time_minutes)
-	var total_growth_bonus = growth_rate * total_minutes  # ej: 0.01 * 5 = 0.05 (5%)
+	var total_growth_bonus = growth_rate * total_minutes  # ej: 0.02 * 4 = 0.08 (8%)
 
 	if total_growth_bonus <= 0:
 		return
 
-	for stat_name in growth_stats:
+	# Aplicar a multiplicadores: añadir porcentaje al valor base de 1.0
+	# Ej: damage_mult base=1.0, growth 8% -> añadimos 0.08 -> final = 1.08
+	for stat_name in growth_stats_mult:
+		var bonus = total_growth_bonus  # Añadir directamente como multiplicador
+		add_temp_modifier(stat_name, bonus, 9999.0, "growth_bonus")
+
+	# Aplicar a stats aditivos: añadir porcentaje del valor base
+	for stat_name in growth_stats_add:
 		var base_value = get_base_stat(stat_name)
 		if base_value > 0:
-			# Aplicar % del valor base como bonus
 			var bonus = base_value * total_growth_bonus
 			add_temp_modifier(stat_name, bonus, 9999.0, "growth_bonus")
 
