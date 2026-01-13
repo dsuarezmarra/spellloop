@@ -83,6 +83,8 @@ var locked: bool = false
 # Modal de confirmación para cerrar sin elegir
 var _confirm_modal: Control = null
 var _confirm_modal_visible: bool = false
+var _confirm_modal_selection: int = 0  # 0=Volver, 1=Perder
+var _confirm_modal_buttons: Array = []  # Referencias a los botones del modal
 
 # Cache de estilos para evitar memory leaks
 var _option_styles: Array[StyleBoxFlat] = []  # Un estilo por panel de opción
@@ -356,20 +358,28 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
 			KEY_A, KEY_LEFT:
-				_navigate_horizontal(-1)
+				if _confirm_modal_visible:
+					_navigate_confirm_modal(-1)
+				else:
+					_navigate_horizontal(-1)
 				handled = true
 			KEY_D, KEY_RIGHT:
-				_navigate_horizontal(1)
+				if _confirm_modal_visible:
+					_navigate_confirm_modal(1)
+				else:
+					_navigate_horizontal(1)
 				handled = true
 			KEY_W, KEY_UP:
-				_navigate_vertical(-1)
-				handled = true
+				if not _confirm_modal_visible:
+					_navigate_vertical(-1)
+					handled = true
 			KEY_S, KEY_DOWN:
-				_navigate_vertical(1)
-				handled = true
+				if not _confirm_modal_visible:
+					_navigate_vertical(1)
+					handled = true
 			KEY_SPACE, KEY_ENTER:
 				if _confirm_modal_visible:
-					_on_confirm_modal_confirm()
+					_activate_confirm_modal_selection()
 				else:
 					_confirm_selection()
 				handled = true
@@ -386,20 +396,28 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventJoypadButton and event.pressed:
 		match event.button_index:
 			JOY_BUTTON_DPAD_LEFT:
-				_navigate_horizontal(-1)
+				if _confirm_modal_visible:
+					_navigate_confirm_modal(-1)
+				else:
+					_navigate_horizontal(-1)
 				handled = true
 			JOY_BUTTON_DPAD_RIGHT:
-				_navigate_horizontal(1)
+				if _confirm_modal_visible:
+					_navigate_confirm_modal(1)
+				else:
+					_navigate_horizontal(1)
 				handled = true
 			JOY_BUTTON_DPAD_UP:
-				_navigate_vertical(-1)
-				handled = true
+				if not _confirm_modal_visible:
+					_navigate_vertical(-1)
+					handled = true
 			JOY_BUTTON_DPAD_DOWN:
-				_navigate_vertical(1)
-				handled = true
+				if not _confirm_modal_visible:
+					_navigate_vertical(1)
+					handled = true
 			JOY_BUTTON_A:
 				if _confirm_modal_visible:
-					_on_confirm_modal_confirm()
+					_activate_confirm_modal_selection()
 				else:
 					_confirm_selection()
 				handled = true
@@ -573,6 +591,8 @@ func _show_confirm_modal() -> void:
 		_confirm_modal.queue_free()
 	
 	_confirm_modal_visible = true
+	_confirm_modal_selection = 0  # Empezar en "Volver a elegir"
+	_confirm_modal_buttons.clear()
 	
 	# Fondo semitransparente del modal
 	_confirm_modal = Control.new()
@@ -586,7 +606,7 @@ func _show_confirm_modal() -> void:
 	
 	# Panel central
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(400, 180)
+	panel.custom_minimum_size = Vector2(400, 160)
 	var panel_style = StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.15, 0.12, 0.18, 0.98)
 	panel_style.border_color = Color(1.0, 0.4, 0.4)
@@ -641,43 +661,28 @@ func _show_confirm_modal() -> void:
 	
 	# Botón Cancelar (volver a elegir)
 	var cancel_btn = Button.new()
+	cancel_btn.name = "CancelBtn"
 	cancel_btn.text = "Volver a elegir"
-	cancel_btn.custom_minimum_size = Vector2(140, 40)
+	cancel_btn.custom_minimum_size = Vector2(150, 45)
 	cancel_btn.add_theme_font_size_override("font_size", 14)
-	var cancel_style = StyleBoxFlat.new()
-	cancel_style.bg_color = Color(0.2, 0.5, 0.3)
-	cancel_style.set_corner_radius_all(8)
-	cancel_btn.add_theme_stylebox_override("normal", cancel_style)
-	var cancel_hover = StyleBoxFlat.new()
-	cancel_hover.bg_color = Color(0.3, 0.65, 0.4)
-	cancel_hover.set_corner_radius_all(8)
-	cancel_btn.add_theme_stylebox_override("hover", cancel_hover)
+	cancel_btn.focus_mode = Control.FOCUS_NONE
 	cancel_btn.pressed.connect(_on_confirm_modal_cancel)
 	btn_container.add_child(cancel_btn)
+	_confirm_modal_buttons.append(cancel_btn)
 	
 	# Botón Confirmar (perder mejora)
 	var confirm_btn = Button.new()
+	confirm_btn.name = "ConfirmBtn"
 	confirm_btn.text = "Perder mejora"
-	confirm_btn.custom_minimum_size = Vector2(140, 40)
+	confirm_btn.custom_minimum_size = Vector2(150, 45)
 	confirm_btn.add_theme_font_size_override("font_size", 14)
-	var confirm_style = StyleBoxFlat.new()
-	confirm_style.bg_color = Color(0.6, 0.2, 0.2)
-	confirm_style.set_corner_radius_all(8)
-	confirm_btn.add_theme_stylebox_override("normal", confirm_style)
-	var confirm_hover = StyleBoxFlat.new()
-	confirm_hover.bg_color = Color(0.75, 0.3, 0.3)
-	confirm_hover.set_corner_radius_all(8)
-	confirm_btn.add_theme_stylebox_override("hover", confirm_hover)
+	confirm_btn.focus_mode = Control.FOCUS_NONE
 	confirm_btn.pressed.connect(_on_confirm_modal_confirm)
 	btn_container.add_child(confirm_btn)
+	_confirm_modal_buttons.append(confirm_btn)
 	
-	# Hint de teclado
-	var hint = Label.new()
-	hint.text = "ESC: Volver  |  ENTER: Perder mejora"
-	hint.add_theme_font_size_override("font_size", 12)
-	hint.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
-	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	inner_vbox.add_child(hint)
+	# Actualizar visual inicial
+	_update_confirm_modal_visuals()
 
 func _on_confirm_modal_cancel() -> void:
 	"""Cerrar modal y volver a elegir"""
@@ -694,6 +699,63 @@ func _hide_confirm_modal() -> void:
 		_confirm_modal.queue_free()
 		_confirm_modal = null
 	_confirm_modal_visible = false
+	_confirm_modal_buttons.clear()
+
+func _navigate_confirm_modal(direction: int) -> void:
+	"""Navegar entre botones del modal"""
+	_confirm_modal_selection = (_confirm_modal_selection + direction) % _confirm_modal_buttons.size()
+	if _confirm_modal_selection < 0:
+		_confirm_modal_selection = _confirm_modal_buttons.size() - 1
+	_update_confirm_modal_visuals()
+
+func _activate_confirm_modal_selection() -> void:
+	"""Activar el botón seleccionado del modal"""
+	match _confirm_modal_selection:
+		0: _on_confirm_modal_cancel()
+		1: _on_confirm_modal_confirm()
+
+func _update_confirm_modal_visuals() -> void:
+	"""Actualizar estilos visuales de los botones del modal"""
+	for i in range(_confirm_modal_buttons.size()):
+		var btn = _confirm_modal_buttons[i] as Button
+		if not btn:
+			continue
+		
+		var is_selected = (i == _confirm_modal_selection)
+		var style = StyleBoxFlat.new()
+		var hover_style = StyleBoxFlat.new()
+		
+		if i == 0:  # Botón "Volver a elegir" (verde)
+			if is_selected:
+				style.bg_color = Color(0.25, 0.6, 0.35)
+				style.border_color = Color(0.4, 1.0, 0.5)
+				style.set_border_width_all(3)
+				btn.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+			else:
+				style.bg_color = Color(0.15, 0.35, 0.2)
+				style.border_color = Color(0.2, 0.4, 0.25)
+				style.set_border_width_all(1)
+				btn.add_theme_color_override("font_color", Color(0.6, 0.7, 0.6))
+			hover_style.bg_color = Color(0.3, 0.65, 0.4)
+		else:  # Botón "Perder mejora" (rojo)
+			if is_selected:
+				style.bg_color = Color(0.7, 0.25, 0.25)
+				style.border_color = Color(1.0, 0.5, 0.5)
+				style.set_border_width_all(3)
+				btn.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+			else:
+				style.bg_color = Color(0.4, 0.15, 0.15)
+				style.border_color = Color(0.5, 0.2, 0.2)
+				style.set_border_width_all(1)
+				btn.add_theme_color_override("font_color", Color(0.7, 0.6, 0.6))
+			hover_style.bg_color = Color(0.75, 0.3, 0.3)
+		
+		style.set_corner_radius_all(8)
+		hover_style.set_corner_radius_all(8)
+		hover_style.border_color = style.border_color
+		hover_style.set_border_width_all(style.border_width_left)
+		btn.add_theme_stylebox_override("normal", style)
+		btn.add_theme_stylebox_override("hover", hover_style)
 
 func _close_panel() -> void:
 	# NOTA: NO despausamos aquí - Game.gd se encarga de eso
