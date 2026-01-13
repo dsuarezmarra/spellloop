@@ -160,10 +160,11 @@ func _recalculate_stats() -> void:
 		if upgrade.has("damage_mult"):
 			damage *= upgrade.damage_mult
 		
-		if upgrade.has("cooldown_mult"):
-			# Solo aplicar si el arma tiene cooldown (> 0)
+		if upgrade.has("attack_speed_mult"):
+			# Aumentar velocidad de ataque = reducir cooldown proporcionalmente
+			# attack_speed_mult 1.18 significa +18% velocidad -> cooldown / 1.18
 			if base_stats.cooldown > 0:
-				cooldown *= upgrade.cooldown_mult
+				cooldown /= upgrade.attack_speed_mult
 			elif upgrade.has("no_cooldown_damage_mult"):
 				# Armas sin cooldown (como Arcane Orb) reciben daño extra
 				damage *= upgrade.no_cooldown_damage_mult

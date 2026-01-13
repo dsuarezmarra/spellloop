@@ -17,6 +17,7 @@ signal option_selected(option: Dictionary)
 signal reroll_used()
 signal banish_used(option_index: int)
 signal skip_used()
+signal upgrade_postponed()  # Nueva señal: mejora pospuesta (ESC sin elegir)
 signal panel_closed()
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -370,7 +371,7 @@ func _input(event: InputEvent) -> void:
 				if banish_mode:
 					_cancel_banish_mode()
 				else:
-					_on_skip()
+					_on_postpone()  # Posponer mejora en vez de saltar
 				handled = true
 
 	# === SOPORTE PARA GAMEPAD ===
@@ -395,7 +396,7 @@ func _input(event: InputEvent) -> void:
 				if banish_mode:
 					_cancel_banish_mode()
 				else:
-					_on_skip()
+					_on_postpone()  # Posponer mejora en vez de saltar
 				handled = true
 
 	# === SOPORTE PARA JOYSTICK ANALOGICO ===
@@ -544,6 +545,14 @@ func _on_skip() -> void:
 		return
 
 	skip_used.emit()
+	_close_panel()
+
+func _on_postpone() -> void:
+	"""Posponer la mejora para más tarde (accesible desde menú de pausa)"""
+	if locked:
+		return
+	
+	upgrade_postponed.emit()
 	_close_panel()
 
 func _close_panel() -> void:

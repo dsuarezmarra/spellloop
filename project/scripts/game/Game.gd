@@ -44,6 +44,9 @@ var remaining_banishes: int = 2
 var pending_level_ups: Array = []
 var level_up_panel_active: bool = false
 
+# Cola de mejoras pospuestas (ESC en LevelUp - se pueden reclamar desde PauseMenu)
+var postponed_upgrades: int = 0
+
 # Estadísticas de la partida
 var run_stats: Dictionary = {
 	"time": 0.0,
@@ -86,6 +89,13 @@ func _notification(what: int) -> void:
 				_resume_game()
 
 func _setup_game() -> void:
+	# Resetear estado de la partida
+	remaining_rerolls = 3
+	remaining_banishes = 2
+	postponed_upgrades = 0
+	pending_level_ups.clear()
+	level_up_panel_active = false
+	
 	# Crear player
 	_create_player()
 
@@ -900,6 +910,8 @@ func _show_level_up_panel(level: int) -> void:
 		panel.reroll_used.connect(_on_reroll_used)
 	if panel.has_signal("banish_used"):
 		panel.banish_used.connect(_on_banish_used)
+	if panel.has_signal("upgrade_postponed"):
+		panel.upgrade_postponed.connect(_on_upgrade_postponed)
 
 	# Pausar el juego y actualizar estado interno
 	is_paused = true
@@ -924,6 +936,35 @@ func _on_level_up_panel_closed() -> void:
 	# Procesar el siguiente level up de la cola (si hay)
 	# Esto también reanudará el juego si no hay más pendientes
 	_process_next_level_up()
+
+func _on_upgrade_postponed() -> void:
+	"""Callback cuando se pospone una mejora (ESC en LevelUp)"""
+	postponed_upgrades += 1
+	print("⏸️ [Game] Mejora pospuesta. Pendientes: %d (reclamar desde menú de pausa)" % postponed_upgrades)
+
+func get_postponed_upgrades_count() -> int:
+	"""Obtener cantidad de mejoras pospuestas"""
+	return postponed_upgrades
+
+func has_postponed_upgrades() -> bool:
+	"""Verificar si hay mejoras pospuestas"""
+	return postponed_upgrades > 0
+
+func claim_postponed_upgrade() -> void:
+	"""Reclamar una mejora pospuesta (llamado desde PauseMenu)"""
+	if postponed_upgrades <= 0:
+		return
+	
+	postponed_upgrades -= 1
+	
+	# Cerrar el menú de pausa primero (si está abierto)
+	var pause_menu = get_tree().get_first_node_in_group("pause_menu")
+	if pause_menu and pause_menu.has_method("close"):
+		pause_menu.close()
+	
+	# Mostrar el panel de level up
+	level_up_panel_active = true
+	_show_level_up_panel(run_stats.get("level", 1))
 
 func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> void:
 	"""Callback cuando cambia un stat del jugador - propagar al player"""
