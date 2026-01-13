@@ -382,11 +382,11 @@ const WEAPONS: Dictionary = {
 
 const LEVEL_UPGRADES: Dictionary = {
 	2: {"damage_mult": 1.2, "description": "+20% Daño"},
-	3: {"cooldown_mult": 0.85, "description": "-15% Cooldown"},
+	3: {"cooldown_mult": 0.85, "no_cooldown_damage_mult": 1.1, "description": "-15% Cooldown / +10% Daño"},
 	4: {"projectile_count_add": 1, "description": "+1 Proyectil"},
-	5: {"effect_mult": 1.5, "description": "+50% Efecto especial"},
+	5: {"effect_mult": 1.5, "no_effect_damage_mult": 1.15, "description": "+50% Efecto / +15% Daño"},
 	6: {"damage_mult": 1.25, "description": "+25% Daño"},
-	7: {"pierce_add": 2, "description": "+2 Pierce"},
+	7: {"pierce_add": 2, "max_pierce_area_mult": 1.2, "description": "+2 Pierce / +20% Área"},
 	8: {"all_mult": 1.3, "description": "¡MÁXIMO! +30% a todo"}
 }
 
@@ -1573,7 +1573,7 @@ const FUSIONS: Dictionary = {
 		"target_type": TargetType.DIRECTION,
 		"projectile_type": ProjectileType.MULTI,
 		"effect": "blind",
-		"effect_value": 0.4,  # Nerfed from 0.5 (50% to 40%)
+		"effect_value": 2.0,  # Duración del blind en segundos (beneficia de effect_mult en nivel 5)
 		"effect_duration": 2.0,
 		"color": Color(0.8, 0.7, 0.5),
 		"icon": "🏜️"

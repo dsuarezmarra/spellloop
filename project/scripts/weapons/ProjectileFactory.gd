@@ -376,10 +376,10 @@ class BeamEffect extends Node2D:
 					enemy.apply_slow(effect_value, effect_duration)
 			"stun":
 				if enemy.has_method("apply_stun"):
-					enemy.apply_stun(effect_duration)
+					enemy.apply_stun(effect_value)  # effect_value = duración del stun
 			"blind":
 				if enemy.has_method("apply_blind"):
-					enemy.apply_blind(effect_duration)
+					enemy.apply_blind(effect_value)  # effect_value = duración del blind
 			"pull":
 				if enemy.has_method("apply_pull"):
 					enemy.apply_pull(global_position, effect_value, effect_duration)
@@ -641,7 +641,7 @@ class AOEEffect extends Node2D:
 		match effect:
 			"stun":
 				if enemy.has_method("apply_stun"):
-					enemy.apply_stun(effect_duration)
+					enemy.apply_stun(effect_value)  # effect_value = duración del stun
 			"pull":
 				if enemy.has_method("apply_pull"):
 					enemy.apply_pull(global_position, effect_value, effect_duration)
@@ -658,7 +658,7 @@ class AOEEffect extends Node2D:
 					enemy.apply_burn(effect_value, effect_duration)
 			"blind":
 				if enemy.has_method("apply_blind"):
-					enemy.apply_blind(effect_duration)
+					enemy.apply_blind(effect_value)  # effect_value = duración del blind
 			"steam":
 				# Efecto combinado: slow + burn
 				if enemy.has_method("apply_slow"):
@@ -1008,13 +1008,13 @@ class OrbitalManager extends Node2D:
 					enemy.apply_slow(effect_value, effect_duration)
 			"stun":
 				if enemy.has_method("apply_stun"):
-					enemy.apply_stun(effect_duration)
+					enemy.apply_stun(effect_value)  # effect_value = duración del stun
 			"pull":
 				if enemy.has_method("apply_pull"):
 					enemy.apply_pull(global_position, effect_value, effect_duration)
 			"blind":
 				if enemy.has_method("apply_blind"):
-					enemy.apply_blind(effect_duration)
+					enemy.apply_blind(effect_value)  # effect_value = duración del blind
 			"lifesteal":
 				var player = _get_orbital_player()
 				if player and player.has_method("heal"):
@@ -1298,7 +1298,7 @@ class ChainProjectile extends Node2D:
 					FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
 			"stun":
 				if target.has_method("apply_stun"):
-					target.apply_stun(effect_duration)
+					target.apply_stun(effect_value)  # effect_value = duración del stun
 			"slow":
 				if target.has_method("apply_slow"):
 					target.apply_slow(effect_value, effect_duration)

@@ -161,22 +161,40 @@ func _recalculate_stats() -> void:
 			damage *= upgrade.damage_mult
 		
 		if upgrade.has("cooldown_mult"):
-			cooldown *= upgrade.cooldown_mult
+			# Solo aplicar si el arma tiene cooldown (> 0)
+			if base_stats.cooldown > 0:
+				cooldown *= upgrade.cooldown_mult
+			elif upgrade.has("no_cooldown_damage_mult"):
+				# Armas sin cooldown (como Arcane Orb) reciben daño extra
+				damage *= upgrade.no_cooldown_damage_mult
 		
 		if upgrade.has("projectile_count_add"):
 			projectile_count += upgrade.projectile_count_add
 		
 		if upgrade.has("pierce_add"):
-			pierce += upgrade.pierce_add
+			# Solo aplicar si el arma no tiene pierce infinito (< 100)
+			if base_stats.pierce < 100:
+				pierce += upgrade.pierce_add
+			elif upgrade.has("max_pierce_area_mult"):
+				# Armas con pierce infinito reciben área extra
+				area *= upgrade.max_pierce_area_mult
 		
 		if upgrade.has("effect_mult"):
-			effect_value *= upgrade.effect_mult
+			# Solo multiplicar si el arma tiene un efecto real (effect_value > 0)
+			if effect_value > 0:
+				effect_value *= upgrade.effect_mult
+			elif upgrade.has("no_effect_damage_mult"):
+				# Armas sin efecto reciben bonus de daño en su lugar
+				damage *= upgrade.no_effect_damage_mult
 		
 		if upgrade.has("all_mult"):
 			damage *= upgrade.all_mult
 			knockback *= upgrade.all_mult
 			area *= upgrade.all_mult
-			effect_value *= upgrade.all_mult
+			projectile_speed *= upgrade.all_mult
+			# Solo aplicar a effect_value si el arma tiene un efecto real
+			if effect_value > 0:
+				effect_value *= upgrade.all_mult
 
 func get_level_progress() -> float:
 	"""Obtener progreso hacia el siguiente nivel (0.0 - 1.0)"""
@@ -677,7 +695,7 @@ func _apply_freeze(target: Node2D) -> void:
 func _apply_stun(target: Node2D) -> void:
 	"""Aplicar stun al objetivo"""
 	if target.has_method("apply_stun"):
-		target.apply_stun(effect_duration)
+		target.apply_stun(effect_value)  # effect_value = duración del stun
 
 func _apply_pull(target: Node2D, pull_position: Vector2 = Vector2.ZERO) -> void:
 	"""Atraer objetivo hacia una posición (por defecto el jugador)"""
@@ -694,7 +712,7 @@ func _apply_pull(target: Node2D, pull_position: Vector2 = Vector2.ZERO) -> void:
 func _apply_blind(target: Node2D) -> void:
 	"""Aplicar ceguera al objetivo"""
 	if target.has_method("apply_blind"):
-		target.apply_blind(effect_duration)
+		target.apply_blind(effect_value)  # effect_value = duración del blind
 
 func _apply_steam(target: Node2D) -> void:
 	"""Aplicar efecto de vapor (slow + burn combinados)"""
