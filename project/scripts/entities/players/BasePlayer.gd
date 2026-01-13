@@ -68,6 +68,9 @@ var _status_flash_timer: float = 0.0
 const STATUS_FLASH_INTERVAL: float = 0.15
 const STATUS_AURA_PULSE_SPEED: float = 4.0
 
+# ========== SISTEMA DE ICONOS DE ESTADO ==========
+var status_icon_display: StatusIconDisplay = null
+
 # ========== CONFIGURACIÓN VISUAL ==========
 @export var player_sprite_scale: float = 1.0  # Escala del sprite
 var last_dir: String = "down"
@@ -331,6 +334,21 @@ func _initialize_status_visual() -> void:
 	_status_visual_node.z_index = 5
 	add_child(_status_visual_node)
 	_status_visual_node.draw.connect(_draw_status_effects)
+	
+	# Inicializar sistema de iconos de estado
+	_initialize_status_icon_display()
+
+func _initialize_status_icon_display() -> void:
+	"""Inicializar display de iconos de estado (buffs/debuffs)"""
+	status_icon_display = StatusIconDisplay.new()
+	status_icon_display.name = "StatusIconDisplay"
+	status_icon_display.is_player = true
+	status_icon_display.set_entity_type(true, false)
+	add_child(status_icon_display)
+	
+	# Posicionar encima de la barra de vida
+	# La barra está aproximadamente en -40 a -50 según la escala
+	status_icon_display.position.y = -55.0
 
 func _update_status_visuals(delta: float) -> void:
 	"""Actualizar efectos visuales de debuffs"""
@@ -1034,6 +1052,10 @@ func apply_slow(amount: float, duration: float) -> void:
 	_is_slowed = true
 	move_speed = base_move_speed * (1.0 - _slow_amount)
 	
+	# Actualizar icono de estado
+	if status_icon_display:
+		status_icon_display.add_effect("slow", _slow_timer)
+	
 	# Mostrar notificación solo si es nuevo
 	if not was_slowed:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "slow")
@@ -1046,6 +1068,9 @@ func _clear_slow() -> void:
 	move_speed = base_move_speed
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE
+	# Eliminar icono
+	if status_icon_display:
+		status_icon_display.remove_effect("slow")
 	# Debug desactivado: print("[%s] ❄️ Slow terminado" % character_class)
 
 func apply_burn(damage_per_tick: float, duration: float) -> void:
@@ -1054,6 +1079,10 @@ func apply_burn(damage_per_tick: float, duration: float) -> void:
 	_burn_damage = damage_per_tick
 	_burn_timer = max(_burn_timer, duration)
 	_burn_tick_timer = BURN_TICK_INTERVAL
+	
+	# Actualizar icono de estado
+	if status_icon_display:
+		status_icon_display.add_effect("burn", _burn_timer)
 	
 	# Mostrar notificación solo si es nuevo
 	if not was_burning:
@@ -1074,6 +1103,9 @@ func _clear_burn() -> void:
 	_burn_damage = 0.0
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE
+	# Eliminar icono
+	if status_icon_display:
+		status_icon_display.remove_effect("burn")
 	# Debug desactivado: print("[%s] 🔥 Burn terminado" % character_class)
 
 func _spawn_burn_particle() -> void:
@@ -1103,6 +1135,10 @@ func apply_poison(damage_per_tick: float, duration: float) -> void:
 	_poison_timer = max(_poison_timer, duration)
 	_poison_tick_timer = POISON_TICK_INTERVAL
 	
+	# Actualizar icono de estado
+	if status_icon_display:
+		status_icon_display.add_effect("poison", _poison_timer)
+	
 	# Mostrar notificación solo si es nuevo
 	if not was_poisoned:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "poison")
@@ -1121,6 +1157,9 @@ func _clear_poison() -> void:
 	_poison_damage = 0.0
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE
+	# Eliminar icono
+	if status_icon_display:
+		status_icon_display.remove_effect("poison")
 	# Debug desactivado: print("[%s] ☠️ Poison terminado" % character_class)
 
 func _spawn_poison_particle() -> void:
@@ -1149,6 +1188,10 @@ func apply_stun(duration: float) -> void:
 	_stun_timer = max(_stun_timer, duration)
 	_is_stunned = true
 	
+	# Actualizar icono de estado
+	if status_icon_display:
+		status_icon_display.add_effect("stun", _stun_timer)
+	
 	# Mostrar notificación solo si es nuevo
 	if not was_stunned:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "stun")
@@ -1159,6 +1202,9 @@ func _clear_stun() -> void:
 	_is_stunned = false
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE
+	# Eliminar icono
+	if status_icon_display:
+		status_icon_display.remove_effect("stun")
 	# Debug desactivado: print("[%s] ⚡ Stun terminado" % character_class)
 
 func apply_weakness(amount: float, duration: float) -> void:
@@ -1167,6 +1213,10 @@ func apply_weakness(amount: float, duration: float) -> void:
 	_weakness_amount = clamp(amount, 0.0, 1.0)  # Máximo +100% daño
 	_weakness_timer = max(_weakness_timer, duration)
 	_is_weakened = true
+	
+	# Actualizar icono de estado
+	if status_icon_display:
+		status_icon_display.add_effect("weakness", _weakness_timer)
 	
 	# Mostrar notificación solo si es nuevo
 	if not was_weakened:
@@ -1179,6 +1229,9 @@ func _clear_weakness() -> void:
 	_weakness_amount = 0.0
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE
+	# Eliminar icono
+	if status_icon_display:
+		status_icon_display.remove_effect("weakness")
 	# Debug desactivado: print("[%s] 💀 Weakness terminado" % character_class)
 
 func apply_curse(amount: float, duration: float) -> void:
@@ -1187,6 +1240,10 @@ func apply_curse(amount: float, duration: float) -> void:
 	_curse_amount = clamp(amount, 0.0, 0.9)  # Máximo -90% curación
 	_curse_timer = max(_curse_timer, duration)
 	_is_cursed = true
+	
+	# Actualizar icono de estado
+	if status_icon_display:
+		status_icon_display.add_effect("curse", _curse_timer)
 	
 	# Mostrar notificación solo si es nuevo
 	if not was_cursed:
@@ -1199,6 +1256,9 @@ func _clear_curse() -> void:
 	_curse_amount = 0.0
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE
+	# Eliminar icono
+	if status_icon_display:
+		status_icon_display.remove_effect("curse")
 	# Debug desactivado: print("[%s] 👻 Curse terminado" % character_class)
 
 func is_stunned() -> bool:

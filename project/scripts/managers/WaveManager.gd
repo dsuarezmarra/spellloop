@@ -51,6 +51,7 @@ var current_wave_config: Dictionary = {}
 var boss_active: bool = false
 var current_boss: Node2D = null
 var boss_warning_shown: bool = false
+var pending_boss_id: String = ""  # Boss que fue anunciado (para evitar cambios)
 var next_boss_minute: int = 5
 
 # Estado de élites
@@ -491,17 +492,20 @@ func _check_boss_events() -> void:
 	if not boss_warning_shown and current_minute >= next_boss_minute - 1:
 		var time_to_boss = (next_boss_minute * 60.0) - game_time_seconds
 		if time_to_boss <= SpawnConfig.BOSS_CONFIG.pre_spawn_warning_seconds and time_to_boss > 0:
-			var boss_id = SpawnConfig.get_boss_for_minute(next_boss_minute)
-			if boss_id != "":
+			# Seleccionar el boss AHORA y guardarlo para el spawn
+			pending_boss_id = SpawnConfig.get_boss_for_minute(next_boss_minute)
+			if pending_boss_id != "":
 				boss_warning_shown = true
-				boss_incoming.emit(boss_id, time_to_boss)
-				_show_boss_warning(boss_id)
+				boss_incoming.emit(pending_boss_id, time_to_boss)
+				_show_boss_warning(pending_boss_id)
 	
 	# Verificar si es momento de spawnear boss
 	if not boss_active and current_minute >= next_boss_minute:
-		var boss_id = SpawnConfig.get_boss_for_minute(next_boss_minute)
+		# Usar el boss que fue anunciado, o seleccionar uno nuevo si no hubo aviso
+		var boss_id = pending_boss_id if pending_boss_id != "" else SpawnConfig.get_boss_for_minute(next_boss_minute)
 		if boss_id != "":
 			_spawn_boss(boss_id)
+			pending_boss_id = ""  # Limpiar para el próximo boss
 			
 			# Calcular siguiente boss
 			if next_boss_minute <= 20:
@@ -516,6 +520,7 @@ func _spawn_boss(boss_id: String) -> void:
 	
 	boss_active = true
 	boss_warning_shown = false
+	pending_boss_id = ""  # Limpiar el boss pendiente
 	
 	# Posición de spawn del boss
 	var spawn_pos = player.global_position + Vector2.from_angle(randf() * TAU) * SpawnConfig.SPAWN_DISTANCE_BOSS
@@ -797,6 +802,7 @@ func to_save_data() -> Dictionary:
 		# Estado de bosses
 		"boss_active": boss_active,
 		"boss_warning_shown": boss_warning_shown,
+		"pending_boss_id": pending_boss_id,
 		"next_boss_minute": next_boss_minute,
 		
 		# Estado de élites
@@ -860,6 +866,7 @@ func from_save_data(data: Dictionary) -> void:
 	# Estado de bosses
 	boss_active = data.get("boss_active", false)
 	boss_warning_shown = data.get("boss_warning_shown", false)
+	pending_boss_id = data.get("pending_boss_id", "")
 	next_boss_minute = data.get("next_boss_minute", 5)
 	
 	# Estado de élites

@@ -1248,7 +1248,7 @@ func _boss_fire_at_player() -> void:
 	var direction = (player.global_position - enemy.global_position).normalized()
 	var damage = int(attack_damage * 0.5)  # Proyectiles hacen 50% del daÃ±o base
 	
-	_spawn_boss_projectile(enemy.global_position, direction, damage, 350.0)
+	_spawn_boss_projectile(enemy.global_position, direction, damage, 220.0)  # Reducido de 350 a 220
 
 func _boss_spawn_random_aoe() -> void:
 	"""Spawn un AOE en posiciÃ³n aleatoria cerca del jugador"""
@@ -1259,11 +1259,11 @@ func _boss_spawn_random_aoe() -> void:
 	var offset = Vector2(randf_range(-200, 200), randf_range(-200, 200))
 	var target_pos = player.global_position + offset
 	
-	# Warning visual antes del impacto
-	_spawn_aoe_warning(target_pos, 80.0, 1.0)
+	# Warning visual antes del impacto - AUMENTADO para dar tiempo de reacción
+	_spawn_aoe_warning(target_pos, 80.0, 1.8)  # Aumentado de 1.0 a 1.8s
 	
-	# DespuÃ©s de 1 segundo, hacer daÃ±o
-	get_tree().create_timer(1.0).timeout.connect(func():
+	# DespuÃ©s del warning, hacer daÃ±o
+	get_tree().create_timer(1.8).timeout.connect(func():
 		if is_instance_valid(player):
 			var dist = target_pos.distance_to(player.global_position)
 			if dist < 80:
@@ -1328,8 +1328,8 @@ func _create_homing_projectile(spawn_pos: Vector2) -> void:
 	
 	# Comportamiento homing
 	var lifetime = 6.0
-	var speed = 180.0
-	var homing_strength = 2.5
+	var speed = 120.0  # Reducido de 180 a 120 (jugador va a 100)
+	var homing_strength = 1.8  # Reducido de 2.5 a 1.8 (más esquivable)
 	var damage = int(attack_damage * 0.4)
 	var hit = false
 	

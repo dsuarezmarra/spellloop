@@ -579,24 +579,24 @@ const BOSSES = {
 			"curse_aura": 10.0        # Reducido
 		},
 		"modifiers": {
-			"barrage_count": 8,       # Más proyectiles
-			"barrage_damage": 18,     # Más daño
-			"barrage_spread": 45.0,   # Mayor dispersión
-			"summon_count": 3,        # Más invocaciones
-			"summon_tier": 2,         # Invocaciones más fuertes
-			"teleport_range": 300.0,  # Mayor rango de teleport
-			"teleport_damage_mult": 2.0,
-			"nova_radius": 180.0,     # Mayor radio
-			"nova_damage": 45,        # Más daño
-			"curse_radius": 200.0,    # Mayor radio de maldición
-			"curse_reduction": 0.6,   # Mayor reducción
-			"curse_duration": 10.0,
+			"barrage_count": 6,       # REDUCIDO de 8
+			"barrage_damage": 15,     # REDUCIDO de 18
+			"barrage_spread": 40.0,   # REDUCIDO de 45 - más fácil de esquivar
+			"summon_count": 2,        # REDUCIDO de 3
+			"summon_tier": 1,         # REDUCIDO de 2 - invocaciones más débiles
+			"teleport_range": 250.0,  # REDUCIDO de 300
+			"teleport_damage_mult": 1.5, # REDUCIDO de 2.0
+			"nova_radius": 140.0,     # REDUCIDO de 180
+			"nova_damage": 35,        # REDUCIDO de 45
+			"curse_radius": 150.0,    # REDUCIDO de 200
+			"curse_reduction": 0.4,   # REDUCIDO de 0.6 - menos severo
+			"curse_duration": 8.0,    # REDUCIDO de 10
 			"phase_2_hp": 0.65,
 			"phase_3_hp": 0.3,
-			"phase_2_summon_count": 5,
-			"phase_2_barrage_count": 12,
-			"phase_3_summon_tier": 3,
-			"phase_3_nova_damage": 70
+			"phase_2_summon_count": 3, # REDUCIDO de 5
+			"phase_2_barrage_count": 9, # REDUCIDO de 12
+			"phase_3_summon_tier": 2,   # REDUCIDO de 3
+			"phase_3_nova_damage": 55   # REDUCIDO de 70
 		}
 	},
 	"el_corazon_del_vacio": {
@@ -631,28 +631,28 @@ const BOSSES = {
 		},
 		"modifiers": {
 			"pull_radius": 450.0,      # Mayor radio
-			"pull_force": 200.0,       # Mayor fuerza
-			"pull_duration": 3.0,
-			"explosion_radius": 220.0, # Mayor radio
+			"pull_force": 130.0,       # REDUCIDO de 200 - más escapable
+			"pull_duration": 2.0,      # REDUCIDO de 3.0 - más corto
+			"explosion_radius": 180.0, # REDUCIDO de 220 - más esquivable
 			"explosion_damage": 70,    # Más daño
-			"orb_count": 5,            # Más orbes
-			"orb_damage": 30,          # Más daño
-			"orb_speed": 180.0,        # Más rápidos
-			"orb_duration": 6.0,
+			"orb_count": 4,            # REDUCIDO de 5
+			"orb_damage": 25,          # REDUCIDO de 30
+			"orb_speed": 110.0,        # REDUCIDO de 180 - más lento que el jugador
+			"orb_duration": 5.0,       # REDUCIDO de 6.0
 			"tear_radius": 100.0,
 			"tear_damage": 18,
 			"tear_duration": 7.0,
-			"aura_radius": 130.0,
-			"aura_damage": 10,
-			"beam_damage": 35,
-			"beam_duration": 3.5,
-			"beam_width": 50.0,
+			"aura_radius": 100.0,      # REDUCIDO de 130
+			"aura_damage": 8,          # REDUCIDO de 10
+			"beam_damage": 30,         # REDUCIDO de 35
+			"beam_duration": 2.5,      # REDUCIDO de 3.5 - más corto
+			"beam_width": 40.0,        # REDUCIDO de 50
 			"phase_2_hp": 0.6,         # Fase 2 antes
 			"phase_3_hp": 0.3,
-			"phase_2_pull_force": 280.0,
-			"phase_2_orb_count": 7,
-			"phase_3_aura_radius": 180.0,
-			"phase_3_explosion_damage": 100
+			"phase_2_pull_force": 180.0,  # REDUCIDO de 280
+			"phase_2_orb_count": 5,       # REDUCIDO de 7
+			"phase_3_aura_radius": 140.0, # REDUCIDO de 180
+			"phase_3_explosion_damage": 85 # REDUCIDO de 100
 		}
 	},
 	"el_guardian_de_runas": {
@@ -688,23 +688,23 @@ const BOSSES = {
 		"modifiers": {
 			"shield_charges": 4,
 			"shield_duration": 10.0,
-			"blast_radius": 120.0,
-			"blast_damage": 35,
-			"prison_duration": 1.5,
-			"prison_damage": 15,
-			"counter_window": 2.0,
-			"counter_damage_mult": 2.5,
-			"barrage_count": 6,
-			"barrage_damage": 15,
-			"slam_radius": 150.0,
-			"slam_damage": 35,
-			"slam_stun": 0.5,
+			"blast_radius": 100.0,    # REDUCIDO de 120
+			"blast_damage": 30,       # REDUCIDO de 35
+			"prison_duration": 1.2,   # REDUCIDO de 1.5
+			"prison_damage": 12,      # REDUCIDO de 15
+			"counter_window": 1.5,    # REDUCIDO de 2.0 - ventana más corta
+			"counter_damage_mult": 2.0, # REDUCIDO de 2.5
+			"barrage_count": 5,       # REDUCIDO de 6
+			"barrage_damage": 12,     # REDUCIDO de 15
+			"slam_radius": 120.0,     # REDUCIDO de 150
+			"slam_damage": 30,        # REDUCIDO de 35
+			"slam_stun": 0.4,         # REDUCIDO de 0.5
 			"phase_2_hp": 0.6,
 			"phase_3_hp": 0.25,
-			"phase_2_shield_charges": 6,
-			"phase_2_blast_damage": 50,
-			"phase_3_counter_damage_mult": 3.5,
-			"phase_3_slam_damage": 55
+			"phase_2_shield_charges": 5, # REDUCIDO de 6
+			"phase_2_blast_damage": 40,  # REDUCIDO de 50
+			"phase_3_counter_damage_mult": 2.8, # REDUCIDO de 3.5
+			"phase_3_slam_damage": 45    # REDUCIDO de 55
 		}
 	},
 	"minotauro_de_fuego": {
@@ -738,32 +738,32 @@ const BOSSES = {
 			"fire_trail": 0.0
 		},
 		"modifiers": {
-			"charge_speed": 550.0,    # Más rápido
-			"charge_damage_mult": 3.0,
-			"charge_stun": 1.0,
-			"stomp_radius": 200.0,    # Mayor radio
-			"stomp_damage": 60,       # Más daño
-			"stomp_burn": 15.0,
-			"stomp_burn_duration": 5.0,
-			"breath_angle": 65.0,     # Más ancho
-			"breath_range": 250.0,    # Más alcance
-			"breath_damage": 30,      # Más daño
-			"breath_duration": 3.0,
-			"meteor_count": 8,        # Más meteoros
-			"meteor_damage": 55,      # Más daño
-			"meteor_radius": 80.0,    # Mayor radio
-			"meteor_delay": 1.2,      # Más rápido
+			"charge_speed": 350.0,    # REDUCIDO de 550 - ahora 3.5x jugador (era 5.5x)
+			"charge_damage_mult": 2.5, # REDUCIDO de 3.0
+			"charge_stun": 0.7,       # REDUCIDO de 1.0
+			"stomp_radius": 160.0,    # REDUCIDO de 200
+			"stomp_damage": 50,       # REDUCIDO de 60
+			"stomp_burn": 12.0,       # REDUCIDO de 15
+			"stomp_burn_duration": 4.0, # REDUCIDO de 5.0
+			"breath_angle": 55.0,     # REDUCIDO de 65 - más estrecho
+			"breath_range": 200.0,    # REDUCIDO de 250
+			"breath_damage": 25,      # REDUCIDO de 30
+			"breath_duration": 2.5,   # REDUCIDO de 3.0
+			"meteor_count": 6,        # REDUCIDO de 8
+			"meteor_damage": 45,      # REDUCIDO de 55
+			"meteor_radius": 70.0,    # REDUCIDO de 80
+			"meteor_delay": 2.0,      # AUMENTADO de 1.2 - más tiempo para esquivar
 			"enrage_threshold": 0.35, # Enrage antes
-			"enrage_damage_bonus": 0.7,
-			"enrage_speed_bonus": 0.4,
-			"trail_damage": 12,
-			"trail_duration": 4.0,
+			"enrage_damage_bonus": 0.5, # REDUCIDO de 0.7
+			"enrage_speed_bonus": 0.3,  # REDUCIDO de 0.4
+			"trail_damage": 10,       # REDUCIDO de 12
+			"trail_duration": 3.0,    # REDUCIDO de 4.0
 			"phase_2_hp": 0.6,
 			"phase_3_hp": 0.25,
-			"phase_2_charge_damage_mult": 4.0,
-			"phase_2_stomp_radius": 250.0,
-			"phase_3_meteor_count": 12,
-			"phase_3_breath_damage": 50
+			"phase_2_charge_damage_mult": 3.0, # REDUCIDO de 4.0
+			"phase_2_stomp_radius": 200.0,     # REDUCIDO de 250
+			"phase_3_meteor_count": 9,         # REDUCIDO de 12
+			"phase_3_breath_damage": 40        # REDUCIDO de 50
 		}
 	}
 }

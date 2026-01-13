@@ -158,6 +158,7 @@ const BOSS_POOL = [
 
 # Escalado de dificultad según el minuto de aparición
 # BOSSES PROGRESIVOS - Dificultad escalada gradualmente
+# BALANCEADO: Intervalos aumentados para dar más tiempo de reacción al jugador (100 px/s)
 const BOSS_MINUTE_SCALING = {
 	5: {
 		"hp_mult": 1.0,
@@ -165,61 +166,61 @@ const BOSS_MINUTE_SCALING = {
 		"cooldown_mult": 1.0,             # Cooldowns normales
 		"abilities_unlocked": 2,          # Solo 2 habilidades básicas
 		"max_combo": 2,                   # Combos de 2 habilidades
-		"combo_delay": 1.5,               # 1.5s entre habilidades
+		"combo_delay": 2.0,               # AUMENTADO de 1.5 a 2.0s entre habilidades
 		"phase_threshold_mult": 0.9,
-		"attack_interval": 1.2,           # Ataca cada 1.2s (más lento)
-		"aoe_spawn_interval": 5.0,        # AOE random cada 5s
-		"homing_interval": 6.0,           # Homing cada 6s
-		"spread_interval": 8.0,           # Spread cada 8s
+		"attack_interval": 1.5,           # AUMENTADO de 1.2 a 1.5s (más lento)
+		"aoe_spawn_interval": 6.0,        # AUMENTADO de 5 a 6s
+		"homing_interval": 8.0,           # AUMENTADO de 6 a 8s
+		"spread_interval": 10.0,          # AUMENTADO de 8 a 10s
 		"orbital_count": 2,               # Solo 2 orbitales
 		"enable_homing": false,           # Sin homing al principio
 		"enable_spread": false            # Sin spread al principio
 	},
 	10: {
 		"hp_mult": 1.4,
-		"damage_mult": 1.2,
-		"cooldown_mult": 0.8,             # Cooldowns reducidos
+		"damage_mult": 1.1,               # REDUCIDO de 1.2
+		"cooldown_mult": 0.85,            # AUMENTADO de 0.8 (cooldowns más largos)
 		"abilities_unlocked": 3,          # 3 habilidades
-		"max_combo": 3,                   # Combos de 3
-		"combo_delay": 1.2,               # 1.2s entre habilidades
+		"max_combo": 2,                   # REDUCIDO de 3 a 2
+		"combo_delay": 1.5,               # AUMENTADO de 1.2 a 1.5s
 		"phase_threshold_mult": 1.0,
-		"attack_interval": 1.0,           # Ataca cada 1s
-		"aoe_spawn_interval": 4.0,        # AOE random cada 4s
-		"homing_interval": 5.0,           # Homing cada 5s
-		"spread_interval": 7.0,           # Spread cada 7s
-		"orbital_count": 3,               # 3 orbitales
+		"attack_interval": 1.3,           # AUMENTADO de 1.0 a 1.3s
+		"aoe_spawn_interval": 5.0,        # AUMENTADO de 4 a 5s
+		"homing_interval": 6.0,           # AUMENTADO de 5 a 6s
+		"spread_interval": 8.0,           # AUMENTADO de 7 a 8s
+		"orbital_count": 2,               # REDUCIDO de 3 a 2
 		"enable_homing": true,            # Habilitar homing
 		"enable_spread": false            # Sin spread todavía
 	},
 	15: {
 		"hp_mult": 1.8,
-		"damage_mult": 1.5,
-		"cooldown_mult": 0.6,             # Cooldowns más cortos
+		"damage_mult": 1.3,               # REDUCIDO de 1.5
+		"cooldown_mult": 0.7,             # AUMENTADO de 0.6
 		"abilities_unlocked": 4,          # 4 habilidades
-		"max_combo": 4,                   # Combos de 4
-		"combo_delay": 0.8,               # 0.8s entre habilidades
+		"max_combo": 3,                   # REDUCIDO de 4 a 3
+		"combo_delay": 1.2,               # AUMENTADO de 0.8 a 1.2s
 		"phase_threshold_mult": 1.2,
-		"attack_interval": 0.8,           # Ataca cada 0.8s
-		"aoe_spawn_interval": 3.0,        # AOE random cada 3s
-		"homing_interval": 4.0,           # Homing cada 4s
-		"spread_interval": 5.0,           # Spread cada 5s
-		"orbital_count": 4,               # 4 orbitales
+		"attack_interval": 1.1,           # AUMENTADO de 0.8 a 1.1s
+		"aoe_spawn_interval": 4.0,        # AUMENTADO de 3 a 4s
+		"homing_interval": 5.0,           # AUMENTADO de 4 a 5s
+		"spread_interval": 6.0,           # AUMENTADO de 5 a 6s
+		"orbital_count": 3,               # REDUCIDO de 4 a 3
 		"enable_homing": true,
 		"enable_spread": true             # Habilitar spread
 	},
 	20: {
 		"hp_mult": 2.2,
-		"damage_mult": 1.8,
-		"cooldown_mult": 0.4,             # Cooldowns muy cortos
-		"abilities_unlocked": 6,          # Todas las habilidades
-		"max_combo": 5,                   # Combos de 5
-		"combo_delay": 0.5,               # 0.5s entre habilidades
+		"damage_mult": 1.5,               # REDUCIDO de 1.8
+		"cooldown_mult": 0.5,             # AUMENTADO de 0.4
+		"abilities_unlocked": 5,          # REDUCIDO de 6 a 5
+		"max_combo": 4,                   # REDUCIDO de 5 a 4
+		"combo_delay": 0.8,               # AUMENTADO de 0.5 a 0.8s
 		"phase_threshold_mult": 1.5,
-		"attack_interval": 0.6,           # Ataca cada 0.6s
-		"aoe_spawn_interval": 2.0,        # AOE random cada 2s
-		"homing_interval": 3.0,           # Homing cada 3s
-		"spread_interval": 4.0,           # Spread cada 4s
-		"orbital_count": 5,               # 5 orbitales
+		"attack_interval": 0.9,           # AUMENTADO de 0.6 a 0.9s
+		"aoe_spawn_interval": 3.0,        # AUMENTADO de 2 a 3s
+		"homing_interval": 4.0,           # AUMENTADO de 3 a 4s
+		"spread_interval": 5.0,           # AUMENTADO de 4 a 5s
+		"orbital_count": 4,               # REDUCIDO de 5 a 4
 		"enable_homing": true,
 		"enable_spread": true
 	}
