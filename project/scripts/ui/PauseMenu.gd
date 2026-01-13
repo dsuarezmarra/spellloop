@@ -625,9 +625,9 @@ const DEFAULT_STAT_VALUES = {
 	# Criticos
 	"crit_chance": 0.05,
 	"crit_damage": 2.0,
-	# Utilidad
-	"move_speed": 1.0,
-	"pickup_range": 1.0,
+	# Utilidad (move_speed y pickup_range son valores ABSOLUTOS, no multiplicadores)
+	"move_speed": 50.0,      # Velocidad base en px/s
+	"pickup_range": 50.0,    # Rango base de recogida en px
 	"xp_mult": 1.0,
 	"coin_value_mult": 1.0,
 	"luck": 0.0,
@@ -685,8 +685,29 @@ func _format_stat_value_fallback(stat_name: String, value: float) -> String:
 	if stat_name in ["crit_chance", "dodge_chance", "life_steal", "thorns_percent", "curse", "growth"]:
 		return "%.0f%%" % (value * 100)
 	
+	# Stats de velocidad y rango son valores ABSOLUTOS (base 50)
+	if stat_name == "move_speed":
+		var base = 50.0
+		var diff_percent = ((value - base) / base) * 100
+		if diff_percent > 0:
+			return "+%.0f%%" % diff_percent
+		elif diff_percent < 0:
+			return "%.0f%%" % diff_percent
+		else:
+			return "+0%"
+	
+	if stat_name == "pickup_range":
+		var base = 50.0
+		var diff_percent = ((value - base) / base) * 100
+		if diff_percent > 0:
+			return "+%.0f%%" % diff_percent
+		elif diff_percent < 0:
+			return "%.0f%%" % diff_percent
+		else:
+			return "+0%"
+	
 	# Stats multiplicadores (base 1.0)
-	if stat_name in ["damage_mult", "attack_speed_mult", "area_mult", "move_speed", "pickup_range", 
+	if stat_name in ["damage_mult", "attack_speed_mult", "area_mult",
 					  "xp_mult", "coin_value_mult", "crit_damage", "projectile_speed_mult", 
 					  "duration_mult", "knockback_mult", "damage_taken_mult", "gold_mult", "magnet_strength"]:
 		if value >= 1.0:
@@ -888,6 +909,26 @@ const ELEMENT_ICONS = {
 	"physical": "⚔️"
 }
 
+# Helper para convertir enum de elemento a string
+func _element_to_string(element_value) -> String:
+	# Si ya es string, retornar en minúsculas
+	if element_value is String:
+		return element_value.to_lower()
+	# Si es int (enum), mapear a nombre
+	var element_names = ["ice", "fire", "lightning", "arcane", "shadow", "nature", "wind", "earth", "light", "void", "physical"]
+	if element_value is int and element_value >= 0 and element_value < element_names.size():
+		return element_names[element_value]
+	return "physical"
+
+# Helper para convertir enum de rareza a string
+func _rarity_to_string(rarity_value) -> String:
+	if rarity_value is String:
+		return rarity_value.to_lower()
+	var rarity_names = ["common", "uncommon", "rare", "epic", "legendary"]
+	if rarity_value is int and rarity_value >= 0 and rarity_value < rarity_names.size():
+		return rarity_names[rarity_value]
+	return "common"
+
 func _show_weapons_tab() -> void:
 	var scroll = ScrollContainer.new()
 	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -961,9 +1002,11 @@ func _create_weapon_card(weapon) -> Control:
 	var card = PanelContainer.new()
 	card.custom_minimum_size = Vector2(400, 0)
 
-	# Obtener elemento y rareza
-	var element = str(weapon.element if "element" in weapon else weapon.element_type if "element_type" in weapon else "physical").to_lower()
-	var rarity = str(weapon.rarity if "rarity" in weapon else "common").to_lower()
+	# Obtener elemento y rareza (convertir a string si es enum/int)
+	var element_raw = weapon.element if "element" in weapon else weapon.element_type if "element_type" in weapon else "physical"
+	var element = str(element_raw).to_lower() if element_raw is String else _element_to_string(element_raw)
+	var rarity_raw = weapon.rarity if "rarity" in weapon else "common"
+	var rarity = str(rarity_raw).to_lower() if rarity_raw is String else _rarity_to_string(rarity_raw)
 	var weapon_level = weapon.level if "level" in weapon else 1
 	var max_level = weapon.max_level if "max_level" in weapon else 8
 
@@ -1163,7 +1206,8 @@ func _add_weapon_stat(grid: GridContainer, icon: String, stat_name: String, valu
 
 func _get_weapon_special_effect(weapon) -> String:
 	"""Obtener descripción del efecto especial del arma"""
-	var element = str(weapon.element if "element" in weapon else weapon.element_type if "element_type" in weapon else "").to_lower()
+	var element_raw = weapon.element if "element" in weapon else weapon.element_type if "element_type" in weapon else ""
+	var element = str(element_raw).to_lower() if element_raw is String else _element_to_string(element_raw)
 
 	# Efectos por defecto según elemento
 	match element:
@@ -1238,7 +1282,8 @@ func _create_weapon_details_popup(weapon) -> Control:
 		stats = attack_manager.get_weapon_full_stats(weapon)
 	
 	# Fallback a datos básicos del weapon si no hay stats
-	var element = stats.get("element", str(weapon.element if "element" in weapon else weapon.element_type if "element_type" in weapon else "physical")).to_lower()
+	var element_raw = stats.get("element", weapon.element if "element" in weapon else weapon.element_type if "element_type" in weapon else "physical")
+	var element = str(element_raw).to_lower() if element_raw is String else _element_to_string(element_raw)
 	var element_color = ELEMENT_COLORS.get(element, Color.WHITE)
 	
 	# Estilo del panel

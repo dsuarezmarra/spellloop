@@ -466,8 +466,8 @@ const BASE_STATS: Dictionary = {
 	"kill_heal": 0.0,              # HP por kill
 
 	# Utilidad
-	"move_speed": 1.0,
-	"pickup_range": 1.0,
+	"move_speed": 50.0,           # Velocidad en px/s (valor absoluto, no multiplicador)
+	"pickup_range": 50.0,         # Rango de recogida en px (valor absoluto)
 	"pickup_range_flat": 0.0,
 	"magnet_strength": 1.0,        # Velocidad de atracción
 	"xp_mult": 1.0,
@@ -491,8 +491,8 @@ const STAT_LIMITS: Dictionary = {
 	"cooldown_mult": {"min": 0.1, "max": 2.0},
 	"damage_mult": {"min": 0.1, "max": 10.0},
 	"damage_taken_mult": {"min": 0.1, "max": 3.0},
-	"move_speed": {"min": 0.3, "max": 3.0},
-	"pickup_range": {"min": 0.5, "max": 5.0},
+	"move_speed": {"min": 15.0, "max": 150.0},  # Valor absoluto en px/s
+	"pickup_range": {"min": 25.0, "max": 250.0}, # Valor absoluto en px
 	"area_mult": {"min": 0.5, "max": 3.0},
 	"projectile_speed_mult": {"min": 0.5, "max": 3.0},
 	"duration_mult": {"min": 0.5, "max": 3.0},
