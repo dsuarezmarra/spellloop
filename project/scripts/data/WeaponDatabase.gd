@@ -386,7 +386,7 @@ const LEVEL_UPGRADES: Dictionary = {
 	4: {"projectile_count_add": 1, "description": "+1 Proyectil"},
 	5: {"effect_mult": 1.5, "no_effect_damage_mult": 1.15, "description": "+50% Efecto / +15% Daño"},
 	6: {"damage_mult": 1.25, "description": "+25% Daño"},
-	7: {"pierce_add": 2, "max_pierce_area_mult": 1.2, "description": "+2 Pierce / +20% Área"},
+	7: {"pierce_add": 2, "max_pierce_area_mult": 1.2, "description": "+2 Penetración / +20% Área"},
 	8: {"all_mult": 1.3, "description": "¡MÁXIMO! +30% a todo"}
 }
 

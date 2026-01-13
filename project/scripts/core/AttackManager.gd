@@ -501,6 +501,13 @@ func _process(delta: float) -> void:
 			var did_fire = false
 			if weapon is BaseWeapon:
 				did_fire = weapon.perform_attack(player, player_stats)
+				# CRÍTICO: Aplicar attack_speed_mult global al cooldown del arma
+				if did_fire:
+					var gs = _get_combined_global_stats()
+					var attack_speed_mult = maxf(gs.get("attack_speed_mult", 1.0), 0.1)
+					if attack_speed_mult > 1.0 and "current_cooldown" in weapon:
+						# Reducir el cooldown por la velocidad de ataque global
+						weapon.current_cooldown = weapon.cooldown / attack_speed_mult
 			else:
 				# Arma NO-BaseWeapon pero con métodos tick_cooldown/is_ready_to_fire
 				var gs = _get_combined_global_stats()
