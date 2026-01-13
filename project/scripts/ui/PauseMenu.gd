@@ -1977,6 +1977,7 @@ func _activate_current_selection() -> void:
 				0: _on_resume_pressed()
 				1: _on_options_pressed()
 				2: _on_quit_pressed()
+				3: _on_postponed_pressed()  # Mejoras pospuestas
 
 func _update_navigation_visuals() -> void:
 	"""Actualizar todos los visuales de navegacion"""

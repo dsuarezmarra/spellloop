@@ -631,7 +631,8 @@ func _get_modified_effect_duration(base_duration: float) -> float:
 	Obtener la duración del efecto modificada por status_duration_mult de PlayerStats.
 	Esto afecta a efectos como slow, burn, freeze, stun, etc.
 	"""
-	var tree = get_tree()
+	# BaseWeapon extiende RefCounted, no Node, así que usamos Engine.get_main_loop()
+	var tree = Engine.get_main_loop() as SceneTree
 	if not tree:
 		return base_duration
 	
