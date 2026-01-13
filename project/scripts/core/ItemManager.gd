@@ -221,6 +221,7 @@ func apply_item_effect(item_type: String, _item_data: Dictionary):
 			# Debug desactivado: print("❤️ Vida máxima aumentada")
 		"speed_boost":
 			# Debug desactivado: print("👢 Velocidad de movimiento aumentada")
+			pass
 		"heal_full":
 			if player and player.has_method("heal"):
 				player.heal(999)

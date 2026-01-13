@@ -12,7 +12,7 @@ signal pickup_range_changed(new_range: float)
 
 var hp: int = 100
 var max_hp: int = 100
-var move_speed: float = 220.0
+var move_speed: float = 120.0
 var armor: int = 0
 var magnet: float = 1.0
 var pickup_radius: float = 64.0
