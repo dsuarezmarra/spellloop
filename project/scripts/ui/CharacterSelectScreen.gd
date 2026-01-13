@@ -522,11 +522,11 @@ func _update_stats_display() -> void:
 
 	var stats = char_data.get("stats", {})
 
-	# All character stats in display order
+	# All character stats in display order (base values = Frost Mage stats)
 	var stat_display = [
 		# Row 1: Core stats
 		{"key": "max_health", "name": "HP", "base": 100, "format": "%.0f", "invert": false},
-		{"key": "move_speed", "name": "SPD", "base": 200, "format": "%.0f", "invert": false},
+		{"key": "move_speed", "name": "SPD", "base": 50, "format": "%.0f", "invert": false},
 		{"key": "armor", "name": "ARM", "base": 0, "format": "%.0f", "invert": false},
 		# Row 2: Combat stats
 		{"key": "damage_mult", "name": "DMG", "base": 1.0, "format": "x%.2f", "invert": false},

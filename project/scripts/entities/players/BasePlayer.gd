@@ -21,8 +21,8 @@ var attack_manager = null
 var game_manager = null
 
 # ========== ESTADÍSTICAS BASE ==========
-@export var move_speed: float = 120.0
-@export var base_move_speed: float = 120.0  # Velocidad original sin debuffs
+@export var move_speed: float = 50.0
+@export var base_move_speed: float = 50.0  # Velocidad original sin debuffs
 @export var pickup_radius: float = 64.0
 @export var hp: int = 100
 @export var max_hp: int = 100
