@@ -12,6 +12,14 @@ static var _projectile_scene: PackedScene = null
 static var _life_steal_accumulator: float = 0.0
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# RESET PARA NUEVA PARTIDA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+static func reset_for_new_game() -> void:
+	"""Resetear estado estático para nueva partida"""
+	_life_steal_accumulator = 0.0
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # MAPEO DE ELEMENTOS
 # ═══════════════════════════════════════════════════════════════════════════════
 

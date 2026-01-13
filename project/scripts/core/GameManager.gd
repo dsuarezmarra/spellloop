@@ -122,6 +122,11 @@ func start_new_run() -> void:
 	# Resetear tracking de bosses para nueva partida
 	SpawnConfig.reset_boss_tracking()
 
+	# CRÍTICO: Resetear AttackManager para nueva partida
+	# Esto limpia armas, stats y mejoras de la partida anterior
+	if attack_manager and attack_manager.has_method("reset_for_new_game"):
+		attack_manager.reset_for_new_game()
+
 	# Initialize run data
 	current_run_data = {
 		"start_time": run_start_time,

@@ -685,6 +685,53 @@ func clear_weapons() -> void:
 
 	# Debug desactivado: print("[AttackManager] Todas las armas removidas")
 
+func reset_for_new_game() -> void:
+	"""
+	CRÍTICO: Resetear completamente el estado para una nueva partida.
+	Debe llamarse al iniciar una nueva partida para evitar que el estado
+	de la partida anterior persista.
+	"""
+	print("[AttackManager] 🔄 Reseteando estado para nueva partida...")
+	
+	# 1. Limpiar todas las armas
+	clear_weapons()
+	
+	# 2. Limpiar el mapa de stats por arma
+	weapon_stats_map.clear()
+	
+	# 3. Resetear GlobalWeaponStats a sus valores por defecto
+	if global_weapon_stats:
+		global_weapon_stats.reset()
+	
+	# 4. Resetear legacy player stats
+	_legacy_player_stats = {
+		"damage_mult": 1.0,
+		"attack_speed_mult": 1.0,
+		"crit_chance": 0.0,
+		"crit_damage": 2.0,
+		"area_mult": 1.0,
+		"projectile_speed_mult": 1.0,
+		"duration_mult": 1.0,
+		"extra_projectiles": 0,
+		"knockback_mult": 1.0,
+		"life_steal": 0.0
+	}
+	
+	# 5. Resetear FusionManager (slots perdidos, historial)
+	if fusion_manager:
+		fusion_manager.reset()
+	
+	# 6. Resetear estado estático de ProjectileFactory
+	ProjectileFactory.reset_for_new_game()
+	
+	# 7. Resetear referencia al jugador
+	player = null
+	
+	# 8. Desactivar temporalmente hasta que se reinicialice
+	is_active = false
+	
+	print("[AttackManager] ✓ Estado reseteado completamente")
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # STATS GLOBALES DE ARMAS (Nuevo sistema)
 # ═══════════════════════════════════════════════════════════════════════════════

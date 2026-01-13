@@ -48,6 +48,15 @@ var current_max_slots: int:
 		return STARTING_MAX_SLOTS - slots_lost
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# RESET PARA NUEVA PARTIDA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func reset() -> void:
+	"""Resetear estado para nueva partida"""
+	slots_lost = 0
+	fusion_history.clear()
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # VERIFICACIÓN DE FUSIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
 

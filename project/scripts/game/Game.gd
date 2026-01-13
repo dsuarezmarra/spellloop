@@ -454,6 +454,12 @@ func _start_game() -> void:
 	game_running = true
 	game_time = 0.0
 	is_paused = false
+	
+	# CRÍTICO: Resetear AttackManager para nueva partida
+	# Esto limpia armas, stats y mejoras de la partida anterior
+	var attack_manager = get_tree().get_first_node_in_group("attack_manager")
+	if attack_manager and attack_manager.has_method("reset_for_new_game"):
+		attack_manager.reset_for_new_game()
 
 	# Resetear stats
 	run_stats = {
