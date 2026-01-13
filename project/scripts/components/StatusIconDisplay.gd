@@ -209,8 +209,8 @@ func _ready() -> void:
 	else:
 		icon_size = ENEMY_ICON_SIZE
 	
-	# Posicionar encima de la barra de vida
-	position.y = offset_y
+	# NOTA: La posición Y se establece externamente por BasePlayer/EnemyBase
+	# No sobreescribir aquí para permitir posicionamiento personalizado
 
 func _process(delta: float) -> void:
 	_update_effects(delta)

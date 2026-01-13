@@ -346,9 +346,53 @@ func _initialize_status_icon_display() -> void:
 	status_icon_display.set_entity_type(true, false)
 	add_child(status_icon_display)
 	
-	# Posicionar encima de la barra de vida
-	# La barra está aproximadamente en -40 a -50 según la escala
-	status_icon_display.position.y = -55.0
+	# Posicionar después de que el sprite esté completamente cargado
+	call_deferred("_position_player_status_icons")
+
+func _position_player_status_icons() -> void:
+	"""Posicionar los iconos de estado encima de la barra de vida del jugador"""
+	if not status_icon_display:
+		return
+	
+	# Obtener la escala del sprite
+	var sprite_scale = player_sprite_scale
+	var visual_calibrator = get_tree().root.get_node_or_null("VisualCalibrator") if get_tree() else null
+	if visual_calibrator and visual_calibrator.has_method("get_player_scale"):
+		sprite_scale = visual_calibrator.get_player_scale()
+	
+	# Calcular la parte superior del sprite
+	var sprite_visual_top: float = -32.0  # Fallback
+	
+	if animated_sprite and is_instance_valid(animated_sprite):
+		var frame_height: float = 0.0
+		# Intentar obtener altura del frame actual
+		if animated_sprite.sprite_frames and animated_sprite.sprite_frames.get_frame_count("default") > 0:
+			var frame_texture = animated_sprite.sprite_frames.get_frame_texture("default", 0)
+			if frame_texture:
+				frame_height = frame_texture.get_height()
+		elif animated_sprite.sprite_frames and animated_sprite.animation:
+			var anim = animated_sprite.animation
+			if animated_sprite.sprite_frames.get_frame_count(anim) > 0:
+				var frame_texture = animated_sprite.sprite_frames.get_frame_texture(anim, 0)
+				if frame_texture:
+					frame_height = frame_texture.get_height()
+		
+		if frame_height > 0:
+			var visual_height = frame_height * animated_sprite.scale.y
+			sprite_visual_top = -(visual_height / 2.0)
+		else:
+			# Fallback basado en escala típica
+			sprite_visual_top = -40.0 * sprite_scale
+	else:
+		# Fallback basado en escala
+		sprite_visual_top = -40.0 * sprite_scale
+	
+	# La barra de vida está en: bar_offset_y = -30.0 - (sprite_scale * 40.0)
+	# Los iconos van encima de la barra (4px alto) + margen (4px) + mitad icono (12px)
+	var bar_offset_y = -30.0 - (sprite_scale * 40.0)
+	# Usar el punto más alto entre el sprite top y la barra
+	var icon_top = min(sprite_visual_top, bar_offset_y) - 20.0
+	status_icon_display.position.y = icon_top
 
 func _update_status_visuals(delta: float) -> void:
 	"""Actualizar efectos visuales de debuffs"""

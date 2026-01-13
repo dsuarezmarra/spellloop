@@ -137,10 +137,55 @@ func _initialize_status_icon_display() -> void:
 	status_icon_display.set_entity_type(false, is_boss)
 	add_child(status_icon_display)
 	
-	# Posicionar encima del enemigo (ajustar según escala)
-	var scale_factor = _get_scale_for_tier()
-	var offset_y = -25.0 * scale_factor - 8.0
-	status_icon_display.position.y = offset_y
+	# Calcular posición Y basándose en el tamaño real del sprite
+	# Lo hacemos deferred para asegurar que el sprite está cargado
+	call_deferred("_position_status_icons")
+
+func _position_status_icons() -> void:
+	"""Posicionar los iconos de estado encima del sprite del enemigo"""
+	if not status_icon_display:
+		return
+	
+	# Calcular el alto visual del sprite en coordenadas locales
+	var sprite_visual_top: float = -32.0  # Fallback: 32px encima del centro
+	var icon_size: float = ENEMY_ICON_SIZE if not is_boss else BOSS_ICON_SIZE
+	
+	# Constantes de tamaño de iconos
+	const ENEMY_ICON_SIZE: float = 14.0
+	const BOSS_ICON_SIZE: float = 18.0
+	
+	# Intentar obtener el bounding box real del sprite
+	if animated_sprite and is_instance_valid(animated_sprite):
+		# AnimatedEnemySprite: usar frame_height y escala
+		var base_height: float = 0.0
+		if animated_sprite.has_method("get_frame_size"):
+			base_height = animated_sprite.get_frame_size().y
+		elif "frame_height" in animated_sprite and animated_sprite.frame_height > 0:
+			base_height = animated_sprite.frame_height
+		elif animated_sprite.texture:
+			base_height = animated_sprite.texture.get_height()
+		
+		if base_height > 0:
+			var visual_height = base_height * animated_sprite.scale.y
+			# El sprite está centrado, la parte superior es -altura/2
+			sprite_visual_top = -(visual_height / 2.0)
+	else:
+		# Buscar Sprite2D estático
+		var sprite = _find_sprite_node(self)
+		if sprite and sprite.texture:
+			var visual_height = sprite.texture.get_height() * sprite.scale.y
+			if sprite.centered:
+				sprite_visual_top = -(visual_height / 2.0)
+			else:
+				sprite_visual_top = -visual_height
+		else:
+			# Fallback basado en tier
+			var scale_factor = _get_scale_for_tier()
+			sprite_visual_top = -40.0 * scale_factor
+	
+	# Posicionar iconos encima del sprite con margen
+	# Margen adicional: espacio para barra de vida (10px) + separación (6px)
+	status_icon_display.position.y = sprite_visual_top - 16.0 - (icon_size / 2.0)
 
 func _get_scale_for_tier() -> float:
 	"""Obtener escala según tier del enemigo"""
