@@ -17,7 +17,6 @@ signal option_selected(option: Dictionary)
 signal reroll_used()
 signal banish_used(option_index: int)
 signal skip_used()
-signal upgrade_postponed()  # Nueva señal: mejora pospuesta (ESC sin elegir)
 signal panel_closed()
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -80,6 +79,10 @@ var button_panels: Array = []
 var reroll_count: int = 3
 var banish_count: int = 2
 var locked: bool = false
+
+# Modal de confirmación para cerrar sin elegir
+var _confirm_modal: Control = null
+var _confirm_modal_visible: bool = false
 
 # Cache de estilos para evitar memory leaks
 var _option_styles: Array[StyleBoxFlat] = []  # Un estilo por panel de opción
@@ -365,13 +368,18 @@ func _input(event: InputEvent) -> void:
 				_navigate_vertical(1)
 				handled = true
 			KEY_SPACE, KEY_ENTER:
-				_confirm_selection()
+				if _confirm_modal_visible:
+					_on_confirm_modal_confirm()
+				else:
+					_confirm_selection()
 				handled = true
 			KEY_ESCAPE:
-				if banish_mode:
+				if _confirm_modal_visible:
+					_on_confirm_modal_cancel()
+				elif banish_mode:
 					_cancel_banish_mode()
 				else:
-					_on_postpone()  # Posponer mejora en vez de saltar
+					_on_try_close()  # Mostrar modal de confirmación
 				handled = true
 
 	# === SOPORTE PARA GAMEPAD ===
@@ -390,13 +398,18 @@ func _input(event: InputEvent) -> void:
 				_navigate_vertical(1)
 				handled = true
 			JOY_BUTTON_A:
-				_confirm_selection()
+				if _confirm_modal_visible:
+					_on_confirm_modal_confirm()
+				else:
+					_confirm_selection()
 				handled = true
 			JOY_BUTTON_B:
-				if banish_mode:
+				if _confirm_modal_visible:
+					_on_confirm_modal_cancel()
+				elif banish_mode:
 					_cancel_banish_mode()
 				else:
-					_on_postpone()  # Posponer mejora en vez de saltar
+					_on_try_close()  # Mostrar modal de confirmación
 				handled = true
 
 	# === SOPORTE PARA JOYSTICK ANALOGICO ===
@@ -547,13 +560,140 @@ func _on_skip() -> void:
 	skip_used.emit()
 	_close_panel()
 
-func _on_postpone() -> void:
-	"""Posponer la mejora para más tarde (accesible desde menú de pausa)"""
-	if locked:
+func _on_try_close() -> void:
+	"""Intentar cerrar sin elegir - muestra modal de confirmación"""
+	if locked or _confirm_modal_visible:
 		return
 	
-	upgrade_postponed.emit()
+	_show_confirm_modal()
+
+func _show_confirm_modal() -> void:
+	"""Mostrar modal de confirmación para perder la mejora"""
+	if _confirm_modal:
+		_confirm_modal.queue_free()
+	
+	_confirm_modal_visible = true
+	
+	# Fondo semitransparente del modal
+	_confirm_modal = Control.new()
+	_confirm_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(_confirm_modal)
+	
+	var modal_bg = ColorRect.new()
+	modal_bg.color = Color(0, 0, 0, 0.7)
+	modal_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_confirm_modal.add_child(modal_bg)
+	
+	# Panel central
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(400, 180)
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.15, 0.12, 0.18, 0.98)
+	panel_style.border_color = Color(1.0, 0.4, 0.4)
+	panel_style.set_border_width_all(3)
+	panel_style.set_corner_radius_all(12)
+	panel.add_theme_stylebox_override("panel", panel_style)
+	
+	# Centrar panel
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_confirm_modal.add_child(center)
+	center.add_child(panel)
+	
+	# Contenido
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 20)
+	panel.add_child(vbox)
+	
+	# Margen interno
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 30)
+	margin.add_theme_constant_override("margin_right", 30)
+	margin.add_theme_constant_override("margin_top", 25)
+	margin.add_theme_constant_override("margin_bottom", 25)
+	vbox.add_child(margin)
+	
+	var inner_vbox = VBoxContainer.new()
+	inner_vbox.add_theme_constant_override("separation", 20)
+	margin.add_child(inner_vbox)
+	
+	# Icono y título
+	var title_label = Label.new()
+	title_label.text = "⚠️ ¿Salir sin elegir mejora?"
+	title_label.add_theme_font_size_override("font_size", 22)
+	title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	inner_vbox.add_child(title_label)
+	
+	# Mensaje
+	var msg_label = Label.new()
+	msg_label.text = "Perderás esta oportunidad de mejora."
+	msg_label.add_theme_font_size_override("font_size", 16)
+	msg_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
+	msg_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	inner_vbox.add_child(msg_label)
+	
+	# Botones
+	var btn_container = HBoxContainer.new()
+	btn_container.add_theme_constant_override("separation", 30)
+	btn_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	inner_vbox.add_child(btn_container)
+	
+	# Botón Cancelar (volver a elegir)
+	var cancel_btn = Button.new()
+	cancel_btn.text = "Volver a elegir"
+	cancel_btn.custom_minimum_size = Vector2(140, 40)
+	cancel_btn.add_theme_font_size_override("font_size", 14)
+	var cancel_style = StyleBoxFlat.new()
+	cancel_style.bg_color = Color(0.2, 0.5, 0.3)
+	cancel_style.set_corner_radius_all(8)
+	cancel_btn.add_theme_stylebox_override("normal", cancel_style)
+	var cancel_hover = StyleBoxFlat.new()
+	cancel_hover.bg_color = Color(0.3, 0.65, 0.4)
+	cancel_hover.set_corner_radius_all(8)
+	cancel_btn.add_theme_stylebox_override("hover", cancel_hover)
+	cancel_btn.pressed.connect(_on_confirm_modal_cancel)
+	btn_container.add_child(cancel_btn)
+	
+	# Botón Confirmar (perder mejora)
+	var confirm_btn = Button.new()
+	confirm_btn.text = "Perder mejora"
+	confirm_btn.custom_minimum_size = Vector2(140, 40)
+	confirm_btn.add_theme_font_size_override("font_size", 14)
+	var confirm_style = StyleBoxFlat.new()
+	confirm_style.bg_color = Color(0.6, 0.2, 0.2)
+	confirm_style.set_corner_radius_all(8)
+	confirm_btn.add_theme_stylebox_override("normal", confirm_style)
+	var confirm_hover = StyleBoxFlat.new()
+	confirm_hover.bg_color = Color(0.75, 0.3, 0.3)
+	confirm_hover.set_corner_radius_all(8)
+	confirm_btn.add_theme_stylebox_override("hover", confirm_hover)
+	confirm_btn.pressed.connect(_on_confirm_modal_confirm)
+	btn_container.add_child(confirm_btn)
+	
+	# Hint de teclado
+	var hint = Label.new()
+	hint.text = "ESC: Volver  |  ENTER: Perder mejora"
+	hint.add_theme_font_size_override("font_size", 12)
+	hint.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	inner_vbox.add_child(hint)
+
+func _on_confirm_modal_cancel() -> void:
+	"""Cerrar modal y volver a elegir"""
+	_hide_confirm_modal()
+
+func _on_confirm_modal_confirm() -> void:
+	"""Confirmar pérdida de mejora y cerrar panel"""
+	_hide_confirm_modal()
 	_close_panel()
+
+func _hide_confirm_modal() -> void:
+	"""Ocultar y destruir el modal"""
+	if _confirm_modal:
+		_confirm_modal.queue_free()
+		_confirm_modal = null
+	_confirm_modal_visible = false
 
 func _close_panel() -> void:
 	# NOTA: NO despausamos aquí - Game.gd se encarga de eso

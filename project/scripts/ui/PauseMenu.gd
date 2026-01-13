@@ -18,7 +18,6 @@ var player_stats: Node = null  # Tipo Node para evitar errores de asignacion
 var attack_manager: Node = null  # Tipo Node para evitar errores de asignacion
 var player_ref: Node = null
 var experience_manager_ref: Node = null
-var game_ref: Node = null  # Referencia a Game.gd para mejoras pospuestas
 
 # Estado
 var game_time: float = 0.0
@@ -29,11 +28,10 @@ var _options_open: bool = false  # Bloquear input cuando opciones esta abierto
 enum NavRow { TABS, CONTENT, ACTIONS }
 var current_nav_row: NavRow = NavRow.TABS
 var content_selection: int = 0  # Indice del elemento seleccionado en el contenido
-var action_selection: int = 0   # 0=Continuar, 1=Opciones, 2=Menu, 3=MejorasPendientes
+var action_selection: int = 0   # 0=Continuar, 1=Opciones, 2=Menu
 var content_items: Array = []   # Array de elementos navegables en el contenido
 var action_buttons: Array = []  # Array de botones de accion
 var content_scroll: ScrollContainer = null  # Referencia al scroll del contenido actual
-var postponed_button: Button = null  # Botón de mejoras pospuestas (puede no existir)
 
 # UI Nodes creados dinamicamente
 var main_panel: PanelContainer = null
@@ -175,19 +173,6 @@ func _create_ui() -> void:
 	buttons_row.add_child(quit_btn)
 	action_buttons.append(quit_btn)
 
-	# Botón de mejoras pospuestas (solo visible si hay pendientes)
-	postponed_button = Button.new()
-	postponed_button.name = "PostponedButton"
-	postponed_button.text = "⬆️ Mejoras (0)"
-	postponed_button.custom_minimum_size = Vector2(180, 45)
-	postponed_button.add_theme_font_size_override("font_size", 18)
-	postponed_button.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2))
-	postponed_button.pressed.connect(_on_postponed_pressed)
-	postponed_button.focus_mode = Control.FOCUS_NONE
-	postponed_button.visible = false  # Oculto por defecto
-	buttons_row.add_child(postponed_button)
-	# NO añadir a action_buttons todavía - se gestiona dinámicamente
-
 	# Help text
 	var help = Label.new()
 	help.name = "HelpLabel"
@@ -259,10 +244,6 @@ func _find_references() -> void:
 		if not experience_manager_ref:
 			experience_manager_ref = tree.root.get_node_or_null("ExperienceManager")
 
-	# Buscar Game.gd para mejoras pospuestas
-	if not game_ref:
-		game_ref = tree.root.get_node_or_null("Game")
-
 func _is_player_stats(node: Node) -> bool:
 	"""Verificar si un nodo es realmente un PlayerStats"""
 	if node == null:
@@ -307,9 +288,6 @@ func show_pause_menu(current_time: float = 0.0) -> void:
 
 	# Obtener referencias automaticamente si no se inicializo
 	_find_references()
-	
-	# Actualizar botón de mejoras pospuestas
-	_update_postponed_button()
 
 	_update_time_display()
 	_update_tabs_visual()
@@ -1977,7 +1955,6 @@ func _activate_current_selection() -> void:
 				0: _on_resume_pressed()
 				1: _on_options_pressed()
 				2: _on_quit_pressed()
-				3: _on_postponed_pressed()  # Mejoras pospuestas
 
 func _update_navigation_visuals() -> void:
 	"""Actualizar todos los visuales de navegacion"""
@@ -2107,56 +2084,6 @@ func _on_quit_pressed() -> void:
 
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
-
-func _on_postponed_pressed() -> void:
-	"""Abrir panel de mejora pospuesta"""
-	_play_button_sound()
-	
-	if not game_ref or not game_ref.has_method("claim_postponed_upgrade"):
-		push_warning("[PauseMenu] No se encontró Game.gd o no tiene claim_postponed_upgrade")
-		return
-	
-	if not game_ref.has_method("has_postponed_upgrades") or not game_ref.has_postponed_upgrades():
-		push_warning("[PauseMenu] No hay mejoras pospuestas")
-		return
-	
-	# Cerrar menú de pausa y abrir el LevelUp
-	hide_pause_menu()
-	game_ref.claim_postponed_upgrade()
-
-func _update_postponed_button() -> void:
-	"""Actualizar visibilidad y texto del botón de mejoras pospuestas"""
-	if not postponed_button:
-		return
-	
-	var count = 0
-	if game_ref and game_ref.has_method("get_postponed_upgrades_count"):
-		count = game_ref.get_postponed_upgrades_count()
-	
-	if count > 0:
-		postponed_button.text = "⬆️ Mejoras (%d)" % count
-		postponed_button.visible = true
-		
-		# Añadir al array de botones de acción si no está
-		if postponed_button not in action_buttons:
-			action_buttons.append(postponed_button)
-		
-		# Estilo destacado para llamar la atención
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.3, 0.25, 0.1)
-		style.border_color = Color(1.0, 0.8, 0.2)
-		style.set_border_width_all(2)
-		style.set_corner_radius_all(8)
-		postponed_button.add_theme_stylebox_override("normal", style)
-		
-		var hover_style = style.duplicate()
-		hover_style.bg_color = Color(0.4, 0.35, 0.15)
-		postponed_button.add_theme_stylebox_override("hover", hover_style)
-	else:
-		postponed_button.visible = false
-		# Quitar del array de botones de acción
-		if postponed_button in action_buttons:
-			action_buttons.erase(postponed_button)
 
 func _save_game_state_for_resume() -> void:
 	"""Guardar todo el estado necesario para reanudar la partida"""
