@@ -194,6 +194,9 @@ func initialize(player_ref: CharacterBody2D) -> void:
 	# Debug desactivado: print("[AttackManager] Inicializado para player: %s" % player.name)
 	# Debug desactivado: print("[AttackManager] Slots disponibles: %d/%d" % [current_weapon_count, max_weapon_slots])
 
+	# Activar el sistema de ataque
+	is_active = true
+	
 	# Iniciar actualización de cooldowns
 	set_process(true)
 
