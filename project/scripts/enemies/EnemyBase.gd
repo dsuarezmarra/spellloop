@@ -146,13 +146,13 @@ func _position_status_icons() -> void:
 	if not status_icon_display:
 		return
 	
-	# Calcular el alto visual del sprite en coordenadas locales
-	var sprite_visual_top: float = -32.0  # Fallback: 32px encima del centro
-	var icon_size: float = ENEMY_ICON_SIZE if not is_boss else BOSS_ICON_SIZE
-	
 	# Constantes de tamaño de iconos
 	const ENEMY_ICON_SIZE: float = 14.0
 	const BOSS_ICON_SIZE: float = 18.0
+	
+	# Calcular el alto visual del sprite en coordenadas locales
+	var sprite_visual_top: float = -32.0  # Fallback: 32px encima del centro
+	var icon_size: float = ENEMY_ICON_SIZE if not is_boss else BOSS_ICON_SIZE
 	
 	# Intentar obtener el bounding box real del sprite
 	if animated_sprite and is_instance_valid(animated_sprite):
