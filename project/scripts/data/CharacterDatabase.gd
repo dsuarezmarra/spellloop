@@ -56,7 +56,7 @@ const CHARACTERS: Dictionary = {
 		"stats": {
 			"max_health": 100,
 			"health_regen": 0.0,
-			"move_speed": 50.0,  # STANDARD speed
+			"move_speed": 100.0,  # STANDARD speed
 			"armor": 0,
 			"damage_mult": 1.0,
 			"cooldown_mult": 1.0,
@@ -107,7 +107,7 @@ const CHARACTERS: Dictionary = {
 		"stats": {
 			"max_health": 90,
 			"health_regen": 0.0,
-			"move_speed": 52.0,  # Slightly faster
+			"move_speed": 104.0,  # Slightly faster
 			"armor": 0,
 			"damage_mult": 1.15,  # +15% damage
 			"cooldown_mult": 1.0,
@@ -155,7 +155,7 @@ const CHARACTERS: Dictionary = {
 		"stats": {
 			"max_health": 85,
 			"health_regen": 0.0,
-			"move_speed": 58.0,  # Fast
+			"move_speed": 116.0,  # Fast
 			"armor": 0,
 			"damage_mult": 1.0,
 			"cooldown_mult": 0.95,  # -5% cooldown
@@ -203,7 +203,7 @@ const CHARACTERS: Dictionary = {
 		"stats": {
 			"max_health": 110,
 			"health_regen": 0.5,  # Light regen
-			"move_speed": 44.0,  # Slow
+			"move_speed": 88.0,  # Slow
 			"armor": 5,  # Some armor
 			"damage_mult": 0.95,
 			"cooldown_mult": 1.0,
@@ -256,7 +256,7 @@ const CHARACTERS: Dictionary = {
 		"stats": {
 			"max_health": 70,  # Very fragile
 			"health_regen": 0.0,
-			"move_speed": 65.0,  # Very fast
+			"move_speed": 130.0,  # Very fast
 			"armor": 0,
 			"damage_mult": 1.2,  # +20% damage
 			"cooldown_mult": 0.9,  # -10% cooldown
@@ -309,7 +309,7 @@ const CHARACTERS: Dictionary = {
 		"stats": {
 			"max_health": 100,
 			"health_regen": 1.5,  # High regen
-			"move_speed": 46.0,  # Slightly slow
+			"move_speed": 92.0,  # Slightly slow
 			"armor": 0,
 			"damage_mult": 0.95,
 			"cooldown_mult": 1.0,
@@ -362,7 +362,7 @@ const CHARACTERS: Dictionary = {
 		"stats": {
 			"max_health": 80,
 			"health_regen": 0.0,
-			"move_speed": 75.0,  # The fastest
+			"move_speed": 150.0,  # The fastest
 			"armor": 0,
 			"damage_mult": 0.9,   # Less damage
 			"cooldown_mult": 0.95,
@@ -415,7 +415,7 @@ const CHARACTERS: Dictionary = {
 		"stats": {
 			"max_health": 150,  # Lots of health
 			"health_regen": 0.5,
-			"move_speed": 35.0,  # Very slow
+			"move_speed": 70.0,  # Very slow
 			"armor": 15,  # Lots of armor
 			"damage_mult": 1.1,
 			"cooldown_mult": 1.1,  # Slower attacks
@@ -468,7 +468,7 @@ const CHARACTERS: Dictionary = {
 		"stats": {
 			"max_health": 120,
 			"health_regen": 0.3,
-			"move_speed": 44.0,  # Slow
+			"move_speed": 88.0,  # Slow
 			"armor": 5,
 			"damage_mult": 1.0,
 			"cooldown_mult": 1.05,
@@ -521,7 +521,7 @@ const CHARACTERS: Dictionary = {
 		"stats": {
 			"max_health": 60,  # Very fragile
 			"health_regen": -0.5,  # LOSES health constantly
-			"move_speed": 50.0,  # Standard speed
+			"move_speed": 100.0,  # Standard speed
 			"armor": 0,
 			"damage_mult": 1.3,  # +30% damage
 			"cooldown_mult": 0.85,  # -15% cooldown

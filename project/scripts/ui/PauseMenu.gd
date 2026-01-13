@@ -626,7 +626,7 @@ const DEFAULT_STAT_VALUES = {
 	"crit_chance": 0.05,
 	"crit_damage": 2.0,
 	# Utilidad (move_speed y pickup_range son valores ABSOLUTOS, no multiplicadores)
-	"move_speed": 50.0,      # Velocidad base en px/s
+	"move_speed": 100.0,     # Velocidad base en px/s
 	"pickup_range": 50.0,    # Rango base de recogida en px
 	"xp_mult": 1.0,
 	"coin_value_mult": 1.0,
