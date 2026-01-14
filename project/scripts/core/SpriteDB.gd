@@ -28,22 +28,22 @@ func load_index():
 	# print("[SpriteDB] sprites_index cargado, llaves: ", sprites_index.keys())
 
 func get_player_sprites() -> Dictionary:
-	if sprites_index.has("players/wizard"):
-		return sprites_index["players/wizard"]
-	# Si no existe, buscar por keys que empiecen con players/wizard/
+	if sprites_index.has("players/frost_mage"):
+		return sprites_index["players/frost_mage"]
+	# Si no existe, buscar por keys que empiecen con players/frost_mage/
 	var out = {}
 	for k in sprites_index.keys():
-		if k.begins_with("players/wizard/"):
+		if k.begins_with("players/frost_mage/"):
 			var dir = k.get_slice("/", 2)
 			out[dir] = sprites_index[k]
 
 	# Fallback: si no hay entradas en el index, buscar archivos en disco
-	# bajo res://assets/sprites/players/wizard/ y mapear convenciones wizard_up/down/left/right
+	# bajo res://assets/sprites/players/frost_mage/ y mapear convenciones frost_mage_up/down/left/right
 	if out.is_empty():
-		var dir_path = "res://assets/sprites/players/wizard"
+		var dir_path = "res://assets/sprites/players/frost_mage"
 		var da = DirAccess.open(dir_path)
 		if da:
-			var mapping = {"down": "wizard_down.png", "up": "wizard_up.png", "left": "wizard_left.png", "right": "wizard_right.png"}
+			var mapping = {"down": "frost_mage_down.png", "up": "frost_mage_up.png", "left": "frost_mage_left.png", "right": "frost_mage_right.png"}
 			for d_key in mapping.keys():
 				var f = "%s/%s" % [dir_path, mapping[d_key]]
 				if FileAccess.file_exists(f):

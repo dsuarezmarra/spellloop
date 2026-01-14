@@ -269,7 +269,7 @@ func _create_carousel() -> void:
 func _create_character_frames(char_data: Dictionary) -> SpriteFrames:
 	"""Create SpriteFrames for a character with idle and walk animations"""
 	var frames = SpriteFrames.new()
-	var sprite_folder = char_data.get("sprite_folder", "wizard")
+	var sprite_folder = char_data.get("sprite_folder", "frost_mage")
 	var base_path = "res://assets/sprites/players/" + sprite_folder
 
 	# IDLE animation (single frame - first walk frame)
@@ -282,8 +282,8 @@ func _create_character_frames(char_data: Dictionary) -> SpriteFrames:
 	if idle_tex:
 		frames.add_frame("idle", idle_tex)
 	else:
-		# Fallback to wizard
-		idle_tex = load("res://assets/sprites/players/wizard/walk/wizard_walk_down_1.png")
+		# Fallback to frost_mage
+		idle_tex = load("res://assets/sprites/players/frost_mage/walk/frost_mage_walk_down_1.png")
 		if idle_tex:
 			frames.add_frame("idle", idle_tex)
 
@@ -299,7 +299,7 @@ func _create_character_frames(char_data: Dictionary) -> SpriteFrames:
 			frames.add_frame("walk", walk_tex)
 		else:
 			# Fallback
-			var fallback_path = "res://assets/sprites/players/wizard/walk/wizard_walk_down_%d.png" % i
+			var fallback_path = "res://assets/sprites/players/frost_mage/walk/frost_mage_walk_down_%d.png" % i
 			walk_tex = load(fallback_path)
 			if walk_tex:
 				frames.add_frame("walk", walk_tex)

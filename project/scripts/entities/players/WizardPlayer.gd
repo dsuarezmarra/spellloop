@@ -1,38 +1,38 @@
 # WizardPlayer.gd
-# Clase específica del personaje Wizard
+# Clase base del jugador - Mantiene el nombre por compatibilidad
 # Extiende BasePlayer con características y armas específicas del mago
 
 extends BasePlayer
 class_name WizardPlayer
 
-# ========== CARACTERÍSTICAS DEL WIZARD ==========
+# ========== CARACTERÍSTICAS DEL JUGADOR ==========
 
-# Estadísticas específicas del Wizard (más magia, menos defensa)
+# Estadísticas específicas (más magia, menos defensa)
 # Nota: move_speed, hp, max_hp, armor se heredan de BasePlayer
 
-# Bono de magia del Wizard
+# Bono de magia
 var spell_power: float = 1.2  # 20% más daño en hechizos
 var mana: int = 50
 var max_mana: int = 50
 
-# ========== ARMAS DEL WIZARD ==========
+# ========== ARMAS ==========
 var ice_wand = null
 var fire_wand = null  # Future
 
 # ========== CICLO DE VIDA ==========
 
 func _ready() -> void:
-	"""Inicialización específica del Wizard"""
-	# print("\n[WizardPlayer] ===== INICIALIZANDO WIZARD =====")
+	"""Inicialización del jugador"""
+	# print("\n[WizardPlayer] ===== INICIALIZANDO PLAYER =====")
 
-	# Asignar valores específicos del Wizard ANTES de llamar a super
-	character_class = "Wizard"
-	character_sprites_key = "wizard"
+	# Asignar valores por defecto ANTES de llamar a super
+	character_class = "FrostMage"
+	character_sprites_key = "frost_mage"
 
 	# Llamar a inicialización base
 	super._ready()
 
-	# print("[WizardPlayer] ===== WIZARD INICIALIZADO =====\n")
+	# print("[WizardPlayer] ===== PLAYER INICIALIZADO =====\n")
 
 func set_character_sprites(sprite_folder: String) -> void:
 	"""Change the character's sprite folder and reload animations"""

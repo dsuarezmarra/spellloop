@@ -83,7 +83,7 @@ const CHARACTERS: Dictionary = {
 		"color_primary": Color(0.4, 0.8, 1.0),      # Ice blue
 		"color_secondary": Color(0.3, 0.6, 0.9),    # Deep blue
 		"icon": "??",
-		"sprite_folder": "wizard",  # Uses current wizard sprites
+		"sprite_folder": "frost_mage",
 		"portrait": "res://assets/sprites/players/portraits/frost_mage.png"
 	},
 

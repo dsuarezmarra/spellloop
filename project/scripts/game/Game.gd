@@ -169,7 +169,7 @@ func _configure_player_character() -> void:
 		push_warning("[Game] Character not found: " + character_id)
 		return
 
-	var sprite_folder = char_data.get("sprite_folder", "wizard")
+	var sprite_folder = char_data.get("sprite_folder", "frost_mage")
 	print("[Game] Sprite folder for %s: %s" % [character_id, sprite_folder])
 
 	# Configurar la carpeta de sprites si el player tiene el metodo

@@ -50,11 +50,11 @@
   "auras/yellow": "res://assets/sprites/auras/yellow/yellow.png",
   "auras/orange": "res://assets/sprites/auras/orange/orange.png",
   "auras/purple": "res://assets/sprites/auras/purple/purple.png",
-  "players/wizard/walk/down": "res://assets/sprites/players/wizard/walk/wizard_walk_down.png",
-  "players/wizard/walk/up": "res://assets/sprites/players/wizard/walk/wizard_walk_up.png",
-  "players/wizard/walk/left": "res://assets/sprites/players/wizard/walk/wizard_walk_left.png",
-  "players/wizard/walk/right": "res://assets/sprites/players/wizard/walk/wizard_walk_right.png",
-  "players/wizard/cast": "res://assets/sprites/players/wizard/cast/wizard_cast.png",
-  "players/wizard/hit": "res://assets/sprites/players/wizard/hit/wizard_hit.png",
-  "players/wizard/death": "res://assets/sprites/players/wizard/death/wizard_death.png"
+  "players/frost_mage/walk/down": "res://assets/sprites/players/frost_mage/walk/frost_mage_walk_down.png",
+  "players/frost_mage/walk/up": "res://assets/sprites/players/frost_mage/walk/frost_mage_walk_up.png",
+  "players/frost_mage/walk/left": "res://assets/sprites/players/frost_mage/walk/frost_mage_walk_left.png",
+  "players/frost_mage/walk/right": "res://assets/sprites/players/frost_mage/walk/frost_mage_walk_right.png",
+  "players/frost_mage/cast": "res://assets/sprites/players/frost_mage/cast/frost_mage_cast.png",
+  "players/frost_mage/hit": "res://assets/sprites/players/frost_mage/hit/frost_mage_hit.png",
+  "players/frost_mage/death": "res://assets/sprites/players/frost_mage/death/frost_mage_death.png"
 }
