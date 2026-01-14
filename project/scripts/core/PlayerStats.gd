@@ -460,7 +460,7 @@ const BASE_STATS: Dictionary = {
 	"shield_regen": 0.0,           # Regeneración de escudo/s
 	"shield_regen_delay": 3.0,     # Segundos sin recibir daño para regenerar escudo (como PoE2)
 	"revives": 0,                  # Vidas extra
-	
+
 	# Duración de efectos de estado
 	"status_duration_mult": 1.0,   # Multiplicador de duración de efectos (slow, burn, etc.)
 
@@ -601,6 +601,109 @@ var global_weapon_stats: GlobalWeaponStats = null
 # Referencia al player para sincronizar vida
 var player_ref: Node = null
 
+# ID del personaje actual (para pasivas)
+var _current_character_id: String = "frost_mage"
+
+# Flags para pasivas condicionales
+var _tailwind_active: bool = false  # Wind Runner: +15% speed below 50% HP
+var _stone_skin_active: bool = false  # Geomancer: -20% damage when stationary
+var _last_position: Vector2 = Vector2.ZERO  # Para detectar si está quieto
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE PASIVAS DE PERSONAJE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _apply_character_passive(character_id: String) -> void:
+	"""Aplicar la pasiva única del personaje seleccionado"""
+	var char_data = CharacterDatabase.get_character(character_id)
+	if char_data.is_empty():
+		return
+
+	var passive = char_data.get("passive", {})
+	if passive.is_empty():
+		return
+
+	var passive_id = passive.get("id", "")
+	print("[PlayerStats] Applying passive: %s (%s)" % [passive.get("name", "Unknown"), passive_id])
+
+	match passive_id:
+		# === FROST MAGE - Frozen Aura ===
+		# Enemies near you are slowed by 10%
+		"frozen_aura":
+			# Esta pasiva se aplica en el sistema de combate, no en stats
+			# Se implementará como aura en el player
+			print("  -> Frozen Aura: Enemies nearby slowed 10%")
+
+		# === PYROMANCER - Burning Soul ===
+		# Fire damage burns 20% longer
+		"burning_soul":
+			stats.status_duration_mult = stats.get("status_duration_mult", 1.0) * 1.2
+			print("  -> Burning Soul: +20%% burn duration (%.2f)" % stats.status_duration_mult)
+
+		# === STORM CALLER - Static Charge ===
+		# Lightning chains to 1 additional enemy
+		"static_charge":
+			stats.chain_count = stats.get("chain_count", 0) + 1
+			print("  -> Static Charge: +1 chain (%d total)" % stats.chain_count)
+
+		# === ARCANIST - Arcane Shield ===
+		# Start with +1 orbital projectile
+		"arcane_shield":
+			stats.extra_projectiles = stats.get("extra_projectiles", 0) + 1
+			print("  -> Arcane Shield: +1 orbital projectile")
+
+		# === SHADOW BLADE - Shadow Step ===
+		# +1 pierce on all projectiles
+		"shadow_step":
+			stats.extra_pierce = stats.get("extra_pierce", 0) + 1
+			print("  -> Shadow Step: +1 pierce")
+
+		# === DRUID - Nature's Blessing ===
+		# Heal 1 HP when collecting experience
+		"natures_blessing":
+			stats.kill_heal = stats.get("kill_heal", 0) + 1
+			print("  -> Nature's Blessing: +1 HP on XP pickup")
+
+		# === WIND RUNNER - Tailwind ===
+		# Move 15% faster when below 50% HP
+		"tailwind":
+			# Esta pasiva es condicional, se implementa en _process
+			print("  -> Tailwind: +15%% speed when below 50%% HP")
+
+		# === GEOMANCER - Stone Skin ===
+		# Take 20% less damage when standing still
+		"stone_skin":
+			# Esta pasiva es condicional, se implementa en take_damage
+			print("  -> Stone Skin: -20%% damage when stationary")
+
+		# === PALADIN - Divine Judgment ===
+		# Critical hits deal 50% more damage
+		"divine_judgment":
+			stats.crit_damage = stats.get("crit_damage", 2.0) + 0.5
+			print("  -> Divine Judgment: +50%% crit damage (%.2fx)" % stats.crit_damage)
+
+		# === VOID WALKER - Void Hunger ===
+		# Killing enemies heals 2 HP, but lose 0.5 HP/sec
+		"void_hunger":
+			stats.kill_heal = stats.get("kill_heal", 0) + 2
+			stats.health_regen = stats.get("health_regen", 0.0) - 0.5
+			print("  -> Void Hunger: +2 HP on kill, -0.5 HP/sec")
+
+		_:
+			print("  -> Unknown passive: %s" % passive_id)
+
+func get_current_character_id() -> String:
+	"""Obtener el ID del personaje actual"""
+	return _current_character_id
+
+func has_passive(passive_id: String) -> bool:
+	"""Verificar si el personaje actual tiene una pasiva específica"""
+	var char_data = CharacterDatabase.get_character(_current_character_id)
+	if char_data.is_empty():
+		return false
+	var passive = char_data.get("passive", {})
+	return passive.get("id", "") == passive_id
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -628,6 +731,9 @@ func initialize_from_character(character_id: String) -> void:
 	"""Inicializar stats desde la base de datos de personajes"""
 	_reset_stats()
 
+	# Guardar el ID del personaje para referencia
+	_current_character_id = character_id
+
 	var char_stats = CharacterDatabase.get_character_stats(character_id)
 	if char_stats.is_empty():
 		push_warning("[PlayerStats] Character not found: " + character_id + ", using defaults")
@@ -641,11 +747,13 @@ func initialize_from_character(character_id: String) -> void:
 	# Actualizar vida actual a la máxima
 	current_health = stats.max_health
 
-	# Debug
-	# print("[PlayerStats] Initialized from character: %s" % character_id)
-	# print("  - Max HP: %d" % stats.max_health)
-	# print("  - Move Speed: %.0f" % stats.move_speed)
-	# print("  - Damage Mult: %.2f" % stats.damage_mult)
+	# Aplicar pasiva del personaje
+	_apply_character_passive(character_id)
+
+	print("[PlayerStats] Initialized from character: %s" % character_id)
+	print("  - Max HP: %d" % stats.max_health)
+	print("  - Move Speed: %.0f" % stats.move_speed)
+	print("  - Passive: %s" % _current_character_id)
 
 func _ready() -> void:
 	# Asegurar que PlayerStats respete la pausa del juego
@@ -907,11 +1015,61 @@ func remove_temp_modifiers_by_source(source: String) -> void:
 		)
 
 func _process(delta: float) -> void:
-	"""Actualizar modificadores temporales, regeneración, growth y shield"""
+	"""Actualizar modificadores temporales, regeneración, growth, shield y pasivas condicionales"""
 	_update_temp_modifiers(delta)
 	_update_health_regen(delta)
 	_update_shield_regen(delta)
 	_update_growth(delta)
+	_update_conditional_passives(delta)
+
+func _update_conditional_passives(_delta: float) -> void:
+	"""Actualizar pasivas que dependen de condiciones en tiempo real"""
+	# === WIND RUNNER - Tailwind ===
+	# Move 15% faster when below 50% HP
+	if has_passive("tailwind"):
+		var max_hp = get_stat("max_health")
+		var hp_percent = current_health / max_hp if max_hp > 0 else 1.0
+
+		if hp_percent < 0.5:
+			# Aplicar bonus de velocidad si no está ya aplicado
+			if not _tailwind_active:
+				_tailwind_active = true
+				# Añadir como modificador temporal permanente mientras está activo
+				var base_speed = stats.move_speed
+				var bonus = base_speed * 0.15
+				add_temp_modifier("move_speed", bonus, 999999.0, "tailwind_passive")
+		else:
+			# Remover bonus si ya no cumple la condición
+			if _tailwind_active:
+				_tailwind_active = false
+				remove_temp_modifiers_by_source("tailwind_passive")
+
+	# === GEOMANCER - Stone Skin ===
+	# Take 20% less damage when stationary
+	if has_passive("stone_skin"):
+		# Necesitamos la posición del jugador - obtenerla del nodo padre
+		var player = get_tree().get_first_node_in_group("player") if get_tree() else null
+		if player and player.has_method("get_global_position"):
+			var current_pos: Vector2 = player.global_position
+			# Considera "quieto" si no se ha movido más de 2 píxeles
+			_stone_skin_active = _last_position.distance_to(current_pos) < 2.0
+			_last_position = current_pos
+		else:
+			_stone_skin_active = false
+
+	# === FROST MAGE - Frozen Aura ===
+	# Enemies near you are slowed by 10%
+	if has_passive("frozen_aura"):
+		var player = get_tree().get_first_node_in_group("player") if get_tree() else null
+		if player:
+			var aura_radius: float = 150.0  # Radio del aura congelante
+			var enemies = get_tree().get_nodes_in_group("enemies")
+			for enemy in enemies:
+				if is_instance_valid(enemy) and enemy.has_method("apply_slow"):
+					var dist = player.global_position.distance_to(enemy.global_position)
+					if dist <= aura_radius:
+						# Aplicar slow de 10% por 0.2 segundos (se renueva constantemente)
+						enemy.apply_slow(0.10, 0.2)
 
 func _update_temp_modifiers(delta: float) -> void:
 	"""Reducir duración de modificadores temporales"""
@@ -1001,14 +1159,14 @@ func _update_shield_regen(delta: float) -> void:
 	"""
 	# Actualizar timer desde último daño
 	_time_since_damage += delta
-	
+
 	var shield_regen = get_stat("shield_regen")
 	if shield_regen <= 0:
 		return
-	
+
 	# Obtener delay de regeneración (por defecto 3 segundos como PoE2)
 	var regen_delay = get_stat("shield_regen_delay")
-	
+
 	# No regenerar si recibió daño recientemente
 	if _time_since_damage < regen_delay:
 		return
@@ -1016,11 +1174,11 @@ func _update_shield_regen(delta: float) -> void:
 	# Obtener escudo actual y máximo
 	var current_shield = get_stat("shield_amount")
 	var max_shield = get_stat("max_shield")  # Usar max_shield, no shield_amount base
-	
+
 	# Si no hay escudo máximo definido, no regenerar
 	if max_shield <= 0:
 		return
-	
+
 	# Si el escudo ya está lleno, no regenerar
 	if current_shield >= max_shield:
 		return
@@ -1074,7 +1232,7 @@ func _apply_growth_bonus(growth_rate: float, _minutes: int) -> void:
 		"damage_mult", "attack_speed_mult", "area_mult",
 		"projectile_speed_mult", "duration_mult", "xp_mult"
 	]
-	
+
 	# Stats que escalan aditivamente (basados en su valor actual)
 	var growth_stats_add = [
 		"max_health", "health_regen", "armor", "pickup_range", "move_speed",
@@ -1131,6 +1289,10 @@ func take_damage(amount: float) -> float:
 
 	var armor = get_stat("armor")
 	var effective_damage = maxf(1.0, amount - armor)  # Mínimo 1 de daño
+
+	# Stone Skin (Geomancer): -20% daño cuando está quieto
+	if _stone_skin_active and has_passive("stone_skin"):
+		effective_damage *= 0.8
 
 	current_health -= effective_damage
 	current_health = maxf(0.0, current_health)
