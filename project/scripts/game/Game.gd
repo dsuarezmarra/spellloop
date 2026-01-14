@@ -91,7 +91,7 @@ func _setup_game() -> void:
 	remaining_banishes = 2
 	pending_level_ups.clear()
 	level_up_panel_active = false
-	
+
 	# Crear player
 	_create_player()
 
@@ -460,7 +460,7 @@ func _start_game() -> void:
 	game_running = true
 	game_time = 0.0
 	is_paused = false
-	
+
 	# CRÍTICO: Resetear AttackManager para nueva partida
 	# Esto limpia armas, stats y mejoras de la partida anterior
 	var attack_manager = get_tree().get_first_node_in_group("attack_manager")
