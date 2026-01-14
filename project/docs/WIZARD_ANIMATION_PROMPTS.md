@@ -1,85 +1,93 @@
-# ?? Prompts para Animaciones del Wizard
+# ?? Prompts para Animaciones del WIZARD
 
-## ?? IMPORTANTE: CÔøΩmo usar este documento
+## ?? IMPORTANTE: CÛmo usar este documento
 
-**Las IAs de imÔøΩgenes (DALL-E, Midjourney, etc.) NO pueden generar todos los sprites de una vez.**
-
-### Estrategia recomendada:
-1. **DALL-E/ChatGPT:** Genera 1 imagen por prompt. NecesitarÔøΩs ejecutar cada prompt por separado.
-2. **Midjourney:** Genera 4 variaciones por prompt (ÔøΩtil para los 4 frames de walk).
+**Las IAs de im·genes NO pueden generar todos los sprites de una vez.**
 
 ### Flujo de trabajo:
 1. Ejecuta el **Prompt #0** primero para establecer el estilo del personaje
-2. Luego ve ejecutando los prompts **#1 al #11** en orden
+2. Luego ve ejecutando los prompts **#1 al #7** en orden
 3. Guarda cada imagen con el nombre indicado
 
 ---
 
-## ?? Especificaciones TÔøΩcnicas
+## ?? Especificaciones TÈcnicas
 
-- **TamaÔøΩo:** 500x500 pÔøΩxeles por frame
+- **TamaÒo:** 500x500 pÌxeles por frame
 - **Formato:** PNG con fondo transparente
-- **Estilo:** Cartoon/Funko Pop (ver guÔøΩa de estilo abajo)
+- **Estilo:** Cartoon/Funko Pop (ver guÌa de estilo abajo)
 - **Vista:** Top-down con ligera perspectiva 3/4
 
 ---
 
-## ?? GUÔøΩA DE ESTILO - SPELLLOOP (MUY IMPORTANTE)
+## ?? SISTEMA DE ANIMACI”N DE CAMINAR (Estilo Binding of Isaac)
 
-### CaracterÔøΩsticas visuales del estilo Funko Pop/Cartoon:
+**Este juego usa un ciclo de caminata de 3 frames en ping-pong:**
 
-| CaracterÔøΩstica | DescripciÔøΩn |
+### Ciclo de animaciÛn:
+```
+Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
+```
+
+### DescripciÛn de cada frame:
+
+| Frame | Walk Down/Up (vista frontal/trasera) | Walk Right (vista lateral) |
+|-------|--------------------------------------|----------------------------|
+| **1** | Pierna IZQUIERDA hacia afuera | Pierna TRASERA atr·s, inclinado hacia adelante |
+| **2** | Piernas JUNTAS (posiciÛn neutral) | Piernas JUNTAS (posiciÛn neutral) |
+| **3** | Pierna DERECHA hacia afuera | Pierna DELANTERA adelante, inclinado hacia adelante |
+
+### ?? IMPORTANTE:
+- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el cÛdigo
+- Solo se necesitan **3 sprites por direcciÛn**: Down, Up y Right
+- Total walk sprites: **9 frames** (3 direcciones ◊ 3 frames)
+
+---
+
+## ?? GUÕA DE ESTILO - WIZARD
+
+### CaracterÌsticas del personaje:
+
+| CaracterÌstica | DescripciÛn |
 |----------------|-------------|
-| **Proporciones** | Cabeza grande (~30% del cuerpo), cuerpo compacto estilizado |
-| **Formas** | Redondeadas y suaves, evitar ÔøΩngulos agudos |
-| **Ojos** | Grandes, expresivos, brillantes (estilo anime/cartoon) |
-| **Outlines** | Contorno oscuro grueso (2-3px), ~20-25% de pÔøΩxeles oscuros |
-| **Colores** | Saturados y vibrantes (~85% saturaciÔøΩn), paleta limitada |
-| **Sombreado** | Cel-shading simple (2-3 niveles de sombra), luz desde arriba-izquierda |
-| **Detalles** | Simplificados pero expresivos, sin texturas realistas |
-| **Expresiones** | Cute/adorable incluso en personajes serios |
+| **GÈnero** | Hombre anciano |
+| **ComplexiÛn** | Delgado, encorvado ligeramente |
+| **Cabello** | Barba larga blanca/plateada |
+| **ExpresiÛn** | Amable, sabio, ojos brillantes |
+| **T˙nica** | Azul p˙rpura larga hasta los pies, con capucha |
+| **Detalles** | Runas m·gicas sutiles en la ropa |
+| **Arma** | BastÛn de madera con cristal cian brillante |
 
-### Paleta de colores del Wizard actual:
-- **TÔøΩnica principal:** Azul profundo (#4A7A9C)
-- **TÔøΩnica sombras:** Azul oscuro (#3A5A7C)
-- **TÔøΩnica highlights:** Azul claro (#6A9ABC)
-- **Piel:** Beige cÔøΩlido (#E8D4B8)
-- **Barba/Pelo:** Blanco grisÔøΩceo (#E0E0E0)
+### Paleta de colores:
+- **T˙nica principal:** Azul profundo (#4A7A9C)
+- **T˙nica sombras:** Azul oscuro (#3A5A7C)
+- **T˙nica highlights:** Azul claro (#6A9ABC)
+- **Piel:** Beige c·lido (#E8D4B8)
+- **Barba/Pelo:** Blanco gris·ceo (#E0E0E0)
 - **Staff cristal:** Cian brillante (#66CCFF)
-- **Staff madera:** MarrÔøΩn (#8B6914)
+- **Staff madera:** MarrÛn (#8B6914)
 - **Outline:** Negro/Gris muy oscuro (#1A1A2E)
 
-### Referencias de estilo (buscar en Google):
-- "Funko Pop wizard"
-- "Chibi mage character"
-- "Cute cartoon wizard game sprite"
-- "Vampire Survivors character style"
+---
+
+# ?? LISTA DE PROMPTS
 
 ---
 
-# ?? LISTA DE PROMPTS (Ejecutar en orden)
-
----
-
-## PROMPT #0 - Referencia de Estilo (EJECUTAR PRIMERO)
-
-> **PropÔøΩsito:** Establece el diseÔøΩo base del personaje. Guarda esta imagen como referencia.
+## PROMPT #0 - Referencia de Estilo
 
 ```
 Character reference sheet for a 2D top-down roguelike game.
 
-CHARACTER: Fantasy Wizard/Mage
+CHARACTER: Fantasy Wizard/Mage - Elderly Male
 
-ART STYLE (CRITICAL - FOLLOW EXACTLY):
+ART STYLE (CRITICAL):
 - Funko Pop / Chibi cartoon style
-- Oversized head (approximately 30% of total body height)
+- Oversized head (~30% of body)
 - Big cute expressive eyes with shine highlights
-- Rounded, soft shapes - NO sharp angles
-- Thick dark outline (2-3 pixels) around all forms
+- Thick dark outline (2-3px)
 - Cel-shading with 2-3 shadow levels
 - Bold saturated colors
-- Simple but charming details
-- Friendly and cute appearance even for a wise old wizard
 
 DESIGN DETAILS:
 - Long flowing purple-blue hooded robe reaching to feet
@@ -98,502 +106,263 @@ COLOR PALETTE:
 - Staff wood: Warm brown (#8B6914)
 - Outline: Very dark blue-black (#1A1A2E)
 
-LAYOUT: Show character from 4 angles in a 2x2 grid:
-- Top-left: Front view (facing camera)
-- Top-right: Back view (facing away)
-- Bottom-left: Left side profile
-- Bottom-right: Right side profile
-
-OUTPUT: Single 1024x1024 image, transparent/checkered background, consistent proportions and colors across all 4 views.
+LAYOUT: 4 angles in 2x2 grid (front, back, left, right profile)
+OUTPUT: 1024x1024, transparent background
 ```
 
-?? **Guardar como:** `wizard_reference.png` (solo referencia, no se usa en el juego)
+?? **Guardar como:** `wizard_reference.png`
 
 ---
 
-## ?? ANIMACIONES DE CAMINAR (Walk)
-
----
-
-### PROMPT #1 - Walk Down (4 frames)
+## PROMPT #1 - Walk Down (3 frames) - Estilo Binding of Isaac
 
 ```
-2D game sprite sheet for roguelike game, horizontal strip format.
+2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Wizard character walking animation - FACING CAMERA (walking downward)
+SUBJECT: Wizard walking animation - FACING CAMERA (Binding of Isaac style)
 
-ART STYLE (MATCH EXACTLY):
-- Funko Pop / Chibi cartoon style
-- Oversized cute head (~30% of body)
-- Big expressive eyes with shine
-- Thick dark outline (2-3px) around all shapes
-- Cel-shading (2-3 shadow levels)
-- Bold saturated colors
-- Rounded soft shapes, NO sharp angles
+ART STYLE: Funko Pop/Chibi, oversized head, thick outline, cel-shading
 
-CHARACTER DESIGN:
-- Purple-blue hooded wizard robe, flowing with movement
-- Long white stylized beard
-- Wooden staff with glowing cyan crystal
-- Kind elderly face, rosy cheeks
-- Hood partially covering head
+CHARACTER: Elderly wizard, purple-blue robe, white beard, wooden staff with cyan crystal
 
-ANIMATION (4 frames, left to right):
-- Frame 1: Neutral standing pose, feet together
-- Frame 2: Left foot stepping forward, robe swaying right
-- Frame 3: Feet passing each other mid-stride
-- Frame 4: Right foot stepping forward, robe swaying left
+?? 3-FRAME WALK CYCLE (BINDING OF ISAAC STYLE):
+- Frame 1: LEFT LEG OUT - Left leg stepped outward/forward, right leg straight, slight body tilt left
+- Frame 2: NEUTRAL - Both legs together, standing straight, centered pose
+- Frame 3: RIGHT LEG OUT - Right leg stepped outward/forward, left leg straight, slight body tilt right
 
-COLORS: Robe #4A7A9C, Skin #E8D4B8, Beard #E0E0E0, Crystal #66CCFF, Outline #1A1A2E
+ANIMATION NOTES:
+- This creates a waddling/bouncy walk when played as: 1-2-3-2-1-2-3...
+- Each frame should be CLEARLY DIFFERENT - exaggerate the leg positions
+- Keep upper body relatively stable, movement is in the legs
+- Long robe sways with leg movement, showing feet underneath
 
-OUTPUT: Horizontal strip 2000x500 pixels (4 frames of 500x500 each), transparent background.
+SECONDARY MOTION:
+- Beard sways gently with movement
+- Staff crystal glows steadily
+- Robe hem reveals walking feet
+
+COLORS: Robe #4A7A9C, Skin #E8D4B8, Beard #E0E0E0, Crystal #66CCFF
+
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `wizard_walk_down_strip.png`
-?? **Cortar en:** `wizard_walk_down_1.png`, `wizard_walk_down_2.png`, `wizard_walk_down_3.png`, `wizard_walk_down_4.png`
 
 ---
 
-### PROMPT #2 - Walk Up (4 frames)
+## PROMPT #2 - Walk Up (3 frames) - Estilo Binding of Isaac
 
 ```
-2D game sprite sheet for roguelike game, horizontal strip format.
+2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Wizard character walking animation - BACK TO CAMERA (walking upward/away)
+SUBJECT: Wizard walking animation - BACK TO CAMERA (Binding of Isaac style)
 
-ART STYLE (MATCH EXACTLY):
-- Funko Pop / Chibi cartoon style
-- Oversized cute head (~30% of body)
-- Thick dark outline (2-3px) around all shapes
-- Cel-shading (2-3 shadow levels)
-- Bold saturated colors
-- Rounded soft shapes
+ART STYLE: Funko Pop/Chibi, thick outline, cel-shading
 
-CHARACTER DESIGN (from behind):
-- Purple-blue hooded wizard robe, hood up visible from back
-- Robe flowing with walking movement
-- Staff held in right hand, visible from behind
-- White beard peeking from sides
+CHARACTER (from behind): Elderly wizard, purple-blue robe, hood visible, staff in hand
 
-ANIMATION (4 frames, left to right):
-- Frame 1: Neutral standing pose from behind
-- Frame 2: Left foot stepping forward, robe trailing
-- Frame 3: Feet crossing mid-stride
-- Frame 4: Right foot stepping forward
+?? 3-FRAME WALK CYCLE (BACK VIEW):
+- Frame 1: LEFT LEG OUT - Left leg stepped outward (visible from behind), body tilts slightly
+- Frame 2: NEUTRAL - Both legs together, standing straight
+- Frame 3: RIGHT LEG OUT - Right leg stepped outward, body tilts opposite
 
-COLORS: Robe #4A7A9C, Beard #E0E0E0, Crystal glow #66CCFF, Outline #1A1A2E
+ANIMATION NOTES:
+- Mirror the front walk cycle but from behind
+- Robe should show leg movement underneath
+- Keep the same bouncy feel as front view
 
-OUTPUT: Horizontal strip 2000x500 pixels (4 frames of 500x500 each), transparent background.
+SECONDARY MOTION:
+- Robe flows with movement
+- Hood slightly visible from behind
+- Beard tips visible from sides
+
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `wizard_walk_up_strip.png`
-?? **Cortar en:** `wizard_walk_up_1.png`, `wizard_walk_up_2.png`, `wizard_walk_up_3.png`, `wizard_walk_up_4.png`
 
 ---
 
-### PROMPT #3 - Walk Left (4 frames)
+## PROMPT #3 - Walk Right (3 frames) - Estilo Binding of Isaac
 
 ```
-2D game sprite sheet for roguelike game, horizontal strip format.
+2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Wizard character walking animation - LEFT SIDE PROFILE (walking left)
+SUBJECT: Wizard walking - RIGHT SIDE PROFILE (Binding of Isaac style)
 
-ART STYLE (MATCH EXACTLY):
-- Funko Pop / Chibi cartoon style
-- Oversized cute head (~30% of body)
-- Big expressive eye visible in profile
-- Thick dark outline (2-3px) around all shapes
-- Cel-shading (2-3 shadow levels)
-- Bold saturated colors
-- Rounded soft shapes
+ART STYLE: Funko Pop/Chibi, thick outline, cel-shading
 
-CHARACTER DESIGN (side view):
-- Purple-blue hooded wizard robe flowing behind
-- Long white beard in profile
-- Staff held in leading hand
-- Hood partially visible
-- Rosy cheek visible
+CHARACTER (right profile): Elderly wizard, robe profile, beard visible, staff in leading hand
 
-ANIMATION (4 frames, left to right):
-- Frame 1: Neutral standing side pose
-- Frame 2: Front leg stepping forward, robe trailing behind
-- Frame 3: Legs crossing mid-stride
-- Frame 4: Back leg coming forward
+?? 3-FRAME WALK CYCLE (SIDE VIEW):
+- Frame 1: BACK LEG EXTENDED - Rear leg stretched back, front leg under body, leaning forward into walk
+- Frame 2: NEUTRAL - Both legs together under body, upright stance
+- Frame 3: FRONT LEG EXTENDED - Front leg stretched forward, rear leg under body, leaning forward
 
-COLORS: Robe #4A7A9C, Skin #E8D4B8, Beard #E0E0E0, Crystal #66CCFF, Outline #1A1A2E
+ANIMATION NOTES:
+- Side view shows the forward/backward leg motion
+- Character leans slightly into movement direction
+- This sprite will be FLIPPED HORIZONTALLY for Walk Left
 
-OUTPUT: Horizontal strip 2000x500 pixels (4 frames of 500x500 each), transparent background.
-```
+SECONDARY MOTION:
+- Robe flows behind
+- Beard trails with movement
+- Staff held forward
 
-?? **Guardar como:** `wizard_walk_left_strip.png`
-?? **Cortar en:** `wizard_walk_left_1.png`, `wizard_walk_left_2.png`, `wizard_walk_left_3.png`, `wizard_walk_left_4.png`
-
----
-### PROMPT #4 - Walk Right (4 frames)
-
-```
-2D game sprite sheet for roguelike game, horizontal strip format.
-
-SUBJECT: Wizard character walking animation - RIGHT SIDE PROFILE (walking right)
-
-ART STYLE (MATCH EXACTLY):
-- Funko Pop / Chibi cartoon style
-- Oversized cute head (~30% of body)
-- Big expressive eye visible in profile
-- Thick dark outline (2-3px) around all shapes
-- Cel-shading (2-3 shadow levels)
-- Bold saturated colors
-- Rounded soft shapes
-
-CHARACTER DESIGN (side view, mirrored from left):
-- Purple-blue hooded wizard robe flowing behind
-- Long white beard in profile
-- Staff held in leading hand
-- Hood partially visible
-- Rosy cheek visible
-
-ANIMATION (4 frames, left to right):
-- Frame 1: Neutral standing side pose facing right
-- Frame 2: Front leg stepping forward, robe trailing
-- Frame 3: Legs crossing mid-stride
-- Frame 4: Back leg coming forward
-
-COLORS: Robe #4A7A9C, Skin #E8D4B8, Beard #E0E0E0, Crystal #66CCFF, Outline #1A1A2E
-
-OUTPUT: Horizontal strip 2000x500 pixels (4 frames of 500x500 each), transparent background.
-
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `wizard_walk_right_strip.png`
-?? **Cortar en:** `wizard_walk_right_1.png`, `wizard_walk_right_2.png`, `wizard_walk_right_3.png`, `wizard_walk_right_4.png`
 
 ---
 
-## ? ANIMACIÔøΩN DE CASTING (Lanzar hechizo)
-
----
-
-### PROMPT #9 - Cast Animation (4 frames)
+## PROMPT #4 - Cast Animation (4 frames)
 
 ```
-2D game sprite sheet for roguelike game, horizontal strip format.
+2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Wizard character SPELL CASTING animation - FACING CAMERA
+SUBJECT: Wizard spell casting - FACING CAMERA
 
-ART STYLE (MATCH EXACTLY):
-- Funko Pop / Chibi cartoon style
-- Oversized cute head (~30% of body)
-- Big expressive eyes (determined/focused expression)
-- Thick dark outline (2-3px)
-- Cel-shading (2-3 shadow levels)
-- Bold saturated colors, rounded shapes
+ART STYLE: Funko Pop/Chibi, magical effects
 
-CHARACTER DESIGN:
-- Purple-blue hooded wizard robe billowing with magical energy
-- Long white stylized beard
-- Staff with INTENSELY glowing cyan crystal
-- Determined magical expression
+ANIMATION SEQUENCE:
+- Frame 1: CHARGE - Raising staff upward, magical sparkles beginning to gather at crystal
+- Frame 2: CHANNEL - Staff raised high above head, intense magical orb forming at crystal tip, robe flowing upward
+- Frame 3: RELEASE - Staff thrust forward releasing spell, bright cyan energy burst, robe blown back dramatically
+- Frame 4: RECOVERY - Lowering staff, magical sparkles dissipating, calm expression returning
 
-ANIMATION (4 frames, dramatic casting):
-- Frame 1: Raising staff upward, magical sparkles beginning to gather at crystal
-- Frame 2: Staff raised high above head, intense magical orb forming at crystal tip, robe flowing upward
-- Frame 3: Staff thrust forward releasing spell, bright cyan energy burst, robe blown back dramatically
-- Frame 4: Recovery pose, staff lowering, fading magical sparkles around
+EFFECTS:
+- Frame 1: Cyan sparkles gathering
+- Frame 2: Intense orb of energy, robe billowing
+- Frame 3: Burst of magical energy, motion lines
+- Frame 4: Fading sparkles, settling robes
 
-MAGICAL EFFECTS:
-- Cyan (#66CCFF) magical particles and sparkles
-- White (#FFFFFF) energy highlights
-- Glowing aura around crystal intensifying through frames
-
-COLORS: Robe #4A7A9C, Skin #E8D4B8, Beard #E0E0E0, Magic #66CCFF + #FFFFFF, Outline #1A1A2E
-
-OUTPUT: Horizontal strip 2000x500 pixels (4 frames of 500x500 each), transparent background.
+OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `wizard_cast_strip.png`
-?? **Cortar en:** `wizard_cast_1.png`, `wizard_cast_2.png`, `wizard_cast_3.png`, `wizard_cast_4.png`
 
 ---
 
-## ?? ANIMACIÔøΩN DE DAÔøΩO (Hit)
-
----
-
-### PROMPT #10 - Hit Animation (2 frames)
+## PROMPT #5 - Death Animation (4 frames)
 
 ```
-2D game sprite sheet for roguelike game, horizontal strip format.
+2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Wizard character TAKING DAMAGE reaction - FACING CAMERA
+SUBJECT: Wizard death animation - FACING CAMERA
 
-ART STYLE (MATCH EXACTLY):
-- Funko Pop / Chibi cartoon style
-- Oversized cute head
-- Big expressive eyes (pained/surprised expression)
-- Thick dark outline (2-3px)
-- Cel-shading, bold colors
+ART STYLE: Funko Pop/Chibi, colors desaturating
 
-CHARACTER DESIGN:
-- Purple-blue hooded wizard robe disturbed by impact
-- Long white beard
-- Staff gripped defensively
-- Pained cute expression (>_<) style
+ANIMATION SEQUENCE:
+- Frame 1: HIT - Recoiling, surprised expression, staff loosening
+- Frame 2: STAGGER - Stumbling, staff falling, robe deflating
+- Frame 3: COLLAPSE - Falling forward, crystal light fading
+- Frame 4: FALLEN - On ground, desaturated colors, staff beside body
 
-ANIMATION (2 frames, damage reaction):
-- Frame 1: Body recoiling backward from impact, eyes squeezed shut in pain, robe disturbed, RED damage flash overlay effect
-- Frame 2: Recovery pose, slightly hunched defensive stance, determined expression returning, gripping staff tightly
+EFFECTS:
+- Frame 1: Impact flash
+- Frame 2: Crystal flickering
+- Frame 3: Light fading
+- Frame 4: Slight transparency (80% opacity)
 
-DAMAGE EFFECTS:
-- Frame 1: Slight red tint/flash on character
-- Small impact stars or pain indicators
-
-COLORS: Robe #4A7A9C, Skin #E8D4B8, Beard #E0E0E0, Damage flash #FF6666, Outline #1A1A2E
-
-OUTPUT: Horizontal strip 1000x500 pixels (2 frames of 500x500 each), transparent background.
-```
-
-?? **Guardar como:** `wizard_hit_strip.png`
-?? **Cortar en:** `wizard_hit_1.png`, `wizard_hit_2.png`
-
----
-
-## ?? ANIMACIÔøΩN DE MUERTE (Death)
-
----
-
-### PROMPT #11 - Death Animation (4 frames)
-
-```
-2D game sprite sheet for roguelike game, horizontal strip format.
-
-SUBJECT: Wizard character DEATH animation - FACING CAMERA (top-down view of falling)
-
-ART STYLE (MATCH EXACTLY):
-- Funko Pop / Chibi cartoon style
-- Oversized cute head
-- Expressive eyes (peaceful/fading)
-- Thick dark outline (2-3px)
-- Cel-shading, bold colors
-
-CHARACTER DESIGN:
-- Purple-blue hooded wizard robe spreading out as falling
-- Long white beard
-- Staff falling beside character
-- Peaceful resigned expression
-
-ANIMATION (4 frames, dramatic death sequence):
-- Frame 1: Dramatic backward lean from fatal blow, staff slipping from grasp, surprised expression
-- Frame 2: Knees buckling, body falling, staff dropping beside, eyes closing
-- Frame 3: Collapsed on ground lying on back (top-down view), robe spread out around body, staff beside
-- Frame 4: Fading away - character becoming semi-transparent/ghostly, magical cyan particles dispersing upward, peaceful expression
-
-DEATH EFFECTS:
-- Frame 4: 50% transparency, cyan magical particles floating up
-- Soft ethereal glow
-
-COLORS: Robe #4A7A9C, Skin #E8D4B8, Beard #E0E0E0, Ghost particles #66CCFF, Outline #1A1A2E
-
-OUTPUT: Horizontal strip 2000x500 pixels (4 frames of 500x500 each), transparent background.
+OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `wizard_death_strip.png`
-?? **Cortar en:** `wizard_death_1.png`, `wizard_death_2.png`, `wizard_death_3.png`, `wizard_death_4.png`
 
 ---
 
-# ?? ALTERNATIVA: Prompts Individuales (Si los strips no funcionan)
+## PROMPT #6 - Hit Animation (2 frames)
 
-Si la IA no genera bien los sprite strips, usa estos prompts frame por frame:
+```
+2D game sprite sheet, horizontal strip format.
+
+SUBJECT: Wizard taking damage - FACING CAMERA
+
+ART STYLE: Funko Pop/Chibi, damage flash effect
+
+ANIMATION:
+- Frame 1: IMPACT - Flinching backward, surprised expression, red damage flash
+- Frame 2: RECOVERY - Returning to stance, determined expression, ready to continue
+
+EFFECTS:
+- Frame 1: Red tint overlay
+- Frame 2: Normal colors returning
+
+OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
+```
+
+?? **Guardar como:** `wizard_hit_strip.png`
 
 ---
 
-### PROMPT ALTERNATIVO - Walk Down Frame Individual
+## PROMPT #7 - Idle Animation (2 frames)
 
-**Frame 1:**
 ```
-2D game sprite, Funko Pop/Chibi cartoon style wizard character. Facing camera, neutral standing pose feet together. Oversized cute head (~30% body), big expressive eyes with shine, thick dark outline (2-3px), cel-shading. Purple-blue hooded robe (#4A7A9C), white beard (#E0E0E0), wooden staff with glowing cyan crystal (#66CCFF). Warm beige skin (#E8D4B8), rosy cheeks. 500x500 pixels, transparent background.
+2D game sprite sheet, horizontal strip format.
+
+SUBJECT: Wizard idle/breathing - FACING CAMERA
+
+ART STYLE: Funko Pop/Chibi, subtle movement
+
+ANIMATION:
+- Frame 1: INHALE - Slight chest expansion, crystal glowing brighter, beard rising slightly
+- Frame 2: EXHALE - Relaxed, crystal dims slightly, beard settles
+
+EFFECTS:
+- Gentle crystal glow pulsing
+- Subtle breathing motion
+- Beard gentle sway
+
+OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 ```
 
-**Frame 2:**
-```
-2D game sprite, Funko Pop/Chibi cartoon style wizard character. Facing camera, walking pose - left foot forward mid-step, robe flowing right. Oversized cute head, big expressive eyes, thick dark outline, cel-shading. Purple-blue hooded robe (#4A7A9C), white beard, staff with glowing cyan crystal. Same character as reference. 500x500 pixels, transparent background.
+?? **Guardar como:** `wizard_idle_strip.png`
+
+---
+
+## ?? RESUMEN DE ARCHIVOS
+
+| AnimaciÛn | Frames | TamaÒo Strip | Archivo |
+|-----------|--------|--------------|---------|
+| Walk Down | 3 | 1500x500 | `wizard_walk_down_strip.png` |
+| Walk Up | 3 | 1500x500 | `wizard_walk_up_strip.png` |
+| Walk Right | 3 | 1500x500 | `wizard_walk_right_strip.png` |
+| Cast | 4 | 2000x500 | `wizard_cast_strip.png` |
+| Death | 4 | 2000x500 | `wizard_death_strip.png` |
+| Hit | 2 | 1000x500 | `wizard_hit_strip.png` |
+| Idle | 2 | 1000x500 | `wizard_idle_strip.png` |
+
+**Total: 21 frames**
+
+---
+
+## ?? ImplementaciÛn en Godot
+
+### Ciclo de animaciÛn Walk (ping-pong):
+```gdscript
+# Frames: 0, 1, 2, 1, 0, 1, 2, 1, 0...
+# Usar animation con loop mode "Ping-Pong"
 ```
 
-**Frame 3:**
-```
-2D game sprite, Funko Pop/Chibi cartoon style wizard character. Facing camera, walking pose - feet passing each other mid-stride. Oversized cute head, big expressive eyes, thick dark outline, cel-shading. Purple-blue hooded robe (#4A7A9C), white beard, staff with glowing cyan crystal. Same character as reference. 500x500 pixels, transparent background.
-```
-
-**Frame 4:**
-```
-2D game sprite, Funko Pop/Chibi cartoon style wizard character. Facing camera, walking pose - right foot forward mid-step, robe flowing left. Oversized cute head, big expressive eyes, thick dark outline, cel-shading. Purple-blue hooded robe (#4A7A9C), white beard, staff with glowing cyan crystal. Same character as reference. 500x500 pixels, transparent background.
+### Walk Left:
+```gdscript
+sprite.flip_h = true  # cuando direcciÛn es LEFT
+sprite.flip_h = false # cuando direcciÛn es RIGHT
 ```
 
 ---
 
-### PROMPT ALTERNATIVO - Cast Frame Individual
-
-**Frame 1:**
-```
-2D game sprite, Funko Pop/Chibi cartoon style wizard casting spell. Facing camera, raising staff upward, magical cyan sparkles gathering at crystal tip. Oversized cute head, determined expression, thick dark outline, cel-shading. Purple-blue hooded robe (#4A7A9C), white beard, glowing staff. 500x500 pixels, transparent background.
-```
-
-**Frame 2:**
-```
-2D game sprite, Funko Pop/Chibi cartoon style wizard casting spell. Facing camera, staff raised high above head, intense magical orb glowing at crystal tip, robe billowing with magical wind. Oversized cute head, focused expression, thick dark outline. Purple-blue robe, bright cyan magic glow (#66CCFF). 500x500 pixels, transparent background.
-```
-
-**Frame 3:**
-```
-2D game sprite, Funko Pop/Chibi cartoon style wizard casting spell. Facing camera, staff thrust forward releasing spell, bright cyan energy burst emanating, robe blown back dramatically. Oversized cute head, intense expression, thick dark outline. Purple-blue robe, powerful magic effects. 500x500 pixels, transparent background.
-```
-
-**Frame 4:**
-```
-2D game sprite, Funko Pop/Chibi cartoon style wizard post-spell. Facing camera, staff lowering to rest position, fading cyan magical sparkles around. Oversized cute head, satisfied expression, thick dark outline, cel-shading. Purple-blue robe settling, recovering pose. 500x500 pixels, transparent background.
-```
-
----
-
-# üìã Resumen y Checklist
-
-## Sprites a generar:
-
-| # | Prompt | Resultado | Sprites Finales |
-|---|--------|-----------|-----------------|
-| 0 | Referencia | 1 imagen | (solo referencia) |
-| 1 | Walk Down | 1 strip | 4 sprites |
-| 2 | Walk Up | 1 strip | 4 sprites |
-| 3 | Walk Left | 1 strip | 4 sprites |
-| 4 | Walk Right | 1 strip | 4 sprites |
-| 5 | Cast | 1 strip | 4 sprites |
-| 6 | Hit | 1 strip | 2 sprites |
-| 7 | Death | 1 strip | 4 sprites |
-| **TOTAL** | **8 prompts** | **8 im√°genes** | **26 sprites** |
-
-> **Nota:** Las animaciones Idle se omiten - se usar√° el primer frame de Walk como pose est√°tica.
-
-## Prioridad de ejecuci√≥n:
-
-1. üé® **#0** ‚Üí Referencia (obligatorio primero)
-2. üö∂ **#1-4** ‚Üí Walk (16 sprites) - Mayor impacto
-3. ‚ú® **#5** ‚Üí Cast (4 sprites) - Feedback combate
-4. üí• **#6** ‚Üí Hit (2 sprites) - Feedback da√±o
-5. üíÄ **#7** ‚Üí Death (4 sprites) - Completitud
-
----
-
-## ‚öôÔ∏è Post-procesamiento
-
-Despu√©s de generar las im√°genes, necesitar√°s:
-
-1. **Cortar los strips** en frames individuales (usa cualquier editor de im√°genes)
-2. **Verificar consistencia** de colores y tama√±os entre frames
-3. **Guardar** en `assets/sprites/players/wizard/` con la estructura:
-   ```
-   wizard/
-   ‚îú‚îÄ‚îÄ walk/
-   ‚îÇ   ‚îú‚îÄ‚îÄ wizard_walk_down_1.png ... wizard_walk_down_4.png
-   ‚îÇ   ‚îú‚îÄ‚îÄ wizard_walk_up_1.png ... wizard_walk_up_4.png
-   ‚îÇ   ‚îú‚îÄ‚îÄ wizard_walk_left_1.png ... wizard_walk_left_4.png
-   ‚îÇ   ‚îî‚îÄ‚îÄ wizard_walk_right_1.png ... wizard_walk_right_4.png
-   ‚îú‚îÄ‚îÄ cast/
-   ‚îÇ   ‚îî‚îÄ‚îÄ wizard_cast_1.png ... wizard_cast_4.png
-   ‚îú‚îÄ‚îÄ hit/
-   ‚îÇ   ‚îî‚îÄ‚îÄ wizard_hit_1.png, wizard_hit_2.png
-   ‚îî‚îÄ‚îÄ death/
-       ‚îî‚îÄ‚îÄ wizard_death_1.png ... wizard_death_4.png
-   ```
-
----
-
-# ?? PLANTILLA BASE PARA NUEVOS PERSONAJES
-
-## Copia este prompt y reemplaza los valores en [CORCHETES] para crear cualquier personaje nuevo:
+## ?? Estructura de Carpetas
 
 ```
-2D game sprite sheet for roguelike game, horizontal strip format.
-
-SUBJECT: [NOMBRE_PERSONAJE] character [TIPO_ANIMACIÔøΩN] animation - [DIRECCIÔøΩN]
-
-ART STYLE (CRITICAL - MATCH SPELLLOOP STYLE):
-- Funko Pop / Chibi cartoon style
-- Oversized cute head (approximately 30% of total body height)
-- Big expressive eyes with white shine highlights
-- Thick dark outline (2-3 pixels) around ALL shapes
-- Cel-shading with 2-3 shadow levels (no gradients)
-- Bold saturated colors (85%+ saturation)
-- Rounded soft shapes - NO sharp angles
-- Friendly cute appearance even for serious characters
-
-CHARACTER DESIGN:
-- [DESCRIPCIÔøΩN_ROPA_PRINCIPAL]
-- [DESCRIPCIÔøΩN_ACCESORIOS]
-- [DESCRIPCIÔøΩN_ARMA_O_ITEM]
-- [TIPO_CUERPO: compacto/esbelto/robusto]
-- [EXPRESIÔøΩN_FACIAL]
-
-ANIMATION ([N_FRAMES] frames, [TIPO_MOVIMIENTO]):
-- Frame 1: [DESCRIPCIÔøΩN_FRAME_1]
-- Frame 2: [DESCRIPCIÔøΩN_FRAME_2]
-- Frame 3: [DESCRIPCIÔøΩN_FRAME_3]
-- Frame 4: [DESCRIPCIÔøΩN_FRAME_4] (si aplica)
-
-COLOR PALETTE:
-- Main color: [HEX_PRINCIPAL]
-- Secondary: [HEX_SECUNDARIO]
-- Accent: [HEX_ACENTO]
-- Skin: [HEX_PIEL]
-- Outline: #1A1A2E (siempre usar este para consistencia)
-
-OUTPUT: Horizontal strip [ANCHO_TOTAL]x500 pixels ([N_FRAMES] frames of 500x500 each), transparent background.
+project/assets/sprites/players/wizard/
+??? walk/
+?   ??? wizard_walk_down_1.png - wizard_walk_down_3.png
+?   ??? wizard_walk_up_1.png - wizard_walk_up_3.png
+?   ??? wizard_walk_right_1.png - wizard_walk_right_3.png
+??? cast/
+??? death/
+??? hit/
+??? idle/
 ```
-
-## Ejemplos de valores para reemplazar:
-
-### Para un ROGUE/ASSASSIN:
-- NOMBRE_PERSONAJE: Rogue
-- ROPA_PRINCIPAL: Dark hooded cloak with leather armor underneath
-- ACCESORIOS: Belt with pouches, face mask
-- ARMA: Twin daggers with purple poison glow
-- TIPO_CUERPO: Esbelto/ÔøΩgil
-- COLOR_PRINCIPAL: #2D2D44 (gris oscuro)
-- COLOR_ACENTO: #9944FF (pÔøΩrpura veneno)
-
-### Para un WARRIOR/KNIGHT:
-- NOMBRE_PERSONAJE: Knight
-- ROPA_PRINCIPAL: Shiny plate armor with blue cloth accents
-- ACCESORIOS: Cape, helmet with visor
-- ARMA: Large sword and shield
-- TIPO_CUERPO: Robusto/fornido
-- COLOR_PRINCIPAL: #7799BB (acero azulado)
-- COLOR_ACENTO: #FFD700 (dorado)
-
-### Para un ARCHER/RANGER:
-- NOMBRE_PERSONAJE: Ranger
-- ROPA_PRINCIPAL: Green hooded tunic, brown leather vest
-- ACCESORIOS: Quiver of arrows on back
-- ARMA: Wooden bow with green magical string
-- TIPO_CUERPO: AtlÔøΩtico/equilibrado
-- COLOR_PRINCIPAL: #4A7A4A (verde bosque)
-- COLOR_ACENTO: #8B4513 (marrÔøΩn cuero)
-
----
-
-## ?? Especificaciones TÔøΩcnicas EstÔøΩndar (TODOS los personajes)
-
-| Propiedad | Valor | Notas |
-|-----------|-------|-------|
-| TamaÔøΩo frame | 500x500 px | Contenido centrado |
-| Outline | 2-3 px | Color #1A1A2E |
-| ProporciÔøΩn cabeza | ~30% altura | Estilo Funko/Chibi |
-| SaturaciÔøΩn colores | 85%+ | Colores vibrantes |
-| Sombras | 2-3 niveles | Cel-shading, sin gradientes |
-| Ojos | Grandes, expresivos | Con brillo blanco |
-| Formas | Redondeadas | Sin ÔøΩngulos agudos |
-
-## ?? Referencia cruzada
-
-Este documento complementa:
-- [AI_SPRITE_PROMPTS.md](AI_SPRITE_PROMPTS.md) - Prompts para proyectiles y efectos
-- Los sprites de enemigos siguen el mismo estilo en `assets/sprites/enemies/`

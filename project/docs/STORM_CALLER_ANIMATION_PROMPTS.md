@@ -6,7 +6,7 @@
 
 ### Flujo de trabajo:
 1. Ejecuta el **Prompt #0** primero para establecer el estilo del personaje
-2. Luego ve ejecutando los prompts **#1 al #8** en orden
+2. Luego ve ejecutando los prompts **#1 al #7** en orden
 3. Guarda cada imagen con el nombre indicado
 
 ---
@@ -20,13 +20,27 @@
 
 ---
 
-## ?? NOTA CRÍTICA SOBRE ANIMACIÓN DE CAMINAR
+## ?? SISTEMA DE ANIMACIÓN DE CAMINAR (Estilo Binding of Isaac)
 
-**MUY IMPORTANTE:** Al generar los frames de caminar, es ESENCIAL que:
-1. **Los pies se muevan claramente** - Cada frame debe mostrar una posición diferente de las piernas
-2. **Transición fluida** - Los 4 frames deben formar un ciclo de caminata natural
-3. **No solo mover la ropa** - El personaje debe DAR PASOS visibles, no solo balancearse
-4. **Pierna adelante/atrás** - Frame 1: neutral, Frame 2: pierna izquierda adelante, Frame 3: cruzando, Frame 4: pierna derecha adelante
+**Este juego usa un ciclo de caminata de 3 frames en ping-pong:**
+
+### Ciclo de animación:
+```
+Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
+```
+
+### Descripción de cada frame:
+
+| Frame | Walk Down/Up (vista frontal/trasera) | Walk Right (vista lateral) |
+|-------|--------------------------------------|----------------------------|
+| **1** | Pierna IZQUIERDA hacia afuera | Pierna TRASERA atrás, inclinado hacia adelante |
+| **2** | Piernas JUNTAS (posición neutral) | Piernas JUNTAS (posición neutral) |
+| **3** | Pierna DERECHA hacia afuera | Pierna DELANTERA adelante, inclinado hacia adelante |
+
+### ?? IMPORTANTE:
+- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el código
+- Solo se necesitan **3 sprites por dirección**: Down, Up y Right
+- Total walk sprites: **9 frames** (3 direcciones × 3 frames)
 
 ---
 
@@ -102,129 +116,109 @@ OUTPUT: 1024x1024, transparent background
 
 ---
 
-## PROMPT #1 - Walk Down (4 frames)
+## PROMPT #1 - Walk Down (3 frames) - Estilo Binding of Isaac
 
 ```
 2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Storm Caller walking animation - FACING CAMERA
+SUBJECT: Storm Caller walking animation - FACING CAMERA (Binding of Isaac style)
 
 ART STYLE: Funko Pop/Chibi, oversized head, thick outline, cel-shading
 
 CHARACTER: Female lightning mage, blue hair with white streaks floating upward, storm blue robe, silver lightning staff
 
-?? CRITICAL WALKING ANIMATION REQUIREMENTS:
-- Frame 1: NEUTRAL - Feet together, standing straight
-- Frame 2: LEFT STEP - Left foot clearly forward, right foot back, weight shifting
-- Frame 3: PASSING - Feet crossing each other mid-stride, body centered
-- Frame 4: RIGHT STEP - Right foot clearly forward, left foot back
-- LEGS MUST BE VISIBLY DIFFERENT in each frame - show actual walking motion
-- Robe sways with movement, electric sparks trail behind
+? 3-FRAME WALK CYCLE (BINDING OF ISAAC STYLE):
+- Frame 1: LEFT LEG OUT - Left leg stepped outward/forward, right leg straight, slight body tilt left
+- Frame 2: NEUTRAL - Both legs together, standing straight, centered pose
+- Frame 3: RIGHT LEG OUT - Right leg stepped outward/forward, left leg straight, slight body tilt right
+
+ANIMATION NOTES:
+- This creates a waddling/bouncy walk when played as: 1-2-3-2-1-2-3...
+- Each frame should be CLEARLY DIFFERENT - exaggerate the leg positions
+- Keep upper body relatively stable, movement is in the legs
+- Robe sways with leg movement
 
 SECONDARY MOTION:
-- Hair floats with static electricity, moves opposite to walk direction
+- Hair floats with static electricity
 - Small lightning arcs between hair strands
-- Staff sparks intensify on contact frames
+- Staff sparks gently
 
 COLORS: Robe #1E3A5F, Hair #00A8FF, Sparks #FFE135, Skin #E8DED5
 
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `storm_caller_walk_down_strip.png`
 
 ---
 
-## PROMPT #2 - Walk Up (4 frames)
+## PROMPT #2 - Walk Up (3 frames) - Estilo Binding of Isaac
 
 ```
 2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Storm Caller walking animation - BACK TO CAMERA (walking away)
+SUBJECT: Storm Caller walking animation - BACK TO CAMERA (Binding of Isaac style)
 
 ART STYLE: Funko Pop/Chibi, oversized head, thick outline, cel-shading
 
 CHARACTER (from behind): Female lightning mage, long blue hair flowing down back with white streaks, storm blue robe, silver staff
 
-?? CRITICAL WALKING ANIMATION:
-- Frame 1: NEUTRAL - Feet together
-- Frame 2: LEFT STEP - Left leg forward (visible from behind), right leg back
-- Frame 3: PASSING - Legs crossing mid-stride
-- Frame 4: RIGHT STEP - Right leg forward, left back
-- SHOW CLEAR LEG MOVEMENT in each frame
+? 3-FRAME WALK CYCLE (BACK VIEW):
+- Frame 1: LEFT LEG OUT - Left leg stepped outward (visible from behind), body tilts slightly
+- Frame 2: NEUTRAL - Both legs together, standing straight
+- Frame 3: RIGHT LEG OUT - Right leg stepped outward, body tilts opposite
+
+ANIMATION NOTES:
+- Mirror the front walk cycle but from behind
+- Legs should be clearly visible below robe hem
+- Keep the same bouncy feel as front view
 
 SECONDARY MOTION:
 - Hair sways side to side with walking rhythm
 - Robe hem moves with leg motion
 - Electric sparks trail from staff tip
 
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `storm_caller_walk_up_strip.png`
 
 ---
 
-## PROMPT #3 - Walk Left (4 frames)
+## PROMPT #3 - Walk Right (3 frames) - Estilo Binding of Isaac
 
 ```
 2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Storm Caller walking - LEFT SIDE PROFILE
+SUBJECT: Storm Caller walking - RIGHT SIDE PROFILE (Binding of Isaac style)
 
 ART STYLE: Funko Pop/Chibi, thick outline, cel-shading
 
-CHARACTER (left profile): Female lightning mage, hair trailing behind, storm robe, staff in right hand
+CHARACTER (right profile): Female lightning mage, hair trailing behind, storm robe, staff visible
 
-?? CRITICAL WALKING ANIMATION (SIDE VIEW):
-- Frame 1: NEUTRAL - Standing side profile
-- Frame 2: BACK LEG PUSH - Rear leg pushing off ground, front leg reaching forward
-- Frame 3: MID-STRIDE - Legs scissoring, crossing each other
-- Frame 4: FRONT LAND - Front leg landing, rear leg lifting
-- Each frame must show DIFFERENT leg positions clearly
+? 3-FRAME WALK CYCLE (SIDE VIEW):
+- Frame 1: BACK LEG EXTENDED - Rear leg stretched back, front leg under body, leaning forward into walk
+- Frame 2: NEUTRAL - Both legs together under body, upright stance
+- Frame 3: FRONT LEG EXTENDED - Front leg stretched forward, rear leg under body, leaning forward
+
+ANIMATION NOTES:
+- Side view shows the forward/backward leg motion
+- Character leans slightly into movement direction
+- This sprite will be FLIPPED HORIZONTALLY for Walk Left
 
 SECONDARY MOTION:
 - Hair flows behind due to movement
 - Robe trails with motion
 - Electric trail behind staff
 
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
-```
-
-?? **Guardar como:** `storm_caller_walk_left_strip.png`
-
----
-
-## PROMPT #4 - Walk Right (4 frames)
-
-```
-2D game sprite sheet, horizontal strip format.
-
-SUBJECT: Storm Caller walking - RIGHT SIDE PROFILE
-
-ART STYLE: Funko Pop/Chibi, thick outline, cel-shading
-
-CHARACTER (right profile): Female lightning mage, hair trailing behind, storm robe, staff visible
-
-?? CRITICAL WALKING ANIMATION (SIDE VIEW):
-- Frame 1: NEUTRAL - Standing side profile
-- Frame 2: BACK LEG PUSH - Rear leg pushing, front reaching
-- Frame 3: MID-STRIDE - Legs crossing
-- Frame 4: FRONT LAND - Front leg down, rear lifting
-- CLEAR LEG POSITION CHANGES between frames
-
-SECONDARY MOTION:
-- Hair flows opposite to movement direction
-- Lightning sparks trail behind
-
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `storm_caller_walk_right_strip.png`
 
 ---
 
-## PROMPT #5 - Cast Animation (4 frames)
+## PROMPT #4 - Cast Animation (4 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
@@ -252,7 +246,7 @@ OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
 
 ---
 
-## PROMPT #6 - Death Animation (4 frames)
+## PROMPT #5 - Death Animation (4 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
@@ -280,7 +274,7 @@ OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
 
 ---
 
-## PROMPT #7 - Hit Animation (2 frames)
+## PROMPT #6 - Hit Animation (2 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
@@ -304,7 +298,7 @@ OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 
 ---
 
-## PROMPT #8 - Idle Animation (2 frames)
+## PROMPT #7 - Idle Animation (2 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
@@ -331,18 +325,35 @@ OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 
 ## ?? RESUMEN DE ARCHIVOS
 
-| Animación | Frames | Archivos |
-|-----------|--------|----------|
-| Walk Down | 4 | `storm_caller_walk_down_1.png` - `storm_caller_walk_down_4.png` |
-| Walk Up | 4 | `storm_caller_walk_up_1.png` - `storm_caller_walk_up_4.png` |
-| Walk Left | 4 | `storm_caller_walk_left_1.png` - `storm_caller_walk_left_4.png` |
-| Walk Right | 4 | `storm_caller_walk_right_1.png` - `storm_caller_walk_right_4.png` |
-| Cast | 4 | `storm_caller_cast_1.png` - `storm_caller_cast_4.png` |
-| Death | 4 | `storm_caller_death_1.png` - `storm_caller_death_4.png` |
-| Hit | 2 | `storm_caller_hit_1.png` - `storm_caller_hit_2.png` |
-| Idle | 2 | `storm_caller_idle_1.png` - `storm_caller_idle_2.png` |
+| Animación | Frames | Tamaño Strip | Archivo |
+|-----------|--------|--------------|---------|
+| Walk Down | 3 | 1500x500 | `storm_caller_walk_down_strip.png` |
+| Walk Up | 3 | 1500x500 | `storm_caller_walk_up_strip.png` |
+| Walk Right | 3 | 1500x500 | `storm_caller_walk_right_strip.png` |
+| Cast | 4 | 2000x500 | `storm_caller_cast_strip.png` |
+| Death | 4 | 2000x500 | `storm_caller_death_strip.png` |
+| Hit | 2 | 1000x500 | `storm_caller_hit_strip.png` |
+| Idle | 2 | 1000x500 | `storm_caller_idle_strip.png` |
 
-**Total: 28 frames**
+**Total: 21 frames** (antes eran 28 con 4 frames de walk × 4 direcciones)
+
+---
+
+## ?? Implementación en Godot
+
+### Ciclo de animación Walk (ping-pong):
+```gdscript
+# En AnimationPlayer o código:
+# Frames: 0, 1, 2, 1, 0, 1, 2, 1, 0...
+# Usar animation con loop mode "Ping-Pong"
+```
+
+### Walk Left:
+```gdscript
+# Voltear sprite_walk_right horizontalmente
+sprite.flip_h = true  # cuando dirección es LEFT
+sprite.flip_h = false # cuando dirección es RIGHT
+```
 
 ---
 
@@ -351,7 +362,17 @@ OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 ```
 project/assets/sprites/players/storm_caller/
 ??? walk/
+?   ??? storm_caller_walk_down_1.png
+?   ??? storm_caller_walk_down_2.png
+?   ??? storm_caller_walk_down_3.png
+?   ??? storm_caller_walk_up_1.png
+?   ??? storm_caller_walk_up_2.png
+?   ??? storm_caller_walk_up_3.png
+?   ??? storm_caller_walk_right_1.png
+?   ??? storm_caller_walk_right_2.png
+?   ??? storm_caller_walk_right_3.png
 ??? cast/
 ??? death/
 ??? hit/
+??? idle/
 ```

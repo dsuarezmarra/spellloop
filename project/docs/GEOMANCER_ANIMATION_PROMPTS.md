@@ -5,8 +5,8 @@
 **Las IAs de imágenes NO pueden generar todos los sprites de una vez.**
 
 ### Flujo de trabajo:
-1. Ejecuta el **Prompt #0** primero para establecer el estilo
-2. Luego ejecuta los prompts **#1 al #8** en orden
+1. Ejecuta el **Prompt #0** primero para establecer el estilo del personaje
+2. Luego ve ejecutando los prompts **#1 al #7** en orden
 3. Guarda cada imagen con el nombre indicado
 
 ---
@@ -15,21 +15,39 @@
 
 - **Tamaño:** 500x500 píxeles por frame
 - **Formato:** PNG con fondo transparente
-- **Estilo:** Cartoon/Funko Pop
+- **Estilo:** Cartoon/Funko Pop (ver guía de estilo abajo)
 - **Vista:** Top-down con ligera perspectiva 3/4
 
 ---
 
-## ?? NOTA CRÍTICA SOBRE ANIMACIÓN DE CAMINAR
+## ?? SISTEMA DE ANIMACIÓN DE CAMINAR (Estilo Binding of Isaac)
 
-**MUY IMPORTANTE:** El Geomancer es EL PERSONAJE MÁS LENTO pero más resistente.
+**Este juego usa un ciclo de caminata de 3 frames en ping-pong:**
 
-Su animación de caminar debe reflejar esto:
-1. **Pasos pesados y deliberados** - Movimiento lento pero poderoso
-2. **Postura anclada** - Parece inamovible, conectado a la tierra
-3. **Peso visible** - Cada paso parece hundir el suelo
-4. **Menos amplitud** - Pasos cortos pero sólidos
-5. **Transición clara pero lenta** - Los pies se mueven claramente pero con calma
+### Ciclo de animación:
+```
+Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
+```
+
+### Descripción de cada frame:
+
+| Frame | Walk Down/Up (vista frontal/trasera) | Walk Right (vista lateral) |
+|-------|--------------------------------------|----------------------------|
+| **1** | Pierna IZQUIERDA hacia afuera | Pierna TRASERA atrás, inclinado hacia adelante |
+| **2** | Piernas JUNTAS (posición neutral) | Piernas JUNTAS (posición neutral) |
+| **3** | Pierna DERECHA hacia afuera | Pierna DELANTERA adelante, inclinado hacia adelante |
+
+### ?? IMPORTANTE:
+- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el código
+- Solo se necesitan **3 sprites por dirección**: Down, Up y Right
+- Total walk sprites: **9 frames** (3 direcciones × 3 frames)
+
+### ?? NOTA ESPECIAL - GEOMANCER:
+El Geomancer es EL PERSONAJE MÁS LENTO pero más resistente. Su animación debe reflejar:
+- Pasos pesados y deliberados
+- Postura anclada, conectado a la tierra
+- Cada paso parece hundir el suelo
+- Pasos cortos pero sólidos
 
 ---
 
@@ -107,133 +125,111 @@ OUTPUT: 1024x1024, transparent background
 
 ---
 
-## PROMPT #1 - Walk Down (4 frames)
+## PROMPT #1 - Walk Down (3 frames) - Estilo Binding of Isaac
 
 ```
 2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Geomancer walking animation - FACING CAMERA
+SUBJECT: Geomancer walking animation - FACING CAMERA (Binding of Isaac style)
 
 ART STYLE: Funko Pop/Chibi, heavy and grounded
 
 CHARACTER: Stocky dwarf earth mage, braided beard, stone armor, crystals on shoulders
 
-?? THIS IS THE SLOWEST CHARACTER - HEAVY DELIBERATE STEPS:
-- Frame 1: PLANTED - Both feet firmly on ground, solid stance
-- Frame 2: LEFT STEP - Left foot lifting slowly, short step forward, weight shifting
-- Frame 3: WEIGHT TRANSFER - Left foot landing with impact, right preparing
-- Frame 4: RIGHT STEP - Right foot forward, same slow deliberate motion
+?? 3-FRAME WALK CYCLE - SLOW HEAVY STEPS:
+- Frame 1: LEFT LEG OUT - Left heavy foot stepped outward, weight on left, body tilts slightly
+- Frame 2: NEUTRAL - Both feet firmly planted together, solid stance, immovable
+- Frame 3: RIGHT LEG OUT - Right heavy foot stepped outward, weight on right, body tilts slightly
+
+ANIMATION NOTES:
+- This creates a heavy, grounded walk when played as: 1-2-3-2-1-2-3...
 - SHOW HEAVY FOOTFALLS - each step looks like it could crack the ground
 - Short stride length - he doesn't need to move fast
 - Body barely tilts - extremely stable
+- Slowest character - convey WEIGHT
 
 SECONDARY MOTION:
 - Crystals on shoulders glow with each step
 - Beard sways minimally - too heavy
 - Runes pulse with walking rhythm
-- Small dust/pebbles kick up from footsteps
-- Armor barely moves - too heavy and solid
+- Small dust/pebbles implied from footsteps
 
 COLORS: Armor #8B7355, Crystals #FFB300, Beard #A0522D, Runes #E65100
 
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `geomancer_walk_down_strip.png`
 
 ---
 
-## PROMPT #2 - Walk Up (4 frames)
+## PROMPT #2 - Walk Up (3 frames) - Estilo Binding of Isaac
 
 ```
 2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Geomancer walking - BACK TO CAMERA
+SUBJECT: Geomancer walking - BACK TO CAMERA (Binding of Isaac style)
 
 ART STYLE: Funko Pop/Chibi, massive back
 
 CHARACTER (from behind): Wide dwarf, massive back armor, braided beard tips visible
 
-?? SLOW HEAVY WALKING (BACK VIEW):
-- Frame 1: PLANTED - Solid stance
-- Frame 2: LEFT STEP - Short, heavy step
-- Frame 3: WEIGHT TRANSFER - Landing with weight
-- Frame 4: RIGHT STEP - Completing slow cycle
+?? 3-FRAME WALK CYCLE (BACK VIEW):
+- Frame 1: LEFT LEG OUT - Left heavy foot out, minimal movement
+- Frame 2: NEUTRAL - Solid planted stance
+- Frame 3: RIGHT LEG OUT - Right heavy foot out, completing slow cycle
+
+ANIMATION NOTES:
 - MINIMAL MOVEMENT - stability is key
+- Show the massive width of this character
+- Heavy deliberate steps
 
 SECONDARY MOTION:
 - Back crystals glowing
 - Wide shoulders barely moving
 - Runes pulsing on back armor
 
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `geomancer_walk_up_strip.png`
 
 ---
 
-## PROMPT #3 - Walk Left (4 frames)
+## PROMPT #3 - Walk Right (3 frames) - Estilo Binding of Isaac
 
 ```
 2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Geomancer walking - LEFT SIDE PROFILE
+SUBJECT: Geomancer walking - RIGHT SIDE PROFILE (Binding of Isaac style)
 
 ART STYLE: Funko Pop/Chibi, wide profile
 
-CHARACTER (left profile): Massive wide dwarf, stone hammer visible, heavy armor
+CHARACTER (right profile): Massive wide dwarf, stone hammer visible, heavy armor
 
-?? SLOW WALKING (SIDE VIEW):
-- Frame 1: PLANTED - Standing solid
-- Frame 2: LIFT - One leg slowly lifting for short step
-- Frame 3: FORWARD - Leg moving forward slowly
-- Frame 4: LAND - Heavy foot placement, ground impact
+?? 3-FRAME WALK CYCLE (SIDE VIEW):
+- Frame 1: BACK LEG EXTENDED - Rear leg back, very short stride, heavy feel
+- Frame 2: NEUTRAL - Both legs solid under body
+- Frame 3: FRONT LEG EXTENDED - Front leg forward slightly, maintaining stability
+
+ANIMATION NOTES:
 - SHORT STRIDES - very little forward lean
+- This sprite will be FLIPPED HORIZONTALLY for Walk Left
 - EACH STEP looks powerful but slow
 
 SECONDARY MOTION:
 - Hammer held steady (barely moves - too heavy)
 - Beard swings slightly
-- Dust from footfalls
+- Implied dust from footfalls
 
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
-```
-
-?? **Guardar como:** `geomancer_walk_left_strip.png`
-
----
-
-## PROMPT #4 - Walk Right (4 frames)
-
-```
-2D game sprite sheet, horizontal strip format.
-
-SUBJECT: Geomancer walking - RIGHT SIDE PROFILE
-
-ART STYLE: Funko Pop/Chibi, stocky profile
-
-CHARACTER (right profile): Wide dwarf, armor, weapon
-
-?? SLOW DELIBERATE WALKING (SIDE VIEW):
-- Frame 1: PLANTED - Solid stance
-- Frame 2: LIFT - Heavy leg lifting
-- Frame 3: FORWARD - Moving slowly
-- Frame 4: LAND - Heavy landing
-- POWERFUL but UNHURRIED movement
-
-SECONDARY MOTION:
-- Everything moves minimally
-- Ground impact effects
-
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `geomancer_walk_right_strip.png`
 
 ---
 
-## PROMPT #5 - Cast Animation (4 frames)
+## PROMPT #4 - Cast Animation (4 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
@@ -249,10 +245,10 @@ ANIMATION SEQUENCE:
 - Frame 4: RECOVERY - Standing from slam, rocks settling, earth returning to calm
 
 EFFECTS:
-- Frame 1: Cracks forming on ground, orange glow from below
-- Frame 2: Rocks and debris floating, energy swirling
-- Frame 3: MASSIVE earth spikes erupting, explosion of rock and dust
-- Frame 4: Debris falling, dust settling, satisfied expression
+- Frame 1: Ground cracks, crystals glow
+- Frame 2: Floating rocks, intense orange energy
+- Frame 3: Earth explosion, spikes, dust
+- Frame 4: Settling rocks, residual glow
 
 OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
 ```
@@ -261,26 +257,26 @@ OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
 
 ---
 
-## PROMPT #6 - Death Animation (4 frames)
+## PROMPT #5 - Death Animation (4 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
 
 SUBJECT: Geomancer death animation - FACING CAMERA
 
-ART STYLE: Funko Pop/Chibi, crumbling stone
+ART STYLE: Funko Pop/Chibi, crumbling effect
 
 ANIMATION SEQUENCE:
-- Frame 1: HIT - Finally staggered (takes a lot!), cracks appearing in armor, crystals flickering
-- Frame 2: CRUMBLE - Armor pieces beginning to fall off, crystals dimming, runes fading
-- Frame 3: COLLAPSE - Falling to knees (still upright momentarily), armor breaking apart
-- Frame 4: FALLEN - Down but looking like a fallen monument, armor scattered, peaceful
+- Frame 1: HIT - Massive impact, recoiling, crystals cracking
+- Frame 2: STAGGER - Stumbling, armor crumbling at edges, runes flickering
+- Frame 3: COLLAPSE - Falling heavily, ground shakes, crystals shattering
+- Frame 4: FALLEN - On ground, armor partially crumbled, crystals dark, still like a fallen statue
 
 EFFECTS:
-- Frame 1: Impact on someone who usually never flinches
-- Frame 2: Stone armor cracking, pieces falling
-- Frame 3: More crumbling, light fading
-- Frame 4: Stillness, scattered stone pieces, dim crystals
+- Frame 1: Impact crack on armor
+- Frame 2: Pieces falling off
+- Frame 3: Heavy fall
+- Frame 4: Slight transparency (80% opacity), statue-like
 
 OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
 ```
@@ -289,22 +285,22 @@ OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
 
 ---
 
-## PROMPT #7 - Hit Animation (2 frames)
+## PROMPT #6 - Hit Animation (2 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
 
 SUBJECT: Geomancer taking damage - FACING CAMERA
 
-ART STYLE: Funko Pop/Chibi, barely affected
+ART STYLE: Funko Pop/Chibi, armor impact
 
 ANIMATION:
-- Frame 1: IMPACT - Barely flinches, small crack in armor, crystals flicker, annoyed expression
-- Frame 2: RECOVERY - Immediately stable again, crack sealing, even more determined
+- Frame 1: IMPACT - Barely flinching, red damage flash, armor absorbing hit, crystals flickering
+- Frame 2: RECOVERY - Immediate solid stance, unfazed expression, crystals restabilizing
 
 EFFECTS:
-- Frame 1: Minimal red flash (tough character), small armor crack
-- Frame 2: Earth magic healing the crack, stoic return
+- Frame 1: Red tint overlay, minimal movement (he's tanky!)
+- Frame 2: Normal colors, ready to continue
 
 OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 ```
@@ -313,24 +309,23 @@ OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 
 ---
 
-## PROMPT #8 - Idle Animation (2 frames)
+## PROMPT #7 - Idle Animation (2 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
 
 SUBJECT: Geomancer idle/breathing - FACING CAMERA
 
-ART STYLE: Funko Pop/Chibi, immovable stance
+ART STYLE: Funko Pop/Chibi, stone-solid presence
 
 ANIMATION:
-- Frame 1: Standing like a statue, crystals glowing steadily, runes pulsing
-- Frame 2: Identical but crystals pulse differently, subtle rune shift
+- Frame 1: INHALE - Minimal chest expansion (armor), crystals glowing steadily
+- Frame 2: EXHALE - Nearly identical, crystals pulse slightly, immovable stance
 
 EFFECTS:
-- Barely any movement - he IS the mountain
-- Only crystals and runes show life
-- Occasional small pebble floating near feet
-- Beard might shift slightly
+- Crystal glow pulse
+- Runes subtle glow
+- Rock-solid stance
 
 OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 ```
@@ -341,18 +336,33 @@ OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 
 ## ?? RESUMEN DE ARCHIVOS
 
-| Animación | Frames | Archivos |
-|-----------|--------|----------|
-| Walk Down | 4 | `geomancer_walk_down_1.png` - `geomancer_walk_down_4.png` |
-| Walk Up | 4 | `geomancer_walk_up_1.png` - `geomancer_walk_up_4.png` |
-| Walk Left | 4 | `geomancer_walk_left_1.png` - `geomancer_walk_left_4.png` |
-| Walk Right | 4 | `geomancer_walk_right_1.png` - `geomancer_walk_right_4.png` |
-| Cast | 4 | `geomancer_cast_1.png` - `geomancer_cast_4.png` |
-| Death | 4 | `geomancer_death_1.png` - `geomancer_death_4.png` |
-| Hit | 2 | `geomancer_hit_1.png` - `geomancer_hit_2.png` |
-| Idle | 2 | `geomancer_idle_1.png` - `geomancer_idle_2.png` |
+| Animación | Frames | Tamaño Strip | Archivo |
+|-----------|--------|--------------|---------|
+| Walk Down | 3 | 1500x500 | `geomancer_walk_down_strip.png` |
+| Walk Up | 3 | 1500x500 | `geomancer_walk_up_strip.png` |
+| Walk Right | 3 | 1500x500 | `geomancer_walk_right_strip.png` |
+| Cast | 4 | 2000x500 | `geomancer_cast_strip.png` |
+| Death | 4 | 2000x500 | `geomancer_death_strip.png` |
+| Hit | 2 | 1000x500 | `geomancer_hit_strip.png` |
+| Idle | 2 | 1000x500 | `geomancer_idle_strip.png` |
 
-**Total: 28 frames**
+**Total: 21 frames**
+
+---
+
+## ?? Implementación en Godot
+
+### Ciclo de animación Walk (ping-pong):
+```gdscript
+# Frames: 0, 1, 2, 1, 0, 1, 2, 1, 0...
+# Usar animation con loop mode "Ping-Pong"
+```
+
+### Walk Left:
+```gdscript
+sprite.flip_h = true  # cuando dirección es LEFT
+sprite.flip_h = false # cuando dirección es RIGHT
+```
 
 ---
 
@@ -361,7 +371,11 @@ OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 ```
 project/assets/sprites/players/geomancer/
 ??? walk/
+?   ??? geomancer_walk_down_1.png - geomancer_walk_down_3.png
+?   ??? geomancer_walk_up_1.png - geomancer_walk_up_3.png
+?   ??? geomancer_walk_right_1.png - geomancer_walk_right_3.png
 ??? cast/
 ??? death/
 ??? hit/
+??? idle/
 ```

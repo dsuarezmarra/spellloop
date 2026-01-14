@@ -1,12 +1,12 @@
-# ??? Prompts para Animaciones del WIND RUNNER
+# ?? Prompts para Animaciones del WIND RUNNER
 
 ## ?? IMPORTANTE: Cómo usar este documento
 
 **Las IAs de imágenes NO pueden generar todos los sprites de una vez.**
 
 ### Flujo de trabajo:
-1. Ejecuta el **Prompt #0** primero para establecer el estilo
-2. Luego ejecuta los prompts **#1 al #8** en orden
+1. Ejecuta el **Prompt #0** primero para establecer el estilo del personaje
+2. Luego ve ejecutando los prompts **#1 al #7** en orden
 3. Guarda cada imagen con el nombre indicado
 
 ---
@@ -15,20 +15,39 @@
 
 - **Tamaño:** 500x500 píxeles por frame
 - **Formato:** PNG con fondo transparente
-- **Estilo:** Cartoon/Funko Pop
+- **Estilo:** Cartoon/Funko Pop (ver guía de estilo abajo)
 - **Vista:** Top-down con ligera perspectiva 3/4
 
 ---
 
-## ?? NOTA CRÍTICA SOBRE ANIMACIÓN DE CAMINAR
+## ?? SISTEMA DE ANIMACIÓN DE CAMINAR (Estilo Binding of Isaac)
 
-**MUY IMPORTANTE:** El Wind Runner es EL PERSONAJE MÁS RÁPIDO del juego.
+**Este juego usa un ciclo de caminata de 3 frames en ping-pong:**
 
-Su animación de caminar debe reflejar esto:
-1. **Pasos muy dinámicos** - Postura inclinada hacia adelante, corriendo más que caminando
-2. **Mayor amplitud de zancada** - Piernas más separadas en cada paso
-3. **Sensación de velocidad** - Ropa y pelo muy sueltos, ondeando hacia atrás
-4. **Ligereza** - Parece apenas tocar el suelo
+### Ciclo de animación:
+```
+Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
+```
+
+### Descripción de cada frame:
+
+| Frame | Walk Down/Up (vista frontal/trasera) | Walk Right (vista lateral) |
+|-------|--------------------------------------|----------------------------|
+| **1** | Pierna IZQUIERDA hacia afuera | Pierna TRASERA atrás, inclinado hacia adelante |
+| **2** | Piernas JUNTAS (posición neutral) | Piernas JUNTAS (posición neutral) |
+| **3** | Pierna DERECHA hacia afuera | Pierna DELANTERA adelante, inclinado hacia adelante |
+
+### ?? IMPORTANTE:
+- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el código
+- Solo se necesitan **3 sprites por dirección**: Down, Up y Right
+- Total walk sprites: **9 frames** (3 direcciones × 3 frames)
+
+### ?? NOTA ESPECIAL - WIND RUNNER:
+El Wind Runner es EL PERSONAJE MÁS RÁPIDO del juego. Su animación debe reflejar:
+- Postura inclinada hacia adelante, corriendo más que caminando
+- Mayor amplitud de zancada - piernas más separadas
+- Sensación de velocidad - ropa y pelo ondeando hacia atrás
+- Ligereza - parece apenas tocar el suelo
 
 ---
 
@@ -106,135 +125,112 @@ OUTPUT: 1024x1024, transparent background
 
 ---
 
-## PROMPT #1 - Walk/Run Down (4 frames)
+## PROMPT #1 - Walk/Run Down (3 frames) - Estilo Binding of Isaac
 
 ```
 2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Wind Runner RUNNING animation - FACING CAMERA
+SUBJECT: Wind Runner RUNNING animation - FACING CAMERA (Binding of Isaac style)
 
 ART STYLE: Funko Pop/Chibi, dynamic movement, wind effects
 
 CHARACTER: Androgynous wind mage, silver hair, white/cyan outfit, floating ribbons
 
-?? THIS IS THE FASTEST CHARACTER - RUNNING NOT WALKING:
-- Frame 1: READY - Light crouch, about to spring, ribbons pulled back
-- Frame 2: LEFT SPRINT - Left leg far forward, right far back, leaning into run, huge stride
-- Frame 3: AIRBORNE - Both feet nearly off ground, mid-sprint leap, maximum speed pose
-- Frame 4: RIGHT SPRINT - Right leg forward, left back, continuing sprint
+?? 3-FRAME RUN CYCLE - FASTEST CHARACTER:
+- Frame 1: LEFT LEG OUT - Left leg stretched far outward/forward, EXAGGERATED stride, body leaning left, speed pose
+- Frame 2: NEUTRAL - Both legs together but body still leaning forward, ready to spring
+- Frame 3: RIGHT LEG OUT - Right leg stretched far outward/forward, EXAGGERATED stride, body leaning right
+
+ANIMATION NOTES:
+- This creates a FAST bouncy run when played as: 1-2-3-2-1-2-3...
 - EXAGGERATED LEG MOVEMENT - this character RUNS, not walks
-- Body leans forward into movement
+- Body leans forward into movement even in neutral
 - Arms pumping or held back for aerodynamics
+- MORE DYNAMIC than other characters
 
 SECONDARY MOTION:
 - Hair blown completely backward
 - ALL ribbons streaming behind
 - Wind spirals trailing from movement
 - Tunic pressed against body from speed
-- Wind effect lines behind character
 
 COLORS: Tunic #F0FFF0, Hair #E8E8E8, Eyes #00CED1, Ribbons #40E0D0
 
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `wind_runner_walk_down_strip.png`
 
 ---
 
-## PROMPT #2 - Walk/Run Up (4 frames)
+## PROMPT #2 - Walk/Run Up (3 frames) - Estilo Binding of Isaac
 
 ```
 2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Wind Runner RUNNING - BACK TO CAMERA
+SUBJECT: Wind Runner RUNNING - BACK TO CAMERA (Binding of Isaac style)
 
-ART STYLE: Funko Pop/Chibi, speed lines
+ART STYLE: Funko Pop/Chibi, speed effects
 
 CHARACTER (from behind): Silver-haired runner, ribbons streaming, wind effects
 
-?? RUNNING ANIMATION (BACK VIEW):
-- Frame 1: READY - Crouched start position
-- Frame 2: LEFT SPRINT - Left leg forward (visible from behind), huge stride
-- Frame 3: AIRBORNE - Mid-sprint, feet barely touching
-- Frame 4: RIGHT SPRINT - Right leg forward, continuing speed
+?? 3-FRAME RUN CYCLE (BACK VIEW):
+- Frame 1: LEFT LEG OUT - Left leg far out (visible from behind), huge dynamic stride
+- Frame 2: NEUTRAL - Legs together, body leaning forward
+- Frame 3: RIGHT LEG OUT - Right leg far out, continuing speed
+
+ANIMATION NOTES:
 - SHOW RUNNING MOTION with exaggerated leg positions
+- Dynamic forward-leaning posture
+- Mirror the front view energy
 
 SECONDARY MOTION:
 - Hair streaming backward (toward camera)
 - Ribbons flowing toward viewer
 - Wind trail effects
-- Dynamic running pose
 
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `wind_runner_walk_up_strip.png`
 
 ---
 
-## PROMPT #3 - Walk/Run Left (4 frames)
+## PROMPT #3 - Walk/Run Right (3 frames) - Estilo Binding of Isaac
 
 ```
 2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Wind Runner RUNNING - LEFT SIDE PROFILE
+SUBJECT: Wind Runner RUNNING - RIGHT SIDE PROFILE (Binding of Isaac style)
 
 ART STYLE: Funko Pop/Chibi, extreme speed
 
-CHARACTER (left profile): Runner in full sprint, ribbons trailing
+CHARACTER (right profile): Runner in full sprint, ribbons trailing
 
-?? RUNNING ANIMATION (SIDE VIEW - BEST FOR SHOWING SPEED):
-- Frame 1: READY - Coiled to spring
-- Frame 2: PUSH OFF - Back leg extended far behind, front reaching forward
-- Frame 3: FLIGHT PHASE - Both legs scissored wide, nearly horizontal lean
-- Frame 4: LANDING - Front foot touching, continuing momentum
+?? 3-FRAME RUN CYCLE (SIDE VIEW - BEST FOR SHOWING SPEED):
+- Frame 1: BACK LEG EXTENDED - Back leg extended FAR behind, front reaching forward, aggressive lean
+- Frame 2: NEUTRAL - Legs together under body, still leaning forward
+- Frame 3: FRONT LEG EXTENDED - Front leg extended FAR forward, nearly horizontal lean
+
+ANIMATION NOTES:
 - MAXIMUM LEG EXTENSION - show the speed through stride length
+- This sprite will be FLIPPED HORIZONTALLY for Run Left
+- Body leaned forward at aggressive angle
+- Arms in running position
 
 SECONDARY MOTION:
 - Everything streams behind: hair, ribbons, wind effects
-- Body leaned forward at aggressive angle
-- Arms in running position
-- Wind speed lines
+- Wind speed lines implied
+- Light, barely-touching-ground feel
 
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
-```
-
-?? **Guardar como:** `wind_runner_walk_left_strip.png`
-
----
-
-## PROMPT #4 - Walk/Run Right (4 frames)
-
-```
-2D game sprite sheet, horizontal strip format.
-
-SUBJECT: Wind Runner RUNNING - RIGHT SIDE PROFILE
-
-ART STYLE: Funko Pop/Chibi, speed emphasis
-
-CHARACTER (right profile): Full sprint pose, streaming elements
-
-?? RUNNING ANIMATION (SIDE VIEW):
-- Frame 1: READY - About to launch
-- Frame 2: PUSH OFF - Maximum extension
-- Frame 3: FLIGHT - Mid-air sprint
-- Frame 4: LANDING - Continuing motion
-- WIDE STRIDES showing fastest character
-
-SECONDARY MOTION:
-- Speed lines behind
-- All loose elements trailing
-- Dynamic forward lean
-
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `wind_runner_walk_right_strip.png`
 
 ---
 
-## PROMPT #5 - Cast Animation (4 frames)
+## PROMPT #4 - Cast Animation (4 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
@@ -262,7 +258,7 @@ OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
 
 ---
 
-## PROMPT #6 - Death Animation (4 frames)
+## PROMPT #5 - Death Animation (4 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
@@ -290,7 +286,7 @@ OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
 
 ---
 
-## PROMPT #7 - Hit Animation (2 frames)
+## PROMPT #6 - Hit Animation (2 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
@@ -300,12 +296,12 @@ SUBJECT: Wind Runner taking damage - FACING CAMERA
 ART STYLE: Funko Pop/Chibi, disrupted wind
 
 ANIMATION:
-- Frame 1: IMPACT - Knocked back, wind disrupted, ribbons tangled, surprised expression
-- Frame 2: RECOVERY - Quick recovery (fastest character), wind re-forming, ready to run again
+- Frame 1: IMPACT - Flinching, wind disrupted, ribbons chaotic, red damage flash
+- Frame 2: RECOVERY - Returning to ready stance, wind restabilizing, determination
 
 EFFECTS:
-- Frame 1: Red flash, wind scattered, motion stopped
-- Frame 2: Wind gathering again, speed returning, determined smile
+- Frame 1: Red tint overlay, scattered wind patterns
+- Frame 2: Normal colors returning, wind reforming
 
 OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 ```
@@ -314,24 +310,23 @@ OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 
 ---
 
-## PROMPT #8 - Idle Animation (2 frames)
+## PROMPT #7 - Idle Animation (2 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Wind Runner idle - FACING CAMERA
+SUBJECT: Wind Runner idle/breathing - FACING CAMERA
 
-ART STYLE: Funko Pop/Chibi, restless energy
+ART STYLE: Funko Pop/Chibi, constant wind movement
 
 ANIMATION:
-- Frame 1: Bouncing slightly on toes, ribbons floating upward, eager expression
-- Frame 2: Other foot, ribbons floating differently, can't stand still
+- Frame 1: INHALE - Light bounce on toes, wind swirling, ribbons floating up, playful energy
+- Frame 2: EXHALE - Slight settle, wind calms slightly, ribbons drift, ready to sprint
 
 EFFECTS:
-- Constant small wind around feet
-- Ribbons always moving
-- Impatient, wants to run
-- Shifting weight foot to foot
+- Constant subtle wind around them
+- Ribbons never fully still
+- Impatient, ready-to-run energy
 
 OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 ```
@@ -342,18 +337,34 @@ OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 
 ## ?? RESUMEN DE ARCHIVOS
 
-| Animación | Frames | Archivos |
-|-----------|--------|----------|
-| Walk Down | 4 | `wind_runner_walk_down_1.png` - `wind_runner_walk_down_4.png` |
-| Walk Up | 4 | `wind_runner_walk_up_1.png` - `wind_runner_walk_up_4.png` |
-| Walk Left | 4 | `wind_runner_walk_left_1.png` - `wind_runner_walk_left_4.png` |
-| Walk Right | 4 | `wind_runner_walk_right_1.png` - `wind_runner_walk_right_4.png` |
-| Cast | 4 | `wind_runner_cast_1.png` - `wind_runner_cast_4.png` |
-| Death | 4 | `wind_runner_death_1.png` - `wind_runner_death_4.png` |
-| Hit | 2 | `wind_runner_hit_1.png` - `wind_runner_hit_2.png` |
-| Idle | 2 | `wind_runner_idle_1.png` - `wind_runner_idle_2.png` |
+| Animación | Frames | Tamaño Strip | Archivo |
+|-----------|--------|--------------|---------|
+| Walk Down | 3 | 1500x500 | `wind_runner_walk_down_strip.png` |
+| Walk Up | 3 | 1500x500 | `wind_runner_walk_up_strip.png` |
+| Walk Right | 3 | 1500x500 | `wind_runner_walk_right_strip.png` |
+| Cast | 4 | 2000x500 | `wind_runner_cast_strip.png` |
+| Death | 4 | 2000x500 | `wind_runner_death_strip.png` |
+| Hit | 2 | 1000x500 | `wind_runner_hit_strip.png` |
+| Idle | 2 | 1000x500 | `wind_runner_idle_strip.png` |
 
-**Total: 28 frames**
+**Total: 21 frames**
+
+---
+
+## ?? Implementación en Godot
+
+### Ciclo de animación Walk (ping-pong):
+```gdscript
+# Frames: 0, 1, 2, 1, 0, 1, 2, 1, 0...
+# Usar animation con loop mode "Ping-Pong"
+# Para Wind Runner: usar velocidad de animación MÁS RÁPIDA que otros personajes
+```
+
+### Walk Left:
+```gdscript
+sprite.flip_h = true  # cuando dirección es LEFT
+sprite.flip_h = false # cuando dirección es RIGHT
+```
 
 ---
 
@@ -362,7 +373,11 @@ OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 ```
 project/assets/sprites/players/wind_runner/
 ??? walk/
+?   ??? wind_runner_walk_down_1.png - wind_runner_walk_down_3.png
+?   ??? wind_runner_walk_up_1.png - wind_runner_walk_up_3.png
+?   ??? wind_runner_walk_right_1.png - wind_runner_walk_right_3.png
 ??? cast/
 ??? death/
 ??? hit/
+??? idle/
 ```

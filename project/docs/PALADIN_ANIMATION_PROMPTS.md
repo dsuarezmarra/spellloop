@@ -5,8 +5,8 @@
 **Las IAs de imágenes NO pueden generar todos los sprites de una vez.**
 
 ### Flujo de trabajo:
-1. Ejecuta el **Prompt #0** primero para establecer el estilo
-2. Luego ejecuta los prompts **#1 al #8** en orden
+1. Ejecuta el **Prompt #0** primero para establecer el estilo del personaje
+2. Luego ve ejecutando los prompts **#1 al #7** en orden
 3. Guarda cada imagen con el nombre indicado
 
 ---
@@ -15,21 +15,32 @@
 
 - **Tamaño:** 500x500 píxeles por frame
 - **Formato:** PNG con fondo transparente
-- **Estilo:** Cartoon/Funko Pop
+- **Estilo:** Cartoon/Funko Pop (ver guía de estilo abajo)
 - **Vista:** Top-down con ligera perspectiva 3/4
 
 ---
 
-## ?? NOTA CRÍTICA SOBRE ANIMACIÓN DE CAMINAR
+## ?? SISTEMA DE ANIMACIÓN DE CAMINAR (Estilo Binding of Isaac)
 
-**MUY IMPORTANTE:** El Paladin es un guerrero sagrado con armadura.
+**Este juego usa un ciclo de caminata de 3 frames en ping-pong:**
 
-Su animación debe reflejar:
-1. **Pasos firmes y dignos** - Camina con propósito, ni muy rápido ni muy lento
-2. **Postura erguida** - Siempre recto, orgulloso
-3. **Peso de armadura** - Se nota que lleva armadura pero no le impide moverse
-4. **Gracia marcial** - Movimiento entrenado de guerrero santo
-5. **Los pies deben verse claramente** - Pasos definidos bajo la capa
+### Ciclo de animación:
+```
+Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
+```
+
+### Descripción de cada frame:
+
+| Frame | Walk Down/Up (vista frontal/trasera) | Walk Right (vista lateral) |
+|-------|--------------------------------------|----------------------------|
+| **1** | Pierna IZQUIERDA hacia afuera | Pierna TRASERA atrás, inclinado hacia adelante |
+| **2** | Piernas JUNTAS (posición neutral) | Piernas JUNTAS (posición neutral) |
+| **3** | Pierna DERECHA hacia afuera | Pierna DELANTERA adelante, inclinado hacia adelante |
+
+### ?? IMPORTANTE:
+- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el código
+- Solo se necesitan **3 sprites por dirección**: Down, Up y Right
+- Total walk sprites: **9 frames** (3 direcciones × 3 frames)
 
 ---
 
@@ -108,22 +119,24 @@ OUTPUT: 1024x1024, transparent background
 
 ---
 
-## PROMPT #1 - Walk Down (4 frames)
+## PROMPT #1 - Walk Down (3 frames) - Estilo Binding of Isaac
 
 ```
 2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Paladin walking animation - FACING CAMERA
+SUBJECT: Paladin walking animation - FACING CAMERA (Binding of Isaac style)
 
 ART STYLE: Funko Pop/Chibi, holy warrior, glowing effects
 
 CHARACTER: Noble paladin, gold/white armor, white cape, blonde hair, light aura
 
-?? CRITICAL WALKING ANIMATION REQUIREMENTS:
-- Frame 1: ATTENTION - Standing tall, feet together, cape resting
-- Frame 2: LEFT STEP - Left armored boot forward, cape beginning to flow, dignified stride
-- Frame 3: PASSING - Feet crossing mid-stride, cape billowing, steady pace
-- Frame 4: RIGHT STEP - Right boot forward, completing noble walk cycle
+? 3-FRAME WALK CYCLE (BINDING OF ISAAC STYLE):
+- Frame 1: LEFT LEG OUT - Left armored boot stepped outward/forward, right leg straight, slight body tilt left
+- Frame 2: NEUTRAL - Both feet together, standing tall and proud, centered pose
+- Frame 3: RIGHT LEG OUT - Right armored boot stepped outward/forward, left leg straight, slight body tilt right
+
+ANIMATION NOTES:
+- This creates a dignified waddling walk when played as: 1-2-3-2-1-2-3...
 - SHOW ARMORED BOOTS clearly stepping - he's a warrior, not floating
 - Posture always upright and proud
 - Military/knightly walking rhythm
@@ -133,107 +146,84 @@ SECONDARY MOTION:
 - Subtle light aura pulses with movement
 - Holy symbols on armor glow faintly
 - Sword/scepter held steadily at side
-- Hair barely moves (short and orderly)
 
 COLORS: Armor #F5F5F5, Gold #FFD700, Cape #FFFFFF, Hair #DAA520, Aura #FFFACD
 
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `paladin_walk_down_strip.png`
 
 ---
 
-## PROMPT #2 - Walk Up (4 frames)
+## PROMPT #2 - Walk Up (3 frames) - Estilo Binding of Isaac
 
 ```
 2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Paladin walking - BACK TO CAMERA
+SUBJECT: Paladin walking - BACK TO CAMERA (Binding of Isaac style)
 
 ART STYLE: Funko Pop/Chibi, cape prominently visible
 
 CHARACTER (from behind): White/gold armored warrior, flowing white cape, blonde hair
 
-?? CRITICAL WALKING ANIMATION:
-- Frame 1: ATTENTION - Standing tall from behind
-- Frame 2: LEFT STEP - Left leg forward (boot visible), cape parting
-- Frame 3: PASSING - Mid-stride, cape flowing to side
-- Frame 4: RIGHT STEP - Right leg forward, cape settling
+? 3-FRAME WALK CYCLE (BACK VIEW):
+- Frame 1: LEFT LEG OUT - Left leg stepped outward (boot visible), cape parting
+- Frame 2: NEUTRAL - Both feet together, standing tall from behind
+- Frame 3: RIGHT LEG OUT - Right leg stepped outward, cape settling
+
+ANIMATION NOTES:
+- Mirror the front walk cycle but from behind
 - ARMORED BOOTS visible with each step
+- Keep noble dignified posture
 
 SECONDARY MOTION:
 - Cape dramatically billows showing back
 - Halo visible from behind as soft glow
 - Armor gleams with holy light
 
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `paladin_walk_up_strip.png`
 
 ---
 
-## PROMPT #3 - Walk Left (4 frames)
+## PROMPT #3 - Walk Right (3 frames) - Estilo Binding of Isaac
 
 ```
 2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Paladin walking - LEFT SIDE PROFILE
+SUBJECT: Paladin walking - RIGHT SIDE PROFILE (Binding of Isaac style)
 
 ART STYLE: Funko Pop/Chibi, noble profile
 
-CHARACTER (left profile): Armored paladin, cape trailing, weapon visible
+CHARACTER (right profile): Armored paladin, cape trailing, weapon visible
 
-?? CRITICAL WALKING ANIMATION (SIDE VIEW):
-- Frame 1: STANDING - Upright profile
-- Frame 2: BACK LEG PUSH - Rear armored boot pushing off, front reaching
-- Frame 3: MID-STRIDE - Legs crossing, cape flowing behind
-- Frame 4: FRONT LAND - Front boot landing firmly
-- SHOW CLEAR LEG MOVEMENT - armored legs visible under tabard
+? 3-FRAME WALK CYCLE (SIDE VIEW):
+- Frame 1: BACK LEG EXTENDED - Rear armored boot pushing back, front leg under body, slight forward lean
+- Frame 2: NEUTRAL - Both legs together under body, upright noble stance
+- Frame 3: FRONT LEG EXTENDED - Front boot forward, rear leg under body, slight forward lean
+
+ANIMATION NOTES:
+- Side view shows the forward/backward leg motion
+- Character maintains proud posture even while walking
+- This sprite will be FLIPPED HORIZONTALLY for Walk Left
+- SHOW CLEAR LEG MOVEMENT - armored legs visible
 
 SECONDARY MOTION:
 - Cape streams behind
 - Weapon held at ready
 - Light aura trails slightly
 
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
-```
-
-?? **Guardar como:** `paladin_walk_left_strip.png`
-
----
-
-## PROMPT #4 - Walk Right (4 frames)
-
-```
-2D game sprite sheet, horizontal strip format.
-
-SUBJECT: Paladin walking - RIGHT SIDE PROFILE
-
-ART STYLE: Funko Pop/Chibi, heroic profile
-
-CHARACTER (right profile): Armored warrior, cape, weapon
-
-?? CRITICAL WALKING ANIMATION (SIDE VIEW):
-- Frame 1: STANDING - Noble stance
-- Frame 2: BACK LEG PUSH - Beginning stride
-- Frame 3: MID-STRIDE - Legs in motion
-- Frame 4: FRONT LAND - Completing step
-- VISIBLE ARMORED FOOTSTEPS
-
-SECONDARY MOTION:
-- Cape flows opposite to movement
-- Light radiating subtly
-
-OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
+OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
 ?? **Guardar como:** `paladin_walk_right_strip.png`
 
 ---
 
-## PROMPT #5 - Cast Animation (4 frames)
+## PROMPT #4 - Cast Animation (4 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
@@ -249,10 +239,10 @@ ANIMATION SEQUENCE:
 - Frame 4: RECOVERY - Lowering weapon, light fading to sparkles, righteous expression
 
 EFFECTS:
-- Frame 1: Light particles gathering, soft glow building
-- Frame 2: Intense golden-white light, divine circle appearing
-- Frame 3: EXPLOSIVE holy beam, screen filled with light, cross/star patterns
-- Frame 4: Gentle sparkles falling, afterglow, holy satisfaction
+- Frame 1: Light gathering above
+- Frame 2: Divine rays, glowing eyes
+- Frame 3: Holy explosion, bright beam
+- Frame 4: Settling sparkles
 
 OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
 ```
@@ -261,7 +251,7 @@ OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
 
 ---
 
-## PROMPT #6 - Death Animation (4 frames)
+## PROMPT #5 - Death Animation (4 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
@@ -271,16 +261,16 @@ SUBJECT: Paladin death animation - FACING CAMERA
 ART STYLE: Funko Pop/Chibi, light fading
 
 ANIMATION SEQUENCE:
-- Frame 1: HIT - Staggering but still fighting, light flickering, surprised expression
-- Frame 2: FALTER - Dropping to one knee, weapon lowering, light dimming, accepting fate
-- Frame 3: COLLAPSE - Falling forward, cape spreading, light nearly gone
-- Frame 4: FALLEN - Lying peacefully, cape spread like wings, faint holy glow remaining, at peace
+- Frame 1: HIT - Recoiling, shocked, halo flickering
+- Frame 2: STAGGER - Stumbling, weapon loosening, light dimming
+- Frame 3: COLLAPSE - Falling to knees, aura fading
+- Frame 4: FALLEN - On ground, light gone, desaturated, peaceful expression
 
 EFFECTS:
-- Frame 1: Light disrupted, armor flash
-- Frame 2: Divine light weakening, halo fading
-- Frame 3: Last light leaving
-- Frame 4: Soft afterglow, peaceful death, slight transparency
+- Frame 1: Light disrupted
+- Frame 2: Aura sputtering
+- Frame 3: Last glow fading
+- Frame 4: Slight transparency (80% opacity)
 
 OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
 ```
@@ -289,22 +279,22 @@ OUTPUT: Horizontal strip 2000x500 (4 frames of 500x500), transparent background
 
 ---
 
-## PROMPT #7 - Hit Animation (2 frames)
+## PROMPT #6 - Hit Animation (2 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
 
 SUBJECT: Paladin taking damage - FACING CAMERA
 
-ART STYLE: Funko Pop/Chibi, holy resistance
+ART STYLE: Funko Pop/Chibi, damage flash effect
 
 ANIMATION:
-- Frame 1: IMPACT - Bracing against hit, holy shield shimmer, light flaring defensively
-- Frame 2: RECOVERY - Standing firm, shield fading, even more determined expression
+- Frame 1: IMPACT - Flinching, armor clanking, red damage flash, aura disrupted
+- Frame 2: RECOVERY - Standing firm, determined expression, aura restabilizing
 
 EFFECTS:
-- Frame 1: Golden shield flash blocking some damage, red minimal, light protecting
-- Frame 2: Shield dissipating, holy aura restabilizing, ready to continue
+- Frame 1: Red tint overlay, light scattered
+- Frame 2: Normal colors returning, righteous stance
 
 OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 ```
@@ -313,24 +303,23 @@ OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 
 ---
 
-## PROMPT #8 - Idle Animation (2 frames)
+## PROMPT #7 - Idle Animation (2 frames)
 
 ```
 2D game sprite sheet, horizontal strip format.
 
-SUBJECT: Paladin idle/standing - FACING CAMERA
+SUBJECT: Paladin idle/breathing - FACING CAMERA
 
-ART STYLE: Funko Pop/Chibi, noble presence
+ART STYLE: Funko Pop/Chibi, steady holy glow
 
 ANIMATION:
-- Frame 1: Standing at attention, light aura steady, cape resting, serene vigilance
-- Frame 2: Subtle shift, aura pulsing slightly, cape moving from unseen breeze
+- Frame 1: INHALE - Slight chest expansion, aura brightening, standing proud
+- Frame 2: EXHALE - Relaxed, aura dims slightly, vigilant stance
 
 EFFECTS:
-- Constant soft holy glow
-- Halo gently pulsing
-- Cape slight movement
-- Eyes watching, protective stance
+- Subtle halo pulse
+- Cape gentle sway
+- Noble readiness
 
 OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 ```
@@ -341,18 +330,33 @@ OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 
 ## ?? RESUMEN DE ARCHIVOS
 
-| Animación | Frames | Archivos |
-|-----------|--------|----------|
-| Walk Down | 4 | `paladin_walk_down_1.png` - `paladin_walk_down_4.png` |
-| Walk Up | 4 | `paladin_walk_up_1.png` - `paladin_walk_up_4.png` |
-| Walk Left | 4 | `paladin_walk_left_1.png` - `paladin_walk_left_4.png` |
-| Walk Right | 4 | `paladin_walk_right_1.png` - `paladin_walk_right_4.png` |
-| Cast | 4 | `paladin_cast_1.png` - `paladin_cast_4.png` |
-| Death | 4 | `paladin_death_1.png` - `paladin_death_4.png` |
-| Hit | 2 | `paladin_hit_1.png` - `paladin_hit_2.png` |
-| Idle | 2 | `paladin_idle_1.png` - `paladin_idle_2.png` |
+| Animación | Frames | Tamaño Strip | Archivo |
+|-----------|--------|--------------|---------|
+| Walk Down | 3 | 1500x500 | `paladin_walk_down_strip.png` |
+| Walk Up | 3 | 1500x500 | `paladin_walk_up_strip.png` |
+| Walk Right | 3 | 1500x500 | `paladin_walk_right_strip.png` |
+| Cast | 4 | 2000x500 | `paladin_cast_strip.png` |
+| Death | 4 | 2000x500 | `paladin_death_strip.png` |
+| Hit | 2 | 1000x500 | `paladin_hit_strip.png` |
+| Idle | 2 | 1000x500 | `paladin_idle_strip.png` |
 
-**Total: 28 frames**
+**Total: 21 frames**
+
+---
+
+## ?? Implementación en Godot
+
+### Ciclo de animación Walk (ping-pong):
+```gdscript
+# Frames: 0, 1, 2, 1, 0, 1, 2, 1, 0...
+# Usar animation con loop mode "Ping-Pong"
+```
+
+### Walk Left:
+```gdscript
+sprite.flip_h = true  # cuando dirección es LEFT
+sprite.flip_h = false # cuando dirección es RIGHT
+```
 
 ---
 
@@ -361,7 +365,11 @@ OUTPUT: Horizontal strip 1000x500 (2 frames of 500x500), transparent background
 ```
 project/assets/sprites/players/paladin/
 ??? walk/
+?   ??? paladin_walk_down_1.png - paladin_walk_down_3.png
+?   ??? paladin_walk_up_1.png - paladin_walk_up_3.png
+?   ??? paladin_walk_right_1.png - paladin_walk_right_3.png
 ??? cast/
 ??? death/
 ??? hit/
+??? idle/
 ```
