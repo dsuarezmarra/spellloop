@@ -1031,9 +1031,9 @@ func player_died() -> void:
 		if audio_manager.has_method("stop_music"):
 			audio_manager.stop_music()
 
-	# La animación de muerte tiene 4 frames a 2 FPS = 2 segundos
+	# La animación de muerte tiene 3 frames a 2 FPS = 1.5 segundos
 	# Esperamos ese tiempo antes de mostrar Game Over
-	await get_tree().create_timer(2.5).timeout
+	await get_tree().create_timer(2.0).timeout
 
 	# Mostrar pantalla de game over
 	if game_over_screen:

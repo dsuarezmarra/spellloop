@@ -49,7 +49,7 @@ func _setup_animations() -> void:
 	var base_path = "res://assets/sprites/players/" + character_sprites_key
 	var prefix = character_sprites_key  # e.g., "wizard", "pyromancer"
 
-	# ========== ANIMACIONES DE CAMINAR (4 frames cada una) ==========
+	# ========== ANIMACIONES DE CAMINAR (3 frames cada una) ==========
 	for dir in dirs:
 		var walk_anim = "walk_%s" % dir
 		var idle_anim = "idle_%s" % dir
@@ -61,8 +61,8 @@ func _setup_animations() -> void:
 		frames.set_animation_loop(walk_anim, true)
 		frames.set_animation_loop(idle_anim, true)
 
-		# Load individual walk frames
-		for i in range(1, 5):
+		# Load individual walk frames (3 frames)
+		for i in range(1, 4):
 			var frame_path = "%s/walk/%s_walk_%s_%d.png" % [base_path, prefix, dir, i]
 			var tex = load(frame_path)
 			if tex:
@@ -73,34 +73,34 @@ func _setup_animations() -> void:
 			else:
 				push_warning("[WizardPlayer] Sprite not found: %s" % frame_path)
 
-	# ========== CAST ANIMATION (4 frames) ==========
+	# ========== CAST ANIMATION (3 frames) ==========
 	frames.add_animation("cast")
 	frames.set_animation_speed("cast", 3.0)
 	frames.set_animation_loop("cast", false)
 
-	for i in range(1, 5):
+	for i in range(1, 4):
 		var frame_path = "%s/cast/%s_cast_%d.png" % [base_path, prefix, i]
 		var tex = load(frame_path)
 		if tex:
 			frames.add_frame("cast", tex)
 
-	# ========== HIT ANIMATION (2 frames) ==========
+	# ========== HIT ANIMATION (3 frames) ==========
 	frames.add_animation("hit")
-	frames.set_animation_speed("hit", 2.0)
+	frames.set_animation_speed("hit", 3.0)
 	frames.set_animation_loop("hit", false)
 
-	for i in range(1, 3):
+	for i in range(1, 4):
 		var frame_path = "%s/hit/%s_hit_%d.png" % [base_path, prefix, i]
 		var tex = load(frame_path)
 		if tex:
 			frames.add_frame("hit", tex)
 
-	# ========== DEATH ANIMATION (4 frames) ==========
+	# ========== DEATH ANIMATION (3 frames) ==========
 	frames.add_animation("death")
 	frames.set_animation_speed("death", 2.0)
 	frames.set_animation_loop("death", false)
 
-	for i in range(1, 5):
+	for i in range(1, 4):
 		var frame_path = "%s/death/%s_death_%d.png" % [base_path, prefix, i]
 		var tex = load(frame_path)
 		if tex:

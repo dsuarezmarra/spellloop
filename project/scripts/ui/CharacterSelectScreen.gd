@@ -287,12 +287,12 @@ func _create_character_frames(char_data: Dictionary) -> SpriteFrames:
 		if idle_tex:
 			frames.add_frame("idle", idle_tex)
 
-	# WALK animation (4 frames)
+	# WALK animation (3 frames)
 	frames.add_animation("walk")
 	frames.set_animation_speed("walk", 6.0)
 	frames.set_animation_loop("walk", true)
 
-	for i in range(1, 5):
+	for i in range(1, 4):
 		var walk_path = "%s/walk/%s_walk_down_%d.png" % [base_path, sprite_folder, i]
 		var walk_tex = load(walk_path)
 		if walk_tex:
