@@ -42,17 +42,27 @@ import os
 import numpy as np
 import sys
 
-# Configuración base
+# ============================================================
+# CONFIGURACIÓN - AJUSTAR ESTOS VALORES
+# ============================================================
+
 PROJECT_PATH = r"c:\git\spellloop\project"
 SPRITES_PATH = os.path.join(PROJECT_PATH, "assets", "sprites", "players")
 
 # Umbral mínimo de ancho de frame (para filtrar ruido)
 MIN_FRAME_WIDTH = 50
 
-# Tamaño fijo para TODOS los personajes (consistencia visual)
-# Si es None, se calcula automáticamente. Si es un número, se usa ese tamaño fijo.
-FIXED_FRAME_SIZE = 208  # Todos los personajes usan 208x208
+# Tamaño FIJO del canvas de salida (todos los personajes usan el mismo)
+FIXED_FRAME_SIZE = 208
 
+# Tamaño FIJO del contenido dentro del canvas
+# El sprite se escalará para que quepa en este tamaño, manteniendo proporciones
+# Esto garantiza que todos los personajes se vean del mismo tamaño visual
+CONTENT_TARGET_SIZE = 180  # El contenido ocupará máximo 180x180 dentro de 208x208
+
+# ============================================================
+# FUNCIONES
+# ============================================================
 
 def get_character_path(character_name):
     """Obtiene la ruta base de un personaje."""
@@ -70,14 +80,12 @@ def analyze_sprite(image_path, name):
     
     # Convertir a numpy para análisis
     data = np.array(img)
-    
-    # Encontrar columnas completamente transparentes (gaps entre frames)
     alpha_channel = data[:, :, 3]
     
-    # Una columna tiene contenido si ALGÚN píxel tiene alpha > 10
+    # Encontrar columnas con contenido
     column_has_content = np.any(alpha_channel > 10, axis=0)
     
-    # Encontrar los límites de cada frame (donde hay contenido)
+    # Encontrar los límites de cada frame
     raw_frames = []
     in_frame = False
     frame_start = 0
@@ -119,46 +127,81 @@ def analyze_sprite(image_path, name):
     return img, frames, (top_row, bottom_row)
 
 
-def find_uniform_frame_size(all_analyses):
-    """Encuentra el tamaño uniforme para todos los frames."""
-    max_frame_width = 0
-    max_content_height = 0
+def get_frame_content_bounds(img, frame_x_start, frame_x_end):
+    """
+    Obtiene los límites exactos del contenido de un frame específico.
+    Retorna (left, top, right, bottom) del bounding box del contenido.
+    """
+    data = np.array(img)
+    alpha = data[:, :, 3]
     
-    for name, (img, frames, (top, bottom)) in all_analyses.items():
-        for start, end in frames:
-            frame_width = end - start
-            if frame_width > max_frame_width:
-                max_frame_width = frame_width
-        
-        content_height = bottom - top + 1
-        if content_height > max_content_height:
-            max_content_height = content_height
+    # Recortar al área del frame
+    frame_alpha = alpha[:, frame_x_start:frame_x_end]
     
-    # Añadir padding y redondear a múltiplo de 16
-    frame_size = max(max_frame_width, max_content_height) + 20
-    frame_size = ((frame_size + 15) // 16) * 16
+    # Encontrar filas con contenido
+    row_has_content = np.any(frame_alpha > 10, axis=1)
+    content_rows = np.where(row_has_content)[0]
     
-    return frame_size
+    # Encontrar columnas con contenido
+    col_has_content = np.any(frame_alpha > 10, axis=0)
+    content_cols = np.where(col_has_content)[0]
+    
+    if len(content_rows) == 0 or len(content_cols) == 0:
+        return None
+    
+    top = content_rows[0]
+    bottom = content_rows[-1]
+    left = content_cols[0] + frame_x_start
+    right = content_cols[-1] + frame_x_start
+    
+    return (left, top, right + 1, bottom + 1)
 
 
-def extract_and_normalize_frames(img, frames, vertical_bounds, target_size):
-    """Extrae frames y los normaliza al tamaño objetivo."""
-    top_row, bottom_row = vertical_bounds
+def extract_and_normalize_frames(img, frames, target_canvas_size, target_content_size):
+    """
+    Extrae frames, los escala para que el contenido tenga un tamaño uniforme,
+    y los centra en el canvas.
+    """
     normalized_frames = []
     
-    for i, (start, end) in enumerate(frames):
-        frame_width = end - start
-        content_height = bottom_row - top_row + 1
+    for i, (frame_start, frame_end) in enumerate(frames):
+        # Obtener bounding box exacto del contenido de este frame
+        bounds = get_frame_content_bounds(img, frame_start, frame_end)
         
-        # Crear imagen con transparencia
-        normalized = Image.new("RGBA", (target_size, target_size), (0, 0, 0, 0))
+        if bounds is None:
+            print(f"    ⚠️ Frame {i+1} vacío")
+            # Crear frame vacío
+            normalized = Image.new("RGBA", (target_canvas_size, target_canvas_size), (0, 0, 0, 0))
+            normalized_frames.append(normalized)
+            continue
         
-        # Extraer contenido
-        frame_content = img.crop((start, top_row, end, bottom_row + 1))
+        left, top, right, bottom = bounds
+        content_width = right - left
+        content_height = bottom - top
         
-        # Centrar
-        paste_x = (target_size - frame_width) // 2
-        paste_y = (target_size - content_height) // 2
+        # Extraer el contenido exacto
+        frame_content = img.crop((left, top, right, bottom))
+        
+        # Calcular escala para que el contenido quepa en target_content_size
+        scale_x = target_content_size / content_width
+        scale_y = target_content_size / content_height
+        scale = min(scale_x, scale_y)  # Mantener proporción, usar el menor
+        
+        # No escalar si ya es más pequeño (evitar agrandar demasiado)
+        if scale > 1.0:
+            scale = 1.0
+        
+        # Escalar el contenido
+        new_width = int(content_width * scale)
+        new_height = int(content_height * scale)
+        
+        if scale < 1.0:
+            frame_content = frame_content.resize((new_width, new_height), Image.Resampling.LANCZOS)
+        
+        # Crear canvas y centrar
+        normalized = Image.new("RGBA", (target_canvas_size, target_canvas_size), (0, 0, 0, 0))
+        paste_x = (target_canvas_size - new_width) // 2
+        paste_y = (target_canvas_size - new_height) // 2
         
         normalized.paste(frame_content, (paste_x, paste_y))
         normalized_frames.append(normalized)
@@ -212,6 +255,8 @@ def process_character(character_name):
     print("=" * 60)
     print(f"PROCESADOR DE SPRITES - {character_name.upper()}")
     print("=" * 60)
+    print(f"Canvas: {FIXED_FRAME_SIZE}x{FIXED_FRAME_SIZE}")
+    print(f"Contenido objetivo: {CONTENT_TARGET_SIZE}x{CONTENT_TARGET_SIZE}")
     
     # Definir sprites a procesar
     sprites = {
@@ -239,33 +284,27 @@ def process_character(character_name):
         print("❌ ERROR: No se encontraron sprites para procesar")
         return False
     
-    # Paso 2: Tamaño uniforme
+    # Paso 2: Extraer y normalizar con tamaño fijo
     print("\n" + "=" * 60)
-    print("PASO 2: DETERMINANDO TAMAÑO UNIFORME")
+    print("PASO 2: EXTRAYENDO Y NORMALIZANDO FRAMES")
     print("=" * 60)
-    
-    if FIXED_FRAME_SIZE:
-        target_size = FIXED_FRAME_SIZE
-        print(f"Usando tamaño FIJO: {target_size}x{target_size} píxeles")
-    else:
-        target_size = find_uniform_frame_size(analyses)
-        print(f"Tamaño calculado: {target_size}x{target_size} píxeles")
-    
-    # Paso 3: Extraer y normalizar
-    print("\n" + "=" * 60)
-    print("PASO 3: EXTRAYENDO Y NORMALIZANDO FRAMES")
-    print("=" * 60)
+    print(f"Todos los frames serán {FIXED_FRAME_SIZE}x{FIXED_FRAME_SIZE}")
+    print(f"Contenido escalado a máximo {CONTENT_TARGET_SIZE}x{CONTENT_TARGET_SIZE}")
     
     all_frames = {}
     for name, (img, frames, vertical_bounds) in analyses.items():
         print(f"\nProcesando {name}...")
-        normalized = extract_and_normalize_frames(img, frames, vertical_bounds, target_size)
+        normalized = extract_and_normalize_frames(
+            img, frames, 
+            FIXED_FRAME_SIZE, 
+            CONTENT_TARGET_SIZE
+        )
         all_frames[name] = normalized
-        print(f"  Extraídos {len(normalized)} frames de {target_size}x{target_size}")
+        print(f"  Extraídos {len(normalized)} frames")
     
-    # Paso 4: Generar archivos
+    # Paso 3: Generar archivos
     print("\n" + "=" * 60)
-    print("PASO 4: GENERANDO SPRITESHEETS Y FRAMES")
+    print("PASO 3: GENERANDO SPRITESHEETS Y FRAMES")
     print("=" * 60)
     
     output_dirs = {
@@ -307,7 +346,8 @@ def process_character(character_name):
     print("RESUMEN FINAL")
     print("=" * 60)
     print(f"✅ Personaje: {character_name}")
-    print(f"✅ Tamaño de frame uniforme: {target_size}x{target_size}")
+    print(f"✅ Canvas: {FIXED_FRAME_SIZE}x{FIXED_FRAME_SIZE}")
+    print(f"✅ Contenido normalizado a: {CONTENT_TARGET_SIZE}x{CONTENT_TARGET_SIZE} máximo")
     print(f"✅ Total de animaciones procesadas: {len(all_frames)}")
     print(f"✅ walk_left generado automáticamente desde walk_right")
     print(f"\n📁 Archivos guardados en: {base_path}")
@@ -320,7 +360,6 @@ def main():
         print("USO: python process_character_sprites.py <nombre_personaje>")
         print("\nPERSONAJES DISPONIBLES:")
         
-        # Listar personajes existentes
         if os.path.exists(SPRITES_PATH):
             characters = [d for d in os.listdir(SPRITES_PATH) 
                          if os.path.isdir(os.path.join(SPRITES_PATH, d))]
