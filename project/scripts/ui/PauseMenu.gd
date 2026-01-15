@@ -554,9 +554,14 @@ func _create_compact_stat_row(stat_name: String) -> Control:
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(name_label)
 
-	# Valor - obtener de player_stats o usar valor base
+	# Valor - obtener de player_stats, GlobalWeaponStats, o usar valor base
 	var value = _get_stat_base_value(stat_name)
-	if player_stats and player_stats.has_method("get_stat"):
+	
+	# life_steal ahora está en GlobalWeaponStats (es un WEAPON_STAT)
+	if stat_name == "life_steal":
+		if attack_manager and attack_manager.has_method("get_global_stat"):
+			value = attack_manager.get_global_stat("life_steal")
+	elif player_stats and player_stats.has_method("get_stat"):
 		value = player_stats.get_stat(stat_name)
 
 	var value_label = Label.new()

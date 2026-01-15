@@ -1065,10 +1065,12 @@ func _get_owned_unique_upgrade_ids() -> Array:
 
 func _is_weapon_upgrade(passive: Dictionary) -> bool:
 	"""Determina si una mejora es de armas (para filtrarla de PassiveDatabase)"""
+	# SINCRONIZADO con PlayerStats.WEAPON_STATS
 	var weapon_stats = [
-		"damage_mult", "cooldown_mult", "attack_speed_mult",
-		"area_mult", "projectile_speed_mult", "duration_mult",
-		"extra_projectiles", "knockback_mult", "crit_chance", "crit_damage"
+		"damage_mult", "damage_flat", "attack_speed_mult", "cooldown_mult",
+		"area_mult", "projectile_speed_mult", "duration_mult", "extra_projectiles",
+		"extra_pierce", "knockback_mult", "range_mult", "crit_chance", "crit_damage",
+		"chain_count", "life_steal"
 	]
 	
 	var effects = passive.get("effects", [])
@@ -1343,11 +1345,12 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 	# Stats que van a GlobalWeaponStats (armas)
 	# IMPORTANTE: Estos stats SOLO van a GlobalWeaponStats, NO a PlayerStats
 	# para evitar duplicación cuando se combinan en AttackManager
+	# SINCRONIZADO con PlayerStats.WEAPON_STATS
 	var weapon_stats = [
 		"damage_mult", "damage_flat", "attack_speed_mult", "cooldown_mult",
-		"area_mult", "projectile_speed_mult", "duration_mult", "knockback_mult",
-		"extra_projectiles", "extra_pierce", "range_mult",
-		"crit_chance", "crit_damage"  # Críticos también son stats de armas
+		"area_mult", "projectile_speed_mult", "duration_mult", "extra_projectiles",
+		"extra_pierce", "knockback_mult", "range_mult", "crit_chance", "crit_damage",
+		"chain_count", "life_steal"  # chain_count y life_steal son stats de combate
 	]
 	
 	# Separar efectos en dos grupos

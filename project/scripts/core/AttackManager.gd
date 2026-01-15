@@ -889,18 +889,21 @@ func modify_player_stat(stat_name: String, delta: float) -> void:
 	# Debug desactivado: print("[AttackManager] Stat modificado: %s += %.2f" % [stat_name, delta])
 
 func get_player_stat(stat_name: String) -> float:
-	"""Obtener stat del jugador"""
+	"""Obtener stat del jugador o de armas desde GlobalWeaponStats"""
 	# Convertir cooldown_mult a attack_speed_mult
 	if stat_name == "cooldown_mult":
 		var attack_speed = get_global_stat("attack_speed_mult")
 		# Devolver como cooldown_mult para compatibilidad
 		return 1.0 / attack_speed if attack_speed > 0 else 1.0
 	
-	# Primero buscar en GlobalWeaponStats
+	# ARQUITECTURA v3.0:
+	# - WEAPON_STATS (damage_mult, crit_*, life_steal, chain_count, etc.) -> GlobalWeaponStats
+	# - PLAYER_STATS (max_health, armor, move_speed, etc.) -> PlayerStats
+	# Primero buscar en GlobalWeaponStats (incluye life_steal y todos los weapon stats)
 	var value = get_global_stat(stat_name)
 	
-	# Si es 0 o no existe, buscar en PlayerStats (nodo del juego)
-	# Esto es necesario para stats como life_steal que están en PlayerStats
+	# Si es 0 o no existe, buscar en PlayerStats para stats del jugador
+	# (NO para weapon stats como life_steal - esos siempre están en GlobalWeaponStats)
 	if value == 0.0:
 		var game_stats = get_tree().get_first_node_in_group("player_stats")
 		if game_stats and game_stats.has_method("get_stat"):

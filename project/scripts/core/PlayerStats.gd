@@ -451,7 +451,7 @@ const BASE_STATS: Dictionary = {
 	"health_regen": 0.0,
 	"armor": 0.0,
 	"dodge_chance": 0.0,           # Probabilidad de esquivar (máx 0.6)
-	"life_steal": 0.0,             # % de daño que recupera como vida
+	# NOTA: life_steal ahora está en GlobalWeaponStats (es un WEAPON_STAT)
 	"damage_taken_mult": 1.0,      # Multiplicador de daño recibido (menor = mejor)
 	"thorns": 0.0,                 # Daño plano reflejado
 	"thorns_percent": 0.0,         # % del daño reflejado
@@ -535,7 +535,7 @@ const STAT_LIMITS: Dictionary = {
 	# Probabilidades (0-100%)
 	"crit_chance": {"min": 0.0, "max": 1.0},
 	"dodge_chance": {"min": 0.0, "max": 0.75},      # Máximo 75%
-	"life_steal": {"min": 0.0, "max": 0.5},          # Máximo 50%
+	# NOTA: life_steal límite está en GlobalWeaponStats
 	"freeze_chance": {"min": 0.0, "max": 0.5},       # Máximo 50%
 	"bleed_chance": {"min": 0.0, "max": 0.5},        # Máximo 50%
 	"explosion_chance": {"min": 0.0, "max": 0.5},    # Máximo 50%
@@ -626,6 +626,9 @@ func _apply_character_passive(character_id: String) -> void:
 	var passive_id = passive.get("id", "")
 	print("[PlayerStats] Applying passive: %s (%s)" % [passive.get("name", "Unknown"), passive_id])
 
+	# Obtener GlobalWeaponStats para los WEAPON_STATS
+	var gws = _get_global_weapon_stats()
+
 	match passive_id:
 		# === FROST MAGE - Frozen Aura ===
 		# Enemies near you are slowed by 10%
@@ -643,20 +646,32 @@ func _apply_character_passive(character_id: String) -> void:
 		# === STORM CALLER - Static Charge ===
 		# Lightning chains to 1 additional enemy
 		"static_charge":
-			stats.chain_count = stats.get("chain_count", 0) + 1
-			print("  -> Static Charge: +1 chain (%d total)" % stats.chain_count)
+			# chain_count es un WEAPON_STAT → va a GlobalWeaponStats
+			if gws:
+				gws.add_stat("chain_count", 1)
+				print("  -> Static Charge: +1 chain (%d total)" % gws.get_stat("chain_count"))
+			else:
+				push_warning("  -> Static Charge: GlobalWeaponStats not found!")
 
 		# === ARCANIST - Arcane Shield ===
 		# Start with +1 orbital projectile
 		"arcane_shield":
-			stats.extra_projectiles = stats.get("extra_projectiles", 0) + 1
-			print("  -> Arcane Shield: +1 orbital projectile")
+			# extra_projectiles es un WEAPON_STAT → va a GlobalWeaponStats
+			if gws:
+				gws.add_stat("extra_projectiles", 1)
+				print("  -> Arcane Shield: +1 orbital projectile")
+			else:
+				push_warning("  -> Arcane Shield: GlobalWeaponStats not found!")
 
 		# === SHADOW BLADE - Shadow Step ===
 		# +1 pierce on all projectiles
 		"shadow_step":
-			stats.extra_pierce = stats.get("extra_pierce", 0) + 1
-			print("  -> Shadow Step: +1 pierce")
+			# extra_pierce es un WEAPON_STAT → va a GlobalWeaponStats
+			if gws:
+				gws.add_stat("extra_pierce", 1)
+				print("  -> Shadow Step: +1 pierce")
+			else:
+				push_warning("  -> Shadow Step: GlobalWeaponStats not found!")
 
 		# === DRUID - Nature's Blessing ===
 		# Heal 1 HP when collecting experience
@@ -679,8 +694,12 @@ func _apply_character_passive(character_id: String) -> void:
 		# === PALADIN - Divine Judgment ===
 		# Critical hits deal 50% more damage
 		"divine_judgment":
-			stats.crit_damage = stats.get("crit_damage", 2.0) + 0.5
-			print("  -> Divine Judgment: +50%% crit damage (%.2fx)" % stats.crit_damage)
+			# crit_damage es un WEAPON_STAT → va a GlobalWeaponStats
+			if gws:
+				gws.add_stat("crit_damage", 0.5)
+				print("  -> Divine Judgment: +50%% crit damage (%.2fx)" % gws.get_stat("crit_damage"))
+			else:
+				push_warning("  -> Divine Judgment: GlobalWeaponStats not found!")
 
 		# === VOID WALKER - Void Hunger ===
 		# Killing enemies heals 2 HP, but lose 0.5 HP/sec
@@ -691,6 +710,24 @@ func _apply_character_passive(character_id: String) -> void:
 
 		_:
 			print("  -> Unknown passive: %s" % passive_id)
+
+func _get_global_weapon_stats() -> Node:
+	"""Obtener referencia a GlobalWeaponStats"""
+	# 1. Usar referencia cacheada
+	if global_weapon_stats != null:
+		return global_weapon_stats
+	
+	# 2. A través de attack_manager
+	if attack_manager and attack_manager.has_method("get_global_weapon_stats"):
+		return attack_manager.get_global_weapon_stats()
+	
+	# 3. Buscar en grupos
+	if is_inside_tree():
+		var nodes = get_tree().get_nodes_in_group("global_weapon_stats")
+		if nodes.size() > 0:
+			return nodes[0]
+	
+	return null
 
 func get_current_character_id() -> String:
 	"""Obtener el ID del personaje actual"""
@@ -809,13 +846,12 @@ func _sync_with_attack_manager() -> void:
 	Esto evita duplicación cuando se aplican mejoras de objetos.
 	Las mejoras de armas van directamente a GlobalWeaponStats via apply_upgrade().
 
-	Solo sincronizamos stats que son exclusivos del jugador pero afectan al combate.
+	NOTA: life_steal ahora también está en GlobalWeaponStats (es un stat de combate).
+	AttackManager.get_player_stat() busca primero en GlobalWeaponStats.
 	"""
-	if attack_manager == null:
-		return
-
-	# life_steal es un stat del jugador que afecta al combate
-	attack_manager.set_player_stat("life_steal", get_stat("life_steal"))
+	# No hay stats para sincronizar en v3.0
+	# Todos los weapon stats (incluyendo life_steal) van a GlobalWeaponStats
+	pass
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MÉTODOS DE METADATOS (PARA UI)
@@ -957,10 +993,10 @@ func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> 
 			var ratio = current_health / old_value if old_value > 0 else 1.0
 			current_health = new_value * ratio
 			health_changed.emit(current_health, new_value)
-
-		"damage_mult", "cooldown_mult", "crit_chance", "area_mult":
-			# Sincronizar con AttackManager
-			_sync_with_attack_manager()
+		
+		# NOTA: Todos los WEAPON_STATS (damage_mult, attack_speed_mult, crit_chance, 
+		# area_mult, life_steal, chain_count, etc.) van EXCLUSIVAMENTE a GlobalWeaponStats.
+		# NO necesitan sincronización aquí porque nunca se almacenan en PlayerStats.
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MODIFICADORES TEMPORALES (BUFFS/DEBUFFS)
