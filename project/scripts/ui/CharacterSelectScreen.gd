@@ -271,38 +271,38 @@ func _create_character_frames(char_data: Dictionary) -> SpriteFrames:
 	var frames = SpriteFrames.new()
 	var sprite_folder = char_data.get("sprite_folder", "frost_mage")
 	var base_path = "res://assets/sprites/players/" + sprite_folder
+	const FRAME_SIZE = 208  # Each frame is 208x208
 
-	# IDLE animation (single frame - first walk frame)
-	frames.add_animation("idle")
-	frames.set_animation_speed("idle", 1.0)
-	frames.set_animation_loop("idle", true)
-
-	var idle_path = "%s/walk/%s_walk_down_1.png" % [base_path, sprite_folder]
-	var idle_tex = load(idle_path)
-	if idle_tex:
-		frames.add_frame("idle", idle_tex)
-	else:
+	# Load the walk_down strip
+	var strip_path = "%s/walk/walk_down_strip.png" % base_path
+	var strip_tex = load(strip_path) as Texture2D
+	
+	if not strip_tex:
 		# Fallback to frost_mage
-		idle_tex = load("res://assets/sprites/players/frost_mage/walk/frost_mage_walk_down_1.png")
-		if idle_tex:
-			frames.add_frame("idle", idle_tex)
-
-	# WALK animation (3 frames)
-	frames.add_animation("walk")
-	frames.set_animation_speed("walk", 6.0)
-	frames.set_animation_loop("walk", true)
-
-	for i in range(1, 4):
-		var walk_path = "%s/walk/%s_walk_down_%d.png" % [base_path, sprite_folder, i]
-		var walk_tex = load(walk_path)
-		if walk_tex:
-			frames.add_frame("walk", walk_tex)
-		else:
-			# Fallback
-			var fallback_path = "res://assets/sprites/players/frost_mage/walk/frost_mage_walk_down_%d.png" % i
-			walk_tex = load(fallback_path)
-			if walk_tex:
-				frames.add_frame("walk", walk_tex)
+		strip_path = "res://assets/sprites/players/frost_mage/walk/walk_down_strip.png"
+		strip_tex = load(strip_path) as Texture2D
+	
+	if strip_tex:
+		var strip_image = strip_tex.get_image()
+		
+		# IDLE animation (first frame from strip)
+		frames.add_animation("idle")
+		frames.set_animation_speed("idle", 1.0)
+		frames.set_animation_loop("idle", true)
+		
+		var idle_region = Rect2i(0, 0, FRAME_SIZE, FRAME_SIZE)
+		var idle_image = strip_image.get_region(idle_region)
+		frames.add_frame("idle", ImageTexture.create_from_image(idle_image))
+		
+		# WALK animation (3 frames from strip)
+		frames.add_animation("walk")
+		frames.set_animation_speed("walk", 6.0)
+		frames.set_animation_loop("walk", true)
+		
+		for i in range(3):
+			var frame_region = Rect2i(i * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE)
+			var frame_image = strip_image.get_region(frame_region)
+			frames.add_frame("walk", ImageTexture.create_from_image(frame_image))
 
 	return frames
 

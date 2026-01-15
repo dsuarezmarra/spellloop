@@ -40,16 +40,16 @@ func set_character_sprites(sprite_folder: String) -> void:
 	_setup_animations()
 
 func _setup_animations() -> void:
-	"""Configure animations with spritesheets (uses character_sprites_key for folder)"""
+	"""Configure animations using strip spritesheets (3 frames per strip, 208x208 each)"""
 	if not animated_sprite:
 		return
 
 	var frames = SpriteFrames.new()
 	var dirs = ["down", "up", "left", "right"]
 	var base_path = "res://assets/sprites/players/" + character_sprites_key
-	var prefix = character_sprites_key  # e.g., "wizard", "pyromancer"
+	const FRAME_SIZE = 208  # Each frame is 208x208
 
-	# ========== ANIMACIONES DE CAMINAR (3 frames cada una) ==========
+	# ========== ANIMACIONES DE CAMINAR (3 frames cada una desde strips) ==========
 	for dir in dirs:
 		var walk_anim = "walk_%s" % dir
 		var idle_anim = "idle_%s" % dir
@@ -61,50 +61,62 @@ func _setup_animations() -> void:
 		frames.set_animation_loop(walk_anim, true)
 		frames.set_animation_loop(idle_anim, true)
 
-		# Load individual walk frames (3 frames)
-		for i in range(1, 4):
-			var frame_path = "%s/walk/%s_walk_%s_%d.png" % [base_path, prefix, dir, i]
-			var tex = load(frame_path)
-			if tex:
-				frames.add_frame(walk_anim, tex)
-				# Use first frame as idle
-				if i == 1:
-					frames.add_frame(idle_anim, tex)
-			else:
-				push_warning("[WizardPlayer] Sprite not found: %s" % frame_path)
+		# Load strip and extract frames
+		var strip_path = "%s/walk/walk_%s_strip.png" % [base_path, dir]
+		var strip_tex = load(strip_path) as Texture2D
+		if strip_tex:
+			var strip_image = strip_tex.get_image()
+			for i in range(3):
+				var frame_region = Rect2i(i * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE)
+				var frame_image = strip_image.get_region(frame_region)
+				var frame_tex = ImageTexture.create_from_image(frame_image)
+				frames.add_frame(walk_anim, frame_tex)
+				if i == 0:
+					frames.add_frame(idle_anim, frame_tex)
+		else:
+			push_warning("[WizardPlayer] Strip not found: %s" % strip_path)
 
-	# ========== CAST ANIMATION (3 frames) ==========
+	# ========== CAST ANIMATION (3 frames desde strip) ==========
 	frames.add_animation("cast")
 	frames.set_animation_speed("cast", 3.0)
 	frames.set_animation_loop("cast", false)
 
-	for i in range(1, 4):
-		var frame_path = "%s/cast/%s_cast_%d.png" % [base_path, prefix, i]
-		var tex = load(frame_path)
-		if tex:
-			frames.add_frame("cast", tex)
+	var cast_strip_path = "%s/cast/cast_strip.png" % base_path
+	var cast_strip = load(cast_strip_path) as Texture2D
+	if cast_strip:
+		var cast_image = cast_strip.get_image()
+		for i in range(3):
+			var frame_region = Rect2i(i * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE)
+			var frame_image = cast_image.get_region(frame_region)
+			frames.add_frame("cast", ImageTexture.create_from_image(frame_image))
 
-	# ========== HIT ANIMATION (3 frames) ==========
+	# ========== HIT ANIMATION (3 frames desde strip) ==========
 	frames.add_animation("hit")
 	frames.set_animation_speed("hit", 3.0)
 	frames.set_animation_loop("hit", false)
 
-	for i in range(1, 4):
-		var frame_path = "%s/hit/%s_hit_%d.png" % [base_path, prefix, i]
-		var tex = load(frame_path)
-		if tex:
-			frames.add_frame("hit", tex)
+	var hit_strip_path = "%s/hit/hit_strip.png" % base_path
+	var hit_strip = load(hit_strip_path) as Texture2D
+	if hit_strip:
+		var hit_image = hit_strip.get_image()
+		for i in range(3):
+			var frame_region = Rect2i(i * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE)
+			var frame_image = hit_image.get_region(frame_region)
+			frames.add_frame("hit", ImageTexture.create_from_image(frame_image))
 
-	# ========== DEATH ANIMATION (3 frames) ==========
+	# ========== DEATH ANIMATION (3 frames desde strip) ==========
 	frames.add_animation("death")
 	frames.set_animation_speed("death", 2.0)
 	frames.set_animation_loop("death", false)
 
-	for i in range(1, 4):
-		var frame_path = "%s/death/%s_death_%d.png" % [base_path, prefix, i]
-		var tex = load(frame_path)
-		if tex:
-			frames.add_frame("death", tex)
+	var death_strip_path = "%s/death/death_strip.png" % base_path
+	var death_strip = load(death_strip_path) as Texture2D
+	if death_strip:
+		var death_image = death_strip.get_image()
+		for i in range(3):
+			var frame_region = Rect2i(i * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE)
+			var frame_image = death_image.get_region(frame_region)
+			frames.add_frame("death", ImageTexture.create_from_image(frame_image))
 
 	# Asignar frames al sprite
 	if animated_sprite:
