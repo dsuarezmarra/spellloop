@@ -49,6 +49,10 @@ SPRITES_PATH = os.path.join(PROJECT_PATH, "assets", "sprites", "players")
 # Umbral mínimo de ancho de frame (para filtrar ruido)
 MIN_FRAME_WIDTH = 50
 
+# Tamaño fijo para TODOS los personajes (consistencia visual)
+# Si es None, se calcula automáticamente. Si es un número, se usa ese tamaño fijo.
+FIXED_FRAME_SIZE = 208  # Todos los personajes usan 208x208
+
 
 def get_character_path(character_name):
     """Obtiene la ruta base de un personaje."""
@@ -240,8 +244,12 @@ def process_character(character_name):
     print("PASO 2: DETERMINANDO TAMAÑO UNIFORME")
     print("=" * 60)
     
-    target_size = find_uniform_frame_size(analyses)
-    print(f"Tamaño de frame uniforme: {target_size}x{target_size} píxeles")
+    if FIXED_FRAME_SIZE:
+        target_size = FIXED_FRAME_SIZE
+        print(f"Usando tamaño FIJO: {target_size}x{target_size} píxeles")
+    else:
+        target_size = find_uniform_frame_size(analyses)
+        print(f"Tamaño calculado: {target_size}x{target_size} píxeles")
     
     # Paso 3: Extraer y normalizar
     print("\n" + "=" * 60)
