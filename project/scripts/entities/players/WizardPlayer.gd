@@ -56,7 +56,7 @@ func _setup_animations() -> void:
 
 		frames.add_animation(walk_anim)
 		frames.add_animation(idle_anim)
-		frames.set_animation_speed(walk_anim, 2.5)  # FPS para walk (lento, natural)
+		frames.set_animation_speed(walk_anim, 1.5)  # FPS bajo para walk suave
 		frames.set_animation_speed(idle_anim, 1.0)  # Idle estático
 		frames.set_animation_loop(walk_anim, true)
 		frames.set_animation_loop(idle_anim, true)
@@ -78,7 +78,7 @@ func _setup_animations() -> void:
 
 	# ========== CAST ANIMATION (3 frames desde strip) ==========
 	frames.add_animation("cast")
-	frames.set_animation_speed("cast", 3.0)
+	frames.set_animation_speed("cast", 1.5)
 	frames.set_animation_loop("cast", false)
 
 	var cast_strip_path = "%s/cast/cast_strip.png" % base_path
@@ -92,7 +92,7 @@ func _setup_animations() -> void:
 
 	# ========== HIT ANIMATION (3 frames desde strip) ==========
 	frames.add_animation("hit")
-	frames.set_animation_speed("hit", 3.0)
+	frames.set_animation_speed("hit", 1.5)
 	frames.set_animation_loop("hit", false)
 
 	var hit_strip_path = "%s/hit/hit_strip.png" % base_path
@@ -106,7 +106,7 @@ func _setup_animations() -> void:
 
 	# ========== DEATH ANIMATION (3 frames desde strip) ==========
 	frames.add_animation("death")
-	frames.set_animation_speed("death", 2.0)
+	frames.set_animation_speed("death", 1.0)
 	frames.set_animation_loop("death", false)
 
 	var death_strip_path = "%s/death/death_strip.png" % base_path
