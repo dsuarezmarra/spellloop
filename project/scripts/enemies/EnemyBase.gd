@@ -31,6 +31,9 @@ var is_boss: bool = false
 var aura_color: Color = Color(1.0, 0.8, 0.2, 0.8)
 var elite_size_scale: float = 1.5
 
+# Flag para prevenir recursión infinita de overkill
+var _receiving_overkill_damage: bool = false
+
 # AI parameters (can be overridden in subclasses)
 var attack_range: float = 32.0
 var separation_radius: float = 40.0
@@ -1274,8 +1277,9 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 			die()
 	
 	# Sistema de OVERKILL: Transferir daño excedente a enemigos cercanos
+	# PERO NO si este daño vino de otro overkill (prevenir recursión infinita)
 	var hp_after = health_component.current_health if health_component else hp
-	if hp_after <= 0 and final_damage > hp_before:
+	if hp_after <= 0 and final_damage > hp_before and not _receiving_overkill_damage:
 		var excess = final_damage - hp_before
 		_apply_overkill_damage(excess)
 
@@ -1313,8 +1317,13 @@ func _apply_overkill_damage(excess_damage: int) -> void:
 		return
 	
 	# Aplicar daño a todos los enemigos cercanos
+	# Marcar que el daño es de overkill para prevenir recursión
 	for enemy in nearby_enemies:
+		if "_receiving_overkill_damage" in enemy:
+			enemy._receiving_overkill_damage = true
 		enemy.take_damage(transfer_damage, "physical", null)
+		if "_receiving_overkill_damage" in enemy:
+			enemy._receiving_overkill_damage = false
 		# Efecto visual de overkill
 		FloatingText.spawn_text(enemy.global_position + Vector2(0, -30), "OVERKILL", Color(1.0, 0.5, 0.0))
 

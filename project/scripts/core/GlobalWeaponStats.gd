@@ -33,10 +33,14 @@ const BASE_GLOBAL_STATS: Dictionary = {
 	# Planos (se suman a todas las armas)
 	"extra_projectiles": 0,       # +X proyectiles a todas las armas
 	"extra_pierce": 0,            # +X penetración a todas las armas
+	"chain_count": 0,             # +X saltos de cadena
 	
 	# Críticos globales
 	"crit_chance": 0.05,          # Probabilidad base de crítico (5%)
 	"crit_damage": 2.0,           # Multiplicador de daño crítico (2x)
+	
+	# Efectos de combate
+	"life_steal": 0.0,            # % del daño convertido en curación
 }
 
 # Metadatos para UI

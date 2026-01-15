@@ -413,26 +413,26 @@ func _show_stats_tab() -> void:
 	columns_hbox.add_theme_constant_override("separation", 20)
 	main_vbox.add_child(columns_hbox)
 
-	# Columna izquierda (Defensivo + Criticos)
+	# Columna izquierda (Defensivo)
 	var left_column = VBoxContainer.new()
 	left_column.add_theme_constant_override("separation", 8)
 	left_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	columns_hbox.add_child(left_column)
 
-	# Columna derecha (Ofensivo + Utilidad)
+	# Columna derecha (Utilidad)
 	var right_column = VBoxContainer.new()
 	right_column.add_theme_constant_override("separation", 8)
 	right_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	columns_hbox.add_child(right_column)
 
-	# SIEMPRE mostrar los stats (con valores por defecto si no hay player_stats)
 	# Columna izquierda - Stats defensivos del jugador
 	_create_stats_section(left_column, "defensive", "Defensivo")
-	# NOTA: Los críticos (crit_chance, crit_damage) son stats de ARMAS
-	# Se muestran en el popup de cada arma, no aquí
 
 	# Columna derecha - Utilidad del jugador
 	_create_stats_section(right_column, "utility", "Utilidad")
+	
+	# === STATS OFENSIVOS GLOBALES (afectan a todas las armas) ===
+	_create_global_weapon_stats_section(main_vbox)
 
 	# === BUFFS ACTIVOS (si los hay) ===
 	_create_active_buffs_section(main_vbox)
@@ -787,6 +787,106 @@ func _get_value_color(stat_name: String, value: float) -> Color:
 	elif value < base_value:
 		return COLOR_DEBUFF
 	return COLOR_NEUTRAL
+
+func _create_global_weapon_stats_section(parent: VBoxContainer) -> void:
+	"""Crear sección de stats ofensivos globales que afectan a todas las armas"""
+	# Separador
+	var sep = HSeparator.new()
+	parent.add_child(sep)
+	
+	# Título
+	var title = Label.new()
+	title.text = "⚔️ Stats de Armas (Global)"
+	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_color_override("font_color", Color(1.0, 0.8, 0.3))
+	parent.add_child(title)
+	
+	# Obtener stats globales de armas (SOLO de GlobalWeaponStats, NO de PlayerStats)
+	var global_stats = {}
+	if attack_manager and attack_manager.has_method("_get_combined_global_stats"):
+		global_stats = attack_manager._get_combined_global_stats()
+	elif attack_manager and "global_weapon_stats" in attack_manager and attack_manager.global_weapon_stats:
+		# Fallback: obtener de GlobalWeaponStats directamente
+		var gws = attack_manager.global_weapon_stats
+		if gws.has_method("get_all_stats"):
+			global_stats = gws.get_all_stats()
+	
+	# Si no hay stats, usar valores base
+	if global_stats.is_empty():
+		global_stats = {
+			"damage_mult": 1.0, "attack_speed_mult": 1.0, "area_mult": 1.0,
+			"projectile_speed_mult": 1.0, "duration_mult": 1.0, "knockback_mult": 1.0,
+			"range_mult": 1.0, "crit_chance": 0.05, "crit_damage": 2.0,
+			"extra_projectiles": 0, "extra_pierce": 0, "damage_flat": 0
+		}
+	
+	# Grid de stats en dos columnas
+	var grid = GridContainer.new()
+	grid.columns = 4  # icono+nombre, valor, icono+nombre, valor
+	grid.add_theme_constant_override("h_separation", 10)
+	grid.add_theme_constant_override("v_separation", 4)
+	parent.add_child(grid)
+	
+	# Lista de stats a mostrar con sus valores base
+	var stats_to_show = [
+		{"stat": "damage_mult", "name": "Daño", "icon": "⚔️", "base": 1.0, "format": "mult"},
+		{"stat": "attack_speed_mult", "name": "Vel. Ataque", "icon": "⚡", "base": 1.0, "format": "mult"},
+		{"stat": "crit_chance", "name": "Prob. Crítico", "icon": "🎯", "base": 0.05, "format": "percent"},
+		{"stat": "crit_damage", "name": "Daño Crítico", "icon": "💢", "base": 2.0, "format": "mult_x"},
+		{"stat": "area_mult", "name": "Área", "icon": "🌀", "base": 1.0, "format": "mult"},
+		{"stat": "duration_mult", "name": "Duración", "icon": "⏳", "base": 1.0, "format": "mult"},
+		{"stat": "projectile_speed_mult", "name": "Vel. Proyectil", "icon": "➡️", "base": 1.0, "format": "mult"},
+		{"stat": "knockback_mult", "name": "Empuje", "icon": "💥", "base": 1.0, "format": "mult"},
+		{"stat": "range_mult", "name": "Alcance", "icon": "📏", "base": 1.0, "format": "mult"},
+		{"stat": "extra_projectiles", "name": "Proyectiles+", "icon": "🎯", "base": 0, "format": "int"},
+		{"stat": "extra_pierce", "name": "Penetración+", "icon": "🗡️", "base": 0, "format": "int"},
+		{"stat": "damage_flat", "name": "Daño Plano", "icon": "➕", "base": 0, "format": "int"},
+	]
+	
+	for stat_info in stats_to_show:
+		var stat_name = stat_info.stat
+		var base_value = stat_info.base
+		var current_value = global_stats.get(stat_name, base_value)
+		
+		# Icono + Nombre
+		var name_label = Label.new()
+		name_label.text = "%s %s" % [stat_info.icon, stat_info.name]
+		name_label.add_theme_font_size_override("font_size", 11)
+		name_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
+		name_label.custom_minimum_size = Vector2(110, 0)
+		grid.add_child(name_label)
+		
+		# Valor
+		var value_label = Label.new()
+		var value_text = ""
+		var value_color = Color(0.9, 0.9, 1.0)
+		
+		match stat_info.format:
+			"mult":
+				if abs(current_value - base_value) > 0.001:
+					value_text = "+%.0f%%" % ((current_value - 1.0) * 100) if current_value >= 1.0 else "%.0f%%" % ((current_value - 1.0) * 100)
+					value_color = Color(0.3, 1.0, 0.4) if current_value > base_value else Color(1.0, 0.4, 0.4)
+				else:
+					value_text = "+0%"
+			"mult_x":
+				value_text = "x%.1f" % current_value
+				if abs(current_value - base_value) > 0.01:
+					value_color = Color(0.3, 1.0, 0.4) if current_value > base_value else Color(1.0, 0.4, 0.4)
+			"percent":
+				value_text = "%.0f%%" % (current_value * 100)
+				if abs(current_value - base_value) > 0.001:
+					value_color = Color(0.3, 1.0, 0.4) if current_value > base_value else Color(1.0, 0.4, 0.4)
+			"int":
+				value_text = "+%d" % int(current_value) if current_value > 0 else "%d" % int(current_value)
+				if current_value != base_value:
+					value_color = Color(0.3, 1.0, 0.4) if current_value > base_value else Color(1.0, 0.4, 0.4)
+		
+		value_label.text = value_text
+		value_label.add_theme_font_size_override("font_size", 11)
+		value_label.add_theme_color_override("font_color", value_color)
+		value_label.custom_minimum_size = Vector2(50, 0)
+		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		grid.add_child(value_label)
 
 func _create_active_buffs_section(parent: VBoxContainer) -> void:
 	"""Crear sección de buffs/debuffs activos"""

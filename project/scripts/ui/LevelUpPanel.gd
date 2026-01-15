@@ -1340,13 +1340,15 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 		# print("[LevelUpPanel] 🟡 Mejora CONSUMIBLE usada: %s" % upgrade_name)
 		pass
 	
-	# Stats que van a GlobalWeaponStats (armas) - NO incluye crit porque está en PlayerStats
+	# Stats que van a GlobalWeaponStats (armas)
+	# IMPORTANTE: Estos stats SOLO van a GlobalWeaponStats, NO a PlayerStats
+	# para evitar duplicación cuando se combinan en AttackManager
 	var weapon_stats = [
 		"damage_mult", "damage_flat", "attack_speed_mult", "cooldown_mult",
 		"area_mult", "projectile_speed_mult", "duration_mult", "knockback_mult",
-		"extra_projectiles", "extra_pierce", "range_mult"
+		"extra_projectiles", "extra_pierce", "range_mult",
+		"crit_chance", "crit_damage"  # Críticos también son stats de armas
 	]
-	# NOTA: crit_chance y crit_damage van a PlayerStats y se sincronizan al AttackManager
 	
 	# Separar efectos en dos grupos
 	var weapon_effects = []

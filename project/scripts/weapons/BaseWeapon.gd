@@ -298,18 +298,25 @@ func _find_targets(player: Node2D) -> Array:
 	"""
 	var enemies = _get_enemies_in_range(player)
 	
+	# Calcular cuántos objetivos necesitamos (para múltiples proyectiles)
+	var global_stats = _get_global_weapon_stats()
+	var extra = int(global_stats.get("extra_projectiles", 0))
+	var needed_targets = projectile_count + extra
+	
 	match target_type:
 		WeaponDatabase.TargetType.NEAREST:
 			if enemies.is_empty():
 				return []
 			enemies.sort_custom(_sort_by_distance.bind(player))
-			return [enemies[0]]
+			# Devolver suficientes objetivos para projectile_count
+			return enemies.slice(0, mini(needed_targets, enemies.size()))
 		
 		WeaponDatabase.TargetType.RANDOM:
 			if enemies.is_empty():
 				return []
 			enemies.shuffle()
-			return [enemies[0]]
+			# Devolver suficientes objetivos para projectile_count
+			return enemies.slice(0, mini(needed_targets, enemies.size()))
 		
 		WeaponDatabase.TargetType.AREA:
 			return enemies  # Todos en área
@@ -520,10 +527,13 @@ func _spawn_chain(player: Node2D, targets: Array, dmg: float, crit: float) -> vo
 	var extra = int(global_stats.get("extra_projectiles", 0))
 	var count = projectile_count + extra
 	
-	# Crear múltiples cadenas hacia diferentes objetivos si hay suficientes
+	# Crear múltiples cadenas - si hay menos enemigos que proyectiles,
+	# disparar múltiples cadenas al mismo objetivo
 	targets.shuffle()
-	for i in range(min(count, targets.size())):
-		_create_chain_projectile(player, targets[i], dmg, crit)
+	for i in range(count):
+		# Usar módulo para ciclar entre objetivos disponibles
+		var target_index = i % targets.size()
+		_create_chain_projectile(player, targets[target_index], dmg, crit)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CREACIÓN DE PROYECTILES (para override en subclases o usar ProjectileFactory)
@@ -615,11 +625,22 @@ func _build_projectile_data(dmg: float, crit: float) -> Dictionary:
 	}
 
 func _get_global_weapon_stats() -> Dictionary:
-	"""Obtener stats globales de armas desde GlobalWeaponStats"""
+	"""
+	Obtener stats globales COMBINADOS de armas (GlobalWeaponStats + PlayerStats).
+	Usa AttackManager._get_combined_global_stats() para incluir todos los modificadores.
+	"""
 	var tree = Engine.get_main_loop() as SceneTree
 	if not tree:
 		return {}
 	
+	# Primero intentar obtener stats combinados del AttackManager
+	var am_nodes = tree.get_nodes_in_group("attack_manager")
+	var am = am_nodes[0] if am_nodes.size() > 0 else null
+	
+	if am and am.has_method("_get_combined_global_stats"):
+		return am._get_combined_global_stats()
+	
+	# Fallback: solo GlobalWeaponStats (sin stats de PlayerStats)
 	var gws_nodes = tree.get_nodes_in_group("global_weapon_stats")
 	var gws = gws_nodes[0] if gws_nodes.size() > 0 else null
 	

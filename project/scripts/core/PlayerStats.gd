@@ -803,44 +803,19 @@ func _sync_with_attack_manager() -> void:
 	"""
 	Sincronizar stats relevantes con AttackManager.
 
-	NOTA (v2.0): Los stats de armas (damage_mult, cooldown_mult, area_mult, etc.)
-	ahora se manejan directamente en GlobalWeaponStats dentro de AttackManager.
-	Solo sincronizamos stats que son tanto del jugador como de las armas.
+	IMPORTANTE (v3.0): Los stats de armas (damage_mult, attack_speed_mult, etc.)
+	SOLO viven en GlobalWeaponStats. NO se sincronizan desde PlayerStats.
+	
+	Esto evita duplicación cuando se aplican mejoras de objetos.
+	Las mejoras de armas van directamente a GlobalWeaponStats via apply_upgrade().
 
-	Para mejoras de armas, usar:
-	- attack_manager.apply_global_upgrade() para mejoras globales
-	- attack_manager.apply_weapon_upgrade() para mejoras específicas
+	Solo sincronizamos stats que son exclusivos del jugador pero afectan al combate.
 	"""
 	if attack_manager == null:
 		return
 
-	# Solo sincronizar stats que pertenecen a AMBOS sistemas
-	# life_steal afecta tanto la supervivencia del jugador como el combate
+	# life_steal es un stat del jugador que afecta al combate
 	attack_manager.set_player_stat("life_steal", get_stat("life_steal"))
-
-	# DEPRECADO: Estos stats ahora viven en GlobalWeaponStats
-	# Las mejoras genéricas del LevelUpPanel deben llamar a
-	# attack_manager.apply_global_upgrade() directamente
-	#
-	# Por compatibilidad temporal, seguimos sincronizando:
-	if stats.has("damage_mult"):
-		attack_manager.set_player_stat("damage_mult", get_stat("damage_mult"))
-	if stats.has("cooldown_mult"):
-		attack_manager.set_player_stat("cooldown_mult", get_stat("cooldown_mult"))
-	if stats.has("crit_chance"):
-		attack_manager.set_player_stat("crit_chance", get_stat("crit_chance"))
-	if stats.has("crit_damage"):
-		attack_manager.set_player_stat("crit_damage", get_stat("crit_damage"))
-	if stats.has("area_mult"):
-		attack_manager.set_player_stat("area_mult", get_stat("area_mult"))
-	if stats.has("projectile_speed_mult"):
-		attack_manager.set_player_stat("projectile_speed_mult", get_stat("projectile_speed_mult"))
-	if stats.has("duration_mult"):
-		attack_manager.set_player_stat("duration_mult", get_stat("duration_mult"))
-	if stats.has("extra_projectiles"):
-		attack_manager.set_player_stat("extra_projectiles", get_stat("extra_projectiles"))
-	if stats.has("knockback_mult"):
-		attack_manager.set_player_stat("knockback_mult", get_stat("knockback_mult"))
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MÉTODOS DE METADATOS (PARA UI)
@@ -1402,9 +1377,14 @@ func get_xp_progress() -> float:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Stats que pertenecen a GlobalWeaponStats y deben sincronizarse
-const WEAPON_STATS = ["damage_mult", "damage_flat", "attack_speed_mult", "cooldown_mult",
+# Stats que van EXCLUSIVAMENTE a GlobalWeaponStats (no a PlayerStats)
+# Esto evita duplicación cuando se aplican mejoras de armas
+const WEAPON_STATS = [
+	"damage_mult", "damage_flat", "attack_speed_mult", "cooldown_mult",
 	"area_mult", "projectile_speed_mult", "duration_mult", "extra_projectiles",
-	"extra_pierce", "knockback_mult", "range_mult", "crit_chance", "crit_damage"]
+	"extra_pierce", "knockback_mult", "range_mult", "crit_chance", "crit_damage",
+	"chain_count", "life_steal"  # life_steal es de combate, va a GlobalWeaponStats
+]
 
 func apply_upgrade(upgrade_data) -> bool:
 	"""
@@ -1425,7 +1405,7 @@ func apply_upgrade(upgrade_data) -> bool:
 	# Aplicar efectos desde el Dictionary (formato nuevo con effects)
 	if upgrade_dict.has("effects"):
 		var effects = upgrade_dict.get("effects", [])
-		var weapon_effects: Array = []  # Efectos que van a GlobalWeaponStats
+		var weapon_effects: Array = []  # Efectos que van SOLO a GlobalWeaponStats
 
 		for effect in effects:
 			var stat = effect.get("stat", "")
@@ -1435,18 +1415,19 @@ func apply_upgrade(upgrade_data) -> bool:
 			if stat == "":
 				continue
 
-			# Aplicar a PlayerStats (todos los stats)
-			match op:
-				"add": add_stat(stat, value)
-				"multiply": multiply_stat(stat, value)
-				"set": set_stat(stat, value)
-				_: add_stat(stat, value)
-
-			# Si es un stat de arma, también enviarlo a GlobalWeaponStats
+			# Si es un stat de arma, SOLO enviarlo a GlobalWeaponStats (NO a PlayerStats)
+			# Esto evita duplicación cuando _get_combined_global_stats() combina ambos
 			if stat in WEAPON_STATS:
 				weapon_effects.append(effect.duplicate())
+			else:
+				# Stats de jugador (max_health, move_speed, etc.) van a PlayerStats
+				match op:
+					"add": add_stat(stat, value)
+					"multiply": multiply_stat(stat, value)
+					"set": set_stat(stat, value)
+					_: add_stat(stat, value)
 
-		# Enviar stats de armas a GlobalWeaponStats
+		# Enviar stats de armas SOLO a GlobalWeaponStats
 		if weapon_effects.size() > 0:
 			_apply_weapon_effects_to_global(weapon_effects, upgrade_dict)
 
