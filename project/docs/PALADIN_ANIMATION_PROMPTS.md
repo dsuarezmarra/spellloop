@@ -1,8 +1,8 @@
-# ?? Prompts para Animaciones del PALADIN
+# ⚔️ Prompts para Animaciones del PALADIN
 
-## ?? IMPORTANTE: C�mo usar este documento
+## 📋 IMPORTANTE: Cómo usar este documento
 
-**Las IAs de im�genes NO pueden generar todos los sprites de una vez.**
+**Las IAs de imágenes NO pueden generar todos los sprites de una vez.**
 
 ### Flujo de trabajo:
 1. Ejecuta el **Prompt #0** primero para establecer el estilo del personaje
@@ -11,44 +11,55 @@
 
 ---
 
-## ?? Especificaciones T�cnicas
+## 📐 Especificaciones Técnicas
 
-- **Tama�o:** 500x500 p�xeles por frame
+- **Tamaño:** 500x500 píxeles por frame
 - **Formato:** PNG con fondo transparente
-- **Estilo:** Cartoon/Funko Pop (ver gu�a de estilo abajo)
+- **Estilo:** Cartoon/Funko Pop (ver guía de estilo abajo)
 - **Vista:** Top-down con ligera perspectiva 3/4
 - **TODAS las animaciones:** 3 frames (1500x500 horizontal strip)
 
 ---
 
-## ?? SISTEMA DE ANIMACI�N (Estilo Binding of Isaac)
+## 🎬 SISTEMA DE ANIMACIÓN (Estilo Binding of Isaac)
 
 **Este juego usa ciclos de 3 frames en ping-pong para TODAS las animaciones:**
 
-### Ciclo de animaci�n:
+### Ciclo de animación:
 ```
-Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
+Frame 1 → Frame 2 → Frame 3 → Frame 2 → Frame 1 → ...
 ```
 
-### ?? IMPORTANTE:
-- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el c�digo
+### 🦶 CICLO DE PIES PARA ANIMACIONES WALK (MUY IMPORTANTE):
+Para crear una sensación natural de caminar, los 3 frames deben seguir este patrón:
+
+| Frame | Posición de Pies | Descripción |
+|-------|------------------|-------------|
+| **Frame 1** | PIE IZQUIERDO ADELANTADO | El pie izquierdo está adelante, el derecho atrás |
+| **Frame 2** | POSICIÓN NEUTRAL | Ambos pies juntos o alineados, postura centrada |
+| **Frame 3** | PIE DERECHO ADELANTADO | El pie derecho está adelante, el izquierdo atrás |
+
+Este ciclo en ping-pong (1-2-3-2-1-2-3...) crea la ilusión de caminar continuo.
+
+### ⚠️ IMPORTANTE:
+- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el código
 - **TODAS las animaciones tienen 3 frames** - Walk, Cast, Death, Hit
-- Total sprites: **18 frames** (6 animaciones � 3 frames)
+- Total sprites: **18 frames** (6 animaciones × 3 frames)
 
 ---
 
-## ?? GU�A DE ESTILO - PALADIN
+## 🎨 GUÍA DE ESTILO - PALADIN
 
-### Caracter�sticas del personaje:
+### Características del personaje:
 
-| Caracter�stica | Descripci�n |
+| Característica | Descripción |
 |----------------|-------------|
-| **G�nero** | Hombre adulto, noble |
-| **Complexi�n** | Atl�tico, musculoso pero elegante |
+| **Género** | Hombre adulto, noble |
+| **Complexión** | Atlético, musculoso pero elegante |
 | **Cabello** | Rubio dorado, corto y ordenado |
-| **Expresi�n** | Noble, justo, ojos brillando con luz divina |
+| **Expresión** | Noble, justo, ojos brillando con luz divina |
 | **Vestimenta** | Armadura blanca/dorada, capa blanca |
-| **Detalles** | S�mbolos sagrados, halo sutil, aura luminosa |
+| **Detalles** | Símbolos sagrados, halo sutil, aura luminosa |
 | **Arma** | Espada de luz o cetro sagrado |
 
 ### Paleta de colores:
@@ -63,7 +74,7 @@ Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
 
 ---
 
-# ?? LISTA DE PROMPTS
+# 📝 LISTA DE PROMPTS
 
 ---
 
@@ -107,7 +118,7 @@ LAYOUT: 4 angles in 2x2 grid (front, back, left, right profile)
 OUTPUT: 1024x1024, transparent background
 ```
 
-?? **Guardar como:** `paladin_reference.png`
+📁 **Guardar como:** `paladin_reference.png`
 
 ---
 
@@ -122,18 +133,19 @@ ART STYLE: Funko Pop/Chibi, holy warrior, glowing effects
 
 CHARACTER: Noble paladin, gold/white armor, white cape, blonde hair, light aura
 
-?? 3-FRAME WALK CYCLE:
-- Frame 1: LEFT LEG OUT - Left armored boot stepped outward, slight body tilt left
-- Frame 2: NEUTRAL - Both feet together, standing proud, centered pose
-- Frame 3: RIGHT LEG OUT - Right armored boot stepped outward, slight body tilt right
+⚔️ 3-FRAME WALK CYCLE - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left armored boot clearly stepped forward, right foot back, slight body tilt left, dignified stride
+- Frame 2: NEUTRAL STANCE - Both feet together side by side, standing proud, centered balanced pose
+- Frame 3: RIGHT FOOT FORWARD - Right armored boot clearly stepped forward, left foot back, slight body tilt right, noble march
 
 ANIMATION NOTES:
-- Ping-pong cycle: 1-2-3-2-1-2-3...
+- Ping-pong cycle: 1-2-3-2-1-2-3... creates continuous walking
+- EXAGGERATE foot positions for clarity - armored boots should be CLEARLY visible
 - Dignified, military walking rhythm
 - Show armored boots clearly stepping
 
 SECONDARY MOTION:
-- Cape flows gracefully
+- Cape flows gracefully with movement
 - Subtle light aura pulses
 - Holy symbols on armor glow
 
@@ -142,7 +154,7 @@ COLORS: Armor #F5F5F5, Gold #FFD700, Cape #FFFFFF, Hair #DAA520
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `paladin_walk_down_strip.png`
+📁 **Guardar como:** `paladin_walk_down_strip.png`
 
 ---
 
@@ -157,10 +169,14 @@ ART STYLE: Funko Pop/Chibi, cape prominently visible
 
 CHARACTER (from behind): White/gold armored warrior, flowing white cape, blonde hair
 
-?? 3-FRAME WALK CYCLE (BACK VIEW):
-- Frame 1: LEFT LEG OUT - Left leg stepped outward, cape parting
-- Frame 2: NEUTRAL - Both feet together, standing tall
-- Frame 3: RIGHT LEG OUT - Right leg stepped outward, cape settling
+⚔️ 3-FRAME WALK CYCLE (BACK VIEW) - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left leg stepped forward (visible extending down-left), cape parting, body tilts slightly left
+- Frame 2: NEUTRAL STANCE - Both feet together, standing tall, centered balanced pose
+- Frame 3: RIGHT FOOT FORWARD - Right leg stepped forward (visible extending down-right), cape settling, body tilts slightly right
+
+ANIMATION NOTES:
+- Ping-pong cycle: 1-2-3-2-1-2-3... creates continuous walking
+- From behind, show leg positions clearly through cape movement
 
 SECONDARY MOTION:
 - Cape dramatically shows back
@@ -170,7 +186,7 @@ SECONDARY MOTION:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `paladin_walk_up_strip.png`
+📁 **Guardar como:** `paladin_walk_up_strip.png`
 
 ---
 
@@ -185,12 +201,16 @@ ART STYLE: Funko Pop/Chibi, noble profile
 
 CHARACTER (right profile): Armored paladin, cape trailing, weapon visible
 
-?? 3-FRAME WALK CYCLE (SIDE VIEW):
-- Frame 1: BACK LEG EXTENDED - Rear boot pushing back, slight forward lean
-- Frame 2: NEUTRAL - Both legs together, upright noble stance
-- Frame 3: FRONT LEG EXTENDED - Front boot forward, slight forward lean
+⚔️ 3-FRAME WALK CYCLE (SIDE VIEW) - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left boot extended forward in front of body, right leg pushing back behind, slight forward lean
+- Frame 2: NEUTRAL STANCE - Both legs together under body, upright noble stance, balanced passing position
+- Frame 3: RIGHT FOOT FORWARD - Right boot extended forward in front of body, left leg back behind, slight forward lean
 
 NOTE: This sprite will be FLIPPED HORIZONTALLY for Walk Left
+
+ANIMATION NOTES:
+- Ping-pong cycle creates continuous walking motion
+- Side view should clearly show leg extension front and back
 
 SECONDARY MOTION:
 - Cape streams behind
@@ -200,7 +220,7 @@ SECONDARY MOTION:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `paladin_walk_right_strip.png`
+📁 **Guardar como:** `paladin_walk_right_strip.png`
 
 ---
 
@@ -213,7 +233,7 @@ SUBJECT: Paladin holy magic smite - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, divine light effects
 
-?? 3-FRAME CAST CYCLE:
+⚔️ 3-FRAME CAST CYCLE:
 - Frame 1: CHARGE - Raising weapon to sky, light gathering above, eyes closing
 - Frame 2: CHANNEL - Eyes open glowing bright, divine light pouring down, halo intensifying
 - Frame 3: RELEASE - Weapon thrust forward, massive beam of holy light, blinding flash
@@ -226,7 +246,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `paladin_cast_strip.png`
+📁 **Guardar como:** `paladin_cast_strip.png`
 
 ---
 
@@ -239,7 +259,7 @@ SUBJECT: Paladin death animation - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, light fading
 
-?? 3-FRAME DEATH SEQUENCE:
+⚔️ 3-FRAME DEATH SEQUENCE:
 - Frame 1: HIT - Recoiling, shocked, halo flickering, armor dented
 - Frame 2: COLLAPSE - Falling to knees, aura fading, weapon loosening
 - Frame 3: FALLEN - On ground, light gone, desaturated, 80% opacity
@@ -252,7 +272,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `paladin_death_strip.png`
+📁 **Guardar como:** `paladin_death_strip.png`
 
 ---
 
@@ -265,7 +285,7 @@ SUBJECT: Paladin taking damage - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, damage flash effect
 
-?? 3-FRAME HIT CYCLE:
+⚔️ 3-FRAME HIT CYCLE:
 - Frame 1: IMPACT - Flinching, armor clanking, red damage flash, aura disrupted
 - Frame 2: RECOIL - Maximum flinch, light scattered, surprised expression
 - Frame 3: RECOVERY - Standing firm, determined, aura restabilizing
@@ -278,13 +298,13 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `paladin_hit_strip.png`
+📁 **Guardar como:** `paladin_hit_strip.png`
 
 ---
 
-## ?? RESUMEN DE ARCHIVOS
+## 📊 RESUMEN DE ARCHIVOS
 
-| Animaci�n | Frames | Tama�o Strip | Archivo |
+| Animación | Frames | Tamaño Strip | Archivo |
 |-----------|--------|--------------|---------|
 | Walk Down | 3 | 1500x500 | `paladin_walk_down_strip.png` |
 | Walk Up | 3 | 1500x500 | `paladin_walk_up_strip.png` |
@@ -293,22 +313,22 @@ OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 | Death | 3 | 1500x500 | `paladin_death_strip.png` |
 | Hit | 3 | 1500x500 | `paladin_hit_strip.png` |
 
-**Total: 18 frames** (6 animaciones � 3 frames)
+**Total: 18 frames** (6 animaciones × 3 frames)
 
 ---
 
-## ?? Estructura de Carpetas
+## 📁 Estructura de Carpetas
 
 ```
 project/assets/sprites/players/paladin/
-??? walk/
-?   ??? paladin_walk_down_1.png - paladin_walk_down_3.png
-?   ??? paladin_walk_up_1.png - paladin_walk_up_3.png
-?   ??? paladin_walk_right_1.png - paladin_walk_right_3.png
-??? cast/
-?   ??? paladin_cast_1.png - paladin_cast_3.png
-??? death/
-?   ??? paladin_death_1.png - paladin_death_3.png
-??? hit/
-    ??? paladin_hit_1.png - paladin_hit_3.png
+├── walk/
+│   ├── paladin_walk_down_1.png - paladin_walk_down_3.png
+│   ├── paladin_walk_up_1.png - paladin_walk_up_3.png
+│   └── paladin_walk_right_1.png - paladin_walk_right_3.png
+├── cast/
+│   └── paladin_cast_1.png - paladin_cast_3.png
+├── death/
+│   └── paladin_death_1.png - paladin_death_3.png
+└── hit/
+    └── paladin_hit_1.png - paladin_hit_3.png
 ```

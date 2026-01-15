@@ -1,8 +1,8 @@
-# ?? Prompts para Animaciones del DRUID
+# 🌿 Prompts para Animaciones del DRUID
 
-## ?? IMPORTANTE: C�mo usar este documento
+## 📋 IMPORTANTE: Cómo usar este documento
 
-**Las IAs de im�genes NO pueden generar todos los sprites de una vez.**
+**Las IAs de imágenes NO pueden generar todos los sprites de una vez.**
 
 ### Flujo de trabajo:
 1. Ejecuta el **Prompt #0** primero para establecer el estilo del personaje
@@ -11,59 +11,70 @@
 
 ---
 
-## ?? Especificaciones T�cnicas
+## 📐 Especificaciones Técnicas
 
-- **Tama�o:** 500x500 p�xeles por frame
+- **Tamaño:** 500x500 píxeles por frame
 - **Formato:** PNG con fondo transparente
-- **Estilo:** Cartoon/Funko Pop (ver gu�a de estilo abajo)
+- **Estilo:** Cartoon/Funko Pop (ver guía de estilo abajo)
 - **Vista:** Top-down con ligera perspectiva 3/4
 - **TODAS las animaciones:** 3 frames (1500x500 horizontal strip)
 
 ---
 
-## ?? SISTEMA DE ANIMACI�N (Estilo Binding of Isaac)
+## 🎬 SISTEMA DE ANIMACIÓN (Estilo Binding of Isaac)
 
 **Este juego usa ciclos de 3 frames en ping-pong para TODAS las animaciones:**
 
-### Ciclo de animaci�n:
+### Ciclo de animación:
 ```
-Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
+Frame 1 → Frame 2 → Frame 3 → Frame 2 → Frame 1 → ...
 ```
 
-### ?? IMPORTANTE:
-- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el c�digo
+### 🦶 CICLO DE PIES PARA ANIMACIONES WALK (MUY IMPORTANTE):
+Para crear una sensación natural de caminar, los 3 frames deben seguir este patrón:
+
+| Frame | Posición de Pies | Descripción |
+|-------|------------------|-------------|
+| **Frame 1** | PIE IZQUIERDO ADELANTADO | El pie izquierdo está adelante, el derecho atrás |
+| **Frame 2** | POSICIÓN NEUTRAL | Ambos pies juntos o alineados, postura centrada |
+| **Frame 3** | PIE DERECHO ADELANTADO | El pie derecho está adelante, el izquierdo atrás |
+
+Este ciclo en ping-pong (1-2-3-2-1-2-3...) crea la ilusión de caminar continuo.
+
+### ⚠️ IMPORTANTE:
+- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el código
 - **TODAS las animaciones tienen 3 frames** - Walk, Cast, Death, Hit
-- Total sprites: **18 frames** (6 animaciones � 3 frames)
+- Total sprites: **18 frames** (6 animaciones × 3 frames)
 
 ---
 
-## ?? GU�A DE ESTILO - DRUID
+## 🎨 GUÍA DE ESTILO - DRUID
 
-### Caracter�sticas del personaje:
+### Características del personaje:
 
-| Caracter�stica | Descripci�n |
+| Característica | Descripción |
 |----------------|-------------|
-| **G�nero** | Mujer adulta |
-| **Complexi�n** | Esbelta, gr�cil, conectada con la naturaleza |
+| **Género** | Mujer adulta |
+| **Complexión** | Esbelta, grácil, conectada con la naturaleza |
 | **Cabello** | Largo, verde oscuro con flores y hojas entrelazadas |
-| **Expresi�n** | Serena, sabia, ojos verdes brillantes |
-| **T�nica** | Verde bosque con patrones de hojas, hasta los pies |
-| **Detalles** | Hojas flotando, peque�as flores brotando, aura verde |
-| **Arma** | Bast�n de madera viva con brotes y hojas |
+| **Expresión** | Serena, sabia, ojos verdes brillantes |
+| **Túnica** | Verde bosque con patrones de hojas, hasta los pies |
+| **Detalles** | Hojas flotando, pequeñas flores brotando, aura verde |
+| **Arma** | Bastón de madera viva con brotes y hojas |
 
 ### Paleta de colores:
-- **T�nica principal:** Verde bosque (#228B22)
-- **T�nica sombras:** Verde oscuro (#006400)
+- **Túnica principal:** Verde bosque (#228B22)
+- **Túnica sombras:** Verde oscuro (#006400)
 - **Highlights:** Verde lima (#32CD32)
 - **Hojas/Naturaleza:** Verde claro (#90EE90) a oscuro
 - **Cabello:** Verde oscuro (#2E8B57) con flores rosas (#FFB6C1)
 - **Piel:** Clara con tono verdoso (#F5F5DC)
-- **Staff madera:** Marr�n vivo (#8B4513) con brotes verdes
+- **Staff madera:** Marrón vivo (#8B4513) con brotes verdes
 - **Outline:** Verde muy oscuro (#013220)
 
 ---
 
-# ?? LISTA DE PROMPTS
+# 📝 LISTA DE PROMPTS
 
 ---
 
@@ -103,7 +114,7 @@ LAYOUT: 4 angles in 2x2 grid (front, back, left, right profile)
 OUTPUT: 1024x1024, transparent background
 ```
 
-?? **Guardar como:** `druid_reference.png`
+📁 **Guardar como:** `druid_reference.png`
 
 ---
 
@@ -118,15 +129,16 @@ ART STYLE: Funko Pop/Chibi, oversized head, thick outline, cel-shading
 
 CHARACTER: Female nature mage, green hair with flowers, forest robe, living wood staff
 
-?? 3-FRAME WALK CYCLE:
-- Frame 1: LEFT LEG OUT - Left leg stepped outward/forward, graceful stride, body tilt left
-- Frame 2: NEUTRAL - Both legs together, standing serene, centered pose
-- Frame 3: RIGHT LEG OUT - Right leg stepped outward/forward, flowing movement, body tilt right
+🌿 3-FRAME WALK CYCLE - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left foot/leg clearly stepped forward, right foot back, graceful stride, slight body lean left
+- Frame 2: NEUTRAL STANCE - Both feet together side by side, standing serene, centered balanced pose
+- Frame 3: RIGHT FOOT FORWARD - Right foot/leg clearly stepped forward, left foot back, flowing movement, slight body lean right
 
 ANIMATION NOTES:
-- Ping-pong cycle: 1-2-3-2-1-2-3...
-- Graceful, flowing walking motion
-- Robe sways like leaves in wind
+- Ping-pong cycle: 1-2-3-2-1-2-3... creates continuous walking
+- EXAGGERATE foot positions for clarity - make the forward foot CLEARLY visible ahead
+- Graceful, flowing walking motion like leaves in wind
+- Robe sways naturally with movement
 
 SECONDARY MOTION:
 - Leaves and petals float around her
@@ -138,7 +150,7 @@ COLORS: Robe #228B22, Hair #2E8B57, Flowers #FFB6C1, Skin #F5F5DC
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `druid_walk_down_strip.png`
+📁 **Guardar como:** `druid_walk_down_strip.png`
 
 ---
 
@@ -153,10 +165,14 @@ ART STYLE: Funko Pop/Chibi, thick outline, cel-shading
 
 CHARACTER (from behind): Female druid, long green hair flowing, forest robe, staff
 
-?? 3-FRAME WALK CYCLE (BACK VIEW):
-- Frame 1: LEFT LEG OUT - Left leg stepped outward, graceful stride
-- Frame 2: NEUTRAL - Both legs together, serene stance
-- Frame 3: RIGHT LEG OUT - Right leg stepped outward, flowing movement
+🌿 3-FRAME WALK CYCLE (BACK VIEW) - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left leg stepped forward (visible extending down-left), graceful stride, body tilts slightly left
+- Frame 2: NEUTRAL STANCE - Both legs together, serene balanced stance, centered pose
+- Frame 3: RIGHT FOOT FORWARD - Right leg stepped forward (visible extending down-right), flowing movement, body tilts slightly right
+
+ANIMATION NOTES:
+- Ping-pong cycle: 1-2-3-2-1-2-3... creates continuous walking
+- From behind, show leg positions clearly through robe movement
 
 SECONDARY MOTION:
 - Hair and leaves trail behind
@@ -166,7 +182,7 @@ SECONDARY MOTION:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `druid_walk_up_strip.png`
+📁 **Guardar como:** `druid_walk_up_strip.png`
 
 ---
 
@@ -181,12 +197,16 @@ ART STYLE: Funko Pop/Chibi, thick outline, cel-shading
 
 CHARACTER (right profile): Female druid, hair trailing, robe flowing, staff forward
 
-?? 3-FRAME WALK CYCLE (SIDE VIEW):
-- Frame 1: BACK LEG EXTENDED - Rear leg back, front under body, gentle forward lean
-- Frame 2: NEUTRAL - Both legs together, graceful stance
-- Frame 3: FRONT LEG EXTENDED - Front leg forward, rear under body, flowing stride
+🌿 3-FRAME WALK CYCLE (SIDE VIEW) - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left leg extended forward in front of body, right leg back behind, gentle forward lean
+- Frame 2: NEUTRAL STANCE - Both legs together under body, graceful upright stance, passing position
+- Frame 3: RIGHT FOOT FORWARD - Right leg extended forward in front of body, left leg back behind, flowing stride
 
 NOTE: This sprite will be FLIPPED HORIZONTALLY for Walk Left
+
+ANIMATION NOTES:
+- Ping-pong cycle creates continuous walking motion
+- Side view should clearly show leg extension front and back
 
 SECONDARY MOTION:
 - Robe and hair flow behind
@@ -196,7 +216,7 @@ SECONDARY MOTION:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `druid_walk_right_strip.png`
+📁 **Guardar como:** `druid_walk_right_strip.png`
 
 ---
 
@@ -209,7 +229,7 @@ SUBJECT: Druid nature spell casting - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, nature magic effects
 
-?? 3-FRAME CAST CYCLE:
+🌿 3-FRAME CAST CYCLE:
 - Frame 1: CHARGE - Raising staff, leaves and vines gathering, eyes glowing green
 - Frame 2: CHANNEL - Staff raised high, nature energy spiraling, flowers blooming around
 - Frame 3: RELEASE - Staff thrust forward, vine/thorn burst launching, petals exploding
@@ -222,7 +242,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `druid_cast_strip.png`
+📁 **Guardar como:** `druid_cast_strip.png`
 
 ---
 
@@ -235,7 +255,7 @@ SUBJECT: Druid death animation - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, nature wilting
 
-?? 3-FRAME DEATH SEQUENCE:
+🌿 3-FRAME DEATH SEQUENCE:
 - Frame 1: HIT - Recoiling, shocked, flowers wilting, leaves scattering
 - Frame 2: COLLAPSE - Falling forward, all plants dying, staff falling
 - Frame 3: FALLEN - On ground, wilted appearance, brown/gray colors, 80% opacity
@@ -248,7 +268,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `druid_death_strip.png`
+📁 **Guardar como:** `druid_death_strip.png`
 
 ---
 
@@ -261,7 +281,7 @@ SUBJECT: Druid taking damage - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, damage flash effect
 
-?? 3-FRAME HIT CYCLE:
+🌿 3-FRAME HIT CYCLE:
 - Frame 1: IMPACT - Flinching backward, red damage flash, leaves scattered
 - Frame 2: RECOIL - Maximum flinch, flowers drooping, pain expression
 - Frame 3: RECOVERY - Returning to stance, nature re-growing, determined
@@ -274,13 +294,13 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `druid_hit_strip.png`
+📁 **Guardar como:** `druid_hit_strip.png`
 
 ---
 
-## ?? RESUMEN DE ARCHIVOS
+## 📊 RESUMEN DE ARCHIVOS
 
-| Animaci�n | Frames | Tama�o Strip | Archivo |
+| Animación | Frames | Tamaño Strip | Archivo |
 |-----------|--------|--------------|---------|
 | Walk Down | 3 | 1500x500 | `druid_walk_down_strip.png` |
 | Walk Up | 3 | 1500x500 | `druid_walk_up_strip.png` |
@@ -289,22 +309,22 @@ OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 | Death | 3 | 1500x500 | `druid_death_strip.png` |
 | Hit | 3 | 1500x500 | `druid_hit_strip.png` |
 
-**Total: 18 frames** (6 animaciones � 3 frames)
+**Total: 18 frames** (6 animaciones × 3 frames)
 
 ---
 
-## ?? Estructura de Carpetas
+## 📁 Estructura de Carpetas
 
 ```
 project/assets/sprites/players/druid/
-??? walk/
-?   ??? druid_walk_down_1.png - druid_walk_down_3.png
-?   ??? druid_walk_up_1.png - druid_walk_up_3.png
-?   ??? druid_walk_right_1.png - druid_walk_right_3.png
-??? cast/
-?   ??? druid_cast_1.png - druid_cast_3.png
-??? death/
-?   ??? druid_death_1.png - druid_death_3.png
-??? hit/
-    ??? druid_hit_1.png - druid_hit_3.png
+├── walk/
+│   ├── druid_walk_down_1.png - druid_walk_down_3.png
+│   ├── druid_walk_up_1.png - druid_walk_up_3.png
+│   └── druid_walk_right_1.png - druid_walk_right_3.png
+├── cast/
+│   └── druid_cast_1.png - druid_cast_3.png
+├── death/
+│   └── druid_death_1.png - druid_death_3.png
+└── hit/
+    └── druid_hit_1.png - druid_hit_3.png
 ```

@@ -1,8 +1,8 @@
-# ?? Prompts para Animaciones del VOID WALKER
+# 🌌 Prompts para Animaciones del VOID WALKER
 
-## ?? IMPORTANTE: C�mo usar este documento
+## 📋 IMPORTANTE: Cómo usar este documento
 
-**Las IAs de im�genes NO pueden generar todos los sprites de una vez.**
+**Las IAs de imágenes NO pueden generar todos los sprites de una vez.**
 
 ### Flujo de trabajo:
 1. Ejecuta el **Prompt #0** primero para establecer el estilo del personaje
@@ -11,63 +11,64 @@
 
 ---
 
-## ?? Especificaciones T�cnicas
+## 📐 Especificaciones Técnicas
 
-- **Tama�o:** 500x500 p�xeles por frame
+- **Tamaño:** 500x500 píxeles por frame
 - **Formato:** PNG con fondo transparente
-- **Estilo:** Cartoon/Funko Pop (ver gu�a de estilo abajo)
+- **Estilo:** Cartoon/Funko Pop (ver guía de estilo abajo)
 - **Vista:** Top-down con ligera perspectiva 3/4
 - **TODAS las animaciones:** 3 frames (1500x500 horizontal strip)
 
 ---
 
-## ?? SISTEMA DE ANIMACI�N (Estilo Binding of Isaac)
+## 🎬 SISTEMA DE ANIMACIÓN (Estilo Binding of Isaac)
 
 **Este juego usa ciclos de 3 frames en ping-pong para TODAS las animaciones:**
 
-### Ciclo de animaci�n:
+### Ciclo de animación:
 ```
-Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
+Frame 1 → Frame 2 → Frame 3 → Frame 2 → Frame 1 → ...
 ```
 
-### ?? IMPORTANTE:
-- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el c�digo
+### ⚠️ IMPORTANTE:
+- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el código
 - **TODAS las animaciones tienen 3 frames** - Walk, Cast, Death, Hit
-- Total sprites: **18 frames** (6 animaciones � 3 frames)
+- Total sprites: **18 frames** (6 animaciones × 3 frames)
 
-### ?? NOTA ESPECIAL - VOID WALKER:
-- **NO CAMINA - FLOTA/TELETRANSPORTA** a trav�s del vac�o
-- Movimiento distorsionado, espacial, c�smico
-- Part�culas de vac�o y estrellas lo rodean
+### 🌌 NOTA ESPECIAL - VOID WALKER:
+- **NO CAMINA - FLOTA/TELETRANSPORTA** a través del vacío
+- Movimiento distorsionado, espacial, cósmico
+- Partículas de vacío y estrellas lo rodean
+- **NO USA CICLO DE PIES** - usa efecto de fase/distorsión
 
 ---
 
-## ?? GU�A DE ESTILO - VOID WALKER
+## 🎨 GUÍA DE ESTILO - VOID WALKER
 
-### Caracter�sticas del personaje:
+### Características del personaje:
 
-| Caracter�stica | Descripci�n |
+| Característica | Descripción |
 |----------------|-------------|
-| **G�nero** | Ambiguo, alien�gena |
-| **Complexi�n** | Et�rea, semi-transparente, fluctuante |
-| **Cabello** | P�rpura/negro c�smico con estrellas |
-| **Expresi�n** | Ojos blancos brillantes vac�os, sereno |
-| **Vestimenta** | T�nica p�rpura oscura con patrones de estrellas |
-| **Detalles** | Estrellas y galaxias flotando, portales peque�os |
-| **Arma** | Orbe del vac�o o manos que canalizan el cosmos |
+| **Género** | Ambiguo, alienígena |
+| **Complexión** | Etérea, semi-transparente, fluctuante |
+| **Cabello** | Púrpura/negro cósmico con estrellas |
+| **Expresión** | Ojos blancos brillantes vacíos, sereno |
+| **Vestimenta** | Túnica púrpura oscura con patrones de estrellas |
+| **Detalles** | Estrellas y galaxias flotando, portales pequeños |
+| **Arma** | Orbe del vacío o manos que canalizan el cosmos |
 
 ### Paleta de colores:
-- **T�nica:** P�rpura oscuro espacial (#1A0A30)
-- **Efectos c�smicos:** P�rpura (#6A0DAD) a azul (#00008B)
-- **Estrellas:** Blanco (#FFFFFF) y amarillo p�lido (#FFFACD)
-- **Ojos:** Blanco brillante vac�o (#FFFFFF)
-- **Portales:** P�rpura brillante (#9400D3) con borde azul
-- **Piel:** Gris azulado p�lido (#708090)
-- **Outline:** P�rpura muy oscuro (#0D0D1A)
+- **Túnica:** Púrpura oscuro espacial (#1A0A30)
+- **Efectos cósmicos:** Púrpura (#6A0DAD) a azul (#00008B)
+- **Estrellas:** Blanco (#FFFFFF) y amarillo pálido (#FFFACD)
+- **Ojos:** Blanco brillante vacío (#FFFFFF)
+- **Portales:** Púrpura brillante (#9400D3) con borde azul
+- **Piel:** Gris azulado pálido (#708090)
+- **Outline:** Púrpura muy oscuro (#0D0D1A)
 
 ---
 
-# ?? LISTA DE PROMPTS
+# 📝 LISTA DE PROMPTS
 
 ---
 
@@ -110,7 +111,7 @@ LAYOUT: 4 angles in 2x2 grid (front, back, left, right profile)
 OUTPUT: 1024x1024, transparent background
 ```
 
-?? **Guardar como:** `void_walker_reference.png`
+📁 **Guardar como:** `void_walker_reference.png`
 
 ---
 
@@ -125,16 +126,16 @@ ART STYLE: Funko Pop/Chibi, cosmic, void effects
 
 CHARACTER: Cosmic void mage, white empty eyes, purple star robes, floating galaxies
 
-?? 3-FRAME PHASE CYCLE (NO WALKING):
-- Frame 1: PHASE LEFT - Partial fade to left, void portal hint, stars trail right
-- Frame 2: SOLID - Fully visible, centered, stars orbiting normally
-- Frame 3: PHASE RIGHT - Partial fade to right, void portal hint, stars trail left
+🌌 3-FRAME PHASE CYCLE (NO WALKING - VOID PHASING):
+- Frame 1: PHASE LEFT - Body partially fading/phasing to the left, void portal hint on left, stars trail to the right
+- Frame 2: SOLID - Fully visible and centered, stars orbiting normally, stable cosmic form
+- Frame 3: PHASE RIGHT - Body partially fading/phasing to the right, void portal hint on right, stars trail to the left
 
 ANIMATION NOTES:
-- Ping-pong cycle: 1-2-3-2-1-2-3...
+- Ping-pong cycle: 1-2-3-2-1-2-3... creates continuous phasing motion
 - DOES NOT WALK - phases/blinks through space
 - Ethereal, dimensional shifting movement
-- Always slightly floating off ground
+- Always slightly floating off ground, no visible feet
 
 SECONDARY MOTION:
 - Stars and galaxies orbit and trail
@@ -146,7 +147,7 @@ COLORS: Robes #1A0A30, Eyes #FFFFFF, Stars #FFFFFF, Portals #9400D3
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `void_walker_walk_down_strip.png`
+📁 **Guardar como:** `void_walker_walk_down_strip.png`
 
 ---
 
@@ -161,20 +162,24 @@ ART STYLE: Funko Pop/Chibi, cosmic from behind
 
 CHARACTER (from behind): Void mage, starry hair flowing, cosmic robes
 
-?? 3-FRAME PHASE CYCLE (BACK VIEW):
-- Frame 1: PHASE LEFT - Fading left, stars trailing
-- Frame 2: SOLID - Fully visible, stars orbiting
-- Frame 3: PHASE RIGHT - Fading right, stars trailing
+🌌 3-FRAME PHASE CYCLE (BACK VIEW - VOID PHASING):
+- Frame 1: PHASE LEFT - Body fading to the left, stars trailing behind
+- Frame 2: SOLID - Fully visible from behind, stars orbiting
+- Frame 3: PHASE RIGHT - Body fading to the right, stars trailing
+
+ANIMATION NOTES:
+- NO FEET - cosmic form floats
+- Shows dimensional phasing from behind
 
 SECONDARY MOTION:
 - Starry hair visible from behind
-- Galaxies orbiting
-- Void shimmer effect
+- Galaxies orbiting body
+- Void shimmer effect around form
 
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `void_walker_walk_up_strip.png`
+📁 **Guardar como:** `void_walker_walk_up_strip.png`
 
 ---
 
@@ -189,22 +194,26 @@ ART STYLE: Funko Pop/Chibi, cosmic profile
 
 CHARACTER (right profile): Void mage, profile showing empty eye, starry hair trailing
 
-?? 3-FRAME PHASE CYCLE (SIDE VIEW):
-- Frame 1: TRAIL BACK - Body solid, cosmic trail behind
-- Frame 2: SOLID - Fully visible, centered phase
-- Frame 3: REACH FORWARD - Partial phase ahead, reaching into void
+🌌 3-FRAME PHASE CYCLE (SIDE VIEW - VOID PHASING):
+- Frame 1: TRAIL BACK - Body solid, cosmic trail behind, phasing from previous position
+- Frame 2: SOLID - Fully visible in profile, centered phase, stable
+- Frame 3: REACH FORWARD - Partial phase ahead, reaching into void, leading edge fading
 
 NOTE: This sprite will be FLIPPED HORIZONTALLY for Walk Left
 
+ANIMATION NOTES:
+- NO FEET - side profile shows floating cosmic form
+- Dimensional phasing side view
+
 SECONDARY MOTION:
 - Void ripple around form
-- Stars streaming
-- Dimensional distortion
+- Stars streaming behind
+- Dimensional distortion effect
 
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `void_walker_walk_right_strip.png`
+📁 **Guardar como:** `void_walker_walk_right_strip.png`
 
 ---
 
@@ -217,7 +226,7 @@ SUBJECT: Void Walker void magic casting - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, cosmic/void effects
 
-?? 3-FRAME CAST CYCLE:
+🌌 3-FRAME CAST CYCLE:
 - Frame 1: CHARGE - Raising hands, void portal opening before them, eyes glowing brighter
 - Frame 2: CHANNEL - Arms spread, massive void tear opening, stars being pulled in
 - Frame 3: RELEASE - Hands thrust forward, void blast/beam launching, cosmic explosion
@@ -230,7 +239,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `void_walker_cast_strip.png`
+📁 **Guardar como:** `void_walker_cast_strip.png`
 
 ---
 
@@ -243,7 +252,7 @@ SUBJECT: Void Walker death animation - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, cosmic collapse
 
-?? 3-FRAME DEATH SEQUENCE:
+🌌 3-FRAME DEATH SEQUENCE:
 - Frame 1: HIT - Recoiling, cosmic energy disrupted, stars scattering
 - Frame 2: COLLAPSE - Being pulled into self, collapsing into mini void
 - Frame 3: VANISHED - Only a small void remnant with fading stars, 80% opacity
@@ -256,7 +265,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `void_walker_death_strip.png`
+📁 **Guardar como:** `void_walker_death_strip.png`
 
 ---
 
@@ -269,10 +278,10 @@ SUBJECT: Void Walker taking damage - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, damage flash effect
 
-?? 3-FRAME HIT CYCLE:
+🌌 3-FRAME HIT CYCLE:
 - Frame 1: IMPACT - Flinching, red damage flash, cosmic field disrupted
-- Frame 2: RECOIL - Partial phase out (defensive), stars scattered
-- Frame 3: RECOVERY - Phasing back in, stars realigning, ready pose
+- Frame 2: RECOIL - Partial phase out (defensive reaction), stars scattered
+- Frame 3: RECOVERY - Phasing back in fully, stars realigning, ready pose
 
 EFFECTS:
 - Frame 1: Red tint overlay, cosmic disruption
@@ -282,13 +291,13 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `void_walker_hit_strip.png`
+📁 **Guardar como:** `void_walker_hit_strip.png`
 
 ---
 
-## ?? RESUMEN DE ARCHIVOS
+## 📊 RESUMEN DE ARCHIVOS
 
-| Animaci�n | Frames | Tama�o Strip | Archivo |
+| Animación | Frames | Tamaño Strip | Archivo |
 |-----------|--------|--------------|---------|
 | Phase Down | 3 | 1500x500 | `void_walker_walk_down_strip.png` |
 | Phase Up | 3 | 1500x500 | `void_walker_walk_up_strip.png` |
@@ -297,24 +306,24 @@ OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 | Death | 3 | 1500x500 | `void_walker_death_strip.png` |
 | Hit | 3 | 1500x500 | `void_walker_hit_strip.png` |
 
-**Total: 18 frames** (6 animaciones � 3 frames)
+**Total: 18 frames** (6 animaciones × 3 frames)
 
-**NOTA:** Void Walker **FLOTA/FASE**, no camina. Los archivos se llaman "walk" por consistencia con el c�digo.
+**NOTA:** Void Walker **FLOTA/FASE**, no camina. Los archivos se llaman "walk" por consistencia con el código.
 
 ---
 
-## ?? Estructura de Carpetas
+## 📁 Estructura de Carpetas
 
 ```
 project/assets/sprites/players/void_walker/
-??? walk/
-?   ??? void_walker_walk_down_1.png - void_walker_walk_down_3.png
-?   ??? void_walker_walk_up_1.png - void_walker_walk_up_3.png
-?   ??? void_walker_walk_right_1.png - void_walker_walk_right_3.png
-??? cast/
-?   ??? void_walker_cast_1.png - void_walker_cast_3.png
-??? death/
-?   ??? void_walker_death_1.png - void_walker_death_3.png
-??? hit/
-    ??? void_walker_hit_1.png - void_walker_hit_3.png
+├── walk/
+│   ├── void_walker_walk_down_1.png - void_walker_walk_down_3.png
+│   ├── void_walker_walk_up_1.png - void_walker_walk_up_3.png
+│   └── void_walker_walk_right_1.png - void_walker_walk_right_3.png
+├── cast/
+│   └── void_walker_cast_1.png - void_walker_cast_3.png
+├── death/
+│   └── void_walker_death_1.png - void_walker_death_3.png
+└── hit/
+    └── void_walker_hit_1.png - void_walker_hit_3.png
 ```

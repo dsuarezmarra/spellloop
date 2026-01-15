@@ -1,8 +1,8 @@
-# ?? Prompts para Animaciones del FROST MAGE
+# ❄️ Prompts para Animaciones del FROST MAGE
 
-## ?? IMPORTANTE: C�mo usar este documento
+## 📋 IMPORTANTE: Cómo usar este documento
 
-**Las IAs de im�genes NO pueden generar todos los sprites de una vez.**
+**Las IAs de imágenes NO pueden generar todos los sprites de una vez.**
 
 ### Flujo de trabajo:
 1. Ejecuta el **Prompt #0** primero para establecer el estilo del personaje
@@ -11,51 +11,62 @@
 
 ---
 
-## ?? Especificaciones T�cnicas
+## 📐 Especificaciones Técnicas
 
-- **Tama�o:** 500x500 p�xeles por frame
+- **Tamaño:** 500x500 píxeles por frame
 - **Formato:** PNG con fondo transparente
-- **Estilo:** Cartoon/Funko Pop (ver gu�a de estilo abajo)
+- **Estilo:** Cartoon/Funko Pop (ver guía de estilo abajo)
 - **Vista:** Top-down con ligera perspectiva 3/4
 - **TODAS las animaciones:** 3 frames (1500x500 horizontal strip)
 
 ---
 
-## ?? SISTEMA DE ANIMACI�N (Estilo Binding of Isaac)
+## 🎬 SISTEMA DE ANIMACIÓN (Estilo Binding of Isaac)
 
 **Este juego usa ciclos de 3 frames en ping-pong para TODAS las animaciones:**
 
-### Ciclo de animaci�n:
+### Ciclo de animación:
 ```
-Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
+Frame 1 → Frame 2 → Frame 3 → Frame 2 → Frame 1 → ...
 ```
 
-### ?? IMPORTANTE:
-- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el c�digo
+### 🦶 CICLO DE PIES PARA ANIMACIONES WALK (MUY IMPORTANTE):
+Para crear una sensación natural de caminar, los 3 frames deben seguir este patrón:
+
+| Frame | Posición de Pies | Descripción |
+|-------|------------------|-------------|
+| **Frame 1** | PIE IZQUIERDO ADELANTADO | El pie izquierdo está adelante, el derecho atrás |
+| **Frame 2** | POSICIÓN NEUTRAL | Ambos pies juntos o alineados, postura centrada |
+| **Frame 3** | PIE DERECHO ADELANTADO | El pie derecho está adelante, el izquierdo atrás |
+
+Este ciclo en ping-pong (1-2-3-2-1-2-3...) crea la ilusión de caminar continuo.
+
+### ⚠️ IMPORTANTE:
+- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el código
 - **TODAS las animaciones tienen 3 frames** - Walk, Cast, Death, Hit
-- Total sprites: **18 frames** (6 animaciones � 3 frames)
+- Total sprites: **18 frames** (6 animaciones × 3 frames)
 
 ---
 
-## ?? GU�A DE ESTILO - FROST MAGE
+## 🎨 GUÍA DE ESTILO - FROST MAGE
 
-### Caracter�sticas del personaje:
+### Características del personaje:
 
-| Caracter�stica | Descripci�n |
+| Característica | Descripción |
 |----------------|-------------|
-| **G�nero** | Hombre anciano |
-| **Complexi�n** | Delgado, encorvado ligeramente |
+| **Género** | Hombre anciano |
+| **Complexión** | Delgado, encorvado ligeramente |
 | **Cabello** | Barba larga blanca/plateada con escarcha |
-| **Expresi�n** | Amable, sabio, ojos brillantes azul hielo |
-| **T�nica** | Azul hielo larga hasta los pies, con capucha |
+| **Expresión** | Amable, sabio, ojos brillantes azul hielo |
+| **Túnica** | Azul hielo larga hasta los pies, con capucha |
 | **Detalles** | Cristales de hielo, escarcha en la ropa, aliento visible |
-| **Arma** | Bast�n de hielo con cristal cian brillante |
+| **Arma** | Bastón de hielo con cristal cian brillante |
 
 ### Paleta de colores:
-- **T�nica principal:** Azul hielo (#4A9CC9)
-- **T�nica sombras:** Azul profundo (#2A6A9C)
-- **T�nica highlights:** Blanco azulado (#B0E0FF)
-- **Piel:** Beige p�lido (#E8E4D8)
+- **Túnica principal:** Azul hielo (#4A9CC9)
+- **Túnica sombras:** Azul profundo (#2A6A9C)
+- **Túnica highlights:** Blanco azulado (#B0E0FF)
+- **Piel:** Beige pálido (#E8E4D8)
 - **Barba/Pelo:** Blanco con tinte azulado (#E8F4FF)
 - **Staff cristal:** Cian brillante (#66CCFF)
 - **Staff:** Hielo cristalizado (#A0D8FF)
@@ -63,7 +74,7 @@ Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
 
 ---
 
-# ?? LISTA DE PROMPTS
+# 📝 LISTA DE PROMPTS
 
 ---
 
@@ -103,7 +114,7 @@ LAYOUT: 4 angles in 2x2 grid (front, back, left, right profile)
 OUTPUT: 1024x1024, transparent background
 ```
 
-?? **Guardar como:** `frost_mage_reference.png`
+📁 **Guardar como:** `frost_mage_reference.png`
 
 ---
 
@@ -118,18 +129,20 @@ ART STYLE: Funko Pop/Chibi, oversized head, thick outline, cel-shading
 
 CHARACTER: Elderly ice wizard, ice-blue robe, white beard with frost, crystalline ice staff
 
-?? 3-FRAME WALK CYCLE:
-- Frame 1: LEFT LEG OUT - Left leg stepped outward/forward, right leg straight, slight body tilt left
-- Frame 2: NEUTRAL - Both legs together, standing straight, centered pose
-- Frame 3: RIGHT LEG OUT - Right leg stepped outward/forward, left leg straight, slight body tilt right
+❄️ 3-FRAME WALK CYCLE - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left foot/leg clearly stepped forward, right leg straight back, slight body tilt left
+- Frame 2: NEUTRAL STANCE - Both feet together side by side, standing straight, centered balanced pose
+- Frame 3: RIGHT FOOT FORWARD - Right foot/leg clearly stepped forward, left leg straight back, slight body tilt right
 
 ANIMATION NOTES:
-- Ping-pong cycle: 1-2-3-2-1-2-3...
-- Exaggerate leg positions for clarity
+- Ping-pong cycle: 1-2-3-2-1-2-3... creates continuous walking
+- EXAGGERATE foot positions for clarity - make the forward foot CLEARLY visible ahead
+- Elderly but steady walking motion
 - Long robe sways with leg movement
 
 SECONDARY MOTION:
-- Beard sways gently, ice crystals orbit staff
+- Beard sways gently with each step
+- Ice crystals orbit staff
 - Small frost particles trail behind
 
 COLORS: Robe #4A9CC9, Skin #E8E4D8, Beard #E8F4FF, Crystal #66CCFF
@@ -137,7 +150,7 @@ COLORS: Robe #4A9CC9, Skin #E8E4D8, Beard #E8F4FF, Crystal #66CCFF
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `frost_mage_walk_down_strip.png`
+📁 **Guardar como:** `frost_mage_walk_down_strip.png`
 
 ---
 
@@ -152,10 +165,14 @@ ART STYLE: Funko Pop/Chibi, thick outline, cel-shading
 
 CHARACTER (from behind): Elderly ice wizard, ice-blue robe, hood visible, ice staff
 
-?? 3-FRAME WALK CYCLE (BACK VIEW):
-- Frame 1: LEFT LEG OUT - Left leg stepped outward, body tilts slightly
-- Frame 2: NEUTRAL - Both legs together, standing straight
-- Frame 3: RIGHT LEG OUT - Right leg stepped outward, body tilts opposite
+❄️ 3-FRAME WALK CYCLE (BACK VIEW) - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left leg stepped forward (visible extending down-left), body tilts slightly left
+- Frame 2: NEUTRAL STANCE - Both legs together, standing straight, centered balanced pose
+- Frame 3: RIGHT FOOT FORWARD - Right leg stepped forward (visible extending down-right), body tilts slightly right
+
+ANIMATION NOTES:
+- Ping-pong cycle: 1-2-3-2-1-2-3... creates continuous walking
+- From behind, show leg positions clearly through robe movement
 
 SECONDARY MOTION:
 - Robe flows with movement, frost patterns visible
@@ -164,7 +181,7 @@ SECONDARY MOTION:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `frost_mage_walk_up_strip.png`
+📁 **Guardar como:** `frost_mage_walk_up_strip.png`
 
 ---
 
@@ -179,17 +196,21 @@ ART STYLE: Funko Pop/Chibi, thick outline, cel-shading
 
 CHARACTER (right profile): Elderly ice wizard, robe profile, frost beard, ice staff
 
-?? 3-FRAME WALK CYCLE (SIDE VIEW):
-- Frame 1: BACK LEG EXTENDED - Rear leg stretched back, front leg under body, leaning forward
-- Frame 2: NEUTRAL - Both legs together under body, upright stance
-- Frame 3: FRONT LEG EXTENDED - Front leg stretched forward, rear leg under body, leaning forward
+❄️ 3-FRAME WALK CYCLE (SIDE VIEW) - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left leg extended forward in front of body, right leg stretched back behind, leaning forward
+- Frame 2: NEUTRAL STANCE - Both legs together under body, upright balanced stance, passing position
+- Frame 3: RIGHT FOOT FORWARD - Right leg extended forward in front of body, left leg stretched back behind, leaning forward
 
 NOTE: This sprite will be FLIPPED HORIZONTALLY for Walk Left
+
+ANIMATION NOTES:
+- Ping-pong cycle creates continuous walking motion
+- Side view should clearly show leg extension front and back
 
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `frost_mage_walk_right_strip.png`
+📁 **Guardar como:** `frost_mage_walk_right_strip.png`
 
 ---
 
@@ -202,7 +223,7 @@ SUBJECT: Frost Mage ice spell casting - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, magical ice effects
 
-?? 3-FRAME CAST CYCLE:
+❄️ 3-FRAME CAST CYCLE:
 - Frame 1: CHARGE - Raising ice staff, frost particles gathering at crystal tip, cold mist rising
 - Frame 2: CHANNEL - Staff raised high, intense ice orb at tip, eyes glowing, maximum energy
 - Frame 3: RELEASE - Staff thrust forward, ice burst with snowflakes exploding, bright flash
@@ -215,7 +236,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `frost_mage_cast_strip.png`
+📁 **Guardar como:** `frost_mage_cast_strip.png`
 
 ---
 
@@ -228,7 +249,7 @@ SUBJECT: Frost Mage death animation - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, colors becoming frozen/desaturated
 
-?? 3-FRAME DEATH SEQUENCE:
+❄️ 3-FRAME DEATH SEQUENCE:
 - Frame 1: HIT - Recoiling backward, shocked expression, ice staff cracking, frost disrupted
 - Frame 2: COLLAPSE - Falling forward, crystal light fading, freezing effect spreading
 - Frame 3: FALLEN - On ground, partially frozen, ice crystals around body, 80% opacity
@@ -241,7 +262,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `frost_mage_death_strip.png`
+📁 **Guardar como:** `frost_mage_death_strip.png`
 
 ---
 
@@ -254,7 +275,7 @@ SUBJECT: Frost Mage taking damage - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, damage flash effect
 
-?? 3-FRAME HIT CYCLE:
+❄️ 3-FRAME HIT CYCLE:
 - Frame 1: IMPACT - Flinching backward, surprised expression, red damage flash, ice disrupted
 - Frame 2: RECOIL - Maximum flinch position, ice crystals scattered, pain expression
 - Frame 3: RECOVERY - Returning to stance, determined expression, ice reforming
@@ -267,13 +288,13 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `frost_mage_hit_strip.png`
+📁 **Guardar como:** `frost_mage_hit_strip.png`
 
 ---
 
-## ?? RESUMEN DE ARCHIVOS
+## 📊 RESUMEN DE ARCHIVOS
 
-| Animaci�n | Frames | Tama�o Strip | Archivo |
+| Animación | Frames | Tamaño Strip | Archivo |
 |-----------|--------|--------------|---------|
 | Walk Down | 3 | 1500x500 | `frost_mage_walk_down_strip.png` |
 | Walk Up | 3 | 1500x500 | `frost_mage_walk_up_strip.png` |
@@ -282,11 +303,11 @@ OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 | Death | 3 | 1500x500 | `frost_mage_death_strip.png` |
 | Hit | 3 | 1500x500 | `frost_mage_hit_strip.png` |
 
-**Total: 18 frames** (6 animaciones � 3 frames)
+**Total: 18 frames** (6 animaciones × 3 frames)
 
 ---
 
-## ?? Implementaci�n en Godot
+## 🎮 Implementación en Godot
 
 ### Todas las animaciones (ping-pong):
 ```gdscript
@@ -296,24 +317,24 @@ OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 
 ### Walk Left:
 ```gdscript
-sprite.flip_h = true  # cuando direcci�n es LEFT
-sprite.flip_h = false # cuando direcci�n es RIGHT
+sprite.flip_h = true  # cuando dirección es LEFT
+sprite.flip_h = false # cuando dirección es RIGHT
 ```
 
 ---
 
-## ?? Estructura de Carpetas
+## 📁 Estructura de Carpetas
 
 ```
 project/assets/sprites/players/frost_mage/
-??? walk/
-?   ??? frost_mage_walk_down_1.png - frost_mage_walk_down_3.png
-?   ??? frost_mage_walk_up_1.png - frost_mage_walk_up_3.png
-?   ??? frost_mage_walk_right_1.png - frost_mage_walk_right_3.png
-??? cast/
-?   ??? frost_mage_cast_1.png - frost_mage_cast_3.png
-??? death/
-?   ??? frost_mage_death_1.png - frost_mage_death_3.png
-??? hit/
-    ??? frost_mage_hit_1.png - frost_mage_hit_3.png
+├── walk/
+│   ├── frost_mage_walk_down_1.png - frost_mage_walk_down_3.png
+│   ├── frost_mage_walk_up_1.png - frost_mage_walk_up_3.png
+│   └── frost_mage_walk_right_1.png - frost_mage_walk_right_3.png
+├── cast/
+│   └── frost_mage_cast_1.png - frost_mage_cast_3.png
+├── death/
+│   └── frost_mage_death_1.png - frost_mage_death_3.png
+└── hit/
+    └── frost_mage_hit_1.png - frost_mage_hit_3.png
 ```

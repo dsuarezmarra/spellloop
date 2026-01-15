@@ -1,8 +1,8 @@
-# ?? Prompts para Animaciones del GEOMANCER
+# 🪨 Prompts para Animaciones del GEOMANCER
 
-## ?? IMPORTANTE: C�mo usar este documento
+## 📋 IMPORTANTE: Cómo usar este documento
 
-**Las IAs de im�genes NO pueden generar todos los sprites de una vez.**
+**Las IAs de imágenes NO pueden generar todos los sprites de una vez.**
 
 ### Flujo de trabajo:
 1. Ejecuta el **Prompt #0** primero para establecer el estilo del personaje
@@ -11,63 +11,74 @@
 
 ---
 
-## ?? Especificaciones T�cnicas
+## 📐 Especificaciones Técnicas
 
-- **Tama�o:** 500x500 p�xeles por frame
+- **Tamaño:** 500x500 píxeles por frame
 - **Formato:** PNG con fondo transparente
-- **Estilo:** Cartoon/Funko Pop (ver gu�a de estilo abajo)
+- **Estilo:** Cartoon/Funko Pop (ver guía de estilo abajo)
 - **Vista:** Top-down con ligera perspectiva 3/4
 - **TODAS las animaciones:** 3 frames (1500x500 horizontal strip)
 
 ---
 
-## ?? SISTEMA DE ANIMACI�N (Estilo Binding of Isaac)
+## 🎬 SISTEMA DE ANIMACIÓN (Estilo Binding of Isaac)
 
 **Este juego usa ciclos de 3 frames en ping-pong para TODAS las animaciones:**
 
-### Ciclo de animaci�n:
+### Ciclo de animación:
 ```
-Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
+Frame 1 → Frame 2 → Frame 3 → Frame 2 → Frame 1 → ...
 ```
 
-### ?? IMPORTANTE:
-- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el c�digo
+### 🦶 CICLO DE PIES PARA ANIMACIONES WALK (MUY IMPORTANTE):
+Para crear una sensación natural de caminar, los 3 frames deben seguir este patrón:
+
+| Frame | Posición de Pies | Descripción |
+|-------|------------------|-------------|
+| **Frame 1** | PIE IZQUIERDO ADELANTADO | El pie izquierdo está adelante, el derecho atrás |
+| **Frame 2** | POSICIÓN NEUTRAL | Ambos pies juntos o alineados, postura centrada |
+| **Frame 3** | PIE DERECHO ADELANTADO | El pie derecho está adelante, el izquierdo atrás |
+
+Este ciclo en ping-pong (1-2-3-2-1-2-3...) crea la ilusión de caminar continuo.
+
+### ⚠️ IMPORTANTE:
+- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el código
 - **TODAS las animaciones tienen 3 frames** - Walk, Cast, Death, Hit
-- Total sprites: **18 frames** (6 animaciones � 3 frames)
+- Total sprites: **18 frames** (6 animaciones × 3 frames)
 
-### ?? NOTA ESPECIAL - GEOMANCER:
-- **Es el personaje M�S LENTO** del juego
+### 🪨 NOTA ESPECIAL - GEOMANCER:
+- **Es el personaje MÁS LENTO** del juego
 - Sus pasos son PESADOS y deliberados
-- Cada paso tiene m�s "peso" visual
+- Cada paso tiene más "peso" visual
 
 ---
 
-## ?? GU�A DE ESTILO - GEOMANCER
+## 🎨 GUÍA DE ESTILO - GEOMANCER
 
-### Caracter�sticas del personaje:
+### Características del personaje:
 
-| Caracter�stica | Descripci�n |
+| Característica | Descripción |
 |----------------|-------------|
-| **G�nero** | Hombre mayor, tipo enano |
-| **Complexi�n** | Bajo, muy robusto, musculoso |
+| **Género** | Hombre mayor, tipo enano |
+| **Complexión** | Bajo, muy robusto, musculoso |
 | **Cabello** | Calvo, barba larga gris con gemas |
-| **Expresi�n** | Gru��n pero sabio, ojos brillando �mbar |
+| **Expresión** | Gruñón pero sabio, ojos brillando ámbar |
 | **Vestimenta** | Armadura de piedra/metal pesada, corta |
 | **Detalles** | Cristales incrustados, gemas flotantes, polvo de piedra |
 | **Arma** | Martillo de cristal o guantes de piedra |
 
 ### Paleta de colores:
 - **Armadura:** Gris piedra (#696969)
-- **Detalles piedra:** Marr�n roca (#8B4513)
-- **Cristales/Gemas:** Naranja �mbar (#FF8C00) y amarillo (#FFD700)
+- **Detalles piedra:** Marrón roca (#8B4513)
+- **Cristales/Gemas:** Naranja ámbar (#FF8C00) y amarillo (#FFD700)
 - **Barba:** Gris con destellos (#C0C0C0)
 - **Piel:** Bronceada curtida (#D2691E)
-- **Ojos:** �mbar brillante (#FFBF00)
+- **Ojos:** Ámbar brillante (#FFBF00)
 - **Outline:** Gris muy oscuro (#2F2F2F)
 
 ---
 
-# ?? LISTA DE PROMPTS
+# 📝 LISTA DE PROMPTS
 
 ---
 
@@ -110,7 +121,7 @@ LAYOUT: 4 angles in 2x2 grid (front, back, left, right profile)
 OUTPUT: 1024x1024, transparent background
 ```
 
-?? **Guardar como:** `geomancer_reference.png`
+📁 **Guardar como:** `geomancer_reference.png`
 
 ---
 
@@ -125,16 +136,17 @@ ART STYLE: Funko Pop/Chibi, stocky dwarf, heavy movement
 
 CHARACTER: Elderly dwarf earth mage, stone armor, gray beard with gems, floating crystals
 
-?? 3-FRAME WALK CYCLE (SLOW AND HEAVY):
-- Frame 1: LEFT LEG OUT - Left heavy boot STOMPED outward, ground impact, body shifted left
-- Frame 2: NEUTRAL - Both feet together, sturdy wide stance, catching balance
-- Frame 3: RIGHT LEG OUT - Right heavy boot STOMPED outward, ground impact, body shifted right
+🪨 3-FRAME WALK CYCLE (SLOW AND HEAVY) - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left heavy boot clearly STOMPED forward, right foot planted back, body shifted left, ground impact visual
+- Frame 2: NEUTRAL STANCE - Both feet together in sturdy wide stance, catching balance, centered heavy pose
+- Frame 3: RIGHT FOOT FORWARD - Right heavy boot clearly STOMPED forward, left foot planted back, body shifted right, ground impact visual
 
 ANIMATION NOTES:
-- Ping-pong cycle: 1-2-3-2-1-2-3...
+- Ping-pong cycle: 1-2-3-2-1-2-3... creates continuous walking
 - SLOWEST character - emphasize WEIGHT in each step
 - Wide, deliberate, heavy footfalls
-- Ground dust on each footfall
+- Ground dust/cracks on each footfall
+- EXAGGERATE foot positions - boots should be CLEARLY visible in forward position
 
 SECONDARY MOTION:
 - Crystals bob heavily with steps
@@ -146,7 +158,7 @@ COLORS: Armor #696969, Crystals #FF8C00, Beard #C0C0C0, Skin #D2691E
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `geomancer_walk_down_strip.png`
+📁 **Guardar como:** `geomancer_walk_down_strip.png`
 
 ---
 
@@ -161,10 +173,14 @@ ART STYLE: Funko Pop/Chibi, heavy dwarf from behind
 
 CHARACTER (from behind): Stocky dwarf, stone armor, beard visible at sides, crystals floating
 
-?? 3-FRAME WALK CYCLE (BACK VIEW - HEAVY):
-- Frame 1: LEFT LEG OUT - Left boot stomped, wide stance
-- Frame 2: NEUTRAL - Both feet together, sturdy
-- Frame 3: RIGHT LEG OUT - Right boot stomped, ground impact
+🪨 3-FRAME WALK CYCLE (BACK VIEW - HEAVY) - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left boot stomped forward (visible extending down-left), wide heavy stance, body shifted left
+- Frame 2: NEUTRAL STANCE - Both feet together, sturdy balanced stance, centered pose
+- Frame 3: RIGHT FOOT FORWARD - Right boot stomped forward (visible extending down-right), ground impact, body shifted right
+
+ANIMATION NOTES:
+- Ping-pong cycle: 1-2-3-2-1-2-3... creates continuous walking
+- Show heavy footsteps even from behind
 
 SECONDARY MOTION:
 - Heavy back armor visible
@@ -174,7 +190,7 @@ SECONDARY MOTION:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `geomancer_walk_up_strip.png`
+📁 **Guardar como:** `geomancer_walk_up_strip.png`
 
 ---
 
@@ -189,12 +205,17 @@ ART STYLE: Funko Pop/Chibi, heavy dwarf profile
 
 CHARACTER (right profile): Stocky dwarf, beard prominent, hammer/weapon forward
 
-?? 3-FRAME WALK CYCLE (SIDE VIEW - HEAVY):
-- Frame 1: BACK LEG EXTENDED - Rear boot pushing, heavy lean forward
-- Frame 2: NEUTRAL - Both legs together, wide sturdy stance
-- Frame 3: FRONT LEG EXTENDED - Front boot stomped, deliberate step
+🪨 3-FRAME WALK CYCLE (SIDE VIEW - HEAVY) - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left boot extended forward in front of body, right leg pushing back behind, heavy lean forward
+- Frame 2: NEUTRAL STANCE - Both legs together, wide sturdy stance, balanced passing position
+- Frame 3: RIGHT FOOT FORWARD - Right boot extended forward in front of body, left leg back behind, deliberate heavy step
 
 NOTE: This sprite will be FLIPPED HORIZONTALLY for Walk Left
+
+ANIMATION NOTES:
+- Ping-pong cycle creates continuous walking motion
+- Side view should clearly show leg extension front and back
+- Emphasize weight and slow deliberate movement
 
 SECONDARY MOTION:
 - Beard swings with movement
@@ -204,7 +225,7 @@ SECONDARY MOTION:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `geomancer_walk_right_strip.png`
+📁 **Guardar como:** `geomancer_walk_right_strip.png`
 
 ---
 
@@ -217,7 +238,7 @@ SUBJECT: Geomancer earth magic casting - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, earth/crystal magic effects
 
-?? 3-FRAME CAST CYCLE:
+🪨 3-FRAME CAST CYCLE:
 - Frame 1: CHARGE - STOMPING ground, crystals rising from below, eyes glowing amber
 - Frame 2: CHANNEL - Raising hands, massive crystals emerging, earth trembling
 - Frame 3: RELEASE - Hands thrust down, crystal/stone explosion upward, ground shattering
@@ -230,7 +251,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `geomancer_cast_strip.png`
+📁 **Guardar como:** `geomancer_cast_strip.png`
 
 ---
 
@@ -243,7 +264,7 @@ SUBJECT: Geomancer death animation - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, crystals shattering
 
-?? 3-FRAME DEATH SEQUENCE:
+🪨 3-FRAME DEATH SEQUENCE:
 - Frame 1: HIT - Recoiling back, crystals cracking, armor denting
 - Frame 2: COLLAPSE - Falling heavily, crystals shattering, weapon dropping
 - Frame 3: FALLEN - On ground, crystals crumbled, desaturated, 80% opacity
@@ -256,7 +277,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `geomancer_death_strip.png`
+📁 **Guardar como:** `geomancer_death_strip.png`
 
 ---
 
@@ -269,7 +290,7 @@ SUBJECT: Geomancer taking damage - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, damage flash effect
 
-?? 3-FRAME HIT CYCLE:
+🪨 3-FRAME HIT CYCLE:
 - Frame 1: IMPACT - Flinching slightly (he's tough), red damage flash, crystals rattled
 - Frame 2: RECOIL - Slight flinch, armor taking hit, grumpy expression
 - Frame 3: RECOVERY - Standing firm, crystals re-stabilizing, stubborn stance
@@ -282,13 +303,13 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `geomancer_hit_strip.png`
+📁 **Guardar como:** `geomancer_hit_strip.png`
 
 ---
 
-## ?? RESUMEN DE ARCHIVOS
+## 📊 RESUMEN DE ARCHIVOS
 
-| Animaci�n | Frames | Tama�o Strip | Archivo |
+| Animación | Frames | Tamaño Strip | Archivo |
 |-----------|--------|--------------|---------|
 | Walk Down | 3 | 1500x500 | `geomancer_walk_down_strip.png` |
 | Walk Up | 3 | 1500x500 | `geomancer_walk_up_strip.png` |
@@ -297,22 +318,22 @@ OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 | Death | 3 | 1500x500 | `geomancer_death_strip.png` |
 | Hit | 3 | 1500x500 | `geomancer_hit_strip.png` |
 
-**Total: 18 frames** (6 animaciones � 3 frames)
+**Total: 18 frames** (6 animaciones × 3 frames)
 
 ---
 
-## ?? Estructura de Carpetas
+## 📁 Estructura de Carpetas
 
 ```
 project/assets/sprites/players/geomancer/
-??? walk/
-?   ??? geomancer_walk_down_1.png - geomancer_walk_down_3.png
-?   ??? geomancer_walk_up_1.png - geomancer_walk_up_3.png
-?   ??? geomancer_walk_right_1.png - geomancer_walk_right_3.png
-??? cast/
-?   ??? geomancer_cast_1.png - geomancer_cast_3.png
-??? death/
-?   ??? geomancer_death_1.png - geomancer_death_3.png
-??? hit/
-    ??? geomancer_hit_1.png - geomancer_hit_3.png
+├── walk/
+│   ├── geomancer_walk_down_1.png - geomancer_walk_down_3.png
+│   ├── geomancer_walk_up_1.png - geomancer_walk_up_3.png
+│   └── geomancer_walk_right_1.png - geomancer_walk_right_3.png
+├── cast/
+│   └── geomancer_cast_1.png - geomancer_cast_3.png
+├── death/
+│   └── geomancer_death_1.png - geomancer_death_3.png
+└── hit/
+    └── geomancer_hit_1.png - geomancer_hit_3.png
 ```

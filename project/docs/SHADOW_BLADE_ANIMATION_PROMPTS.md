@@ -1,8 +1,8 @@
-# ??? Prompts para Animaciones del SHADOW BLADE
+# 🗡️ Prompts para Animaciones del SHADOW BLADE
 
-## ?? IMPORTANTE: C�mo usar este documento
+## 📋 IMPORTANTE: Cómo usar este documento
 
-**Las IAs de im�genes NO pueden generar todos los sprites de una vez.**
+**Las IAs de imágenes NO pueden generar todos los sprites de una vez.**
 
 ### Flujo de trabajo:
 1. Ejecuta el **Prompt #0** primero para establecer el estilo del personaje
@@ -11,47 +11,48 @@
 
 ---
 
-## ?? Especificaciones T�cnicas
+## 📐 Especificaciones Técnicas
 
-- **Tama�o:** 500x500 p�xeles por frame
+- **Tamaño:** 500x500 píxeles por frame
 - **Formato:** PNG con fondo transparente
-- **Estilo:** Cartoon/Funko Pop (ver gu�a de estilo abajo)
+- **Estilo:** Cartoon/Funko Pop (ver guía de estilo abajo)
 - **Vista:** Top-down con ligera perspectiva 3/4
 - **TODAS las animaciones:** 3 frames (1500x500 horizontal strip)
 
 ---
 
-## ?? SISTEMA DE ANIMACI�N (Estilo Binding of Isaac)
+## 🎬 SISTEMA DE ANIMACIÓN (Estilo Binding of Isaac)
 
 **Este juego usa ciclos de 3 frames en ping-pong para TODAS las animaciones:**
 
-### Ciclo de animaci�n:
+### Ciclo de animación:
 ```
-Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
+Frame 1 → Frame 2 → Frame 3 → Frame 2 → Frame 1 → ...
 ```
 
-### ?? IMPORTANTE:
-- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el c�digo
+### ⚠️ IMPORTANTE:
+- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el código
 - **TODAS las animaciones tienen 3 frames** - Walk, Cast, Death, Hit
-- Total sprites: **18 frames** (6 animaciones � 3 frames)
+- Total sprites: **18 frames** (6 animaciones × 3 frames)
 
-### ??? NOTA ESPECIAL - SHADOW BLADE:
+### 🗡️ NOTA ESPECIAL - SHADOW BLADE:
 - **NO CAMINA - FLOTA/DESLIZA** sobre las sombras
-- Movimiento fluido, et�reo, espectral
-- Sombras se mueven con �l como tent�culos
+- Movimiento fluido, etéreo, espectral
+- Sombras se mueven con él como tentáculos
+- **NO USA CICLO DE PIES** - usa movimiento de sombras laterales
 
 ---
 
-## ?? GU�A DE ESTILO - SHADOW BLADE
+## 🎨 GUÍA DE ESTILO - SHADOW BLADE
 
-### Caracter�sticas del personaje:
+### Características del personaje:
 
-| Caracter�stica | Descripci�n |
+| Característica | Descripción |
 |----------------|-------------|
-| **G�nero** | Ambiguo, misterioso |
-| **Complexi�n** | Esbelta, �gil, semi-transparente |
+| **Género** | Ambiguo, misterioso |
+| **Complexión** | Esbelta, ágil, semi-transparente |
 | **Cabello** | Negro como sombra, fluye como humo |
-| **Expresi�n** | Ojos rojos brillantes, resto del rostro oscuro |
+| **Expresión** | Ojos rojos brillantes, resto del rostro oscuro |
 | **Vestimenta** | Capa negra que se funde con sombras |
 | **Detalles** | Sombras vivientes, fragmentos oscuros flotando |
 | **Arma** | Dagas gemelas de sombra solidificada |
@@ -60,14 +61,14 @@ Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
 - **Cuerpo/Capa:** Negro profundo (#1A1A1A)
 - **Sombras activas:** Gris oscuro (#333333) a negro
 - **Ojos:** Rojo brillante (#FF0000)
-- **Destellos:** P�rpura oscuro (#4B0082)
-- **Bordes et�reos:** Gris humo (#696969)
+- **Destellos:** Púrpura oscuro (#4B0082)
+- **Bordes etéreos:** Gris humo (#696969)
 - **Dagas:** Negro con filo rojo (#8B0000)
 - **Outline:** Negro puro (#000000)
 
 ---
 
-# ?? LISTA DE PROMPTS
+# 📝 LISTA DE PROMPTS
 
 ---
 
@@ -110,7 +111,7 @@ LAYOUT: 4 angles in 2x2 grid (front, back, left, right profile)
 OUTPUT: 1024x1024, transparent background
 ```
 
-?? **Guardar como:** `shadow_blade_reference.png`
+📁 **Guardar como:** `shadow_blade_reference.png`
 
 ---
 
@@ -125,16 +126,16 @@ ART STYLE: Funko Pop/Chibi, shadowy, ethereal
 
 CHARACTER: Shadow assassin, red glowing eyes, black cloak, shadow tendrils, twin daggers
 
-??? 3-FRAME FLOAT CYCLE (NO WALKING):
-- Frame 1: SHADOW LEFT - Shadow tendrils extend left, slight tilt, eyes drift left
-- Frame 2: NEUTRAL - Centered floating, shadows coiled beneath, eyes forward
-- Frame 3: SHADOW RIGHT - Shadow tendrils extend right, slight tilt, eyes drift right
+🗡️ 3-FRAME FLOAT CYCLE (NO WALKING - SHADOW MOVEMENT):
+- Frame 1: SHADOW LEFT - Shadow tendrils extend to the left, body tilts slightly left, eyes drift left, shadows pool on left side
+- Frame 2: NEUTRAL - Centered floating, shadows coiled beneath in pool, eyes forward, balanced ethereal pose
+- Frame 3: SHADOW RIGHT - Shadow tendrils extend to the right, body tilts slightly right, eyes drift right, shadows pool on right side
 
 ANIMATION NOTES:
-- Ping-pong cycle: 1-2-3-2-1-2-3...
+- Ping-pong cycle: 1-2-3-2-1-2-3... creates continuous floating motion
 - DOES NOT WALK - glides on shadow pool
 - Ethereal, ghostly movement
-- Lower body is shadowy/smoky
+- Lower body is shadowy/smoky, no visible feet
 
 SECONDARY MOTION:
 - Shadow tendrils writhe and shift
@@ -146,7 +147,7 @@ COLORS: Body #1A1A1A, Eyes #FF0000, Shadows #333333, Highlights #4B0082
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `shadow_blade_walk_down_strip.png`
+📁 **Guardar como:** `shadow_blade_walk_down_strip.png`
 
 ---
 
@@ -161,20 +162,24 @@ ART STYLE: Funko Pop/Chibi, shadowy from behind
 
 CHARACTER (from behind): Shadow figure, cloak flowing, shadow pool beneath
 
-??? 3-FRAME FLOAT CYCLE (BACK VIEW):
-- Frame 1: SHADOW LEFT - Shadows extending left
-- Frame 2: NEUTRAL - Centered, shadows pooled
-- Frame 3: SHADOW RIGHT - Shadows extending right
+🗡️ 3-FRAME FLOAT CYCLE (BACK VIEW - SHADOW MOVEMENT):
+- Frame 1: SHADOW LEFT - Shadows extending to the left, body tilts slightly
+- Frame 2: NEUTRAL - Centered floating, shadows pooled beneath
+- Frame 3: SHADOW RIGHT - Shadows extending to the right, body tilts opposite
+
+ANIMATION NOTES:
+- NO FEET - floats on shadow pool
+- Ethereal back view showing cloak merging with shadows
 
 SECONDARY MOTION:
-- Cloak/shadows form back
-- Shadow tendrils visible
-- Ethereal dark particles
+- Cloak/shadows form back silhouette
+- Shadow tendrils visible from behind
+- Ethereal dark particles drift
 
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `shadow_blade_walk_up_strip.png`
+📁 **Guardar como:** `shadow_blade_walk_up_strip.png`
 
 ---
 
@@ -189,12 +194,16 @@ ART STYLE: Funko Pop/Chibi, shadow profile
 
 CHARACTER (right profile): Shadow assassin, single red eye visible, daggers ready
 
-??? 3-FRAME FLOAT CYCLE (SIDE VIEW):
-- Frame 1: LEAN FORWARD - Body tilting forward, shadows trailing
-- Frame 2: NEUTRAL - Straight floating, shadows centered
-- Frame 3: LEAN BACK - Body tilting back, shadows leading
+🗡️ 3-FRAME FLOAT CYCLE (SIDE VIEW - SHADOW MOVEMENT):
+- Frame 1: LEAN FORWARD - Body tilting forward, shadows trailing behind, aggressive float pose
+- Frame 2: NEUTRAL - Straight floating, shadows centered beneath, balanced
+- Frame 3: LEAN BACK - Body tilting back slightly, shadows leading ahead
 
 NOTE: This sprite will be FLIPPED HORIZONTALLY for Walk Left
+
+ANIMATION NOTES:
+- NO FEET - side profile shows shadow pool gliding
+- Ethereal side movement
 
 SECONDARY MOTION:
 - Shadow trail behind
@@ -204,7 +213,7 @@ SECONDARY MOTION:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `shadow_blade_walk_right_strip.png`
+📁 **Guardar como:** `shadow_blade_walk_right_strip.png`
 
 ---
 
@@ -217,7 +226,7 @@ SUBJECT: Shadow Blade shadow magic attack - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, shadow magic effects
 
-??? 3-FRAME CAST CYCLE:
+🗡️ 3-FRAME CAST CYCLE:
 - Frame 1: CHARGE - Raising daggers, shadows gathering densely, eyes glowing brighter
 - Frame 2: CHANNEL - Daggers crossed, massive shadow vortex forming, tendrils swirling
 - Frame 3: RELEASE - Daggers thrust forward, shadow blades/wave launching, darkness exploding
@@ -230,7 +239,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `shadow_blade_cast_strip.png`
+📁 **Guardar como:** `shadow_blade_cast_strip.png`
 
 ---
 
@@ -243,7 +252,7 @@ SUBJECT: Shadow Blade death animation - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, shadow dissipating
 
-??? 3-FRAME DEATH SEQUENCE:
+🗡️ 3-FRAME DEATH SEQUENCE:
 - Frame 1: HIT - Recoiling, shadows scattering, red eyes flickering
 - Frame 2: COLLAPSE - Dissolving into shadow particles, form losing cohesion
 - Frame 3: DISSIPATED - Just a shadow puddle with fading red glow, 80% opacity
@@ -256,7 +265,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `shadow_blade_death_strip.png`
+📁 **Guardar como:** `shadow_blade_death_strip.png`
 
 ---
 
@@ -269,7 +278,7 @@ SUBJECT: Shadow Blade taking damage - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, damage flash effect
 
-??? 3-FRAME HIT CYCLE:
+🗡️ 3-FRAME HIT CYCLE:
 - Frame 1: IMPACT - Flinching, red damage flash, shadows disrupted
 - Frame 2: RECOIL - Form fragmenting briefly, eyes flickering
 - Frame 3: RECOVERY - Shadows reforming, eyes steady, ready to strike
@@ -282,13 +291,13 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `shadow_blade_hit_strip.png`
+📁 **Guardar como:** `shadow_blade_hit_strip.png`
 
 ---
 
-## ?? RESUMEN DE ARCHIVOS
+## 📊 RESUMEN DE ARCHIVOS
 
-| Animaci�n | Frames | Tama�o Strip | Archivo |
+| Animación | Frames | Tamaño Strip | Archivo |
 |-----------|--------|--------------|---------|
 | Float Down | 3 | 1500x500 | `shadow_blade_walk_down_strip.png` |
 | Float Up | 3 | 1500x500 | `shadow_blade_walk_up_strip.png` |
@@ -297,24 +306,24 @@ OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 | Death | 3 | 1500x500 | `shadow_blade_death_strip.png` |
 | Hit | 3 | 1500x500 | `shadow_blade_hit_strip.png` |
 
-**Total: 18 frames** (6 animaciones � 3 frames)
+**Total: 18 frames** (6 animaciones × 3 frames)
 
-**NOTA:** Shadow Blade **FLOTA**, no camina. Los archivos se llaman "walk" por consistencia con el c�digo.
+**NOTA:** Shadow Blade **FLOTA**, no camina. Los archivos se llaman "walk" por consistencia con el código.
 
 ---
 
-## ?? Estructura de Carpetas
+## 📁 Estructura de Carpetas
 
 ```
 project/assets/sprites/players/shadow_blade/
-??? walk/
-?   ??? shadow_blade_walk_down_1.png - shadow_blade_walk_down_3.png
-?   ??? shadow_blade_walk_up_1.png - shadow_blade_walk_up_3.png
-?   ??? shadow_blade_walk_right_1.png - shadow_blade_walk_right_3.png
-??? cast/
-?   ??? shadow_blade_cast_1.png - shadow_blade_cast_3.png
-??? death/
-?   ??? shadow_blade_death_1.png - shadow_blade_death_3.png
-??? hit/
-    ??? shadow_blade_hit_1.png - shadow_blade_hit_3.png
+├── walk/
+│   ├── shadow_blade_walk_down_1.png - shadow_blade_walk_down_3.png
+│   ├── shadow_blade_walk_up_1.png - shadow_blade_walk_up_3.png
+│   └── shadow_blade_walk_right_1.png - shadow_blade_walk_right_3.png
+├── cast/
+│   └── shadow_blade_cast_1.png - shadow_blade_cast_3.png
+├── death/
+│   └── shadow_blade_death_1.png - shadow_blade_death_3.png
+└── hit/
+    └── shadow_blade_hit_1.png - shadow_blade_hit_3.png
 ```

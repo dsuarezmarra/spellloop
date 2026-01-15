@@ -1,8 +1,8 @@
-# ? Prompts para Animaciones del ARCANIST
+# 🔮 Prompts para Animaciones del ARCANIST
 
-## ?? IMPORTANTE: C�mo usar este documento
+## 📋 IMPORTANTE: Cómo usar este documento
 
-**Las IAs de im�genes NO pueden generar todos los sprites de una vez.**
+**Las IAs de imágenes NO pueden generar todos los sprites de una vez.**
 
 ### Flujo de trabajo:
 1. Ejecuta el **Prompt #0** primero para establecer el estilo del personaje
@@ -11,59 +11,70 @@
 
 ---
 
-## ?? Especificaciones T�cnicas
+## 📐 Especificaciones Técnicas
 
-- **Tama�o:** 500x500 p�xeles por frame
+- **Tamaño:** 500x500 píxeles por frame
 - **Formato:** PNG con fondo transparente
-- **Estilo:** Cartoon/Funko Pop (ver gu�a de estilo abajo)
+- **Estilo:** Cartoon/Funko Pop (ver guía de estilo abajo)
 - **Vista:** Top-down con ligera perspectiva 3/4
 - **TODAS las animaciones:** 3 frames (1500x500 horizontal strip)
 
 ---
 
-## ?? SISTEMA DE ANIMACI�N (Estilo Binding of Isaac)
+## 🎬 SISTEMA DE ANIMACIÓN (Estilo Binding of Isaac)
 
 **Este juego usa ciclos de 3 frames en ping-pong para TODAS las animaciones:**
 
-### Ciclo de animaci�n:
+### Ciclo de animación:
 ```
-Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
+Frame 1 → Frame 2 → Frame 3 → Frame 2 → Frame 1 → ...
 ```
 
-### ?? IMPORTANTE:
-- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el c�digo
+### 🦶 CICLO DE PIES PARA ANIMACIONES WALK (MUY IMPORTANTE):
+Para crear una sensación natural de caminar, los 3 frames deben seguir este patrón:
+
+| Frame | Posición de Pies | Descripción |
+|-------|------------------|-------------|
+| **Frame 1** | PIE IZQUIERDO ADELANTADO | El pie izquierdo está adelante, el derecho atrás |
+| **Frame 2** | POSICIÓN NEUTRAL | Ambos pies juntos o alineados, postura centrada |
+| **Frame 3** | PIE DERECHO ADELANTADO | El pie derecho está adelante, el izquierdo atrás |
+
+Este ciclo en ping-pong (1-2-3-2-1-2-3...) crea la ilusión de caminar continuo.
+
+### ⚠️ IMPORTANTE:
+- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el código
 - **TODAS las animaciones tienen 3 frames** - Walk, Cast, Death, Hit
-- Total sprites: **18 frames** (6 animaciones � 3 frames)
+- Total sprites: **18 frames** (6 animaciones × 3 frames)
 
 ---
 
-## ?? GU�A DE ESTILO - ARCANIST
+## 🎨 GUÍA DE ESTILO - ARCANIST
 
-### Caracter�sticas del personaje:
+### Características del personaje:
 
-| Caracter�stica | Descripci�n |
+| Característica | Descripción |
 |----------------|-------------|
-| **G�nero** | Hombre joven |
-| **Complexi�n** | Delgado, estudioso |
-| **Cabello** | Corto, desordenado, p�rpura oscuro |
-| **Expresi�n** | Curioso, concentrado, ojos brillantes p�rpura |
-| **T�nica** | P�rpura/violeta con runas arcanas brillantes |
-| **Detalles** | Runas flotantes, energ�a arcana, libro de hechizos |
-| **Arma** | Orbe arcano flotante o tomo m�gico |
+| **Género** | Hombre joven |
+| **Complexión** | Delgado, estudioso |
+| **Cabello** | Corto, desordenado, púrpura oscuro |
+| **Expresión** | Curioso, concentrado, ojos brillantes púrpura |
+| **Túnica** | Púrpura/violeta con runas arcanas brillantes |
+| **Detalles** | Runas flotantes, energía arcana, libro de hechizos |
+| **Arma** | Orbe arcano flotante o tomo mágico |
 
 ### Paleta de colores:
-- **T�nica principal:** P�rpura profundo (#6A0DAD)
-- **T�nica sombras:** Violeta oscuro (#4B0082)
+- **Túnica principal:** Púrpura profundo (#6A0DAD)
+- **Túnica sombras:** Violeta oscuro (#4B0082)
 - **Highlights:** Lavanda brillante (#E6E6FA)
-- **Runas/Magia:** Rosa arcano (#FF00FF) a p�rpura
-- **Cabello:** P�rpura oscuro (#483D8B)
-- **Piel:** P�lida (#FAF0E6)
+- **Runas/Magia:** Rosa arcano (#FF00FF) a púrpura
+- **Cabello:** Púrpura oscuro (#483D8B)
+- **Piel:** Pálida (#FAF0E6)
 - **Orbe arcano:** Rosa brillante (#FF69B4)
-- **Outline:** P�rpura muy oscuro (#1A0033)
+- **Outline:** Púrpura muy oscuro (#1A0033)
 
 ---
 
-# ?? LISTA DE PROMPTS
+# 📝 LISTA DE PROMPTS
 
 ---
 
@@ -103,7 +114,7 @@ LAYOUT: 4 angles in 2x2 grid (front, back, left, right profile)
 OUTPUT: 1024x1024, transparent background
 ```
 
-?? **Guardar como:** `arcanist_reference.png`
+📁 **Guardar como:** `arcanist_reference.png`
 
 ---
 
@@ -118,27 +129,28 @@ ART STYLE: Funko Pop/Chibi, oversized head, thick outline, cel-shading
 
 CHARACTER: Young arcane scholar, purple robe with glowing runes, floating arcane orb
 
-? 3-FRAME WALK CYCLE:
-- Frame 1: LEFT LEG OUT - Left leg stepped outward/forward, scholarly stride, body tilt left
-- Frame 2: NEUTRAL - Both legs together, slightly hunched, centered pose
-- Frame 3: RIGHT LEG OUT - Right leg stepped outward/forward, curious walk, body tilt right
+🔮 3-FRAME WALK CYCLE - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left foot/leg clearly stepped forward, right foot back, scholarly stride, slight body lean left
+- Frame 2: NEUTRAL STANCE - Both feet together side by side, slightly hunched scholarly pose, centered balanced position
+- Frame 3: RIGHT FOOT FORWARD - Right foot/leg clearly stepped forward, left foot back, curious walk, slight body lean right
 
 ANIMATION NOTES:
-- Ping-pong cycle: 1-2-3-2-1-2-3...
-- Slightly bookish walking motion
+- Ping-pong cycle: 1-2-3-2-1-2-3... creates continuous walking
+- EXAGGERATE foot positions for clarity - make the forward foot CLEARLY visible ahead
+- Slightly bookish, curious walking motion
 - Robe sways with movement
 
 SECONDARY MOTION:
-- Arcane runes float and orbit
-- Orb bobs gently
-- Magical particles trail
+- Arcane runes float and orbit around him
+- Orb bobs gently with each step
+- Magical particles trail behind
 
 COLORS: Robe #6A0DAD, Hair #483D8B, Orb #FF69B4, Runes #FF00FF
 
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `arcanist_walk_down_strip.png`
+📁 **Guardar como:** `arcanist_walk_down_strip.png`
 
 ---
 
@@ -153,10 +165,14 @@ ART STYLE: Funko Pop/Chibi, thick outline, cel-shading
 
 CHARACTER (from behind): Arcane scholar, purple robe, floating orb, glowing runes
 
-? 3-FRAME WALK CYCLE (BACK VIEW):
-- Frame 1: LEFT LEG OUT - Left leg stepped outward, scholarly stride
-- Frame 2: NEUTRAL - Both legs together, studying posture
-- Frame 3: RIGHT LEG OUT - Right leg stepped outward, curious walk
+🔮 3-FRAME WALK CYCLE (BACK VIEW) - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left leg stepped forward (visible extending down-left), scholarly stride, body tilts slightly left
+- Frame 2: NEUTRAL STANCE - Both legs together, studying posture, centered balanced pose
+- Frame 3: RIGHT FOOT FORWARD - Right leg stepped forward (visible extending down-right), curious walk, body tilts slightly right
+
+ANIMATION NOTES:
+- Ping-pong cycle: 1-2-3-2-1-2-3... creates continuous walking
+- From behind, show leg positions clearly through robe movement
 
 SECONDARY MOTION:
 - Runes visible on back of robe
@@ -166,7 +182,7 @@ SECONDARY MOTION:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `arcanist_walk_up_strip.png`
+📁 **Guardar como:** `arcanist_walk_up_strip.png`
 
 ---
 
@@ -181,12 +197,16 @@ ART STYLE: Funko Pop/Chibi, thick outline, cel-shading
 
 CHARACTER (right profile): Arcane scholar, profile view, orb floating ahead, runes trailing
 
-? 3-FRAME WALK CYCLE (SIDE VIEW):
-- Frame 1: BACK LEG EXTENDED - Rear leg back, front under body, leaning forward curiously
-- Frame 2: NEUTRAL - Both legs together, studious stance
-- Frame 3: FRONT LEG EXTENDED - Front leg forward, rear under body, eager stride
+🔮 3-FRAME WALK CYCLE (SIDE VIEW) - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left leg extended forward in front of body, right leg back behind, leaning forward curiously
+- Frame 2: NEUTRAL STANCE - Both legs together under body, studious upright stance, passing position
+- Frame 3: RIGHT FOOT FORWARD - Right leg extended forward in front of body, left leg back behind, eager scholarly stride
 
 NOTE: This sprite will be FLIPPED HORIZONTALLY for Walk Left
+
+ANIMATION NOTES:
+- Ping-pong cycle creates continuous walking motion
+- Side view should clearly show leg extension front and back
 
 SECONDARY MOTION:
 - Robe trails behind
@@ -196,7 +216,7 @@ SECONDARY MOTION:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `arcanist_walk_right_strip.png`
+📁 **Guardar como:** `arcanist_walk_right_strip.png`
 
 ---
 
@@ -209,7 +229,7 @@ SUBJECT: Arcanist arcane spell casting - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, arcane magic effects
 
-? 3-FRAME CAST CYCLE:
+🔮 3-FRAME CAST CYCLE:
 - Frame 1: CHARGE - Raising hands/orb, arcane symbols gathering, eyes glowing bright
 - Frame 2: CHANNEL - Orb raised high, massive arcane circle forming, runes spinning
 - Frame 3: RELEASE - Hands thrust forward, arcane beam/burst launching, symbol explosion
@@ -222,7 +242,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `arcanist_cast_strip.png`
+📁 **Guardar como:** `arcanist_cast_strip.png`
 
 ---
 
@@ -235,7 +255,7 @@ SUBJECT: Arcanist death animation - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, magic fading
 
-? 3-FRAME DEATH SEQUENCE:
+🔮 3-FRAME DEATH SEQUENCE:
 - Frame 1: HIT - Recoiling, shocked, runes shattering, orb flickering
 - Frame 2: COLLAPSE - Falling forward, all magic fading, orb falling
 - Frame 3: FALLEN - On ground, no runes, desaturated colors, 80% opacity
@@ -248,7 +268,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `arcanist_death_strip.png`
+📁 **Guardar como:** `arcanist_death_strip.png`
 
 ---
 
@@ -261,7 +281,7 @@ SUBJECT: Arcanist taking damage - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, damage flash effect
 
-? 3-FRAME HIT CYCLE:
+🔮 3-FRAME HIT CYCLE:
 - Frame 1: IMPACT - Flinching backward, red damage flash, runes scattered
 - Frame 2: RECOIL - Maximum flinch, orb flickering, surprised expression
 - Frame 3: RECOVERY - Returning to stance, runes reforming, focused expression
@@ -274,13 +294,13 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `arcanist_hit_strip.png`
+📁 **Guardar como:** `arcanist_hit_strip.png`
 
 ---
 
-## ?? RESUMEN DE ARCHIVOS
+## 📊 RESUMEN DE ARCHIVOS
 
-| Animaci�n | Frames | Tama�o Strip | Archivo |
+| Animación | Frames | Tamaño Strip | Archivo |
 |-----------|--------|--------------|---------|
 | Walk Down | 3 | 1500x500 | `arcanist_walk_down_strip.png` |
 | Walk Up | 3 | 1500x500 | `arcanist_walk_up_strip.png` |
@@ -289,22 +309,22 @@ OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 | Death | 3 | 1500x500 | `arcanist_death_strip.png` |
 | Hit | 3 | 1500x500 | `arcanist_hit_strip.png` |
 
-**Total: 18 frames** (6 animaciones � 3 frames)
+**Total: 18 frames** (6 animaciones × 3 frames)
 
 ---
 
-## ?? Estructura de Carpetas
+## 📁 Estructura de Carpetas
 
 ```
 project/assets/sprites/players/arcanist/
-??? walk/
-?   ??? arcanist_walk_down_1.png - arcanist_walk_down_3.png
-?   ??? arcanist_walk_up_1.png - arcanist_walk_up_3.png
-?   ??? arcanist_walk_right_1.png - arcanist_walk_right_3.png
-??? cast/
-?   ??? arcanist_cast_1.png - arcanist_cast_3.png
-??? death/
-?   ??? arcanist_death_1.png - arcanist_death_3.png
-??? hit/
-    ??? arcanist_hit_1.png - arcanist_hit_3.png
+├── walk/
+│   ├── arcanist_walk_down_1.png - arcanist_walk_down_3.png
+│   ├── arcanist_walk_up_1.png - arcanist_walk_up_3.png
+│   └── arcanist_walk_right_1.png - arcanist_walk_right_3.png
+├── cast/
+│   └── arcanist_cast_1.png - arcanist_cast_3.png
+├── death/
+│   └── arcanist_death_1.png - arcanist_death_3.png
+└── hit/
+    └── arcanist_hit_1.png - arcanist_hit_3.png
 ```

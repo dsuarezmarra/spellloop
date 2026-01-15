@@ -1,8 +1,8 @@
-# ?? Prompts para Animaciones del PYROMANCER
+# 🔥 Prompts para Animaciones del PYROMANCER
 
-## ?? IMPORTANTE: C�mo usar este documento
+## 📋 IMPORTANTE: Cómo usar este documento
 
-**Las IAs de im�genes NO pueden generar todos los sprites de una vez.**
+**Las IAs de imágenes NO pueden generar todos los sprites de una vez.**
 
 ### Flujo de trabajo:
 1. Ejecuta el **Prompt #0** primero para establecer el estilo del personaje
@@ -11,59 +11,70 @@
 
 ---
 
-## ?? Especificaciones T�cnicas
+## 📐 Especificaciones Técnicas
 
-- **Tama�o:** 500x500 p�xeles por frame
+- **Tamaño:** 500x500 píxeles por frame
 - **Formato:** PNG con fondo transparente
-- **Estilo:** Cartoon/Funko Pop (ver gu�a de estilo abajo)
+- **Estilo:** Cartoon/Funko Pop (ver guía de estilo abajo)
 - **Vista:** Top-down con ligera perspectiva 3/4
 - **TODAS las animaciones:** 3 frames (1500x500 horizontal strip)
 
 ---
 
-## ?? SISTEMA DE ANIMACI�N (Estilo Binding of Isaac)
+## 🎬 SISTEMA DE ANIMACIÓN (Estilo Binding of Isaac)
 
 **Este juego usa ciclos de 3 frames en ping-pong para TODAS las animaciones:**
 
-### Ciclo de animaci�n:
+### Ciclo de animación:
 ```
-Frame 1 ? Frame 2 ? Frame 3 ? Frame 2 ? Frame 1 ? ...
+Frame 1 → Frame 2 → Frame 3 → Frame 2 → Frame 1 → ...
 ```
 
-### ?? IMPORTANTE:
-- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el c�digo
+### 🦶 CICLO DE PIES PARA ANIMACIONES WALK (MUY IMPORTANTE):
+Para crear una sensación natural de caminar, los 3 frames deben seguir este patrón:
+
+| Frame | Posición de Pies | Descripción |
+|-------|------------------|-------------|
+| **Frame 1** | PIE IZQUIERDO ADELANTADO | El pie izquierdo está adelante, el derecho atrás |
+| **Frame 2** | POSICIÓN NEUTRAL | Ambos pies juntos o alineados, postura centrada |
+| **Frame 3** | PIE DERECHO ADELANTADO | El pie derecho está adelante, el izquierdo atrás |
+
+Este ciclo en ping-pong (1-2-3-2-1-2-3...) crea la ilusión de caminar continuo.
+
+### ⚠️ IMPORTANTE:
+- **Walk Left NO se genera** - Se voltea horizontalmente el sprite de Walk Right en el código
 - **TODAS las animaciones tienen 3 frames** - Walk, Cast, Death, Hit
-- Total sprites: **18 frames** (6 animaciones � 3 frames)
+- Total sprites: **18 frames** (6 animaciones × 3 frames)
 
 ---
 
-## ?? GU�A DE ESTILO - PYROMANCER
+## 🎨 GUÍA DE ESTILO - PYROMANCER
 
-### Caracter�sticas del personaje:
+### Características del personaje:
 
-| Caracter�stica | Descripci�n |
+| Característica | Descripción |
 |----------------|-------------|
-| **G�nero** | Hombre adulto |
-| **Complexi�n** | Musculoso, imponente |
+| **Género** | Hombre adulto |
+| **Complexión** | Musculoso, imponente |
 | **Cabello** | Corto, negro con puntas de fuego/naranja |
-| **Expresi�n** | Confiado, intenso, ojos con llamas |
-| **T�nica** | Roja/naranja con bordes de fuego, hasta rodillas |
-| **Detalles** | Llamas peque�as flotando alrededor, tatuajes de fuego |
+| **Expresión** | Confiado, intenso, ojos con llamas |
+| **Túnica** | Roja/naranja con bordes de fuego, hasta rodillas |
+| **Detalles** | Llamas pequeñas flotando alrededor, tatuajes de fuego |
 | **Arma** | Cetro de fuego con llama viva en la punta |
 
 ### Paleta de colores:
-- **T�nica principal:** Rojo fuego (#C41E3A)
-- **T�nica sombras:** Rojo oscuro (#8B0000)
+- **Túnica principal:** Rojo fuego (#C41E3A)
+- **Túnica sombras:** Rojo oscuro (#8B0000)
 - **Highlights:** Naranja brillante (#FF6600)
 - **Llamas:** Amarillo (#FFD700) a naranja (#FF4500) a rojo
 - **Cabello:** Negro (#1A1A1A) con puntas naranja
 - **Piel:** Bronceada (#D2691E)
 - **Staff llama:** Naranja vivo (#FF8C00)
-- **Outline:** Marr�n muy oscuro (#2D1B00)
+- **Outline:** Marrón muy oscuro (#2D1B00)
 
 ---
 
-# ?? LISTA DE PROMPTS
+# 📝 LISTA DE PROMPTS
 
 ---
 
@@ -104,7 +115,7 @@ LAYOUT: 4 angles in 2x2 grid (front, back, left, right profile)
 OUTPUT: 1024x1024, transparent background
 ```
 
-?? **Guardar como:** `pyromancer_reference.png`
+📁 **Guardar como:** `pyromancer_reference.png`
 
 ---
 
@@ -119,13 +130,14 @@ ART STYLE: Funko Pop/Chibi, oversized head, thick outline, cel-shading
 
 CHARACTER: Muscular fire mage, red/orange robe, fire staff with living flame
 
-?? 3-FRAME WALK CYCLE:
-- Frame 1: LEFT LEG OUT - Left leg stepped outward/forward, confident stride, body tilt left
-- Frame 2: NEUTRAL - Both legs together, standing proud, centered pose
-- Frame 3: RIGHT LEG OUT - Right leg stepped outward/forward, powerful stride, body tilt right
+🔥 3-FRAME WALK CYCLE - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left foot/leg clearly stepped forward, right foot back, confident stride, slight body lean left
+- Frame 2: NEUTRAL STANCE - Both feet together side by side, standing proud, centered balanced pose
+- Frame 3: RIGHT FOOT FORWARD - Right foot/leg clearly stepped forward, left foot back, powerful stride, slight body lean right
 
 ANIMATION NOTES:
-- Ping-pong cycle: 1-2-3-2-1-2-3...
+- Ping-pong cycle: 1-2-3-2-1-2-3... creates continuous walking
+- EXAGGERATE foot positions for clarity - make the forward foot CLEARLY visible ahead
 - Confident, powerful walking motion
 - Robe sways with movement
 
@@ -139,7 +151,7 @@ COLORS: Robe #C41E3A, Skin #D2691E, Flames #FF8C00, Hair tips #FF4500
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `pyromancer_walk_down_strip.png`
+📁 **Guardar como:** `pyromancer_walk_down_strip.png`
 
 ---
 
@@ -154,10 +166,14 @@ ART STYLE: Funko Pop/Chibi, thick outline, cel-shading
 
 CHARACTER (from behind): Fire mage, red robe, fire staff, flames around body
 
-?? 3-FRAME WALK CYCLE (BACK VIEW):
-- Frame 1: LEFT LEG OUT - Left leg stepped outward, powerful stride
-- Frame 2: NEUTRAL - Both legs together, standing strong
-- Frame 3: RIGHT LEG OUT - Right leg stepped outward, confident movement
+🔥 3-FRAME WALK CYCLE (BACK VIEW) - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left leg stepped forward (visible extending down-left), powerful stride, body tilts slightly left
+- Frame 2: NEUTRAL STANCE - Both legs together, standing strong, centered balanced pose
+- Frame 3: RIGHT FOOT FORWARD - Right leg stepped forward (visible extending down-right), confident movement, body tilts slightly right
+
+ANIMATION NOTES:
+- Ping-pong cycle: 1-2-3-2-1-2-3... creates continuous walking
+- From behind, show leg positions clearly through robe movement
 
 SECONDARY MOTION:
 - Flames trail behind as he walks
@@ -167,7 +183,7 @@ SECONDARY MOTION:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `pyromancer_walk_up_strip.png`
+📁 **Guardar como:** `pyromancer_walk_up_strip.png`
 
 ---
 
@@ -182,12 +198,16 @@ ART STYLE: Funko Pop/Chibi, thick outline, cel-shading
 
 CHARACTER (right profile): Fire mage, robe profile, fire staff forward, flames trailing
 
-?? 3-FRAME WALK CYCLE (SIDE VIEW):
-- Frame 1: BACK LEG EXTENDED - Rear leg back, front under body, aggressive forward lean
-- Frame 2: NEUTRAL - Both legs together, proud stance
-- Frame 3: FRONT LEG EXTENDED - Front leg forward, rear under body, powerful stride
+🔥 3-FRAME WALK CYCLE (SIDE VIEW) - FOOT POSITIONS ARE CRITICAL:
+- Frame 1: LEFT FOOT FORWARD - Left leg extended forward in front of body, right leg back behind, aggressive forward lean
+- Frame 2: NEUTRAL STANCE - Both legs together under body, proud upright stance, passing position
+- Frame 3: RIGHT FOOT FORWARD - Right leg extended forward in front of body, left leg back behind, powerful stride
 
 NOTE: This sprite will be FLIPPED HORIZONTALLY for Walk Left
+
+ANIMATION NOTES:
+- Ping-pong cycle creates continuous walking motion
+- Side view should clearly show leg extension front and back
 
 SECONDARY MOTION:
 - Flames stream behind from movement
@@ -196,7 +216,7 @@ SECONDARY MOTION:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `pyromancer_walk_right_strip.png`
+📁 **Guardar como:** `pyromancer_walk_right_strip.png`
 
 ---
 
@@ -209,7 +229,7 @@ SUBJECT: Pyromancer fire spell casting - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, intense fire effects
 
-?? 3-FRAME CAST CYCLE:
+🔥 3-FRAME CAST CYCLE:
 - Frame 1: CHARGE - Raising fire staff, flames gathering at tip, eyes glowing intensely
 - Frame 2: CHANNEL - Staff raised high, massive fireball forming, flames erupting around body
 - Frame 3: RELEASE - Staff thrust forward, fireball launching with explosion, fire trail
@@ -222,7 +242,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `pyromancer_cast_strip.png`
+📁 **Guardar como:** `pyromancer_cast_strip.png`
 
 ---
 
@@ -235,7 +255,7 @@ SUBJECT: Pyromancer death animation - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, flames dying out
 
-?? 3-FRAME DEATH SEQUENCE:
+🔥 3-FRAME DEATH SEQUENCE:
 - Frame 1: HIT - Recoiling, shocked, flames sputtering and disrupted
 - Frame 2: COLLAPSE - Falling forward, all flames dying out, staff falling
 - Frame 3: FALLEN - On ground, no flames, desaturated colors, 80% opacity
@@ -248,7 +268,7 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `pyromancer_death_strip.png`
+📁 **Guardar como:** `pyromancer_death_strip.png`
 
 ---
 
@@ -261,7 +281,7 @@ SUBJECT: Pyromancer taking damage - FACING CAMERA
 
 ART STYLE: Funko Pop/Chibi, damage flash effect
 
-?? 3-FRAME HIT CYCLE:
+🔥 3-FRAME HIT CYCLE:
 - Frame 1: IMPACT - Flinching, red damage flash, flames scattered
 - Frame 2: RECOIL - Maximum flinch, flames disrupted, angry expression
 - Frame 3: RECOVERY - Returning to stance, flames re-igniting, furious expression
@@ -274,13 +294,13 @@ EFFECTS:
 OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 ```
 
-?? **Guardar como:** `pyromancer_hit_strip.png`
+📁 **Guardar como:** `pyromancer_hit_strip.png`
 
 ---
 
-## ?? RESUMEN DE ARCHIVOS
+## 📊 RESUMEN DE ARCHIVOS
 
-| Animaci�n | Frames | Tama�o Strip | Archivo |
+| Animación | Frames | Tamaño Strip | Archivo |
 |-----------|--------|--------------|---------|
 | Walk Down | 3 | 1500x500 | `pyromancer_walk_down_strip.png` |
 | Walk Up | 3 | 1500x500 | `pyromancer_walk_up_strip.png` |
@@ -289,22 +309,22 @@ OUTPUT: Horizontal strip 1500x500 (3 frames of 500x500), transparent background
 | Death | 3 | 1500x500 | `pyromancer_death_strip.png` |
 | Hit | 3 | 1500x500 | `pyromancer_hit_strip.png` |
 
-**Total: 18 frames** (6 animaciones � 3 frames)
+**Total: 18 frames** (6 animaciones × 3 frames)
 
 ---
 
-## ?? Estructura de Carpetas
+## 📁 Estructura de Carpetas
 
 ```
 project/assets/sprites/players/pyromancer/
-??? walk/
-?   ??? pyromancer_walk_down_1.png - pyromancer_walk_down_3.png
-?   ??? pyromancer_walk_up_1.png - pyromancer_walk_up_3.png
-?   ??? pyromancer_walk_right_1.png - pyromancer_walk_right_3.png
-??? cast/
-?   ??? pyromancer_cast_1.png - pyromancer_cast_3.png
-??? death/
-?   ??? pyromancer_death_1.png - pyromancer_death_3.png
-??? hit/
-    ??? pyromancer_hit_1.png - pyromancer_hit_3.png
+├── walk/
+│   ├── pyromancer_walk_down_1.png - pyromancer_walk_down_3.png
+│   ├── pyromancer_walk_up_1.png - pyromancer_walk_up_3.png
+│   └── pyromancer_walk_right_1.png - pyromancer_walk_right_3.png
+├── cast/
+│   └── pyromancer_cast_1.png - pyromancer_cast_3.png
+├── death/
+│   └── pyromancer_death_1.png - pyromancer_death_3.png
+└── hit/
+    └── pyromancer_hit_1.png - pyromancer_hit_3.png
 ```
