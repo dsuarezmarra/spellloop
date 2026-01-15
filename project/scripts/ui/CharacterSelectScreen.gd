@@ -199,8 +199,8 @@ func _build_stats_panel() -> void:
 	stats_panel = PanelContainer.new()
 	stats_panel.name = "StatsPanel"
 	stats_panel.set_anchors_preset(Control.PRESET_CENTER)
-	stats_panel.anchor_top = 0.62
-	stats_panel.anchor_bottom = 0.62
+	stats_panel.anchor_top = 0.68
+	stats_panel.anchor_bottom = 0.68
 	stats_panel.offset_left = -280
 	stats_panel.offset_right = 280
 	stats_panel.offset_top = 0
