@@ -98,6 +98,8 @@ func _initialize_from_data(data: Dictionary) -> void:
 		"area": data.get("area", 1.0),
 		"duration": data.get("duration", 0.0),
 		"knockback": data.get("knockback", 50.0),
+		"effect_value": data.get("effect_value", 0.0),
+		"effect_duration": data.get("effect_duration", 0.0),
 	}
 	
 	# Aplicar stats base
@@ -109,10 +111,8 @@ func _initialize_from_data(data: Dictionary) -> void:
 	projectile_type = data.get("projectile_type", WeaponDatabase.ProjectileType.SINGLE)
 	color = data.get("color", Color.WHITE)
 	
-	# Efectos
+	# Efecto (el tipo, no el valor - el valor ya se aplica en _apply_base_stats)
 	effect = data.get("effect", "none")
-	effect_value = data.get("effect_value", 0.0)
-	effect_duration = data.get("effect_duration", 0.0)
 
 func _apply_base_stats() -> void:
 	"""Aplicar stats base sin modificadores"""
@@ -125,6 +125,8 @@ func _apply_base_stats() -> void:
 	area = base_stats.area
 	duration = base_stats.duration
 	knockback = base_stats.knockback
+	effect_value = base_stats.effect_value
+	effect_duration = base_stats.effect_duration
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SISTEMA DE NIVELES
@@ -181,8 +183,8 @@ func _recalculate_stats() -> void:
 				area *= upgrade.max_pierce_area_mult
 		
 		if upgrade.has("effect_mult"):
-			# Solo multiplicar si el arma tiene un efecto real (effect_value > 0)
-			if effect_value > 0:
+			# Solo multiplicar si el arma tiene un efecto real en base (effect_value > 0)
+			if base_stats.effect_value > 0:
 				effect_value *= upgrade.effect_mult
 			elif upgrade.has("no_effect_damage_mult"):
 				# Armas sin efecto reciben bonus de daño en su lugar
@@ -193,8 +195,8 @@ func _recalculate_stats() -> void:
 			knockback *= upgrade.all_mult
 			area *= upgrade.all_mult
 			projectile_speed *= upgrade.all_mult
-			# Solo aplicar a effect_value si el arma tiene un efecto real
-			if effect_value > 0:
+			# Solo aplicar a effect_value si el arma tiene un efecto real en base
+			if base_stats.effect_value > 0:
 				effect_value *= upgrade.all_mult
 
 func get_level_progress() -> float:
@@ -576,7 +578,7 @@ func _create_chain_projectile(player: Node2D, first_target: Node2D, dmg: float, 
 	"""Crear proyectil encadenante - usar ProjectileFactory"""
 	var chain_data = _build_projectile_data(dmg, crit)
 	chain_data["first_target"] = first_target
-	chain_data["chain_count"] = int(effect_value) if effect == "chain" else 2
+	chain_data["chain_count"] = roundi(effect_value) if effect == "chain" else 2
 	chain_data["is_chain"] = true
 	
 	ProjectileFactory.create_chain_projectile(player, chain_data)

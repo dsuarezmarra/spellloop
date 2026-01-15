@@ -431,7 +431,7 @@ class BeamEffect extends Node2D:
 			"lifesteal":
 				var player = _get_player()
 				if player and player.has_method("heal"):
-					var heal_amount = int(effect_value)
+					var heal_amount = roundi(effect_value)
 					player.heal(heal_amount)
 					FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
 			"bleed":
@@ -719,14 +719,14 @@ class AOEEffect extends Node2D:
 				# Curar al jugador por cada tick
 				var player = _get_player()
 				if player and player.has_method("heal"):
-					var heal_amount = int(effect_value)
+					var heal_amount = roundi(effect_value)
 					player.heal(heal_amount)
 					FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
 			"lifesteal_chain":
 				# Lifesteal (el chain se aplica en proyectiles, no en AOE)
 				var player2 = _get_player()
 				if player2 and player2.has_method("heal"):
-					var heal_amount2 = int(effect_value)
+					var heal_amount2 = roundi(effect_value)
 					player2.heal(heal_amount2)
 					FloatingText.spawn_heal(player2.global_position + Vector2(0, -30), heal_amount2)
 			"execute":
@@ -1062,7 +1062,7 @@ class OrbitalManager extends Node2D:
 			"lifesteal":
 				var player = _get_orbital_player()
 				if player and player.has_method("heal"):
-					var heal_amount = int(effect_value)
+					var heal_amount = roundi(effect_value)
 					player.heal(heal_amount)
 					FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
 			"bleed":
@@ -1073,7 +1073,7 @@ class OrbitalManager extends Node2D:
 					enemy.apply_shadow_mark(effect_value, modified_duration)
 			"chain":
 				# Crear salto de daño a enemigos cercanos
-				_apply_chain_damage(enemy, int(effect_value))
+				_apply_chain_damage(enemy, roundi(effect_value))
 	
 	func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
 		"""Aplicar daño encadenado a enemigos cercanos"""
@@ -1337,7 +1337,7 @@ class ChainProjectile extends Node2D:
 				# Curar al jugador por cada enemigo
 				var player = _get_player()
 				if player and player.has_method("heal"):
-					var heal_amount = int(effect_value)
+					var heal_amount = roundi(effect_value)
 					player.heal(heal_amount)
 					FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
 			"stun":

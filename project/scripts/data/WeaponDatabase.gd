@@ -382,11 +382,11 @@ const WEAPONS: Dictionary = {
 
 const LEVEL_UPGRADES: Dictionary = {
 	2: {"damage_mult": 1.2, "description": "+20% Daño"},
-	3: {"attack_speed_mult": 1.18, "no_cooldown_damage_mult": 1.1, "description": "+18% Vel. Ataque / +10% Daño"},
+	3: {"attack_speed_mult": 1.18, "no_cooldown_damage_mult": 1.1, "description": "+18% Vel. Ataque (o +10% Daño)"},
 	4: {"projectile_count_add": 1, "description": "+1 Proyectil"},
-	5: {"effect_mult": 1.5, "no_effect_damage_mult": 1.15, "description": "+50% Efecto / +15% Daño"},
+	5: {"effect_mult": 1.5, "no_effect_damage_mult": 1.15, "description": "+50% Poder de Efecto (o +15% Daño)"},
 	6: {"damage_mult": 1.25, "description": "+25% Daño"},
-	7: {"pierce_add": 2, "max_pierce_area_mult": 1.2, "description": "+2 Penetración / +20% Área"},
+	7: {"pierce_add": 2, "max_pierce_area_mult": 1.2, "description": "+2 Penetración (o +20% Área)"},
 	8: {"all_mult": 1.3, "description": "¡MÁXIMO! +30% a todo"}
 }
 
