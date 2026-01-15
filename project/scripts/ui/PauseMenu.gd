@@ -1169,8 +1169,9 @@ func _create_weapon_card(weapon) -> Control:
 	if attack_manager and attack_manager.has_method("get_weapon_full_stats"):
 		full_stats = attack_manager.get_weapon_full_stats(weapon)
 	
-	# Daño (mostrar con mejora si aplica)
+	# Usar full_stats si están disponibles, sino usar valores del weapon directamente
 	if not full_stats.is_empty():
+		# ═══ DAÑO ═══
 		var dmg_base = full_stats.get("damage_base", 0)
 		var dmg_final = full_stats.get("damage_final", 0)
 		if dmg_final != dmg_base:
@@ -1178,7 +1179,7 @@ func _create_weapon_card(weapon) -> Control:
 		else:
 			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%.0f" % dmg_final)
 		
-		# Velocidad de Ataque
+		# ═══ VELOCIDAD DE ATAQUE ═══
 		var as_base = full_stats.get("attack_speed_base", 1.0)
 		var as_final = full_stats.get("attack_speed_final", 1.0)
 		if abs(as_final - as_base) > 0.01:
@@ -1186,43 +1187,93 @@ func _create_weapon_card(weapon) -> Control:
 		else:
 			_add_weapon_stat(stats_grid, "⚡", "Vel. Ataque", "%.2f/s" % as_final)
 		
-		# Proyectiles
+		# ═══ COOLDOWN ═══
+		var cd_base = full_stats.get("cooldown_base", 1.0)
+		var cd_final = full_stats.get("cooldown_final", 1.0)
+		if abs(cd_final - cd_base) > 0.01:
+			_add_weapon_stat(stats_grid, "⏱", "Cooldown", "%.2f→%.2fs" % [cd_base, cd_final], Color(0.3, 1.0, 0.4))
+		else:
+			_add_weapon_stat(stats_grid, "⏱", "Cooldown", "%.2fs" % cd_final)
+		
+		# ═══ PROYECTILES ═══
+		var proj_base = full_stats.get("projectile_count_base", 1)
 		var proj_final = full_stats.get("projectile_count_final", 1)
-		var proj_extra = full_stats.get("extra_projectiles", 0)
-		if proj_extra > 0:
-			_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "%d(+%d)" % [proj_final, proj_extra], Color(0.3, 1.0, 0.4))
-		elif proj_final > 1:
-			_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "x%d" % proj_final)
+		if proj_final != proj_base:
+			_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "%d→%d" % [proj_base, proj_final], Color(0.3, 1.0, 0.4))
+		else:
+			_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "%d" % proj_final)
+		
+		# ═══ VELOCIDAD DE PROYECTIL ═══
+		var ps_base = full_stats.get("projectile_speed_base", 300.0)
+		var ps_final = full_stats.get("projectile_speed_final", 300.0)
+		if abs(ps_final - ps_base) > 1:
+			_add_weapon_stat(stats_grid, "➡️", "Vel. Proyectil", "%.0f→%.0f" % [ps_base, ps_final], Color(0.3, 1.0, 0.4))
+		else:
+			_add_weapon_stat(stats_grid, "➡️", "Vel. Proyectil", "%.0f" % ps_final)
+		
+		# ═══ ÁREA ═══
+		var area_base = full_stats.get("area_base", 1.0)
+		var area_final = full_stats.get("area_final", 1.0)
+		if abs(area_final - area_base) > 0.01:
+			_add_weapon_stat(stats_grid, "🌀", "Área", "%.0f%%→%.0f%%" % [area_base * 100, area_final * 100], Color(0.3, 1.0, 0.4))
+		else:
+			_add_weapon_stat(stats_grid, "🌀", "Área", "%.0f%%" % (area_final * 100))
+		
+		# ═══ ALCANCE ═══
+		var range_base = full_stats.get("range_base", 300.0)
+		var range_final = full_stats.get("range_final", 300.0)
+		if abs(range_final - range_base) > 1:
+			_add_weapon_stat(stats_grid, "📏", "Alcance", "%.0f→%.0f" % [range_base, range_final], Color(0.3, 1.0, 0.4))
+		else:
+			_add_weapon_stat(stats_grid, "📏", "Alcance", "%.0f" % range_final)
+		
+		# ═══ EMPUJE ═══
+		var kb_base = full_stats.get("knockback_base", 50.0)
+		var kb_final = full_stats.get("knockback_final", 50.0)
+		if abs(kb_final - kb_base) > 1:
+			_add_weapon_stat(stats_grid, "💥", "Empuje", "%.0f→%.0f" % [kb_base, kb_final], Color(0.3, 1.0, 0.4))
+		else:
+			_add_weapon_stat(stats_grid, "💥", "Empuje", "%.0f" % kb_final)
+		
+		# ═══ DURACIÓN ═══
+		var dur_base = full_stats.get("duration_base", 0.0)
+		var dur_final = full_stats.get("duration_final", 0.0)
+		if dur_final > 0 or dur_base > 0:
+			if abs(dur_final - dur_base) > 0.01:
+				_add_weapon_stat(stats_grid, "⏳", "Duración", "%.1f→%.1fs" % [dur_base, dur_final], Color(0.3, 1.0, 0.4))
+			else:
+				_add_weapon_stat(stats_grid, "⏳", "Duración", "%.1fs" % dur_final)
+		
+		# ═══ PENETRACIÓN ═══
+		var pierce_base = full_stats.get("pierce_base", 0)
+		var pierce_final = full_stats.get("pierce_final", 0)
+		if pierce_final > 0 or pierce_base > 0:
+			if pierce_final != pierce_base:
+				_add_weapon_stat(stats_grid, "🗡️", "Atravesar", "%d→%d" % [pierce_base, pierce_final], Color(0.3, 1.0, 0.4))
+			else:
+				_add_weapon_stat(stats_grid, "🗡️", "Atravesar", "%d" % pierce_final)
 	else:
-		pass  # Bloque else
-		# Fallback: usar datos del weapon directamente
+		# Fallback: usar datos del weapon directamente (sin full_stats)
 		if "damage" in weapon:
 			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%.0f" % weapon.damage)
-
-		# Velocidad de Ataque (convertir cooldown a ataques/segundo)
 		if "cooldown" in weapon:
 			var attack_speed = 1.0 / weapon.cooldown if weapon.cooldown > 0 else 1.0
 			_add_weapon_stat(stats_grid, "⚡", "Vel. Ataque", "%.2f/s" % attack_speed)
-
-		# Proyectiles
-		if "projectile_count" in weapon and weapon.projectile_count > 0:
-			_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "x%d" % weapon.projectile_count)
-
-		# Pierce
+			_add_weapon_stat(stats_grid, "⏱", "Cooldown", "%.2fs" % weapon.cooldown)
+		if "projectile_count" in weapon:
+			_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "%d" % weapon.projectile_count)
+		if "projectile_speed" in weapon:
+			_add_weapon_stat(stats_grid, "➡️", "Vel. Proyectil", "%.0f" % weapon.projectile_speed)
+		if "area" in weapon:
+			_add_weapon_stat(stats_grid, "🌀", "Área", "%.0f%%" % (weapon.area * 100))
+		if "weapon_range" in weapon:
+			_add_weapon_stat(stats_grid, "📏", "Alcance", "%.0f" % weapon.weapon_range)
+		if "knockback" in weapon:
+			_add_weapon_stat(stats_grid, "💥", "Empuje", "%.0f" % weapon.knockback)
+		if "duration" in weapon and weapon.duration > 0:
+			_add_weapon_stat(stats_grid, "⏳", "Duración", "%.1fs" % weapon.duration)
 		if "pierce" in weapon and weapon.pierce > 0:
 			_add_weapon_stat(stats_grid, "🗡️", "Atravesar", "%d" % weapon.pierce)
-
-		# Área
-		if "area" in weapon and weapon.area != 1.0:
-			_add_weapon_stat(stats_grid, "🌀", "Área", "%.0f%%" % (weapon.area * 100))
-
-		# Velocidad de proyectil
-		if "projectile_speed" in weapon:
-			_add_weapon_stat(stats_grid, "➡️", "Velocidad", "%.0f" % weapon.projectile_speed)
-
-		# Knockback
-		if "knockback" in weapon and weapon.knockback > 0:
-			_add_weapon_stat(stats_grid, "💥", "Empuje", "%.0f" % weapon.knockback)
 
 	# === EFECTO ESPECIAL ===
 	var special_effect = _get_weapon_special_effect(weapon)
@@ -1627,29 +1678,29 @@ func _add_stat_with_bonus(grid: GridContainer, stat_name: String, base_value: fl
 	grid.add_child(name_label)
 	
 	var value_label = Label.new()
-	var has_bonus = abs(multiplier - 1.0) > 0.001 or abs(final_value - base_value) > 0.1
+	# Detectar bonus: comparar directamente base vs final, o si hay multiplicador global
+	var threshold = 0.01 if (suffix == "/s" or suffix == "s") else 0.5
+	var has_bonus = abs(final_value - base_value) > threshold
 	
 	if has_bonus:
 		# Mostrar base → final en verde
-		var bonus_percent = (multiplier - 1.0) * 100
 		if suffix == "/s":
-			value_label.text = "%.2f → %.2f%s" % [base_value, final_value, suffix]
+			value_label.text = "%.2f→%.2f%s" % [base_value, final_value, suffix]
 		elif suffix == "s":
-			value_label.text = "%.1f → %.1f%s" % [base_value, final_value, suffix]
+			value_label.text = "%.1f→%.1f%s" % [base_value, final_value, suffix]
 		elif suffix == "%":
-			value_label.text = "%.0f → %.0f%s" % [base_value, final_value, suffix]
+			value_label.text = "%.0f%%→%.0f%%" % [base_value, final_value]
 		else:
-			value_label.text = "%.0f → %.0f" % [base_value, final_value]
+			value_label.text = "%.0f→%.0f" % [base_value, final_value]
 		value_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.4))  # Verde
 	else:
-		pass  # Bloque else
-		# Sin bonus, mostrar solo valor
+		# Sin bonus, mostrar solo valor final
 		if suffix == "/s":
 			value_label.text = "%.2f%s" % [final_value, suffix]
 		elif suffix == "s":
 			value_label.text = "%.1f%s" % [final_value, suffix]
 		elif suffix == "%":
-			value_label.text = "%.0f%s" % [final_value, suffix]
+			value_label.text = "%.0f%%" % final_value
 		else:
 			value_label.text = "%.0f" % final_value
 		value_label.add_theme_color_override("font_color", Color(0.95, 0.95, 1.0))

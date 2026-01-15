@@ -974,6 +974,7 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	if original_data.is_empty() and weapon is BaseWeapon and weapon.base_stats:
 		# Fallback solo si no existe en DB (armas custom/fusiones)
 		original_data = weapon.base_stats.duplicate()  # Copiar para seguridad
+		print("[DEBUG] get_weapon_full_stats: Usando base_stats como fallback para %s" % weapon_id)
 	
 	var original_damage = original_data.get("damage", 10)
 	var original_cooldown = original_data.get("cooldown", 1.0)
@@ -986,6 +987,9 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	var original_knockback = original_data.get("knockback", 50.0)
 	var original_duration = original_data.get("duration", 0.0)
 	
+	# DEBUG: Verificar valores de velocidad de ataque
+	# print("[DEBUG] %s: original_cooldown=%.2f, original_attack_speed=%.4f" % [weapon_id, original_cooldown, original_attack_speed])
+	
 	# ═══════════════════════════════════════════════════════════════════════════
 	# VALORES ACTUALES DEL ARMA (con mejoras de nivel ya aplicadas)
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -996,7 +1000,7 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	var current_pierce = weapon.pierce if "pierce" in weapon else original_pierce
 	var current_area = weapon.area if "area" in weapon else original_area
 	var current_projectile_speed = weapon.projectile_speed if "projectile_speed" in weapon else original_projectile_speed
-	var current_range = weapon.attack_range if "attack_range" in weapon else original_range
+	var current_range = weapon.weapon_range if "weapon_range" in weapon else original_range
 	var current_knockback = weapon.knockback if "knockback" in weapon else original_knockback
 	var current_duration = weapon.duration if "duration" in weapon else original_duration
 	
