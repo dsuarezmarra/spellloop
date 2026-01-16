@@ -134,6 +134,21 @@ func _apply_base_stats() -> void:
 	effect_value = base_stats.effect_value
 	effect_duration = base_stats.effect_duration
 
+func override_stats(new_stats: Dictionary) -> void:
+	"""
+	Sobrescribir stats base (usado para fusiones con stats dinámicos).
+	Reinicia el nivel a 1 para empezar la progresión de fusión.
+	"""
+	# Mezclar con los defaults para asegurar que no falten claves
+	var merged = base_stats.duplicate()
+	for k in new_stats:
+		merged[k] = new_stats[k]
+	
+	base_stats = merged
+	level = 1  # Reiniciar nivel siempre
+	_apply_base_stats()
+	# print("[BaseWeapon] Stats sobrescritos dinámicamente. Nuevo Daño Base: %s" % damage)
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # SISTEMA DE NIVELES
 # ═══════════════════════════════════════════════════════════════════════════════

@@ -1838,6 +1838,20 @@ const FUSIONS: Dictionary = {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# MEJORAS UNIVERSALES DE FUSIÓN (Omni-Upgrade)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+const FUSION_LEVEL_UPGRADES: Dictionary = {
+	2: {"damage_mult": 1.25, "area_mult": 1.15, "description": "+25% Daño, +15% Área"},
+	3: {"attack_speed_mult": 1.2, "duration_mult": 1.2, "description": "+20% Vel. Ataque, +20% Duración"},
+	4: {"projectile_count_add": 1, "pierce_add": 1, "description": "+1 Proyectil, +1 Perforación"},
+	5: {"damage_mult": 1.3, "crit_chance_add": 0.1, "description": "+30% Daño, +10% Crit"},
+	6: {"attack_speed_mult": 1.25, "range_mult": 1.2, "description": "+25% Vel. Ataque, +20% Rango"},
+	7: {"projectile_count_add": 2, "description": "+2 Proyectiles"},
+	8: {"all_mult": 1.4, "description": "¡MAESTRÍA DE FUSIÓN! +40% Todo"}
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # MÉTODOS DE UTILIDAD
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1853,6 +1867,13 @@ static func get_weapon_data(weapon_id: String) -> Dictionary:
 	
 	push_error("[WeaponDatabase] Arma no encontrada: %s" % weapon_id)
 	return {}
+
+static func is_fusion_weapon(weapon_id: String) -> bool:
+	"""Determinar si un ID corresponde a un arma fusionada"""
+	for fusion_key in FUSIONS:
+		if FUSIONS[fusion_key].id == weapon_id:
+			return true
+	return false
 
 static func get_fusion_result(weapon_a: String, weapon_b: String) -> Dictionary:
 	"""Obtener resultado de fusionar dos armas"""
@@ -1880,14 +1901,19 @@ static func get_all_fusions() -> Array:
 	return FUSIONS.keys()
 
 static func get_level_upgrade(level: int, weapon_id: String = "") -> Dictionary:
-	"""Obtener mejora para un nivel específico, priorizando el árbol del arma"""
+	"""Obtener mejora para un nivel específico, priorizando el árbol del arma o fusiones"""
 	# 1. Intentar buscar en árbol específico del arma
 	if weapon_id != "" and WEAPON_SPECIFIC_UPGRADES.has(weapon_id):
 		var tree = WEAPON_SPECIFIC_UPGRADES[weapon_id]
 		if tree.has(level):
 			return tree[level].duplicate()
 	
-	# 2. Fallback: usar tabla genérica
+	# 2. Verificar si es un arma de fusión (usar Omni-Upgrade)
+	if weapon_id != "" and is_fusion_weapon(weapon_id):
+		if FUSION_LEVEL_UPGRADES.has(level):
+			return FUSION_LEVEL_UPGRADES[level].duplicate()
+	
+	# 3. Fallback: usar tabla genérica
 	if GENERIC_LEVEL_UPGRADES.has(level):
 		return GENERIC_LEVEL_UPGRADES[level].duplicate()
 	

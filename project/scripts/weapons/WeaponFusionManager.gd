@@ -142,11 +142,7 @@ func get_available_fusions(weapons: Array) -> Array:
 
 func fuse_weapons(weapon_a: BaseWeapon, weapon_b: BaseWeapon) -> BaseWeapon:
 	"""
-	Fusionar dos armas en una nueva
-	IMPORTANTE: Esto NO modifica el array de armas del jugador
-	El sistema de slots debe manejarse externamente
-	
-	Retorna: El arma fusionada, o null si falló
+	Fusionar dos armas en una nueva con stats dinámicos mejorados
 	"""
 	# Verificar que la fusión es válida
 	var check = can_fuse_weapons(weapon_a, weapon_b)
@@ -155,17 +151,17 @@ func fuse_weapons(weapon_a: BaseWeapon, weapon_b: BaseWeapon) -> BaseWeapon:
 		push_error("[WeaponFusionManager] Fusión fallida: %s" % check.reason)
 		return null
 	
+	# Calcular stats dinámicos (x2 de la suma de componentes)
+	var dynamic_stats = _calculate_dynamic_stats(weapon_a, weapon_b)
+	
 	# Crear el arma fusionada
 	var fused_weapon = _create_fused_weapon(weapon_a, weapon_b, check.result)
 	if fused_weapon == null:
 		fusion_failed.emit("Error al crear el arma fusionada")
 		return null
 	
-	# Calcular nivel inicial del arma fusionada
-	# Hereda parte del nivel de las armas componentes
-	var inherited_levels = int((weapon_a.level + weapon_b.level) / 3.0)
-	for i in range(inherited_levels):
-		fused_weapon.level_up()
+	# APLICAR STATS DINÁMICOS Y RESETEAR A NIVEL 1
+	fused_weapon.override_stats(dynamic_stats)
 	
 	# Registrar en historial
 	fusion_history.append({
@@ -175,20 +171,62 @@ func fuse_weapons(weapon_a: BaseWeapon, weapon_b: BaseWeapon) -> BaseWeapon:
 		"timestamp": Time.get_unix_time_from_system()
 	})
 	
-	# Incrementar slots perdidos
+	# Incrementar slots perdidos permanentemente
 	slots_lost += 1
-	
-	# print("[WeaponFusionManager] ¡Fusión exitosa! %s + %s = %s" % [
-	# 	weapon_a.weapon_name, weapon_b.weapon_name, fused_weapon.weapon_name
-	# ])
-	# print("[WeaponFusionManager] Slots actuales: %d/%d" % [current_max_slots, STARTING_MAX_SLOTS])
 	
 	fusion_completed.emit(fused_weapon, true)
 	
 	return fused_weapon
 
+func _calculate_dynamic_stats(a: BaseWeapon, b: BaseWeapon) -> Dictionary:
+	"""
+	Calcula los stats base de la fusión combinando los componentes.
+	Lógica: (Stat A + Stat B) * 2.0 (Massive Power Spike)
+	"""
+	var stats = {}
+	
+	# Daño
+	stats["damage"] = (a.damage + b.damage) * 2.0
+	
+	# Cooldown: Promedio de velocidad, duplicado (mitad de tiempo)
+	var avg_cd = (a.cooldown + b.cooldown) / 2.0
+	stats["cooldown"] = avg_cd * 0.5
+	
+	# Rango: Promedio + 50%
+	var avg_range = (a.weapon_range + b.weapon_range) / 2.0
+	stats["range"] = avg_range * 1.5
+	
+	# Velocidad de proyectil
+	stats["projectile_speed"] = (a.projectile_speed + b.projectile_speed) * 0.75 # No queremos que sea demasiado rápido (glitchy)
+	if stats["projectile_speed"] < 400.0: stats["projectile_speed"] = 400.0
+	
+	# Cantidad
+	stats["projectile_count"] = (a.projectile_count + b.projectile_count) * 2
+	
+	# Pierce (Cap en 10 para evitar números absurdos si no es infinito)
+	if a.pierce >= 99 or b.pierce >= 99:
+		stats["pierce"] = 999 
+	else:
+		stats["pierce"] = min((a.pierce + b.pierce) * 2, 20)
+	
+	# Área
+	stats["area"] = (a.area + b.area) * 2.0
+	
+	# Duración
+	stats["duration"] = (a.duration + b.duration) * 2.0
+	
+	# Knockback
+	stats["knockback"] = (a.knockback + b.knockback) * 2.0
+	
+	# Effect Value (Burn damage, slow amount, etc)
+	stats["effect_value"] = (a.effect_value + b.effect_value) * 1.5
+	stats["effect_duration"] = (a.effect_duration + b.effect_duration) * 1.5
+	
+	return stats
+
 func _create_fused_weapon(weapon_a: BaseWeapon, weapon_b: BaseWeapon, fusion_data: Dictionary) -> BaseWeapon:
 	"""Crear el arma fusionada con los datos combinados"""
+	# Crear instancia
 	var fused = BaseWeapon.new(fusion_data.id, true)  # from_fusion = true
 	
 	if fused.id.is_empty():
