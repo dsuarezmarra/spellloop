@@ -36,7 +36,14 @@ func initialize(chest_position: Vector2, type: int, player: CharacterBody2D, rar
 			ChestType.ELITE:
 				chest_rarity = 1 # Raro mínimo
 			_:
-				chest_rarity = get_item_rarity_for_chest()
+				# Probabilidad base para cofres normales
+				var roll = randf()
+				if roll < 0.6:
+					chest_rarity = 0 # Common
+				elif roll < 0.9:
+					chest_rarity = 1 # Uncommon
+				else:
+					chest_rarity = 2 # Rare
 	else:
 		chest_rarity = rarity
 	

@@ -1457,7 +1457,7 @@ func _get_weapon_special_effect(weapon) -> String:
 		"fire":
 			return "Inflige quemadura (daño continuo)"
 		"lightning":
-			var chains = weapon.chain_count if "chain_count" in weapon else 2
+			var chains = weapon.effect_value if "effect_value" in weapon and weapon.effect == "chain" else 2
 			return "Salta a %d enemigos cercanos" % chains
 		"nature":
 			return "Persigue enemigos y roba vida"

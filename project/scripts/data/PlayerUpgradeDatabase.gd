@@ -855,7 +855,6 @@ const UTILITY_UPGRADES: Dictionary = {
 		"category": "offensive",
 		"tier": 3,
 		"max_stacks": 3,
-		"max_stacks": 3,
 		"required_tags": ["chain"],
 		"effects": [{"stat": "chain_count", "value": 1, "operation": "add"}]
 	},
@@ -866,7 +865,6 @@ const UTILITY_UPGRADES: Dictionary = {
 		"icon": "⚡",
 		"category": "offensive",
 		"tier": 4,
-		"max_stacks": 2,
 		"max_stacks": 2,
 		"required_tags": ["chain"],
 		"effects": [{"stat": "chain_count", "value": 2, "operation": "add"}]

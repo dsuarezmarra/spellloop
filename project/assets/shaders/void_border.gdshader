@@ -60,7 +60,7 @@ void fragment() {
     
     // Si la máscara es 0 (dentro del radio seguro), descartar o alpha 0
     if (border_mask <= 0.001) {
-        COLOR = vec4(0.0);
+        discard;
     } else {
         // --- EFERVECENCIA DEL VACÍO ---
         

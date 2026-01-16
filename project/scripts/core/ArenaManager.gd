@@ -476,13 +476,14 @@ func _create_boundary() -> void:
 	var sprite = Sprite2D.new()
 	sprite.name = "VoidBorderSprite"
 	
-	# Usar PlaceholderTexture2D para no necesitar textura real
-	var placeholder = PlaceholderTexture2D.new()
-	placeholder.size = Vector2(1024, 1024) # Tamaño base decente
-	sprite.texture = placeholder
+	# Usar GradientTexture2D para asegurar UVs correctos (PlaceholderTexture2D a veces da problemas con shaders)
+	var texture = GradientTexture2D.new()
+	texture.width = 128
+	texture.height = 128
+	sprite.texture = texture
 	
 	# Escalar para cubrir toda el área deseada
-	var scale_factor = diameter / 1024.0
+	var scale_factor = diameter / 128.0
 	sprite.scale = Vector2(scale_factor, scale_factor)
 	
 	# Cargar Shader
