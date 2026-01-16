@@ -505,6 +505,9 @@ func _start_game() -> void:
 	}
 
 	# Debug desactivado: print("🚀 [Game] ¡Partida iniciada!")
+	
+	# Forzar actualización del HUD de armas después de que todo esté inicializado
+	call_deferred("_deferred_weapon_hud_update")
 
 func _resume_saved_game() -> void:
 	"""Restaurar el estado de una partida guardada"""
@@ -1257,3 +1260,11 @@ func _get_boss_display_name(boss_id: String) -> String:
 		"minotauro_de_fuego": "Minotauro de Fuego"
 	}
 	return names.get(boss_id, boss_id.replace("_", " ").capitalize())
+
+func _deferred_weapon_hud_update() -> void:
+	"""Actualizar HUD de armas de forma diferida para capturar arma inicial"""
+	if weapon_manager and hud and weapon_manager.has_method("get_weapons_info"):
+		var info = weapon_manager.get_weapons_info()
+		if hud.has_method("update_weapons"):
+			hud.update_weapons(info)
+

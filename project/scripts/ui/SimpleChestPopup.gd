@@ -302,14 +302,14 @@ func create_panel_style() -> StyleBox:
 	return style
 
 func _input(event: InputEvent):
-	"""Capturar ESC o números para seleccionar items (seguro contra otros tipos de eventos)"""
-	# Evitar acceder a propiedades específicas de teclas si no es InputEventKey
-	if not (event is InputEventKey):
+	"""Capturar input para navegación con WASD/Joystick y selección con Space/X"""
+	if popup_locked:
 		return
-
-	if event.pressed:
-		# Opciones por número
+	
+	# === INPUT DE TECLADO ===
+	if event is InputEventKey and event.pressed:
 		match event.keycode:
+			# Números 1-3 para selección directa
 			KEY_1:
 				if item_buttons.size() >= 1:
 					_select_item_at_index(0)
@@ -325,23 +325,84 @@ func _input(event: InputEvent):
 					_select_item_at_index(2)
 					get_tree().root.set_input_as_handled()
 					return
+			
+			# WASD / Flechas para navegar
+			KEY_W, KEY_UP:
+				_navigate_selection(-1)
+				get_tree().root.set_input_as_handled()
+				return
+			KEY_S, KEY_DOWN:
+				_navigate_selection(1)
+				get_tree().root.set_input_as_handled()
+				return
+			
+			# Space / Enter para confirmar selección
+			KEY_SPACE, KEY_ENTER:
+				if current_selected_index >= 0 and current_selected_index < available_items.size():
+					_select_item_at_index(current_selected_index)
+				get_tree().root.set_input_as_handled()
+				return
+			
 			KEY_ESCAPE:
 				if item_buttons.size() > 0:
 					_select_item_at_index(0)
 				get_tree().root.set_input_as_handled()
 				return
-			KEY_ENTER:
+	
+	# === INPUT DE GAMEPAD (Joystick / Botones) ===
+	if event is InputEventJoypadButton and event.pressed:
+		match event.button_index:
+			JOY_BUTTON_DPAD_UP:
+				_navigate_selection(-1)
+				get_tree().root.set_input_as_handled()
+				return
+			JOY_BUTTON_DPAD_DOWN:
+				_navigate_selection(1)
+				get_tree().root.set_input_as_handled()
+				return
+			JOY_BUTTON_A:  # X en PlayStation / A en Xbox
 				if current_selected_index >= 0 and current_selected_index < available_items.size():
 					_select_item_at_index(current_selected_index)
 				get_tree().root.set_input_as_handled()
 				return
+	
+	# === JOYSTICK ANALÓGICO ===
+	if event is InputEventJoypadMotion:
+		# Eje Y del stick izquierdo
+		if event.axis == JOY_AXIS_LEFT_Y:
+			if event.axis_value < -0.5:
+				_navigate_selection(-1)
+				get_tree().root.set_input_as_handled()
+			elif event.axis_value > 0.5:
+				_navigate_selection(1)
+				get_tree().root.set_input_as_handled()
+
+func _navigate_selection(direction: int):
+	"""Navegar la selección arriba (-1) o abajo (+1)"""
+	if item_buttons.is_empty():
+		return
+	
+	# Si no hay selección, empezar en el primero
+	if current_selected_index < 0:
+		current_selected_index = 0 if direction > 0 else item_buttons.size() - 1
+	else:
+		current_selected_index += direction
+	
+	# Wrap around
+	if current_selected_index < 0:
+		current_selected_index = item_buttons.size() - 1
+	elif current_selected_index >= item_buttons.size():
+		current_selected_index = 0
+	
+	_update_button_selection()
 
 func _select_item_at_index(index: int):
-	"""Seleccionar un item por índice (desde teclado)"""
+	"""Seleccionar un item por índice (desde teclado/gamepad)"""
 	if popup_locked:
 		return
 	
 	if index >= 0 and index < available_items.size():
 		var selected_item = available_items[index]
 		_process_item_selection(selected_item, index)
+
 
