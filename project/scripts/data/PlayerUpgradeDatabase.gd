@@ -2217,6 +2217,20 @@ const UNIQUE_UPGRADES: Dictionary = {
 			{"stat": "damage_mult", "value": 1.50, "operation": "multiply"},
 			{"stat": "life_steal", "value": 0.20, "operation": "add"}
 		]
+	},
+	"unique_gravity_well": {
+		"id": "unique_gravity_well",
+		"name": "Pozo de Gravedad",
+		"description": "Atrae TODAS las monedas y gemas del mapa instantáneamente. +50% oro.",
+		"icon": "🌀",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "infinite_pickup_range", "value": 1, "operation": "add"},
+			{"stat": "gold_mult", "value": 1.50, "operation": "multiply"}
+		]
 	}
 }
 

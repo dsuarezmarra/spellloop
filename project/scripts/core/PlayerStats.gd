@@ -510,6 +510,7 @@ const BASE_STATS: Dictionary = {
 	"kill_damage_scaling": 0.0,    # % daño por kills
 	"enemy_slow_aura": 0.0,        # Ralentización pasiva a enemigos
 	"hp_cost_per_attack": 0.0,     # HP que cuesta cada ataque
+	"infinite_pickup_range": 0,    # Si > 0, atrae todos los pickups del mapa
 
 	# Críticos
 	"crit_chance": 0.05,
@@ -589,6 +590,7 @@ const STAT_LIMITS: Dictionary = {
 	"levelup_options": {"min": 0, "max": 3},
 	"reroll_count": {"min": 0, "max": 5},
 	"banish_count": {"min": 0, "max": 5},
+	"infinite_pickup_range": {"min": 0, "max": 1},   # 0 o 1 (booleano)
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
