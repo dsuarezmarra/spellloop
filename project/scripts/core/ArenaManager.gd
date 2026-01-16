@@ -461,61 +461,57 @@ func _get_inner_radius(zone_type: ZoneType) -> float:
 	return 0.0
 
 func _create_boundary() -> void:
-	"""Crear la barrera visual del borde de la arena"""
+	"""Crear la barrera visual del borde de la arena usando Shader Volumétrico"""
 	boundary_node = Node2D.new()
 	boundary_node.name = "ArenaBoundary"
-	boundary_node.z_index = 50  # Encima de casi todo
+	boundary_node.z_index = -5  # Debajo de enemigos (0) y player, pero encima del suelo (-100)
 	arena_root.add_child(boundary_node)
 	
-	# Script para dibujar el borde
-	var script = GDScript.new()
-	script.source_code = """
-extends Node2D
-
-var arena_radius: float = 10000.0
-var boundary_thickness: float = 200.0
-var segments: int = 128
-var pulse_speed: float = 2.0
-var time: float = 0.0
-
-func _process(delta):
-	time += delta
-	queue_redraw()
-
-func _draw():
-	# Borde exterior pulsante
-	var pulse = 0.5 + 0.5 * sin(time * pulse_speed)
-	var outer_color = Color(0.8, 0.2, 0.1, 0.3 + pulse * 0.2)
-	var inner_color = Color(0.6, 0.1, 0.05, 0.1)
+	# Radio visual que cubra más allá del límite físico para que no se vea el corte
+	# Multiplicamos por 2.5 para tener suficiente margen "infinito"
+	var visual_radius = arena_radius * 2.5
+	var diameter = visual_radius * 2.0
 	
-	# Dibujar anillo exterior (zona de muerte)
-	var outer_points = PackedVector2Array()
-	var inner_points = PackedVector2Array()
+	# Crear Sprite gigante
+	var sprite = Sprite2D.new()
+	sprite.name = "VoidBorderSprite"
 	
-	for i in range(segments + 1):
-		var angle = i * TAU / segments
-		var dir = Vector2(cos(angle), sin(angle))
-		outer_points.append(dir * (arena_radius + boundary_thickness))
-		inner_points.append(dir * arena_radius)
+	# Usar PlaceholderTexture2D para no necesitar textura real
+	var placeholder = PlaceholderTexture2D.new()
+	placeholder.size = Vector2(1024, 1024) # Tamaño base decente
+	sprite.texture = placeholder
 	
-	# Dibujar como líneas gruesas
-	for i in range(segments):
-		var p1_out = outer_points[i]
-		var p2_out = outer_points[i + 1]
-		var p1_in = inner_points[i]
-		var p2_in = inner_points[i + 1]
+	# Escalar para cubrir toda el área deseada
+	var scale_factor = diameter / 1024.0
+	sprite.scale = Vector2(scale_factor, scale_factor)
+	
+	# Cargar Shader
+	var shader = load("res://assets/shaders/void_border.gdshader")
+	if not shader:
+		push_error("[ArenaManager] No se pudo cargar void_border.gdshader")
+		return
 		
-		# Cuadrilátero para el borde
-		var quad = PackedVector2Array([p1_in, p2_in, p2_out, p1_out])
-		draw_colored_polygon(quad, outer_color)
+	var mat = ShaderMaterial.new()
+	mat.shader = shader
 	
-	# Línea brillante en el borde exacto
-	draw_arc(Vector2.ZERO, arena_radius, 0, TAU, segments, Color(1, 0.3, 0.1, 0.5 + pulse * 0.3), 4.0)
-"""
-	script.reload()
-	boundary_node.set_script(script)
-	boundary_node.set("arena_radius", arena_radius)
-	boundary_node.set("boundary_thickness", boundary_thickness)
+	# Calcular radio normalizado para el shader
+	# El shader usa UV (0 a 1), centro en 0.5
+	# Nuestro radio físico es 'arena_radius'
+	# El radio visual total es 'visual_radius' = arena_radius * 2.5
+	# Ratio = arena_radius / visual_radius = 1 / 2.5 = 0.4
+	# En espacio UV (0-0.5 radio), el borde está en 0.5 * Ratio = 0.2
+	var radius_normalized = 0.5 * (arena_radius / visual_radius)
+	
+	mat.set_shader_parameter("radius", radius_normalized)
+	mat.set_shader_parameter("smoothness", 0.02)
+	mat.set_shader_parameter("pulse_speed", 1.5)
+	mat.set_shader_parameter("chaos_speed", 0.4)
+	mat.set_shader_parameter("noise_scale", 10.0) # Más detalle
+	
+	sprite.material = mat
+	boundary_node.add_child(sprite)
+	
+	# Debug desactivado: print("🎨 [ArenaManager] Void Border shader aplicado. R_norm: %.3f" % radius_normalized)
 
 func _physics_process(delta: float) -> void:
 	"""Actualizar estado del player respecto a la arena"""
