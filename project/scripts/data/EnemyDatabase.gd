@@ -29,12 +29,13 @@ class_name EnemyDatabase
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Escalado base por tier (multiplicadores respecto a tier 1)
+# REBALANCEADO: XP más equilibrado, velocidades aumentadas
 const TIER_SCALING = {
 	1: {"hp": 1.0, "damage": 1.0, "speed": 1.0, "xp": 1.0},
-	2: {"hp": 2.5, "damage": 1.8, "speed": 1.1, "xp": 3.0},
-	3: {"hp": 5.0, "damage": 3.0, "speed": 1.2, "xp": 7.0},
-	4: {"hp": 10.0, "damage": 5.0, "speed": 1.3, "xp": 15.0},
-	5: {"hp": 1.0, "damage": 1.0, "speed": 1.0, "xp": 50.0}  # Bosses - NO multiplicar HP/daño (ya tienen base_hp alto)
+	2: {"hp": 2.0, "damage": 1.5, "speed": 1.15, "xp": 2.0},    # XP: 3→2, speed: 1.1→1.15
+	3: {"hp": 4.0, "damage": 2.2, "speed": 1.3, "xp": 4.0},     # XP: 7→4, speed: 1.2→1.3
+	4: {"hp": 7.0, "damage": 3.5, "speed": 1.45, "xp": 8.0},    # XP: 15→8, speed: 1.3→1.45
+	5: {"hp": 1.0, "damage": 1.0, "speed": 1.0, "xp": 15.0}     # Bosses XP: 50→15
 }
 
 # Escalado exponencial post-minuto 20 (cada 5 minutos)
@@ -45,8 +46,8 @@ const ELITE_CONFIG = {
 	"hp_multiplier": 10.0,          # 10x HP base - son mini-bosses
 	"damage_multiplier": 3.5,       # 3.5x daño - duelen mucho
 	"size_multiplier": 1.8,         # 80% más grandes - imponentes
-	"xp_multiplier": 20.0,          # 20x XP - gran recompensa
-	"speed_multiplier": 1.35,       # 35% más rápidos - agresivos
+	"xp_multiplier": 8.0,           # REDUCIDO: 20→8 XP (balance)
+	"speed_multiplier": 1.5,        # AUMENTADO: 1.35→1.5 (más agresivos)
 	"attack_speed_multiplier": 0.55,# Atacan 45% más rápido
 	"spawn_chance_per_minute": 0.025, # 2.5% por minuto
 	"max_per_run": 10,

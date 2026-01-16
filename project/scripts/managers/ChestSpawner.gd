@@ -106,16 +106,16 @@ func _calculate_spawn_position_in_player_zone() -> Vector2:
 		match player_zone:
 			0:  # SAFE
 				inner_radius = 0.0
-				outer_radius = arena_manager.get("safe_zone_radius") if arena_manager.has("safe_zone_radius") else 2500.0
+				outer_radius = arena_manager.safe_zone_radius if "safe_zone_radius" in arena_manager else 2500.0
 			1:  # MEDIUM
-				inner_radius = arena_manager.get("safe_zone_radius") if arena_manager.has("safe_zone_radius") else 2500.0
-				outer_radius = arena_manager.get("medium_zone_radius") if arena_manager.has("medium_zone_radius") else 5500.0
+				inner_radius = arena_manager.safe_zone_radius if "safe_zone_radius" in arena_manager else 2500.0
+				outer_radius = arena_manager.medium_zone_radius if "medium_zone_radius" in arena_manager else 5500.0
 			2:  # DANGER
-				inner_radius = arena_manager.get("medium_zone_radius") if arena_manager.has("medium_zone_radius") else 5500.0
-				outer_radius = arena_manager.get("danger_zone_radius") if arena_manager.has("danger_zone_radius") else 8500.0
+				inner_radius = arena_manager.medium_zone_radius if "medium_zone_radius" in arena_manager else 5500.0
+				outer_radius = arena_manager.danger_zone_radius if "danger_zone_radius" in arena_manager else 8500.0
 			3:  # DEATH
-				inner_radius = arena_manager.get("danger_zone_radius") if arena_manager.has("danger_zone_radius") else 8500.0
-				outer_radius = arena_manager.get("arena_radius") if arena_manager.has("arena_radius") else 10000.0
+				inner_radius = arena_manager.danger_zone_radius if "danger_zone_radius" in arena_manager else 8500.0
+				outer_radius = arena_manager.arena_radius if "arena_radius" in arena_manager else 10000.0
 	
 	# Intentar varias posiciones dentro de la zona
 	for _attempt in range(30):

@@ -29,6 +29,7 @@ const SPAWN_DISTANCE_BOSS: float = 400.0  # Bosses aparecen más cerca
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # Cada fase define cómo se comporta el spawn durante ese período
+# REBALANCEADO: Mayor densidad de enemigos, spawn más agresivo
 const PHASES = {
 	1: {
 		"name": "",
@@ -36,8 +37,8 @@ const PHASES = {
 		"end_minute": 5,
 		"description": "",
 		"available_tiers": [1],
-		"max_enemies": 25,
-		"spawn_rate": 0.8,  # Enemigos por segundo
+		"max_enemies": 35,        # AUMENTADO: 25→35
+		"spawn_rate": 1.2,        # AUMENTADO: 0.8→1.2 enemigos/segundo
 		"tier_weights": {1: 1.0},
 		"special_events": [],
 		"music_intensity": "calm"
@@ -48,8 +49,8 @@ const PHASES = {
 		"end_minute": 10,
 		"description": "",
 		"available_tiers": [1, 2],
-		"max_enemies": 40,
-		"spawn_rate": 1.2,
+		"max_enemies": 55,        # AUMENTADO: 40→55
+		"spawn_rate": 1.8,        # AUMENTADO: 1.2→1.8
 		"tier_weights": {1: 0.7, 2: 0.3},
 		"special_events": ["first_boss"],
 		"music_intensity": "medium"
@@ -60,8 +61,8 @@ const PHASES = {
 		"end_minute": 15,
 		"description": "Enemigos más peligrosos aparecen",
 		"available_tiers": [1, 2, 3],
-		"max_enemies": 55,
-		"spawn_rate": 1.6,
+		"max_enemies": 75,        # AUMENTADO: 55→75
+		"spawn_rate": 2.2,        # AUMENTADO: 1.6→2.2
 		"tier_weights": {1: 0.5, 2: 0.35, 3: 0.15},
 		"special_events": ["second_boss", "elite_surge"],
 		"music_intensity": "high"
@@ -72,8 +73,8 @@ const PHASES = {
 		"end_minute": 20,
 		"description": "Todos los enemigos pueden aparecer",
 		"available_tiers": [1, 2, 3, 4],
-		"max_enemies": 70,
-		"spawn_rate": 2.0,
+		"max_enemies": 100,       # AUMENTADO: 70→100
+		"spawn_rate": 2.8,        # AUMENTADO: 2.0→2.8
 		"tier_weights": {1: 0.35, 2: 0.30, 3: 0.25, 4: 0.10},
 		"special_events": ["third_boss", "swarm_event"],
 		"music_intensity": "intense"
@@ -84,8 +85,8 @@ const PHASES = {
 		"end_minute": -1,  # Sin fin
 		"description": "Sobrevive todo lo que puedas",
 		"available_tiers": [1, 2, 3, 4],
-		"max_enemies": 100,
-		"spawn_rate": 2.5,
+		"max_enemies": 150,       # AUMENTADO: 100→150
+		"spawn_rate": 3.5,        # AUMENTADO: 2.5→3.5
 		"tier_weights": {1: 0.25, 2: 0.30, 3: 0.30, 4: 0.15},
 		"special_events": ["rotating_bosses", "death_wave"],
 		"music_intensity": "epic"
