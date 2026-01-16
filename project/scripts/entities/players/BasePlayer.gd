@@ -293,8 +293,6 @@ func _get_player_stats() -> Node:
 
 
 
-	pass
-
 func _process_debuffs(delta: float) -> void:
 	"""Procesar todos los debuffs activos"""
 	# Slow

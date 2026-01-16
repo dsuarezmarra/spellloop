@@ -21,11 +21,7 @@
 extends Node
 class_name PlayerStats
 
-# ========== REFERENCIAS ==========
-var player_ref = null
-var attack_manager = null
-var global_weapon_stats = null
-var game_manager = null
+
 
 # ========== SEÑALES ==========
 
@@ -643,6 +639,9 @@ var global_weapon_stats: GlobalWeaponStats = null
 # Referencia al player para sincronizar vida
 var player_ref: Node = null
 
+# GameManager reference
+var game_manager: Node = null
+
 # ID del personaje actual (para pasivas)
 var _current_character_id: String = "frost_mage"
 
@@ -984,46 +983,7 @@ func _get_temp_modifier_total(stat_name: String) -> float:
 # MODIFICACIÓN DE STATS (PERMANENTES)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-func add_upgrade(upgrade_data: Dictionary) -> void:
-	"""Aplicar una mejora (upgrade) al jugador"""
-	
-	# 1. Registrar colección
-	var id = upgrade_data.get("id", "unknown")
-	if not collected_upgrades.has(id):
-		collected_upgrades[id] = 0
-	collected_upgrades[id] += 1
-	
-	print("[PlayerStats] Applying upgrade: %s (Tier %d)" % [upgrade_data.get("name", id), upgrade_data.get("tier", 0)])
 
-	# 2. Procesar efectos
-	if upgrade_data.has("effects"):
-		for effect in upgrade_data.effects:
-			var stat_name = effect.stat
-			var value = effect.value
-			var operation = effect.get("operation", "add")
-			
-			if not stats.has(stat_name) and not stat_name in ["extra_pierce", "chain_count", "crit_damage", "crit_chance"]:
-				# Algunos stats especiales pueden no estar en BASE_STATS pero ser válidos
-				# o ser stats de armas (extra_pierce)
-				if is_weapon_stat(stat_name):
-					_apply_weapon_stat_upgrade(stat_name, value, operation)
-					continue
-				else:
-					push_warning("[PlayerStats] Stat not found: " + stat_name)
-					# Intentar añadirlo de todos modos si es nuevo
-					stats[stat_name] = 0.0
-
-			if operation == "add":
-				add_stat(stat_name, value)
-			elif operation == "multiply":
-				var current = stats.get(stat_name, 0.0)
-				var new_val = current * value
-				var diff = new_val - current
-				add_stat(stat_name, diff)
-				
-	# 3. Procesar lógica especial (passive_id, etc)
-	# Esto se maneja en el sistema de pasivas, pero si el upgrade tiene
-	# efectos fuera de los stats estándar, se pueden manejar aquí o en listeners.
 
 func is_weapon_stat(stat_name: String) -> bool:
 	return stat_name in ["extra_pierce", "chain_count", "crit_damage", "crit_chance", "projectile_count_add"]
@@ -1042,23 +1002,7 @@ func _apply_weapon_stat_upgrade(stat_name: String, value: float, operation: Stri
 	else:
 		push_warning("[PlayerStats] Cannot apply weapon stat %s: GlobalWeaponStats missing" % stat_name)
 
-func _get_global_weapon_stats() -> Node:
-	"""Helper para obtener GlobalWeaponStats"""
-	# 1. Referencia directa si la tenemos
-	if global_weapon_stats:
-		return global_weapon_stats
-		
-	# 2. A través de group
-	if is_inside_tree():
-		var nodes = get_tree().get_nodes_in_group("global_weapon_stats")
-		if nodes.size() > 0:
-			return nodes[0]
-			
-	# 3. A través de AttackManager si existe referencia
-	if attack_manager and attack_manager.has_method("get_global_weapon_stats"):
-		return attack_manager.get_global_weapon_stats()
-		
-	return null
+
 
 func add_stat(stat_name: String, amount: float) -> void:
 	"""Añadir valor a un stat (permanente)"""
