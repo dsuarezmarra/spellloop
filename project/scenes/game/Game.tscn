@@ -30,10 +30,3 @@ position = Vector2(0, 0)
 [node name="UILayer" type="CanvasLayer" parent="."]
 layer = 100
 
-[node name="DebugInfo" type="Label" parent="UILayer"]
-offset_left = 10.0
-offset_top = 10.0
-offset_right = 300.0
-offset_bottom = 30.0
-theme_override_colors/font_color = Color(0.5, 1, 0.5, 0.7)
-text = "🎮 SPELLLOOP - WASD mover | ESC pausa"

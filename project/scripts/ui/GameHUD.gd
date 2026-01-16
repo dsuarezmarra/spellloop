@@ -31,8 +31,38 @@ func _ready():
 	# Inicializar estado
 	boss_bar.visible = false
 	
-	# Verificar nodos críticos (fallback para evitar crash si el tscn no está actualizado aun)
+	# Verificar nodos críticos
 	_verify_nodes()
+	
+	# IMPROVE: Estilizar barras programáticamente para asegurar look premium
+	_style_hud_elements()
+
+func _style_hud_elements():
+	if hp_bar:
+		var sb_bg = StyleBoxFlat.new()
+		sb_bg.bg_color = Color(0.1, 0.0, 0.0, 0.8)
+		sb_bg.border_width_left = 2
+		sb_bg.border_width_top = 2
+		sb_bg.border_width_right = 2
+		sb_bg.border_width_bottom = 2
+		sb_bg.border_color = Color(0,0,0)
+		
+		var sb_fill = StyleBoxFlat.new()
+		sb_fill.bg_color = Color(0.8, 0.1, 0.1, 1.0) # Rojo intenso
+		sb_fill.border_width_left = 2
+		sb_fill.border_width_top = 2
+		sb_fill.border_width_right = 2
+		sb_fill.border_width_bottom = 2
+		sb_fill.border_color = Color(0,0,0,0) # Transparente para ver el bg border
+		
+		hp_bar.add_theme_stylebox_override("background", sb_bg)
+		hp_bar.add_theme_stylebox_override("fill", sb_fill)
+	
+	if xp_bar:
+		var sb_fill_xp = StyleBoxFlat.new()
+		sb_fill_xp.bg_color = Color(0.2, 0.6, 1.0, 1.0) # Azul brillante
+		xp_bar.add_theme_stylebox_override("fill", sb_fill_xp)
+
 
 func _verify_nodes():
 	# Si algun nodo vital es null (porque el tscn aun no se actualizó), buscarlos dinámicamente o ignorar
@@ -113,67 +143,97 @@ func update_passives(passives: Array):
 			var empty = _create_empty_slot()
 			passive_container.add_child(empty)
 
-func _create_empty_slot() -> Control:
-	var slot = TextureRect.new()
-	slot.custom_minimum_size = Vector2(32, 32)
-	
-	var bg = Panel.new()
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.0, 0.0, 0.0, 0.5)
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	style.border_color = Color(0.2, 0.2, 0.2)
-	bg.add_theme_stylebox_override("panel", style)
-	slot.add_child(bg)
-	
-	return slot
+
 		
 
 
 func _create_slot(item_data, is_weapon: bool) -> Control:
 	# Crear un TextureRect simple para el icono
 	var slot = TextureRect.new()
-	slot.custom_minimum_size = Vector2(32, 32)
+	slot.custom_minimum_size = Vector2(40, 40) # Slightly bigger
 	slot.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	slot.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	
-	# Fondo del slot
+	# Fondo del slot (Marco)
 	var bg = Panel.new()
 	bg.show_behind_parent = true
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	# Estilo básico
+	
+	# Estilo Premium
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.1, 0.1, 0.1, 0.8)
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	style.border_color = Color(0.3, 0.3, 0.3)
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.border_color = Color(0.8, 0.7, 0.2) # Dorado
+	style.corner_radius_top_left = 4
+	style.corner_radius_top_right = 4
+	style.corner_radius_bottom_right = 4
+	style.corner_radius_bottom_left = 4
+	
 	bg.add_theme_stylebox_override("panel", style)
 	slot.add_child(bg)
 	
-	# Icono
+	# Cargar Icono
 	var icon_path = ""
 	if typeof(item_data) == TYPE_DICTIONARY:
-		icon_path = item_data.get("icon_path", "")
-		if icon_path == "" and item_data.has("id"):
-			# Fallback a buscar por ID
-			pass # TODO: Implement icon lookup
+		# 1. Intentar cargar desde assets/icons/ID.png
+		if item_data.has("id"):
+			var asset_path = "res://assets/icons/%s.png" % item_data.id
+			# Doble check: ResourceLoader o FileAccess
+			if ResourceLoader.exists(asset_path) or FileAccess.file_exists(asset_path):
+				icon_path = asset_path
+		
+		# 2. Fallback a propiedad (si es path explícito)
+		if icon_path == "" and item_data.has("icon_path"):
+			icon_path = item_data.icon_path
 	
 	if icon_path != "":
 		slot.texture = load(icon_path)
 	
+	# Fallback a texto si no hay textura
+	if slot.texture == null and typeof(item_data) == TYPE_DICTIONARY: 
+		if item_data.has("icon") and item_data.icon.length() < 10:
+			var lbl = Label.new()
+			lbl.text = item_data.icon
+			lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+			slot.add_child(lbl)
+
 	# Nivel (si aplica)
 	if typeof(item_data) == TYPE_DICTIONARY and item_data.has("level"):
 		var lvl_lbl = Label.new()
 		lvl_lbl.text = str(item_data.level)
-		lvl_lbl.position = Vector2(2, 2)
+		lvl_lbl.position = Vector2(4, 4)
 		lvl_lbl.add_theme_font_size_override("font_size", 10)
+		lvl_lbl.add_theme_color_override("font_outline_color", Color.BLACK)
+		lvl_lbl.add_theme_constant_override("outline_size", 4)
 		slot.add_child(lvl_lbl)
 		
+	return slot
+
+func _create_empty_slot() -> Control:
+	var slot = TextureRect.new()
+	slot.custom_minimum_size = Vector2(40, 40)
+	
+	var bg = Panel.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.0, 0.0, 0.0, 0.3)
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = Color(0.3, 0.3, 0.3) # Gris oscuro
+	style.corner_radius_top_left = 4
+	style.corner_radius_top_right = 4
+	style.corner_radius_bottom_right = 4
+	style.corner_radius_bottom_left = 4
+	bg.add_theme_stylebox_override("panel", style)
+	slot.add_child(bg)
+	
 	return slot
 
 

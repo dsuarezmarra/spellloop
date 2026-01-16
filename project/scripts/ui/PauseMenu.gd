@@ -1209,10 +1209,27 @@ func _create_weapon_card(weapon) -> Control:
 	icon_container.add_theme_stylebox_override("panel", icon_style)
 	header_hbox.add_child(icon_container)
 
-	var icon = Label.new()
-	icon.text = weapon.icon if "icon" in weapon else ELEMENT_ICONS.get(element, "🔮")
-	icon.add_theme_font_size_override("font_size", 32)
-	icon_container.add_child(icon)
+	# Intentar cargar icono grafico
+	var icon_tex: Texture2D = null
+	# 1. Por ID si está disponible en el objeto weapon (o pasar id)
+	if "id" in weapon:
+		var asset_path = "res://assets/icons/%s.png" % weapon.id
+		if ResourceLoader.exists(asset_path):
+			icon_tex = load(asset_path)
+	
+	if icon_tex:
+		var icon_rect = TextureRect.new()
+		icon_rect.texture = icon_tex
+		icon_rect.custom_minimum_size = Vector2(48, 48)
+		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon_container.add_child(icon_rect)
+	else:
+		# Fallback a texto
+		var icon_lbl = Label.new()
+		icon_lbl.text = weapon.icon if "icon" in weapon else ELEMENT_ICONS.get(element, "🔮")
+		icon_lbl.add_theme_font_size_override("font_size", 32)
+		icon_container.add_child(icon_lbl)
 
 	# Info del nombre
 	var info_vbox = VBoxContainer.new()
