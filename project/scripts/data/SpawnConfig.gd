@@ -243,12 +243,12 @@ const BOSS_CONFIG = {
 # ═══════════════════════════════════════════════════════════════════════════════
 
 const ELITE_CONFIG = {
-	"first_spawn_minute": 2.0,  # No antes del minuto 2
-	"spawn_interval_base": 150.0,  # Cada 2.5 minutos base
-	"spawn_interval_variance": 30.0,  # ±30 segundos
-	"max_active": 1,  # Solo 1 élite activo a la vez
-	"max_per_game_base": 8,  # Máximo en los primeros 20 min
-	"elite_per_5min_infinite": 2,  # En fase infinita, 2 cada 5 min
+	"first_spawn_minute": 1.0,  # Aparecen antes (minuto 1)
+	"spawn_interval_base": 60.0,  # Cada 1 minuto (mucho más frecuente)
+	"spawn_interval_variance": 15.0,  # ±15 segundos
+	"max_active": 2,  # Hasta 2 élites simultáneos
+	"max_per_game_base": 15,  # Más oportunidades de loot raro
+	"elite_per_5min_infinite": 3,  # En fase infinita, 3 cada 5 min
 	"guaranteed_drop": true,  # Siempre dropean algo especial
 	"spawn_announcement": "⭐ ¡Enemigo Legendario!"
 }
