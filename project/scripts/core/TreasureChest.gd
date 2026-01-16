@@ -133,102 +133,36 @@ func create_chest_texture():
 	sprite.texture = texture
 
 func generate_contents():
-	"""Generar contenido del cofre basado en rareza"""
-	# SIEMPRE generar exactamente 3 items para el popup
-	var item_count = 3
+	"""Generar contenido del cofre usando LootManager"""
 	
-	var items_defs = null
-	if get_tree() and get_tree().root and get_tree().root.get_node_or_null("ItemsDefinitions"):
-		items_defs = get_tree().root.get_node("ItemsDefinitions")
-
-	# Obtener modificador de suerte desde SaveManager (user://meta.json)
-	var luck_modifier = 1.0
-	if get_tree() and get_tree().root and get_tree().root.get_node_or_null("SaveManager"):
-		var sm = get_tree().root.get_node("SaveManager")
-		var meta = sm.get_meta_data() if sm.has_method("get_meta_data") else {}
-		var luck_points = 0
-		if meta and meta.has("luck_points"):
-			luck_points = int(meta["luck_points"])
-		luck_modifier = 1.0 + (luck_points * 0.02)
-	
-	# Modificador de suerte por tipo de cofre
-	if chest_type == ChestType.ELITE:
-		luck_modifier += 0.5
-	elif chest_type == ChestType.BOSS:
-		luck_modifier += 2.0
-		# Asegurar rareza mínima para boss
-		if chest_rarity < 3: chest_rarity = 3
-
-	for i in range(item_count):
-		var chosen_item = null
-		
-		# Intentar usar ItemsDefinitions
-		if items_defs and items_defs.has_method("get_weighted_random_item"):
-			var player_level = 1
-			if get_tree() and get_tree().root and get_tree().root.get_node_or_null("ExperienceManager"):
-				var em = get_tree().root.get_node("ExperienceManager")
-				if em and em.has("current_level"):
-					player_level = int(em.current_level)
-			
-			# Usar rareza del cofre como base mínima preferida
-			chosen_item = items_defs.get_weighted_random_item(player_level, luck_modifier)
-			
-			if chosen_item and typeof(chosen_item) == TYPE_DICTIONARY and chosen_item.has("id"):
-				var item_id = chosen_item.id
-				var item_rarity_local = int(chosen_item.rarity) if chosen_item.has("rarity") else get_item_rarity_for_chest()
+	# Usar LootManager si está disponible
+	if ClassDB.class_exists("LootManager") or ResourceLoader.exists("res://scripts/managers/LootManager.gd"):
+		var loot_class = load("res://scripts/managers/LootManager.gd")
+		if loot_class:
+			# Calcular modificador de suerte
+			var luck_modifier = 1.0
+			var sm = get_tree().root.get_node_or_null("SaveManager") if get_tree() and get_tree().root else null
+			if sm and sm.has_method("get_meta_data"):
+				var meta = sm.get_meta_data()
+				var luck_points = int(meta.get("luck_points", 0))
+				luck_modifier = 1.0 + (luck_points * 0.02)
 				
-				# Boost de rareza si el item salió inferior a la del cofre
-				if item_rarity_local < chest_rarity:
-					item_rarity_local = chest_rarity
-				
-				items_inside.append({"type": item_id, "rarity": item_rarity_local, "source": "chest"})
-				continue
+			items_inside = loot_class.get_chest_loot(chest_type, luck_modifier)
+			
+			# Fallback si LootManager devuelve vacío
+			if items_inside.size() == 0:
+				items_inside.append(loot_class._generate_gold_loot(chest_type, 1.0))
+			return
 
-		# Fallback
-		var item_type = get_random_chest_item()
-		var item_rarity = get_item_rarity_for_chest()
-		if item_rarity < chest_rarity: item_rarity = chest_rarity
-		
-		items_inside.append({
-			"type": item_type,
-			"rarity": item_rarity,
-			"source": "chest"
-		})
-
-func get_item_rarity_for_chest() -> int:
-	"""Obtener rareza de item con progresión temporal + tipo de cofre"""
-	# Base de tiempo
-	var minutes_elapsed = 0
-	var game_manager = null
-	if get_tree() and get_tree().root and get_tree().root.get_node_or_null("GameManager"):
-		game_manager = get_tree().root.get_node("GameManager")
-	if game_manager and game_manager.has_method("get_elapsed_minutes"):
-		minutes_elapsed = game_manager.get_elapsed_minutes()
-	
-	var difficulty_round = minutes_elapsed / 5.0
-	var rand_value = randf()
-	var rarity = 0 
-	
-	# Lógica básica (simplificada)
-	if difficulty_round < 1:
-		rarity = 0 if rand_value < 0.8 else 1
-	elif difficulty_round < 3:
-		if rand_value < 0.5: rarity = 0
-		elif rand_value < 0.9: rarity = 1
-		else: rarity = 2
-	else:
-		if rand_value < 0.3: rarity = 0
-		elif rand_value < 0.7: rarity = 1
-		elif rand_value < 0.95: rarity = 2
-		else: rarity = 3
-	
-	# Boost por tipo de cofre
-	if chest_type == ChestType.ELITE:
-		rarity = max(rarity, 1) # Mínimo azul
-	elif chest_type == ChestType.BOSS:
-		rarity = max(rarity, 3) # Mínimo naranja
-	
-	return rarity
+	# Fallback legacy si no existe LootManager (para evitar crash)
+	items_inside.append({
+		"type": "gold",
+		"id": "gold_bag_legacy",
+		"name": "Bolsa de Oro",
+		"amount": 100,
+		"rarity": 1,
+		"icon": "💰"
+	})
 
 func get_random_chest_item() -> String:
 	var item_types = [

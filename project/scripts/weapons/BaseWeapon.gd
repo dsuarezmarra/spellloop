@@ -61,6 +61,10 @@ var effect_duration: float = 0.0
 var current_cooldown: float = 0.0
 var ready_to_fire: bool = true
 
+# Cache para optimización
+var _cached_global_stats: Node = null
+var _cached_player_stats: Node = null
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -233,7 +237,21 @@ func is_ready_to_fire() -> bool:
 
 func start_cooldown() -> void:
 	"""Iniciar el cooldown después de disparar"""
-	current_cooldown = cooldown
+	# APLICAR MEJORAS GLOBALES DE VELOCIDAD DE ATAQUE
+	# GlobalWeaponStats convierte cooldown_mult (-10% CD) en attack_speed_mult (+11% Speed)
+	# Formula: cooldown_real = cooldown_base / attack_speed_mult
+	
+	var attack_speed_mult = 1.0
+	var global_stats = _get_global_weapon_stats_node()
+	
+	if global_stats and global_stats.has_method("get_stat"):
+		attack_speed_mult = global_stats.get_stat("attack_speed_mult")
+	
+	# Asegurar que no sea 0 para evitar división por cero
+	if attack_speed_mult <= 0.01:
+		attack_speed_mult = 0.01
+		
+	current_cooldown = cooldown / attack_speed_mult
 	ready_to_fire = false
 
 func get_cooldown_progress() -> float:
@@ -629,49 +647,61 @@ func _build_projectile_data(dmg: float, crit: float) -> Dictionary:
 func _get_global_weapon_stats() -> Dictionary:
 	"""
 	Obtener stats globales COMBINADOS de armas (GlobalWeaponStats + PlayerStats).
-	Usa AttackManager._get_combined_global_stats() para incluir todos los modificadores.
+	 Usa caching para evitar búsquedas costosas en cada frame.
 	"""
-	var tree = Engine.get_main_loop() as SceneTree
-	if not tree:
-		return {}
-	
-	# Primero intentar obtener stats combinados del AttackManager
-	var am_nodes = tree.get_nodes_in_group("attack_manager")
-	var am = am_nodes[0] if am_nodes.size() > 0 else null
-	
-	if am and am.has_method("_get_combined_global_stats"):
+	var am = _get_attack_manager_node()
+	if am:
 		return am._get_combined_global_stats()
 	
-	# Fallback: solo GlobalWeaponStats (sin stats de PlayerStats)
-	var gws_nodes = tree.get_nodes_in_group("global_weapon_stats")
-	var gws = gws_nodes[0] if gws_nodes.size() > 0 else null
-	
-	if gws and gws.has_method("get_all_stats"):
+	var gws = _get_global_weapon_stats_node()
+	if gws:
 		return gws.get_all_stats()
 	
 	return {}
 
+func _get_global_weapon_stats_node() -> Node:
+	"""Obtener nodo GlobalWeaponStats con caching"""
+	if is_instance_valid(_cached_global_stats):
+		return _cached_global_stats
+		
+	var tree = Engine.get_main_loop() as SceneTree
+	if not tree:
+		return null
+		
+	var nodes = tree.get_nodes_in_group("global_weapon_stats")
+	if nodes.size() > 0:
+		_cached_global_stats = nodes[0]
+		return _cached_global_stats
+		
+	return null
+
+func _get_attack_manager_node() -> Node:
+	"""Helper para obtener AttackManager (no lo cacheamos permanente pq puede cambiar)"""
+	var tree = Engine.get_main_loop() as SceneTree
+	if not tree:
+		return null
+	var nodes = tree.get_nodes_in_group("attack_manager") 
+	return nodes[0] if nodes.size() > 0 else null
+
 func _get_modified_effect_duration(base_duration: float) -> float:
 	"""
 	Obtener la duración del efecto modificada por status_duration_mult de PlayerStats.
-	Esto afecta a efectos como slow, burn, freeze, stun, etc.
 	"""
-	# BaseWeapon extiende RefCounted, no Node, así que usamos Engine.get_main_loop()
-	var tree = Engine.get_main_loop() as SceneTree
-	if not tree:
-		return base_duration
+	if not is_instance_valid(_cached_player_stats):
+		var tree = Engine.get_main_loop() as SceneTree
+		if tree:
+			var nodes = tree.get_nodes_in_group("player_stats")
+			if nodes.size() > 0:
+				_cached_player_stats = nodes[0]
 	
-	var player_stats_nodes = tree.get_nodes_in_group("player_stats")
-	if player_stats_nodes.is_empty():
-		return base_duration
-	
-	var player_stats = player_stats_nodes[0]
-	if player_stats and player_stats.has_method("get_stat"):
-		var duration_mult = player_stats.get_stat("status_duration_mult")
+	if _cached_player_stats and _cached_player_stats.has_method("get_stat"):
+		var duration_mult = _cached_player_stats.get_stat("status_duration_mult")
 		if duration_mult > 0:
 			return base_duration * duration_mult
-	
+			
 	return base_duration
+
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # APLICACIÓN DE EFECTOS

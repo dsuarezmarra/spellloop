@@ -2,106 +2,110 @@
 extends SceneTree
 
 # CompatibilityAnalysis.gd
-# Herramienta para analizar compatibilidad entre armas y mejoras
+# Herramienta para analizar compatibilidad EXHAUSTIVA entre armas (incluyendo fusiones) y mejoras
 # Ejecutar con: godot -s scripts/tools/CompatibilityAnalysis.gd
 
 func _init():
 	print("════════════════════════════════════════════════════════════")
-	print("🔍 INICIANDO ANÁLISIS DE COMPATIBILIDAD ARMAS-MEJORAS")
+	print("🔍 ANÁLISIS COMPLETO DE COMPATIBILIDAD (FUSIONES INCLUIDAS)")
 	print("════════════════════════════════════════════════════════════")
 	
-	# Cargar bases de datos
-	var weapon_db = load("res://scripts/data/WeaponDatabase.gd").new()
-	var passive_db = load("res://scripts/data/PassiveDatabase.gd").new()
+	# 1. Cargar bases de datos
+	var weapon_db_script = load("res://scripts/data/WeaponDatabase.gd")
+	if not weapon_db_script:
+		print("❌ Error: No se pudo cargar WeaponDatabase.gd")
+		quit()
+		return
+
+	var weapon_db = weapon_db_script.new()
+	var weapons = weapon_db.WEAPONS.duplicate()
 	
-	var weapons = weapon_db.WEAPONS
-	var passives = passive_db.PASSIVES
+	# Añadir fusiones al análisis
+	if "FUSIONS" in weapon_db:
+		for fusion_id in weapon_db.FUSIONS:
+			weapons[fusion_id] = weapon_db.FUSIONS[fusion_id]
+			weapons[fusion_id]["is_fusion"] = true
 	
-	print("📋 Armas encontradas: %d" % weapons.size())
-	print("📋 Mejoras encontradas: %d" % passives.size())
+	print("📋 Total Armas a analizar: %d (Base + Fusiones)" % weapons.size())
 	print("────────────────────────────────────────────────────────────")
 
-	# Definir reglas de incompatibilidad conocidas para detectar problemas
-	# Formato: { "stat_upgrade": ["incompatible_weapon_type", "incompatible_projectile_type"] }
-	var weapon_db_script = load("res://scripts/data/WeaponDatabase.gd")
-	var incompatibility_rules = {
-		"pierce": {
-			"projectile_type": [weapon_db_script.ProjectileType.ORBIT, weapon_db_script.ProjectileType.CHAIN, weapon_db_script.ProjectileType.AOE, weapon_db_script.ProjectileType.BEAM],
-			"target_type": [weapon_db_script.TargetType.ORBIT, weapon_db_script.TargetType.AREA]
-		},
-		"projectile_speed": {
-			"projectile_type": [weapon_db_script.ProjectileType.BEAM, weapon_db_script.ProjectileType.AOE], # Beam suele ser instantaneo, AOE estático
-			"target_type": [weapon_db_script.TargetType.AREA]
-		},
-		"area": {
-			"projectile_type": [weapon_db_script.ProjectileType.SINGLE, weapon_db_script.ProjectileType.BEAM] # A veces beam no escala con área, single simple tampoco
-		},
-		"amount": { # Extra projectiles
-			"projectile_type": [weapon_db_script.ProjectileType.BEAM] # A veces no funciona bien en beams si no está programado
-		}
-	}
+	# 2. Definir Heurísticas de Compatibilidad
+	# Reglas: Si un arma tiene X característica, entonces Y mejora es INÚTIL.
+	# Generaremos los tags "no_X" basados en esto.
 	
-	print("\n🚨 DETECTANDO INCOMPATIBILIDADES POTENCIALES ACTUALES:")
-	
-	var issues_found = 0
+	var suggestions = {}
 	
 	for weapon_id in weapons:
-		var weapon = weapons[weapon_id]
-		var w_name = weapon.name
-		var w_proj_type = weapon.get("projectile_type", -1)
-		var w_target_type = weapon.get("target_type", -1)
-		var w_pierce = weapon.get("pierce", 0)
+		var w = weapons[weapon_id]
+		var w_name = w.get("name", "Unknown")
+		var w_proj = w.get("projectile_type", -1)
+		var w_target = w.get("target_type", -1)
+		var w_pierce = w.get("pierce", 0)
+		var w_speed = w.get("projectile_speed", 0)
+		var w_duration = w.get("duration", 0)
+		var w_area = w.get("area", 0)
+		var w_cooldown = w.get("cooldown", 0)
 		
-		# Chequear contra stats de mejoras comunes
+		var suggested_tags = []
 		
-		# CASO 1: Pierce
-		if w_pierce > 100: # Infinito (Orbit, etc)
-			print("  ⚠️  [PIERCE RECUNDANTE] %-15s tiene pierce infinito (%d). Mejoras de 'Pierce +1' son inútiles." % [w_name, w_pierce])
-			issues_found += 1
-		elif w_proj_type in incompatibility_rules["pierce"]["projectile_type"]:
-			print("  ⚠️  [PIERCE INÚTIL]     %-15s es tipo %s. Pierce no suele tener efecto." % [w_name, str(w_proj_type)])
-			issues_found += 1
-			
-		# CASO 2: Chain
-		if w_proj_type == weapon_db_script.ProjectileType.CHAIN:
-			# Chain suele usar "saltos", no pierce.
-			pass 
+		# --- ANÁLISIS DE PIERCE ---
+		# Inútil si: Pierce infinito OR es tipo Ara/Orbit/Beam (generalmente)
+		if w_pierce >= 100 or \
+		   w_proj == weapon_db_script.ProjectileType.ORBIT or \
+		   w_proj == weapon_db_script.ProjectileType.AOE or \
+		   w_proj == weapon_db_script.ProjectileType.BEAM or \
+		   w_proj == weapon_db_script.ProjectileType.CHAIN: # Chain usa chain_count, no pierce
+			suggested_tags.append("no_pierce")
 
-	print("\n────────────────────────────────────────────────────────────")
-	print("💡 SUGERENCIA DE SISTEMA DE TAGS:")
-	print("Para solucionar esto, se recomienda añadir los siguientes tags a las armas:")
-	
-	for weapon_id in weapons:
-		var weapon = weapons[weapon_id]
-		var recommended_tags = []
-		var w_proj_type = weapon.get("projectile_type", -1)
+		# --- ANÁLISIS DE VELOCIDAD DE PROYECTIL ---
+		# Inútil si: Estático (AOE centrado), Instantáneo (Beam, aunque a veces afecta speed de aparición), o Orbital (speed afecta rotación?)
+		# Asumimos que AOE puro (pico de tierra) no usa speed.
+		if w_speed <= 0 or w_speed >= 999:
+			# Ojo: Algunos beams instantaneos usan 999 pero no se benefician de más speed.
+			# Algunos AOE estáticos tienen speed 0.
+			suggested_tags.append("no_projectile_speed")
+			
+		# --- ANÁLISIS DE ÁREA ---
+		# Inútil si: Single Target sin explosión?
+		# La mayoría de armas aceptan área (hitbox size).
+		# Excepción: Quizás armas muy puntería? Pero casi todo en VS-like tiene Area.
+		# Dejamos Area como generalmente valido, salvo que sea explícitamente "point" damage.
 		
-		# Lógica de tags sugeridos
-		if w_proj_type == weapon_db_script.ProjectileType.ORBIT or weapon.get("pierce", 0) > 100:
-			recommended_tags.append("no_pierce")
+		# --- ANÁLISIS DE DURACIÓN ---
+		# Inútil si: Disparo instantáneo sin persistencia.
+		# Ej: Disparo básico que desaparece al hit (duration 0).
+		# Ej: Beam instantaneo (duration > 0 suele ser cuanto dura el beam).
+		if w_duration <= 0 and w_proj != weapon_db_script.ProjectileType.BEAM: 
+			# Beams suelen tener duracion. Proyectiles normales (hit and die) tienen duration 0 en data?
+			# Revisar data: Ice Wand tiene duration 0.0 -> no se beneficia de duration_mult.
+			suggested_tags.append("no_duration")
+
+		# --- ANÁLISIS DE COOLDOWN ---
+		# Casi todas usan cooldown. Excepción: Armas pasivas siempre activas (Orbit? No, Orbit suele tener cooldown de respawn/orbit speed).
+		# Arcane Orb tiene cooldown 0.0?
+		if w_cooldown <= 0:
+			suggested_tags.append("no_cooldown")
 			
-		if w_proj_type == weapon_db_script.ProjectileType.CHAIN:
-			recommended_tags.append("chain")
-			recommended_tags.append("no_pierce") # Generalmente chain reemplaza pierce
+		# --- ANÁLISIS DE MULTI-PROYECTIL (Amount) ---
+		# Inútil si: Arma única fija? (Ej: escudo corporal único).
+		# Generalmente valido para todos. 
+		
+		# --- TAGS POSITIVOS (Requisitos) ---
+		if w_proj == weapon_db_script.ProjectileType.CHAIN:
+			suggested_tags.append("chain")
 			
-		if w_proj_type == weapon_db_script.ProjectileType.AOE:
-			recommended_tags.append("aoe")
-			recommended_tags.append("no_pierce")
-			recommended_tags.append("no_speed") # Speed suele no afectar AOE estáticos
-			
-		if w_proj_type == weapon_db_script.ProjectileType.BEAM:
-			recommended_tags.append("beam")
-			recommended_tags.append("no_pierce")
-			
-		if recommended_tags.size() > 0:
-			print("  🔸 %-15s -> Tags sugeridos: %s" % [weapon.name, str(recommended_tags)])
-			
+		
+		if not suggested_tags.is_empty():
+			suggestions[weapon_id] = suggested_tags
+
+	# 3. Reporte
+	print("\n📊 REPORTE DE TAGS SUGERIDOS:")
+	print("Copiar estos tags a WeaponDatabase.gd para filtrar mejoras inútiles.")
+	
+	for id in suggestions:
+		var w = weapons[id]
+		var type_str = "FUSION" if w.get("is_fusion", false) else "BASE"
+		print("%-25s [%s] -> %s" % [w.name, type_str, str(suggestions[id])])
+		
 	print("\n════════════════════════════════════════════════════════════")
-	print("ANÁLISIS COMPLETADO. %d Problemas potenciales detectados." % issues_found)
 	quit()
-
-func _get_enum_string(enum_dict, value):
-	for key in enum_dict.keys():
-		if enum_dict[key] == value:
-			return key
-	return "UNKNOWN"

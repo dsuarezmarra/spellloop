@@ -433,6 +433,9 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 # CALLBACKS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# Referencia a la escena del cofre
+var chest_scene: PackedScene = preload("res://scenes/interactables/TreasureChest.tscn")
+
 func _on_enemy_died(enemy: Node, type_id: String = "", exp_value: int = 0, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
 	if enemy in active_enemies:
 		active_enemies.erase(enemy)
@@ -441,12 +444,40 @@ func _on_enemy_died(enemy: Node, type_id: String = "", exp_value: int = 0, enemy
 	if is_instance_valid(enemy) and enemy is Node2D:
 		pos = enemy.global_position
 
+	# SPAWN COFRES PARA ÉLITES Y BOSSES
+	if (is_elite or is_boss) and chest_scene:
+		_spawn_reward_chest_deferred.call_deferred(pos, is_elite, is_boss)
+
 	enemy_died.emit(pos, type_id, exp_value, enemy_tier, is_elite, is_boss)
 
 	if debug_spawns:
 		var elite_str = " [ELITE]" if is_elite else ""
 		var boss_str = " [BOSS]" if is_boss else ""
 		print("[EnemyManager] Enemy died: T%d %s%s%s XP:%d" % [enemy_tier, type_id, elite_str, boss_str, exp_value])
+
+func _spawn_reward_chest_deferred(pos: Vector2, is_elite: bool, is_boss: bool) -> void:
+	"""Spawnear cofre de recompensa de forma segura"""
+	var chest_type = 1 # ELITE default (ChestType.ELITE)
+	if is_boss:
+		chest_type = 2 # BOSS (ChestType.BOSS)
+		
+	var chest = chest_scene.instantiate()
+	
+	# Añadir a la escena
+	var root = get_tree().current_scene
+	if root:
+		# Intentar ponerlo en una capa de items si existe
+		if root.has_node("WorldRoot/ItemsRoot"):
+			root.get_node("WorldRoot/ItemsRoot").add_child(chest)
+		else:
+			root.add_child(chest)
+			
+		# Inicializar
+		if chest.has_method("initialize"):
+			chest.initialize(pos, chest_type, player)
+			
+		# Debug
+		print("🎁 [EnemyManager] Cofre spawneado: %s en %s" % ["BOSS" if is_boss else "ELITE", pos])
 
 func _cleanup_dead_enemies() -> void:
 	var to_remove = []
