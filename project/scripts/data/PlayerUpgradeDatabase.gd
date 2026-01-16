@@ -117,12 +117,12 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 	"regen_2": {
 		"id": "regen_2",
 		"name": "Regeneración",
-		"description": "+1.5 HP/segundo.",
+		"description": "+2.5 HP/segundo.",
 		"icon": "💚",
 		"category": "defensive",
 		"tier": 2,
 		"max_stacks": 4,
-		"effects": [{"stat": "health_regen", "value": 1.5, "operation": "add"}]
+		"effects": [{"stat": "health_regen", "value": 2.5, "operation": "add"}]
 	},
 	"regen_3": {
 		"id": "regen_3",
@@ -195,42 +195,42 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 	"dodge_1": {
 		"id": "dodge_1",
 		"name": "Agilidad",
-		"description": "+5% probabilidad de esquivar.",
+		"description": "+3% probabilidad de esquivar.",
 		"icon": "💨",
 		"category": "defensive",
 		"tier": 1,
-		"max_stacks": 6,
-		"effects": [{"stat": "dodge_chance", "value": 0.05, "operation": "add"}]
+		"max_stacks": 4,
+		"effects": [{"stat": "dodge_chance", "value": 0.03, "operation": "add"}]
 	},
 	"dodge_2": {
 		"id": "dodge_2",
 		"name": "Reflejos Rápidos",
-		"description": "+10% probabilidad de esquivar.",
+		"description": "+6% probabilidad de esquivar.",
 		"icon": "💨",
 		"category": "defensive",
 		"tier": 2,
-		"max_stacks": 4,
-		"effects": [{"stat": "dodge_chance", "value": 0.10, "operation": "add"}]
+		"max_stacks": 3,
+		"effects": [{"stat": "dodge_chance", "value": 0.06, "operation": "add"}]
 	},
 	"dodge_3": {
 		"id": "dodge_3",
 		"name": "Evasión",
-		"description": "+15% probabilidad de esquivar.",
+		"description": "+10% probabilidad de esquivar.",
 		"icon": "💨",
 		"category": "defensive",
 		"tier": 3,
 		"max_stacks": 2,
-		"effects": [{"stat": "dodge_chance", "value": 0.15, "operation": "add"}]
+		"effects": [{"stat": "dodge_chance", "value": 0.10, "operation": "add"}]
 	},
 	"dodge_4": {
 		"id": "dodge_4",
 		"name": "Sombra Elusiva",
-		"description": "+20% probabilidad de esquivar.",
+		"description": "+15% probabilidad de esquivar.",
 		"icon": "💨",
 		"category": "defensive",
 		"tier": 4,
-		"max_stacks": 1,
-		"effects": [{"stat": "dodge_chance", "value": 0.20, "operation": "add"}]
+		"max_stacks": 2,
+		"effects": [{"stat": "dodge_chance", "value": 0.15, "operation": "add"}]
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -239,12 +239,12 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 	"lifesteal_1": {
 		"id": "lifesteal_1",
 		"name": "Vampirismo Menor",
-		"description": "+3% robo de vida.",
+		"description": "+5% robo de vida.",
 		"icon": "🩸",
 		"category": "defensive",
 		"tier": 2,
-		"max_stacks": 5,
-		"effects": [{"stat": "life_steal", "value": 0.03, "operation": "add"}]
+		"max_stacks": 4,
+		"effects": [{"stat": "life_steal", "value": 0.05, "operation": "add"}]
 	},
 	"lifesteal_2": {
 		"id": "lifesteal_2",
@@ -307,52 +307,58 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 	"thorns_1": {
 		"id": "thorns_1",
 		"name": "Espinas Menores",
-		"description": "Refleja 5 daño a atacantes cuerpo a cuerpo.",
+		"description": "Refleja 5% del daño recibido a atacantes.",
 		"icon": "🌵",
 		"category": "defensive",
 		"tier": 1,
-		"max_stacks": 6,
-		"effects": [{"stat": "thorns", "value": 5, "operation": "add"}]
+		"max_stacks": 5,
+		"effects": [{"stat": "thorns_percent", "value": 0.05, "operation": "add"}]
 	},
 	"thorns_2": {
 		"id": "thorns_2",
 		"name": "Espinas",
-		"description": "Refleja 15 daño a atacantes.",
+		"description": "Refleja 12% del daño recibido.",
 		"icon": "🌵",
 		"category": "defensive",
 		"tier": 2,
 		"max_stacks": 4,
-		"effects": [{"stat": "thorns", "value": 15, "operation": "add"}]
+		"effects": [{"stat": "thorns_percent", "value": 0.12, "operation": "add"}]
 	},
 	"thorns_3": {
 		"id": "thorns_3",
 		"name": "Espinas Venenosas",
-		"description": "Refleja 30 daño a atacantes.",
+		"description": "Refleja 20% del daño recibido.",
 		"icon": "🌵",
 		"category": "defensive",
 		"tier": 3,
 		"max_stacks": 3,
-		"effects": [{"stat": "thorns", "value": 30, "operation": "add"}]
+		"effects": [{"stat": "thorns_percent", "value": 0.20, "operation": "add"}]
 	},
 	"thorns_percent_1": {
 		"id": "thorns_percent_1",
 		"name": "Retribución",
-		"description": "Refleja 25% del daño recibido.",
-		"icon": "⚡",
-		"category": "defensive",
-		"tier": 3,
-		"max_stacks": 3,
-		"effects": [{"stat": "thorns_percent", "value": 0.25, "operation": "add"}]
-	},
-	"thorns_percent_2": {
-		"id": "thorns_percent_2",
-		"name": "Venganza",
-		"description": "Refleja 50% del daño recibido.",
+		"description": "Refleja 30% del daño recibido. Los ataques reflejados ralentizan.",
 		"icon": "⚡",
 		"category": "defensive",
 		"tier": 4,
 		"max_stacks": 2,
-		"effects": [{"stat": "thorns_percent", "value": 0.50, "operation": "add"}]
+		"effects": [
+			{"stat": "thorns_percent", "value": 0.30, "operation": "add"},
+			{"stat": "thorns_slow", "value": 0.25, "operation": "add"}
+		]
+	},
+	"thorns_percent_2": {
+		"id": "thorns_percent_2",
+		"name": "Venganza Divina",
+		"description": "Refleja 50% del daño recibido. Los ataques reflejados aturden 0.3s.",
+		"icon": "⚡",
+		"category": "defensive",
+		"tier": 5,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "thorns_percent", "value": 0.50, "operation": "add"},
+			{"stat": "thorns_stun", "value": 0.3, "operation": "add"}
+		]
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -361,22 +367,22 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 	"kill_heal_1": {
 		"id": "kill_heal_1",
 		"name": "Absorción",
-		"description": "+1 HP por enemigo eliminado.",
+		"description": "+2 HP por enemigo eliminado.",
 		"icon": "💀",
 		"category": "defensive",
 		"tier": 2,
-		"max_stacks": 5,
-		"effects": [{"stat": "kill_heal", "value": 1, "operation": "add"}]
+		"max_stacks": 4,
+		"effects": [{"stat": "kill_heal", "value": 2, "operation": "add"}]
 	},
 	"kill_heal_2": {
 		"id": "kill_heal_2",
 		"name": "Devorador",
-		"description": "+3 HP por enemigo eliminado.",
+		"description": "+4 HP por enemigo eliminado.",
 		"icon": "💀",
 		"category": "defensive",
 		"tier": 3,
 		"max_stacks": 3,
-		"effects": [{"stat": "kill_heal", "value": 3, "operation": "add"}]
+		"effects": [{"stat": "kill_heal", "value": 4, "operation": "add"}]
 	},
 	"kill_heal_3": {
 		"id": "kill_heal_3",
@@ -1079,7 +1085,7 @@ const CURSED_UPGRADES: Dictionary = {
 	"cursed_scatter_1": {
 		"id": "cursed_scatter_1",
 		"name": "Disparo Disperso",
-		"description": "+1 proyectil, pero -20% daño por proyectil.",
+		"description": "+1 proyectil, pero -10% daño por proyectil.",
 		"icon": "🎯",
 		"category": "cursed",
 		"tier": 3,
@@ -1087,13 +1093,13 @@ const CURSED_UPGRADES: Dictionary = {
 		"max_stacks": 2,
 		"effects": [
 			{"stat": "extra_projectiles", "value": 1, "operation": "add"},
-			{"stat": "damage_mult", "value": 0.80, "operation": "multiply"}
+			{"stat": "damage_mult", "value": 0.90, "operation": "multiply"}
 		]
 	},
 	"cursed_scatter_2": {
 		"id": "cursed_scatter_2",
 		"name": "Metralla",
-		"description": "+2 proyectiles, pero -35% daño por proyectil.",
+		"description": "+2 proyectiles, pero -20% daño por proyectil.",
 		"icon": "🎯",
 		"category": "cursed",
 		"tier": 4,
@@ -1101,7 +1107,7 @@ const CURSED_UPGRADES: Dictionary = {
 		"max_stacks": 1,
 		"effects": [
 			{"stat": "extra_projectiles", "value": 2, "operation": "add"},
-			{"stat": "damage_mult", "value": 0.65, "operation": "multiply"}
+			{"stat": "damage_mult", "value": 0.80, "operation": "multiply"}
 		]
 	},
 	
@@ -1190,14 +1196,17 @@ const UNIQUE_UPGRADES: Dictionary = {
 	"unique_second_chance": {
 		"id": "unique_second_chance",
 		"name": "Segunda Vida",
-		"description": "Revives una vez con 30% HP. (Se consume)",
+		"description": "Revives una vez con 50% HP + 3s invulnerabilidad. (Se consume)",
 		"icon": "💫",
 		"category": "unique",
 		"tier": 4,
 		"is_unique": true,
 		"is_consumable": true,
 		"max_stacks": 1,
-		"effects": [{"stat": "revives", "value": 1, "operation": "add"}]
+		"effects": [
+			{"stat": "revives", "value": 1, "operation": "add"},
+			{"stat": "revive_invuln", "value": 3.0, "operation": "add"}
+		]
 	},
 	"unique_critical_mastery": {
 		"id": "unique_critical_mastery",
@@ -1388,15 +1397,17 @@ const UNIQUE_UPGRADES: Dictionary = {
 	"unique_berserker_rage": {
 		"id": "unique_berserker_rage",
 		"name": "Furia del Berserker",
-		"description": "+50% daño, +25% velocidad ataque. Modo agresivo permanente.",
+		"description": "+50% daño, +25% velocidad ataque, pero -15% vida máxima.",
 		"icon": "😡",
 		"category": "unique",
 		"tier": 5,
 		"is_unique": true,
+		"is_cursed": true,
 		"max_stacks": 1,
 		"effects": [
 			{"stat": "damage_mult", "value": 1.50, "operation": "multiply"},
-			{"stat": "attack_speed_mult", "value": 1.25, "operation": "multiply"}
+			{"stat": "attack_speed_mult", "value": 1.25, "operation": "multiply"},
+			{"stat": "max_health", "value": 0.85, "operation": "multiply"}
 		]
 	},
 	# ─────────────────────────────────────────────────────────────────────────────

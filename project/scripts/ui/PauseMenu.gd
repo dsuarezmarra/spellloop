@@ -620,9 +620,12 @@ const DEFAULT_STAT_VALUES = {
 	"damage_taken_mult": 1.0,
 	"thorns": 0.0,
 	"thorns_percent": 0.0,
+	"thorns_slow": 0.0,
+	"thorns_stun": 0.0,
 	"shield_amount": 0.0,
 	"shield_regen": 0.0,
 	"revives": 0.0,
+	"revive_invuln": 0.0,
 	# Armas globales
 	"damage_mult": 1.0,
 	"attack_speed_mult": 1.0,

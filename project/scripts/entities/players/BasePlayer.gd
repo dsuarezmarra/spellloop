@@ -656,6 +656,8 @@ func _apply_thorns_damage(attacker: Node, damage_received: int, player_stats: No
 	"""Aplicar daño de espinas al atacante"""
 	var thorns_flat = player_stats.get_stat("thorns") if player_stats.has_method("get_stat") else 0.0
 	var thorns_percent = player_stats.get_stat("thorns_percent") if player_stats.has_method("get_stat") else 0.0
+	var thorns_slow = player_stats.get_stat("thorns_slow") if player_stats.has_method("get_stat") else 0.0
+	var thorns_stun = player_stats.get_stat("thorns_stun") if player_stats.has_method("get_stat") else 0.0
 	
 	# Calcular daño total de espinas
 	var thorns_damage = int(thorns_flat + (damage_received * thorns_percent))
@@ -671,6 +673,14 @@ func _apply_thorns_damage(attacker: Node, damage_received: int, player_stats: No
 		# Mostrar texto flotante sobre el enemigo
 		if "global_position" in attacker:
 			FloatingText.spawn_damage(attacker.global_position + Vector2(0, -20), thorns_damage, false)
+		
+		# Aplicar ralentización si hay thorns_slow
+		if thorns_slow > 0 and attacker.has_method("apply_slow"):
+			attacker.apply_slow(thorns_slow, 1.5)  # 1.5s de duración
+		
+		# Aplicar aturdimiento si hay thorns_stun
+		if thorns_stun > 0 and attacker.has_method("apply_stun"):
+			attacker.apply_stun(thorns_stun)
 
 func _play_damage_flash(element: String) -> void:
 	"""Flash de daño según el elemento"""

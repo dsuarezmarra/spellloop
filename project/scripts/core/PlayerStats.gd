@@ -455,6 +455,9 @@ const BASE_STATS: Dictionary = {
 	"damage_taken_mult": 1.0,      # Multiplicador de daño recibido (menor = mejor)
 	"thorns": 0.0,                 # Daño plano reflejado
 	"thorns_percent": 0.0,         # % del daño reflejado
+	"thorns_slow": 0.0,            # Ralentización aplicada por espinas
+	"thorns_stun": 0.0,            # Duración de aturdimiento por espinas
+	"revive_invuln": 0.0,          # Segundos de invulnerabilidad al revivir
 	"shield_amount": 0.0,          # Escudo que absorbe daño
 	"max_shield": 0.0,             # Escudo máximo (para regeneración)
 	"shield_regen": 0.0,           # Regeneración de escudo/s
@@ -542,6 +545,9 @@ const STAT_LIMITS: Dictionary = {
 	"execute_threshold": {"min": 0.0, "max": 0.15},  # Máximo 15% HP
 	"overkill_damage": {"min": 0.0, "max": 1.0},     # Máximo 100%
 	"thorns_percent": {"min": 0.0, "max": 2.0},      # Máximo 200%
+	"thorns_slow": {"min": 0.0, "max": 0.5},         # Máximo 50% slow
+	"thorns_stun": {"min": 0.0, "max": 1.0},         # Máximo 1s stun
+	"revive_invuln": {"min": 0.0, "max": 5.0},       # Máximo 5s invulnerabilidad
 	"curse": {"min": 0.0, "max": 2.0},               # Máximo 200%
 	"growth": {"min": 0.0, "max": 1.0},              # Máximo 100%
 
