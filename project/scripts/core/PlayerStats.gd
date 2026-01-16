@@ -21,9 +21,13 @@
 extends Node
 class_name PlayerStats
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SEÑALES
-# ═══════════════════════════════════════════════════════════════════════════════
+# ========== REFERENCIAS ==========
+var player_ref = null
+var attack_manager = null
+var global_weapon_stats = null
+var game_manager = null
+
+# ========== SEÑALES ==========
 
 signal stat_changed(stat_name: String, old_value: float, new_value: float)
 signal health_changed(current: float, maximum: float)
@@ -1037,6 +1041,24 @@ func _apply_weapon_stat_upgrade(stat_name: String, value: float, operation: Stri
 			gws.add_stat(stat_name, diff)
 	else:
 		push_warning("[PlayerStats] Cannot apply weapon stat %s: GlobalWeaponStats missing" % stat_name)
+
+func _get_global_weapon_stats() -> Node:
+	"""Helper para obtener GlobalWeaponStats"""
+	# 1. Referencia directa si la tenemos
+	if global_weapon_stats:
+		return global_weapon_stats
+		
+	# 2. A través de group
+	if is_inside_tree():
+		var nodes = get_tree().get_nodes_in_group("global_weapon_stats")
+		if nodes.size() > 0:
+			return nodes[0]
+			
+	# 3. A través de AttackManager si existe referencia
+	if attack_manager and attack_manager.has_method("get_global_weapon_stats"):
+		return attack_manager.get_global_weapon_stats()
+		
+	return null
 
 func add_stat(stat_name: String, amount: float) -> void:
 	"""Añadir valor a un stat (permanente)"""
