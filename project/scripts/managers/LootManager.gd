@@ -386,15 +386,14 @@ static func _generate_shop_item(base_tier: int, time_bonus: int, luck: float) ->
 
 static func _generate_shop_weapon(base_tier: int, luck: float) -> Dictionary:
 	"""Generar arma para tienda"""
-	var weapons = WeaponDatabase.get_tiered_weapons(base_tier)
-	if weapons.is_empty():
-		# Fallback a armas base
-		var all_weapons = WeaponDatabase.get_base_weapons()
-		if all_weapons.is_empty():
-			return {}
-		weapons = all_weapons
+	# Obtener todas las armas base del diccionario
+	var all_weapon_ids = WeaponDatabase.WEAPONS.keys()
 	
-	var weapon_id = weapons[randi() % weapons.size()]
+	if all_weapon_ids.is_empty():
+		return {}
+	
+	# Seleccionar arma aleatoria
+	var weapon_id = all_weapon_ids[randi() % all_weapon_ids.size()]
 	var weapon_data = WeaponDatabase.get_weapon_data(weapon_id)
 	
 	if weapon_data.is_empty():

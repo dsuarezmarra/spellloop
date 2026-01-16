@@ -521,7 +521,7 @@ const BASE_STATS: Dictionary = {
 
 	# Utilidad
 	"move_speed": 100.0,          # Velocidad en px/s (valor absoluto, no multiplicador)
-	"pickup_range": 50.0,         # Rango de recogida en px (valor absoluto)
+	"pickup_range": 150.0,        # Rango de recogida en px (valor absoluto) - AUMENTADO de 50
 	"pickup_range_flat": 0.0,
 	"magnet_strength": 1.0,        # Velocidad de atracción
 	"xp_mult": 1.0,

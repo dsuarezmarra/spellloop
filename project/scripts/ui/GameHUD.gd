@@ -19,6 +19,7 @@ class_name GameHUD
 
 @onready var boss_bar: ProgressBar = $Control/TopCenter/BossHPBar
 @onready var boss_label: Label = $Control/TopCenter/BossHPBar/BossNameLabel
+@onready var shield_bar: ProgressBar = $Control/TopLeft/ShieldBar
 
 # -- Variables internas --
 var _weapons_cache: Array = []
@@ -36,6 +37,7 @@ func _ready():
 	
 	# IMPROVE: Estilizar barras programáticamente para asegurar look premium
 	_style_hud_elements()
+	_style_shield_bar()
 
 func _style_hud_elements():
 	if hp_bar:
@@ -81,6 +83,21 @@ func update_health(current: int, max_val: int):
 		# Actualizar texto dentro de la barra si existe
 		var lbl = hp_bar.get_node_or_null("Label")
 		if lbl: lbl.text = "%d / %d" % [current, max_val]
+
+func update_shield(current: int, max_val: int):
+	if shield_bar:
+		shield_bar.max_value = maxi(max_val, 1)
+		shield_bar.value = current
+		# Actualizar texto
+		var lbl = shield_bar.get_node_or_null("Label")
+		if lbl:
+			if max_val > 0:
+				lbl.text = "%d / %d" % [current, max_val]
+			else:
+				lbl.text = "0"
+		
+		# Cambiar color según si tiene escudo
+		_update_shield_bar_color(current, max_val)
 
 func update_exp(current: int, max_val: int):
 	if xp_bar:
@@ -309,3 +326,43 @@ func show_wave_message(text: String, duration: float = 3.0):
 	tween.tween_interval(duration)
 	tween.tween_property(msg_label, "modulate:a", 0.0, 0.5)
 	tween.tween_callback(msg_label.queue_free)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHIELD BAR
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _update_shield_bar_color(current: int, max_val: int):
+	"""Actualizar color del shield bar según si tiene escudo"""
+	if not shield_bar:
+		return
+	
+	var sb_bg = StyleBoxFlat.new()
+	sb_bg.set_corner_radius_all(2)
+	
+	var sb_fill = StyleBoxFlat.new()
+	sb_fill.set_corner_radius_all(2)
+	
+	if max_val > 0 and current > 0:
+		# Tiene escudo - Azul brillante
+		sb_bg.bg_color = Color(0.05, 0.1, 0.2, 0.8)
+		sb_bg.border_color = Color(0.2, 0.4, 0.6)
+		sb_bg.set_border_width_all(1)
+		
+		sb_fill.bg_color = Color(0.2, 0.5, 0.9, 1.0)
+	else:
+		# Sin escudo - Gris azulado
+		sb_bg.bg_color = Color(0.08, 0.08, 0.1, 0.6)
+		sb_bg.border_color = Color(0.15, 0.15, 0.2)
+		sb_bg.set_border_width_all(1)
+		
+		sb_fill.bg_color = Color(0.2, 0.2, 0.3, 0.5)
+	
+	shield_bar.add_theme_stylebox_override("background", sb_bg)
+	shield_bar.add_theme_stylebox_override("fill", sb_fill)
+
+func _style_shield_bar():
+	"""Inicializar estilo de shield bar al crearse"""
+	if shield_bar:
+		# Empezar con estilo gris (sin escudo)
+		_update_shield_bar_color(0, 0)
+
