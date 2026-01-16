@@ -175,9 +175,31 @@ func fire_weapon(weapon: WeaponData, target_position: Vector2):
 	weapon_fired.emit(weapon.id, target_position)
 
 func fire_projectile(weapon: WeaponData, target_position: Vector2):
-	# DESACTIVADO: Solo usamos IceWand.gd para proyectiles
-	# Los puntos violeta venian de SpellloopMagicProjectile
-	pass
+	if not MagicProjectileScript:
+		return
+
+	var projectile = MagicProjectileScript.new()
+	projectile.name = "MagicProjectile"
+	
+	# Determinar daño final (aquí se podrían aplicar buffs globales del player)
+	var final_damage = weapon.damage
+	
+	# Usar initialize del script
+	projectile.initialize(
+		player.global_position,
+		target_position,
+		final_damage,
+		weapon.projectile_speed
+	)
+	
+	# Configurar propiedades adicionales si existen
+	if weapon.tags.has("piercing"):
+		projectile.pierce_count = 1
+	if weapon.tags.has("homing"):
+		projectile.homing_strength = 2.0
+		
+	# Añadir a la escena actual (no al player, para que sean independientes)
+	get_tree().current_scene.add_child(projectile)
 
 
 func fire_area_spell(weapon: WeaponData, _target_position: Vector2):
