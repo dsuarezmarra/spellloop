@@ -124,12 +124,15 @@ func setup_items(items: Array):
 		var item_icon = item.get("icon", "❓") # Emoji fallback
 		var item_id = item.get("id", "")
 		
+		var item_type = item.get("type", "upgrade")
+		var item_rarity = item.get("rarity", item.get("tier", 1) - 1)  # tier-1 = rarity index
+		
 		# Contenedor principal del botón
 		var button = Button.new()
 		button.custom_minimum_size = Vector2(400, 80)
 		button.mouse_filter = Control.MOUSE_FILTER_STOP
 		button.process_mode = Node.PROCESS_MODE_ALWAYS
-		apply_button_style(button, i)
+		apply_button_style(button, i, item_type, item_rarity)
 		
 		# Layout interno (HBox)
 		var hbox = HBoxContainer.new()
@@ -260,37 +263,71 @@ func _update_button_selection():
 			else:
 				item_buttons[i].modulate = Color.WHITE
 
-func apply_button_style(button: Button, index: int):
-	"""Aplicar estilos a los botones"""
+func apply_button_style(button: Button, index: int, item_type: String = "upgrade", rarity: int = 0):
+	"""Aplicar estilos a los botones según tipo de item"""
+	
+	# Colores según tipo de item
+	var border_color: Color
+	var bg_color: Color = Color(0.2, 0.2, 0.2, 1.0)
+	var hover_border_color: Color
+	var pressed_border_color: Color
+	var border_width: int = 2
+	
+	if item_type == "weapon":
+		# ⚔️ ARMAS: Borde cyan/azul brillante con brillo especial
+		border_color = Color(0.0, 0.8, 1.0, 1.0)  # Cyan brillante
+		hover_border_color = Color(0.2, 1.0, 1.0, 1.0)  # Cyan más brillante
+		pressed_border_color = Color(0.5, 1.0, 1.0, 1.0)  # Cyan muy brillante
+		bg_color = Color(0.1, 0.15, 0.2, 1.0)  # Fondo azulado oscuro
+		border_width = 3  # Borde más grueso para destacar
+	else:
+		# 📈 UPGRADES: Borde según tier/rareza
+		match rarity:
+			0:  # Común - Blanco/gris
+				border_color = Color(0.6, 0.6, 0.6, 1.0)
+				hover_border_color = Color(0.8, 0.8, 0.8, 1.0)
+				pressed_border_color = Color(1.0, 1.0, 1.0, 1.0)
+			1:  # Raro - Verde
+				border_color = Color(0.2, 0.8, 0.2, 1.0)
+				hover_border_color = Color(0.3, 1.0, 0.3, 1.0)
+				pressed_border_color = Color(0.5, 1.0, 0.5, 1.0)
+			2:  # Épico - Púrpura
+				border_color = Color(0.6, 0.2, 0.8, 1.0)
+				hover_border_color = Color(0.8, 0.4, 1.0, 1.0)
+				pressed_border_color = Color(1.0, 0.6, 1.0, 1.0)
+			3, 4:  # Legendario/Único - Dorado
+				border_color = Color(1.0, 0.8, 0.0, 1.0)
+				hover_border_color = Color(1.0, 0.9, 0.3, 1.0)
+				pressed_border_color = Color(1.0, 1.0, 0.5, 1.0)
+			_:  # Default - Dorado suave
+				border_color = Color(0.6, 0.4, 0.1, 1.0)
+				hover_border_color = Color(1.0, 0.7, 0.0, 1.0)
+				pressed_border_color = Color(1.0, 1.0, 0.0, 1.0)
+	
 	# Estilo normal
 	var style_normal = StyleBoxFlat.new()
-	style_normal.bg_color = Color(0.2, 0.2, 0.2, 1.0)
-	style_normal.border_color = Color(0.6, 0.4, 0.1, 1.0)
-	style_normal.set_border_width_all(2)
-	style_normal.set_corner_radius_all(4)
+	style_normal.bg_color = bg_color
+	style_normal.border_color = border_color
+	style_normal.set_border_width_all(border_width)
+	style_normal.set_corner_radius_all(6)
 	
 	# Estilo hover
 	var style_hover = StyleBoxFlat.new()
-	style_hover.bg_color = Color(0.3, 0.3, 0.3, 1.0)
-	style_hover.border_color = Color(1.0, 0.7, 0.0, 1.0)
-	style_hover.set_border_width_all(2)
-	style_hover.set_corner_radius_all(4)
+	style_hover.bg_color = Color(bg_color.r + 0.1, bg_color.g + 0.1, bg_color.b + 0.1, 1.0)
+	style_hover.border_color = hover_border_color
+	style_hover.set_border_width_all(border_width)
+	style_hover.set_corner_radius_all(6)
 	
 	# Estilo pressed
 	var style_pressed = StyleBoxFlat.new()
-	style_pressed.bg_color = Color(0.4, 0.4, 0.2, 1.0)
-	style_pressed.border_color = Color(1.0, 1.0, 0.0, 1.0)
-	style_pressed.set_border_width_all(2)
-	style_pressed.set_corner_radius_all(4)
+	style_pressed.bg_color = Color(bg_color.r + 0.2, bg_color.g + 0.2, bg_color.b + 0.1, 1.0)
+	style_pressed.border_color = pressed_border_color
+	style_pressed.set_border_width_all(border_width)
+	style_pressed.set_corner_radius_all(6)
 	
 	button.add_theme_stylebox_override("normal", style_normal)
 	button.add_theme_stylebox_override("hover", style_hover)
 	button.add_theme_stylebox_override("pressed", style_pressed)
-	
-	# Añadir número de opción al texto
-	# DESACTIVADO: Interfiere con el layout personalizado
-	# var original_text = button.text
-	# button.text = "[%d] %s" % [index + 1, original_text]
 
 func create_panel_style() -> StyleBox:
 	"""Crear estilo para el fondo del popup"""

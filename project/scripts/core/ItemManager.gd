@@ -192,9 +192,38 @@ func process_item_collected(item_data: Dictionary):
 	# Emitir señal
 	item_collected.emit(item_type, item_data)
 
-func apply_item_effect(item_type: String, _item_data: Dictionary):
+func apply_item_effect(item_type: String, item_data: Dictionary):
 	"""Aplicar efecto de un item"""
 	match item_type:
+		"weapon":
+			# Arma del cofre - usar add_weapon_by_id con el ID
+			var weapon_id = item_data.get("id", "")
+			if weapon_id == "":
+				push_warning("[ItemManager] Weapon sin ID")
+				return
+			
+			# Buscar AttackManager para añadir arma
+			var attack_manager = get_tree().get_first_node_in_group("attack_manager")
+			if attack_manager and attack_manager.has_method("add_weapon_by_id"):
+				var result = attack_manager.add_weapon_by_id(weapon_id)
+				if result:
+					print("[ItemManager] ⚔️ Arma equipada: %s" % item_data.get("name", weapon_id))
+				else:
+					push_warning("[ItemManager] Error al equipar arma: %s" % weapon_id)
+			else:
+				push_warning("[ItemManager] AttackManager no disponible")
+		
+		"upgrade":
+			# Mejora de stats - aplicar a PlayerStats
+			var upgrade_id = item_data.get("id", "")
+			var player_stats = get_tree().get_first_node_in_group("player_stats")
+			if player_stats and player_stats.has_method("apply_upgrade_by_id"):
+				player_stats.apply_upgrade_by_id(upgrade_id)
+				print("[ItemManager] 📈 Upgrade aplicado: %s" % item_data.get("name", upgrade_id))
+			else:
+				# Fallback: aplicar efectos manualmente
+				_apply_upgrade_effects(item_data, player_stats)
+		
 		"weapon_damage":
 			# Debug desactivado: print("⚡ Daño de armas aumentado")
 			var _cs = null
@@ -226,6 +255,12 @@ func apply_item_effect(item_type: String, _item_data: Dictionary):
 			if player and player.has_method("heal"):
 				player.heal(999)
 			# Debug desactivado: print("🧪 Vida completamente restaurada")
+		"gold":
+			var amount = item_data.get("amount", 0)
+			var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
+			if exp_mgr and "total_coins" in exp_mgr:
+				exp_mgr.total_coins += amount
+				print("[ItemManager] 💰 +%d oro" % amount)
 		"new_weapon":
 			# Debug desactivado: print("⚔️ Nueva arma desbloqueada")
 			var _cs = null
@@ -266,6 +301,19 @@ func apply_item_effect(item_type: String, _item_data: Dictionary):
 		_:
 			# Tipo de item desconocido, ignorar
 			pass
+
+func _apply_upgrade_effects(item_data: Dictionary, player_stats) -> void:
+	"""Aplicar efectos de upgrade manualmente si no hay apply_upgrade_by_id"""
+	if not player_stats or not item_data.has("effects"):
+		return
+	
+	for effect in item_data.effects:
+		var stat = effect.get("stat", "")
+		var value = effect.get("value", 0)
+		var op = effect.get("operation", "add")
+		
+		if player_stats.has_method("modify_stat"):
+			player_stats.modify_stat(stat, value, op)
 
 
 func create_boss_drop(position: Vector2, _boss_type: String):
