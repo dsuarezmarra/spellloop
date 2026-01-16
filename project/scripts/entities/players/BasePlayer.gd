@@ -281,10 +281,7 @@ func _physics_process(delta: float) -> void:
 	_update_status_visuals(delta)
 	_update_revive_immunity(delta)
 
-func _update_shield_bar() -> void:
-	"""Actualizar visuales de barra de escudo"""
-	# Implementar cuando haya UI de escudo
-	pass
+
 
 
 
@@ -295,6 +292,8 @@ func _get_player_stats() -> Node:
 
 
 
+
+	pass
 
 func _process_debuffs(delta: float) -> void:
 	"""Procesar todos los debuffs activos"""
@@ -1472,3 +1471,4 @@ func is_slowed() -> bool:
 func get_current_speed() -> float:
 	"""Devuelve la velocidad actual considerando debuffs"""
 	return move_speed
+
