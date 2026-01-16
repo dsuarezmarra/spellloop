@@ -22,6 +22,7 @@ var weapon_name: String = ""
 var weapon_name_es: String = ""
 var description: String = ""
 var icon: String = ""
+var tags: Array = []
 
 # Sistema de niveles
 var level: int = 1
@@ -86,6 +87,7 @@ func _initialize_from_data(data: Dictionary) -> void:
 	weapon_name_es = data.get("name_es", weapon_name)
 	description = data.get("description", "")
 	icon = data.get("icon", "🔮")
+	tags = data.get("tags", [])
 	
 	# Guardar stats base
 	base_stats = {

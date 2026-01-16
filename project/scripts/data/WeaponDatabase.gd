@@ -84,7 +84,10 @@ const WEAPONS: Dictionary = {
 		
 		# Visual
 		"color": Color(0.4, 0.8, 1.0),
-		"icon": "❄️"
+		"icon": "❄️",
+		
+		# Tags de Mecanicas
+		"tags": ["projectile", "single_target"]
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -116,7 +119,8 @@ const WEAPONS: Dictionary = {
 		"effect_duration": 4.0,
 		
 		"color": Color(1.0, 0.4, 0.1),
-		"icon": "🔥"
+		"icon": "🔥",
+		"tags": ["projectile", "area_splash", "dot"]
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -146,6 +150,9 @@ const WEAPONS: Dictionary = {
 		"effect": "chain",
 		"effect_value": 2,  # Salta a 2 enemigos adicionales
 		"effect_duration": 0.0,
+		
+		# Tags de Mecanicas
+		"tags": ["chain", "no_pierce", "projectile"],
 		
 		"color": Color(1.0, 1.0, 0.3),
 		"icon": "⚡"
@@ -179,6 +186,9 @@ const WEAPONS: Dictionary = {
 		"effect_value": 0,
 		"effect_duration": 0.0,
 		
+		# Tags de Mecanicas
+		"tags": ["orbital", "no_pierce", "area"],
+		
 		"color": Color(0.7, 0.3, 1.0),
 		"icon": "💜"
 	},
@@ -210,6 +220,8 @@ const WEAPONS: Dictionary = {
 		"effect": "none",
 		"effect_value": 0,
 		"effect_duration": 0.0,
+		
+		"tags": ["projectile", "piercing"],
 		
 		"color": Color(0.3, 0.1, 0.4),
 		"icon": "🗡️"

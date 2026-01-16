@@ -411,21 +411,56 @@ func generate_upgrade_options() -> Array:
 	var options = []
 
 	# Intentar usar PassiveDatabase
-	var PassiveDB = load("res://scripts/data/PassiveDatabase.gd")
-	if PassiveDB:
-		var db_instance = PassiveDB.new()
-		if db_instance.has_method("get_random_passives"):
-			# Obtener 4 pasivos aleatorios (permitimos más para dar variedad)
-			var luck_bonus = 0.0
-			# Intentar obtener luck del player si tiene stats
-			if player and "stats" in player and player.stats and "luck" in player.stats:
-				luck_bonus = player.stats.luck
-
-			options = db_instance.get_random_passives(4, [], luck_bonus)
-			db_instance.queue_free()
-
-			if options.size() > 0:
-				return options
+	# Usar PlayerUpgradeDatabase (Sistema Avanzado)
+	var UpgradeDB = load("res://scripts/data/PlayerUpgradeDatabase.gd")
+	if UpgradeDB:
+		# 1. Obtener tags de armas equipadas
+		var common_tags = []
+		var all_tags = []
+		
+		var attack_manager_nodes = get_tree().get_nodes_in_group("attack_manager")
+		if not attack_manager_nodes.is_empty():
+			var am = attack_manager_nodes[0]
+			if "weapons" in am:
+				var first_weapon = true
+				for weapon in am.weapons:
+					if weapon == null: continue
+					
+					var w_tags = weapon.tags if "tags" in weapon else []
+					
+					# All Tags (Union)
+					for t in w_tags:
+						if t not in all_tags:
+							all_tags.append(t)
+					
+					# Common Tags (Intersection)
+					if first_weapon:
+						common_tags = w_tags.duplicate()
+						first_weapon = false
+					else:
+						# Intersección manual
+						var new_common = []
+						for t in common_tags:
+							if t in w_tags:
+								new_common.append(t)
+						common_tags = new_common
+		
+		# 2. Obtener Luck y Tiempo
+		var luck_bonus = 0.0
+		if player and "stats" in player and player.stats and "luck" in player.stats:
+			luck_bonus = player.stats.luck
+			
+		var game_time = 0.0
+		# Intentar obtener tiempo de juego (GameManager o similar)
+		var gm_nodes = get_tree().get_nodes_in_group("game_manager")
+		if not gm_nodes.is_empty() and "game_time" in gm_nodes[0]:
+			game_time = gm_nodes[0].game_time / 60.0 # Minutos
+		
+		# 3. Generar opciones
+		options = UpgradeDB.get_random_player_upgrades(4, [], luck_bonus, game_time, [], common_tags, all_tags)
+		
+		if options.size() > 0:
+			return options
 
 	# Fallback: opciones básicas si PassiveDatabase no está disponible
 	options.append({

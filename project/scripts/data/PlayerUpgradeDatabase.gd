@@ -819,6 +819,7 @@ const UTILITY_UPGRADES: Dictionary = {
 		"category": "offensive",
 		"tier": 2,
 		"max_stacks": 4,
+		"excluded_tags": ["no_pierce"],
 		"effects": [{"stat": "extra_pierce", "value": 1, "operation": "add"}]
 	},
 	"pierce_2": {
@@ -829,6 +830,7 @@ const UTILITY_UPGRADES: Dictionary = {
 		"category": "offensive",
 		"tier": 3,
 		"max_stacks": 3,
+		"excluded_tags": ["no_pierce"],
 		"effects": [{"stat": "extra_pierce", "value": 2, "operation": "add"}]
 	},
 	"pierce_3": {
@@ -853,6 +855,8 @@ const UTILITY_UPGRADES: Dictionary = {
 		"category": "offensive",
 		"tier": 3,
 		"max_stacks": 3,
+		"max_stacks": 3,
+		"required_tags": ["chain"],
 		"effects": [{"stat": "chain_count", "value": 1, "operation": "add"}]
 	},
 	"chain_2": {
@@ -863,6 +867,8 @@ const UTILITY_UPGRADES: Dictionary = {
 		"category": "offensive",
 		"tier": 4,
 		"max_stacks": 2,
+		"max_stacks": 2,
+		"required_tags": ["chain"],
 		"effects": [{"stat": "chain_count", "value": 2, "operation": "add"}]
 	},
 	
@@ -2271,33 +2277,56 @@ static func get_upgrade_by_id(upgrade_id: String) -> Dictionary:
 		return UNIQUE_UPGRADES[upgrade_id]
 	return {}
 
-static func get_random_player_upgrades(count: int, excluded_ids: Array, luck: float, game_time_minutes: float, owned_unique_ids: Array = []) -> Array:
+static func get_random_player_upgrades(count: int, excluded_ids: Array, luck: float, game_time_minutes: float, owned_unique_ids: Array = [], common_tags: Array = [], all_tags: Array = []) -> Array:
 	"""
 	Obtiene mejoras aleatorias de jugador basadas en tier y tiempo.
 	
-	owned_unique_ids: IDs de mejoras únicas que el jugador ya posee (no se ofrecerán de nuevo)
+	owned_unique_ids: IDs de mejoras únicas que el jugador ya posee
+	common_tags: Tags presentes en TODAS las armas equipadas (para exclusión)
+	all_tags: Tags presentes en AL MENOS UNA arma equipada (para requisitos)
 	"""
 	var all_available = []
+	
+	# Función auxiliar para filtrar
+	var check_tags = func(upgrade):
+		# Chequear exclusión (si TODAS las armas tienen el tag prohibido)
+		if upgrade.has("excluded_tags"):
+			for tag in upgrade.excluded_tags:
+				if tag in common_tags:
+					return false
+		
+		# Chequear requisitos (si NINGUNA arma tiene el tag requerido)
+		if upgrade.has("required_tags"):
+			for tag in upgrade.required_tags:
+				if tag not in all_tags:
+					# Excepción: si el upgrade OTORGA el tag (ej: weapon evolution), permitirlo
+					# pero aquí son stats pasivos.
+					return false
+		return true
 	
 	# Añadir mejoras normales
 	for upgrade in DEFENSIVE_UPGRADES.values():
 		if upgrade.id not in excluded_ids:
-			all_available.append(upgrade)
+			if check_tags.call(upgrade):
+				all_available.append(upgrade)
 	
 	for upgrade in UTILITY_UPGRADES.values():
 		if upgrade.id not in excluded_ids:
-			all_available.append(upgrade)
+			if check_tags.call(upgrade):
+				all_available.append(upgrade)
 	
 	# Añadir cursed (menos frecuentes - 30% chance de incluirlas)
 	if randf() < 0.3:
 		for upgrade in CURSED_UPGRADES.values():
 			if upgrade.id not in excluded_ids:
-				all_available.append(upgrade)
+				if check_tags.call(upgrade):
+					all_available.append(upgrade)
 	
 	# Añadir únicas (si no las tiene ya)
 	for upgrade in UNIQUE_UPGRADES.values():
 		if upgrade.id not in excluded_ids and upgrade.id not in owned_unique_ids:
-			all_available.append(upgrade)
+			if check_tags.call(upgrade):
+				all_available.append(upgrade)
 	
 	if all_available.is_empty():
 		return []
