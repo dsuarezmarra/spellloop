@@ -292,6 +292,11 @@ func _physics_process(delta: float) -> void:
 	# Actualizar barra de escudo (para efecto de parpadeo)
 	_update_shield_bar()
 
+func _update_shield_bar() -> void:
+	"""Actualizar visuales de barra de escudo"""
+	# Implementar cuando haya UI de escudo
+	pass
+
 func _process_shield(delta: float) -> void:
 	"""Procesar regeneración de escudo"""
 	var ps = _get_player_stats()

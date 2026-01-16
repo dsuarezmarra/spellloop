@@ -709,11 +709,6 @@ func _physics_process(delta: float) -> void:
 	# Ejecutar habilidades especiales si aplica
 	_try_special_abilities(distance_to_player, delta)
 
-func take_damage(amount: int, element: String = "physical", attacker: Node = null) -> void:
-	"""Recibir daño (wrapper para HealthComponent)"""
-	if health_component:
-		health_component.take_damage(amount, element, attacker)
-
 	# NOTA: El ataque ahora lo maneja EnemyAttackSystem para evitar daño duplicado
 	# La lógica legacy de _attempt_attack() está deshabilitada
 	# if distance_to_player <= attack_range:
