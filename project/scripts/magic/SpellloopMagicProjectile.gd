@@ -21,6 +21,7 @@ var lifetime: float = 5.0
 var auto_target: bool = true
 var pierce_count: int = 0  # 0 = no piercing
 var homing_strength: float = 0.0  # 0 = no homing
+var projectile_color: Color = Color(0.3, 0.5, 1.0) # Default Blue
 
 # Estado interno
 var direction: Vector2
@@ -52,7 +53,9 @@ func initialize(start_pos: Vector2, target_pos: Vector2, dmg: int, speed: float)
 	# Calcular dirección inicial
 	direction = (target_position - start_pos).normalized()
 	
-	# print("🔮 Proyectil mágico creado - Daño: ", damage, " Velocidad: ", speed)
+	# Regenerar textura si el color cambió
+	if sprite and projectile_color != Color(0.3, 0.5, 1.0):
+		create_magic_projectile_texture()
 
 func setup_projectile():
 	"""Configurar propiedades básicas del proyectil"""
@@ -82,7 +85,7 @@ func setup_visuals():
 	sprite.scale = Vector2(scale_factor, scale_factor)
 
 func create_magic_projectile_texture():
-	"""Crear textura procedural para el proyectil"""
+	"""Crear textura procedural para el proyectil usando projectile_color"""
 	var size = 16
 	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
 	
@@ -97,8 +100,11 @@ func create_magic_projectile_texture():
 			
 			if distance <= max_radius:
 				var intensity = 1.0 - (distance / max_radius)
-				var color = Color(0.3 + intensity * 0.7, 0.1 + intensity * 0.8, 1.0, intensity * 0.9)
-				image.set_pixel(x, y, color)
+				# Mezclar blanco (núcleo) con projectile_color (borde)
+				var base_col = Color.WHITE.lerp(projectile_color, 0.3)
+				var final_col = base_col.lerp(projectile_color, 1.0 - intensity)
+				final_col.a = intensity * 0.95
+				image.set_pixel(x, y, final_col)
 			else:
 				image.set_pixel(x, y, Color.TRANSPARENT)
 	
@@ -121,18 +127,15 @@ func setup_effects():
 	"""Configurar efectos visuales"""
 	# Efecto de brillo pulsante
 	glow_tween = create_tween()
-	# add_child(glow_tween)  # Ya no es necesario con create_tween()
 	
 	start_glow_effect()
-	
-	# Partículas de trail (opcional)
-	#setup_trail_particles()
 
 func start_glow_effect():
 	"""Iniciar efecto de brillo"""
 	if glow_tween and sprite:
-		glow_tween.tween_property(sprite, "modulate", Color(1.5, 1.5, 2.0, 1.0), 0.5)
-		glow_tween.tween_property(sprite, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.5)
+		var glow_col = projectile_color.lightened(0.5)
+		glow_tween.tween_property(sprite, "modulate", glow_col, 0.5)
+		glow_tween.tween_property(sprite, "modulate", Color.WHITE, 0.5)
 		glow_tween.set_loops()
 
 func _physics_process(delta):
@@ -168,9 +171,26 @@ func apply_homing_behavior(delta):
 		direction = direction.lerp(to_enemy, homing_strength * delta)
 
 func find_nearest_enemy() -> Node2D:
-	"""Encontrar enemigo más cercano"""
-	# Esto se conectará con el EnemyManager más adelante
-	return null
+	"""Encontrar enemigo más cercano en grupo 'enemies'"""
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	if enemies.size() == 0:
+		return null
+		
+	var nearest: Node2D = null
+	var min_dist: float = INF
+	
+	for enemy in enemies:
+		if not is_instance_valid(enemy): continue
+		
+		# Ignorar enemigos muertos si tienen esa propiedad
+		if enemy.has_method("is_dead") and enemy.is_dead(): continue
+			
+		var dist = global_position.distance_to(enemy.global_position)
+		if dist < min_dist:
+			min_dist = dist
+			nearest = enemy
+			
+	return nearest
 
 func check_collisions():
 	"""Verificar colisiones con enemigos"""
