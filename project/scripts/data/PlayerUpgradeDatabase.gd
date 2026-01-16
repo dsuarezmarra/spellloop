@@ -848,6 +848,7 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 		"category": "offensive",
 		"tier": 4,
 		"max_stacks": 2,
+		"excluded_tags": ["no_pierce"],
 		"effects": [{"stat": "extra_pierce", "value": 3, "operation": "add"}]
 	},
 	
@@ -888,6 +889,7 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 		"category": "offensive",
 		"tier": 1,
 		"max_stacks": 4,
+		"excluded_tags": ["no_projectile_speed"],
 		"effects": [{"stat": "projectile_speed_mult", "value": 1.20, "operation": "multiply"}]
 	},
 	"projectile_speed_2": {
@@ -898,6 +900,7 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 		"category": "offensive",
 		"tier": 2,
 		"max_stacks": 3,
+		"excluded_tags": ["no_projectile_speed"],
 		"effects": [{"stat": "projectile_speed_mult", "value": 1.40, "operation": "multiply"}]
 	},
 	

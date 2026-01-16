@@ -434,4 +434,3 @@ func _apply_purchased_item(item: Dictionary):
 		
 		_:
 			print("[TreasureChest] Tipo de item no manejado: %s" % item_type)
-

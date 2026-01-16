@@ -1267,4 +1267,3 @@ func _deferred_weapon_hud_update() -> void:
 		var info = weapon_manager.get_weapons_info()
 		if hud.has_method("update_weapons"):
 			hud.update_weapons(info)
-
