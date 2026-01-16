@@ -443,6 +443,20 @@ func _connect_hud_to_player() -> void:
 	if player.has_signal("health_changed") and hud.has_method("update_health"):
 		if not player.health_changed.is_connected(hud.update_health):
 			player.health_changed.connect(hud.update_health)
+			
+	# Conectar WeaponManager
+	if weapon_manager and weapon_manager.has_signal("weapons_updated"):
+		if not weapon_manager.weapons_updated.is_connected(hud.update_weapons):
+			weapon_manager.weapons_updated.connect(hud.update_weapons)
+			# Force update
+			if weapon_manager.has_method("get_weapons_info"):
+				hud.update_weapons(weapon_manager.get_weapons_info())
+
+	# Conectar Coin updates (ExperienceManager)
+	if experience_manager and experience_manager.has_signal("coin_collected"):
+		# Check signature: coin_collected(amount, total)
+		if not experience_manager.coin_collected.is_connected(hud.update_coins):
+			experience_manager.coin_collected.connect(hud.update_coins)
 
 	# Actualización inicial del HUD
 	if player.has_method("get_health") and hud.has_method("update_stats"):
@@ -766,6 +780,8 @@ func _update_hud() -> void:
 
 func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
 	run_stats["kills"] += 1
+	if hud and hud.has_method("update_kills"):
+		hud.update_kills(run_stats["kills"])
 
 	# XP AUTOMÁTICO - Se da directamente al matar
 	if experience_manager:
@@ -774,6 +790,28 @@ func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy
 	# MONEDAS - Caen al suelo para que el player las recoja
 	if experience_manager:
 		experience_manager.spawn_coins_from_enemy(position, enemy_tier, is_elite, is_boss)
+
+	# ═══════════════════════════════════════════════════════════════════════════
+	# SISTEMA DE RECOMPENSAS (Nuevo)
+	# ═══════════════════════════════════════════════════════════════════════════
+	var enemy_info = {"tier": enemy_tier, "is_elite": is_elite, "is_boss": is_boss, "id": enemy_type}
+	var rewards = EnemyRewardsDatabase.get_rewards_for_enemy(enemy_info)
+	
+	# 1. Cofres
+	var spawn_chest = false
+	if rewards.get("guaranteed_chest", false):
+		spawn_chest = true
+	elif randf() < rewards.get("chest_chance", 0.0):
+		spawn_chest = true
+		
+	if spawn_chest:
+		_spawn_reward_chest(position, rewards)
+	
+	# 2. Orbes de Mejora (Items directos)
+	if randf() < rewards.get("upgrade_chance", 0.0):
+		# TODO: Implementar orbe visual, por ahora damos cofre extra de menor calidad o moneda especial
+		# _spawn_upgrade_orb(position)
+		pass
 
 	# ═══════════════════════════════════════════════════════════════════════════
 	# EFECTOS ESPECIALES DE KILL
@@ -793,6 +831,41 @@ func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy
 		if explosion_chance > 0.0 and randf() < explosion_chance:
 			var explosion_damage = player_stats.get_stat("explosion_damage") if player_stats.has_method("get_stat") else 50.0
 			_trigger_kill_explosion(position, explosion_damage)
+
+func _spawn_reward_chest(pos: Vector2, rewards_config: Dictionary) -> void:
+	"""Spawnear un cofre de recompensa"""
+	var chest_scene = load("res://scenes/interactables/TreasureChest.tscn")
+	if not chest_scene:
+		push_warning("⚠️ No se encontró TreasureChest.tscn")
+		return
+
+	var chest = chest_scene.instantiate()
+	
+	# Determinar tipo
+	var type_str = rewards_config.get("chest_type", "normal")
+	var type_enum = TreasureChest.ChestType.NORMAL
+	match type_str:
+		"elite": type_enum = TreasureChest.ChestType.ELITE
+		"boss": type_enum = TreasureChest.ChestType.BOSS
+		"weapon": type_enum = TreasureChest.ChestType.WEAPON
+	
+	# Añadir a la escena (PickupsRoot si existe, sino root)
+	if pickups_root:
+		pickups_root.add_child(chest)
+	else:
+		world_root.add_child(chest)
+	
+	# Inicializar
+	# rarity_boost: aumenta la rareza mínima
+	var rarity_min = -1
+	if rewards_config.has("chest_rarity_min"):
+		rarity_min = rewards_config.chest_rarity_min
+	elif rewards_config.has("chest_rarity_boost"):
+		# Lógica simple: boost = rareza mínima 1 (azul)
+		rarity_min = 1 
+		
+	chest.initialize(pos, type_enum, player, rarity_min)
+
 
 func _trigger_kill_explosion(pos: Vector2, damage: float) -> void:
 	"""Explosión al matar enemigos (kill_explosion effect)"""

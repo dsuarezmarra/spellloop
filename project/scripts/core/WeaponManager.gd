@@ -13,6 +13,7 @@ Gestiona todas las armas del player:
 """
 
 signal weapon_fired(weapon_type: String, target_position: Vector2)
+signal weapons_updated(weapons_list: Array)
 
 # Script del proyectil mágico - se carga dinámicamente
 var MagicProjectileScript: Script = null
@@ -82,7 +83,7 @@ func equip_initial_weapon():
 	ice_wand.targeting = WeaponData.TargetingType.NEAREST_ENEMY
 	ice_wand.tags = ["ice"]
 	equipped_weapons.append(ice_wand)
-	
+	weapons_updated.emit(get_weapons_info())
 	# Las otras armas están desactivadas temporalmente
 
 func set_enemy_manager(enemy_manager_ref):
@@ -203,6 +204,7 @@ func add_weapon(weapon_data: WeaponData) -> bool:
 	
 	equipped_weapons.append(weapon_data)
 	# print("⚔️ Nueva arma equipada: ", weapon_data.name)
+	weapons_updated.emit(get_weapons_info())
 	return true
 
 func _on_auto_fire_tick() -> void:
@@ -226,6 +228,7 @@ func upgrade_weapon(weapon_id: String, upgrade_data: Dictionary) -> bool:
 		if weapon.id == weapon_id:
 			weapon.apply_upgrade(upgrade_data)
 			# print("⬆️ Arma mejorada: ", weapon.name)
+			weapons_updated.emit(get_weapons_info())
 			return true
 	return false
 
