@@ -406,13 +406,20 @@ func _update_status_visuals(delta: float) -> void:
 		_status_flash_timer = 0.0
 		_apply_status_flash()
 	
-	# Redibujar auras
-	if _status_visual_node and _has_any_status():
+	# Redibujar auras (incluyendo aura de revive dorada)
+	if _status_visual_node and (_has_any_status() or _has_revive_available()):
 		_status_visual_node.queue_redraw()
 
 func _has_any_status() -> bool:
 	"""Verificar si tiene algún estado activo"""
 	return _burn_timer > 0 or _slow_timer > 0 or _poison_timer > 0 or _stun_timer > 0 or _weakness_timer > 0 or _curse_timer > 0
+
+func _has_revive_available() -> bool:
+	"""Verificar si tiene revives disponibles (para aura dorada)"""
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.has_method("get_stat"):
+		return int(player_stats.get_stat("revives")) > 0
+	return false
 
 func _apply_status_flash() -> void:
 	"""Aplicar parpadeo al sprite según estados activos"""
@@ -541,6 +548,23 @@ func _draw_status_effects() -> void:
 			var rune_angle = _status_aura_timer * 0.3 + i * TAU / 4.0
 			var rune_pos = Vector2(cos(rune_angle), sin(rune_angle)) * (curse_radius * 0.8)
 			_status_visual_node.draw_rect(Rect2(rune_pos - Vector2(2, 2), Vector2(4, 4)), Color(0.5, 0.2, 0.6, curse_alpha))
+	
+	# === AURA DORADA DE REVIVE (Ángel Guardián / Corazón de Fénix) ===
+	if _has_revive_available():
+		var gold_alpha = 0.15 + pulse * 0.1
+		var gold_radius = 30.0 + pulse * 3.0
+		# Aura exterior dorada
+		_status_visual_node.draw_circle(Vector2.ZERO, gold_radius, Color(1.0, 0.85, 0.3, gold_alpha * 0.4))
+		# Anillo pulsante dorado
+		_status_visual_node.draw_arc(Vector2.ZERO, gold_radius * 0.9, 0, TAU, 24, Color(1.0, 0.9, 0.4, gold_alpha), 2.0)
+		# Anillo interior más brillante
+		_status_visual_node.draw_arc(Vector2.ZERO, gold_radius * 0.5, 0, TAU, 16, Color(1.0, 0.95, 0.6, gold_alpha * 1.5), 1.5)
+		# Pequeñas partículas doradas giratorias
+		for i in range(6):
+			var spark_angle = _status_aura_timer * 0.8 + i * TAU / 6.0
+			var spark_pos = Vector2(cos(spark_angle), sin(spark_angle)) * (gold_radius * 0.7)
+			var spark_size = 2.0 + pulse * 1.5
+			_status_visual_node.draw_circle(spark_pos, spark_size, Color(1.0, 0.9, 0.5, gold_alpha * 1.2))
 
 func _draw_star(pos: Vector2, size: float, col: Color) -> void:
 	"""Dibujar una estrella de 4 puntas"""
