@@ -638,7 +638,12 @@ func _create_chain_projectile(player: Node2D, first_target: Node2D, dmg: float, 
 	"""Crear proyectil encadenante - usar ProjectileFactory"""
 	var chain_data = _build_projectile_data(dmg, crit)
 	chain_data["first_target"] = first_target
-	chain_data["chain_count"] = roundi(effect_value) if effect == "chain" else 2
+	
+	# Convertir Penetración (Pierce) a rebotes extra para armas de cadena
+	var total_pierce = chain_data.get("pierce", 0)
+	var base_chains = roundi(effect_value) if effect == "chain" else 2
+	chain_data["chain_count"] = base_chains + total_pierce
+	
 	chain_data["is_chain"] = true
 	
 	ProjectileFactory.create_chain_projectile(player, chain_data)
