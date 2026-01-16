@@ -208,7 +208,19 @@ static func _generate_weapon_loot(chest_type: int, luck: float) -> Dictionary:
 	# Seleccionar arma aleatoria
 	# En una implementación completa verificaríamos armas desbloqueadas
 	
-	var possible_weapons = ["magic_wand", "axe", "cross", "fireball"]
+	var possible_weapons = []
+	
+	# Obtener armas reales de la base de datos
+	if ClassDB.class_exists("WeaponDatabase") or ResourceLoader.exists("res://scripts/data/WeaponDatabase.gd"):
+		var WeaponDB = load("res://scripts/data/WeaponDatabase.gd")
+		if WeaponDB:
+			# Obtener todas las armas base (no fusiones)
+			possible_weapons = WeaponDB.get_all_base_weapons()
+	
+	# Fallback si falla la carga
+	if possible_weapons.is_empty():
+		possible_weapons = ["ice_wand", "fire_wand", "lightning_wand"]
+
 	var selected_id = possible_weapons[randi() % possible_weapons.size()]
 	
 	return {

@@ -394,17 +394,131 @@ const WEAPONS: Dictionary = {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MEJORAS POR NIVEL (aplicables a todas las armas)
+# MEJORAS POR NIVEL (MAESTRÍA DE ARMAS)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-const LEVEL_UPGRADES: Dictionary = {
+# Fallback genérico (solo se usa si el arma no tiene árbol específico)
+const GENERIC_LEVEL_UPGRADES: Dictionary = {
 	2: {"damage_mult": 1.2, "description": "+20% Daño"},
-	3: {"attack_speed_mult": 1.18, "no_cooldown_damage_mult": 1.1, "description": "+18% Vel. Ataque (o +10% Daño)"},
+	3: {"attack_speed_mult": 1.15, "no_cooldown_damage_mult": 1.1, "description": "+15% Vel. Ataque"},
 	4: {"projectile_count_add": 1, "description": "+1 Proyectil"},
-	5: {"effect_mult": 1.5, "no_effect_damage_mult": 1.15, "description": "+50% Poder de Efecto (o +15% Daño)"},
+	5: {"effect_mult": 1.5, "no_effect_damage_mult": 1.15, "description": "+50% Eficacia Efecto"},
 	6: {"damage_mult": 1.25, "description": "+25% Daño"},
-	7: {"pierce_add": 2, "max_pierce_area_mult": 1.2, "description": "+2 Penetración (o +20% Área)"},
-	8: {"all_mult": 1.3, "description": "¡MÁXIMO! +30% a todo"}
+	7: {"pierce_add": 1, "max_pierce_area_mult": 1.2, "description": "+1 Penetración / +20% Área"},
+	8: {"all_mult": 1.25, "description": "¡MAESTRÍA! +25% a todo"}
+}
+
+# Árboles de mejora específicos por arma (Diseño Único)
+const WEAPON_SPECIFIC_UPGRADES: Dictionary = {
+	# ❄️ ICE WAND: Control y Penetración
+	"ice_wand": {
+		2: {"pierce_add": 1, "description": "+1 Penetración"},
+		3: {"damage_mult": 1.2, "description": "+20% Daño"},
+		4: {"effect_mult": 1.5, "description": "+50% Congelación (Slow)"},
+		5: {"projectile_count_add": 1, "description": "+1 Proyectil"},
+		6: {"pierce_add": 1, "description": "+1 Penetración"},
+		7: {"area_mult": 1.3, "description": "+30% Área de impacto"},
+		8: {"projectile_count_add": 2, "description": "¡VENTISCA! +2 Proyectiles"}
+	},
+
+	# 🔥 FIRE WAND: Área y Daño Puro (DoT)
+	"fire_wand": {
+		2: {"area_mult": 1.25, "description": "+25% Área de explosión"},
+		3: {"damage_mult": 1.25, "description": "+25% Daño"},
+		4: {"effect_mult": 1.5, "description": "Quemadura Intensa (+50% Daño burn)"},
+		5: {"damage_mult": 1.3, "description": "+30% Daño"},
+		6: {"area_mult": 1.25, "description": "+25% Área de explosión"},
+		7: {"projectile_count_add": 1, "description": "+1 Proyectil"},
+		8: {"all_mult": 1.25, "description": "¡INFIERNO! +25% Stats y Quemadura"}
+	},
+
+	# ⚡ LIGHTNING WAND: Cadenas y Velocidad
+	"lightning_wand": {
+		2: {"effect_value_add": 1, "description": "+1 Salto de cadena"}, # effect_value es chain_count
+		3: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque"},
+		4: {"damage_mult": 1.25, "description": "+25% Daño"},
+		5: {"effect_value_add": 2, "description": "+2 Saltos de cadena"},
+		6: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque"},
+		7: {"damage_mult": 1.3, "description": "+30% Daño"},
+		8: {"effect_value_add": 3, "description": "¡SOBRECARGA! +3 Saltos de cadena"}
+	},
+
+	# 💜 ARCANE ORB: Cantidad y Velocidad (Cooldown)
+	"arcane_orb": {
+		2: {"projectile_count_add": 1, "description": "+1 Orbe adicional"},
+		3: {"damage_mult": 1.25, "description": "+25% Daño"},
+		4: {"projectile_speed_mult": 1.25, "description": "+25% Velocidad de rotación"},
+		5: {"projectile_count_add": 1, "description": "+1 Orbe adicional"},
+		6: {"area_mult": 1.25, "description": "+25% Tamaño de orbes"},
+		7: {"no_cooldown_damage_mult": 1.3, "description": "+30% Daño"},
+		8: {"projectile_count_add": 2, "description": "¡GALAXIA! +2 Orbes adicionales"}
+	},
+
+	# 🗡️ SHADOW DAGGER: Penetración y Crítico (Simulado con daño)
+	"shadow_dagger": {
+		2: {"pierce_add": 1, "description": "+1 Penetración"},
+		3: {"damage_mult": 1.3, "description": "+30% Daño"},
+		4: {"projectile_count_add": 1, "description": "+1 Daga"},
+		5: {"pierce_add": 2, "description": "+2 Penetración"},
+		6: {"attack_speed_mult": 1.25, "description": "+25% Velocidad de Ataque"},
+		7: {"damage_mult": 1.3, "description": "+30% Daño"},
+		8: {"projectile_count_add": 2, "description": "¡LLUVIA DE HOJAS! +2 Dagas"}
+	},
+
+	# 🌿 NATURE STAFF: Homing y Curación (Effect)
+	"nature_staff": {
+		2: {"duration_mult": 1.5, "description": "+50% Duración (mejor persiguiendo)"},
+		3: {"damage_mult": 1.2, "description": "+20% Daño"},
+		4: {"projectile_count_add": 1, "description": "+1 Proyectil"},
+		5: {"attack_speed_mult": 1.25, "description": "+25% Velocidad de Ataque"},
+		6: {"damage_mult": 1.25, "description": "+25% Daño"},
+		7: {"projectile_count_add": 1, "description": "+1 Proyectil"},
+		8: {"effect_mult": 2.0, "description": "¡VIDA PURA! Doble Curación"}
+	},
+
+	# 🌪️ WIND BLADE: Knockback y Cantidad
+	"wind_blade": {
+		2: {"projectile_count_add": 1, "description": "+1 Cuchilla"},
+		3: {"knockback_mult": 1.3, "description": "+30% Empuje"},
+		4: {"pierce_add": 1, "description": "+1 Penetración"},
+		5: {"area_mult": 1.25, "description": "+25% Tamaño"},
+		6: {"projectile_count_add": 1, "description": "+1 Cuchilla"},
+		7: {"damage_mult": 1.3, "description": "+30% Daño"},
+		8: {"pierce_add": 2, "description": "¡HURACÁN! +2 Penetración"}
+	},
+
+	# 🪨 EARTH SPIKE: Área y Stun (Effect)
+	"earth_spike": {
+		2: {"area_mult": 1.25, "description": "+25% Área"},
+		3: {"damage_mult": 1.3, "description": "+30% Daño"},
+		4: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque"},
+		5: {"effect_mult": 1.5, "description": "+50% Duración de Stun"},
+		6: {"area_mult": 1.3, "description": "+30% Área"},
+		7: {"damage_mult": 1.3, "description": "+30% Daño"},
+		8: {"area_mult": 1.5, "description": "¡TERREMOTO! +50% Área Masiva"}
+	},
+
+	# ✨ LIGHT BEAM: Cooldown y Daño
+	"light_beam": {
+		2: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque"},
+		3: {"damage_mult": 1.3, "description": "+30% Daño"},
+		4: {"area_mult": 1.25, "description": "+25% Grosor del rayo"},
+		5: {"attack_speed_mult": 1.25, "description": "+25% Velocidad de Ataque"},
+		6: {"damage_mult": 1.3, "description": "+30% Daño"},
+		7: {"effect_mult": 1.5, "description": "+50% Probabilidad Crítica"},
+		8: {"attack_speed_mult": 1.4, "description": "¡LUZ DIVINA! +40% Velocidad de Ataque"}
+	},
+	
+	# 🕳️ VOID PULSE: Área y Pull (Effect)
+	"void_pulse": {
+		2: {"area_mult": 1.2, "description": "+20% Área"},
+		3: {"damage_mult": 1.25, "description": "+25% Daño"},
+		4: {"effect_mult": 1.3, "description": "+30% Fuerza de atracción"},
+		5: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque"},
+		6: {"area_mult": 1.25, "description": "+25% Área"},
+		7: {"damage_mult": 1.3, "description": "+30% Daño"},
+		8: {"effect_mult": 1.5, "description": "¡AGUJERO NEGRO! +50% Atracción"}
+	}
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1765,10 +1879,18 @@ static func get_all_fusions() -> Array:
 	"""Obtener lista de todas las fusiones posibles"""
 	return FUSIONS.keys()
 
-static func get_level_upgrade(level: int) -> Dictionary:
-	"""Obtener mejora para un nivel específico"""
-	if LEVEL_UPGRADES.has(level):
-		return LEVEL_UPGRADES[level].duplicate()
+static func get_level_upgrade(level: int, weapon_id: String = "") -> Dictionary:
+	"""Obtener mejora para un nivel específico, priorizando el árbol del arma"""
+	# 1. Intentar buscar en árbol específico del arma
+	if weapon_id != "" and WEAPON_SPECIFIC_UPGRADES.has(weapon_id):
+		var tree = WEAPON_SPECIFIC_UPGRADES[weapon_id]
+		if tree.has(level):
+			return tree[level].duplicate()
+	
+	# 2. Fallback: usar tabla genérica
+	if GENERIC_LEVEL_UPGRADES.has(level):
+		return GENERIC_LEVEL_UPGRADES[level].duplicate()
+	
 	return {}
 
 static func get_weapons_by_rarity(rarity: String) -> Array:

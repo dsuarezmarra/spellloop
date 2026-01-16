@@ -161,7 +161,7 @@ func _recalculate_stats() -> void:
 	
 	# Aplicar mejoras de nivel acumulativas
 	for lvl in range(2, level + 1):
-		var upgrade = WeaponDatabase.get_level_upgrade(lvl)
+		var upgrade = WeaponDatabase.get_level_upgrade(lvl, id)
 		if upgrade.is_empty():
 			continue
 		
@@ -187,6 +187,9 @@ func _recalculate_stats() -> void:
 			elif upgrade.has("max_pierce_area_mult"):
 				# Armas con pierce infinito reciben área extra
 				area *= upgrade.max_pierce_area_mult
+
+		if upgrade.has("effect_value_add"):
+			effect_value += upgrade.effect_value_add
 		
 		if upgrade.has("effect_mult"):
 			# Solo multiplicar si el arma tiene un efecto real en base (effect_value > 0)
@@ -195,6 +198,18 @@ func _recalculate_stats() -> void:
 			elif upgrade.has("no_effect_damage_mult"):
 				# Armas sin efecto reciben bonus de daño en su lugar
 				damage *= upgrade.no_effect_damage_mult
+
+		if upgrade.has("area_mult"):
+			area *= upgrade.area_mult
+		
+		if upgrade.has("projectile_speed_mult"):
+			projectile_speed *= upgrade.projectile_speed_mult
+
+		if upgrade.has("duration_mult"):
+			duration *= upgrade.duration_mult
+
+		if upgrade.has("knockback_mult"):
+			knockback *= upgrade.knockback_mult
 		
 		if upgrade.has("all_mult"):
 			damage *= upgrade.all_mult
@@ -214,7 +229,7 @@ func get_next_upgrade_description() -> String:
 	if not can_level_up():
 		return "¡NIVEL MÁXIMO!"
 	
-	var upgrade = WeaponDatabase.get_level_upgrade(level + 1)
+	var upgrade = WeaponDatabase.get_level_upgrade(level + 1, id)
 	return upgrade.get("description", "Mejora desconocida")
 
 # ═══════════════════════════════════════════════════════════════════════════════
