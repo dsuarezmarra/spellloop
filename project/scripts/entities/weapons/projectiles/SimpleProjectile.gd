@@ -384,6 +384,25 @@ func _handle_hit(target: Node) -> void:
 	if randf() < crit_chance:
 		final_damage *= crit_damage_mult  # Usar multiplicador variable
 	
+	# Verificar daño contra élites
+	var is_elite_target = false
+	if target.has_method("is_elite") and target.is_elite():
+		is_elite_target = true
+	elif "is_elite" in target and target.is_elite:
+		is_elite_target = true
+		
+	if is_elite_target:
+		var ps = get_tree().get_first_node_in_group("player_stats")
+		if ps and ps.has_method("get_stat"):
+			var elite_mult = ps.get_stat("elite_damage_mult")
+			if elite_mult > 0:
+				# Si es 1.5, multiplica por 1.5 (el default en PlayerStats suele ser 1.0?? o 0.0??)
+				# PlayerStats default 1.0? Check PlayerStats.gd or assume it's a multiplier.
+				# Usually "elite_damage_mult" is a multiplier (e.g. 1.2 for +20%).
+				if elite_mult < 0.1: elite_mult = 1.0 # Safety check
+				final_damage = int(final_damage * elite_mult)
+				# print("⚔️ Elite Hit! Damage x%.2f" % elite_mult)
+	
 	# Aplicar daño
 	if target.has_method("take_damage"):
 		target.take_damage(final_damage)

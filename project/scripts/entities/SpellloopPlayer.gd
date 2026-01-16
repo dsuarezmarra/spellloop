@@ -166,6 +166,32 @@ func _on_wizard_died() -> void:
 func take_damage(amount: int, element: String = "physical", attacker: Node = null) -> void:
 	if wizard_player:
 		wizard_player.take_damage(amount, element, attacker)
+
+		# === THORNS LOGIC ===
+		if attacker and is_instance_valid(attacker) and attacker.has_method("take_damage"):
+			var ps = get_tree().get_first_node_in_group("player_stats")
+			if ps and ps.has_method("get_stat"):
+				var thorns = ps.get_stat("thorns")
+				var thorns_pct = ps.get_stat("thorns_percent")
+				
+				if thorns > 0 or thorns_pct > 0:
+					# Calcular daño de reflexión (Daño base + % del daño recibido)
+					var reflect_damage = int(thorns + (amount * thorns_pct))
+					
+					if reflect_damage > 0:
+						# Aplicar daño al atacante
+						attacker.take_damage(reflect_damage, "thorns", self)
+						
+						# Aplicar efectos de estado de thorns (Rare/Legendary upgrades)
+						var t_slow = ps.get_stat("thorns_slow")
+						var t_stun = ps.get_stat("thorns_stun")
+						
+						if t_slow > 0 and attacker.has_method("apply_slow"):
+							attacker.apply_slow(0.5, 2.0) # 50% slow por 2s
+						
+						if t_stun > 0 and attacker.has_method("apply_stun"):
+							attacker.apply_stun(t_stun)
+
 	hp = wizard_player.hp if wizard_player else hp
 
 func heal(amount: int) -> void:
