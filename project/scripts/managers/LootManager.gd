@@ -48,38 +48,89 @@ const CHEST_WIEGHTS = {
 # GENERACIÓN DE LOOT
 # ═══════════════════════════════════════════════════════════════════════════════
 
-static func get_chest_loot(chest_type: int, luck_modifier: float = 1.0) -> Array:
+static func get_chest_loot(chest_type: int, luck_modifier: float = 1.0, context: Object = null) -> Array:
 	"""
 	Generar contenido para un cofre.
 	Retorna array de diccionarios: [{id, type, rarity, amount, ...}]
+	Context: Objeto opcional (usualmente AttackManager) para lógica de fusiones
 	"""
 	var items = []
-	var weights = CHEST_WIEGHTS.get(chest_type, CHEST_WIEGHTS[ChestType.NORMAL])
 	
-	# Determinar categoría principal del premio
+	# Lógica especial para BOSS (Cofre Legendario)
+	if chest_type == ChestType.BOSS:
+		return _generate_boss_loot(luck_modifier, context)
+	
+	# Lógica estándar para otros cofres
+	var weights = CHEST_WIEGHTS.get(chest_type, CHEST_WIEGHTS[ChestType.NORMAL])
 	var category = _roll_category(weights, luck_modifier)
 	
-	# Generar item específico según categoría
 	var item = null
-	
 	match category:
 		"gold":
 			item = _generate_gold_loot(chest_type, luck_modifier)
 		"healing":
 			item = _generate_healing_loot(chest_type)
 		"upgrade":
-			item = _generate_upgrade_loot(chest_type, luck_modifier)
+			# Elite asegura mejores mejoras (min tier 2)
+			var min_tier = 2 if chest_type == ChestType.ELITE else 1
+			item = _generate_upgrade_loot(chest_type, luck_modifier, min_tier)
 		"weapon":
 			item = _generate_weapon_loot(chest_type, luck_modifier)
 			
 	if item:
 		items.append(item)
 		
-	# Boss chests pueden dar premios extra
-	if chest_type == ChestType.BOSS:
-		# Siempre añadir oro extra
-		items.append(_generate_gold_loot(chest_type, luck_modifier))
+	return items
+
+static func _generate_boss_loot(luck: float, context: Object) -> Array:
+	"""
+	Generar loot de JEFE (Legendario)
+	Prioridad 1: Fusión si está disponible
+	Prioridad 2: Jackpot (3-5 items)
+	"""
+	var items = []
+	
+	# 1. Intentar FUSIÓN (Garantizada si está disponible)
+	# context debe ser el AttackManager
+	if context and context.has_method("get_available_fusions"):
+		var fusions = context.get_available_fusions()
+		if not fusions.is_empty():
+			# ¡Fusión disponible! Devolver el resultado de la primera fusión
+			var fusing = fusions[0]
+			var result = fusing.result
+			
+			items.append({
+				"id": result.id,
+				"type": "fusion", # Tipo especial para UI
+				"name": result.name,
+				"description": result.description,
+				"rarity": 4, # Legendario/Evolución
+				"icon": result.get("icon", "🌟"),
+				"fusion_data": fusing # Datos necesarios para realizar la fusión
+			})
+			
+			# Bonus de oro siempre
+			items.append(_generate_gold_loot(ChestType.BOSS, luck))
+			return items
+
+	# 2. JACKPOT (Si no hay fusión)
+	# 3 items garantizados: 1 Upgrade Raro, 1 Arma/Upgrade, 1 Upgrade
+	
+	# Item 1: Upgrade de Tier Alto (Min Tier 2)
+	items.append(_generate_upgrade_loot(ChestType.BOSS, luck, 2))
+	
+	# Item 2: Arma o Upgrade
+	if randf() < 0.5:
+		items.append(_generate_weapon_loot(ChestType.BOSS, luck))
+	else:
+		items.append(_generate_upgrade_loot(ChestType.BOSS, luck, 2))
 		
+	# Item 3: Otro Upgrade
+	items.append(_generate_upgrade_loot(ChestType.BOSS, luck, 1))
+	
+	# Plus de oro grande
+	items.append(_generate_gold_loot(ChestType.BOSS, luck))
+	
 	return items
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -126,20 +177,16 @@ static func _generate_healing_loot(chest_type: int) -> Dictionary:
 		"icon": icon
 	}
 
-static func _generate_upgrade_loot(chest_type: int, luck: float) -> Dictionary:
+static func _generate_upgrade_loot(chest_type: int, luck: float, min_tier_override: int = 1) -> Dictionary:
 	"""
 	Generar una mejora aleatoria desde la base de datos de mejoras.
+	min_tier_override: Fuerza un tier mínimo (para Elites/Jefes)
 	"""
 	# Obtener referencia a la base de datos de mejoras
-	# Como PlayerUpgradeDatabase tiene constantes estáticas, podemos acceder a ellas directamente
-	# o vía una instancia dummy si es necesario. En Godot 4, acceso estático a const dictionary funciona.
-	
 	var all_upgrades = []
 	
-	# Recopilar todas las mejoras posibles
-	# Nota: Asumimos que PlayerUpgradeDatabase es accesible globalmente o preload
+	# Cargar script dinámicamente
 	if not ClassDB.class_exists("PlayerUpgradeDatabase") and not ResourceLoader.exists("res://scripts/data/PlayerUpgradeDatabase.gd"):
-		# Fallback de emergencia
 		return {
 			"id": "gold_bag_fallback", 
 			"type": "gold", 
@@ -149,27 +196,27 @@ static func _generate_upgrade_loot(chest_type: int, luck: float) -> Dictionary:
 			"icon": "💰"
 		}
 		
-	# Cargar script dinámicamente para acceder constantes
 	var UpgradeDB = load("res://scripts/data/PlayerUpgradeDatabase.gd")
-	
 	if UpgradeDB:
 		_append_dict_values(all_upgrades, UpgradeDB.DEFENSIVE_UPGRADES)
 		_append_dict_values(all_upgrades, UpgradeDB.UTILITY_UPGRADES)
-		_append_dict_values(all_upgrades, UpgradeDB.OFFENSIVE_UPGRADES) # Asumiendo que existe
+		_append_dict_values(all_upgrades, UpgradeDB.OFFENSIVE_UPGRADES)
 		
-		# Filtrar por rareza mínima según tipo de cofre
-		var min_tier = 1
-		if chest_type == ChestType.ELITE: min_tier = 2
-		if chest_type == ChestType.BOSS: min_tier = 3
+		# Determinar tier mínimo
+		var min_tier = min_tier_override
+		if chest_type == ChestType.ELITE and min_tier < 2: min_tier = 2
+		if chest_type == ChestType.BOSS and min_tier < 3: min_tier = 3
 		
 		var valid_upgrades = []
 		for up in all_upgrades:
 			if up.get("tier", 1) >= min_tier:
-				# Aplicar suerte: si luck es alto, preferir tiers altos
+				# Aplicar suerte
 				var tier = up.get("tier", 1)
 				var weight = 1.0
+				
+				# Preferir altos tiers para cofres buenos
 				if tier > min_tier:
-					weight = 1.0 + (luck - 1.0) * 0.5 # Bonus leve de peso a tiers superiores
+					weight = 1.0 + (luck - 1.0) * 0.5
 				
 				valid_upgrades.append({"data": up, "weight": weight})
 		
@@ -180,9 +227,9 @@ static func _generate_upgrade_loot(chest_type: int, luck: float) -> Dictionary:
 				"type": "upgrade",
 				"name": picked.name,
 				"description": picked.description,
-				"rarity": picked.get("tier", 1) - 1, # Ajuste visual 0-indexed si es necesario
+				"rarity": picked.get("tier", 1) - 1,
 				"icon": picked.icon,
-				"data": picked # Guardar ref completa
+				"data": picked
 			}
 			
 	return _generate_gold_loot(chest_type, luck)
@@ -206,18 +253,15 @@ static func _weighted_random(items: Array) -> Dictionary:
 
 static func _generate_weapon_loot(chest_type: int, luck: float) -> Dictionary:
 	# Seleccionar arma aleatoria
-	# En una implementación completa verificaríamos armas desbloqueadas
-	
 	var possible_weapons = []
 	
 	# Obtener armas reales de la base de datos
 	if ClassDB.class_exists("WeaponDatabase") or ResourceLoader.exists("res://scripts/data/WeaponDatabase.gd"):
 		var WeaponDB = load("res://scripts/data/WeaponDatabase.gd")
 		if WeaponDB:
-			# Obtener todas las armas base (no fusiones)
 			possible_weapons = WeaponDB.get_all_base_weapons()
 	
-	# Fallback si falla la carga
+	# Fallback
 	if possible_weapons.is_empty():
 		possible_weapons = ["ice_wand", "fire_wand", "lightning_wand"]
 
@@ -230,7 +274,7 @@ static func _generate_weapon_loot(chest_type: int, luck: float) -> Dictionary:
 		"rarity": 3 if chest_type == ChestType.BOSS else 2,
 		"icon": "⚔️"
 	}
-
+	
 # ═══════════════════════════════════════════════════════════════════════════════
 # UTILS
 # ═══════════════════════════════════════════════════════════════════════════════

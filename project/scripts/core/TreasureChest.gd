@@ -146,8 +146,16 @@ func generate_contents():
 				var meta = sm.get_meta_data()
 				var luck_points = int(meta.get("luck_points", 0))
 				luck_modifier = 1.0 + (luck_points * 0.02)
+			
+			# Contexto para fusiones (AttackManager)
+			var context = null
+			if player_ref:
+				if "attack_manager" in player_ref:
+					context = player_ref.attack_manager
+				elif player_ref.has_node("AttackManager"):
+					context = player_ref.get_node("AttackManager")
 				
-			items_inside = loot_class.get_chest_loot(chest_type, luck_modifier)
+			items_inside = loot_class.get_chest_loot(chest_type, luck_modifier, context)
 			
 			# Fallback si LootManager devuelve vacío
 			if items_inside.size() == 0:
@@ -205,13 +213,24 @@ func create_chest_popup():
 		var item = items_inside[i]
 		var item_display = item.duplicate()
 		var item_type = item.get("type", "Unknown")
-		var item_name = get_item_display_name(item_type)
+		var item_name = item.get("name", "")
+		# Fallback name logic if internal name is not display-friendly
+		if item_name == "":
+			item_name = get_item_display_name(item_type)
+			
 		var rarity_name = get_rarity_name(item.get("rarity", 0))
 		item_display["name"] = "%s (%s)" % [item_name, rarity_name]
 		items_with_names.append(item_display)
 	
-	popup_instance.setup_items(items_with_names)
-	popup_instance.item_selected.connect(_on_popup_item_selected)
+	# Determinar modo Jackpot vs Selección
+	if items_with_names.size() > 1:
+		# Modo Jackpot / Fusión: Mostrar todos y reclamar todos
+		popup_instance.show_as_jackpot(items_with_names)
+		popup_instance.all_items_claimed.connect(_on_jackpot_claimed)
+	else:
+		# Modo normal: Selección (o solo 1 item)
+		popup_instance.setup_items(items_with_names)
+		popup_instance.item_selected.connect(_on_popup_item_selected)
 
 func get_item_display_name(item_type: String) -> String:
 	match item_type:
@@ -236,9 +255,27 @@ func get_rarity_name(rarity: int) -> String:
 		_: return "?"
 
 func _on_popup_item_selected(selected_item: Dictionary):
+	# Reconstruir el item original (quitando el nombre visual si es necesario) o pasarlo tal cual
+	# AttackManager/Game espera el formato de LootManager.
+	# SimpleChestPopup devuelve el item con 'name' modificado, pero la data importante (id, type) persiste.
+	
+	_finalize_opening([selected_item])
+
+func _on_jackpot_claimed(items: Array):
+	# Reclamar todos los items
+	_finalize_opening(items)
+
+func _finalize_opening(items: Array):
 	is_opened = true
 	create_opening_effect()
-	chest_opened.emit(self, [selected_item])
+	
+	# Emitir señal con los items originales (hacemos match por índice si es necesario, 
+	# pero como items_inside no cambia, podemos confiar en el orden o usar items)
+	# Nota: items viene del popup, que tiene nombres modificados. 
+	# Mejor usar items_inside si es reclamar todo, o buscar el seleccionado.
+	# Para simplificar, pasamos los items del popup que tienen la data base.
+	
+	chest_opened.emit(self, items)
 	
 	var timer = Timer.new()
 	add_child(timer)

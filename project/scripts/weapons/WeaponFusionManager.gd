@@ -26,7 +26,6 @@ signal fusion_failed(reason: String)
 # CONSTANTES
 # ═══════════════════════════════════════════════════════════════════════════════
 
-const MIN_LEVEL_TO_FUSE: int = 1  # Nivel mínimo de cada arma para fusionar
 const STARTING_MAX_SLOTS: int = 6
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -89,11 +88,11 @@ func can_fuse_weapons(weapon_a: BaseWeapon, weapon_b: BaseWeapon) -> Dictionary:
 			"result": {}
 		}
 	
-	# Verificar nivel mínimo
-	if weapon_a.level < MIN_LEVEL_TO_FUSE or weapon_b.level < MIN_LEVEL_TO_FUSE:
+	# Verificar nivel máximo (Mecánica clave: Solo armas maxeadas evolucionan)
+	if weapon_a.level < weapon_a.max_level or weapon_b.level < weapon_b.max_level:
 		return {
 			"can_fuse": false,
-			"reason": "Ambas armas deben ser nivel %d o superior" % MIN_LEVEL_TO_FUSE,
+			"reason": "Ambas armas deben estar al Nivel Máximo (%d) para evolucionar" % weapon_a.max_level,
 			"result": {}
 		}
 	
