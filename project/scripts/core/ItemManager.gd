@@ -147,7 +147,7 @@ func spawn_chest_at_position(_chunk_pos: Vector2i, world_position: Vector2):
 	# Crear el cofre
 	var rarity = compute_normal_chest_rarity()
 	var chest = TreasureChest.new()
-	chest.initialize(world_position, "normal", player, rarity)
+	chest.initialize(world_position, TreasureChest.ChestType.NORMAL, player, rarity)
 	chest.chest_opened.connect(_on_chest_opened)
 
 	# Añadir el cofre al mundo
@@ -273,8 +273,8 @@ func create_boss_drop(position: Vector2, _boss_type: String):
 	# Determine chest rarity influenced by meta luck
 	var chest_rarity = compute_boss_chest_rarity()
 	var chest = TreasureChest.new()
-	# Use type 'big' so UI/popup can adapt (TreasureChest handles visuals itself)
-	chest.initialize(position, "big", player, chest_rarity)
+	# Use type BOSS so UI/popup can adapt (TreasureChest handles visuals itself)
+	chest.initialize(position, TreasureChest.ChestType.BOSS, player, chest_rarity)
 	chest.chest_opened.connect(_on_chest_opened)
 
 	# Añadir al mundo

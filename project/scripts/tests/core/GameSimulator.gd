@@ -1,3 +1,7 @@
+# GameSimulator.gd
+# Test utility for simulating game scenarios
+# Note: This is a test file and may have limited functionality
+
 class_name GameSimulator
 extends RefCounted
 
@@ -5,11 +9,12 @@ var attack_manager: AttackManager
 var player: Node2D
 var tree: SceneTree
 
-# Mock classes
+# Mock player class for testing
 class MockPlayer extends Node2D:
-	var global_position = Vector2.ZERO
-	func get_tree():
-		return get_node("/root") # Fallback
+	var mock_position: Vector2 = Vector2.ZERO
+	
+	func get_mock_position() -> Vector2:
+		return global_position
 
 func setup(scene_tree: SceneTree):
 	tree = scene_tree
@@ -35,7 +40,13 @@ func teardown():
 		player.queue_free()
 
 func equip_weapon(weapon_id: String) -> BaseWeapon:
-	var weapon = WeaponDatabase.create_weapon(weapon_id)
+	# Get weapon data from database and create weapon manually
+	var weapon_data = WeaponDatabase.get_weapon_data(weapon_id)
+	if weapon_data.is_empty():
+		return null
+	
+	var weapon = BaseWeapon.new()
+	weapon.initialize(weapon_data, player)
 	if weapon:
 		attack_manager.add_weapon(weapon)
 	return weapon
@@ -44,10 +55,7 @@ func add_global_stat(stat_name: String, value: float):
 	if attack_manager.global_weapon_stats:
 		attack_manager.global_weapon_stats.add_stat_bonus(stat_name, value)
 	else:
-		# Fallback legacy
-		if stat_name == "pierce":
-			# Not supported in legacy map directly?
-			pass
+		# Fallback legacy - not supported
 		pass
 
 func get_weapon_instance(weapon_id_part: String) -> BaseWeapon:

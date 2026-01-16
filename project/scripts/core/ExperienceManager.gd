@@ -459,6 +459,20 @@ func generate_upgrade_options() -> Array:
 		# 3. Generar opciones
 		options = UpgradeDB.get_random_player_upgrades(4, [], luck_bonus, game_time, [], common_tags, all_tags)
 		
+		# 4. Filtrar upgrades que solo afectan stats al cap
+		var player_stats = get_tree().get_first_node_in_group("player_stats")
+		if player_stats and player_stats.has_method("would_upgrade_be_useful"):
+			var useful_options = []
+			for upgrade in options:
+				if player_stats.would_upgrade_be_useful(upgrade):
+					useful_options.append(upgrade)
+				# else: upgrade is useless because all its effects are capped
+			
+			# Si quedaron opciones útiles, usarlas
+			if useful_options.size() > 0:
+				options = useful_options
+			# Si no quedó ninguna, usar las originales como fallback
+		
 		if options.size() > 0:
 			return options
 

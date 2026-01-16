@@ -1664,3 +1664,80 @@ func modify_stat(stat_name: String, value: float, operation: String = "add") -> 
 			set_stat(stat_name, value)
 		_:
 			add_stat(stat_name, value)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE STAT CAPS - FILTRADO DE UPGRADES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func is_stat_at_cap(stat_name: String) -> bool:
+	"""Verificar si un stat ha alcanzado su límite máximo"""
+	if not STAT_LIMITS.has(stat_name):
+		return false
+	
+	var current = get_stat(stat_name)
+	var limit = STAT_LIMITS[stat_name]
+	
+	# Para multiplicadores, el cap es el max
+	# Excepción: cooldown_mult y damage_taken_mult donde menor es mejor
+	if stat_name in ["cooldown_mult", "damage_taken_mult"]:
+		# Estos se reducen, así que cap es el min
+		return current <= limit.min
+	else:
+		return current >= limit.max
+
+func is_stat_at_min_cap(stat_name: String) -> bool:
+	"""Verificar si un stat ha alcanzado su límite mínimo"""
+	if not STAT_LIMITS.has(stat_name):
+		return false
+	
+	var current = get_stat(stat_name)
+	var limit = STAT_LIMITS[stat_name]
+	return current <= limit.min
+
+func get_capped_stats() -> Array:
+	"""Obtener lista de stats que están al máximo y no se beneficiarían de upgrades"""
+	var capped = []
+	
+	for stat_name in STAT_LIMITS.keys():
+		if is_stat_at_cap(stat_name):
+			capped.append(stat_name)
+	
+	return capped
+
+func would_upgrade_be_useful(upgrade: Dictionary) -> bool:
+	"""Verificar si un upgrade tendría al menos un efecto útil (no-capped)"""
+	if not upgrade.has("effects"):
+		return true  # Sin effects = siempre disponible
+	
+	for effect in upgrade.effects:
+		var stat = effect.get("stat", "")
+		var operation = effect.get("operation", "add")
+		var value = effect.get("value", 0)
+		
+		# Si el stat no tiene límite, siempre es útil
+		if not STAT_LIMITS.has(stat):
+			return true
+		
+		var current = get_stat(stat)
+		var limit = STAT_LIMITS[stat]
+		
+		# Verificar si el efecto tendría impacto
+		match operation:
+			"multiply":
+				# Para cooldown/damage_taken, multiplicar por <1 es bueno
+				if stat in ["cooldown_mult", "damage_taken_mult"]:
+					if value < 1.0 and current > limit.min:
+						return true  # Todavía puede reducirse
+				else:
+					if value > 1.0 and current < limit.max:
+						return true  # Todavía puede aumentarse
+					elif value < 1.0 and current > limit.min:
+						return true  # Todavía puede reducirse
+			"add":
+				if value > 0 and current < limit.max:
+					return true  # Puede añadir
+				elif value < 0 and current > limit.min:
+					return true  # Puede restar (si tiene sentido)
+	
+	return false  # Todos los efectos afectan stats al cap
+

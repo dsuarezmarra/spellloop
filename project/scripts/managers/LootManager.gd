@@ -455,4 +455,3 @@ static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float)
 		"rarity": upgrade.get("tier", 1),
 		"effects": upgrade.get("effects", [])
 	}
-
