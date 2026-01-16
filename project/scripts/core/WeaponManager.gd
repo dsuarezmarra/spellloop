@@ -238,6 +238,8 @@ func add_weapon_by_id(weapon_id: String) -> bool:
 	new_weapon.weapon_type = int(data.get("projectile_type", WeaponData.WeaponType.PROJECTILE))
 	new_weapon.targeting = int(data.get("target_type", WeaponData.TargetingType.NEAREST_ENEMY))
 	new_weapon.tags = data.get("tags", [])
+	new_weapon.color = data.get("color", Color.WHITE)
+	new_weapon.icon = data.get("icon", "⚔️")
 	new_weapon.evolution = data.get("evolution", "")
 	
 	return add_weapon(new_weapon)
@@ -316,6 +318,8 @@ class WeaponData:
 	var level: int = 1
 	var max_level: int = 8
 	var tags: Array = []
+	var color: Color = Color.WHITE
+	var icon: String = "⚔️"
 	# Para evoluciones/uniones
 	var evolution: String = ""
 	var passive_required: String = ""
