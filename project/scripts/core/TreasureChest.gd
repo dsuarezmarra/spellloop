@@ -7,7 +7,8 @@ enum ChestType {
 	NORMAL,
 	ELITE,
 	BOSS,
-	WEAPON
+	WEAPON,
+	SHOP  # Cofres tipo tienda que aparecen en el mapa
 }
 
 var chest_type: int = ChestType.NORMAL
@@ -15,6 +16,11 @@ var chest_rarity: int = 0  # ItemsDefinitions.ItemRarity.WHITE (numeric fallback
 var is_opened: bool = false
 var interaction_range: float = 60.0
 var popup_shown: bool = false  # Control para evitar múltiples popups
+
+# Variables específicas para SHOP chests
+var is_shop_chest: bool = false
+var shop_tier: int = 1
+var shop_game_time: float = 0.0
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var interaction_area: Area2D = $InteractionArea
@@ -49,6 +55,20 @@ func initialize(chest_position: Vector2, type: int, player: CharacterBody2D, rar
 	
 	setup_visual()
 	generate_contents()
+
+func initialize_as_shop(chest_position: Vector2, player: CharacterBody2D, tier: int, game_time: float):
+	"""Inicializar como cofre tipo tienda"""
+	global_position = chest_position
+	chest_type = ChestType.SHOP
+	player_ref = player
+	is_shop_chest = true
+	shop_tier = tier
+	shop_game_time = game_time
+	z_index = 35
+	chest_rarity = tier  # Rareza visual = tier
+	
+	setup_visual()
+	# No llamar generate_contents - se genera al abrir con ShopChestPopup
 
 func setup_visual():
 	"""Configurar apariencia del cofre"""
@@ -212,6 +232,12 @@ func trigger_chest_interaction():
 	create_chest_popup()
 
 func create_chest_popup():
+	# Si es cofre tipo SHOP, usar ShopChestPopup
+	if is_shop_chest:
+		_create_shop_popup()
+		return
+	
+	# Popup normal para otros tipos
 	var popup_instance = SimpleChestPopup.new()
 	get_tree().current_scene.add_child(popup_instance)
 	
@@ -297,3 +323,115 @@ func create_opening_effect():
 		tween.parallel().tween_property(sprite, "modulate", Color(2, 2, 2, 1), 0.3)
 		tween.parallel().tween_property(sprite, "scale", sprite.scale * 1.2, 0.3)
 		tween.tween_property(sprite, "modulate", Color(1, 1, 1, 0.5), 0.7)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHOP CHEST POPUP
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _create_shop_popup():
+	"""Crear popup de tienda para cofre SHOP"""
+	# Obtener monedas del jugador
+	var player_coins = 0
+	var exp_mgr = get_tree().current_scene.get_node_or_null("ExperienceManager")
+	if exp_mgr and "total_coins" in exp_mgr:
+		player_coins = exp_mgr.total_coins
+	elif player_ref and "coins" in player_ref:
+		player_coins = player_ref.coins
+	
+	# Generar items con precios
+	var luck = 1.0
+	if player_ref and player_ref.has_method("get_luck"):
+		luck = player_ref.get_luck()
+	
+	var game_time_minutes = shop_game_time / 60.0
+	items_inside = LootManager.get_shop_chest_loot(shop_tier, game_time_minutes, luck)
+	
+	if items_inside.is_empty():
+		# Fallback: generar al menos un item
+		items_inside.append({
+			"type": "gold",
+			"id": "gold_bag",
+			"name": "Bolsa de Oro",
+			"description": "+50 monedas",
+			"icon": "💰",
+			"tier": 1,
+			"price": 25,
+			"original_price": 25,
+			"discount_percent": 0
+		})
+	
+	# Crear popup
+	var popup = ShopChestPopup.new()
+	get_tree().current_scene.add_child(popup)
+	popup.setup_shop(items_inside, player_coins)
+	
+	# Conectar señales
+	popup.item_purchased.connect(_on_shop_item_purchased)
+	popup.popup_closed.connect(_on_shop_popup_closed)
+
+func _on_shop_item_purchased(item: Dictionary, price: int):
+	"""Callback cuando se compra un item de la tienda"""
+	# Descontar monedas
+	var exp_mgr = get_tree().current_scene.get_node_or_null("ExperienceManager")
+	if exp_mgr and exp_mgr.has_method("spend_coins"):
+		exp_mgr.spend_coins(price)
+	elif exp_mgr and "total_coins" in exp_mgr:
+		exp_mgr.total_coins -= price
+	
+	# Aplicar item al jugador
+	_apply_purchased_item(item)
+	
+	# Finalizar apertura
+	is_opened = true
+	create_opening_effect()
+	chest_opened.emit(self, [item])
+	
+	# Destruir cofre después de un delay
+	await get_tree().create_timer(1.0).timeout
+	queue_free()
+
+func _on_shop_popup_closed(purchased: bool):
+	"""Callback cuando se cierra el popup de tienda"""
+	is_opened = true
+	
+	if not purchased:
+		# No compró nada, igual destruir
+		create_opening_effect()
+	
+	# Destruir cofre
+	await get_tree().create_timer(0.5).timeout
+	queue_free()
+
+func _apply_purchased_item(item: Dictionary):
+	"""Aplicar item comprado al jugador"""
+	var item_type = item.get("type", "")
+	var item_id = item.get("id", "")
+	
+	match item_type:
+		"weapon":
+			# Añadir arma al WeaponManager
+			var weapon_mgr = get_tree().current_scene.get_node_or_null("WeaponManager")
+			if weapon_mgr and weapon_mgr.has_method("add_weapon"):
+				weapon_mgr.add_weapon(item_id)
+			elif player_ref and "attack_manager" in player_ref:
+				if player_ref.attack_manager.has_method("add_weapon"):
+					player_ref.attack_manager.add_weapon(item_id)
+		
+		"upgrade":
+			# Aplicar upgrade al PlayerStats
+			var player_stats = get_tree().current_scene.get_node_or_null("PlayerStats")
+			if player_stats and player_stats.has_method("add_upgrade"):
+				player_stats.add_upgrade(item)
+			elif player_ref and player_ref.has_method("apply_upgrade"):
+				player_ref.apply_upgrade(item)
+		
+		"gold":
+			# Añadir oro
+			var amount = item.get("amount", 50)
+			var exp_mgr = get_tree().current_scene.get_node_or_null("ExperienceManager")
+			if exp_mgr and exp_mgr.has_method("add_coins"):
+				exp_mgr.add_coins(amount)
+		
+		_:
+			print("[TreasureChest] Tipo de item no manejado: %s" % item_type)
+

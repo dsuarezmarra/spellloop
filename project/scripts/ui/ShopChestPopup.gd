@@ -1,0 +1,455 @@
+# ShopChestPopup.gd
+# UI para cofres tipo tienda - muestra items con precios y permite comprar
+# Incluye sistema de descuentos, validación de monedas, y modal de confirmación
+
+extends CanvasLayer
+class_name ShopChestPopup
+
+signal item_purchased(item: Dictionary, final_price: int)
+signal popup_closed(purchased: bool)
+
+# === ESTADO ===
+var available_items: Array = []
+var player_coins: int = 0
+var current_selected_index: int = -1
+var popup_locked: bool = false
+var showing_confirm_modal: bool = false
+
+# === REFERENCIAS UI ===
+var main_control: Control
+var items_container: VBoxContainer
+var coins_label: Label
+var exit_button: Button
+var confirm_modal: Control
+var item_buttons: Array[Control] = []
+
+# === COLORES POR TIER ===
+const TIER_COLORS = {
+	1: Color(0.7, 0.7, 0.7),      # Gris (Común)
+	2: Color(0.3, 0.7, 0.3),      # Verde (Poco común)
+	3: Color(0.3, 0.5, 0.9),      # Azul (Raro)
+	4: Color(0.7, 0.3, 0.9),      # Púrpura (Épico)
+	5: Color(1.0, 0.7, 0.2)       # Dorado (Legendario)
+}
+
+func _ready():
+	layer = 100
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	set_process_input(true)
+	
+	_build_ui()
+
+func _build_ui():
+	"""Construir toda la interfaz"""
+	# Control principal
+	main_control = Control.new()
+	main_control.set_anchors_preset(Control.PRESET_FULL_RECT)
+	main_control.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(main_control)
+	
+	# Fondo oscuro
+	var bg = PanelContainer.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var bg_style = StyleBoxFlat.new()
+	bg_style.bg_color = Color(0, 0, 0, 0.7)
+	bg.add_theme_stylebox_override("panel", bg_style)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	main_control.add_child(bg)
+	
+	# Panel principal centrado
+	var popup_panel = PanelContainer.new()
+	popup_panel.custom_minimum_size = Vector2(500, 400)
+	popup_panel.set_anchors_preset(Control.PRESET_CENTER)
+	popup_panel.add_theme_stylebox_override("panel", _create_panel_style())
+	main_control.add_child(popup_panel)
+	
+	# Layout vertical
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 15)
+	popup_panel.add_child(vbox)
+	
+	# Margen
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_right", 20)
+	margin.add_theme_constant_override("margin_top", 15)
+	margin.add_theme_constant_override("margin_bottom", 15)
+	vbox.add_child(margin)
+	
+	var inner_vbox = VBoxContainer.new()
+	inner_vbox.add_theme_constant_override("separation", 10)
+	margin.add_child(inner_vbox)
+	
+	# Header con título y monedas
+	var header = HBoxContainer.new()
+	inner_vbox.add_child(header)
+	
+	var title = Label.new()
+	title.text = "🎁 COFRE DE TESOROS"
+	title.add_theme_font_size_override("font_size", 24)
+	title.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(title)
+	
+	coins_label = Label.new()
+	coins_label.text = "🪙 0"
+	coins_label.add_theme_font_size_override("font_size", 20)
+	coins_label.add_theme_color_override("font_color", Color(1, 0.9, 0.4))
+	header.add_child(coins_label)
+	
+	# Separador
+	var sep = HSeparator.new()
+	inner_vbox.add_child(sep)
+	
+	# Contenedor de items (scrollable)
+	var scroll = ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(0, 250)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	inner_vbox.add_child(scroll)
+	
+	items_container = VBoxContainer.new()
+	items_container.add_theme_constant_override("separation", 8)
+	items_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(items_container)
+	
+	# Botón salir
+	exit_button = Button.new()
+	exit_button.text = "❌ Salir sin comprar"
+	exit_button.custom_minimum_size = Vector2(0, 45)
+	exit_button.pressed.connect(_on_exit_pressed)
+	_style_exit_button(exit_button)
+	inner_vbox.add_child(exit_button)
+	
+	# Modal de confirmación (oculto inicialmente)
+	_build_confirm_modal()
+	
+	# Centrar popup después de un frame
+	await get_tree().process_frame
+	var screen_size = get_viewport().get_visible_rect().size
+	popup_panel.position = (screen_size - popup_panel.size) / 2
+
+func _build_confirm_modal():
+	"""Construir modal de confirmación para salir"""
+	confirm_modal = Control.new()
+	confirm_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	confirm_modal.visible = false
+	confirm_modal.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(confirm_modal)
+	
+	# Fondo más oscuro
+	var modal_bg = PanelContainer.new()
+	modal_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0, 0, 0, 0.5)
+	modal_bg.add_theme_stylebox_override("panel", style)
+	confirm_modal.add_child(modal_bg)
+	
+	# Panel del modal
+	var modal_panel = PanelContainer.new()
+	modal_panel.custom_minimum_size = Vector2(350, 150)
+	modal_panel.set_anchors_preset(Control.PRESET_CENTER)
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.15, 0.1, 0.1, 0.98)
+	panel_style.border_color = Color(0.8, 0.3, 0.2)
+	panel_style.set_border_width_all(3)
+	panel_style.set_corner_radius_all(8)
+	modal_panel.add_theme_stylebox_override("panel", panel_style)
+	confirm_modal.add_child(modal_panel)
+	
+	var modal_vbox = VBoxContainer.new()
+	modal_vbox.add_theme_constant_override("separation", 20)
+	modal_panel.add_child(modal_vbox)
+	
+	var modal_margin = MarginContainer.new()
+	modal_margin.add_theme_constant_override("margin_left", 20)
+	modal_margin.add_theme_constant_override("margin_right", 20)
+	modal_margin.add_theme_constant_override("margin_top", 20)
+	modal_margin.add_theme_constant_override("margin_bottom", 20)
+	modal_vbox.add_child(modal_margin)
+	
+	var modal_inner = VBoxContainer.new()
+	modal_inner.add_theme_constant_override("separation", 15)
+	modal_margin.add_child(modal_inner)
+	
+	var warn_label = Label.new()
+	warn_label.text = "⚠️ ¿Seguro que quieres salir?\nEl cofre desaparecerá."
+	warn_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	warn_label.add_theme_font_size_override("font_size", 16)
+	modal_inner.add_child(warn_label)
+	
+	var buttons_hbox = HBoxContainer.new()
+	buttons_hbox.add_theme_constant_override("separation", 20)
+	buttons_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	modal_inner.add_child(buttons_hbox)
+	
+	var cancel_btn = Button.new()
+	cancel_btn.text = "Cancelar"
+	cancel_btn.custom_minimum_size = Vector2(100, 35)
+	cancel_btn.pressed.connect(_on_confirm_cancel)
+	buttons_hbox.add_child(cancel_btn)
+	
+	var confirm_btn = Button.new()
+	confirm_btn.text = "Salir"
+	confirm_btn.custom_minimum_size = Vector2(100, 35)
+	confirm_btn.pressed.connect(_on_confirm_exit)
+	var confirm_style = StyleBoxFlat.new()
+	confirm_style.bg_color = Color(0.6, 0.2, 0.2)
+	confirm_style.set_corner_radius_all(4)
+	confirm_btn.add_theme_stylebox_override("normal", confirm_style)
+	buttons_hbox.add_child(confirm_btn)
+
+func setup_shop(items: Array, coins: int):
+	"""Configurar la tienda con items y monedas del jugador"""
+	available_items = items
+	player_coins = coins
+	
+	coins_label.text = "🪙 %d" % coins
+	
+	# Limpiar items previos
+	for child in items_container.get_children():
+		child.queue_free()
+	item_buttons.clear()
+	
+	await get_tree().process_frame
+	
+	# Crear botones de items
+	for i in range(items.size()):
+		var item = items[i]
+		var item_btn = _create_item_button(item, i)
+		items_container.add_child(item_btn)
+		item_buttons.append(item_btn)
+	
+	await get_tree().process_frame
+
+func _create_item_button(item: Dictionary, index: int) -> Control:
+	"""Crear botón de item con icono, nombre, descripción y precio"""
+	var btn = Button.new()
+	btn.custom_minimum_size = Vector2(440, 70)
+	btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	
+	var price = item.get("price", 100)
+	var original_price = item.get("original_price", price)
+	var discount = item.get("discount_percent", 0)
+	var tier = item.get("tier", 1)
+	var can_afford = player_coins >= price
+	
+	# Estilo según asequibilidad
+	_style_item_button(btn, tier, can_afford, discount > 0)
+	
+	# Layout interno
+	var hbox = HBoxContainer.new()
+	hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hbox.add_theme_constant_override("separation", 12)
+	
+	var margin = MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_bottom", 8)
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	# Icono
+	var icon_container = TextureRect.new()
+	icon_container.custom_minimum_size = Vector2(48, 48)
+	icon_container.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_container.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	
+	var icon_str = item.get("icon", "❓")
+	var icon_lbl = Label.new()
+	icon_lbl.text = icon_str
+	icon_lbl.add_theme_font_size_override("font_size", 32)
+	icon_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	icon_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	icon_container.add_child(icon_lbl)
+	hbox.add_child(icon_container)
+	
+	# Info (nombre + descripción)
+	var info_vbox = VBoxContainer.new()
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	var name_lbl = Label.new()
+	name_lbl.text = item.get("name", "Item Desconocido")
+	name_lbl.add_theme_font_size_override("font_size", 16)
+	name_lbl.add_theme_color_override("font_color", TIER_COLORS.get(tier, Color.WHITE))
+	info_vbox.add_child(name_lbl)
+	
+	var desc_lbl = Label.new()
+	desc_lbl.text = item.get("description", "")
+	desc_lbl.add_theme_font_size_override("font_size", 11)
+	desc_lbl.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info_vbox.add_child(desc_lbl)
+	
+	hbox.add_child(info_vbox)
+	
+	# Precio
+	var price_vbox = VBoxContainer.new()
+	price_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	price_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	if discount > 0:
+		# Precio original tachado
+		var orig_lbl = Label.new()
+		orig_lbl.text = "🪙 %d" % original_price
+		orig_lbl.add_theme_font_size_override("font_size", 12)
+		orig_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+		# Simular tachado con strikethrough
+		orig_lbl.modulate.a = 0.6
+		price_vbox.add_child(orig_lbl)
+		
+		# Descuento label
+		var disc_lbl = Label.new()
+		disc_lbl.text = "-%d%%" % discount
+		disc_lbl.add_theme_font_size_override("font_size", 10)
+		disc_lbl.add_theme_color_override("font_color", Color(0.2, 0.9, 0.2))
+		price_vbox.add_child(disc_lbl)
+	
+	var price_lbl = Label.new()
+	price_lbl.text = "🪙 %d" % price
+	price_lbl.add_theme_font_size_override("font_size", 16)
+	if can_afford:
+		price_lbl.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
+	else:
+		price_lbl.add_theme_color_override("font_color", Color(0.8, 0.3, 0.3))
+	price_vbox.add_child(price_lbl)
+	
+	hbox.add_child(price_vbox)
+	margin.add_child(hbox)
+	btn.add_child(margin)
+	
+	# Conectar señal
+	var item_data = item.duplicate()
+	btn.pressed.connect(func(): _on_item_pressed(index, item_data))
+	
+	return btn
+
+func _on_item_pressed(index: int, item: Dictionary):
+	"""Usuario presionó un item"""
+	if popup_locked or showing_confirm_modal:
+		return
+	
+	var price = item.get("price", 100)
+	
+	if player_coins < price:
+		# No tiene suficientes monedas - feedback visual
+		_show_insufficient_funds_feedback(index)
+		return
+	
+	# Compra exitosa
+	popup_locked = true
+	player_coins -= price
+	coins_label.text = "🪙 %d" % player_coins
+	
+	# Efecto visual de compra
+	if index < item_buttons.size():
+		var btn = item_buttons[index]
+		var tween = create_tween()
+		tween.tween_property(btn, "modulate", Color(0.2, 1.0, 0.2), 0.2)
+		tween.tween_property(btn, "modulate", Color.WHITE, 0.2)
+	
+	await get_tree().create_timer(0.4).timeout
+	
+	item_purchased.emit(item, price)
+	_close_popup(true)
+
+func _show_insufficient_funds_feedback(index: int):
+	"""Mostrar feedback de fondos insuficientes"""
+	if index >= item_buttons.size():
+		return
+	
+	var btn = item_buttons[index]
+	var tween = create_tween()
+	tween.tween_property(btn, "modulate", Color(1.0, 0.3, 0.3), 0.1)
+	tween.tween_property(btn, "modulate", Color.WHITE, 0.1)
+	tween.tween_property(btn, "modulate", Color(1.0, 0.3, 0.3), 0.1)
+	tween.tween_property(btn, "modulate", Color.WHITE, 0.1)
+
+func _on_exit_pressed():
+	"""Usuario quiere salir"""
+	if popup_locked:
+		return
+	
+	# Mostrar modal de confirmación
+	showing_confirm_modal = true
+	confirm_modal.visible = true
+
+func _on_confirm_cancel():
+	"""Cancelar salida"""
+	showing_confirm_modal = false
+	confirm_modal.visible = false
+
+func _on_confirm_exit():
+	"""Confirmar salida sin comprar"""
+	_close_popup(false)
+
+func _close_popup(purchased: bool):
+	"""Cerrar popup y notificar"""
+	get_tree().paused = false
+	popup_closed.emit(purchased)
+	queue_free()
+
+func _input(event: InputEvent):
+	"""Manejar input de teclado"""
+	if not (event is InputEventKey) or not event.pressed:
+		return
+	
+	if showing_confirm_modal:
+		if event.keycode == KEY_ESCAPE or event.keycode == KEY_N:
+			_on_confirm_cancel()
+			get_tree().root.set_input_as_handled()
+		elif event.keycode == KEY_ENTER or event.keycode == KEY_Y:
+			_on_confirm_exit()
+			get_tree().root.set_input_as_handled()
+		return
+	
+	if event.keycode == KEY_ESCAPE:
+		_on_exit_pressed()
+		get_tree().root.set_input_as_handled()
+
+# === ESTILOS ===
+
+func _create_panel_style() -> StyleBox:
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.12, 0.10, 0.08, 0.98)
+	style.border_color = Color(0.7, 0.5, 0.2)
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(10)
+	return style
+
+func _style_item_button(btn: Button, tier: int, can_afford: bool, has_discount: bool):
+	var style_normal = StyleBoxFlat.new()
+	var base_color = Color(0.15, 0.15, 0.15) if can_afford else Color(0.1, 0.08, 0.08)
+	style_normal.bg_color = base_color
+	style_normal.border_color = TIER_COLORS.get(tier, Color.WHITE) * (1.0 if can_afford else 0.5)
+	style_normal.set_border_width_all(2)
+	style_normal.set_corner_radius_all(6)
+	
+	var style_hover = style_normal.duplicate()
+	style_hover.bg_color = base_color.lightened(0.1)
+	style_hover.border_color = style_normal.border_color.lightened(0.2)
+	
+	var style_pressed = style_normal.duplicate()
+	style_pressed.bg_color = base_color.lightened(0.2)
+	
+	btn.add_theme_stylebox_override("normal", style_normal)
+	btn.add_theme_stylebox_override("hover", style_hover)
+	btn.add_theme_stylebox_override("pressed", style_pressed)
+	
+	if not can_afford:
+		btn.modulate = Color(0.7, 0.7, 0.7)
+
+func _style_exit_button(btn: Button):
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.3, 0.15, 0.15)
+	style.border_color = Color(0.6, 0.3, 0.3)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(6)
+	btn.add_theme_stylebox_override("normal", style)
+	
+	var hover = style.duplicate()
+	hover.bg_color = Color(0.4, 0.2, 0.2)
+	btn.add_theme_stylebox_override("hover", hover)

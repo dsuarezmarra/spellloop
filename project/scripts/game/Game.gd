@@ -26,6 +26,7 @@ var hud: CanvasLayer = null
 var pause_menu: Control = null
 var game_over_screen: Control = null
 var damage_vignette: CanvasLayer = null  # Efecto de daño estilo Binding of Isaac
+var chest_spawner: Node = null  # Sistema de spawn de cofres tipo tienda
 
 # Estado del juego
 var game_running: bool = false
@@ -104,6 +105,7 @@ func _setup_game() -> void:
 	_create_wave_manager()  # Pasa _is_resuming para skip_auto_init
 	_create_weapon_manager()
 	_create_experience_manager()
+	_create_chest_spawner()  # Sistema de cofres tipo tienda
 
 	# Crear UI
 	_create_ui()
@@ -296,6 +298,17 @@ func _create_experience_manager() -> void:
 			experience_manager.exp_gained.connect(_on_exp_gained)
 		if experience_manager.has_signal("coin_collected"):
 			experience_manager.coin_collected.connect(_on_coin_collected)
+
+func _create_chest_spawner() -> void:
+	var cs_script = load("res://scripts/managers/ChestSpawner.gd")
+	if cs_script:
+		chest_spawner = cs_script.new()
+		chest_spawner.name = "ChestSpawner"
+		add_child(chest_spawner)
+		
+		# Inicializar con referencias
+		if chest_spawner.has_method("initialize"):
+			chest_spawner.initialize(player, arena_manager, pickups_root)
 
 func _create_ui() -> void:
 	# HUD

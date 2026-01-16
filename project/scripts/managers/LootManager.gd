@@ -300,3 +300,160 @@ static func _roll_category(weights: Dictionary, luck: float) -> String:
 			return category
 			
 	return "gold"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHOP CHEST LOOT (Cofres tienda con precios)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+const PRICE_BY_TIER = {
+	1: {"base": 50, "variance": 25},
+	2: {"base": 100, "variance": 50},
+	3: {"base": 200, "variance": 100},
+	4: {"base": 350, "variance": 175},
+	5: {"base": 500, "variance": 250}
+}
+
+const DISCOUNT_CHANCE: float = 0.20  # 20% probabilidad de descuento
+const DISCOUNT_MIN: int = 10
+const DISCOUNT_MAX: int = 90
+
+static func get_shop_chest_loot(zone_tier: int, game_time_minutes: float, luck: float = 1.0) -> Array:
+	"""
+	Generar items para cofre tipo tienda.
+	Retorna array de items con precios y descuentos.
+	"""
+	var items = []
+	
+	# Determinar cantidad de items (1-5, más tarde en el juego = más opciones)
+	var min_items = 1
+	var max_items = clampi(2 + int(game_time_minutes / 5), 2, 5)
+	var item_count = randi_range(min_items, max_items)
+	
+	# Tier base según zona y tiempo
+	var base_tier = clampi(zone_tier, 1, 5)
+	var time_bonus = int(game_time_minutes / 5.0)  # +1 tier potencial cada 5 min
+	
+	# Generar items
+	for i in range(item_count):
+		var item = _generate_shop_item(base_tier, time_bonus, luck)
+		if item:
+			items.append(item)
+	
+	return items
+
+static func _generate_shop_item(base_tier: int, time_bonus: int, luck: float) -> Dictionary:
+	"""Generar un item para tienda con precio"""
+	
+	# Decidir tipo de item (upgrade o weapon)
+	var is_weapon = randf() < 0.3  # 30% armas, 70% upgrades
+	
+	var item = {}
+	
+	if is_weapon:
+		item = _generate_shop_weapon(base_tier, luck)
+	else:
+		item = _generate_shop_upgrade(base_tier, time_bonus, luck)
+	
+	if item.is_empty():
+		return {}
+	
+	# Calcular tier efectivo
+	var tier = item.get("tier", base_tier)
+	tier = clampi(tier, 1, 5)
+	
+	# Calcular precio
+	var price_data = PRICE_BY_TIER.get(tier, PRICE_BY_TIER[1])
+	var base_price = price_data.base
+	var variance = price_data.variance
+	var price = base_price + randi_range(-variance, variance)
+	price = maxi(price, 10)  # Mínimo 10 monedas
+	
+	var original_price = price
+	var discount = 0
+	
+	# Aplicar descuento aleatorio
+	if randf() < DISCOUNT_CHANCE:
+		discount = randi_range(DISCOUNT_MIN, DISCOUNT_MAX)
+		price = int(price * (100 - discount) / 100.0)
+		price = maxi(price, 5)  # Nunca menos de 5
+	
+	item["price"] = price
+	item["original_price"] = original_price
+	item["discount_percent"] = discount
+	item["tier"] = tier
+	
+	return item
+
+static func _generate_shop_weapon(base_tier: int, luck: float) -> Dictionary:
+	"""Generar arma para tienda"""
+	var weapons = WeaponDatabase.get_tiered_weapons(base_tier)
+	if weapons.is_empty():
+		# Fallback a armas base
+		var all_weapons = WeaponDatabase.get_base_weapons()
+		if all_weapons.is_empty():
+			return {}
+		weapons = all_weapons
+	
+	var weapon_id = weapons[randi() % weapons.size()]
+	var weapon_data = WeaponDatabase.get_weapon_data(weapon_id)
+	
+	if weapon_data.is_empty():
+		return {}
+	
+	return {
+		"type": "weapon",
+		"id": weapon_id,
+		"name": weapon_data.get("name_es", weapon_data.get("name", "Arma")),
+		"description": weapon_data.get("description", "Nueva arma"),
+		"icon": weapon_data.get("icon", "⚔️"),
+		"tier": base_tier,
+		"rarity": base_tier
+	}
+
+static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float) -> Dictionary:
+	"""Generar upgrade para tienda"""
+	var UpgradeDB = load("res://scripts/data/PlayerUpgradeDatabase.gd")
+	if not UpgradeDB:
+		return {}
+	
+	var all_upgrades = []
+	
+	# Recolectar de todas las categorías
+	if UpgradeDB.get("DEFENSIVE_UPGRADES"):
+		_append_dict_values(all_upgrades, UpgradeDB.DEFENSIVE_UPGRADES)
+	if UpgradeDB.get("UTILITY_UPGRADES"):
+		_append_dict_values(all_upgrades, UpgradeDB.UTILITY_UPGRADES)
+	if UpgradeDB.get("OFFENSIVE_UPGRADES"):
+		_append_dict_values(all_upgrades, UpgradeDB.OFFENSIVE_UPGRADES)
+	
+	if all_upgrades.is_empty():
+		return {}
+	
+	# Filtrar por tier (con bonus de tiempo y suerte)
+	var target_tier = base_tier
+	if randf() < luck * 0.2:  # Suerte puede subir tier
+		target_tier = mini(target_tier + 1, 5)
+	if time_bonus > 0 and randf() < 0.3:
+		target_tier = mini(target_tier + 1, 5)
+	
+	var eligible = all_upgrades.filter(func(u): 
+		var t = u.get("tier", 1)
+		return t >= base_tier and t <= target_tier + 1
+	)
+	
+	if eligible.is_empty():
+		eligible = all_upgrades
+	
+	var upgrade = eligible[randi() % eligible.size()]
+	
+	return {
+		"type": "upgrade",
+		"id": upgrade.get("id", "unknown"),
+		"name": upgrade.get("name", "Mejora"),
+		"description": upgrade.get("description", "Mejora desconocida"),
+		"icon": upgrade.get("icon", "⬆️"),
+		"tier": upgrade.get("tier", 1),
+		"rarity": upgrade.get("tier", 1),
+		"effects": upgrade.get("effects", [])
+	}
+
