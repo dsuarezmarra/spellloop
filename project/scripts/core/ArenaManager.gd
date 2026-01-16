@@ -476,10 +476,15 @@ func _create_boundary() -> void:
 	var sprite = Sprite2D.new()
 	sprite.name = "VoidBorderSprite"
 	
-	# Usar GradientTexture2D para asegurar UVs correctos (PlaceholderTexture2D a veces da problemas con shaders)
+	# Usar GradientTexture2D para asegurar UVs correctos
+	# Configurar como totalmente transparente por defecto para evitar "pantalla negra" si falla el shader
 	var texture = GradientTexture2D.new()
 	texture.width = 128
 	texture.height = 128
+	# Configurar gradiente transparente
+	var grad = Gradient.new()
+	grad.colors = [Color(0,0,0,0), Color(0,0,0,0)] # Todo transparente
+	texture.gradient = grad
 	sprite.texture = texture
 	
 	# Escalar para cubrir toda el área deseada
@@ -501,7 +506,16 @@ func _create_boundary() -> void:
 	# El radio visual total es 'visual_radius' = arena_radius * 2.5
 	# Ratio = arena_radius / visual_radius = 1 / 2.5 = 0.4
 	# En espacio UV (0-0.5 radio), el borde está en 0.5 * Ratio = 0.2
+	# Calcular radio normalizado con SAFEGUARDS
+	if visual_radius <= 1.0: visual_radius = 10000.0 # Evitar div/0
 	var radius_normalized = 0.5 * (arena_radius / visual_radius)
+	
+	# CLAMP CRÍTICO: Asegurar que el radio nunca sea 0.0 (oscuridad total)
+	# Forzamos que al menos el 10% central sea visible siempre
+	radius_normalized = clampf(radius_normalized, 0.1, 0.49)
+	
+	# Debug para verificar que no sea 0
+	print("🎨 [ArenaManager] Void Border Shader: Arena R=%.1f, Visual R=%.1f, Norm R=%.3f" % [arena_radius, visual_radius, radius_normalized])
 	
 	mat.set_shader_parameter("radius", radius_normalized)
 	mat.set_shader_parameter("smoothness", 0.02)
