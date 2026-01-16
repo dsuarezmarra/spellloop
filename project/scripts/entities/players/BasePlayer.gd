@@ -81,14 +81,6 @@ var _is_casting: bool = false  # Flag para animación de cast
 var character_class: String = "BasePlayer"  # Sobrescribir en subclases: "Wizard", "Rogue", etc.
 var character_sprites_key: String = "wizard"  # Sobrescribir en subclases
 
-# ========== SISTEMA DE ESCUDO ==========
-var current_shield: float = 0.0
-var max_shield: float = 0.0
-var shield_regen_rate: float = 0.0
-var shield_regen_delay: float = 0.0
-var _shield_regen_timer: float = 0.0
-var _shield_delay_timer: float = 0.0
-
 # ========== CICLO DE VIDA ==========
 
 func _ready() -> void:
@@ -286,84 +278,22 @@ func _physics_process(delta: float) -> void:
 	"""Actualizar física y debuffs"""
 	# El movimiento se maneja en SpellloopPlayer para evitar duplicación
 	_process_debuffs(delta)
-	_process_shield(delta)
 	_update_status_visuals(delta)
 	_update_revive_immunity(delta)
-	# Actualizar barra de escudo (para efecto de parpadeo)
-	_update_shield_bar()
 
 func _update_shield_bar() -> void:
 	"""Actualizar visuales de barra de escudo"""
 	# Implementar cuando haya UI de escudo
 	pass
 
-func _process_shield(delta: float) -> void:
-	"""Procesar regeneración de escudo"""
-	var ps = _get_player_stats()
-	if not ps:
-		return
-		
-	var max_shield = ps.get_stat("max_shield")
-	var shield_regen = ps.get_stat("shield_regen")
-	
-	if max_shield <= 0:
-		current_shield = 0
-		return
-		
-	if shield_regen_timer > 0:
-		shield_regen_timer -= delta
-	elif current_shield < max_shield:
-		current_shield += shield_regen * delta
-		current_shield = min(current_shield, max_shield)
 
-func take_damage(amount: int, element: String = "physical", attacker: Node = null) -> void:
-	"""Manejar daño con estadísticas defensivas (Dodge, Shield, Armor)"""
-	var ps = _get_player_stats()
-	
-	# 1. Esquiva (Dodge)
-	if ps:
-		var dodge_chance = ps.get_stat("dodge_chance")
-		if dodge_chance > 0 and randf() < dodge_chance:
-			FloatingText.spawn_text(global_position, "DODGE", Color.YELLOW)
-			return
-
-	# 2. Reducción de daño porcentual
-	var damage_taken_mult = ps.get_stat("damage_taken_mult") if ps else 1.0
-	var reduced_amount = float(amount) * damage_taken_mult
-	
-	# 3. Armadura (Flat reduction)
-	var armor = ps.get_stat("armor") if ps else 0.0
-	reduced_amount = max(1.0, reduced_amount - armor)
-	
-	# 4. Absorción de Escudo
-	if current_shield > 0:
-		var absorbed = min(current_shield, reduced_amount)
-		current_shield -= absorbed
-		reduced_amount -= absorbed
-		# Resetear timer de regeneración
-		var regen_delay = ps.get_stat("shield_regen_delay") if ps else 3.0
-		shield_regen_timer = max(1.0, regen_delay + 3.0) # Base 3s + modificador
-		
-		# Feedback visual de escudo
-		_play_shield_hit_effect()
-		
-		if reduced_amount <= 0:
-			return # Todo el daño absorbido
-
-	# 5. Aplicar daño restante a la salud
-	if health_component:
-		health_component.take_damage(int(reduced_amount), element)
-		
-	# Efectos on-hit (Thorns ya se maneja en SpellloopPlayer, pero podríamos moverlo aquí si quisiéramos)
 
 func _get_player_stats() -> Node:
 	if game_manager and game_manager.player_stats:
 		return game_manager.player_stats
 	return get_tree().get_first_node_in_group("player_stats")
 
-func _play_shield_hit_effect() -> void:
-	# Todo: Implement visual effect
-	pass
+
 
 
 func _process_debuffs(delta: float) -> void:
