@@ -343,7 +343,21 @@ func _input(event: InputEvent):
 	if popup_locked:
 		return
 	
-	# === INPUT DE TECLADO ===
+	# === INPUT DE TECLADO Y ACCIONES (WASD / Flechas / Gamepad) ===
+	if event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and event.keycode == KEY_W):
+		_navigate_selection(-1)
+		get_tree().root.set_input_as_handled()
+		return
+	elif event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and event.keycode == KEY_S):
+		_navigate_selection(1)
+		get_tree().root.set_input_as_handled()
+		return
+	elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and event.keycode == KEY_SPACE):
+		if current_selected_index >= 0 and current_selected_index < available_items.size():
+			_select_item_at_index(current_selected_index)
+		get_tree().root.set_input_as_handled()
+		return
+
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
 			# Números 1-3 para selección directa
@@ -362,16 +376,6 @@ func _input(event: InputEvent):
 					_select_item_at_index(2)
 					get_tree().root.set_input_as_handled()
 					return
-			
-			# WASD / Flechas para navegar
-			KEY_W, KEY_UP:
-				_navigate_selection(-1)
-				get_tree().root.set_input_as_handled()
-				return
-			KEY_S, KEY_DOWN:
-				_navigate_selection(1)
-				get_tree().root.set_input_as_handled()
-				return
 			
 			# Space / Enter para confirmar selección
 			KEY_SPACE, KEY_ENTER:

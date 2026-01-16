@@ -197,6 +197,29 @@ func fire_beam(_weapon: WeaponData, _target_position: Vector2):
 	# Implementación futura: rayo láser
 	pass
 
+func add_weapon_by_id(weapon_id: String) -> bool:
+	"""Crear y añadir arma por su ID"""
+	if not WeaponDatabase.WEAPONS.has(weapon_id):
+		push_error("Weapon ID not found: " + weapon_id)
+		return false
+		
+	var data = WeaponDatabase.WEAPONS[weapon_id]
+	var new_weapon = WeaponData.new()
+	
+	new_weapon.id = data["id"]
+	new_weapon.name = data["name"]
+	new_weapon.damage = data["damage"]
+	new_weapon.cooldown = data["cooldown"]
+	new_weapon.weapon_range = data["range"]
+	new_weapon.projectile_speed = data["projectile_speed"]
+	# Enums conversion
+	new_weapon.weapon_type = int(data.get("projectile_type", WeaponData.WeaponType.PROJECTILE))
+	new_weapon.targeting = int(data.get("target_type", WeaponData.TargetingType.NEAREST_ENEMY))
+	new_weapon.tags = data.get("tags", [])
+	new_weapon.evolution = data.get("evolution", "")
+	
+	return add_weapon(new_weapon)
+
 func add_weapon(weapon_data: WeaponData) -> bool:
 	"""Añadir nueva arma"""
 	if equipped_weapons.size() >= max_weapons:

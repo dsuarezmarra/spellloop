@@ -411,11 +411,11 @@ func _apply_purchased_item(item: Dictionary):
 		"weapon":
 			# Añadir arma al WeaponManager
 			var weapon_mgr = get_tree().current_scene.get_node_or_null("WeaponManager")
-			if weapon_mgr and weapon_mgr.has_method("add_weapon"):
-				weapon_mgr.add_weapon(item_id)
+			if weapon_mgr and weapon_mgr.has_method("add_weapon_by_id"):
+				weapon_mgr.add_weapon_by_id(item_id)
 			elif player_ref and "attack_manager" in player_ref:
-				if player_ref.attack_manager.has_method("add_weapon"):
-					player_ref.attack_manager.add_weapon(item_id)
+				if player_ref.attack_manager.has_method("add_weapon_by_id"):
+					player_ref.attack_manager.add_weapon_by_id(item_id)
 		
 		"upgrade":
 			# Aplicar upgrade al PlayerStats
