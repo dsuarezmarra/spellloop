@@ -602,15 +602,496 @@ const UTILITY_UPGRADES: Dictionary = {
 		"max_stacks": 2,
 		"effects": [{"stat": "pickup_range", "value": 1.75, "operation": "multiply"}]
 	},
-	"pickup_flat_1": {
-		"id": "pickup_flat_1",
-		"name": "Atracción",
-		"description": "+50 píxeles de rango de recogida.",
-		"icon": "🧲",
-		"category": "utility",
+	# ─────────────────────────────────────────────────────────────────────────────
+	# DAÑO GLOBAL (Mejoras ofensivas directas - MUY IMPORTANTES)
+	# ─────────────────────────────────────────────────────────────────────────────
+	"damage_1": {
+		"id": "damage_1",
+		"name": "Poder Menor",
+		"description": "+10% daño de todas las armas.",
+		"icon": "⚔️",
+		"category": "offensive",
+		"tier": 1,
+		"max_stacks": 6,
+		"effects": [{"stat": "damage_mult", "value": 1.10, "operation": "multiply"}]
+	},
+	"damage_2": {
+		"id": "damage_2",
+		"name": "Poder",
+		"description": "+18% daño de todas las armas.",
+		"icon": "⚔️",
+		"category": "offensive",
 		"tier": 2,
 		"max_stacks": 4,
-		"effects": [{"stat": "pickup_range_flat", "value": 50, "operation": "add"}]
+		"effects": [{"stat": "damage_mult", "value": 1.18, "operation": "multiply"}]
+	},
+	"damage_3": {
+		"id": "damage_3",
+		"name": "Fuerza Brutal",
+		"description": "+30% daño de todas las armas.",
+		"icon": "⚔️",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 3,
+		"effects": [{"stat": "damage_mult", "value": 1.30, "operation": "multiply"}]
+	},
+	"damage_4": {
+		"id": "damage_4",
+		"name": "Devastación",
+		"description": "+50% daño de todas las armas.",
+		"icon": "⚔️",
+		"category": "offensive",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [{"stat": "damage_mult", "value": 1.50, "operation": "multiply"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# VELOCIDAD DE ATAQUE
+	# ─────────────────────────────────────────────────────────────────────────────
+	"attack_speed_1": {
+		"id": "attack_speed_1",
+		"name": "Agilidad de Combate",
+		"description": "+10% velocidad de ataque.",
+		"icon": "⚡",
+		"category": "offensive",
+		"tier": 1,
+		"max_stacks": 5,
+		"effects": [{"stat": "attack_speed_mult", "value": 1.10, "operation": "multiply"}]
+	},
+	"attack_speed_2": {
+		"id": "attack_speed_2",
+		"name": "Rapidez",
+		"description": "+20% velocidad de ataque.",
+		"icon": "⚡",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 4,
+		"effects": [{"stat": "attack_speed_mult", "value": 1.20, "operation": "multiply"}]
+	},
+	"attack_speed_3": {
+		"id": "attack_speed_3",
+		"name": "Frenesí",
+		"description": "+35% velocidad de ataque.",
+		"icon": "⚡",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "attack_speed_mult", "value": 1.35, "operation": "multiply"}]
+	},
+	"attack_speed_4": {
+		"id": "attack_speed_4",
+		"name": "Tormenta de Acero",
+		"description": "+50% velocidad de ataque.",
+		"icon": "⚡",
+		"category": "offensive",
+		"tier": 4,
+		"max_stacks": 1,
+		"effects": [{"stat": "attack_speed_mult", "value": 1.50, "operation": "multiply"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# CRÍTICOS
+	# ─────────────────────────────────────────────────────────────────────────────
+	"crit_chance_1": {
+		"id": "crit_chance_1",
+		"name": "Ojo Entrenado",
+		"description": "+5% probabilidad de crítico.",
+		"icon": "🎯",
+		"category": "offensive",
+		"tier": 1,
+		"max_stacks": 5,
+		"effects": [{"stat": "crit_chance", "value": 0.05, "operation": "add"}]
+	},
+	"crit_chance_2": {
+		"id": "crit_chance_2",
+		"name": "Precisión",
+		"description": "+10% probabilidad de crítico.",
+		"icon": "🎯",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 3,
+		"effects": [{"stat": "crit_chance", "value": 0.10, "operation": "add"}]
+	},
+	"crit_chance_3": {
+		"id": "crit_chance_3",
+		"name": "Maestría del Golpe",
+		"description": "+15% probabilidad de crítico.",
+		"icon": "🎯",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "crit_chance", "value": 0.15, "operation": "add"}]
+	},
+	"crit_damage_1": {
+		"id": "crit_damage_1",
+		"name": "Golpe Certero",
+		"description": "+25% daño crítico.",
+		"icon": "💥",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 4,
+		"effects": [{"stat": "crit_damage", "value": 0.25, "operation": "add"}]
+	},
+	"crit_damage_2": {
+		"id": "crit_damage_2",
+		"name": "Golpe Demoledor",
+		"description": "+50% daño crítico.",
+		"icon": "💥",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 3,
+		"effects": [{"stat": "crit_damage", "value": 0.50, "operation": "add"}]
+	},
+	"crit_damage_3": {
+		"id": "crit_damage_3",
+		"name": "Aniquilación",
+		"description": "+75% daño crítico.",
+		"icon": "💥",
+		"category": "offensive",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [{"stat": "crit_damage", "value": 0.75, "operation": "add"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# ÁREA DE EFECTO
+	# ─────────────────────────────────────────────────────────────────────────────
+	"area_1": {
+		"id": "area_1",
+		"name": "Alcance Expandido",
+		"description": "+15% área de efecto.",
+		"icon": "🔵",
+		"category": "offensive",
+		"tier": 1,
+		"max_stacks": 5,
+		"effects": [{"stat": "area_mult", "value": 1.15, "operation": "multiply"}]
+	},
+	"area_2": {
+		"id": "area_2",
+		"name": "Onda Expansiva",
+		"description": "+25% área de efecto.",
+		"icon": "🔵",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 3,
+		"effects": [{"stat": "area_mult", "value": 1.25, "operation": "multiply"}]
+	},
+	"area_3": {
+		"id": "area_3",
+		"name": "Devastación en Área",
+		"description": "+40% área de efecto.",
+		"icon": "🔵",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "area_mult", "value": 1.40, "operation": "multiply"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# PROYECTILES Y PENETRACIÓN
+	# ─────────────────────────────────────────────────────────────────────────────
+	"projectile_1": {
+		"id": "projectile_1",
+		"name": "Disparo Doble",
+		"description": "+1 proyectil adicional.",
+		"icon": "🔮",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 3,
+		"effects": [{"stat": "extra_projectiles", "value": 1, "operation": "add"}]
+	},
+	"projectile_2": {
+		"id": "projectile_2",
+		"name": "Ráfaga",
+		"description": "+2 proyectiles adicionales.",
+		"icon": "🔮",
+		"category": "offensive",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [{"stat": "extra_projectiles", "value": 2, "operation": "add"}]
+	},
+	"pierce_1": {
+		"id": "pierce_1",
+		"name": "Penetración",
+		"description": "+1 penetración (atraviesa +1 enemigo).",
+		"icon": "➡️",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 4,
+		"effects": [{"stat": "extra_pierce", "value": 1, "operation": "add"}]
+	},
+	"pierce_2": {
+		"id": "pierce_2",
+		"name": "Empalamiento",
+		"description": "+2 penetración (atraviesa +2 enemigos).",
+		"icon": "➡️",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 3,
+		"effects": [{"stat": "extra_pierce", "value": 2, "operation": "add"}]
+	},
+	"pierce_3": {
+		"id": "pierce_3",
+		"name": "Perforación Total",
+		"description": "+3 penetración (atraviesa +3 enemigos).",
+		"icon": "➡️",
+		"category": "offensive",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [{"stat": "extra_pierce", "value": 3, "operation": "add"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# CADENAS (CHAIN)
+	# ─────────────────────────────────────────────────────────────────────────────
+	"chain_1": {
+		"id": "chain_1",
+		"name": "Rebote",
+		"description": "Los ataques saltan a +1 enemigo cercano.",
+		"icon": "⚡",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 3,
+		"effects": [{"stat": "chain_count", "value": 1, "operation": "add"}]
+	},
+	"chain_2": {
+		"id": "chain_2",
+		"name": "Cadena de Rayos",
+		"description": "Los ataques saltan a +2 enemigos cercanos.",
+		"icon": "⚡",
+		"category": "offensive",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [{"stat": "chain_count", "value": 2, "operation": "add"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# VELOCIDAD DE PROYECTIL
+	# ─────────────────────────────────────────────────────────────────────────────
+	"projectile_speed_1": {
+		"id": "projectile_speed_1",
+		"name": "Proyectiles Rápidos",
+		"description": "+20% velocidad de proyectiles.",
+		"icon": "💨",
+		"category": "offensive",
+		"tier": 1,
+		"max_stacks": 4,
+		"effects": [{"stat": "projectile_speed_mult", "value": 1.20, "operation": "multiply"}]
+	},
+	"projectile_speed_2": {
+		"id": "projectile_speed_2",
+		"name": "Proyectiles Supersónicos",
+		"description": "+40% velocidad de proyectiles.",
+		"icon": "💨",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 3,
+		"effects": [{"stat": "projectile_speed_mult", "value": 1.40, "operation": "multiply"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# DURACIÓN DE HABILIDADES
+	# ─────────────────────────────────────────────────────────────────────────────
+	"duration_1": {
+		"id": "duration_1",
+		"name": "Persistencia",
+		"description": "+20% duración de proyectiles y efectos.",
+		"icon": "⏳",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 4,
+		"effects": [{"stat": "duration_mult", "value": 1.20, "operation": "multiply"}]
+	},
+	"duration_2": {
+		"id": "duration_2",
+		"name": "Permanencia",
+		"description": "+40% duración de proyectiles y efectos.",
+		"icon": "⏳",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "duration_mult", "value": 1.40, "operation": "multiply"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# REDUCCIÓN DE COOLDOWN
+	# ─────────────────────────────────────────────────────────────────────────────
+	"cooldown_1": {
+		"id": "cooldown_1",
+		"name": "Recuperación",
+		"description": "-10% tiempo de recarga.",
+		"icon": "🔄",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 4,
+		"effects": [{"stat": "cooldown_mult", "value": 0.90, "operation": "multiply"}]
+	},
+	"cooldown_2": {
+		"id": "cooldown_2",
+		"name": "Celeridad",
+		"description": "-20% tiempo de recarga.",
+		"icon": "🔄",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 3,
+		"effects": [{"stat": "cooldown_mult", "value": 0.80, "operation": "multiply"}]
+	},
+	"cooldown_3": {
+		"id": "cooldown_3",
+		"name": "Flujo Arcano",
+		"description": "-30% tiempo de recarga.",
+		"icon": "🔄",
+		"category": "offensive",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [{"stat": "cooldown_mult", "value": 0.70, "operation": "multiply"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# KNOCKBACK
+	# ─────────────────────────────────────────────────────────────────────────────
+	"knockback_1": {
+		"id": "knockback_1",
+		"name": "Impacto",
+		"description": "+30% retroceso a enemigos.",
+		"icon": "💪",
+		"category": "offensive",
+		"tier": 1,
+		"max_stacks": 4,
+		"effects": [{"stat": "knockback_mult", "value": 1.30, "operation": "multiply"}]
+	},
+	"knockback_2": {
+		"id": "knockback_2",
+		"name": "Fuerza Bruta",
+		"description": "+60% retroceso a enemigos.",
+		"icon": "💪",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 3,
+		"effects": [{"stat": "knockback_mult", "value": 1.60, "operation": "multiply"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# DAÑO CONTRA ELITES/JEFES
+	# ─────────────────────────────────────────────────────────────────────────────
+	"elite_damage_1": {
+		"id": "elite_damage_1",
+		"name": "Cazador de Elites",
+		"description": "+25% daño contra elites y jefes.",
+		"icon": "👑",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 4,
+		"effects": [{"stat": "elite_damage_mult", "value": 0.25, "operation": "add"}]
+	},
+	"elite_damage_2": {
+		"id": "elite_damage_2",
+		"name": "Matador de Gigantes",
+		"description": "+50% daño contra elites y jefes.",
+		"icon": "👑",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "elite_damage_mult", "value": 0.50, "operation": "add"}]
+	},
+	"elite_damage_3": {
+		"id": "elite_damage_3",
+		"name": "Verdugo de Titanes",
+		"description": "+100% daño contra elites y jefes.",
+		"icon": "👑",
+		"category": "offensive",
+		"tier": 4,
+		"max_stacks": 1,
+		"effects": [{"stat": "elite_damage_mult", "value": 1.0, "operation": "add"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# EFECTOS DE ESTADO OFENSIVOS
+	# ─────────────────────────────────────────────────────────────────────────────
+	"burn_chance_1": {
+		"id": "burn_chance_1",
+		"name": "Toque Ardiente",
+		"description": "+10% prob. de quemar enemigos (3 daño/s por 3s).",
+		"icon": "🔥",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 4,
+		"effects": [{"stat": "burn_chance", "value": 0.10, "operation": "add"}]
+	},
+	"burn_chance_2": {
+		"id": "burn_chance_2",
+		"name": "Inmolación",
+		"description": "+20% prob. de quemar enemigos.",
+		"icon": "🔥",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "burn_chance", "value": 0.20, "operation": "add"}]
+	},
+	"freeze_chance_1": {
+		"id": "freeze_chance_1",
+		"name": "Toque Gélido",
+		"description": "+10% prob. de congelar enemigos (1s).",
+		"icon": "❄️",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 4,
+		"effects": [{"stat": "freeze_chance", "value": 0.10, "operation": "add"}]
+	},
+	"freeze_chance_2": {
+		"id": "freeze_chance_2",
+		"name": "Corazón de Hielo",
+		"description": "+20% prob. de congelar enemigos.",
+		"icon": "❄️",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "freeze_chance", "value": 0.20, "operation": "add"}]
+	},
+	"bleed_chance_1": {
+		"id": "bleed_chance_1",
+		"name": "Corte Profundo",
+		"description": "+10% prob. de causar sangrado (2 daño/s por 4s).",
+		"icon": "🩸",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 4,
+		"effects": [{"stat": "bleed_chance", "value": 0.10, "operation": "add"}]
+	},
+	"bleed_chance_2": {
+		"id": "bleed_chance_2",
+		"name": "Hemorragia",
+		"description": "+20% prob. de causar sangrado.",
+		"icon": "🩸",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "bleed_chance", "value": 0.20, "operation": "add"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# RANGO DE ATAQUE
+	# ─────────────────────────────────────────────────────────────────────────────
+	"range_1": {
+		"id": "range_1",
+		"name": "Alcance",
+		"description": "+15% rango de ataque.",
+		"icon": "🏹",
+		"category": "offensive",
+		"tier": 1,
+		"max_stacks": 4,
+		"effects": [{"stat": "range_mult", "value": 1.15, "operation": "multiply"}]
+	},
+	"range_2": {
+		"id": "range_2",
+		"name": "Largo Alcance",
+		"description": "+30% rango de ataque.",
+		"icon": "🏹",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 3,
+		"effects": [{"stat": "range_mult", "value": 1.30, "operation": "multiply"}]
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -750,37 +1231,107 @@ const UTILITY_UPGRADES: Dictionary = {
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
-	# FUERZA DE IMÁN (Velocidad de atracción de pickups)
+	# SINERGIAS - Daño condicional
 	# ─────────────────────────────────────────────────────────────────────────────
-	"magnet_strength_1": {
-		"id": "magnet_strength_1",
-		"name": "Atracción Menor",
-		"description": "+20% velocidad de atracción de pickups.",
-		"icon": "🧲",
-		"category": "utility",
-		"tier": 1,
-		"max_stacks": 5,
-		"effects": [{"stat": "magnet_strength", "value": 1.20, "operation": "multiply"}]
-	},
-	"magnet_strength_2": {
-		"id": "magnet_strength_2",
-		"name": "Atracción",
-		"description": "+40% velocidad de atracción de pickups.",
-		"icon": "🧲",
-		"category": "utility",
+	"slow_synergy_1": {
+		"id": "slow_synergy_1",
+		"name": "Cazador Paciente",
+		"description": "+25% daño a enemigos ralentizados.",
+		"icon": "🐌",
+		"category": "offensive",
 		"tier": 2,
 		"max_stacks": 3,
-		"effects": [{"stat": "magnet_strength", "value": 1.40, "operation": "multiply"}]
+		"effects": [{"stat": "damage_vs_slowed", "value": 0.25, "operation": "add"}]
 	},
-	"magnet_strength_3": {
-		"id": "magnet_strength_3",
-		"name": "Imán Poderoso",
-		"description": "+75% velocidad de atracción de pickups.",
-		"icon": "🧲",
-		"category": "utility",
+	"slow_synergy_2": {
+		"id": "slow_synergy_2",
+		"name": "Depredador",
+		"description": "+50% daño a enemigos ralentizados.",
+		"icon": "🐌",
+		"category": "offensive",
 		"tier": 3,
 		"max_stacks": 2,
-		"effects": [{"stat": "magnet_strength", "value": 1.75, "operation": "multiply"}]
+		"effects": [{"stat": "damage_vs_slowed", "value": 0.50, "operation": "add"}]
+	},
+	"burn_synergy_1": {
+		"id": "burn_synergy_1",
+		"name": "Pirómano",
+		"description": "+25% daño a enemigos en llamas.",
+		"icon": "🔥",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 3,
+		"effects": [{"stat": "damage_vs_burning", "value": 0.25, "operation": "add"}]
+	},
+	"burn_synergy_2": {
+		"id": "burn_synergy_2",
+		"name": "Señor del Fuego",
+		"description": "+50% daño a enemigos en llamas.",
+		"icon": "🔥",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "damage_vs_burning", "value": 0.50, "operation": "add"}]
+	},
+	"freeze_synergy_1": {
+		"id": "freeze_synergy_1",
+		"name": "Ejecutor del Hielo",
+		"description": "+40% daño a enemigos congelados.",
+		"icon": "❄️",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 3,
+		"effects": [{"stat": "damage_vs_frozen", "value": 0.40, "operation": "add"}]
+	},
+	"freeze_synergy_2": {
+		"id": "freeze_synergy_2",
+		"name": "Rompe Hielos",
+		"description": "+80% daño a enemigos congelados.",
+		"icon": "❄️",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "damage_vs_frozen", "value": 0.80, "operation": "add"}]
+	},
+	"low_hp_damage_1": {
+		"id": "low_hp_damage_1",
+		"name": "Riesgo Calculado",
+		"description": "+2% daño por cada 10% de HP perdido.",
+		"icon": "💔",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 3,
+		"effects": [{"stat": "low_hp_damage_bonus", "value": 0.02, "operation": "add"}]
+	},
+	"low_hp_damage_2": {
+		"id": "low_hp_damage_2",
+		"name": "Al Borde de la Muerte",
+		"description": "+4% daño por cada 10% de HP perdido.",
+		"icon": "💔",
+		"category": "offensive",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [{"stat": "low_hp_damage_bonus", "value": 0.04, "operation": "add"}]
+	},
+	"full_hp_damage_1": {
+		"id": "full_hp_damage_1",
+		"name": "Confianza Plena",
+		"description": "+20% daño mientras tengas HP máximo.",
+		"icon": "💚",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 3,
+		"effects": [{"stat": "full_hp_damage_bonus", "value": 0.20, "operation": "add"}]
+	},
+	"full_hp_damage_2": {
+		"id": "full_hp_damage_2",
+		"name": "Perfeccionista",
+		"description": "+40% daño mientras tengas HP máximo.",
+		"icon": "💚",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "full_hp_damage_bonus", "value": 0.40, "operation": "add"}]
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1491,6 +2042,180 @@ const UNIQUE_UPGRADES: Dictionary = {
 			{"stat": "freeze_chance", "value": 0.30, "operation": "add"},
 			{"stat": "status_duration_mult", "value": 0.75, "operation": "add"},
 			{"stat": "area_mult", "value": 1.25, "operation": "multiply"}
+		]
+	},
+	# ─────────────────────────────────────────────────────────────────────────────
+	# NUEVAS MEJORAS ÚNICAS (v4.0) - Build-Defining
+	# ─────────────────────────────────────────────────────────────────────────────
+	"unique_orbital_mastery": {
+		"id": "unique_orbital_mastery",
+		"name": "Maestro Orbital",
+		"description": "+50% daño orbital, +2 orbes adicionales, +30% velocidad orbital.",
+		"icon": "🔮",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "orbital_damage_mult", "value": 0.50, "operation": "add"},
+			{"stat": "orbital_count_bonus", "value": 2, "operation": "add"},
+			{"stat": "orbital_speed_mult", "value": 1.30, "operation": "multiply"}
+		]
+	},
+	"unique_projectile_specialist": {
+		"id": "unique_projectile_specialist",
+		"name": "Especialista en Proyectiles",
+		"description": "+2 proyectiles, +30% velocidad proyectil, +25% penetración.",
+		"icon": "🎯",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "extra_projectiles", "value": 2, "operation": "add"},
+			{"stat": "projectile_speed_mult", "value": 1.30, "operation": "multiply"},
+			{"stat": "extra_pierce", "value": 3, "operation": "add"}
+		]
+	},
+	"unique_aoe_devastator": {
+		"id": "unique_aoe_devastator",
+		"name": "Devastador de Área",
+		"description": "+60% área, +40% daño en área, -20% daño single target.",
+		"icon": "💥",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "area_mult", "value": 1.60, "operation": "multiply"},
+			{"stat": "aoe_damage_mult", "value": 0.40, "operation": "add"},
+			{"stat": "single_target_mult", "value": 0.80, "operation": "multiply"}
+		]
+	},
+	"unique_glass_mage": {
+		"id": "unique_glass_mage",
+		"name": "Mago de Cristal",
+		"description": "+100% daño, +100% velocidad ataque, pero armadura = 0.",
+		"icon": "💠",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"is_cursed": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "damage_mult", "value": 2.0, "operation": "multiply"},
+			{"stat": "attack_speed_mult", "value": 2.0, "operation": "multiply"},
+			{"stat": "armor", "value": -999, "operation": "add"}
+		]
+	},
+	"unique_juggernaut": {
+		"id": "unique_juggernaut",
+		"name": "Juggernaut",
+		"description": "+200 HP, +30 armadura, +15% daño, pero -30% velocidad.",
+		"icon": "🦾",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"is_cursed": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "max_health", "value": 200, "operation": "add"},
+			{"stat": "armor", "value": 30, "operation": "add"},
+			{"stat": "damage_mult", "value": 1.15, "operation": "multiply"},
+			{"stat": "move_speed", "value": 0.70, "operation": "multiply"}
+		]
+	},
+	"unique_elemental_fusion": {
+		"id": "unique_elemental_fusion",
+		"name": "Fusión Elemental",
+		"description": "+15% prob. quemar, congelar y sangrar. +50% daño a afectados.",
+		"icon": "🌈",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "burn_chance", "value": 0.15, "operation": "add"},
+			{"stat": "freeze_chance", "value": 0.15, "operation": "add"},
+			{"stat": "bleed_chance", "value": 0.15, "operation": "add"},
+			{"stat": "damage_vs_burning", "value": 0.50, "operation": "add"},
+			{"stat": "damage_vs_frozen", "value": 0.50, "operation": "add"}
+		]
+	},
+	"unique_soul_collector": {
+		"id": "unique_soul_collector",
+		"name": "Colector de Almas",
+		"description": "+5 HP por kill, +3% daño permanente por cada 100 kills (max 30%).",
+		"icon": "👻",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "kill_heal", "value": 5, "operation": "add"},
+			{"stat": "kill_damage_scaling", "value": 0.03, "operation": "add"}
+		]
+	},
+	"unique_lucky_star": {
+		"id": "unique_lucky_star",
+		"name": "Estrella de la Suerte",
+		"description": "+75% suerte, +25% probabilidad crítico, +50% oro.",
+		"icon": "⭐",
+		"category": "unique",
+		"tier": 4,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "luck", "value": 0.75, "operation": "add"},
+			{"stat": "crit_chance", "value": 0.25, "operation": "add"},
+			{"stat": "gold_mult", "value": 1.50, "operation": "multiply"}
+		]
+	},
+	"unique_mirror_shield": {
+		"id": "unique_mirror_shield",
+		"name": "Escudo Espejo",
+		"description": "Refleja 100% del daño recibido. +20% esquiva. -20% HP máx.",
+		"icon": "🪞",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"is_cursed": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "thorns_percent", "value": 1.0, "operation": "add"},
+			{"stat": "dodge_chance", "value": 0.20, "operation": "add"},
+			{"stat": "max_health", "value": 0.80, "operation": "multiply"}
+		]
+	},
+	"unique_time_dilation": {
+		"id": "unique_time_dilation",
+		"name": "Dilatación Temporal",
+		"description": "Enemigos se mueven 25% más lento. -40% cooldowns. +25% velocidad.",
+		"icon": "⏰",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "enemy_slow_aura", "value": 0.25, "operation": "add"},
+			{"stat": "cooldown_mult", "value": 0.60, "operation": "multiply"},
+			{"stat": "move_speed", "value": 1.25, "operation": "multiply"}
+		]
+	},
+	"unique_blood_mage": {
+		"id": "unique_blood_mage",
+		"name": "Mago de Sangre",
+		"description": "Las habilidades cuestan 5 HP pero hacen +50% daño. +20% life steal.",
+		"icon": "🩸",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"is_cursed": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "hp_cost_per_attack", "value": 5, "operation": "add"},
+			{"stat": "damage_mult", "value": 1.50, "operation": "multiply"},
+			{"stat": "life_steal", "value": 0.20, "operation": "add"}
 		]
 	}
 }

@@ -483,12 +483,33 @@ const BASE_STATS: Dictionary = {
 
 	# Efectos especiales de ataque
 	"burn_damage": 0.0,            # Daño de quemadura/s
+	"burn_chance": 0.0,            # Prob. de quemar
 	"freeze_chance": 0.0,          # Prob. de congelar
 	"bleed_chance": 0.0,           # Prob. de sangrado
 	"explosion_chance": 0.0,       # Prob. de explosión al matar
 	"explosion_damage": 0.0,       # Daño de explosiones
 	"execute_threshold": 0.0,      # Umbral de ejecución (%)
 	"overkill_damage": 0.0,        # % de daño excedente transferido
+	
+	# Daño contra elites/jefes
+	"elite_damage_mult": 0.0,      # % extra vs elites/jefes
+	
+	# Sinergias - Daño condicional
+	"damage_vs_slowed": 0.0,       # % extra vs ralentizados
+	"damage_vs_burning": 0.0,      # % extra vs en llamas
+	"damage_vs_frozen": 0.0,       # % extra vs congelados
+	"low_hp_damage_bonus": 0.0,    # % extra por HP perdido
+	"full_hp_damage_bonus": 0.0,   # % extra con HP máximo
+	
+	# Mejoras de builds específicos
+	"orbital_damage_mult": 0.0,    # % extra daño orbital
+	"orbital_count_bonus": 0,      # Orbes adicionales
+	"orbital_speed_mult": 1.0,     # Velocidad orbital
+	"aoe_damage_mult": 0.0,        # % extra daño AOE
+	"single_target_mult": 1.0,     # Mult daño single target
+	"kill_damage_scaling": 0.0,    # % daño por kills
+	"enemy_slow_aura": 0.0,        # Ralentización pasiva a enemigos
+	"hp_cost_per_attack": 0.0,     # HP que cuesta cada ataque
 
 	# Críticos
 	"crit_chance": 0.05,
@@ -539,6 +560,7 @@ const STAT_LIMITS: Dictionary = {
 	"crit_chance": {"min": 0.0, "max": 1.0},
 	"dodge_chance": {"min": 0.0, "max": 0.75},      # Máximo 75%
 	# NOTA: life_steal límite está en GlobalWeaponStats
+	"burn_chance": {"min": 0.0, "max": 0.5},         # Máximo 50%
 	"freeze_chance": {"min": 0.0, "max": 0.5},       # Máximo 50%
 	"bleed_chance": {"min": 0.0, "max": 0.5},        # Máximo 50%
 	"explosion_chance": {"min": 0.0, "max": 0.5},    # Máximo 50%
@@ -550,6 +572,14 @@ const STAT_LIMITS: Dictionary = {
 	"revive_invuln": {"min": 0.0, "max": 5.0},       # Máximo 5s invulnerabilidad
 	"curse": {"min": 0.0, "max": 2.0},               # Máximo 200%
 	"growth": {"min": 0.0, "max": 1.0},              # Máximo 100%
+	
+	# Daño condicional / sinergias
+	"elite_damage_mult": {"min": 0.0, "max": 3.0},   # Máximo +300% vs elites
+	"damage_vs_slowed": {"min": 0.0, "max": 2.0},    # Máximo +200%
+	"damage_vs_burning": {"min": 0.0, "max": 2.0},   # Máximo +200%
+	"damage_vs_frozen": {"min": 0.0, "max": 3.0},    # Máximo +300%
+	"low_hp_damage_bonus": {"min": 0.0, "max": 0.1}, # Máximo +10% por 10% HP perdido
+	"full_hp_damage_bonus": {"min": 0.0, "max": 1.0}, # Máximo +100%
 
 	# Valores planos con límite
 	"extra_projectiles": {"min": 0, "max": 10},
