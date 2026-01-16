@@ -295,9 +295,12 @@ func show_wave_message(text: String, duration: float = 3.0):
 	msg_label.add_theme_constant_override("outline_size", 4)
 	msg_label.add_theme_color_override("font_outline_color", Color.BLACK)
 	
-	# Centrar en pantalla
+	# Centrar en pantalla pero arriba (debajo del timer) - Estilo WARNING
 	$Control.add_child(msg_label)
-	msg_label.set_anchors_preset(Control.PRESET_CENTER)
+	msg_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	msg_label.add_theme_constant_override("margin_top", 120) # Debajo del timer
+	msg_label.add_theme_color_override("font_color", Color(1, 0.2, 0.2)) # Rojo Alerta
+	msg_label.add_theme_font_size_override("font_size", 48) # Más grande
 	
 	# Animación
 	msg_label.modulate.a = 0

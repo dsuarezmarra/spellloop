@@ -31,10 +31,10 @@ const SPAWN_DISTANCE_BOSS: float = 400.0  # Bosses aparecen más cerca
 # Cada fase define cómo se comporta el spawn durante ese período
 const PHASES = {
 	1: {
-		"name": "Introducción",
+		"name": "",
 		"start_minute": 0,
 		"end_minute": 5,
-		"description": "Aprende las mecánicas básicas",
+		"description": "",
 		"available_tiers": [1],
 		"max_enemies": 25,
 		"spawn_rate": 0.8,  # Enemigos por segundo
@@ -43,10 +43,10 @@ const PHASES = {
 		"music_intensity": "calm"
 	},
 	2: {
-		"name": "Escalada",
+		"name": "",
 		"start_minute": 5,
 		"end_minute": 10,
-		"description": "La dificultad aumenta",
+		"description": "",
 		"available_tiers": [1, 2],
 		"max_enemies": 40,
 		"spawn_rate": 1.2,
@@ -283,7 +283,7 @@ const SPECIAL_EVENTS = {
 		"duration_seconds": 10.0,
 		"spawn_multiplier": 0.0,  # Sin spawns
 		"heal_player_percent": 0.1,  # Cura 10% HP
-		"announcement": "💚 Momento de respiro...",
+		"announcement": "",
 		"music_override": "calm"
 	}
 }

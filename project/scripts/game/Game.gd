@@ -1162,9 +1162,11 @@ func _on_phase_changed(phase_num: int, phase_config: Dictionary) -> void:
 	var phase_name = phase_config.get("name", "Fase %d" % phase_num)
 	# Debug desactivado: print("🌊 [Game] Fase cambiada: %s" % phase_name)
 
-	if hud and hud.has_method("show_wave_message"):
-		var msg = "═══ FASE %d: %s ═══" % [phase_num, phase_name.to_upper()]
-		hud.show_wave_message(msg, 5.0)
+	# DESACTIVADO: Ya no mostramos mensajes de fase, solo eventos importantes
+	# if hud and hud.has_method("show_wave_message"):
+	# 	var msg = "═══ FASE %d: %s ═══" % [phase_num, phase_name.to_upper()]
+	# 	hud.show_wave_message(msg, 5.0)
+	pass
 
 func _on_wave_started(wave_type: String, wave_config: Dictionary) -> void:
 	"""Callback cuando inicia una oleada"""

@@ -602,6 +602,13 @@ const UTILITY_UPGRADES: Dictionary = {
 		"max_stacks": 2,
 		"effects": [{"stat": "pickup_range", "value": 1.75, "operation": "multiply"}]
 	},
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MEJORAS OFENSIVAS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+const OFFENSIVE_UPGRADES: Dictionary = {
 	# ─────────────────────────────────────────────────────────────────────────────
 	# DAÑO GLOBAL (Mejoras ofensivas directas - MUY IMPORTANTES)
 	# ─────────────────────────────────────────────────────────────────────────────

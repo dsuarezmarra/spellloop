@@ -239,6 +239,20 @@ func get_level_progress() -> float:
 	"""Obtener progreso hacia el siguiente nivel (0.0 - 1.0)"""
 	return float(level) / float(max_level)
 
+func get_info() -> Dictionary:
+	"""Obtener diccionario con información del arma para HUD"""
+	return {
+		"id": id,
+		"name": weapon_name_es if weapon_name_es != "" else weapon_name,
+		"description": description,
+		"icon": icon,
+		"level": level,
+		"max_level": max_level,
+		"damage": damage,
+		"cooldown": cooldown,
+		"is_fused": is_fused
+	}
+
 func get_next_upgrade_description() -> String:
 	"""Obtener descripción de la siguiente mejora"""
 	if not can_level_up():

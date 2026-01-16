@@ -116,48 +116,95 @@ func setup_items(items: Array):
 	
 	await get_tree().process_frame
 	
-	# Crear botones o paneles
+	# Crear botones complejos
 	for i in range(items.size()):
 		var item = items[i]
-		var item_name = item.get("name", "Item Desconocido")
-		if item_name == "Item Desconocido":
-			item_name = item.get("type", "Item Desconocido")
-			
-		var control: Control
+		var item_name = item.get("name", "Objeto Misterioso")
+		var item_desc = item.get("description", "Sin descripción")
+		var item_icon = item.get("icon", "❓") # Emoji fallback
+		var item_id = item.get("id", "")
 		
-		if is_jackpot_mode:
-			# En modo jackpot son paneles informativos, no botones
-			var panel = PanelContainer.new()
-			var style = StyleBoxFlat.new()
-			style.bg_color = Color(0.1, 0.1, 0.1, 0.8)
-			style.border_color = Color(0.5, 0.5, 0.5)
-			style.set_border_width_all(1)
-			panel.add_theme_stylebox_override("panel", style)
-			
-			var lbl = Label.new()
-			lbl.text = item_name
-			lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			panel.add_child(lbl)
-			panel.custom_minimum_size = Vector2(350, 40)
-			control = panel
+		# Contenedor principal del botón
+		var button = Button.new()
+		button.custom_minimum_size = Vector2(400, 80)
+		button.mouse_filter = Control.MOUSE_FILTER_STOP
+		button.process_mode = Node.PROCESS_MODE_ALWAYS
+		apply_button_style(button, i)
+		
+		# Layout interno (HBox)
+		var hbox = HBoxContainer.new()
+		hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+		hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE # Dejar pasar clicks al botón
+		hbox.add_theme_constant_override("separation", 15)
+		
+		# Margen interno
+		var margin = MarginContainer.new()
+		margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+		margin.add_theme_constant_override("margin_left", 10)
+		margin.add_theme_constant_override("margin_top", 5)
+		margin.add_theme_constant_override("margin_right", 10)
+		margin.add_theme_constant_override("margin_bottom", 5)
+		margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		
+		# Icono
+		var icon_tex = null
+		# Intentar cargar textura real
+		if item_id != "":
+			var path = "res://assets/icons/%s.png" % item_id
+			if ResourceLoader.exists(path):
+				icon_tex = load(path)
+		
+		var icon_rect = TextureRect.new()
+		icon_rect.custom_minimum_size = Vector2(48, 48)
+		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		
+		if icon_tex:
+			icon_rect.texture = icon_tex
 		else:
-			# Modo normal: Botones seleccionables
-			var button = Button.new()
-			button.text = item_name
-			button.custom_minimum_size = Vector2(350, 50)
-			button.mouse_filter = Control.MOUSE_FILTER_STOP
-			button.process_mode = Node.PROCESS_MODE_ALWAYS
-			apply_button_style(button, i)
+			# Fallback emoji Label
+			var emoji_lbl = Label.new()
+			emoji_lbl.text = item_icon
+			emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			emoji_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			emoji_lbl.add_theme_font_size_override("font_size", 32)
+			emoji_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+			icon_rect.add_child(emoji_lbl)
 			
-			# Conectar pressed
-			var item_index = i
-			var item_data = item.duplicate()
-			button.pressed.connect(func(): _on_button_pressed(item_index, item_data))
-			button.mouse_entered.connect(func(): _on_button_hover(item_index))
-			control = button
+		hbox.add_child(icon_rect)
 		
-		items_vbox.add_child(control)
-		item_buttons.append(control)
+		# Textos (Nombre + Descripción)
+		var text_vbox = VBoxContainer.new()
+		text_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		text_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		text_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		
+		var name_lbl = Label.new()
+		name_lbl.text = item_name
+		name_lbl.add_theme_font_size_override("font_size", 18)
+		name_lbl.add_theme_color_override("font_color", Color(1, 0.9, 0.4)) # Dorado pálido
+		
+		var desc_lbl = Label.new()
+		desc_lbl.text = item_desc
+		desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		desc_lbl.add_theme_font_size_override("font_size", 12)
+		desc_lbl.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+		
+		text_vbox.add_child(name_lbl)
+		text_vbox.add_child(desc_lbl)
+		
+		hbox.add_child(text_vbox)
+		margin.add_child(hbox)
+		button.add_child(margin)
+		
+		# Conectar señales
+		var item_index = i
+		var item_data = item.duplicate()
+		button.pressed.connect(func(): _on_button_pressed(item_index, item_data))
+		button.mouse_entered.connect(func(): _on_button_hover(item_index))
+		
+		items_vbox.add_child(button)
+		item_buttons.append(button)
 	
 	# Doble await para renderizado
 	await get_tree().process_frame
@@ -241,8 +288,9 @@ func apply_button_style(button: Button, index: int):
 	button.add_theme_stylebox_override("pressed", style_pressed)
 	
 	# Añadir número de opción al texto
-	var original_text = button.text
-	button.text = "[%d] %s" % [index + 1, original_text]
+	# DESACTIVADO: Interfiere con el layout personalizado
+	# var original_text = button.text
+	# button.text = "[%d] %s" % [index + 1, original_text]
 
 func create_panel_style() -> StyleBox:
 	"""Crear estilo para el fondo del popup"""
