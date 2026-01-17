@@ -284,8 +284,18 @@ func get_synergy_description(fusion_result: Dictionary) -> String:
 		"cosmic_void": "🕳️+🔮 → 🌌\nOrbes del vacío cósmico\n• Orbitan distorsionando la realidad\n• Atraen enemigos hacia el centro\n• Daño gravitacional masivo"
 	}
 	
-	var fusion_id = fusion_result.get("id", "")
-	return synergy_descriptions.get(fusion_id, fusion_result.get("description", "Sinergia desconocida"))
+	var fusion_id = ""
+	var default_desc = "Sinergia desconocida"
+	
+	if fusion_result is Object and fusion_result is Reference: # BaseWeapon inherits RefCounted/Reference
+		fusion_id = fusion_result.id if "id" in fusion_result else ""
+		if "description" in fusion_result:
+			default_desc = fusion_result.description
+	elif fusion_result is Dictionary:
+		fusion_id = fusion_result.get("id", "")
+		default_desc = fusion_result.get("description", default_desc)
+		
+	return synergy_descriptions.get(fusion_id, default_desc)
 
 func get_synergy_effects(fused_weapon_id: String) -> Array:
 	"""Obtener efectos especiales de sinergia para un arma fusionada"""

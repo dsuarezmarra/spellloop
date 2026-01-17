@@ -349,6 +349,9 @@ func _create_shop_popup():
 	if player_ref and player_ref.has_method("get_luck"):
 		luck = player_ref.get_luck()
 	
+	# Restaurar declaración de game_time_minutes
+	var game_time_minutes = shop_game_time / 60.0
+	
 	# Mapear shop_tier a ChestType de LootManager
 	var loot_chest_type = LootManager.ChestType.NORMAL
 	if shop_tier >= 3:
