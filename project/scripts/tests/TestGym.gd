@@ -294,6 +294,14 @@ func _run_full_cycle_test(weapon_id: String):
 		
 		# Wait 1s and Log
 		var dummy = get_tree().get_first_node_in_group("enemies")
+		
+		# Measure Player Health
+		var p_start_hp = 0
+		if player and player.get("health_component"):
+			p_start_hp = player.health_component.current_health
+		elif player and "hp" in player:
+			p_start_hp = player.hp
+			
 		if is_instance_valid(dummy):
 			var start_dmg = dummy.get("total_damage")
 			if start_dmg == null: start_dmg = 0
@@ -304,7 +312,17 @@ func _run_full_cycle_test(weapon_id: String):
 				var end_dmg = dummy.get("total_damage")
 				if end_dmg == null: end_dmg = 0
 				var dps = end_dmg - start_dmg
-				print("      💥 DPS (1s): %d" % dps)
+				
+				# Calc Player Dmg
+				var p_end_hp = 0
+				if player and player.get("health_component"):
+					p_end_hp = player.health_component.current_health
+				elif player and "hp" in player:
+					p_end_hp = player.hp
+				
+				var p_dmg_taken = p_start_hp - p_end_hp
+				
+				print("      💥 DPS (1s): %d | 🛡️ Player Hit Dmg: %d" % [dps, p_dmg_taken])
 			else:
 				print("      ❌ Dummy Lost")
 				break
@@ -527,7 +545,9 @@ func _shoot_projectile():
 	"	body_entered.connect(_on_hit)\\n" + \
 	"	get_tree().create_timer(4.0).timeout.connect(queue_free)\\n" + \
 	"func _on_hit(body):\\n" + \
+	"	# print('PROJ HIT: ', body.name)\\n" + \
 	"	if body.is_in_group('player'):\\n" + \
+	"		print('🎯 ENEMY PROJ HIT PLAYER!')\\n" + \
 	"		if body.has_method('take_damage'):\\n" + \
 	"			body.take_damage(10, 'physical', self)\\n" + \
 	"		queue_free()"
