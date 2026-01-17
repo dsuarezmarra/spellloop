@@ -39,9 +39,21 @@ func setup_environment():
 
 func spawn_player():
     # Intentar cargar la escena del player real
-    var player_scene = load("res://scenes/entities/Player.tscn")
+    # CORRECCIÓN: Ruta correcta encontrada en analisis previo via find_by_name
+    var possible_paths = [
+        "res://scenes/player/SpellloopPlayer.tscn",
+        "res://scenes/entities/Player.tscn"
+    ]
+    
+    var player_scene = null
+    for path in possible_paths:
+        if ResourceLoader.exists(path):
+            player_scene = load(path)
+            break
+            
     if player_scene:
         player = player_scene.instantiate()
+        print("[TestGym] Player scene loaded successfully")
     else:
         # Fallback si no existe la escena (crear uno básico)
         printerr("[TestGym] Warn: No se encontró Player.tscn, creando dummy")
@@ -84,6 +96,7 @@ func spawn_player():
 
 func create_debug_ui():
     ui_layer = CanvasLayer.new()
+    ui_layer.layer = 128 # FIX: Asegurar que esté por encima del UIManager (Layer 100)
     add_child(ui_layer)
     
     debug_panel = PanelContainer.new()
@@ -217,6 +230,11 @@ func _clear_weapons():
     if am and "weapons" in am:
         am.weapons.clear() # Limpieza forzada básica
         _show_toast("Weapons Cleared")
+
+func _process(delta):
+    # Asegurar cursor visible siempre en esta escena de test
+    if Input.get_mouse_mode() != Input.MOUSE_MODE_VISIBLE:
+         Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 func _show_toast(msg: String):
     var label = Label.new()
