@@ -10,6 +10,7 @@ var debug_panel: PanelContainer
 var weapon_ids = []
 var fusion_ids = []
 var upgrade_ids = []
+var is_running_test = false
 
 func _ready():
 	# 0. Asegurar Mouse Visible
@@ -48,6 +49,12 @@ func _load_database_ids():
 		for id in PlayerUpgradeDatabase.DEFENSIVE_UPGRADES: upgrade_ids.append(id)
 	if "UTILITY_UPGRADES" in PlayerUpgradeDatabase:
 		for id in PlayerUpgradeDatabase.UTILITY_UPGRADES: upgrade_ids.append(id)
+	
+	# Load PassiveDatabase IDs (Offensive Passives)
+	if "PASSIVES" in PassiveDatabase:
+		for id in PassiveDatabase.PASSIVES:
+			if not id in upgrade_ids:
+				upgrade_ids.append(id)
 	if "OFFENSIVE_UPGRADES" in PlayerUpgradeDatabase:
 		for id in PlayerUpgradeDatabase.OFFENSIVE_UPGRADES: upgrade_ids.append(id)
 	upgrade_ids.sort()
@@ -201,6 +208,183 @@ func create_debug_ui():
 	btn_auto.modulate = Color(0.5, 1, 0.5)
 	btn_auto.pressed.connect(_run_auto_test_sequence)
 	utils_vbox.add_child(btn_auto)
+	
+	var btn_inc = Button.new()
+	btn_inc.text = "▶ RUN INC. TEST"
+	btn_inc.modulate = Color(0.5, 0.5, 1)
+	btn_inc.pressed.connect(_run_incremental_test)
+	utils_vbox.add_child(btn_inc)
+
+	# Tab 5: Solo Tests
+	var solo_scroll = ScrollContainer.new()
+	solo_scroll.name = "Solo Tests"
+	var solo_grid = GridContainer.new()
+	solo_grid.columns = 1
+	solo_scroll.add_child(solo_grid)
+	tabs.add_child(solo_scroll)
+
+	for wid in weapon_ids:
+		var btn = Button.new()
+		btn.text = "🧪 Test Full Cycle: " + wid
+		btn.pressed.connect(_run_full_cycle_test.bind(wid))
+		solo_grid.add_child(btn)
+	
+	for fid in fusion_ids:
+		var btn = Button.new()
+		btn.text = "🧪 Test Full Cycle: " + fid
+		btn.pressed.connect(_run_full_cycle_test.bind(fid))
+		solo_grid.add_child(btn)
+
+func _run_full_cycle_test(weapon_id: String):
+	if is_running_test: return
+	is_running_test = true
+	
+	_show_toast("🚀 FULL CYCLE: " + weapon_id)
+	print("\n🚀 INICIANDO TEST CICLO COMPLETO: " + weapon_id)
+	print("📋 Total Upgrades a aplicar: ", upgrade_ids.size())
+	
+	# 1. Setup Environment
+	_clear_weapons()
+	get_tree().call_group("enemies", "queue_free")
+	await get_tree().create_timer(0.2).timeout
+	_spawn_dummy()
+	
+	# 2. Add Target Weapon
+	_on_add_weapon(weapon_id)
+	
+	# 3. Clean Utils
+	var am = _get_attack_manager()
+	if am and am.global_weapon_stats: am.global_weapon_stats.reset()
+	
+	# 4. Loop Logic
+	var count = 0
+	var total = upgrade_ids.size()
+	
+	# Base Stats
+	print("   📊 Stats Base:")
+	_print_stats_report()
+	
+	for uid in upgrade_ids:
+		count += 1
+		var u_data = _get_upgrade_data(uid)
+		var u_name = u_data.get("name", uid)
+		
+		print("\n   ➕ [%d/%d] Adding: %s (%s)" % [count, total, u_name, uid])
+		_show_toast("[%d/%d] +%s" % [count, total, u_name])
+		
+		# Apply Upgrade
+		_on_add_upgrade(uid)
+		
+		# Wait 1s and Log
+		var dummy = get_tree().get_first_node_in_group("enemies")
+		if is_instance_valid(dummy):
+			var start_dmg = dummy.get("total_damage")
+			if start_dmg == null: start_dmg = 0
+			
+			await get_tree().create_timer(1.0).timeout
+			
+			if is_instance_valid(dummy):
+				var end_dmg = dummy.get("total_damage")
+				if end_dmg == null: end_dmg = 0
+				var dps = end_dmg - start_dmg
+				print("      💥 DPS (1s): %d" % dps)
+			else:
+				print("      ❌ Dummy Lost")
+				break
+		else:
+			print("      ❌ No Dummy")
+			break
+			
+	print("\n✅✅ CICLO COMPLETO FINALIZADO PARA: " + weapon_id)
+	_show_toast("✅ TEST FINISHED: " + weapon_id)
+	is_running_test = false
+
+func _run_incremental_test():
+	if is_running_test: return
+	is_running_test = true
+	
+	_show_toast("🚀 STARTING INCREMENTAL TEST 🚀")
+	print("\n🚀 INICIANDO TEST INCREMENTAL DE MEJORAS 🚀")
+	
+	var all_weapons = weapon_ids + fusion_ids
+	var total_weapons = all_weapons.size()
+	print("📋 Armas a testear: ", total_weapons)
+	
+	for i in range(total_weapons):
+		var weapon_id = all_weapons[i]
+		print("\n🔹 WEAPON %d/%d: %s" % [i+1, total_weapons, weapon_id])
+		
+		# Limpiar todo
+		_clear_weapons()
+		# Limpiar enemigos
+		get_tree().call_group("enemies", "queue_free")
+		await get_tree().create_timer(0.1).timeout
+		
+		# Spawn dummy fresco
+		_spawn_dummy()
+		
+		# Añadir arma
+		_on_add_weapon(weapon_id)
+		
+		# Resetear stats globales para empezar limpio
+		var am = _get_attack_manager()
+		if am and "global_weapon_stats" in am and am.global_weapon_stats:
+			am.global_weapon_stats.reset()
+		
+		# Secuencia de pasos
+		var steps = [
+			{"name": "BASE", "upgrade": ""},
+			{"name": "+DAMAGE", "upgrade": "damage_1"},
+			{"name": "+CRIT", "upgrade": "crit_chance_1"},
+			{"name": "+SPEED", "upgrade": "attack_speed_1"},
+			{"name": "+AREA", "upgrade": "area_1"},
+			{"name": "+PROJ SPEED", "upgrade": "projectile_speed_1"},
+			{"name": "+EXTRA PROJ", "upgrade": "extra_projectiles_1"},
+		]
+		
+		for step in steps:
+			if step.upgrade != "":
+				_on_add_upgrade(step.upgrade) # Usamos _on_add_upgrade para log visual también
+				await get_tree().create_timer(0.2).timeout # Pequeña pausa para aplicar
+			
+			await _measure_step(step.name)
+		
+		await get_tree().create_timer(0.5).timeout
+	
+	_show_toast("✅ INCREMENTAL TEST COMPLETED")
+	print("\n✅ TEST INCREMENTAL FINALIZADO")
+	is_running_test = false
+
+func _measure_step(step_name: String):
+	print("   👉 Estado: %s" % step_name)
+	
+	var dummy = get_tree().get_first_node_in_group("enemies")
+	if not is_instance_valid(dummy):
+		print("      ❌ Error: No dummy found")
+		return
+	
+	# Imprimir stats actuales (usando helper existente)
+	_print_stats_report() 
+	
+	# Medir daño
+	var start_damage = 0
+	if dummy.get("total_damage") != null:
+		start_damage = dummy.get("total_damage")
+		
+	print("      ⏱️ Midiendo 2s...")
+	await get_tree().create_timer(2.0).timeout
+	
+	if not is_instance_valid(dummy):
+		print("      ❌ Error: Dummy died or lost")
+		return
+
+	var end_damage = 0
+	if dummy.get("total_damage") != null:
+		end_damage = dummy.get("total_damage")
+	
+	var damage_diff = end_damage - start_damage
+	var dps = damage_diff / 2.0
+	print("      💥 DPS: %.1f (Total en 2s: %d)" % [dps, damage_diff])
 
 # --- Helpers ---
 
@@ -226,7 +410,8 @@ func _get_player_stats():
 func _get_upgrade_data(id: String) -> Dictionary:
 	if id in PlayerUpgradeDatabase.DEFENSIVE_UPGRADES: return PlayerUpgradeDatabase.DEFENSIVE_UPGRADES[id]
 	if id in PlayerUpgradeDatabase.UTILITY_UPGRADES: return PlayerUpgradeDatabase.UTILITY_UPGRADES[id]
-	if id in PlayerUpgradeDatabase.OFFENSIVE_UPGRADES: return PlayerUpgradeDatabase.OFFENSIVE_UPGRADES[id]
+	# if id in PlayerUpgradeDatabase.OFFENSIVE_UPGRADES: return PlayerUpgradeDatabase.OFFENSIVE_UPGRADES[id] # Original line seems commented or unused?
+	if "PASSIVES" in PassiveDatabase and id in PassiveDatabase.PASSIVES: return PassiveDatabase.PASSIVES[id]
 	return {}
 
 # --- Acciones ---
@@ -271,39 +456,39 @@ func _spawn_dummy():
 	
 	var script = GDScript.new()
 	script.source_code = """
-	extends Node2D
-	var health = 999999
-	var total_damage = 0
+extends Node2D
+var health = 999999
+var total_damage = 0
+
+func take_damage(data, _source=null):
+	var amount = 0
+	if typeof(data) == TYPE_INT or typeof(data) == TYPE_FLOAT:
+		amount = data
+	elif typeof(data) == TYPE_DICTIONARY and data.has("amount"):
+		amount = data.amount
+	elif typeof(data) == TYPE_OBJECT and data.has_method("get_amount"):
+		amount = data.get_amount()
+	elif typeof(data) == TYPE_OBJECT and "amount" in data:
+		amount = data.amount
+	elif typeof(data) == TYPE_OBJECT and "damage" in data:
+		amount = data.damage
 	
-	func take_damage(data, _source=null):
-		var amount = 0
-		if typeof(data) == TYPE_INT or typeof(data) == TYPE_FLOAT:
-			amount = data
-		elif typeof(data) == TYPE_DICTIONARY and data.has("amount"):
-			amount = data.amount
-		elif typeof(data) == TYPE_OBJECT and data.has_method("get_amount"):
-			amount = data.get_amount()
-		elif typeof(data) == TYPE_OBJECT and "amount" in data:
-			amount = data.amount
-		elif typeof(data) == TYPE_OBJECT and "damage" in data:
-			amount = data.damage
-		
-		total_damage += amount
-		print("🎯 Dummy received damage: ", amount, " | Total: ", total_damage)
-		
-		# Efecto visual
-		var label = Label.new()
-		label.text = str(int(amount))
-		label.modulate = Color(1, 0.3, 0.3)
-		label.z_index = 100
-		label.position = Vector2(randf_range(-10, 10), randf_range(-20, -40))
-		add_child(label)
-		
-		# Animar
-		var tw = create_tween()
-		tw.tween_property(label, "position", label.position + Vector2(0, -30), 0.5)
-		tw.tween_property(label, "modulate:a", 0.0, 0.5).from(1.0)
-		tw.tween_callback(label.queue_free)
+	total_damage += amount
+	# print("🎯 Dummy received damage: ", amount, " | Total: ", total_damage)
+	
+	# Efecto visual
+	var label = Label.new()
+	label.text = str(int(amount))
+	label.modulate = Color(1, 0.3, 0.3)
+	label.z_index = 100
+	label.position = Vector2(randf_range(-10, 10), randf_range(-20, -40))
+	add_child(label)
+	
+	# Animar
+	var tw = create_tween()
+	tw.tween_property(label, "position", label.position + Vector2(0, -30), 0.5)
+	tw.tween_property(label, "modulate:a", 0.0, 0.5).from(1.0)
+	tw.tween_callback(label.queue_free)
 	"""
 	script.reload() # IMPORTANT: Compile the script
 	dummy.set_script(script)
