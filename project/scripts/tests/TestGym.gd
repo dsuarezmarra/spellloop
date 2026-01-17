@@ -347,6 +347,22 @@ func _clear_weapons():
 			
 	_show_toast("Weapons Cleared & Cleaned")
 
+func _process(delta):
+	if Input.get_mouse_mode() != Input.MOUSE_MODE_VISIBLE:
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+func _show_toast(msg: String):
+	var label = Label.new()
+	label.text = msg
+	label.position = Vector2(player.position.x - 50, player.position.y - 120)
+	label.z_index = 200
+	label.modulate = Color(1.0, 1.0, 0.0) # Yellow
+	add_child(label)
+	var tw = create_tween()
+	tw.tween_property(label, "position", Vector2(label.position.x, label.position.y - 80), 1.5)
+	tw.tween_property(label, "modulate:a", 0.0, 1.5)
+	tw.tween_callback(label.queue_free)
+
 func _run_auto_test_sequence():
 	# Ejecutar test complejo en una cor rutina separada para no bloquear
 	_run_complex_test()
