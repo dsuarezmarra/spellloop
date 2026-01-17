@@ -186,17 +186,11 @@ static func _generate_upgrade_loot(chest_type: int, luck: float, min_tier_overri
 	var all_upgrades = []
 	
 	# Cargar script dinámicamente
-	if not ClassDB.class_exists("PlayerUpgradeDatabase") and not ResourceLoader.exists("res://scripts/data/PlayerUpgradeDatabase.gd"):
-		return {
-			"id": "gold_bag_fallback", 
-			"type": "gold", 
-			"amount": 100,
-			"name": "Tesoro",
-			"rarity": 1,
-			"icon": "💰"
-		}
+	if not ClassDB.class_exists("UpgradeDatabase") and not ResourceLoader.exists("res://scripts/data/UpgradeDatabase.gd"):
+		printerr("❌ LootManager: UpgradeDatabase no encontrado.")
+		return loot
 		
-	var UpgradeDB = load("res://scripts/data/PlayerUpgradeDatabase.gd")
+	var UpgradeDB = load("res://scripts/data/UpgradeDatabase.gd")
 	if UpgradeDB:
 		_append_dict_values(all_upgrades, UpgradeDB.DEFENSIVE_UPGRADES)
 		_append_dict_values(all_upgrades, UpgradeDB.UTILITY_UPGRADES)
@@ -317,47 +311,63 @@ const DISCOUNT_CHANCE: float = 0.20  # 20% probabilidad de descuento
 const DISCOUNT_MIN: int = 10
 const DISCOUNT_MAX: int = 90
 
-static func get_shop_chest_loot(zone_tier: int, game_time_minutes: float, luck: float = 1.0) -> Array:
+static func get_random_shop_loot(chest_type: int, count: int, luck: float = 1.0) -> Array:
 	"""
 	Generar items para cofre tipo tienda.
 	Retorna array de items con precios y descuentos.
 	"""
 	var items = []
 	
-	# Determinar cantidad de items (1-5, más tarde en el juego = más opciones)
-	var min_items = 1
-	var max_items = clampi(2 + int(game_time_minutes / 5), 2, 5)
-	var item_count = randi_range(min_items, max_items)
+	# Tier base según tipo de cofre
+	var base_tier = 1
+	var min_rarity = 0
 	
-	# Tier base según zona y tiempo
-	var base_tier = clampi(zone_tier, 1, 5)
-	var time_bonus = int(game_time_minutes / 5.0)  # +1 tier potencial cada 5 min
-	
+	match chest_type:
+		ChestType.NORMAL:
+			base_tier = 1 # Común/Uncommon
+		ChestType.ELITE:
+			base_tier = 2 # Rare+
+			min_rarity = 1
+		ChestType.BOSS:
+			base_tier = 3 # Epic/Legendary
+			min_rarity = 3
+			
 	# Generar items
-	for i in range(item_count):
-		var item = _generate_shop_item(base_tier, time_bonus, luck)
+	for i in range(count):
+		var item = _generate_shop_item(chest_type, base_tier, luck)
 		if item:
 			items.append(item)
 	
 	return items
 
-static func _generate_shop_item(base_tier: int, time_bonus: int, luck: float) -> Dictionary:
+static func _generate_shop_item(chest_type: int, base_tier: int, luck: float) -> Dictionary:
 	"""Generar un item para tienda con precio"""
-	
-	# Decidir tipo de item (upgrade o weapon)
-	var is_weapon = randf() < 0.3  # 30% armas, 70% upgrades
 	
 	var item = {}
 	
-	if is_weapon:
-		item = _generate_shop_weapon(base_tier, luck)
+	# Lógica especial para BOSS
+	if chest_type == ChestType.BOSS:
+		# 50% Boss Item, 30% Weapon, 20% High Tier Upgrade
+		var roll = randf()
+		if roll < 0.5:
+			# Intentar sacar item de BossDatabase (si implementado) o fallback a upgrade alto
+			item = _generate_shop_boss_item(luck)
+		elif roll < 0.8:
+			item = _generate_shop_weapon(base_tier, luck)
+		else:
+			item = _generate_shop_upgrade(base_tier, 0, luck)
 	else:
-		item = _generate_shop_upgrade(base_tier, time_bonus, luck)
+		# Lógica estándar
+		var is_weapon = randf() < 0.2  # 20% armas
+		if is_weapon:
+			item = _generate_shop_weapon(base_tier, luck)
+		else:
+			item = _generate_shop_upgrade(base_tier, 0, luck)
 	
 	if item.is_empty():
 		return {}
 	
-	# Calcular tier efectivo
+	# Calcular tier efectivo (clamping)
 	var tier = item.get("tier", base_tier)
 	tier = clampi(tier, 1, 5)
 	
@@ -366,7 +376,7 @@ static func _generate_shop_item(base_tier: int, time_bonus: int, luck: float) ->
 	var base_price = price_data.base
 	var variance = price_data.variance
 	var price = base_price + randi_range(-variance, variance)
-	price = maxi(price, 10)  # Mínimo 10 monedas
+	price = maxi(price, 10)
 	
 	var original_price = price
 	var discount = 0
@@ -375,12 +385,11 @@ static func _generate_shop_item(base_tier: int, time_bonus: int, luck: float) ->
 	if randf() < DISCOUNT_CHANCE:
 		discount = randi_range(DISCOUNT_MIN, DISCOUNT_MAX)
 		price = int(price * (100 - discount) / 100.0)
-		price = maxi(price, 5)  # Nunca menos de 5
+		price = maxi(price, 5)
 	
 	item["price"] = price
 	item["original_price"] = original_price
 	item["discount_percent"] = discount
-	item["tier"] = tier
 	
 	return item
 
@@ -411,7 +420,7 @@ static func _generate_shop_weapon(base_tier: int, luck: float) -> Dictionary:
 
 static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float) -> Dictionary:
 	"""Generar upgrade para tienda"""
-	var UpgradeDB = load("res://scripts/data/PlayerUpgradeDatabase.gd")
+	var UpgradeDB = load("res://scripts/data/UpgradeDatabase.gd")
 	if not UpgradeDB:
 		return {}
 	
@@ -455,3 +464,32 @@ static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float)
 		"rarity": upgrade.get("tier", 1),
 		"effects": upgrade.get("effects", [])
 	}
+ 
+ s t a t i c   f u n c   _ g e n e r a t e _ s h o p _ b o s s _ i t e m ( l u c k :   f l o a t )   - >   D i c t i o n a r y :  
+ 	 " " " G e n e r a r   i t e m   d e   j e f e   ( L e g e n d a r i o / � an i c o ) " " "  
+ 	 i f   n o t   C l a s s D B . c l a s s _ e x i s t s ( " B o s s D a t a b a s e " )   a n d   n o t   R e s o u r c e L o a d e r . e x i s t s ( " r e s : / / s c r i p t s / d a t a / B o s s D a t a b a s e . g d " ) :  
+ 	 	 r e t u r n   _ g e n e r a t e _ s h o p _ u p g r a d e ( 4 ,   0 ,   l u c k )  
+ 	 	  
+ 	 v a r   B o s s D B   =   l o a d ( " r e s : / / s c r i p t s / d a t a / B o s s D a t a b a s e . g d " )  
+ 	 i f   n o t   B o s s D B :   r e t u r n   _ g e n e r a t e _ s h o p _ u p g r a d e ( 4 ,   0 ,   l u c k )  
+ 	  
+ 	 v a r   l o o t _ t a b l e   =   B o s s D B . g e t _ b o s s _ l o o t ( " d e f a u l t " )  
+ 	 v a r   p o o l   =   l o o t _ t a b l e . g e t ( " p o o l " ,   [ ] )  
+ 	  
+ 	 i f   p o o l . i s _ e m p t y ( ) :  
+ 	 	 r e t u r n   _ g e n e r a t e _ s h o p _ u p g r a d e ( 4 ,   0 ,   l u c k )  
+ 	 	  
+ 	 v a r   p i c k   =   p o o l [ r a n d i ( )   %   p o o l . s i z e ( ) ]  
+ 	  
+ 	 m a t c h   p i c k :  
+ 	 	 " w e a p o n _ u p g r a d e " :  
+ 	 	 	 r e t u r n   _ g e n e r a t e _ s h o p _ w e a p o n ( 4 ,   l u c k )   #   T i e r   4   w e a p o n  
+ 	 	 " s t a t _ u p g r a d e _ t i e r _ 3 " :  
+ 	 	 	 r e t u r n   _ g e n e r a t e _ s h o p _ u p g r a d e ( 3 ,   0 ,   l u c k )  
+ 	 	 " s t a t _ u p g r a d e _ t i e r _ 4 " :  
+ 	 	 	 r e t u r n   _ g e n e r a t e _ s h o p _ u p g r a d e ( 4 ,   0 ,   l u c k )  
+ 	 	 " u n i q u e _ u p g r a d e " :  
+ 	 	 	 r e t u r n   _ g e n e r a t e _ s h o p _ u p g r a d e ( 5 ,   0 ,   l u c k   *   1 . 5 )   #   T r y   f o r   u n i q u e  
+ 	 	 	  
+ 	 r e t u r n   _ g e n e r a t e _ s h o p _ u p g r a d e ( 3 ,   0 ,   l u c k )  
+ 

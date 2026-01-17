@@ -45,25 +45,16 @@ func _load_database_ids():
 	fusion_ids.sort()
 	
 	# Upgrades (Items)
-	# PlayerUpgradeDatabase tiene varias constantes
-	if "DEFENSIVE_UPGRADES" in PlayerUpgradeDatabase:
-		for id in PlayerUpgradeDatabase.DEFENSIVE_UPGRADES: upgrade_ids.append(id)
-	if "UTILITY_UPGRADES" in PlayerUpgradeDatabase:
-		for id in PlayerUpgradeDatabase.UTILITY_UPGRADES: upgrade_ids.append(id)
-	
-	# Load PassiveDatabase IDs (Offensive Passives)
-	if "PASSIVES" in PassiveDatabase:
-		for id in PassiveDatabase.PASSIVES:
-			if not id in upgrade_ids:
-				upgrade_ids.append(id)
-	if "OFFENSIVE_UPGRADES" in PlayerUpgradeDatabase:
-		for id in PlayerUpgradeDatabase.OFFENSIVE_UPGRADES: upgrade_ids.append(id)
-	
-	if "CURSED_UPGRADES" in PlayerUpgradeDatabase:
-		for id in PlayerUpgradeDatabase.CURSED_UPGRADES: upgrade_ids.append(id)
-		
-	if "UNIQUE_UPGRADES" in PlayerUpgradeDatabase:
-		for id in PlayerUpgradeDatabase.UNIQUE_UPGRADES: upgrade_ids.append(id)
+	if "DEFENSIVE_UPGRADES" in UpgradeDatabase:
+		for id in UpgradeDatabase.DEFENSIVE_UPGRADES: upgrade_ids.append(id)
+	if "UTILITY_UPGRADES" in UpgradeDatabase:
+		for id in UpgradeDatabase.UTILITY_UPGRADES: upgrade_ids.append(id)
+	if "OFFENSIVE_UPGRADES" in UpgradeDatabase:
+		for id in UpgradeDatabase.OFFENSIVE_UPGRADES: upgrade_ids.append(id)
+	if "CURSED_UPGRADES" in UpgradeDatabase:
+		for id in UpgradeDatabase.CURSED_UPGRADES: upgrade_ids.append(id)
+	if "UNIQUE_UPGRADES" in UpgradeDatabase:
+		for id in UpgradeDatabase.UNIQUE_UPGRADES: upgrade_ids.append(id)
 		
 	upgrade_ids.sort()
 

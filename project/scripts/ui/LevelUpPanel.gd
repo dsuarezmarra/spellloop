@@ -1038,7 +1038,7 @@ func _get_player_upgrade_options(luck: float) -> Array:
 	
 	# 2. MEJORAS DEL JUGADOR (PlayerUpgradeDatabase) - Función estática
 	var owned_unique_ids = _get_owned_unique_upgrade_ids()
-	var player_upgrades = PlayerUpgradeDatabase.get_random_player_upgrades(4, [], luck, game_time_minutes, owned_unique_ids)
+	var player_upgrades = UpgradeDatabase.get_random_player_upgrades(4, [], luck, game_time_minutes, owned_unique_ids)
 	for upgrade in player_upgrades:
 		upgrade_options.append({
 			"type": OPTION_TYPES.PLAYER_UPGRADE,

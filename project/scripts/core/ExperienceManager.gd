@@ -410,9 +410,8 @@ func generate_upgrade_options() -> Array:
 	"""Generar opciones de mejora para selección usando PassiveDatabase"""
 	var options = []
 
-	# Intentar usar PassiveDatabase
-	# Usar PlayerUpgradeDatabase (Sistema Avanzado)
-	var UpgradeDB = load("res://scripts/data/PlayerUpgradeDatabase.gd")
+	# Usar UpgradeDatabase (Sistema Unificado)
+	var UpgradeDB = load("res://scripts/data/UpgradeDatabase.gd")
 	if UpgradeDB:
 		# 1. Obtener tags de armas equipadas
 		var common_tags = []

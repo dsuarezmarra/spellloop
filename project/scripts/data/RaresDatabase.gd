@@ -1,4 +1,4 @@
-class_name EnemyRewardsDatabase
+class_name RaresDatabase
 extends Node
 
 # Configuración centralizada de recompensas por tipo de enemigo
@@ -24,15 +24,7 @@ const ELITE_REWARDS = {
 	"xp_multiplier": 20.0          # XP base x20
 }
 
-const BOSS_REWARDS = {
-	"guaranteed_coins": {"min": 100, "max": 200, "type": "purple"},
-	"guaranteed_chest": true,      # 100% cofre
-	"chest_type": "boss",
-	"chest_rarity_min": 3,         # Mínimo Legendario (Orange)
-	"relic_chance": 1.0,           # Garantiza reliquia/item especial si existen
-	"xp_multiplier": 100.0,        # Gran cantidad de XP
-	"clear_screen": true           # Limpia enemigos cercanos al morir
-}
+# BOSS_REWARDS movido a BossDatabase.gd
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # FUNCIONES DE UTILIDAD
@@ -50,8 +42,10 @@ static func get_rewards_for_enemy(enemy_data: Dictionary) -> Dictionary:
 	var is_elite = enemy_data.get("is_elite", false) 
 	var is_rare = enemy_data.get("is_rare", false) # Quizás definido por probabilidad baja
 	
+	# Jefes ahora se manejan externamente o usando BossDatabase
 	if is_boss:
-		return BOSS_REWARDS
+		printerr("⚠️ RaresDatabase: Boss logic requested but should use BossDatabase")
+		return {}
 	elif is_elite:
 		return ELITE_REWARDS
 	elif is_rare:

@@ -11,6 +11,14 @@ enum ChestType {
 	SHOP  # Cofres tipo tienda que aparecen en el mapa
 }
 
+const TIER_COLORS = {
+	0: Color(0.7, 0.7, 0.7),      # Gris (Común)
+	1: Color(0.3, 0.7, 0.3),      # Verde (Poco común)
+	2: Color(0.3, 0.5, 0.9),      # Azul (Raro)
+	3: Color(0.7, 0.3, 0.9),      # Púrpura (Épico)
+	4: Color(1.0, 0.7, 0.2)       # Dorado (Legendario)
+}
+
 var chest_type: int = ChestType.NORMAL
 var chest_rarity: int = 0  # ItemsDefinitions.ItemRarity.WHITE (numeric fallback)
 var is_opened: bool = false
@@ -126,11 +134,10 @@ func create_chest_texture():
 		ChestType.WEAPON: chest_color = Color(0.5, 0.1, 0.1) # Rojo oscuro
 	
 	var rarity_color = Color(1,1,1)
-	var items_defs = null
-	if get_tree() and get_tree().root and get_tree().root.get_node_or_null("ItemsDefinitions"):
-		items_defs = get_tree().root.get_node("ItemsDefinitions")
-	if items_defs and items_defs.has_method("get_rarity_color"):
-		rarity_color = items_defs.get_rarity_color(chest_rarity)
+	# Eliminado ItemsDefinitions (Dead Code)
+	var rarity_color = Color(1,1,1)
+	if TIER_COLORS.has(chest_rarity):
+		rarity_color = TIER_COLORS[chest_rarity]
 	var lock_color = rarity_color
 	
 	# Cuerpo del cofre
@@ -343,8 +350,17 @@ func _create_shop_popup():
 	if player_ref and player_ref.has_method("get_luck"):
 		luck = player_ref.get_luck()
 	
-	var game_time_minutes = shop_game_time / 60.0
-	items_inside = LootManager.get_shop_chest_loot(shop_tier, game_time_minutes, luck)
+	# Mapear shop_tier a ChestType de LootManager
+	var loot_chest_type = LootManager.ChestType.NORMAL
+	if shop_tier >= 3:
+		loot_chest_type = LootManager.ChestType.BOSS
+	elif shop_tier == 2:
+		loot_chest_type = LootManager.ChestType.ELITE
+		
+	# Calcular cantidad de items (1-3 + bonus por tiempo)
+	var count = clampi(2 + int(game_time_minutes / 5.0), 2, 5)
+	
+	items_inside = LootManager.get_random_shop_loot(loot_chest_type, count, luck)
 	
 	if items_inside.is_empty():
 		# Fallback: generar al menos un item
@@ -431,6 +447,15 @@ func _apply_purchased_item(item: Dictionary):
 			var exp_mgr = get_tree().current_scene.get_node_or_null("ExperienceManager")
 			if exp_mgr and exp_mgr.has_method("add_coins"):
 				exp_mgr.add_coins(amount)
+				
+		"fusion":
+			# Aplicar fusión
+			var fusion_data = item.get("fusion_data", {})
+			if player_ref and "attack_manager" in player_ref:
+				if player_ref.attack_manager.has_method("apply_fusion_result"):
+					player_ref.attack_manager.apply_fusion_result(fusion_data)
+				elif player_ref.attack_manager.has_method("perform_fusion"):
+					player_ref.attack_manager.perform_fusion(fusion_data)
 		
 		_:
 			print("[TreasureChest] Tipo de item no manejado: %s" % item_type)

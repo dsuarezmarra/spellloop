@@ -811,7 +811,7 @@ func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy
 	# SISTEMA DE RECOMPENSAS (Nuevo)
 	# ═══════════════════════════════════════════════════════════════════════════
 	var enemy_info = {"tier": enemy_tier, "is_elite": is_elite, "is_boss": is_boss, "id": enemy_type}
-	var rewards = EnemyRewardsDatabase.get_rewards_for_enemy(enemy_info)
+	var rewards = RaresDatabase.get_rewards_for_enemy(enemy_info)
 	
 	# 1. Cofres
 	var spawn_chest = false

@@ -18,7 +18,7 @@
 # - Cursed: Púrpura
 
 extends Node
-class_name PlayerUpgradeDatabase
+class_name UpgradeDatabase
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONSTANTES
@@ -601,6 +601,40 @@ const UTILITY_UPGRADES: Dictionary = {
 		"tier": 3,
 		"max_stacks": 2,
 		"effects": [{"stat": "pickup_range", "value": 1.75, "operation": "multiply"}]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
+	# SUERTE Y CODICIA (Portado de PassiveDatabase)
+	# ─────────────────────────────────────────────────────────────────────────────
+	"utility_luck_1": {
+		"id": "utility_luck_1",
+		"name": "Trébol de 4 Hojas",
+		"description": "+10% Suerte (mejores drops y opciones).",
+		"icon": "🍀",
+		"category": "utility",
+		"tier": 2,
+		"max_stacks": 5,
+		"effects": [{"stat": "luck", "value": 0.10, "operation": "add"}]
+	},
+	"utility_greed_1": {
+		"id": "utility_greed_1",
+		"name": "Avaricia",
+		"description": "+20% valor de monedas.",
+		"icon": "💰",
+		"category": "utility",
+		"tier": 2,
+		"max_stacks": 3,
+		"effects": [{"stat": "coin_value_mult", "value": 1.20, "operation": "multiply"}]
+	},
+	"utility_vacuum": {
+		"id": "utility_vacuum",
+		"name": "Campo Gravitacional",
+		"description": "Las monedas son atraídas desde +100 píxeles.",
+		"icon": "🌀",
+		"category": "utility",
+		"tier": 3,
+		"max_stacks": 1,
+		"effects": [{"stat": "pickup_range_flat", "value": 100.0, "operation": "add"}]
 	},
 }
 
@@ -2245,6 +2279,98 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"effects": [
 			{"stat": "infinite_pickup_range", "value": 1, "operation": "add"},
 			{"stat": "gold_mult", "value": 1.50, "operation": "multiply"}
+		]
+	},
+
+	# ─────────────────────────────────────────────────────────────────────────────
+	# LEGENDARIOS CLÁSICOS (Portado de PassiveDatabase)
+	# ─────────────────────────────────────────────────────────────────────────────
+	"unique_glass_cannon": {
+		"id": "unique_glass_cannon",
+		"name": "Cañón de Cristal",
+		"description": "+50% Daño, +25% Crítico, -30% Vida máxima.",
+		"icon": "💎",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "damage_mult", "value": 1.5, "operation": "multiply"},
+			{"stat": "crit_chance", "value": 0.25, "operation": "add"},
+			{"stat": "max_health", "value": 0.7, "operation": "multiply"}
+		]
+	},
+	"unique_fortress": {
+		"id": "unique_fortress",
+		"name": "Fortaleza Ambulante",
+		"description": "+50 Vida, +5 Armadura, +15% Esquivar, -20% Velocidad.",
+		"icon": "🏯",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "max_health", "value": 50, "operation": "add"},
+			{"stat": "armor", "value": 5, "operation": "add"},
+			{"stat": "dodge_chance", "value": 0.15, "operation": "add"},
+			{"stat": "move_speed", "value": 0.8, "operation": "multiply"}
+		]
+	},
+	"unique_berserker": {
+		"id": "unique_berserker",
+		"name": "Berserker Puro",
+		"description": "+30% Daño, +10% Robo de Vida, +25% Velocidad Ataque.",
+		"icon": "🩸",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "damage_mult", "value": 1.3, "operation": "multiply"},
+			{"stat": "life_steal", "value": 0.10, "operation": "add"},
+			{"stat": "attack_speed_mult", "value": 1.25, "operation": "multiply"}
+		]
+	},
+	"unique_sniper": {
+		"id": "unique_sniper",
+		"name": "Francotirador",
+		"description": "+50% Crítico, +100% Daño Crítico, +30% Vel. Proyectil.",
+		"icon": "🎯",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "crit_chance", "value": 0.50, "operation": "add"},
+			{"stat": "crit_damage", "value": 1.0, "operation": "add"},
+			{"stat": "projectile_speed_mult", "value": 1.3, "operation": "multiply"}
+		]
+	},
+	"unique_midas": {
+		"id": "unique_midas",
+		"name": "Rey Midas",
+		"description": "Rango de recolección DOBLE (x2), monedas +50% valor.",
+		"icon": "👑",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "pickup_range", "value": 2.0, "operation": "multiply"},
+			{"stat": "coin_value_mult", "value": 1.5, "operation": "multiply"}
+		]
+	},
+	"unique_streak_master": {
+		"id": "unique_streak_master",
+		"name": "Maestro de Racha",
+		"description": "El bonus de racha de monedas es el doble.",
+		"icon": "🔥",
+		"category": "unique",
+		"tier": 4,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "double_coin_streak", "value": true, "operation": "set_flag"}
 		]
 	}
 }
