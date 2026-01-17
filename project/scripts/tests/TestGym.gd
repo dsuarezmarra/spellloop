@@ -312,6 +312,14 @@ func _run_full_cycle_test(weapon_id: String):
 		# Wait 1s and Log
 		var dummy = get_tree().get_first_node_in_group("enemies")
 		
+		# FORCE INFINITE HP & DEBUG
+		if player and player.get("health_component"):
+			var hc = player.health_component
+			# print("   🏥 HP Debug: %d/%d" % [hc.current_health, hc.max_health])
+			if hc.max_health < 500:
+				hc.initialize(10000)
+			player.heal(10000)
+			
 		# Measure Player Health
 		var p_start_hp = 0
 		if player and player.get("health_component"):
