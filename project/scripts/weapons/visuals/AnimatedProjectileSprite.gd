@@ -176,8 +176,10 @@ func _generate_procedural_frame(anim_type: String, frame_idx: int, total_frames:
 	var center = Vector2(size / 2.0, size / 2.0)
 	var progress = float(frame_idx) / float(total_frames - 1) if total_frames > 1 else 1.0
 	
-	var primary = visual_data.primary_color if visual_data else Color(0.4, 0.8, 1.0)
-	var secondary = visual_data.secondary_color if visual_data else Color(0.2, 0.5, 0.9)
+	var primary = visual_data.primary_color if visual_data else Color(1, 0, 1) # MAGENTA para identificar fallback
+	if not visual_data:
+		print("[DEBUG_MAGENTA] Fallback Magenta for weapon: %s" % _weapon_id)
+	var secondary = visual_data.secondary_color if visual_data else Color(0.5, 0, 0.5)
 	var accent = visual_data.accent_color if visual_data else Color.WHITE
 	var outline = visual_data.outline_color if visual_data else Color(0.1, 0.2, 0.4)
 	
