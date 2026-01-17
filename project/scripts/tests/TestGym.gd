@@ -59,12 +59,19 @@ func spawn_player():
             var am = AttackManager.new()
             am.name = "AttackManager"
             player.add_child(am)
+            # CRITICAL FIX: Initialize AttackManager with player reference
+            am.initialize(player)
             
         # Añadir PlayerStats stats
         player.set_meta("stats", PlayerStats.new())
     
     player.position = Vector2(640, 360) # Centro pantalla aprox
     add_child(player)
+    
+    # Ensure AttackManager is initialized if we loaded a scene that didn't auto-init
+    var am = player.get_node_or_null("AttackManager")
+    if am and not am.player:
+        am.initialize(player)
     
     # Configurar cámara
     var cam = Camera2D.new()
@@ -116,6 +123,12 @@ func create_debug_ui():
     btn_clear.text = "Clear Weapons"
     btn_clear.pressed.connect(_clear_weapons)
     vbox.add_child(btn_clear)
+
+    var btn_auto = Button.new()
+    btn_auto.text = "▶ RUN AUTO-TEST"
+    btn_auto.modulate = Color(0.5, 1, 0.5)
+    btn_auto.pressed.connect(_run_auto_test_sequence)
+    vbox.add_child(btn_auto)
 
     var btn_heal = Button.new()
     btn_heal.text = "Heal Player"
@@ -204,10 +217,52 @@ func _clear_weapons():
 func _show_toast(msg: String):
     var label = Label.new()
     label.text = msg
-    label.position = Vector2(player.position.x, player.position.y - 100)
+    label.position = Vector2(player.position.x - 50, player.position.y - 100)
     label.z_index = 200
+    label.modulate = Color.YELLOW
     add_child(label)
     var tw = create_tween()
     tw.tween_property(label, "position", Vector2(label.position.x, label.position.y - 50), 1.0)
     tw.tween_property(label, "modulate:a", 0.0, 1.0)
     tw.tween_callback(label.queue_free)
+
+func _run_auto_test_sequence():
+    print("[TestGym] Starting Auto-Test Sequence...")
+    _show_toast("STARTED AUTO-TEST")
+    _clear_weapons()
+    
+    # Create a coroutine-like sequence using manual timer or tween
+    var tw = create_tween()
+    
+    # Step 1: Equip Magic Wand
+    tw.tween_callback(func(): 
+        _on_add_weapon("magic_wand")
+        _show_toast("Testing: Magic Wand")
+    )
+    tw.tween_interval(1.5)
+    
+    # Step 2: Equip Axe
+    tw.tween_callback(func(): 
+        _on_add_weapon("axe")
+        _show_toast("Testing: Axe")
+    )
+    tw.tween_interval(1.5)
+    
+    # Step 3: Equip many
+    tw.tween_callback(func():
+        _on_add_weapon("garlic")
+        _on_add_weapon("fire_wand")
+        _on_add_weapon("lightning_ring")
+        _show_toast("Stress Test: Adding 3 more...")
+    )
+    tw.tween_interval(2.0)
+    
+    # Finish
+    tw.tween_callback(func():
+        var am = player.get_node_or_null("AttackManager")
+        var count = am.get_weapon_count() if am else 0
+        if count >= 5:
+            _show_toast("✅ TEST PASSED: 5 Weapons Active")
+        else:
+            _show_toast("❌ TEST FAILED: Count mismatch")
+    )
