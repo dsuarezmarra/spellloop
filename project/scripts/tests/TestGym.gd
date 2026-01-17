@@ -152,12 +152,28 @@ func create_debug_ui():
     btn_heal.pressed.connect(func(): if player.has_method("heal"): player.heal(100))
     vbox.add_child(btn_heal)
 
+# --- Helpers ---
+
+func _get_attack_manager():
+    # 1. Intentar buscar en el player (Dummy o legacy)
+    var am = player.get_node_or_null("AttackManager")
+    if am: return am
+    
+    # 2. Intentar buscar en GameManager (Global/SpellloopPlayer standard)
+    if get_tree().root.has_node("GameManager"):
+        var gm = get_tree().root.get_node("GameManager")
+        if gm.attack_manager:
+            return gm.attack_manager
+            
+    return null
+
 # --- Acciones ---
 
 func _on_add_weapon(id: String):
     print("[TestGym] Intentando añadir arma: ", id)
     # Buscar AttackManager
-    var am = player.get_node_or_null("AttackManager")
+    var am = _get_attack_manager()
+    
     # Si no es nulo y tiene el método
     if am and am.has_method("add_weapon_by_id"):
         var res = am.add_weapon_by_id(id)
@@ -226,7 +242,7 @@ func _spawn_dummy():
     _show_toast("Dummy Spawned")
 
 func _clear_weapons():
-    var am = player.get_node_or_null("AttackManager")
+    var am = _get_attack_manager()
     if am and "weapons" in am:
         am.weapons.clear() # Limpieza forzada básica
         _show_toast("Weapons Cleared")
@@ -281,7 +297,7 @@ func _run_auto_test_sequence():
     
     # Finish
     tw.tween_callback(func():
-        var am = player.get_node_or_null("AttackManager")
+        var am = _get_attack_manager()
         var count = am.get_weapon_count() if am else 0
         if count >= 5:
             _show_toast("✅ TEST PASSED: 5 Weapons Active")
