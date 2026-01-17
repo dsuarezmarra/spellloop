@@ -109,7 +109,13 @@ func spawn_player():
 			am.name = "AttackManager"
 			player.add_child(am)
 			am.initialize(player)
-		player.set_meta("stats", PlayerStats.new())
+		
+		# CRITICAL FIX: Add PlayerStats as Node and Group
+		var stats = PlayerStats.new()
+		stats.name = "PlayerStats"
+		player.add_child(stats)
+		stats.add_to_group("player_stats")
+		player.set_meta("stats", stats)
 	
 	# SUPER HP FOR TESTING
 	if "max_hp" in player: player.max_hp = 10000
