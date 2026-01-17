@@ -226,11 +226,13 @@ static func create_orbitals(owner: Node2D, data: Dictionary) -> void:
 	Crear proyectiles orbitantes alrededor del jugador
 	Verifica si ya existen orbitales del mismo tipo
 	"""
-	var orbital_manager = owner.get_node_or_null("OrbitalManager")
+	var weapon_id = data.get("weapon_id", "default")
+	var manager_name = "OrbitalManager_" + weapon_id
+	var orbital_manager = owner.get_node_or_null(manager_name)
 
 	if orbital_manager == null:
 		orbital_manager = OrbitalManager.new()
-		orbital_manager.name = "OrbitalManager"
+		orbital_manager.name = manager_name
 		owner.add_child(orbital_manager)
 
 	orbital_manager.update_orbitals(data)
@@ -959,6 +961,12 @@ class OrbitalManager extends Node2D:
 		# Conectar señales
 		orbital.body_entered.connect(_on_orbital_hit.bind(orbital))
 		orbital.area_entered.connect(_on_orbital_area_hit.bind(orbital))
+		
+		# CRITICAL FIX: Añadir al grupo de proyectiles para que AttackManager pueda limpiarlos adecuadamente
+		# Esto previene "ghost orbs" al refrescar stats
+		if orbital_weapon_id != "":
+			orbital.add_to_group("weapon_projectiles_" + orbital_weapon_id)
+			orbital.add_to_group("projectiles") # Grupo general
 
 		return orbital
 
