@@ -655,7 +655,7 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	if effective_armor > 0:
 		var pre_armor = final_damage
 		final_damage = maxi(1, final_damage - int(effective_armor))  # Mínimo 1 de daño
-		print("🛡️ ARMOR APPLIED: %d -> %d (Armor: %d)" % [pre_armor, final_damage, effective_armor])
+		# print("🛡️ ARMOR APPLIED: %d -> %d (Armor: %d)" % [pre_armor, final_damage, effective_armor])
 	
 	# 4. Aplicar damage_taken_mult si existe
 	if player_stats and player_stats.has_method("get_stat"):

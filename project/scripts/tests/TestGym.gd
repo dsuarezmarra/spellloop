@@ -593,9 +593,9 @@ func _shoot_projectile():
 	"func _on_hit(body):\\n" + \
 	"	print('PROJ HIT: ', body.name, ' | Groups: ', body.get_groups())\\n" + \
 	"	if body.is_in_group('player'):\\n" + \
-	"		print('🎯 ENEMY PROJ HIT PLAYER!')\\n" + \
+	"		print('🎯 ENEMY PROJ HIT PLAYER! ( Raw Dmg: 500 )')\\n" + \
 	"		if body.has_method('take_damage'):\\n" + \
-	"			body.take_damage(10, 'physical', self)\\n" + \
+	"			body.take_damage(500, 'physical', self)\\n" + \
 	"		queue_free()"
 	
 	ps.reload()
