@@ -94,6 +94,7 @@ func spawn_player():
 	else:
 		printerr("[TestGym] Warn: No se encontró Player.tscn, creando dummy")
 		player = CharacterBody2D.new()
+		# ... (dummy fallback code omitted for brevity if unchanged, but safely keeping context) ...
 		var sprite = Sprite2D.new()
 		sprite.texture = PlaceholderTexture2D.new()
 		sprite.scale = Vector2(20, 20)
@@ -110,8 +111,17 @@ func spawn_player():
 			am.initialize(player)
 		player.set_meta("stats", PlayerStats.new())
 	
+	# SUPER HP FOR TESTING
+	if "max_hp" in player: player.max_hp = 10000
+	if "hp" in player: player.hp = 10000
+	
 	player.position = Vector2(640, 360) 
 	add_child(player)
+	
+	# Force update health component if exists
+	if player.has_node("HealthComponent"):
+		var hc = player.get_node("HealthComponent")
+		if hc.has_method("initialize"): hc.initialize(10000)
 	
 	var am = _get_attack_manager()
 	if am and not am.player:
@@ -468,6 +478,68 @@ func _spawn_dummy():
 extends Node2D
 var health = 999999
 var total_damage = 0
+var attack_timer = 0.0
+
+func _process(delta):
+	# Ataque automático cada 1 segundo
+	attack_timer += delta
+	if attack_timer >= 1.0:
+		attack_timer = 0.0
+		_shoot_projectile()
+
+func _shoot_projectile():
+	var player = get_tree().get_first_node_in_group("player")
+	if not player: return
+	
+	var proj = Area2D.new()
+	proj.name = "EnemyProj"
+	proj.position = global_position
+	
+	# Visual simple
+	var vis = ColorRect.new()
+	vis.color = Color.MAGENTA
+	vis.size = Vector2(10, 10)
+	vis.position = Vector2(-5, -5)
+	proj.add_child(vis)
+	
+	# Colisión
+	var col = CollisionShape2D.new()
+	var shape = CircleShape2D.new()
+	shape.radius = 6
+	col.shape = shape
+	proj.add_child(col)
+	
+	# Layer 4: Enemy Projectile
+	proj.set_collision_layer_value(1, false)
+	proj.set_collision_layer_value(4, true)
+	
+	# Mask 1: Player
+	proj.set_collision_mask_value(1, true)
+	
+	# Script de movimiento y daño
+	var ps = GDScript.new()
+	ps.source_code = "extends Area2D\\n" + \
+	"var dir = Vector2.ZERO\\n" + \
+	"var speed = 250\\n" + \
+	"func _process(delta):\\n" + \
+	"	position += dir * speed * delta\\n" + \
+	"func _ready():\\n" + \
+	"	body_entered.connect(_on_hit)\\n" + \
+	"	get_tree().create_timer(4.0).timeout.connect(queue_free)\\n" + \
+	"func _on_hit(body):\\n" + \
+	"	if body.is_in_group('player'):\\n" + \
+	"		if body.has_method('take_damage'):\\n" + \
+	"			body.take_damage(10, 'physical', self)\\n" + \
+	"		queue_free()"
+	
+	ps.reload()
+	proj.set_script(ps)
+	
+	# Calcular dirección hacia el player
+	var dir = (player.global_position - global_position).normalized()
+	proj.set("dir", dir)
+	
+	get_parent().add_child(proj)
 
 func take_damage(data, _source=null):
 	var amount = 0
@@ -483,7 +555,6 @@ func take_damage(data, _source=null):
 		amount = data.damage
 	
 	total_damage += amount
-	# print("🎯 Dummy received damage: ", amount, " | Total: ", total_damage)
 	
 	# Efecto visual
 	var label = Label.new()
