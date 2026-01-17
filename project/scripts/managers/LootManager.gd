@@ -1,6 +1,6 @@
 # LootManager.gd
 # Sistema centralizado para generar loot de cofres
-# Conecta TreasureChest con PlayerUpgradeDatabase y WeaponDatabase
+# Conecta TreasureChest con UpgradeDatabase y WeaponDatabase
 
 extends Node
 class_name LootManager
@@ -188,7 +188,7 @@ static func _generate_upgrade_loot(chest_type: int, luck: float, min_tier_overri
 	# Cargar script dinámicamente
 	if not ClassDB.class_exists("UpgradeDatabase") and not ResourceLoader.exists("res://scripts/data/UpgradeDatabase.gd"):
 		printerr("❌ LootManager: UpgradeDatabase no encontrado.")
-		return loot
+		return {}
 		
 	var UpgradeDB = load("res://scripts/data/UpgradeDatabase.gd")
 	if UpgradeDB:
@@ -464,32 +464,31 @@ static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float)
 		"rarity": upgrade.get("tier", 1),
 		"effects": upgrade.get("effects", [])
 	}
- 
- s t a t i c   f u n c   _ g e n e r a t e _ s h o p _ b o s s _ i t e m ( l u c k :   f l o a t )   - >   D i c t i o n a r y :  
- 	 " " " G e n e r a r   i t e m   d e   j e f e   ( L e g e n d a r i o / � an i c o ) " " "  
- 	 i f   n o t   C l a s s D B . c l a s s _ e x i s t s ( " B o s s D a t a b a s e " )   a n d   n o t   R e s o u r c e L o a d e r . e x i s t s ( " r e s : / / s c r i p t s / d a t a / B o s s D a t a b a s e . g d " ) :  
- 	 	 r e t u r n   _ g e n e r a t e _ s h o p _ u p g r a d e ( 4 ,   0 ,   l u c k )  
- 	 	  
- 	 v a r   B o s s D B   =   l o a d ( " r e s : / / s c r i p t s / d a t a / B o s s D a t a b a s e . g d " )  
- 	 i f   n o t   B o s s D B :   r e t u r n   _ g e n e r a t e _ s h o p _ u p g r a d e ( 4 ,   0 ,   l u c k )  
- 	  
- 	 v a r   l o o t _ t a b l e   =   B o s s D B . g e t _ b o s s _ l o o t ( " d e f a u l t " )  
- 	 v a r   p o o l   =   l o o t _ t a b l e . g e t ( " p o o l " ,   [ ] )  
- 	  
- 	 i f   p o o l . i s _ e m p t y ( ) :  
- 	 	 r e t u r n   _ g e n e r a t e _ s h o p _ u p g r a d e ( 4 ,   0 ,   l u c k )  
- 	 	  
- 	 v a r   p i c k   =   p o o l [ r a n d i ( )   %   p o o l . s i z e ( ) ]  
- 	  
- 	 m a t c h   p i c k :  
- 	 	 " w e a p o n _ u p g r a d e " :  
- 	 	 	 r e t u r n   _ g e n e r a t e _ s h o p _ w e a p o n ( 4 ,   l u c k )   #   T i e r   4   w e a p o n  
- 	 	 " s t a t _ u p g r a d e _ t i e r _ 3 " :  
- 	 	 	 r e t u r n   _ g e n e r a t e _ s h o p _ u p g r a d e ( 3 ,   0 ,   l u c k )  
- 	 	 " s t a t _ u p g r a d e _ t i e r _ 4 " :  
- 	 	 	 r e t u r n   _ g e n e r a t e _ s h o p _ u p g r a d e ( 4 ,   0 ,   l u c k )  
- 	 	 " u n i q u e _ u p g r a d e " :  
- 	 	 	 r e t u r n   _ g e n e r a t e _ s h o p _ u p g r a d e ( 5 ,   0 ,   l u c k   *   1 . 5 )   #   T r y   f o r   u n i q u e  
- 	 	 	  
- 	 r e t u r n   _ g e n e r a t e _ s h o p _ u p g r a d e ( 3 ,   0 ,   l u c k )  
- 
+
+static func _generate_shop_boss_item(luck: float) -> Dictionary:
+	"""Generar item de jefe (Legendario/Único)"""
+	if not ClassDB.class_exists("BossDatabase") and not ResourceLoader.exists("res://scripts/data/BossDatabase.gd"):
+		return _generate_shop_upgrade(4, 0, luck)
+		
+	var BossDB = load("res://scripts/data/BossDatabase.gd")
+	if not BossDB: return _generate_shop_upgrade(4, 0, luck)
+	
+	var loot_table = BossDB.get_boss_loot("default")
+	var pool = loot_table.get("pool", [])
+	
+	if pool.is_empty():
+		return _generate_shop_upgrade(4, 0, luck)
+		
+	var pick = pool[randi() % pool.size()]
+	
+	match pick:
+		"weapon_upgrade":
+			return _generate_shop_weapon(4, luck) # Tier 4 weapon
+		"stat_upgrade_tier_3":
+			return _generate_shop_upgrade(3, 0, luck)
+		"stat_upgrade_tier_4":
+			return _generate_shop_upgrade(4, 0, luck)
+		"unique_upgrade":
+			return _generate_shop_upgrade(5, 0, luck * 1.5) # Try for unique
+			
+	return _generate_shop_upgrade(3, 0, luck)

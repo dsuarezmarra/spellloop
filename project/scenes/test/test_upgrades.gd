@@ -482,20 +482,20 @@ func _on_damage_dealt(amount: int, target: Node, _weapon = null) -> void:
 
 func _load_all_upgrades() -> void:
 	# Player upgrades
-	for key in PlayerUpgradeDatabase.DEFENSIVE_UPGRADES:
-		var u = PlayerUpgradeDatabase.DEFENSIVE_UPGRADES[key].duplicate(true)
+	for key in UpgradeDatabase.DEFENSIVE_UPGRADES:
+		var u = UpgradeDatabase.DEFENSIVE_UPGRADES[key].duplicate(true)
 		u["source"] = "defensive"
 		all_player_upgrades.append(u)
-	for key in PlayerUpgradeDatabase.UTILITY_UPGRADES:
-		var u = PlayerUpgradeDatabase.UTILITY_UPGRADES[key].duplicate(true)
+	for key in UpgradeDatabase.UTILITY_UPGRADES:
+		var u = UpgradeDatabase.UTILITY_UPGRADES[key].duplicate(true)
 		u["source"] = "utility"
 		all_player_upgrades.append(u)
-	for key in PlayerUpgradeDatabase.CURSED_UPGRADES:
-		var u = PlayerUpgradeDatabase.CURSED_UPGRADES[key].duplicate(true)
+	for key in UpgradeDatabase.CURSED_UPGRADES:
+		var u = UpgradeDatabase.CURSED_UPGRADES[key].duplicate(true)
 		u["is_cursed"] = true
 		all_player_upgrades.append(u)
-	for key in PlayerUpgradeDatabase.UNIQUE_UPGRADES:
-		var u = PlayerUpgradeDatabase.UNIQUE_UPGRADES[key].duplicate(true)
+	for key in UpgradeDatabase.UNIQUE_UPGRADES:
+		var u = UpgradeDatabase.UNIQUE_UPGRADES[key].duplicate(true)
 		u["is_unique"] = true
 		all_player_upgrades.append(u)
 	

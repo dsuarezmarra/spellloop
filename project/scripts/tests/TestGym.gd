@@ -481,12 +481,11 @@ func _get_player_stats():
 	return null
 
 func _get_upgrade_data(id: String) -> Dictionary:
-	if id in PlayerUpgradeDatabase.DEFENSIVE_UPGRADES: return PlayerUpgradeDatabase.DEFENSIVE_UPGRADES[id]
-	if id in PlayerUpgradeDatabase.UTILITY_UPGRADES: return PlayerUpgradeDatabase.UTILITY_UPGRADES[id]
-	if id in PlayerUpgradeDatabase.OFFENSIVE_UPGRADES: return PlayerUpgradeDatabase.OFFENSIVE_UPGRADES[id]
-	if "CURSED_UPGRADES" in PlayerUpgradeDatabase and id in PlayerUpgradeDatabase.CURSED_UPGRADES: return PlayerUpgradeDatabase.CURSED_UPGRADES[id]
-	if "UNIQUE_UPGRADES" in PlayerUpgradeDatabase and id in PlayerUpgradeDatabase.UNIQUE_UPGRADES: return PlayerUpgradeDatabase.UNIQUE_UPGRADES[id]
-	if "PASSIVES" in PassiveDatabase and id in PassiveDatabase.PASSIVES: return PassiveDatabase.PASSIVES[id]
+	if id in UpgradeDatabase.DEFENSIVE_UPGRADES: return UpgradeDatabase.DEFENSIVE_UPGRADES[id]
+	if id in UpgradeDatabase.UTILITY_UPGRADES: return UpgradeDatabase.UTILITY_UPGRADES[id]
+	if id in UpgradeDatabase.OFFENSIVE_UPGRADES: return UpgradeDatabase.OFFENSIVE_UPGRADES[id]
+	if "CURSED_UPGRADES" in UpgradeDatabase and id in UpgradeDatabase.CURSED_UPGRADES: return UpgradeDatabase.CURSED_UPGRADES[id]
+	if "UNIQUE_UPGRADES" in UpgradeDatabase and id in UpgradeDatabase.UNIQUE_UPGRADES: return UpgradeDatabase.UNIQUE_UPGRADES[id]
 	return {}
 
 # --- Acciones ---

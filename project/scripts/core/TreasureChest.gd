@@ -135,7 +135,6 @@ func create_chest_texture():
 	
 	var rarity_color = Color(1,1,1)
 	# Eliminado ItemsDefinitions (Dead Code)
-	var rarity_color = Color(1,1,1)
 	if TIER_COLORS.has(chest_rarity):
 		rarity_color = TIER_COLORS[chest_rarity]
 	var lock_color = rarity_color
