@@ -124,6 +124,21 @@ func spawn_player():
 	player.position = Vector2(640, 360) 
 	add_child(player)
 	
+	# CRITICAL FIX: Add PlayerStats as Node and Group (SHARED FOR BOTH BRANCHES)
+	if not player.has_node("PlayerStats"):
+		var stats = PlayerStats.new()
+		stats.name = "PlayerStats"
+		player.add_child(stats)
+		stats.add_to_group("player_stats")
+		player.set_meta("stats", stats)
+		print("[TestGym] ✓ PlayerStats injected successfully")
+	else:
+		# If it exists, ensure it's in the group and meta
+		var stats = player.get_node("PlayerStats")
+		if not stats.is_in_group("player_stats"): stats.add_to_group("player_stats")
+		player.set_meta("stats", stats)
+		print("[TestGym] ✓ PlayerStats found existing")
+	
 	# CRITICAL FIX: Ensure Collision Shape exists
 	var has_shape = false
 	for c in player.get_children():
