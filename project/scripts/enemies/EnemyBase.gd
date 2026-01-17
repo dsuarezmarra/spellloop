@@ -128,8 +128,7 @@ func _ready() -> void:
 			attack_range,
 			damage,
 			false,  # is_ranged
-			null,   # projectile_scene
-			enemy_data.get("weapon_id", "")
+			null    # projectile_scene
 		)
 		# print("[EnemyBase] ✓ Sistema de ataque inicializado para %s" % name)
 
@@ -405,7 +404,6 @@ func initialize_from_database(data: Dictionary, player) -> void:
 			"is_ranged": archetype in ["ranged", "teleporter"],
 			"archetype": archetype,
 			"element_type": _determine_element_from_id(enemy_id),
-			"weapon_id": modifiers.get("weapon_id", ""),
 			"special_abilities": special_abilities,
 			"modifiers": modifiers
 		})

@@ -19,7 +19,6 @@ var attack_damage: int = 5
 var is_ranged: bool = false
 var projectile_scene: PackedScene = null
 var projectile_speed: float = 200.0
-var weapon_id: String = ""
 
 # Propiedades de ataque especial
 var archetype: String = "melee"
@@ -54,14 +53,13 @@ func _ready() -> void:
 	EnemyProjectileScript = load("res://scripts/enemies/EnemyProjectile.gd")
 	# print("[EnemyAttackSystem] Inicializado para: %s" % enemy.name)
 
-func initialize(p_attack_cooldown: float, p_attack_range: float, p_damage: int, p_is_ranged: bool = false, p_projectile_scene: PackedScene = null, p_weapon_id: String = "") -> void:
+func initialize(p_attack_cooldown: float, p_attack_range: float, p_damage: int, p_is_ranged: bool = false, p_projectile_scene: PackedScene = null) -> void:
 	"""Configurar parÃ¡metros de ataque"""
 	attack_cooldown = p_attack_cooldown
 	attack_range = p_attack_range
 	attack_damage = p_damage
 	is_ranged = p_is_ranged
 	projectile_scene = p_projectile_scene
-	weapon_id = p_weapon_id
 	# print("[EnemyAttackSystem] Configurado: cooldown=%.2f, range=%.0f, damage=%d, ranged=%s" % [attack_cooldown, attack_range, attack_damage, is_ranged])
 
 func initialize_full(config: Dictionary) -> void:
@@ -72,7 +70,6 @@ func initialize_full(config: Dictionary) -> void:
 	is_ranged = config.get("is_ranged", false)
 	archetype = config.get("archetype", "melee")
 	element_type = config.get("element_type", "physical")
-	weapon_id = config.get("weapon_id", "")
 	special_abilities = config.get("special_abilities", [])
 	modifiers = config.get("modifiers", {})
 	
@@ -973,7 +970,7 @@ func _perform_ranged_attack() -> void:
 	
 	# Configurar proyectil
 	if projectile.has_method("initialize"):
-		projectile.initialize(direction, projectile_speed, attack_damage, 5.0, element_type, weapon_id)
+		projectile.initialize(direction, projectile_speed, attack_damage, 5.0, element_type)
 	else:
 		pass  # Bloque else
 		# AsignaciÃ³n directa
@@ -1014,7 +1011,7 @@ func _create_dynamic_projectile() -> void:
 	
 	# Inicializar
 	if projectile.has_method("initialize"):
-		projectile.initialize(direction, projectile_speed, attack_damage, 5.0, elem, weapon_id)
+		projectile.initialize(direction, projectile_speed, attack_damage, 5.0, elem)
 	
 	# print("[EnemyAttackSystem] ðŸŽ¯ %s disparÃ³ proyectil dinÃ¡mico (%s)" % [enemy.name, elem])
 	attacked_player.emit(attack_damage, false)
@@ -1311,26 +1308,7 @@ func _create_homing_projectile(spawn_pos: Vector2) -> void:
 	shape.shape = circle
 	projectile.add_child(shape)
 	
-	# Visual mejorado con ProjectileVisualManager
-	var animated_visual = null
-	if ProjectileVisualManager and weapon_id != "":
-		var visual_manager = ProjectileVisualManager.instance
-		var visual_data = visual_manager.get_visual_data(weapon_id)
-		
-		var aps_script = load("res://scripts/weapons/visuals/AnimatedProjectileSprite.gd")
-		if aps_script:
-			animated_visual = aps_script.new()
-			animated_visual.name = "AnimatedVisual"
-			animated_visual.top_level = true
-			animated_visual.z_index = 56
-			animated_visual.global_position = projectile.global_position
-			
-			var parent = enemy.get_parent()
-			if parent:
-				parent.add_child.call_deferred(animated_visual)
-				animated_visual.call_deferred("initialize", visual_data)
-	
-	# Fallback visual si falla el animado
+	# Visual
 	var visual = Node2D.new()
 	projectile.add_child(visual)
 	
@@ -1338,9 +1316,6 @@ func _create_homing_projectile(spawn_pos: Vector2) -> void:
 	var color = _get_element_color(elem)
 	
 	visual.draw.connect(func():
-		if animated_visual:
-			visual.visible = false
-			return
 		visual.draw_circle(Vector2.ZERO, 15, Color(color.r, color.g, color.b, 0.3))
 		visual.draw_circle(Vector2.ZERO, 10, color)
 		visual.draw_circle(Vector2.ZERO, 5, Color(1, 1, 1, 0.9))
@@ -1385,12 +1360,6 @@ func _create_homing_projectile(spawn_pos: Vector2) -> void:
 		projectile.rotation = new_dir.angle()
 		projectile.global_position += new_dir * speed * 0.016
 		
-		# Actualizar visual animado
-		if is_instance_valid(animated_visual):
-			animated_visual.global_position = projectile.global_position
-			if animated_visual.has_method("update_visual"):
-				animated_visual.call("update_visual", 0.016)
-		
 		# Check colisiÃ³n manual
 		var dist = projectile.global_position.distance_to(player.global_position)
 		if dist < 20:
@@ -1399,8 +1368,6 @@ func _create_homing_projectile(spawn_pos: Vector2) -> void:
 				var elem_type = _get_enemy_element()
 				player.call("take_damage", damage, elem_type)
 			projectile.queue_free()
-			if is_instance_valid(animated_visual):
-				animated_visual.queue_free()
 	)
 
 func _boss_spread_shot() -> void:
@@ -1520,41 +1487,16 @@ func _spawn_boss_orbitals(count: int) -> void:
 		shape.shape = circle
 		orbital.add_child(shape)
 		
-		# Visual mejorado con ProjectileVisualManager
-		var animated_visual = null
-		if ProjectileVisualManager and weapon_id != "":
-			var visual_manager = ProjectileVisualManager.instance
-			var visual_data = visual_manager.get_visual_data(weapon_id)
-			
-			var aps_script = load("res://scripts/weapons/visuals/AnimatedProjectileSprite.gd")
-			if aps_script:
-				animated_visual = aps_script.new()
-				animated_visual.name = "AnimatedVisual"
-				animated_visual.top_level = true
-				animated_visual.z_index = 56
-				animated_visual.global_position = orbital.global_position
-				
-				# Ponerlo como hijo del orbital (lo moveremos nosotros)
-				orbital.add_child.call_deferred(animated_visual)
-				animated_visual.call_deferred("initialize", visual_data)
-		
-		# Visual fallback
+		# Visual
 		var visual = Node2D.new()
 		orbital.add_child(visual)
 		
 		visual.draw.connect(func():
-			if animated_visual:
-				visual.visible = false
-				return
 			visual.draw_circle(Vector2.ZERO, 18, Color(color.r, color.g, color.b, 0.4))
 			visual.draw_circle(Vector2.ZERO, 12, color)
 			visual.draw_circle(Vector2.ZERO, 6, Color(1, 1, 1, 0.9))
 		)
 		visual.queue_redraw()
-		
-		# Guardar referencia al visual animado para actualizar su posición
-		if animated_visual:
-			orbital.set_meta("animated_visual", animated_visual)
 		
 		# Metadata para movimiento
 		orbital.set_meta("angle", (TAU / count) * i)
@@ -1581,14 +1523,6 @@ func _update_boss_orbitals(delta: float) -> void:
 		# Posicionar
 		var radius = base_radius
 		orbital.position = Vector2(cos(angle), sin(angle)) * radius
-		
-		# Actualizar visual animado si existe
-		if orbital.has_meta("animated_visual"):
-			var animated_visual = orbital.get_meta("animated_visual")
-			if is_instance_valid(animated_visual):
-				animated_visual.global_position = orbital.global_position
-				if animated_visual.has_method("update_visual"):
-					animated_visual.call("update_visual", delta)
 		
 		# Check daÃ±o al jugador
 		if is_instance_valid(player):
