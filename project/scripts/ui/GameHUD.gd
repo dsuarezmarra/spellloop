@@ -194,6 +194,8 @@ func _create_slot(item_data, is_weapon: bool) -> Control:
 	
 	# Cargar Icono
 	var icon_path = ""
+	
+	# Manejo de diccionarios (Legacy/Loot)
 	if typeof(item_data) == TYPE_DICTIONARY:
 		# 1. Intentar cargar desde assets/icons/ID.png
 		if item_data.has("id"):
@@ -205,15 +207,32 @@ func _create_slot(item_data, is_weapon: bool) -> Control:
 		# 2. Fallback a propiedad (si es path explícito)
 		if icon_path == "" and item_data.has("icon_path"):
 			icon_path = item_data.icon_path
+			
+	# Manejo de Objetos (BaseWeapon / RefCounted)
+	elif typeof(item_data) == TYPE_OBJECT:
+		var w_id = ""
+		if "id" in item_data: w_id = item_data.id
+		elif item_data.has_method("get_id"): w_id = item_data.get_id()
+		
+		if w_id != "":
+			var asset_path = "res://assets/icons/%s.png" % w_id
+			if ResourceLoader.exists(asset_path):
+				icon_path = asset_path
 	
 	if icon_path != "":
 		slot.texture = load(icon_path)
 	
 	# Fallback a texto si no hay textura
-	if slot.texture == null and typeof(item_data) == TYPE_DICTIONARY: 
-		if item_data.has("icon") and item_data.icon.length() < 10:
+	if slot.texture == null: 
+		var text_fallback = ""
+		if typeof(item_data) == TYPE_DICTIONARY and item_data.has("icon"):
+			text_fallback = item_data.icon
+		elif typeof(item_data) == TYPE_OBJECT and "icon" in item_data:
+			text_fallback = item_data.icon
+			
+		if text_fallback.length() < 10 and text_fallback != "":
 			var lbl = Label.new()
-			lbl.text = item_data.icon
+			lbl.text = text_fallback
 			lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 			lbl.set_anchors_preset(Control.PRESET_FULL_RECT)

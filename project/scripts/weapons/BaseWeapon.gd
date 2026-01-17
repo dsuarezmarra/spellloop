@@ -325,6 +325,7 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> bool:
 	# AOE y ORBIT no necesitan targets para disparar
 	var needs_target = target_type != WeaponDatabase.TargetType.AREA \
 		and target_type != WeaponDatabase.TargetType.ORBIT \
+		and target_type != WeaponDatabase.TargetType.DIRECTION \
 		and projectile_type != WeaponDatabase.ProjectileType.AOE \
 		and projectile_type != WeaponDatabase.ProjectileType.ORBIT
 	
@@ -657,7 +658,7 @@ func _create_chain_projectile(player: Node2D, first_target: Node2D, dmg: float, 
 	# Convertir Penetración (Pierce) a rebotes extra para armas de cadena
 	var total_pierce = chain_data.get("pierce", 0)
 	var base_chains = roundi(effect_value) if effect == "chain" else 2
-	chain_data["chain_count"] = base_chains + total_pierce + 1 # +1 para incluir el target inicial
+	chain_data["chain_count"] = base_chains + total_pierce + 1 # +1 para incluir el target inicial + 1 # +1 para incluir el target inicial
 	
 	chain_data["is_chain"] = true
 	
