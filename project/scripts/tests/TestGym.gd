@@ -6,7 +6,7 @@ var ui_layer: CanvasLayer
 var debug_panel: PanelContainer
 
 # Configuración
-const WEAPON_IDS = ["magic_wand", "axe", "garlic", "fire_wand", "lightning_ring", "runetracer"]
+const WEAPON_IDS = ["ice_wand", "fire_wand", "lightning_wand", "arcane_orb", "shadow_dagger", "nature_staff"]
 const UPGRADE_IDS = ["spinach", "armor", "hollow_heart", "pummarola", "empty_tome", "candelabrador"]
 
 func _ready():
@@ -278,25 +278,25 @@ func _run_auto_test_sequence():
 	# Create a coroutine-like sequence using manual timer or tween
 	var tw = create_tween()
 	
-	# Step 1: Equip Magic Wand
+	# Step 1: Equip Lightning Wand
 	tw.tween_callback(func(): 
-		_on_add_weapon("magic_wand")
-		_show_toast("Testing: Magic Wand")
+		_on_add_weapon("lightning_wand")
+		_show_toast("Testing: Lightning Wand")
 	)
 	tw.tween_interval(1.5)
 	
-	# Step 2: Equip Axe
+	# Step 2: Equip Shadow Dagger
 	tw.tween_callback(func(): 
-		_on_add_weapon("axe")
-		_show_toast("Testing: Axe")
+		_on_add_weapon("shadow_dagger")
+		_show_toast("Testing: Shadow Dagger")
 	)
 	tw.tween_interval(1.5)
 	
 	# Step 3: Equip many
 	tw.tween_callback(func():
-		_on_add_weapon("garlic")
-		_on_add_weapon("fire_wand")
-		_on_add_weapon("lightning_ring")
+		_on_add_weapon("nature_staff")
+		_on_add_weapon("arcane_orb")
+		_on_add_weapon("wind_blade")
 		_show_toast("Stress Test: Adding 3 more...")
 	)
 	tw.tween_interval(2.0)

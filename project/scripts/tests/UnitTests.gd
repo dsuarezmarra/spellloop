@@ -103,6 +103,8 @@ func test_multi_weapon_slots(sim: GameSimulator):
 	
 	# Usar una lista de armas distintas
 	var desired_weapons = ["magic_wand", "axe", "garlic", "fire_wand", "lightning_ring", "runetracer"]
+	# CORRECCIÓN: Usar IDs válidos del proyecto (ver WeaponDatabase.gd)
+	desired_weapons = ["ice_wand", "fire_wand", "lightning_wand", "arcane_orb", "shadow_dagger", "nature_staff"]
 	
 	print("   Intentando equipar 6 armas...")
 	for wid in desired_weapons:
