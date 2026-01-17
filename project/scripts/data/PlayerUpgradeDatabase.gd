@@ -1807,6 +1807,7 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"tier": 5,
 		"is_unique": true,
 		"max_stacks": 1,
+		"excluded_tags": ["orbital"],
 		"effects": [{"stat": "chain_count", "value": 2, "operation": "add"}]
 	},
 	"unique_explosion_master": {

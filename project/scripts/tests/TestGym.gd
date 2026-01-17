@@ -121,7 +121,7 @@ func spawn_player():
 	player.add_child(cam)
 	cam.make_current()
 
-func create_debug_ui():
+func _create_debug_ui():
 	ui_layer = CanvasLayer.new()
 	ui_layer.layer = 128
 	add_child(ui_layer)

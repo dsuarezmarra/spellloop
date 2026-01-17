@@ -97,6 +97,9 @@ func _try_create_animated_visual() -> bool:
 		# Debug desactivado: print("[SimpleProjectile] ✗ No weapon_id en metadata")
 		return false
 	
+	# AGREGAR A GRUPO PARA GESTIÓN DE ORBITALES
+	add_to_group("weapon_projectiles_" + _weapon_id)
+	
 	# Buscar el ProjectileVisualManager
 	var visual_manager = ProjectileVisualManager.instance
 	if visual_manager == null:

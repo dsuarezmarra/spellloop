@@ -160,6 +160,43 @@ func _ready() -> void:
 func _on_global_stats_changed(stat_name: String, _old_value: float, _new_value: float) -> void:
 	"""Callback cuando cambian los stats globales"""
 	global_stats_changed.emit()
+	
+	# REFRESCAR ORBITALES (Fix para bug de auditoría)
+	# Los orbitales son persistentes, así que si cambian stats clave (daño, cantidad, área),
+	# debemos destruirlos y recrearlos para que se actualicen.
+	var refresh_stats = [
+		"damage_mult", "damage_flat", "crit_chance", "crit_damage", 
+		"extra_projectiles", "area_mult", "projectile_speed_mult", 
+		"knockback_mult", "duration_mult"
+	]
+	
+	if stat_name in refresh_stats:
+		_refresh_active_orbital_weapons()
+
+func _refresh_active_orbital_weapons() -> void:
+	"""Reiniciar armas orbitales para aplicar nuevos stats"""
+	if not player or not is_instance_valid(player) or not player.get_tree():
+		return
+		
+	for weapon in weapons:
+		if weapon is BaseWeapon:
+			var is_orbital = weapon.projectile_type == WeaponDatabase.ProjectileType.ORBIT or \
+							 weapon.target_type == WeaponDatabase.TargetType.ORBIT
+			
+			if is_orbital:
+				# 1. Limpiar proyectiles viejos
+				var group_name = "weapon_projectiles_" + weapon.id
+				player.get_tree().call_group(group_name, "queue_free")
+				
+				# 2. Forzar disparo inmediato (re-spawn)
+				weapon.ready_to_fire = true # Asegurar que pueda disparar
+				# Usar call_deferred para dar tiempo a que se borren los viejos y evitar conflictos físicos
+				call_deferred("_force_respawn_orbital", weapon)
+
+func _force_respawn_orbital(weapon: BaseWeapon) -> void:
+	"""Helper para respawnear orbital en el siguiente frame"""
+	if is_instance_valid(player) and is_active:
+		weapon.perform_attack(player, player_stats)
 
 func _exit_tree() -> void:
 	"""Limpiar referencias cuando el nodo se elimina del árbol"""
