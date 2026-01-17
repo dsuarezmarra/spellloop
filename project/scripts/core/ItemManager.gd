@@ -226,24 +226,17 @@ func apply_item_effect(item_type: String, item_data: Dictionary):
 		
 		"weapon_damage":
 			# Debug desactivado: print("⚡ Daño de armas aumentado")
-			var _cs = null
-			var _gt = get_tree()
-			if _gt:
-				_cs = _gt.current_scene
-			if _cs and _cs.has_node("WeaponManager"):
-				var wm = _cs.get_node("WeaponManager")
-				if wm and wm.has_method("upgrade_weapon"):
-					wm.upgrade_weapon("magic_wand", {"damage": 5})
+			var attack_manager = get_tree().get_first_node_in_group("attack_manager")
+			if attack_manager and attack_manager.global_weapon_stats:
+				attack_manager.global_weapon_stats.modify_stat("damage_mult", 0.1, "add")
+				print("[ItemManager] ⚔️ Daño global aumentado +10%")
+
 		"weapon_speed":
 			# Debug desactivado: print("⚡ Velocidad de ataque aumentada")
-			var _cs = null
-			var _gt = get_tree()
-			if _gt:
-				_cs = _gt.current_scene
-			if _cs and _cs.has_node("WeaponManager"):
-				var wm = _cs.get_node("WeaponManager")
-				if wm and wm.has_method("upgrade_weapon"):
-					wm.upgrade_weapon("magic_wand", {"cooldown_reduction": 0.2})
+			var attack_manager = get_tree().get_first_node_in_group("attack_manager")
+			if attack_manager and attack_manager.global_weapon_stats:
+				attack_manager.global_weapon_stats.modify_stat("attack_speed_mult", 0.1, "add")
+				print("[ItemManager] ⚡ Velocidad de ataque global aumentada +10%")
 		"health_boost":
 			if player and player.has_method("increase_max_health"):
 				player.increase_max_health(20)
@@ -263,41 +256,16 @@ func apply_item_effect(item_type: String, item_data: Dictionary):
 				print("[ItemManager] 💰 +%d oro" % amount)
 		"new_weapon":
 			# Debug desactivado: print("⚔️ Nueva arma desbloqueada")
-			var _cs = null
-			var _gt = get_tree()
-			if _gt:
-				_cs = _gt.current_scene
-			if _cs and _cs.has_node("WeaponManager"):
-				var wm = _cs.get_node("WeaponManager")
-				# Prefer calling add_weapon with a WeaponData instance if available
-				if wm and wm.has_method("add_weapon"):
-					var created = false
-					# Try to construct WeaponManager.WeaponData if symbol is available
-					if typeof(WeaponManager) != TYPE_NIL:
-						var wd = WeaponManager.WeaponData.new()
-						wd.id = "fire_staff"
-						wd.name = "Bastón de Fuego"
-						wd.damage = 15
-						wd.cooldown = 1.2
-						wd.weapon_range = 400.0
-						wd.projectile_speed = 350.0
-						wd.weapon_type = WeaponManager.WeaponData.WeaponType.PROJECTILE
-						wd.targeting = WeaponManager.WeaponData.TargetingType.NEAREST_ENEMY
-						wm.add_weapon(wd)
-						created = true
-					# Fallback: pass a simple dictionary if object construction failed
-					if not created:
-						var new_w = {
-							"id": "fire_staff",
-							"name": "Bastón de Fuego",
-							"damage": 15,
-							"cooldown": 1.2,
-							"weapon_range": 400.0,
-							"projectile_speed": 350.0,
-							"weapon_type": "projectile",
-							"targeting": "nearest"
-						}
-						wm.add_weapon(new_w)
+			# NUEVO SISTEMA: Usar AttackManager y BaseWeapon
+			var weapon_id = item_data.get("id", "nature_staff") # Default fallback
+			if weapon_id == "": weapon_id = "nature_staff"
+			
+			var attack_manager = get_tree().get_first_node_in_group("attack_manager")
+			if attack_manager and attack_manager.has_method("add_weapon_by_id"):
+				print("[ItemManager] ⚔️ Añadiendo arma nueva via AttackManager: %s" % weapon_id)
+				attack_manager.add_weapon_by_id(weapon_id)
+			else:
+				push_error("[ItemManager] AttackManager no encontrado para new_weapon")
 		_:
 			# Tipo de item desconocido, ignorar
 			pass

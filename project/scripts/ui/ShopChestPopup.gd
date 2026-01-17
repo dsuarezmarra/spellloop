@@ -453,3 +453,103 @@ func _style_exit_button(btn: Button):
 	var hover = style.duplicate()
 	hover.bg_color = Color(0.4, 0.2, 0.2)
 	btn.add_theme_stylebox_override("hover", hover)
+	
+# ═══════════════════════════════════════════════════════════════════════════════
+# INPUT & NAVEGACIÓN
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _input(event: InputEvent):
+	if popup_locked:
+		return
+
+	# Modal de confirmación tiene prioridad
+	if showing_confirm_modal:
+		if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and event.keycode == KEY_N):
+			_on_confirm_cancel()
+			get_tree().root.set_input_as_handled()
+		elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and event.keycode == KEY_Y):
+			_on_confirm_exit()
+			get_tree().root.set_input_as_handled()
+		# Navegación básica en modal (izquierda/derecha)
+		elif event.is_action_pressed("ui_left") or event.is_action_pressed("ui_right"):
+			# TODO: Selección visual en modal
+			pass
+		return
+
+	# Navegación en la lista de items
+	if event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and event.keycode == KEY_W):
+		_navigate_selection(-1)
+		get_tree().root.set_input_as_handled()
+	elif event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and event.keycode == KEY_S):
+		_navigate_selection(1)
+		get_tree().root.set_input_as_handled()
+	elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and event.keycode == KEY_SPACE):
+		_activate_selection()
+		get_tree().root.set_input_as_handled()
+	elif event.is_action_pressed("ui_cancel"):
+		_on_exit_pressed()
+		get_tree().root.set_input_as_handled()
+
+func _navigate_selection(direction: int):
+	"""Navegar selección (incluye botón de salir como última opción)"""
+	var total_items = item_buttons.size()
+	# exit_button es el índice 'total_items'
+	var max_index = total_items # (items 0..n-1 + exit n)
+	
+	if current_selected_index < 0:
+		current_selected_index = 0
+	else:
+		current_selected_index += direction
+	
+	# Wrap around
+	if current_selected_index < 0:
+		current_selected_index = max_index
+	elif current_selected_index > max_index:
+		current_selected_index = 0
+		
+	_update_selection_visuals()
+	
+	# Scroll automático
+	if current_selected_index < total_items:
+		_ensure_visible(item_buttons[current_selected_index])
+	else:
+		_ensure_visible(exit_button)
+
+func _activate_selection():
+	"""Activar elemento seleccionado"""
+	var total_items = item_buttons.size()
+	
+	if current_selected_index == total_items:
+		# Botón salir
+		_on_exit_pressed()
+	elif current_selected_index >= 0 and current_selected_index < total_items:
+		# Item
+		# Simular click en el botón (que llama a _on_item_pressed)
+		item_buttons[current_selected_index].pressed.emit()
+
+func _update_selection_visuals():
+	"""Actualizar feedback visual de selección"""
+	for i in range(item_buttons.size()):
+		var btn = item_buttons[i]
+		if i == current_selected_index:
+			# Resaltar seleccionado
+			btn.modulate = Color(1.3, 1.3, 1.5) # Brillo azulado
+			# Scale effect
+			btn.scale = Vector2(1.02, 1.02)
+		else:
+			btn.modulate = Color.WHITE
+			btn.scale = Vector2(1.0, 1.0)
+			
+	# Botón salir
+	if current_selected_index == item_buttons.size():
+		exit_button.modulate = Color(1.3, 1.0, 1.0) # Brillo rojizo
+		exit_button.scale = Vector2(1.02, 1.02)
+	else:
+		exit_button.modulate = Color.WHITE
+		exit_button.scale = Vector2(1.0, 1.0)
+
+func _ensure_visible(control: Control):
+	"""Asegurar que el control es visible en el scroll"""
+	# Implementación simple: si está muy abajo/arriba, ajustar scroll_vertical
+	# TODO: Mejorar lógica de scroll
+	pass
