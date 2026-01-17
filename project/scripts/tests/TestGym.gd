@@ -188,7 +188,7 @@ func _on_add_weapon(id: String):
 		var w = BaseWeapon.new(id)
 		var res = am.add_weapon(w)
 		if res:
-			 _show_toast("Added (BaseWeapon): " + id)
+			_show_toast("Added (BaseWeapon): " + id)
 	else:
 		printerr("[TestGym] Error: Player no tiene AttackManager o método add_weapon_by_id")
 		if am:
@@ -256,7 +256,7 @@ func _clear_weapons():
 func _process(delta):
 	# Asegurar cursor visible siempre en esta escena de test
 	if Input.get_mouse_mode() != Input.MOUSE_MODE_VISIBLE:
-		 Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 func _show_toast(msg: String):
 	var label = Label.new()
