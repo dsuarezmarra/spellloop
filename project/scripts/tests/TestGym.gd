@@ -26,7 +26,7 @@ func _ready():
 	spawn_player()
 	
 	# 4. Crear UI de Debug
-	create_debug_ui()
+	_create_debug_ui()
 	
 	print("[TestGym] Iniciado. Usa el panel para probar TODO.")
 
@@ -57,6 +57,13 @@ func _load_database_ids():
 				upgrade_ids.append(id)
 	if "OFFENSIVE_UPGRADES" in PlayerUpgradeDatabase:
 		for id in PlayerUpgradeDatabase.OFFENSIVE_UPGRADES: upgrade_ids.append(id)
+	
+	if "CURSED_UPGRADES" in PlayerUpgradeDatabase:
+		for id in PlayerUpgradeDatabase.CURSED_UPGRADES: upgrade_ids.append(id)
+		
+	if "UNIQUE_UPGRADES" in PlayerUpgradeDatabase:
+		for id in PlayerUpgradeDatabase.UNIQUE_UPGRADES: upgrade_ids.append(id)
+		
 	upgrade_ids.sort()
 
 func setup_environment():
@@ -410,7 +417,9 @@ func _get_player_stats():
 func _get_upgrade_data(id: String) -> Dictionary:
 	if id in PlayerUpgradeDatabase.DEFENSIVE_UPGRADES: return PlayerUpgradeDatabase.DEFENSIVE_UPGRADES[id]
 	if id in PlayerUpgradeDatabase.UTILITY_UPGRADES: return PlayerUpgradeDatabase.UTILITY_UPGRADES[id]
-	# if id in PlayerUpgradeDatabase.OFFENSIVE_UPGRADES: return PlayerUpgradeDatabase.OFFENSIVE_UPGRADES[id] # Original line seems commented or unused?
+	if id in PlayerUpgradeDatabase.OFFENSIVE_UPGRADES: return PlayerUpgradeDatabase.OFFENSIVE_UPGRADES[id]
+	if "CURSED_UPGRADES" in PlayerUpgradeDatabase and id in PlayerUpgradeDatabase.CURSED_UPGRADES: return PlayerUpgradeDatabase.CURSED_UPGRADES[id]
+	if "UNIQUE_UPGRADES" in PlayerUpgradeDatabase and id in PlayerUpgradeDatabase.UNIQUE_UPGRADES: return PlayerUpgradeDatabase.UNIQUE_UPGRADES[id]
 	if "PASSIVES" in PassiveDatabase and id in PassiveDatabase.PASSIVES: return PassiveDatabase.PASSIVES[id]
 	return {}
 
