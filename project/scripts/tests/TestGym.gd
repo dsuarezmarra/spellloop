@@ -253,8 +253,9 @@ func _spawn_dummy():
 	sprite.texture = ImageTexture.create_from_image(img)
 	dummy.add_child(sprite)
 	dummy.add_to_group("enemies")
-	var offset = Vector2(randf_range(-200, 200), randf_range(-200, 200))
-	dummy.position = player.position + offset
+	
+	# POSICIÓN FIJA: A la derecha del player para asegurar hit
+	dummy.position = player.position + Vector2(150, 0)
 	
 	var area = Area2D.new()
 	# IMPORTANTE: Layer 2 para enemigos (según SimpleProjectile)
@@ -272,9 +273,11 @@ func _spawn_dummy():
 	script.source_code = """
 	extends Node2D
 	var health = 999999
-	var damage_log = {} # id_arma -> daño_total
+	var total_damage = 0
 	
 	func take_damage(amount, _source=null):
+		total_damage += amount
+		
 		# Efecto visual
 		var label = Label.new()
 		label.text = str(int(amount))
@@ -289,12 +292,11 @@ func _spawn_dummy():
 		tw.tween_property(label, "modulate:a", 0.0, 0.5).from(1.0)
 		tw.tween_callback(label.queue_free)
 		
-		# Log extra para debug (NECESARIO PARA EL USUARIO)
-		print("Dummy hit: ", amount, " dmg")
+		# print("Dummy hit: ", amount, " dmg") # Spam reducido, TestGym reportará el total
 	"""
 	dummy.set_script(script)
 	add_child(dummy)
-	_show_toast("Dummy Spawned (Layer 2)")
+	_show_toast("Dummy Spawned (Fixed Pos)")
 
 func _clear_weapons():
 	var am = _get_attack_manager()
@@ -309,7 +311,7 @@ func _clear_weapons():
 			am.global_weapon_stats.reset()
 		
 	# CLEANUP AGRESIVO DE PROYECTILES/ORBITALES
-	print("[TestGym] Cleaning up logic entities...")
+	# print("[TestGym] Cleaning up logic entities...")
 	get_tree().call_group("projectiles", "queue_free")
 	
 	var root = get_tree().current_scene
@@ -323,7 +325,7 @@ func _clear_weapons():
 		if child.name.contains("Orb") or child.name.contains("Barrier") or child.name.contains("Shield"):
 			child.queue_free()
 			
-	_show_toast("Weapons Cleared & Cleaned")
+	# _show_toast("Weapons Cleared & Cleaned")
 
 func _process(delta):
 	if Input.get_mouse_mode() != Input.MOUSE_MODE_VISIBLE:
@@ -348,8 +350,15 @@ func _run_complex_test() -> void:
 	print("🚀 INICIANDO SUPER MEGA AUTO-TEST 🚀")
 	_show_toast("🚀 STARTING COMPLEX TEST 🚀")
 	
+	var dummy = null
 	if not get_tree().has_group("enemies"):
 		_spawn_dummy()
+	
+	# Esperar a que dummy exista
+	await get_tree().process_frame
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	if enemies.size() > 0:
+		dummy = enemies[0]
 	
 	var all_weapons = weapon_ids + fusion_ids
 	var batch_size = 6
@@ -372,29 +381,57 @@ func _run_complex_test() -> void:
 		_show_toast("Testing Batch %d/%d" % [i+1, batches.size()])
 		
 		_clear_weapons()
-		await get_tree().create_timer(0.5).timeout
+		await get_tree().create_timer(0.2).timeout
+		
+		# --- BASELINE REPORT ---
+		print("   📊 Stats Base (Pre-Upgrades):")
+		_print_stats_report()
 		
 		for wid in batch:
 			_on_add_weapon(wid)
-			await get_tree().create_timer(0.1).timeout
+		
+		await get_tree().create_timer(0.2).timeout
 			
 		print("   🔼 Aplicando ALL Upgrades...")
 		_show_toast("Applying Upgrades...")
 		
-		var upg_count = 0
 		for uid in upgrade_ids:
 			_apply_upgrade_silent(uid)
-			upg_count += 1
-			if upg_count % 5 == 0:
-				await get_tree().process_frame
 		
-		print("   ✅ Upgrades aplicados. Esperando daño...")
-		_show_toast("Wait for Damage...")
+		# --- UPGRADED REPORT ---
+		print("   📊 Stats Mejorados (Post-Upgrades):")
+		_print_stats_report()
+		
+		# Reset damage tracking for this batch
+		var initial_dmg = 0
+		if is_instance_valid(dummy):
+			initial_dmg = dummy.total_damage
+		
+		print("   ⚔️ Midiendo daño (3s)...")
+		_show_toast("Measuring Damage...")
 		
 		await get_tree().create_timer(3.0).timeout
 		
+		if is_instance_valid(dummy):
+			var final_dmg = dummy.total_damage
+			var batch_dmg = final_dmg - initial_dmg
+			print("   💥 BATCH TOTAL DAMAGE: %d" % batch_dmg)
+			_show_toast("Batch Dmg: %d" % batch_dmg)
+		else:
+			print("   ❌ Dummy lost!")
+		
 	print("\n✅✅✅ TEST COMPLETO: Todas las combinaciones probadas ✅✅✅")
 	_show_toast("✅✅✅ TEST COMPLETE ✅✅✅")
+
+func _print_stats_report():
+	var am = _get_attack_manager()
+	if am and am.global_weapon_stats:
+		var gws = am.global_weapon_stats
+		print("      > Dmg Mult: x%.2f" % gws.get_stat("damage_mult"))
+		print("      > Speed Mult: x%.2f" % gws.get_stat("projectile_speed_mult"))
+		print("      > Area Mult: x%.2f" % gws.get_stat("area_mult"))
+		print("      > Extra Proj: +%d" % gws.get_stat("extra_projectiles"))
+		print("      > Crit Chance: %.0f%%" % (gws.get_stat("crit_chance") * 100))
 
 # Stats que pertenecen a GlobalWeaponStats
 const WEAPON_STATS = [
@@ -425,8 +462,8 @@ func _apply_stat_change(stat: String, val: float, op: String, silent: bool = fal
 		if target_obj.has_method("multiply_stat"):
 			target_obj.multiply_stat(stat, val)
 			
-	if not silent:
-		print("[TestGym] Stat '%s' %s %.2f applied to %s" % [stat, op, val, "GlobalWeaponStats" if is_weapon_stat else "PlayerStats"])
+	# if not silent:
+	#	print("[TestGym] Stat '%s' %s %.2f applied" % [stat, op, val])
 
 func _apply_upgrade_silent(id: String):
 	var data = _get_upgrade_data(id)
