@@ -242,34 +242,7 @@ func _on_add_weapon(id: String):
 	else:
 		printerr("[TestGym] No AttackManager found")
 
-func _on_add_upgrade(id: String):
-	print("[TestGym] Adding upgrade: ", id)
-	var stats = _get_player_stats()
-	var data = _get_upgrade_data(id)
-	
-	if not stats:
-		_show_toast("Error: No PlayerStats found")
-		return
-		
-	if data.is_empty():
-		_show_toast("Error: Unknown Upgrade")
-		return
-		
-	# Aplicar efectos
-	if "effects" in data:
-		for effect in data.effects:
-			var stat = effect.stat
-			var val = effect.value
-			var op = effect.operation
-			
-			if op == "add":
-				if stats.has_method("add_stat"):
-					stats.add_stat(stat, val)
-			elif op == "multiply":
-				if stats.has_method("multiply_stat"):
-					stats.multiply_stat(stat, val)
-					
-	_show_toast("Upgrade Added: " + data.get("name", id))
+
 
 func _spawn_dummy():
 	var dummy = Node2D.new()
@@ -295,7 +268,6 @@ func _spawn_dummy():
 	area.add_child(col)
 	dummy.add_child(area)
 	
-	var script = GDScript.new()
 	var script = GDScript.new()
 	script.source_code = """
 	extends Node2D
@@ -334,7 +306,7 @@ func _clear_weapons():
 		
 		# Resetear GlobalWeaponStats también
 		if am.global_weapon_stats:
-			am.global_weapon_stats.reset_stats()
+			am.global_weapon_stats.reset()
 		
 	# CLEANUP AGRESIVO DE PROYECTILES/ORBITALES
 	print("[TestGym] Cleaning up logic entities...")
