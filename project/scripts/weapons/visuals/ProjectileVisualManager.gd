@@ -1364,11 +1364,21 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 	# SPRITES DE PROYECTIL NORMAL (flight + impact)
 	# ═══════════════════════════════════════════════════════════════════════════
 	var flight_path = base_path + "flight_spritesheet_" + weapon_id + ".png"
-	if not ResourceLoader.exists(flight_path):
-		return  # No hay sprites personalizados, usar procedural
-
-	# Cargar sprites (solo flight e impact son requeridos)
-	var flight_tex = load(flight_path) as Texture2D
+	# Intentar cargar directamente (bypass ResourceLoader.exists cache)
+	# Usar CACHE_MODE_IGNORE para evitar que el editor devuelva un recurso fallido en caché
+	var flight_tex = ResourceLoader.load(flight_path, "Texture2D", ResourceLoader.CACHE_MODE_IGNORE)
+	
+	# Fallback system
+	if flight_tex == null:
+		var alt_path = ""
+		if "/weapons/" in base_path:
+			alt_path = FUSION_SPRITES_PATH + weapon_id + "/flight_spritesheet_" + weapon_id + ".png"
+		else:
+			alt_path = WEAPONS_SPRITES_PATH + weapon_id + "/flight_spritesheet_" + weapon_id + ".png"
+			
+		if ResourceLoader.exists(alt_path):
+			flight_tex = ResourceLoader.load(alt_path, "Texture2D", ResourceLoader.CACHE_MODE_IGNORE)
+			print("[ProjectileVisualManager] ⚠️ Sprite found in ALT path: ", alt_path)
 	var impact_tex = load(base_path + "impact_spritesheet_" + weapon_id + ".png") as Texture2D
 
 	if flight_tex == null:
