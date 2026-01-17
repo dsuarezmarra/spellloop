@@ -279,6 +279,7 @@ const TIER_2_ENEMIES = {
 		"description": "Mago corrupto que ataca desde la distancia.",
 		"special_abilities": ["ranged_attack", "keep_distance"],
 		"modifiers": {
+			"weapon_id": "arcane_orb",
 			"preferred_distance": 180.0,  # Intenta mantener esta distancia
 			"projectile_speed": 200.0,
 			"projectile_damage": 14
@@ -369,6 +370,7 @@ const TIER_3_ENEMIES = {
 		"description": "Ser de hielo puro. Sus proyectiles congelan.",
 		"special_abilities": ["ranged_attack", "freeze_projectile"],
 		"modifiers": {
+			"weapon_id": "ice_wand",
 			"projectile_speed": 180.0,
 			"slow_amount": 0.4,          # 40% slow
 			"slow_duration": 2.5,
@@ -391,6 +393,7 @@ const TIER_3_ENEMIES = {
 		"description": "Domina la magia del vacío. Se teletransporta para evadir.",
 		"special_abilities": ["ranged_attack", "teleport"],
 		"modifiers": {
+			"weapon_id": "arcane_orb",
 			"teleport_cooldown": 5.0,
 			"teleport_range": 150.0,     # Distancia máxima de teleport
 			"teleport_health_threshold": 0.4, # Teleporta si HP < 40%
@@ -465,6 +468,7 @@ const TIER_4_ENEMIES = {
 		"description": "Maestro del fuego. Crea zonas ardientes letales.",
 		"special_abilities": ["ranged_attack", "fire_zone", "burn_aura"],
 		"modifiers": {
+			"weapon_id": "fire_wand",
 			"fire_zone_radius": 80.0,
 			"fire_zone_damage": 15,      # DPS
 			"fire_zone_duration": 5.0,
@@ -488,6 +492,7 @@ const TIER_4_ENEMIES = {
 		"description": "Soberana del frío eterno. Congela todo a su alrededor.",
 		"special_abilities": ["ranged_attack", "freeze_zone", "ice_armor"],
 		"modifiers": {
+			"weapon_id": "ice_wand",
 			"freeze_zone_radius": 120.0,
 			"freeze_zone_slow": 0.5,     # 50% slow
 			"freeze_zone_duration": 4.0,
@@ -511,6 +516,7 @@ const TIER_4_ENEMIES = {
 		"description": "Mago de inmenso poder que domina múltiples elementos.",
 		"special_abilities": ["ranged_attack", "teleport", "multi_element"],
 		"modifiers": {
+			"weapon_id": "arcane_orb",
 			"teleport_cooldown": 6.0,
 			"element_cycle": ["fire", "ice", "void"],  # Cicla entre elementos
 			"fire_projectile_burn": 3.0,   # Segundos de burn
@@ -580,6 +586,7 @@ const BOSSES = {
 			"curse_aura": 10.0        # Reducido
 		},
 		"modifiers": {
+			"weapon_id": "arcane_orb",
 			"barrage_count": 6,       # REDUCIDO de 8
 			"barrage_damage": 15,     # REDUCIDO de 18
 			"barrage_spread": 40.0,   # REDUCIDO de 45 - más fácil de esquivar
@@ -631,6 +638,7 @@ const BOSSES = {
 			"void_beam": 10.0          # Reducido
 		},
 		"modifiers": {
+			"weapon_id": "void_pulse",
 			"pull_radius": 450.0,      # Mayor radio
 			"pull_force": 130.0,       # REDUCIDO de 200 - más escapable
 			"pull_duration": 2.0,      # REDUCIDO de 3.0 - más corto
@@ -687,6 +695,7 @@ const BOSSES = {
 			"ground_slam": 8.0
 		},
 		"modifiers": {
+			"weapon_id": "arcane_orb",
 			"shield_charges": 4,
 			"shield_duration": 10.0,
 			"blast_radius": 100.0,    # REDUCIDO de 120
@@ -739,6 +748,7 @@ const BOSSES = {
 			"fire_trail": 0.0
 		},
 		"modifiers": {
+			"weapon_id": "fire_wand",
 			"charge_speed": 350.0,    # REDUCIDO de 550 - ahora 3.5x jugador (era 5.5x)
 			"charge_damage_mult": 2.5, # REDUCIDO de 3.0
 			"charge_stun": 0.7,       # REDUCIDO de 1.0

@@ -13,9 +13,11 @@ var speed: float = 200.0
 var damage: int = 10
 var lifetime: float = 5.0
 var element_type: String = "physical"  # physical, fire, ice, dark, arcane
+var weapon_id: String = ""             # ID para ProjectileVisualManager
 
 # Visual
 var visual_node: Node2D = null
+var animated_visual: Node2D = null   # Instancia de AnimatedProjectileSprite
 var trail_positions: Array = []
 var max_trail_length: int = 18  # Estela más larga para efecto más dramático
 
@@ -25,7 +27,7 @@ var _time: float = 0.0
 
 func _ready() -> void:
 	"""Inicializar proyectil"""
-	print("[DEBUG_ENEMY_PROJ] Spawned at: %s" % global_position)
+	# print("[DEBUG_ENEMY_PROJ] Spawned at: %s, weapon_id: %s" % [global_position, weapon_id])
 	# CRÍTICO: Respetar la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	
@@ -46,7 +48,10 @@ func _ready() -> void:
 	collision.shape = shape
 	add_child(collision)
 	
-	# Crear visual mejorado
+	# Intentar crear visual animado si hay weapon_id
+	_try_create_animated_visual()
+	
+	# Crear visual mejorado (fallback procedural)
 	_create_enhanced_visual()
 	
 	# Conectar señal de colisión
@@ -56,13 +61,14 @@ func _ready() -> void:
 	if direction != Vector2.ZERO:
 		rotation = direction.angle()
 
-func initialize(p_direction: Vector2, p_speed: float, p_damage: int, p_lifetime: float = 5.0, p_element: String = "physical") -> void:
+func initialize(p_direction: Vector2, p_speed: float, p_damage: int, p_lifetime: float = 5.0, p_element: String = "physical", p_weapon_id: String = "") -> void:
 	"""Inicializar el proyectil con parámetros"""
 	direction = p_direction.normalized()
 	speed = p_speed
 	damage = p_damage
 	lifetime = p_lifetime
 	element_type = p_element
+	weapon_id = p_weapon_id
 	_lifetime_timer = lifetime
 	
 	# Limpiar trail al reinicializar
@@ -84,8 +90,13 @@ func _physics_process(delta: float) -> void:
 	global_position += direction * speed * delta
 	
 	# Actualizar visual
-	if visual_node:
+	if visual_node and visual_node.visible:
 		visual_node.queue_redraw()
+	
+	if animated_visual:
+		animated_visual.global_position = global_position
+		if animated_visual.has_method("update_visual"):
+			animated_visual.call("update_visual", delta)
 	
 	# CHECK MANUAL de colisión con player (más fiable que body_entered)
 	_check_player_collision_distance()
@@ -155,14 +166,52 @@ func _apply_element_effect(target: Node) -> void:
 
 func _create_enhanced_visual() -> void:
 	"""Crear visual ÉPICO mejorado del proyectil con estela"""
+	# Si ya tenemos visual animado, el procedural se usa solo como estela o se oculta
 	visual_node = Node2D.new()
-	visual_node.name = "Visual"
-	# Visual se dibuja en coordenadas globales relativas al parent
+	visual_node.name = "ProceduralVisual"
 	visual_node.top_level = true
-	visual_node.z_index = 55  # Más visible
+	visual_node.z_index = 55
 	add_child(visual_node)
 	
 	visual_node.draw.connect(_draw_projectile)
+	
+	# Si hay visual animado, ocultar el núcleo del procedural (mantener solo la estela si se desea)
+	# Por ahora, si hay animado, el procedural solo dibuja si no hay animado
+	if animated_visual:
+		# Podríamos mantenerlo solo para la estela, pero AnimatedProjectileSprite suele tener su propia estela
+		visual_node.visible = false
+
+func _try_create_animated_visual() -> void:
+	"""Intentar usar el sistema de ProjectileVisualManager"""
+	if weapon_id == "" or not ProjectileVisualManager:
+		return
+		
+	var visual_manager = ProjectileVisualManager.instance
+	if not visual_manager:
+		return
+		
+	var visual_data = visual_manager.get_visual_data(weapon_id)
+	if not visual_data:
+		return
+		
+	# Cargar el script de AnimatedProjectileSprite
+	var aps_script = load("res://scripts/weapons/visuals/AnimatedProjectileSprite.gd")
+	if not aps_script:
+		return
+		
+	animated_visual = aps_script.new()
+	animated_visual.name = "AnimatedVisual"
+	animated_visual.top_level = true
+	animated_visual.z_index = 56
+	animated_visual.global_position = global_position
+	
+	# Ponerlo como hijo del parent para que no se mueva con el proyectil (nosotros lo movemos)
+	var parent = get_parent()
+	if parent:
+		parent.add_child.call_deferred(animated_visual)
+		# Configurar después de añadir al árbol
+		animated_visual.call_deferred("initialize", visual_data)
+		# print("[EnemyProjectile] Visual animado creado para: %s" % weapon_id)
 
 func _draw_projectile() -> void:
 	"""Dibujar proyectil ÉPICO con estela y efectos mejorados según elemento"""
