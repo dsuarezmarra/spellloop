@@ -342,6 +342,7 @@ func get_fusion_preview(weapon_a: BaseWeapon, weapon_b: BaseWeapon) -> Dictionar
 		}
 	
 	var result = check.result
+	
 	return {
 		"available": true,
 		"name": result.get("name", "???"),
