@@ -513,112 +513,23 @@ func _on_add_weapon(id: String):
 
 
 func _spawn_dummy():
-	var dummy = Node2D.new()
+	var dummy = TestDummy.new()
 	dummy.name = "DummyTarget"
-	var sprite = Sprite2D.new()
-	var img = Image.create(32, 32, false, Image.FORMAT_RGBA8)
-	img.fill(Color.RED)
-	sprite.texture = ImageTexture.create_from_image(img)
-	dummy.add_child(sprite)
 	dummy.add_to_group("enemies")
 	
 	# POSICIÓN FIJA: A la derecha del player para asegurar hit
 	dummy.position = player.position + Vector2(150, 0)
 	
-	var area = Area2D.new()
-	# IMPORTANTE: Layer 2 para enemigos (según SimpleProjectile)
-	area.set_collision_layer_value(2, true)
-	area.set_collision_mask_value(4, true) # Escuchar proyectiles de layer 4 (opcional para area)
+	# La collision shape y health component se crean en TestDummy._ready() (via EnemyBase)
 	
-	var col = CollisionShape2D.new()
-	var shape = CircleShape2D.new()
-	shape.radius = 20
-	col.shape = shape
-	area.add_child(col)
-	dummy.add_child(area)
+	add_child(dummy)
 	
-	var script = GDScript.new()
-	script.source_code = """
-extends Node2D
-var health = 999999
-var total_damage = 0
-var attack_timer = 0.0
+	# Forzar _ready si es necesario, aunque add_child lo hace.
+	# EnemyBase._ready() configura colisiones y componentes.
+	# Logica manual eliminada a favor de TestDummy.gd
 
-func _process(delta):
-	# Ataque automático cada 1 segundo
-	attack_timer += delta
-	if attack_timer >= 1.0:
-		attack_timer = 0.0
-		_shoot_projectile()
+	pass
 
-func _shoot_projectile():
-	var player = get_tree().get_first_node_in_group("player")
-	if not player: return
-	
-	var proj = Area2D.new()
-	proj.name = "EnemyProj"
-	proj.position = global_position
-	
-	# Visual simple
-	var vis = ColorRect.new()
-	vis.color = Color.MAGENTA
-	vis.size = Vector2(10, 10)
-	vis.position = Vector2(-5, -5)
-	proj.add_child(vis)
-	
-	# Colisión
-	var col = CollisionShape2D.new()
-	var shape = CircleShape2D.new()
-	shape.radius = 6
-	col.shape = shape
-	proj.add_child(col)
-	
-	# Layer 4: Enemy Projectile
-	proj.set_collision_layer_value(1, false)
-	proj.set_collision_layer_value(4, true)
-	
-	# Mask 1: Player
-	proj.set_collision_mask_value(1, true)
-	
-	# Script de movimiento y daño
-	var ps = GDScript.new()
-	ps.source_code = "extends Area2D\\n" + \
-	"var dir = Vector2.ZERO\\n" + \
-	"var speed = 250\\n" + \
-	"func _process(delta):\\n" + \
-	"	position += dir * speed * delta\\n" + \
-	"func _ready():\\n" + \
-	"	body_entered.connect(_on_hit)\\n" + \
-	"	get_tree().create_timer(4.0).timeout.connect(queue_free)\\n" + \
-	"func _on_hit(body):\\n" + \
-	"	print('PROJ HIT: ', body.name, ' | Groups: ', body.get_groups())\\n" + \
-	"	if body.is_in_group('player'):\\n" + \
-	"		print('🎯 ENEMY PROJ HIT PLAYER! ( Raw Dmg: 500 )')\\n" + \
-	"		if body.has_method('take_damage'):\\n" + \
-	"			body.take_damage(500, 'physical', self)\\n" + \
-	"		queue_free()"
-	
-	ps.reload()
-	proj.set_script(ps)
-	
-	# DEBUG PLAYER COLLISION
-	if player:
-		print("🔍 PLAYER COLLISION CHECK:")
-		print("   Layer: %d (Bit 1: %s)" % [player.collision_layer, player.get_collision_layer_value(1)])
-		print("   Mask:  %d (Bit 4: %s)" % [player.collision_mask, player.get_collision_mask_value(4)])
-		var has_shape = false
-		for c in player.get_children():
-			if c is CollisionShape2D or c is CollisionPolygon2D:
-				has_shape = true
-				print("   Found Shape: ", c.name)
-		if not has_shape:
-			print("   ⚠️ NO COLLISION SHAPE FOUND ON PLAYER!")
-	
-	# Calcular dirección hacia el player
-	var dir = (player.global_position - global_position).normalized()
-	proj.set("dir", dir)
-	
-	get_parent().add_child(proj)
 
 func take_damage(data, _source=null):
 	var amount = 0

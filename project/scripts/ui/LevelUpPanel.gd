@@ -1054,6 +1054,19 @@ func _get_player_upgrade_options(luck: float) -> Array:
 			"is_consumable": upgrade.get("is_consumable", false),
 			"priority": 0.8
 		})
+	
+	# 3. FILTRADO: Eliminar attack_speed si solo usa orbitales (no se benefician)
+	if _are_all_weapons_orbital():
+		var filtered = []
+		for opt in upgrade_options:
+			var keep = true
+			for eff in opt.get("effects", []):
+				if eff.get("stat") == "attack_speed_mult":
+					keep = false
+					break
+			if keep:
+				filtered.append(opt)
+		upgrade_options = filtered
 
 	return upgrade_options
 
@@ -1136,7 +1149,7 @@ func _calculate_weapon_upgrade_chance(luck: float) -> float:
 
 func _get_fallback_options() -> Array:
 	"""Opciones de respaldo si no hay suficientes mejoras disponibles"""
-	return [
+	var fallback = [
 		{
 			"type": OPTION_TYPES.PLAYER_UPGRADE,
 			"upgrade_id": "damage_boost",
@@ -1182,6 +1195,15 @@ func _get_fallback_options() -> Array:
 			"priority": 0.8
 		}
 	]
+	
+	if _are_all_weapons_orbital():
+		var filtered = []
+		for opt in fallback:
+			if opt.upgrade_id != "attack_speed_boost":
+				filtered.append(opt)
+		return filtered
+		
+	return fallback
 
 func _get_new_weapon_options() -> Array:
 	var new_options: Array = []
@@ -1416,3 +1438,20 @@ func set_banish_count(count: int) -> void:
 	banish_count = count
 	_update_button_counts()
 	_update_all_visuals()
+
+func _are_all_weapons_orbital() -> bool:
+	"""Verifica si todas las armas equipadas son orbitales (tags: orbital)"""
+	if not attack_manager or not attack_manager.has_method("get_weapons"):
+		return false
+		
+	var weapons = attack_manager.get_weapons()
+	if weapons.is_empty():
+		return false
+		
+	for weapon in weapons:
+		# Verificar si el arma tiene el tag "orbital"
+		var tags = weapon.get("tags", [])
+		if not "orbital" in tags:
+			return false
+			
+	return true
