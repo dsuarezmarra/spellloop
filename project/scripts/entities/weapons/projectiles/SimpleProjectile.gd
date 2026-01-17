@@ -362,6 +362,9 @@ func _on_body_entered(body: Node2D) -> void:
 	_handle_hit(body)
 
 func _on_area_entered(area: Area2D) -> void:
+	# DEBUG: Ver qué entra
+	# print("Proj hit area: ", area.name, " Parent: ", area.get_parent().name)
+	
 	# Si el área tiene un parent que es enemigo
 	if area.get_parent() and area.get_parent().is_in_group("enemies"):
 		_handle_hit(area.get_parent())
@@ -375,6 +378,7 @@ func _handle_hit(target: Node) -> void:
 	if not target.is_in_group("enemies"):
 		return
 	
+	print("🎯 Proj Hit Target: ", target.name)
 	enemies_hit.append(target)
 	
 	# Calcular daño final (con crítico si aplica)
