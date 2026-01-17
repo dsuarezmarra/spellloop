@@ -324,16 +324,8 @@ func _create_item_button(item: Dictionary, index: int) -> Control:
 	# Conectar señal
 	var item_data = item.duplicate()
 	btn.pressed.connect(func(): _on_item_pressed(index, item_data))
-	btn.mouse_entered.connect(func(): _on_button_hover(index))
 	
 	return btn
-
-func _on_button_hover(index: int):
-	"""Actualizar selección al pasar el mouse"""
-	if popup_locked or showing_confirm_modal:
-		return
-	current_selected_index = index
-	_update_button_selection()
 
 func _on_item_pressed(index: int, item: Dictionary):
 	"""Usuario presionó un item"""
@@ -402,77 +394,21 @@ func _close_popup(purchased: bool):
 
 func _input(event: InputEvent):
 	"""Manejar input de teclado"""
-	if popup_locked:
+	if not (event is InputEventKey) or not event.pressed:
 		return
-
+	
 	if showing_confirm_modal:
-		if (event is InputEventKey and event.pressed):
-			if event.keycode == KEY_ESCAPE or event.keycode == KEY_N:
-				_on_confirm_cancel()
-				get_tree().root.set_input_as_handled()
-			elif event.keycode == KEY_ENTER or event.keycode == KEY_Y:
-				_on_confirm_exit()
-				get_tree().root.set_input_as_handled()
-		return
-	
-	# === NAVEGACIÓN LISTA PRINCIPAL ===
-	if event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and event.keycode == KEY_W):
-		_navigate_selection(-1)
-		get_tree().root.set_input_as_handled()
-		return
-	elif event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and event.keycode == KEY_S):
-		_navigate_selection(1)
-		get_tree().root.set_input_as_handled()
-		return
-	elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER)):
-		if current_selected_index >= 0 and current_selected_index < available_items.size():
-			var item = available_items[current_selected_index]
-			_on_item_pressed(current_selected_index, item)
-		get_tree().root.set_input_as_handled()
-		return
-
-	if event is InputEventKey and event.pressed:
-		if event.keycode == KEY_ESCAPE:
-			_on_exit_pressed()
+		if event.keycode == KEY_ESCAPE or event.keycode == KEY_N:
+			_on_confirm_cancel()
 			get_tree().root.set_input_as_handled()
-
-func _navigate_selection(direction: int):
-	"""Navegar la selección arriba (-1) o abajo (+1)"""
-	if item_buttons.is_empty():
+		elif event.keycode == KEY_ENTER or event.keycode == KEY_Y:
+			_on_confirm_exit()
+			get_tree().root.set_input_as_handled()
 		return
 	
-	# Si no hay selección, empezar en el primero
-	if current_selected_index < 0:
-		current_selected_index = 0 if direction > 0 else item_buttons.size() - 1
-	else:
-		current_selected_index += direction
-	
-	# Wrap around
-	if current_selected_index < 0:
-		current_selected_index = item_buttons.size() - 1
-	elif current_selected_index >= item_buttons.size():
-		current_selected_index = 0
-	
-	_update_button_selection()
-
-func _update_button_selection():
-	"""Actualizar estilos visuales según selección"""
-	for i in range(item_buttons.size()):
-		var btn = item_buttons[i]
-		if i == current_selected_index:
-			# Resaltar seleccionado (brillo extra o borde)
-			btn.modulate = Color(1.3, 1.3, 1.1, 1.0)
-			# Opcional: enfocar el botón para accesoibilidad nátiva
-			# btn.grab_focus() 
-		else:
-			# Estado normal
-			var item = available_items[i]
-			var price = item.get("price", 100)
-			var can_afford = player_coins >= price
-			if not can_afford:
-				btn.modulate = Color(0.7, 0.7, 0.7)
-			else:
-				btn.modulate = Color.WHITE
+	if event.keycode == KEY_ESCAPE:
+		_on_exit_pressed()
+		get_tree().root.set_input_as_handled()
 
 # === ESTILOS ===
 

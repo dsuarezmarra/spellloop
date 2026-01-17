@@ -63,8 +63,9 @@ func _ready() -> void:
 	var _effect_value = get_meta("effect_value", 0.0)
 	var _effect_dur = get_meta("effect_duration", 0.0)
 	var _wid = get_meta("weapon_id", "")
-	# if _effect != "none":
-	# 	print("[SimpleProjectile] 🆕 Creado - weapon: %s, element: %s, effect: %s" % [_wid, element_type, _effect])
+	if _effect != "none":
+		# Debug desactivado: print("[SimpleProjectile] 🆕 Creado - weapon: %s, effect: %s (val=%.2f, dur=%.2f)" % [_wid, _effect, _effect_value, _effect_dur])
+		pass
 	
 	# Obtener color: priorizar color del arma sobre color del elemento
 	if has_meta("weapon_color"):
@@ -114,9 +115,6 @@ func _try_create_animated_visual() -> bool:
 		# Debug desactivado: print("[SimpleProjectile] ✗ create_projectile_visual retornó null")
 		return false
 	
-	if not animated_sprite.visual_data.has_custom_sprites():
-		print("[DEBUG_WHITE] Procedural fallback for: ", _weapon_id, " element: ", element_type)
-	
 	add_child(animated_sprite)
 	
 	# Iniciar animación de vuelo (saltamos launch para proyectiles en movimiento)
@@ -148,10 +146,6 @@ func _setup_collision() -> void:
 
 func _create_visual() -> void:
 	"""Crear visual según tipo de elemento"""
-	# Usar ROJO para identificar fallback interno
-	projectile_color = Color(1, 0, 0)
-	print("[DEBUG_RED] Fallback Red for element: %s" % element_type)
-	
 	sprite = Sprite2D.new()
 	sprite.name = "Sprite"
 	
@@ -627,7 +621,7 @@ func _spawn_hit_effect() -> void:
 	particles.gravity = Vector2.ZERO
 	particles.scale_amount_min = 2.0
 	particles.scale_amount_max = 4.0
-	particles.color = Color(1, 0, 0) # Usar ROJO para identificar hit effects
+	particles.color = projectile_color
 	
 	particles.global_position = global_position
 	get_tree().current_scene.add_child(particles)

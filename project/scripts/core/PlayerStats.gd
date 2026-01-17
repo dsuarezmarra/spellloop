@@ -1366,22 +1366,6 @@ func take_damage(amount: float) -> float:
 	# Stone Skin (Geomancer): -20% daño cuando está quieto
 	if _stone_skin_active and has_passive("stone_skin"):
 		effective_damage *= 0.8
-		
-	# LOGICA DE ESCUDO
-	_time_since_damage = 0.0 # Resetear timer de regeneración
-	
-	var current_shield = get_stat("shield_amount")
-	if current_shield > 0:
-		var absorbed = minf(current_shield, effective_damage)
-		effective_damage -= absorbed
-		current_shield -= absorbed
-		set_stat("shield_amount", current_shield)
-		# print("[PlayerStats] Escudo absorbió %.0f daño. Restante: %.0f" % [absorbed, current_shield])
-		
-		# Si absorbió todo, no restar vida
-		if effective_damage <= 0:
-			effective_damage = 0
-			return 0.0
 
 	current_health -= effective_damage
 	current_health = maxf(0.0, current_health)
@@ -1389,8 +1373,6 @@ func take_damage(amount: float) -> float:
 	health_changed.emit(current_health, get_stat("max_health"))
 
 	return effective_damage
-
-
 
 func heal(amount: float) -> float:
 	"""

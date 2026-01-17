@@ -175,62 +175,9 @@ func fire_weapon(weapon: WeaponData, target_position: Vector2):
 	weapon_fired.emit(weapon.id, target_position)
 
 func fire_projectile(weapon: WeaponData, target_position: Vector2):
-	if not MagicProjectileScript:
-		return
-
-	# Determinar cantidad de proyectiles (default 1)
-	var count = 1
-	# Consultar database o tags para count? WeaponData no tiene count explícito en la clase base
-	# pero lo cargamos del diccionario en database. Asumimos 1 si no está.
-	# HACK: Mirar si podemos leer el count original del dictionary guardado o inferirlo
-	# Por ahora, usamos 1 básico, PERO si queremos soportar Wind Blade (3), necesitamos
-	# que WeaponData tenga 'projectile_count'.
-	# Vamos a añadirlo temporalmente como propiedad dinámica si es posible, o hardcodear logic simple
-	
-	# Mejor approach: Como acabamos de editar WeaponData, no añadimos projectile_count.
-	# Pero tags puede tener "multi".
-	if weapon.tags.has("multi_3"): count = 3
-	elif weapon.tags.has("multi_2"): count = 2
-	
-	# Si queremos ser precisos, deberíamos haber añadido projectile_count a WeaponData.
-	# Para este fix rápido, asumiremos 1 salvo excepciones.
-	
-	# Calcular ángulo base hacia el objetivo
-	var direction = (target_position - player.global_position).normalized()
-	var base_angle = direction.angle()
-	var spread = deg_to_rad(15.0) # 15 grados de spread
-	
-	for i in range(count):
-		var projectile = MagicProjectileScript.new()
-		projectile.name = "MP_%s_%d" % [weapon.id, randi()]
-		
-		# Calcular ángulo ajustado si son múltiples
-		var final_target = target_position
-		if count > 1:
-			var angle_offset = (i - (count - 1) / 2.0) * spread
-			var new_angle = base_angle + angle_offset
-			var dist = player.global_position.distance_to(target_position)
-			final_target = player.global_position + Vector2(cos(new_angle), sin(new_angle)) * dist
-		
-		# Inicializar visuales ANTES de initialize si es posible, o después
-		projectile.projectile_color = weapon.color
-		
-		# Init
-		projectile.initialize(
-			player.global_position,
-			final_target,
-			weapon.damage,
-			weapon.projectile_speed
-		)
-		
-		# Tags logic
-		if weapon.tags.has("piercing") or weapon.id == "shadow_dagger" or weapon.id == "wind_blade":
-			projectile.pierce_count = 1 + (1 if weapon.id == "shadow_dagger" else 0)
-		if weapon.tags.has("homing") or weapon.id == "nature_staff":
-			projectile.homing_strength = 3.5
-			projectile.lifetime = 4.0 # Más duración para homing
-			
-		get_tree().current_scene.add_child(projectile)
+	# DESACTIVADO: Solo usamos IceWand.gd para proyectiles
+	# Los puntos violeta venian de SpellloopMagicProjectile
+	pass
 
 
 func fire_area_spell(weapon: WeaponData, _target_position: Vector2):
@@ -269,8 +216,6 @@ func add_weapon_by_id(weapon_id: String) -> bool:
 	new_weapon.weapon_type = int(data.get("projectile_type", WeaponData.WeaponType.PROJECTILE))
 	new_weapon.targeting = int(data.get("target_type", WeaponData.TargetingType.NEAREST_ENEMY))
 	new_weapon.tags = data.get("tags", [])
-	new_weapon.color = data.get("color", Color.WHITE)
-	new_weapon.icon = data.get("icon", "⚔️")
 	new_weapon.evolution = data.get("evolution", "")
 	
 	return add_weapon(new_weapon)
@@ -349,8 +294,6 @@ class WeaponData:
 	var level: int = 1
 	var max_level: int = 8
 	var tags: Array = []
-	var color: Color = Color.WHITE
-	var icon: String = "⚔️"
 	# Para evoluciones/uniones
 	var evolution: String = ""
 	var passive_required: String = ""

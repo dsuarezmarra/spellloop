@@ -38,7 +38,6 @@ enum ProjectileStyle {
 
 @export_group("Type")
 @export var style: ProjectileStyle = ProjectileStyle.SINGLE
-@export var shape: String = "orb"  # Forma procedural: orb, shard, bolt, fireball, etc.
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SPRITES Y ANIMACIONES

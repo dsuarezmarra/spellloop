@@ -176,10 +176,8 @@ func _generate_procedural_frame(anim_type: String, frame_idx: int, total_frames:
 	var center = Vector2(size / 2.0, size / 2.0)
 	var progress = float(frame_idx) / float(total_frames - 1) if total_frames > 1 else 1.0
 	
-	var primary = visual_data.primary_color if visual_data else Color(1, 0, 1) # MAGENTA para identificar fallback
-	if not visual_data:
-		print("[DEBUG_MAGENTA] Fallback Magenta for weapon: %s" % _weapon_id)
-	var secondary = visual_data.secondary_color if visual_data else Color(0.5, 0, 0.5)
+	var primary = visual_data.primary_color if visual_data else Color(0.4, 0.8, 1.0)
+	var secondary = visual_data.secondary_color if visual_data else Color(0.2, 0.5, 0.9)
 	var accent = visual_data.accent_color if visual_data else Color.WHITE
 	var outline = visual_data.outline_color if visual_data else Color(0.1, 0.2, 0.4)
 	
@@ -191,13 +189,13 @@ func _generate_procedural_frame(anim_type: String, frame_idx: int, total_frames:
 				scale_factor = progress * 2.0 * 1.2  # Overshoot
 			else:
 				scale_factor = 1.0 + (1.0 - (progress - 0.5) * 2.0) * 0.2
-			_draw_shaped_projectile(image, center, size * 0.35 * scale_factor, 1.0, primary, secondary, accent, outline, visual_data.shape)
+			_draw_cartoon_orb(image, center, size * 0.35 * scale_factor, primary, secondary, accent, outline)
 			
 		"flight":
 			# Orbe pulsante con efecto "bouncy"
 			var pulse = sin(progress * TAU) * 0.1 + 1.0
 			var squash = 1.0 + sin(progress * TAU * 2) * 0.05
-			_draw_shaped_projectile(image, center, size * 0.35 * pulse, squash, primary, secondary, accent, outline, visual_data.shape)
+			_draw_cartoon_orb_squashed(image, center, size * 0.35 * pulse, squash, primary, secondary, accent, outline)
 			
 		"impact":
 			# Explosión que se expande y desvanece
@@ -209,37 +207,46 @@ func _generate_procedural_frame(anim_type: String, frame_idx: int, total_frames:
 	
 	return ImageTexture.create_from_image(image)
 
-func _draw_shaped_projectile(image: Image, center: Vector2, radius: float, squash: float,
-		primary: Color, secondary: Color, accent: Color, outline: Color, shape: String) -> void:
-	"""Dibujar proyectil con forma específica"""
-	match shape:
-		"shard", "ice_blade", "dark_shard", "prism":
-			_draw_shape_diamond(image, center, radius, squash, primary, secondary, accent, outline)
-		"bolt", "ice_bolt", "dark_bolt", "geo_bolt":
-			_draw_shape_bolt(image, center, radius, squash, primary, secondary, accent, outline)
-		"fireball", "plasma_ball", "orb", "storm_orb", "shadow_orb":
-			_draw_shape_orb(image, center, radius, squash, primary, secondary, accent, outline)
-		"leaf", "pollen":
-			_draw_shape_leaf(image, center, radius, squash, primary, secondary, accent, outline)
-		"star", "solar_disc":
-			_draw_shape_star(image, center, radius, squash, primary, secondary, accent, outline)
-		"crescent", "wind_blade":
-			_draw_shape_crescent(image, center, radius, squash, primary, secondary, accent, outline)
-		"spike", "dagger":
-			_draw_shape_spike(image, center, radius, squash, primary, secondary, accent, outline)
-		_:
-			# Fallback a orbe
-			_draw_shape_orb(image, center, radius, squash, primary, secondary, accent, outline)
-
-func _draw_shape_orb(image: Image, center: Vector2, radius: float, squash: float,
+func _draw_cartoon_orb(image: Image, center: Vector2, radius: float, 
 		primary: Color, secondary: Color, accent: Color, outline: Color) -> void:
-	"""Dibujar orbe (círculo)"""
+	"""Dibujar un orbe estilo cartoon con outline grueso"""
 	var outline_width = max(2.0, radius * 0.15)
+	
+	# Dibujar en el image
+	for y in range(image.get_height()):
+		for x in range(image.get_width()):
+			var pos = Vector2(x, y)
+			var dist = pos.distance_to(center)
+			
+			# Outline
+			if dist <= radius + outline_width and dist > radius:
+				image.set_pixel(x, y, outline)
+			# Cuerpo principal con gradiente
+			elif dist <= radius:
+				var t = dist / radius
+				# Highlight en la parte superior izquierda
+				var highlight_center = center + Vector2(-radius * 0.3, -radius * 0.3)
+				var highlight_dist = pos.distance_to(highlight_center)
+				var highlight_t = clamp(1.0 - highlight_dist / (radius * 0.6), 0.0, 1.0)
+				
+				var base_color = primary.lerp(secondary, t * 0.5)
+				var final_color = base_color.lerp(accent, highlight_t * 0.7)
+				image.set_pixel(x, y, final_color)
+
+func _draw_cartoon_orb_squashed(image: Image, center: Vector2, radius: float, squash: float,
+		primary: Color, secondary: Color, accent: Color, outline: Color) -> void:
+	"""Dibujar orbe con squash/stretch para efecto bouncy"""
+	var outline_width = max(2.0, radius * 0.15)
+	var stretch = 1.0 / squash
 	
 	for y in range(image.get_height()):
 		for x in range(image.get_width()):
 			var pos = Vector2(x, y)
-			var adjusted_pos = Vector2((pos.x - center.x) / squash + center.x, (pos.y - center.y) * squash + center.y)
+			# Aplicar squash/stretch a la distancia
+			var adjusted_pos = Vector2(
+				(pos.x - center.x) / squash + center.x,
+				(pos.y - center.y) * squash + center.y
+			)
 			var dist = adjusted_pos.distance_to(center)
 			
 			if dist <= radius + outline_width and dist > radius:
@@ -253,165 +260,6 @@ func _draw_shape_orb(image: Image, center: Vector2, radius: float, squash: float
 				var base_color = primary.lerp(secondary, t * 0.5)
 				var final_color = base_color.lerp(accent, highlight_t * 0.7)
 				image.set_pixel(x, y, final_color)
-
-func _draw_shape_diamond(image: Image, center: Vector2, radius: float, squash: float,
-		primary: Color, secondary: Color, accent: Color, outline: Color) -> void:
-	"""Dibujar diamante (shard)"""
-	var outline_width = max(2.0, radius * 0.15)
-	
-	for y in range(image.get_height()):
-		for x in range(image.get_width()):
-			# Distancia Manhattan modificada para rombo
-			var dx = abs(x - center.x) / squash
-			var dy = abs(y - center.y) * squash
-			var dist = dx * 0.8 + dy  # Estirado un poco
-			
-			if dist <= radius + outline_width and dist > radius:
-				image.set_pixel(x, y, outline)
-			elif dist <= radius:
-				var t = dist / radius
-				# Highlight lineal desde el centro
-				var highlight_t = clamp(1.0 - t * 1.5, 0.0, 1.0)
-				
-				var base_color = primary.lerp(secondary, t * 0.8)
-				var final_color = base_color.lerp(accent, highlight_t)
-				image.set_pixel(x, y, final_color)
-
-func _draw_shape_bolt(image: Image, center: Vector2, radius: float, squash: float,
-		primary: Color, secondary: Color, accent: Color, outline: Color) -> void:
-	"""Dibujar rayo/zig-zag"""
-	# Simplificado: dibujo un rombo muy estirado y rotado se verá como bolt si se rota externamente
-	# Para "bolt", usamos una forma más afilada e irregular
-	radius *= 1.2 # Un poco más grande para compensar
-	var outline_width = max(1.0, radius * 0.1)
-	
-	for y in range(image.get_height()):
-		for x in range(image.get_width()):
-			var dx = (x - center.x) / squash
-			var dy = (y - center.y) * squash
-			
-			# Forma de "S" o rayo paramétrico simple
-			# Distancia a la linea central zigzagueante
-			var zigzag_offset = sin(dy * 0.2) * radius * 0.3
-			var dist_x = abs(dx - zigzag_offset)
-			var dist_y = abs(dy)
-			
-			# Combinamos para hacer una forma alargada
-			var shape_dist = dist_x * 2.0 + dist_y * 0.5
-			
-			if shape_dist <= radius + outline_width and shape_dist > radius:
-				image.set_pixel(x, y, outline)
-			elif shape_dist <= radius:
-				var t = shape_dist / radius
-				var base_color = primary.lerp(secondary, abs(dy) / radius)
-				var final_color = base_color.lerp(accent, (1.0 - t) * 0.8)
-				image.set_pixel(x, y, final_color)
-
-func _draw_shape_star(image: Image, center: Vector2, radius: float, squash: float,
-		primary: Color, secondary: Color, accent: Color, outline: Color) -> void:
-	"""Dibujar estrella de 4 puntas"""
-	var outline_width = max(1.0, radius * 0.1)
-	
-	for y in range(image.get_height()):
-		for x in range(image.get_width()):
-			var dx = abs(x - center.x) / squash
-			var dy = abs(y - center.y) * squash
-			
-			# Astroid-like shape: x^(2/3) + y^(2/3) = r^(2/3) -> aprox
-			# O simplemente min(dx, dy) para cruceta
-			# Usamos curva cóncava
-			var dist = 0.0
-			if dx == 0 and dy == 0:
-				dist = 0.0
-			else:
-				# Fórmula polar aproximada para estrella
-				var angle = atan2(dy, dx)
-				var r_star = radius * (0.4 + 0.6 * abs(cos(angle * 2.0))) # 4 puntas
-				var current_r = sqrt(dx*dx + dy*dy)
-				dist = current_r / (r_star / radius) # Normalizado a radius
-			
-			if dist <= radius + outline_width and dist > radius:
-				image.set_pixel(x, y, outline)
-			elif dist <= radius:
-				var t = dist / radius
-				image.set_pixel(x, y, primary.lerp(accent, (1.0 - t)))
-
-func _draw_shape_crescent(image: Image, center: Vector2, radius: float, squash: float,
-		primary: Color, secondary: Color, accent: Color, outline: Color) -> void:
-	"""Dibujar media luna"""
-	var outline_width = max(1.0, radius * 0.1)
-	
-	for y in range(image.get_height()):
-		for x in range(image.get_width()):
-			var dx = (x - center.x) / squash
-			var dy = (y - center.y) * squash
-			var dist = sqrt(dx*dx + dy*dy)
-			
-			# Círculo grande recortado por otro círculo desplazado
-			var offset_x = radius * 0.5
-			var dist_cut = sqrt((dx - offset_x)*(dx - offset_x) + dy*dy)
-			
-			if dist <= radius and dist_cut > radius * 0.8:
-				# Dentro de la luna
-				if dist > radius - outline_width or dist_cut < radius * 0.8 + outline_width:
-					image.set_pixel(x, y, outline)
-				else:
-					image.set_pixel(x, y, primary.lerp(secondary, (dy + radius) / (2.0 * radius)))
-			elif dist <= radius + outline_width and dist_cut > radius * 0.8 - outline_width:
-				# Borde exterior
-				if dist_cut > radius * 0.8: # Solo dibujar si no está totalmente comido
-					image.set_pixel(x, y, outline)
-
-func _draw_shape_spike(image: Image, center: Vector2, radius: float, squash: float,
-		primary: Color, secondary: Color, accent: Color, outline: Color) -> void:
-	"""Dibujar pico triangular"""
-	var outline_width = max(1.0, radius * 0.1)
-	
-	for y in range(image.get_height()):
-		for x in range(image.get_width()):
-			var dx = (x - center.x) / squash # Apunta a derecha
-			var dy = abs(y - center.y) * squash
-			
-			# Triángulo isósceles apuntando a derecha (x positivo)
-			# x va de -radius a +radius
-			# width en x varía linealmente
-			var dist_x = -dx # Invertir para math simple (base en -x, punta en +x)
-			
-			# Definir triangulo: x < radius, x > -radius, |y| < (radius - x) * 0.5
-			var in_tri = false
-			if dx <= radius:
-				var half_width = (radius - dx) * 0.6
-				if dy <= half_width:
-					in_tri = true
-			
-			# Calcular distancia al borde aproximada para outline
-			# Simplificado:
-			if in_tri:
-				# Borde?
-				var half_width = (radius - dx) * 0.6
-				if dx > radius - outline_width or dy > half_width - outline_width:
-					image.set_pixel(x, y, outline)
-				else:
-					image.set_pixel(x, y, primary.lerp(secondary, dy / half_width))
-			# Borde fuera? (complicado de calcular exacto en pixel shader simple, omitir por ahora, el in_tri cubre la mayoría)
-
-func _draw_shape_leaf(image: Image, center: Vector2, radius: float, squash: float,
-		primary: Color, secondary: Color, accent: Color, outline: Color) -> void:
-	"""Dibujar hoja (elipse puntieguda)"""
-	var outline_width = max(1.0, radius * 0.1)
-	
-	for y in range(image.get_height()):
-		for x in range(image.get_width()):
-			var dx = abs(x - center.x) / squash
-			var dy = abs(y - center.y) * squash
-			
-			# Fórmula de ojo/hoja: x^2 + 2*y^2
-			var dist = sqrt(dx*dx + dy*dy * 2.5) 
-			
-			if dist <= radius + outline_width and dist > radius:
-				image.set_pixel(x, y, outline)
-			elif dist <= radius:
-				image.set_pixel(x, y, primary.lerp(accent, 1.0 - dist/radius))
 
 func _draw_impact_burst(image: Image, center: Vector2, radius: float, 
 		primary: Color, accent: Color, frame_idx: int) -> void:

@@ -24,8 +24,6 @@ var _lifetime_timer: float = 0.0
 var _time: float = 0.0
 
 func _ready() -> void:
-	"""Inicializar proyectil"""
-	print("[DEBUG_ENEMY_PROJ] Spawned at: %s" % global_position)
 	# CRÍTICO: Respetar la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	
@@ -447,7 +445,7 @@ func _get_element_color() -> Color:
 		"lightning":
 			return Color(1.0, 1.0, 0.25)
 		_:
-			return Color(1, 0, 1) # MAGENTA para identificar enemy projectiles
+			return Color(0.85, 0.85, 0.9)
 
 func _spawn_hit_effect() -> void:
 	"""Crear efecto visual de impacto espectacular según elemento"""

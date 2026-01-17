@@ -185,14 +185,10 @@ func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bo
 	if is_boss:
 		coin_count = int(coin_count * 2.5)
 
-	# Diferir la creación de nodos para evitar errores de físicas (flushing queries)
-	call_deferred("_spawn_coin_batch_deferred", position, coin_type, coin_count)
-
-func _spawn_coin_batch_deferred(pos: Vector2, coin_type: int, count: int) -> void:
-	"""Crear lote de monedas en frame seguro (deferred)"""
-	for i in range(count):
+	# Crear las monedas con pequeño offset aleatorio
+	for i in range(coin_count):
 		var offset = Vector2(randf_range(-20, 20), randf_range(-20, 20))
-		_create_coin_with_type(pos + offset, coin_type)
+		_create_coin_with_type(position + offset, coin_type)
 
 func _get_coin_type_for_enemy(tier: int, is_elite: bool, is_boss: bool) -> int:
 	"""Determinar el tipo de moneda según el enemigo"""
@@ -354,14 +350,16 @@ func _save_coins_to_progression(amount: int) -> void:
 			progression["meta_currency"] = progression.get("meta_currency", 0) + amount
 			# No guardar inmediatamente cada moneda, se guarda al final de la partida
 
-func _process(_delta):
-	# Limpiar referencias a monedas destruidas de forma segura
-	# Iterar al revés es más seguro para modificar arrays
-	for i in range(active_coins.size() - 1, -1, -1):
-		var coin = active_coins[i]
+func _process(delta):
+	"""Actualizar sistema - limpiar monedas inválidas"""
+	# Limpiar referencias a monedas destruidas
+	var coins_to_remove = []
+	for coin in active_coins:
 		if not is_instance_valid(coin):
-			active_coins.remove_at(i)
+			coins_to_remove.append(coin)
 
+	for coin in coins_to_remove:
+		active_coins.erase(coin)
 
 func create_collection_effect(_position: Vector2):
 	"""Crear efecto visual de recolección de EXP"""
