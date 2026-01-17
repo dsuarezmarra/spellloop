@@ -1390,31 +1390,7 @@ func take_damage(amount: float) -> float:
 
 	return effective_damage
 
-func _process(delta: float) -> void:
-	# Regeneración de escudo
-	var max_shield = get_stat("max_shield")
-	if max_shield > 0:
-		_time_since_damage += delta
-		var regen_delay = get_stat("shield_regen_delay")
-		
-		# Asegurar que shield_amount esté inicializado
-		if not stats.has("shield_amount"):
-			stats["shield_amount"] = 0.0
-			
-		var current_shield = get_stat("shield_amount")
-		
-		if _time_since_damage >= regen_delay and current_shield < max_shield:
-			var regen = get_stat("shield_regen")
-			var new_shield = minf(current_shield + regen * delta, max_shield)
-			set_stat("shield_amount", new_shield)
-			
-	# Regeneración de vida (si implementada)
-	var health_regen = get_stat("health_regen")
-	if health_regen > 0 and current_health < get_stat("max_health"):
-		heal(health_regen * delta)
 
-# Variables de tiempo para regeneración
-var _time_since_damage: float = 0.0
 
 func heal(amount: float) -> float:
 	"""
