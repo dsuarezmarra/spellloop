@@ -11,6 +11,7 @@ var weapon_ids = []
 var fusion_ids = []
 var upgrade_ids = []
 var is_running_test = false
+var total_damage: int = 0
 
 func _ready():
 	# 0. Asegurar Mouse Visible
