@@ -1473,7 +1473,12 @@ func _are_all_weapons_orbital() -> bool:
 		
 	for weapon in weapons:
 		# Verificar si el arma tiene el tag "orbital"
-		var tags = weapon.get("tags", [])
+		var tags = []
+		if weapon is BaseWeapon:
+			tags = weapon.tags
+		elif weapon is Dictionary:
+			tags = weapon.get("tags", [])
+			
 		if not "orbital" in tags:
 			return false
 			
