@@ -10,6 +10,9 @@ const WEAPON_IDS = ["magic_wand", "axe", "garlic", "fire_wand", "lightning_ring"
 const UPGRADE_IDS = ["spinach", "armor", "hollow_heart", "pummarola", "empty_tome", "candelabrador"]
 
 func _ready():
+    # 0. Asegurar Mouse Visible
+    Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+    
     # 1. Configurar Entorno
     setup_environment()
     
@@ -28,6 +31,7 @@ func setup_environment():
     bg.size = Vector2(5000, 5000)
     bg.position = Vector2(-2500, -2500)
     bg.z_index = -100
+    bg.mouse_filter = Control.MOUSE_FILTER_IGNORE # FIX: No bloquear inputs
     add_child(bg)
     
     # Grid visual (opcional)
