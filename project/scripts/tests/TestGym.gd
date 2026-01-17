@@ -275,8 +275,21 @@ func _spawn_dummy():
 	var health = 999999
 	var total_damage = 0
 	
-	func take_damage(amount, _source=null):
+	func take_damage(data, _source=null):
+		var amount = 0
+		if typeof(data) == TYPE_INT or typeof(data) == TYPE_FLOAT:
+			amount = data
+		elif typeof(data) == TYPE_DICTIONARY and data.has("amount"):
+			amount = data.amount
+		elif typeof(data) == TYPE_OBJECT and data.has_method("get_amount"):
+			amount = data.get_amount()
+		elif typeof(data) == TYPE_OBJECT and "amount" in data:
+			amount = data.amount
+		elif typeof(data) == TYPE_OBJECT and "damage" in data:
+			amount = data.damage
+		
 		total_damage += amount
+		print("🎯 Dummy received damage: ", amount, " | Total: ", total_damage)
 		
 		# Efecto visual
 		var label = Label.new()
@@ -291,9 +304,8 @@ func _spawn_dummy():
 		tw.tween_property(label, "position", label.position + Vector2(0, -30), 0.5)
 		tw.tween_property(label, "modulate:a", 0.0, 0.5).from(1.0)
 		tw.tween_callback(label.queue_free)
-		
-		# print("Dummy hit: ", amount, " dmg") # Spam reducido, TestGym reportará el total
 	"""
+	script.reload() # IMPORTANT: Compile the script
 	dummy.set_script(script)
 	add_child(dummy)
 	_show_toast("Dummy Spawned (Fixed Pos)")
