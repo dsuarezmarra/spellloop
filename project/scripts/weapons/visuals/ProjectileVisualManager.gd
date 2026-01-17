@@ -1247,6 +1247,8 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 		base_path = WEAPONS_SPRITES_PATH + weapon_id + "/"
 	else:
 		base_path = FUSION_SPRITES_PATH + weapon_id + "/"
+	
+
 
 	# Obtener configuración de frames para este arma
 	var config = WEAPON_SPRITE_CONFIG.get(weapon_id, {})
@@ -1440,8 +1442,9 @@ func _create_weapon_visual_data(weapon_id: String, weapon_data: Dictionary) -> P
 		data.glow_enabled = true
 		data.glow_intensity = 0.5
 
-		# Guardar shape y efectos especiales en metadata
-		data.set_meta("shape", config.get("shape", "orb"))
+
+		# Guardar shape y efectos especiales
+		data.shape = config.get("shape", "orb")
 		data.set_meta("particles", config.get("particles", "default"))
 		data.set_meta("rotation_speed", config.get("rotation_speed", 0.0))
 		data.set_meta("squash_amount", config.get("squash_amount", 0.1))
@@ -1455,7 +1458,7 @@ func _create_weapon_visual_data(weapon_id: String, weapon_data: Dictionary) -> P
 		data.glow_color = Color(0.5, 0.5, 0.7, 0.5)
 		data.trail_enabled = true
 		data.glow_enabled = true
-		data.set_meta("shape", "orb")
+		data.shape = "orb"
 		data.set_meta("rotation_speed", 0.0)
 		data.set_meta("squash_amount", 0.1)
 

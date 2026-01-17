@@ -18,6 +18,7 @@ func _process(delta: float) -> void:
 		timer = change_dir_interval
 
 	_apply_input()
+	_handle_popups()
 	_log_stats()
 
 func _randomize_direction() -> void:
@@ -70,3 +71,51 @@ func _get_player_hp(game_node) -> String:
 
 func _exit_tree() -> void:
 	_release_all()
+
+func _handle_popups() -> void:
+	"""Detectar y manejar popups que pausan el juego (Level Up, Cofres, etc)"""
+	# Buscar LevelUpPanel en la raíz o en los hijos directos de root
+	var level_up_panel = _find_node_by_class(get_tree().root, "LevelUpPanel")
+	
+	if not level_up_panel:
+		# Intentar buscar por nombre si no se encuentra por clase
+		level_up_panel = get_tree().root.find_child("LevelUpPanel", true, false)
+	
+	if level_up_panel and level_up_panel.visible and not level_up_panel.is_queued_for_deletion():
+		# Verificar si ya estamos procesando para no spammear
+		if not level_up_panel.has_meta("auto_selecting"):
+			level_up_panel.set_meta("auto_selecting", true)
+			print("[AutoTest] 🆙 LevelUpPanel detectado. Auto-seleccionando opción...")
+			
+			# Simular pulsación de ENTER si el método directo falla
+			if level_up_panel.has_method("_select_option"):
+				# Llamar directamente (hack para tests)
+				level_up_panel._select_option()
+			else:
+				_simulate_key_press(KEY_ENTER)
+
+	# Buscar ChestPanel (si existe)
+	var chest_panel = get_tree().root.find_child("ChestPanel", true, false)
+	if chest_panel and chest_panel.visible and not chest_panel.is_queued_for_deletion():
+		if not chest_panel.has_meta("auto_opening"):
+			chest_panel.set_meta("auto_opening", true)
+			print("[AutoTest] 🎁 ChestPanel detectado. Auto-abriendo...")
+			_simulate_key_press(KEY_ENTER)
+
+func _find_node_by_class(root: Node, class_str: String) -> Node:
+	if root.is_class(class_str) or (root.get_script() and root.get_script().resource_path.ends_with(class_str + ".gd")):
+		return root
+	
+	for child in root.get_children():
+		var res = _find_node_by_class(child, class_str)
+		if res: return res
+	return null
+
+func _simulate_key_press(key: int) -> void:
+	var ev = InputEventKey.new()
+	ev.keycode = key
+	ev.pressed = true
+	Input.parse_input_event(ev)
+	# No esperamos aquí porque estamos en _process, solo enviamos el evento
+	# El release lo hará el próximo frame o inmediatamente
+	Input.action_press("ui_accept") # Generic accept fallback

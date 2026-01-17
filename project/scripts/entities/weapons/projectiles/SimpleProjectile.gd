@@ -63,9 +63,8 @@ func _ready() -> void:
 	var _effect_value = get_meta("effect_value", 0.0)
 	var _effect_dur = get_meta("effect_duration", 0.0)
 	var _wid = get_meta("weapon_id", "")
-	if _effect != "none":
-		# Debug desactivado: print("[SimpleProjectile] 🆕 Creado - weapon: %s, effect: %s (val=%.2f, dur=%.2f)" % [_wid, _effect, _effect_value, _effect_dur])
-		pass
+	# if _effect != "none":
+	# 	print("[SimpleProjectile] 🆕 Creado - weapon: %s, element: %s, effect: %s" % [_wid, element_type, _effect])
 	
 	# Obtener color: priorizar color del arma sobre color del elemento
 	if has_meta("weapon_color"):
