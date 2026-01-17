@@ -220,12 +220,17 @@ func setup_shop(items: Array, coins: int):
 		item_buttons.append(item_btn)
 	
 	await get_tree().process_frame
+	
+	# Dar foco al primer botón para navegación con teclado
+	if item_buttons.size() > 0:
+		item_buttons[0].grab_focus()
 
 func _create_item_button(item: Dictionary, index: int) -> Control:
 	"""Crear botón de item con icono, nombre, descripción y precio"""
 	var btn = Button.new()
 	btn.custom_minimum_size = Vector2(440, 70)
 	btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	btn.focus_mode = Control.FOCUS_ALL # Permitir foco por teclado/gamepad
 	
 	var price = item.get("price", 100)
 	var original_price = item.get("original_price", price)
@@ -325,7 +330,23 @@ func _create_item_button(item: Dictionary, index: int) -> Control:
 	var item_data = item.duplicate()
 	btn.pressed.connect(func(): _on_item_pressed(index, item_data))
 	
+	# Conectar señales de foco para feedback visual
+	btn.focus_entered.connect(func(): _on_item_focus_entered(btn))
+	btn.focus_exited.connect(func(): _on_item_focus_exited(btn))
+	
 	return btn
+
+func _on_item_focus_entered(btn: Button) -> void:
+	"""Feedback visual cuando el botón recibe foco"""
+	var tween = create_tween()
+	tween.tween_property(btn, "scale", Vector2(1.05, 1.05), 0.1)
+	btn.modulate = Color(1.2, 1.2, 1.2) # Brillo extra
+
+func _on_item_focus_exited(btn: Button) -> void:
+	"""Restaurar estado cuando pierde foco"""
+	var tween = create_tween()
+	tween.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.1)
+	btn.modulate = Color.WHITE
 
 func _on_item_pressed(index: int, item: Dictionary):
 	"""Usuario presionó un item"""

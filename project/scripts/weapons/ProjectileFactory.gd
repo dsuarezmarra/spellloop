@@ -1298,7 +1298,13 @@ class ChainProjectile extends Node2D:
 			chains_done += 1
 
 		# Esperar a que el visual termine y destruir
-		await get_tree().create_timer(0.3).timeout
+		# Esperar a que el visual termine y destruir
+		if _enhanced_visual and _enhanced_visual.has_signal("all_chains_finished"):
+			await _enhanced_visual.all_chains_finished
+		else:
+			# Fallback más generoso si no hay señal
+			await get_tree().create_timer(1.0).timeout
+			
 		if is_instance_valid(self):
 			queue_free()
 

@@ -1503,6 +1503,8 @@ func create_aoe_visual(weapon_id: String, radius: float, duration: float = 0.5,
 	effect.setup(visual_data, radius, duration)
 	return effect
 
+
+
 func create_beam_visual(weapon_id: String, length: float, direction: Vector2,
 		width: float = 12.0, weapon_data: Dictionary = {}) -> BeamVisualEffect:
 	"""Crear efecto visual de rayo"""

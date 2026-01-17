@@ -104,13 +104,12 @@ func _try_load_custom_sprites() -> void:
 
 func _create_bolt_lines() -> void:
 	"""Crear las líneas del rayo (modo procedural)"""
-	# Outline (más grueso, detrás)
 	_outline_bolt = Line2D.new()
 	_outline_bolt.width = _bolt_width + 4
 	_outline_bolt.default_color = _outline_color
 	_outline_bolt.begin_cap_mode = Line2D.LINE_CAP_ROUND
 	_outline_bolt.end_cap_mode = Line2D.LINE_CAP_ROUND
-	_outline_bolt.z_index = -2
+	_outline_bolt.z_index = 18
 	add_child(_outline_bolt)
 
 	# Glow (más grueso, semitransparente)
@@ -119,7 +118,7 @@ func _create_bolt_lines() -> void:
 	_glow_bolt.default_color = Color(_primary_color.r, _primary_color.g, _primary_color.b, 0.4)
 	_glow_bolt.begin_cap_mode = Line2D.LINE_CAP_ROUND
 	_glow_bolt.end_cap_mode = Line2D.LINE_CAP_ROUND
-	_glow_bolt.z_index = -1
+	_glow_bolt.z_index = 19
 	add_child(_glow_bolt)
 
 	# Rayo principal con gradiente
@@ -127,6 +126,7 @@ func _create_bolt_lines() -> void:
 	_main_bolt.width = _bolt_width
 	_main_bolt.begin_cap_mode = Line2D.LINE_CAP_ROUND
 	_main_bolt.end_cap_mode = Line2D.LINE_CAP_ROUND
+	_main_bolt.z_index = 20
 	add_child(_main_bolt)
 
 	# Gradiente del rayo principal
