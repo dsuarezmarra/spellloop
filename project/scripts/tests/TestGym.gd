@@ -445,4 +445,3 @@ func _apply_upgrade_silent(id: String):
 			elif op == "multiply":
 				if stats.has_method("multiply_stat"):
 					stats.multiply_stat(stat, val)
-
