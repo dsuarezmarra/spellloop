@@ -545,7 +545,7 @@ func _shoot_projectile():
 	"	body_entered.connect(_on_hit)\\n" + \
 	"	get_tree().create_timer(4.0).timeout.connect(queue_free)\\n" + \
 	"func _on_hit(body):\\n" + \
-	"	# print('PROJ HIT: ', body.name)\\n" + \
+	"	print('PROJ HIT: ', body.name, ' | Groups: ', body.get_groups())\\n" + \
 	"	if body.is_in_group('player'):\\n" + \
 	"		print('🎯 ENEMY PROJ HIT PLAYER!')\\n" + \
 	"		if body.has_method('take_damage'):\\n" + \
@@ -554,6 +554,19 @@ func _shoot_projectile():
 	
 	ps.reload()
 	proj.set_script(ps)
+	
+	# DEBUG PLAYER COLLISION
+	if player:
+		print("🔍 PLAYER COLLISION CHECK:")
+		print("   Layer: %d (Bit 1: %s)" % [player.collision_layer, player.get_collision_layer_value(1)])
+		print("   Mask:  %d (Bit 4: %s)" % [player.collision_mask, player.get_collision_mask_value(4)])
+		var has_shape = false
+		for c in player.get_children():
+			if c is CollisionShape2D or c is CollisionPolygon2D:
+				has_shape = true
+				print("   Found Shape: ", c.name)
+		if not has_shape:
+			print("   ⚠️ NO COLLISION SHAPE FOUND ON PLAYER!")
 	
 	# Calcular dirección hacia el player
 	var dir = (player.global_position - global_position).normalized()
