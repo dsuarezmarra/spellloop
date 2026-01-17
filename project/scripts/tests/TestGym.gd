@@ -118,6 +118,23 @@ func spawn_player():
 	player.position = Vector2(640, 360) 
 	add_child(player)
 	
+	# CRITICAL FIX: Ensure Collision Shape exists
+	var has_shape = false
+	for c in player.get_children():
+		if c is CollisionShape2D or c is CollisionPolygon2D:
+			has_shape = true
+			break
+	
+	if not has_shape:
+		print("[TestGym] ⚠️ PLAYER HAS NO COLLISION SHAPE! Force-adding CircleShape2D...")
+		var shape = CollisionShape2D.new()
+		shape.name = "DebugCollisionShape"
+		var circle = CircleShape2D.new()
+		circle.radius = 20.0
+		shape.shape = circle
+		shape.debug_color = Color(0.0, 1.0, 0.0, 0.5)
+		player.add_child(shape)
+	
 	# Force update health component if exists
 	if player.has_node("HealthComponent"):
 		var hc = player.get_node("HealthComponent")
