@@ -929,37 +929,37 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
-	# REDUCCIÓN DE COOLDOWN
+	# VELOCIDAD EXTRA (Reemplaza Cooldown)
 	# ─────────────────────────────────────────────────────────────────────────────
 	"cooldown_1": {
 		"id": "cooldown_1",
 		"name": "Recuperación",
-		"description": "-10% tiempo de recarga.",
-		"icon": "🔄",
+		"description": "+12% velocidad de ataque.",
+		"icon": "⚡",
 		"category": "offensive",
 		"tier": 2,
 		"max_stacks": 4,
-		"effects": [{"stat": "cooldown_mult", "value": 0.90, "operation": "multiply"}]
+		"effects": [{"stat": "attack_speed_mult", "value": 1.12, "operation": "multiply"}]
 	},
 	"cooldown_2": {
 		"id": "cooldown_2",
 		"name": "Celeridad",
-		"description": "-20% tiempo de recarga.",
-		"icon": "🔄",
+		"description": "+25% velocidad de ataque.",
+		"icon": "⚡",
 		"category": "offensive",
 		"tier": 3,
 		"max_stacks": 3,
-		"effects": [{"stat": "cooldown_mult", "value": 0.80, "operation": "multiply"}]
+		"effects": [{"stat": "attack_speed_mult", "value": 1.25, "operation": "multiply"}]
 	},
 	"cooldown_3": {
 		"id": "cooldown_3",
 		"name": "Flujo Arcano",
-		"description": "-30% tiempo de recarga.",
-		"icon": "🔄",
+		"description": "+45% velocidad de ataque.",
+		"icon": "⚡",
 		"category": "offensive",
 		"tier": 4,
 		"max_stacks": 2,
-		"effects": [{"stat": "cooldown_mult", "value": 0.70, "operation": "multiply"}]
+		"effects": [{"stat": "attack_speed_mult", "value": 1.45, "operation": "multiply"}]
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -2014,7 +2014,7 @@ const UNIQUE_UPGRADES: Dictionary = {
 	"unique_temporal_mage": {
 		"id": "unique_temporal_mage",
 		"name": "Mago Temporal",
-		"description": "+50% duración de efectos, -20% cooldowns, +20% duración habilidades.",
+		"description": "+50% duración de efectos, +25% velocidad ataque, +20% duración habilidades.",
 		"icon": "🕐",
 		"category": "unique",
 		"tier": 4,
@@ -2022,7 +2022,7 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"max_stacks": 1,
 		"effects": [
 			{"stat": "status_duration_mult", "value": 0.50, "operation": "add"},
-			{"stat": "cooldown_mult", "value": 0.80, "operation": "multiply"},
+			{"stat": "attack_speed_mult", "value": 1.25, "operation": "multiply"},
 			{"stat": "duration_mult", "value": 1.20, "operation": "multiply"}
 		]
 	},
@@ -2205,7 +2205,7 @@ const UNIQUE_UPGRADES: Dictionary = {
 	"unique_time_dilation": {
 		"id": "unique_time_dilation",
 		"name": "Dilatación Temporal",
-		"description": "Enemigos se mueven 25% más lento. -40% cooldowns. +25% velocidad.",
+		"description": "Enemigos se mueven 25% más lento. +65% velocidad ataque. +25% velocidad.",
 		"icon": "⏰",
 		"category": "unique",
 		"tier": 5,
@@ -2213,7 +2213,7 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"max_stacks": 1,
 		"effects": [
 			{"stat": "enemy_slow_aura", "value": 0.25, "operation": "add"},
-			{"stat": "cooldown_mult", "value": 0.60, "operation": "multiply"},
+			{"stat": "attack_speed_mult", "value": 1.65, "operation": "multiply"},
 			{"stat": "move_speed", "value": 1.25, "operation": "multiply"}
 		]
 	},

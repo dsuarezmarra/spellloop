@@ -56,7 +56,7 @@ var player_stats: Dictionary:
 
 var _legacy_player_stats: Dictionary = {
 	"damage_mult": 1.0,
-	"attack_speed_mult": 1.0,  # Renombrado de cooldown_mult
+	"attack_speed_mult": 1.0,
 	"crit_chance": 0.0,
 	"crit_damage": 2.0,
 	"area_mult": 1.0,
@@ -906,10 +906,7 @@ func _update_weapon_original_metas(weapon) -> void:
 func set_player_stat(stat_name: String, value: float) -> void:
 	"""Establecer stat del jugador (usa GlobalWeaponStats)"""
 	# Convertir cooldown_mult a attack_speed_mult si viene del sistema legacy
-	if stat_name == "cooldown_mult":
-		stat_name = "attack_speed_mult"
-		# Invertir: cooldown 0.8 = attack_speed 1.25
-		value = 1.0 / value if value > 0 else 1.0
+
 	
 	if global_weapon_stats:
 		global_weapon_stats.set_stat(stat_name, value)
@@ -919,11 +916,7 @@ func set_player_stat(stat_name: String, value: float) -> void:
 
 func modify_player_stat(stat_name: String, delta: float) -> void:
 	"""Modificar stat del jugador (sumar/restar)"""
-	if stat_name == "cooldown_mult":
-		# Convertir delta de cooldown a attack_speed
-		stat_name = "attack_speed_mult"
-		# Invertir lógica: -0.1 cooldown = +X attack_speed
-		delta = -delta  # Simplificación
+
 	
 	if global_weapon_stats:
 		global_weapon_stats.add_stat(stat_name, delta)
@@ -936,10 +929,7 @@ func modify_player_stat(stat_name: String, delta: float) -> void:
 func get_player_stat(stat_name: String) -> float:
 	"""Obtener stat del jugador o de armas desde GlobalWeaponStats"""
 	# Convertir cooldown_mult a attack_speed_mult
-	if stat_name == "cooldown_mult":
-		var attack_speed = get_global_stat("attack_speed_mult")
-		# Devolver como cooldown_mult para compatibilidad
-		return 1.0 / attack_speed if attack_speed > 0 else 1.0
+
 	
 	# ARQUITECTURA v3.0:
 	# - WEAPON_STATS (damage_mult, crit_*, life_steal, chain_count, etc.) -> GlobalWeaponStats

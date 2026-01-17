@@ -530,7 +530,7 @@ func _update_stats_display() -> void:
 		{"key": "armor", "name": "ARM", "base": 0, "format": "%.0f", "invert": false},
 		# Row 2: Combat stats
 		{"key": "damage_mult", "name": "DMG", "base": 1.0, "format": "x%.2f", "invert": false},
-		{"key": "cooldown_mult", "name": "CD", "base": 1.0, "format": "x%.2f", "invert": true},
+		{"key": "attack_speed_mult", "name": "SPD", "base": 1.0, "format": "x%.2f", "invert": false},
 		{"key": "area_mult", "name": "AREA", "base": 1.0, "format": "x%.2f", "invert": false},
 		# Row 3: Utility stats
 		{"key": "pickup_range", "name": "RNG", "base": 50, "format": "%.0f", "invert": false},

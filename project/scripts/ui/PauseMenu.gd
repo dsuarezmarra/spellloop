@@ -592,7 +592,7 @@ const DEFAULT_STAT_METADATA = {
 	# === STATS GLOBALES DE ARMAS (v2.0) ===
 	"damage_mult": {"name": "Danio", "icon": "!", "description": "Multiplicador de danio de armas"},
 	"attack_speed_mult": {"name": "Vel. Ataque", "icon": ">>", "description": "Ataques por segundo (mayor = mas rapido)"},
-	"cooldown_mult": {"name": "Vel. Ataque", "icon": ">>", "description": "(Legacy) Convertido a Vel. Ataque"},
+
 	"area_mult": {"name": "Area", "icon": "O", "description": "Tamanio de area de efecto"},
 	"projectile_speed_mult": {"name": "Vel. Proyectil", "icon": "->", "description": "Velocidad de proyectiles"},
 	"duration_mult": {"name": "Duracion", "icon": ":", "description": "Duracion de efectos"},
@@ -629,7 +629,7 @@ const DEFAULT_STAT_VALUES = {
 	# Armas globales
 	"damage_mult": 1.0,
 	"attack_speed_mult": 1.0,
-	"cooldown_mult": 1.0,  # Legacy, convertido a attack_speed
+
 	"area_mult": 1.0,
 	"projectile_speed_mult": 1.0,
 	"duration_mult": 1.0,
@@ -714,13 +714,7 @@ func _format_stat_value_fallback(stat_name: String, value: float) -> String:
 		else:
 			return "%.0f%%" % ((value - 1.0) * 100)
 	
-	# Cooldown legacy
-	if stat_name == "cooldown_mult":
-		var attack_speed = 1.0 / value if value > 0 else 1.0
-		if attack_speed >= 1.0:
-			return "+%.0f%%" % ((attack_speed - 1.0) * 100)
-		else:
-			return "%.0f%%" % ((attack_speed - 1.0) * 100)
+
 	
 	# Stats enteros
 	if stat_name in ["extra_projectiles", "thorns", "revives", "reroll_count", "banish_count", "levelup_options"]:
@@ -769,14 +763,7 @@ func _get_value_color(stat_name: String, value: float) -> Color:
 			return COLOR_DEBUFF  # Rojo - recibes más daño
 		return COLOR_NEUTRAL
 	
-	# === COOLDOWN (legacy) ===
-	if stat_name == "cooldown_mult":
-		var attack_speed = 1.0 / value if value > 0 else 1.0
-		if attack_speed > 1.0:
-			return COLOR_BUFF  # Verde si más rápido
-		elif attack_speed < 1.0:
-			return COLOR_DEBUFF  # Rojo si más lento
-		return COLOR_NEUTRAL
+
 	
 	# === OBTENER VALOR BASE DEL STAT ===
 	var base_value = _get_stat_base_value(stat_name)

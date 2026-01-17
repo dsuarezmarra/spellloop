@@ -89,14 +89,7 @@ const STAT_METADATA: Dictionary = {
 		"format": "multiplier",
 		"color": Color(1.0, 0.5, 0.2)
 	},
-	"cooldown_mult": {
-		"name": "Cooldown",
-		"icon": "⏱️",
-		"category": "weapon_global",  # Cambiado de "offensive" - ahora se muestra solo en armas
-		"description": "Multiplicador de tiempo entre ataques. Menor es mejor.",
-		"format": "multiplier_inverse",
-		"color": Color(0.3, 0.7, 1.0)
-	},
+
 	"area_mult": {
 		"name": "Área de Efecto",
 		"icon": "🌀",
@@ -470,7 +463,7 @@ const BASE_STATS: Dictionary = {
 	# Ofensivos - Stats globales de armas
 	"damage_mult": 1.0,
 	"damage_flat": 0.0,            # Daño plano adicional
-	"cooldown_mult": 1.0,
+
 	"attack_speed_mult": 1.0,      # Multiplicador de velocidad de ataque
 	"area_mult": 1.0,
 	"projectile_speed_mult": 1.0,
@@ -542,7 +535,7 @@ const XP_SCALING: float = 1.15  # Cada nivel requiere 15% más XP
 # Límites de stats
 const STAT_LIMITS: Dictionary = {
 	# Multiplicadores
-	"cooldown_mult": {"min": 0.1, "max": 2.0},
+
 	"damage_mult": {"min": 0.1, "max": 10.0},
 	"damage_taken_mult": {"min": 0.1, "max": 3.0},
 	"move_speed": {"min": 30.0, "max": 300.0},  # Valor absoluto en px/s
@@ -964,6 +957,17 @@ func get_stat(stat_name: String) -> float:
 		final_value = clampf(final_value, limits.min, limits.max)
 
 	return final_value
+
+func is_stat_capped(stat_name: String) -> bool:
+	"""Verificar si un stat ha alcanzado su límite duro"""
+	if not STAT_LIMITS.has(stat_name):
+		return false
+		
+	var limits = STAT_LIMITS[stat_name]
+	var current_value = get_stat(stat_name)
+	
+	# Caso standard: Cap en el máximo
+	return current_value >= limits.max - 0.001
 
 func get_base_stat(stat_name: String) -> float:
 	"""Obtener valor base sin modificadores temporales"""
@@ -1478,7 +1482,7 @@ func get_xp_progress() -> float:
 # Stats que van EXCLUSIVAMENTE a GlobalWeaponStats (no a PlayerStats)
 # Esto evita duplicación cuando se aplican mejoras de armas
 const WEAPON_STATS = [
-	"damage_mult", "damage_flat", "attack_speed_mult", "cooldown_mult",
+	"damage_mult", "damage_flat", "attack_speed_mult",
 	"area_mult", "projectile_speed_mult", "duration_mult", "extra_projectiles",
 	"extra_pierce", "knockback_mult", "range_mult", "crit_chance", "crit_damage",
 	"chain_count", "life_steal"  # life_steal es de combate, va a GlobalWeaponStats

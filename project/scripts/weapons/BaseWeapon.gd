@@ -282,7 +282,7 @@ func is_ready_to_fire() -> bool:
 func start_cooldown() -> void:
 	"""Iniciar el cooldown después de disparar"""
 	# APLICAR MEJORAS GLOBALES DE VELOCIDAD DE ATAQUE
-	# GlobalWeaponStats convierte cooldown_mult (-10% CD) en attack_speed_mult (+11% Speed)
+	# APLICAR MEJORAS GLOBALES DE VELOCIDAD DE ATAQUE
 	# Formula: cooldown_real = cooldown_base / attack_speed_mult
 	
 	var attack_speed_mult = 1.0

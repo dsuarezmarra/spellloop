@@ -1068,6 +1068,29 @@ func _get_player_upgrade_options(luck: float) -> Array:
 				filtered.append(opt)
 		upgrade_options = filtered
 
+	# 4. FILTRADO POR CAPS: Eliminar mejoras si el stat ya está al máximo
+	# Solo filtramos si la mejora NO tiene ningún efecto útil
+	var unmaxed_options = []
+	for opt in upgrade_options:
+		var has_useful_effect = false
+		var effects = opt.get("effects", [])
+		
+		# Si no tiene efectos (raro) o es otro tipo, la dejamos
+		if effects.is_empty():
+			has_useful_effect = true
+			
+		for eff in effects:
+			var stat = eff.get("stat", "")
+			# Si encontramos al menos un stat NO capeado, la opción sirve
+			if stat != "" and player_stats and not player_stats.is_stat_capped(stat):
+				has_useful_effect = true
+				break
+		
+		if has_useful_effect:
+			unmaxed_options.append(opt)
+	
+	upgrade_options = unmaxed_options
+
 	return upgrade_options
 
 func _get_owned_unique_upgrade_ids() -> Array:
@@ -1369,7 +1392,7 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 	# para evitar duplicación cuando se combinan en AttackManager
 	# SINCRONIZADO con PlayerStats.WEAPON_STATS
 	var weapon_stats = [
-		"damage_mult", "damage_flat", "attack_speed_mult", "cooldown_mult",
+		"damage_mult", "damage_flat", "attack_speed_mult",
 		"area_mult", "projectile_speed_mult", "duration_mult", "extra_projectiles",
 		"extra_pierce", "knockback_mult", "range_mult", "crit_chance", "crit_damage",
 		"chain_count", "life_steal"  # chain_count y life_steal son stats de combate

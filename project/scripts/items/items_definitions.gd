@@ -498,8 +498,8 @@ var items_database = {
 		"name": "Maná Infinito",
 		"type": ItemType.ACCESSORY,
 		"rarity": ItemRarity.ORANGE,
-		"description": "Los hechizos nunca consumen maná, pero tienen 3x cooldown",
-		"stat_modifiers": {"infinite_mana": true, "cooldown_multiplier": 3.0},
+		"description": "Los hechizos nunca consumen maná, pero velocidad de ataque reducida (33%)",
+		"stat_modifiers": {"infinite_mana": true, "attack_speed_multiplier": 0.33},
 		"stackable": false,
 		"special_effect": "limitless_power",
 		"drop_weight": 1

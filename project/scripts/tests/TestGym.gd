@@ -703,7 +703,7 @@ func _print_stats_report():
 const WEAPON_STATS = [
 	"damage_mult", "attack_speed_mult", "crit_chance", "crit_damage",
 	"area_mult", "projectile_speed_mult", "duration_mult", "knockback_mult",
-	"extra_projectiles", "extra_pierce", "damage_flat", "cooldown_mult"
+	"extra_projectiles", "extra_pierce", "damage_flat"
 ]
 
 func _apply_stat_change(stat: String, val: float, op: String, silent: bool = false):
