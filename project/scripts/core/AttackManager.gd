@@ -196,7 +196,7 @@ func add_weapon(weapon) -> bool:
 
 	# Verificar si hay slots disponibles
 	if not has_available_slot:
-		# Debug desactivado: print("[AttackManager] ⚠️ No hay slots disponibles (%d/%d)" % [current_weapon_count, max_weapon_slots])
+		print("[AttackManager] ❌ No hay slots disponibles (%d/%d)" % [current_weapon_count, max_weapon_slots])
 		return false
 
 	# Obtener ID del arma (compatible con ambos sistemas)
@@ -206,8 +206,10 @@ func add_weapon(weapon) -> bool:
 	# Verificar si ya tenemos esta arma
 	for existing in weapons:
 		if _get_weapon_id(existing) == weapon_id:
-			# Debug desactivado: print("[AttackManager] ℹ️ Ya tienes %s, subiendo de nivel..." % weapon_display_name)
-			return level_up_weapon_by_id(weapon_id)
+			print("[AttackManager] ℹ️ Ya tienes %s, subiendo de nivel..." % weapon_display_name)
+			var lvl_result = level_up_weapon_by_id(weapon_id)
+			print("[AttackManager] ⬆️ Level up result for %s: %s" % [weapon_id, lvl_result])
+			return lvl_result
 
 	# Añadir a la lista
 	weapons.append(weapon)
@@ -235,11 +237,17 @@ func add_weapon(weapon) -> bool:
 
 func add_weapon_by_id(weapon_id: String) -> bool:
 	"""Añadir arma por su ID"""
+	print("[AttackManager] ➡️ add_weapon_by_id START: ", weapon_id)
 	var weapon = BaseWeapon.new(weapon_id)
+	
 	if weapon.id.is_empty():
-		push_error("[AttackManager] No se pudo crear arma: %s" % weapon_id)
+		push_error("[AttackManager] ❌ No se pudo crear arma: %s (ID vacío)" % weapon_id)
+		print("[AttackManager] ❌ Failed to instantiate BaseWeapon with ID: ", weapon_id)
 		return false
-	return add_weapon(weapon)
+		
+	var result = add_weapon(weapon)
+	print("[AttackManager] ⬅️ add_weapon_by_id END: ", weapon_id, " | Result: ", result)
+	return result
 
 func remove_weapon(weapon) -> bool:
 	"""Remover arma de la lista"""

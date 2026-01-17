@@ -179,16 +179,23 @@ func _on_add_weapon(id: String):
         var res = am.add_weapon_by_id(id)
         if res:
             _show_toast("Added: " + id)
+            print("[TestGym] ✅ Added: " + id)
         else:
             _show_toast("Failed to add: " + id)
+            print("[TestGym] ❌ Failed to add: " + id)
     elif am and am.has_method("add_weapon"):
-        # Fallback a add_weapon directo si es necesario
+        print("[TestGym] Fallback to direct add_weapon")
         var w = BaseWeapon.new(id)
         var res = am.add_weapon(w)
         if res:
              _show_toast("Added (BaseWeapon): " + id)
     else:
+    else:
         printerr("[TestGym] Error: Player no tiene AttackManager o método add_weapon_by_id")
+        if am:
+            print("[TestGym] AM methods: ", am.get_method_list().map(func(m): return m.name if "weapon" in m.name else ""))
+        else:
+            print("[TestGym] AM is null")
 
 func _spawn_dummy():
     var dummy = Node2D.new()
