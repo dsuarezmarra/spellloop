@@ -797,6 +797,10 @@ func _apply_stat_change(stat: String, val: float, op: String, silent: bool = fal
 		
 	if not target_obj: return
 	
+	# Debug tracking for defensive stats
+	if not is_weapon_stat:
+		print("   ... Applying '%s' to: %s" % [stat, target_obj.name])
+	
 	# Aplicar cambio
 	if op == "add":
 		if target_obj.has_method("add_stat"):
