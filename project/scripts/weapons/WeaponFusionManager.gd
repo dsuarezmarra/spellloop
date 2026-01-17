@@ -343,24 +343,48 @@ func get_fusion_preview(weapon_a: BaseWeapon, weapon_b: BaseWeapon) -> Dictionar
 	
 	var result = check.result
 	
+	# Defensive handling for result type (Dynamic typing to handle BaseWeapon)
+	var r_name = "???"
+	var r_name_es = "???"
+	var r_icon = "❓"
+	var r_desc = ""
+	
+	if result is BaseWeapon:
+		r_name = result.weapon_name
+		r_name_es = result.weapon_name_es
+		r_icon = result.icon
+		r_desc = result.description
+	elif result is Dictionary:
+		r_name = result.get("name", "???")
+		r_name_es = result.get("name_es", result.get("name", "???"))
+		r_icon = result.get("icon", "❓")
+		r_desc = result.get("description", "")
+	
 	return {
 		"available": true,
-		"name": result.get("name", "???"),
-		"name_es": result.get("name_es", result.get("name", "???")),
-		"icon": result.get("icon", "❓"),
-		"description": result.get("description", ""),
+		"name": r_name,
+		"name_es": r_name_es,
+		"icon": r_icon,
+		"description": r_desc,
 		"synergy": get_synergy_description(result),
 		"stats_preview": _get_stats_comparison(weapon_a, weapon_b, result),
 		"warning": "⚠️ Perderás 1 slot de arma permanentemente"
 	}
 
-func _get_stats_comparison(weapon_a: BaseWeapon, weapon_b: BaseWeapon, fusion_result: Dictionary) -> Dictionary:
+func _get_stats_comparison(weapon_a: BaseWeapon, weapon_b: BaseWeapon, fusion_result) -> Dictionary:
 	"""Comparar stats de las armas originales vs fusionada"""
 	var combined_damage = weapon_a.damage + weapon_b.damage
-	var fusion_damage = fusion_result.get("damage", 0)
+	var fusion_damage = 0
+	var fusion_cooldown = 1.0
+	
+	if fusion_result is BaseWeapon:
+		fusion_damage = fusion_result.damage
+		fusion_cooldown = fusion_result.cooldown
+	elif fusion_result is Dictionary:
+		fusion_damage = fusion_result.get("damage", 0)
+		fusion_cooldown = fusion_result.get("cooldown", 1.0)
 	
 	var avg_cooldown = (weapon_a.cooldown + weapon_b.cooldown) / 2.0
-	var fusion_cooldown = fusion_result.get("cooldown", 1.0)
 	
 	return {
 		"damage": {
@@ -375,7 +399,7 @@ func _get_stats_comparison(weapon_a: BaseWeapon, weapon_b: BaseWeapon, fusion_re
 		},
 		"effects": {
 			"lost": [],  # Las armas originales se pierden
-			"gained": get_synergy_effects(fusion_result.get("id", ""))
+			"gained": get_synergy_effects(fusion_result.id if fusion_result is BaseWeapon else fusion_result.get("id", ""))
 		}
 	}
 
