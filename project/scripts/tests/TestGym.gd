@@ -296,6 +296,7 @@ func _spawn_dummy():
 	dummy.add_child(area)
 	
 	var script = GDScript.new()
+	var script = GDScript.new()
 	script.source_code = """
 	extends Node2D
 	var health = 999999
@@ -316,8 +317,8 @@ func _spawn_dummy():
 		tw.tween_property(label, "modulate:a", 0.0, 0.5).from(1.0)
 		tw.tween_callback(label.queue_free)
 		
-		# Log extra para debug (opcional)
-		# print("Dummy tomó ", amount, " de daño")
+		# Log extra para debug (NECESARIO PARA EL USUARIO)
+		print("Dummy hit: ", amount, " dmg")
 	"""
 	dummy.set_script(script)
 	add_child(dummy)
@@ -328,7 +329,12 @@ func _clear_weapons():
 	if am and "weapons" in am:
 		am.weapons.clear()
 		am.current_weapon_count = 0 
-		am.weapon_stats_map.clear() # Limpiar stats también
+		if "weapon_stats_map" in am:
+			am.weapon_stats_map.clear()
+		
+		# Resetear GlobalWeaponStats también
+		if am.global_weapon_stats:
+			am.global_weapon_stats.reset_stats()
 		
 	# CLEANUP AGRESIVO DE PROYECTILES/ORBITALES
 	print("[TestGym] Cleaning up logic entities...")
@@ -364,18 +370,15 @@ func _show_toast(msg: String):
 	tw.tween_callback(label.queue_free)
 
 func _run_auto_test_sequence():
-	# Ejecutar test complejo en una cor rutina separada para no bloquear
 	_run_complex_test()
 
 func _run_complex_test() -> void:
 	print("🚀 INICIANDO SUPER MEGA AUTO-TEST 🚀")
 	_show_toast("🚀 STARTING COMPLEX TEST 🚀")
 	
-	# Asegurar dummy
 	if not get_tree().has_group("enemies"):
 		_spawn_dummy()
 	
-	# Combinar armas y fusiones para probar todo
 	var all_weapons = weapon_ids + fusion_ids
 	var batch_size = 6
 	var batches = []
@@ -396,20 +399,16 @@ func _run_complex_test() -> void:
 		print("\n🔹 BATCH %d/%d: %s" % [i+1, batches.size(), batch])
 		_show_toast("Testing Batch %d/%d" % [i+1, batches.size()])
 		
-		# 1. Limpiar
 		_clear_weapons()
 		await get_tree().create_timer(0.5).timeout
 		
-		# 2. Equipar Batch
 		for wid in batch:
 			_on_add_weapon(wid)
 			await get_tree().create_timer(0.1).timeout
 			
-		# 3. Probar TODOS los upgrades con este setup
 		print("   🔼 Aplicando ALL Upgrades...")
 		_show_toast("Applying Upgrades...")
 		
-		# Agrupar upgrades para no tardar 100 años (aplicar 5 por frame)
 		var upg_count = 0
 		for uid in upgrade_ids:
 			_apply_upgrade_silent(uid)
@@ -420,28 +419,57 @@ func _run_complex_test() -> void:
 		print("   ✅ Upgrades aplicados. Esperando daño...")
 		_show_toast("Wait for Damage...")
 		
-		# 4. Esperar y observar daño (3 segundos)
 		await get_tree().create_timer(3.0).timeout
 		
 	print("\n✅✅✅ TEST COMPLETO: Todas las combinaciones probadas ✅✅✅")
 	_show_toast("✅✅✅ TEST COMPLETE ✅✅✅")
 
-func _apply_upgrade_silent(id: String):
-	# Versión silenciosa de _on_add_upgrade para no spammear toasts
-	var stats = _get_player_stats()
-	var data = _get_upgrade_data(id)
+# Stats que pertenecen a GlobalWeaponStats
+const WEAPON_STATS = [
+	"damage_mult", "attack_speed_mult", "crit_chance", "crit_damage",
+	"area_mult", "projectile_speed_mult", "duration_mult", "knockback_mult",
+	"extra_projectiles", "extra_pierce", "damage_flat", "cooldown_mult"
+]
+
+func _apply_stat_change(stat: String, val: float, op: String, silent: bool = false):
+	# Determinar destino
+	var target_obj = null
+	var is_weapon_stat = stat in WEAPON_STATS
 	
-	if not stats or data.is_empty(): return
+	if is_weapon_stat:
+		var am = _get_attack_manager()
+		if am and am.global_weapon_stats:
+			target_obj = am.global_weapon_stats
+	else:
+		target_obj = _get_player_stats()
 		
+	if not target_obj: return
+	
+	# Aplicar cambio
+	if op == "add":
+		if target_obj.has_method("add_stat"):
+			target_obj.add_stat(stat, val)
+	elif op == "multiply":
+		if target_obj.has_method("multiply_stat"):
+			target_obj.multiply_stat(stat, val)
+			
+	if not silent:
+		print("[TestGym] Stat '%s' %s %.2f applied to %s" % [stat, op, val, "GlobalWeaponStats" if is_weapon_stat else "PlayerStats"])
+
+func _apply_upgrade_silent(id: String):
+	var data = _get_upgrade_data(id)
+	if data.is_empty(): return
 	if "effects" in data:
 		for effect in data.effects:
-			var stat = effect.stat
-			var val = effect.value
-			var op = effect.operation
-			
-			if op == "add":
-				if stats.has_method("add_stat"):
-					stats.add_stat(stat, val)
-			elif op == "multiply":
-				if stats.has_method("multiply_stat"):
-					stats.multiply_stat(stat, val)
+			_apply_stat_change(effect.stat, effect.value, effect.operation, true)
+
+func _on_add_upgrade(id: String):
+	print("[TestGym] Adding upgrade: ", id)
+	var data = _get_upgrade_data(id)
+	if data.is_empty():
+		_show_toast("Error: Unknown Upgrade")
+		return
+	if "effects" in data:
+		for effect in data.effects:
+			_apply_stat_change(effect.stat, effect.value, effect.operation, false)
+	_show_toast("Upgrade Added: " + data.get("name", id))
