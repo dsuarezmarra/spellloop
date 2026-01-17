@@ -20,6 +20,7 @@ func _init():
 		current_scene = scene
 	
 	test_storm_caller_pierce_conversion(sim)
+	test_multi_weapon_slots(sim)
 	
 	print("\n✅ Todas las pruebas completadas.")
 	quit()
@@ -95,4 +96,38 @@ func test_storm_caller_pierce_conversion(sim: GameSimulator):
 		print("✅ PASÓ: Penetración se convirtió en rebote extra.")
 	else:
 		printerr("❌ FALLÓ: Se esperaban 3 rebotes, se obtuvieron %d." % chain_count)
+
+
+func test_multi_weapon_slots(sim: GameSimulator):
+	print("\n🧪 Test: Verificación de Múltiples Armas (Slots)")
+	
+	# Usar una lista de armas distintas
+	var desired_weapons = ["magic_wand", "axe", "garlic", "fire_wand", "lightning_ring", "runetracer"]
+	
+	print("   Intentando equipar 6 armas...")
+	for wid in desired_weapons:
+		var w = sim.equip_weapon(wid)
+		if w:
+			print("    -> Equipado: ", wid)
+		else:
+			printerr("    ❌ Error equipando: ", wid)
+			
+	# Verificar conteo en AttackManager
+	var count = sim.attack_manager.weapons.size()
+	print("   Armas equipadas en Manager: %d" % count)
+	
+	if count == 6:
+		print("✅ PASÓ: Se equiparon 6 armas correctamente.")
+	else:
+		printerr("❌ FALLÓ: Se esperaban 6 armas, se tienen %d." % count)
+		
+	# Simular un frame para verificar que todas intenten disparar (cooldown check)
+	# Esto requeriría mockear el tiempo o llamar _process en las armas.
+	print("   Simulando ciclo de ataque...")
+	for w in sim.attack_manager.weapons:
+		if w.current_cooldown <= 0:
+			# Si tiene target logic, intentará disparar
+			# Solo verificamos que no crashee al llamar attack
+			w.attack(0.1)
+	print("✅ PASÓ: Ciclo de ataque completado sin errores.")
 
