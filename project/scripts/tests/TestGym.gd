@@ -559,11 +559,7 @@ func take_damage(data, _source=null):
 	tw.tween_property(label, "position", label.position + Vector2(0, -30), 0.5)
 	tw.tween_property(label, "modulate:a", 0.0, 0.5).from(1.0)
 	tw.tween_callback(label.queue_free)
-	"""
-	script.reload() # IMPORTANT: Compile the script
-	dummy.set_script(script)
-	add_child(dummy)
-	_show_toast("Dummy Spawned (Fixed Pos)")
+	# ------------------------------------------------------------------
 
 func _clear_weapons():
 	var am = _get_attack_manager()
