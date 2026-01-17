@@ -237,13 +237,66 @@ func apply_item_effect(item_type: String, item_data: Dictionary):
 			if attack_manager and attack_manager.global_weapon_stats:
 				attack_manager.global_weapon_stats.modify_stat("attack_speed_mult", 0.1, "add")
 				print("[ItemManager] ⚡ Velocidad de ataque global aumentada +10%")
+
 		"health_boost":
-			if player and player.has_method("increase_max_health"):
-				player.increase_max_health(20)
-			# Debug desactivado: print("❤️ Vida máxima aumentada")
+			# Equivalent to health_1
+			var player_stats = get_tree().get_first_node_in_group("player_stats")
+			if player_stats and player_stats.has_method("apply_upgrade_by_id"):
+				player_stats.apply_upgrade_by_id("health_1")
+			elif player and player.has_method("increase_max_health"):
+				player.increase_max_health(10)
+
 		"speed_boost":
-			# Debug desactivado: print("👢 Velocidad de movimiento aumentada")
-			pass
+			# Equivalent to speed_1 (+8%) or speed_2 (+15%)
+			# Using speed_2 to match the legacy +20 feeling
+			var player_stats = get_tree().get_first_node_in_group("player_stats")
+			if player_stats and player_stats.has_method("apply_upgrade_by_id"):
+				player_stats.apply_upgrade_by_id("speed_2")
+				print("[ItemManager] 👢 Velocidad aumentada (speed_2 applied)")
+
+		"pickup_range":
+			# Equivalent to pickup_2 (+40% range)
+			var player_stats = get_tree().get_first_node_in_group("player_stats")
+			if player_stats and player_stats.has_method("apply_upgrade_by_id"):
+				player_stats.apply_upgrade_by_id("pickup_2")
+				print("[ItemManager] 🧲 Imán aplicado (pickup_2)")
+
+		"magnet": 
+			# Alias for pickup_range
+			var player_stats = get_tree().get_first_node_in_group("player_stats")
+			if player_stats and player_stats.has_method("apply_upgrade_by_id"):
+				player_stats.apply_upgrade_by_id("pickup_2")
+				print("[ItemManager] 🧲 Imán aplicado (pickup_2)")
+
+		"luck":
+			# Equivalent to utility_luck_1 (+10%)
+			# Applying it multiple times? Legacy was +0.3 (30%)
+			# Let's apply utility_luck_1 which is the standard
+			var player_stats = get_tree().get_first_node_in_group("player_stats")
+			if player_stats and player_stats.has_method("apply_upgrade_by_id"):
+				player_stats.apply_upgrade_by_id("utility_luck_1")
+				print("[ItemManager] 🍀 Suerte aumentada (utility_luck_1)")
+
+		"armor":
+			# Equivalent to armor_1 (+3 armor)
+			var player_stats = get_tree().get_first_node_in_group("player_stats")
+			if player_stats and player_stats.has_method("apply_upgrade_by_id"):
+				player_stats.apply_upgrade_by_id("armor_1")
+				print("[ItemManager] 🛡️ Armadura aumentada (armor_1)")
+
+		"growth":
+			# XP Bonus -> xp_1 (+10%)
+			var player_stats = get_tree().get_first_node_in_group("player_stats")
+			if player_stats and player_stats.has_method("apply_upgrade_by_id"):
+				player_stats.apply_upgrade_by_id("xp_1")
+				print("[ItemManager] ⭐ XP Multiplier aumentado (xp_1)")
+
+		"greed":
+			# Gold Value -> utility_greed_1 (+20%)
+			var player_stats = get_tree().get_first_node_in_group("player_stats")
+			if player_stats and player_stats.has_method("apply_upgrade_by_id"):
+				player_stats.apply_upgrade_by_id("utility_greed_1")
+				print("[ItemManager] 🪙 Valor de monedas aumentado (utility_greed_1)")
 		"heal_full":
 			if player and player.has_method("heal"):
 				player.heal(999)

@@ -1056,6 +1056,12 @@ func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> 
 				player.modify_stat("pickup_range", new_value)
 			"pickup_range_flat":
 				player.modify_stat("pickup_range_flat", new_value)
+			"shield_amount", "max_shield":
+				if hud and hud.has_method("update_shield"):
+					# Obtener ambos valores para actualizar la barra correctamente
+					var current = player_stats.get_stat("shield_amount")
+					var max_s = player_stats.get_stat("max_shield")
+					hud.update_shield(int(current), int(max_s))
 
 func _on_player_level_changed(new_level: int) -> void:
 	"""Callback cuando sube el nivel del jugador (desde PlayerStats)"""

@@ -392,23 +392,7 @@ func _close_popup(purchased: bool):
 	popup_closed.emit(purchased)
 	queue_free()
 
-func _input(event: InputEvent):
-	"""Manejar input de teclado"""
-	if not (event is InputEventKey) or not event.pressed:
-		return
-	
-	if showing_confirm_modal:
-		if event.keycode == KEY_ESCAPE or event.keycode == KEY_N:
-			_on_confirm_cancel()
-			get_tree().root.set_input_as_handled()
-		elif event.keycode == KEY_ENTER or event.keycode == KEY_Y:
-			_on_confirm_exit()
-			get_tree().root.set_input_as_handled()
-		return
-	
-	if event.keycode == KEY_ESCAPE:
-		_on_exit_pressed()
-		get_tree().root.set_input_as_handled()
+
 
 # === ESTILOS ===
 

@@ -199,6 +199,12 @@ func _find_global_managers() -> void:
 	attack_manager = _gt.root.get_node_or_null("AttackManager")
 	if not attack_manager and game_manager:
 		attack_manager = game_manager.get_node_or_null("AttackManager")
+		
+	# Conectar señales de PlayerStats para actualizar la barra de vida/escudo
+	var player_stats = _gt.get_first_node_in_group("player_stats")
+	if player_stats and player_stats.has_signal("stat_changed"):
+		if not player_stats.stat_changed.is_connected(_on_stat_changed):
+			player_stats.stat_changed.connect(_on_stat_changed)
 	
 	# Debug desactivado: print("[%s] GameManager: %s | AttackManager: %s" % [character_class, "✓" if game_manager else "✗", "✓" if attack_manager else "✗"])
 
@@ -1475,3 +1481,11 @@ func get_current_speed() -> float:
 	"""Devuelve la velocidad actual considerando debuffs"""
 	return move_speed
 
+
+
+
+f u n c   _ o n _ s t a t _ c h a n g e d ( s t a t _ n a m e :   S t r i n g ,   _ o l d _ v a l u e :   f l o a t ,   _ n e w _ v a l u e :   f l o a t )   - >   v o i d :  
+ 	 " " " C a l l b a c k   c u a n d o   c a m b i a n   l o s   s t a t s   g l o b a l e s " " "  
+ 	 i f   s t a t _ n a m e   = =   " s h i e l d _ a m o u n t "   o r   s t a t _ n a m e   = =   " m a x _ s h i e l d " :  
+ 	 	 u p d a t e _ h e a l t h _ b a r ( )  
+ 
