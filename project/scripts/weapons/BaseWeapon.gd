@@ -345,8 +345,8 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> bool:
 			modified_crit += effect_value
 	
 	# Log de disparo
-	# var target_info = "posición player" if targets.is_empty() else str(targets[0].global_position)
-	# print("[%s] ⚡ Disparando (%s) → %s" % [weapon_name, WeaponDatabase.ProjectileType.keys()[projectile_type], target_info])
+	var target_info = "posición player" if targets.is_empty() else str(targets[0].global_position)
+	print("[%s] ⚡ Disparando (%s) → %s" % [weapon_name, WeaponDatabase.ProjectileType.keys()[projectile_type], target_info])
 	
 	# Crear proyectil(es) según el tipo
 	_spawn_projectiles(player, targets, modified_damage, modified_crit)

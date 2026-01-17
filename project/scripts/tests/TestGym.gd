@@ -405,7 +405,8 @@ func _run_complex_test() -> void:
 		# Reset damage tracking for this batch
 		var initial_dmg = 0
 		if is_instance_valid(dummy):
-			initial_dmg = dummy.total_damage
+			initial_dmg = dummy.get("total_damage")
+			if initial_dmg == null: initial_dmg = 0
 		
 		print("   ⚔️ Midiendo daño (3s)...")
 		_show_toast("Measuring Damage...")
@@ -413,7 +414,8 @@ func _run_complex_test() -> void:
 		await get_tree().create_timer(3.0).timeout
 		
 		if is_instance_valid(dummy):
-			var final_dmg = dummy.total_damage
+			var final_dmg = dummy.get("total_damage")
+			if final_dmg == null: final_dmg = 0
 			var batch_dmg = final_dmg - initial_dmg
 			print("   💥 BATCH TOTAL DAMAGE: %d" % batch_dmg)
 			_show_toast("Batch Dmg: %d" % batch_dmg)
