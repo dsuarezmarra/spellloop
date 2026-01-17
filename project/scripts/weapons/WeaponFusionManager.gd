@@ -242,7 +242,7 @@ func _create_fused_weapon(weapon_a: BaseWeapon, weapon_b: BaseWeapon, fusion_dat
 # SISTEMA DE SINERGIAS
 # ═══════════════════════════════════════════════════════════════════════════════
 
-func get_synergy_description(fusion_result: Dictionary) -> String:
+func get_synergy_description(fusion_result) -> String:
 	"""Obtener descripción de la sinergia de una fusión"""
 	var synergy_descriptions = {
 		"steam_cannon": "❄️+🔥 → 💨\nEl vapor congela y quema simultáneamente\n• Enemigos ralentizados reciben daño continuo\n• Explosiones de área ampliadas",
@@ -287,8 +287,8 @@ func get_synergy_description(fusion_result: Dictionary) -> String:
 	var fusion_id = ""
 	var default_desc = "Sinergia desconocida"
 	
-	if fusion_result is Object and fusion_result is Reference: # BaseWeapon inherits RefCounted/Reference
-		fusion_id = fusion_result.id if "id" in fusion_result else ""
+	if fusion_result is BaseWeapon:
+		fusion_id = fusion_result.id
 		if "description" in fusion_result:
 			default_desc = fusion_result.description
 	elif fusion_result is Dictionary:
