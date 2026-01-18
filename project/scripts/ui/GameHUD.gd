@@ -37,7 +37,7 @@ func _ready():
 	
 	# IMPROVE: Estilizar barras programáticamente para asegurar look premium
 	_style_hud_elements()
-	_style_hud_elements()
+
 	_style_shield_bar()
 	_create_streak_bar()
 	

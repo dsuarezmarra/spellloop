@@ -1448,12 +1448,55 @@ func take_damage(amount: float) -> float:
 	if _stone_skin_active and has_passive("stone_skin"):
 		effective_damage *= 0.8
 
-	current_health -= effective_damage
-	current_health = maxf(0.0, current_health)
+	# 1. Absorb with Shield
+	var shield_current = get_stat("shield_amount")
+	if shield_current > 0:
+		var absorbed = minf(shield_current, effective_damage)
+		effective_damage -= absorbed
+		shield_current -= absorbed
+		modify_stat("shield_amount", -absorbed, "add") # Update stat
+		
+		# Visual/Signal for shield hit?
+		# ...
 
+	if effective_damage > 0:
+		current_health -= effective_damage
+		current_health = maxf(0.0, current_health)
+	
 	health_changed.emit(current_health, get_stat("max_health"))
-
+	
+	# Reset regen timers
+	_shield_regen_delay_timer = 0.0
+	
 	return effective_damage
+
+func _process(delta: float) -> void:
+	"""Procesar regeneración"""
+	if is_dead: return
+	
+	# --- SHIELD REGEN ---
+	var max_shield = get_stat("max_shield")
+	var shield_regen = get_stat("shield_regen")
+	var regen_delay = get_stat("shield_regen_delay")
+	
+	if max_shield > 0:
+		if _shield_regen_delay_timer < regen_delay:
+			_shield_regen_delay_timer += delta
+		else:
+			if get_stat("shield_amount") < max_shield:
+				var regen_amt = shield_regen * delta
+				modify_stat("shield_amount", regen_amt, "add")
+				# Clamp
+				if get_stat("shield_amount") > max_shield:
+					set_stat("shield_amount", max_shield)
+
+	# --- HEALTH REGEN ---
+	var hp_regen = get_stat("health_regen")
+	var max_hp = get_stat("max_health")
+	if hp_regen > 0 and current_health < max_hp and current_health > 0:
+		heal(hp_regen * delta)
+
+var _shield_regen_delay_timer: float = 0.0
 
 func heal(amount: float) -> float:
 	"""

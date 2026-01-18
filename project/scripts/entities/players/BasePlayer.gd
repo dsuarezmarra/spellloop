@@ -1656,5 +1656,91 @@ func _update_pickup_area_size() -> void:
 	if pickup_area:
 		var collision = pickup_area.get_node_or_null("CollisionShape2D")
 		if collision and collision.shape is CircleShape2D:
-			collision.shape.radius = pickup_radius
+			var final_radius = pickup_radius
+			var player_stats = get_tree().get_first_node_in_group("player_stats")
+			if player_stats and player_stats.has_method("get_stat"):
+				if player_stats.get_stat("infinite_pickup_range") > 0:
+					final_radius = 10000.0
+			collision.shape.radius = final_radius
+
+func _on_health_damaged(amount: int, _element: String) -> void:
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if not player_stats or not player_stats.has_method("get_stat"):
+		return
+
+	# --- CORAJE (Grit) ---
+	if player_stats.get_stat("grit_active") > 0:
+		var threshold = max_hp * 0.10
+		if amount > threshold:
+			_grant_revive_immunity(2.0) # Reusamos la inmunidad de revive
+			FloatingText.spawn_text(global_position + Vector2(0, -60), "GRIT!", Color(0.8, 0.8, 0.8))
+			# Visual feedback (Grit)
+			var tween = create_tween()
+			tween.tween_property(self, "modulate", Color(0.5, 0.5, 0.5, 0.5), 0.1)
+			tween.tween_property(self, "modulate", Color.WHITE, 0.1)
+
+	# --- NOVA DE ESCARCHA (Frost Nova) ---
+	if player_stats.get_stat("frost_nova_on_hit") > 0:
+		var aoe_data = {
+			"damage": 5.0, "area": 2.5, "duration": 3.0, "effect": "freeze",
+			"effect_value": 0.5, "effect_duration": 3.0, "color": Color(0.6, 0.9, 1.0),
+			"is_aoe": true, "position": global_position
+		}
+		ProjectileFactory.create_aoe(self, aoe_data)
+		FloatingText.spawn_text(global_position + Vector2(0, -40), "FROST NOVA!", Color.CYAN)
+
+	# --- ESPINAS (Thorns) ---
+	var thorns_base = player_stats.get_stat("thorns")
+	var thorns_pct = player_stats.get_stat("thorns_percent")
+	# Daño total = Base + % del daño recibido
+	var thorns_dmg = thorns_base + (thorns_pct * float(amount))
+	
+	if thorns_dmg > 0:
+		# Crear AOE de espinas alrededor del jugador
+		var thorns_data = {
+			"damage": thorns_dmg, 
+			"area": 3.0, # Radio moderado
+			"duration": 0.2, 
+			"effect": "slow", # Opcional: slow si thorns_slow > 0
+			"effect_value": player_stats.get_stat("thorns_slow"), 
+			"effect_duration": player_stats.get_stat("thorns_stun"),
+			"color": Color(0.2, 0.8, 0.2), # Verde
+			"is_aoe": true, 
+			"position": global_position
+		}
+		ProjectileFactory.create_aoe(self, thorns_data)
+
+func _update_turret_logic(delta: float, is_moving: bool) -> void:
+	if is_moving:
+		_stationary_timer = 0.0
+		if _turret_buff_active:
+			_remove_turret_buff()
+	else:
+		_stationary_timer += delta
+		if not _turret_buff_active and _stationary_timer >= 2.0:
+			var player_stats = get_tree().get_first_node_in_group("player_stats")
+			if player_stats and player_stats.has_method("get_stat") and player_stats.get_stat("turret_bonus") > 0:
+				_apply_turret_buff()
+
+func _apply_turret_buff() -> void:
+	_turret_buff_active = true
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats:
+		# +50% Daño, +25% Ataque, +10 HP regen/s
+		player_stats.add_temp_modifier("damage_mult", 0.5, 9999.0, "turret_bonus")
+		player_stats.add_temp_modifier("attack_speed_mult", 0.25, 9999.0, "turret_bonus")
+		player_stats.add_temp_modifier("health_regen", 10.0, 9999.0, "turret_bonus")
+	
+	FloatingText.spawn_text(global_position + Vector2(0, -80), "TURRET MODE!", Color.YELLOW)
+	
+	# Visual effect (Escudo visual o algo)
+	modulate = Color(1.5, 1.2, 0.8) # Brillo dorado
+
+func _remove_turret_buff() -> void:
+	_turret_buff_active = false
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats:
+		player_stats.remove_temp_modifiers_by_source("turret_bonus")
+	
+	modulate = Color.WHITE
 
