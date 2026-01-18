@@ -22,6 +22,7 @@ signal destroyed
 @export var lifetime: float = 3.0
 @export var knockback_force: float = 150.0
 @export var pierce_count: int = 0  # 0 = no atraviesa
+@export var hit_vfx_scene: PackedScene # Escena opcional para efecto de impacto
 
 # === TIPO DE ELEMENTO ===
 @export var element_type: String = "ice"  # ice, fire, arcane, lightning, dark, nature
@@ -609,6 +610,14 @@ func _apply_effect(target: Node) -> void:
 			if target.has_method("apply_shadow_mark"):
 				target.apply_shadow_mark(effect_value, effect_duration)
 
+func _play_roulette_sound() -> void:
+	"""Reproducir sonido de jackpot para Russian Roulette"""
+	# Placeholder: Si existe AudioManager usarlo, sino solo log/visual
+	# print("💰 JACKPOT SOUND!")
+	if ClassDB.class_exists("AudioManager"):
+		# AudioManager.play_sfx("jackpot") 
+		pass
+
 func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
 	"""Aplicar daño encadenado a enemigos cercanos"""
 	var enemies_hit = [first_target]
@@ -700,16 +709,17 @@ func _spawn_hit_effect() -> void:
 	particles.initial_velocity_max = 100.0
 	particles.gravity = Vector2.ZERO
 	particles.scale_amount_min = 2.0
-	# Instanciar efecto visual
-	if hit_vfx_scene:
-		var effect = hit_vfx_scene.instantiate()
-		effect.global_position = global_position
-		get_tree().root.add_child(effect)
 	particles.scale_amount_max = 4.0
 	particles.color = projectile_color
 	
 	particles.global_position = global_position
 	get_tree().current_scene.add_child(particles)
+	
+	# Instanciar efecto visual extra si existe
+	if hit_vfx_scene:
+		var effect = hit_vfx_scene.instantiate()
+		effect.global_position = global_position
+		get_tree().root.add_child(effect)
 	
 	# Auto-destruir partículas
 	var timer = get_tree().create_timer(0.5)
