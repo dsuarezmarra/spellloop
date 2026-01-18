@@ -89,30 +89,18 @@ func _input(event: InputEvent) -> void:
 	
 	if event.is_action_pressed("ui_up") or event.is_action_pressed("move_up"):
 		get_viewport().set_input_as_handled()
-		_navigate_items(-1)
+		_navigate_selection(-1)
 		return
 	
 	if event.is_action_pressed("ui_down") or event.is_action_pressed("move_down"):
 		get_viewport().set_input_as_handled()
-		_navigate_items(1)
+		_navigate_selection(1)
 		return
 	
 	if event.is_action_pressed("ui_accept"):  # Space/Enter
 		get_viewport().set_input_as_handled()
-		if current_selected_index >= 0 and current_selected_index < item_buttons.size():
-			item_buttons[current_selected_index].emit_signal("pressed")
+		_activate_selection()
 		return
-
-func _navigate_items(direction: int) -> void:
-	"""Navegar entre items con W/S"""
-	if item_buttons.is_empty():
-		return
-	
-	current_selected_index += direction
-	current_selected_index = clampi(current_selected_index, 0, item_buttons.size() - 1)
-	
-	if current_selected_index >= 0 and current_selected_index < item_buttons.size():
-		item_buttons[current_selected_index].grab_focus()
 
 func _update_modal_selection() -> void:
 	"""Actualizar visual de selección en modal"""
@@ -544,40 +532,8 @@ func _style_exit_button(btn: Button):
 	btn.add_theme_stylebox_override("hover", hover)
 	
 # ═══════════════════════════════════════════════════════════════════════════════
-# INPUT & NAVEGACIÓN
+# NAVEGACIÓN HELPERS
 # ═══════════════════════════════════════════════════════════════════════════════
-
-func _input(event: InputEvent):
-	if popup_locked:
-		return
-
-	# Modal de confirmación tiene prioridad
-	if showing_confirm_modal:
-		if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.pressed and event.keycode == KEY_N):
-			_on_confirm_cancel()
-			get_tree().root.set_input_as_handled()
-		elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and event.keycode == KEY_Y):
-			_on_confirm_exit()
-			get_tree().root.set_input_as_handled()
-		# Navegación básica en modal (izquierda/derecha)
-		elif event.is_action_pressed("ui_left") or event.is_action_pressed("ui_right"):
-			# TODO: Selección visual en modal
-			pass
-		return
-
-	# Navegación en la lista de items
-	if event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and event.keycode == KEY_W):
-		_navigate_selection(-1)
-		get_tree().root.set_input_as_handled()
-	elif event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and event.keycode == KEY_S):
-		_navigate_selection(1)
-		get_tree().root.set_input_as_handled()
-	elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and event.keycode == KEY_SPACE):
-		_activate_selection()
-		get_tree().root.set_input_as_handled()
-	elif event.is_action_pressed("ui_cancel"):
-		_on_exit_pressed()
-		get_tree().root.set_input_as_handled()
 
 func _navigate_selection(direction: int):
 	"""Navegar selección (incluye botón de salir como última opción)"""
