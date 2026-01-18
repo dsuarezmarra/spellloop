@@ -806,7 +806,18 @@ class AOEEffect extends Node2D:
 				if enemy.has_method("apply_slow"):
 					enemy.apply_slow(effect_value, modified_duration)
 			"burn":
-				if enemy.has_method("apply_burn"):
+				var instant = _check_player_stat("instant_combustion")
+				if instant > 0:
+					if enemy.has_method("take_damage"):
+						# Burn default: 3 dmg/s normally defined in WeaponDatabase or defaults
+						# We should try to access damage per tick logic or strict definition.
+						# Assuming effect_value is damage per second? 
+						# In UpgradeDatabase: "3 daño/s por 3s" -> effect_value likely 3.
+						var total_dmg = effect_value * modified_duration
+						enemy.take_damage(total_dmg)
+						# VFX for instant burn
+						_spawn_instant_effect_visual(enemy.global_position, Color.ORANGE_RED)
+				elif enemy.has_method("apply_burn"):
 					enemy.apply_burn(effect_value, modified_duration)
 			"blind":
 				if enemy.has_method("apply_blind"):
@@ -859,8 +870,13 @@ class AOEEffect extends Node2D:
 				# Ya se maneja en _apply_damage_tick
 				pass
 			"bleed":
-				# Efecto de sangrado (DoT separado del burn)
-				if enemy.has_method("apply_bleed"):
+				var instant = _check_player_stat("instant_bleed")
+				if instant > 0:
+					if enemy.has_method("take_damage"):
+						var total_dmg = effect_value * modified_duration
+						enemy.take_damage(total_dmg)
+						_spawn_instant_effect_visual(enemy.global_position, Color.DARK_RED)
+				elif enemy.has_method("apply_bleed"):
 					enemy.apply_bleed(effect_value, modified_duration)
 			"shadow_mark":
 				# Marcar enemigo para daño extra
@@ -878,6 +894,19 @@ class AOEEffect extends Node2D:
 		if players.size() > 0:
 			return players[0]
 		return null
+
+	func _check_player_stat(stat: String) -> float:
+		"""Helper para verificar stat del player"""
+		var ps = get_tree().get_first_node_in_group("player_stats")
+		if ps and ps.has_method("get_stat"):
+			return ps.get_stat(stat)
+		return 0.0
+
+	func _spawn_instant_effect_visual(pos: Vector2, color: Color) -> void:
+		"""Visual simple para daño instantáneo"""
+		# Podríamos usar FloatingText o crear una partícula simple
+		# Por ahora usamos FloatingText con un símbolo
+		FloatingText.spawn_text(pos + Vector2(0, -20), "💥", color)
 
 	func _create_aoe_visual() -> void:
 		# Intentar usar visual mejorado

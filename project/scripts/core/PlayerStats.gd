@@ -545,7 +545,19 @@ const BASE_STATS: Dictionary = {
 	"reroll_count": 0,             # Rerolls extra
 	"banish_count": 0,             # Banishes extra
 	"levelup_options": 0,          # Opciones extra en levelup
-	"revives": 0                   # Vidas extra (Guardian Angel)
+	"revives": 0,                  # Vidas extra (Guardian Angel)
+	
+	# Nuevos Stats (New Items Phase)
+	"damage_per_gold": 0.0,        # +% daño por 100 oro
+	"heal_on_pickup": 0,           # HP curado al recoger items
+	"xp_on_reroll": 0.0,           # % XP ganado al hacer reroll
+	"xp_on_reroll": 0.0,           # % XP ganado al hacer reroll
+	"momentum_factor": 0.0,        # % de velocidad convertido a daño
+	
+	# Phase 4: Unique Logic Stats
+	"instant_combustion": 0,       # 1 = True
+	"instant_bleed": 0,            # 1 = True
+	"multicast_chance": 0.0        # Chance to double cast
 }
 
 const MAX_LEVEL: int = 99
@@ -598,11 +610,16 @@ const STAT_LIMITS: Dictionary = {
 	# Valores planos con límite
 	"extra_projectiles": {"min": 0, "max": 10},
 	"extra_pierce": {"min": 0, "max": 20},
-	"chain_count": {"min": 0, "max": 10},
+	
+	# Nuevos Stats de Utilidad / Condicionales
+	"damage_per_gold": {"min": 0.0, "max": 0.10}, # Max 10% por 100 gold
+	"heal_on_pickup": {"min": 0, "max": 5},       # Max 5 HP
+	"xp_on_reroll": {"min": 0.0, "max": 1.0},     # Max 100% XP
 	"revives": {"min": 0, "max": 3},
+	"reroll_count": {"min": 0, "max": 10},
+	"banish_count": {"min": 0, "max": 10},
+	"chain_count": {"min": 0, "max": 10},
 	"levelup_options": {"min": 0, "max": 3},
-	"reroll_count": {"min": 0, "max": 5},
-	"banish_count": {"min": 0, "max": 5},
 	"infinite_pickup_range": {"min": 0, "max": 1},   # 0 o 1 (booleano)
 }
 
@@ -976,6 +993,34 @@ func get_stat(stat_name: String) -> float:
 	var base_value = stats.get(stat_name, 0.0)
 	var temp_bonus = _get_temp_modifier_total(stat_name)
 	var final_value = base_value + temp_bonus
+	
+	# Lógica especial para damage_mult (Investor / Momentum)
+	if stat_name == "damage_mult":
+		# Investor: +1% daño por cada 100 de oro
+		var dmg_per_gold = stats.get("damage_per_gold", 0.0) + _get_temp_modifier_total("damage_per_gold")
+		if dmg_per_gold > 0:
+			# Obtener referencias a ExperienceManager para el oro
+			var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
+			if exp_mgr and "total_coins" in exp_mgr:
+				var gold_bonus = floor(exp_mgr.total_coins / 100.0) * dmg_per_gold
+				final_value += gold_bonus
+		
+		# Momentum: +% daño basado en velocidad de movimiento (si existe el upgrade)
+		# Verificamos si tenemos el efecto momentum (guardado como stat ficticio o verificando upgrade)
+		# En la propuesta Item 5 se llama "Momentum"
+		var momentum_factor = stats.get("momentum_factor", 0.0) # 0.2 para 20%
+		if momentum_factor > 0:
+			# Calcular bonus: (MoveSpeedActual - MoveSpeedBase) * factor?
+			# O simplemente % de velocidad total? La propuesta dice "Convierte el 20% de tu Movimiento en Daño".
+			# Asumiremos que es sobre el exceso de velocidad (speed_mult > 1.0) o valor total.
+			var speed = get_stat("move_speed") # Valor absoluto, ej 350
+			var base_speed = BASE_STATS.get("move_speed", 300.0)
+			if speed > base_speed:
+				# Por cada 10 unidades de velocidad extra ~ +1%?
+				# O si es multiplicador:
+				var extra_speed_pct = (speed / base_speed) - 1.0 # Ej: 360/300 = 1.2 -> 0.2 (20% extra)
+				if extra_speed_pct > 0:
+					final_value += extra_speed_pct * momentum_factor
 
 	# Aplicar límites si existen
 	if STAT_LIMITS.has(stat_name):

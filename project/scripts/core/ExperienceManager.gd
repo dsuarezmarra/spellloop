@@ -355,6 +355,16 @@ func _on_coin_collected(value: int) -> void:
 	# Guardar en SaveManager si existe
 	_save_coins_to_progression(final_value)
 
+	# --- LÓGICA DE IMÁN VITAL (Item 12: Heal on Pickup) ---
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.has_method("get_stat"):
+		var heal_amount = int(player_stats.get_stat("heal_on_pickup"))
+		if heal_amount > 0:
+			var p = _find_player()
+			if p and p.has_method("heal"):
+				p.heal(heal_amount)
+	# -----------------------------------------------------
+
 	# Debug desactivado: prints de monedas con streak/multiplicadores
 
 func _get_player_coin_mult() -> float:
@@ -572,7 +582,6 @@ func generate_upgrade_options() -> Array:
 func _on_exp_orb_collected(_orb: Node2D, exp_value: int):
 	"""Manejar recolección de orbe (señal desde el orbe)"""
 	gain_experience(exp_value)
-
 
 func _has_property(obj: Object, prop_name: String) -> bool:
 	"""Helper: comprobar si un objeto expone una propiedad con nombre prop_name.

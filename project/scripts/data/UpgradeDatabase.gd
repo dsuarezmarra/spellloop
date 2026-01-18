@@ -626,6 +626,36 @@ const UTILITY_UPGRADES: Dictionary = {
 		"max_stacks": 3,
 		"effects": [{"stat": "coin_value_mult", "value": 1.20, "operation": "multiply"}]
 	},
+	"utility_investor": {
+		"id": "utility_investor",
+		"name": "Inversor (Investor)",
+		"description": "+1% Daño por cada 100 monedas que tengas.",
+		"icon": "📈",
+		"category": "utility",
+		"tier": 3,
+		"max_stacks": 1,
+		"effects": [{"stat": "damage_per_gold", "value": 0.01, "operation": "add"}]
+	},
+	"utility_life_magnet": {
+		"id": "utility_life_magnet",
+		"name": "Imán Vital",
+		"description": "Recoger monedas te cura 1 HP.",
+		"icon": "💗",
+		"category": "utility",
+		"tier": 3,
+		"max_stacks": 1,
+		"effects": [{"stat": "heal_on_pickup", "value": 1, "operation": "add"}]
+	},
+	"utility_recycler": {
+		"id": "utility_recycler",
+		"name": "Reciclaje",
+		"description": "Ganas +5% XP cuando haces Reroll.",
+		"icon": "♻️",
+		"category": "utility",
+		"tier": 2,
+		"max_stacks": 3,
+		"effects": [{"stat": "xp_on_reroll", "value": 0.05, "operation": "add"}]
+	},
 	"utility_vacuum": {
 		"id": "utility_vacuum",
 		"name": "Campo Gravitacional",
@@ -2318,7 +2348,57 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"effects": [
 			{"stat": "crit_chance", "value": 0.50, "operation": "add"},
 			{"stat": "crit_damage", "value": 1.0, "operation": "add"},
-			{"stat": "projectile_speed_mult", "value": 1.3, "operation": "multiply"}
+			{"stat": "projectile_speed_mult", "value": 1.3, "operation": "multiply"	"unique_heavy_glass": {
+		"id": "unique_heavy_glass",
+		"name": "Vidrio Pesado",
+		"description": "+100% Daño. -50% Velocidad de Movimiento.",
+		"icon": "🗿",
+		"category": "unique",
+		"tier": 5,
+		"max_stacks": 1,
+		"is_unique": true,
+		"is_cursed": true,
+		"effects": [
+			{"stat": "damage_mult", "value": 2.0, "operation": "multiply"},
+			{"stat": "move_speed", "value": 0.5, "operation": "multiply"}
+		]
+	},
+	"unique_pacifist": {
+		"id": "unique_pacifist",
+		"name": "Pacifista",
+		"description": "+200% XP y Oro. -100% Daño.",
+		"icon": "🕊️",
+		"category": "unique",
+		"tier": 5,
+		"max_stacks": 1,
+		"is_unique": true,
+		"is_cursed": true,
+		"effects": [
+			{"stat": "xp_mult", "value": 3.0, "operation": "multiply"},
+			{"stat": "gold_mult", "value": 3.0, "operation": "multiply"},
+			{"stat": "damage_mult", "value": 0.0, "operation": "multiply"}
+		]
+	},
+	"unique_chaos": {
+		"id": "unique_chaos",
+		"name": "Caos Primigenio",
+		"description": "+50% Stats Ofensivos. -50% Stats Defensivos.",
+		"icon": "🌀",
+		"category": "unique",
+		"tier": 5,
+		"max_stacks": 1,
+		"is_unique": true,
+		"is_cursed": true,
+		"effects": [
+			{"stat": "damage_mult", "value": 1.5, "operation": "multiply"},
+			{"stat": "attack_speed_mult", "value": 1.5, "operation": "multiply"},
+			{"stat": "crit_chance", "value": 0.5, "operation": "add"},
+			{"stat": "max_health", "value": 0.5, "operation": "multiply"},
+			{"stat": "armor", "value": -10, "operation": "add"}, 
+			{"stat": "health_regen", "value": 0.5, "operation": "multiply"}
+		]
+	}
+}
 		]
 	},
 	"unique_midas": {

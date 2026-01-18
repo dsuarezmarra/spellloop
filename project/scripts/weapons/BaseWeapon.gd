@@ -350,8 +350,29 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> bool:
 	# var target_info = "posición player" if targets.is_empty() else str(targets[0].global_position)
 	# print("[%s] ⚡ Disparando (%s) → %s" % [weapon_name, WeaponDatabase.ProjectileType.keys()[projectile_type], target_info])
 	
-	# Crear proyectil(es) según el tipo
-	_spawn_projectiles(player, targets, modified_damage, modified_crit)
+	# --------------------------------------------------------------------------
+	# LÓGICA MULTICAST (Item Idea: "Doble o Nada", "Echo")
+    # --------------------------------------------------------------------------
+	var executions = 1
+	var multicast_chance = player_stats.get("multicast_chance", 0.0)
+	# También verificar en global stats por si acaso no vino en el dict
+	if multicast_chance <= 0:
+		var gstats = _get_global_weapon_stats()
+		multicast_chance = gstats.get("multicast_chance", 0.0)
+		
+	if multicast_chance > 0 and randf() < multicast_chance:
+		executions = 2
+		# Visual feedback
+		FloatingText.spawn_text(player.global_position + Vector2(0, -40), "MULTICAST!", Color(0.8, 0.2, 1.0))
+
+	for i in range(executions):
+		# Crear proyectil(es) según el tipo
+		_spawn_projectiles(player, targets, modified_damage, modified_crit)
+		
+		# Pequeña variación para el segundo disparo si es instantáneo para que se note
+		if i > 0 and (projectile_type == WeaponDatabase.ProjectileType.AOE or projectile_type == WeaponDatabase.ProjectileType.BEAM):
+			await player.get_tree().create_timer(0.1).timeout
+	# --------------------------------------------------------------------------
 	
 	start_cooldown()
 	weapon_fired.emit(id, player.global_position, targets[0] if not targets.is_empty() else null)
