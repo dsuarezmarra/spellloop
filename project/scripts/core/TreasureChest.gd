@@ -454,12 +454,17 @@ func _apply_item(item: Dictionary):
 			var upgrade_data = item.get("data", item)
 			print("[TreasureChest] Aplicando upgrade: %s (Raw: %s)" % [upgrade_data, item])
 			
-			var player_stats = get_tree().current_scene.get_node_or_null("PlayerStats")
-			if player_stats and player_stats.has_method("add_upgrade"):
-				var result = player_stats.add_upgrade(upgrade_data)
+			# Buscar PlayerStats por grupo (NO por ruta directa)
+			var player_stats_nodes = get_tree().get_nodes_in_group("player_stats")
+			var player_stats = player_stats_nodes[0] if player_stats_nodes.size() > 0 else null
+			
+			if player_stats and player_stats.has_method("apply_upgrade"):
+				var result = player_stats.apply_upgrade(upgrade_data)
 				print("[TreasureChest] Upgrade applied: %s" % result)
 			elif player_ref and player_ref.has_method("apply_upgrade"):
 				player_ref.apply_upgrade(upgrade_data)
+			else:
+				push_error("[TreasureChest] No se encontró PlayerStats para aplicar upgrade")
 		
 		"gold":
 			# Añadir oro
