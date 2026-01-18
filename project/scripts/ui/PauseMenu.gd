@@ -1163,9 +1163,9 @@ func _show_weapons_tab() -> void:
 		main_vbox.add_child(no_weapons)
 		return
 
-	# Grid de armas (2 columnas)
+	# Grid de armas (1 columna para evitar corte)
 	var weapons_grid = GridContainer.new()
-	weapons_grid.columns = 2
+	weapons_grid.columns = 1
 	weapons_grid.add_theme_constant_override("h_separation", 12)
 	weapons_grid.add_theme_constant_override("v_separation", 12)
 	main_vbox.add_child(weapons_grid)

@@ -394,7 +394,7 @@ class BeamEffect extends Node2D:
 
 		# Query para el rayo
 		var query = PhysicsRayQueryParameters2D.create(global_position, end_pos)
-		query.collision_mask = 2  # Capa de enemigos
+		query.collision_mask = 2 | 4 | 8 | 16 # Layers 2, 3, 4, 5 (Player/Enemy/World)
 		query.collide_with_areas = true
 		query.collide_with_bodies = true
 
@@ -415,7 +415,7 @@ class BeamEffect extends Node2D:
 			# Mover el punto de inicio más allá
 			current_pos = result.position + direction * 5.0
 			query = PhysicsRayQueryParameters2D.create(current_pos, end_pos)
-			query.collision_mask = 2
+			query.collision_mask = 2 | 4 | 8 | 16 # Layers 2, 3, 4, 5 to be safe
 			query.exclude = [collider.get_rid()]
 
 		# Crear visual del rayo (mejorado si está disponible)
@@ -1001,7 +1001,9 @@ class OrbitalManager extends Node2D:
 		orbital.collision_layer = 0
 		orbital.set_collision_layer_value(4, true)  # Proyectiles
 		orbital.collision_mask = 0
-		orbital.set_collision_mask_value(2, true)  # Enemigos
+		orbital.set_collision_mask_value(2, true)
+		orbital.set_collision_mask_value(3, true)
+		orbital.set_collision_mask_value(4, true)
 
 		# Collision shape
 		var shape = CollisionShape2D.new()
