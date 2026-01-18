@@ -106,6 +106,7 @@ func _process(delta: float) -> void:
 	_check_boss_spawn()
 	_check_elite_spawn(delta)
 	_cleanup_dead_enemies()
+	_process_enemy_despawn(delta)  # Sistema de despawn para rendimiento
 
 func _update_spawn_timer(delta: float) -> void:
 	spawn_timer += delta
@@ -778,3 +779,61 @@ func from_save_data(data: Dictionary) -> void:
 	print("   - Enemigos restaurados: %d / %d" % [restored_count, enemies_data.size()])
 	print("   - Élites spawneados total: %d" % elites_spawned_this_run)
 	print("   - Boss restaurado: %s" % boss_restored)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE DESPAWN/RESPAWN PARA RENDIMIENTO
+# ═══════════════════════════════════════════════════════════════════════════════
+
+const DESPAWN_DISTANCE: float = 1000.0  # Distancia a la que los enemigos hacen despawn
+const DESPAWN_CHECK_INTERVAL: float = 0.5  # Frecuencia de chequeo (segundos)
+var despawn_check_timer: float = 0.0
+
+func _process_enemy_despawn(delta: float) -> void:
+	"""
+	Sistema de despawn/respawn para rendimiento:
+	- Enemigos a más de DESPAWN_DISTANCE del jugador son teletransportados cerca
+	- Bosses y élites están exentos
+	"""
+	if not player:
+		return
+	
+	despawn_check_timer += delta
+	if despawn_check_timer < DESPAWN_CHECK_INTERVAL:
+		return
+	despawn_check_timer = 0.0
+	
+	var player_pos = player.global_position
+	var enemies_to_respawn: Array = []
+	
+	for enemy in active_enemies:
+		if not is_instance_valid(enemy):
+			continue
+		
+		# No despawnear bosses ni élites
+		if enemy.get("is_boss") or enemy.get("is_elite"):
+			continue
+		
+		var dist = enemy.global_position.distance_to(player_pos)
+		if dist > DESPAWN_DISTANCE:
+			enemies_to_respawn.append(enemy)
+	
+	# Respawnear enemigos lejos cerca del jugador
+	for enemy in enemies_to_respawn:
+		_respawn_enemy_near_player(enemy)
+
+func _respawn_enemy_near_player(enemy: Node2D) -> void:
+	"""Teletransportar un enemigo a una posición cerca del jugador"""
+	if not is_instance_valid(enemy) or not player:
+		return
+	
+	# Calcular nueva posición de spawn (500-700 px del jugador)
+	var angle = randf() * TAU
+	var distance = randf_range(500.0, 700.0)
+	var new_pos = player.global_position + Vector2.from_angle(angle) * distance
+	
+	# Teletransportar enemigo
+	enemy.global_position = new_pos
+	
+	# Resetear navegación si tiene
+	if enemy.has_method("reset_navigation"):
+		enemy.reset_navigation()

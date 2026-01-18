@@ -705,9 +705,25 @@ func _end_special_event() -> void:
 	event_config = {}
 
 func _show_wave_announcement(text: String) -> void:
-	# Debug desactivado: print("📢 %s" % text)
-	# Aquí se conectaría con el sistema de UI para mostrar el anuncio
-	pass
+	# Mostrar anuncio de oleada en el HUD
+	if text == "":
+		return
+	
+	# Buscar HUD en diferentes ubicaciones posibles
+	var hud = get_tree().get_first_node_in_group("hud")
+	if not hud:
+		hud = get_node_or_null("/root/Game/HUD")
+	if not hud:
+		hud = get_node_or_null("/root/Game/GameHUD")
+	
+	if hud and hud.has_method("show_wave_message"):
+		hud.show_wave_message(text, 3.0)
+	else:
+		# Fallback: usar FloatingText si existe
+		var floating_text = get_tree().get_first_node_in_group("floating_text")
+		if floating_text and floating_text.has_method("spawn_text"):
+			var player_pos = player.global_position if player else Vector2.ZERO
+			floating_text.spawn_text(text, player_pos + Vector2(0, -100), Color.GOLD)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ESCALADO INFINITO

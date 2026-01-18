@@ -19,7 +19,6 @@ var player: CharacterBody2D = null
 var player_stats: Node = null  # Sistema de stats del jugador
 var arena_manager: Node = null
 var enemy_manager: Node = null
-var weapon_manager: Node = null
 var experience_manager: Node = null
 var wave_manager: Node = null
 var hud: CanvasLayer = null
@@ -103,7 +102,6 @@ func _setup_game() -> void:
 	_create_player_stats()  # IMPORTANTE: Crear antes que otros sistemas
 	_create_enemy_manager()
 	_create_wave_manager()  # Pasa _is_resuming para skip_auto_init
-	_create_weapon_manager()
 	_create_experience_manager()
 	_create_chest_spawner()  # Sistema de cofres tipo tienda
 
@@ -277,13 +275,6 @@ func _create_wave_manager() -> void:
 	else:
 		push_warning("[Game] No se pudo cargar WaveManager.gd - usando spawn básico")
 
-func _create_weapon_manager() -> void:
-	var wm_script = load("res://scripts/core/WeaponManager.gd")
-	if wm_script:
-		weapon_manager = wm_script.new()
-		weapon_manager.name = "WeaponManager"
-		add_child(weapon_manager)
-
 func _create_experience_manager() -> void:
 	var em_script = load("res://scripts/core/ExperienceManager.gd")
 	if em_script:
@@ -430,10 +421,6 @@ func _initialize_systems() -> void:
 		if wave_manager:
 			enemy_manager.enable_spawning(false)
 
-	if weapon_manager and player:
-		weapon_manager.initialize(player)
-		weapon_manager.enemy_manager = enemy_manager
-
 	if experience_manager and player:
 		experience_manager.initialize(player)
 
@@ -457,13 +444,16 @@ func _connect_hud_to_player() -> void:
 		if not player.health_changed.is_connected(hud.update_health):
 			player.health_changed.connect(hud.update_health)
 			
-	# Conectar WeaponManager
-	if weapon_manager and weapon_manager.has_signal("weapons_updated"):
-		if not weapon_manager.weapons_updated.is_connected(hud.update_weapons):
-			weapon_manager.weapons_updated.connect(hud.update_weapons)
-			# Force update
-			if weapon_manager.has_method("get_weapons_info"):
-				hud.update_weapons(weapon_manager.get_weapons_info())
+	# Conectar AttackManager para actualizar iconos de armas en HUD
+	var attack_manager_ref = get_tree().get_first_node_in_group("attack_manager")
+	if attack_manager_ref and attack_manager_ref.has_signal("weapon_added"):
+		if not attack_manager_ref.weapon_added.is_connected(_on_weapon_changed_update_hud):
+			attack_manager_ref.weapon_added.connect(_on_weapon_changed_update_hud)
+		if attack_manager_ref.has_signal("weapon_removed"):
+			if not attack_manager_ref.weapon_removed.is_connected(_on_weapon_changed_update_hud):
+				attack_manager_ref.weapon_removed.connect(_on_weapon_changed_update_hud)
+		# Force initial update
+		_update_hud_weapons_from_attack_manager(attack_manager_ref)
 
 	# Conectar Coin updates (ExperienceManager)
 	if experience_manager and experience_manager.has_signal("coin_collected"):
@@ -1310,7 +1300,35 @@ func _get_boss_display_name(boss_id: String) -> String:
 
 func _deferred_weapon_hud_update() -> void:
 	"""Actualizar HUD de armas de forma diferida para capturar arma inicial"""
-	if weapon_manager and hud and weapon_manager.has_method("get_weapons_info"):
-		var info = weapon_manager.get_weapons_info()
-		if hud.has_method("update_weapons"):
-			hud.update_weapons(info)
+	var attack_manager_ref = get_tree().get_first_node_in_group("attack_manager")
+	if attack_manager_ref:
+		_update_hud_weapons_from_attack_manager(attack_manager_ref)
+
+func _on_weapon_changed_update_hud(_weapon, _slot_index: int) -> void:
+	"""Callback cuando se añade/remueve un arma - actualizar HUD"""
+	var attack_manager_ref = get_tree().get_first_node_in_group("attack_manager")
+	if attack_manager_ref:
+		_update_hud_weapons_from_attack_manager(attack_manager_ref)
+
+func _update_hud_weapons_from_attack_manager(attack_mgr) -> void:
+	"""Actualizar iconos de armas en HUD desde AttackManager"""
+	if not hud or not hud.has_method("update_weapons"):
+		return
+	
+	var weapons_info: Array = []
+	if attack_mgr.has_method("get_weapons"):
+		for weapon in attack_mgr.get_weapons():
+			var info = {}
+			if weapon.has_method("get_info"):
+				info = weapon.get_info()
+			elif "id" in weapon:
+				info = {
+					"id": weapon.id,
+					"name": weapon.weapon_name if "weapon_name" in weapon else weapon.id,
+					"level": weapon.level if "level" in weapon else 1,
+					"icon_path": "res://assets/icons/%s.png" % weapon.id
+				}
+			if not info.is_empty():
+				weapons_info.append(info)
+	
+	hud.update_weapons(weapons_info)

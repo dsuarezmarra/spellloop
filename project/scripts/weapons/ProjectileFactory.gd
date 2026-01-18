@@ -1083,9 +1083,13 @@ class OrbitalManager extends Node2D:
 		orbital.collision_layer = 0
 		orbital.set_collision_layer_value(4, true)  # Proyectiles
 		orbital.collision_mask = 0
-		orbital.set_collision_mask_value(2, true)
+		orbital.set_collision_mask_value(2, true)  # Enemigos CharacterBody2D
 		orbital.set_collision_mask_value(3, true)
 		orbital.set_collision_mask_value(4, true)
+		
+		# CRITICAL: Habilitar monitoring para detectar colisiones
+		orbital.monitoring = true
+		orbital.monitorable = true
 
 		# Collision shape
 		var shape = CollisionShape2D.new()
