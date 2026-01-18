@@ -391,6 +391,11 @@ func _handle_hit(target: Node) -> void:
 	if randf() < crit_chance:
 		final_damage *= crit_damage_mult  # Usar multiplicador variable
 	
+	# Aplicar multiplicador de daño condicional (damage_vs_slowed/burning/frozen)
+	var conditional_mult = ProjectileFactory.get_conditional_damage_multiplier(get_tree(), target)
+	if conditional_mult > 1.0:
+		final_damage = int(float(final_damage) * conditional_mult)
+	
 	# Verificar daño contra élites
 	var is_elite_target = false
 	if target.has_method("is_elite") and target.is_elite():

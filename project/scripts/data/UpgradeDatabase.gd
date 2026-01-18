@@ -2110,21 +2110,37 @@ const UNIQUE_UPGRADES: Dictionary = {
 	# ─────────────────────────────────────────────────────────────────────────────
 	# NUEVAS MEJORAS ÚNICAS (v4.0) - Build-Defining
 	# ─────────────────────────────────────────────────────────────────────────────
-	"unique_orbital_mastery": {
-		"id": "unique_orbital_mastery",
-		"name": "Maestro Orbital",
-		"description": "+50% daño orbital, +2 orbes adicionales, +30% velocidad orbital.",
-		"icon": "🔮",
+	"unique_glass_cannon": {
+		"id": "unique_glass_cannon",
+		"name": "Pacto de Cristal",
+		"description": "Daño x2.0 (multiplicativo), pero tu HP Máximo se fija en 1.",
+		"icon": "💎",
 		"category": "unique",
 		"tier": 5,
 		"is_unique": true,
+		"is_cursed": true,
 		"max_stacks": 1,
 		"effects": [
-			{"stat": "orbital_damage_mult", "value": 0.50, "operation": "add"},
-			{"stat": "orbital_count_bonus", "value": 2, "operation": "add"},
-			{"stat": "orbital_speed_mult", "value": 1.30, "operation": "multiply"}
+			{"stat": "damage_mult", "value": 2.0, "operation": "multiply"},
+			{"stat": "is_glass_cannon", "value": 1, "operation": "add"}
 		]
 	},
+	"unique_soy_milk": {
+		"id": "unique_soy_milk",
+		"name": "Leche de Soja",
+		"description": "+50% Velocidad de Ataque, -40% Daño, -20% Retroceso.",
+		"icon": "🥛",
+		"category": "unique",
+		"tier": 4,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "attack_speed_mult", "value": 1.5, "operation": "multiply"},
+			{"stat": "damage_mult", "value": 0.6, "operation": "multiply"},
+			{"stat": "knockback", "value": 0.8, "operation": "multiply"}
+		]
+	},
+
 	"unique_projectile_specialist": {
 		"id": "unique_projectile_specialist",
 		"name": "Especialista en Proyectiles",
@@ -2205,20 +2221,7 @@ const UNIQUE_UPGRADES: Dictionary = {
 			{"stat": "damage_vs_frozen", "value": 0.50, "operation": "add"}
 		]
 	},
-	"unique_soul_collector": {
-		"id": "unique_soul_collector",
-		"name": "Colector de Almas",
-		"description": "+5 HP por kill, +3% daño permanente por cada 100 kills (max 30%).",
-		"icon": "👻",
-		"category": "unique",
-		"tier": 5,
-		"is_unique": true,
-		"max_stacks": 1,
-		"effects": [
-			{"stat": "kill_heal", "value": 5, "operation": "add"},
-			{"stat": "kill_damage_scaling", "value": 0.03, "operation": "add"}
-		]
-	},
+
 	"unique_lucky_star": {
 		"id": "unique_lucky_star",
 		"name": "Estrella de la Suerte",
@@ -2265,22 +2268,7 @@ const UNIQUE_UPGRADES: Dictionary = {
 			{"stat": "move_speed", "value": 1.25, "operation": "multiply"}
 		]
 	},
-	"unique_blood_mage": {
-		"id": "unique_blood_mage",
-		"name": "Mago de Sangre",
-		"description": "Las habilidades cuestan 5 HP pero hacen +50% daño. +20% life steal.",
-		"icon": "🩸",
-		"category": "unique",
-		"tier": 5,
-		"is_unique": true,
-		"is_cursed": true,
-		"max_stacks": 1,
-		"effects": [
-			{"stat": "hp_cost_per_attack", "value": 5, "operation": "add"},
-			{"stat": "damage_mult", "value": 1.50, "operation": "multiply"},
-			{"stat": "life_steal", "value": 0.20, "operation": "add"}
-		]
-	},
+
 	"unique_gravity_well": {
 		"id": "unique_gravity_well",
 		"name": "Pozo de Gravedad",

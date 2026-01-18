@@ -520,6 +520,9 @@ const BASE_STATS: Dictionary = {
 	"enemy_slow_aura": 0.0,        # Ralentización pasiva a enemigos
 	"hp_cost_per_attack": 0.0,     # HP que cuesta cada ataque
 	"infinite_pickup_range": 0,    # Si > 0, atrae todos los pickups del mapa
+	
+	# Nuevos stats únicos
+	"is_glass_cannon": 0,          # 1 si es glass cannon (HP=1)
 
 	# Críticos
 	"crit_chance": 0.05,
@@ -964,6 +967,12 @@ func format_stat_value(stat_name: String, value: float) -> String:
 
 func get_stat(stat_name: String) -> float:
 	"""Obtener valor actual de un stat (base + modificadores temporales)"""
+	# Caso especial: Glass Cannon fuerza max_health a 1
+	if stat_name == "max_health":
+		var is_glass = stats.get("is_glass_cannon", 0.0) + _get_temp_modifier_total("is_glass_cannon")
+		if is_glass > 0:
+			return 1.0
+
 	var base_value = stats.get(stat_name, 0.0)
 	var temp_bonus = _get_temp_modifier_total(stat_name)
 	var final_value = base_value + temp_bonus

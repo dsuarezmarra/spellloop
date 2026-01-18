@@ -209,9 +209,52 @@ static func apply_status_effects_chance(tree: SceneTree, enemy: Node) -> void:
 			# print("[StatusEffect] 🩸 Bleed aplicado! (chance: %.0f%%)" % (bleed_chance * 100))
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# CREACIÓN DE PROYECTILES
+# HELPER: CONDITIONAL DAMAGE MULTIPLIER
 # ═══════════════════════════════════════════════════════════════════════════════
 
+static func get_conditional_damage_multiplier(tree: SceneTree, enemy: Node) -> float:
+	"""
+	Calculate extra damage multiplier based on enemy status effects.
+	Returns a multiplier (1.0 = no bonus, 1.25 = +25% damage, etc.)
+	Checks: damage_vs_slowed, damage_vs_burning, damage_vs_frozen
+	"""
+	if tree == null or enemy == null or not is_instance_valid(enemy):
+		return 1.0
+	
+	# Obtener PlayerStats
+	var player_stats_nodes = tree.get_nodes_in_group("player_stats")
+	if player_stats_nodes.is_empty():
+		return 1.0
+	
+	var player_stats = player_stats_nodes[0]
+	if not player_stats or not player_stats.has_method("get_stat"):
+		return 1.0
+	
+	var multiplier = 1.0
+	
+	# === DAMAGE VS SLOWED ===
+	var damage_vs_slowed = player_stats.get_stat("damage_vs_slowed")
+	if damage_vs_slowed > 0:
+		if "_is_slowed" in enemy and enemy._is_slowed:
+			multiplier += damage_vs_slowed
+	
+	# === DAMAGE VS BURNING ===
+	var damage_vs_burning = player_stats.get_stat("damage_vs_burning")
+	if damage_vs_burning > 0:
+		if "_is_burning" in enemy and enemy._is_burning:
+			multiplier += damage_vs_burning
+	
+	# === DAMAGE VS FROZEN ===
+	var damage_vs_frozen = player_stats.get_stat("damage_vs_frozen")
+	if damage_vs_frozen > 0:
+		if "_is_frozen" in enemy and enemy._is_frozen:
+			multiplier += damage_vs_frozen
+	
+	return multiplier
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CREACIÓN DE PROYECTILES
+# ═══════════════════════════════════════════════════════════════════════════════
 static func create_projectile(owner: Node2D, data: Dictionary) -> Node2D:
 	"""
 	Crear un proyectil básico
@@ -427,6 +470,11 @@ class BeamEffect extends Node2D:
 		# Verificar crítico
 		if randf() < crit_chance:
 			final_damage *= crit_damage  # Usar multiplicador de crítico variable
+		
+		# Aplicar multiplicador de daño condicional (damage_vs_slowed/burning/frozen)
+		var conditional_mult = ProjectileFactory.get_conditional_damage_multiplier(get_tree(), enemy)
+		if conditional_mult > 1.0:
+			final_damage *= conditional_mult
 
 		if enemy.has_method("take_damage"):
 			enemy.take_damage(int(final_damage))
@@ -697,6 +745,11 @@ class AOEEffect extends Node2D:
 		if randf() < crit_chance:
 			final_damage *= crit_damage  # Usar multiplicador de crítico variable
 			is_crit = true
+		
+		# Aplicar multiplicador de daño condicional (damage_vs_slowed/burning/frozen)
+		var conditional_mult = ProjectileFactory.get_conditional_damage_multiplier(get_tree(), enemy)
+		if conditional_mult > 1.0:
+			final_damage *= conditional_mult
 
 		if enemy.has_method("take_damage"):
 			enemy.take_damage(int(final_damage))

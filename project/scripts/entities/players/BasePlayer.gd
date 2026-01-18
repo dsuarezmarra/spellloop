@@ -277,6 +277,7 @@ func _equip_starting_weapons() -> void:
 # ========== MOVIMIENTO ==========
 
 var _is_moving: bool = false
+var _slow_aura_timer: float = 0.0
 
 func _process(delta: float) -> void:
 	"""Actualizar lógica por frame (Animación + Regeneración)"""
@@ -284,7 +285,20 @@ func _process(delta: float) -> void:
 	# DUPLICATE REGEN LOGIC REMOVED
 	# La regeneración ahora es gestionada exclusivamente por PlayerStats.gd para evitar doble curación
 	# y asegurar centralización de la lógica.
+	
+	# === ENEMY SLOW AURA ===
+	# Aplicar ralentización pasiva a enemigos cercanos si tenemos el stat
+	_slow_aura_timer -= delta
+	if _slow_aura_timer <= 0:
+		_apply_enemy_slow_aura()
+		_slow_aura_timer = 0.5  # Revisar cada 0.5s
 
+	# === POCKET BLACK HOLE ===
+	# Stat: auto_black_hole_interval (si > 0, activa agujero negro periódico)
+	if _black_hole_timer > 0:
+		_black_hole_timer -= delta
+	else:
+		_check_and_trigger_black_hole()
 
 	if not animated_sprite or not animated_sprite.sprite_frames:
 		return
@@ -1054,6 +1068,30 @@ func _update_revive_immunity(delta: float) -> void:
 		# Efecto visual de parpadeo durante inmunidad
 		if animated_sprite:
 			animated_sprite.modulate.a = 0.5 + 0.5 * sin(_revive_immunity_timer * 10.0)
+
+func _apply_enemy_slow_aura() -> void:
+	"""Aplicar ralentización pasiva a enemigos cercanos (stat: enemy_slow_aura)"""
+	var player_stats = _get_player_stats()
+	if not player_stats or not player_stats.has_method("get_stat"):
+		return
+	
+	var slow_amount = player_stats.get_stat("enemy_slow_aura")
+	if slow_amount <= 0:
+		return
+	
+	# Obtener todos los enemigos cercanos (radio de 200px)
+	var aura_radius = 200.0
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	
+	for enemy in enemies:
+		if not is_instance_valid(enemy):
+			continue
+		
+		var distance = global_position.distance_to(enemy.global_position)
+		if distance <= aura_radius:
+			# Aplicar slow corto (se refresca cada 0.5s)
+			if enemy.has_method("apply_slow"):
+				enemy.apply_slow(slow_amount, 0.6)  # 0.6s para solapar con el check de 0.5s
 
 # ========== ACCESO A COMPONENTES ==========
 
