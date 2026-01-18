@@ -530,8 +530,14 @@ func _on_reroll() -> void:
 	# 3. Reciclaje (Recycling): XP al hacer reroll
 	if player_stats and player_stats.has_method("get_stat"):
 		var xp_fraction = player_stats.get_stat("xp_on_reroll")
-		if xp_fraction > 0:
-			var xp_amount = xp_to_next_level * xp_fraction
+		var exp_mgr_node = get_tree().get_first_node_in_group("experience_manager")
+		if xp_fraction > 0 and exp_mgr_node:
+			# Obtener xp_to_next_level desde el manager
+			var needed_xp = 100 # Fallback
+			if "experience_required" in exp_mgr_node:
+				needed_xp = exp_mgr_node.experience_required
+			
+			var xp_amount = needed_xp * xp_fraction
 			# Otorgar XP a través del manager o directamente
 			# Mejor usar ExperienceManager si es posible, o player_stats.gain_xp
 			var exp_mgr = get_tree().get_first_node_in_group("experience_manager")

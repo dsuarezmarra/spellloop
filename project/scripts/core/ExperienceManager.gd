@@ -354,10 +354,10 @@ func _on_coin_collected(value: int) -> void:
 	
 	# Usar multiplicador de bonus de racha desde PlayerStats (New Item Support)
 	var streak_mult_stat = 1.0
-	var player_stats = get_tree().get_first_node_in_group("player_stats")
-	if player_stats and player_stats.has_method("get_stat"):
+	var ps_node = get_tree().get_first_node_in_group("player_stats")
+	if ps_node and ps_node.has_method("get_stat"):
 		# Default 1.0. If "streak_master" adds +100%, value becomes 2.0
-		var bonus = player_stats.get_stat("streak_bonus_mult")
+		var bonus = ps_node.get_stat("streak_bonus_mult")
 		# Base stat might not exist, check logic. Usually stats are 0 base.
 		# If user has +100% streak bonus, stat is 1.0? Or is it a multiplier?
 		# Let's assume it's an additive multiplier like damage_mult.

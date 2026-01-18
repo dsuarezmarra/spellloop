@@ -321,7 +321,16 @@ func _process(delta: float) -> void:
 	
 	# Procesar movimiento (input)
 	if not _is_dying:
-		_process_movement(delta)
+		# Lógica de movimiento restaurada
+		var movement_vector = input_manager.get_movement_vector()
+		if movement_vector.length() > 0:
+			velocity = movement_vector * move_speed
+			_is_moving = true
+		else:
+			velocity = velocity.move_toward(Vector2.ZERO, move_speed * 10 * delta)
+			_is_moving = false
+			
+		move_and_slide()
 		
 		# -----------------------------------------------------------
 		# LÓGICA DE NUEVOS OBJETOS (Phase 4)
@@ -335,7 +344,7 @@ func _process(delta: float) -> void:
 					# Activar buffs (simulado con modificadores temporales o stats directos)
 					# Por ahora solo feedback visual y asumimos que PlayerStats checkea _turret_active
 					# O aplicamos buff aquí
-					FloatingText.spawn_custom(global_position + Vector2(0, -70), "TURRET MODE!", Color.GREEN)
+					FloatingText.spawn_text(global_position + Vector2(0, -70), "TURRET MODE!", Color.GREEN)
 					# Modificar stats dinámicamente si es posible, o usar flag en PlayerStats
 					if player_stats.has_method("add_temporary_modifier"):
 						# ID, Stat, ValueMs, Duration (0=infinite until removed)

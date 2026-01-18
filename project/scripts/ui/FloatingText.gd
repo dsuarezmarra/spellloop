@@ -124,6 +124,10 @@ static func spawn_text(pos: Vector2, txt: String, col: Color = Color.WHITE) -> v
 	"""Mostrar texto personalizado"""
 	_spawn_text(pos, txt, col, 16, 1.0)
 
+static func spawn_custom(pos: Vector2, txt: String, col: Color = Color.WHITE) -> void:
+	"""Alias para spawn_text (para compatibilidad)"""
+	spawn_text(pos, txt, col)
+
 static func _spawn_text(pos: Vector2, txt: String, col: Color, size: int, dur: float) -> void:
 	"""Crear un texto flotante en la posición indicada"""
 	var tree = Engine.get_main_loop()

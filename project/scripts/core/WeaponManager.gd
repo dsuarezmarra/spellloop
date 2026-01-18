@@ -201,7 +201,6 @@ func fire_projectile(weapon: WeaponData, target_position: Vector2):
 		"knockback": weapon.knockback,
 		"pierce": weapon.pierce,
 		"element": weapon.element,
-		"element": weapon.element,
 		"weapon_id": weapon.id
 	}
 	
