@@ -17,6 +17,7 @@ signal coin_collected(amount: int, total: int)
 signal exp_gained(amount: int, total_exp: int)
 signal level_up(new_level: int, available_upgrades: Array)
 signal streak_updated(count: int)
+signal streak_timer_updated(time_left: float, max_time: float) # NUEVO: Para la barra de mecha
 
 # === REFERENCIAS ===
 var player: CharacterBody2D
@@ -55,6 +56,20 @@ func _ready():
 	_load_coin_scene()
 
 	# Debug desactivado: print("💰 ExperienceManager: Añadidas %d monedas (Total: %d)" % [amount, total_coins])
+
+func _process(delta: float) -> void:
+	if streak_count > 0:
+		var time_since_coin = Time.get_ticks_msec() / 1000.0 - last_coin_time
+		var time_left = maxf(0.0, streak_timeout - time_since_coin)
+		
+		# Emitir señal de actualización de timer
+		streak_timer_updated.emit(time_left, streak_timeout)
+		
+		# Si se acabó el tiempo, resetear streak (la lógica original ya hacía esto al recoger moneda, 
+		# pero para la UI necesitamos saber cuando llega a 0 en tiempo real)
+		if time_left <= 0:
+			streak_count = 0
+			streak_updated.emit(0)
 
 func add_coins(base_amount: int) -> void:
 	"""Añadir monedas aplicando multiplicadores del jugador (cofres, eventos, etc)"""

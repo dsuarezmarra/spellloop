@@ -2269,39 +2269,12 @@ const UNIQUE_UPGRADES: Dictionary = {
 		]
 	},
 
-	"unique_gravity_well": {
-		"id": "unique_gravity_well",
-		"name": "Pozo de Gravedad",
-		"description": "Atrae TODAS las monedas y gemas del mapa instantáneamente. +50% oro.",
-		"icon": "🌀",
-		"category": "unique",
-		"tier": 5,
-		"is_unique": true,
-		"max_stacks": 1,
-		"effects": [
-			{"stat": "infinite_pickup_range", "value": 1, "operation": "add"},
-			{"stat": "gold_mult", "value": 1.50, "operation": "multiply"}
-		]
-	},
+
 
 	# ─────────────────────────────────────────────────────────────────────────────
 	# LEGENDARIOS CLÁSICOS (Portado de PassiveDatabase)
 	# ─────────────────────────────────────────────────────────────────────────────
-	"unique_glass_cannon": {
-		"id": "unique_glass_cannon",
-		"name": "Cañón de Cristal",
-		"description": "+50% Daño, +25% Crítico, -30% Vida máxima.",
-		"icon": "💎",
-		"category": "unique",
-		"tier": 5,
-		"is_unique": true,
-		"max_stacks": 1,
-		"effects": [
-			{"stat": "damage_mult", "value": 1.5, "operation": "multiply"},
-			{"stat": "crit_chance", "value": 0.25, "operation": "add"},
-			{"stat": "max_health", "value": 0.7, "operation": "multiply"}
-		]
-	},
+
 	"unique_fortress": {
 		"id": "unique_fortress",
 		"name": "Fortaleza Ambulante",

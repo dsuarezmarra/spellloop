@@ -37,9 +37,68 @@ func _ready():
 	
 	# IMPROVE: Estilizar barras programáticamente para asegurar look premium
 	_style_hud_elements()
+	_style_hud_elements()
 	_style_shield_bar()
+	_create_streak_bar()
+	
+	# Conectar señal de streak
+	var exp_manager = get_tree().get_first_node_in_group("experience_manager")
+	if exp_manager:
+		if exp_manager.has_signal("streak_timer_updated"):
+			exp_manager.streak_timer_updated.connect(_update_streak_timer)
 
-func _style_hud_elements():
+var streak_bar: ProgressBar = null
+
+func _create_streak_bar():
+	# Crear dinámicamente la barra de racha debajo de las monedas
+	var coins_container = get_node_or_null("Control/TopRight/CoinsContainer")
+	if coins_container:
+		var parent_container = coins_container.get_parent()
+		if parent_container:
+			streak_bar = ProgressBar.new()
+			streak_bar.custom_minimum_size = Vector2(100, 8) # Más delgada
+			streak_bar.show_percentage = false
+			
+			# Estilo "Mecha" (Fuse)
+			var bg_style = StyleBoxFlat.new()
+			bg_style.bg_color = Color(0.2, 0.1, 0, 0.8)
+			bg_style.corner_radius_top_left = 2
+			bg_style.corner_radius_top_right = 2
+			bg_style.corner_radius_bottom_right = 2
+			bg_style.corner_radius_bottom_left = 2
+			
+			var fill_style = StyleBoxFlat.new()
+			fill_style.bg_color = Color(1.0, 0.5, 0.0) # Naranja mecha
+			fill_style.corner_radius_top_left = 2
+			fill_style.corner_radius_top_right = 2
+			fill_style.corner_radius_bottom_right = 2
+			fill_style.corner_radius_bottom_left = 2
+			
+			streak_bar.add_theme_stylebox_override("background", bg_style)
+			streak_bar.add_theme_stylebox_override("fill", fill_style)
+			
+			# Añadir al padre (TopRight) para que quede debajo de CoinsContainer (si es VBox)
+			parent_container.add_child(streak_bar)
+			# Asegurar orden: Justo después de CoinsContainer
+			parent_container.move_child(streak_bar, coins_container.get_index() + 1)
+			
+			streak_bar.visible = false # Oculto por defecto
+
+func _update_streak_timer(time_left: float, max_time: float):
+	if streak_bar:
+		if time_left > 0:
+			streak_bar.visible = true
+			streak_bar.max_value = max_time
+			streak_bar.value = time_left
+			
+			# Efecto de parpadeo si queda poco (mecha agotándose)
+			if time_left < max_time * 0.3:
+				var alpha = 0.5 + 0.5 * sin(Time.get_ticks_msec() * 0.02)
+				streak_bar.modulate.a = alpha
+			else:
+				streak_bar.modulate.a = 1.0
+		else:
+			streak_bar.visible = false
 	if hp_bar:
 		var sb_bg = StyleBoxFlat.new()
 		sb_bg.bg_color = Color(0.1, 0.0, 0.0, 0.8)

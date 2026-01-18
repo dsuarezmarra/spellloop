@@ -578,7 +578,7 @@ const STAT_LIMITS: Dictionary = {
 	"freeze_chance": {"min": 0.0, "max": 0.5},       # Máximo 50%
 	"bleed_chance": {"min": 0.0, "max": 0.5},        # Máximo 50%
 	"explosion_chance": {"min": 0.0, "max": 0.5},    # Máximo 50%
-	"execute_threshold": {"min": 0.0, "max": 0.15},  # Máximo 15% HP
+	"execute_threshold": {"min": 0.0, "max": 0.70},  # Máximo 70% HP
 	"overkill_damage": {"min": 0.0, "max": 1.0},     # Máximo 100%
 	"thorns_percent": {"min": 0.0, "max": 2.0},      # Máximo 200%
 	"thorns_slow": {"min": 0.0, "max": 0.5},         # Máximo 50% slow

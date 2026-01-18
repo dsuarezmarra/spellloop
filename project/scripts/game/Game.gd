@@ -893,6 +893,33 @@ func _trigger_kill_explosion(pos: Vector2, damage: float) -> void:
 	"""Explosión al matar enemigos (kill_explosion effect)"""
 	var explosion_radius = 100.0  # Radio de explosión fijo
 
+	# --- EFECTO VISUAL ---
+	var particles = CPUParticles2D.new()
+	particles.emitting = true
+	particles.one_shot = true
+	particles.amount = 20
+	particles.lifetime = 0.6
+	particles.explosiveness = 1.0
+	particles.direction = Vector2.ZERO
+	particles.spread = 180.0
+	particles.gravity = Vector2.ZERO
+	particles.initial_velocity_min = 100.0
+	particles.initial_velocity_max = 200.0
+	particles.scale_amount_min = 3.0
+	particles.scale_amount_max = 6.0
+	particles.color_ramp = Gradient.new()
+	particles.color_ramp.add_point(0.0, Color(1, 0.5, 0)) # Naranja
+	particles.color_ramp.add_point(0.5, Color(1, 0, 0))   # Rojo
+	particles.color_ramp.add_point(1.0, Color(0.2, 0, 0, 0)) # Fade out
+	particles.global_position = pos
+	particles.z_index = 20 # Sobre enemigos
+	
+	# Auto-destrucción visual
+	add_child(particles) # Add to Game node/scene
+	var timer = get_tree().create_timer(1.0)
+	timer.timeout.connect(particles.queue_free)
+	
+	# --- LÓGICA DE DAÑO ---
 	# Encontrar enemigos cercanos
 	if enemy_manager and enemy_manager.has_method("get_enemies_in_range"):
 		var enemies_hit = enemy_manager.get_enemies_in_range(pos, explosion_radius)
