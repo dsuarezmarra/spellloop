@@ -325,7 +325,7 @@ func setup_shop(items: Array, coins: int):
 func _create_item_button(item: Dictionary, index: int) -> Control:
 	"""Crear botón de item con icono, nombre, descripción y precio"""
 	var btn = Button.new()
-	btn.custom_minimum_size = Vector2(420, 70) # Reducido de 440 para evitar recorte
+	btn.custom_minimum_size = Vector2(380, 70) # Reducido para evitar recorte en margen derecho
 	btn.mouse_filter = Control.MOUSE_FILTER_STOP
 	btn.focus_mode = Control.FOCUS_ALL # Permitir foco por teclado/gamepad
 	

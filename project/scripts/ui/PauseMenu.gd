@@ -1915,9 +1915,21 @@ func _show_upgrades_tab() -> void:
 		grid.add_child(no_upgrades)
 		return
 
-	for i in range(upgrades.size()):
-		var upgrade = upgrades[i]
-		var upgrade_panel = _create_upgrade_panel(upgrade)
+	# Agrupar items duplicados
+	var grouped_upgrades = {}
+	var upgrade_order = []  # Para mantener orden de aparición
+	
+	for upgrade in upgrades:
+		var u_name = upgrade.get("name", "Unknown")
+		if not grouped_upgrades.has(u_name):
+			grouped_upgrades[u_name] = {"data": upgrade, "count": 0}
+			upgrade_order.append(u_name)
+		grouped_upgrades[u_name].count += 1
+
+	for i in range(upgrade_order.size()):
+		var u_name = upgrade_order[i]
+		var info = grouped_upgrades[u_name]
+		var upgrade_panel = _create_upgrade_panel(info.data, info.count)
 		grid.add_child(upgrade_panel)
 
 		# Registrar como elemento navegable
@@ -1925,11 +1937,11 @@ func _show_upgrades_tab() -> void:
 			"panel": upgrade_panel,
 			"type": "upgrade",
 			"index": i,
-			"upgrade": upgrade,
+			"upgrade": info.data,
 			"callback": Callable()
 		})
 
-func _create_upgrade_panel(upgrade: Dictionary) -> Control:
+func _create_upgrade_panel(upgrade: Dictionary, count: int = 1) -> Control:
 	var panel = PanelContainer.new()
 	panel.custom_minimum_size = Vector2(260, 100)
 	var style = StyleBoxFlat.new()
@@ -1986,6 +1998,13 @@ func _create_upgrade_panel(upgrade: Dictionary) -> Control:
 	name_label.add_theme_font_size_override("font_size", 14)
 	name_label.add_theme_color_override("font_color", VALUE_COLOR)
 	header.add_child(name_label)
+	
+	if count > 1:
+		var count_label = Label.new()
+		count_label.text = "x%d" % count
+		count_label.add_theme_font_size_override("font_size", 14)
+		count_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.4))  # Dorado
+		header.add_child(count_label)
 
 	# Descripción
 	var desc = Label.new()
@@ -2054,29 +2073,54 @@ func _navigate_vertical(direction: int) -> void:
 	"""Navegar arriba/abajo entre filas (tabs, contenido, acciones) o hacer scroll"""
 	var old_row = current_nav_row
 
-	# Si estamos en CONTENT y hay scroll, hacer scroll con W/S
-	if current_nav_row == NavRow.CONTENT and content_scroll:
-		var scroll_amount = 60  # Pixeles a scrollear por pulsacion
-		var current_v = content_scroll.scroll_vertical
-		var max_v = content_scroll.get_v_scroll_bar().max_value - content_scroll.size.y
+	# Si estamos en CONTENT y hay scroll
+	if current_nav_row == NavRow.CONTENT:
+		# CASO ESPECIAL: Tab de Armas (1) es una lista vertical.
+		# W/S debe cambiar la selección de item, no solo scrollear.
+		if current_tab == 1 and content_items.size() > 0:
+			content_selection = (content_selection + direction) % content_items.size()
+			if content_selection < 0:
+				content_selection = content_items.size() - 1
+			_update_content_selection_visual()
+			
+			# Auto-scroll para seguir la selección
+			if content_scroll and content_items[content_selection].has("panel"):
+				var item_panel = content_items[content_selection].panel
+				if item_panel:
+					# Calcular posición relativa básica para scroll
+					var item_y = item_panel.position.y
+					var scroll_y = content_scroll.scroll_vertical
+					var view_h = content_scroll.size.y
+					
+					if item_y < scroll_y:
+						content_scroll.scroll_vertical = int(item_y)
+					elif item_y + item_panel.size.y > scroll_y + view_h:
+						content_scroll.scroll_vertical = int(item_y + item_panel.size.y - view_h)
+			return
 
-		if direction < 0:  # W - Scroll arriba
-			if current_v > 0:
-				content_scroll.scroll_vertical = maxi(0, current_v - scroll_amount)
-				return
-			else:
-				pass  # Bloque else
-				# Ya estamos arriba, ir a tabs
-				current_nav_row = NavRow.TABS
-		else:  # S - Scroll abajo
-			if current_v < max_v:
-				content_scroll.scroll_vertical = mini(int(max_v), current_v + scroll_amount)
-				return
-			else:
-				pass  # Bloque else
-				# Ya estamos abajo, ir a actions
-				current_nav_row = NavRow.ACTIONS
-	elif direction < 0:  # Arriba (W)
+		# Para otros tabs (Stats, Objetos) mantener comportamiento de scroll/salir normal
+		if content_scroll:
+			var scroll_amount = 60  # Pixeles a scrollear por pulsacion
+			var current_v = content_scroll.scroll_vertical
+			var max_v = content_scroll.get_v_scroll_bar().max_value - content_scroll.size.y
+
+			if direction < 0:  # W - Scroll arriba
+				if current_v > 0:
+					content_scroll.scroll_vertical = maxi(0, current_v - scroll_amount)
+					return
+				else:
+					pass  # Bloque else
+					# Ya estamos arriba, ir a tabs
+					current_nav_row = NavRow.TABS
+			else:  # S - Scroll abajo
+				if current_v < max_v:
+					content_scroll.scroll_vertical = mini(int(max_v), current_v + scroll_amount)
+					return
+				else:
+					pass  # Bloque else
+					# Ya estamos abajo, ir a actions
+					current_nav_row = NavRow.ACTIONS
+	elif direction < 0:  # Arriba (W) desde ACTIONS
 		match current_nav_row:
 			NavRow.ACTIONS:
 				if content_scroll or content_items.size() > 0:

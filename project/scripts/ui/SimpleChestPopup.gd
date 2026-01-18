@@ -128,6 +128,9 @@ func show_as_jackpot(items: Array):
 	
 	claim_button.pressed.connect(_on_claim_all_pressed)
 	main_vbox.add_child(claim_button)
+	
+	# Dar foco para soporte de teclado/gamepad
+	claim_button.grab_focus()
 
 func setup_items(items: Array):
 	"""Configurar los items disponibles"""
@@ -397,10 +400,11 @@ func _input(event: InputEvent):
 		return
 
 	# Si es Jackpot, cualquier tecla de aceptación reclama todo
+	# Si es Jackpot, dejamos que el botón maneje el input (tiene foco)
 	if is_jackpot_mode:
-		if event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER)) or (event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_A):
-			_on_claim_all_pressed()
-			get_tree().root.set_input_as_handled()
+		# Si por alguna razón perdemos el foco, recuperarlo con cualquier input de navegación
+		if claim_button and not claim_button.has_focus():
+			claim_button.grab_focus()
 		return
 	
 	# === INPUT DE TECLADO Y ACCIONES (WASD / Flechas / Gamepad) ===
