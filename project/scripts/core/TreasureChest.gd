@@ -305,6 +305,24 @@ func create_chest_popup():
 		# Modo normal: Selección (o solo 1 item)
 		popup_instance.setup_items(items_with_names)
 		popup_instance.item_selected.connect(_on_popup_item_selected)
+		if popup_instance.has_signal("skipped"):
+			popup_instance.skipped.connect(_on_chest_skipped)
+
+func _on_chest_skipped():
+	"""Callback cuando se salta el cofre"""
+	is_opened = true
+	create_opening_effect()
+	
+	# No aplicamos items
+	print("[TreasureChest] Cofre saltado (Skip usado)")
+	chest_opened.emit(self, []) # Lista vacía indica skip
+	
+	var timer = Timer.new()
+	add_child(timer)
+	timer.wait_time = 1.0
+	timer.one_shot = true
+	timer.timeout.connect(func(): queue_free())
+	timer.start()
 
 func get_item_display_name(item_type: String) -> String:
 	match item_type:

@@ -1,4 +1,4 @@
-﻿# BasePlayer.gd
+# BasePlayer.gd
 # Clase base genérica para todos los personajes jugables
 # Proporciona movimiento, stats, salud, manejo de armas, etc.
 # Las clases específicas (Wizard, Rogue, etc.) heredan de aquí
@@ -883,8 +883,8 @@ func heal(amount: int) -> void:
 		# Emitir señal de cambio de vida
 		health_component.health_changed.emit(health_component.current_health, max_hp)
 
-		# Debug explícito para verificar que ESTE método se llama
-		print("[%s] HEAL() llamado. Amount: %.1f -> Healed: %.1f. HP Now: %d/%d" % [character_class, float(amount), float(healed), health_component.current_health, max_hp])
+		# Debug explícito desactivado por spam:
+		# print("[%s] HEAL() llamado. Amount: %.1f -> Healed: %.1f. HP Now: %d/%d" % [character_class, float(amount), float(healed), health_component.current_health, max_hp])
 
 		# Mostrar texto flotante de curación si realmente curó algo
 		if healed > 0:
@@ -1734,4 +1734,3 @@ func _remove_turret_buff() -> void:
 		player_stats.remove_temp_modifiers_by_source("turret_bonus")
 	
 	modulate = Color.WHITE
-

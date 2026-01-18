@@ -1258,7 +1258,7 @@ func _update_health_regen(delta: float) -> void:
 	var heal_int = int(_regen_accumulator)
 	_regen_accumulator -= heal_int  # Guardar el residuo para el siguiente tick
 	
-	print("[HealthRegen] Intentando curar %d HP (regen=%.2f, player_ref=%s)" % [heal_int, regen, player_ref])
+	# Debug desactivado por spam: print("[HealthRegen] Intentando curar %d HP (regen=%.2f, player_ref=%s)" % [heal_int, regen, player_ref])
 
 	# Si tenemos referencia al player, curar directamente
 	if player_ref and player_ref.has_method("heal"):

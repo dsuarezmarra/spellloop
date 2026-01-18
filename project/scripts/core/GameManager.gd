@@ -40,6 +40,7 @@ var is_run_active: bool = false
 # Combat systems
 var attack_manager = null
 var player_ref = null
+var player_stats = null  # Referencia a estadisticas del jugador
 var projectile_visual_manager = null  # Gestor de visuales de proyectiles
 
 # Current run data
@@ -154,6 +155,11 @@ func start_new_run() -> void:
 		if player:
 			attack_manager.initialize(player)
 			player_ref = player
+			# Buscar referencia a PlayerStats
+			player_stats = player.get_node_or_null("PlayerStats")
+			if not player_stats:
+				player_stats = get_tree().get_first_node_in_group("player_stats")
+			
 			# Debug desactivado: print("[GameManager] ✓ AttackManager inicializado con player")
 			# NOTA: Las armas iniciales las equipa el propio Player (_equip_starting_weapons)
 			# No duplicar aquí para evitar armas duplicadas

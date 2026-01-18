@@ -4,6 +4,7 @@ class_name SimpleChestPopup
 # Popup simple para selección de items del cofre - USANDO CANVASLAYER
 signal item_selected(item)
 signal all_items_claimed(items)
+signal skipped
 
 var available_items: Array = []
 var main_control: Control
@@ -13,6 +14,7 @@ var current_selected_index: int = -1
 var popup_locked: bool = false
 var is_jackpot_mode: bool = false
 var claim_button: Button = null
+var skip_button: Button = null
 
 # GESTIÓN DE PAUSA GLOBAL PARA POPUPS APILADOS
 static var active_instances: int = 0
@@ -240,9 +242,129 @@ func setup_items(items: Array):
 	await get_tree().process_frame
 	await get_tree().process_frame
 	
+	# Agregar botón de Skip si no es Jackpot
+	if not is_jackpot_mode:
+		_add_skip_button()
+	
 	# Inicializar selección visual (mostrar borde en el primer item)
 	current_selected_index = 0
 	_update_button_selection()
+
+func _add_skip_button():
+	"""Agregar botón de Skip al final de la lista"""
+	skip_button = Button.new()
+	skip_button.text = "Saltar (Sin Recompensa)"
+	skip_button.custom_minimum_size = Vector2(250, 45)
+	skip_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	
+	# Estilo sutil/advertencia
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.3, 0.1, 0.1, 0.8) # Rojo oscuro
+	style.border_color = Color(0.8, 0.4, 0.4, 0.5)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(6)
+	
+	var style_hover = style.duplicate()
+	style_hover.bg_color = Color(0.4, 0.15, 0.15, 0.9)
+	style_hover.border_color = Color(1.0, 0.5, 0.5, 0.8)
+	
+	skip_button.add_theme_stylebox_override("normal", style)
+	skip_button.add_theme_stylebox_override("hover", style_hover)
+	skip_button.add_theme_font_size_override("font_size", 16)
+	skip_button.add_theme_color_override("font_color", Color(0.9, 0.7, 0.7))
+	
+	skip_button.pressed.connect(_on_skip_pressed)
+	
+	# Añadir un separador antes
+	var sep = Control.new()
+	sep.custom_minimum_size = Vector2(0, 10)
+	items_vbox.add_child(sep)
+	items_vbox.add_child(skip_button)
+	
+	# Añadir a la lista de navegación
+	item_buttons.append(skip_button)
+
+func _on_skip_pressed():
+	if popup_locked: return
+	_show_confirm_skip_modal()
+
+func _show_confirm_skip_modal():
+	"""Mostrar modal de confirmación para saltar recompensa"""
+	var confirm_modal = Control.new()
+	confirm_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	confirm_modal.z_index = 10 # Encima de todo
+	add_child(confirm_modal)
+	
+	# Bloquear input del fondo
+	var blocker = ColorRect.new()
+	blocker.color = Color(0, 0, 0, 0.8)
+	blocker.set_anchors_preset(Control.PRESET_FULL_RECT)
+	confirm_modal.add_child(blocker)
+	
+	# Panel del modal
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(400, 180)
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.15, 0.12, 0.12, 1.0)
+	style.border_color = Color(1.0, 0.3, 0.3)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	panel.add_theme_stylebox_override("panel", style)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	confirm_modal.add_child(center)
+	center.add_child(panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 20)
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_top", 20)
+	margin.add_theme_constant_override("margin_bottom", 20)
+	margin.add_theme_constant_override("margin_left", 30)
+	margin.add_theme_constant_override("margin_right", 30)
+	margin.add_child(vbox)
+	panel.add_child(margin)
+	
+	var label_title = Label.new()
+	label_title.text = "⚠️ ¿Saltar Recompensa?"
+	label_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label_title.add_theme_font_size_override("font_size", 22)
+	label_title.add_theme_color_override("font_color", Color(1, 0.5, 0.5))
+	vbox.add_child(label_title)
+	
+	var label_desc = Label.new()
+	label_desc.text = "Perderás esta oportunidad de obtener un objeto.\nEl cofre desaparecerá."
+	label_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label_desc.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
+	vbox.add_child(label_desc)
+	
+	var hbox = HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 30)
+	vbox.add_child(hbox)
+	
+	var btn_cancel = Button.new()
+	btn_cancel.text = "Volver"
+	btn_cancel.custom_minimum_size = Vector2(100, 40)
+	btn_cancel.pressed.connect(func(): confirm_modal.queue_free())
+	hbox.add_child(btn_cancel)
+	
+	var btn_confirm = Button.new()
+	btn_confirm.text = "Confirmar Salto"
+	btn_confirm.custom_minimum_size = Vector2(140, 40)
+	var style_confirm = StyleBoxFlat.new()
+	style_confirm.bg_color = Color(0.6, 0.2, 0.2)
+	style_confirm.set_corner_radius_all(4)
+	btn_confirm.add_theme_stylebox_override("normal", style_confirm)
+	btn_confirm.pressed.connect(func(): 
+		skipped.emit()
+		queue_free()
+	)
+	hbox.add_child(btn_confirm)
+	
+	# Foco inicial
+	btn_cancel.grab_focus()
 
 func _on_claim_all_pressed():
 	if popup_locked: return
@@ -256,6 +378,11 @@ func _on_button_pressed(button_index: int, item_data: Dictionary):
 	if popup_locked or is_jackpot_mode:
 		return
 	
+	# Verificar si es el botón de skip (si se llegara a llamar así, aunque tiene su propio callback)
+	if item_buttons[button_index] == skip_button:
+		_on_skip_pressed()
+		return
+		
 	_process_item_selection(item_data, button_index)
 
 func _on_button_hover(button_index: int):
@@ -287,9 +414,10 @@ func _update_button_selection():
 	"""Actualizar estilos visuales según selección con aura brillante"""
 	if is_jackpot_mode: return
 	for i in range(item_buttons.size()):
-		if item_buttons[i] is Button:
-			var btn = item_buttons[i]
-			var is_selected = (i == current_selected_index)
+		var btn = item_buttons[i]
+		if not is_instance_valid(btn) or not btn is Button: continue
+			
+		var is_selected = (i == current_selected_index)
 			
 			# Buscar o crear el panel de glow
 			var glow_panel = btn.get_node_or_null("SelectionGlow")
@@ -505,8 +633,14 @@ func _select_item_at_index(index: int):
 	if popup_locked:
 		return
 	
-	if index >= 0 and index < available_items.size():
-		var selected_item = available_items[index]
-		_process_item_selection(selected_item, index)
+	if index >= 0 and index < item_buttons.size():
+		var btn = item_buttons[index]
+		if btn == skip_button:
+			_on_skip_pressed()
+			return
+			
+		if index < available_items.size():
+			var selected_item = available_items[index]
+			_process_item_selection(selected_item, index)
 
 

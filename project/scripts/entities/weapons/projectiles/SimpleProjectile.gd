@@ -381,7 +381,7 @@ func _handle_hit(target: Node) -> void:
 	if not target.is_in_group("enemies"):
 		return
 	
-	print("🎯 Proj Hit Target: ", target.name)
+	# Debug desactivado por spam: print("🎯 Proj Hit Target: ", target.name)
 	enemies_hit.append(target)
 	
 	# Calcular daño final (con crítico si aplica)

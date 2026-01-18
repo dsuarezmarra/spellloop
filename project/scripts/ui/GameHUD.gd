@@ -46,8 +46,22 @@ func _ready():
 	if exp_manager:
 		if exp_manager.has_signal("streak_timer_updated"):
 			exp_manager.streak_timer_updated.connect(_update_streak_timer)
+		if exp_manager.has_signal("streak_updated"):
+			exp_manager.streak_updated.connect(_update_streak_value)
 
-var streak_bar: ProgressBar = null
+func _update_streak_value(count: int, total_value: int):
+	"""Actualizar etiqueta de valor de racha"""
+	if streak_value_label:
+		streak_value_label.text = "+%d" % total_value
+		
+		# Feedback visual pequeño (Pop)
+		var tween = create_tween()
+		tween.tween_property(streak_value_label, "scale", Vector2(1.3, 1.3), 0.1)
+		tween.tween_property(streak_value_label, "scale", Vector2(1.0, 1.0), 0.1)
+
+var streak_bar_container: HBoxContainer = null
+var streak_icon: Label = null # Usaremos emoji por ahora, o texture si hay
+var streak_value_label: Label = null
 
 func _create_streak_bar():
 	# Crear dinámicamente la barra de racha debajo de las monedas
@@ -55,50 +69,67 @@ func _create_streak_bar():
 	if coins_container:
 		var parent_container = coins_container.get_parent()
 		if parent_container:
+			# Contenedor horizontal para Icono + Barra + Valor
+			streak_bar_container = HBoxContainer.new()
+			streak_bar_container.alignment = BoxContainer.ALIGNMENT_END
+			streak_bar_container.add_theme_constant_override("separation", 5)
+			
+			# 1. Icono Dinamita (Usaremos Emoji por simplicidad y estilo)
+			streak_icon = Label.new()
+			streak_icon.text = "🧨"
+			streak_icon.add_theme_font_size_override("font_size", 20)
+			streak_bar_container.add_child(streak_icon)
+			
+			# 2. Barra de Mecha (Progreso inverso)
 			streak_bar = ProgressBar.new()
-			streak_bar.custom_minimum_size = Vector2(100, 8) # Más delgada
+			streak_bar.custom_minimum_size = Vector2(80, 10)
 			streak_bar.show_percentage = false
+			streak_bar.size_flags_vertical = Control.SIZE_CENTER
 			
 			# Estilo "Mecha" (Fuse)
 			var bg_style = StyleBoxFlat.new()
-			bg_style.bg_color = Color(0.2, 0.1, 0, 0.8)
-			bg_style.corner_radius_top_left = 2
-			bg_style.corner_radius_top_right = 2
-			bg_style.corner_radius_bottom_right = 2
-			bg_style.corner_radius_bottom_left = 2
+			bg_style.bg_color = Color(0.2, 0.1, 0, 0.6)
+			bg_style.corner_radius_all = 4
 			
 			var fill_style = StyleBoxFlat.new()
-			fill_style.bg_color = Color(1.0, 0.5, 0.0) # Naranja mecha
-			fill_style.corner_radius_top_left = 2
-			fill_style.corner_radius_top_right = 2
-			fill_style.corner_radius_bottom_right = 2
-			fill_style.corner_radius_bottom_left = 2
+			fill_style.bg_color = Color(1.0, 0.4, 0.1) # Naranja fuego
+			fill_style.corner_radius_all = 4
 			
 			streak_bar.add_theme_stylebox_override("background", bg_style)
 			streak_bar.add_theme_stylebox_override("fill", fill_style)
 			
-			# Añadir al padre (TopRight) para que quede debajo de CoinsContainer (si es VBox)
-			parent_container.add_child(streak_bar)
-			# Asegurar orden: Justo después de CoinsContainer
-			parent_container.move_child(streak_bar, coins_container.get_index() + 1)
+			streak_bar_container.add_child(streak_bar)
 			
-			streak_bar.visible = false # Oculto por defecto
+			# 3. Etiqueta de Valor (+XXX)
+			streak_value_label = Label.new()
+			streak_value_label.text = "+0"
+			streak_value_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4)) # Amarillo oro
+			streak_value_label.add_theme_font_size_override("font_size", 16)
+			streak_value_label.add_theme_constant_override("outline_size", 4)
+			streak_value_label.add_theme_color_override("font_outline_color", Color.BLACK)
+			streak_bar_container.add_child(streak_value_label)
+			
+			# Añadir al padre (TopRight) justo después de CoinsContainer
+			parent_container.add_child(streak_bar_container)
+			parent_container.move_child(streak_bar_container, coins_container.get_index() + 1)
+			
+			streak_bar_container.visible = false # Oculto por defecto
 
 func _update_streak_timer(time_left: float, max_time: float):
-	if streak_bar:
+	if streak_bar_container:
 		if time_left > 0:
-			streak_bar.visible = true
-			streak_bar.max_value = max_time
-			streak_bar.value = time_left
-			
-			# Efecto de parpadeo si queda poco (mecha agotándose)
-			if time_left < max_time * 0.3:
-				var alpha = 0.5 + 0.5 * sin(Time.get_ticks_msec() * 0.02)
-				streak_bar.modulate.a = alpha
-			else:
-				streak_bar.modulate.a = 1.0
+			streak_bar_container.visible = true
+			if streak_bar:
+				streak_bar.max_value = max_time
+				streak_bar.value = time_left
+				
+				# Efecto de parpadeo de la mecha
+				if time_left < max_time * 0.3:
+					streak_icon.modulate = Color(1, 0.5, 0.5) if (int(Time.get_ticks_msec() / 100) % 2 == 0) else Color.WHITE
+				else:
+					streak_icon.modulate = Color.WHITE
 		else:
-			streak_bar.visible = false
+			streak_bar_container.visible = false
 	if hp_bar:
 		var sb_bg = StyleBoxFlat.new()
 		sb_bg.bg_color = Color(0.1, 0.0, 0.0, 0.8)

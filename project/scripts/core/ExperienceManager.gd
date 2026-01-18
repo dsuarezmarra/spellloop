@@ -16,7 +16,7 @@ signal coin_created(coin: Node2D)
 signal coin_collected(amount: int, total: int)
 signal exp_gained(amount: int, total_exp: int)
 signal level_up(new_level: int, available_upgrades: Array)
-signal streak_updated(count: int)
+signal streak_updated(count: int, total_value: int)
 signal streak_timer_updated(time_left: float, max_time: float) # NUEVO: Para la barra de mecha
 
 # === REFERENCIAS ===
@@ -38,6 +38,7 @@ var coin_value_variance: float = 0.3  # ±30% variación en valor
 
 # Streak tracking for coin pickups
 var streak_count: int = 0
+var current_streak_value: int = 0 # Valor acumulado de la racha actual
 var last_coin_time: float = 0.0
 var streak_timeout: float = 2.0  # Segundos para mantener streak
 
@@ -70,7 +71,8 @@ func _process(delta: float) -> void:
 
 		if time_left <= 0:
 			streak_count = 0
-			streak_updated.emit(0)
+			current_streak_value = 0
+			streak_updated.emit(0, 0)
 
 	# Limpiar referencias a monedas destruidas (Lógica de limpieza)
 	var coins_to_remove = []
@@ -341,6 +343,7 @@ func _on_coin_collected(value: int) -> void:
 		streak_count += 1
 	else:
 		streak_count = 1
+		current_streak_value = 0 # Resetear valor acumulado en nueva racha
 	last_coin_time = now
 
 	# Aplicar multiplicador de streak (5% por cada streak adicional)
@@ -357,9 +360,10 @@ func _on_coin_collected(value: int) -> void:
 
 	# Añadir al total
 	total_coins += final_value
+	current_streak_value += final_value # Añadir al acumulado de la racha
 
 	# Emitir señales
-	streak_updated.emit(streak_count)
+	streak_updated.emit(streak_count, current_streak_value)
 	coin_collected.emit(final_value, total_coins)
 
 	# Guardar en SaveManager si existe
