@@ -14,6 +14,24 @@ var popup_locked: bool = false
 var is_jackpot_mode: bool = false
 var claim_button: Button = null
 
+# GESTIÓN DE PAUSA GLOBAL PARA POPUPS APILADOS
+static var active_instances: int = 0
+
+func _enter_tree():
+	active_instances += 1
+	get_tree().paused = true
+	# print("[SimpleChestPopup] Popup abierto. Activos: %d" % active_instances)
+
+func _exit_tree():
+	active_instances -= 1
+	if active_instances <= 0:
+		active_instances = 0
+		get_tree().paused = false
+		# print("[SimpleChestPopup] Todos los popups cerrados. Juego reanudado.")
+	else:
+		pass
+		# print("[SimpleChestPopup] Popup cerrado. Restantes: %d (Juego sigue pausado)" % active_instances)
+
 func _ready():
 	# CanvasLayer siempre está al frente (no afectado por cámara)
 	layer = 100
@@ -21,8 +39,8 @@ func _ready():
 	# CRUCIAL: Procesar SIEMPRE aunque el juego esté pausado
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
-	# Pausar el juego
-	get_tree().paused = true
+	# Pausar el juego (Manejado por _enter_tree via active_instances)
+	# get_tree().paused = true
 	
 	# Asegurar que puede recibir input
 	set_process_input(true)
@@ -227,7 +245,7 @@ func _on_claim_all_pressed():
 	if popup_locked: return
 	popup_locked = true
 	all_items_claimed.emit(available_items)
-	get_tree().paused = false
+	# get_tree().paused = false (Manejado por _exit_tree)
 	queue_free()
 
 func _on_button_pressed(button_index: int, item_data: Dictionary):
@@ -258,7 +276,7 @@ func _process_item_selection(item: Dictionary, button_index: int):
 	
 	item_selected.emit(item)
 	
-	get_tree().paused = false
+	# get_tree().paused = false (Manejado por _exit_tree)
 	
 	queue_free()
 

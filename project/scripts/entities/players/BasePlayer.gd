@@ -139,14 +139,7 @@ func _initialize_health_component() -> void:
 	else:
 		push_warning("[%s] No se pudo cargar HealthComponent" % character_class)
 
-func heal(amount: int) -> void:
-	"""Curar al jugador"""
-	if health_component:
-		health_component.heal(amount)
-		# Feedback visual
-		if _status_visual_node:
-			# TODO: Añadir efecto visual de curación
-			pass
+
 
 func _initialize_visual() -> void:
 	"""Inicializar sprite y animaciones"""

@@ -522,6 +522,42 @@ func _apply_item(item: Dictionary):
 				if player_ref.health_component.has_method("heal"):
 					player_ref.health_component.heal(amount)
 					
+		"consumable", "elixir", "potion":
+			# Manejar consumibles (curación, buffs temporales o permanentes)
+			var handled = false
+			
+			# 1. Curación directa
+			if item.has("heal_amount"):
+				var amount = item.get("heal_amount")
+				if player_ref and player_ref.has_method("heal"):
+					player_ref.heal(amount)
+					handled = true
+					print("[TreasureChest] 🧪 Consumible curó: %s HP" % amount)
+			
+			# 2. Efectos de stats
+			var effects = item.get("effects", [])
+			if not effects.is_empty():
+				var player_stats_nodes = get_tree().get_nodes_in_group("player_stats")
+				var player_stats = player_stats_nodes[0] if player_stats_nodes.size() > 0 else null
+				
+				if player_stats:
+					# Verificar si tiene duración (buff temporal)
+					var duration = item.get("duration", 0.0)
+					# Si tiene add_temporary_modifier, usarlo
+					if duration > 0 and player_stats.has_method("add_temporary_modifier"):
+						for eff in effects:
+							player_stats.add_temporary_modifier(eff.get("stat"), eff.get("value"), duration)
+						handled = true
+						print("[TreasureChest] 🧪 Consumible aplicó buffs temporales (%.1fs)" % duration)
+					else:
+						# Si no, aplicar como upgrade permanente
+						player_stats.apply_upgrade(item)
+						handled = true
+						print("[TreasureChest] 🧪 Consumible aplicado como upgrade permanente")
+			
+			if not handled:
+				print("[TreasureChest] ⚠️ Consumible sin efectos reconocidos: %s" % item)
+
 		_:
 			# Otros tipos (stats directos como speed_boost, etc. deberían ser upgrades)
 			# Si son temporales, se aplican aquí. Si son stats permanentes, mejor usar "upgrade".
