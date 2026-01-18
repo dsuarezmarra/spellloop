@@ -62,6 +62,7 @@ func _update_streak_value(count: int, total_value: int):
 var streak_bar_container: HBoxContainer = null
 var streak_icon: Label = null # Usaremos emoji por ahora, o texture si hay
 var streak_value_label: Label = null
+var streak_bar: ProgressBar = null
 
 func _create_streak_bar():
 	# Crear dinámicamente la barra de racha debajo de las monedas
@@ -84,16 +85,16 @@ func _create_streak_bar():
 			streak_bar = ProgressBar.new()
 			streak_bar.custom_minimum_size = Vector2(80, 10)
 			streak_bar.show_percentage = false
-			streak_bar.size_flags_vertical = Control.SIZE_CENTER
+			streak_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			
 			# Estilo "Mecha" (Fuse)
 			var bg_style = StyleBoxFlat.new()
 			bg_style.bg_color = Color(0.2, 0.1, 0, 0.6)
-			bg_style.corner_radius_all = 4
+			bg_style.set_corner_radius_all(4)
 			
 			var fill_style = StyleBoxFlat.new()
 			fill_style.bg_color = Color(1.0, 0.4, 0.1) # Naranja fuego
-			fill_style.corner_radius_all = 4
+			fill_style.set_corner_radius_all(4)
 			
 			streak_bar.add_theme_stylebox_override("background", bg_style)
 			streak_bar.add_theme_stylebox_override("fill", fill_style)

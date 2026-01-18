@@ -321,16 +321,14 @@ func _process(delta: float) -> void:
 	
 	# Procesar movimiento (input)
 	if not _is_dying:
-		# Lógica de movimiento restaurada
-		var movement_vector = input_manager.get_movement_vector()
-		if movement_vector.length() > 0:
-			velocity = movement_vector * move_speed
-			_is_moving = true
-		else:
-			velocity = velocity.move_toward(Vector2.ZERO, move_speed * 10 * delta)
-			_is_moving = false
+		# IMPORTANTE: El movimiento real se maneja en SpellloopPlayer.gd (wrapper)
+		# para evitar conflictos de posición física vs visual.
+		# BasePlayer solo actualiza su estado interno si es necesario.
+		pass
 			
-		move_and_slide()
+		# NO LLAMAR move_and_slide() AQUÍ si usamos SpellloopPlayer wrapper
+		
+		# -----------------------------------------------------------
 		
 		# -----------------------------------------------------------
 		# LÓGICA DE NUEVOS OBJETOS (Phase 4)

@@ -122,9 +122,11 @@ func _physics_process(_delta: float) -> void:
 	# Más confiable que colisiones físicas para barreras circulares
 	_enforce_zone_barriers()
 
-	# Sincronizar posición con WizardPlayer (para que sus sistemas funcionen)
+	# Sincronizar posición y velocidad con WizardPlayer (para que sus sistemas funcionen)
 	if wizard_player:
 		wizard_player.global_position = global_position
+		wizard_player.velocity = velocity # Sincronizar velocidad para lógica como Torreta
+
 
 func _enforce_zone_barriers() -> void:
 	"""Sistema de barreras basado en distancia - 100% confiable"""
