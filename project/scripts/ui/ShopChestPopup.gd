@@ -23,6 +23,11 @@ var exit_button: Button
 var confirm_modal: Control
 var item_buttons: Array[Control] = []
 
+# Modal navigation
+var modal_cancel_btn: Button = null
+var modal_confirm_btn: Button = null
+var modal_selected_index: int = 0  # 0 = Cancel, 1 = Confirm
+
 # === COLORES POR TIER ===
 const TIER_COLORS = {
 	1: Color(0.7, 0.7, 0.7),      # Gris (Común)
@@ -38,6 +43,83 @@ func _ready():
 	set_process_input(true)
 	
 	_build_ui()
+
+func _input(event: InputEvent) -> void:
+	"""Manejar input de teclado para navegación WASD y bloqueo de ESC"""
+	if not is_inside_tree():
+		return
+	
+	if popup_locked:
+		return
+	
+	# Si el modal de confirmación está visible, manejar navegación del modal
+	if showing_confirm_modal:
+		if event.is_action_pressed("ui_cancel"):  # ESC
+			# Cancelar y cerrar modal
+			get_viewport().set_input_as_handled()
+			_on_confirm_cancel()
+			return
+		
+		if event.is_action_pressed("ui_left") or event.is_action_pressed("move_left"):
+			get_viewport().set_input_as_handled()
+			modal_selected_index = 0
+			_update_modal_selection()
+			return
+		
+		if event.is_action_pressed("ui_right") or event.is_action_pressed("move_right"):
+			get_viewport().set_input_as_handled()
+			modal_selected_index = 1
+			_update_modal_selection()
+			return
+		
+		if event.is_action_pressed("ui_accept"):  # Space/Enter
+			get_viewport().set_input_as_handled()
+			if modal_selected_index == 0:
+				_on_confirm_cancel()
+			else:
+				_on_confirm_exit()
+			return
+		return  # Block all other input while modal shown
+	
+	# Navegación normal del popup de tienda
+	if event.is_action_pressed("ui_cancel"):  # ESC
+		get_viewport().set_input_as_handled()
+		_on_exit_pressed()  # Mostrar modal de confirmación
+		return
+	
+	if event.is_action_pressed("ui_up") or event.is_action_pressed("move_up"):
+		get_viewport().set_input_as_handled()
+		_navigate_items(-1)
+		return
+	
+	if event.is_action_pressed("ui_down") or event.is_action_pressed("move_down"):
+		get_viewport().set_input_as_handled()
+		_navigate_items(1)
+		return
+	
+	if event.is_action_pressed("ui_accept"):  # Space/Enter
+		get_viewport().set_input_as_handled()
+		if current_selected_index >= 0 and current_selected_index < item_buttons.size():
+			item_buttons[current_selected_index].emit_signal("pressed")
+		return
+
+func _navigate_items(direction: int) -> void:
+	"""Navegar entre items con W/S"""
+	if item_buttons.is_empty():
+		return
+	
+	current_selected_index += direction
+	current_selected_index = clampi(current_selected_index, 0, item_buttons.size() - 1)
+	
+	if current_selected_index >= 0 and current_selected_index < item_buttons.size():
+		item_buttons[current_selected_index].grab_focus()
+
+func _update_modal_selection() -> void:
+	"""Actualizar visual de selección en modal"""
+	if modal_cancel_btn:
+		modal_cancel_btn.modulate = Color(1.3, 1.3, 1.3) if modal_selected_index == 0 else Color.WHITE
+	if modal_confirm_btn:
+		modal_confirm_btn.modulate = Color(1.3, 1.3, 1.3) if modal_selected_index == 1 else Color.WHITE
 
 func _build_ui():
 	"""Construir toda la interfaz"""
@@ -187,6 +269,7 @@ func _build_confirm_modal():
 	cancel_btn.custom_minimum_size = Vector2(100, 35)
 	cancel_btn.pressed.connect(_on_confirm_cancel)
 	buttons_hbox.add_child(cancel_btn)
+	modal_cancel_btn = cancel_btn  # Store reference
 	
 	var confirm_btn = Button.new()
 	confirm_btn.text = "Salir"
@@ -197,6 +280,7 @@ func _build_confirm_modal():
 	confirm_style.set_corner_radius_all(4)
 	confirm_btn.add_theme_stylebox_override("normal", confirm_style)
 	buttons_hbox.add_child(confirm_btn)
+	modal_confirm_btn = confirm_btn  # Store reference
 
 func setup_shop(items: Array, coins: int):
 	"""Configurar la tienda con items y monedas del jugador"""

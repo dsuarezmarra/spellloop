@@ -74,6 +74,66 @@ func _ready():
 	await get_tree().process_frame
 	var screen_size = get_viewport().get_visible_rect().size
 	popup_bg.position = (screen_size - popup_bg.size) / 2
+	
+	# Inicializar selección
+	current_selected_index = 0
+
+func _input(event: InputEvent) -> void:
+	"""Manejar input de teclado para navegación WASD y bloqueo de ESC"""
+	if not is_inside_tree():
+		return
+	
+	if popup_locked:
+		return
+	
+	# Bloquear ESC completamente - el usuario debe seleccionar un item
+	if event.is_action_pressed("ui_cancel"):  # ESC
+		get_viewport().set_input_as_handled()
+		# No hacer nada - forzar selección
+		return
+	
+	# Navegación con W/S o flechas
+	if event.is_action_pressed("ui_up") or event.is_action_pressed("move_up"):
+		get_viewport().set_input_as_handled()
+		_navigate_selection(-1)
+		return
+	
+	if event.is_action_pressed("ui_down") or event.is_action_pressed("move_down"):
+		get_viewport().set_input_as_handled()
+		_navigate_selection(1)
+		return
+	
+	# Selección con Space/Enter
+	if event.is_action_pressed("ui_accept"):
+		get_viewport().set_input_as_handled()
+		if is_jackpot_mode and claim_button:
+			claim_button.emit_signal("pressed")
+		elif current_selected_index >= 0 and current_selected_index < item_buttons.size():
+			var item = available_items[current_selected_index]
+			_process_item_selection(item, current_selected_index)
+		return
+
+func _navigate_selection(direction: int) -> void:
+	"""Navegar entre items con W/S"""
+	if item_buttons.is_empty():
+		return
+	
+	# En modo jackpot, navegar hasta el botón claim
+	var max_index = item_buttons.size() - 1
+	if is_jackpot_mode and claim_button:
+		max_index = item_buttons.size()  # +1 para incluir claim button
+	
+	current_selected_index += direction
+	current_selected_index = clampi(current_selected_index, 0, max_index)
+	
+	_update_button_selection()
+	
+	# Dar foco visual
+	if is_jackpot_mode and current_selected_index == item_buttons.size() and claim_button:
+		claim_button.grab_focus()
+	elif current_selected_index >= 0 and current_selected_index < item_buttons.size():
+		if item_buttons[current_selected_index] is Button:
+			item_buttons[current_selected_index].grab_focus()
 
 func show_as_jackpot(items: Array):
 	"""Mostrar modo Jackpot (múltiples premios)"""

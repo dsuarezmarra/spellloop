@@ -1187,7 +1187,8 @@ func _show_weapons_tab() -> void:
 func _create_weapon_card(weapon) -> Control:
 	"""Crear tarjeta detallada de arma"""
 	var card = PanelContainer.new()
-	card.custom_minimum_size = Vector2(400, 0)
+	card.custom_minimum_size = Vector2(340, 0)  # Más pequeño para evitar desbordamiento
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL  # Expandir para llenar columna
 
 	# Obtener elemento y rareza (convertir a string si es enum/int)
 	var element_raw = weapon.element if "element" in weapon else weapon.element_type if "element_type" in weapon else "physical"
