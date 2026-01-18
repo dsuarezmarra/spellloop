@@ -350,11 +350,12 @@ func initialize_from_database(data: Dictionary, player) -> void:
 	enemy_tier = int(data.get("tier", enemy_tier))
 
 	# Stats (usar final_ si están calculados, sino base_)
-	max_hp = int(data.get("final_hp", data.get("base_hp", max_hp)))
+	# Stats (usar final_ si están calculados, sino base_)
+	max_hp = roundi(float(data.get("final_hp", data.get("base_hp", max_hp))))
 	hp = max_hp
 	speed = float(data.get("final_speed", data.get("base_speed", speed)))
-	damage = int(data.get("final_damage", data.get("base_damage", damage)))
-	exp_value = int(data.get("final_xp", data.get("base_xp", exp_value)))
+	damage = roundi(float(data.get("final_damage", data.get("base_damage", damage))))
+	exp_value = roundi(float(data.get("final_xp", data.get("base_xp", exp_value))))
 
 	# Configuración de combate
 	attack_range = float(data.get("attack_range", attack_range))

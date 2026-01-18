@@ -113,25 +113,48 @@ static func _generate_boss_loot(luck: float, context: Object) -> Array:
 			items.append(_generate_gold_loot(ChestType.BOSS, luck))
 			return items
 
-	# 2. JACKPOT (Si no hay fusión)
-	# 3 items garantizados: 1 Upgrade Raro, 1 Arma/Upgrade, 1 Upgrade
+	# 2. BOSS DATABASE LOOT
+	# Usar tabla de loot definida en BossDatabase
+	var BossDB = load("res://scripts/data/BossDatabase.gd")
+	var loot_config = BossDB.get_boss_loot("default") # Por defecto o pasar ID si estuviera disponible
 	
-	# Item 1: Upgrade de Tier Alto (Min Tier 2)
-	items.append(_generate_upgrade_loot(ChestType.BOSS, luck, 2))
-	
-	# Item 2: Arma o Upgrade
-	if randf() < 0.5:
-		items.append(_generate_weapon_loot(ChestType.BOSS, luck))
-	else:
-		items.append(_generate_upgrade_loot(ChestType.BOSS, luck, 2))
+	# Recompensas garantizadas
+	for guaranteed_item in loot_config.get("guaranteed", []):
+		var item = _resolve_loot_string(guaranteed_item, luck, context)
+		if item: items.append(item)
 		
-	# Item 3: Otro Upgrade
-	items.append(_generate_upgrade_loot(ChestType.BOSS, luck, 1))
-	
-	# Plus de oro grande
-	items.append(_generate_gold_loot(ChestType.BOSS, luck))
+	# Chance de extra
+	if randf() < loot_config.get("chance_for_extra", 0.0):
+		var pool = loot_config.get("pool", [])
+		if not pool.is_empty():
+			var pick = pool[randi() % pool.size()]
+			var item = _resolve_loot_string(pick, luck, context)
+			if item: items.append(item)
+			
+	# Garantizar al menos un item de pool si solo hay oro garantizado?
+	# La config actual da "gold_large" y "stat_upgrade_tier_3" garantizados en default.
+	# Si la lista de items sigue vacía (por error), fallback
+	if items.is_empty():
+		items.append(_generate_upgrade_loot(ChestType.BOSS, luck, 3))
 	
 	return items
+
+static func _resolve_loot_string(key: String, luck: float, context: Object) -> Dictionary:
+	match key:
+		"gold_large":
+			return _generate_gold_loot(ChestType.BOSS, luck)
+		"weapon_upgrade":
+			return _generate_weapon_loot(ChestType.BOSS, luck, context)
+		"stat_upgrade_tier_3":
+			return _generate_upgrade_loot(ChestType.BOSS, luck, 3)
+		"stat_upgrade_tier_4":
+			return _generate_upgrade_loot(ChestType.BOSS, luck, 4)
+		"unique_upgrade":
+			# Intentar tier 5 (Legendario/Unico)
+			return _generate_upgrade_loot(ChestType.BOSS, luck, 5)
+		_:
+			printerr("LootManager: Clave desconocida de BossDatabase: ", key)
+			return {}
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # GENERADORES ESPECÍFICOS

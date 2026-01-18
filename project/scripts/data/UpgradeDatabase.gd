@@ -236,8 +236,8 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 	# ─────────────────────────────────────────────────────────────────────────────
 	# ROBO DE VIDA
 	# ─────────────────────────────────────────────────────────────────────────────
-	"lifesteal_1": {
-		"id": "lifesteal_1",
+	"lifesteal_tier2": {
+		"id": "lifesteal_tier2",
 		"name": "Vampirismo Menor",
 		"description": "+5% robo de vida.",
 		"icon": "🩸",
@@ -246,8 +246,8 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 		"max_stacks": 4,
 		"effects": [{"stat": "life_steal", "value": 0.05, "operation": "add"}]
 	},
-	"lifesteal_2": {
-		"id": "lifesteal_2",
+	"lifesteal_tier3": {
+		"id": "lifesteal_tier3",
 		"name": "Vampirismo",
 		"description": "+7% robo de vida.",
 		"icon": "🩸",
@@ -256,8 +256,8 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 		"max_stacks": 3,
 		"effects": [{"stat": "life_steal", "value": 0.07, "operation": "add"}]
 	},
-	"lifesteal_3": {
-		"id": "lifesteal_3",
+	"lifesteal_tier4": {
+		"id": "lifesteal_tier4",
 		"name": "Sed de Sangre",
 		"description": "+12% robo de vida.",
 		"icon": "🩸",
@@ -606,8 +606,8 @@ const UTILITY_UPGRADES: Dictionary = {
 	# ─────────────────────────────────────────────────────────────────────────────
 	# SUERTE Y CODICIA (Portado de PassiveDatabase)
 	# ─────────────────────────────────────────────────────────────────────────────
-	"utility_luck_1": {
-		"id": "utility_luck_1",
+	"luck_1": {
+		"id": "luck_1",
 		"name": "Trébol de 4 Hojas",
 		"description": "+10% Suerte (mejores drops y opciones).",
 		"icon": "🍀",

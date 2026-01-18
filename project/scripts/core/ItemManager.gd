@@ -274,8 +274,8 @@ func apply_item_effect(item_type: String, item_data: Dictionary):
 			# Let's apply utility_luck_1 which is the standard
 			var player_stats = get_tree().get_first_node_in_group("player_stats")
 			if player_stats and player_stats.has_method("apply_upgrade_by_id"):
-				player_stats.apply_upgrade_by_id("utility_luck_1")
-				print("[ItemManager] 🍀 Suerte aumentada (utility_luck_1)")
+				player_stats.apply_upgrade_by_id("luck_1")
+				print("[ItemManager] 🍀 Suerte aumentada (luck_1)")
 
 		"armor":
 			# Equivalent to armor_1 (+3 armor)
