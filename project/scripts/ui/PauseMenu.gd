@@ -1121,6 +1121,9 @@ func _show_weapons_tab() -> void:
 	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	content_container.add_child(scroll)
+	
+	# Asignar scroll para navegación con teclado
+	content_scroll = scroll
 
 	var main_vbox = VBoxContainer.new()
 	main_vbox.add_theme_constant_override("separation", 12)

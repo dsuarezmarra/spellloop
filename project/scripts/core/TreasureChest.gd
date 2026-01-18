@@ -562,12 +562,19 @@ func _apply_item(item: Dictionary):
 			var handled = false
 			
 			# 1. Curación directa
-			if item.has("heal_amount"):
-				var amount = item.get("heal_amount")
+			# Soportar tanto "heal_amount" como "amount" si el efecto es curar
+			var is_heal = item.get("effect") == "heal" or "potion" in item_id or "elixir" in item_id
+			var heal_val = item.get("heal_amount", item.get("amount", 0))
+			
+			if is_heal and heal_val > 0:
 				if player_ref and player_ref.has_method("heal"):
-					player_ref.heal(amount)
+					player_ref.heal(heal_val)
 					handled = true
-					print("[TreasureChest] 🧪 Consumible curó: %s HP" % amount)
+					print("[TreasureChest] 🧪 Consumible curó: %s HP" % heal_val)
+				elif player_ref and "health_component" in player_ref and player_ref.health_component:
+					player_ref.health_component.heal(heal_val)
+					handled = true
+					print("[TreasureChest] 🧪 Consumible curó (direct HC): %s HP" % heal_val)
 			
 			# 2. Efectos de stats
 			var effects = item.get("effects", [])
@@ -578,14 +585,12 @@ func _apply_item(item: Dictionary):
 				if player_stats:
 					# Verificar si tiene duración (buff temporal)
 					var duration = item.get("duration", 0.0)
-					# Si tiene add_temporary_modifier, usarlo
 					if duration > 0 and player_stats.has_method("add_temporary_modifier"):
 						for eff in effects:
 							player_stats.add_temporary_modifier(eff.get("stat"), eff.get("value"), duration)
 						handled = true
 						print("[TreasureChest] 🧪 Consumible aplicó buffs temporales (%.1fs)" % duration)
 					else:
-						# Si no, aplicar como upgrade permanente
 						player_stats.apply_upgrade(item)
 						handled = true
 						print("[TreasureChest] 🧪 Consumible aplicado como upgrade permanente")

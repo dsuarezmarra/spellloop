@@ -282,15 +282,19 @@ static func _generate_weapon_loot(chest_type: int, luck: float, context: Object 
 
 	var selected_id = possible_weapons[randi() % possible_weapons.size()]
 	
-	# Obtener nombre bonito si es posible
+	# Obtener nombre bonito y descripción si es posible
 	var w_name = selected_id.capitalize().replace("_", " ")
+	var w_desc = "Nueva arma"
+	
 	if WeaponDB and WeaponDB.WEAPONS.has(selected_id):
 		w_name = WeaponDB.WEAPONS[selected_id].get("name", w_name)
+		w_desc = WeaponDB.WEAPONS[selected_id].get("description", w_desc)
 
 	return {
 		"id": selected_id,
 		"type": "weapon",
 		"name": w_name,
+		"description": w_desc,
 		"rarity": 3 if chest_type == ChestType.BOSS else 2,
 		"icon": "⚔️"
 	}

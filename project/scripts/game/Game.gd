@@ -739,7 +739,13 @@ func _clear_saved_state_deferred() -> void:
 	SessionState.clear_game_state()
 
 func _process(delta: float) -> void:
-	if not game_running or is_paused:
+	# Sistema de prioridad de popups:
+	# Si ya no estamos pausados (ej. cofre cerrado) y hay level ups pendientes, mostrarlos
+	if not get_tree().paused and not level_up_panel_active and not pending_level_ups.is_empty():
+		_process_next_level_up()
+
+	# Si el juego está pausado (por menú o por popups externos), no avanzar tiempo
+	if not game_running or is_paused or get_tree().paused:
 		return
 
 	# Actualizar tiempo
@@ -937,8 +943,8 @@ func _on_level_up(new_level: int, _upgrades: Array) -> void:
 	# Añadir a la cola de level ups pendientes
 	pending_level_ups.append(new_level)
 
-	# Solo mostrar panel si no hay uno activo
-	if not level_up_panel_active:
+	# Solo mostrar panel si no hay uno activo Y no hay pausa externa (ej. cofres)
+	if not level_up_panel_active and not get_tree().paused:
 		_process_next_level_up()
 
 func _process_next_level_up() -> void:

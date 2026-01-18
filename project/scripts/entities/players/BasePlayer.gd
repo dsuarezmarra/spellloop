@@ -61,6 +61,10 @@ var _curse_timer: float = 0.0
 var _curse_amount: float = 0.0  # % reducción de curación
 var _is_cursed: bool = false
 
+# ========== REGENERACIÓN ==========
+var _regen_accumulator: float = 0.0
+var _player_stats_ref: Node = null
+
 # ========== SISTEMA VISUAL DE DEBUFFS ==========
 var _status_visual_node: Node2D = null
 var _status_aura_timer: float = 0.0
@@ -219,10 +223,10 @@ func _find_global_managers() -> void:
 		attack_manager = game_manager.get_node_or_null("AttackManager")
 		
 	# Conectar señales de PlayerStats para actualizar la barra de vida/escudo
-	var player_stats = _gt.get_first_node_in_group("player_stats")
-	if player_stats and player_stats.has_signal("stat_changed"):
-		if not player_stats.stat_changed.is_connected(_on_stat_changed):
-			player_stats.stat_changed.connect(_on_stat_changed)
+	_player_stats_ref = _gt.get_first_node_in_group("player_stats")
+	if _player_stats_ref and _player_stats_ref.has_signal("stat_changed"):
+		if not _player_stats_ref.stat_changed.is_connected(_on_stat_changed):
+			_player_stats_ref.stat_changed.connect(_on_stat_changed)
 	
 	# Debug desactivado: print("[%s] GameManager: %s | AttackManager: %s" % [character_class, "✓" if game_manager else "✗", "✓" if attack_manager else "✗"])
 
@@ -250,7 +254,20 @@ func _equip_starting_weapons() -> void:
 var _is_moving: bool = false
 
 func _process(delta: float) -> void:
-	"""Actualizar animación según dirección de movimiento"""
+	"""Actualizar lógica por frame (Animación + Regeneración)"""
+	
+	# Regeneración de Vida (Fix bug reportado)
+	if _player_stats_ref and health_component and not _is_dying:
+		if health_component.current_health < health_component.max_health:
+			if _player_stats_ref.has_method("get_stat"):
+				var regen_rate = _player_stats_ref.get_stat("health_regen")
+				if regen_rate > 0.0:
+					_regen_accumulator += regen_rate * delta
+					if _regen_accumulator >= 1.0:
+						var heal_int = int(_regen_accumulator)
+						_regen_accumulator -= heal_int
+						heal(heal_int)
+
 	if not animated_sprite or not animated_sprite.sprite_frames:
 		return
 	

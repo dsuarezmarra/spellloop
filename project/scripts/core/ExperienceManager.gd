@@ -47,9 +47,24 @@ func _ready():
 	# Asegurar que ExperienceManager respete la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	
+	# Registrar en grupo para acceso global seguro
+	add_to_group("experience_manager")
+	
 	# Debug desactivado: print("⭐ ExperienceManager inicializado")
 	setup_level_curve()
 	_load_coin_scene()
+
+func add_coins(amount: int) -> void:
+	"""Añadir monedas directamente (desde cofres, eventos, etc)"""
+	total_coins += amount
+	
+	# Emitir señal con valor 0 para indicar que no hay valor recogido individualmente
+	# O podríamos emitir el amount. Lo importante es actualizar la UI.
+	coin_collected.emit(amount, total_coins)
+	
+	# Guardar
+	_save_coins_to_progression(amount)
+	# Debug desactivado: print("💰 ExperienceManager: Añadidas %d monedas (Total: %d)" % [amount, total_coins])
 
 func initialize(player_ref: CharacterBody2D):
 	"""Inicializar sistema de experiencia"""

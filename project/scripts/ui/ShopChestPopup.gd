@@ -105,10 +105,32 @@ func _input(event: InputEvent) -> void:
 
 func _update_modal_selection() -> void:
 	"""Actualizar visual de selección en modal"""
-	if modal_cancel_btn:
-		modal_cancel_btn.modulate = Color(1.3, 1.3, 1.3) if modal_selected_index == 0 else Color.WHITE
-	if modal_confirm_btn:
-		modal_confirm_btn.modulate = Color(1.3, 1.3, 1.3) if modal_selected_index == 1 else Color.WHITE
+	var buttons = [modal_cancel_btn, modal_confirm_btn]
+	for i in range(buttons.size()):
+		var btn = buttons[i]
+		if btn == null:
+			continue
+		
+		if i == modal_selected_index:
+			btn.modulate = Color(1.2, 1.2, 1.2)
+			
+			# Añadir borde brillante
+			var style = StyleBoxFlat.new()
+			style.set_corner_radius_all(4) # Use 4 for consistency with other buttons
+			style.set_border_width_all(2)
+			
+			# Usar color distintivo para confirmar (verde) vs cancelar (rojo)
+			if btn == modal_confirm_btn:
+				style.bg_color = Color(0.2, 0.5, 0.2) # Darker green background
+				style.border_color = Color(0.4, 1.0, 0.4) # Bright green border
+			else: # modal_cancel_btn
+				style.bg_color = Color(0.5, 0.2, 0.2) # Darker red background
+				style.border_color = Color(1.0, 0.4, 0.4) # Bright red border
+				
+			btn.add_theme_stylebox_override("normal", style)
+		else:
+			btn.modulate = Color(0.7, 0.7, 0.7)
+			btn.remove_theme_stylebox_override("normal")
 
 func _build_ui():
 	"""Construir toda la interfaz"""
@@ -303,7 +325,7 @@ func setup_shop(items: Array, coins: int):
 func _create_item_button(item: Dictionary, index: int) -> Control:
 	"""Crear botón de item con icono, nombre, descripción y precio"""
 	var btn = Button.new()
-	btn.custom_minimum_size = Vector2(440, 70)
+	btn.custom_minimum_size = Vector2(420, 70) # Reducido de 440 para evitar recorte
 	btn.mouse_filter = Control.MOUSE_FILTER_STOP
 	btn.focus_mode = Control.FOCUS_ALL # Permitir foco por teclado/gamepad
 	
