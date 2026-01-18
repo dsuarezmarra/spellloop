@@ -10,7 +10,7 @@ signal chest_opened(chest: Node2D, item_purchased: Dictionary)
 
 # === CONFIGURACIÓN ===
 @export_group("Spawn Timing")
-@export var spawn_interval_base: float = 20.0  # Segundos entre spawns
+@export var spawn_interval_base: float = 30.0  # Segundos entre spawns
 @export var spawn_interval_variance: float = 5.0  # ± varianza
 @export var first_spawn_delay: float = 15.0  # Delay antes del primer spawn
 
