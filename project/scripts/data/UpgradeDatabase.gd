@@ -2750,6 +2750,12 @@ static func get_random_player_upgrades(count: int, excluded_ids: Array, luck: fl
 			if check_tags.call(upgrade):
 				all_available.append(upgrade)
 	
+	# Añadir mejoras ofensivas (daño, crítico, velocidad de ataque, etc.)
+	for upgrade in OFFENSIVE_UPGRADES.values():
+		if upgrade.id not in excluded_ids:
+			if check_tags.call(upgrade):
+				all_available.append(upgrade)
+	
 	# Añadir cursed (menos frecuentes - 30% chance de incluirlas)
 	if randf() < 0.3:
 		for upgrade in CURSED_UPGRADES.values():

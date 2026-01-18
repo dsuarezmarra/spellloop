@@ -404,5 +404,6 @@ class WeaponData:
 			"range": weapon_range,
 			"level": level,
 			"tags": tags,
-			"evolution": evolution
+			"evolution": evolution,
+			"icon_path": "res://assets/icons/%s.png" % id
 		}

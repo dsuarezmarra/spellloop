@@ -221,6 +221,14 @@ static func _generate_upgrade_loot(chest_type: int, luck: float, min_tier_overri
 		_append_dict_values(all_upgrades, UpgradeDB.UTILITY_UPGRADES)
 		_append_dict_values(all_upgrades, UpgradeDB.OFFENSIVE_UPGRADES)
 		
+		# Incluir CURSED con 15% de probabilidad (trade-offs interesantes)
+		if randf() < 0.15:
+			_append_dict_values(all_upgrades, UpgradeDB.CURSED_UPGRADES)
+		
+		# Incluir UNIQUE solo para cofres BOSS (objetos especiales)
+		if chest_type == ChestType.BOSS:
+			_append_dict_values(all_upgrades, UpgradeDB.UNIQUE_UPGRADES)
+		
 		# Determinar tier mínimo
 		var min_tier = min_tier_override
 		if chest_type == ChestType.ELITE and min_tier < 2: min_tier = 2
@@ -271,6 +279,14 @@ static func _weighted_random(items: Array) -> Dictionary:
 	return items[0].data
 
 static func _generate_weapon_loot(chest_type: int, luck: float, context: Object = null) -> Dictionary:
+	# NUEVO: Verificar si hay slots disponibles antes de ofrecer armas
+	if context and context.has_method("get_weapons"):
+		var equipped = context.get_weapons()
+		var max_slots = 6 # Constante de slots máximos
+		if equipped.size() >= max_slots:
+			# No hay espacio para más armas - dar upgrade o monedas
+			return _generate_upgrade_loot(chest_type, luck)
+	
 	# Seleccionar arma aleatoria
 	var possible_weapons = []
 	
