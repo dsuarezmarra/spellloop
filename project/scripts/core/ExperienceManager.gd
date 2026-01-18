@@ -65,7 +65,18 @@ func add_coins(base_amount: int) -> void:
 	total_coins += final_amount
 	coin_collected.emit(final_amount, total_coins)
 	_save_coins_to_progression(final_amount)
+	_save_coins_to_progression(final_amount)
 	# Debug desactivado: print("💰 ExperienceManager: Añadidas %d monedas (Total: %d)" % [final_amount, total_coins])
+
+func spend_coins(amount: int) -> bool:
+	"""Gastar monedas y actualizar UI inmediatamente"""
+	if total_coins >= amount:
+		total_coins -= amount
+		# Emitimos coin_collected con valor negativo para actualizar el label del HUD sin animación de ganancia
+		coin_collected.emit(-amount, total_coins)
+		# Guardar progreso (si es necesario implementar persistencia aquí)
+		return true
+	return false
 
 func initialize(player_ref: CharacterBody2D):
 	"""Inicializar sistema de experiencia"""

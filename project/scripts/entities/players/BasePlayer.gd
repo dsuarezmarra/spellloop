@@ -8,6 +8,7 @@ class_name BasePlayer
 
 # ========== SEÑALES ==========
 signal player_damaged(amount: int, current_hp: int)
+signal health_changed(current_hp: int, max_hp: int) # REQUIRED by GameHUD
 signal player_took_damage(damage: int, element: String)  # Para efectos de feedback visual
 signal player_died
 signal weapon_equipped(weapon)
@@ -139,9 +140,61 @@ func _initialize_health_component() -> void:
 		if health_component.has_signal("died"):
 			health_component.died.connect(_on_health_died)
 		
+		# Sincronizar Max HP desde PlayerStats si ya existe y es diferente
+		var stats = get_tree().get_first_node_in_group("player_stats")
+		if stats and stats.has_method("get_stat"):
+			var stats_max = stats.get_stat("max_health")
+			if stats_max > 0 and stats_max != max_hp:
+				max_hp = int(stats_max)
+				health_component.set_max_health(max_hp)
+				print("[%s] Sincronizado Max HP con PlayerStats: %d" % [character_class, max_hp])
+
 		# Debug desactivado: print("[%s] ✓ Health component inicializado (HP: %d/%d)" % [character_class, hp, max_hp])
 	else:
 		push_warning("[%s] No se pudo cargar HealthComponent" % character_class)
+
+func _on_health_changed(current: int, max_val: int) -> void:
+	"""Handler para cuando cambia la vida en el componente"""
+	# Re-emitir para que la UI (GameHUD) se entere
+	health_changed.emit(current, max_val)
+
+func _on_health_died() -> void:
+	"""Handler para muerte"""
+	_is_dying = true
+	
+	# Desactivar input
+	set_process_input(false)
+	set_process_unhandled_input(false)
+	
+	# Detener movimiento
+	if "velocity" in self:
+		self.velocity = Vector2.ZERO
+	
+	# Reproducir animación de muerte LENTA (3x más lenta = 0.3 scale)
+	if animated_sprite:
+		animated_sprite.speed_scale = 0.3
+		if animated_sprite.sprite_frames.has_animation("death"):
+			animated_sprite.play("death")
+			
+			# Esperar a que termine la animación para emitir la señal de muerte (Game Over)
+			if not animated_sprite.animation_finished.is_connected(_on_death_animation_finished):
+				animated_sprite.animation_finished.connect(_on_death_animation_finished)
+		else:
+			# Fallback si no hay anim de muerte
+			get_tree().create_timer(1.0).timeout.connect(func(): player_died.emit())
+	else:
+		player_died.emit()
+
+func _on_death_animation_finished() -> void:
+	# Mantener el último frame (pausar sprite)
+	if animated_sprite:
+		animated_sprite.pause()
+		# Desconectar para no llamar múltiples veces
+		if animated_sprite.animation_finished.is_connected(_on_death_animation_finished):
+			animated_sprite.animation_finished.disconnect(_on_death_animation_finished)
+			
+	player_died.emit()
+
 
 
 
@@ -225,10 +278,21 @@ func _find_global_managers() -> void:
 	# Conectar señales de PlayerStats para actualizar la barra de vida/escudo
 	_player_stats_ref = _gt.get_first_node_in_group("player_stats")
 	if _player_stats_ref and _player_stats_ref.has_signal("stat_changed"):
-		if not _player_stats_ref.stat_changed.is_connected(_on_stat_changed):
-			_player_stats_ref.stat_changed.connect(_on_stat_changed)
+		if not _player_stats_ref.stat_changed.is_connected(_on_stats_changed_signal):
+			_player_stats_ref.stat_changed.connect(_on_stats_changed_signal)
 	
 	# Debug desactivado: print("[%s] GameManager: %s | AttackManager: %s" % [character_class, "✓" if game_manager else "✗", "✓" if attack_manager else "✗"])
+
+func _on_stats_changed_signal(stat_name, _old, new_val):
+	if stat_name == "max_health" and health_component:
+		max_hp = int(new_val)
+		health_component.set_max_health(max_hp)
+		# Emitir cambio para actualizar UI
+		health_changed.emit(health_component.current_health, max_hp)
+		
+	elif stat_name == "pickup_range":
+		pickup_radius = new_val
+		_update_pickup_area_size()
 
 func _setup_weapons_deferred() -> void:
 	"""Configurar armas después de que todo esté listo"""
@@ -256,17 +320,10 @@ var _is_moving: bool = false
 func _process(delta: float) -> void:
 	"""Actualizar lógica por frame (Animación + Regeneración)"""
 	
-	# Regeneración de Vida (Fix bug reportado)
-	if _player_stats_ref and health_component and not _is_dying:
-		if health_component.current_health < health_component.max_health:
-			if _player_stats_ref.has_method("get_stat"):
-				var regen_rate = _player_stats_ref.get_stat("health_regen")
-				if regen_rate > 0.0:
-					_regen_accumulator += regen_rate * delta
-					if _regen_accumulator >= 1.0:
-						var heal_int = int(_regen_accumulator)
-						_regen_accumulator -= heal_int
-						heal(heal_int)
+	# DUPLICATE REGEN LOGIC REMOVED
+	# La regeneración ahora es gestionada exclusivamente por PlayerStats.gd para evitar doble curación
+	# y asegurar centralización de la lógica.
+
 
 	if not animated_sprite or not animated_sprite.sprite_frames:
 		return
@@ -835,6 +892,12 @@ func heal(amount: int) -> void:
 		health_component.heal(final_heal)
 		var healed = health_component.current_health - old_hp
 		
+		# Emitir señal de cambio de vida
+		health_component.health_changed.emit(health_component.current_health, max_hp)
+
+		# Debug explícito para verificar que ESTE método se llama
+		print("[%s] HEAL() llamado. Amount: %.1f -> Healed: %.1f. HP Now: %d/%d" % [character_class, float(amount), float(healed), health_component.current_health, max_hp])
+
 		# Mostrar texto flotante de curación si realmente curó algo
 		if healed > 0:
 			FloatingText.spawn_heal(global_position + Vector2(0, -30), healed)

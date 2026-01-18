@@ -150,6 +150,7 @@ static func _generate_gold_loot(chest_type: int, luck: float) -> Dictionary:
 		"id": "gold_bag",
 		"type": "gold",
 		"name": "Bolsa de Oro",
+		"description": "+%d Monedas" % amount,
 		"amount": amount,
 		"rarity": 1,
 		"icon": "💰"
@@ -172,6 +173,7 @@ static func _generate_healing_loot(chest_type: int) -> Dictionary:
 		"type": "consumable",
 		"effect": "heal",
 		"name": name,
+		"description": "Restaura el 100% de la salud." if chest_type >= ChestType.ELITE else "Restaura el 30% de la salud.",
 		"amount": amount,
 		"rarity": 1,
 		"icon": icon

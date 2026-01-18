@@ -109,8 +109,8 @@ func _physics_process(_delta: float) -> void:
 
 		move_speed = final_speed
 
-	# No moverse si está stunneado
-	if wizard_player and wizard_player.is_stunned():
+	# No moverse si está stunneado o muriendo
+	if wizard_player and (wizard_player.is_stunned() or wizard_player._is_dying):
 		velocity = Vector2.ZERO
 	else:
 		var movement_input = input_manager.get_movement_vector()
