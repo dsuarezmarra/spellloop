@@ -157,6 +157,58 @@ static func get_modified_effect_duration(tree: SceneTree, base_duration: float) 
 	return base_duration
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# HELPER: STATUS EFFECTS CHANCE (burn, freeze, bleed from upgrades)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+static func apply_status_effects_chance(tree: SceneTree, enemy: Node) -> void:
+	"""
+	Roll for burn/freeze/bleed chances from PlayerStats and apply if successful.
+	This is called after damage to give player upgrade effects a chance to proc.
+	"""
+	if tree == null or enemy == null or not is_instance_valid(enemy):
+		return
+	
+	# Obtener PlayerStats
+	var player_stats_nodes = tree.get_nodes_in_group("player_stats")
+	if player_stats_nodes.is_empty():
+		return
+	
+	var player_stats = player_stats_nodes[0]
+	if not player_stats or not player_stats.has_method("get_stat"):
+		return
+	
+	# Obtener multiplicador de duración
+	var status_duration_mult = player_stats.get_stat("status_duration_mult")
+	if status_duration_mult <= 0:
+		status_duration_mult = 1.0
+	
+	# === BURN CHANCE ===
+	var burn_chance = player_stats.get_stat("burn_chance")
+	if burn_chance > 0 and randf() < burn_chance:
+		if enemy.has_method("apply_burn"):
+			var burn_dmg = player_stats.get_stat("burn_damage") if player_stats.has_method("get_stat") else 3.0
+			if burn_dmg <= 0:
+				burn_dmg = 3.0
+			enemy.apply_burn(burn_dmg, 3.0 * status_duration_mult)  # 3s base duration
+			# print("[StatusEffect] 🔥 Burn aplicado! (chance: %.0f%%)" % (burn_chance * 100))
+	
+	# === FREEZE CHANCE ===
+	var freeze_chance = player_stats.get_stat("freeze_chance")
+	if freeze_chance > 0 and randf() < freeze_chance:
+		if enemy.has_method("apply_freeze"):
+			enemy.apply_freeze(1.0, 1.0 * status_duration_mult)  # 1s freeze
+			# print("[StatusEffect] ❄️ Freeze aplicado! (chance: %.0f%%)" % (freeze_chance * 100))
+		elif enemy.has_method("apply_slow"):
+			enemy.apply_slow(0.5, 2.0 * status_duration_mult)  # Fallback: 50% slow 2s
+	
+	# === BLEED CHANCE ===
+	var bleed_chance = player_stats.get_stat("bleed_chance")
+	if bleed_chance > 0 and randf() < bleed_chance:
+		if enemy.has_method("apply_bleed"):
+			enemy.apply_bleed(2.0, 4.0 * status_duration_mult)  # 2 dmg/s for 4s
+			# print("[StatusEffect] 🩸 Bleed aplicado! (chance: %.0f%%)" % (bleed_chance * 100))
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # CREACIÓN DE PROYECTILES
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -382,6 +434,8 @@ class BeamEffect extends Node2D:
 			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
 			# Verificar execute threshold después del daño
 			ProjectileFactory.check_execute(get_tree(), enemy)
+			# Aplicar efectos de estado por probabilidad (burn, freeze, bleed)
+			ProjectileFactory.apply_status_effects_chance(get_tree(), enemy)
 
 		# Aplicar knockback
 		if knockback != 0 and enemy.has_method("apply_knockback"):
@@ -650,6 +704,9 @@ class AOEEffect extends Node2D:
 			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
 			# Verificar execute threshold después del daño
 			ProjectileFactory.check_execute(get_tree(), enemy)
+			# Aplicar efectos de estado por probabilidad (solo primer hit)
+			if not _enemies_damaged.has(enemy.get_instance_id()):
+				ProjectileFactory.apply_status_effects_chance(get_tree(), enemy)
 			# Debug de crítico (desactivado en producción)
 			# if is_crit:
 			#	print("[AOE] ⚡ CRIT! %s recibe %d daño (tick %d/%d)" % [enemy.name, int(final_damage), _ticks_applied, total_ticks])
@@ -1023,6 +1080,8 @@ class OrbitalManager extends Node2D:
 			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
 			# Verificar execute threshold después del daño
 			ProjectileFactory.check_execute(get_tree(), enemy)
+			# Aplicar efectos de estado por probabilidad
+			ProjectileFactory.apply_status_effects_chance(get_tree(), enemy)
 		
 		# Calcular knockback real (con bonus si aplica)
 		var final_knockback = knockback

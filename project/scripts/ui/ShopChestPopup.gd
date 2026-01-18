@@ -573,23 +573,51 @@ func _activate_selection():
 		item_buttons[current_selected_index].pressed.emit()
 
 func _update_selection_visuals():
-	"""Actualizar feedback visual de selección"""
+	"""Actualizar feedback visual de selección con borde brillante"""
 	for i in range(item_buttons.size()):
 		var btn = item_buttons[i]
 		if i == current_selected_index:
-			# Resaltar seleccionado
-			btn.modulate = Color(1.3, 1.3, 1.5) # Brillo azulado
-			# Scale effect
+			# Crear estilo con borde dorado brillante para selección
+			var selected_style = StyleBoxFlat.new()
+			selected_style.bg_color = Color(0.2, 0.25, 0.3, 1.0)
+			selected_style.border_color = Color(1.0, 0.85, 0.2, 1.0)  # Dorado brillante
+			selected_style.set_border_width_all(4)
+			selected_style.set_corner_radius_all(8)
+			btn.add_theme_stylebox_override("normal", selected_style)
+			btn.add_theme_stylebox_override("hover", selected_style)
+			btn.modulate = Color(1.2, 1.2, 1.1)
 			btn.scale = Vector2(1.02, 1.02)
 		else:
+			# Restaurar estilo normal
+			var normal_style = StyleBoxFlat.new()
+			normal_style.bg_color = Color(0.15, 0.15, 0.18, 1.0)
+			normal_style.border_color = Color(0.5, 0.5, 0.6, 0.8)
+			normal_style.set_border_width_all(2)
+			normal_style.set_corner_radius_all(6)
+			btn.add_theme_stylebox_override("normal", normal_style)
+			btn.add_theme_stylebox_override("hover", normal_style)
 			btn.modulate = Color.WHITE
 			btn.scale = Vector2(1.0, 1.0)
 			
 	# Botón salir
 	if current_selected_index == item_buttons.size():
-		exit_button.modulate = Color(1.3, 1.0, 1.0) # Brillo rojizo
+		var exit_style = StyleBoxFlat.new()
+		exit_style.bg_color = Color(0.3, 0.15, 0.15, 1.0)
+		exit_style.border_color = Color(1.0, 0.5, 0.3, 1.0)  # Naranja-rojo
+		exit_style.set_border_width_all(4)
+		exit_style.set_corner_radius_all(6)
+		exit_button.add_theme_stylebox_override("normal", exit_style)
+		exit_button.add_theme_stylebox_override("hover", exit_style)
+		exit_button.modulate = Color(1.2, 1.1, 1.0)
 		exit_button.scale = Vector2(1.02, 1.02)
 	else:
+		var normal_exit = StyleBoxFlat.new()
+		normal_exit.bg_color = Color(0.25, 0.15, 0.15, 1.0)
+		normal_exit.border_color = Color(0.6, 0.4, 0.4, 0.8)
+		normal_exit.set_border_width_all(2)
+		normal_exit.set_corner_radius_all(4)
+		exit_button.add_theme_stylebox_override("normal", normal_exit)
+		exit_button.add_theme_stylebox_override("hover", normal_exit)
 		exit_button.modulate = Color.WHITE
 		exit_button.scale = Vector2(1.0, 1.0)
 

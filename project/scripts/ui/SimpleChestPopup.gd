@@ -256,15 +256,33 @@ func _process_item_selection(item: Dictionary, button_index: int):
 	queue_free()
 
 func _update_button_selection():
-	"""Actualizar estilos visuales según selección"""
+	"""Actualizar estilos visuales según selección con borde brillante"""
 	if is_jackpot_mode: return
 	for i in range(item_buttons.size()):
 		if item_buttons[i] is Button:
+			var btn = item_buttons[i]
 			var is_selected = (i == current_selected_index)
+			
 			if is_selected:
-				item_buttons[i].modulate = Color(1.5, 1.5, 1.0, 1.0)
+				# Crear estilo con borde brillante para selección
+				var selected_style = StyleBoxFlat.new()
+				selected_style.bg_color = Color(0.2, 0.25, 0.3, 1.0)  # Fondo ligeramente más claro
+				selected_style.border_color = Color(1.0, 0.9, 0.3, 1.0)  # Borde dorado brillante
+				selected_style.set_border_width_all(4)  # Borde grueso
+				selected_style.set_corner_radius_all(8)
+				btn.add_theme_stylebox_override("normal", selected_style)
+				btn.add_theme_stylebox_override("hover", selected_style)
+				btn.modulate = Color(1.2, 1.2, 1.1, 1.0)  # Brillo adicional
 			else:
-				item_buttons[i].modulate = Color.WHITE
+				# Restaurar estilo normal
+				var normal_style = StyleBoxFlat.new()
+				normal_style.bg_color = Color(0.15, 0.15, 0.18, 1.0)
+				normal_style.border_color = Color(0.5, 0.5, 0.6, 0.8)
+				normal_style.set_border_width_all(2)
+				normal_style.set_corner_radius_all(6)
+				btn.add_theme_stylebox_override("normal", normal_style)
+				btn.add_theme_stylebox_override("hover", normal_style)
+				btn.modulate = Color.WHITE
 
 func apply_button_style(button: Button, index: int, item_type: String = "upgrade", rarity: int = 0):
 	"""Aplicar estilos a los botones según tipo de item"""
