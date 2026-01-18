@@ -137,7 +137,6 @@ func _initialize_health_component() -> void:
 		
 		# Debug desactivado: print("[%s] ✓ Health component inicializado (HP: %d/%d)" % [character_class, hp, max_hp])
 	else:
-	else:
 		push_warning("[%s] No se pudo cargar HealthComponent" % character_class)
 
 func heal(amount: int) -> void:
