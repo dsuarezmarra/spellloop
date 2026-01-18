@@ -434,6 +434,10 @@ func _show_stats_tab() -> void:
 	# === STATS OFENSIVOS GLOBALES (afectan a todas las armas) ===
 	_create_global_weapon_stats_section(main_vbox)
 
+	# === EFECTOS DE ESTADO Y BONUS (Ofensivo) ===
+	_create_stats_section(main_vbox, "offensive", "🛡️ EFECTOS Y BONUS")
+
+
 	# === BUFFS ACTIVOS (si los hay) ===
 	_create_active_buffs_section(main_vbox)
 
@@ -598,6 +602,26 @@ const DEFAULT_STAT_METADATA = {
 	"duration_mult": {"name": "Duracion", "icon": ":", "description": "Duracion de efectos"},
 	"extra_projectiles": {"name": "Proyectiles Extra", "icon": "x", "description": "Proyectiles adicionales"},
 	"knockback_mult": {"name": "Empuje", "icon": "<-", "description": "Fuerza de empuje"},
+	
+	# === NUEVOS STATS OFENSIVOS (v3.0) ===
+	"elite_damage_mult": {"name": "Daño Elites", "icon": "💀", "description": "Daño extra a elites y jefes"},
+	"burn_chance": {"name": "Prob. Quemar", "icon": "🔥", "description": "Probabilidad de quemar enemigos"},
+	"freeze_chance": {"name": "Prob. Congelar", "icon": "❄️", "description": "Probabilidad de congelar enemigos"},
+	"bleed_chance": {"name": "Prob. Sangrado", "icon": "🩸", "description": "Probabilidad de causar sangrado"},
+	"explosion_chance": {"name": "Prob. Explosión", "icon": "💣", "description": "Probabilidad de exploar al matar"},
+	"execute_threshold": {"name": "Ejecución", "icon": "⚰️", "description": "Mata enemigos con poca vida"},
+	"status_duration_mult": {"name": "Dur. Efectos", "icon": "⏳", "description": "Duración de estados alterados"},
+	"kill_heal": {"name": "Vida por Kill", "icon": "💗", "description": "Curación al eliminar enemigos"},
+	"burn_damage": {"name": "Daño Fuego", "icon": "🔥", "description": "Daño por quemadura"},
+	"explosion_damage": {"name": "Daño Expl.", "icon": "💥", "description": "Daño de explosiones"},
+	
+	# === UTILIDAD ===
+	"revives": {"name": "Revivir", "icon": "🆙", "description": "Vidas extra"},
+	"reroll_count": {"name": "Rerolls", "icon": "🎲", "description": "Cambiar opciones al subir nivel"},
+	"banish_count": {"name": "Banish", "icon": "🚫", "description": "Bloquear opciones al subir nivel"},
+	"magnet_strength": {"name": "Imán", "icon": "🧲", "description": "Fuerza de atracción de objetos"},
+	"levelup_options": {"name": "Opciones", "icon": "📚", "description": "Opciones extra al elegir mejora"},
+
 	# === CRITICOS ===
 	"crit_chance": {"name": "Prob. Critico", "icon": "*", "description": "Probabilidad de critico"},
 	"crit_damage": {"name": "Danio Critico", "icon": "**", "description": "Multiplicador de danio critico"},
@@ -690,8 +714,10 @@ func _get_stats_for_category(category: String) -> Array:
 					"damage_taken_mult", "thorns", "thorns_percent", "shield_amount", 
 					"shield_regen", "revives"]
 		"offensive":
-			return ["damage_mult", "elite_damage_mult", "burn_chance", "freeze_chance", 
-					"bleed_chance", "explosion_chance", "execute_threshold"]
+			# "damage_mult" ya está en Stats de Armas Globales
+			return ["elite_damage_mult", "burn_chance", "freeze_chance", 
+					"bleed_chance", "explosion_chance", "execute_threshold",
+					"status_duration_mult", "kill_heal", "burn_damage", "explosion_damage"]
 		"critical":
 			# Los críticos son stats de ARMAS, no del jugador
 			# Se muestran en el popup de cada arma, no aquí

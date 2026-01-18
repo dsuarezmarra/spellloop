@@ -175,9 +175,38 @@ func fire_weapon(weapon: WeaponData, target_position: Vector2):
 	weapon_fired.emit(weapon.id, target_position)
 
 func fire_projectile(weapon: WeaponData, target_position: Vector2):
-	# DESACTIVADO: Solo usamos IceWand.gd para proyectiles
-	# Los puntos violeta venian de SpellloopMagicProjectile
-	pass
+	"""Disparar proyectil usando la fábrica centralizada"""
+	# Construir diccionario de datos para la fábrica
+	var direction = (target_position - player.global_position).normalized()
+	
+	var data = {
+		"start_position": player.global_position,
+		"direction": direction,
+		"damage": weapon.damage,
+		"speed": weapon.projectile_speed,
+		"range": weapon.weapon_range,
+		"knockback": weapon.knockback,
+		"pierce": weapon.pierce,
+		"element": weapon.element,
+		"weapon_id": weapon.id
+	}
+	
+	# Añadir efectos si existen
+	if "effect" in weapon:
+		data["effect"] = weapon.effect
+	if "effect_value" in weapon:
+		data["effect_value"] = weapon.effect_value
+	if "effect_duration" in weapon:
+		data["effect_duration"] = weapon.effect_duration
+	if "crit_chance" in weapon:
+		data["crit_chance"] = weapon.crit_chance
+		
+	# Pasar color si existe
+	if "color" in weapon:
+		data["color"] = weapon.color
+	
+	# Usar ProjectileFactory para crear el proyectil correcto
+	ProjectileFactory.create_projectile(player, data)
 
 
 func fire_area_spell(weapon: WeaponData, _target_position: Vector2):

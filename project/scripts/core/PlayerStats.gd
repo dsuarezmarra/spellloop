@@ -1543,6 +1543,7 @@ func apply_upgrade(upgrade_data) -> bool:
 		return true
 
 	push_warning("[PlayerStats] No se pudo aplicar upgrade: %s" % str(upgrade_data))
+	print("❌ [PlayerStats] Upgrade fallido. Keys recibidas: ", upgrade_dict.keys())
 	return false
 
 func _apply_weapon_effects_to_global(effects: Array, upgrade_dict: Dictionary) -> void:

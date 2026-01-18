@@ -452,10 +452,12 @@ func _apply_item(item: Dictionary):
 			# IMPORTANTE: LootManager devuelve un wrapper con la data real en "data"
 			# Debemos pasar la data real (que contiene "effects") al PlayerStats
 			var upgrade_data = item.get("data", item)
+			print("[TreasureChest] Aplicando upgrade: %s (Raw: %s)" % [upgrade_data, item])
 			
 			var player_stats = get_tree().current_scene.get_node_or_null("PlayerStats")
 			if player_stats and player_stats.has_method("add_upgrade"):
-				player_stats.add_upgrade(upgrade_data)
+				var result = player_stats.add_upgrade(upgrade_data)
+				print("[TreasureChest] Upgrade applied: %s" % result)
 			elif player_ref and player_ref.has_method("apply_upgrade"):
 				player_ref.apply_upgrade(upgrade_data)
 		
