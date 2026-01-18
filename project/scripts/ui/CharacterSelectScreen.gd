@@ -165,33 +165,7 @@ func _build_ui() -> void:
 	instructions_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 	add_child(instructions_label)
 
-	# Buttons at bottom
-	var button_container = HBoxContainer.new()
-	button_container.name = "Buttons"
-	button_container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	button_container.offset_top = -50
-	button_container.offset_bottom = -10
-	button_container.offset_left = 100
-	button_container.offset_right = -100
-	button_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	button_container.add_theme_constant_override("separation", 50)
-	add_child(button_container)
 
-	back_button = Button.new()
-	back_button.name = "BackButton"
-	back_button.text = "BACK"
-	back_button.custom_minimum_size = Vector2(150, 45)
-	back_button.add_theme_font_size_override("font_size", 18)
-	back_button.pressed.connect(_on_back_pressed)
-	button_container.add_child(back_button)
-
-	play_button = Button.new()
-	play_button.name = "PlayButton"
-	play_button.text = "START ADVENTURE"
-	play_button.custom_minimum_size = Vector2(200, 50)
-	play_button.add_theme_font_size_override("font_size", 20)
-	play_button.pressed.connect(_on_play_pressed)
-	button_container.add_child(play_button)
 
 func _build_stats_panel() -> void:
 	"""Build the stats display panel"""
