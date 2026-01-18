@@ -419,33 +419,33 @@ func _update_button_selection():
 			
 		var is_selected = (i == current_selected_index)
 			
-			# Buscar o crear el panel de glow
-			var glow_panel = btn.get_node_or_null("SelectionGlow")
-			if not glow_panel:
-				glow_panel = Panel.new()
-				glow_panel.name = "SelectionGlow"
-				glow_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				glow_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
-				# Estilo del glow brillante
-				var glow_style = StyleBoxFlat.new()
-				glow_style.bg_color = Color(0, 0, 0, 0)  # Transparente
-				glow_style.border_color = Color(1.0, 0.85, 0.2, 1.0)  # Dorado brillante
-				glow_style.set_border_width_all(5)  # Borde grueso
-				glow_style.set_corner_radius_all(10)
-				glow_style.set_expand_margin_all(4)  # Expande el glow hacia afuera
-				glow_panel.add_theme_stylebox_override("panel", glow_style)
-				btn.add_child(glow_panel)
-				# Mover al fondo para que esté detrás del contenido
-				btn.move_child(glow_panel, 0)
-			
-			# Mostrar u ocultar
-			glow_panel.visible = is_selected
-			
-			# Brillo adicional en el botón seleccionado
-			if is_selected:
-				btn.modulate = Color(1.15, 1.15, 1.05, 1.0)
-			else:
-				btn.modulate = Color.WHITE
+		# Buscar o crear el panel de glow
+		var glow_panel = btn.get_node_or_null("SelectionGlow")
+		if not glow_panel:
+			glow_panel = Panel.new()
+			glow_panel.name = "SelectionGlow"
+			glow_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			glow_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+			# Estilo del glow brillante
+			var glow_style = StyleBoxFlat.new()
+			glow_style.bg_color = Color(0, 0, 0, 0)  # Transparente
+			glow_style.border_color = Color(1.0, 0.85, 0.2, 1.0)  # Dorado brillante
+			glow_style.set_border_width_all(5)  # Borde grueso
+			glow_style.set_corner_radius_all(10)
+			glow_style.set_expand_margin_all(4)  # Expande el glow hacia afuera
+			glow_panel.add_theme_stylebox_override("panel", glow_style)
+			btn.add_child(glow_panel)
+			# Mover al fondo para que esté detrás del contenido
+			btn.move_child(glow_panel, 0)
+		
+		# Mostrar u ocultar
+		glow_panel.visible = is_selected
+		
+		# Brillo adicional en el botón seleccionado
+		if is_selected:
+			btn.modulate = Color(1.15, 1.15, 1.05, 1.0)
+		else:
+			btn.modulate = Color.WHITE
 
 func apply_button_style(button: Button, index: int, item_type: String = "upgrade", rarity: int = 0):
 	"""Aplicar estilos a los botones según tipo de item"""
