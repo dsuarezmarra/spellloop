@@ -435,17 +435,29 @@ func _apply_item(item: Dictionary):
 	
 	match item_type:
 		"weapon":
-			# Añadir arma al WeaponManager
+			# Añadir arma usando AttackManager (el sistema correcto de armas)
+			# AttackManager.add_weapon_by_id crea un BaseWeapon con comportamiento completo
 			print("[TreasureChest] Intentando añadir arma: %s" % item_id)
-			var weapon_mgr = get_tree().current_scene.get_node_or_null("WeaponManager")
-			if weapon_mgr and weapon_mgr.has_method("add_weapon_by_id"):
-				var result = weapon_mgr.add_weapon_by_id(item_id)
-				print("[TreasureChest] Resultado añadir arma: %s" % result)
-			elif player_ref and "attack_manager" in player_ref:
-				if player_ref.attack_manager.has_method("add_weapon_by_id"):
-					player_ref.attack_manager.add_weapon_by_id(item_id)
+			var result = false
+			
+			print("[TreasureChest] DEBUG: player_ref = %s" % player_ref)
+			print("[TreasureChest] DEBUG: has attack_manager = %s" % ("attack_manager" in player_ref if player_ref else "N/A"))
+			
+			if player_ref and "attack_manager" in player_ref:
+				var attack_mgr = player_ref.attack_manager
+				print("[TreasureChest] DEBUG: attack_mgr = %s" % attack_mgr)
+				print("[TreasureChest] DEBUG: has add_weapon_by_id = %s" % (attack_mgr.has_method("add_weapon_by_id") if attack_mgr else "N/A"))
+				
+				if attack_mgr and attack_mgr.has_method("add_weapon_by_id"):
+					result = attack_mgr.add_weapon_by_id(item_id)
+					print("[TreasureChest] Arma añadida via AttackManager: %s" % result)
+				else:
+					push_error("[TreasureChest] AttackManager no tiene add_weapon_by_id")
 			else:
-				push_error("[TreasureChest] No se encontró WeaponManager para añadir arma: %s" % item_id)
+				push_error("[TreasureChest] No se encontró player_ref.attack_manager para añadir arma: %s" % item_id)
+			
+			if not result:
+				print("[TreasureChest] ❌ Falló añadir arma: %s" % item_id)
 		
 		"upgrade":
 			# Aplicar upgrade al PlayerStats
