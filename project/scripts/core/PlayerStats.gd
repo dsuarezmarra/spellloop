@@ -1470,8 +1470,8 @@ func take_damage(amount: float) -> float:
 	
 	return effective_damage
 
-func _process(delta: float) -> void:
-	"""Procesar regeneración"""
+func _update_shield_regen(delta: float) -> void:
+	"""Procesar regeneración de escudo"""
 	if current_health <= 0: return
 	
 	# --- SHIELD REGEN ---
@@ -1489,12 +1489,6 @@ func _process(delta: float) -> void:
 				# Clamp
 				if get_stat("shield_amount") > max_shield:
 					set_stat("shield_amount", max_shield)
-
-	# --- HEALTH REGEN ---
-	var hp_regen = get_stat("health_regen")
-	var max_hp = get_stat("max_health")
-	if hp_regen > 0 and current_health < max_hp and current_health > 0:
-		heal(hp_regen * delta)
 
 var _shield_regen_delay_timer: float = 0.0
 
