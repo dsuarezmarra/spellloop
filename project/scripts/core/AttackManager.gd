@@ -309,6 +309,21 @@ func remove_weapon(weapon) -> bool:
 	weapon_removed.emit(weapon, slot_index)
 	slots_updated.emit(current_weapon_count, max_weapon_slots)
 
+	# LIMPIEZA DE NODOS PERSISTENTES (Fix Ghost Orbs)
+	if player and is_instance_valid(player):
+		var wid = _get_weapon_id(weapon)
+		if not wid.is_empty():
+			# 1. Borrar OrbitalManager si existe (proyectiles que orbitan adheridos al player)
+			var orbital_mgr = player.get_node_or_null("OrbitalManager_" + wid)
+			if orbital_mgr:
+				orbital_mgr.queue_free()
+				print("[AttackManager] 🧹 Limpiado OrbitalManager para: ", wid)
+			
+			# 2. Borrar proyectiles sueltos en el grupo especifico (proyectiles de vuelo libre)
+			# Usamos call_deferred para asegurar limpieza segura physics-safe
+			if player.get_tree():
+				player.get_tree().call_group("weapon_projectiles_" + wid, "queue_free")
+
 	return true
 
 func remove_weapon_at_slot(slot_index: int) -> bool:
