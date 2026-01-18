@@ -280,7 +280,7 @@ func _equip_starting_weapons() -> void:
 # ========== MOVIMIENTO ==========
 
 var _is_moving: bool = false
-var _is_moving: bool = false
+
 var _slow_aura_timer: float = 0.0
 var _stationary_timer: float = 0.0  # Para la mejora "Torreta"
 var _turret_buff_active: bool = false

@@ -2400,9 +2400,6 @@ const UNIQUE_UPGRADES: Dictionary = {
 			{"stat": "armor", "value": -10, "operation": "add"}, 
 			{"stat": "health_regen", "value": 0.5, "operation": "multiply"}
 		]
-	}
-}
-		]
 	},
 	"unique_midas": {
 		"id": "unique_midas",
