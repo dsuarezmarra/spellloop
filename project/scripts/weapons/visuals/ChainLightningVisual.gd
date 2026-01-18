@@ -165,7 +165,7 @@ func fire_at(from: Vector2, to: Vector2) -> void:
 func set_chain_count(count: int) -> void:
 	"""Actualizar el número de cadenas esperadas y ajustar duración"""
 	_expected_chains = count
-	_max_duration = max(0.5, count * 0.15 + 0.3)
+	_max_duration = max(0.5, count * 0.05 + 0.3)
 
 func disable_auto_fade() -> void:
 	"""Desactivar el auto-fade (útil para control manual)"""

@@ -445,11 +445,15 @@ func _apply_item(item: Dictionary):
 		
 		"upgrade":
 			# Aplicar upgrade al PlayerStats
+			# IMPORTANTE: LootManager devuelve un wrapper con la data real en "data"
+			# Debemos pasar la data real (que contiene "effects") al PlayerStats
+			var upgrade_data = item.get("data", item)
+			
 			var player_stats = get_tree().current_scene.get_node_or_null("PlayerStats")
 			if player_stats and player_stats.has_method("add_upgrade"):
-				player_stats.add_upgrade(item)
+				player_stats.add_upgrade(upgrade_data)
 			elif player_ref and player_ref.has_method("apply_upgrade"):
-				player_ref.apply_upgrade(item)
+				player_ref.apply_upgrade(upgrade_data)
 		
 		"gold":
 			# Añadir oro
