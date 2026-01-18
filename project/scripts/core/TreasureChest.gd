@@ -440,21 +440,15 @@ func _apply_item(item: Dictionary):
 			print("[TreasureChest] Intentando añadir arma: %s" % item_id)
 			var result = false
 			
-			print("[TreasureChest] DEBUG: player_ref = %s" % player_ref)
-			print("[TreasureChest] DEBUG: has attack_manager = %s" % ("attack_manager" in player_ref if player_ref else "N/A"))
+			# Buscar AttackManager por grupo (más robusto que player_ref.attack_manager)
+			var attack_mgr = get_tree().get_first_node_in_group("attack_manager")
+			print("[TreasureChest] DEBUG: attack_mgr = %s" % attack_mgr)
 			
-			if player_ref and "attack_manager" in player_ref:
-				var attack_mgr = player_ref.attack_manager
-				print("[TreasureChest] DEBUG: attack_mgr = %s" % attack_mgr)
-				print("[TreasureChest] DEBUG: has add_weapon_by_id = %s" % (attack_mgr.has_method("add_weapon_by_id") if attack_mgr else "N/A"))
-				
-				if attack_mgr and attack_mgr.has_method("add_weapon_by_id"):
-					result = attack_mgr.add_weapon_by_id(item_id)
-					print("[TreasureChest] Arma añadida via AttackManager: %s" % result)
-				else:
-					push_error("[TreasureChest] AttackManager no tiene add_weapon_by_id")
+			if attack_mgr and attack_mgr.has_method("add_weapon_by_id"):
+				result = attack_mgr.add_weapon_by_id(item_id)
+				print("[TreasureChest] ✅ Arma añadida via AttackManager: %s" % result)
 			else:
-				push_error("[TreasureChest] No se encontró player_ref.attack_manager para añadir arma: %s" % item_id)
+				push_error("[TreasureChest] No se pudo añadir arma: attack_manager=%s" % attack_mgr)
 			
 			if not result:
 				print("[TreasureChest] ❌ Falló añadir arma: %s" % item_id)
