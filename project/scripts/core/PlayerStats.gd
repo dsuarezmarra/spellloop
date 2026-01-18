@@ -545,12 +545,10 @@ const BASE_STATS: Dictionary = {
 	"reroll_count": 0,             # Rerolls extra
 	"banish_count": 0,             # Banishes extra
 	"levelup_options": 0,          # Opciones extra en levelup
-	"revives": 0,                  # Vidas extra (Guardian Angel)
 	
 	# Nuevos Stats (New Items Phase)
 	"damage_per_gold": 0.0,        # +% daño por 100 oro
 	"heal_on_pickup": 0,           # HP curado al recoger items
-	"xp_on_reroll": 0.0,           # % XP ganado al hacer reroll
 	"xp_on_reroll": 0.0,           # % XP ganado al hacer reroll
 	"momentum_factor": 0.0,        # % de velocidad convertido a daño
 	

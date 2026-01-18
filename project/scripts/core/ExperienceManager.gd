@@ -67,9 +67,19 @@ func _process(delta: float) -> void:
 		
 		# Si se acabó el tiempo, resetear streak (la lógica original ya hacía esto al recoger moneda, 
 		# pero para la UI necesitamos saber cuando llega a 0 en tiempo real)
+
 		if time_left <= 0:
 			streak_count = 0
 			streak_updated.emit(0)
+
+	# Limpiar referencias a monedas destruidas (Lógica de limpieza)
+	var coins_to_remove = []
+	for coin in active_coins:
+		if not is_instance_valid(coin):
+			coins_to_remove.append(coin)
+
+	for coin in coins_to_remove:
+		active_coins.erase(coin)
 
 func add_coins(base_amount: int) -> void:
 	"""Añadir monedas aplicando multiplicadores del jugador (cofres, eventos, etc)"""
@@ -80,7 +90,7 @@ func add_coins(base_amount: int) -> void:
 	total_coins += final_amount
 	coin_collected.emit(final_amount, total_coins)
 	_save_coins_to_progression(final_amount)
-	_save_coins_to_progression(final_amount)
+
 	# Debug desactivado: print("💰 ExperienceManager: Añadidas %d monedas (Total: %d)" % [final_amount, total_coins])
 
 func spend_coins(amount: int) -> bool:
@@ -409,16 +419,7 @@ func _save_coins_to_progression(amount: int) -> void:
 			progression["meta_currency"] = progression.get("meta_currency", 0) + amount
 			# No guardar inmediatamente cada moneda, se guarda al final de la partida
 
-func _process(delta):
-	"""Actualizar sistema - limpiar monedas inválidas"""
-	# Limpiar referencias a monedas destruidas
-	var coins_to_remove = []
-	for coin in active_coins:
-		if not is_instance_valid(coin):
-			coins_to_remove.append(coin)
 
-	for coin in coins_to_remove:
-		active_coins.erase(coin)
 
 func create_collection_effect(_position: Vector2):
 	"""Crear efecto visual de recolección de EXP"""

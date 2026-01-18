@@ -142,8 +142,7 @@ func _initialize_health_component() -> void:
 			health_component.died.connect(_on_health_died)
 		if health_component.has_signal("damaged"):
 			health_component.damaged.connect(_on_health_damaged)
-		if health_component.has_signal("damaged"):
-			health_component.damaged.connect(_on_health_damaged)
+
 		
 		# Sincronizar Max HP desde PlayerStats si ya existe y es diferente
 		var stats = get_tree().get_first_node_in_group("player_stats")

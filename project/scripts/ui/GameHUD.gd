@@ -444,3 +444,8 @@ func _style_shield_bar():
 	if shield_bar:
 		# Empezar con estilo gris (sin escudo)
 		_update_shield_bar_color(0, 0)
+
+func _style_hud_elements() -> void:
+	# Estilos adicionales si fueran necesarios (placeholder)
+	pass
+

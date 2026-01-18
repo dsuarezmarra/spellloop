@@ -2348,7 +2348,10 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"effects": [
 			{"stat": "crit_chance", "value": 0.50, "operation": "add"},
 			{"stat": "crit_damage", "value": 1.0, "operation": "add"},
-			{"stat": "projectile_speed_mult", "value": 1.3, "operation": "multiply"	"unique_heavy_glass": {
+			{"stat": "projectile_speed_mult", "value": 1.3, "operation": "multiply"}
+		]
+	},
+	"unique_heavy_glass": {
 		"id": "unique_heavy_glass",
 		"name": "Vidrio Pesado",
 		"description": "+100% Daño. -50% Velocidad de Movimiento.",
