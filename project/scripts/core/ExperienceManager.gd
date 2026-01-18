@@ -54,17 +54,18 @@ func _ready():
 	setup_level_curve()
 	_load_coin_scene()
 
-func add_coins(amount: int) -> void:
-	"""Añadir monedas directamente (desde cofres, eventos, etc)"""
-	total_coins += amount
-	
-	# Emitir señal con valor 0 para indicar que no hay valor recogido individualmente
-	# O podríamos emitir el amount. Lo importante es actualizar la UI.
-	coin_collected.emit(amount, total_coins)
-	
-	# Guardar
-	_save_coins_to_progression(amount)
 	# Debug desactivado: print("💰 ExperienceManager: Añadidas %d monedas (Total: %d)" % [amount, total_coins])
+
+func add_coins(base_amount: int) -> void:
+	"""Añadir monedas aplicando multiplicadores del jugador (cofres, eventos, etc)"""
+	# Aplicar multiplicador de estadísticas del jugador (Greed, etc.)
+	var coin_mult = _get_player_coin_mult()
+	var final_amount = int(base_amount * coin_mult)
+	
+	total_coins += final_amount
+	coin_collected.emit(final_amount, total_coins)
+	_save_coins_to_progression(final_amount)
+	# Debug desactivado: print("💰 ExperienceManager: Añadidas %d monedas (Total: %d)" % [final_amount, total_coins])
 
 func initialize(player_ref: CharacterBody2D):
 	"""Inicializar sistema de experiencia"""
@@ -331,12 +332,19 @@ func _on_coin_collected(value: int) -> void:
 	# Debug desactivado: prints de monedas con streak/multiplicadores
 
 func _get_player_coin_mult() -> float:
-	"""Obtener multiplicador de monedas del player"""
+	"""Obtener multiplicador de monedas desde PlayerStats (Sistema Unificado)"""
+	# Prioridad: PlayerStats (grupo global) -> Player methods -> 1.0
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.has_method("get_stat"):
+		return player_stats.get_stat("coin_value_mult")
+		
+	# Fallback a métodos antiguos del player
 	var player = _find_player()
 	if player and player.has_method("get_coin_value_mult"):
 		return player.get_coin_value_mult()
 	elif player and "coin_value_mult" in player:
 		return player.coin_value_mult
+		
 	return 1.0
 
 func _has_flag(flag_name: String) -> bool:
