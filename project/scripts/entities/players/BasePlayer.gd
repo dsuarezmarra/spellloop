@@ -299,16 +299,7 @@ func _process(delta: float) -> void:
 		_apply_enemy_slow_aura()
 		_slow_aura_timer = 0.5  # Revisar cada 0.5s
 
-	# === POCKET BLACK HOLE ===
-	# Stat: auto_black_hole_interval (si > 0, activa agujero negro periódico)
-	if _black_hole_timer > 0:
-		_black_hole_timer -= delta
-	# === POCKET BLACK HOLE ===
-	# Stat: auto_black_hole_interval (si > 0, activa agujero negro periódico)
-	if _black_hole_timer > 0:
-		_black_hole_timer -= delta
-	else:
-		_check_and_trigger_black_hole()
+
 	
 	# === LÓGICA TORRETA (Item 19) ===
 	_update_turret_logic(delta, _is_moving)

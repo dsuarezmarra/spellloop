@@ -1472,7 +1472,7 @@ func take_damage(amount: float) -> float:
 
 func _process(delta: float) -> void:
 	"""Procesar regeneración"""
-	if is_dead: return
+	if current_health <= 0: return
 	
 	# --- SHIELD REGEN ---
 	var max_shield = get_stat("max_shield")
