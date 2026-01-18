@@ -1159,6 +1159,22 @@ class OrbitalManager extends Node2D:
 		_last_hit_times[enemy_id] = current_time
 
 		var final_damage = orbital_damage
+		
+		# Aplicar bonificación de daño por distancia (usando distancia jugador-enemigo)
+		var player = _get_orbital_player()
+		if player and enemy:
+			var player_to_enemy_distance = player.global_position.distance_to(enemy.global_position)
+			var ps = get_tree().get_first_node_in_group("player_stats")
+			if ps and ps.has_method("get_stat"):
+				# Brawler: +daño si enemigo cerca (< 150 del jugador)
+				var brawler_val = ps.get_stat("close_range_damage_bonus")
+				if brawler_val > 0 and player_to_enemy_distance < 150:
+					final_damage = final_damage * (1.0 + brawler_val)
+				# Sharpshooter: +daño si enemigo lejos (> 300 del jugador)
+				var sharpshooter_val = ps.get_stat("long_range_damage_bonus")
+				if sharpshooter_val > 0 and player_to_enemy_distance > 300:
+					final_damage = final_damage * (1.0 + sharpshooter_val)
+		
 		if randf() < crit_chance:
 			final_damage *= crit_damage  # Usar multiplicador de crítico variable
 
@@ -1461,6 +1477,22 @@ class ChainProjectile extends Node2D:
 			return
 
 		var final_damage = damage
+		
+		# Aplicar bonificación de daño por distancia (usando distancia jugador-enemigo)
+		var player = _get_player()
+		if player and target:
+			var player_to_enemy_distance = player.global_position.distance_to(target.global_position)
+			var ps = get_tree().get_first_node_in_group("player_stats")
+			if ps and ps.has_method("get_stat"):
+				# Brawler: +daño si enemigo cerca (< 150 del jugador)
+				var brawler_val = ps.get_stat("close_range_damage_bonus")
+				if brawler_val > 0 and player_to_enemy_distance < 150:
+					final_damage = final_damage * (1.0 + brawler_val)
+				# Sharpshooter: +daño si enemigo lejos (> 300 del jugador)
+				var sharpshooter_val = ps.get_stat("long_range_damage_bonus")
+				if sharpshooter_val > 0 and player_to_enemy_distance > 300:
+					final_damage = final_damage * (1.0 + sharpshooter_val)
+		
 		if randf() < crit_chance:
 			final_damage *= crit_damage  # Usar multiplicador de crítico variable
 
