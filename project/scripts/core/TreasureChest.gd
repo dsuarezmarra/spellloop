@@ -487,4 +487,3 @@ func _apply_item(item: Dictionary):
 			# Si son temporales, se aplican aquí. Si son stats permanentes, mejor usar "upgrade".
 			# Por ahora, loguear para debug.
 			print("[TreasureChest] Aplicando item genérico o desconocido: %s" % item_type)
-

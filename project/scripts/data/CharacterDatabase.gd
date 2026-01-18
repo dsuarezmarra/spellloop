@@ -61,7 +61,7 @@ const CHARACTERS: Dictionary = {
 			"damage_mult": 1.0,
 			"cooldown_mult": 1.0,
 			"area_mult": 1.0,
-			"pickup_range": 50.0,
+			"pickup_range": 100.0,
 			"luck": 0.0,
 			"xp_mult": 1.0
 		},
@@ -112,7 +112,7 @@ const CHARACTERS: Dictionary = {
 			"damage_mult": 1.15,  # +15% damage
 			"cooldown_mult": 1.0,
 			"area_mult": 1.1,   # +10% area (explosions)
-			"pickup_range": 50.0,
+			"pickup_range": 100.0,
 			"luck": 0.0,
 			"xp_mult": 1.0
 		},
@@ -160,7 +160,7 @@ const CHARACTERS: Dictionary = {
 			"damage_mult": 1.0,
 			"cooldown_mult": 0.95,  # -5% cooldown
 			"area_mult": 1.0,
-			"pickup_range": 55.0,
+			"pickup_range": 105.0,
 			"luck": 0.05,  # +5% luck (crits)
 			"xp_mult": 1.0
 		},
@@ -208,7 +208,7 @@ const CHARACTERS: Dictionary = {
 			"damage_mult": 0.95,
 			"cooldown_mult": 1.0,
 			"area_mult": 1.15,  # +15% orbital area
-			"pickup_range": 60.0,
+			"pickup_range": 110.0,
 			"luck": 0.0,
 			"xp_mult": 1.0
 		},
@@ -261,7 +261,7 @@ const CHARACTERS: Dictionary = {
 			"damage_mult": 1.2,  # +20% damage
 			"cooldown_mult": 0.9,  # -10% cooldown
 			"area_mult": 0.9,
-			"pickup_range": 45.0,
+			"pickup_range": 95.0,
 			"luck": 0.1,  # +10% luck (crits)
 			"xp_mult": 1.0
 		},
@@ -314,7 +314,7 @@ const CHARACTERS: Dictionary = {
 			"damage_mult": 0.95,
 			"cooldown_mult": 1.0,
 			"area_mult": 1.0,
-			"pickup_range": 70.0,  # Higher pickup range
+			"pickup_range": 120.0,  # Higher pickup range
 			"luck": 0.0,
 			"xp_mult": 1.1  # +10% XP
 		},
@@ -367,7 +367,7 @@ const CHARACTERS: Dictionary = {
 			"damage_mult": 0.9,   # Less damage
 			"cooldown_mult": 0.95,
 			"area_mult": 1.0,
-			"pickup_range": 80.0,  # Big range
+			"pickup_range": 130.0,  # Big range
 			"luck": 0.0,
 			"xp_mult": 1.0
 		},
@@ -420,7 +420,7 @@ const CHARACTERS: Dictionary = {
 			"damage_mult": 1.1,
 			"cooldown_mult": 1.1,  # Slower attacks
 			"area_mult": 1.2,
-			"pickup_range": 40.0,  # Low range
+			"pickup_range": 90.0,  # Low range
 			"luck": 0.0,
 			"xp_mult": 0.9  # -10% XP
 		},
@@ -473,7 +473,7 @@ const CHARACTERS: Dictionary = {
 			"damage_mult": 1.0,
 			"cooldown_mult": 1.05,
 			"area_mult": 0.9,
-			"pickup_range": 50.0,
+			"pickup_range": 100.0,
 			"luck": 0.15,  # +15% luck (crits)
 			"xp_mult": 1.0
 		},
@@ -526,7 +526,7 @@ const CHARACTERS: Dictionary = {
 			"damage_mult": 1.3,  # +30% damage
 			"cooldown_mult": 0.85,  # -15% cooldown
 			"area_mult": 1.25,
-			"pickup_range": 100.0,  # Attracts pickups
+			"pickup_range": 150.0,  # Attracts pickups
 			"luck": 0.0,
 			"xp_mult": 1.2  # +20% XP
 		},
@@ -622,7 +622,7 @@ static func get_character_stats(character_id: String) -> Dictionary:
 		"damage_mult": 1.0,
 		"cooldown_mult": 1.0,
 		"area_mult": 1.0,
-		"pickup_range": 50.0,
+		"pickup_range": 100.0,
 		"luck": 0.0,
 		"xp_mult": 1.0
 	}
