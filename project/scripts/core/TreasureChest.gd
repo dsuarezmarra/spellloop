@@ -314,6 +314,10 @@ func _finalize_opening(items: Array):
 	# Mejor usar items_inside si es reclamar todo, o buscar el seleccionado.
 	# Para simplificar, pasamos los items del popup que tienen la data base.
 	
+	# APLICAR ITEMS AL JUGADOR (CRÍTICO: Esto faltaba para cofres normales)
+	for item in items:
+		_apply_item(item)
+	
 	chest_opened.emit(self, items)
 	
 	var timer = Timer.new()
@@ -397,7 +401,7 @@ func _on_shop_item_purchased(item: Dictionary, price: int):
 		exp_mgr.total_coins -= price
 	
 	# Aplicar item al jugador
-	_apply_purchased_item(item)
+	_apply_item(item)
 	
 	# Finalizar apertura
 	is_opened = true
@@ -420,8 +424,12 @@ func _on_shop_popup_closed(purchased: bool):
 	await get_tree().create_timer(0.5).timeout
 	queue_free()
 
-func _apply_purchased_item(item: Dictionary):
-	"""Aplicar item comprado al jugador"""
+	# Destruir cofre
+	await get_tree().create_timer(0.5).timeout
+	queue_free()
+
+func _apply_item(item: Dictionary):
+	"""Aplicar item al jugador (usado tanto para compras como para loot normal)"""
 	var item_type = item.get("type", "")
 	var item_id = item.get("id", "")
 	
@@ -459,5 +467,20 @@ func _apply_purchased_item(item: Dictionary):
 				elif player_ref.attack_manager.has_method("perform_fusion"):
 					player_ref.attack_manager.perform_fusion(fusion_data)
 		
+		"healing", "health_boost":
+			# Curación instantánea
+			var amount = item.get("amount", 0)
+			# Si es health_boost, puede ser max_hp o curación, depende de la implementación.
+			# Asumimos que healing es curar.
+			if player_ref and player_ref.has_method("heal"):
+				player_ref.heal(amount)
+			elif player_ref and "health_component" in player_ref:
+				if player_ref.health_component.has_method("heal"):
+					player_ref.health_component.heal(amount)
+					
 		_:
-			print("[TreasureChest] Tipo de item no manejado: %s" % item_type)
+			# Otros tipos (stats directos como speed_boost, etc. deberían ser upgrades)
+			# Si son temporales, se aplican aquí. Si son stats permanentes, mejor usar "upgrade".
+			# Por ahora, loguear para debug.
+			print("[TreasureChest] Aplicando item genérico o desconocido: %s" % item_type)
+

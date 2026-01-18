@@ -1,4 +1,4 @@
-# BasePlayer.gd
+﻿# BasePlayer.gd
 # Clase base genérica para todos los personajes jugables
 # Proporciona movimiento, stats, salud, manejo de armas, etc.
 # Las clases específicas (Wizard, Rogue, etc.) heredan de aquí
@@ -110,6 +110,12 @@ func _ready() -> void:
 	
 	# Conectar armas una vez que todo esté listo
 	_setup_weapons_deferred()
+	
+	# Sincronizar stats iniciales
+	var stats = get_tree().get_first_node_in_group("player_stats")
+	if stats and stats.has_method("get_stat"):
+		pickup_radius = stats.get_stat("pickup_range")
+		_update_pickup_area_size()
 	
 	z_index = 50
 	# Debug desactivado: print("[%s] ✓ Inicialización completada" % character_class)
@@ -1482,10 +1488,19 @@ func get_current_speed() -> float:
 	return move_speed
 
 
+func _on_stat_changed(stat_name: String, _old_value: float, _new_value: float) -> void:
+	"""Callback cuando cambian los stats globales"""
+	if stat_name == 'shield_amount' or stat_name == 'max_shield':
+		update_health_bar()
+	elif stat_name == 'pickup_range':
+		pickup_radius = _new_value
+		_update_pickup_area_size()
 
+func _update_pickup_area_size() -> void:
+	"""Actualizar el tamaño del área de recolección"""
+	var pickup_area = get_node_or_null("PickupArea")
+	if pickup_area:
+		var collision = pickup_area.get_node_or_null("CollisionShape2D")
+		if collision and collision.shape is CircleShape2D:
+			collision.shape.radius = pickup_radius
 
-f u n c   _ o n _ s t a t _ c h a n g e d ( s t a t _ n a m e :   S t r i n g ,   _ o l d _ v a l u e :   f l o a t ,   _ n e w _ v a l u e :   f l o a t )   - >   v o i d :  
- 	 " " " C a l l b a c k   c u a n d o   c a m b i a n   l o s   s t a t s   g l o b a l e s " " "  
- 	 i f   s t a t _ n a m e   = =   " s h i e l d _ a m o u n t "   o r   s t a t _ n a m e   = =   " m a x _ s h i e l d " :  
- 	 	 u p d a t e _ h e a l t h _ b a r ( )  
- 

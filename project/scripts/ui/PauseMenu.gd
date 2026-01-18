@@ -601,6 +601,17 @@ const DEFAULT_STAT_METADATA = {
 	# === CRITICOS ===
 	"crit_chance": {"name": "Prob. Critico", "icon": "*", "description": "Probabilidad de critico"},
 	"crit_damage": {"name": "Danio Critico", "icon": "**", "description": "Multiplicador de danio critico"},
+	
+	# === EFECTOS DE ESTADO ===
+	"burn_chance": {"name": "Prob. Quemar", "icon": "🔥", "description": "Probabilidad de aplicar quemadura"},
+	"freeze_chance": {"name": "Prob. Congelar", "icon": "❄️", "description": "Probabilidad de congelar"},
+	"bleed_chance": {"name": "Prob. Sangrado", "icon": "🩸", "description": "Probabilidad de sangrado"},
+	"explosion_chance": {"name": "Prob. Explosión", "icon": "💣", "description": "Probabilidad de explosión al matar"},
+	"execute_threshold": {"name": "Ejecución", "icon": "⚰️", "description": "Mata instantáneamente bajo este HP"},
+	
+	# === DAÑO ESPECIFICO ===
+	"elite_damage_mult": {"name": "Daño a Elites", "icon": "💀", "description": "Daño extra a Elites y Jefes"},
+	
 	# === UTILIDAD ===
 	"move_speed": {"name": "Velocidad", "icon": "->", "description": "Velocidad de movimiento"},
 	"pickup_range": {"name": "Rango Recogida", "icon": "()", "description": "Rango para recoger items"},
@@ -679,9 +690,8 @@ func _get_stats_for_category(category: String) -> Array:
 					"damage_taken_mult", "thorns", "thorns_percent", "shield_amount", 
 					"shield_regen", "revives"]
 		"offensive":
-			# NOTA: Los stats ofensivos de armas ahora se muestran en el popup de cada arma
-			# Aquí solo se mostrarían stats ofensivos del JUGADOR (ninguno actualmente)
-			return []
+			return ["damage_mult", "elite_damage_mult", "burn_chance", "freeze_chance", 
+					"bleed_chance", "explosion_chance", "execute_threshold"]
 		"critical":
 			# Los críticos son stats de ARMAS, no del jugador
 			# Se muestran en el popup de cada arma, no aquí
