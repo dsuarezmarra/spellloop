@@ -772,6 +772,38 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	var armor_text = " [ARMOR: -%d]" % (amount - final_damage) if effective_armor > 0 and amount > final_damage else ""
 	# Debug desactivado: print("[%s] 💥 Daño recibido: %d → %d (%s) (HP: %d/%d)%s%s" % [character_class, amount, final_damage, element, health_component.current_health, max_hp, " [WEAKENED]" if _is_weakened else "", armor_text])
 
+	# -----------------------------------------------------------
+	# LÓGICA DE NUEVOS OBJETOS (Phase 3)
+	# -----------------------------------------------------------
+	if player_stats and player_stats.has_method("get_stat"):
+		# 1. Grit (Valor): Invulnerabilidad si daño > 10% HP Max
+		# grit_active es un flag (0 o 1)
+		if player_stats.get_stat("grit_active") > 0:
+			var threshold = max_hp * 0.10
+			if final_damage >= threshold:
+				# Otorgar 1s de invulnerabilidad (si existe el método)
+				if health_component.has_method("set_invulnerable"):
+					health_component.set_invulnerable(1.0)
+					FloatingText.spawn_custom(global_position + Vector2(0, -50), "🛡️ GRIT!", Color.GOLD)
+
+		# 2. Frost Nova (Nova de Escarcha): Explotar al recibir daño
+		if player_stats.get_stat("frost_nova_on_hit") > 0:
+			var nova_scene = load("res://scenes/projectiles/IceNova.tscn")
+			# Fallback si no existe escena dedicada, usar lógica manual
+			# Buscamos enemigos cercanos y aplicamos freeze
+			var enemies = get_tree().get_nodes_in_group("enemies")
+			for enemy in enemies:
+				if global_position.distance_to(enemy.global_position) < 250: # Rango de nova
+					if enemy.has_method("apply_freeze"):
+						enemy.apply_freeze(2.0)
+					if enemy.has_method("apply_knockback"):
+						var dir = (enemy.global_position - global_position).normalized()
+						enemy.apply_knockback(dir * 300)
+			
+			# Visual effect (reutilizamos shockwave o similar si existe)
+			_spawn_nova_effect()
+	# -----------------------------------------------------------
+
 func _apply_thorns_damage(attacker: Node, damage_received: int, player_stats: Node) -> void:
 	"""Aplicar daño de espinas al atacante"""
 	var thorns_flat = player_stats.get_stat("thorns") if player_stats.has_method("get_stat") else 0.0
@@ -897,7 +929,25 @@ func _spawn_heal_particles() -> void:
 	"""Crear partículas de curación verde"""
 	var particles = CPUParticles2D.new()
 	particles.emitting = true
+	particles.emitting = true
 	particles.one_shot = true
+
+func _spawn_nova_effect() -> void:
+	"""Efecto visual para Frost Nova"""
+	var particles = CPUParticles2D.new()
+	particles.emitting = true
+	particles.one_shot = true
+	particles.amount = 32
+	particles.explosiveness = 1.0
+	particles.spread = 180
+	particles.gravity = Vector2.ZERO
+	particles.initial_velocity_min = 100
+	particles.initial_velocity_max = 200
+	particles.scale_amount_min = 2.0
+	particles.scale_amount_max = 4.0
+	particles.color = Color(0.4, 0.8, 1.0, 0.8)
+	add_child(particles)
+	particles.finished.connect(particles.queue_free)
 	particles.explosiveness = 0.8
 	particles.amount = 8
 	particles.lifetime = 0.6

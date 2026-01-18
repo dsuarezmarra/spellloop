@@ -524,20 +524,22 @@ func _on_reroll() -> void:
 		return
 
 	reroll_count -= 1
-	reroll_count -= 1
-	reroll_used.emit()
 	
-	# --- LÓGICA DE RECICLAJE (Item 11: Recycler) ---
+	# -----------------------------------------------------------
+	# LÓGICA DE NUEVOS OBJETOS (Phase 3)
+	# 3. Reciclaje (Recycling): XP al hacer reroll
 	if player_stats and player_stats.has_method("get_stat"):
-		var xp_bonus_pct = player_stats.get_stat("xp_on_reroll")
-		if xp_bonus_pct > 0:
+		var xp_fraction = player_stats.get_stat("xp_on_reroll")
+		if xp_fraction > 0:
+			var xp_amount = xp_to_next_level * xp_fraction
+			# Otorgar XP a través del manager o directamente
+			# Mejor usar ExperienceManager si es posible, o player_stats.gain_xp
 			var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
-			if exp_mgr and "xp_required" in exp_mgr:
-				var amount = int(exp_mgr.xp_required * xp_bonus_pct)
-				if amount > 0:
-					exp_mgr.gain_experience(amount)
+			if exp_mgr and exp_mgr.has_method("gain_experience"):
+				if xp_amount > 0:
+					exp_mgr.gain_experience(int(xp_amount))
 					# El texto flotante lo maneja gain_experience o lo añadimos aquí
-					# FloatingText.spawn_text(global_position, "+%d XP" % amount, Color.PURPLE)
+					# FloatingText.spawn_text(global_position, "+%d XP" % int(xp_amount), Color.PURPLE)
 	# -----------------------------------------------
 
 	generate_options()

@@ -27,6 +27,7 @@ signal destroyed
 @export var element_type: String = "ice"  # ice, fire, arcane, lightning, dark, nature
 
 # === ESTADO ===
+var start_pos: Vector2 = Vector2.ZERO # Recordar posición inicial para sharpshooter
 var direction: Vector2 = Vector2.RIGHT
 var current_lifetime: float = 0.0
 var enemies_hit: Array[Node] = []
@@ -408,12 +409,64 @@ func _handle_hit(target: Node) -> void:
 		if ps and ps.has_method("get_stat"):
 			var elite_mult = ps.get_stat("elite_damage_mult")
 			if elite_mult > 0:
-				# Si es 1.5, multiplica por 1.5 (el default en PlayerStats suele ser 1.0?? o 0.0??)
-				# PlayerStats default 1.0? Check PlayerStats.gd or assume it's a multiplier.
-				# Usually "elite_damage_mult" is a multiplier (e.g. 1.2 for +20%).
 				if elite_mult < 0.1: elite_mult = 1.0 # Safety check
 				final_damage = int(final_damage * elite_mult)
 				# print("⚔️ Elite Hit! Damage x%.2f" % elite_mult)
+				
+	# -----------------------------------------------------------
+	# LÓGICA DE NUEVOS OBJETOS (Phase 3)
+	# -----------------------------------------------------------
+	var distance_traveled = global_position.distance_to(start_pos) if start_pos else 0.0
+	
+	# 1. Tiro Certero (Sharpshooter): +damage si lejos (> 300)
+	var ps = get_tree().get_first_node_in_group("player_stats")
+	if ps:
+		# Check Sharpshooter
+		var sharpshooter_val = ps.get_stat("long_range_damage_bonus") if ps.has_method("get_stat") else 0.0
+		if sharpshooter_val > 0 and distance_traveled > 300:
+			final_damage = int(final_damage * (1.0 + sharpshooter_val))
+			
+		# 2. Peleador Callejero (Street Brawler): +damage si cerca (< 150)
+		var brawler_val = ps.get_stat("close_range_damage_bonus") if ps.has_method("get_stat") else 0.0
+		if brawler_val > 0 and distance_traveled < 150:
+			final_damage = int(final_damage * (1.0 + brawler_val))
+			
+		# 3. Verdugo (Executioner): +damage si enemigo Low HP (< 30%)
+		var executioner_val = ps.get_stat("low_hp_damage_bonus") if ps.has_method("get_stat") else 0.0
+		if executioner_val > 0:
+			var hp_pct = 1.0
+			if target.has_method("get_health_percent"):
+				hp_pct = target.get_health_percent()
+			elif "health_component" in target and target.health_component:
+				hp_pct = target.health_component.get_health_percent()
+			
+			if hp_pct < 0.30: # 30% HP threshold
+				final_damage = int(final_damage * (1.0 + executioner_val))
+		
+		# 4. Combustión Instantánea (Combustion - Rework): Burn aplica daño instantáneo
+		var combustion_active = ps.get_stat("combustion_active") if ps.has_method("get_stat") else 0.0
+		if combustion_active > 0:
+			# Si aplicamos quemadura, aplicamos su daño total instantáneamente
+			var burn_chance = get_meta("burn_chance", 0.0)
+			# Asumimos que si hay status_effect manager o similar, aplicamos daño extra
+			# Simplificación: +50% daño extra como "explosión" si el proyectil tiene elemento fuego
+			if get_meta("element", "") == "fire" or burn_chance > 0:
+				var burn_dmg = final_damage * 0.5
+				target.take_damage(int(burn_dmg))
+				FloatingText.spawn_custom(target.global_position + Vector2(10, -40), "COMB!", Color.ORANGE_RED)
+
+		# 5. Ruleta Rusa (Russian Roulette): 1% chance de 4x daño, o 0 daño?
+		# Descripción: "1% chance for massive damage" -> Digamos 10x daño
+		var russian_roulette = ps.get_stat("russian_roulette") if ps.has_method("get_stat") else 0.0
+		if russian_roulette > 0:
+			if randf() < 0.01: # 1%
+				final_damage *= 10.0
+				FloatingText.spawn_custom(target.global_position + Vector2(0, -60), "JACKPOT!", Color.GOLD)
+				_play_roulette_sound()
+			# Opcional: penalización en tiros normales? "Ruleta rusa" implica riesgo.
+			# Por ahora solo bonus masivo.
+	# -----------------------------------------------------------
+	# -----------------------------------------------------------
 	
 	# Aplicar daño
 	if target.has_method("take_damage"):
@@ -638,6 +691,11 @@ func _spawn_hit_effect() -> void:
 	particles.initial_velocity_max = 100.0
 	particles.gravity = Vector2.ZERO
 	particles.scale_amount_min = 2.0
+	# Instanciar efecto visual
+	if hit_vfx_scene:
+		var effect = hit_vfx_scene.instantiate()
+		effect.global_position = global_position
+		get_tree().root.add_child(effect)
 	particles.scale_amount_max = 4.0
 	particles.color = projectile_color
 	

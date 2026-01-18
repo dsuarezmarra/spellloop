@@ -473,7 +473,29 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 		"tier": 4,
 		"max_stacks": 2,
 		"effects": [{"stat": "shield_regen_delay", "value": -1.0, "operation": "add"}]
-	}
+	},
+	# [NUEVO] Valor (Grit)
+	"grit": {
+		"id": "grit",
+		"name": "Valor",
+		"description": "Si recibes un golpe > 10% HP, te vuelves invulnerable 1s.",
+		"icon": "🛡️",
+		"category": "defensive",
+		"tier": 4,
+		"max_stacks": 1,
+		"effects": [{"stat": "grit_active", "value": 1, "operation": "add"}]
+	},
+	# [NUEVO] Nova de Escarcha (Frost Nova)
+	"frost_nova": {
+		"id": "frost_nova",
+		"name": "Nova de Escarcha",
+		"description": "Congelas enemigos cercanos al recibir daño.",
+		"icon": "❄️",
+		"category": "defensive",
+		"tier": 3,
+		"max_stacks": 1,
+		"effects": [{"stat": "frost_nova_on_hit", "value": 1, "operation": "add"}]
+	},
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -666,6 +688,28 @@ const UTILITY_UPGRADES: Dictionary = {
 		"max_stacks": 1,
 		"effects": [{"stat": "pickup_range_flat", "value": 100.0, "operation": "add"}]
 	},
+	# [NUEVO] Impulso (Momentum)
+	"momentum": {
+		"id": "momentum",
+		"name": "Impulso",
+		"description": "Ganas +20% de tu velocidad de movimiento extra como Daño.",
+		"icon": "👟",
+		"category": "utility",
+		"tier": 3,
+		"max_stacks": 1,
+		"effects": [{"stat": "momentum_factor", "value": 0.20, "operation": "add"}]
+	},
+	# [NUEVO] Maestro de Racha (Streak Master)
+	"streak_master": {
+		"id": "streak_master",
+		"name": "Maestro de Racha",
+		"description": "El bonus de racha de monedas se duplica (+100%).",
+		"icon": "🔥",
+		"category": "utility",
+		"tier": 4,
+		"max_stacks": 1,
+		"effects": [{"stat": "streak_bonus_mult", "value": 1.0, "operation": "add"}]
+	},
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -715,6 +759,52 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 		"tier": 4,
 		"max_stacks": 2,
 		"effects": [{"stat": "damage_mult", "value": 1.50, "operation": "multiply"}]
+	},
+	
+	# [NUEVO] Tiro Certero (Sharpshooter)
+	"sharpshooter": {
+		"id": "sharpshooter",
+		"name": "Tiro Certero",
+		"description": "+50% daño a enemigos lejanos (>300px).",
+		"icon": "🏹",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 3,
+		"required_tags": ["projectile"],
+		"effects": [{"stat": "long_range_damage_bonus", "value": 0.50, "operation": "add"}]
+	},
+	# [NUEVO] Peleador Callejero (Street Brawler)
+	"street_brawler": {
+		"id": "street_brawler",
+		"name": "Peleador Callejero",
+		"description": "+50% daño a enemigos cercanos (<150px).",
+		"icon": "🥊",
+		"category": "offensive",
+		"tier": 2,
+		"max_stacks": 3,
+		"effects": [{"stat": "close_range_damage_bonus", "value": 0.50, "operation": "add"}]
+	},
+	# [NUEVO] Verdugo (Executioner)
+	"executioner": {
+		"id": "executioner",
+		"name": "Verdugo",
+		"description": "+50% daño a enemigos con baja vida (<30%).",
+		"icon": "🪓",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 2,
+		"effects": [{"stat": "low_hp_damage_bonus", "value": 0.50, "operation": "add"}]
+	},
+	# [NUEVO] Matagigantes (Giant Slayer)
+	"giant_slayer": {
+		"id": "giant_slayer",
+		"name": "Matagigantes",
+		"description": "+20% daño contra élites y jefes.",
+		"icon": "👹",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 3,
+		"effects": [{"stat": "elite_damage_mult", "value": 1.20, "operation": "multiply"}]
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1488,6 +1578,17 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 		"tier": 5,
 		"max_stacks": 1,
 		"effects": [{"stat": "status_duration_mult", "value": 0.75, "operation": "add"}]
+	},
+	# [NUEVO] Imán Vital (Funcionalidad en ExperienceManager)
+	"vital_magnet": {
+		"id": "vital_magnet",
+		"name": "Imán Vital",
+		"description": "Recureras 1 HP al recoger cualquier moneda.",
+		"icon": "♥",
+		"category": "utility",
+		"tier": 3,
+		"max_stacks": 3,
+		"effects": [{"stat": "heal_on_pickup", "value": 1, "operation": "add"}]
 	}
 }
 
@@ -1499,18 +1600,62 @@ const CURSED_UPGRADES: Dictionary = {
 	# ─────────────────────────────────────────────────────────────────────────────
 	# DAÑO vs DEFENSA
 	# ─────────────────────────────────────────────────────────────────────────────
-	"cursed_glass_cannon_1": {
-		"id": "cursed_glass_cannon_1",
+	"glass_cannon_1": {
+		"id": "glass_cannon_1",
 		"name": "Cañón de Cristal",
-		"description": "+25% daño, pero +15% daño recibido.",
-		"icon": "💎",
+		"description": "+35% daño, -20% vida máxima.",
+		"icon": "🔮",
 		"category": "cursed",
 		"tier": 2,
-		"is_cursed": true,
 		"max_stacks": 3,
 		"effects": [
-			{"stat": "damage_mult", "value": 1.25, "operation": "multiply"},
-			{"stat": "damage_taken_mult", "value": 1.15, "operation": "multiply"}
+			{"stat": "damage_mult", "value": 0.35, "operation": "add"},
+			{"stat": "max_health", "value": 0.8, "operation": "multiply"}
+		]
+	},
+	# [NUEVO] Vidrio Pesado (Heavy Glass)
+	"heavy_glass": {
+		"id": "heavy_glass",
+		"name": "Vidrio Pesado",
+		"description": "+50% Daño, -20% Velocidad de movimiento.",
+		"icon": "🗿",
+		"category": "cursed",
+		"tier": 3,
+		"max_stacks": 3,
+		"effects": [
+			{"stat": "damage_mult", "value": 0.50, "operation": "add"},
+			{"stat": "move_speed", "value": 0.80, "operation": "multiply"}
+		]
+	},
+	# [NUEVO] Pacifista
+	"pacifist": {
+		"id": "pacifist",
+		"name": "Pacifista",
+		"description": "+50% XP, +50% Oro, -30% Daño.",
+		"icon": "🕊️",
+		"category": "cursed",
+		"tier": 3,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "xp_mult", "value": 0.50, "operation": "add"},
+			{"stat": "gold_mult", "value": 0.50, "operation": "add"},
+			{"stat": "damage_mult", "value": 0.70, "operation": "multiply"}
+		]
+	},
+	# [NUEVO] Caos Primordial
+	"chaos": {
+		"id": "chaos",
+		"name": "Caos Primordial",
+		"description": "+30% Stats Ofensivos, -20% Stats Defensivos.",
+		"icon": "🌀",
+		"category": "cursed",
+		"tier": 4,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "damage_mult", "value": 0.30, "operation": "add"},
+			{"stat": "attack_speed_mult", "value": 0.30, "operation": "add"},
+			{"stat": "max_health", "value": 0.80, "operation": "multiply"},
+			{"stat": "armor", "value": -10, "operation": "add"}
 		]
 	},
 	"cursed_glass_cannon_2": {
@@ -1543,6 +1688,17 @@ const CURSED_UPGRADES: Dictionary = {
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
+	# [NUEVO] Pacto de Sangre (Blood Pact)
+	"blood_pact": {
+		"id": "blood_pact",
+		"name": "Pacto de Sangre",
+		"description": "HP se reduce a 1 (no curable). Escudo x2.",
+		"icon": "🩸",
+		"category": "cursed",
+		"tier": 5,
+		"max_stacks": 1,
+		"effects": [{"stat": "blood_pact", "value": 1, "operation": "add"}]
+	},
 	# VELOCIDAD vs DAÑO
 	# ─────────────────────────────────────────────────────────────────────────────
 	"cursed_berserker_1": {

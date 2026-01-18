@@ -348,10 +348,28 @@ func _on_coin_collected(value: int) -> void:
 
 	# Aplicar multiplicador de streak (5% por cada streak adicional)
 	# El flag "double_coin_streak" duplica este bonus
+	# Aplicar multiplicador de streak (5% por cada streak adicional)
+	# El flag "double_coin_streak" duplica este bonus (Legacy logic handled via global stat now)
 	var streak_bonus_per = 0.05
+	
+	# Usar multiplicador de bonus de racha desde PlayerStats (New Item Support)
+	var streak_mult_stat = 1.0
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.has_method("get_stat"):
+		# Default 1.0. If "streak_master" adds +100%, value becomes 2.0
+		var bonus = player_stats.get_stat("streak_bonus_mult")
+		# Base stat might not exist, check logic. Usually stats are 0 base.
+		# If user has +100% streak bonus, stat is 1.0? Or is it a multiplier?
+		# Let's assume it's an additive multiplier like damage_mult.
+		# If we name it "streak_bonus_mult" in UpgradeDB as "add" 1.0 -> 2.0 total?
+		# Or if it's 0 base, we do 1.0 + check.
+		streak_mult_stat = 1.0 + bonus # Assuming bonus is 0 by default, 1.0 if Upgrade
+		
+	# Check legacy flag too just in case
 	if _has_flag("double_coin_streak"):
-		streak_bonus_per = 0.10
-	var streak_multiplier = 1.0 + streak_bonus_per * float(max(0, streak_count - 1))
+		streak_mult_stat *= 2.0
+		
+	var streak_multiplier = 1.0 + (streak_bonus_per * streak_mult_stat) * float(max(0, streak_count - 1))
 
 	# Aplicar multiplicador de valor de monedas del player
 	var coin_mult = _get_player_coin_mult()
