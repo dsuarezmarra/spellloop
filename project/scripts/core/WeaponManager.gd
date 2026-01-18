@@ -198,7 +198,25 @@ func fire_beam(_weapon: WeaponData, _target_position: Vector2):
 	pass
 
 func add_weapon_by_id(weapon_id: String) -> bool:
-	"""Crear y añadir arma por su ID"""
+	"""Crear y añadir arma por su ID (o mejorar si ya existe)"""
+	# 1. Verificar si ya tenemos el arma (para mejorarla en lugar de duplicarla)
+	var existing_weapon = _get_weapon_by_id(weapon_id)
+	if existing_weapon:
+		# Ya la tenemos, aplicamos mejora de nivel genérica
+		print("⚔️ [WeaponManager] Arma ya existe: %s. Aplicando mejora..." % weapon_id)
+		# TODO: Obtener mejora real de base de datos. Por ahora, level up genérico.
+		var level_up_data = {"damage_mult": 1.1, "cooldown_reduction": 0.05} 
+		
+		# Intentar buscar mejora real si existe lógica disponible
+		if ClassDB.class_exists("WeaponDatabase"):
+			# Lógica simplificada: simular upgrade
+			pass
+			
+		update_weapon_stats(existing_weapon, level_up_data)
+		existing_weapon.level += 1
+		weapons_updated.emit(get_weapons_info())
+		return true
+
 	if not WeaponDatabase.WEAPONS.has(weapon_id):
 		push_error("Weapon ID not found: " + weapon_id)
 		return false
@@ -219,6 +237,15 @@ func add_weapon_by_id(weapon_id: String) -> bool:
 	new_weapon.evolution = data.get("evolution", "")
 	
 	return add_weapon(new_weapon)
+
+func _get_weapon_by_id(weapon_id: String) -> WeaponData:
+	for w in equipped_weapons:
+		if w.id == weapon_id:
+			return w
+	return null
+
+func update_weapon_stats(weapon: WeaponData, modifications: Dictionary) -> void:
+	weapon.apply_upgrade(modifications)
 
 func add_weapon(weapon_data: WeaponData) -> bool:
 	"""Añadir nueva arma"""

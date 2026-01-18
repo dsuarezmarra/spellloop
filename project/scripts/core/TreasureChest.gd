@@ -436,12 +436,16 @@ func _apply_item(item: Dictionary):
 	match item_type:
 		"weapon":
 			# Añadir arma al WeaponManager
+			print("[TreasureChest] Intentando añadir arma: %s" % item_id)
 			var weapon_mgr = get_tree().current_scene.get_node_or_null("WeaponManager")
 			if weapon_mgr and weapon_mgr.has_method("add_weapon_by_id"):
-				weapon_mgr.add_weapon_by_id(item_id)
+				var result = weapon_mgr.add_weapon_by_id(item_id)
+				print("[TreasureChest] Resultado añadir arma: %s" % result)
 			elif player_ref and "attack_manager" in player_ref:
 				if player_ref.attack_manager.has_method("add_weapon_by_id"):
 					player_ref.attack_manager.add_weapon_by_id(item_id)
+			else:
+				push_error("[TreasureChest] No se encontró WeaponManager para añadir arma: %s" % item_id)
 		
 		"upgrade":
 			# Aplicar upgrade al PlayerStats
