@@ -557,7 +557,13 @@ const BASE_STATS: Dictionary = {
 	# Phase 4: Unique Logic Stats
 	"instant_combustion": 0,       # 1 = True
 	"instant_bleed": 0,            # 1 = True
-	"multicast_chance": 0.0        # Chance to double cast
+	"multicast_chance": 0.0,       # Chance to double cast
+	
+	# Phase 5: Defensive Logic Stats
+	"frost_nova_on_hit": 0,        # 1 = True
+	"grit_active": 0,              # 1 = True
+	"turret_bonus": 0,             # 1 = True
+	"blood_pact": 0                # 1 = True
 }
 
 const MAX_LEVEL: int = 99
@@ -984,12 +990,13 @@ func format_stat_value(stat_name: String, value: float) -> String:
 
 func get_stat(stat_name: String) -> float:
 	"""Obtener valor actual de un stat (base + modificadores temporales)"""
-	# Caso especial: Glass Cannon fuerza max_health a 1
+	# Caso especial: Glass Cannon o Blood Pact fuerza max_health a 1
 	if stat_name == "max_health":
 		var is_glass = stats.get("is_glass_cannon", 0.0) + _get_temp_modifier_total("is_glass_cannon")
-		if is_glass > 0:
+		var is_pact = stats.get("blood_pact", 0) + _get_temp_modifier_total("blood_pact")
+		if is_glass > 0 or is_pact > 0:
 			return 1.0
-
+			
 	var base_value = stats.get(stat_name, 0.0)
 	var temp_bonus = _get_temp_modifier_total(stat_name)
 	var final_value = base_value + temp_bonus
@@ -1006,27 +1013,26 @@ func get_stat(stat_name: String) -> float:
 				final_value += gold_bonus
 		
 		# Momentum: +% daño basado en velocidad de movimiento (si existe el upgrade)
-		# Verificamos si tenemos el efecto momentum (guardado como stat ficticio o verificando upgrade)
-		# En la propuesta Item 5 se llama "Momentum"
 		var momentum_factor = stats.get("momentum_factor", 0.0) # 0.2 para 20%
 		if momentum_factor > 0:
-			# Calcular bonus: (MoveSpeedActual - MoveSpeedBase) * factor?
-			# O simplemente % de velocidad total? La propuesta dice "Convierte el 20% de tu Movimiento en Daño".
-			# Asumiremos que es sobre el exceso de velocidad (speed_mult > 1.0) o valor total.
 			var speed = get_stat("move_speed") # Valor absoluto, ej 350
 			var base_speed = BASE_STATS.get("move_speed", 300.0)
 			if speed > base_speed:
-				# Por cada 10 unidades de velocidad extra ~ +1%?
-				# O si es multiplicador:
 				var extra_speed_pct = (speed / base_speed) - 1.0 # Ej: 360/300 = 1.2 -> 0.2 (20% extra)
 				if extra_speed_pct > 0:
 					final_value += extra_speed_pct * momentum_factor
+	
+	# Caso especial Blood Pact: Escudo x2
+	if stat_name == "max_shield":
+		var is_pact = stats.get("blood_pact", 0) + _get_temp_modifier_total("blood_pact")
+		if is_pact > 0:
+			final_value *= 2.0
 
 	# Aplicar límites si existen
 	if STAT_LIMITS.has(stat_name):
 		var limits = STAT_LIMITS[stat_name]
 		final_value = clampf(final_value, limits.min, limits.max)
-
+	
 	return final_value
 
 func is_stat_capped(stat_name: String) -> bool:

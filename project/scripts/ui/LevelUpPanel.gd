@@ -524,7 +524,22 @@ func _on_reroll() -> void:
 		return
 
 	reroll_count -= 1
+	reroll_count -= 1
 	reroll_used.emit()
+	
+	# --- LÓGICA DE RECICLAJE (Item 11: Recycler) ---
+	if player_stats and player_stats.has_method("get_stat"):
+		var xp_bonus_pct = player_stats.get_stat("xp_on_reroll")
+		if xp_bonus_pct > 0:
+			var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
+			if exp_mgr and "xp_required" in exp_mgr:
+				var amount = int(exp_mgr.xp_required * xp_bonus_pct)
+				if amount > 0:
+					exp_mgr.gain_experience(amount)
+					# El texto flotante lo maneja gain_experience o lo añadimos aquí
+					# FloatingText.spawn_text(global_position, "+%d XP" % amount, Color.PURPLE)
+	# -----------------------------------------------
+
 	generate_options()
 	# Volver a opciones después de reroll
 	current_row = Row.OPTIONS

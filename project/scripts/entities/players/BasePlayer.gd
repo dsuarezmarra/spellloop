@@ -140,6 +140,10 @@ func _initialize_health_component() -> void:
 			health_component.health_changed.connect(_on_health_changed)
 		if health_component.has_signal("died"):
 			health_component.died.connect(_on_health_died)
+		if health_component.has_signal("damaged"):
+			health_component.damaged.connect(_on_health_damaged)
+		if health_component.has_signal("damaged"):
+			health_component.damaged.connect(_on_health_damaged)
 		
 		# Sincronizar Max HP desde PlayerStats si ya existe y es diferente
 		var stats = get_tree().get_first_node_in_group("player_stats")
@@ -277,7 +281,10 @@ func _equip_starting_weapons() -> void:
 # ========== MOVIMIENTO ==========
 
 var _is_moving: bool = false
+var _is_moving: bool = false
 var _slow_aura_timer: float = 0.0
+var _stationary_timer: float = 0.0  # Para la mejora "Torreta"
+var _turret_buff_active: bool = false
 
 func _process(delta: float) -> void:
 	"""Actualizar lógica por frame (Animación + Regeneración)"""
@@ -297,8 +304,15 @@ func _process(delta: float) -> void:
 	# Stat: auto_black_hole_interval (si > 0, activa agujero negro periódico)
 	if _black_hole_timer > 0:
 		_black_hole_timer -= delta
+	# === POCKET BLACK HOLE ===
+	# Stat: auto_black_hole_interval (si > 0, activa agujero negro periódico)
+	if _black_hole_timer > 0:
+		_black_hole_timer -= delta
 	else:
 		_check_and_trigger_black_hole()
+	
+	# === LÓGICA TORRETA (Item 19) ===
+	_update_turret_logic(delta, _is_moving)
 
 	if not animated_sprite or not animated_sprite.sprite_frames:
 		return
@@ -864,6 +878,15 @@ func heal(amount: int) -> void:
 		# Aplicar curse si está activo
 		if _is_cursed:
 			final_heal = int(amount * (1.0 - _curse_amount))
+		# Aplicar curse si está activo
+		if _is_cursed:
+			final_heal = int(amount * (1.0 - _curse_amount))
+			
+		# Blood Pact check: No healing allowed
+		var player_stats = get_tree().get_first_node_in_group("player_stats")
+		if player_stats and player_stats.has_method("get_stat") and player_stats.get_stat("blood_pact") > 0:
+			final_heal = 0
+			
 		health_component.heal(final_heal)
 		var healed = health_component.current_health - old_hp
 		
@@ -998,6 +1021,20 @@ func _trigger_revive(player_stats: Node, current_revives: int) -> void:
 		health_component.is_alive = true
 		hp = revive_hp
 	
+	# Explosión de Fénix (AoE masivo)
+	var explosion_data = {
+		"damage": 500.0,
+		"area": 4.0,
+		"duration": 0.5,
+		"effect": "burn",
+		"effect_value": 10.0,
+		"effect_duration": 5.0,
+		"color": Color(1.0, 0.4, 0.1),
+		"is_aoe": true,
+		"position": global_position
+	}
+	ProjectileFactory.create_aoe(self, explosion_data)
+
 	# Efectos visuales de revive
 	_play_revive_effects()
 	
