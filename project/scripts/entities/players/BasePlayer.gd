@@ -189,6 +189,16 @@ func _initialize_physics() -> void:
 	set_collision_mask_value(5, true)    # Pickups
 	set_collision_mask_value(8, true)    # Barreras de zona
 	
+	# Ajustar Hitbox (Request de usuario: agrandar hitbox)
+	var col_shape = get_node_or_null("CollisionShape2D")
+	if col_shape and col_shape.shape:
+		if col_shape.shape is CircleShape2D:
+			col_shape.shape.radius = 15.0 # Aumentado de default (10) a 15
+		elif col_shape.shape is CapsuleShape2D:
+			col_shape.shape.radius = 15.0
+			col_shape.shape.height = 42.0
+		# print("[Player] Hitbox size increased")
+	
 	# Debug desactivado: print("[%s] ✓ Física configurada" % character_class)
 
 func _find_global_managers() -> void:

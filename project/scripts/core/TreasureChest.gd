@@ -79,17 +79,41 @@ func initialize_as_shop(chest_position: Vector2, player: CharacterBody2D, tier: 
 	# No llamar generate_contents - se genera al abrir con ShopChestPopup
 
 func setup_visual():
-	"""Configurar apariencia del cofre"""
+	"""Configurar apariencia del cofre usando spritesheets"""
 	sprite = Sprite2D.new()
 	add_child(sprite)
 	
-	create_chest_texture()
+	# Determinar textura según rareza
+	var tex_name = "chest_common"
+	match chest_rarity:
+		0: tex_name = "chest_common"
+		1: tex_name = "chest_rare"
+		2: tex_name = "chest_epic"
+		3: tex_name = "chest_legendary"
+		4: tex_name = "chest_unique"
 	
-	var scale_factor = 1.0
+	# Mapeos especiales
+	if chest_type == ChestType.BOSS: tex_name = "chest_legendary"
+	if chest_type == ChestType.WEAPON: tex_name = "chest_rare"
+	
+	var path = "res://assets/treasure_chests/%s.png" % tex_name
+	
+	# Cargar textura o fallback
+	if ResourceLoader.exists(path):
+		var tex = load(path)
+		sprite.texture = tex
+		sprite.hframes = 4 # Spritesheet de 4 frames (Bouncing)
+		sprite.offset = Vector2(0, -16) # Ajuste de pivote
+	else:
+		create_chest_texture()
+	
+	# Ajuste de tamaño (Request de usuario: reducir a la mitad porque se ven enormes)
+	var scale_factor = 0.5
+	
 	# Escala según tipo
 	match chest_type:
-		ChestType.BOSS: scale_factor = 1.3
-		ChestType.ELITE: scale_factor = 1.15
+		ChestType.BOSS: scale_factor *= 1.3
+		ChestType.ELITE: scale_factor *= 1.15
 	
 	var scale_manager = null
 	if get_tree() and get_tree().root and get_tree().root.get_node_or_null("ScaleManager"):
@@ -213,7 +237,18 @@ func get_random_chest_item() -> String:
 	]
 	return item_types[randi() % item_types.size()]
 
-func _process(_delta):
+# Variables de animación
+var _anim_timer: float = 0.0
+const ANIM_FRAME_TIME: float = 0.15
+
+func _process(delta):
+	# Animación Bouncing (solo si está cerrado y no pausado)
+	if not is_opened and sprite and sprite.hframes > 1 and not get_tree().paused:
+		_anim_timer += delta
+		if _anim_timer >= ANIM_FRAME_TIME:
+			_anim_timer = 0.0
+			sprite.frame = (sprite.frame + 1) % sprite.hframes
+
 	if is_opened or not player_ref or popup_shown:
 		return
 	
