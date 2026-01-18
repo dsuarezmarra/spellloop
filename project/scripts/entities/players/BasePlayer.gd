@@ -1084,7 +1084,7 @@ func _play_death_animation() -> void:
 		# SAFETY TIMER: Forzar muerte si la animación falla o se cuelga
 		# 2.0 segundos debería ser suficiente para cualquier animación de muerte razonable
 		get_tree().create_timer(2.0).timeout.connect(func():
-			if game_manager and game_manager.game_running:
+			if game_manager and game_manager.is_run_active:
 				# Si el juego sigue corriendo (no se llamó a player_died), forzarlo
 				print("[%s] ⚠️ Safety Timer: Forzando señal player_died" % character_class)
 				player_died.emit()

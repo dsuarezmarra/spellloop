@@ -417,19 +417,23 @@ func _handle_hit(target: Node) -> void:
 	# -----------------------------------------------------------
 	# LÓGICA DE NUEVOS OBJETOS (Phase 3)
 	# -----------------------------------------------------------
-	var distance_traveled = global_position.distance_to(start_pos) if start_pos else 0.0
+	# Calcular distancia desde el jugador al enemigo (NO la distancia recorrida por el proyectil)
+	var player_to_enemy_distance: float = 0.0
+	var player = get_tree().get_first_node_in_group("player")
+	if player and target:
+		player_to_enemy_distance = player.global_position.distance_to(target.global_position)
 	
-	# 1. Tiro Certero (Sharpshooter): +damage si lejos (> 300)
+	# 1. Tiro Certero (Sharpshooter): +damage si enemigo lejos (> 300 del jugador)
 	var ps = get_tree().get_first_node_in_group("player_stats")
 	if ps:
-		# Check Sharpshooter
+		# Check Sharpshooter - usa distancia del jugador al enemigo
 		var sharpshooter_val = ps.get_stat("long_range_damage_bonus") if ps.has_method("get_stat") else 0.0
-		if sharpshooter_val > 0 and distance_traveled > 300:
+		if sharpshooter_val > 0 and player_to_enemy_distance > 300:
 			final_damage = int(final_damage * (1.0 + sharpshooter_val))
 			
-		# 2. Peleador Callejero (Street Brawler): +damage si cerca (< 150)
+		# 2. Peleador Callejero (Street Brawler): +damage si enemigo cerca (< 150 del jugador)
 		var brawler_val = ps.get_stat("close_range_damage_bonus") if ps.has_method("get_stat") else 0.0
-		if brawler_val > 0 and distance_traveled < 150:
+		if brawler_val > 0 and player_to_enemy_distance < 150:
 			final_damage = int(final_damage * (1.0 + brawler_val))
 			
 		# 3. Verdugo (Executioner): +damage si enemigo Low HP (< 30%)
