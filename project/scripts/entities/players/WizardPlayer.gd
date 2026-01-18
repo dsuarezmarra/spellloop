@@ -2,7 +2,7 @@
 # Clase base del jugador - Mantiene el nombre por compatibilidad
 # Extiende BasePlayer con características y armas específicas del mago
 
-extends BasePlayer
+extends "res://scripts/entities/players/BasePlayer.gd"
 class_name WizardPlayer
 
 # ========== CARACTERÍSTICAS DEL JUGADOR ==========

@@ -17,7 +17,7 @@ enum ChestType {
 }
 
 # Probabilidades base por tipo de cofre
-const CHEST_WIEGHTS = {
+const CHEST_WEIGHTS = {
 	ChestType.NORMAL: {
 		"gold": 0.4,
 		"healing": 0.3,
@@ -61,7 +61,7 @@ static func get_chest_loot(chest_type: int, luck_modifier: float = 1.0, context:
 		return _generate_boss_loot(luck_modifier, context)
 	
 	# Lógica estándar para otros cofres
-	var weights = CHEST_WIEGHTS.get(chest_type, CHEST_WIEGHTS[ChestType.NORMAL])
+	var weights = CHEST_WEIGHTS.get(chest_type, CHEST_WEIGHTS[ChestType.NORMAL])
 	var category = _roll_category(weights, luck_modifier)
 	
 	var item = null
