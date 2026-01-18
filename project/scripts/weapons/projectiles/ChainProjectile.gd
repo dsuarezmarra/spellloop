@@ -67,7 +67,7 @@ func _create_chain_visual() -> void:
 				return
 
 	# Fallback: crear visual simple
-	_enhanced_visual = ProjectileFactory.ChainLightningVisual.new()
+	_enhanced_visual = ChainLightningVisual.new()
 	_enhanced_visual.setup(null, weapon_id, chain_count)
 	add_child(_enhanced_visual)
 	_use_enhanced = true
