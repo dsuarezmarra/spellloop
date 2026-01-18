@@ -293,9 +293,11 @@ func setup_shop(items: Array, coins: int):
 	
 	await get_tree().process_frame
 	
-	# Dar foco al primer botón para navegación con teclado
+	# Inicializar selección visual (mostrar borde en el primer item)
+	current_selected_index = 0
 	if item_buttons.size() > 0:
 		item_buttons[0].grab_focus()
+	_update_selection_visuals()
 
 func _create_item_button(item: Dictionary, index: int) -> Control:
 	"""Crear botón de item con icono, nombre, descripción y precio"""
@@ -573,53 +575,57 @@ func _activate_selection():
 		item_buttons[current_selected_index].pressed.emit()
 
 func _update_selection_visuals():
-	"""Actualizar feedback visual de selección con borde brillante"""
+	"""Actualizar feedback visual de selección con aura brillante"""
 	for i in range(item_buttons.size()):
 		var btn = item_buttons[i]
-		if i == current_selected_index:
-			# Crear estilo con borde dorado brillante para selección
-			var selected_style = StyleBoxFlat.new()
-			selected_style.bg_color = Color(0.2, 0.25, 0.3, 1.0)
-			selected_style.border_color = Color(1.0, 0.85, 0.2, 1.0)  # Dorado brillante
-			selected_style.set_border_width_all(4)
-			selected_style.set_corner_radius_all(8)
-			btn.add_theme_stylebox_override("normal", selected_style)
-			btn.add_theme_stylebox_override("hover", selected_style)
-			btn.modulate = Color(1.2, 1.2, 1.1)
-			btn.scale = Vector2(1.02, 1.02)
-		else:
-			# Restaurar estilo normal
-			var normal_style = StyleBoxFlat.new()
-			normal_style.bg_color = Color(0.15, 0.15, 0.18, 1.0)
-			normal_style.border_color = Color(0.5, 0.5, 0.6, 0.8)
-			normal_style.set_border_width_all(2)
-			normal_style.set_corner_radius_all(6)
-			btn.add_theme_stylebox_override("normal", normal_style)
-			btn.add_theme_stylebox_override("hover", normal_style)
-			btn.modulate = Color.WHITE
-			btn.scale = Vector2(1.0, 1.0)
+		var is_selected = (i == current_selected_index)
+		
+		# Buscar o crear el panel de glow
+		var glow_panel = btn.get_node_or_null("SelectionGlow")
+		if not glow_panel:
+			glow_panel = Panel.new()
+			glow_panel.name = "SelectionGlow"
+			glow_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			glow_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+			# Estilo del glow dorado brillante
+			var glow_style = StyleBoxFlat.new()
+			glow_style.bg_color = Color(0, 0, 0, 0)  # Transparente
+			glow_style.border_color = Color(1.0, 0.85, 0.2, 1.0)  # Dorado brillante
+			glow_style.set_border_width_all(5)  # Borde grueso
+			glow_style.set_corner_radius_all(10)
+			glow_style.set_expand_margin_all(4)  # Expande hacia afuera
+			glow_panel.add_theme_stylebox_override("panel", glow_style)
+			btn.add_child(glow_panel)
+			btn.move_child(glow_panel, 0)  # Mover al fondo
+		
+		# Mostrar u ocultar
+		glow_panel.visible = is_selected
+		btn.modulate = Color(1.15, 1.15, 1.05) if is_selected else Color.WHITE
+		btn.scale = Vector2(1.02, 1.02) if is_selected else Vector2(1.0, 1.0)
 			
 	# Botón salir
-	if current_selected_index == item_buttons.size():
+	var exit_selected = (current_selected_index == item_buttons.size())
+	
+	# Buscar o crear glow del botón exit
+	var exit_glow = exit_button.get_node_or_null("SelectionGlow")
+	if not exit_glow:
+		exit_glow = Panel.new()
+		exit_glow.name = "SelectionGlow"
+		exit_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		exit_glow.set_anchors_preset(Control.PRESET_FULL_RECT)
 		var exit_style = StyleBoxFlat.new()
-		exit_style.bg_color = Color(0.3, 0.15, 0.15, 1.0)
-		exit_style.border_color = Color(1.0, 0.5, 0.3, 1.0)  # Naranja-rojo
-		exit_style.set_border_width_all(4)
-		exit_style.set_corner_radius_all(6)
-		exit_button.add_theme_stylebox_override("normal", exit_style)
-		exit_button.add_theme_stylebox_override("hover", exit_style)
-		exit_button.modulate = Color(1.2, 1.1, 1.0)
-		exit_button.scale = Vector2(1.02, 1.02)
-	else:
-		var normal_exit = StyleBoxFlat.new()
-		normal_exit.bg_color = Color(0.25, 0.15, 0.15, 1.0)
-		normal_exit.border_color = Color(0.6, 0.4, 0.4, 0.8)
-		normal_exit.set_border_width_all(2)
-		normal_exit.set_corner_radius_all(4)
-		exit_button.add_theme_stylebox_override("normal", normal_exit)
-		exit_button.add_theme_stylebox_override("hover", normal_exit)
-		exit_button.modulate = Color.WHITE
-		exit_button.scale = Vector2(1.0, 1.0)
+		exit_style.bg_color = Color(0, 0, 0, 0)
+		exit_style.border_color = Color(1.0, 0.4, 0.2, 1.0)  # Naranja-rojo
+		exit_style.set_border_width_all(5)
+		exit_style.set_corner_radius_all(8)
+		exit_style.set_expand_margin_all(4)
+		exit_glow.add_theme_stylebox_override("panel", exit_style)
+		exit_button.add_child(exit_glow)
+		exit_button.move_child(exit_glow, 0)
+	
+	exit_glow.visible = exit_selected
+	exit_button.modulate = Color(1.2, 1.1, 1.0) if exit_selected else Color.WHITE
+	exit_button.scale = Vector2(1.02, 1.02) if exit_selected else Vector2(1.0, 1.0)
 
 func _ensure_visible(control: Control):
 	"""Asegurar que el control es visible en el scroll"""
