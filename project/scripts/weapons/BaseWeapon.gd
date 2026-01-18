@@ -352,7 +352,7 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> bool:
 	
 	# --------------------------------------------------------------------------
 	# LÓGICA MULTICAST (Item Idea: "Doble o Nada", "Echo")
-    # --------------------------------------------------------------------------
+	# --------------------------------------------------------------------------
 	var executions = 1
 	var multicast_chance = player_stats.get("multicast_chance", 0.0)
 	# También verificar en global stats por si acaso no vino en el dict

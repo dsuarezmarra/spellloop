@@ -448,4 +448,3 @@ func _style_shield_bar():
 func _style_hud_elements() -> void:
 	# Estilos adicionales si fueran necesarios (placeholder)
 	pass
-
