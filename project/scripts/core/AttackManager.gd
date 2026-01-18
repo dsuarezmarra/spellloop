@@ -1355,3 +1355,14 @@ func get_debug_info() -> String:
 		lines.append("")
 		lines.append("🔥 Fusiones disponibles: %d" % fusions.size())
 	return "\n".join(lines)
+
+
+func set_active(active: bool) -> void:
+	"""Activar o desactivar el sistema de ataques"""
+	is_active = active
+	set_process(active)
+	if not active:
+		# Detener todas las armas si se desactiva
+		for weapon in weapons:
+			if weapon.has_method("stop_firing"):
+				weapon.stop_firing()

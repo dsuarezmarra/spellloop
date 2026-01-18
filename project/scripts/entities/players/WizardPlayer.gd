@@ -106,7 +106,7 @@ func _setup_animations() -> void:
 
 	# ========== DEATH ANIMATION (3 frames desde strip) ==========
 	frames.add_animation("death")
-	frames.set_animation_speed("death", 1.0)
+	frames.set_animation_speed("death", 5.0)
 	frames.set_animation_loop("death", false)
 
 	var death_strip_path = "%s/death/death_strip.png" % base_path

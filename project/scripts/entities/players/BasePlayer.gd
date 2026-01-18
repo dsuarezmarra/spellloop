@@ -920,6 +920,12 @@ func _play_death_animation() -> void:
 	# Detener cualquier movimiento
 	velocity = Vector2.ZERO
 	
+	# Desactivar AttackManager para detener auto-ataques
+	if attack_manager and attack_manager.has_method("set_active"):
+		attack_manager.set_active(false)
+	elif attack_manager:
+		attack_manager.process_mode = Node.PROCESS_MODE_DISABLED
+	
 	# Hacer al jugador invulnerable durante la animación de muerte
 	set_collision_layer_value(1, false)
 	
@@ -932,13 +938,24 @@ func _play_death_animation() -> void:
 		# Restaurar escala normal por si estaba casteando
 		animated_sprite.scale = Vector2(player_sprite_scale, player_sprite_scale)
 		
-		# Efecto de muerte lenta
-		animated_sprite.speed_scale = 0.3
+		# Efecto de muerte: velocidad normal (ahora controlada por FPS en WizardPlayer)
+		# Se removió el 0.3x que causaba demora de 10s
+		animated_sprite.speed_scale = 1.0
 		
 		animated_sprite.play("death")
+		
 		# Conectar señal para emitir player_died cuando termine la animación
 		if not animated_sprite.animation_finished.is_connected(_on_death_animation_finished):
 			animated_sprite.animation_finished.connect(_on_death_animation_finished, CONNECT_ONE_SHOT)
+			
+		# SAFETY TIMER: Forzar muerte si la animación falla o se cuelga
+		# 2.0 segundos debería ser suficiente para cualquier animación de muerte razonable
+		get_tree().create_timer(2.0).timeout.connect(func():
+			if game_manager and game_manager.game_running:
+				# Si el juego sigue corriendo (no se llamó a player_died), forzarlo
+				print("[%s] ⚠️ Safety Timer: Forzando señal player_died" % character_class)
+				player_died.emit()
+		)
 	else:
 		# Si no hay animación de muerte, emitir señal directamente
 		player_died.emit()
