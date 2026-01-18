@@ -1466,7 +1466,7 @@ func take_damage(amount: float) -> float:
 	health_changed.emit(current_health, get_stat("max_health"))
 	
 	# Reset regen timers
-	_shield_regen_delay_timer = 0.0
+	_time_since_damage = 0.0
 	
 	return effective_damage
 
@@ -1480,8 +1480,8 @@ func _update_shield_regen(delta: float) -> void:
 	var regen_delay = get_stat("shield_regen_delay")
 	
 	if max_shield > 0:
-		if _shield_regen_delay_timer < regen_delay:
-			_shield_regen_delay_timer += delta
+		if _time_since_damage < regen_delay:
+			_time_since_damage += delta
 		else:
 			if get_stat("shield_amount") < max_shield:
 				var regen_amt = shield_regen * delta
@@ -1490,7 +1490,7 @@ func _update_shield_regen(delta: float) -> void:
 				if get_stat("shield_amount") > max_shield:
 					set_stat("shield_amount", max_shield)
 
-var _shield_regen_delay_timer: float = 0.0
+
 
 func heal(amount: float) -> float:
 	"""
