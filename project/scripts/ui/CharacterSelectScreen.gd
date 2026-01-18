@@ -29,8 +29,7 @@ var stats_panel: Control
 var title_label: Label
 var character_name_label: Label
 var character_title_label: Label
-var back_button: Button
-var play_button: Button
+
 var instructions_label: Label
 
 # Character sprites in carousel
@@ -533,7 +532,7 @@ func _update_stats_display() -> void:
 		{"key": "attack_speed_mult", "name": "SPD", "base": 1.0, "format": "x%.2f", "invert": false},
 		{"key": "area_mult", "name": "AREA", "base": 1.0, "format": "x%.2f", "invert": false},
 		# Row 3: Utility stats
-		{"key": "pickup_range", "name": "RNG", "base": 50, "format": "%.0f", "invert": false},
+		{"key": "pickup_range", "name": "RNG", "base": 100, "format": "%.0f", "invert": false},
 		{"key": "health_regen", "name": "REGEN", "base": 0.0, "format": "%.1f", "invert": false},
 		{"key": "luck", "name": "LUCK", "base": 0.0, "format": "%.0f%%", "invert": false},
 		# Row 4: XP
