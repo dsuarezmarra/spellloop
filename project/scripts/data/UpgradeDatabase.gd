@@ -1783,7 +1783,7 @@ const UNIQUE_UPGRADES: Dictionary = {
 	"unique_phoenix_heart": {
 		"id": "unique_phoenix_heart",
 		"name": "Corazón de Fénix",
-		"description": "Al morir, revives con 50% HP. (Se consume al usarse)",
+		"description": "Revives al morir con 50% HP. (Se consume al usarse)",
 		"icon": "🔥",
 		"category": "unique",
 		"tier": 5,
@@ -1791,6 +1791,20 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"is_consumable": true,
 		"max_stacks": 1,
 		"effects": [{"stat": "revives", "value": 1, "operation": "add"}]
+	},
+	"unique_guardian_angel": {
+		"id": "unique_guardian_angel",
+		"name": "Ángel Guardián",
+		"description": "+1 Revive. Aura dorada y 3s de invulnerabilidad al revivir.",
+		"icon": "👼",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "revives", "value": 1, "operation": "add"},
+			{"stat": "revive_invuln", "value": 3.0, "operation": "add"}
+		]
 	},
 	"unique_second_chance": {
 		"id": "unique_second_chance",

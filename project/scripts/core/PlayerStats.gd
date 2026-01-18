@@ -541,7 +541,8 @@ const BASE_STATS: Dictionary = {
 	"growth": 0.0,                 # Bonus que escala con tiempo
 	"reroll_count": 0,             # Rerolls extra
 	"banish_count": 0,             # Banishes extra
-	"levelup_options": 0           # Opciones extra en levelup
+	"levelup_options": 0,          # Opciones extra en levelup
+	"revives": 0                   # Vidas extra (Guardian Angel)
 }
 
 const MAX_LEVEL: int = 99

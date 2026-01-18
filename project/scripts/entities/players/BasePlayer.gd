@@ -990,8 +990,10 @@ func _trigger_revive(player_stats: Node, current_revives: int) -> void:
 	# Mostrar mensaje
 	FloatingText.spawn_text(global_position + Vector2(0, -50), "¡REVIVE!", Color(1.0, 0.9, 0.3))
 	
-	# Inmunidad temporal (2 segundos)
-	_grant_revive_immunity(2.0)
+	# Inmunidad temporal: base 2s + bonus de revive_invuln
+	var base_immunity = 2.0
+	var bonus_immunity = player_stats.get_stat("revive_invuln") if player_stats.has_method("get_stat") else 0.0
+	_grant_revive_immunity(base_immunity + bonus_immunity)
 	
 	# Notificar cambio de salud
 	if health_component:

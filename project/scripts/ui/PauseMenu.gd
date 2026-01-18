@@ -704,7 +704,7 @@ func _get_stats_for_category(category: String) -> Array:
 		"defensive":
 			return ["max_health", "health_regen", "armor", "dodge_chance", "life_steal", 
 					"damage_taken_mult", "thorns", "thorns_percent", "shield_amount", 
-					"shield_regen", "revives"]
+					"max_shield", "shield_regen", "revives"]
 		"offensive":
 			# "damage_mult" ya está en Stats de Armas Globales
 			return ["elite_damage_mult", "burn_chance", "freeze_chance", 
