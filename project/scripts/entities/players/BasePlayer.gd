@@ -89,6 +89,9 @@ var character_sprites_key: String = "wizard"  # Sobrescribir en subclases
 
 # ========== CICLO DE VIDA ==========
 
+var _turret_timer: float = 0.0
+var _turret_active: bool = false
+
 func _ready() -> void:
 	"""Inicialización del personaje"""
 	# CRÍTICO: Respetar la pausa del juego
@@ -316,6 +319,37 @@ func _process(delta: float) -> void:
 	if not input_manager:
 		return
 	
+	# Procesar movimiento (input)
+	if not _is_dying:
+		_process_movement(delta)
+		
+		# -----------------------------------------------------------
+		# LÓGICA DE NUEVOS OBJETOS (Phase 4)
+		# 19. Torreta (Tower): Buffs si quieto > 2s
+		var player_stats = _get_player_stats()
+		if player_stats and player_stats.has_method("get_stat") and player_stats.get_stat("turret_mode_enabled") > 0:
+			if velocity.length() < 10.0:
+				_turret_timer += delta
+				if _turret_timer >= 2.0 and not _turret_active:
+					_turret_active = true
+					# Activar buffs (simulado con modificadores temporales o stats directos)
+					# Por ahora solo feedback visual y asumimos que PlayerStats checkea _turret_active
+					# O aplicamos buff aquí
+					FloatingText.spawn_custom(global_position + Vector2(0, -70), "TURRET MODE!", Color.GREEN)
+					# Modificar stats dinámicamente si es posible, o usar flag en PlayerStats
+					if player_stats.has_method("add_temporary_modifier"):
+						# ID, Stat, ValueMs, Duration (0=infinite until removed)
+						# Pero temp modifiers suelen tener duración.
+						# Mejor: PlayerStats lee una variable nuestra o nosotros seteamos un flag en PlayerStats
+						if "is_turret_mode" in player_stats:
+							player_stats.is_turret_mode = true
+			else:
+				_turret_timer = 0.0
+				if _turret_active:
+					_turret_active = false
+					if player_stats and "is_turret_mode" in player_stats:
+						player_stats.is_turret_mode = false
+		# -----------------------------------------------------------
 	var movement_input_vec = input_manager.get_movement_vector()
 	var is_moving_now = movement_input_vec.length() > 0.1
 	
@@ -802,6 +836,21 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 			
 			# Visual effect (reutilizamos shockwave o similar si existe)
 			_spawn_nova_effect()
+			
+		# 6. Vínculo de Alma (Soul Link): Distribuir daño a enemigos cercanos
+		var soul_link_pct = player_stats.get_stat("soul_link_percent")
+		if soul_link_pct > 0:
+			var enemies = get_tree().get_nodes_in_group("enemies")
+			var link_radius = 400.0
+			var damage_to_share = int(final_damage * soul_link_pct)
+			
+			if damage_to_share > 0:
+				for enemy in enemies:
+					if global_position.distance_to(enemy.global_position) < link_radius:
+						if enemy.has_method("take_damage"):
+							enemy.take_damage(damage_to_share)
+							# Visual: Beam/Line logic would be cool but keep it simple for now
+							FloatingText.spawn_custom(enemy.global_position + Vector2(0, -50), "LINK!", Color.MAGENTA)
 	# -----------------------------------------------------------
 
 func _apply_thorns_damage(attacker: Node, damage_received: int, player_stats: Node) -> void:

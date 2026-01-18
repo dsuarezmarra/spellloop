@@ -465,6 +465,15 @@ func _handle_hit(target: Node) -> void:
 				_play_roulette_sound()
 			# Opcional: penalización en tiros normales? "Ruleta rusa" implica riesgo.
 			# Por ahora solo bonus masivo.
+			
+		# 9. Hemorragia (Hemorrhage): Chance de aplicar Sangrado
+		var bleed_chance = ps.get_stat("bleed_on_hit_chance") if ps.has_method("get_stat") else 0.0
+		if bleed_chance > 0 and randf() < bleed_chance:
+			if target.has_method("apply_bleed"):
+				# Daño de sangrado base o proporcional
+				var bleed_dmg = max(1, damage * 0.2) # 20% del daño del golpe
+				target.apply_bleed(bleed_dmg, 3.0)
+				FloatingText.spawn_custom(target.global_position + Vector2(-10, -30), "BLEED", Color.RED)
 	# -----------------------------------------------------------
 	# -----------------------------------------------------------
 	

@@ -496,6 +496,28 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 		"max_stacks": 1,
 		"effects": [{"stat": "frost_nova_on_hit", "value": 1, "operation": "add"}]
 	},
+	# [NUEVO] Torreta (Tower)
+	"tower": {
+		"id": "tower",
+		"name": "Torreta",
+		"description": "Activa modo Torreta tras 2s quieto.",
+		"icon": "🏰",
+		"category": "defensive",
+		"tier": 3,
+		"max_stacks": 1,
+		"effects": [{"stat": "turret_mode_enabled", "value": 1, "operation": "add"}]
+	},
+	# [NUEVO] Vínculo de Alma (Soul Link)
+	"soul_link": {
+		"id": "soul_link",
+		"name": "Vínculo de Alma",
+		"description": "Redirige 30% del daño recibido a enemigos cercanos.",
+		"icon": "🔗",
+		"category": "defensive",
+		"tier": 4,
+		"max_stacks": 2,
+		"effects": [{"stat": "soul_link_percent", "value": 0.30, "operation": "add"}]
+	},
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -710,6 +732,39 @@ const UTILITY_UPGRADES: Dictionary = {
 		"max_stacks": 1,
 		"effects": [{"stat": "streak_bonus_mult", "value": 1.0, "operation": "add"}]
 	},
+	# [NUEVO] Doble o Nada (Multicast)
+	"double_or_nothing": {
+		"id": "double_or_nothing",
+		"name": "Doble o Nada",
+		"description": "20% probabilidad de disparar dos veces.",
+		"icon": "🎲",
+		"category": "utility",
+		"tier": 5,
+		"max_stacks": 3,
+		"effects": [{"stat": "multicast_chance", "value": 0.20, "operation": "add"}]
+	},
+	# [NUEVO] Portador de Plaga (Plague Bearer)
+	"plague_bearer": {
+		"id": "plague_bearer",
+		"name": "Portador de Plaga",
+		"description": "Al morir, los enemigos contagian sus estados.",
+		"icon": "🦠",
+		"category": "utility",
+		"tier": 4,
+		"max_stacks": 1,
+		"effects": [{"stat": "plague_bearer_active", "value": 1, "operation": "add"}]
+	},
+	# [NUEVO] Crono-Salto (Chrono Jump)
+	"chrono_jump": {
+		"id": "chrono_jump",
+		"name": "Crono-Salto",
+		"description": "Enemigos se mueven 50% más lento.",
+		"icon": "⏳",
+		"category": "utility",
+		"tier": 5,
+		"max_stacks": 1,
+		"effects": [{"stat": "chrono_jump_active", "value": 1, "operation": "add"}]
+	},
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -805,6 +860,39 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 		"tier": 3,
 		"max_stacks": 3,
 		"effects": [{"stat": "elite_damage_mult", "value": 1.20, "operation": "multiply"}]
+	},
+	# [NUEVO] Combustión (Combustion)
+	"combustion": {
+		"id": "combustion",
+		"name": "Combustión",
+		"description": "La quemadura hace su daño total instantáneamente.",
+		"icon": "🔥",
+		"category": "offensive",
+		"tier": 4,
+		"max_stacks": 1,
+		"effects": [{"stat": "combustion_active", "value": 1, "operation": "add"}]
+	},
+	# [NUEVO] Ruleta Rusa (Russian Roulette)
+	"russian_roulette": {
+		"id": "russian_roulette",
+		"name": "Ruleta Rusa",
+		"description": "1% probabilidad de causar daño masivo (10x).",
+		"icon": "🔫",
+		"category": "offensive",
+		"tier": 4,
+		"max_stacks": 1,
+		"effects": [{"stat": "russian_roulette", "value": 1, "operation": "add"}]
+	},
+	# [NUEVO] Hemorragia (Hemorrhage)
+	"hemorrhage": {
+		"id": "hemorrhage",
+		"name": "Hemorragia",
+		"description": "20% probabilidad de causar sangrado al impactar.",
+		"icon": "🩸",
+		"category": "offensive",
+		"tier": 3,
+		"max_stacks": 3,
+		"effects": [{"stat": "bleed_on_hit_chance", "value": 0.20, "operation": "add"}]
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1698,6 +1786,20 @@ const CURSED_UPGRADES: Dictionary = {
 		"tier": 5,
 		"max_stacks": 1,
 		"effects": [{"stat": "blood_pact", "value": 1, "operation": "add"}]
+	},
+	# [NUEVO] Miope (Near Sighted)
+	"near_sighted": {
+		"id": "near_sighted",
+		"name": "Miope",
+		"description": "-50% Rango, +50% Daño.",
+		"icon": "👓",
+		"category": "cursed",
+		"tier": 3,
+		"max_stacks": 1,
+		"effects": [
+			{"stat": "near_sighted_active", "value": 1, "operation": "add"},
+			{"stat": "damage_mult", "value": 0.50, "operation": "add"}
+		]
 	},
 	# VELOCIDAD vs DAÑO
 	# ─────────────────────────────────────────────────────────────────────────────

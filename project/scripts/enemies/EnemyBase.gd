@@ -697,6 +697,17 @@ func _physics_process(delta: float) -> void:
 	# Calcular movimiento según arquetipo
 	var movement = _calculate_archetype_movement(direction, distance_to_player, delta)
 
+	# -----------------------------------------------------------
+	# LÓGICA DE NUEVOS OBJETOS (Phase 4)
+	# 8. Crono-Salto (Chrono Jump): Enemigos 50% más lentos
+	# Consultar PlayerStats (cachear si es posible, pero por ahora directo para simplicidad)
+	if player_ref and is_instance_valid(player_ref) and player_ref.has_method("get_player_stats"):
+		# Try to access global player stats via group to be safe
+		var ps = get_tree().get_first_node_in_group("player_stats")
+		if ps and ps.has_method("get_stat") and ps.get_stat("chrono_jump_active") > 0:
+			movement *= 0.5
+	# -----------------------------------------------------------
+
 	# Calcular separación de otros enemigos
 	var separation = _calculate_separation()
 
@@ -1834,6 +1845,48 @@ func die() -> void:
 
 func _on_health_died() -> void:
 	"""Manejar muerte desde HealthComponent"""
+	
+	# -----------------------------------------------------------
+	# LÓGICA DE NUEVOS OBJETOS (Phase 4)
+	# 10. Portadores de Plaga (Plague Bearer): Spread debuffs on death
+	if player_ref and is_instance_valid(player_ref) and player_ref.has_method("get_player_stats"):
+		# Try to access global player stats
+		var ps = get_tree().get_first_node_in_group("player_stats")
+		if ps and ps.has_method("get_stat"):
+			var plague_active = ps.get_stat("plague_bearer_active")
+			if plague_active > 0:
+				# Check active debuffs
+				var debuffs_to_spread = []
+				var spread_timers = []
+				
+				if _is_burning: debuffs_to_spread.append("burn"); spread_timers.append(_burn_timer)
+				if _is_slowed: debuffs_to_spread.append("slow"); spread_timers.append(_slow_timer)
+				if _is_blinded: debuffs_to_spread.append("blind"); spread_timers.append(_blind_timer)
+				if _is_bleeding: debuffs_to_spread.append("bleed"); spread_timers.append(_bleed_timer)
+				if _is_frozen: debuffs_to_spread.append("freeze"); spread_timers.append(_freeze_timer)
+				
+				if not debuffs_to_spread.is_empty():
+					# Find nearby enemies
+					var enemies = get_tree().get_nodes_in_group("enemies")
+					var spread_radius = 250.0
+					for enemy in enemies:
+						if enemy != self and global_position.distance_to(enemy.global_position) < spread_radius:
+							# Apply debuffs
+							for i in range(debuffs_to_spread.size()):
+								var debuff = debuffs_to_spread[i]
+								var duration = spread_timers[i]
+								
+								match debuff:
+									"burn": if enemy.has_method("apply_burn"): enemy.apply_burn(_burn_damage, duration)
+									"slow": if enemy.has_method("apply_slow"): enemy.apply_slow(_slow_amount, duration)
+									"blind": if enemy.has_method("apply_blind"): enemy.apply_blind(duration)
+									"bleed": if enemy.has_method("apply_bleed"): enemy.apply_bleed(_bleed_damage, duration)
+									"freeze": if enemy.has_method("apply_freeze"): enemy.apply_freeze(duration)
+					
+					# Visual feedback
+					# FloatingText.spawn_custom(global_position, "SPREAD!", Color.GREEN)
+	# -----------------------------------------------------------
+	
 	die()
 
 func get_info() -> Dictionary:

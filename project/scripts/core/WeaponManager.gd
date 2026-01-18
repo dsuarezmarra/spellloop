@@ -164,6 +164,29 @@ func fire_weapon(weapon: WeaponData, target_position: Vector2):
 	# Emitir señal
 	weapon_fired.emit(weapon.id, target_position)
 
+	# -----------------------------------------------------------
+	# LÓGICA DE NUEVOS OBJETOS (Phase 4)
+	# 7. Doble o Nada (Double or Nothing / Multicast): Chance de disparar otra vez
+	# Evitamos recursión infinita con un chequeo o solo permitiendo 1 extra
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.has_method("get_stat"):
+		# Usamos "multicast_chance" o "double_shot_chance"
+		var chance = player_stats.get_stat("multicast_chance")
+		if chance > 0 and randf() < chance:
+			# Disparar de nuevo con un pequeño delay o offset para que se note
+			# Por simplicidad, disparamos inmediatamente pero ligeramente desviado
+			var offset = Vector2(randf_range(-10, 10), randf_range(-10, 10))
+			
+			match weapon.weapon_type:
+				WeaponData.WeaponType.PROJECTILE:
+					fire_projectile(weapon, target_position + offset)
+				WeaponData.WeaponType.AREA_SPELL:
+					fire_area_spell(weapon, target_position + offset)
+					
+			# Feedback visual (Texto "X2!")
+			# FloatingText.spawn_custom(player.global_position + Vector2(0, -70), "X2!", Color.CYAN)
+	# -----------------------------------------------------------
+
 func fire_projectile(weapon: WeaponData, target_position: Vector2):
 	"""Disparar proyectil usando la fábrica centralizada"""
 	# Construir diccionario de datos para la fábrica
@@ -178,8 +201,23 @@ func fire_projectile(weapon: WeaponData, target_position: Vector2):
 		"knockback": weapon.knockback,
 		"pierce": weapon.pierce,
 		"element": weapon.element,
+		"element": weapon.element,
 		"weapon_id": weapon.id
 	}
+	
+	# -----------------------------------------------------------
+	# LÓGICA DE NUEVOS OBJETOS (Phase 4)
+	# 8. Miope (Near Sighted): -50% Range, +Damage (handled via stats usually, but range here)
+	# Asumimos que "near_sighted" en PlayerStats da +Damage global (configurado en DB)
+	# Aquí aplicamos la reducción de rango
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and player_stats.has_method("get_stat"):
+		var near_sighted = player_stats.get_stat("near_sighted_active")
+		if near_sighted > 0:
+			data["range"] *= 0.5
+			# Optional: Visual indicator?
+			
+	# -----------------------------------------------------------
 	
 	# Añadir efectos si existen
 	if "effect" in weapon:
