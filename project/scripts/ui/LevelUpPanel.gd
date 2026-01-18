@@ -107,6 +107,7 @@ var buttons_container: HBoxContainer = null
 func _ready() -> void:
 	layer = 200
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	get_tree().paused = true
 	_create_ui()
 
 func initialize(attack_mgr: AttackManager, stats: PlayerStats) -> void:

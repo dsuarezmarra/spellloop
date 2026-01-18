@@ -137,7 +137,17 @@ func _initialize_health_component() -> void:
 		
 		# Debug desactivado: print("[%s] ✓ Health component inicializado (HP: %d/%d)" % [character_class, hp, max_hp])
 	else:
+	else:
 		push_warning("[%s] No se pudo cargar HealthComponent" % character_class)
+
+func heal(amount: int) -> void:
+	"""Curar al jugador"""
+	if health_component:
+		health_component.heal(amount)
+		# Feedback visual
+		if _status_visual_node:
+			# TODO: Añadir efecto visual de curación
+			pass
 
 func _initialize_visual() -> void:
 	"""Inicializar sprite y animaciones"""
@@ -292,6 +302,10 @@ func _physics_process(delta: float) -> void:
 	_process_debuffs(delta)
 	_update_status_visuals(delta)
 	_update_revive_immunity(delta)
+	
+	# Actualizar barras visuales (vida y escudo)
+	_update_shield_bar()
+	update_health_bar()
 
 
 
@@ -1114,6 +1128,7 @@ func create_health_bar() -> void:
 	if not health_bar_container:
 		health_bar_container = Node2D.new()
 		health_bar_container.name = "HealthBarContainer"
+		health_bar_container.z_index = 100 # Asegurar visibilidad encima de todo
 		add_child(health_bar_container)
 		
 		# Calcular offset Y basado en la escala del sprite

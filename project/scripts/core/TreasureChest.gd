@@ -472,12 +472,35 @@ func _apply_item(item: Dictionary):
 			else:
 				push_error("[TreasureChest] No se encontró PlayerStats para aplicar upgrade")
 		
+		"healing":
+			var amount = item.get("amount", 20)
+			# Curar usando player_ref o búsqueda segura
+			if player_ref and player_ref.has_method("heal"):
+				player_ref.heal(amount)
+				print("[TreasureChest] ❤️ Curado %d HP via player_ref" % amount)
+			else:
+				var p = get_tree().get_first_node_in_group("player")
+				if p and p.has_method("heal"):
+					p.heal(amount)
+					print("[TreasureChest] ❤️ Curado %d HP via group" % amount)
+		
 		"gold":
 			# Añadir oro
 			var amount = item.get("amount", 50)
 			var exp_mgr = get_tree().current_scene.get_node_or_null("ExperienceManager")
+			
+			if not exp_mgr:
+				# Intentar buscar por grupo
+				var groups = get_tree().get_nodes_in_group("experience_manager")
+				if not groups.is_empty():
+					exp_mgr = groups[0]
+			
 			if exp_mgr and exp_mgr.has_method("add_coins"):
 				exp_mgr.add_coins(amount)
+				print("[TreasureChest] 💰 Añadido %d ORO" % amount)
+			elif player_ref and "coins" in player_ref:
+				player_ref.coins += amount
+				print("[TreasureChest] 💰 Añadido %d ORO a player.coins" % amount)
 				
 		"fusion":
 			# Aplicar fusión

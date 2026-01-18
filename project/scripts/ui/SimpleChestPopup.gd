@@ -21,6 +21,9 @@ func _ready():
 	# CRUCIAL: Procesar SIEMPRE aunque el juego esté pausado
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
+	# Pausar el juego
+	get_tree().paused = true
+	
 	# Asegurar que puede recibir input
 	set_process_input(true)
 	
@@ -50,7 +53,7 @@ func _ready():
 	var popup_bg = PanelContainer.new()
 	popup_bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	popup_bg.add_theme_stylebox_override("panel", create_panel_style())
-	popup_bg.custom_minimum_size = Vector2(450, 200) # Slightly wider
+	popup_bg.custom_minimum_size = Vector2(650, 250) # Wider to avoid cutoff
 	main_control.add_child(popup_bg)
 	
 	# Contenedor principal (VBoxContainer)
@@ -132,7 +135,7 @@ func setup_items(items: Array):
 		
 		# Contenedor principal del botón
 		var button = Button.new()
-		button.custom_minimum_size = Vector2(400, 80)
+		button.custom_minimum_size = Vector2(600, 90)
 		button.mouse_filter = Control.MOUSE_FILTER_STOP
 		button.process_mode = Node.PROCESS_MODE_ALWAYS
 		apply_button_style(button, i, item_type, item_rarity)
@@ -373,6 +376,13 @@ func create_panel_style() -> StyleBox:
 func _input(event: InputEvent):
 	"""Capturar input para navegación con WASD/Joystick y selección con Space/X"""
 	if popup_locked:
+		return
+
+	# Si es Jackpot, cualquier tecla de aceptación reclama todo
+	if is_jackpot_mode:
+		if event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER)) or (event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_A):
+			_on_claim_all_pressed()
+			get_tree().root.set_input_as_handled()
 		return
 	
 	# === INPUT DE TECLADO Y ACCIONES (WASD / Flechas / Gamepad) ===

@@ -75,7 +75,7 @@ static func get_chest_loot(chest_type: int, luck_modifier: float = 1.0, context:
 			var min_tier = 2 if chest_type == ChestType.ELITE else 1
 			item = _generate_upgrade_loot(chest_type, luck_modifier, min_tier)
 		"weapon":
-			item = _generate_weapon_loot(chest_type, luck_modifier)
+			item = _generate_weapon_loot(chest_type, luck_modifier, context)
 			
 	if item:
 		items.append(item)
@@ -245,13 +245,14 @@ static func _weighted_random(items: Array) -> Dictionary:
 			return item.data
 	return items[0].data
 
-static func _generate_weapon_loot(chest_type: int, luck: float) -> Dictionary:
+static func _generate_weapon_loot(chest_type: int, luck: float, context: Object = null) -> Dictionary:
 	# Seleccionar arma aleatoria
 	var possible_weapons = []
 	
 	# Obtener armas reales de la base de datos
+	var WeaponDB = null
 	if ClassDB.class_exists("WeaponDatabase") or ResourceLoader.exists("res://scripts/data/WeaponDatabase.gd"):
-		var WeaponDB = load("res://scripts/data/WeaponDatabase.gd")
+		WeaponDB = load("res://scripts/data/WeaponDatabase.gd")
 		if WeaponDB:
 			possible_weapons = WeaponDB.get_all_base_weapons()
 	
@@ -259,12 +260,37 @@ static func _generate_weapon_loot(chest_type: int, luck: float) -> Dictionary:
 	if possible_weapons.is_empty():
 		possible_weapons = ["ice_wand", "fire_wand", "lightning_wand"]
 
+	# Filtrar armas que ya están al nivel máximo (8)
+	if context and context.has_method("get_weapons"):
+		var equipped_weapons = context.get_weapons()
+		var maxed_weapons = []
+		
+		for w in equipped_weapons:
+			if w.level >= 8: # MAX LEVEL CONSTANT
+				maxed_weapons.append(w.id)
+		
+		# Remover armas maxeadas de la lista posible
+		var filtered = []
+		for w_id in possible_weapons:
+			if not w_id in maxed_weapons:
+				filtered.append(w_id)
+		possible_weapons = filtered
+	
+	# Si no quedan armas disponibles (todas maxeadas o error), dar Oro o Curación
+	if possible_weapons.is_empty():
+		return _generate_gold_loot(chest_type, luck)
+
 	var selected_id = possible_weapons[randi() % possible_weapons.size()]
 	
+	# Obtener nombre bonito si es posible
+	var w_name = selected_id.capitalize().replace("_", " ")
+	if WeaponDB and WeaponDB.WEAPONS.has(selected_id):
+		w_name = WeaponDB.WEAPONS[selected_id].get("name", w_name)
+
 	return {
 		"id": selected_id,
 		"type": "weapon",
-		"name": selected_id.capitalize().replace("_", " "),
+		"name": w_name,
 		"rarity": 3 if chest_type == ChestType.BOSS else 2,
 		"icon": "⚔️"
 	}

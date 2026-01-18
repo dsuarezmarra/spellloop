@@ -40,6 +40,7 @@ const TIER_COLORS = {
 func _ready():
 	layer = 100
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	get_tree().paused = true  # Pausar juego
 	set_process_input(true)
 	
 	_build_ui()
