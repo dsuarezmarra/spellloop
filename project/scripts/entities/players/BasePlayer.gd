@@ -5,6 +5,7 @@
 
 extends CharacterBody2D
 class_name BasePlayer
+# BasePlayer class definition
 
 # ========== SEÑALES ==========
 signal player_damaged(amount: int, current_hp: int)
@@ -153,47 +154,7 @@ func _initialize_health_component() -> void:
 	else:
 		push_warning("[%s] No se pudo cargar HealthComponent" % character_class)
 
-func _on_health_changed(current: int, max_val: int) -> void:
-	"""Handler para cuando cambia la vida en el componente"""
-	# Re-emitir para que la UI (GameHUD) se entere
-	health_changed.emit(current, max_val)
 
-func _on_health_died() -> void:
-	"""Handler para muerte"""
-	_is_dying = true
-	
-	# Desactivar input
-	set_process_input(false)
-	set_process_unhandled_input(false)
-	
-	# Detener movimiento
-	if "velocity" in self:
-		self.velocity = Vector2.ZERO
-	
-	# Reproducir animación de muerte LENTA (3x más lenta = 0.3 scale)
-	if animated_sprite:
-		animated_sprite.speed_scale = 0.3
-		if animated_sprite.sprite_frames.has_animation("death"):
-			animated_sprite.play("death")
-			
-			# Esperar a que termine la animación para emitir la señal de muerte (Game Over)
-			if not animated_sprite.animation_finished.is_connected(_on_death_animation_finished):
-				animated_sprite.animation_finished.connect(_on_death_animation_finished)
-		else:
-			# Fallback si no hay anim de muerte
-			get_tree().create_timer(1.0).timeout.connect(func(): player_died.emit())
-	else:
-		player_died.emit()
-
-func _on_death_animation_finished() -> void:
-	# Mantener el último frame (pausar sprite)
-	if animated_sprite:
-		animated_sprite.pause()
-		# Desconectar para no llamar múltiples veces
-		if animated_sprite.animation_finished.is_connected(_on_death_animation_finished):
-			animated_sprite.animation_finished.disconnect(_on_death_animation_finished)
-			
-	player_died.emit()
 
 
 
@@ -935,7 +896,7 @@ func _on_health_changed(current: int, max_val: int) -> void:
 	"""Callback cuando la salud cambia"""
 	hp = current
 	max_hp = max_val  # Sincronizar también max_hp
-	player_damaged.emit(current, max_val)
+	health_changed.emit(current, max_val)
 
 func _on_health_died() -> void:
 	"""Callback cuando el personaje muere - verifica revives primero"""
@@ -970,6 +931,9 @@ func _play_death_animation() -> void:
 		
 		# Restaurar escala normal por si estaba casteando
 		animated_sprite.scale = Vector2(player_sprite_scale, player_sprite_scale)
+		
+		# Efecto de muerte lenta
+		animated_sprite.speed_scale = 0.3
 		
 		animated_sprite.play("death")
 		# Conectar señal para emitir player_died cuando termine la animación
