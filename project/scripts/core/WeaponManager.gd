@@ -70,21 +70,11 @@ func initialize(player_ref: CharacterBody2D):
 		auto_fire_timer.start()
 
 func equip_initial_weapon():
-	"""Equipar solo varita de hielo inicial"""
-	# Solo Ice Wand - el resto está desactivado para evitar spam de proyectiles
-	var ice_wand = WeaponData.new()
-	ice_wand.id = "ice_wand"
-	ice_wand.name = "Ice Wand"
-	ice_wand.damage = 8
-	ice_wand.cooldown = 1.1
-	ice_wand.weapon_range = 340.0
-	ice_wand.projectile_speed = 280.0
-	ice_wand.weapon_type = WeaponData.WeaponType.PROJECTILE
-	ice_wand.targeting = WeaponData.TargetingType.NEAREST_ENEMY
-	ice_wand.tags = ["ice"]
-	equipped_weapons.append(ice_wand)
-	weapons_updated.emit(get_weapons_info())
-	# Las otras armas están desactivadas temporalmente
+	"""NO-OP: El arma inicial la configura AttackManager basándose en el personaje seleccionado.
+	Ver WizardPlayer.gd / SpellloopPlayer.gd donde se llama a attack_manager.add_weapon_by_id(starting_weapon).
+	"""
+	pass
+	# DESACTIVADO: Ya no añadimos Ice Wand aquí porque cada personaje tiene su arma propia
 
 func set_enemy_manager(enemy_manager_ref):
 	"""Establecer referencia al gestor de enemigos"""
@@ -350,6 +340,9 @@ class WeaponData:
 	var level: int = 1
 	var max_level: int = 8
 	var tags: Array = []
+	var knockback: float = 50.0
+	var pierce: int = 0
+	var element: int = 0  # Uses WeaponDatabase.Element enum values
 	# Para evoluciones/uniones
 	var evolution: String = ""
 	var passive_required: String = ""

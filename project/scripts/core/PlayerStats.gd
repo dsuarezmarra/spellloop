@@ -274,6 +274,22 @@ const STAT_METADATA: Dictionary = {
 	},
 
 	# === NUEVOS STATS OFENSIVOS ===
+	"elite_damage_mult": {
+		"name": "Daño a Elites",
+		"icon": "👑",
+		"category": "offensive",
+		"description": "Daño extra contra enemigos élite y jefes.",
+		"format": "multiplier",
+		"color": Color(1.0, 0.7, 0.2)
+	},
+	"burn_chance": {
+		"name": "Prob. Quemar",
+		"icon": "🔥",
+		"category": "offensive",
+		"description": "Probabilidad de quemar enemigos.",
+		"format": "percent",
+		"color": Color(1.0, 0.4, 0.1)
+	},
 	"kill_heal": {
 		"name": "Curar al Matar",
 		"icon": "💀",
@@ -293,7 +309,7 @@ const STAT_METADATA: Dictionary = {
 	"burn_damage": {
 		"name": "Daño Fuego",
 		"icon": "🔥",
-		"category": "weapon_global",
+		"category": "offensive",
 		"description": "Daño de quemadura adicional por segundo.",
 		"format": "flat",
 		"color": Color(1.0, 0.4, 0.1)
@@ -301,7 +317,7 @@ const STAT_METADATA: Dictionary = {
 	"freeze_chance": {
 		"name": "Prob. Congelar",
 		"icon": "❄️",
-		"category": "weapon_global",
+		"category": "offensive",
 		"description": "Probabilidad de congelar enemigos.",
 		"format": "percent",
 		"color": Color(0.4, 0.8, 1.0)
@@ -309,7 +325,7 @@ const STAT_METADATA: Dictionary = {
 	"bleed_chance": {
 		"name": "Prob. Sangrado",
 		"icon": "🩸",
-		"category": "weapon_global",
+		"category": "offensive",
 		"description": "Probabilidad de causar sangrado.",
 		"format": "percent",
 		"color": Color(0.8, 0.2, 0.2)
@@ -317,7 +333,7 @@ const STAT_METADATA: Dictionary = {
 	"execute_threshold": {
 		"name": "Umbral Ejecución",
 		"icon": "⚰️",
-		"category": "weapon_global",
+		"category": "offensive",
 		"description": "Mata instantáneamente enemigos bajo este % de HP.",
 		"format": "percent",
 		"color": Color(0.3, 0.1, 0.1)
@@ -357,7 +373,7 @@ const STAT_METADATA: Dictionary = {
 	"explosion_chance": {
 		"name": "Prob. Explosión",
 		"icon": "💣",
-		"category": "weapon_global",
+		"category": "offensive",
 		"description": "Probabilidad de causar explosión al matar.",
 		"format": "percent",
 		"color": Color(1.0, 0.5, 0.1)
