@@ -628,17 +628,7 @@ const DEFAULT_STAT_METADATA = {
 	"crit_chance": {"name": "Prob. Critico", "icon": "*", "description": "Probabilidad de critico"},
 	"crit_damage": {"name": "Danio Critico", "icon": "**", "description": "Multiplicador de danio critico"},
 	
-	# === EFECTOS DE ESTADO ===
-	"burn_chance": {"name": "Prob. Quemar", "icon": "🔥", "description": "Probabilidad de aplicar quemadura"},
-	"freeze_chance": {"name": "Prob. Congelar", "icon": "❄️", "description": "Probabilidad de congelar"},
-	"bleed_chance": {"name": "Prob. Sangrado", "icon": "🩸", "description": "Probabilidad de sangrado"},
-	"explosion_chance": {"name": "Prob. Explosión", "icon": "💣", "description": "Probabilidad de explosión al matar"},
-	"execute_threshold": {"name": "Ejecución", "icon": "⚰️", "description": "Mata instantáneamente bajo este HP"},
-	
-	# === DAÑO ESPECIFICO ===
-	"elite_damage_mult": {"name": "Daño a Elites", "icon": "💀", "description": "Daño extra a Elites y Jefes"},
-	
-	# === UTILIDAD ===
+	# === UTILIDAD EXTRA ===
 	"move_speed": {"name": "Velocidad", "icon": "->", "description": "Velocidad de movimiento"},
 	"pickup_range": {"name": "Rango Recogida", "icon": "()", "description": "Rango para recoger items"},
 	"xp_mult": {"name": "Experiencia", "icon": "^", "description": "Experiencia ganada"},

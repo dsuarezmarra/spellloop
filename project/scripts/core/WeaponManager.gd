@@ -376,4 +376,3 @@ class WeaponData:
 			"tags": tags,
 			"evolution": evolution
 		}
-
