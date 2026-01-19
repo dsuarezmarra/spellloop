@@ -81,7 +81,7 @@ func _execute_chain_sequence() -> void:
 	while chains_done < chain_count and current_target != null and is_instance_valid(current_target):
 		var target_pos = current_target.global_position
 
-		if _use_enhanced and _enhanced_visual:
+		if _use_enhanced and is_instance_valid(_enhanced_visual):
 			_enhanced_visual.fire_at(
 				_enhanced_visual.to_local(current_pos),
 				_enhanced_visual.to_local(target_pos)
@@ -98,7 +98,14 @@ func _execute_chain_sequence() -> void:
 		chains_done += 1
 
 	if _enhanced_visual and _enhanced_visual.has_signal("all_chains_finished"):
-		await _enhanced_visual.all_chains_finished
+		# Wait for visual to finish, but with a timeout
+		var visual_finished = false
+		_enhanced_visual.all_chains_finished.connect(func(): visual_finished = true)
+		
+		var wait_time = 0.0
+		while not visual_finished and wait_time < 2.0:
+			await get_tree().process_frame
+			wait_time += get_process_delta_time()
 	else:
 		await get_tree().create_timer(1.0).timeout
 		
