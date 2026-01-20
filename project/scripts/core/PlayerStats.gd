@@ -1026,6 +1026,12 @@ func get_stat(stat_name: String) -> float:
 		if is_pact > 0:
 			final_value *= 2.0
 
+	# Caso especial Chrono Jump: Aura de slow
+	if stat_name == "enemy_slow_aura":
+		var chrono_active = stats.get("chrono_jump_active", 0) + _get_temp_modifier_total("chrono_jump_active")
+		if chrono_active > 0:
+			final_value += 0.5 # 50% slow aura base
+
 	# Aplicar límites si existen
 	if STAT_LIMITS.has(stat_name):
 		var limits = STAT_LIMITS[stat_name]

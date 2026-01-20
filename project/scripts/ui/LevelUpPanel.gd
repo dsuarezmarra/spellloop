@@ -1203,7 +1203,17 @@ func _get_player_upgrade_options(luck: float) -> Array:
 	
 	# 2. MEJORAS DEL JUGADOR (PlayerUpgradeDatabase) - Función estática
 	var owned_unique_ids = _get_owned_unique_upgrade_ids()
-	var player_upgrades = UpgradeDatabase.get_random_player_upgrades(4, [], luck, game_time_minutes, owned_unique_ids)
+	
+	# Obtener tags de armas para filtrado
+	var common_tags = []
+	var all_tags = []
+	
+	if attack_manager and attack_manager.has_method("get_weapon_tags"):
+		var tags = attack_manager.get_weapon_tags()
+		common_tags = tags.get("common", [])
+		all_tags = tags.get("all", [])
+	
+	var player_upgrades = UpgradeDatabase.get_random_player_upgrades(4, [], luck, game_time_minutes, owned_unique_ids, common_tags, all_tags)
 	for upgrade in player_upgrades:
 		upgrade_options.append({
 			"type": OPTION_TYPES.PLAYER_UPGRADE,

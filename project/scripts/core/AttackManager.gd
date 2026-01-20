@@ -86,6 +86,56 @@ var has_available_slot: bool:
 		return current_weapon_count < max_weapon_slots
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# HELPER PARA FILTRADO DE MEJORAS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func get_weapon_tags() -> Dictionary:
+	"""
+	Obtiene los tags de todas las armas equipadas para filtrar mejoras.
+	Retorna:
+	{
+		"all": Array con TODOS los tags presentes en AL MENOS UN arma
+		"common": Array con los tags presentes en TODAS las armas
+	}
+	"""
+	var all_tags = []
+	var common_tags = []
+	var first_weapon = true
+	
+	if weapons.is_empty():
+		return {"all": [], "common": []}
+		
+	for weapon in weapons:
+		# Obtener tags del arma
+		var w_tags = []
+		if "tags" in weapon:
+			w_tags = weapon.tags
+		elif weapon.has_method("get_tags"):
+			w_tags = weapon.get_tags()
+			
+		# Añadir a all_tags (sin duplicados)
+		for tag in w_tags:
+			if tag not in all_tags:
+				all_tags.append(tag)
+		
+		# Calcular common_tags
+		if first_weapon:
+			common_tags = w_tags.duplicate()
+			first_weapon = false
+		else:
+			# Intersección: mantener solo los que están en ambos
+			var new_common = []
+			for tag in common_tags:
+				if tag in w_tags:
+					new_common.append(tag)
+			common_tags = new_common
+			
+	return {
+		"all": all_tags,
+		"common": common_tags
+	}
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # FUNCIONES HELPER PARA COMPATIBILIDAD
 # ═══════════════════════════════════════════════════════════════════════════════
 

@@ -1786,6 +1786,31 @@ func _on_health_damaged(amount: int, _element: String) -> void:
 		ProjectileFactory.create_aoe(self, aoe_data)
 		FloatingText.spawn_text(global_position + Vector2(0, -40), "FROST NOVA!", Color.CYAN)
 
+	# --- VINCULO DE ALMAS (Soul Link) ---
+	if player_stats.get_stat("soul_link_active") > 0:
+		var reflect_damage = int(amount * 0.30)
+		if reflect_damage > 0:
+			var enemies = get_tree().get_nodes_in_group("enemies")
+			var link_range = 300.0
+			var hit_count = 0
+			for enemy in enemies:
+				if not is_instance_valid(enemy): continue
+				if global_position.distance_to(enemy.global_position) <= link_range:
+					if enemy.has_method("take_damage"):
+						enemy.take_damage(reflect_damage, "magic", self)
+						# Línea visual hacia el enemigo
+						var line = Line2D.new()
+						line.width = 2
+						line.default_color = Color(0.8, 0.2, 0.8, 0.7)
+						line.points = [Vector2(0, -20), enemy.global_position - global_position]
+						add_child(line)
+						get_tree().create_timer(0.2).timeout.connect(line.queue_free)
+						hit_count += 1
+						if hit_count >= 5: break # Max 5 targets
+			
+			if hit_count > 0:
+				FloatingText.spawn_text(global_position + Vector2(0, -50), "SOUL LINK!", Color(0.8, 0.2, 0.8))
+
 	# --- ESPINAS (Thorns) ---
 	var thorns_base = player_stats.get_stat("thorns")
 	var thorns_pct = player_stats.get_stat("thorns_percent")
