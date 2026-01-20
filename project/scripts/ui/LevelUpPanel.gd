@@ -1233,7 +1233,7 @@ func _get_player_upgrade_options(luck: float) -> Array:
 				filtered.append(opt)
 		upgrade_options = filtered
 
-	# 4. FILTRADO POR CAPS: Eliminar mejoras si el stat ya está al máximo
+	# 4. FILTRADO POR CAPS: Eliminar mejoras si TODOS los stats están al máximo
 	# Solo filtramos si la mejora NO tiene ningún efecto útil
 	var unmaxed_options = []
 	for opt in upgrade_options:
@@ -1246,8 +1246,22 @@ func _get_player_upgrade_options(luck: float) -> Array:
 			
 		for eff in effects:
 			var stat = eff.get("stat", "")
+			if stat == "":
+				continue
+			
+			# Verificar en PlayerStats primero
+			var is_capped = false
+			if player_stats and player_stats.has_method("is_stat_capped"):
+				is_capped = player_stats.is_stat_capped(stat)
+			
+			# Si no está en PlayerStats, verificar en GlobalWeaponStats
+			if not is_capped and attack_manager:
+				var gws = attack_manager.get("global_weapon_stats")
+				if gws and gws.has_method("is_stat_capped"):
+					is_capped = gws.is_stat_capped(stat)
+			
 			# Si encontramos al menos un stat NO capeado, la opción sirve
-			if stat != "" and player_stats and not player_stats.is_stat_capped(stat):
+			if not is_capped:
 				has_useful_effect = true
 				break
 		

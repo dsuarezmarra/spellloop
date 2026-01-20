@@ -534,7 +534,7 @@ func _create_stats_section(parent: VBoxContainer, category: String, title: Strin
 	parent.add_child(spacer)
 
 func _create_compact_stat_row(stat_name: String) -> Control:
-	"""Fila compacta: icono + nombre + valor"""
+	"""Fila compacta: icono + nombre + valor - Con indicador de cap"""
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 6)
 
@@ -545,7 +545,12 @@ func _create_compact_stat_row(stat_name: String) -> Control:
 		if ps_meta and not ps_meta.is_empty():
 			meta = ps_meta
 
-	# Icono pequenio
+	# Verificar si el stat está al máximo
+	var is_capped = false
+	if player_stats and player_stats.has_method("is_stat_capped"):
+		is_capped = player_stats.is_stat_capped(stat_name)
+
+	# Icono
 	var icon = Label.new()
 	icon.text = meta.get("icon", "o")
 	icon.add_theme_font_size_override("font_size", 12)
@@ -556,7 +561,10 @@ func _create_compact_stat_row(stat_name: String) -> Control:
 	var name_label = Label.new()
 	name_label.text = meta.get("name", stat_name)
 	name_label.add_theme_font_size_override("font_size", 12)
-	name_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.85))
+	if is_capped:
+		name_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))  # Dorado si al cap
+	else:
+		name_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.85))
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(name_label)
 
@@ -571,14 +579,24 @@ func _create_compact_stat_row(stat_name: String) -> Control:
 		value = player_stats.get_stat(stat_name)
 
 	var value_label = Label.new()
+	var value_text = ""
 	if player_stats and player_stats.has_method("format_stat_value"):
-		value_label.text = player_stats.format_stat_value(stat_name, value)
+		value_text = player_stats.format_stat_value(stat_name, value)
 	else:
-		value_label.text = _format_stat_value_fallback(stat_name, value)
+		value_text = _format_stat_value_fallback(stat_name, value)
+	
+	# Añadir indicador (MAX) si está al cap
+	if is_capped:
+		value_text += " (MAX)"
+	
+	value_label.text = value_text
 	value_label.add_theme_font_size_override("font_size", 12)
-	value_label.add_theme_color_override("font_color", _get_value_color(stat_name, value))
+	if is_capped:
+		value_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))  # Dorado si al cap
+	else:
+		value_label.add_theme_color_override("font_color", _get_value_color(stat_name, value))
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	value_label.custom_minimum_size = Vector2(60, 0)
+	value_label.custom_minimum_size = Vector2(80, 0)  # Un poco más ancho para (MAX)
 	hbox.add_child(value_label)
 
 	# Tooltip
@@ -611,29 +629,40 @@ const DEFAULT_STAT_METADATA = {
 	"freeze_chance": {"name": "Prob. Congelar", "icon": "❄️", "description": "Probabilidad de congelar enemigos"},
 	"bleed_chance": {"name": "Prob. Sangrado", "icon": "🩸", "description": "Probabilidad de causar sangrado"},
 	"explosion_chance": {"name": "Prob. Explosión", "icon": "💣", "description": "Probabilidad de exploar al matar"},
-	"execute_threshold": {"name": "Ejecución", "icon": "⚰️", "description": "Mata enemigos con poca vida"},
-	"status_duration_mult": {"name": "Dur. Efectos", "icon": "⏳", "description": "Duración de estados alterados"},
-	"kill_heal": {"name": "Vida por Kill", "icon": "💗", "description": "Curación al eliminar enemigos"},
+	"execute_threshold": {"name": "Umbral Ejecución", "icon": "⚰️", "description": "Mata enemigos con poca vida"},
+	"status_duration_mult": {"name": "Duración Efectos", "icon": "⏳", "description": "Duración de estados alterados"},
+	"kill_heal": {"name": "Curar al Matar", "icon": "💗", "description": "Curación al eliminar enemigos"},
 	"burn_damage": {"name": "Daño Fuego", "icon": "🔥", "description": "Daño por quemadura"},
 	"explosion_damage": {"name": "Daño Expl.", "icon": "💥", "description": "Daño de explosiones"},
 	
+	# === DAÑO CONDICIONAL (v4.0) ===
+	"close_range_damage_bonus": {"name": "Daño Cercano", "icon": "👊", "description": "Daño extra a enemigos cercanos"},
+	"long_range_damage_bonus": {"name": "Daño Lejano", "icon": "🏹", "description": "Daño extra a enemigos lejanos"},
+	"damage_vs_slowed": {"name": "vs Lentos", "icon": "🐌", "description": "Daño extra a enemigos ralentizados"},
+	"damage_vs_burning": {"name": "vs Quemados", "icon": "🔥", "description": "Daño extra a enemigos quemando"},
+	"damage_vs_frozen": {"name": "vs Congelados", "icon": "❄️", "description": "Daño extra a enemigos congelados"},
+	"low_hp_damage_bonus": {"name": "vs Heridos", "icon": "💔", "description": "Daño extra a enemigos con baja vida"},
+	"full_hp_damage_bonus": {"name": "Daño Full HP", "icon": "💚", "description": "Daño extra si tienes vida completa"},
+	
 	# === UTILIDAD ===
 	"revives": {"name": "Revivir", "icon": "🆙", "description": "Vidas extra"},
-	"reroll_count": {"name": "Rerolls", "icon": "🎲", "description": "Cambiar opciones al subir nivel"},
-	"banish_count": {"name": "Banish", "icon": "🚫", "description": "Bloquear opciones al subir nivel"},
-	"magnet_strength": {"name": "Imán", "icon": "🧲", "description": "Fuerza de atracción de objetos"},
-	"levelup_options": {"name": "Opciones", "icon": "📚", "description": "Opciones extra al elegir mejora"},
+	"reroll_count": {"name": "Rerolls Extra", "icon": "🎲", "description": "Cambiar opciones al subir nivel"},
+	"banish_count": {"name": "Banish Extra", "icon": "❌", "description": "Bloquear opciones al subir nivel"},
+	"magnet_strength": {"name": "Fuerza Imán", "icon": "🧲", "description": "Fuerza de atracción de objetos"},
+	"levelup_options": {"name": "Opciones Extra", "icon": "📚", "description": "Opciones extra al elegir mejora"},
+	"chain_count": {"name": "Cadenas Extra", "icon": "⚡", "description": "Cadenas adicionales en ataques"},
+	"infinite_pickup_range": {"name": "Recogida Infinita", "icon": "🌐", "description": "Recoge items de todo el mapa"},
 
 	# === CRITICOS ===
-	"crit_chance": {"name": "Prob. Critico", "icon": "*", "description": "Probabilidad de critico"},
-	"crit_damage": {"name": "Danio Critico", "icon": "**", "description": "Multiplicador de danio critico"},
+	"crit_chance": {"name": "Prob. Crítico", "icon": "🎯", "description": "Probabilidad de crítico"},
+	"crit_damage": {"name": "Daño Crítico", "icon": "💢", "description": "Multiplicador de daño crítico"},
 	
 	# === UTILIDAD EXTRA ===
-	"move_speed": {"name": "Velocidad", "icon": "->", "description": "Velocidad de movimiento"},
-	"pickup_range": {"name": "Rango Recogida", "icon": "()", "description": "Rango para recoger items"},
-	"xp_mult": {"name": "Experiencia", "icon": "^", "description": "Experiencia ganada"},
-	"coin_value_mult": {"name": "Valor Monedas", "icon": "$", "description": "Valor de monedas"},
-	"luck": {"name": "Suerte", "icon": "?", "description": "Afecta drops y criticos"}
+	"move_speed": {"name": "Velocidad", "icon": "🏃", "description": "Velocidad de movimiento"},
+	"pickup_range": {"name": "Rango Recogida", "icon": "🧲", "description": "Rango para recoger items"},
+	"xp_mult": {"name": "Experiencia", "icon": "⭐", "description": "Experiencia ganada"},
+	"coin_value_mult": {"name": "Valor Monedas", "icon": "🪙", "description": "Valor de monedas"},
+	"luck": {"name": "Suerte", "icon": "🍀", "description": "Afecta drops y críticos"}
 }
 
 # Valores base para stats - ACTUALIZADO v3.0
@@ -693,38 +722,49 @@ func _get_stat_base_value(stat_name: String) -> float:
 	return 0.0
 
 func _get_stats_for_category(category: String) -> Array:
-	"""Obtener stats de una categoría - ACTUALIZADO v3.0"""
+	"""Obtener stats de una categoría - ACTUALIZADO v4.0"""
 	if player_stats and player_stats.has_method("get_stats_by_category"):
 		return player_stats.get_stats_by_category(category)
 
 	# Fallback manual - Solo stats del JUGADOR
 	# Los stats de armas (damage_mult, attack_speed, area, etc.) se muestran en el popup de armas
-	# Los críticos (crit_chance, crit_damage) también son de armas y se muestran en el popup
 	match category:
 		"defensive":
 			return ["max_health", "health_regen", "armor", "dodge_chance", "life_steal", 
 					"damage_taken_mult", "thorns", "thorns_percent", "shield_amount", 
 					"max_shield", "shield_regen", "revives"]
 		"offensive":
-			# "damage_mult" ya está en Stats de Armas Globales
-			return ["elite_damage_mult", "burn_chance", "freeze_chance", 
-					"bleed_chance", "explosion_chance", "execute_threshold",
-					"status_duration_mult", "kill_heal", "burn_damage", "explosion_damage"]
+			# Incluye stats de daño condicional + efectos de estado
+			return ["status_duration_mult", "elite_damage_mult", "burn_chance",
+					"kill_heal", "burn_damage",
+					"freeze_chance", "bleed_chance", "execute_threshold", "explosion_chance",
+					# Daño condicional (faltaban en UI)
+					"close_range_damage_bonus", "long_range_damage_bonus",
+					"damage_vs_slowed", "damage_vs_burning", "damage_vs_frozen",
+					"low_hp_damage_bonus", "full_hp_damage_bonus"]
 		"critical":
-			# Los críticos son stats de ARMAS, no del jugador
-			# Se muestran en el popup de cada arma, no aquí
+			# Los críticos son stats de ARMAS, se muestran en popup de armas
 			return []
 		"utility":
 			return ["move_speed", "pickup_range", "xp_mult", "coin_value_mult", "luck",
 					"gold_mult", "reroll_count", "banish_count", "curse", "growth",
-					"magnet_strength", "levelup_options"]
+					"magnet_strength", "levelup_options",
+					# Faltaban en UI
+					"chain_count", "infinite_pickup_range"]
 	return []
 
 func _format_stat_value_fallback(stat_name: String, value: float) -> String:
-	"""Formatear valor cuando no hay PlayerStats - ACTUALIZADO v3.0"""
+	"""Formatear valor cuando no hay PlayerStats - ACTUALIZADO v4.0"""
+	# Stats booleanos
+	if stat_name == "infinite_pickup_range":
+		return "Sí" if value > 0 else "No"
+	
 	# Stats porcentuales (0.0 - 1.0 → 0% - 100%)
-	if stat_name in ["crit_chance", "dodge_chance", "life_steal", "thorns_percent", "curse", "growth"]:
-		return "%.0f%%" % (value * 100)
+	if stat_name in ["crit_chance", "dodge_chance", "life_steal", "thorns_percent", "curse", "growth",
+					  "burn_chance", "freeze_chance", "bleed_chance", "explosion_chance", "execute_threshold",
+					  "close_range_damage_bonus", "long_range_damage_bonus", "damage_vs_slowed",
+					  "damage_vs_burning", "damage_vs_frozen", "low_hp_damage_bonus", "full_hp_damage_bonus"]:
+		return "+%.0f%%" % (value * 100) if value > 0 else "%.0f%%" % (value * 100)
 	
 	# Stats de velocidad y rango son valores ABSOLUTOS - mostrar el valor directamente
 	if stat_name == "move_speed":
@@ -736,16 +776,25 @@ func _format_stat_value_fallback(stat_name: String, value: float) -> String:
 	# Stats multiplicadores (base 1.0)
 	if stat_name in ["damage_mult", "attack_speed_mult", "area_mult",
 					  "xp_mult", "coin_value_mult", "crit_damage", "projectile_speed_mult", 
-					  "duration_mult", "knockback_mult", "damage_taken_mult", "gold_mult", "magnet_strength"]:
+					  "duration_mult", "knockback_mult", "gold_mult", "magnet_strength",
+					  "status_duration_mult", "elite_damage_mult"]:
 		if value >= 1.0:
 			return "+%.0f%%" % ((value - 1.0) * 100)
 		else:
 			return "%.0f%%" % ((value - 1.0) * 100)
 	
-
+	# damage_taken_mult - Caso especial (mostrar como x1.0 o reducción)
+	if stat_name == "damage_taken_mult":
+		if value == 1.0:
+			return "x1.0"
+		elif value < 1.0:
+			return "-%.0f%%" % ((1.0 - value) * 100)
+		else:
+			return "+%.0f%%" % ((value - 1.0) * 100)
 	
 	# Stats enteros
-	if stat_name in ["extra_projectiles", "thorns", "revives", "reroll_count", "banish_count", "levelup_options"]:
+	if stat_name in ["extra_projectiles", "thorns", "revives", "reroll_count", "banish_count", 
+					  "levelup_options", "chain_count", "kill_heal", "burn_damage"]:
 		return "+%d" % int(value) if value > 0 else "%d" % int(value)
 	
 	# Stats con decimales especiales (por segundo)

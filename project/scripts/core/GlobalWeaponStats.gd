@@ -21,7 +21,7 @@ signal global_upgrade_applied(upgrade_id: String)
 # Stats globales base (multiplicadores = 1.0, planos = 0)
 const BASE_GLOBAL_STATS: Dictionary = {
 	# Multiplicadores (afectan a todas las armas)
-	"damage_mult": 1.0,           # +X% daño a todas las armas
+	"damage_mult": 1.0,           # +X% daño a todas las armas - SIN CAP
 	"damage_flat": 0,             # +X daño plano a todas las armas
 	"attack_speed_mult": 1.0,     # +X% velocidad de ataque global
 	"projectile_speed_mult": 1.0, # +X% velocidad de proyectiles
@@ -41,6 +41,30 @@ const BASE_GLOBAL_STATS: Dictionary = {
 	
 	# Efectos de combate
 	"life_steal": 0.0,            # % del daño convertido en curación
+}
+
+# Límites de stats globales de armas (compartidos con PlayerStats donde aplique)
+# Los stats aquí se aplican con clampf() en get_stat()
+# NOTA: damage_mult NO tiene cap (puede crecer infinitamente)
+const GLOBAL_STAT_LIMITS: Dictionary = {
+	# Multiplicadores con límite
+	"attack_speed_mult": {"min": 0.1, "max": 5.0},
+	"projectile_speed_mult": {"min": 0.5, "max": 3.0},
+	"area_mult": {"min": 0.5, "max": 3.0},
+	"range_mult": {"min": 0.5, "max": 5.0},  # Aumentado a 5.0
+	"duration_mult": {"min": 0.5, "max": 3.0},
+	"knockback_mult": {"min": 0.0, "max": 5.0},
+	
+	# Planos con límite
+	"extra_projectiles": {"min": 0, "max": 10},
+	"extra_pierce": {"min": 0, "max": 20},
+	"chain_count": {"min": 0, "max": 10},
+	
+	# Probabilidades
+	"crit_chance": {"min": 0.0, "max": 1.0},  # Máximo 100%
+	
+	# Efectos
+	"life_steal": {"min": 0.0, "max": 0.5},   # Máximo 50%
 }
 
 # Metadatos para UI
@@ -161,12 +185,35 @@ func _ready() -> void:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func get_stat(stat_name: String) -> float:
-	"""Obtener valor de un stat global"""
+	"""Obtener valor de un stat global (con caps aplicados)"""
+	var raw_value = stats.get(stat_name, BASE_GLOBAL_STATS.get(stat_name, 0.0))
+	
+	# Aplicar límites si existen
+	if GLOBAL_STAT_LIMITS.has(stat_name):
+		var limits = GLOBAL_STAT_LIMITS[stat_name]
+		raw_value = clampf(raw_value, limits.min, limits.max)
+	
+	return raw_value
+
+func get_raw_stat(stat_name: String) -> float:
+	"""Obtener valor sin aplicar cap (para mostrar valor real acumulado)"""
 	return stats.get(stat_name, BASE_GLOBAL_STATS.get(stat_name, 0.0))
 
+func is_stat_capped(stat_name: String) -> bool:
+	"""Verificar si un stat global ha alcanzado su límite máximo"""
+	if not GLOBAL_STAT_LIMITS.has(stat_name):
+		return false  # Sin límite = nunca al cap
+	
+	var limits = GLOBAL_STAT_LIMITS[stat_name]
+	var raw_value = get_raw_stat(stat_name)
+	return raw_value >= limits.max - 0.001
+
 func get_all_stats() -> Dictionary:
-	"""Obtener todos los stats globales (para pasar a WeaponStats)"""
-	return stats.duplicate()
+	"""Obtener todos los stats globales (con caps aplicados)"""
+	var capped_stats = {}
+	for stat_name in stats:
+		capped_stats[stat_name] = get_stat(stat_name)
+	return capped_stats
 
 func get_crit_chance() -> float:
 	"""Obtener probabilidad de crítico"""
