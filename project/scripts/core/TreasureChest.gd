@@ -626,8 +626,7 @@ func _apply_item(item: Dictionary):
 			# 2. Efectos de stats
 			var effects = item.get("effects", [])
 			if not effects.is_empty():
-				var player_stats_nodes = get_tree().get_nodes_in_group("player_stats")
-				var player_stats = player_stats_nodes[0] if player_stats_nodes.size() > 0 else null
+				# player_stats ya está definido al inicio de la función
 				
 				if player_stats:
 					# Verificar si tiene duración (buff temporal)
@@ -649,6 +648,7 @@ func _apply_item(item: Dictionary):
 			# Otros tipos (stats directos como speed_boost, etc. deberían ser upgrades)
 			# Si son temporales, se aplican aquí. Si son stats permanentes, mejor usar "upgrade".
 			# Por ahora, loguear para debug.
+			print("[TreasureChest] Aplicando item genérico o desconocido: %s" % item_type)
 	# -----------------------------------------------------------
 	# REGISTRAR HISTORIAL DE OBJETOS (ABSOLUTAMENTE TODOS)
 	# -----------------------------------------------------------
