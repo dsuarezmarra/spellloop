@@ -16,6 +16,26 @@ var is_jackpot_mode: bool = false
 var claim_button: Button = null
 var skip_button: Button = null
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# ANIMACIÓN DE CHEST BURST (Reveal espectacular)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+var _enable_burst_animation: bool = true  # Toggle para habilitar/deshabilitar
+var _is_animating: bool = false           # Si la animación está en progreso
+var _chest_rarity: int = 1                # Rareza del cofre para intensidad visual
+var _popup_bg: PanelContainer = null      # Referencia al panel principal
+
+const BURST_RARITY_COLORS: Dictionary = {
+	1: Color(0.7, 0.7, 0.7),       # Common - Gray
+	2: Color(0.3, 0.8, 0.3),       # Uncommon - Green  
+	3: Color(0.3, 0.5, 1.0),       # Rare - Blue
+	4: Color(0.7, 0.3, 0.9),       # Epic - Purple
+	5: Color(1.0, 0.75, 0.2)       # Legendary - Gold
+}
+const SHAKE_DURATION: float = 0.4
+const BURST_DURATION: float = 0.3
+const ITEM_REVEAL_DELAY: float = 0.15
+
 # GESTIÓN DE PAUSA GLOBAL PARA POPUPS APILADOS
 static var active_instances: int = 0
 
@@ -249,6 +269,100 @@ func setup_items(items: Array):
 	# Inicializar selección visual (mostrar borde en el primer item)
 	current_selected_index = 0
 	_update_button_selection()
+	
+	# Reproducir animación de burst si está habilitada
+	if _enable_burst_animation and available_items.size() > 0:
+		await _play_chest_burst_animation()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ANIMACIÓN DE CHEST BURST
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func set_chest_rarity(rarity: int) -> void:
+	"""Establecer rareza del cofre para ajustar intensidad visual"""
+	_chest_rarity = clampi(rarity, 1, 5)
+
+func _play_chest_burst_animation() -> void:
+	"""Reproducir animación de apertura de cofre espectacular"""
+	if _is_animating:
+		return
+	
+	_is_animating = true
+	popup_locked = true
+	
+	var color = BURST_RARITY_COLORS.get(_chest_rarity, Color.WHITE)
+	
+	# Ocultar todos los items inicialmente
+	for btn in item_buttons:
+		if is_instance_valid(btn):
+			btn.modulate.a = 0.0
+			btn.scale = Vector2(0.8, 0.8)
+	
+	# Fase 1: Shake del popup
+	await _shake_popup()
+	
+	# Fase 2: Flash de luz
+	await _flash_screen(color)
+	
+	# Fase 3: Revelar items secuencialmente
+	for i in range(item_buttons.size()):
+		if is_instance_valid(item_buttons[i]):
+			await _reveal_item_animated(item_buttons[i], i)
+	
+	_is_animating = false
+	popup_locked = false
+
+func _shake_popup() -> void:
+	"""Hacer que el popup tiemble antes de revelar"""
+	if not _popup_bg:
+		_popup_bg = main_control.get_child(1) if main_control.get_child_count() > 1 else null
+	
+	if not _popup_bg:
+		return
+	
+	var original_pos = _popup_bg.position
+	var intensity = 2.0
+	
+	for i in range(6):
+		var offset = Vector2(randf_range(-intensity, intensity), randf_range(-intensity, intensity))
+		_popup_bg.position = original_pos + offset
+		intensity += 1.0
+		await get_tree().create_timer(0.04).timeout
+		if not is_instance_valid(self):
+			return
+	
+	_popup_bg.position = original_pos
+
+func _flash_screen(color: Color) -> void:
+	"""Crear flash de luz del color de rareza"""
+	var flash = ColorRect.new()
+	flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	flash.color = Color(color.r, color.g, color.b, 0.0)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	main_control.add_child(flash)
+	
+	var tween = create_tween()
+	tween.tween_property(flash, "color:a", 0.5 + (_chest_rarity * 0.1), 0.08)
+	tween.tween_property(flash, "color:a", 0.0, 0.25)
+	tween.tween_callback(flash.queue_free)
+	
+	await get_tree().create_timer(BURST_DURATION).timeout
+
+func _reveal_item_animated(btn: Control, index: int) -> void:
+	"""Revelar un item con animación de entrada"""
+	if not is_instance_valid(btn):
+		return
+	
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_BACK)
+	
+	# Fade in + scale up con bounce
+	tween.tween_property(btn, "modulate:a", 1.0, 0.2)
+	tween.parallel().tween_property(btn, "scale", Vector2(1.05, 1.05), 0.2)
+	tween.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.1)
+	
+	await get_tree().create_timer(ITEM_REVEAL_DELAY).timeout
 
 func _add_skip_button():
 	"""Agregar botón de Skip al final de la lista"""

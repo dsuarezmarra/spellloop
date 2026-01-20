@@ -90,6 +90,17 @@ var _confirm_modal_buttons: Array = []  # Referencias a los botones del modal
 var _option_styles: Array[StyleBoxFlat] = []  # Un estilo por panel de opción
 var _button_styles: Array[StyleBoxFlat] = []  # Un estilo por botón
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# ANIMACIÓN DE SLOT REEL (Reveal espectacular)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+var _enable_slot_animation: bool = true   # Toggle para habilitar/deshabilitar animación
+var _is_animating: bool = false           # Si la animación está en progreso
+var _spin_tweens: Array[Tween] = []       # Tweens de animación por panel
+var _spin_icons: Array[String] = ["🔥", "⚡", "❄️", "🛡️", "⚔️", "💀", "✨", "🌟", "💎", "🎯", "🏹", "🌿"]
+const SPIN_DURATION_PER_REEL: float = 0.5  # Segundos de spin por panel
+const SPIN_STAGGER: float = 0.2            # Delay entre paradas de paneles
+
 # Referencias
 var attack_manager: AttackManager = null
 var player_stats: PlayerStats = null
@@ -986,6 +997,132 @@ func _get_type_text(option_type: String) -> String:
 		_: return "✨ Mejora"
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# ANIMACIÓN DE SLOT REEL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _play_slot_reel_animation() -> void:
+	"""Reproducir animación de carretes girando antes de mostrar opciones"""
+	if _is_animating or options.size() == 0:
+		_update_options_ui()
+		_update_all_visuals()
+		_update_button_counts()
+		return
+	
+	_is_animating = true
+	locked = true  # Bloquear input durante animación
+	
+	# Cancelar tweens anteriores
+	for tween in _spin_tweens:
+		if tween and tween.is_valid():
+			tween.kill()
+	_spin_tweens.clear()
+	
+	# Mostrar todos los paneles con icono spinning
+	for i in range(option_panels.size()):
+		var panel = option_panels[i]
+		if i < options.size():
+			panel.visible = true
+			_start_panel_spin(panel, i)
+		else:
+			panel.visible = false
+	
+	# Esperar y detener reels secuencialmente
+	for i in range(options.size()):
+		await get_tree().create_timer(SPIN_DURATION_PER_REEL + SPIN_STAGGER * i).timeout
+		if not is_instance_valid(self):
+			return
+		await _stop_panel_spin(i, options[i])
+	
+	# Finalizar animación
+	_is_animating = false
+	locked = false
+	_update_all_visuals()
+	_update_button_counts()
+
+func _start_panel_spin(panel: Control, _index: int) -> void:
+	"""Iniciar efecto de spin en un panel"""
+	var icon_label = panel.find_child("IconLabel", true, false) as Label
+	var name_label = panel.find_child("NameLabel", true, false) as Label
+	var desc_label = panel.find_child("DescLabel", true, false) as Label
+	var type_label = panel.find_child("TypeLabel", true, false) as Label
+	
+	if name_label:
+		name_label.text = "???"
+		name_label.modulate.a = 0.5
+	if desc_label:
+		desc_label.text = "Girando..."
+		desc_label.modulate.a = 0.3
+	if type_label:
+		type_label.text = "🎰"
+	
+	# Crear tween para ciclar iconos
+	if icon_label:
+		var tween = create_tween()
+		tween.set_loops()
+		
+		for j in range(_spin_icons.size()):
+			var icon = _spin_icons[j]
+			tween.tween_callback(func(): 
+				if is_instance_valid(icon_label):
+					icon_label.text = icon
+			)
+			tween.tween_interval(0.05)
+		
+		_spin_tweens.append(tween)
+	
+	# Escala inicial pequeña
+	panel.scale = Vector2(0.95, 0.95)
+
+func _stop_panel_spin(index: int, option: Dictionary) -> void:
+	"""Detener spin y mostrar opción real con bounce"""
+	if index >= option_panels.size():
+		return
+	
+	var panel = option_panels[index]
+	
+	# Cancelar tween de spin si existe
+	if index < _spin_tweens.size() and _spin_tweens[index]:
+		_spin_tweens[index].kill()
+	
+	# Actualizar con opción real
+	_update_option_panel(panel, option)
+	
+	# Restaurar alpha
+	var name_label = panel.find_child("NameLabel", true, false) as Label
+	var desc_label = panel.find_child("DescLabel", true, false) as Label
+	if name_label:
+		name_label.modulate.a = 1.0
+	if desc_label:
+		desc_label.modulate.a = 1.0
+	
+	# Animación de bounce
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_BACK)
+	tween.tween_property(panel, "scale", Vector2(1.1, 1.1), 0.15)
+	tween.tween_property(panel, "scale", Vector2(1.0, 1.0), 0.1)
+	
+	await tween.finished
+
+func skip_slot_animation() -> void:
+	"""Saltar la animación y mostrar opciones inmediatamente"""
+	if not _is_animating:
+		return
+	
+	# Cancelar todos los tweens
+	for tween in _spin_tweens:
+		if tween and tween.is_valid():
+			tween.kill()
+	_spin_tweens.clear()
+	
+	# Mostrar opciones finales
+	_is_animating = false
+	locked = false
+	_update_options_ui()
+	_update_all_visuals()
+	_update_button_counts()
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # GENERACIÓN DE OPCIONES
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1028,9 +1165,13 @@ func generate_options() -> void:
 	options = _balance_options(possible_options)
 	option_index = 0
 
-	_update_options_ui()
-	_update_all_visuals()
-	_update_button_counts()
+	# Usar animación de slot reel si está habilitada
+	if _enable_slot_animation and options.size() > 0:
+		_play_slot_reel_animation()
+	else:
+		_update_options_ui()
+		_update_all_visuals()
+		_update_button_counts()
 
 func _get_player_upgrade_options(luck: float) -> Array:
 	"""
