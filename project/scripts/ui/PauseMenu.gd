@@ -47,13 +47,18 @@ const UNSELECTED_TAB = Color(0.5, 0.5, 0.6)
 const STAT_COLOR = Color(0.8, 0.8, 0.9)
 const VALUE_COLOR = Color(0.3, 0.9, 0.4)
 const HIGHLIGHT_COLOR = Color(0.3, 0.5, 0.8, 0.3)
-const RARITY_COLORS = {
-	"common": Color(0.7, 0.7, 0.7),
-	"uncommon": Color(0.3, 0.9, 0.3),
-	"rare": Color(0.4, 0.6, 1.0),
-	"epic": Color(0.8, 0.4, 1.0),
-	"legendary": Color(1.0, 0.8, 0.2)
-}
+
+# Mapping local rarities to UIVisualHelper tiers
+func _get_color_by_rarity(rarity_str: String) -> Color:
+	var tier_map = {
+		"common": 1,
+		"uncommon": 2,
+		"rare": 3,
+		"epic": 4,
+		"legendary": 5
+	}
+	var tier = tier_map.get(rarity_str.to_lower(), 1)
+	return UIVisualHelper.get_color_for_tier(tier)
 
 func _ready() -> void:
 	visible = false
@@ -1250,14 +1255,24 @@ func _create_weapon_card(weapon) -> Control:
 	var weapon_level = weapon.level if "level" in weapon else 1
 	var max_level = weapon.max_level if "max_level" in weapon else 8
 
-	# Estilo con borde del elemento
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.1, 0.14)
-	style.border_color = ELEMENT_COLORS.get(element, RARITY_COLORS.get(rarity, Color.WHITE))
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(10)
+	# Mapear rareza a tier int
+	var tier_map = {"common":1, "uncommon":2, "rare":3, "epic":4, "legendary":5}
+	var tier = tier_map.get(rarity, 1)
+
+	# Estilo usando UIVisualHelper
+	# Nota: para armas en el menú de pausa, usamos el estilo "hover false" por defecto, 
+	# el sistema de navegación le pondrá borde de selección después.
+	var style = UIVisualHelper.get_panel_style(tier, false, true)
+	
+	# Override manual si queremos borde de ELEMENTO en lugar de TIER (opcional, pero consistente con diseño previo)
+	# Decisión: Usar color de TIER para el borde para mantener consistencia visual global
+	# El color de elemento se usa en iconos y textos.
+	
 	style.set_content_margin_all(12)
 	card.add_theme_stylebox_override("panel", style)
+	
+	# Glow del tier debajo
+	UIVisualHelper.apply_tier_glow(card, tier)
 
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 8)
@@ -1309,7 +1324,7 @@ func _create_weapon_card(weapon) -> Control:
 	var name_label = Label.new()
 	name_label.text = weapon_name
 	name_label.add_theme_font_size_override("font_size", 16)
-	name_label.add_theme_color_override("font_color", RARITY_COLORS.get(rarity, Color.WHITE))
+	name_label.add_theme_color_override("font_color", _get_color_by_rarity(rarity))
 	info_vbox.add_child(name_label)
 
 	# Elemento y tipo

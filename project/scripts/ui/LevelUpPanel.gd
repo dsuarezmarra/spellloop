@@ -232,38 +232,57 @@ func _create_ui() -> void:
 
 func _create_option_panel(index: int) -> Control:
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(220, 300)
+	panel.custom_minimum_size = Vector2(230, 320)
 	panel.name = "Option_%d" % index
-
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.14, 0.14, 0.2)
-	style.border_color = UNSELECTED_COLOR
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(12)
-	style.set_content_margin_all(12)
+	
+	# Obtener datos de la opción (si existen, si no usar defaults)
+	var option = options[index] if index < options.size() else {}
+	var rarity = option.get("rarity", 1)  # 1-based tier
+	var type = option.get("type", "upgrade")
+	var is_weapon = (type == "new_weapon" or type == "weapon" or type == "fusion")
+	
+	# Estilo base
+	var style = UIVisualHelper.get_panel_style(rarity, false, is_weapon)
 	panel.add_theme_stylebox_override("panel", style)
+	_option_styles.append(style) # Guardar referencia
+	
+	# Glow si es arma
+	if is_weapon:
+		UIVisualHelper.apply_tier_glow(panel, rarity)
 
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 8)
+	vbox.add_theme_constant_override("separation", 10)
 	panel.add_child(vbox)
 
 	# Tipo
 	var type_label = Label.new()
 	type_label.name = "TypeLabel"
-	type_label.add_theme_font_size_override("font_size", 11)
-	type_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+	type_label.text = type.capitalize().replace("_", " ")
+	type_label.add_theme_font_size_override("font_size", 12)
+	type_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 	type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(type_label)
 
 	# Icono
 	var icon_center = CenterContainer.new()
-	icon_center.custom_minimum_size = Vector2(80, 80)
+	icon_center.custom_minimum_size = Vector2(90, 90)
 	vbox.add_child(icon_center)
 
 	var icon_container = Control.new()
 	icon_container.name = "IconContainer"
-	icon_container.custom_minimum_size = Vector2(64, 64)
+	icon_container.custom_minimum_size = Vector2(72, 72)
 	icon_center.add_child(icon_container)
+	
+	# Fondo del icono
+	var icon_bg = Panel.new()
+	icon_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var bg_style = StyleBoxFlat.new()
+	bg_style.bg_color = Color(0, 0, 0, 0.3)
+	bg_style.border_color = UIVisualHelper.get_color_for_tier(rarity)
+	bg_style.set_border_width_all(2)
+	bg_style.set_corner_radius_all(36) # Circular
+	icon_bg.add_theme_stylebox_override("panel", bg_style)
+	icon_container.add_child(icon_bg)
 
 	var icon_label = Label.new()
 	icon_label.name = "IconLabel"
@@ -285,30 +304,36 @@ func _create_option_panel(index: int) -> Control:
 	# Nombre
 	var name_label = Label.new()
 	name_label.name = "NameLabel"
-	name_label.add_theme_font_size_override("font_size", 15)
+	name_label.add_theme_font_size_override("font_size", 16)
+	name_label.add_theme_color_override("font_color", UIVisualHelper.get_color_for_tier(rarity))
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name_label.custom_minimum_size.y = 40
 	vbox.add_child(name_label)
 
 	# Descripción
 	var desc_label = Label.new()
 	desc_label.name = "DescLabel"
 	desc_label.add_theme_font_size_override("font_size", 12)
-	desc_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.75))
+	desc_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc_label.custom_minimum_size.y = 50
+	desc_label.custom_minimum_size.y = 60
 	vbox.add_child(desc_label)
 
 	# Indicador de selección
-	var indicator = Label.new()
-	indicator.name = "Indicator"
-	indicator.text = "▲ ENTER ▲"
-	indicator.add_theme_font_size_override("font_size", 12)
-	indicator.add_theme_color_override("font_color", SELECTED_COLOR)
-	indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var indicator = Panel.new()
+	indicator.name = "SelectionIndicator"
+	indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	indicator.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var ind_style = StyleBoxFlat.new()
+	ind_style.bg_color = Color(0,0,0,0)
+	ind_style.border_color = Color(1, 1, 1, 0.8)
+	ind_style.set_border_width_all(3)
+	ind_style.set_corner_radius_all(12)
+	indicator.add_theme_stylebox_override("panel", ind_style)
+	panel.add_child(indicator)
 	indicator.visible = false
-	vbox.add_child(indicator)
 
 	return panel
 

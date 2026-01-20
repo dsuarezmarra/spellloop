@@ -76,13 +76,13 @@ func _input(event: InputEvent) -> void:
 
 	var handled = false
 
-	# Navegacion con teclado WASD
+	# Navegacion con teclado WASD + Flechas
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
-			KEY_A, KEY_W:
+			KEY_A, KEY_W, KEY_LEFT, KEY_UP:
 				_navigate(-1)
 				handled = true
-			KEY_D, KEY_S:
+			KEY_D, KEY_S, KEY_RIGHT, KEY_DOWN:
 				_navigate(1)
 				handled = true
 			KEY_SPACE, KEY_ENTER:

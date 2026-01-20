@@ -337,18 +337,32 @@ func setup_shop(items: Array, coins: int):
 func _create_item_button(item: Dictionary, index: int) -> Control:
 	"""Crear botón de item con icono, nombre, descripción y precio"""
 	var btn = Button.new()
-	btn.custom_minimum_size = Vector2(380, 70) # Reducido para evitar recorte en margen derecho
+	btn.custom_minimum_size = Vector2(380, 80) # Más alto para acomodar mejor
 	btn.mouse_filter = Control.MOUSE_FILTER_STOP
-	btn.focus_mode = Control.FOCUS_ALL # Permitir foco por teclado/gamepad
+	btn.focus_mode = Control.FOCUS_ALL
 	
 	var price = item.get("price", 100)
 	var original_price = item.get("original_price", price)
 	var discount = item.get("discount_percent", 0)
 	var tier = item.get("tier", 1)
 	var can_afford = player_coins >= price
+	var item_type = item.get("type", "upgrade")
+	var is_weapon = (item_type == "weapon" or item_type == "new_weapon")
 	
-	# Estilo según asequibilidad
-	_style_item_button(btn, tier, can_afford, discount > 0)
+	# Estilo usando UIVisualHelper
+	var style_normal = UIVisualHelper.get_panel_style(tier, false, is_weapon)
+	var style_hover = UIVisualHelper.get_panel_style(tier, true, is_weapon)
+	
+	if not can_afford:
+		style_normal.bg_color = Color(0.1, 0.05, 0.05, 0.8)
+		style_normal.border_color = Color(0.4, 0.2, 0.2)
+	
+	btn.add_theme_stylebox_override("normal", style_normal)
+	btn.add_theme_stylebox_override("hover", style_hover)
+	btn.add_theme_stylebox_override("pressed", style_hover) # Feedback visual al presionar
+	
+	if is_weapon:
+		UIVisualHelper.apply_tier_glow(btn, tier)
 	
 	# Layout interno
 	var hbox = HBoxContainer.new()
@@ -388,16 +402,17 @@ func _create_item_button(item: Dictionary, index: int) -> Control:
 	var name_lbl = Label.new()
 	name_lbl.text = item.get("name", "Item Desconocido")
 	name_lbl.add_theme_font_size_override("font_size", 16)
-	name_lbl.add_theme_color_override("font_color", TIER_COLORS.get(tier, Color.WHITE))
+	name_lbl.add_theme_color_override("font_color", UIVisualHelper.get_color_for_tier(tier))
+	if not can_afford:
+		name_lbl.modulate = Color(0.7, 0.7, 0.7) # Dimmed if affordable
 	info_vbox.add_child(name_lbl)
 	
 	var desc_lbl = Label.new()
 	desc_lbl.text = item.get("description", "")
 	desc_lbl.add_theme_font_size_override("font_size", 11)
-	desc_lbl.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	desc_lbl.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	info_vbox.add_child(desc_lbl)
-	
 	hbox.add_child(info_vbox)
 	
 	# Precio
@@ -406,20 +421,16 @@ func _create_item_button(item: Dictionary, index: int) -> Control:
 	price_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
 	if discount > 0:
-		# Precio original tachado
 		var orig_lbl = Label.new()
 		orig_lbl.text = "🪙 %d" % original_price
 		orig_lbl.add_theme_font_size_override("font_size", 12)
 		orig_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
-		# Simular tachado con strikethrough
-		orig_lbl.modulate.a = 0.6
 		price_vbox.add_child(orig_lbl)
 		
-		# Descuento label
 		var disc_lbl = Label.new()
 		disc_lbl.text = "-%d%%" % discount
 		disc_lbl.add_theme_font_size_override("font_size", 10)
-		disc_lbl.add_theme_color_override("font_color", Color(0.2, 0.9, 0.2))
+		disc_lbl.add_theme_color_override("font_color", Color(0.4, 1.0, 0.4))
 		price_vbox.add_child(disc_lbl)
 	
 	var price_lbl = Label.new()
@@ -428,7 +439,7 @@ func _create_item_button(item: Dictionary, index: int) -> Control:
 	if can_afford:
 		price_lbl.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
 	else:
-		price_lbl.add_theme_color_override("font_color", Color(0.8, 0.3, 0.3))
+		price_lbl.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))
 	price_vbox.add_child(price_lbl)
 	
 	hbox.add_child(price_vbox)

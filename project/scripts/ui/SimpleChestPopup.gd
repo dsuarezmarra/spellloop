@@ -192,7 +192,20 @@ func setup_items(items: Array):
 		button.custom_minimum_size = Vector2(600, 90)
 		button.mouse_filter = Control.MOUSE_FILTER_STOP
 		button.process_mode = Node.PROCESS_MODE_ALWAYS
-		apply_button_style(button, i, item_type, item_rarity)
+		
+		# Determinar si es arma para tratamiento especial
+		var is_weapon = (item_type == "weapon" or item_type == "new_weapon" or item_type == "fusion")
+		
+		# Aplicar estilo inicial usando Helper
+		var style_normal = UIVisualHelper.get_panel_style(item_rarity + 1, false, is_weapon)
+		var style_hover = UIVisualHelper.get_panel_style(item_rarity + 1, true, is_weapon)
+		button.add_theme_stylebox_override("normal", style_normal)
+		button.add_theme_stylebox_override("hover", style_hover)
+		button.add_theme_stylebox_override("pressed", style_hover)
+		
+		# Si es arma, añadir efecto visual potente
+		if is_weapon:
+			UIVisualHelper.apply_tier_glow(button, item_rarity + 1)
 		
 		# Layout interno (HBox)
 		var hbox = HBoxContainer.new()
@@ -209,9 +222,16 @@ func setup_items(items: Array):
 		margin.add_theme_constant_override("margin_bottom", 5)
 		margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		
-		# Icono
+		# Icono con borde de rareza
+		var icon_container_panel = PanelContainer.new()
+		var icon_style = StyleBoxFlat.new()
+		icon_style.bg_color = Color(0, 0, 0, 0.3)
+		icon_style.border_color = UIVisualHelper.get_color_for_tier(item_rarity + 1)
+		icon_style.set_border_width_all(2)
+		icon_style.set_corner_radius_all(4)
+		icon_container_panel.add_theme_stylebox_override("panel", icon_style)
+		
 		var icon_tex = null
-		# Intentar cargar textura real
 		if item_id != "":
 			var path = "res://assets/icons/%s.png" % item_id
 			if ResourceLoader.exists(path):
@@ -225,7 +245,6 @@ func setup_items(items: Array):
 		if icon_tex:
 			icon_rect.texture = icon_tex
 		else:
-			# Fallback emoji Label
 			var emoji_lbl = Label.new()
 			emoji_lbl.text = item_icon
 			emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -234,7 +253,8 @@ func setup_items(items: Array):
 			emoji_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
 			icon_rect.add_child(emoji_lbl)
 			
-		hbox.add_child(icon_rect)
+		icon_container_panel.add_child(icon_rect)
+		hbox.add_child(icon_container_panel)
 		
 		# Textos (Nombre + Descripción)
 		var text_vbox = VBoxContainer.new()
@@ -245,13 +265,13 @@ func setup_items(items: Array):
 		var name_lbl = Label.new()
 		name_lbl.text = item_name
 		name_lbl.add_theme_font_size_override("font_size", 18)
-		name_lbl.add_theme_color_override("font_color", Color(1, 0.9, 0.4)) # Dorado pálido
+		name_lbl.add_theme_color_override("font_color", UIVisualHelper.get_color_for_tier(item_rarity + 1))
 		
 		var desc_lbl = Label.new()
 		desc_lbl.text = item_desc
 		desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc_lbl.add_theme_font_size_override("font_size", 12)
-		desc_lbl.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+		desc_lbl.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
 		
 		text_vbox.add_child(name_lbl)
 		text_vbox.add_child(desc_lbl)
@@ -652,10 +672,7 @@ func _input(event: InputEvent):
 	if popup_locked:
 		return
 
-	# Si es Jackpot, cualquier tecla de aceptación reclama todo
-	# Si es Jackpot, dejamos que el botón maneje el input (tiene foco)
 	if is_jackpot_mode:
-		# Si por alguna razón perdemos el foco, recuperarlo con cualquier input de navegación
 		if claim_button and not claim_button.has_focus():
 			claim_button.grab_focus()
 		return
@@ -677,34 +694,19 @@ func _input(event: InputEvent):
 
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
-			# Números 1-3 para selección directa
-			KEY_1:
-				if item_buttons.size() >= 1:
-					_select_item_at_index(0)
+			KEY_1, KEY_2, KEY_3:
+				var idx = event.keycode - KEY_1
+				if idx < item_buttons.size() - 1: # Excluir skip button si es el ultimo
+					_select_item_at_index(idx)
 					get_tree().root.set_input_as_handled()
-					return
-			KEY_2:
-				if item_buttons.size() >= 2:
-					_select_item_at_index(1)
-					get_tree().root.set_input_as_handled()
-					return
-			KEY_3:
-				if item_buttons.size() >= 3:
-					_select_item_at_index(2)
-					get_tree().root.set_input_as_handled()
-					return
 			
-			# Space / Enter para confirmar selección
-			KEY_SPACE, KEY_ENTER:
+			KEY_ENTER:
 				if current_selected_index >= 0 and current_selected_index < item_buttons.size():
 					_select_item_at_index(current_selected_index)
 				get_tree().root.set_input_as_handled()
-				return
 			
 			KEY_ESCAPE:
-				# Bloquear ESC - usuario debe seleccionar un item
 				get_tree().root.set_input_as_handled()
-				return
 	
 	# === INPUT DE GAMEPAD (Joystick / Botones) ===
 	if event is InputEventJoypadButton and event.pressed:
@@ -712,20 +714,16 @@ func _input(event: InputEvent):
 			JOY_BUTTON_DPAD_UP:
 				_navigate_selection(-1)
 				get_tree().root.set_input_as_handled()
-				return
 			JOY_BUTTON_DPAD_DOWN:
 				_navigate_selection(1)
 				get_tree().root.set_input_as_handled()
-				return
-			JOY_BUTTON_A:  # X en PlayStation / A en Xbox
+			JOY_BUTTON_A:
 				if current_selected_index >= 0 and current_selected_index < item_buttons.size():
 					_select_item_at_index(current_selected_index)
 				get_tree().root.set_input_as_handled()
-				return
 	
 	# === JOYSTICK ANALÓGICO ===
 	if event is InputEventJoypadMotion:
-		# Eje Y del stick izquierdo
 		if event.axis == JOY_AXIS_LEFT_Y:
 			if event.axis_value < -0.5:
 				_navigate_selection(-1)
@@ -739,11 +737,7 @@ func _navigate_selection(direction: int):
 	if item_buttons.is_empty():
 		return
 	
-	# Si no hay selección, empezar en el primero
-	if current_selected_index < 0:
-		current_selected_index = 0 if direction > 0 else item_buttons.size() - 1
-	else:
-		current_selected_index += direction
+	current_selected_index += direction
 	
 	# Wrap around
 	if current_selected_index < 0:
@@ -755,11 +749,16 @@ func _navigate_selection(direction: int):
 
 func _select_item_at_index(index: int):
 	"""Seleccionar un item por índice (desde teclado/gamepad)"""
-	if popup_locked:
-		return
+	if popup_locked: return
 	
 	if index >= 0 and index < item_buttons.size():
 		var btn = item_buttons[index]
+		
+		# Simular click visual
+		var tween = create_tween()
+		tween.tween_property(btn, "scale", Vector2(0.95, 0.95), 0.05)
+		tween.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.05)
+		
 		if btn == skip_button:
 			_on_skip_pressed()
 			return
@@ -767,5 +766,38 @@ func _select_item_at_index(index: int):
 		if index < available_items.size():
 			var selected_item = available_items[index]
 			_process_item_selection(selected_item, index)
+
+func _update_button_selection():
+	"""Actualizar estilos visuales según selección con aura brillante"""
+	if is_jackpot_mode: return
+	for i in range(item_buttons.size()):
+		var btn = item_buttons[i]
+		if not is_instance_valid(btn): continue
+			
+		var is_selected = (i == current_selected_index)
+		
+		# Escala suave
+		var target_scale = Vector2(1.02, 1.02) if is_selected else Vector2(1.0, 1.0)
+		var tween = create_tween()
+		tween.tween_property(btn, "scale", target_scale, 0.1)
+		
+		# Borde brillante (Glow)
+		var glow_panel = btn.get_node_or_null("SelectionGlow")
+		if not glow_panel:
+			glow_panel = Panel.new()
+			glow_panel.name = "SelectionGlow"
+			glow_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			glow_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+			var glow_style = StyleBoxFlat.new()
+			glow_style.bg_color = Color(0, 0, 0, 0)
+			glow_style.border_color = Color(1.0, 0.9, 0.4, 1.0) # Dorado
+			glow_style.set_border_width_all(4)
+			glow_style.set_corner_radius_all(8)
+			glow_style.set_expand_margin_all(4)
+			glow_panel.add_theme_stylebox_override("panel", glow_style)
+			btn.add_child(glow_panel)
+			btn.move_child(glow_panel, 0)
+		
+		glow_panel.visible = is_selected
 
 
