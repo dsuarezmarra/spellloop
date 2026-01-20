@@ -369,7 +369,9 @@ func _on_coin_collected(value: int) -> void:
 	if _has_flag("double_coin_streak"):
 		streak_mult_stat *= 2.0
 		
-	var streak_multiplier = 1.0 + (streak_bonus_per * streak_mult_stat) * float(max(0, streak_count - 1))
+	# Fórmula EXPONENCIAL: cada moneda multiplica el bonus
+	# Streak 5: 1.05^4 ≈ 1.22 (+22%), Streak 10: 1.05^9 ≈ 1.55 (+55%), Streak 20: 1.05^19 ≈ 2.53 (+153%)
+	var streak_multiplier = pow(1.0 + (streak_bonus_per * streak_mult_stat), max(0, streak_count - 1))
 
 	# Aplicar multiplicador de valor de monedas del player
 	var coin_mult = _get_player_coin_mult()

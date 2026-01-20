@@ -40,6 +40,7 @@ func _ready():
 	# Crear timer de spawn
 	spawn_timer = Timer.new()
 	spawn_timer.one_shot = true
+	spawn_timer.process_mode = Node.PROCESS_MODE_PAUSABLE  # Respetar pausa del juego
 	spawn_timer.timeout.connect(_on_spawn_timer_timeout)
 	add_child(spawn_timer)
 

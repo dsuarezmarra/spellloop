@@ -1375,9 +1375,9 @@ func create_health_bar() -> void:
 			sprite_scale = visual_calibrator.get_player_scale()
 		
 		# Fórmula equilibrada: base + ajuste por escala
-		# Con escala 0.25 -> -40px (justo sobre la cabeza)
-		# Con escala 0.35 -> -44px (se adapta a sprites más grandes)
-		var bar_offset_y = -30.0 - (sprite_scale * 40.0)
+		# Con escala 0.25 -> -65px (bien por encima de la cabeza)
+		# Con escala 0.35 -> -69px (se adapta a sprites más grandes)
+		var bar_offset_y = -55.0 - (sprite_scale * 40.0)
 		
 		# ════════════════════════════════════════════════════════════════════
 		# BARRA DE VIDA (Verde)
