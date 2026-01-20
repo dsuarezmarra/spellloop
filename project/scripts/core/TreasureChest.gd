@@ -2,6 +2,8 @@ extends Node2D
 class_name TreasureChest
 
 signal chest_opened(chest: Node2D, items: Array)
+signal ui_opened() # New signal for pause management
+signal ui_closed() # New signal for pause management
 
 enum ChestType {
 	NORMAL,
@@ -279,6 +281,7 @@ func create_chest_popup():
 		return
 	
 	# Popup normal para otros tipos
+	ui_opened.emit()
 	var popup_instance = SimpleChestPopup.new()
 	get_tree().current_scene.add_child(popup_instance)
 	
@@ -307,6 +310,9 @@ func create_chest_popup():
 		popup_instance.item_selected.connect(_on_popup_item_selected)
 		if popup_instance.has_signal("skipped"):
 			popup_instance.skipped.connect(_on_chest_skipped)
+			
+		# Emitir ui_closed cuando se cierre el popup
+		popup_instance.tree_exited.connect(func(): ui_closed.emit())
 
 func _on_chest_skipped():
 	"""Callback cuando se salta el cofre"""
@@ -436,6 +442,7 @@ func _create_shop_popup():
 		})
 	
 	# Crear popup
+	ui_opened.emit()
 	var popup = ShopChestPopup.new()
 	get_tree().current_scene.add_child(popup)
 	popup.setup_shop(items_inside, player_coins)
@@ -443,6 +450,7 @@ func _create_shop_popup():
 	# Conectar señales
 	popup.item_purchased.connect(_on_shop_item_purchased)
 	popup.popup_closed.connect(_on_shop_popup_closed)
+	popup.tree_exited.connect(func(): ui_closed.emit())
 
 func _on_shop_item_purchased(item: Dictionary, price: int):
 	"""Callback cuando se compra un item de la tienda"""

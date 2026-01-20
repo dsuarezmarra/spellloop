@@ -77,13 +77,33 @@ func _notification(what: int) -> void:
 	match what:
 		NOTIFICATION_APPLICATION_FOCUS_OUT:
 			if game_running and not is_paused and not level_up_panel_active:
-				_paused_by_focus_loss = true
-				_pause_game()
+				# Solo auto-pausar si NO estaba ya pausado por otro motivo
+				if not get_tree().paused:
+					_paused_by_focus_loss = true
+					_pause_game()
+					
 		NOTIFICATION_APPLICATION_FOCUS_IN:
-			# Solo despausar si fue pausado automáticamente por pérdida de foco
+			# Solo despausar si fue pausado por pérdida de foco Y no hay otro bloqueante (como LevelUp)
 			if _paused_by_focus_loss and is_paused:
-				_paused_by_focus_loss = false
-				_resume_game()
+				# Verificar si algo más ha pausado el juego mientras estábamos fuera (raro pero posible)
+				# o si hay menús abiertos que requieran pausa
+				var can_resume = true
+				
+				# Si hay popups abiertos (Cofres, LevelUp, etc), NO despausar
+				# Chequear si el árbol sigue pausado por otra razón
+				if level_up_panel_active:
+					can_resume = false
+				
+				# Chequear si hay cofres abiertos
+				if chest_spawner and chest_spawner.is_chest_open:
+					can_resume = false
+					
+				if can_resume:
+					_paused_by_focus_loss = false
+					_resume_game()
+				else:
+					# Si no podemos reanudar, limpiamos el flag para que el usuario deba despausar manual o cerrar el menú
+					_paused_by_focus_loss = false
 
 func _setup_game() -> void:
 	# Resetear estado de la partida

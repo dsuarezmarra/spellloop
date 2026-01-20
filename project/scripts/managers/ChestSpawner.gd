@@ -21,6 +21,7 @@ signal chest_opened(chest: Node2D, item_purchased: Dictionary)
 @export var min_distance_between_chests: float = 200.0  # Evitar clusters
 
 # === ESTADO ===
+var is_chest_open: bool = false # Si hay un popup de cofre abierto
 var active_chests: Array[Node2D] = []
 var spawn_timer: Timer
 var player_ref: Node2D
@@ -174,6 +175,12 @@ func _spawn_shop_chest(pos: Vector2) -> void:
 		chest.chest_opened.connect(_on_chest_opened.bind(chest))
 	if chest.has_signal("tree_exiting"):
 		chest.tree_exiting.connect(_on_chest_removed.bind(chest))
+	
+	# Detectar cuando se abre la UI de este cofre
+	if chest.has_signal("ui_opened"):
+		chest.ui_opened.connect(func(): is_chest_open = true)
+	if chest.has_signal("ui_closed"):
+		chest.ui_closed.connect(func(): is_chest_open = false)
 	
 	active_chests.append(chest)
 	chest_spawned.emit(chest, pos)
