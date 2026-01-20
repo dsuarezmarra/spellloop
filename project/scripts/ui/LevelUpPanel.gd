@@ -128,11 +128,16 @@ func initialize(attack_mgr: AttackManager, stats: PlayerStats) -> void:
 
 func _sync_counts_from_player_stats() -> void:
 	"""Sincronizar reroll/banish counts con PlayerStats"""
-	if player_stats and player_stats.has_method("get_stat"):
+	if player_stats and "current_rerolls" in player_stats:
+		# USAR VALORES PERSISTENTES (Fix bug de reset)
+		reroll_count = player_stats.current_rerolls
+		banish_count = player_stats.current_banishes
+	elif player_stats and player_stats.has_method("get_stat"):
+		# Fallback legacy
 		var extra_rerolls = int(player_stats.get_stat("reroll_count"))
 		var extra_banishes = int(player_stats.get_stat("banish_count"))
-		reroll_count = 2 + extra_rerolls  # Base 2 + mejoras
-		banish_count = 2 + extra_banishes  # Base 2 + mejoras
+		reroll_count = 2 + extra_rerolls
+		banish_count = 2 + extra_banishes
 
 func _get_max_options() -> int:
 	"""Obtener número máximo de opciones (base + mejoras)"""
@@ -559,7 +564,14 @@ func _on_reroll() -> void:
 	if locked or reroll_count <= 0:
 		return
 
-	reroll_count -= 1
+	# Consumir reroll en PlayerStats si es posible
+	if player_stats and player_stats.has_method("consume_reroll"):
+		if not player_stats.consume_reroll():
+			return # No pudo consumir
+		# Actualizar localmente
+		reroll_count = player_stats.current_rerolls
+	else:
+		reroll_count -= 1
 	
 	# -----------------------------------------------------------
 	# LÓGICA DE NUEVOS OBJETOS (Phase 3)
@@ -611,7 +623,14 @@ func _confirm_banish() -> void:
 		option_index = options.size() - 1
 
 	options.remove_at(option_index)
-	banish_count -= 1
+	
+	# Consumir banish
+	if player_stats and player_stats.has_method("consume_banish"):
+		player_stats.consume_banish()
+		banish_count = player_stats.current_banishes
+	else:
+		banish_count -= 1
+		
 	banish_used.emit(option_index)
 
 	# Salir del modo eliminar

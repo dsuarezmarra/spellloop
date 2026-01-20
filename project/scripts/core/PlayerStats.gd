@@ -664,6 +664,10 @@ var level: int = 1
 var current_xp: float = 0.0
 var xp_to_next_level: float = BASE_XP_TO_LEVEL
 
+# Contadores persistentes de reroll y banish
+var current_rerolls: int = 2
+var current_banishes: int = 2
+
 # Referencia al AttackManager para sincronizar stats
 var attack_manager: AttackManager = null
 
@@ -838,6 +842,10 @@ func _reset_stats() -> void:
 	_time_since_damage = 999.0  # Permitir regeneración de escudo inmediata al inicio
 	_game_time_minutes = 0.0
 	_last_growth_minute = 0
+	
+	# Resetear contadores a base (2)
+	current_rerolls = 2
+	current_banishes = 2
 
 func initialize_from_character(character_id: String) -> void:
 	"""Inicializar stats desde la base de datos de personajes"""
@@ -858,6 +866,10 @@ func initialize_from_character(character_id: String) -> void:
 
 	# Actualizar vida actual a la máxima
 	current_health = stats.max_health
+	
+	# Añadir bonus de reroll/banish del personaje a los contadores actuales
+	current_rerolls += int(stats.get("reroll_count", 0))
+	current_banishes += int(stats.get("banish_count", 0))
 
 	# Aplicar pasiva del personaje
 	_apply_character_passive(character_id)
@@ -1107,6 +1119,12 @@ func add_stat(stat_name: String, amount: float) -> void:
 	if old_value != new_value:
 		stat_changed.emit(stat_name, old_value, new_value)
 		_on_stat_changed(stat_name, old_value, new_value)
+		
+		# Si se añade reroll/banish count (ej: Powerup), sumar al actual
+		if stat_name == "reroll_count":
+			current_rerolls += int(amount)
+		elif stat_name == "banish_count":
+			current_banishes += int(amount)
 
 	# print("[PlayerStats] %s: %.2f → %.2f (+%.2f)" % [stat_name, old_value, new_value, amount])
 
@@ -1590,6 +1608,26 @@ const WEAPON_STATS = [
 	"chain_count", "life_steal"  # life_steal es de combate, va a GlobalWeaponStats
 ]
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# GESTIÓN DE REROLLS Y BANISH
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func consume_reroll() -> bool:
+	"""Consumir un reroll si es posible"""
+	if current_rerolls > 0:
+		current_rerolls -= 1
+		# Notificar cambio si es necesario
+		return true
+	return false
+
+func consume_banish() -> bool:
+	"""Consumir un banish si es posible"""
+	if current_banishes > 0:
+		current_banishes -= 1
+		return true
+	return false
+
 func apply_upgrade(upgrade_data) -> bool:
 	"""
 	Aplicar un upgrade del jugador. Acepta Dictionary con formato effects.
@@ -1598,8 +1636,6 @@ func apply_upgrade(upgrade_data) -> bool:
 	se envían TAMBIÉN a GlobalWeaponStats para que afecten a todas las armas.
 	"""
 	var upgrade_dict: Dictionary = {}
-
-	# Determinar si es un ID o un Dictionary completo
 	if upgrade_data is Dictionary:
 		upgrade_dict = upgrade_data
 	else:
