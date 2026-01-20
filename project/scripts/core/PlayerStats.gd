@@ -688,6 +688,9 @@ var _tailwind_active: bool = false  # Wind Runner: +15% speed below 50% HP
 var _stone_skin_active: bool = false  # Geomancer: -20% damage when stationary
 var _last_position: Vector2 = Vector2.ZERO  # Para detectar si está quieto
 
+# Estado de Turret Mode (activado desde BasePlayer)
+var is_turret_mode: bool = false
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # SISTEMA DE PASIVAS DE PERSONAJE
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1043,6 +1046,16 @@ func get_stat(stat_name: String) -> float:
 		var chrono_active = stats.get("chrono_jump_active", 0) + _get_temp_modifier_total("chrono_jump_active")
 		if chrono_active > 0:
 			final_value += 0.5 # 50% slow aura base
+
+	# Caso especial Turret Mode
+	if is_turret_mode:
+		if stat_name == "attack_speed_mult":
+			final_value += 0.5 # +50% Velocidad de Ataque
+		elif stat_name == "damage_mult":
+			final_value += 0.25 # +25% Daño Global
+		elif stat_name == "damage_taken_mult":
+			final_value -= 0.2 # -20% Daño Recibido
+
 
 	# Aplicar límites si existen
 	if STAT_LIMITS.has(stat_name):
