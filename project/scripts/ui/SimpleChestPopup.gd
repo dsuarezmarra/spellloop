@@ -670,7 +670,7 @@ func _input(event: InputEvent):
 		get_tree().root.set_input_as_handled()
 		return
 	elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and event.keycode == KEY_SPACE):
-		if current_selected_index >= 0 and current_selected_index < available_items.size():
+		if current_selected_index >= 0 and current_selected_index < item_buttons.size():
 			_select_item_at_index(current_selected_index)
 		get_tree().root.set_input_as_handled()
 		return
@@ -696,7 +696,7 @@ func _input(event: InputEvent):
 			
 			# Space / Enter para confirmar selección
 			KEY_SPACE, KEY_ENTER:
-				if current_selected_index >= 0 and current_selected_index < available_items.size():
+				if current_selected_index >= 0 and current_selected_index < item_buttons.size():
 					_select_item_at_index(current_selected_index)
 				get_tree().root.set_input_as_handled()
 				return
@@ -718,7 +718,7 @@ func _input(event: InputEvent):
 				get_tree().root.set_input_as_handled()
 				return
 			JOY_BUTTON_A:  # X en PlayStation / A en Xbox
-				if current_selected_index >= 0 and current_selected_index < available_items.size():
+				if current_selected_index >= 0 and current_selected_index < item_buttons.size():
 					_select_item_at_index(current_selected_index)
 				get_tree().root.set_input_as_handled()
 				return
