@@ -1798,6 +1798,16 @@ func add_upgrade(upgrade_data: Dictionary) -> void:
 		"description": upgrade_data.get("description", ""),
 		"effects": upgrade_data.get("effects", [])
 	})
+
+func track_collected_item(item_data: Dictionary) -> void:
+	"""Registrar un objeto recolectado (para historial de PauseMenu)"""
+	# Reutilizamos la lógica de add_upgrade ya que es generic storage
+	# Aseguramos que tenga un ID único si no lo tiene, para evitar problemas
+	var data = item_data.duplicate()
+	if not data.has("id"):
+		data["id"] = "tracked_item_%d" % collected_upgrades.size()
+	
+	add_upgrade(data)
 	# print("[PlayerStats] Mejora añadida: %s" % upgrade_data.get("name", "???"))
 
 func get_collected_upgrades() -> Array:

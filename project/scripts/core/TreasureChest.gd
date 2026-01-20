@@ -486,6 +486,13 @@ func _apply_item(item: Dictionary):
 	var item_type = item.get("type", "")
 	var item_id = item.get("id", "")
 	
+	# Buscar PlayerStats una sola vez
+	var player_stats = null
+	if is_inside_tree():
+		var ps_nodes = get_tree().get_nodes_in_group("player_stats")
+		if ps_nodes.size() > 0:
+			player_stats = ps_nodes[0]
+	
 	match item_type:
 		"weapon":
 			# Añadir arma usando AttackManager (el sistema correcto de armas)
@@ -499,11 +506,34 @@ func _apply_item(item: Dictionary):
 			
 			if attack_mgr and attack_mgr.has_method("add_weapon_by_id"):
 				result = attack_mgr.add_weapon_by_id(item_id)
+			if result:
 				print("[TreasureChest] ✅ Arma añadida via AttackManager: %s" % result)
+				
+				# -----------------------------------------------------------
+				# MEJORA: Nivelar arma según rareza del cofre / item
+				# -----------------------------------------------------------
+				# Si sale en un cofre de Tier X, el arma debería ser Nivel X
+				var target_tier = 1
+				
+				if item.has("tier"):
+					target_tier = int(item.tier)
+				elif item.has("rarity"):
+					target_tier = int(item.rarity) + 1 # Rarity 0 is Tier 1
+				else:
+					target_tier = chest_rarity + 1
+				
+				# Aplicar level ups si corresponde
+				if target_tier > 1:
+					print("[TreasureChest] ⚔️ Auto-nivelando arma %s a Nivel %d (Tier %d)" % [item_id, target_tier, target_tier])
+					# El arma empieza a nivel 1, necesitamos (tier - 1) subidas
+					for i in range(target_tier - 1):
+						var leveled = attack_mgr.level_up_weapon_by_id(item_id)
+						if not leveled:
+							print("[TreasureChest] ⚠️ No se pudo subir más de nivel (Max level?)")
+							break
+				# -----------------------------------------------------------
+				
 			else:
-				push_error("[TreasureChest] No se pudo añadir arma: attack_manager=%s" % attack_mgr)
-			
-			if not result:
 				print("[TreasureChest] ❌ Falló añadir arma: %s" % item_id)
 		
 		"upgrade":
@@ -514,8 +544,7 @@ func _apply_item(item: Dictionary):
 			print("[TreasureChest] Aplicando upgrade: %s (Raw: %s)" % [upgrade_data, item])
 			
 			# Buscar PlayerStats por grupo (NO por ruta directa)
-			var player_stats_nodes = get_tree().get_nodes_in_group("player_stats")
-			var player_stats = player_stats_nodes[0] if player_stats_nodes.size() > 0 else null
+			# (Ya buscado arriba)
 			
 			if player_stats and player_stats.has_method("apply_upgrade"):
 				var result = player_stats.apply_upgrade(upgrade_data)
@@ -620,4 +649,11 @@ func _apply_item(item: Dictionary):
 			# Otros tipos (stats directos como speed_boost, etc. deberían ser upgrades)
 			# Si son temporales, se aplican aquí. Si son stats permanentes, mejor usar "upgrade".
 			# Por ahora, loguear para debug.
-			print("[TreasureChest] Aplicando item genérico o desconocido: %s" % item_type)
+	# -----------------------------------------------------------
+	# REGISTRAR HISTORIAL DE OBJETOS (ABSOLUTAMENTE TODOS)
+	# -----------------------------------------------------------
+	# Skip 'upgrade' porque apply_upgrade ya lo registra internamente.
+	# Skip 'weapon' porque van a su propia pestaña (opcional, si el usuario quiere ver "recogiste arma" se puede quitar)
+	if player_stats and player_stats.has_method("track_collected_item"):
+		if item_type != "upgrade" and item_type != "weapon":
+			player_stats.track_collected_item(item)

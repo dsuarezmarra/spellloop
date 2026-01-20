@@ -2142,9 +2142,24 @@ func _navigate_vertical(direction: int) -> void:
 		# CASO ESPECIAL: Tab de Armas (1) es una lista vertical.
 		# W/S debe cambiar la selección de item, no solo scrollear.
 		if current_tab == 1 and content_items.size() > 0:
-			content_selection = (content_selection + direction) % content_items.size()
-			if content_selection < 0:
-				content_selection = content_items.size() - 1
+			# Manejo de navegación con salida del grid
+			if direction > 0: # Abajo
+				if content_selection >= content_items.size() - 1:
+					# Estamos al final, salir a acciones
+					current_nav_row = NavRow.ACTIONS
+					_update_navigation_visuals()
+					return
+				else:
+					content_selection += 1
+			else: # Arriba
+				if content_selection <= 0:
+					# Estamos al inicio, salir a tabs
+					current_nav_row = NavRow.TABS
+					_update_navigation_visuals()
+					return
+				else:
+					content_selection -= 1
+					
 			_update_content_selection_visual()
 			
 			# Auto-scroll para seguir la selección

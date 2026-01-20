@@ -15,6 +15,7 @@ var popup_locked: bool = false
 var is_jackpot_mode: bool = false
 var claim_button: Button = null
 var skip_button: Button = null
+var _is_skip_modal_active: bool = false
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ANIMACIÓN DE CHEST BURST (Reveal espectacular)
@@ -435,6 +436,8 @@ func _on_skip_pressed():
 
 func _show_confirm_skip_modal():
 	"""Mostrar modal de confirmación para saltar recompensa"""
+	_is_skip_modal_active = true
+	
 	var confirm_modal = Control.new()
 	confirm_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
 	confirm_modal.z_index = 10 # Encima de todo
@@ -492,7 +495,10 @@ func _show_confirm_skip_modal():
 	var btn_cancel = Button.new()
 	btn_cancel.text = "Volver"
 	btn_cancel.custom_minimum_size = Vector2(100, 40)
-	btn_cancel.pressed.connect(func(): confirm_modal.queue_free())
+	btn_cancel.pressed.connect(func(): 
+		_is_skip_modal_active = false
+		confirm_modal.queue_free()
+	)
 	hbox.add_child(btn_cancel)
 	
 	var btn_confirm = Button.new()
@@ -503,6 +509,7 @@ func _show_confirm_skip_modal():
 	style_confirm.set_corner_radius_all(4)
 	btn_confirm.add_theme_stylebox_override("normal", style_confirm)
 	btn_confirm.pressed.connect(func(): 
+		_is_skip_modal_active = false
 		skipped.emit()
 		queue_free()
 	)
@@ -569,6 +576,9 @@ func create_panel_style() -> StyleBox:
 func _input(event: InputEvent):
 	"""Capturar input para navegación con WASD/Joystick y selección con Space/X"""
 	if popup_locked:
+		return
+		
+	if _is_skip_modal_active:
 		return
 
 	if is_jackpot_mode:
