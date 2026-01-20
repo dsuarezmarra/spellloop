@@ -30,55 +30,57 @@ class_name EnemyDatabase
 
 # Escalado base por tier (multiplicadores respecto a tier 1)
 # REBALANCEADO: XP más equilibrado, velocidades aumentadas
+# Escalado base por tier (multiplicadores respecto a tier 1)
+# REBALANCEADO: XP más equilibrado, velocidades aumentadas
 const TIER_SCALING = {
 	1: {"hp": 1.0, "damage": 1.0, "speed": 1.0, "xp": 1.0},
-	2: {"hp": 2.0, "damage": 1.5, "speed": 1.15, "xp": 2.0},    # XP: 3→2, speed: 1.1→1.15
-	3: {"hp": 4.0, "damage": 2.2, "speed": 1.3, "xp": 4.0},     # XP: 7→4, speed: 1.2→1.3
-	4: {"hp": 7.0, "damage": 3.5, "speed": 1.45, "xp": 8.0},    # XP: 15→8, speed: 1.3→1.45
-	5: {"hp": 1.0, "damage": 1.0, "speed": 1.0, "xp": 15.0}     # Bosses XP: 50→15
+	2: {"hp": 2.5, "damage": 1.6, "speed": 1.25, "xp": 2.2},    # Buffed HP/Speed
+	3: {"hp": 5.0, "damage": 2.5, "speed": 1.45, "xp": 4.5},    # Buffed HP/Speed
+	4: {"hp": 9.0, "damage": 4.0, "speed": 1.65, "xp": 9.0},    # Buffed HP/Speed
+	5: {"hp": 1.0, "damage": 1.0, "speed": 1.0, "xp": 3.0}      # Boss XP HUGE NERF: 15.0 -> 3.0
 }
 
 # Escalado exponencial post-minuto 20 (cada 5 minutos)
-const EXPONENTIAL_SCALING_BASE = 1.5  # 50% más fuerte cada 5 min después de min 20
+const EXPONENTIAL_SCALING_BASE = 1.6  # 60% más fuerte cada 5 min (was 1.5)
 
 # Configuración de élites/legendarios - EXTREMADAMENTE BUFFADOS
 const ELITE_CONFIG = {
-	"hp_multiplier": 10.0,          # 10x HP base - son mini-bosses
-	"damage_multiplier": 3.5,       # 3.5x daño - duelen mucho
-	"size_multiplier": 1.8,         # 80% más grandes - imponentes
-	"xp_multiplier": 8.0,           # REDUCIDO: 20→8 XP (balance)
-	"speed_multiplier": 1.5,        # AUMENTADO: 1.35→1.5 (más agresivos)
-	"attack_speed_multiplier": 0.55,# Atacan 45% más rápido
-	"spawn_chance_per_minute": 0.025, # 2.5% por minuto
-	"max_per_run": 10,
-	"min_spawn_minute": 2,
-	"aura_color": Color(1.0, 0.85, 0.1, 0.95),  # Dorado brillante
-	"aura_pulse_speed": 4.0,        # Aura pulsante más rápida
-	# Habilidades especiales para élites - MUCHAS MÁS
+	"hp_multiplier": 15.0,          # 15x HP base (was 10x) - Tankier
+	"damage_multiplier": 4.0,       # 4x daño (was 3.5x) - Deadlier
+	"size_multiplier": 1.9,         # 90% más grandes
+	"xp_multiplier": 12.0,          # 12x XP (was 8x) - Better reward for harder fight
+	"speed_multiplier": 1.7,        # 1.7x Speed (was 1.5x) - Very fast
+	"attack_speed_multiplier": 0.5, # Atacan 50% más rápido (cd * 0.5)
+	"spawn_chance_per_minute": 0.04, # 4% por minuto (was 2.5%) - More frequent
+	"max_per_run": 15,
+	"min_spawn_minute": 1,          # Can spawn earlier
+	"aura_color": Color(1.0, 0.85, 0.1, 0.95),
+	"aura_pulse_speed": 5.0,
+	# Habilidades especiales para élites
 	"extra_abilities": ["elite_slam", "elite_rage", "elite_shield", "elite_dash", "elite_nova", "elite_summon"],
-	# Elite Slam - Golpe de área devastador
-	"slam_cooldown": 4.0,           # Más frecuente
-	"slam_radius": 100.0,           # Radio más grande
-	"slam_damage_mult": 2.0,        # El doble de daño
-	# Elite Rage - Furia al estar bajo de vida
-	"rage_hp_threshold": 0.5,       # Se enfurece al 50% HP (antes)
-	"rage_damage_bonus": 0.75,      # +75% daño en rage
-	"rage_speed_bonus": 0.5,        # +50% velocidad en rage
-	# Elite Shield - Escudo protector
-	"shield_charges": 5,            # 5 hits absorbidos
-	"shield_cooldown": 12.0,        # Cooldown más corto
-	# Elite Dash - Embestida hacia el jugador
-	"dash_cooldown": 3.0,
-	"dash_speed": 600.0,
-	"dash_damage_mult": 1.8,
-	# Elite Nova - Explosión de proyectiles en círculo
-	"nova_cooldown": 6.0,
-	"nova_projectile_count": 12,
-	"nova_damage_mult": 0.8,
-	# Elite Summon - Invoca minions temporales
-	"summon_cooldown": 10.0,
-	"summon_count": 3,
-	"ability_use_chance": 0.50      # 50% de usar habilidad por ataque
+	# Elite Slam
+	"slam_cooldown": 3.0,           # Lower CD
+	"slam_radius": 120.0,           # Bigger radius
+	"slam_damage_mult": 2.5,
+	# Elite Rage
+	"rage_hp_threshold": 0.6,       # Rage at 60% HP
+	"rage_damage_bonus": 1.0,       # +100% dmg
+	"rage_speed_bonus": 0.6,        # +60% speed
+	# Elite Shield
+	"shield_charges": 8,            # 8 hits (was 5)
+	"shield_cooldown": 10.0,        # Lower CD
+	# Elite Dash
+	"dash_cooldown": 2.5,
+	"dash_speed": 750.0,
+	"dash_damage_mult": 2.0,
+	# Elite Nova
+	"nova_cooldown": 5.0,
+	"nova_projectile_count": 16,    # More projectiles
+	"nova_damage_mult": 1.0,
+	# Elite Summon
+	"summon_cooldown": 8.0,
+	"summon_count": 4,
+	"ability_use_chance": 0.70      # 70% chance to use ability (was 50%)
 }
 
 # Tiempo de aparición de tiers

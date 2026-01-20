@@ -345,7 +345,7 @@ func _activate_elite_shield() -> void:
 	# print("[Elite] ðŸ‘‘ðŸ›¡ï¸ %s activÃ³ Elite Shield! (%d cargas)" % [enemy.name, elite_shield_charges])
 
 func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
-	"""Visual Ã©pico de slam Ã©lite"""
+	"""Visual ÉPICO de slam élite (Mejorado)"""
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 65
@@ -359,42 +359,43 @@ func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
 	var visual = Node2D.new()
 	effect.add_child(visual)
 	
-	# Color dorado para Ã©lites
-	var gold = Color(1.0, 0.85, 0.1)
-	var bright_gold = Color(1.0, 0.95, 0.5)
+	# Colores más intensos
+	var gold = Color(1.0, 0.8, 0.0)
+	var red = Color(1.0, 0.2, 0.1)
+	var bright = Color(1.0, 0.95, 0.6)
 	
 	visual.draw.connect(func():
-		var expand = radius * 1.3 * anim
+		var expand = radius * 1.35 * anim
 		
-		# Ondas doradas
-		for i in range(5):
-			var r = expand * (0.3 + i * 0.18)
-			var a = (1.0 - anim) * (0.9 - i * 0.15)
-			visual.draw_arc(Vector2.ZERO, r, 0, TAU, 48, Color(gold.r, gold.g, gold.b, a), 5.0 - i)
+		# Ondas de choque múltiples
+		for i in range(4):
+			var r = expand * (0.4 + i * 0.2)
+			var a = (1.0 - anim) * (1.0 - i * 0.2)
+			visual.draw_arc(Vector2.ZERO, r, 0, TAU, 32, Color(gold.r, gold.g, gold.b, a), 6.0 - i)
+			visual.draw_arc(Vector2.ZERO, r * 0.9, 0, TAU, 32, Color(red.r, red.g, red.b, a * 0.5), 3.0)
 		
-		# Relleno dorado
-		for i in range(3):
-			var fill_r = expand * (0.85 - i * 0.2)
-			var fill_a = (1.0 - anim) * (0.4 - i * 0.1)
-			visual.draw_circle(Vector2.ZERO, fill_r, Color(gold.r, gold.g, gold.b, fill_a))
+		# Relleno explosivo
+		var fill_a = (1.0 - anim * 1.2)
+		if fill_a > 0:
+			visual.draw_circle(Vector2.ZERO, expand * 0.9, Color(gold.r, gold.g, gold.b, fill_a * 0.3))
+			visual.draw_circle(Vector2.ZERO, expand * 0.6, Color(red.r, 0.5, 0.0, fill_a * 0.5))
 		
-		# Corona de estrellas
-		var star_count = 8
+		# Grietas en el suelo (simuladas)
+		for i in range(8):
+			var angle = (TAU / 8) * i
+			var crack_len = expand * 0.8
+			var crack_end = Vector2(cos(angle), sin(angle)) * crack_len
+			visual.draw_line(Vector2.ZERO, crack_end, Color(0.8, 0.4, 0.0, (1.0-anim)), 3.0)
+		
+		# Corona de estrellas/puntas
+		var star_count = 12
 		for i in range(star_count):
-			var star_angle = (TAU / star_count) * i + anim * PI
-			var star_dist = expand * 0.7
+			var star_angle = (TAU / star_count) * i + anim * PI * 2
+			var star_dist = expand * 0.9
 			var star_pos = Vector2(cos(star_angle), sin(star_angle)) * star_dist
-			var star_size = 10 * (1.0 - anim * 0.5)
 			
-			# Estrella de 4 puntas
-			for j in range(4):
-				var point_angle = (TAU / 4) * j + anim * PI * 2
-				var point_end = star_pos + Vector2(cos(point_angle), sin(point_angle)) * star_size
-				visual.draw_line(star_pos, point_end, bright_gold, 2.0)
-			visual.draw_circle(star_pos, star_size * 0.4, bright_gold)
-		
-		# Borde exterior
-		visual.draw_arc(Vector2.ZERO, expand, 0, TAU, 64, Color(1, 1, 1, 0.7 * (1.0 - anim)), 4.0)
+			# Destello en punta
+			visual.draw_circle(star_pos, 5 * (1.0 - anim), bright)
 	)
 	
 	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
@@ -403,14 +404,14 @@ func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
 		anim = v
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.6)
+	, 0.0, 1.0, 0.5) # Más rápido: 0.5s
 	tween.tween_callback(func():
 		if is_instance_valid(effect):
 			effect.queue_free()
 	)
 
 func _spawn_elite_rage_visual() -> void:
-	"""Visual Ã©pico de rage Ã©lite"""
+	"""Visual ÉPICO de rage élite (Mejorado)"""
 	if not is_instance_valid(enemy):
 		return
 	
@@ -428,37 +429,37 @@ func _spawn_elite_rage_visual() -> void:
 	effect.add_child(visual)
 	
 	visual.draw.connect(func():
-		# Aura de furia dorada/roja
-		for i in range(6):
-			var r = 70 + i * 18 + sin(anim * PI * 5 + i) * 12
-			var a = (0.7 - i * 0.1) * (1.0 - anim * 0.4)
-			var color_blend = float(i) / 6.0
-			var aura_color = Color(1, 0.5 * (1.0 - color_blend), 0.1, a)
-			visual.draw_arc(Vector2.ZERO, r, 0, TAU, 48, aura_color, 4.0)
+		# Aura de furia ROJA INTENSA
+		for i in range(5):
+			var r = 75 + i * 20 + sin(anim * PI * 6 + i) * 15
+			var a = (0.8 - i * 0.15) * (1.0 - anim * 0.3)
+			var aura_color = Color(1.0, 0.1, 0.1, a) # Rojo puro
+			visual.draw_arc(Vector2.ZERO, r, 0, TAU, 48, aura_color, 5.0)
+			visual.draw_arc(Vector2.ZERO, r * 0.95, 0, TAU, 48, Color(1.0, 0.5, 0.0, a*0.5), 2.0)
 		
-		# Llamas de furia
-		var flame_count = 16
-		for i in range(flame_count):
-			var angle = (TAU / flame_count) * i + anim * PI * 1.5
-			var dist = 55 + sin(anim * PI * 8 + i * 0.8) * 20
-			var pos = Vector2(cos(angle), sin(angle)) * dist
-			var size = 12 + sin(anim * PI * 10 + i) * 6
-			
-			# Llama exterior
-			var flame_tip = pos + Vector2(0, -size)
-			visual.draw_colored_polygon(
-				PackedVector2Array([flame_tip, pos + Vector2(-size * 0.4, 0), pos + Vector2(size * 0.4, 0)]),
-				Color(1, 0.4, 0, 0.85 * (1.0 - anim * 0.5))
-			)
-			# NÃºcleo
-			visual.draw_circle(pos, size * 0.35, Color(1, 0.9, 0.3, 0.9 * (1.0 - anim * 0.5)))
+		# Símbolo de calavera/rage simplificado
+		var rage_scale = 1.2 + sin(anim * PI * 10) * 0.2
+		var s = 20 * rage_scale * (1.0 - anim * 0.5)
 		
-		# Texto "RAGE" simulado con sÃ­mbolo
-		var rage_size = 25 * (1.0 - anim * 0.3)
-		visual.draw_circle(Vector2.ZERO, rage_size, Color(1, 0.2, 0, 0.8 * (1.0 - anim)))
-		# X de rabia
-		visual.draw_line(Vector2(-rage_size * 0.5, -rage_size * 0.5), Vector2(rage_size * 0.5, rage_size * 0.5), Color(1, 1, 0.5, (1.0 - anim)), 4.0)
-		visual.draw_line(Vector2(rage_size * 0.5, -rage_size * 0.5), Vector2(-rage_size * 0.5, rage_size * 0.5), Color(1, 1, 0.5, (1.0 - anim)), 4.0)
+		# Ojos
+		visual.draw_circle(Vector2(-10, -5) * rage_scale, 6 * (1.0-anim), Color(1, 1, 0))
+		visual.draw_circle(Vector2(10, -5) * rage_scale, 6 * (1.0-anim), Color(1, 1, 0))
+		
+		# Boca gritando
+		var mouth_pts = PackedVector2Array([
+			Vector2(-8, 5) * rage_scale,
+			Vector2(8, 5) * rage_scale,
+			Vector2(0, 15) * rage_scale
+		])
+		visual.draw_colored_polygon(mouth_pts, Color(0.2, 0, 0, 1.0-anim))
+		
+		# Rayos de ira
+		var ray_count = 12
+		for i in range(ray_count):
+			var angle = (TAU/ray_count)*i + anim*5
+			var start = Vector2(cos(angle), sin(angle)) * 30
+			var end = Vector2(cos(angle), sin(angle)) * (60 + randf()*20)
+			visual.draw_line(start, end, Color(1, 0.2, 0, 1.0-anim), 2.0)
 	)
 	
 	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
@@ -467,7 +468,7 @@ func _spawn_elite_rage_visual() -> void:
 		anim = v
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 1.2)
+	, 0.0, 1.0, 1.0)
 	tween.tween_callback(func():
 		if is_instance_valid(effect):
 			effect.queue_free()

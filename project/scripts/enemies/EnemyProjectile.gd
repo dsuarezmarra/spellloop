@@ -165,90 +165,57 @@ func _create_enhanced_visual() -> void:
 func _draw_projectile() -> void:
 	"""Dibujar proyectil ÉPICO con estela y efectos mejorados según elemento"""
 	var color = _get_element_color()
-	var bright_color = Color(min(color.r + 0.4, 1.0), min(color.g + 0.4, 1.0), min(color.b + 0.4, 1.0), 1.0)
+	# Boost brightness
+	var bright = Color(min(color.r + 0.6, 1.0), min(color.g + 0.6, 1.0), min(color.b + 0.6, 1.0), 1.0)
 	var pos = global_position
-	var pulse = 0.85 + sin(_time * 12) * 0.2
+	# Faster pulse
+	var pulse = 0.9 + sin(_time * 18) * 0.2
 	
 	# === ESTELA ÉPICA CON GRADIENTE MEJORADO ===
 	if trail_positions.size() > 1:
-		# Estela exterior brillante
-		for i in range(trail_positions.size() - 1):
-			var from_pos = trail_positions[i]
-			var to_pos = trail_positions[i + 1]
-			var t = float(i) / float(trail_positions.size())
-			var trail_alpha = (1.0 - t) * 0.5
-			var trail_width = (1.0 - t) * 14.0  # Más gruesa
-			
-			if trail_width > 1:
-				var glow_color = Color(color.r, color.g, color.b, trail_alpha * 0.3)
-				visual_node.draw_line(from_pos, to_pos, glow_color, trail_width * 1.5)
+		# Estela ancha difusa (Glow)
+		var points = PackedVector2Array(trail_positions)
+		visual_node.draw_polyline(points, Color(color.r, color.g, color.b, 0.3), 18.0)
 		
-		# Estela principal
-		for i in range(trail_positions.size() - 1):
-			var from_pos = trail_positions[i]
-			var to_pos = trail_positions[i + 1]
-			var t = float(i) / float(trail_positions.size())
-			var trail_alpha = (1.0 - t) * 0.85
-			var trail_width = (1.0 - t) * 10.0
-			
-			if trail_width > 0.5:
-				var trail_color = Color(color.r, color.g, color.b, trail_alpha * 0.7)
-				visual_node.draw_line(from_pos, to_pos, trail_color, trail_width)
+		# Estela núcleo brillante
+		visual_node.draw_polyline(points, Color(bright.r, bright.g, bright.b, 0.8), 6.0)
 		
-		# Estela interior brillante
-		for i in range(trail_positions.size() - 1):
-			var from_pos = trail_positions[i]
-			var to_pos = trail_positions[i + 1]
-			var t = float(i) / float(trail_positions.size())
-			var trail_alpha = (1.0 - t) * 0.9
-			var trail_width = (1.0 - t) * 5.0
-			
-			if trail_width > 0.3:
-				var trail_bright = Color(bright_color.r, bright_color.g, bright_color.b, trail_alpha * 0.6)
-				visual_node.draw_line(from_pos, to_pos, trail_bright, trail_width)
+		# Línea central blanca
+		visual_node.draw_polyline(points, Color(1, 1, 1, 0.5), 2.0)
 	
 	# === VISUAL ESPECÍFICO POR ELEMENTO ===
 	match element_type:
 		"fire":
-			_draw_fire_projectile(pos, pulse, color, bright_color)
+			_draw_fire_projectile(pos, pulse, color, bright)
 		"ice":
-			_draw_ice_projectile(pos, pulse, color, bright_color)
+			_draw_ice_projectile(pos, pulse, color, bright)
 		"dark", "shadow", "void":
-			_draw_dark_projectile(pos, pulse, color, bright_color)
+			_draw_dark_projectile(pos, pulse, color, bright)
 		"arcane":
-			_draw_arcane_projectile(pos, pulse, color, bright_color)
+			_draw_arcane_projectile(pos, pulse, color, bright)
 		"poison":
-			_draw_poison_projectile(pos, pulse, color, bright_color)
+			_draw_poison_projectile(pos, pulse, color, bright)
 		"lightning":
-			_draw_lightning_projectile(pos, pulse, color, bright_color)
+			_draw_lightning_projectile(pos, pulse, color, bright)
 		_:
-			_draw_default_projectile(pos, pulse, color, bright_color)
+			_draw_default_projectile(pos, pulse, color, bright)
 
 func _draw_fire_projectile(pos: Vector2, pulse: float, color: Color, bright_color: Color) -> void:
-	"""Proyectil de fuego ÉPICO - llama con cola ardiente"""
-	# Aura de calor grande
-	visual_node.draw_circle(pos, 22 * pulse, Color(1.0, 0.2, 0.0, 0.12))
-	visual_node.draw_circle(pos, 18 * pulse, Color(1.0, 0.35, 0.05, 0.2))
-	visual_node.draw_circle(pos, 14 * pulse, Color(1.0, 0.5, 0.1, 0.3))
+	"""Proyectil de fuego ÉPICO"""
+	# Halo de calor intenso
+	visual_node.draw_circle(pos, 28 * pulse, Color(1.0, 0.2, 0.0, 0.15))
+	visual_node.draw_circle(pos, 22 * pulse, Color(1.0, 0.4, 0.0, 0.3))
 	
-	# Llama principal (forma ovalada hacia atrás)
-	var flame_offset = -direction * 8
-	visual_node.draw_circle(pos + flame_offset * 1.5, 10 * pulse, Color(1.0, 0.3, 0.0, 0.5))
-	visual_node.draw_circle(pos + flame_offset, 9 * pulse, Color(1.0, 0.45, 0.05, 0.7))
-	visual_node.draw_circle(pos, 8 * pulse, Color(1.0, 0.6, 0.2, 0.85))
+	# Núcleo de fuego multicapa
+	visual_node.draw_circle(pos, 14 * pulse, Color(1.0, 0.1, 0.0, 0.8)) # Rojo base
+	visual_node.draw_circle(pos, 10 * pulse, Color(1.0, 0.6, 0.0, 0.9)) # Naranja medio
+	visual_node.draw_circle(pos, 6 * pulse, Color(1.0, 1.0, 0.0, 1.0))  # Amarillo centro
+	visual_node.draw_circle(pos, 3 * pulse, Color(1.0, 1.0, 1.0, 1.0))  # Blanco puro
 	
-	# Núcleo caliente brillante
-	visual_node.draw_circle(pos, 5 * pulse, Color(1.0, 0.85, 0.4, 1.0))
-	visual_node.draw_circle(pos, 3 * pulse, Color(1.0, 0.95, 0.7, 1.0))
-	visual_node.draw_circle(pos, 1.5 * pulse, Color(1.0, 1.0, 0.95, 1.0))
-	
-	# Chispas voladoras más dramáticas
-	for i in range(6):
-		var spark_angle = _time * 8 + i * 1.2
-		var spark_dist = 10 + sin(_time * 12 + i) * 5
-		var spark_offset = -direction * spark_dist + Vector2(sin(spark_angle) * 6, cos(spark_angle) * 6)
-		var spark_size = 2.5 + sin(_time * 15 + i) * 1.0
-		visual_node.draw_circle(pos + spark_offset, spark_size, Color(1.0, 0.8, 0.3, 0.8))
+	# Partículas de brasas (aleatorias en cada frame para simular caos)
+	for i in range(5):
+		var offset = Vector2(randf_range(-15, 15), randf_range(-15, 15))
+		visual_node.draw_circle(pos + offset, 2.0, Color(1, 0.8, 0, 0.8))
 
 func _draw_ice_projectile(pos: Vector2, pulse: float, color: Color, bright_color: Color) -> void:
 	"""Proyectil de hielo ÉPICO - cristal brillante con destellos"""

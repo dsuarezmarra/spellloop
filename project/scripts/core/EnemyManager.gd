@@ -23,8 +23,8 @@ signal wave_cleared()
 
 @export_group("Spawn Settings")
 @export var spawn_distance: float = 600.0
-@export var max_enemies: int = 50
-@export var base_spawn_rate: float = 1.5  # Enemigos por segundo base
+@export var max_enemies: int = 80       # AUMENTADO: 50 -> 80 (Más densidad)
+@export var base_spawn_rate: float = 2.5  # AUMENTADO: 1.5 -> 2.5 (Más rápido)
 @export var debug_spawns: bool = false  # Normal: desactivado
 
 # DEBUG TEMPORAL - Activar para ver spawns de zona
@@ -32,7 +32,7 @@ const DEBUG_ZONE_SPAWNS: bool = false
 
 @export_group("Scaling")
 @export var spawn_rate_increase_per_minute: float = 0.1  # +10% por minuto
-@export var max_enemies_increase_per_minute: int = 2
+@export var max_enemies_increase_per_minute: int = 4     # AUMENTADO: 2 -> 4
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ESTADO
