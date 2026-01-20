@@ -198,12 +198,24 @@ func _build_ui():
 	var scroll = ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(0, 250)
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inner_vbox.add_child(scroll)
 	
+	# WRAPPER con padding para evitar clipping de bordes/glow
+	# Este margen garantiza que los efectos visuales (bordes, glows, sombras)
+	# nunca se corten independientemente del tamaño del contenido
+	var items_wrapper = MarginContainer.new()
+	items_wrapper.add_theme_constant_override("margin_left", 8)
+	items_wrapper.add_theme_constant_override("margin_right", 8)
+	items_wrapper.add_theme_constant_override("margin_top", 6)
+	items_wrapper.add_theme_constant_override("margin_bottom", 6)
+	items_wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(items_wrapper)
+	
 	items_container = VBoxContainer.new()
-	items_container.add_theme_constant_override("separation", 8)
+	items_container.add_theme_constant_override("separation", 12)  # Más espacio entre items
 	items_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(items_container)
+	items_wrapper.add_child(items_container)
 	
 	# Botón salir
 	exit_button = Button.new()

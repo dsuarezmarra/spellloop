@@ -39,7 +39,7 @@ var coin_value_variance: float = 0.3  # ±30% variación en valor
 # Streak tracking for coin pickups
 var streak_count: int = 0
 var current_streak_value: int = 0 # Valor acumulado de la racha actual
-var last_coin_time: float = 0.0
+var streak_time_elapsed: float = 0.0  # Tiempo transcurrido desde última moneda (pausa-aware)
 var streak_timeout: float = 2.0  # Segundos para mantener streak
 
 # === CONFIGURACIÓN DE NIVELES ===
@@ -60,15 +60,14 @@ func _ready():
 
 func _process(delta: float) -> void:
 	if streak_count > 0:
-		var time_since_coin = Time.get_ticks_msec() / 1000.0 - last_coin_time
-		var time_left = maxf(0.0, streak_timeout - time_since_coin)
+		# Usar delta para que respete la pausa del juego
+		streak_time_elapsed += delta
+		var time_left = maxf(0.0, streak_timeout - streak_time_elapsed)
 		
 		# Emitir señal de actualización de timer
 		streak_timer_updated.emit(time_left, streak_timeout)
 		
-		# Si se acabó el tiempo, resetear streak (la lógica original ya hacía esto al recoger moneda, 
-		# pero para la UI necesitamos saber cuando llega a 0 en tiempo real)
-
+		# Si se acabó el tiempo, resetear streak
 		if time_left <= 0:
 			streak_count = 0
 			current_streak_value = 0
@@ -337,14 +336,15 @@ func on_coin_collected(value: int, _position: Vector2 = Vector2.ZERO) -> void:
 
 func _on_coin_collected(value: int) -> void:
 	"""Procesar recolección de moneda"""
-	# Actualizar streak
-	var now = Time.get_ticks_msec() / 1000.0
-	if now - last_coin_time <= streak_timeout:
+	# Actualizar streak - usar streak_time_elapsed que respeta pausa
+	if streak_time_elapsed <= streak_timeout:
 		streak_count += 1
 	else:
 		streak_count = 1
 		current_streak_value = 0 # Resetear valor acumulado en nueva racha
-	last_coin_time = now
+	
+	# Resetear el timer (la moneda recién recogida reinicia el contador)
+	streak_time_elapsed = 0.0
 
 	# Aplicar multiplicador de streak (5% por cada streak adicional)
 	# El flag "double_coin_streak" duplica este bonus

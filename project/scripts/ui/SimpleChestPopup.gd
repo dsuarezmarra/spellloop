@@ -108,10 +108,21 @@ func _ready():
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	main_vbox.add_child(title)
 	
+	# WRAPPER con padding para evitar clipping de bordes/glow
+	# Este margen garantiza que los efectos visuales nunca se corten
+	var items_wrapper = MarginContainer.new()
+	items_wrapper.add_theme_constant_override("margin_left", 10)
+	items_wrapper.add_theme_constant_override("margin_right", 10)
+	items_wrapper.add_theme_constant_override("margin_top", 8)
+	items_wrapper.add_theme_constant_override("margin_bottom", 8)
+	items_wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	main_vbox.add_child(items_wrapper)
+	
 	# Lista de items
 	items_vbox = VBoxContainer.new()
-	items_vbox.add_theme_constant_override("separation", 5)
-	main_vbox.add_child(items_vbox)
+	items_vbox.add_theme_constant_override("separation", 10)  # Más espacio entre items
+	items_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	items_wrapper.add_child(items_vbox)
 	
 	# Centrar popup después de un frame
 	await get_tree().process_frame
