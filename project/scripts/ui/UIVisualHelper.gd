@@ -30,30 +30,37 @@ static func get_color_for_tier(tier: int) -> Color:
 	return TIER_COLORS.get(tier, TIER_COLORS[1])
 
 static func get_panel_style(tier: int, is_hover: bool = false, is_weapon: bool = false) -> StyleBoxFlat:
-	var base_color = get_color_for_tier(tier)
+	var tier_color = get_color_for_tier(tier)
 	var style = StyleBoxFlat.new()
 	
+	# Color de fondo base oscuro (Gris oscuro/negro)
+	var base_bg = Color(0.08, 0.08, 0.12)
+	
 	if is_weapon:
-		# Armas tienen fondo más agresivo
-		style.bg_color = base_color.darkened(0.8)
-		style.bg_color.a = 0.9
+		# Armas: Fondo más agresivo y saturado
+		# Mezclar base oscura con un 25% del color del tier
+		style.bg_color = base_bg.lerp(tier_color, 0.25)
+		style.bg_color.a = 0.95
 		style.border_width_left = 4
 		style.border_width_top = 4
 		style.border_width_right = 4
 		style.border_width_bottom = 4
 	else:
-		style.bg_color = base_color.darkened(0.9)
-		style.bg_color.a = 0.85
+		# Items normales: Fondo sutil
+		# Mezclar base oscura con un 15% del color del tier
+		style.bg_color = base_bg.lerp(tier_color, 0.15)
+		style.bg_color.a = 0.9
 		style.border_width_left = 2
 		style.border_width_top = 2
 		style.border_width_right = 2
 		style.border_width_bottom = 2
 		
 	if is_hover:
-		style.bg_color = style.bg_color.lightened(0.1)
-		style.border_color = base_color.lightened(0.3)
+		# Al hacer hover, aclarar ligeramente el fondo y el borde
+		style.bg_color = style.bg_color.lightened(0.15)
+		style.border_color = tier_color.lightened(0.2)
 	else:
-		style.border_color = base_color
+		style.border_color = tier_color
 		
 	style.corner_radius_top_left = 8
 	style.corner_radius_top_right = 8
