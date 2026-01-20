@@ -48,20 +48,60 @@ func _ready():
 			exp_manager.streak_timer_updated.connect(_update_streak_timer)
 		if exp_manager.has_signal("streak_updated"):
 			exp_manager.streak_updated.connect(_update_streak_value)
+		if exp_manager.has_signal("streak_finished"):
+			exp_manager.streak_finished.connect(_on_streak_finished)
 
-func _update_streak_value(count: int, total_value: int):
-	"""Actualizar etiqueta de valor de racha"""
+func _update_streak_value(count: int, total_value: int, multiplier: float = 1.0):
+	"""Actualizar etiqueta de valor de racha y multiplicador"""
 	if streak_value_label:
 		streak_value_label.text = "+%d" % total_value
 		
-		# Feedback visual pequeño (Pop)
+		# Feedback visual simple para el valor
 		var tween = create_tween()
-		tween.tween_property(streak_value_label, "scale", Vector2(1.3, 1.3), 0.1)
+		tween.tween_property(streak_value_label, "scale", Vector2(1.2, 1.2), 0.05)
 		tween.tween_property(streak_value_label, "scale", Vector2(1.0, 1.0), 0.1)
+
+	if streak_multiplier_label:
+		streak_multiplier_label.text = "x%.2f" % multiplier
+		
+		# EFECTO HYPE TRAIN: Escala y color según el multiplicador
+		var scale_mult = 1.0
+		var hype_color = Color(0.8, 0.8, 1.0) # Base (x1.0)
+		var rotation_shake = 0.0
+		
+		if multiplier >= 3.0: # LEGENDARY
+			scale_mult = 1.8
+			hype_color = Color(1.0, 0.2, 0.8) # Magenta brillante
+			rotation_shake = 15.0
+		elif multiplier >= 2.0: # EPIC
+			scale_mult = 1.5
+			hype_color = Color(1.0, 0.5, 0.0) # Naranja intenso
+			rotation_shake = 10.0
+		elif multiplier >= 1.5: # RARE
+			scale_mult = 1.3
+			hype_color = Color(0.2, 0.8, 1.0) # Cyan brillante
+			rotation_shake = 5.0
+		elif multiplier > 1.0: # UNCOMMON
+			scale_mult = 1.15
+			hype_color = Color(0.5, 1.0, 0.5) # Verde claro
+		
+		# Aplicar color
+		streak_multiplier_label.add_theme_color_override("font_color", hype_color)
+		
+		# Animación de golpe
+		var mtween = create_tween()
+		mtween.set_parallel(true)
+		mtween.tween_property(streak_multiplier_label, "scale", Vector2(scale_mult, scale_mult), 0.05).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		mtween.tween_property(streak_multiplier_label, "rotation_degrees", randf_range(-rotation_shake, rotation_shake), 0.05)
+		
+		mtween.chain().set_parallel(true)
+		mtween.tween_property(streak_multiplier_label, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+		mtween.tween_property(streak_multiplier_label, "rotation_degrees", 0.0, 0.2)
 
 var streak_bar_container: HBoxContainer = null
 var streak_icon: Label = null # Usaremos emoji por ahora, o texture si hay
 var streak_value_label: Label = null
+var streak_multiplier_label: Label = null
 var streak_bar: ProgressBar = null
 
 func _create_streak_bar():
@@ -108,13 +148,74 @@ func _create_streak_bar():
 			streak_value_label.add_theme_font_size_override("font_size", 16)
 			streak_value_label.add_theme_constant_override("outline_size", 4)
 			streak_value_label.add_theme_color_override("font_outline_color", Color.BLACK)
+			streak_value_label.add_theme_constant_override("outline_size", 4)
+			streak_value_label.add_theme_color_override("font_outline_color", Color.BLACK)
 			streak_bar_container.add_child(streak_value_label)
+			
+			# 4. Etiqueta de Multiplicador (HYPE TRAIN)
+			streak_multiplier_label = Label.new()
+			streak_multiplier_label.text = "x1.0"
+			streak_multiplier_label.add_theme_color_override("font_color", Color(0.8, 0.8, 1.0)) # Azul claro base
+			streak_multiplier_label.add_theme_font_size_override("font_size", 14)
+			streak_multiplier_label.add_theme_constant_override("outline_size", 4)
+			streak_multiplier_label.add_theme_color_override("font_outline_color", Color.BLACK)
+			streak_bar_container.add_child(streak_multiplier_label)
 			
 			# Añadir al padre (TopRight) justo después de CoinsContainer
 			parent_container.add_child(streak_bar_container)
 			parent_container.move_child(streak_bar_container, coins_container.get_index() + 1)
 			
 			streak_bar_container.visible = false # Oculto por defecto
+
+func _on_streak_finished(total_value: int, max_multiplier: float):
+	"""Mostrar resultado de la racha al finalizar (HYPE COMPLETE)"""
+	# REFINAMIENTO: Solo mostrar si el multiplicador llegó a x2.0 (Epic/Hype real)
+	if total_value <= 0 or max_multiplier < 2.0: return
+	
+	# Crear popup temporal
+	var popup = VBoxContainer.new()
+	popup.alignment = BoxContainer.ALIGNMENT_CENTER
+	
+	# Posicionar debajo de la barra de racha
+	if streak_bar_container:
+		# Centrado respecto a la barra + offset Y
+		var container_center_x = streak_bar_container.global_position.x + (streak_bar_container.size.x / 2)
+		popup.size = Vector2(200, 100)
+		popup.position = Vector2(container_center_x - (popup.size.x / 2), streak_bar_container.global_position.y + 40)
+	else:
+		# Fallback al centro
+		popup.position = Vector2(get_viewport().size.x / 2 - 100, get_viewport().size.y / 2 - 150)
+		popup.size = Vector2(200, 100)
+	
+	var title = Label.new()
+	title.text = "HYPE COMPLETE!"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 24)
+	title.add_theme_color_override("font_color", Color(1.0, 0.84, 0.0)) # Dorado
+	title.add_theme_constant_override("outline_size", 6)
+	title.add_theme_color_override("font_outline_color", Color.BLACK)
+	popup.add_child(title)
+	
+	var result = Label.new()
+	result.text = "Total: %d 🪙\nMax Combo: x%.2f" % [total_value, max_multiplier]
+	result.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	result.add_theme_font_size_override("font_size", 18)
+	result.add_theme_constant_override("outline_size", 4)
+	result.add_theme_color_override("font_outline_color", Color.BLACK)
+	popup.add_child(result)
+	
+	$Control.add_child(popup)
+	
+	# Animar entrada y salida (Pop In -> Wait -> Fade Out)
+	popup.scale = Vector2.ZERO
+	popup.pivot_offset = popup.size / 2
+	
+	var tween = create_tween()
+	tween.tween_property(popup, "scale", Vector2(1.2, 1.2), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(popup, "scale", Vector2(1.0, 1.0), 0.1)
+	tween.tween_interval(1.5) # Mostrar por 1.5s
+	tween.tween_property(popup, "modulate:a", 0.0, 0.5)
+	tween.tween_callback(popup.queue_free)
 
 func _update_streak_timer(time_left: float, max_time: float):
 	if streak_bar_container:

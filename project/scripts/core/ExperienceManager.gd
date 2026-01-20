@@ -16,8 +16,9 @@ signal coin_created(coin: Node2D)
 signal coin_collected(amount: int, total: int)
 signal exp_gained(amount: int, total_exp: int)
 signal level_up(new_level: int, available_upgrades: Array)
-signal streak_updated(count: int, total_value: int)
+signal streak_updated(count: int, total_value: int, current_multiplier: float)
 signal streak_timer_updated(time_left: float, max_time: float) # NUEVO: Para la barra de mecha
+signal streak_finished(total_value: int, max_multiplier: float) # NUEVO: Al terminar la racha
 
 # === REFERENCIAS ===
 var player: CharacterBody2D
@@ -39,6 +40,7 @@ var coin_value_variance: float = 0.3  # ±30% variación en valor
 # Streak tracking for coin pickups
 var streak_count: int = 0
 var current_streak_value: int = 0 # Valor acumulado de la racha actual
+var _last_max_multiplier: float = 1.0 # Para guardar el pico de la racha
 var streak_time_elapsed: float = 0.0  # Tiempo transcurrido desde última moneda (pausa-aware)
 var streak_timeout: float = 2.0  # Segundos para mantener streak
 
@@ -69,9 +71,13 @@ func _process(delta: float) -> void:
 		
 		# Si se acabó el tiempo, resetear streak
 		if time_left <= 0:
+			# Emitir resultado final antes de resetear
+			streak_finished.emit(current_streak_value, _last_max_multiplier)
+			
 			streak_count = 0
 			current_streak_value = 0
-			streak_updated.emit(0, 0)
+			_last_max_multiplier = 1.0
+			streak_updated.emit(0, 0, 1.0)
 
 	# Limpiar referencias a monedas destruidas (Lógica de limpieza)
 	var coins_to_remove = []
@@ -372,6 +378,10 @@ func _on_coin_collected(value: int) -> void:
 	# Fórmula EXPONENCIAL: cada moneda multiplica el bonus
 	# Streak 5: 1.05^4 ≈ 1.22 (+22%), Streak 10: 1.05^9 ≈ 1.55 (+55%), Streak 20: 1.05^19 ≈ 2.53 (+153%)
 	var streak_multiplier = pow(1.0 + (streak_bonus_per * streak_mult_stat), max(0, streak_count - 1))
+	
+	# Actualizar máximo multiplicador de la racha actual
+	if streak_multiplier > _last_max_multiplier:
+		_last_max_multiplier = streak_multiplier
 
 	# Aplicar multiplicador de valor de monedas del player
 	var coin_mult = _get_player_coin_mult()
@@ -383,7 +393,7 @@ func _on_coin_collected(value: int) -> void:
 	current_streak_value += final_value # Añadir al acumulado de la racha
 
 	# Emitir señales
-	streak_updated.emit(streak_count, current_streak_value)
+	streak_updated.emit(streak_count, current_streak_value, streak_multiplier)
 	coin_collected.emit(final_value, total_coins)
 
 	# Guardar en SaveManager si existe
