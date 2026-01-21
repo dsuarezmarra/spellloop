@@ -1623,24 +1623,6 @@ const WEAPON_STATS = [
 ]
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# GESTIÓN DE REROLLS Y BANISH
-# ═══════════════════════════════════════════════════════════════════════════════
-
-func consume_reroll() -> bool:
-	"""Consumir un reroll si es posible"""
-	if current_rerolls > 0:
-		current_rerolls -= 1
-		# Notificar cambio si es necesario
-		return true
-	return false
-
-func consume_banish() -> bool:
-	"""Consumir un banish si es posible"""
-	if current_banishes > 0:
-		current_banishes -= 1
-		return true
-	return false
 
 func apply_upgrade(upgrade_data) -> bool:
 	"""
