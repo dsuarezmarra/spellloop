@@ -248,6 +248,9 @@ func _generate_arena() -> void:
 
 	# Generar caminos procedurales (encima del suelo, debajo de decoraciones)
 	_generate_paths(zones_container)
+	
+	# Fog of War: Inicialmente solo visible hasta el borde de la zona segura + un poco
+	_create_fog_of_war(zones_container, safe_zone_radius + 500.0)
 
 func _generate_paths(parent: Node2D) -> void:
 	"""Generar caminos procedurales que radian desde el centro y se dividen por zonas"""
@@ -263,11 +266,22 @@ func _generate_paths(parent: Node2D) -> void:
 	noise.frequency = 0.001 
 	noise.fractal_octaves = 2
 	
-	# Cargar textura base (Dirt) usando el cargador estándar
-	# El shader World-Space se encarga del tiling, no necesitamos rotar ni estirar manualmente.
-	var path_texture_default = load("res://assets/textures/paths/path_dirt.png")
-	if not path_texture_default:
-		push_error("No se pudo cargar la textura path_dirt.png")
+	# Cargar texturas de caminos por bioma
+	# Pre-cargamos todo para usarlo durante la generación
+	var path_textures = {
+		"Grassland": load("res://assets/textures/paths/path_dirt.png"),
+		"Forest": load("res://assets/textures/paths/path_dirt.png"),
+		"Snow": load("res://assets/textures/paths/path_snow.png"),
+		"Desert": load("res://assets/textures/paths/path_desert.png"),
+		"Lava": load("res://assets/textures/paths/path_lava.png"),
+		"ArcaneWastes": load("res://assets/textures/paths/path_arcane.png"),
+		"Death": load("res://assets/textures/paths/path_death.png")
+	}
+	
+	# Verificar cargas
+	for biome in path_textures:
+		if not path_textures[biome]:
+			push_warning("Falta textura de camino para: " + biome)
 	
 	# Cantidad de caminos principales
 	var main_paths = rng.randi_range(3, 5)
@@ -281,11 +295,11 @@ func _generate_paths(parent: Node2D) -> void:
 		
 		# 2. Dibujar troceada por zonas
 		if full_points.size() > 1:
-			_split_and_draw_path(path_container, full_points, path_texture_default)
+			_split_and_draw_path(path_container, full_points, path_textures)
 			
 			# Ramificaciones
 			if rng.randf() > 0.4:
-				_create_branch_path(path_container, full_points, noise, i)
+				_create_branch_path(path_container, full_points, noise, i, path_textures)
 
 
 
@@ -308,71 +322,141 @@ func _generate_path_geometry(base_angle: float, noise: FastNoiseLite, seed_idx: 
 	for p in points: curve.add_point(p)
 	return curve.tessellate(3, 8)
 
-func _split_and_draw_path(container: Node, points: PackedVector2Array, default_texture: Texture2D) -> void:
+func _split_and_draw_path(container: Node, points: PackedVector2Array, textures: Dictionary) -> void:
 	if points.size() < 2: return
 	
 	var current_zone = _get_zone_at_distance(points[0].length())
 	var segment_points = PackedVector2Array([points[0]])
 	
 	for k in range(1, points.size()):
-		var p = points[k]
-		var dist = p.length()
-		var zone = _get_zone_at_distance(dist)
+		var p_prev = points[k-1]
+		var p_curr = points[k]
+		var dist_curr = p_curr.length()
+		var zone_curr = _get_zone_at_distance(dist_curr)
 		
-		if zone != current_zone:
-			segment_points.append(p)
-			_draw_path_segment(container, segment_points, current_zone, default_texture)
-			current_zone = zone
-			segment_points = PackedVector2Array([p])
+		if zone_curr != current_zone:
+			# Corte exacto en frontera
+			var boundary_radius = _get_boundary_radius(current_zone, zone_curr)
+			var intersection = _find_circle_segment_intersection(p_prev, p_curr, boundary_radius)
+			
+			if intersection != Vector2.INF:
+				segment_points.append(intersection)
+				_draw_path_segment_with_biome(container, segment_points, current_zone, textures)
+				
+				current_zone = zone_curr
+				segment_points = PackedVector2Array([intersection])
+				segment_points.append(p_curr)
+			else:
+				segment_points.append(p_curr)
+				_draw_path_segment_with_biome(container, segment_points, current_zone, textures)
+				current_zone = zone_curr
+				segment_points = PackedVector2Array([p_curr])
 		else:
-			segment_points.append(p)
+			segment_points.append(p_curr)
 	
-	_draw_path_segment(container, segment_points, current_zone, default_texture)
+	_draw_path_segment_with_biome(container, segment_points, current_zone, textures)
 
-func _draw_path_segment(container: Node, points: PackedVector2Array, zone: int, default_tex: Texture2D) -> void:
+func _get_boundary_radius(zone_a: int, zone_b: int) -> float:
+	# Devuelve el radio frontera entre dos zonas. 
+	# Asumimos que zone_b es la siguiente (más lejana) o anterior.
+	# La frontera siempre es el radio exterior de la zona más pequeña.
+	var min_zone = min(zone_a, zone_b)
+	match min_zone:
+		ZoneType.SAFE: return safe_zone_radius
+		ZoneType.MEDIUM: return medium_zone_radius
+		ZoneType.DANGER: return danger_zone_radius
+		ZoneType.DEATH: return arena_radius # O danger_zone_radius? La zona DEATH empieza donde acaba DANGER
+	return danger_zone_radius # Fallback seguro
+
+func _find_circle_segment_intersection(p1: Vector2, p2: Vector2, r: float) -> Vector2:
+	# Resuelve intersección entre segmento P1-P2 y círculo radio R centrado en (0,0)
+	# Ecuación: |P1 + t*(P2-P1)| = R
+	var d = p2 - p1
+	var a = d.dot(d)
+	var b = 2.0 * p1.dot(d)
+	var c = p1.dot(p1) - (r * r)
+	
+	var discriminant = b * b - 4 * a * c
+	if discriminant < 0: return Vector2.INF
+	
+	var t = (-b + sqrt(discriminant)) / (2 * a)
+	if t >= 0.0 and t <= 1.0:
+		return p1 + d * t
+		
+	# A veces la otra solución es la correcta si vamos 'hacia adentro'
+	t = (-b - sqrt(discriminant)) / (2 * a)
+	if t >= 0.0 and t <= 1.0:
+		return p1 + d * t
+		
+	return Vector2.INF
+
+func _create_fog_of_war(parent: Node2D, initial_radius: float) -> void:
+	var fog = ColorRect.new()
+	fog.name = "FogOfWar"
+	# Cubrir un área gigante suficiente para todo el mapa
+	var huge_size = 50000 
+	fog.size = Vector2(huge_size, huge_size)
+	fog.position = Vector2(-huge_size/2, -huge_size/2)
+	fog.z_index = 100 # Encima de casi todo (menos UI)
+	fog.mouse_filter = Control.MOUSE_FILTER_IGNORE # No bloquear clicks
+	
+	var shader = load("res://assets/shaders/fog_of_war.gdshader")
+	var mat = ShaderMaterial.new()
+	mat.shader = shader
+	mat.set_shader_parameter("unlocked_radius", initial_radius)
+	mat.set_shader_parameter("fog_color", Color(0.05, 0.05, 0.08, 0.95)) # Casi negro azulado
+	
+	fog.material = mat
+	parent.add_child(fog)
+	
+func update_fog_radius(new_radius: float) -> void:
+	var fog = get_node_or_null("World/Zones/FogOfWar") # Ruta asumiendo estructura
+	# Mejor buscarlo dinámicamente o guardar referencia si es posible
+	if not fog and has_node("ArenaZones/FogOfWar"): fog = get_node("ArenaZones/FogOfWar")
+	
+	if fog and fog.material is ShaderMaterial:
+		# Tween suave
+		var tween = create_tween()
+		tween.tween_method(
+			func(val): fog.material.set_shader_parameter("unlocked_radius", val),
+			fog.material.get_shader_parameter("unlocked_radius"),
+			new_radius,
+			2.0 # Duración transición
+		).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+func _draw_path_segment_with_biome(container: Node, points: PackedVector2Array, zone: int, textures: Dictionary) -> void:
 	if points.size() < 2: return
 	
-	# === TÉCNICA DE WORLD-SPACE UV (Shader) ===
-	# Usamos Line2D para la geometría suave, pero la textura se mapea
-	# usando coordenadas mundiales en el shader.
-	# Resultado: Cero distorsión en curvas, textura continua perfecta.
+	# Determinar textura correcta
+	var biome_name = selected_biomes.get(zone, "Grassland")
+	var tex = textures.get(biome_name, textures.get("Grassland"))
+	
+	if not tex: return # Si falla todo, no dibujamos
 	
 	var line = Line2D.new()
-	# Ancho generoso para que el degradado de bordes se vea bien
 	line.width = rng.randf_range(350.0, 420.0) 
-	line.texture_mode = Line2D.LINE_TEXTURE_STRETCH # El modo da igual, el shader lo ignora
+	line.texture_mode = Line2D.LINE_TEXTURE_STRETCH 
 	line.joint_mode = Line2D.LINE_JOINT_ROUND
 	line.end_cap_mode = Line2D.LINE_CAP_ROUND
 	line.antialiased = true
 	line.points = points
 	
-	# Cargar shader World Space
 	var shader = load("res://assets/shaders/path_world_uv.gdshader")
 	var mat = ShaderMaterial.new()
 	mat.shader = shader
-	mat.set_shader_parameter("texture_albedo", default_tex)
+	mat.set_shader_parameter("texture_albedo", tex)
 	mat.set_shader_parameter("texture_scale", Vector2(0.002, 0.002)) 
 	
-	if default_tex == null:
-		push_error("TEXTURA NULL en _draw_path_segment")
-		line.default_color = Color(1, 0, 0, 1) # Rojo error
-	
 	line.material = mat
-	
-	# Tintes por bioma
-	var biome_name = selected_biomes.get(zone, "Grassland")
-	match biome_name:
-		"Snow": line.modulate = Color(0.8, 0.9, 1.0, 1.0)
-		"Lava": line.modulate = Color(0.5, 0.2, 0.2, 1.0)
-		"Desert": line.modulate = Color(1.0, 0.9, 0.6, 1.0)
-		"ArcaneWastes": line.modulate = Color(0.6, 0.4, 0.8, 1.0)
-		_: line.modulate = Color(1, 1, 1, 1) # Dirt/Default
+	# YA NO USAMOS MODULATE (TINTES)
+	# Como tenemos texturas reales, dejamos el color en blanco puro.
+	line.modulate = Color(1, 1, 1, 1) 
 		
 	container.add_child(line)
 
 # Función _create_quad_mesh eliminada por no usarse
 
-func _create_branch_path(container: Node2D, parent_points: PackedVector2Array, noise: FastNoiseLite, seed_offset: int) -> void:
+func _create_branch_path(container: Node2D, parent_points: PackedVector2Array, noise: FastNoiseLite, seed_offset: int, textures: Dictionary) -> void:
 	if parent_points.size() < 20: return
 	var start_idx = rng.randi_range(parent_points.size() / 4, parent_points.size() / 2)
 	var start_pos = parent_points[start_idx]
@@ -394,9 +478,8 @@ func _create_branch_path(container: Node2D, parent_points: PackedVector2Array, n
 	for p in branch_points: curve.add_point(p)
 	var smoothed = curve.tessellate(3, 8)
 	
-	# Usar textura default estándar
-	var tex = load("res://assets/textures/paths/path_dirt.png")
-	_split_and_draw_path(container, smoothed, tex)
+	# Usar texturas pasadas por argumento
+	_split_and_draw_path(container, smoothed, textures)
 
 
 
