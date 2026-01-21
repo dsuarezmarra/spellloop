@@ -138,6 +138,7 @@ func initialize(player: Node2D, root: Node2D, resume_seed: int = -1) -> void:
 	
 	# Seleccionar biomas aleatorios para cada zona
 	_select_random_biomes()
+	print("DEBUG: BIOMES_BY_ZONE keys: ", BIOMES_BY_ZONE.keys())
 	
 	# Cargar texturas de biomas
 	_load_biome_textures()
@@ -251,7 +252,8 @@ func _generate_arena() -> void:
 	_generate_paths(zones_container)
 	
 	# Fog of War: Inicialmente visible hasta el borde de SAFE
-	_create_fog_of_war(zones_container, safe_zone_radius)
+	# Ajuste manual (-150) para que la niebla empiece justo en la línea azul ("a ras")
+	_create_fog_of_war(zones_container, safe_zone_radius - 150.0)
 
 func _generate_paths(parent: Node2D) -> void:
 	"""Generar caminos procedurales que radian desde el centro y se dividen por zonas"""
@@ -369,18 +371,26 @@ func _split_and_draw_path(container: Node, points: PackedVector2Array, textures:
 		var dist_curr = p_curr.length()
 		var zone_curr = _get_zone_at_distance(dist_curr)
 		
-		# Debug zonas
-		# if k % 50 == 0: print("   [DEBUG] Punto %d: Dist %d -> Zona %d" % [k, dist_curr, zone_curr])
-		
 		if zone_curr != current_zone:
 			# Corte exacto en frontera
 			var boundary_radius = _get_boundary_radius(current_zone, zone_curr)
 			var intersection = _find_circle_segment_intersection(p_prev, p_curr, boundary_radius)
 			
 			if intersection != Vector2.INF:
-				segment_points.append(intersection)
+				# Tweak: Extender el punto de intersección un poco hacia afuera (20px)
+				# Esto asegura que el camino se meta DEBAJO del suelo de la siguiente zona (Z-Sandwich)
+				var direction = (intersection - Vector2.ZERO).normalized()
+				var extended_intersection = intersection + (direction * 50.0) # Aumentar a 50px para asegurar
+				
+				segment_points.append(extended_intersection)
+				
+				# CRITICAL FIX: Este segmento pertenece a la zona ANTERIOR (current_zone)
+				# Al dibujarse con Z=1 en Zone_INNER, y Zone_OUTER tener Z=100 overlay,
+				# el trozo extendido quedará Oculto.
 				_draw_path_segment_with_biome(container, segment_points, current_zone, textures)
 				
+				# El siguiente segmento empieza en la INTERSECCIÓN REAL (no extendida)
+				# y pertenece a la NUEVA ZONA.
 				current_zone = zone_curr
 				segment_points = PackedVector2Array([intersection])
 				segment_points.append(p_curr)
@@ -434,7 +444,15 @@ func _draw_path_segment_with_biome(container: Node, points: PackedVector2Array, 
 	if not tex:
 		line.default_color = Color(1, 0, 1, 1) # Fallback Magenta solo si falla textura 
 
-	container.add_child(line)
+	# CAMBIO CLAVE: Añadir el camino al nodo de su propia zona
+	# Como las zonas se dibujan en orden (Inner -> Outer), y Outer tiene "agujero",
+	# el camino de Inner sobresaldrá un poco pero quedará oculto DEBAJO del suelo de Outer.
+	if zone_nodes.has(zone):
+		var z_node = zone_nodes[zone]
+		z_node.add_child(line)
+		line.z_index = 1 # Encima del suelo (0) pero debajo de la siguiente zona (10)
+	else:
+		container.add_child(line)
 
 func _get_boundary_radius(zone_a: int, zone_b: int) -> float:
 	# Devuelve el radio frontera entre dos zonas. 
@@ -564,9 +582,9 @@ func _create_zone(parent: Node2D, zone_type: ZoneType, radius: float) -> void:
 	
 	# SANDWICH Z-INDEX STRATEGY:
 	# Cada zona debe dibujarse ENCIMA de la anterior para cubrir los cortes de camino.
-	# Safe(0) -> Z=0, Medium(1) -> Z=10, Danger(2) -> Z=20, Death(3) -> Z=30.
-	# Global Z será: zones_container(-100) + (zone_type * 10).
-	zone_node.z_index = int(zone_type) * 10 
+	# Safe(0) -> Z=0, Medium(1) -> Z=100, Danger(2) -> Z=200, Death(3) -> Z=300.
+	# Global Z será: zones_container(-100) + (zone_type * 100).
+	zone_node.z_index = int(zone_type) * 100 
 	
 	parent.add_child(zone_node)
 	zone_nodes[zone_type] = zone_node
