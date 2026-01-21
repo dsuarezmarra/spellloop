@@ -242,7 +242,6 @@ func _generate_arena() -> void:
 	arena_root.add_child(zones_container)
 	
 	# Generar zonas de ADENTRO hacia AFUERA (Safe primero, Death al final)
-	# Esto permite que las zonas exteriores "tapen" los bordes feos de las interiores
 	_create_zone(zones_container, ZoneType.SAFE, safe_zone_radius)
 	_create_zone(zones_container, ZoneType.MEDIUM, medium_zone_radius)
 	_create_zone(zones_container, ZoneType.DANGER, danger_zone_radius)
@@ -562,6 +561,13 @@ func _create_zone(parent: Node2D, zone_type: ZoneType, radius: float) -> void:
 	# Contenedor de la zona
 	var zone_node = Node2D.new()
 	zone_node.name = "Zone_%s" % ZoneType.keys()[zone_type]
+	
+	# SANDWICH Z-INDEX STRATEGY:
+	# Cada zona debe dibujarse ENCIMA de la anterior para cubrir los cortes de camino.
+	# Safe(0) -> Z=0, Medium(1) -> Z=10, Danger(2) -> Z=20, Death(3) -> Z=30.
+	# Global Z será: zones_container(-100) + (zone_type * 10).
+	zone_node.z_index = int(zone_type) * 10 
+	
 	parent.add_child(zone_node)
 	zone_nodes[zone_type] = zone_node
 	
@@ -570,6 +576,7 @@ func _create_zone(parent: Node2D, zone_type: ZoneType, radius: float) -> void:
 	
 	if base_texture:
 		# Usar textura seamless con shader de tiling circular
+		# IMPORTANTE: El sprite dentro de zone_node debe estar en Z=0 local para respetar el sandwich
 		_create_circular_tiled_zone(zone_node, base_texture, radius, inner_radius, zone_type)
 	else:
 		pass  # Bloque else
@@ -639,7 +646,7 @@ func _create_circular_tiled_zone(zone_node: Node2D, texture: Texture2D, outer_ra
 	var sprite = Sprite2D.new()
 	sprite.name = "TiledCircle"
 	sprite.texture = texture  # La textura base para el tamaño del sprite
-	sprite.z_index = -100
+	sprite.z_index = 0 # Local 0. Hereda el Z de la Zone (0, 10, 20...)
 	
 	# Escalar el sprite para cubrir el diámetro completo de la zona
 	var diameter = outer_radius * 2.0
@@ -684,7 +691,7 @@ func _create_colored_zone(zone_node: Node2D, biome_name: String, radius: float, 
 	# Crear un círculo/anillo usando draw
 	var circle_drawer = Node2D.new()
 	circle_drawer.name = "CircleDrawer"
-	circle_drawer.z_index = -100  # Muy atrás para no tapar decoraciones
+	circle_drawer.z_index = 0 # Local 0
 	zone_node.add_child(circle_drawer)
 	
 	# Añadir script para dibujar círculo o anillo
@@ -775,7 +782,7 @@ func _add_animated_decorations(zone_node: Node2D, radius: float, zone_type: Zone
 		decor_node.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		
 		decor_node.position = pos
-		decor_node.z_index = 20  # Relativo: -100 + 0 + 20 = -80. Path es -90. -80 > -90. CORRECTO.
+		decor_node.z_index = 2 # Encima de camino (1) y suelo (0)
 		
 		# Escala variable basada en el tamaño del player
 		# Player: 500px × 0.25 = 125px visual
