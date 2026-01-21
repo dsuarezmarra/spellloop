@@ -409,15 +409,10 @@ func _draw_path_segment_with_biome(container: Node, points: PackedVector2Array, 
 	
 	var line = Line2D.new()
 	line.width = rng.randf_range(350.0, 420.0) 
-	line.texture_mode = Line2D.LINE_TEXTURE_STRETCH 
-	line.joint_mode = Line2D.LINE_JOINT_ROUND
-	# Usar CAP_NONE para que el corte en los límites de zona sea exacto y no "sangre"
-	line.begin_cap_mode = Line2D.LINE_CAP_NONE
-	line.end_cap_mode = Line2D.LINE_CAP_NONE
-	line.antialiased = true
-	line.points = points
-
+	# Debug para ver por qué sale marrón en el desierto
+	# print("🖌️ [SEGMENT] Zone: %d | Biome: %s | Texture: %s" % [zone, biome_name, "FOUND" if textures.has(biome_name) else "MISSING"])
 	
+	# 1. Configurar Shader correcto
 	var shader = load("res://assets/shaders/path_world_uv.gdshader")
 	var mat = ShaderMaterial.new()
 	mat.shader = shader
@@ -425,9 +420,18 @@ func _draw_path_segment_with_biome(container: Node, points: PackedVector2Array, 
 	mat.set_shader_parameter("texture_scale", Vector2(0.002, 0.002)) 
 	
 	line.material = mat
-	# YA NO USAMOS MODULATE (TINTES)
-	# Como tenemos texturas reales, dejamos el color en blanco puro.
-	line.modulate = Color(1, 1, 1, 1) 
+	line.texture_mode = Line2D.LINE_TEXTURE_STRETCH 
+	
+	# Usar CAP_NONE para que el corte en los límites de zona sea exacto
+	line.begin_cap_mode = Line2D.LINE_CAP_NONE
+	line.end_cap_mode = Line2D.LINE_CAP_NONE
+	line.antialiased = true
+	line.points = points
+		
+	# Tintes y colores
+	line.modulate = Color(1, 1, 1, 1) # Blanco puro
+	if not tex:
+		line.default_color = Color(1, 0, 1, 1) # Fallback Magenta solo si falla textura 
 
 	container.add_child(line)
 
@@ -472,9 +476,15 @@ func _create_fog_of_war(parent: Node2D, initial_radius: float) -> void:
 	var huge_size = 50000 
 	fog.size = Vector2(huge_size, huge_size)
 	fog.position = Vector2(-huge_size/2, -huge_size/2)
-	fog.z_index = 100 # Encima de casi todo (menos UI)
-	fog.mouse_filter = Control.MOUSE_FILTER_IGNORE # No bloquear clicks
 	
+	# Z-Index CRÍTICO: 
+	# Si parent es `zones_container` (-100), poner 100 da Global 0.
+	# Si hay cosas en Z > 0 (player, enemigos), la niebla no las tapa.
+	# SOLUCIÓN: Usar Z muy alto y asegurar parent global 0.
+	fog.z_index = 4000 # Max canvas layerish
+	fog.mouse_filter = Control.MOUSE_FILTER_IGNORE 
+	
+	# Restaurar Shader de Niebla
 	var shader = load("res://assets/shaders/fog_of_war.gdshader")
 	var mat = ShaderMaterial.new()
 	mat.shader = shader
@@ -482,21 +492,34 @@ func _create_fog_of_war(parent: Node2D, initial_radius: float) -> void:
 	mat.set_shader_parameter("fog_color", Color(0.05, 0.05, 0.08, 0.95)) # Casi negro azulado
 	
 	fog.material = mat
-	parent.add_child(fog)
+	
+	# Usar arena_root para el z_index correcto
+	var target_parent = arena_root if arena_root else parent
+	
+	# Asegurar que no existe ya
+	if target_parent.has_node("FogOfWar"):
+		target_parent.get_node("FogOfWar").queue_free()
+
+	target_parent.add_child(fog)
+	
+	# Debug
+	print("🌫️ [ArenaManager] FogOfWar creado en %s con radio inicial %.1f" % [target_parent.name, initial_radius])
 	
 func update_fog_radius(new_radius: float) -> void:
-	var fog = get_node_or_null("World/Zones/FogOfWar") # Ruta asumiendo estructura
-	# Mejor buscarlo dinámicamente o guardar referencia si es posible
-	if not fog and has_node("ArenaZones/FogOfWar"): fog = get_node("ArenaZones/FogOfWar")
+	# Buscar niebla en arena_root primero (nueva ubicación)
+	var fog = arena_root.get_node_or_null("FogOfWar")
+	if not fog: fog = get_node_or_null("World/Zones/FogOfWar") 
+	if not fog: fog = get_tree().root.find_child("FogOfWar", true, false)
 	
 	if fog and fog.material is ShaderMaterial:
+		print("🌫️ [ArenaManager] Actualizando niebla a radio: %.1f" % new_radius)
 		# Tween suave
 		var tween = create_tween()
 		tween.tween_method(
 			func(val): fog.material.set_shader_parameter("unlocked_radius", val),
 			fog.material.get_shader_parameter("unlocked_radius"),
 			new_radius,
-			2.0 # Duración transición
+			2.0 
 		).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 # Función _create_quad_mesh eliminada por no usarse
@@ -719,7 +742,7 @@ func _add_animated_decorations(zone_node: Node2D, radius: float, zone_type: Zone
 	
 	var decor_container = Node2D.new()
 	decor_container.name = "Decorations"
-	decor_container.z_index = -99  # Encima del suelo, debajo de entidades
+	decor_container.z_index = 0  # CRÍTICO: Global será -100 + 0 = -100 (relativa a zona)
 	zone_node.add_child(decor_container)
 	
 	var decor_created = 0
@@ -750,7 +773,7 @@ func _add_animated_decorations(zone_node: Node2D, radius: float, zone_type: Zone
 		decor_node.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		
 		decor_node.position = pos
-		decor_node.z_index = 50  # Por ENCIMA de las texturas base (-100) y caminos (-90)
+		decor_node.z_index = 20  # Relativo: -100 + 0 + 20 = -80. Path es -90. -80 > -90. CORRECTO.
 		
 		# Escala variable basada en el tamaño del player
 		# Player: 500px × 0.25 = 125px visual
