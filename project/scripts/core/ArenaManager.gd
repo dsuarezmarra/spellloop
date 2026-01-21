@@ -277,8 +277,16 @@ func _generate_paths(parent: Node2D) -> void:
 		var err = img.load(path)
 		if err != OK: return null
 		
-		# Las texturas generadas suelen ser verticales, Line2D pide horizontales
+		# 1. Rotar: Las texturas generadas son verticales, Line2D pide horizontales (X = largo)
 		img.rotate_90(CLOCKWISE) 
+		
+		# 2. Estirar: Para evitar el efecto "acordeón", forzamos un ancho grande (2048)
+		# manteniendo el alto original. Esto reduce la frecuencia de repetición.
+		var original_size = img.get_size()
+		var new_width = 2048 
+		var new_height = original_size.y
+		img.resize(new_width, new_height, Image.INTERPOLATE_CUBIC)
+		
 		return ImageTexture.create_from_image(img)
 	
 	path_texture = _load_rotated.call("res://assets/textures/paths/path_dirt.png")
@@ -298,20 +306,18 @@ func _generate_paths(parent: Node2D) -> void:
 		
 		# Crear Line2D
 		var line = Line2D.new()
-		line.width = rng.randf_range(200.0, 280.0) # Reducir ancho levemente para evitar overlap en curvas
+		# Ajustar ancho para que coincida mejor con la textura (evitar estiramiento vertical excesivo)
+		line.width = rng.randf_range(280.0, 320.0) 
 		line.texture_mode = Line2D.LINE_TEXTURE_TILE
 		line.joint_mode = Line2D.LINE_JOINT_ROUND
-		line.end_cap_mode = Line2D.LINE_CAP_BOX # Box a veces da mejor tiling final que round
-		
-		# CRÍTICO: Habilitar repetición de textura para evitar "stretching" y cortes
+		line.end_cap_mode = Line2D.LINE_CAP_ROUND
 		line.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
-		line.antialiased = true # Suavizar bordes
-		# Filtro lineal con mipmaps para que se vea bien al alejar/acercar
-		line.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		line.antialiased = true
 		
+		# Usar la textura nativa con el estiramiento aplicado en la carga
 		if path_texture:
 			line.texture = path_texture
-			line.default_color = Color(1, 1, 1, 1.0) # Totalmente visible (el alpha lo maneja la textura)
+			line.default_color = Color(1, 1, 1, 1) # Opaco
 		else:
 			line.default_color = Color(0.15, 0.12, 0.1, 0.4) # Fallback
 		
@@ -321,19 +327,21 @@ func _generate_paths(parent: Node2D) -> void:
 		var max_dist = arena_radius * 1.1 # Salirse un poco del mapa
 		var points = []
 		
+		# Puntos iniciales
+		points.append(Vector2.ZERO)
+		
 		while current_dist < max_dist:
-			# Añadir punto
-			points.append(current_pos)
-			
-			# Avanzar
-			current_dist += 40.0 # Aún más resolución (antes 50)
+			# Avanzar tramos más largos para evitar zig-zag
+			current_dist += 150.0 
 			
 			# Calcular desviación usando ruido
-			var noise_val = noise.get_noise_2d(current_dist, i * 100.0)
-			var angle_offset = noise_val * 0.7 # Curvatura suave
+			# Frecuencia MUY baja para curvas suaves (tipo río/carretera)
+			var noise_val = noise.get_noise_2d(current_dist, i * 500.0)
+			var angle_offset = noise_val * 0.5 # Ángulo suave
 			
 			var current_angle = base_angle + angle_offset
 			current_pos = Vector2(cos(current_angle), sin(current_angle)) * current_dist
+			points.append(current_pos)
 			
 		# suavizar el camino usando Curve2D
 		var curve = Curve2D.new()
@@ -352,39 +360,7 @@ func _generate_paths(parent: Node2D) -> void:
 		if rng.randf() > 0.4:
 			_create_branch_path(path_container, line.points, noise, i)
 
-func _create_branch_path(container: Node2D, parent_points: Array, noise: FastNoiseLite, seed_offset: int) -> void:
-	"""Crear un camino secundario que sale del principal"""
-	if parent_points.size() < 10: return
-	
-	# Elegir punto de inicio (mitad del camino aprox)
-	var start_idx = rng.randi_range(parent_points.size() / 4, parent_points.size() / 2)
-	var start_pos = parent_points[start_idx]
-	var start_dist = start_pos.length()
-	
-	var line = Line2D.new()
-	line.default_color = Color(0.15, 0.12, 0.1, 0.3) # Más sutil
-	line.width = rng.randf_range(100.0, 150.0)
-	line.joint_mode = Line2D.LINE_JOINT_ROUND
-	line.end_cap_mode = Line2D.LINE_CAP_ROUND
-	
-	var points = [start_pos]
-	var current_pos = start_pos
-	var current_dist = start_dist
-	
-	# Determinar ángulo de divergencia
-	var parent_angle = start_pos.angle()
-	var branch_angle = parent_angle + (rng.randf_range(0.3, 0.8) * (1 if rng.randf() > 0.5 else -1))
-	
-	for j in range(20): # Longitud fija
-		current_dist += 80.0
-		var noise_val = noise.get_noise_2d(current_dist, seed_offset + 500)
-		var angle = branch_angle + (noise_val * 1.0)
-		
-		current_pos += Vector2(cos(angle), sin(angle)) * 80.0
-		points.append(current_pos)
-		
-	line.points = PackedVector2Array(points)
-	container.add_child(line)
+
 
 func _create_zone(parent: Node2D, zone_type: ZoneType, radius: float) -> void:
 	"""Crear una zona circular con su bioma usando textura seamless + shader"""
