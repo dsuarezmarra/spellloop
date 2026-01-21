@@ -247,7 +247,7 @@ func _generate_arena() -> void:
 	_create_zone(zones_container, ZoneType.SAFE, safe_zone_radius)
 
 	# Generar caminos procedurales (encima del suelo, debajo de decoraciones)
-	_generate_paths(zones_container)
+	_generate_paths(arena_root)
 	
 	# Fog of War: Inicialmente solo visible hasta el borde de la zona segura + un poco
 	_create_fog_of_war(zones_container, safe_zone_radius + 500.0)
@@ -257,6 +257,7 @@ func _generate_paths(parent: Node2D) -> void:
 	# Usar Node2D simple para evitar problemas con shaders en CanvasGroup
 	var path_container = Node2D.new()
 	path_container.name = "Paths"
+	# ZONA: -200 Global. CAMINOS: -90 Global.
 	path_container.z_index = -90 
 	parent.add_child(path_container)
 	
@@ -266,17 +267,50 @@ func _generate_paths(parent: Node2D) -> void:
 	noise.frequency = 0.001 
 	noise.fractal_octaves = 2
 	
+	# Función local para carga robusta (resuelve importaciones pendientes)
+	# Función local para carga robusta (resuelve importaciones pendientes)
+	var _load_robusta = func(path: String) -> Texture2D:
+		# 1. Intentar carga estándar
+		if ResourceLoader.exists(path):
+			var res = load(path)
+			if res: return res
+		
+		# 2. Fallback: Carga manual
+		var global_path = ProjectSettings.globalize_path(path)
+		var img = Image.new()
+		var err = img.load(global_path)
+		
+		if err != OK:
+			# 3. Nuclear fallback: Leer bytes directamente
+			# Sometimes img.load() fails on locked files, reading bytes avoids some locks
+			if FileAccess.file_exists(path):
+				var buffer = FileAccess.get_file_as_bytes(path)
+				var err_buf = img.load_png_from_buffer(buffer) # Asumimos PNG
+				if err_buf != OK:
+					err_buf = img.load_jpg_from_buffer(buffer) # Try JPG
+				err = err_buf
+		
+		if err == OK:
+			return ImageTexture.create_from_image(img)
+			
+		push_warning("⚠️ [ArenaManager] FAIL LOAD: " + path + " | Global: " + global_path)
+		return null
+	
 	# Cargar texturas de caminos por bioma
-	# Pre-cargamos todo para usarlo durante la generación
 	var path_textures = {
-		"Grassland": load("res://assets/textures/paths/path_dirt.png"),
-		"Forest": load("res://assets/textures/paths/path_dirt.png"),
-		"Snow": load("res://assets/textures/paths/path_snow.png"),
-		"Desert": load("res://assets/textures/paths/path_desert.png"),
-		"Lava": load("res://assets/textures/paths/path_lava.png"),
-		"ArcaneWastes": load("res://assets/textures/paths/path_arcane.png"),
-		"Death": load("res://assets/textures/paths/path_death.png")
+		"Grassland": _load_robusta.call("res://assets/textures/paths/path_dirt.png"),
+		"Forest": _load_robusta.call("res://assets/textures/paths/path_dirt.png"),
+		"Snow": _load_robusta.call("res://assets/textures/paths/path_snow.png"),
+		"Desert": _load_robusta.call("res://assets/textures/paths/path_desert.png"),
+		"Lava": _load_robusta.call("res://assets/textures/paths/path_lava.png"),
+		"ArcaneWastes": _load_robusta.call("res://assets/textures/paths/path_arcane.png"),
+		"Death": _load_robusta.call("res://assets/textures/paths/path_death.png")
 	}
+	
+	# Fallback final para Grassland si falla la png
+	if not path_textures["Grassland"]:
+		path_textures["Grassland"] = _load_robusta.call("res://assets/textures/paths/path_dirt_v2.jpg")
+		path_textures["Forest"] = path_textures["Grassland"]
 	
 	# Verificar cargas
 	for biome in path_textures:
@@ -334,6 +368,9 @@ func _split_and_draw_path(container: Node, points: PackedVector2Array, textures:
 		var dist_curr = p_curr.length()
 		var zone_curr = _get_zone_at_distance(dist_curr)
 		
+		# Debug zonas
+		# if k % 50 == 0: print("   [DEBUG] Punto %d: Dist %d -> Zona %d" % [k, dist_curr, zone_curr])
+		
 		if zone_curr != current_zone:
 			# Corte exacto en frontera
 			var boundary_radius = _get_boundary_radius(current_zone, zone_curr)
@@ -355,6 +392,44 @@ func _split_and_draw_path(container: Node, points: PackedVector2Array, textures:
 			segment_points.append(p_curr)
 	
 	_draw_path_segment_with_biome(container, segment_points, current_zone, textures)
+
+func _draw_path_segment_with_biome(container: Node, points: PackedVector2Array, zone: int, textures: Dictionary) -> void:
+	if points.size() < 2: return
+	
+	# Determinar textura correcta
+	var biome_name = selected_biomes.get(zone, "Grassland")
+	var tex = textures.get(biome_name, textures.get("Grassland"))
+	
+	# Si no hay textura, usar fallback visual (Magenta) en lugar de abortar
+	if not tex: 
+		push_warning("⚠️ [ArenaManager] Usando textura fallback (Magenta) para zona %d" % zone)
+		var img = Image.create_empty(64, 64, false, Image.FORMAT_RGBA8)
+		img.fill(Color.MAGENTA)
+		tex = ImageTexture.create_from_image(img)
+	
+	var line = Line2D.new()
+	line.width = rng.randf_range(350.0, 420.0) 
+	line.texture_mode = Line2D.LINE_TEXTURE_STRETCH 
+	line.joint_mode = Line2D.LINE_JOINT_ROUND
+	# Usar CAP_NONE para que el corte en los límites de zona sea exacto y no "sangre"
+	line.begin_cap_mode = Line2D.LINE_CAP_NONE
+	line.end_cap_mode = Line2D.LINE_CAP_NONE
+	line.antialiased = true
+	line.points = points
+
+	
+	var shader = load("res://assets/shaders/path_world_uv.gdshader")
+	var mat = ShaderMaterial.new()
+	mat.shader = shader
+	mat.set_shader_parameter("texture_albedo", tex)
+	mat.set_shader_parameter("texture_scale", Vector2(0.002, 0.002)) 
+	
+	line.material = mat
+	# YA NO USAMOS MODULATE (TINTES)
+	# Como tenemos texturas reales, dejamos el color en blanco puro.
+	line.modulate = Color(1, 1, 1, 1) 
+
+	container.add_child(line)
 
 func _get_boundary_radius(zone_a: int, zone_b: int) -> float:
 	# Devuelve el radio frontera entre dos zonas. 
@@ -423,36 +498,6 @@ func update_fog_radius(new_radius: float) -> void:
 			new_radius,
 			2.0 # Duración transición
 		).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-
-func _draw_path_segment_with_biome(container: Node, points: PackedVector2Array, zone: int, textures: Dictionary) -> void:
-	if points.size() < 2: return
-	
-	# Determinar textura correcta
-	var biome_name = selected_biomes.get(zone, "Grassland")
-	var tex = textures.get(biome_name, textures.get("Grassland"))
-	
-	if not tex: return # Si falla todo, no dibujamos
-	
-	var line = Line2D.new()
-	line.width = rng.randf_range(350.0, 420.0) 
-	line.texture_mode = Line2D.LINE_TEXTURE_STRETCH 
-	line.joint_mode = Line2D.LINE_JOINT_ROUND
-	line.end_cap_mode = Line2D.LINE_CAP_ROUND
-	line.antialiased = true
-	line.points = points
-	
-	var shader = load("res://assets/shaders/path_world_uv.gdshader")
-	var mat = ShaderMaterial.new()
-	mat.shader = shader
-	mat.set_shader_parameter("texture_albedo", tex)
-	mat.set_shader_parameter("texture_scale", Vector2(0.002, 0.002)) 
-	
-	line.material = mat
-	# YA NO USAMOS MODULATE (TINTES)
-	# Como tenemos texturas reales, dejamos el color en blanco puro.
-	line.modulate = Color(1, 1, 1, 1) 
-		
-	container.add_child(line)
 
 # Función _create_quad_mesh eliminada por no usarse
 
@@ -705,7 +750,7 @@ func _add_animated_decorations(zone_node: Node2D, radius: float, zone_type: Zone
 		decor_node.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		
 		decor_node.position = pos
-		decor_node.z_index = 10  # Por ENCIMA de las texturas base (-100)
+		decor_node.z_index = 50  # Por ENCIMA de las texturas base (-100) y caminos (-90)
 		
 		# Escala variable basada en el tamaño del player
 		# Player: 500px × 0.25 = 125px visual
@@ -1143,6 +1188,16 @@ func unlock_zone(zone_type: ZoneType) -> void:
 		return  # Ya desbloqueada
 	
 	unlocked_zones[zone_type] = true
+	
+	# Calcular nueva visibilidad de niebla
+	var new_fog_radius = safe_zone_radius
+	match zone_type:
+		ZoneType.MEDIUM: new_fog_radius = medium_zone_radius + 500.0
+		ZoneType.DANGER: new_fog_radius = danger_zone_radius + 500.0
+		ZoneType.DEATH: new_fog_radius = arena_radius + 500.0
+	
+	# Actualizar niebla of war
+	update_fog_radius(new_fog_radius)
 	
 	# Eliminar barrera física
 	if zone_barriers.has(zone_type):
