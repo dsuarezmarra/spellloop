@@ -107,7 +107,8 @@ signal zone_unlocked(zone_type: int, zone_name: String)
 var biome_textures: Dictionary = {}  # biome_name -> {base: Texture, decor: [Texture]}
 
 # Nodos visuales
-var zone_sprites: Array[Node2D] = []
+# Nodos visuales
+var zone_nodes: Dictionary = {} # ZoneType -> Node2D
 var boundary_node: Node2D = null
 
 func _ready() -> void:
@@ -240,17 +241,18 @@ func _generate_arena() -> void:
 	zones_container.z_index = -100  # Muy atrás
 	arena_root.add_child(zones_container)
 	
-	# Generar zonas de afuera hacia adentro (para que las interiores se dibujen encima)
-	_create_zone(zones_container, ZoneType.DEATH, arena_radius)
-	_create_zone(zones_container, ZoneType.DANGER, danger_zone_radius)
-	_create_zone(zones_container, ZoneType.MEDIUM, medium_zone_radius)
+	# Generar zonas de ADENTRO hacia AFUERA (Safe primero, Death al final)
+	# Esto permite que las zonas exteriores "tapen" los bordes feos de las interiores
 	_create_zone(zones_container, ZoneType.SAFE, safe_zone_radius)
+	_create_zone(zones_container, ZoneType.MEDIUM, medium_zone_radius)
+	_create_zone(zones_container, ZoneType.DANGER, danger_zone_radius)
+	_create_zone(zones_container, ZoneType.DEATH, arena_radius)
 
-	# Generar caminos procedurales (encima del suelo, debajo de decoraciones)
-	_generate_paths(arena_root)
+	# Generar caminos procedurales (ahora se añaden como hijos de cada zona)
+	_generate_paths(zones_container)
 	
-	# Fog of War: Inicialmente solo visible hasta el borde de la zona segura + un poco
-	_create_fog_of_war(zones_container, safe_zone_radius + 500.0)
+	# Fog of War: Inicialmente visible hasta el borde de SAFE
+	_create_fog_of_war(zones_container, safe_zone_radius)
 
 func _generate_paths(parent: Node2D) -> void:
 	"""Generar caminos procedurales que radian desde el centro y se dividen por zonas"""
@@ -561,7 +563,7 @@ func _create_zone(parent: Node2D, zone_type: ZoneType, radius: float) -> void:
 	var zone_node = Node2D.new()
 	zone_node.name = "Zone_%s" % ZoneType.keys()[zone_type]
 	parent.add_child(zone_node)
-	zone_sprites.append(zone_node)
+	zone_nodes[zone_type] = zone_node
 	
 	# Radio interior (para calcular área del anillo)
 	var inner_radius = _get_inner_radius(zone_type)
