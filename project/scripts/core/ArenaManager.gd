@@ -250,115 +250,154 @@ func _generate_arena() -> void:
 	_generate_paths(zones_container)
 
 func _generate_paths(parent: Node2D) -> void:
-	"""Generar caminos procedurales que radian desde el centro"""
-	# Usar CanvasGroup para que las intersecciones de caminos semi-transparentes
-	# no se sumen (doble opacidad), sino que se mezclen como una sola capa.
-	var path_container = CanvasGroup.new()
+	"""Generar caminos procedurales que radian desde el centro y se dividen por zonas"""
+	# Usar Node2D simple para evitar problemas con shaders en CanvasGroup
+	var path_container = Node2D.new()
 	path_container.name = "Paths"
-	path_container.z_index = -90 # Encima de zonas (-100), debajo de decoraciones (-99)
-	# Configurar el material del CanvasGroup si fuera necesario, pero por defecto
-	# ya hace el blending correcto de sus hijos.
-	
+	path_container.z_index = -90 
 	parent.add_child(path_container)
 	
-	# Configurar ruido para curvas naturales
+	# Configurar ruido
 	var noise = FastNoiseLite.new()
 	noise.seed = arena_seed
-	noise.frequency = 0.001 # Frecuencia más baja = curvas más largas y suaves
+	noise.frequency = 0.001 
 	noise.fractal_octaves = 2
 	
-	# Cargar textura del camino según bioma principal (Safe/Medium/etc)
-	var path_texture: Texture2D = null
+	# Cargar textura base (Dirt) usando el cargador estándar
+	# El shader World-Space se encarga del tiling, no necesitamos rotar ni estirar manualmente.
+	var path_texture_default = load("res://assets/textures/paths/path_dirt.png")
+	if not path_texture_default:
+		push_error("No se pudo cargar la textura path_dirt.png")
 	
-	# Función local para cargar y rotar (Line2D necesita orientación horizontal)
-	var _load_rotated = func(path: String) -> Texture2D:
-		if not FileAccess.file_exists(path): return null
-		var img = Image.new()
-		var err = img.load(path)
-		if err != OK: return null
-		
-		# 1. Rotar: Las texturas generadas son verticales, Line2D pide horizontales (X = largo)
-		img.rotate_90(CLOCKWISE) 
-		
-		# 2. Estirar: Para evitar el efecto "acordeón", forzamos un ancho grande (2048)
-		# manteniendo el alto original. Esto reduce la frecuencia de repetición.
-		var original_size = img.get_size()
-		var new_width = 2048 
-		var new_height = original_size.y
-		img.resize(new_width, new_height, Image.INTERPOLATE_CUBIC)
-		
-		return ImageTexture.create_from_image(img)
-	
-	path_texture = _load_rotated.call("res://assets/textures/paths/path_dirt.png")
-	
-	# TODO: Lógica para elegir textura según bioma predominante si generamos más
-	var safe_biome = selected_biomes[ZoneType.SAFE]
-	if safe_biome in ["Grassland", "Forest"]:
-		path_texture = _load_rotated.call("res://assets/textures/paths/path_dirt.png")
-	
-	# Cantidad de caminos principales y secundarios
+	# Cantidad de caminos principales
 	var main_paths = rng.randi_range(3, 5)
 	
 	for i in range(main_paths):
-		# Ángulo base distribuido uniformemente + variación
 		var angle_step = TAU / main_paths
 		var base_angle = (i * angle_step) + rng.randf_range(-0.5, 0.5)
 		
-		# Crear Line2D
-		var line = Line2D.new()
-		# Ajustar ancho para que coincida mejor con la textura (evitar estiramiento vertical excesivo)
-		line.width = rng.randf_range(280.0, 320.0) 
-		line.texture_mode = Line2D.LINE_TEXTURE_TILE
-		line.joint_mode = Line2D.LINE_JOINT_ROUND
-		line.end_cap_mode = Line2D.LINE_CAP_ROUND
-		line.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
-		line.antialiased = true
+		# 1. Generar geometría completa
+		var full_points = _generate_path_geometry(base_angle, noise, i)
 		
-		# Usar la textura nativa con el estiramiento aplicado en la carga
-		if path_texture:
-			line.texture = path_texture
-			line.default_color = Color(1, 1, 1, 1) # Opaco
+		# 2. Dibujar troceada por zonas
+		if full_points.size() > 1:
+			_split_and_draw_path(path_container, full_points, path_texture_default)
+			
+			# Ramificaciones
+			if rng.randf() > 0.4:
+				_create_branch_path(path_container, full_points, noise, i)
+
+
+
+func _generate_path_geometry(base_angle: float, noise: FastNoiseLite, seed_idx: int) -> PackedVector2Array:
+	var points = []
+	var current_pos = Vector2.ZERO
+	var current_dist = 0.0
+	var max_dist = arena_radius * 1.1 
+	points.append(Vector2.ZERO)
+	
+	while current_dist < max_dist:
+		current_dist += 40.0 
+		var noise_val = noise.get_noise_2d(current_dist, seed_idx * 500.0)
+		var angle_offset = noise_val * 0.6 
+		var current_angle = base_angle + angle_offset
+		current_pos = Vector2(cos(current_angle), sin(current_angle)) * current_dist
+		points.append(current_pos)
+		
+	var curve = Curve2D.new()
+	for p in points: curve.add_point(p)
+	return curve.tessellate(3, 8)
+
+func _split_and_draw_path(container: Node, points: PackedVector2Array, default_texture: Texture2D) -> void:
+	if points.size() < 2: return
+	
+	var current_zone = _get_zone_at_distance(points[0].length())
+	var segment_points = PackedVector2Array([points[0]])
+	
+	for k in range(1, points.size()):
+		var p = points[k]
+		var dist = p.length()
+		var zone = _get_zone_at_distance(dist)
+		
+		if zone != current_zone:
+			segment_points.append(p)
+			_draw_path_segment(container, segment_points, current_zone, default_texture)
+			current_zone = zone
+			segment_points = PackedVector2Array([p])
 		else:
-			line.default_color = Color(0.15, 0.12, 0.1, 0.4) # Fallback
+			segment_points.append(p)
+	
+	_draw_path_segment(container, segment_points, current_zone, default_texture)
+
+func _draw_path_segment(container: Node, points: PackedVector2Array, zone: int, default_tex: Texture2D) -> void:
+	if points.size() < 2: return
+	
+	# === TÉCNICA DE WORLD-SPACE UV (Shader) ===
+	# Usamos Line2D para la geometría suave, pero la textura se mapea
+	# usando coordenadas mundiales en el shader.
+	# Resultado: Cero distorsión en curvas, textura continua perfecta.
+	
+	var line = Line2D.new()
+	# Ancho generoso para que el degradado de bordes se vea bien
+	line.width = rng.randf_range(350.0, 420.0) 
+	line.texture_mode = Line2D.LINE_TEXTURE_STRETCH # El modo da igual, el shader lo ignora
+	line.joint_mode = Line2D.LINE_JOINT_ROUND
+	line.end_cap_mode = Line2D.LINE_CAP_ROUND
+	line.antialiased = true
+	line.points = points
+	
+	# Cargar shader World Space
+	var shader = load("res://assets/shaders/path_world_uv.gdshader")
+	var mat = ShaderMaterial.new()
+	mat.shader = shader
+	mat.set_shader_parameter("texture_albedo", default_tex)
+	# Aumentar escala para ver la repetición claramente (1 repetición cada ~200px)
+	mat.set_shader_parameter("texture_scale", Vector2(0.005, 0.005)) 
+	
+	if default_tex == null:
+		push_error("TEXTURA NULL en _draw_path_segment")
+		line.default_color = Color(1, 0, 0, 1) # Rojo error
+	
+	line.material = mat
+	
+	# Tintes por bioma
+	var biome_name = selected_biomes.get(zone, "Grassland")
+	match biome_name:
+		"Snow": line.modulate = Color(0.8, 0.9, 1.0, 1.0)
+		"Lava": line.modulate = Color(0.5, 0.2, 0.2, 1.0)
+		"Desert": line.modulate = Color(1.0, 0.9, 0.6, 1.0)
+		"ArcaneWastes": line.modulate = Color(0.6, 0.4, 0.8, 1.0)
+		_: line.modulate = Color(1, 1, 1, 1) # Dirt/Default
 		
-		# Generar puntos del camino
-		var current_pos = Vector2.ZERO
-		var current_dist = 0.0
-		var max_dist = arena_radius * 1.1 # Salirse un poco del mapa
-		var points = []
-		
-		# Puntos iniciales
-		points.append(Vector2.ZERO)
-		
-		while current_dist < max_dist:
-			# Avanzar tramos más largos para evitar zig-zag
-			current_dist += 150.0 
-			
-			# Calcular desviación usando ruido
-			# Frecuencia MUY baja para curvas suaves (tipo río/carretera)
-			var noise_val = noise.get_noise_2d(current_dist, i * 500.0)
-			var angle_offset = noise_val * 0.5 # Ángulo suave
-			
-			var current_angle = base_angle + angle_offset
-			current_pos = Vector2(cos(current_angle), sin(current_angle)) * current_dist
-			points.append(current_pos)
-			
-		# suavizar el camino usando Curve2D
-		var curve = Curve2D.new()
-		for p in points:
-			curve.add_point(p)
-		
-		# Tessellate con tolerancia MUY baja (2) para máxima suavidad en curvas
-		line.points = curve.tessellate(3, 8) # Mayor recursividad (8) y menor tolerancia (3)
-		
-		# Añadir borde difuminado (opcional, requiere textura de gradiente o shader)
-		# Por ahora usamos color plano con alpha bajo para blend
-		
-		path_container.add_child(line)
-		
-		# Ramificaciones (Branching)
-		if rng.randf() > 0.4:
-			_create_branch_path(path_container, line.points, noise, i)
+	container.add_child(line)
+
+# Función _create_quad_mesh eliminada por no usarse
+
+func _create_branch_path(container: Node2D, parent_points: PackedVector2Array, noise: FastNoiseLite, seed_offset: int) -> void:
+	if parent_points.size() < 20: return
+	var start_idx = rng.randi_range(parent_points.size() / 4, parent_points.size() / 2)
+	var start_pos = parent_points[start_idx]
+	
+	var branch_points = []
+	var current_pos = start_pos
+	var current_dist = start_pos.length()
+	var branch_angle = start_pos.angle() + (rng.randf_range(0.5, 1.0) * (1 if rng.randf() > 0.5 else -1))
+	branch_points.append(start_pos)
+	
+	for j in range(30): 
+		current_dist += 60.0 
+		var noise_val = noise.get_noise_2d(current_dist, seed_offset + 999)
+		var angle = branch_angle + (noise_val * 0.5)
+		current_pos += Vector2(cos(angle), sin(angle)) * 60.0
+		branch_points.append(current_pos)
+	
+	var curve = Curve2D.new()
+	for p in branch_points: curve.add_point(p)
+	var smoothed = curve.tessellate(3, 8)
+	
+	# Usar textura default estándar
+	var tex = load("res://assets/textures/paths/path_dirt.png")
+	_split_and_draw_path(container, smoothed, tex)
 
 
 
@@ -386,7 +425,8 @@ func _create_zone(parent: Node2D, zone_type: ZoneType, radius: float) -> void:
 		_create_colored_zone(zone_node, biome_name, radius, inner_radius)
 	
 	# Añadir decals de suelo (detalles estáticos planos)
-	_generate_ground_decals(zone_node, radius, inner_radius, zone_type)
+	# Desactivado temporalmente por feedback visual (manchas negras)
+	# _generate_ground_decals(zone_node, radius, inner_radius, zone_type)
 
 	# Añadir decoraciones (reducidas para mejor rendimiento)
 	_add_animated_decorations(zone_node, radius, zone_type)
