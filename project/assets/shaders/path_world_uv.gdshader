@@ -20,12 +20,12 @@ void fragment() {
 	// 1. Muestrear textura usando coordenadas MUNDIALES
 	// Esto hace que la textura sea estática (como un suelo real) y el camino
 	// solo actúa como una "máscara" que la revela. Cero distorsión en curvas.
-	// Mezclar dos muestras de la textura (0° y 90°) para romper la direccionalidad
-	// Esto convierte una textura de "franjas" en una de "ruido/tierra" genérica.
-	vec2 uv = world_pos * texture_scale;
-	vec4 col1 = texture(texture_albedo, uv);
-	vec4 col2 = texture(texture_albedo, vec2(uv.y, -uv.x)); // Rotada 90 grados
-	vec4 col = mix(col1, col2, 0.5);
+	// Rotar UVs 45 grados para evitar alineación con la retícula de píxeles
+	float angle = 0.785398;
+	mat2 rot = mat2(vec2(cos(angle), -sin(angle)), vec2(sin(angle), cos(angle)));
+	vec2 uv = (rot * world_pos) * texture_scale;
+	
+	vec4 col = texture(texture_albedo, uv);
 	
 	// 2. Calcular alpha basado en el ancho de la línea (UV.y)
 	// UV.y va de 0 a 1 a lo ancho de la Line2D. 0.5 es el centro.

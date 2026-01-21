@@ -351,8 +351,7 @@ func _draw_path_segment(container: Node, points: PackedVector2Array, zone: int, 
 	var mat = ShaderMaterial.new()
 	mat.shader = shader
 	mat.set_shader_parameter("texture_albedo", default_tex)
-	# Aumentar escala para ver la repetición claramente (1 repetición cada ~200px)
-	mat.set_shader_parameter("texture_scale", Vector2(0.005, 0.005)) 
+	mat.set_shader_parameter("texture_scale", Vector2(0.002, 0.002)) 
 	
 	if default_tex == null:
 		push_error("TEXTURA NULL en _draw_path_segment")
