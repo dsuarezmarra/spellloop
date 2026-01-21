@@ -128,16 +128,17 @@ func initialize(attack_mgr: AttackManager, stats: PlayerStats) -> void:
 
 func _sync_counts_from_player_stats() -> void:
 	"""Sincronizar reroll/banish counts con PlayerStats"""
-	if player_stats and "current_rerolls" in player_stats:
-		# USAR VALORES PERSISTENTES (Fix bug de reset)
-		reroll_count = player_stats.current_rerolls
-		banish_count = player_stats.current_banishes
-	elif player_stats and player_stats.has_method("get_stat"):
-		# Fallback legacy
-		var extra_rerolls = int(player_stats.get_stat("reroll_count"))
-		var extra_banishes = int(player_stats.get_stat("banish_count"))
-		reroll_count = 2 + extra_rerolls
-		banish_count = 2 + extra_banishes
+	if player_stats:
+		# SIEMPRE usar los contadores persistentes de PlayerStats
+		# Esto evita que se reseteen al subir de nivel varias veces
+		if "current_rerolls" in player_stats:
+			reroll_count = player_stats.current_rerolls
+		
+		if "current_banishes" in player_stats:
+			banish_count = player_stats.current_banishes
+			
+		# Debug
+		# print("[LevelUpPanel] Sincronizado: Rerolls=%d, Banishes=%d" % [reroll_count, banish_count])
 
 func _get_max_options() -> int:
 	"""Obtener número máximo de opciones (base + mejoras)"""
@@ -235,6 +236,20 @@ func _create_ui() -> void:
 	nav_help.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(nav_help)
 
+func _parse_rarity(value) -> int:
+	if value is int:
+		return value
+	if value is float:
+		return int(value)
+	if value is String:
+		match value.to_lower():
+			"common": return 1
+			"uncommon": return 2
+			"rare": return 3
+			"epic": return 4
+			"legendary": return 5
+	return 1
+
 func _create_option_panel(index: int) -> Control:
 	var panel = PanelContainer.new()
 	panel.custom_minimum_size = Vector2(230, 320)
@@ -242,7 +257,8 @@ func _create_option_panel(index: int) -> Control:
 	
 	# Obtener datos de la opción (si existen, si no usar defaults)
 	var option = options[index] if index < options.size() else {}
-	var rarity = option.get("rarity", 1)  # 1-based tier
+	var raw_rarity = option.get("rarity", 1)
+	var rarity = _parse_rarity(raw_rarity)  # 1-based tier (Robust conversion)
 	var type = option.get("type", "upgrade")
 	var is_weapon = (type == "new_weapon" or type == "weapon" or type == "fusion")
 	

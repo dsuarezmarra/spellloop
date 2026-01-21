@@ -461,9 +461,9 @@ func _draw_path_segment_with_biome(container: Node, points: PackedVector2Array, 
 	line.material = mat
 	line.texture_mode = Line2D.LINE_TEXTURE_STRETCH 
 	
-	# Usar CAP_NONE para que el corte en los límites de zona sea exacto
-	line.begin_cap_mode = Line2D.LINE_CAP_NONE
-	line.end_cap_mode = Line2D.LINE_CAP_NONE
+	# Usar CAP_ROUND para que los segmentos se unan visualmente sin cortes
+	line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	line.end_cap_mode = Line2D.LINE_CAP_ROUND
 	line.antialiased = true
 	line.points = points
 		
