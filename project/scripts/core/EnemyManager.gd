@@ -784,8 +784,8 @@ func from_save_data(data: Dictionary) -> void:
 # SISTEMA DE DESPAWN/RESPAWN PARA RENDIMIENTO
 # ═══════════════════════════════════════════════════════════════════════════════
 
-const DESPAWN_DISTANCE: float = 1000.0  # Distancia a la que los enemigos hacen despawn
-const DESPAWN_CHECK_INTERVAL: float = 0.5  # Frecuencia de chequeo (segundos)
+const DESPAWN_DISTANCE: float = 850.0  # Reducido para ser más agresivo (era 1000)
+const DESPAWN_CHECK_INTERVAL: float = 0.2  # Más frecuente (era 0.5)
 var despawn_check_timer: float = 0.0
 
 func _process_enemy_despawn(delta: float) -> void:
@@ -813,7 +813,10 @@ func _process_enemy_despawn(delta: float) -> void:
 		if enemy.get("is_boss") or enemy.get("is_elite"):
 			continue
 		
+		# Calcular distancia
 		var dist = enemy.global_position.distance_to(player_pos)
+		
+		# Si está muy lejos, reciclar
 		if dist > DESPAWN_DISTANCE:
 			enemies_to_respawn.append(enemy)
 	
@@ -826,14 +829,36 @@ func _respawn_enemy_near_player(enemy: Node2D) -> void:
 	if not is_instance_valid(enemy) or not player:
 		return
 	
-	# Calcular nueva posición de spawn (500-700 px del jugador)
-	var angle = randf() * TAU
-	var distance = randf_range(500.0, 700.0)
-	var new_pos = player.global_position + Vector2.from_angle(angle) * distance
+	var arena_manager = _get_arena_manager()
+	var new_pos = Vector2.ZERO
+	var valid_pos = false
 	
-	# Teletransportar enemigo
-	enemy.global_position = new_pos
+	# Intentar encontrar una posición válida (desbloqueada)
+	for i in range(5):
+		var angle = randf() * TAU
+		# Aparecer JUSTO fuera de la pantalla (aprox 600-800)
+		var distance = randf_range(600.0, 800.0)
+		var candidate = player.global_position + Vector2.from_angle(angle) * distance
+		
+		if arena_manager:
+			# Verificar si la zona está desbloqueada
+			var zone = arena_manager.get_zone_at_position(candidate)
+			if arena_manager.is_zone_unlocked(zone):
+				new_pos = candidate
+				valid_pos = true
+				break
+		else:
+			new_pos = candidate
+			valid_pos = true
+			break
 	
-	# Resetear navegación si tiene
-	if enemy.has_method("reset_navigation"):
-		enemy.reset_navigation()
+	if valid_pos:
+		# Teletransportar enemigo
+		enemy.global_position = new_pos
+		
+		# Resetear navegación si tiene
+		if enemy.has_method("reset_navigation"):
+			enemy.reset_navigation()
+	else:
+		# Si no encontramos lugar válido, matarlo para que el spawner cree uno nuevo limpio
+		enemy.queue_free()

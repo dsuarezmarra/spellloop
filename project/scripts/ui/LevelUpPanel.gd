@@ -246,10 +246,25 @@ func _create_option_panel(index: int) -> Control:
 	var type = option.get("type", "upgrade")
 	var is_weapon = (type == "new_weapon" or type == "weapon" or type == "fusion")
 	
-	# Estilo base
-	var style = UIVisualHelper.get_panel_style(rarity, false, is_weapon)
+	# ESTILO FINAL DIRECTO (Solicitud Usuario: Tarjetas de color)
+	var style = StyleBoxFlat.new()
+	var tier_color = TIER_COLORS.get(rarity, TIER_COLORS[1])
+	
+	# Fondo: Color del tier con transparencia (0.5 para que se note bien)
+	style.bg_color = Color(tier_color.r, tier_color.g, tier_color.b, 0.5)
+	
+	# Borde: Color del tier sólido
+	style.border_color = tier_color
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	
+	# Ajuste para armas (más intenso)
+	if is_weapon:
+		style.bg_color.a = 0.6
+		style.set_border_width_all(4)
+	
 	panel.add_theme_stylebox_override("panel", style)
-	_option_styles.append(style) # Guardar referencia
+	_option_styles.append(style)
 	
 	# Glow si es arma
 	if is_weapon:

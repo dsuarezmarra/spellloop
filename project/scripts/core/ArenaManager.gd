@@ -239,7 +239,7 @@ func _generate_arena() -> void:
 	# Crear contenedor para zonas
 	var zones_container = Node2D.new()
 	zones_container.name = "ArenaZones"
-	zones_container.z_index = -100  # Muy atrás
+	zones_container.z_index = 0 # DEJAMOS que cada zona maneje su Z negativo
 	arena_root.add_child(zones_container)
 	
 	# Generar zonas de ADENTRO hacia AFUERA (Safe primero, Death al final)
@@ -330,9 +330,12 @@ func _generate_paths(parent: Node2D) -> void:
 		# 1. Generar geometría completa
 		var full_points = _generate_path_geometry(base_angle, noise, i)
 		
+		# Calcular ancho CONSISTENTE para todo este camino
+		var path_width = rng.randf_range(350.0, 420.0)
+		
 		# 2. Dibujar troceada por zonas
 		if full_points.size() > 1:
-			_split_and_draw_path(path_container, full_points, path_textures)
+			_split_and_draw_path(path_container, full_points, path_textures, path_width)
 			
 			# Ramificaciones
 			if rng.randf() > 0.4:
@@ -359,7 +362,7 @@ func _generate_path_geometry(base_angle: float, noise: FastNoiseLite, seed_idx: 
 	for p in points: curve.add_point(p)
 	return curve.tessellate(3, 8)
 
-func _split_and_draw_path(container: Node, points: PackedVector2Array, textures: Dictionary) -> void:
+func _split_and_draw_path(container: Node, points: PackedVector2Array, textures: Dictionary, width: float) -> void:
 	if points.size() < 2: return
 	
 	var current_zone = _get_zone_at_distance(points[0].length())
@@ -377,34 +380,30 @@ func _split_and_draw_path(container: Node, points: PackedVector2Array, textures:
 			var intersection = _find_circle_segment_intersection(p_prev, p_curr, boundary_radius)
 			
 			if intersection != Vector2.INF:
-				# Tweak: Extender el punto de intersección un poco hacia afuera (20px)
-				# Esto asegura que el camino se meta DEBAJO del suelo de la siguiente zona (Z-Sandwich)
-				var direction = (intersection - Vector2.ZERO).normalized()
-				var extended_intersection = intersection + (direction * 50.0) # Aumentar a 50px para asegurar
+				# Corte exacto en frontera
+				# Eliminamos cualquier extensión para evitar superposiciones visuales
+				segment_points.append(intersection)
 				
-				segment_points.append(extended_intersection)
+				# Este segmento pertenece a la zona ANTERIOR
+				# Se dibujará con el Z-index negativo correcto (-390, -290, etc)
+				_draw_path_segment_with_biome(container, segment_points, current_zone, textures, width)
 				
-				# CRITICAL FIX: Este segmento pertenece a la zona ANTERIOR (current_zone)
-				# Al dibujarse con Z=1 en Zone_INNER, y Zone_OUTER tener Z=100 overlay,
-				# el trozo extendido quedará Oculto.
-				_draw_path_segment_with_biome(container, segment_points, current_zone, textures)
-				
-				# El siguiente segmento empieza en la INTERSECCIÓN REAL (no extendida)
-				# y pertenece a la NUEVA ZONA.
+				# El siguiente segmento empieza en la INTERSECCIÓN REAL
+				# (La zona nueva empieza limpia en el borde)
 				current_zone = zone_curr
 				segment_points = PackedVector2Array([intersection])
 				segment_points.append(p_curr)
 			else:
 				segment_points.append(p_curr)
-				_draw_path_segment_with_biome(container, segment_points, current_zone, textures)
+				_draw_path_segment_with_biome(container, segment_points, current_zone, textures, width)
 				current_zone = zone_curr
 				segment_points = PackedVector2Array([p_curr])
 		else:
 			segment_points.append(p_curr)
 	
-	_draw_path_segment_with_biome(container, segment_points, current_zone, textures)
+	_draw_path_segment_with_biome(container, segment_points, current_zone, textures, width)
 
-func _draw_path_segment_with_biome(container: Node, points: PackedVector2Array, zone: int, textures: Dictionary) -> void:
+func _draw_path_segment_with_biome(container: Node, points: PackedVector2Array, zone: int, textures: Dictionary, width: float) -> void:
 	if points.size() < 2: return
 	
 	# Determinar textura correcta
@@ -419,7 +418,7 @@ func _draw_path_segment_with_biome(container: Node, points: PackedVector2Array, 
 		tex = ImageTexture.create_from_image(img)
 	
 	var line = Line2D.new()
-	line.width = rng.randf_range(350.0, 420.0) 
+	line.width = width 
 	# Debug para ver por qué sale marrón en el desierto
 	# print("🖌️ [SEGMENT] Zone: %d | Biome: %s | Texture: %s" % [zone, biome_name, "FOUND" if textures.has(biome_name) else "MISSING"])
 	
@@ -429,6 +428,35 @@ func _draw_path_segment_with_biome(container: Node, points: PackedVector2Array, 
 	mat.shader = shader
 	mat.set_shader_parameter("texture_albedo", tex)
 	mat.set_shader_parameter("texture_scale", Vector2(0.002, 0.002)) 
+	
+	# Calcular límites exactos para el clipping
+	var clip_min = 0.0
+	var clip_max = 100000.0 # Default gigante
+	
+	# IMPORTANTE: Para que el "Z-Sandwich" funcione, la capa de abajo (Inner)
+	# debe poder dibujarse un poco más allá de su límite (geometry extended 50px).
+	# Por eso añadimos un margen (+200) al clip_max, para no cortar la extensión con el shader.
+	# El suelo de la siguiente capa (que está encima en Z) se encargará de taparlo visualmente.
+	
+	var margin = 200.0
+	
+	match zone:
+		ZoneType.SAFE:
+			clip_min = 0.0
+			clip_max = safe_zone_radius + margin
+		ZoneType.MEDIUM:
+			clip_min = safe_zone_radius
+			clip_max = medium_zone_radius + margin
+		ZoneType.DANGER:
+			clip_min = medium_zone_radius
+			clip_max = danger_zone_radius + margin
+		ZoneType.DEATH:
+			clip_min = danger_zone_radius
+			clip_max = arena_radius + margin
+	
+	# Pasar uniforms al shader (sin ajustes de 2.0px, EXACTOS para match perfecto)
+	mat.set_shader_parameter("min_radius", clip_min)
+	mat.set_shader_parameter("max_radius", clip_max)
 	
 	line.material = mat
 	line.texture_mode = Line2D.LINE_TEXTURE_STRETCH 
@@ -565,8 +593,11 @@ func _create_branch_path(container: Node2D, parent_points: PackedVector2Array, n
 	for p in branch_points: curve.add_point(p)
 	var smoothed = curve.tessellate(3, 8)
 	
+	# Ancho consistente para la rama (más fino que el principal)
+	var branch_width = rng.randf_range(200.0, 300.0)
+	
 	# Usar texturas pasadas por argumento
-	_split_and_draw_path(container, smoothed, textures)
+	_split_and_draw_path(container, smoothed, textures, branch_width)
 
 
 
@@ -580,11 +611,16 @@ func _create_zone(parent: Node2D, zone_type: ZoneType, radius: float) -> void:
 	var zone_node = Node2D.new()
 	zone_node.name = "Zone_%s" % ZoneType.keys()[zone_type]
 	
-	# SANDWICH Z-INDEX STRATEGY:
-	# Cada zona debe dibujarse ENCIMA de la anterior para cubrir los cortes de camino.
-	# Safe(0) -> Z=0, Medium(1) -> Z=100, Danger(2) -> Z=200, Death(3) -> Z=300.
-	# Global Z será: zones_container(-100) + (zone_type * 100).
-	zone_node.z_index = int(zone_type) * 100 
+	# SANDWICH Z-INDEX STRATEGY (NEGATIVE STACK):
+	# Queremos que las zonas EXTERIORES cubran a las INTERIORES, pero TODO debajo de Enemigos (Z=0).
+	# Safe(0)   -> Ground -400
+	# Medium(1) -> Ground -300 (Cubre a Safe Path -390)
+	# Danger(2) -> Ground -200 (Cubre a Medium Path -290)
+	# Death(3)  -> Ground -100 (Cubre a Danger Path -190)
+	
+	# Global Z será: 
+	var base_z = -400 + (int(zone_type) * 100)
+	zone_node.z_index = base_z
 	
 	parent.add_child(zone_node)
 	zone_nodes[zone_type] = zone_node

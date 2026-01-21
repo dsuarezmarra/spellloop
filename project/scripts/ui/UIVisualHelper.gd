@@ -7,7 +7,8 @@ class_name UIVisualHelper
 
 # Colores por Tier (1-5)
 const TIER_COLORS = {
-	1: Color(0.85, 0.85, 0.9),      # Común (Blanco/Gris)
+	# 1: Color(0.85, 0.85, 0.9),      # ANTES: Común (Blanco/Gris)
+	1: Color(0.4, 0.7, 1.0),        # AHORA: Azul Cielo (Para que se note el color)
 	2: Color(0.2, 0.9, 0.4),        # Poco Común (Verde neón)
 	3: Color(0.1, 0.6, 1.0),        # Raro (Azul eléctrico)
 	4: Color(0.7, 0.2, 1.0),        # Épico (Púrpura)
@@ -46,10 +47,10 @@ static func get_panel_style(tier: int, is_hover: bool = false, is_weapon: bool =
 		style.border_width_right = 4
 		style.border_width_bottom = 4
 	else:
-		# Items normales: Fondo sutil
-		# Mezclar base oscura con un 15% del color del tier
-		style.bg_color = base_bg.lerp(tier_color, 0.15)
-		style.bg_color.a = 0.9
+		# Items normales: Fondo más visible (Solicitud Usuario)
+		# Mezclar base oscura con un 40% del color del tier (era 15%)
+		style.bg_color = base_bg.lerp(tier_color, 0.4)
+		style.bg_color.a = 0.95
 		style.border_width_left = 2
 		style.border_width_top = 2
 		style.border_width_right = 2

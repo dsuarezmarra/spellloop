@@ -9,6 +9,11 @@ uniform float edge_softness : hint_range(0.0, 1.0) = 0.4;
 // Ruido opcional para bordes irregulares
 uniform sampler2D noise_texture : repeat_enable, filter_linear;
 
+// Radio mínimo (para hacer clip en zonas interiores)
+uniform float min_radius = 0.0;
+// Radio máximo (para hacer clip en zonas exteriores)
+uniform float max_radius = 100000.0;
+
 varying vec2 world_pos;
 
 void vertex() {
@@ -33,6 +38,14 @@ void fragment() {
 	
 	// 3. Aplicar suavizado en los bordes
 	float alpha = 1.0 - smoothstep(1.0 - edge_softness, 1.0, dist_from_center);
+	
+	// 4. CLIPPING CIRCULAR (Standard)
+	// Usamos discard para asegurar corte limpio y evitar problemas de alpha/blending
+	float dist_to_center = length(world_pos);
+	
+	if (dist_to_center < min_radius || dist_to_center > max_radius) {
+		discard;
+	}
 	
 	// Aplicar color y transparencia
 	COLOR = col * COLOR;
