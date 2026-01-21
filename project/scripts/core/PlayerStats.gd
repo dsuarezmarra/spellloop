@@ -1932,30 +1932,29 @@ func would_upgrade_be_useful(upgrade: Dictionary) -> bool:
 	
 	return false  # Todos los efectos afectan stats al cap
 
- 
- #   â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "   
- #   C O N S U M I B L E S   ( R e r o l l   /   B a n i s h )  
- #   â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "  â "   
-  
- f u n c   c o n s u m e _ r e r o l l ( )   - >   b o o l :  
- 	 " " " C o n s u m i r   u n   r e r o l l   s i   q u e d a n   d i s p o n i b l e s " " "  
- 	 i f   c u r r e n t _ r e r o l l s   >   0 :  
- 	 	 c u r r e n t _ r e r o l l s   - =   1  
- 	 	 #   p r i n t ( " [ P l a y e r S t a t s ]   R e r o l l   c o n s u m i d o .   Q u e d a n :   % d "   %   c u r r e n t _ r e r o l l s )  
- 	 	 r e t u r n   t r u e  
- 	 r e t u r n   f a l s e  
-  
- f u n c   c o n s u m e _ b a n i s h ( )   - >   b o o l :  
- 	 " " " C o n s u m i r   u n   b a n i s h   s i   q u e d a n   d i s p o n i b l e s " " "  
- 	 i f   c u r r e n t _ b a n i s h e s   >   0 :  
- 	 	 c u r r e n t _ b a n i s h e s   - =   1  
- 	 	 #   p r i n t ( " [ P l a y e r S t a t s ]   B a n i s h   c o n s u m i d o .   Q u e d a n :   % d "   %   c u r r e n t _ b a n i s h e s )  
- 	 	 r e t u r n   t r u e  
- 	 r e t u r n   f a l s e  
-  
- f u n c   a d d _ r e r o l l ( a m o u n t :   i n t   =   1 )   - >   v o i d :  
- 	 c u r r e n t _ r e r o l l s   + =   a m o u n t  
-  
- f u n c   a d d _ b a n i s h ( a m o u n t :   i n t   =   1 )   - >   v o i d :  
- 	 c u r r e n t _ b a n i s h e s   + =   a m o u n t  
- 
+
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# CONSUMIBLES (Reroll / Banish)
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+func consume_reroll() -> bool:
+	"""Consumir un reroll si quedan disponibles"""
+	if current_rerolls > 0:
+		current_rerolls -= 1
+		# print("[PlayerStats] Reroll consumido. Quedan: %d" % current_rerolls)
+		return true
+	return false
+
+func consume_banish() -> bool:
+	"""Consumir un banish si quedan disponibles"""
+	if current_banishes > 0:
+		current_banishes -= 1
+		# print("[PlayerStats] Banish consumido. Quedan: %d" % current_banishes)
+		return true
+	return false
+
+func add_reroll(amount: int = 1) -> void:
+	current_rerolls += amount
+
+func add_banish(amount: int = 1) -> void:
+	current_banishes += amount
