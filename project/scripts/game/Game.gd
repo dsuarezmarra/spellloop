@@ -26,6 +26,7 @@ var pause_menu: Control = null
 var game_over_screen: Control = null
 var damage_vignette: CanvasLayer = null  # Efecto de daño estilo Binding of Isaac
 var chest_spawner: Node = null  # Sistema de spawn de cofres tipo tienda
+var ambient_atmosphere: Node = null # Sistema de partículas ambientales
 
 # Estado del juego
 var game_running: bool = false
@@ -221,6 +222,9 @@ func _create_arena_manager() -> void:
 		# Conectar señales
 		if arena_manager.has_signal("player_zone_changed"):
 			arena_manager.player_zone_changed.connect(_on_player_zone_changed)
+			# Conectar update de atmósfera
+			arena_manager.player_zone_changed.connect(_update_atmosphere_biome)
+			
 		if arena_manager.has_signal("player_hit_boundary"):
 			arena_manager.player_hit_boundary.connect(_on_player_hit_boundary)
 	else:
@@ -362,6 +366,17 @@ func _setup_damage_feedback() -> void:
 		damage_vignette = DamageVignetteScript.new()
 		damage_vignette.name = "DamageVignette"
 		add_child(damage_vignette)
+
+	# Cargar y crear AmbientAtmosphere
+	var atmosphere_script = load("res://scripts/visuals/AmbientAtmosphere.gd")
+	if atmosphere_script:
+		ambient_atmosphere = atmosphere_script.new()
+		ambient_atmosphere.name = "AmbientAtmosphere"
+		add_child(ambient_atmosphere)
+		if player:
+			ambient_atmosphere.initialize(player)
+	else:
+		push_warning("[Game] No se encontró AmbientAtmosphere.gd")
 
 	# Conectar señal de daño del player
 	if player:
@@ -1352,3 +1367,13 @@ func _update_hud_weapons_from_attack_manager(attack_mgr) -> void:
 				weapons_info.append(info)
 	
 	hud.update_weapons(weapons_info)
+
+func _update_atmosphere_biome(zone_id: int, _zone_name: String) -> void:
+	"""Actualizar partículas ambientales cuando cambia la zona"""
+	if not ambient_atmosphere or not arena_manager:
+		return
+		
+	# Obtener nombre del bioma desde ArenaManager
+	if "selected_biomes" in arena_manager:
+		var biome = arena_manager.selected_biomes.get(zone_id, "Grassland")
+		ambient_atmosphere.set_biome(biome)

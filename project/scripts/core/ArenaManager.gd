@@ -246,6 +246,146 @@ func _generate_arena() -> void:
 	_create_zone(zones_container, ZoneType.MEDIUM, medium_zone_radius)
 	_create_zone(zones_container, ZoneType.SAFE, safe_zone_radius)
 
+	# Generar caminos procedurales (encima del suelo, debajo de decoraciones)
+	_generate_paths(zones_container)
+
+func _generate_paths(parent: Node2D) -> void:
+	"""Generar caminos procedurales que radian desde el centro"""
+	# Usar CanvasGroup para que las intersecciones de caminos semi-transparentes
+	# no se sumen (doble opacidad), sino que se mezclen como una sola capa.
+	var path_container = CanvasGroup.new()
+	path_container.name = "Paths"
+	path_container.z_index = -90 # Encima de zonas (-100), debajo de decoraciones (-99)
+	# Configurar el material del CanvasGroup si fuera necesario, pero por defecto
+	# ya hace el blending correcto de sus hijos.
+	
+	parent.add_child(path_container)
+	
+	# Configurar ruido para curvas naturales
+	var noise = FastNoiseLite.new()
+	noise.seed = arena_seed
+	noise.frequency = 0.001 # Frecuencia más baja = curvas más largas y suaves
+	noise.fractal_octaves = 2
+	
+	# Cargar textura del camino según bioma principal (Safe/Medium/etc)
+	var path_texture: Texture2D = null
+	
+	# Función local para cargar y rotar (Line2D necesita orientación horizontal)
+	var _load_rotated = func(path: String) -> Texture2D:
+		if not FileAccess.file_exists(path): return null
+		var img = Image.new()
+		var err = img.load(path)
+		if err != OK: return null
+		
+		# Las texturas generadas suelen ser verticales, Line2D pide horizontales
+		img.rotate_90(CLOCKWISE) 
+		return ImageTexture.create_from_image(img)
+	
+	path_texture = _load_rotated.call("res://assets/textures/paths/path_dirt.png")
+	
+	# TODO: Lógica para elegir textura según bioma predominante si generamos más
+	var safe_biome = selected_biomes[ZoneType.SAFE]
+	if safe_biome in ["Grassland", "Forest"]:
+		path_texture = _load_rotated.call("res://assets/textures/paths/path_dirt.png")
+	
+	# Cantidad de caminos principales y secundarios
+	var main_paths = rng.randi_range(3, 5)
+	
+	for i in range(main_paths):
+		# Ángulo base distribuido uniformemente + variación
+		var angle_step = TAU / main_paths
+		var base_angle = (i * angle_step) + rng.randf_range(-0.5, 0.5)
+		
+		# Crear Line2D
+		var line = Line2D.new()
+		line.width = rng.randf_range(200.0, 280.0) # Reducir ancho levemente para evitar overlap en curvas
+		line.texture_mode = Line2D.LINE_TEXTURE_TILE
+		line.joint_mode = Line2D.LINE_JOINT_ROUND
+		line.end_cap_mode = Line2D.LINE_CAP_BOX # Box a veces da mejor tiling final que round
+		
+		# CRÍTICO: Habilitar repetición de textura para evitar "stretching" y cortes
+		line.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		line.antialiased = true # Suavizar bordes
+		# Filtro lineal con mipmaps para que se vea bien al alejar/acercar
+		line.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		
+		if path_texture:
+			line.texture = path_texture
+			line.default_color = Color(1, 1, 1, 1.0) # Totalmente visible (el alpha lo maneja la textura)
+		else:
+			line.default_color = Color(0.15, 0.12, 0.1, 0.4) # Fallback
+		
+		# Generar puntos del camino
+		var current_pos = Vector2.ZERO
+		var current_dist = 0.0
+		var max_dist = arena_radius * 1.1 # Salirse un poco del mapa
+		var points = []
+		
+		while current_dist < max_dist:
+			# Añadir punto
+			points.append(current_pos)
+			
+			# Avanzar
+			current_dist += 40.0 # Aún más resolución (antes 50)
+			
+			# Calcular desviación usando ruido
+			var noise_val = noise.get_noise_2d(current_dist, i * 100.0)
+			var angle_offset = noise_val * 0.7 # Curvatura suave
+			
+			var current_angle = base_angle + angle_offset
+			current_pos = Vector2(cos(current_angle), sin(current_angle)) * current_dist
+			
+		# suavizar el camino usando Curve2D
+		var curve = Curve2D.new()
+		for p in points:
+			curve.add_point(p)
+		
+		# Tessellate con tolerancia MUY baja (2) para máxima suavidad en curvas
+		line.points = curve.tessellate(3, 8) # Mayor recursividad (8) y menor tolerancia (3)
+		
+		# Añadir borde difuminado (opcional, requiere textura de gradiente o shader)
+		# Por ahora usamos color plano con alpha bajo para blend
+		
+		path_container.add_child(line)
+		
+		# Ramificaciones (Branching)
+		if rng.randf() > 0.4:
+			_create_branch_path(path_container, line.points, noise, i)
+
+func _create_branch_path(container: Node2D, parent_points: Array, noise: FastNoiseLite, seed_offset: int) -> void:
+	"""Crear un camino secundario que sale del principal"""
+	if parent_points.size() < 10: return
+	
+	# Elegir punto de inicio (mitad del camino aprox)
+	var start_idx = rng.randi_range(parent_points.size() / 4, parent_points.size() / 2)
+	var start_pos = parent_points[start_idx]
+	var start_dist = start_pos.length()
+	
+	var line = Line2D.new()
+	line.default_color = Color(0.15, 0.12, 0.1, 0.3) # Más sutil
+	line.width = rng.randf_range(100.0, 150.0)
+	line.joint_mode = Line2D.LINE_JOINT_ROUND
+	line.end_cap_mode = Line2D.LINE_CAP_ROUND
+	
+	var points = [start_pos]
+	var current_pos = start_pos
+	var current_dist = start_dist
+	
+	# Determinar ángulo de divergencia
+	var parent_angle = start_pos.angle()
+	var branch_angle = parent_angle + (rng.randf_range(0.3, 0.8) * (1 if rng.randf() > 0.5 else -1))
+	
+	for j in range(20): # Longitud fija
+		current_dist += 80.0
+		var noise_val = noise.get_noise_2d(current_dist, seed_offset + 500)
+		var angle = branch_angle + (noise_val * 1.0)
+		
+		current_pos += Vector2(cos(angle), sin(angle)) * 80.0
+		points.append(current_pos)
+		
+	line.points = PackedVector2Array(points)
+	container.add_child(line)
+
 func _create_zone(parent: Node2D, zone_type: ZoneType, radius: float) -> void:
 	"""Crear una zona circular con su bioma usando textura seamless + shader"""
 	var biome_name = selected_biomes[zone_type]
@@ -269,8 +409,54 @@ func _create_zone(parent: Node2D, zone_type: ZoneType, radius: float) -> void:
 		# Fallback: círculo de color sólido
 		_create_colored_zone(zone_node, biome_name, radius, inner_radius)
 	
+	# Añadir decals de suelo (detalles estáticos planos)
+	_generate_ground_decals(zone_node, radius, inner_radius, zone_type)
+
 	# Añadir decoraciones (reducidas para mejor rendimiento)
 	_add_animated_decorations(zone_node, radius, zone_type)
+
+func _generate_ground_decals(zone_node: Node2D, radius: float, inner_radius: float, zone_type: ZoneType) -> void:
+	"""Generar detalles planos en el suelo para romper repetitividad"""
+	# Usar una textura procedural simple para manchas/grietas
+	var noise_tex = GradientTexture2D.new()
+	noise_tex.width = 64
+	noise_tex.height = 64
+	noise_tex.fill = GradientTexture2D.FILL_RADIAL
+	var grad = Gradient.new()
+	grad.colors = [Color(0,0,0,0.4), Color(0,0,0,0)] # Mancha oscura difusa
+	noise_tex.gradient = grad
+	
+	# Calcular cantidad basada en área
+	var zone_area = PI * (radius * radius - inner_radius * inner_radius)
+	var decal_count = int(zone_area / 400000) # ~1 por cada 400k px²
+	decal_count = clamp(decal_count, 20, 200)
+	
+	var decals_container = Node2D.new()
+	decals_container.name = "Decals"
+	decals_container.z_index = -95 # Entre suelo (-100) y caminos (-90)
+	zone_node.add_child(decals_container)
+	
+	for i in range(decal_count):
+		# Posición aleatoria en anillo
+		var angle = rng.randf() * TAU
+		var min_dist = inner_radius + 50
+		var max_dist = radius - 50
+		if max_dist <= min_dist: continue
+		
+		var dist = rng.randf_range(min_dist, max_dist)
+		var pos = Vector2(cos(angle), sin(angle)) * dist
+		
+		var decal = Sprite2D.new()
+		decal.texture = noise_tex
+		decal.position = pos
+		
+		# Variación visual
+		var scale_val = rng.randf_range(1.0, 3.0)
+		decal.scale = Vector2(scale_val, scale_val * rng.randf_range(0.8, 1.2))
+		decal.rotation = rng.randf() * TAU
+		decal.modulate = Color(1, 1, 1, rng.randf_range(0.3, 0.7)) # Opacidad variable
+		
+		decals_container.add_child(decal)
 
 func _create_circular_tiled_zone(zone_node: Node2D, texture: Texture2D, outer_radius: float, inner_radius: float, zone_type: ZoneType) -> void:
 	"""Crear zona circular perfecta con UN SOLO sprite + shader de tiling"""
