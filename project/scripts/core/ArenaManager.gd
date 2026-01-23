@@ -315,9 +315,9 @@ func _generate_paths(parent: Node2D) -> void:
 		"Forest": _load_robusta.call("res://assets/textures/paths/path_dirt.png"),
 		"Snow": _load_robusta.call("res://assets/textures/paths/path_snow.png"),
 		"Desert": _load_robusta.call("res://assets/textures/paths/path_desert.png"),
-		"Lava": _load_robusta.call("res://assets/textures/paths/path_lava.png"),
-		"ArcaneWastes": _load_robusta.call("res://assets/textures/paths/path_arcane.png"),
-		"Death": _load_robusta.call("res://assets/textures/paths/path_death.png")
+		"Lava": _load_robusta.call("res://assets/textures/paths/path_lava.jpg"),
+		"ArcaneWastes": _load_robusta.call("res://assets/textures/paths/path_arcane.jpg"),
+		"Death": _load_robusta.call("res://assets/textures/paths/path_death.jpg")
 	}
 	
 	# Fallback final para Grassland si falla la png
