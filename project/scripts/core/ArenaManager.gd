@@ -113,7 +113,7 @@ var boundary_node: Node2D = null
 
 # Sistema de detección de caminos (para speed buff)
 var path_segments: Array[PackedVector2Array] = []  # Lista de todos los segmentos de camino
-const PATH_DETECTION_WIDTH: float = 40.0  # Ancho de detección del camino
+const PATH_DETECTION_WIDTH: float = 180.0  # Ancho de detección del camino (mitad del ancho visual ~350-420)
 const PATH_SPEED_BONUS: float = 0.25  # +25% velocidad en caminos
 
 func _ready() -> void:
