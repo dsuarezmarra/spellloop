@@ -337,9 +337,14 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> bool:
 	var modified_crit = 0.0
 	
 	if not player_stats.is_empty():
-		modified_damage *= player_stats.get("damage_mult", 1.0)
+		var dmg_mult = player_stats.get("damage_mult", 1.0)
+		modified_damage *= dmg_mult
 		modified_damage += player_stats.get("damage_flat", 0.0)  # Sumar daño plano
 		modified_crit = player_stats.get("crit_chance", 0.0)
+		
+		# DEBUG: Log para Pacifista
+		if dmg_mult < 0.01:
+			print("🔴 [BaseWeapon] %s: dmg_mult=%.2f, base=%d, final=%.1f" % [weapon_name, dmg_mult, damage, modified_damage])
 		
 		# Agregar crit del efecto del arma
 		if effect == "crit_chance":

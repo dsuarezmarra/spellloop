@@ -239,6 +239,9 @@ func multiply_stat(stat_name: String, value: float) -> void:
 	if stat_name in stats:
 		var old_value = stats[stat_name]
 		stats[stat_name] *= value
+		# DEBUG: Log crítico para Pacifista
+		if stat_name == "damage_mult":
+			print("🔴 [GlobalWeaponStats] damage_mult MULTIPLICADO: %.2f × %.2f = %.2f" % [old_value, value, stats[stat_name]])
 		global_stat_changed.emit(stat_name, old_value, stats[stat_name])
 
 func set_stat(stat_name: String, value: float) -> void:

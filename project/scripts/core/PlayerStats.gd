@@ -1705,21 +1705,30 @@ func _apply_weapon_effects_to_global(effects: Array, upgrade_dict: Dictionary) -
 	# 1. Usar referencia directa si existe
 	if global_weapon_stats != null:
 		gws = global_weapon_stats
+		# print("🟢 [PlayerStats] Usando global_weapon_stats directo")
 
 	# 2. Intentar a través de attack_manager
 	if gws == null and attack_manager and attack_manager.has_method("get_global_weapon_stats"):
 		gws = attack_manager.get_global_weapon_stats()
+		# print("🟡 [PlayerStats] Usando attack_manager.get_global_weapon_stats()")
 
 	# 3. Buscar en grupos si estamos en el árbol
 	if gws == null and is_inside_tree():
 		var nodes = get_tree().get_nodes_in_group("global_weapon_stats")
 		if nodes.size() > 0:
 			gws = nodes[0]
+			# print("🟠 [PlayerStats] Usando grupo global_weapon_stats (%d nodos)" % nodes.size())
 
 	if gws == null:
 		# No hay GlobalWeaponStats, los stats se quedan solo en PlayerStats
 		push_warning("[PlayerStats] No se encontró GlobalWeaponStats para sincronizar stats de armas")
+		print("🔴 [PlayerStats] ERROR: No se encontró GlobalWeaponStats!")
 		return
+
+	# DEBUG: Verificar el upgrade que se va a aplicar
+	for eff in effects:
+		if eff.get("stat") == "damage_mult":
+			print("🔵 [PlayerStats] Enviando a GWS: damage_mult op=%s val=%.2f" % [eff.get("operation"), eff.get("value", 0)])
 
 	# Crear una mini-mejora solo con los efectos de armas
 	var weapon_upgrade = {
