@@ -374,9 +374,9 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> bool:
 		# Crear proyectil(es) según el tipo
 		_spawn_projectiles(player, targets, modified_damage, modified_crit)
 		
-		# Pequeña variación para el segundo disparo si es instantáneo para que se note
-		if i > 0 and (projectile_type == WeaponDatabase.ProjectileType.AOE or projectile_type == WeaponDatabase.ProjectileType.BEAM):
-			await player.get_tree().create_timer(0.1).timeout
+		# NOTA: Se eliminó el await para evitar convertir perform_attack en corrutina
+		# esto causaba que AttackManager recibiera un objeto GDScriptFunctionState (truthy)
+		# en lugar de false cuando no había targets válido.
 	# --------------------------------------------------------------------------
 	
 	start_cooldown()

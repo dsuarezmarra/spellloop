@@ -414,6 +414,10 @@ static func _create_base_projectile(data: Dictionary) -> SimpleProjectile:
 	if data.has("color"):
 		projectile.set_meta("weapon_color", data.get("color"))
 
+	# CRÍTICO: Re-inicializar visuales para soporte de pooling
+	# Esto recrea sprites y partículas que se eliminaron al devolver al pool
+	projectile.initialize_visuals()
+
 	return projectile
 
 

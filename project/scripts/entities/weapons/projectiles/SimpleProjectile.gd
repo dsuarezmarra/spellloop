@@ -78,51 +78,67 @@ func _ready() -> void:
 	# Configurar colisiones
 	_setup_collision()
 	
+	# Inicializar visuales (llamado aquí para primera vez, y externamente para pooling)
+	initialize_visuals()
+	
+	# Conectar señales
+	if not body_entered.is_connected(_on_body_entered):
+		body_entered.connect(_on_body_entered)
+	if not area_entered.is_connected(_on_area_entered):
+		area_entered.connect(_on_area_entered)
+
+func initialize_visuals() -> void:
+	"""Crear/Recrear los visuales del proyectil (Soporte para pooling)"""
+	# Limpiar visuales anteriores si existen (seguridad extra)
+	if is_instance_valid(animated_sprite):
+		animated_sprite.queue_free()
+		animated_sprite = null
+	if is_instance_valid(sprite):
+		sprite.queue_free()
+		sprite = null
+	
 	# NUEVO: Intentar crear visual animado primero
 	var used_animated = _try_create_animated_visual()
 	
 	if not used_animated:
 		# Crear visual según tipo de elemento (fallback)
 		_create_visual()
-		# Crear estela de partículas
-		_create_trail()
 	
-	# Conectar señales
-	body_entered.connect(_on_body_entered)
-	area_entered.connect(_on_area_entered)
+	# Siempre recrear trail (partículas)
+	if is_instance_valid(trail_particles):
+		trail_particles.queue_free()
+	_create_trail()
 
 func _try_create_animated_visual() -> bool:
 	"""Intentar crear visual animado usando ProjectileVisualManager"""
 	# Obtener weapon_id desde metadata
 	_weapon_id = get_meta("weapon_id", "")
 	if _weapon_id.is_empty():
-		# Debug desactivado: print("[SimpleProjectile] ✗ No weapon_id en metadata")
 		return false
 	
-	# AGREGAR A GRUPO PARA GESTIÓN DE ORBITALES
-	add_to_group("weapon_projectiles_" + _weapon_id)
+	# AGREGAR A GRUPO PARA GESTIÓN DE ORBITALES (Seguridad para pooling)
+	var group_name = "weapon_projectiles_" + _weapon_id
+	if not is_in_group(group_name):
+		add_to_group(group_name)
 	
 	# Buscar el ProjectileVisualManager
 	var visual_manager = ProjectileVisualManager.instance
 	if visual_manager == null:
-		# Debug desactivado: print("[SimpleProjectile] ✗ ProjectileVisualManager.instance es null")
 		return false
 	
 	# Obtener weapon_data para el visual
 	var weapon_data = WeaponDatabase.get_weapon_data(_weapon_id)
 	if weapon_data.is_empty():
-		# Debug desactivado: print("[SimpleProjectile] ✗ weapon_data vacío para: %s" % _weapon_id)
 		return false
 	
 	# Crear el visual animado
 	animated_sprite = visual_manager.create_projectile_visual(_weapon_id, weapon_data)
 	if animated_sprite == null:
-		# Debug desactivado: print("[SimpleProjectile] ✗ create_projectile_visual retornó null")
 		return false
 	
 	add_child(animated_sprite)
 	
-	# Iniciar animación de vuelo (saltamos launch para proyectiles en movimiento)
+	# Iniciar animación de vuelo
 	animated_sprite.play_flight()
 	
 	# Aplicar rotación inmediatamente basada en la dirección actual
