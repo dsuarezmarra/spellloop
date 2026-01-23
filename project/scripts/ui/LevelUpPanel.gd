@@ -249,37 +249,17 @@ func _create_option_panel(index: int) -> Control:
 	panel.custom_minimum_size = Vector2(230, 320)
 	panel.name = "Option_%d" % index
 	
-	# Obtener datos de la opción (si existen, si no usar defaults)
-	var option = options[index] if index < options.size() else {}
-	# Buscar rarity O tier (algunos usan uno, otros el otro)
-	var raw_rarity = option.get("rarity", option.get("tier", 1))
-	var rarity = _parse_rarity(raw_rarity)  # 1-based tier (Robust conversion)
-	var type = option.get("type", "upgrade")
-	var is_weapon = (type == "new_weapon" or type == "weapon" or type == "fusion")
-	
-	# ESTILO FINAL DIRECTO (Solicitud Usuario: Tarjetas de color)
+	# Estilo inicial default (gris oscuro)
+	# Los colores finales se aplican en _update_panel_style() cuando llegan las opciones
 	var style = StyleBoxFlat.new()
-	var tier_color = UIVisualHelper.get_color_for_tier(rarity)
-	
-	# Fondo: Color del tier con transparencia (0.5 para que se note bien)
-	style.bg_color = Color(tier_color.r, tier_color.g, tier_color.b, 0.5)
-	
-	# Borde: Color del tier sólido
-	style.border_color = tier_color
+	var default_color = Color(0.3, 0.3, 0.35)
+	style.bg_color = Color(default_color.r, default_color.g, default_color.b, 0.5)
+	style.border_color = default_color
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(8)
 	
-	# Ajuste para armas (más intenso)
-	if is_weapon:
-		style.bg_color.a = 0.6
-		style.set_border_width_all(4)
-	
 	panel.add_theme_stylebox_override("panel", style)
 	_option_styles.append(style)
-	
-	# Glow si es arma
-	if is_weapon:
-		UIVisualHelper.apply_tier_glow(panel, rarity)
 
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 10)
@@ -994,6 +974,11 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 	var name_label = panel.find_child("NameLabel", true, false) as Label
 	var desc_label = panel.find_child("DescLabel", true, false) as Label
 
+	# ═══════════════════════════════════════════════════════════════════════════
+	# ACTUALIZAR ESTILO DEL PANEL (Colores por tier/tipo)
+	# ═══════════════════════════════════════════════════════════════════════════
+	_update_panel_style(panel, option)
+
 	# Tipo
 	if type_label:
 		type_label.text = _get_type_text(option.get("type", ""))
@@ -1027,6 +1012,50 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 	# Descripción
 	if desc_label:
 		desc_label.text = option.get("description", "")
+
+func _update_panel_style(panel: Control, option: Dictionary) -> void:
+	"""Actualiza el estilo visual del panel basándose en tier y tipo."""
+	var option_type = option.get("type", "")
+	var is_weapon = (option_type == OPTION_TYPES.NEW_WEAPON or 
+					 option_type == OPTION_TYPES.LEVEL_UP_WEAPON or 
+					 option_type == OPTION_TYPES.FUSION)
+	
+	# Determinar el color a usar
+	var panel_color: Color
+	
+	if is_weapon:
+		# Armas, mejoras de arma y fusiones: Color naranja especial
+		panel_color = WEAPON_COLOR
+	elif option.get("is_cursed", false):
+		# Mejoras cursed: Púrpura
+		panel_color = CURSED_COLOR
+	elif option.get("is_unique", false):
+		# Mejoras únicas: Rojo
+		panel_color = UNIQUE_COLOR
+	else:
+		# Por tier: Usar rarity o tier de la opción
+		var raw_tier = option.get("rarity", option.get("tier", 1))
+		var tier = _parse_rarity(raw_tier)
+		panel_color = UIVisualHelper.get_color_for_tier(tier)
+	
+	# Crear nuevo estilo
+	var style = StyleBoxFlat.new()
+	
+	# Fondo: Color del panel con transparencia
+	style.bg_color = Color(panel_color.r, panel_color.g, panel_color.b, 0.5)
+	
+	# Borde: Color sólido
+	style.border_color = panel_color
+	style.set_corner_radius_all(8)
+	
+	if is_weapon:
+		# Armas: Más intenso
+		style.bg_color.a = 0.6
+		style.set_border_width_all(4)
+	else:
+		style.set_border_width_all(2)
+	
+	panel.add_theme_stylebox_override("panel", style)
 
 func _get_option_color(option: Dictionary) -> Color:
 	"""Determina el color del nombre basado en tier, tipo especial, etc."""
