@@ -1829,7 +1829,7 @@ func get_debug_info() -> String:
 
 func add_upgrade(upgrade_data: Dictionary) -> void:
 	"""Registrar una mejora aplicada"""
-	collected_upgrades.append({
+	# collected_upgrades.append({  <-- ERROR REMOVED
 	var upgrade_entry = {
 		"id": upgrade_data.get("upgrade_id", upgrade_data.get("id", "")),
 		"name": upgrade_data.get("name", "???"),

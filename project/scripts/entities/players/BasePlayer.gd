@@ -63,6 +63,9 @@ var _curse_timer: float = 0.0
 var _curse_amount: float = 0.0  # % reducción de curación
 var _is_cursed: bool = false
 
+# I-Frames (Invulnerabilidad temporal post-daño)
+var _invulnerability_timer: float = 0.0
+
 # ========== REGENERACIÓN ==========
 var _regen_accumulator: float = 0.0
 var _player_stats_ref: Node = null
@@ -394,6 +397,12 @@ func _process(delta: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	"""Actualizar física y debuffs"""
+	# Procesar timers de inmunidad
+	if _revive_immunity_timer > 0:
+		_revive_immunity_timer -= delta
+	if _invulnerability_timer > 0:
+		_invulnerability_timer -= delta
+		
 	# El movimiento se maneja en SpellloopPlayer para evitar duplicación
 	_process_debuffs(delta)
 	_update_status_visuals(delta)
@@ -731,9 +740,9 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	if not health_component.is_alive or _is_dying:
 		return
 	
-	# 0. Verificar inmunidad de revive
-	if _revive_immunity_timer > 0:
-		FloatingText.spawn_text(global_position + Vector2(0, -35), "INMUNE", Color(1.0, 0.9, 0.3, 0.8))
+	# 0. Verificar inmunidad de revive o frames de invulnerabilidad (i-frames)
+	if _revive_immunity_timer > 0 or _invulnerability_timer > 0:
+		# FloatingText.spawn_text(global_position + Vector2(0, -35), "INMUNE", Color(1.0, 0.9, 0.3, 0.8))
 		return
 	
 	# Obtener PlayerStats para dodge, armor, shield y thorns
@@ -747,6 +756,9 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 			# Debug desactivado: print("[%s] ✨ ¡ESQUIVADO! (%.0f%% chance)" % [character_class, dodge_chance * 100])
 			FloatingText.spawn_text(global_position + Vector2(0, -35), "DODGE!", Color(0.3, 0.9, 1.0))
 			return
+	
+	# OTORGAR I-FRAMES (0.5s de inmunidad tras recibir daño)
+	_invulnerability_timer = 0.5
 	
 	var final_damage = amount
 	
