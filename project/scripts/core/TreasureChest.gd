@@ -551,6 +551,15 @@ func _apply_item(item: Dictionary):
 			if player_stats and player_stats.has_method("apply_upgrade"):
 				var result = player_stats.apply_upgrade(upgrade_data)
 				print("[TreasureChest] Upgrade applied: %s" % result)
+				
+				# FALLBACK: Si falla (ej: Única duplicada), dar oro
+				if not result:
+					print("[TreasureChest] ⚠️ Falla al aplicar upgrade (Duplicado?). Dando ORO como compensación.")
+					var gold_amount = 50 * (item.get("rarity", 0) + 1)
+					_apply_item({"type": "gold", "amount": gold_amount})
+					# Mostrar texto flotante
+					FloatingText.spawn_text(global_position + Vector2(0, -60), "+%d 💰 (REFUND)" % gold_amount, Color(1, 0.9, 0.2))
+					
 			elif player_ref and player_ref.has_method("apply_upgrade"):
 				player_ref.apply_upgrade(upgrade_data)
 			else:

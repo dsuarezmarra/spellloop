@@ -30,6 +30,10 @@ var effect: String = "none"
 var effect_value: float = 0.0
 var effect_duration: float = 0.0
 
+# Active Shooting (Storm)
+var _active_shooting_timer: float = 0.0
+var _shooting_range_mult: float = 1.5  # Disparar a 1.5x del radio orbital
+
 var _rotation_angle: float = 0.0
 var _last_hit_times: Dictionary = {}
 var _hit_cooldown: float = 0.5
@@ -75,6 +79,12 @@ func update_orbitals(data: Dictionary) -> void:
 	effect = data.get("effect", "none")
 	effect_value = data.get("effect_value", 0.0)
 	effect_duration = data.get("effect_duration", 0.0)
+	
+	# Detectar si debe disparar activamente (chain effect + orbital)
+	if effect == "chain":
+		_active_shooting_timer = 0.0
+		if DEBUG_COLLISIONS:
+			print("[OrbitalManager] Activado modo Shooting para: %s" % orbital_weapon_id)
 
 	_recreate_orbitals()
 
@@ -386,6 +396,13 @@ func _process(delta: float) -> void:
 		_cleanup_counter = 0
 		_cleanup_invalid_hit_times()
 
+	# Lógica de disparo activo (Arcane Storm)
+	if effect == "chain":
+		_active_shooting_timer -= delta
+		if _active_shooting_timer <= 0:
+			_active_shooting_timer = 0.4  # Cooldown base de disparo
+			_fire_active_shot()
+
 func _cleanup_invalid_hit_times() -> void:
 	"""Eliminar entradas de enemigos que ya no existen"""
 	var keys_to_remove: Array = []
@@ -460,3 +477,67 @@ func validate_collision_setup() -> Dictionary:
 			print("  - %s" % issue)
 	
 	return result
+
+func _fire_active_shot() -> void:
+	"""Disparar un rayo desde un orbital aleatorio a un enemigo cercano"""
+	if orbitals.is_empty():
+		return
+		
+	var shooting_radius = orbital_radius * _shooting_range_mult
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var target: Node = null
+	var min_dist = shooting_radius
+	var source_orbital: Node2D = null
+	
+	# Buscar el enemigo más cercano a cualquiera de los orbitales
+	# O simplificado: más cercano al centro pero dentro de rango extendido
+	for enemy in enemies:
+		if not is_instance_valid(enemy):
+			continue
+			
+		var dist_to_center = global_position.distance_to(enemy.global_position)
+		if dist_to_center <= shooting_radius:
+			# Priorizar el más cercano
+			if dist_to_center < min_dist:
+				min_dist = dist_to_center
+				target = enemy
+	
+	if target:
+		# Encontrar el orbital más cercano al objetivo para disparar desde ahí
+		var closest_orb_dist = 9999.0
+		for orb in orbitals:
+			if is_instance_valid(orb):
+				var d = orb.global_position.distance_to(target.global_position)
+				if d < closest_orb_dist:
+					closest_orb_dist = d
+					source_orbital = orb
+		
+		if source_orbital:
+			# Disparar rayo
+			_spawn_chain_lightning_visual(source_orbital.global_position, target.global_position)
+			
+			# Aplicar daño (usando effect_value como chain count)
+			var chain_count = int(effect_value)
+			
+			# Daño inicial al target (reutilizamos la lógica de chain que aplica daño al primero)
+			# Pero _apply_chain_damage inicia el chain DESDE el target.
+			# Así que aplicamos daño al target primero y luego chain.
+			
+			# Calcular daño (quizás un poco menos que el contacto directo?)
+			# Usamos el daño base del orbital
+			
+			# Registrar y aplicar
+			DamageLogger.log_orbital_damage(orbital_weapon_id, target.name, int(orbital_damage), {"type": "lightning"})
+			
+			if target.has_method("take_damage"):
+				# Calcular daño completo
+				var player = _get_orbital_player()
+				var damage_res = DamageCalculator.calculate_final_damage(orbital_damage, target, player, crit_chance, crit_damage)
+				
+				target.take_damage(damage_res.get_int_damage())
+				ProjectileFactory.apply_life_steal(get_tree(), damage_res.final_damage)
+				
+				# Chain a otros
+				_apply_chain_damage(target, chain_count)
+			
+			# Agregar un pequeño efecto de impacto visual si se quiere

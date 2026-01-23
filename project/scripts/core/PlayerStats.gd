@@ -1655,6 +1655,22 @@ func apply_upgrade(upgrade_data) -> bool:
 		push_error("[PlayerStats] apply_upgrade: tipo invalido %s, se espera Dictionary" % typeof(upgrade_data))
 		return false
 
+	# 1. Verificar si es una mejora única ya obtenida
+	var upgrade_id = upgrade_dict.get("id", "")
+	var is_unique = upgrade_dict.get("is_unique", false)
+	
+	if is_unique and upgrade_id in owned_unique_ids:
+		print("[PlayerStats] ⚠️ Intento de aplicar mejora única duplicada: %s" % upgrade_id)
+		return false
+	
+	# 2. Verificar límite de stacks (si aplica)
+	var max_stacks = upgrade_dict.get("max_stacks", 0)
+	if max_stacks > 0:
+		var current_stacks = _count_upgrade_stacks(upgrade_id)
+		if current_stacks >= max_stacks:
+			print("[PlayerStats] ⚠️ Límite de stacks alcanzado para: %s (%d/%d)" % [upgrade_id, current_stacks, max_stacks])
+			return false
+
 	# Aplicar efectos desde el Dictionary (formato nuevo con effects)
 	if upgrade_dict.has("effects"):
 		var effects = upgrade_dict.get("effects", [])
@@ -1814,12 +1830,26 @@ func get_debug_info() -> String:
 func add_upgrade(upgrade_data: Dictionary) -> void:
 	"""Registrar una mejora aplicada"""
 	collected_upgrades.append({
+	var upgrade_entry = {
 		"id": upgrade_data.get("upgrade_id", upgrade_data.get("id", "")),
 		"name": upgrade_data.get("name", "???"),
 		"icon": upgrade_data.get("icon", "✨"),
 		"description": upgrade_data.get("description", ""),
 		"effects": upgrade_data.get("effects", [])
-	})
+	}
+	collected_upgrades.append(upgrade_entry)
+	
+	# Auto-registrar si es única
+	if upgrade_data.get("is_unique", false):
+		register_unique_upgrade(upgrade_entry["id"])
+
+func _count_upgrade_stacks(upgrade_id: String) -> int:
+	"""Contar cuántas veces se ha obtenido una mejora específica"""
+	var count = 0
+	for upgrade in collected_upgrades:
+		if upgrade.id == upgrade_id:
+			count += 1
+	return count
 
 func track_collected_item(item_data: Dictionary) -> void:
 	"""Registrar un objeto recolectado (para historial de PauseMenu)"""

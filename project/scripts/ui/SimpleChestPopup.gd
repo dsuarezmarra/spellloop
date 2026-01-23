@@ -181,6 +181,31 @@ func show_as_jackpot(items: Array):
 	claim_button.pressed.connect(_on_claim_all_pressed)
 	buttons_hbox.add_child(claim_button)
 	
+	# Botón Reclamar Seleccionados (Nuevo)
+	var claim_selected_btn = Button.new()
+	claim_selected_btn.text = "✓ RECLAMAR SELECCIONADOS"
+	claim_selected_btn.custom_minimum_size = Vector2(240, 50)
+	claim_selected_btn.add_theme_font_size_override("font_size", 16)
+	claim_selected_btn.visible = false # Oculto por defecto, se muestra si hay selección parcial
+	
+	var style_sel = StyleBoxFlat.new()
+	style_sel.bg_color = Color(0.15, 0.3, 0.4)
+	style_sel.border_color = Color(0.4, 0.8, 1.0)
+	style_sel.set_border_width_all(2)
+	style_sel.set_corner_radius_all(8)
+	claim_selected_btn.add_theme_stylebox_override("normal", style_sel)
+	
+	var style_sel_hover = style_sel.duplicate()
+	style_sel_hover.bg_color = Color(0.2, 0.4, 0.5)
+	claim_selected_btn.add_theme_stylebox_override("hover", style_sel_hover)
+	
+	# Conectar a función de terminar selección
+	claim_selected_btn.pressed.connect(_on_claim_selected_pressed)
+	buttons_hbox.add_child(claim_selected_btn)
+	
+	# Guardar referencia para actualizar visibilidad
+	self.set_meta("claim_selected_btn", claim_selected_btn)
+	
 	# Botón Salir (con confirmación)
 	var exit_button = Button.new()
 	exit_button.text = "✕ SALIR"
@@ -792,7 +817,7 @@ func _show_confirm_skip_modal():
 	hbox.add_child(btn_cancel)
 	
 	var btn_confirm = Button.new()
-	btn_confirm.text = "Confirmar Salto"
+	btn_confirm.text = "Confirmar"
 	btn_confirm.custom_minimum_size = Vector2(140, 40)
 	var style_confirm = StyleBoxFlat.new()
 	style_confirm.bg_color = Color(0.6, 0.2, 0.2)
@@ -806,6 +831,7 @@ func _show_confirm_skip_modal():
 	hbox.add_child(btn_confirm)
 	
 	# Foco inicial
+	await get_tree().process_frame
 	btn_cancel.grab_focus()
 
 func _on_claim_all_pressed():
@@ -893,6 +919,21 @@ func _input(event: InputEvent):
 		# Space/Enter reclama el item seleccionado (no cierra el popup)
 		elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER)):
 			_claim_selected_jackpot_item()
+			get_tree().root.set_input_as_handled()
+			return
+			
+		# Navegación hacia botones inferiores desde el último item
+		if (event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and event.keycode == KEY_S)) and current_selected_index == item_buttons.size() - 1:
+			_focus_bottom_buttons()
+			get_tree().root.set_input_as_handled()
+			return
+			
+		return
+	
+	# Manejo especial para cuando el foco está en los botones de abajo (Jackpot)
+	if is_jackpot_mode and _is_focus_on_buttons:
+		if event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and event.keycode == KEY_W):
+			_return_focus_to_items()
 			get_tree().root.set_input_as_handled()
 			return
 		return
@@ -1066,6 +1107,65 @@ func _claim_selected_jackpot_item():
 	_update_claimed_panel_visual(panel)
 	
 	# Actualizar selección visual
+	_update_jackpot_selection()
+	
+	# Actualizar visibilidad de botones
+	_update_jackpot_buttons_visibility()
+
+func _update_jackpot_buttons_visibility():
+	if not self.has_meta("claim_selected_btn"): return
+	var btn = self.get_meta("claim_selected_btn")
+	
+	# Mostrar "Reclamar Seleccionados" si hay items reclamados pero no todos
+	var has_claims = _jackpot_claimed_items.size() > 0
+	var all_claimed = _jackpot_claimed_items.size() == (_jackpot_claimed_items.size() + _jackpot_pending_items.size()) # Simplificado
+	# Mejor contar items totales vs reclamados
+	var total_items = item_buttons.size()
+	var claimed_count = 0
+	for panel in item_buttons:
+		if is_instance_valid(panel) and panel.has_meta("is_claimed") and panel.get_meta("is_claimed"):
+			claimed_count += 1
+			
+	btn.visible = (claimed_count > 0 and claimed_count < total_items)
+	
+	# Ajustar botón de Claim All si ya todo está reclamado? 
+	# No, Claim All siempre útil para "el resto".
+
+func _on_claim_selected_pressed():
+	"""Terminar el jackpot llevando solo lo seleccionado"""
+	if popup_locked: return
+	popup_locked = true
+	
+	if _jackpot_claimed_items.size() > 0:
+		all_items_claimed.emit(_jackpot_claimed_items)
+	else:
+		skipped.emit()
+	queue_free()
+
+var _is_focus_on_buttons: bool = false
+
+func _focus_bottom_buttons():
+	"""Mover foco a los botones de abajo"""
+	_is_focus_on_buttons = true
+	current_selected_index = -1
+	_update_jackpot_selection() # Limpiar selección visual items
+	
+	# Intentar focusear "Reclamar Todo" o "Reclamar Seleccionados"
+	if claim_button and is_instance_valid(claim_button) and claim_button.visible:
+		claim_button.grab_focus()
+	elif self.has_meta("claim_selected_btn"):
+		var btn = self.get_meta("claim_selected_btn")
+		if btn and is_instance_valid(btn) and btn.visible:
+			btn.grab_focus()
+
+func _return_focus_to_items():
+	"""Volver foco a la lista de items"""
+	_is_focus_on_buttons = false
+	# Liberar foco de botones
+	var focus_owner = get_viewport().gui_get_focus_owner()
+	if focus_owner: focus_owner.release_focus()
+	
+	current_selected_index = item_buttons.size() - 1
 	_update_jackpot_selection()
 
 func _update_claimed_panel_visual(panel: Control):
