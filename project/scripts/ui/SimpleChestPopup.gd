@@ -9,6 +9,7 @@ signal skipped
 var available_items: Array = []
 var main_control: Control
 var items_vbox: VBoxContainer
+var _main_vbox: VBoxContainer  # Referencia al contenedor principal
 var item_buttons: Array[Control] = [] # Changed to Control to handle buttons or panels
 var current_selected_index: int = -1
 var popup_locked: bool = false
@@ -16,6 +17,8 @@ var is_jackpot_mode: bool = false
 var claim_button: Button = null
 var skip_button: Button = null
 var _is_skip_modal_active: bool = false
+var _jackpot_claimed_items: Array = []  # Items aceptados en modo jackpot
+var _jackpot_pending_items: Array = []  # Items pendientes en modo jackpot
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ANIMACIÓN DE CHEST BURST (Reveal espectacular)
@@ -101,16 +104,16 @@ func _ready():
 	_popup_bg = popup_bg  # Guardar referencia para animaciones y recentrado
 	
 	# Contenedor principal (VBoxContainer)
-	var main_vbox = VBoxContainer.new()
-	main_vbox.add_theme_constant_override("separation", 10)
-	popup_bg.add_child(main_vbox)
+	_main_vbox = VBoxContainer.new()
+	_main_vbox.add_theme_constant_override("separation", 10)
+	popup_bg.add_child(_main_vbox)
 	
 	# Título
 	var title = Label.new()
 	title.text = "¡Escoge tu recompensa!"
 	title.add_theme_font_size_override("font_size", 24)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	main_vbox.add_child(title)
+	_main_vbox.add_child(title)
 	
 	# WRAPPER con padding para evitar clipping de bordes/glow
 	# Este margen garantiza que los efectos visuales nunca se corten
@@ -120,7 +123,7 @@ func _ready():
 	items_wrapper.add_theme_constant_override("margin_top", 8)
 	items_wrapper.add_theme_constant_override("margin_bottom", 8)
 	items_wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	main_vbox.add_child(items_wrapper)
+	_main_vbox.add_child(items_wrapper)
 	
 	# Lista de items
 	items_vbox = VBoxContainer.new()
@@ -137,41 +140,295 @@ func _ready():
 	current_selected_index = 0
 
 func show_as_jackpot(items: Array):
-	"""Mostrar modo Jackpot (múltiples premios)"""
+	"""Mostrar modo Jackpot (múltiples premios) - Items seleccionables individualmente"""
 	is_jackpot_mode = true
-	setup_items(items)
+	_jackpot_pending_items = items.duplicate()
+	_jackpot_claimed_items = []
 	
 	# Actualizar título
-	var main_vbox = items_vbox.get_parent()
-	for child in main_vbox.get_children():
+	for child in _main_vbox.get_children():
 		if child is Label:
 			child.text = "¡RECOMPENSA LEGENDARIA!"
 			child.modulate = Color(1, 0.8, 0.2) # Dorado
 			break
-			
-	# Añadir botón de reclamar todo
-	claim_button = Button.new()
-	claim_button.text = "¡RECLAMAR TODO!"
-	claim_button.custom_minimum_size = Vector2(350, 60)
-	claim_button.add_theme_font_size_override("font_size", 20)
 	
-	# Estilo dorado para el botón
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.2, 0.4, 0.2)
-	style.border_color = Color(1, 0.8, 0.0)
-	style.set_border_width_all(4)
-	style.set_corner_radius_all(8)
-	claim_button.add_theme_stylebox_override("normal", style)
+	# Crear items con botones de aceptar/rechazar
+	_setup_jackpot_items(items)
+	
+	# Contenedor para botones de acción al final
+	var buttons_hbox = HBoxContainer.new()
+	buttons_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	buttons_hbox.add_theme_constant_override("separation", 20)
+	_main_vbox.add_child(buttons_hbox)
+	
+	# Botón Reclamar Todo
+	claim_button = Button.new()
+	claim_button.text = "✓ RECLAMAR TODO"
+	claim_button.custom_minimum_size = Vector2(200, 50)
+	claim_button.add_theme_font_size_override("font_size", 16)
+	
+	var style_claim = StyleBoxFlat.new()
+	style_claim.bg_color = Color(0.15, 0.4, 0.15)
+	style_claim.border_color = Color(0.4, 1.0, 0.4)
+	style_claim.set_border_width_all(3)
+	style_claim.set_corner_radius_all(8)
+	claim_button.add_theme_stylebox_override("normal", style_claim)
+	
+	var style_claim_hover = style_claim.duplicate()
+	style_claim_hover.bg_color = Color(0.2, 0.5, 0.2)
+	claim_button.add_theme_stylebox_override("hover", style_claim_hover)
 	
 	claim_button.pressed.connect(_on_claim_all_pressed)
-	main_vbox.add_child(claim_button)
+	buttons_hbox.add_child(claim_button)
 	
-	# Recentrar popup después de añadir botón
+	# Botón Cerrar (rechazar resto)
+	var close_button = Button.new()
+	close_button.text = "✕ CERRAR"
+	close_button.custom_minimum_size = Vector2(150, 50)
+	close_button.add_theme_font_size_override("font_size", 16)
+	
+	var style_close = StyleBoxFlat.new()
+	style_close.bg_color = Color(0.3, 0.15, 0.15)
+	style_close.border_color = Color(0.7, 0.3, 0.3)
+	style_close.set_border_width_all(2)
+	style_close.set_corner_radius_all(8)
+	close_button.add_theme_stylebox_override("normal", style_close)
+	
+	var style_close_hover = style_close.duplicate()
+	style_close_hover.bg_color = Color(0.4, 0.2, 0.2)
+	close_button.add_theme_stylebox_override("hover", style_close_hover)
+	
+	close_button.pressed.connect(_on_jackpot_close_pressed)
+	buttons_hbox.add_child(close_button)
+	
+	# Recentrar popup
 	await get_tree().process_frame
 	_recenter_popup()
 	
-	# Dar foco para soporte de teclado/gamepad
-	claim_button.grab_focus()
+	# Dar foco al primer item
+	if item_buttons.size() > 0:
+		item_buttons[0].grab_focus()
+
+func _setup_jackpot_items(items: Array):
+	"""Crear items para modo jackpot con botones de aceptar/rechazar"""
+	available_items = items
+	item_buttons.clear()
+	
+	# Limpiar items previos
+	for child in items_vbox.get_children():
+		child.queue_free()
+	
+	await get_tree().process_frame
+	
+	for i in range(items.size()):
+		var item = items[i]
+		var item_panel = _create_jackpot_item_panel(item, i)
+		items_vbox.add_child(item_panel)
+		item_buttons.append(item_panel)
+
+func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
+	"""Crear panel de item para jackpot con botones de acción"""
+	var item_name = item.get("name", "Objeto Misterioso")
+	var item_desc = item.get("description", "Sin descripción")
+	var item_icon = item.get("icon", "❓")
+	var item_id = item.get("id", "")
+	var item_type = item.get("type", "upgrade")
+	var item_rarity = item.get("rarity", item.get("tier", 1) - 1)
+	var is_weapon = (item_type == "weapon" or item_type == "new_weapon" or item_type == "fusion")
+	
+	# Panel contenedor principal
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(600, 80)
+	
+	var panel_style = UIVisualHelper.get_panel_style(item_rarity + 1, false, is_weapon)
+	panel.add_theme_stylebox_override("panel", panel_style)
+	
+	if is_weapon:
+		UIVisualHelper.apply_tier_glow(panel, item_rarity + 1)
+	
+	# HBox principal
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 10)
+	panel.add_child(hbox)
+	
+	# Margen izquierdo
+	var margin_left = Control.new()
+	margin_left.custom_minimum_size = Vector2(10, 0)
+	hbox.add_child(margin_left)
+	
+	# Icono
+	var icon_panel = PanelContainer.new()
+	var icon_style = StyleBoxFlat.new()
+	icon_style.bg_color = Color(0, 0, 0, 0.3)
+	icon_style.border_color = UIVisualHelper.get_color_for_tier(item_rarity + 1)
+	icon_style.set_border_width_all(2)
+	icon_style.set_corner_radius_all(4)
+	icon_panel.add_theme_stylebox_override("panel", icon_style)
+	
+	var icon_rect = TextureRect.new()
+	icon_rect.custom_minimum_size = Vector2(48, 48)
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	
+	var icon_tex = null
+	if item_id != "":
+		var path = "res://assets/icons/%s.png" % item_id
+		if ResourceLoader.exists(path):
+			icon_tex = load(path)
+	
+	if icon_tex:
+		icon_rect.texture = icon_tex
+	else:
+		var emoji_lbl = Label.new()
+		emoji_lbl.text = item_icon
+		emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		emoji_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		emoji_lbl.add_theme_font_size_override("font_size", 28)
+		emoji_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+		icon_rect.add_child(emoji_lbl)
+	
+	icon_panel.add_child(icon_rect)
+	hbox.add_child(icon_panel)
+	
+	# Info (nombre + descripción)
+	var info_vbox = VBoxContainer.new()
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	
+	var name_lbl = Label.new()
+	name_lbl.text = item_name
+	name_lbl.add_theme_font_size_override("font_size", 16)
+	name_lbl.add_theme_color_override("font_color", UIVisualHelper.get_color_for_tier(item_rarity + 1))
+	info_vbox.add_child(name_lbl)
+	
+	var desc_lbl = Label.new()
+	desc_lbl.text = item_desc
+	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc_lbl.add_theme_font_size_override("font_size", 11)
+	desc_lbl.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85))
+	info_vbox.add_child(desc_lbl)
+	
+	hbox.add_child(info_vbox)
+	
+	# Botones de acción
+	var actions_vbox = VBoxContainer.new()
+	actions_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	actions_vbox.add_theme_constant_override("separation", 4)
+	
+	# Botón Aceptar
+	var accept_btn = Button.new()
+	accept_btn.text = "✓"
+	accept_btn.custom_minimum_size = Vector2(40, 30)
+	accept_btn.add_theme_font_size_override("font_size", 18)
+	accept_btn.tooltip_text = "Aceptar"
+	
+	var accept_style = StyleBoxFlat.new()
+	accept_style.bg_color = Color(0.2, 0.5, 0.2)
+	accept_style.set_corner_radius_all(4)
+	accept_btn.add_theme_stylebox_override("normal", accept_style)
+	var accept_hover = accept_style.duplicate()
+	accept_hover.bg_color = Color(0.3, 0.7, 0.3)
+	accept_btn.add_theme_stylebox_override("hover", accept_hover)
+	
+	var item_data = item.duplicate()
+	accept_btn.pressed.connect(func(): _on_jackpot_item_accepted(index, item_data, panel))
+	actions_vbox.add_child(accept_btn)
+	
+	# Botón Rechazar
+	var reject_btn = Button.new()
+	reject_btn.text = "✕"
+	reject_btn.custom_minimum_size = Vector2(40, 30)
+	reject_btn.add_theme_font_size_override("font_size", 18)
+	reject_btn.tooltip_text = "Rechazar"
+	
+	var reject_style = StyleBoxFlat.new()
+	reject_style.bg_color = Color(0.5, 0.2, 0.2)
+	reject_style.set_corner_radius_all(4)
+	reject_btn.add_theme_stylebox_override("normal", reject_style)
+	var reject_hover = reject_style.duplicate()
+	reject_hover.bg_color = Color(0.7, 0.3, 0.3)
+	reject_btn.add_theme_stylebox_override("hover", reject_hover)
+	
+	reject_btn.pressed.connect(func(): _on_jackpot_item_rejected(index, panel))
+	actions_vbox.add_child(reject_btn)
+	
+	hbox.add_child(actions_vbox)
+	
+	# Margen derecho
+	var margin_right = Control.new()
+	margin_right.custom_minimum_size = Vector2(10, 0)
+	hbox.add_child(margin_right)
+	
+	return panel
+
+func _on_jackpot_item_accepted(index: int, item: Dictionary, panel: Control):
+	"""Item aceptado individualmente en jackpot"""
+	if popup_locked: return
+	
+	# Añadir a items reclamados
+	_jackpot_claimed_items.append(item)
+	
+	# Remover de pendientes
+	for i in range(_jackpot_pending_items.size()):
+		if _jackpot_pending_items[i].get("id", "") == item.get("id", ""):
+			_jackpot_pending_items.remove_at(i)
+			break
+	
+	# Animar y remover panel
+	var tween = create_tween()
+	tween.tween_property(panel, "modulate", Color(0.5, 1.0, 0.5, 0.5), 0.2)
+	tween.tween_property(panel, "custom_minimum_size:y", 0, 0.2)
+	tween.tween_callback(func():
+		panel.queue_free()
+		item_buttons.erase(panel)
+		_check_jackpot_complete()
+	)
+	
+	# Emitir señal de item individual
+	item_selected.emit(item)
+
+func _on_jackpot_item_rejected(index: int, panel: Control):
+	"""Item rechazado en jackpot"""
+	if popup_locked: return
+	
+	# Remover de pendientes sin añadir a reclamados
+	if index < _jackpot_pending_items.size():
+		_jackpot_pending_items.remove_at(index)
+	
+	# Animar y remover panel
+	var tween = create_tween()
+	tween.tween_property(panel, "modulate", Color(1.0, 0.5, 0.5, 0.3), 0.2)
+	tween.tween_property(panel, "custom_minimum_size:y", 0, 0.2)
+	tween.tween_callback(func():
+		panel.queue_free()
+		item_buttons.erase(panel)
+		_check_jackpot_complete()
+	)
+
+func _check_jackpot_complete():
+	"""Verificar si todos los items han sido procesados"""
+	await get_tree().process_frame
+	_recenter_popup()
+	
+	# Si no quedan items pendientes, cerrar
+	if items_vbox.get_child_count() == 0:
+		popup_locked = true
+		if _jackpot_claimed_items.size() > 0:
+			all_items_claimed.emit(_jackpot_claimed_items)
+		else:
+			skipped.emit()
+		queue_free()
+
+func _on_jackpot_close_pressed():
+	"""Cerrar jackpot reclamando solo los ya aceptados"""
+	if popup_locked: return
+	popup_locked = true
+	
+	if _jackpot_claimed_items.size() > 0:
+		all_items_claimed.emit(_jackpot_claimed_items)
+	else:
+		skipped.emit()
+	queue_free()
 
 func _recenter_popup() -> void:
 	"""Recentrar el popup después de cambios de contenido"""
@@ -535,8 +792,16 @@ func _show_confirm_skip_modal():
 func _on_claim_all_pressed():
 	if popup_locked: return
 	popup_locked = true
-	all_items_claimed.emit(available_items)
-	# get_tree().paused = false (Manejado por _exit_tree)
+	
+	if is_jackpot_mode:
+		# En modo jackpot, reclamar todos los pendientes + ya aceptados
+		var all_items = _jackpot_claimed_items.duplicate()
+		for item in _jackpot_pending_items:
+			all_items.append(item)
+		all_items_claimed.emit(all_items)
+	else:
+		all_items_claimed.emit(available_items)
+	
 	queue_free()
 
 func _on_button_pressed(button_index: int, item_data: Dictionary):
