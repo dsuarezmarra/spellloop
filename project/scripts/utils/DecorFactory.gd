@@ -207,8 +207,15 @@ static func add_collision_to_node(node: Node2D, size: Vector2) -> void:
 	
 	body.add_child(shape)
 	
-	# Debug (solo editor)
-	# body.modulate = Color(1,0,0,0.5)
+	# Debug VISUAL (Temporal para diagnóstico)
+	var debug_visual = ColorRect.new()
+	debug_visual.size = Vector2(radius * 2, height)
+	debug_visual.position = Vector2(-radius, -height * 0.5) + shape.position
+	debug_visual.color = Color(1.0, 0.0, 0.0, 0.6) # Rojo semitransparente
+	debug_visual.z_index = 100 # Muy por encima
+	body.add_child(debug_visual)
+	
+	print("DEBUG DecorFactory: Added collision to %s. Layer: %d (Value: %d). Visual added in Z=100" % [node.name, body.collision_layer, 1 << (8-1)])
 
 ## Crear decoración con escala y modulación personalizadas
 static func make_decor_styled(
