@@ -157,6 +157,9 @@ func _setup_modular_abilities() -> void:
 			
 			"slow_attack":
 				if ability:
+					if ability is EnemyAbility_Melee or ability is EnemyAbility_Ranged:
+						ability.element_type = "ice" # Ice aplica slow/freeze
+
 			"freeze_projectile":
 				if ability:
 					if ability is EnemyAbility_Melee or ability is EnemyAbility_Ranged:
