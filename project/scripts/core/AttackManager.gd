@@ -1407,42 +1407,7 @@ func get_debug_info() -> String:
 	return "\n".join(lines)
 
 
-func reset_for_new_game() -> void:
-	"""
-	Resetear completamente el manager para una nueva partida.
-	CRÍTICO: Limpiar stats globales y armas para evitar bugs de persistencia (Double Damage).
-	"""
-	# 1. Limpiar armas
-	clear_weapons()
-	
-	# 2. Limpiar stats individuales
-	weapon_stats_map.clear()
-	
-	# 3. Limpiar stats globales
-	if global_weapon_stats:
-		# Asumiendo que GlobalWeaponStats tiene un método reset, si no, recrearlo
-		if global_weapon_stats.has_method("reset"):
-			global_weapon_stats.reset()
-		else:
-			# Fallback: recrear nodo
-			global_weapon_stats.queue_free()
-			global_weapon_stats = GlobalWeaponStats.new()
-			global_weapon_stats.name = "GlobalWeaponStats"
-			add_child(global_weapon_stats)
-			global_weapon_stats.global_stat_changed.connect(_on_global_stats_changed)
-			
-	# 4. Limpiar fusion manager
-	if fusion_manager:
-		fusion_manager.queue_free()
-		fusion_manager = WeaponFusionManager.new()
-		fusion_manager.name = "FusionManager"
-		add_child(fusion_manager)
-		fusion_manager.fusion_completed.connect(_on_fusion_completed)
-		fusion_manager.fusion_failed.connect(_on_fusion_failed)
-		
-	# 5. Reiniciar estado interno
-	is_active = true
-	# print("[AttackManager] ♻️ Reset completado para nueva partida")
+
 
 func set_active(active: bool) -> void:
 	"""Activar o desactivar el sistema de ataques"""
