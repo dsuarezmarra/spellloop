@@ -2555,6 +2555,12 @@ func _save_game_state_for_resume() -> void:
 		game_state["remaining_banishes"] = game_node.remaining_banishes
 	
 	# ═══════════════════════════════════════════════════════════════════════════════
+	# Guardar run_stats (kills, damage, etc) para restaurar el contador de enemigos
+	# ═══════════════════════════════════════════════════════════════════════════════
+	if game_node and "run_stats" in game_node:
+		game_state["run_stats"] = game_node.run_stats.duplicate()
+	
+	# ═══════════════════════════════════════════════════════════════════════════════
 	# NUEVO: Guardar estado del WaveManager (fase, oleadas, boss, elites, eventos)
 	# ═══════════════════════════════════════════════════════════════════════════════
 	if game_node and game_node.has_node("WaveManager"):

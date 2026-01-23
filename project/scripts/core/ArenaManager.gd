@@ -1334,8 +1334,24 @@ func to_save_data() -> Dictionary:
 		"arena_seed": arena_seed,
 		"unlocked_zones": unlocked_zones_serialized,
 		"selected_biomes": selected_biomes_serialized,
-		"player_current_zone": int(player_current_zone)
+		"player_current_zone": int(player_current_zone),
+		"fog_radius": _get_current_fog_radius()
 	}
+
+func _get_current_fog_radius() -> float:
+	"""Obtener el radio actual del fog desde el shader"""
+	var fog = arena_root.get_node_or_null("FogOfWar") if arena_root else null
+	if not fog:
+		fog = get_tree().root.find_child("FogOfWar", true, false)
+	if fog and fog.material is ShaderMaterial:
+		return fog.material.get_shader_parameter("unlocked_radius")
+	# Fallback basado en zona actual
+	match player_current_zone:
+		ZoneType.SAFE: return safe_zone_radius - FOG_RADIUS_OFFSET
+		ZoneType.MEDIUM: return medium_zone_radius - FOG_RADIUS_OFFSET
+		ZoneType.DANGER: return danger_zone_radius - FOG_RADIUS_OFFSET
+		ZoneType.DEATH: return arena_radius
+	return safe_zone_radius - FOG_RADIUS_OFFSET
 
 func from_save_data(data: Dictionary) -> void:
 	"""Restaurar estado del ArenaManager desde datos guardados"""
@@ -1358,7 +1374,23 @@ func from_save_data(data: Dictionary) -> void:
 	if data.has("player_current_zone"):
 		player_current_zone = data["player_current_zone"]
 	
+	# Restaurar radio del fog de guerra (importante para continuidad visual)
+	if data.has("fog_radius"):
+		var saved_fog_radius = data["fog_radius"]
+		# Usar call_deferred para asegurar que el fog ya esté creado
+		call_deferred("_restore_fog_radius", saved_fog_radius)
+	
 	# Debug desactivado: print("🏟️ [ArenaManager] Estado restaurado:")
+
+func _restore_fog_radius(radius: float) -> void:
+	"""Restaurar el radio del fog inmediatamente (sin animación)"""
+	var fog = arena_root.get_node_or_null("FogOfWar") if arena_root else null
+	if not fog:
+		fog = get_tree().root.find_child("FogOfWar", true, false)
+	
+	if fog and fog.material is ShaderMaterial:
+		fog.material.set_shader_parameter("unlocked_radius", radius)
+		print("🌫️ [ArenaManager] Fog restaurado a radio: %.1f" % radius))
 	# Debug desactivado: print("   - Seed: %d" % arena_seed)
 	# Debug desactivado: print("   - Zonas desbloqueadas: SAFE=%s, MEDIUM=%s, DANGER=%s, DEATH=%s" % [
 	#	unlocked_zones.get(ZoneType.SAFE, false),

@@ -550,6 +550,14 @@ func _resume_saved_game() -> void:
 	# Restaurar stats de la partida
 	run_stats["time"] = game_time
 	run_stats["level"] = _saved_state.get("player_level", 1)
+	
+	# Restaurar run_stats completo si existe (kills, damage, etc)
+	if _saved_state.has("run_stats"):
+		var saved_run_stats = _saved_state["run_stats"]
+		run_stats["kills"] = saved_run_stats.get("kills", 0)
+		run_stats["xp_total"] = saved_run_stats.get("xp_total", 0)
+		run_stats["gold"] = saved_run_stats.get("gold", 0)
+		run_stats["damage_dealt"] = saved_run_stats.get("damage_dealt", 0)
 
 	# IMPORTANTE: Esperar un frame para que HealthComponent._ready() ya haya ejecutado
 	# antes de restaurar el HP (evita que _ready() sobrescriba nuestro valor)
@@ -756,6 +764,33 @@ func _update_hud_after_restore() -> void:
 		hud.update_coins(0, coins)  # amount=0 porque no es una moneda nueva, solo actualizar total
 	elif "coins_label" in hud and hud.coins_label:
 		hud.coins_label.text = str(coins)
+
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# NUEVO: Actualizar barra de vida
+	# ═══════════════════════════════════════════════════════════════════════════════
+	var saved_hp = _saved_state.get("player_hp", 100)
+	var saved_max_hp = _saved_state.get("player_max_hp", 100)
+	if hud.has_method("update_health"):
+		hud.update_health(saved_hp, saved_max_hp)
+
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# NUEVO: Actualizar barra de escudo
+	# ═══════════════════════════════════════════════════════════════════════════════
+	if player_stats and hud.has_method("update_shield"):
+		var current_shield = int(player_stats.get_stat("shield_amount"))
+		var max_shield = int(player_stats.get_stat("max_shield"))
+		hud.update_shield(current_shield, max_shield)
+
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# NUEVO: Actualizar contador de enemigos
+	# ═══════════════════════════════════════════════════════════════════════════════
+	if enemy_manager and hud.has_method("update_kills"):
+		var kill_count = 0
+		if "enemies_killed" in enemy_manager:
+			kill_count = enemy_manager.enemies_killed
+		elif enemy_manager.has_method("get_kill_count"):
+			kill_count = enemy_manager.get_kill_count()
+		hud.update_kills(kill_count)
 
 	# Debug desactivado: print("📊 [Game] HUD actualizado después de restaurar")
 
