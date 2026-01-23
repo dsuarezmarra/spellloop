@@ -63,11 +63,8 @@ static func make_decor(
 		if use_integration_shader:
 			_apply_integration_shader(anim, biome_name)
 		
-		# Auto-Colisión (Task C)
-		if frames.get_frame_count("default") > 0:
-			var tex = frames.get_frame_texture("default", 0)
-			if tex:
-				add_collision_to_node(anim, tex.get_size())
+		# NOTA: La colisión se añade DESPUÉS de que el nodo esté en el árbol
+		# Llamar add_collision_to_node() desde el caller (ej: ArenaManager)
 		
 		return anim
 		
@@ -91,8 +88,8 @@ static func make_decor(
 		if use_integration_shader:
 			_apply_integration_shader(spr, biome_name)
 		
-		# Auto-Colisión (Task C)
-		add_collision_to_node(spr, sz)
+		# NOTA: La colisión se añade DESPUÉS de que el nodo esté en el árbol
+		# Llamar add_collision_to_node() desde el caller (ej: ArenaManager)
 		
 		return spr
 
@@ -178,34 +175,40 @@ static func _apply_integration_shader(node: CanvasItem, biome_name: String = "")
 	node.material = material
 
 static func add_collision_to_node(node: Node2D, size: Vector2) -> void:
-	"""Añadir colisión estática a la base del decorado (Capa 8)"""
-	var body = StaticBody2D.new()
-	body.name = "CollisionBody"
-	node.add_child(body)
+	"""
+	Registrar colisión de decorado en el sistema basado en distancia.
 	
-	# Configurar capa 8 (Barreras)
-	body.collision_layer = 0
-	body.set_collision_layer_value(8, true)
-	body.collision_mask = 0
+	Los StaticBody2D dinámicos NO funcionan con move_and_slide() en Godot.
+	Este proyecto usa un sistema de colisión por distancia (ver zone barriers).
+	Registramos la posición y radio en DecorCollisionManager.
+	"""
 	
-	# Crear Shape (Cápsula achatada)
-	var shape = CollisionShape2D.new()
-	var capsule = CapsuleShape2D.new()
+	# Obtener escala visual ABSOLUTA (ignorando signo negativo del mirror)
+	var abs_scale_x = abs(node.scale.x) if node.scale.x != 0 else 1.0
+	var abs_scale_y = abs(node.scale.y) if node.scale.y != 0 else 1.0
 	
-	# Radio: 25% del ancho del sprite
-	var radius = max(4.0, size.x * 0.25)
+	# Calcular dimensiones visuales
+	var visual_width = size.x * abs_scale_x
+	var visual_height = size.y * abs_scale_y
 	
-	# Altura de colisión: pequeña (solo la base/tronco)
-	var height = max(8.0, size.y * 0.15)
+	# Radio de colisión: promedio de base del decorado
+	var collision_radius = max(15.0, (visual_width * 0.3 + visual_height * 0.15) / 2.0)
 	
-	capsule.radius = radius
-	capsule.height = max(height, radius * 2.0)
+	# Registrar en el manager (esperamos que esté en el árbol)
+	var tree = node.get_tree()
+	if not tree:
+		return
 	
-	shape.shape = capsule
-	# Posicionar ligeramente arriba de (0,0) que es el bottom-center del sprite
-	shape.position = Vector2(0, -height * 0.3)
-	
-	body.add_child(shape)
+	var manager = tree.get_first_node_in_group("decor_collision_manager")
+	if manager and manager.has_method("register_collision"):
+		# CORRECCIÓN: Los sprites de ArenaManager tienen pivot en el centro, no en la base.
+		# Necesitamos offsetar la colisión a la BASE del sprite (Y += visual_height * 0.5)
+		# para que la colisión sea en el "tronco" del árbol, no en el centro visual.
+		# Sin embargo, el offset depende de si el sprite tiene bottom-center o center pivot.
+		# ArenaManager NO usa offset, así que global_position es el CENTRO visual.
+		# Queremos colisión en la base, así que bajamos el punto de colisión.
+		var collision_pos = node.global_position + Vector2(0, visual_height * 0.35)
+		manager.register_collision(collision_pos, collision_radius)
 
 ## Crear decoración con escala y modulación personalizadas
 static func make_decor_styled(

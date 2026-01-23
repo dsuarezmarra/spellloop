@@ -142,6 +142,10 @@ func _physics_process(_delta: float) -> void:
 	# === SISTEMA DE BARRERAS POR DISTANCIA ===
 	# Más confiable que colisiones físicas para barreras circulares
 	_enforce_zone_barriers()
+	
+	# === COLISIONES CON DECORADOS ===
+	# Sistema basado en distancia (StaticBody2D dinámicos no funcionan)
+	_enforce_decor_collisions()
 
 	# Sincronizar posición y velocidad con WizardPlayer (para que sus sistemas funcionen)
 	if wizard_player:
@@ -174,6 +178,22 @@ func _enforce_zone_barriers() -> void:
 			get_tree().create_timer(0.5).timeout.connect(func(): _barrier_hit_cooldown = false)
 
 var _barrier_hit_cooldown: bool = false
+
+func _enforce_decor_collisions() -> void:
+	"""Sistema de colisión con decorados basado en distancia"""
+	var manager = get_tree().get_first_node_in_group("decor_collision_manager")
+	if not manager or not manager.has_method("check_collision_fast"):
+		return
+	
+	# Radio del player (basado en CollisionShape2D radius=10)
+	var player_radius = 15.0
+	
+	# Verificar colisiones y obtener vector de empuje
+	var push = manager.check_collision_fast(global_position, player_radius)
+	
+	# Si hay empuje, aplicarlo
+	if push.length_squared() > 0.1:
+		global_position += push
 
 func _on_wizard_damaged(amount: int, current_hp: int) -> void:
 	hp = current_hp

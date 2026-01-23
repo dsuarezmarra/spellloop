@@ -842,8 +842,7 @@ func _add_animated_decorations(zone_node: Node2D, radius: float, zone_type: Zone
 			var tex = sprite_frames.get_frame_texture("default", 0)
 			if tex:
 				# Aplicar colisión a la decoración
-				# CORRECCIÓN: Pasar tamaño ORIGINAL de la textura.
-				# DecorFactory añade el body como hijo, por lo que heredará la escala del nodo padre.
+				# DecorFactory usa top_level=true para aislar de escala negativa del padre
 				DecorFactory.add_collision_to_node(decor_node, tex.get_size())
 		
 		decor_created += 1
