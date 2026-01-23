@@ -26,6 +26,9 @@ var element_type: String = "physical"
 var special_abilities: Array = []
 var modifiers: Dictionary = {}
 
+# Habilidades Modulares (Phase 1 Refactor)
+var abilities: Array = []
+
 # AoE
 var aoe_radius: float = 100.0
 var aoe_damage_multiplier: float = 0.7
@@ -85,6 +88,78 @@ func initialize_full(config: Dictionary) -> void:
 			multi_attack_count = modifiers.get("attack_count", 3)
 	
 	# print("[EnemyAttackSystem] Full config: %s (arch=%s, elem=%s)" % [enemy.name, archetype, element_type])
+
+	# Phase 1 Migration: Setup Ability Objects
+	_setup_modular_abilities()
+
+func _setup_modular_abilities() -> void:
+	probabilities.clear() # Typo safety: access abilities
+	abilities.clear()
+	
+	var ability: EnemyAbility = null
+	
+	# Mapear lógica legacy a objetos Ability
+	if is_ranged or archetype == "ranged" or archetype == "teleporter" or archetype == "boss":
+		# Bosses/Ranged/Teleporter usan proyectiles
+		var ranged = EnemyAbility_Ranged.new()
+		ranged.projectile_speed = projectile_speed
+		ranged.projectile_scene = projectile_scene
+		ranged.element_type = element_type
+		# Configuración específica
+		if archetype == "multi":
+			ranged.projectile_count = multi_attack_count
+			ranged.spread_angle = 15.0
+		ability = ranged
+		
+	elif archetype == "charger":
+		# Phase 1: Usar Melee para mantener compatibilidad con EnemyBase movement logic
+		# Phase 2: Migrar a EnemyAbility_Dash completo cuando deshabilitemos la lógica en EnemyBase
+		var melee = EnemyAbility_Melee.new()
+		ability = melee
+		
+	elif archetype == "melee" or archetype == "tank" or archetype == "agile":
+		var melee = EnemyAbility_Melee.new()
+		ability = melee
+	
+	# Si se creó una habilidad, configurarla y añadirla
+	if ability:
+		ability.id = "primary_" + archetype
+		ability.cooldown = attack_cooldown
+		ability.range_max = attack_range
+		abilities.append(ability)
+		# print("[EnemyAttackSystem] Migrada habilidad: %s" % ability.id)
+
+	# Phase 2: Map special_abilities strings to active Ability objects
+	for ab_name in special_abilities:
+		var extra_ability: EnemyAbility = null
+		
+		match ab_name:
+			"elite_nova", "nova":
+				extra_ability = EnemyAbility_Nova.new()
+				var cd = modifiers.get("nova_cooldown", modifiers.get("elite_nova_cooldown", 8.0))
+				extra_ability.cooldown = cd
+				extra_ability.projectile_count = modifiers.get("nova_projectile_count", modifiers.get("elite_nova_projectile_count", 12))
+				
+			"elite_summon", "summon":
+				extra_ability = EnemyAbility_Summon.new()
+				var cd = modifiers.get("summon_cooldown", modifiers.get("elite_summon_cooldown", 10.0))
+				extra_ability.cooldown = cd
+				extra_ability.summon_count = modifiers.get("summon_count", modifiers.get("elite_summon_count", 3))
+				
+			"teleport":
+				extra_ability = EnemyAbility_Teleport.new()
+				extra_ability.cooldown = modifiers.get("teleport_cooldown", 5.0)
+				
+			"stomp_attack", "elite_slam":
+				extra_ability = EnemyAbility_Aoe.new()
+				var cd = modifiers.get("stomp_cooldown", modifiers.get("slam_cooldown", modifiers.get("elite_slam_cooldown", 5.0)))
+				extra_ability.cooldown = cd
+				extra_ability.radius = modifiers.get("stomp_radius", modifiers.get("slam_radius", modifiers.get("elite_slam_radius", 100.0)))
+				
+		if extra_ability:
+			extra_ability.id = ab_name
+			abilities.append(extra_ability)
+			# print("[EnemyAttackSystem] Added extra ability: %s" % ab_name)
 
 # Variables para el sistema de boss agresivo
 var is_boss_enemy: bool = false
@@ -171,6 +246,30 @@ func _perform_attack() -> void:
 	"""Ejecutar el ataque segÃºn arquetipo"""
 	if not enemy or not player:
 		return
+	
+	# PHASE 1: Modular Ability Execution
+	if not abilities.is_empty():
+		var context = {
+			"damage": attack_damage,
+			"element_type": element_type,
+			"modifiers": modifiers
+		}
+		
+		# Ejecutar todas las habilidades disponibles (por ahora solo la primaria)
+		for ability in abilities:
+			# Usar el timer global attack_timer como cooldown compartido por ahora
+			# En Phase 2, cada habilidad tendrá su propio timer
+			if ability.execute(enemy, player, context):
+				# Señal de ataque exitoso
+				if ability is EnemyAbility_Melee:
+					attacked_player.emit(attack_damage, true)
+				elif ability is EnemyAbility_Dash:
+					pass # Dash maneja su collision
+				elif ability is EnemyAbility_Ranged:
+					attacked_player.emit(0, false) # Señal genérica para animaciones
+		
+		return # 🔥 Salir para no ejecutar lógica legacy
+
 	
 	# Obtener arquetipo del enemigo padre si existe
 	if enemy.has_method("get") and "archetype" in enemy:

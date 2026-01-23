@@ -63,6 +63,12 @@ static func make_decor(
 		if use_integration_shader:
 			_apply_integration_shader(anim, biome_name)
 		
+		# Auto-Colisión (Task C)
+		if frames.get_frame_count("default") > 0:
+			var tex = frames.get_frame_texture("default", 0)
+			if tex:
+				_add_collision_to_node(anim, tex.get_size())
+		
 		return anim
 		
 	else:
@@ -85,10 +91,13 @@ static func make_decor(
 		if use_integration_shader:
 			_apply_integration_shader(spr, biome_name)
 		
+		# Auto-Colisión (Task C)
+		_add_collision_to_node(spr, sz)
+		
 		return spr
 
 ## Aplicar shader de integración con el suelo
-static func _apply_integration_shader(node: CanvasItem, biome_name: String = "") -> void:
+	static func _apply_integration_shader(node: CanvasItem, biome_name: String = "") -> void:
 	"""
 	Aplica shader para integrar decoración con el suelo:
 	- Sombra sutil en la base
@@ -167,6 +176,39 @@ static func _apply_integration_shader(node: CanvasItem, biome_name: String = "")
 	material.set_shader_parameter("base_fade", base_fade)
 	
 	node.material = material
+
+static func _add_collision_to_node(node: Node2D, size: Vector2) -> void:
+	"""Añadir colisión estática a la base del decorado (Capa 8)"""
+	var body = StaticBody2D.new()
+	body.name = "CollisionBody"
+	node.add_child(body)
+	
+	# Configurar capa 8 (Barreras)
+	body.collision_layer = 0
+	body.set_collision_layer_value(8, true)
+	body.collision_mask = 0
+	
+	# Crear Shape (Cápsula achatada)
+	var shape = CollisionShape2D.new()
+	var capsule = CapsuleShape2D.new()
+	
+	# Radio: 25% del ancho del sprite
+	var radius = max(4.0, size.x * 0.25)
+	
+	# Altura de colisión: pequeña (solo la base/tronco)
+	var height = max(8.0, size.y * 0.15)
+	
+	capsule.radius = radius
+	capsule.height = max(height, radius * 2.0)
+	
+	shape.shape = capsule
+	# Posicionar ligeramente arriba de (0,0) que es el bottom-center del sprite
+	shape.position = Vector2(0, -height * 0.3)
+	
+	body.add_child(shape)
+	
+	# Debug (solo editor)
+	# body.modulate = Color(1,0,0,0.5)
 
 ## Crear decoración con escala y modulación personalizadas
 static func make_decor_styled(

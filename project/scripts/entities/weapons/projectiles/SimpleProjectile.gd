@@ -161,9 +161,27 @@ func _setup_collision() -> void:
 		shape = CollisionShape2D.new()
 		shape.name = "CollisionShape2D"
 		var circle = CircleShape2D.new()
-		circle.radius = projectile_size * 0.5
+		
+		# AUMENTO DE HITBOX (Mejora de "Game Feel")
+		# Multiplicador base: 25% más grande que el sprite visual por defecto
+		var hitbox_mult = 1.25
+		
+		# Ajustes por tipo de elemento
+		match element_type:
+			"ice": hitbox_mult = 1.15    # Hielo debe ser preciso
+			"fire": hitbox_mult = 1.35   # Fuego se siente más expansivo
+			"arcane": hitbox_mult = 1.3  # Magia pura es generosa
+			"nature": hitbox_mult = 1.2  # Naturaleza estándar
+			"dark": hitbox_mult = 1.25   # Oscuridad estándar
+			"lightning": hitbox_mult = 1.4 # Rayos deben impactar fácil
+		
+		# Calcular radio final
+		circle.radius = (projectile_size * 0.5) * hitbox_mult
 		shape.shape = circle
 		add_child(shape)
+		
+		# Debug visual (solo visible si 'Visible Collision Shapes' está activo en Debug)
+		shape.modulate = Color(1, 0, 0, 0.5)
 
 func _create_visual() -> void:
 	"""Crear visual según tipo de elemento"""
