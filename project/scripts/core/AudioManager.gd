@@ -440,8 +440,9 @@ func save_volume_settings() -> void:
 	}
 	var file = FileAccess.open(settings_path, FileAccess.WRITE)
 	if file:
-		# store_var writes a binary-serialised variant; acceptable for settings persistence
-		file.store_var(cfg)
+		# Guardar como JSON válido, no binario
+		var json_string = JSON.stringify(cfg, "\t")
+		file.store_string(json_string)
 		file.close()
 
 # Convenience methods for enhanced SFX
