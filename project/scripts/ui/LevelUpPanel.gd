@@ -249,6 +249,10 @@ func _create_option_panel(index: int) -> Control:
 	panel.custom_minimum_size = Vector2(230, 320)
 	panel.name = "Option_%d" % index
 	
+	# Valores default para creación inicial (se actualizan en _update_panel_style)
+	var type = "upgrade"
+	var rarity = 1
+	
 	# Estilo inicial default (gris oscuro)
 	# Los colores finales se aplican en _update_panel_style() cuando llegan las opciones
 	var style = StyleBoxFlat.new()
