@@ -301,13 +301,12 @@ static func create_projectile(owner: Node2D, data: Dictionary) -> Node2D:
 	else:
 		owner.get_parent().add_child(projectile)
 
-	# CRÍTICO: Usar launch() para inicializar movimiento y visuales
-	# Esto asegura que set_process(true) se llame y que la dirección sea correcta
+	# CRÍTICO: Usar configure_and_launch para inicialización ATÓMICA y UNIFICADA
+	# Esto asegura que todos los stats, efectos y visuales se configuren en un solo paso
 	var start_pos = data.get("start_position", owner.global_position)
 	var dir = data.get("direction", Vector2.RIGHT)
-	var speed = data.get("speed", -1.0)
 	
-	projectile.launch(start_pos, dir, true, speed)
+	projectile.configure_and_launch(data, start_pos, dir, true)
 
 	return projectile
 
