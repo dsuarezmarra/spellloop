@@ -24,7 +24,11 @@ const NUM_SLOTS = 3
 func _L(key: String, fallback: String = "") -> String:
 	var loc = get_tree().root.get_node_or_null("Localization")
 	if loc and loc.has_method("L"):
-		return loc.L(key, [], fallback if fallback != "" else key)
+		var result = loc.L(key)
+		# Si el resultado es la key misma, usar fallback
+		if result == key and fallback != "":
+			return fallback
+		return result
 	return fallback if fallback != "" else key
 
 func _ready() -> void:

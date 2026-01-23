@@ -331,9 +331,11 @@ func is_language_available(language_code: String) -> bool:
 	return language_code in SUPPORTED_LANGUAGES
 
 # Short alias - Use L() for convenience (tr is reserved by Godot's Object class)
-func L(key: String, args: Array = []) -> String:
+func L(key: String, args = null) -> String:
 	"""Short alias for get_text() - Use this in UI code
 	Named 'L' to avoid conflict with Godot's native tr() method"""
+	if args == null:
+		args = []
 	return get_text(key, args)
 
 func _load_language_from_settings() -> void:
