@@ -310,13 +310,23 @@ func _draw_default_orb(image: Image, size: int, center: Vector2) -> void:
 			else:
 				image.set_pixel(x, y, Color(0, 0, 0, 0))
 
+# OPTIMIZACIÓN: Límite global de sistemas de partículas activos
+const MAX_ACTIVE_TRAILS: int = 30
+static var _active_trail_count: int = 0
+
 func _create_trail() -> void:
-	"""Crear partículas de estela según elemento"""
+	"""Crear partículas de estela según elemento (con límite global)"""
+	# OPTIMIZACIÓN: No crear más trails si alcanzamos el límite
+	if SimpleProjectile._active_trail_count >= MAX_ACTIVE_TRAILS:
+		return
+	
+	SimpleProjectile._active_trail_count += 1
+	
 	trail_particles = CPUParticles2D.new()
 	trail_particles.name = "Trail"
 	trail_particles.emitting = true
-	trail_particles.amount = 8
-	trail_particles.lifetime = 0.3
+	trail_particles.amount = 6  # Reducido de 8 a 6 para mejor rendimiento
+	trail_particles.lifetime = 0.25  # Reducido de 0.3
 	trail_particles.speed_scale = 1.5
 	trail_particles.explosiveness = 0.0
 	trail_particles.direction = Vector2(-1, 0)  # Hacia atrás
@@ -327,7 +337,16 @@ func _create_trail() -> void:
 	trail_particles.scale_amount_min = 0.3
 	trail_particles.scale_amount_max = 0.6
 	trail_particles.color = projectile_color
+	
+	# Conectar para decrementar contador cuando se destruya
+	trail_particles.tree_exited.connect(_on_trail_destroyed)
+	
 	add_child(trail_particles)
+
+func _on_trail_destroyed() -> void:
+	"""Callback cuando un trail se destruye"""
+	SimpleProjectile._active_trail_count = maxi(0, SimpleProjectile._active_trail_count - 1)
+
 
 func _process(delta: float) -> void:
 	# Actualizar lifetime
@@ -822,4 +841,11 @@ func _destroy() -> void:
 		await animated_sprite.impact_finished
 	
 	destroyed.emit()
-	queue_free()
+	
+	# OPTIMIZACIÓN: Devolver al pool en lugar de destruir
+	# Esto permite reutilizar el proyectil sin crear uno nuevo
+	if has_meta("_pooled") and get_meta("_pooled") == true:
+		ProjectilePool.release(self)
+	else:
+		queue_free()
+

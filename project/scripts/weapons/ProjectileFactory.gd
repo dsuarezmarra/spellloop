@@ -1,6 +1,8 @@
 # ProjectileFactory.gd
 # Fábrica centralizada para crear proyectiles de todas las armas
 # Se integra con SimpleProjectile existente y añade nuevos tipos
+#
+# OPTIMIZACIÓN v2.0: Sistema de caching para referencias globales
 
 extends Node
 class_name ProjectileFactory
@@ -12,12 +14,51 @@ static var _projectile_scene: PackedScene = null
 static var _life_steal_accumulator: float = 0.0
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# SISTEMA DE CACHING (OPTIMIZACIÓN)
+# Evita llamar get_nodes_in_group() miles de veces por segundo
+# ═══════════════════════════════════════════════════════════════════════════════
+
+static var _cached_player_stats: Node = null
+static var _cached_player: Node = null
+static var _cache_frame: int = -1  # Frame en que se actualizó el cache
+
+static func _get_cached_player_stats(tree: SceneTree) -> Node:
+	"""Obtener PlayerStats con caching por frame"""
+	if tree == null:
+		return null
+	
+	# Actualizar cache solo una vez por frame
+	var current_frame = Engine.get_process_frames()
+	if _cache_frame != current_frame or not is_instance_valid(_cached_player_stats):
+		var nodes = tree.get_nodes_in_group("player_stats")
+		_cached_player_stats = nodes[0] if not nodes.is_empty() else null
+		_cache_frame = current_frame
+	
+	return _cached_player_stats
+
+static func _get_cached_player(tree: SceneTree) -> Node:
+	"""Obtener Player con caching"""
+	if tree == null:
+		return null
+	
+	if not is_instance_valid(_cached_player):
+		var nodes = tree.get_nodes_in_group("player")
+		_cached_player = nodes[0] if not nodes.is_empty() else null
+	
+	return _cached_player
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # RESET PARA NUEVA PARTIDA
 # ═══════════════════════════════════════════════════════════════════════════════
 
 static func reset_for_new_game() -> void:
 	"""Resetear estado estático para nueva partida"""
 	_life_steal_accumulator = 0.0
+	# Limpiar cache
+	_cached_player_stats = null
+	_cached_player = null
+	_cache_frame = -1
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MAPEO DE ELEMENTOS
@@ -144,11 +185,8 @@ static func get_modified_effect_duration(tree: SceneTree, base_duration: float) 
 	if tree == null:
 		return base_duration
 	
-	var player_stats_nodes = tree.get_nodes_in_group("player_stats")
-	if player_stats_nodes.is_empty():
-		return base_duration
-	
-	var player_stats = player_stats_nodes[0]
+	# OPTIMIZACIÓN: Usar cache en lugar de get_nodes_in_group
+	var player_stats = _get_cached_player_stats(tree)
 	if player_stats and player_stats.has_method("get_stat"):
 		var duration_mult = player_stats.get_stat("status_duration_mult")
 		if duration_mult > 0:
@@ -168,12 +206,8 @@ static func apply_status_effects_chance(tree: SceneTree, enemy: Node) -> void:
 	if tree == null or enemy == null or not is_instance_valid(enemy):
 		return
 	
-	# Obtener PlayerStats
-	var player_stats_nodes = tree.get_nodes_in_group("player_stats")
-	if player_stats_nodes.is_empty():
-		return
-	
-	var player_stats = player_stats_nodes[0]
+	# OPTIMIZACIÓN: Usar cache en lugar de get_nodes_in_group
+	var player_stats = _get_cached_player_stats(tree)
 	if not player_stats or not player_stats.has_method("get_stat"):
 		return
 	
@@ -221,12 +255,8 @@ static func get_conditional_damage_multiplier(tree: SceneTree, enemy: Node) -> f
 	if tree == null or enemy == null or not is_instance_valid(enemy):
 		return 1.0
 	
-	# Obtener PlayerStats
-	var player_stats_nodes = tree.get_nodes_in_group("player_stats")
-	if player_stats_nodes.is_empty():
-		return 1.0
-	
-	var player_stats = player_stats_nodes[0]
+	# OPTIMIZACIÓN: Usar cache en lugar de get_nodes_in_group
+	var player_stats = _get_cached_player_stats(tree)
 	if not player_stats or not player_stats.has_method("get_stat"):
 		return 1.0
 	
@@ -354,8 +384,9 @@ static func create_chain_projectile(owner: Node2D, data: Dictionary) -> Node2D:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 static func _create_base_projectile(data: Dictionary) -> SimpleProjectile:
-	"""Crear instancia base de SimpleProjectile con los datos"""
-	var projectile = SimpleProjectile.new()
+	"""Crear instancia base de SimpleProjectile con los datos (usa pool)"""
+	# OPTIMIZACIÓN: Usar pool en lugar de new()
+	var projectile = ProjectilePool.acquire()
 
 	# Stats básicos
 	projectile.damage = int(data.get("damage", 10))
@@ -365,6 +396,7 @@ static func _create_base_projectile(data: Dictionary) -> SimpleProjectile:
 	projectile.lifetime = data.get("range", 300.0) / proj_speed
 	projectile.knockback_force = data.get("knockback", 50.0)
 	projectile.pierce_count = data.get("pierce", 0)
+	projectile.pierces_remaining = projectile.pierce_count
 
 	# Elemento
 	var element_int = data.get("element", 3)  # Default arcane
@@ -375,6 +407,7 @@ static func _create_base_projectile(data: Dictionary) -> SimpleProjectile:
 	projectile.set_meta("effect_value", data.get("effect_value", 0.0))
 	projectile.set_meta("effect_duration", data.get("effect_duration", 0.0))
 	projectile.set_meta("crit_chance", data.get("crit_chance", 0.0))
+	projectile.set_meta("crit_damage", data.get("crit_damage", 2.0))
 	projectile.set_meta("weapon_id", data.get("weapon_id", ""))
 	
 	# Pasar el color del arma si está definido
@@ -382,6 +415,7 @@ static func _create_base_projectile(data: Dictionary) -> SimpleProjectile:
 		projectile.set_meta("weapon_color", data.get("color"))
 
 	return projectile
+
 
 static func get_element_string(element_enum: int) -> String:
 	"""Convertir enum de elemento a string"""
@@ -972,7 +1006,8 @@ class AOEEffect extends Node2D:
 		
 		# Terminar cuando se alcance la duración (si no usamos visual mejorado)
 		if not _use_enhanced:
-			queue_redraw()  # Redibujar para mantener el visual actualizado
+			# OPTIMIZACIÓN: Removido queue_redraw() que se llamaba cada frame
+			# El AOE es estático, no necesita redibujar constantemente
 			if _timer >= duration:
 				queue_free()
 
