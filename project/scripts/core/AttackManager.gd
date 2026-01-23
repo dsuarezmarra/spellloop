@@ -770,12 +770,12 @@ func clear_weapons() -> void:
 				weapon.weapon_leveled_up.disconnect(_on_weapon_leveled_up)
 	weapons.clear()
 
-	# Limpiar OrbitalManager del jugador si existe
-	if player:
-		var orbital_manager = player.get_node_or_null("OrbitalManager")
-		if orbital_manager:
-			orbital_manager.queue_free()
-			# Debug desactivado: print("[AttackManager] OrbitalManager eliminado")
+	# Limpiar TODOS los OrbitalManager del jugador (buscar por prefijo)
+	if player and is_instance_valid(player):
+		for child in player.get_children():
+			if child.name.begins_with("OrbitalManager"):
+				child.queue_free()
+				# Debug: print("[AttackManager] OrbitalManager eliminado: %s" % child.name)
 
 	# Debug desactivado: print("[AttackManager] Todas las armas removidas")
 

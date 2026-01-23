@@ -802,19 +802,19 @@ func _cleanup_player_orbitals() -> void:
 	if not player:
 		return
 
-	# Buscar en el player directo
-	var orbital_manager = player.get_node_or_null("OrbitalManager")
-	if orbital_manager:
-		orbital_manager.queue_free()
-		print("🧪 [WeaponTest] OrbitalManager eliminado del player")
+	# Buscar TODOS los OrbitalManager por prefijo (pueden tener sufijo _weapon_id)
+	for child in player.get_children():
+		if child.name.begins_with("OrbitalManager"):
+			child.queue_free()
+			print("🧪 [WeaponTest] OrbitalManager eliminado: %s" % child.name)
 
 	# Buscar en el WizardPlayer (SpellloopPlayer tiene wizard_player como hijo)
 	var wizard = player.get("wizard_player") if "wizard_player" in player else null
 	if wizard:
-		var wizard_orbital = wizard.get_node_or_null("OrbitalManager")
-		if wizard_orbital:
-			wizard_orbital.queue_free()
-			print("🧪 [WeaponTest] OrbitalManager eliminado del WizardPlayer")
+		for child in wizard.get_children():
+			if child.name.begins_with("OrbitalManager"):
+				child.queue_free()
+				print("🧪 [WeaponTest] OrbitalManager eliminado del WizardPlayer: %s" % child.name)
 
 func _update_stats_display() -> void:
 	var weapons_to_show = base_weapons if current_category == "base" else fusion_weapons

@@ -79,9 +79,14 @@ func update_orbitals(data: Dictionary) -> void:
 	_recreate_orbitals()
 
 func _recreate_orbitals() -> void:
-	# Limpiar orbitales existentes
+	# Limpiar orbitales existentes - desconectar señales primero
 	for orbital in orbitals:
 		if is_instance_valid(orbital):
+			if orbital is Area2D:
+				if orbital.body_entered.is_connected(_on_orbital_hit):
+					orbital.body_entered.disconnect(_on_orbital_hit)
+				if orbital.area_entered.is_connected(_on_orbital_area_hit):
+					orbital.area_entered.disconnect(_on_orbital_area_hit)
 			orbital.queue_free()
 	orbitals.clear()
 
@@ -102,36 +107,61 @@ func _recreate_orbitals() -> void:
 				_use_enhanced = true
 
 	# Crear nuevos orbitales (siempre necesarios para detección de colisión)
+	# IMPORTANTE: Primero añadirlos al árbol, LUEGO conectar señales
 	for i in range(orbital_count):
 		var orbital = _create_orbital(i)
 		orbitals.append(orbital)
 		add_child(orbital)
+		# Conectar señales DESPUÉS de añadir al árbol para asegurar que funcionen
+		_connect_orbital_signals(orbital)
+	
+	if DEBUG_COLLISIONS:
+		print("[OrbitalManager] ✓ Creados %d orbitales para '%s'" % [orbital_count, orbital_weapon_id])
 
-func _create_orbital(index: int) -> Node2D:
+func _connect_orbital_signals(orbital: Area2D) -> void:
+	"""Conectar señales de colisión del orbital.
+	Llamar DESPUÉS de add_child() para evitar bugs de detección."""
+	if not orbital.body_entered.is_connected(_on_orbital_hit):
+		orbital.body_entered.connect(_on_orbital_hit.bind(orbital))
+	if not orbital.area_entered.is_connected(_on_orbital_area_hit):
+		orbital.area_entered.connect(_on_orbital_area_hit.bind(orbital))
+	
+	if DEBUG_COLLISIONS:
+		print("[OrbitalManager] → Señales conectadas para: %s (layer=%d, mask=%d, monitoring=%s)" % [
+			orbital.name, orbital.collision_layer, orbital.collision_mask, orbital.monitoring])
+
+func _create_orbital(index: int) -> Area2D:
 	var orbital = Area2D.new()
 	orbital.name = "Orbital_%d" % index
+	
+	# CRÍTICO: Configuración de capas de colisión
+	# Layer 4 = Orbitales del jugador
+	# Mask 2 = Enemigos (CharacterBody2D)
 	orbital.collision_layer = 0
 	orbital.set_collision_layer_value(4, true)
 	orbital.collision_mask = 0
-	orbital.set_collision_mask_value(2, true)
-	orbital.set_collision_mask_value(3, true)
-	orbital.set_collision_mask_value(4, true)
+	orbital.set_collision_mask_value(2, true)  # Detectar enemigos
+	orbital.set_collision_mask_value(3, true)  # Detectar proyectiles (para interacciones)
+	orbital.set_collision_mask_value(4, true)  # Detectar otros orbitales
 	
+	# CRÍTICO: Habilitar monitoreo para detectar colisiones
 	orbital.monitoring = true
 	orbital.monitorable = true
 
+	# Crear CollisionShape2D para detección física
 	var shape = CollisionShape2D.new()
 	var circle = CircleShape2D.new()
 	circle.radius = 15.0
 	shape.shape = circle
+	shape.disabled = false  # Asegurar que está habilitado
 	orbital.add_child(shape)
 
 	if not _use_enhanced:
 		var visual = _create_orbital_visual()
 		orbital.add_child(visual)
 
-	orbital.body_entered.connect(_on_orbital_hit.bind(orbital))
-	orbital.area_entered.connect(_on_orbital_area_hit.bind(orbital))
+	# NOTA: Las señales se conectan en _connect_orbital_signals() DESPUÉS de add_child()
+	# para asegurar que la detección de colisiones funcione correctamente
 	
 	if orbital_weapon_id != "":
 		orbital.add_to_group("weapon_projectiles_" + orbital_weapon_id)
@@ -161,23 +191,46 @@ func _create_orbital_visual() -> Node2D:
 	return sprite
 
 func _on_orbital_hit(body: Node2D, _orbital: Node2D) -> void:
-	if body.is_in_group("enemies"):
+	"""Callback cuando un orbital colisiona con un CharacterBody2D (enemigo)."""
+	if DEBUG_COLLISIONS:
+		print("[OrbitalManager] body_entered: %s (in enemies: %s)" % [
+			body.name if body else "null", 
+			body.is_in_group("enemies") if body else false])
+	
+	if body and body.is_in_group("enemies"):
 		_damage_enemy(body)
 
 func _on_orbital_area_hit(area: Area2D, _orbital: Node2D) -> void:
+	"""Callback cuando un orbital colisiona con otra Area2D.
+	Verifica si el parent del área es un enemigo (para hitboxes separadas)."""
 	var parent = area.get_parent()
+	
+	if DEBUG_COLLISIONS:
+		print("[OrbitalManager] area_entered: %s, parent: %s (in enemies: %s)" % [
+			area.name if area else "null",
+			parent.name if parent else "null",
+			parent.is_in_group("enemies") if parent else false])
+	
 	if parent and parent.is_in_group("enemies"):
 		_damage_enemy(parent)
 
 func _damage_enemy(enemy: Node) -> void:
+	"""Aplicar daño a un enemigo con cooldown para evitar spam."""
+	if not is_instance_valid(enemy):
+		return
+		
 	var enemy_id = enemy.get_instance_id()
 	var current_time = Time.get_ticks_msec() / 1000.0
 
+	# Verificar cooldown por enemigo
 	if _last_hit_times.has(enemy_id):
 		if current_time - _last_hit_times[enemy_id] < _hit_cooldown:
 			return
 
 	_last_hit_times[enemy_id] = current_time
+	
+	if DEBUG_COLLISIONS:
+		print("[OrbitalManager] 💥 Dañando enemigo: %s (dmg=%.1f)" % [enemy.name, orbital_damage])
 
 	# Usar DamageCalculator centralizado
 	var player = _get_orbital_player()
@@ -341,3 +394,69 @@ func _cleanup_invalid_hit_times() -> void:
 			keys_to_remove.append(enemy_id)
 	for key in keys_to_remove:
 		_last_hit_times.erase(key)
+# ═══════════════════════════════════════════════════════════════════════════════
+# DIAGNÓSTICO Y VALIDACIÓN
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func validate_collision_setup() -> Dictionary:
+	"""
+	Validar que la configuración de colisiones sea correcta.
+	Retorna un diccionario con el estado de validación.
+	Útil para debugging y tests automatizados.
+	"""
+	var result = {
+		"valid": true,
+		"orbital_count": orbitals.size(),
+		"issues": []
+	}
+	
+	for i in range(orbitals.size()):
+		var orbital = orbitals[i]
+		if not is_instance_valid(orbital):
+			result.issues.append("Orbital %d es inválido" % i)
+			result.valid = false
+			continue
+			
+		if not orbital is Area2D:
+			result.issues.append("Orbital %d no es Area2D" % i)
+			result.valid = false
+			continue
+		
+		# Verificar monitoring
+		if not orbital.monitoring:
+			result.issues.append("Orbital %d: monitoring=false" % i)
+			result.valid = false
+		
+		# Verificar máscara de colisión (debe incluir layer 2 para enemigos)
+		if not orbital.get_collision_mask_value(2):
+			result.issues.append("Orbital %d: no tiene mask para layer 2 (enemigos)" % i)
+			result.valid = false
+		
+		# Verificar que tiene CollisionShape2D
+		var has_shape = false
+		for child in orbital.get_children():
+			if child is CollisionShape2D:
+				has_shape = true
+				if child.disabled:
+					result.issues.append("Orbital %d: CollisionShape2D deshabilitado" % i)
+					result.valid = false
+				elif child.shape == null:
+					result.issues.append("Orbital %d: CollisionShape2D sin shape" % i)
+					result.valid = false
+				break
+		
+		if not has_shape:
+			result.issues.append("Orbital %d: no tiene CollisionShape2D" % i)
+			result.valid = false
+		
+		# Verificar conexión de señales
+		if not orbital.body_entered.is_connected(_on_orbital_hit):
+			result.issues.append("Orbital %d: body_entered no conectado" % i)
+			result.valid = false
+	
+	if DEBUG_COLLISIONS:
+		print("[OrbitalManager] Validación: %s" % ("✓ OK" if result.valid else "✗ FALLÓ"))
+		for issue in result.issues:
+			print("  - %s" % issue)
+	
+	return result
