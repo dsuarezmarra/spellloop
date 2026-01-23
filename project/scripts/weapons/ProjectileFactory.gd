@@ -294,19 +294,20 @@ static func create_projectile(owner: Node2D, data: Dictionary) -> Node2D:
 	if projectile == null:
 		return null
 
-	projectile.global_position = data.get("start_position", owner.global_position)
-	projectile.direction = data.get("direction", Vector2.RIGHT)
-
-	# NOTA: NO rotar el nodo proyectil aquí.
-	# El AnimatedProjectileSprite.set_direction() se encarga de la rotación del sprite.
-	# Rotar el nodo padre causaría doble rotación cuando hay sprites animados.
-
-	# Añadir al árbol
+	# Añadir al árbol primero para asegurar ciclo de vida correcto
 	var tree = owner.get_tree()
 	if tree and tree.current_scene:
 		tree.current_scene.add_child(projectile)
 	else:
 		owner.get_parent().add_child(projectile)
+
+	# CRÍTICO: Usar launch() para inicializar movimiento y visuales
+	# Esto asegura que set_process(true) se llame y que la dirección sea correcta
+	var start_pos = data.get("start_position", owner.global_position)
+	var dir = data.get("direction", Vector2.RIGHT)
+	var speed = data.get("speed", -1.0)
+	
+	projectile.launch(start_pos, dir, true, speed)
 
 	return projectile
 
@@ -383,42 +384,10 @@ static func create_chain_projectile(owner: Node2D, data: Dictionary) -> Node2D:
 # HELPERS
 # ═══════════════════════════════════════════════════════════════════════════════
 
-static func _create_base_projectile(data: Dictionary) -> SimpleProjectile:
-	"""Crear instancia base de SimpleProjectile con los datos (usa pool)"""
-	# OPTIMIZACIÓN: Usar pool en lugar de new()
-	var projectile = ProjectilePool.acquire()
-
-	# Stats básicos
-	projectile.damage = int(data.get("damage", 10))
-	projectile.speed = data.get("speed", 300.0)
-	# Calcular lifetime basado en rango (evitar división por cero)
-	var proj_speed = maxf(data.get("speed", 300.0), 1.0)
-	projectile.lifetime = data.get("range", 300.0) / proj_speed
-	projectile.knockback_force = data.get("knockback", 50.0)
-	projectile.pierce_count = data.get("pierce", 0)
-	projectile.pierces_remaining = projectile.pierce_count
-
-	# Elemento
-	var element_int = data.get("element", 3)  # Default arcane
-	projectile.element_type = ELEMENT_TO_STRING.get(element_int, "arcane")
-
-	# Efecto especial (almacenar en metadata)
-	projectile.set_meta("effect", data.get("effect", "none"))
-	projectile.set_meta("effect_value", data.get("effect_value", 0.0))
-	projectile.set_meta("effect_duration", data.get("effect_duration", 0.0))
-	projectile.set_meta("crit_chance", data.get("crit_chance", 0.0))
-	projectile.set_meta("crit_damage", data.get("crit_damage", 2.0))
-	projectile.set_meta("weapon_id", data.get("weapon_id", ""))
-	
-	# Pasar el color del arma si está definido
-	if data.has("color"):
-		projectile.set_meta("weapon_color", data.get("color"))
-
-	# CRÍTICO: Re-inicializar visuales para soporte de pooling
-	# Esto recrea sprites y partículas que se eliminaron al devolver al pool
-	projectile.initialize_visuals()
-
-	return projectile
+static func _create_base_projectile(_data: Dictionary) -> SimpleProjectile:
+	"""Crear instancia base de SimpleProjectile (Wrapper del Pool)"""
+	# OPTIMIZACIÓN: Usar pool. La configuración completa ocurre en configure_and_launch
+	return ProjectilePool.acquire()
 
 
 static func get_element_string(element_enum: int) -> String:

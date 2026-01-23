@@ -378,22 +378,73 @@ func _process(delta: float) -> void:
 	if animated_sprite and is_instance_valid(animated_sprite):
 		animated_sprite.set_direction(direction)
 
-func initialize(start_pos: Vector2, target_pos: Vector2, dmg: int = -1, spd: float = -1) -> void:
-	"""Inicializar proyectil - llamar DESPUÉS de add_child()"""
+func configure_and_launch(data: Dictionary, start_pos: Vector2, target_vec: Vector2, is_direction: bool = true) -> void:
+	"""
+	Método UNIFICADO para inicializar, configurar y lanzar un proyectil.
+	Reemplaza la lógica fragmentada anterior para garantizar consistencia total (Zero-Ghosting Policy).
+	"""
+	# 1. Aplicar Stats Base (Sobrescribir siempre)
+	damage = int(data.get("damage", 10))
+	speed = data.get("speed", 400.0)
+	var proj_range = data.get("range", 300.0)
+	# Calcular lifetime exacto según velocidad (mínimo 1.0 para evitar div/0)
+	lifetime = proj_range / maxf(speed, 1.0)
+	knockback_force = data.get("knockback", 150.0)
+	pierce_count = data.get("pierce", 0)
+	pierces_remaining = pierce_count
+	
+	# 2. Configurar Elemento
+	var element_int = data.get("element", 3)
+	if ProjectileFactory.has_method("get_element_string"):
+		element_type = ProjectileFactory.get_element_string(element_int)
+	else:
+		element_type = "arcane" # Fallback
+	
+	# 3. Configurar Color (Prioridad: Arma > Elemento)
+	if data.has("color"):
+		projectile_color = data.get("color")
+		set_meta("weapon_color", projectile_color)
+	else:
+		projectile_color = ELEMENT_COLORS.get(element_type, Color.WHITE)
+	
+	# 4. Configurar Efectos (Metadata)
+	set_meta("effect", data.get("effect", "none"))
+	set_meta("effect_value", data.get("effect_value", 0.0))
+	set_meta("effect_duration", data.get("effect_duration", 0.0))
+	set_meta("crit_chance", data.get("crit_chance", 0.0))
+	set_meta("crit_damage", data.get("crit_damage", 2.0))
+	set_meta("weapon_id", data.get("weapon_id", ""))
+	
+	# 5. Configurar Movimiento
 	global_position = start_pos
-	direction = (target_pos - start_pos).normalized()
+	if is_direction:
+		direction = target_vec
+	else:
+		direction = (target_vec - start_pos).normalized()
 	
-	if dmg > 0:
-		damage = dmg
-	if spd > 0:
-		speed = spd
+	# Resetear estado de ejecución
+	current_lifetime = 0.0
+	enemies_hit.clear()
 	
-	# Aplicar rotación inmediatamente al sprite animado
+	# 6. Reconstruir Visuales (Ahora que tenemos todos los datos)
+	initialize_visuals()
+	
+	# 7. Activar Lógica y Señales
+	set_process(true)
+	
+	# Reconectar señales (Pooling cleanup fix)
+	if not body_entered.is_connected(_on_body_entered):
+		body_entered.connect(_on_body_entered)
+	if not area_entered.is_connected(_on_area_entered):
+		area_entered.connect(_on_area_entered)
+	
+	# 8. Trigger Animación
 	if animated_sprite and is_instance_valid(animated_sprite):
 		animated_sprite.set_direction(direction)
+		animated_sprite.play_flight()
 
 func set_color(color: Color) -> void:
-	"""Cambiar color del proyectil"""
+	"""Cambiar color del proyectil (Runtime override)"""
 	projectile_color = color
 	if sprite:
 		sprite.modulate = color
