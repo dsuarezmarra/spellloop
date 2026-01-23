@@ -29,13 +29,7 @@ var modal_confirm_btn: Button = null
 var modal_selected_index: int = 0  # 0 = Cancel, 1 = Confirm
 
 # === COLORES POR TIER ===
-const TIER_COLORS = {
-	1: Color(0.7, 0.7, 0.7),      # Gris (Común)
-	2: Color(0.3, 0.7, 0.3),      # Verde (Poco común)
-	3: Color(0.3, 0.5, 0.9),      # Azul (Raro)
-	4: Color(0.7, 0.3, 0.9),      # Púrpura (Épico)
-	5: Color(1.0, 0.7, 0.2)       # Dorado (Legendario)
-}
+# Usar UIVisualHelper.TIER_COLORS para colores centralizados
 
 func _ready():
 	layer = 100
@@ -549,7 +543,7 @@ func _style_item_button(btn: Button, tier: int, can_afford: bool, has_discount: 
 	var style_normal = StyleBoxFlat.new()
 	var base_color = Color(0.15, 0.15, 0.15) if can_afford else Color(0.1, 0.08, 0.08)
 	style_normal.bg_color = base_color
-	style_normal.border_color = TIER_COLORS.get(tier, Color.WHITE) * (1.0 if can_afford else 0.5)
+	style_normal.border_color = UIVisualHelper.get_color_for_tier(tier) * (1.0 if can_afford else 0.5)
 	style_normal.set_border_width_all(2)
 	style_normal.set_corner_radius_all(6)
 	

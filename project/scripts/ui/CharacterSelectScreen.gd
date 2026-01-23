@@ -73,6 +73,26 @@ func L(key: String, args: Array = []) -> String:
 		return Localization.L(key, args)
 	return key
 
+func _get_lang_suffix() -> String:
+	"""Get current language suffix for localized content (e.g., '_es', '_en')"""
+	if Localization and Localization.has_method("get_current_language"):
+		return "_" + Localization.get_current_language()
+	return "_es"  # Default to Spanish
+
+func _get_localized_field(data: Dictionary, field_base: String, fallback: String = "") -> String:
+	"""Get a localized field from a dictionary (e.g., 'name_es' or 'name_en')"""
+	var lang_suffix = _get_lang_suffix()
+	var key = field_base + lang_suffix
+	if data.has(key):
+		return data[key]
+	# Fallback to Spanish
+	if data.has(field_base + "_es"):
+		return data[field_base + "_es"]
+	# Fallback to field without suffix
+	if data.has(field_base):
+		return data[field_base]
+	return fallback
+
 func _load_characters() -> void:
 	"""Load all characters from database"""
 	all_characters = CharacterDatabase.get_all_characters()
@@ -411,12 +431,12 @@ func _update_stats_display() -> void:
 	var char_data = all_characters[current_index]
 	var is_unlocked = char_data.id in unlocked_character_ids
 
-	# Update name and title
+	# Update name and title (use localized versions)
 	if character_name_label:
-		character_name_label.text = char_data.name_es if is_unlocked else "???"
+		character_name_label.text = _get_localized_field(char_data, "name", "???") if is_unlocked else "???"
 
 	if character_title_label:
-		character_title_label.text = char_data.title_es if is_unlocked else "LOCKED"
+		character_title_label.text = _get_localized_field(char_data, "title", "") if is_unlocked else L("ui.character_select.locked")
 		character_title_label.add_theme_color_override("font_color", char_data.color_primary if is_unlocked else Color(0.5, 0.5, 0.5))
 
 	# Update stats panel
@@ -441,15 +461,15 @@ func _update_stats_display() -> void:
 
 	if not is_unlocked:
 		var locked_label = Label.new()
-		locked_label.text = "Complete challenges to unlock this hero!"
+		locked_label.text = L("ui.character_select.unlock_hint")
 		locked_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		locked_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 		vbox.add_child(locked_label)
 		return
 
-	# Description
+	# Description (localized)
 	var desc_label = Label.new()
-	desc_label.text = char_data.description_es
+	desc_label.text = _get_localized_field(char_data, "description", "")
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.add_theme_font_size_override("font_size", 14)
@@ -462,8 +482,8 @@ func _update_stats_display() -> void:
 
 	# Weapon and Passive (localized)
 	var weapon_data = WeaponDatabase.WEAPONS.get(char_data.starting_weapon, {})
-	var weapon_name = weapon_data.get("name_es", char_data.starting_weapon)
-	var weapon_label_text = Localization.L("ui.character_select.starting_weapon")
+	var weapon_name = _get_localized_field(weapon_data, "name", char_data.starting_weapon)
+	var weapon_label_text = L("ui.character_select.starting_weapon")
 
 	var weapon_label = Label.new()
 	weapon_label.text = weapon_label_text + ": " + weapon_name
@@ -473,8 +493,8 @@ func _update_stats_display() -> void:
 	vbox.add_child(weapon_label)
 
 	var passive = char_data.get("passive", {})
-	var passive_name = passive.get("name_es", "None")
-	var passive_label_text = Localization.L("ui.character_select.passive")
+	var passive_name = _get_localized_field(passive, "name", "None")
+	var passive_label_text = L("ui.character_select.passive")
 	var passive_label = Label.new()
 	passive_label.text = passive_label_text + ": " + passive_name
 	passive_label.add_theme_font_size_override("font_size", 15)

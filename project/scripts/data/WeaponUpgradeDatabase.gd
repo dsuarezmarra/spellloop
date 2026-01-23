@@ -47,14 +47,10 @@ enum UpgradeRarity {
 	LEGENDARY = 5
 }
 
-# Colores por tier (nuevos)
-const TIER_COLORS: Dictionary = {
-	1: Color(0.9, 0.9, 0.9),      # Blanco
-	2: Color(0.3, 0.9, 0.3),      # Verde
-	3: Color(0.4, 0.6, 1.0),      # Azul
-	4: Color(1.0, 0.85, 0.2),     # Amarillo
-	5: Color(1.0, 0.5, 0.1),      # Naranja
-}
+# Colores por tier - usar UIVisualHelper para consistencia global
+# TIER_COLORS se mantiene para compatibilidad legacy
+static func get_tier_color(tier: int) -> Color:
+	return UIVisualHelper.get_color_for_tier(tier)
 
 const UNIQUE_COLOR = Color(1.0, 0.3, 0.3)   # Rojo
 const CURSED_COLOR = Color(0.7, 0.2, 0.8)   # Púrpura

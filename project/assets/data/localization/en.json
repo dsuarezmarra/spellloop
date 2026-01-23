@@ -21,6 +21,22 @@
 			"unlock_hint": "Complete challenges to unlock this hero!",
 			"starting_weapon": "Starting Weapon",
 			"passive": "Passive"
+		},
+		"options": {
+			"title": "OPTIONS",
+			"music": "Music",
+			"sfx": "Sound Effects",
+			"language": "Language / Idioma",
+			"close": "Close"
+		},
+		"save_slots": {
+			"title": "SELECT YOUR GAME",
+			"slot": "Slot",
+			"empty": "Empty",
+			"level": "Level",
+			"time": "Time",
+			"delete": "Delete",
+			"back": "Back"
 		}
 	}
 }

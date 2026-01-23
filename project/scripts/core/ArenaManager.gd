@@ -111,7 +111,14 @@ var biome_textures: Dictionary = {}  # biome_name -> {base: Texture, decor: [Tex
 var zone_nodes: Dictionary = {} # ZoneType -> Node2D
 var boundary_node: Node2D = null
 
+# Sistema de detección de caminos (para speed buff)
+var path_segments: Array[PackedVector2Array] = []  # Lista de todos los segmentos de camino
+const PATH_DETECTION_WIDTH: float = 40.0  # Ancho de detección del camino
+const PATH_SPEED_BONUS: float = 0.25  # +25% velocidad en caminos
+
 func _ready() -> void:
+	# Añadir al grupo para acceso global
+	add_to_group("arena_manager")
 	# Asegurar que ArenaManager respete la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	# Debug desactivado: print("🏟️ [ArenaManager] Inicializando...")
@@ -315,10 +322,14 @@ func _generate_paths(parent: Node2D) -> void:
 		path_textures["Grassland"] = _load_robusta.call("res://assets/textures/paths/path_dirt_v2.jpg")
 		path_textures["Forest"] = path_textures["Grassland"]
 	
-	# Verificar cargas
+	# Fallback robusto: biomas sin textura usan la de Grassland (tierra)
+	var fallback_tex = path_textures["Grassland"]
 	for biome in path_textures:
 		if not path_textures[biome]:
-			push_warning("Falta textura de camino para: " + biome)
+			path_textures[biome] = fallback_tex
+			# Solo mostrar warning si es un bioma que debería tener textura propia
+			if biome in ["Lava", "ArcaneWastes", "Death"]:
+				push_warning("⚠️ [ArenaManager] Textura de camino para '%s' no encontrada, usando fallback" % biome)
 	
 	# Cantidad de caminos principales
 	var main_paths = rng.randi_range(3, 5)
@@ -405,6 +416,9 @@ func _split_and_draw_path(container: Node, points: PackedVector2Array, textures:
 
 func _draw_path_segment_with_biome(container: Node, points: PackedVector2Array, zone: int, textures: Dictionary, width: float) -> void:
 	if points.size() < 2: return
+	
+	# Almacenar puntos para detección de caminos (speed buff)
+	path_segments.append(points)
 	
 	# Determinar textura correcta
 	var biome_name = selected_biomes.get(zone, "Grassland")
@@ -1275,12 +1289,12 @@ func unlock_zone(zone_type: ZoneType) -> void:
 	
 	unlocked_zones[zone_type] = true
 	
-	# Calcular nueva visibilidad de niebla
+	# Calcular nueva visibilidad de niebla - alinear con la siguiente barrera desbloqueada
 	var new_fog_radius = safe_zone_radius
 	match zone_type:
-		ZoneType.MEDIUM: new_fog_radius = medium_zone_radius + 500.0
-		ZoneType.DANGER: new_fog_radius = danger_zone_radius + 500.0
-		ZoneType.DEATH: new_fog_radius = arena_radius + 500.0
+		ZoneType.MEDIUM: new_fog_radius = medium_zone_radius  # Fog hasta la barrera a DANGER
+		ZoneType.DANGER: new_fog_radius = danger_zone_radius  # Fog hasta la barrera a DEATH
+		ZoneType.DEATH: new_fog_radius = arena_radius  # Fog hasta el borde del arena
 	
 	# Actualizar niebla of war
 	update_fog_radius(new_fog_radius)
@@ -1399,3 +1413,50 @@ func _unlock_zone_barrier(zone_type: int) -> void:
 			barrier.queue_free()
 			zone_barriers.erase(zone_type)
 			# Debug desactivado: print("🏟️ [ArenaManager] Barrera de zona %d removida" % zone_type)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DETECCIÓN DE CAMINOS (SPEED BUFF)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func is_on_path(position: Vector2) -> bool:
+	"""Verificar si una posición está sobre un camino"""
+	for segment in path_segments:
+		if _is_point_near_polyline(position, segment, PATH_DETECTION_WIDTH):
+			return true
+	return false
+
+func get_path_speed_bonus() -> float:
+	"""Obtener el bonus de velocidad por caminar en un camino"""
+	return PATH_SPEED_BONUS
+
+func _is_point_near_polyline(point: Vector2, polyline: PackedVector2Array, max_distance: float) -> bool:
+	"""Verificar si un punto está cerca de cualquier segmento de una polilínea"""
+	if polyline.size() < 2:
+		return false
+	
+	var max_dist_sq = max_distance * max_distance
+	
+	for i in range(polyline.size() - 1):
+		var a = polyline[i]
+		var b = polyline[i + 1]
+		
+		# Calcular distancia del punto al segmento
+		var dist_sq = _point_to_segment_dist_sq(point, a, b)
+		if dist_sq <= max_dist_sq:
+			return true
+	
+	return false
+
+func _point_to_segment_dist_sq(point: Vector2, seg_a: Vector2, seg_b: Vector2) -> float:
+	"""Calcular distancia al cuadrado de un punto a un segmento"""
+	var seg = seg_b - seg_a
+	var seg_len_sq = seg.length_squared()
+	
+	if seg_len_sq < 0.0001:
+		return (point - seg_a).length_squared()
+	
+	# Proyectar punto en la línea
+	var t = maxf(0.0, minf(1.0, (point - seg_a).dot(seg) / seg_len_sq))
+	var projection = seg_a + t * seg
+	
+	return (point - projection).length_squared()

@@ -94,8 +94,11 @@ func _ready():
 	var popup_bg = PanelContainer.new()
 	popup_bg.mouse_filter = Control.MOUSE_FILTER_STOP
 	popup_bg.add_theme_stylebox_override("panel", create_panel_style())
-	popup_bg.custom_minimum_size = Vector2(650, 250) # Wider to avoid cutoff
+	popup_bg.custom_minimum_size = Vector2(650, 0) # Wider, altura dinámica
+	popup_bg.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	main_control.add_child(popup_bg)
+	
+	_popup_bg = popup_bg  # Guardar referencia para animaciones y recentrado
 	
 	# Contenedor principal (VBoxContainer)
 	var main_vbox = VBoxContainer.new()
@@ -163,8 +166,19 @@ func show_as_jackpot(items: Array):
 	claim_button.pressed.connect(_on_claim_all_pressed)
 	main_vbox.add_child(claim_button)
 	
+	# Recentrar popup después de añadir botón
+	await get_tree().process_frame
+	_recenter_popup()
+	
 	# Dar foco para soporte de teclado/gamepad
 	claim_button.grab_focus()
+
+func _recenter_popup() -> void:
+	"""Recentrar el popup después de cambios de contenido"""
+	if _popup_bg and is_instance_valid(_popup_bg):
+		await get_tree().process_frame
+		var screen_size = get_viewport().get_visible_rect().size
+		_popup_bg.position = (screen_size - _popup_bg.size) / 2
 
 func setup_items(items: Array):
 	"""Configurar los items disponibles"""
@@ -581,9 +595,23 @@ func _input(event: InputEvent):
 	if _is_skip_modal_active:
 		return
 
+	# En modo jackpot, también permitir navegación WASD para ver items antes de reclamar
 	if is_jackpot_mode:
-		if claim_button and not claim_button.has_focus():
-			claim_button.grab_focus()
+		# Manejar navegación W/S para explorar items (sin seleccionar)
+		if event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and event.keycode == KEY_W):
+			_navigate_selection(-1)
+			get_tree().root.set_input_as_handled()
+			return
+		elif event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and event.keycode == KEY_S):
+			_navigate_selection(1)
+			get_tree().root.set_input_as_handled()
+			return
+		# Space/Enter activa el botón Claim All
+		elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER)):
+			if claim_button:
+				_on_claim_all_pressed()
+			get_tree().root.set_input_as_handled()
+			return
 		return
 	
 	# === INPUT DE TECLADO Y ACCIONES (WASD / Flechas / Gamepad) ===

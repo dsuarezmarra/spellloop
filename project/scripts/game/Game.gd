@@ -1046,11 +1046,12 @@ func _show_level_up_panel(level: int) -> void:
 	if panel.has_method("initialize"):
 		panel.initialize(attack_mgr, stats)
 
-	# Configurar contadores de reroll/banish (persistentes entre level ups)
-	if panel.has_method("set_reroll_count"):
-		panel.set_reroll_count(remaining_rerolls)
-	if panel.has_method("set_banish_count"):
-		panel.set_banish_count(remaining_banishes)
+	# Configurar contadores de reroll/banish desde PlayerStats (fuente única de verdad)
+	# Game.gd ahora solo observa pero no mantiene contadores paralelos
+	if stats and panel.has_method("set_reroll_count"):
+		panel.set_reroll_count(stats.current_rerolls)
+	if stats and panel.has_method("set_banish_count"):
+		panel.set_banish_count(stats.current_banishes)
 
 	# Conectar señales
 	if panel.has_signal("option_selected"):
@@ -1090,18 +1091,21 @@ func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> 
 	"""Callback cuando cambia un stat del jugador - propagar al player"""
 	# Debug desactivado: print("📊 [Game] Stat cambiado: %s = %.2f" % [stat_name, new_value])
 
-	# Manejar mejoras de reroll/banish - incrementar contadores cuando se obtienen
+	# Manejar mejoras de reroll/banish - PlayerStats ya maneja esto internamente
+	# Solo logueamos si es necesario
 	if stat_name == "reroll_count":
 		var diff = int(new_value) - int(old_value)
 		if diff > 0:
-			remaining_rerolls += diff
-			# Debug desactivado: print("🎲 [Game] +%d rerolls por mejora (total: %d)" % [diff, remaining_rerolls])
+			# PlayerStats.apply_upgrade_effect() ya incrementa current_rerolls
+			# Debug desactivado: print("🎲 [Game] +%d rerolls por mejora" % diff)
+			pass
 		return
 	elif stat_name == "banish_count":
 		var diff = int(new_value) - int(old_value)
 		if diff > 0:
-			remaining_banishes += diff
-			# Debug desactivado: print("🚫 [Game] +%d banishes por mejora (total: %d)" % [diff, remaining_banishes])
+			# PlayerStats.apply_upgrade_effect() ya incrementa current_banishes
+			# Debug desactivado: print("🚫 [Game] +%d banishes por mejora" % diff)
+			pass
 		return
 
 	# Propagar cambios relevantes al player
@@ -1135,14 +1139,14 @@ func _on_player_level_changed(new_level: int) -> void:
 	# Debug desactivado: print("📊 [Game] Nivel del jugador: %d" % new_level)
 
 func _on_reroll_used() -> void:
-	"""Callback cuando se usa un reroll"""
-	remaining_rerolls = maxi(0, remaining_rerolls - 1)
-	# Debug desactivado: print("🎲 [Game] Reroll usado (restantes: %d)" % remaining_rerolls)
+	"""Callback cuando se usa un reroll - PlayerStats ya lo decrementó"""
+	# remaining_rerolls ya no se usa, PlayerStats.current_rerolls es la fuente de verdad
+	pass
 
 func _on_banish_used(_option_index: int) -> void:
-	"""Callback cuando se usa un banish"""
-	remaining_banishes = maxi(0, remaining_banishes - 1)
-	# Debug desactivado: print("🚫 [Game] Banish usado (restantes: %d)" % remaining_banishes)
+	"""Callback cuando se usa un banish - PlayerStats ya lo decrementó"""
+	# remaining_banishes ya no se usa, PlayerStats.current_banishes es la fuente de verdad
+	pass
 
 func _on_coin_collected(value: int, total: int) -> void:
 	## Callback cuando se recoge una moneda

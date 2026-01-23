@@ -89,6 +89,11 @@ func _ready() -> void:
 	# print("[SpellloopPlayer] ===== OK: SPELLLOOP PLAYER LISTO =====\n")
 
 func _physics_process(_delta: float) -> void:
+	# BLOQUEO TOTAL durante muerte - no procesar nada más
+	if wizard_player and wizard_player._is_dying:
+		velocity = Vector2.ZERO
+		return  # Salir inmediatamente, sin move_and_slide
+	
 	# Obtener input del jugador
 	var input_manager = get_tree().root.get_node_or_null("InputManager")
 	if not input_manager:
@@ -103,14 +108,20 @@ func _physics_process(_delta: float) -> void:
 		if ps and ps.has_method("get_stat"):
 			final_speed = ps.get_stat("move_speed")  # Valor directo, no multiplicador
 
+		# Aplicar bonus de velocidad si estamos sobre un camino (+25%)
+		var arena_manager = get_tree().get_first_node_in_group("arena_manager")
+		if arena_manager and arena_manager.has_method("is_on_path"):
+			if arena_manager.is_on_path(global_position):
+				final_speed = final_speed * (1.0 + arena_manager.get_path_speed_bonus())
+
 		# Aplicar slow temporal si hay
 		if wizard_player._is_slowed:
 			final_speed = final_speed * (1.0 - wizard_player._slow_amount)
 
 		move_speed = final_speed
 
-	# No moverse si está stunneado o muriendo
-	if wizard_player and (wizard_player.is_stunned() or wizard_player._is_dying):
+	# No moverse si está stunneado
+	if wizard_player and wizard_player.is_stunned():
 		velocity = Vector2.ZERO
 	else:
 		var movement_input = input_manager.get_movement_vector()

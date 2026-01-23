@@ -31,14 +31,8 @@ const OPTION_TYPES = {
 	PLAYER_UPGRADE = "player_upgrade"
 }
 
-# Colores por TIER (sistema visual mejorado)
-const TIER_COLORS = {
-	1: Color(0.9, 0.9, 0.9),      # Tier 1 - Blanco
-	2: Color(0.3, 0.9, 0.3),      # Tier 2 - Verde
-	3: Color(0.4, 0.6, 1.0),      # Tier 3 - Azul
-	4: Color(1.0, 0.85, 0.2),     # Tier 4 - Amarillo
-	5: Color(1.0, 0.5, 0.1),      # Tier 5 - Naranja (Legendario)
-}
+# Usar colores centralizados de UIVisualHelper
+# TIER_COLORS ahora viene de UIVisualHelper.TIER_COLORS
 
 # Colores especiales
 const UNIQUE_COLOR = Color(1.0, 0.3, 0.3)     # Rojo para mejoras únicas
@@ -264,7 +258,7 @@ func _create_option_panel(index: int) -> Control:
 	
 	# ESTILO FINAL DIRECTO (Solicitud Usuario: Tarjetas de color)
 	var style = StyleBoxFlat.new()
-	var tier_color = TIER_COLORS.get(rarity, TIER_COLORS[1])
+	var tier_color = UIVisualHelper.get_color_for_tier(rarity)
 	
 	# Fondo: Color del tier con transparencia (0.5 para que se note bien)
 	style.bg_color = Color(tier_color.r, tier_color.g, tier_color.b, 0.5)
@@ -1061,7 +1055,7 @@ func _get_option_color(option: Dictionary) -> Color:
 			"legendary": tier = 5
 			_: tier = 1
 	
-	return TIER_COLORS.get(tier, TIER_COLORS[1])
+	return UIVisualHelper.get_color_for_tier(tier)
 
 func _get_type_text(option_type: String) -> String:
 	match option_type:
@@ -1708,6 +1702,10 @@ func show_panel() -> void:
 	current_row = Row.OPTIONS
 	option_index = 0
 	button_index = 0
+	
+	# Sincronizar contadores con PlayerStats al abrir el panel
+	_sync_counts_from_player_stats()
+	
 	generate_options()
 
 func setup_options(opts: Array) -> void:

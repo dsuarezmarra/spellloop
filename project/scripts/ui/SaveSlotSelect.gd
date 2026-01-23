@@ -20,6 +20,13 @@ var current_slot_index: int = 0
 
 const NUM_SLOTS = 3
 
+# Helper para localización
+func _L(key: String, fallback: String = "") -> String:
+	var loc = get_tree().root.get_node_or_null("Localization")
+	if loc and loc.has_method("L"):
+		return loc.L(key, [], fallback if fallback != "" else key)
+	return fallback if fallback != "" else key
+
 func _ready() -> void:
 	_create_slot_ui()
 	_load_slot_data()
@@ -48,17 +55,21 @@ func _create_slot_ui() -> void:
 		slot_panels.append(slot_panel)
 
 func _create_slot_panel(slot_index: int) -> PanelContainer:
-	"""Crear un panel individual de slot"""
+	"""Crear un panel individual de slot con estilo mejorado"""
 	var panel = PanelContainer.new()
 	panel.name = "Slot%d" % (slot_index + 1)
-	panel.custom_minimum_size = Vector2(250, 300)
+	panel.custom_minimum_size = Vector2(280, 340)  # Ligeramente más grande
 	
-	# Estilo del panel
+	# Estilo del panel mejorado (más elegante)
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.15, 0.15, 0.2, 0.9)
-	style.border_color = Color(0.4, 0.4, 0.5)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(8)
+	style.bg_color = Color(0.12, 0.12, 0.18, 0.95)
+	style.border_color = Color(0.3, 0.4, 0.5)
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(12)
+	# Sombra sutil
+	style.shadow_color = Color(0, 0, 0, 0.3)
+	style.shadow_size = 8
+	style.shadow_offset = Vector2(4, 4)
 	panel.add_theme_stylebox_override("panel", style)
 	
 	var vbox = VBoxContainer.new()
@@ -67,22 +78,22 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	
 	# Margen interno
 	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 15)
-	margin.add_theme_constant_override("margin_right", 15)
-	margin.add_theme_constant_override("margin_top", 15)
-	margin.add_theme_constant_override("margin_bottom", 15)
+	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_right", 20)
+	margin.add_theme_constant_override("margin_top", 20)
+	margin.add_theme_constant_override("margin_bottom", 20)
 	
 	var inner_vbox = VBoxContainer.new()
-	inner_vbox.add_theme_constant_override("separation", 8)
+	inner_vbox.add_theme_constant_override("separation", 10)
 	margin.add_child(inner_vbox)
 	
-	# Título del slot
+	# Título del slot con icono grande
 	var slot_title = Label.new()
 	slot_title.name = "SlotTitle"
-	slot_title.text = "📁 Slot %d" % (slot_index + 1)
+	slot_title.text = "📁 %s %d" % [_L("ui.save_slots.slot"), slot_index + 1]
 	slot_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	slot_title.add_theme_font_size_override("font_size", 24)
-	slot_title.add_theme_color_override("font_color", Color(1, 0.9, 0.5))
+	slot_title.add_theme_font_size_override("font_size", 26)
+	slot_title.add_theme_color_override("font_color", Color(1, 0.85, 0.4))
 	inner_vbox.add_child(slot_title)
 	
 	# Separador

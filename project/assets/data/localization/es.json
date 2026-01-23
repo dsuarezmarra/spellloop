@@ -21,6 +21,22 @@
 			"unlock_hint": "Completa desafios para desbloquear este heroe!",
 			"starting_weapon": "Arma Inicial",
 			"passive": "Pasiva"
+		},
+		"options": {
+			"title": "OPCIONES",
+			"music": "Musica",
+			"sfx": "Efectos de Sonido",
+			"language": "Idioma / Language",
+			"close": "Cerrar"
+		},
+		"save_slots": {
+			"title": "SELECCIONA TU PARTIDA",
+			"slot": "Ranura",
+			"empty": "Vacia",
+			"level": "Nivel",
+			"time": "Tiempo",
+			"delete": "Eliminar",
+			"back": "Atras"
 		}
 	}
 }

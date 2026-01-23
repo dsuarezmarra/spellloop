@@ -92,9 +92,38 @@ func _on_language_selected(index: int) -> void:
 	if loc and loc.has_method("set_language"):
 		loc.set_language(lang_code)
 		print("[OptionsMenu] Language changed to: %s" % lang_code)
+		# Refrescar textos inmediatamente después del cambio
+		_refresh_ui_texts()
 
 	# Configurar navegacion WASD
 	_setup_wasd_navigation()
+
+func _refresh_ui_texts() -> void:
+	"""Refrescar todos los textos de la UI con el nuevo idioma"""
+	var loc = _get_localization()
+	if not loc:
+		return
+	
+	# Actualizar textos usando el sistema de localización
+	var title_label = get_node_or_null("Panel/VBox/TitleLabel")
+	if title_label:
+		title_label.text = "⚙️ " + loc.L("ui.options.title", "OPCIONES")
+	
+	var music_label = get_node_or_null("Panel/VBox/MusicContainer/MusicLabel")
+	if music_label:
+		music_label.text = "🎵 " + loc.L("ui.options.music", "Música")
+	
+	var sfx_label = get_node_or_null("Panel/VBox/SFXContainer/SFXLabel")
+	if sfx_label:
+		sfx_label.text = "🔊 " + loc.L("ui.options.sfx", "Efectos de Sonido")
+	
+	var lang_label = get_node_or_null("Panel/VBox/LanguageContainer/LanguageLabel")
+	if lang_label:
+		lang_label.text = "🌐 " + loc.L("ui.options.language", "Idioma / Language")
+	
+	var close_button = get_node_or_null("Panel/VBox/CloseButton")
+	if close_button:
+		close_button.text = loc.L("ui.options.close", "Cerrar")
 
 func _setup_wasd_navigation() -> void:
 	"""Configurar controles navegables y desactivar navegacion por flechas"""

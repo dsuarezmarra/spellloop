@@ -13,13 +13,8 @@ enum ChestType {
 	SHOP  # Cofres tipo tienda que aparecen en el mapa
 }
 
-const TIER_COLORS = {
-	0: Color(0.7, 0.7, 0.7),      # Gris (Común)
-	1: Color(0.3, 0.7, 0.3),      # Verde (Poco común)
-	2: Color(0.3, 0.5, 0.9),      # Azul (Raro)
-	3: Color(0.7, 0.3, 0.9),      # Púrpura (Épico)
-	4: Color(1.0, 0.7, 0.2)       # Dorado (Legendario)
-}
+# Usar UIVisualHelper.TIER_COLORS para colores centralizados
+# Nota: chest_rarity usa 0-4, UIVisualHelper usa 1-5, así que +1 al acceder
 
 var chest_type: int = ChestType.NORMAL
 var chest_rarity: int = 0  # ItemsDefinitions.ItemRarity.WHITE (numeric fallback)
@@ -160,9 +155,8 @@ func create_chest_texture():
 		ChestType.WEAPON: chest_color = Color(0.5, 0.1, 0.1) # Rojo oscuro
 	
 	var rarity_color = Color(1,1,1)
-	# Eliminado ItemsDefinitions (Dead Code)
-	if TIER_COLORS.has(chest_rarity):
-		rarity_color = TIER_COLORS[chest_rarity]
+	# Usar UIVisualHelper para colores consistentes (chest_rarity 0-4 -> tier 1-5)
+	rarity_color = UIVisualHelper.get_color_for_tier(chest_rarity + 1)
 	var lock_color = rarity_color
 	
 	# Cuerpo del cofre

@@ -1322,7 +1322,15 @@ func _create_weapon_card(weapon) -> Control:
 
 	var weapon_name = weapon.weapon_name_es if "weapon_name_es" in weapon else weapon.weapon_name if "weapon_name" in weapon else "Arma"
 	var name_label = Label.new()
-	name_label.text = weapon_name
+	
+	# Verificar si es fusión y agregar badge
+	var is_fusion = false
+	if "id" in weapon and WeaponDatabase.is_fusion_weapon(weapon.id):
+		is_fusion = true
+		name_label.text = "🔥 " + weapon_name
+	else:
+		name_label.text = weapon_name
+	
 	name_label.add_theme_font_size_override("font_size", 16)
 	name_label.add_theme_color_override("font_color", _get_color_by_rarity(rarity))
 	info_vbox.add_child(name_label)
@@ -1330,9 +1338,11 @@ func _create_weapon_card(weapon) -> Control:
 	# Elemento y tipo
 	var type_label = Label.new()
 	var element_display = ELEMENT_ICONS.get(element, "❓") + " " + element.capitalize()
+	if is_fusion:
+		element_display = "🔥 FUSIÓN • " + element_display
 	type_label.text = element_display
 	type_label.add_theme_font_size_override("font_size", 12)
-	type_label.add_theme_color_override("font_color", ELEMENT_COLORS.get(element, Color.GRAY))
+	type_label.add_theme_color_override("font_color", ELEMENT_COLORS.get(element, Color.GRAY) if not is_fusion else Color(1.0, 0.7, 0.3))
 	info_vbox.add_child(type_label)
 
 	# === NIVEL Y BARRA DE PROGRESO ===
