@@ -377,126 +377,83 @@ func _generate_path_geometry(base_angle: float, noise: FastNoiseLite, seed_idx: 
 	return curve.tessellate(3, 8)
 
 func _split_and_draw_path(container: Node, points: PackedVector2Array, textures: Dictionary, width: float) -> void:
+	"""
+	Dibuja el camino completo como UNA SOLA geometría continua.
+	Se renderiza 4 veces (una por zona) con diferentes texturas,
+	usando el shader para mostrar solo la parte visible de cada zona.
+	Esto garantiza continuidad perfecta en las fronteras.
+	"""
 	if points.size() < 2: return
 	
-	var current_zone = _get_zone_at_distance(points[0].length())
-	var segment_points = PackedVector2Array([points[0]])
-	
-	for k in range(1, points.size()):
-		var p_prev = points[k-1]
-		var p_curr = points[k]
-		var dist_curr = p_curr.length()
-		var zone_curr = _get_zone_at_distance(dist_curr)
-		
-		if zone_curr != current_zone:
-			# Corte exacto en frontera
-			var boundary_radius = _get_boundary_radius(current_zone, zone_curr)
-			var intersection = _find_circle_segment_intersection(p_prev, p_curr, boundary_radius)
-			
-			if intersection != Vector2.INF:
-				# Corte exacto en frontera
-				# Eliminamos cualquier extensión para evitar superposiciones visuales
-				segment_points.append(intersection)
-				
-				# Este segmento pertenece a la zona ANTERIOR
-				# Se dibujará con el Z-index negativo correcto (-390, -290, etc)
-				_draw_path_segment_with_biome(container, segment_points, current_zone, textures, width)
-				
-				# El siguiente segmento empieza en la INTERSECCIÓN REAL
-				# (La zona nueva empieza limpia en el borde)
-				current_zone = zone_curr
-				segment_points = PackedVector2Array([intersection])
-				segment_points.append(p_curr)
-			else:
-				segment_points.append(p_curr)
-				_draw_path_segment_with_biome(container, segment_points, current_zone, textures, width)
-				current_zone = zone_curr
-				segment_points = PackedVector2Array([p_curr])
-		else:
-			segment_points.append(p_curr)
-	
-	_draw_path_segment_with_biome(container, segment_points, current_zone, textures, width)
-
-func _draw_path_segment_with_biome(container: Node, points: PackedVector2Array, zone: int, textures: Dictionary, width: float) -> void:
-	if points.size() < 2: return
-	
-	# Almacenar puntos para detección de caminos (speed buff)
+	# Almacenar puntos completos para detección de caminos (speed buff)
 	path_segments.append(points)
 	
-	# Determinar textura correcta
+	# Dibujar el mismo camino completo para cada zona con su textura correspondiente
+	for zone in [ZoneType.SAFE, ZoneType.MEDIUM, ZoneType.DANGER, ZoneType.DEATH]:
+		_draw_full_path_for_zone(container, points, zone, textures, width)
+
+func _draw_full_path_for_zone(container: Node, points: PackedVector2Array, zone: int, textures: Dictionary, width: float) -> void:
+	"""
+	Dibuja el camino completo pero solo visible dentro de la zona especificada.
+	El shader se encarga de ocultar (discard) los píxeles fuera de la zona.
+	"""
+	if points.size() < 2: return
+	
+	# Determinar textura correcta para esta zona
 	var biome_name = selected_biomes.get(zone, "Grassland")
 	var tex = textures.get(biome_name, textures.get("Grassland"))
 	
-	# Si no hay textura, usar fallback visual (Magenta) en lugar de abortar
+	# Si no hay textura, usar fallback visual
 	if not tex: 
-		push_warning("⚠️ [ArenaManager] Usando textura fallback (Magenta) para zona %d" % zone)
+		push_warning("⚠️ [ArenaManager] Usando textura fallback para zona %d" % zone)
 		var img = Image.create_empty(64, 64, false, Image.FORMAT_RGBA8)
 		img.fill(Color.MAGENTA)
 		tex = ImageTexture.create_from_image(img)
 	
 	var line = Line2D.new()
 	line.width = width 
-	# Debug para ver por qué sale marrón en el desierto
-	# print("🖌️ [SEGMENT] Zone: %d | Biome: %s | Texture: %s" % [zone, biome_name, "FOUND" if textures.has(biome_name) else "MISSING"])
 	
-	# 1. Configurar Shader correcto
+	# Configurar Shader
 	var shader = load("res://assets/shaders/path_world_uv.gdshader")
 	var mat = ShaderMaterial.new()
 	mat.shader = shader
 	mat.set_shader_parameter("texture_albedo", tex)
 	mat.set_shader_parameter("texture_scale", Vector2(0.002, 0.002)) 
 	
-	# Calcular límites exactos para el clipping
+	# Calcular límites de visibilidad para esta zona (sin overlap, corte exacto)
 	var clip_min = 0.0
-	var clip_max = 100000.0 # Default gigante
-	
-	# IMPORTANTE: Para que los caminos se vean continuos entre zonas,
-	# necesitamos un overlap en los bordes. El camino tiene ~400px de ancho,
-	# así que extendemos el clip_min hacia adentro para que cubra medio ancho.
-	# Esto evita que el discard del shader corte partes visibles del camino.
-	
-	var overlap = width * 0.6  # 60% del ancho del camino como overlap
-	var margin = 200.0  # Margen extra para el clip_max
+	var clip_max = 100000.0
 	
 	match zone:
 		ZoneType.SAFE:
 			clip_min = 0.0
-			clip_max = safe_zone_radius + margin
+			clip_max = safe_zone_radius
 		ZoneType.MEDIUM:
-			clip_min = safe_zone_radius - overlap  # Overlap hacia adentro
-			clip_max = medium_zone_radius + margin
+			clip_min = safe_zone_radius
+			clip_max = medium_zone_radius
 		ZoneType.DANGER:
-			clip_min = medium_zone_radius - overlap  # Overlap hacia adentro
-			clip_max = danger_zone_radius + margin
+			clip_min = medium_zone_radius
+			clip_max = danger_zone_radius
 		ZoneType.DEATH:
-			clip_min = danger_zone_radius - overlap  # Overlap hacia adentro
-			clip_max = arena_radius + margin
+			clip_min = danger_zone_radius
+			clip_max = arena_radius
 	
-	# Pasar uniforms al shader (sin ajustes de 2.0px, EXACTOS para match perfecto)
 	mat.set_shader_parameter("min_radius", clip_min)
 	mat.set_shader_parameter("max_radius", clip_max)
 	
 	line.material = mat
 	line.texture_mode = Line2D.LINE_TEXTURE_STRETCH 
-	
-	# Usar CAP_ROUND para que los segmentos se unan visualmente sin cortes
 	line.begin_cap_mode = Line2D.LINE_CAP_ROUND
 	line.end_cap_mode = Line2D.LINE_CAP_ROUND
 	line.antialiased = true
-	line.points = points
-		
-	# Tintes y colores
-	line.modulate = Color(1, 1, 1, 1) # Blanco puro
-	if not tex:
-		line.default_color = Color(1, 0, 1, 1) # Fallback Magenta solo si falla textura 
+	line.points = points  # MISMOS puntos para todas las zonas = continuidad perfecta
+	line.modulate = Color(1, 1, 1, 1)
 
-	# CAMBIO CLAVE: Añadir el camino al nodo de su propia zona
-	# Como las zonas se dibujan en orden (Inner -> Outer), y Outer tiene "agujero",
-	# el camino de Inner sobresaldrá un poco pero quedará oculto DEBAJO del suelo de Outer.
+	# Añadir al nodo de zona correspondiente
 	if zone_nodes.has(zone):
 		var z_node = zone_nodes[zone]
 		z_node.add_child(line)
-		line.z_index = 1 # Encima del suelo (0) pero debajo de la siguiente zona (10)
+		line.z_index = 1  # Encima del suelo (0)
 	else:
 		container.add_child(line)
 

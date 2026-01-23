@@ -93,8 +93,8 @@ var _enable_slot_animation: bool = true   # Toggle para habilitar/deshabilitar a
 var _is_animating: bool = false           # Si la animación está en progreso
 var _spin_tweens: Array[Tween] = []       # Tweens de animación por panel
 var _spin_icons: Array[String] = ["🔥", "⚡", "❄️", "🛡️", "⚔️", "💀", "✨", "🌟", "💎", "🎯", "🏹", "🌿"]
-const SPIN_DURATION_PER_REEL: float = 0.3  # Segundos de spin por panel (reducido para fluidez)
-const SPIN_STAGGER: float = 0.1            # Delay entre paradas de paneles (reducido)
+const SPIN_DURATION_PER_REEL: float = 0.5  # Segundos de spin por panel (reducido para fluidez)
+const SPIN_STAGGER: float = 0.2            # Delay entre paradas de paneles (reducido)
 
 # Referencias
 var attack_manager: AttackManager = null
