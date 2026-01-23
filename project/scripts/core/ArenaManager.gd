@@ -450,25 +450,26 @@ func _draw_path_segment_with_biome(container: Node, points: PackedVector2Array, 
 	var clip_min = 0.0
 	var clip_max = 100000.0 # Default gigante
 	
-	# IMPORTANTE: Para que el "Z-Sandwich" funcione, la capa de abajo (Inner)
-	# debe poder dibujarse un poco más allá de su límite (geometry extended 50px).
-	# Por eso añadimos un margen (+200) al clip_max, para no cortar la extensión con el shader.
-	# El suelo de la siguiente capa (que está encima en Z) se encargará de taparlo visualmente.
+	# IMPORTANTE: Para que los caminos se vean continuos entre zonas,
+	# necesitamos un overlap en los bordes. El camino tiene ~400px de ancho,
+	# así que extendemos el clip_min hacia adentro para que cubra medio ancho.
+	# Esto evita que el discard del shader corte partes visibles del camino.
 	
-	var margin = 200.0
+	var overlap = width * 0.6  # 60% del ancho del camino como overlap
+	var margin = 200.0  # Margen extra para el clip_max
 	
 	match zone:
 		ZoneType.SAFE:
 			clip_min = 0.0
 			clip_max = safe_zone_radius + margin
 		ZoneType.MEDIUM:
-			clip_min = safe_zone_radius
+			clip_min = safe_zone_radius - overlap  # Overlap hacia adentro
 			clip_max = medium_zone_radius + margin
 		ZoneType.DANGER:
-			clip_min = medium_zone_radius
+			clip_min = medium_zone_radius - overlap  # Overlap hacia adentro
 			clip_max = danger_zone_radius + margin
 		ZoneType.DEATH:
-			clip_min = danger_zone_radius
+			clip_min = danger_zone_radius - overlap  # Overlap hacia adentro
 			clip_max = arena_radius + margin
 	
 	# Pasar uniforms al shader (sin ajustes de 2.0px, EXACTOS para match perfecto)
