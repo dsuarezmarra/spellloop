@@ -419,7 +419,9 @@ func _stop_reel(index: int, final_item: Dictionary) -> void:
 	for child in strip.get_children():
 		child.queue_free()
 	
-	await get_tree().process_frame
+	var tree = get_tree()
+	if tree:
+		await tree.process_frame
 	
 	# Crear display del item real
 	var icon = final_item.get("icon", "❓")

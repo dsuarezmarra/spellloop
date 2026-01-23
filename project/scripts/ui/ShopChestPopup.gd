@@ -311,7 +311,9 @@ func setup_shop(items: Array, coins: int):
 		child.queue_free()
 	item_buttons.clear()
 	
-	await get_tree().process_frame
+	var tree = get_tree()
+	if tree:
+		await tree.process_frame
 	
 	# Crear botones de items
 	for i in range(items.size()):
@@ -320,7 +322,8 @@ func setup_shop(items: Array, coins: int):
 		items_container.add_child(item_btn)
 		item_buttons.append(item_btn)
 	
-	await get_tree().process_frame
+	if tree:
+		await tree.process_frame
 	
 	# Inicializar selección visual (mostrar borde en el primer item)
 	current_selected_index = 0

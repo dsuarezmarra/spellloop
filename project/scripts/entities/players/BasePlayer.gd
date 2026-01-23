@@ -266,8 +266,20 @@ func _on_stats_changed_signal(stat_name, _old, new_val):
 
 func _setup_weapons_deferred() -> void:
 	"""Configurar armas después de que todo esté listo"""
+	# Verificación de seguridad: el nodo debe estar en el árbol
+	if not is_inside_tree():
+		return
+		
+	var tree = get_tree()
+	if not tree:
+		return
+
 	# Usar await para asegurar que todo esté inicializado
-	await get_tree().process_frame
+	await tree.process_frame
+	
+	# Verificar de nuevo tras el await (el nodo podría haber sido eliminado)
+	if not is_inside_tree() or not attack_manager:
+		return
 	
 	if attack_manager:
 		attack_manager.initialize(self)
