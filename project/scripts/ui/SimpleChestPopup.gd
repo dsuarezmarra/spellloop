@@ -749,6 +749,9 @@ func _on_skip_pressed():
 	if popup_locked: return
 	_show_confirm_skip_modal()
 
+var _modal_btn_cancel: Button = null
+var _modal_btn_confirm: Button = null
+
 func _show_confirm_skip_modal():
 	"""Mostrar modal de confirmación para saltar recompensa"""
 	_is_skip_modal_active = true
@@ -813,8 +816,11 @@ func _show_confirm_skip_modal():
 	btn_cancel.pressed.connect(func(): 
 		_is_skip_modal_active = false
 		confirm_modal.queue_free()
+		_modal_btn_cancel = null
+		_modal_btn_confirm = null
 	)
 	hbox.add_child(btn_cancel)
+	_modal_btn_cancel = btn_cancel
 	
 	var btn_confirm = Button.new()
 	btn_confirm.text = "Confirmar"
@@ -827,12 +833,16 @@ func _show_confirm_skip_modal():
 		_is_skip_modal_active = false
 		skipped.emit()
 		queue_free()
+		_modal_btn_cancel = null
+		_modal_btn_confirm = null
 	)
 	hbox.add_child(btn_confirm)
+	_modal_btn_confirm = btn_confirm
 	
 	# Foco inicial
 	await get_tree().process_frame
-	btn_cancel.grab_focus()
+	if is_instance_valid(btn_cancel):
+		btn_cancel.grab_focus()
 
 func _on_claim_all_pressed():
 	if popup_locked: return
@@ -903,6 +913,17 @@ func _input(event: InputEvent):
 		return
 		
 	if _is_skip_modal_active:
+		# Lógica de navegación específica para el modal de skip
+		if _modal_btn_cancel and _modal_btn_confirm:
+			# A/Left -> Cancel
+			if event.is_action_pressed("ui_left") or (event is InputEventKey and event.pressed and (event.keycode == KEY_A or event.keycode == KEY_LEFT)):
+				_modal_btn_cancel.grab_focus()
+				get_tree().root.set_input_as_handled()
+			# D/Right -> Confirm
+			elif event.is_action_pressed("ui_right") or (event is InputEventKey and event.pressed and (event.keycode == KEY_D or event.keycode == KEY_RIGHT)):
+				_modal_btn_confirm.grab_focus()
+				get_tree().root.set_input_as_handled()
+			# Space/Enter -> Trigger focused (Standard UI behavior usually handles this, but ensuring focus is enough)
 		return
 
 	# En modo jackpot, permitir navegación WASD y Space para reclamar item individual

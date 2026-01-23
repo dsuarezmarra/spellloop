@@ -42,7 +42,7 @@ var _enhanced_visual: Node2D = null  # OrbitalsVisualContainer
 var _use_enhanced: bool = false
 
 # Flag para debug (activar en caso de problemas)
-const DEBUG_COLLISIONS: bool = true  # TEMPORAL: Para diagnosticar problema de orbitales
+const DEBUG_COLLISIONS: bool = false  # TEMPORAL: Para diagnosticar problema de orbitales
 
 func _ready() -> void:
 	# CRÍTICO: Respetar la pausa del juego

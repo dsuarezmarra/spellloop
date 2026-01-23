@@ -234,13 +234,21 @@ func _refresh_active_orbital_weapons() -> void:
 							 weapon.target_type == WeaponDatabase.TargetType.ORBIT
 			
 			if is_orbital:
-				# 1. Limpiar proyectiles viejos
+				# 1. Destruir proyectiles del grupo
 				var group_name = "weapon_projectiles_" + weapon.id
 				player.get_tree().call_group(group_name, "queue_free")
 				
-				# 2. Forzar disparo inmediato (re-spawn)
-				weapon.ready_to_fire = true # Asegurar que pueda disparar
-				# Usar call_deferred para dar tiempo a que se borren los viejos y evitar conflictos físicos
+				# 2. CRÍTICO: También destruir el OrbitalManager
+				# Si no lo destruimos, update_orbitals() detectará el mismo weapon_id
+				# y solo actualizará stats, NO recreará los orbitales destruidos
+				var orbital_mgr_name = "OrbitalManager_" + weapon.id
+				var orbital_mgr = player.get_node_or_null(orbital_mgr_name)
+				if orbital_mgr:
+					orbital_mgr.queue_free()
+				
+				# 3. Forzar disparo inmediato (re-spawn completo)
+				weapon.ready_to_fire = true
+				# Usar call_deferred para dar tiempo a que se borren los viejos
 				call_deferred("_force_respawn_orbital", weapon)
 
 func _force_respawn_orbital(weapon: BaseWeapon) -> void:
