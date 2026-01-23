@@ -67,7 +67,7 @@ static func make_decor(
 		if frames.get_frame_count("default") > 0:
 			var tex = frames.get_frame_texture("default", 0)
 			if tex:
-				_add_collision_to_node(anim, tex.get_size())
+				add_collision_to_node(anim, tex.get_size())
 		
 		return anim
 		
@@ -92,12 +92,12 @@ static func make_decor(
 			_apply_integration_shader(spr, biome_name)
 		
 		# Auto-Colisión (Task C)
-		_add_collision_to_node(spr, sz)
+		add_collision_to_node(spr, sz)
 		
 		return spr
 
 ## Aplicar shader de integración con el suelo
-	static func _apply_integration_shader(node: CanvasItem, biome_name: String = "") -> void:
+static func _apply_integration_shader(node: CanvasItem, biome_name: String = "") -> void:
 	"""
 	Aplica shader para integrar decoración con el suelo:
 	- Sombra sutil en la base
@@ -177,7 +177,7 @@ static func make_decor(
 	
 	node.material = material
 
-static func _add_collision_to_node(node: Node2D, size: Vector2) -> void:
+static func add_collision_to_node(node: Node2D, size: Vector2) -> void:
 	"""Añadir colisión estática a la base del decorado (Capa 8)"""
 	var body = StaticBody2D.new()
 	body.name = "CollisionBody"

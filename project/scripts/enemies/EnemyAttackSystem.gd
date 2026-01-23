@@ -93,7 +93,6 @@ func initialize_full(config: Dictionary) -> void:
 	_setup_modular_abilities()
 
 func _setup_modular_abilities() -> void:
-	probabilities.clear() # Typo safety: access abilities
 	abilities.clear()
 	
 	var ability: EnemyAbility = null
@@ -149,6 +148,23 @@ func _setup_modular_abilities() -> void:
 			"teleport":
 				extra_ability = EnemyAbility_Teleport.new()
 				extra_ability.cooldown = modifiers.get("teleport_cooldown", 5.0)
+
+			"poison_attack":
+				# Modificar habilidad primaria si existe
+				if ability:
+					if ability is EnemyAbility_Melee or ability is EnemyAbility_Ranged:
+						ability.element_type = "poison"
+			
+			"slow_attack":
+				if ability:
+					if ability is EnemyAbility_Melee or ability is EnemyAbility_Ranged:
+						ability.element_type = "ice" # Ice aplica slow/freeze
+
+			"fire_trail":
+				# TODO: Implementar Trail ability si es necesario, 
+				# o dejar que EnemyBase lo maneje si es movimiento.
+				pass
+
 				
 			"stomp_attack", "elite_slam":
 				extra_ability = EnemyAbility_Aoe.new()

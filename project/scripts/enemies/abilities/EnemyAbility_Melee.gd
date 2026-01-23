@@ -3,6 +3,7 @@ extends EnemyAbility
 
 @export var damage: int = 10
 @export var knockback_force: float = 0.0
+@export var element_type: String = "physical"
 
 signal attacked_player(damage: int, is_melee: bool)
 
@@ -13,8 +14,8 @@ func execute(attacker: Node2D, target: Node2D, context: Dictionary = {}) -> bool
 	var final_damage = context.get("damage", damage)
 	
 	if target.has_method("take_damage"):
-		# Determinar elemento (fallback a physical)
-		var elem = context.get("element_type", "physical")
+		# Determinar elemento (fallback a self.element_type si no hay en contexto)
+		var elem = context.get("element_type", element_type)
 		
 		# Aplicar daño
 		target.call("take_damage", final_damage, elem, attacker)

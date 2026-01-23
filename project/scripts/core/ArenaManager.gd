@@ -12,6 +12,9 @@
 extends Node2D
 class_name ArenaManager
 
+const DecorFactory = preload("res://scripts/utils/DecorFactory.gd")   # Asegurar referencia
+
+
 # === SIGNALS ===
 signal arena_ready(arena_data: Dictionary)
 signal player_zone_changed(zone_id: int, zone_name: String)
@@ -833,6 +836,14 @@ func _add_animated_decorations(zone_node: Node2D, radius: float, zone_type: Zone
 			decor_node.frame = rng.randi() % frame_count
 		
 		decor_container.add_child(decor_node)
+		
+		# TASK C: Añadir colisión usando el helper refactorizado de DecorFactory
+		if frame_count > 0:
+			var tex = sprite_frames.get_frame_texture("default", 0)
+			if tex:
+				# Aplicar colisión a la decoración
+				DecorFactory.add_collision_to_node(decor_node, tex.get_size() * final_scale)
+		
 		decor_created += 1
 	
 	# Debug desactivado: print("   🌿 [Zone %s] %d decoraciones" % [ZoneType.keys()[zone_type], decor_created])
