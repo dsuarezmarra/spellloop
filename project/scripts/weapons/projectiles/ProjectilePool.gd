@@ -7,10 +7,10 @@
 # - ProjectilePool.return_projectile(proj) en lugar de queue_free()
 
 extends Node
-class_name ProjectilePool
+# NOTA: No usar class_name aquí porque es un autoload
 
-# Singleton instance
-static var instance: ProjectilePool = null
+# Singleton instance (usamos Node como tipo ya que no tenemos class_name)
+static var instance: Node = null
 
 # Pool de proyectiles disponibles
 var _available_pool: Array[SimpleProjectile] = []
