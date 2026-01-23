@@ -107,23 +107,23 @@ func _refresh_ui_texts() -> void:
 	# Actualizar textos usando el sistema de localización
 	var title_label = get_node_or_null("Panel/VBox/TitleLabel")
 	if title_label:
-		title_label.text = "⚙️ " + loc.L("ui.options.title", "OPCIONES")
+		title_label.text = "⚙️ " + loc.L("ui.options.title")
 	
 	var music_label = get_node_or_null("Panel/VBox/MusicContainer/MusicLabel")
 	if music_label:
-		music_label.text = "🎵 " + loc.L("ui.options.music", "Música")
+		music_label.text = "🎵 " + loc.L("ui.options.music")
 	
 	var sfx_label = get_node_or_null("Panel/VBox/SFXContainer/SFXLabel")
 	if sfx_label:
-		sfx_label.text = "🔊 " + loc.L("ui.options.sfx", "Efectos de Sonido")
+		sfx_label.text = "🔊 " + loc.L("ui.options.sfx")
 	
 	var lang_label = get_node_or_null("Panel/VBox/LanguageContainer/LanguageLabel")
 	if lang_label:
-		lang_label.text = "🌐 " + loc.L("ui.options.language", "Idioma / Language")
+		lang_label.text = "🌐 " + loc.L("ui.options.language")
 	
 	var close_button = get_node_or_null("Panel/VBox/CloseButton")
 	if close_button:
-		close_button.text = loc.L("ui.options.close", "Cerrar")
+		close_button.text = loc.L("ui.options.close")
 
 func _setup_wasd_navigation() -> void:
 	"""Configurar controles navegables y desactivar navegacion por flechas"""
