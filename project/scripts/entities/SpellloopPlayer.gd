@@ -98,8 +98,8 @@ func _physics_process(_delta: float) -> void:
 	var input_manager = get_tree().root.get_node_or_null("InputManager")
 	
 	# DEBUG: Verificar máscara cada 60 frames (~1s)
-	if Engine.get_frames_drawn() % 120 == 0:
-		print("DEBUG Player: Collision Mask = %d (Bin: %s)" % [collision_mask, String.num_int64(collision_mask, 2)])
+	# if Engine.get_frames_drawn() % 120 == 0:
+	# 	print("DEBUG Player: Collision Mask = %d (Bin: %s)" % [collision_mask, String.num_int64(collision_mask, 2)])
 
 	if not input_manager:
 		return
