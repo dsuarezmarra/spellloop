@@ -512,6 +512,11 @@ class BeamEffect extends Node2D:
 
 		if enemy.has_method("take_damage"):
 			enemy.take_damage(int(final_damage))
+			
+			# LOG: Registrar daño de beam
+			var is_crit = final_damage > damage
+			DamageLogger.log_beam_damage(weapon_id, enemy.name, int(final_damage), is_crit)
+			
 			# Aplicar life steal
 			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
 			# Verificar execute threshold después del daño
@@ -787,6 +792,10 @@ class AOEEffect extends Node2D:
 
 		if enemy.has_method("take_damage"):
 			enemy.take_damage(int(final_damage))
+			
+			# LOG: Registrar daño AOE con info de ticks
+			DamageLogger.log_aoe_damage(weapon_id, enemy.name, int(final_damage), "tick %d/%d" % [_ticks_applied, total_ticks])
+			
 			# Aplicar life steal
 			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
 			# Verificar execute threshold después del daño

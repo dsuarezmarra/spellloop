@@ -38,7 +38,7 @@ var _enhanced_visual: Node2D = null  # OrbitalsVisualContainer
 var _use_enhanced: bool = false
 
 # Flag para debug (activar en caso de problemas)
-const DEBUG_COLLISIONS: bool = false
+const DEBUG_COLLISIONS: bool = true  # TEMPORAL: Para diagnosticar problema de orbitales
 
 func _ready() -> void:
 	# CRÍTICO: Respetar la pausa del juego
@@ -229,8 +229,8 @@ func _damage_enemy(enemy: Node) -> void:
 
 	_last_hit_times[enemy_id] = current_time
 	
-	if DEBUG_COLLISIONS:
-		print("[OrbitalManager] 💥 Dañando enemigo: %s (dmg=%.1f)" % [enemy.name, orbital_damage])
+	# LOG: Registrar daño orbital
+	DamageLogger.log_orbital_damage(orbital_weapon_id, enemy.name, int(orbital_damage), {"effect": effect})
 
 	# Usar DamageCalculator centralizado
 	var player = _get_orbital_player()

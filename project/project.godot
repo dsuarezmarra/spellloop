@@ -28,6 +28,7 @@ MagicDefinitions="*res://scripts/magic/magic_definitions.gd"
 SpriteDB="*res://scripts/core/SpriteDB.gd"
 SessionState="*res://scripts/core/SessionState.gd"
 ProjectilePool="*res://scripts/weapons/projectiles/ProjectilePool.gd"
+DamageLogger="*res://scripts/core/DamageLogger.gd"
 
 [display]
 

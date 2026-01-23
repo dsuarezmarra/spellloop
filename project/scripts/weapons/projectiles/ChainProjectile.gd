@@ -124,6 +124,11 @@ func _apply_damage_to_target(target: Node2D) -> void:
 
 	if target.has_method("take_damage"):
 		target.take_damage(damage_result.get_int_damage())
+		
+		# LOG: Registrar daño de cadena con hop actual
+		var hop_number = enemies_hit.size() + 1
+		DamageLogger.log_chain_damage(weapon_id, target.name, damage_result.get_int_damage(), hop_number, chain_count)
+		
 		ProjectileFactory.apply_life_steal(get_tree(), damage_result.final_damage)
 		# Aplicar efectos de estado por probabilidad (bleed, burn, freeze de items)
 		ProjectileFactory.apply_status_effects_chance(get_tree(), target)

@@ -1390,7 +1390,7 @@ func _restore_fog_radius(radius: float) -> void:
 	
 	if fog and fog.material is ShaderMaterial:
 		fog.material.set_shader_parameter("unlocked_radius", radius)
-		print("🌫️ [ArenaManager] Fog restaurado a radio: %.1f" % radius))
+		print("🌫️ [ArenaManager] Fog restaurado a radio: %.1f" % radius)
 	# Debug desactivado: print("   - Seed: %d" % arena_seed)
 	# Debug desactivado: print("   - Zonas desbloqueadas: SAFE=%s, MEDIUM=%s, DANGER=%s, DEATH=%s" % [
 	#	unlocked_zones.get(ZoneType.SAFE, false),

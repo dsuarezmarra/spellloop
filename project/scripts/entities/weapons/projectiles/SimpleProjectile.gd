@@ -504,6 +504,12 @@ func _handle_hit(target: Node) -> void:
 	# Aplicar daño
 	if target.has_method("take_damage"):
 		target.take_damage(final_damage)
+		
+		# LOG: Registrar daño aplicado
+		var weapon_id = get_meta("weapon_id", "unknown_projectile")
+		var is_crit = final_damage > damage  # Si hay diferencia, fue crítico
+		DamageLogger.log_weapon_damage(weapon_id, target.name, final_damage, {"crit": is_crit, "effect": get_meta("effect", "none")})
+		
 		# Aplicar life steal
 		ProjectileFactory.apply_life_steal(get_tree(), final_damage)
 		# Verificar execute threshold después del daño

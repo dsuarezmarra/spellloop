@@ -793,6 +793,10 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	# Aplicar daño al HealthComponent
 	health_component.take_damage(final_damage)
 	
+	# LOG: Registrar daño recibido por el player
+	var attacker_name = attacker.name if attacker and is_instance_valid(attacker) else "environment"
+	DamageLogger.log_player_damage(attacker_name, final_damage, element)
+	
 	# IMPORTANTE: Notificar a PlayerStats que recibió daño (para el delay del escudo)
 	if player_stats and player_stats.has_method("on_damage_taken"):
 		player_stats.on_damage_taken()
