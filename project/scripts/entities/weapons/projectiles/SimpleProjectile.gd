@@ -395,10 +395,8 @@ func configure_and_launch(data: Dictionary, start_pos: Vector2, target_vec: Vect
 	
 	# 2. Configurar Elemento
 	var element_int = data.get("element", 3)
-	if ProjectileFactory.has_method("get_element_string"):
-		element_type = ProjectileFactory.get_element_string(element_int)
-	else:
-		element_type = "arcane" # Fallback
+	# Usar helper estático de ProjectileFactory directamente
+	element_type = ProjectileFactory.get_element_string(element_int)
 	
 	# 3. Configurar Color (Prioridad: Arma > Elemento)
 	if data.has("color"):

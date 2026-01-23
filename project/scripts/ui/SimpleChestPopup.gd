@@ -936,9 +936,22 @@ func _input(event: InputEvent):
 			_return_focus_to_items()
 			get_tree().root.set_input_as_handled()
 			return
+			
+		# Navegación lateral manual entre botones (A/D/Left/Right)
+		if event.is_action_pressed("ui_left") or (event is InputEventKey and event.pressed and (event.keycode == KEY_A or event.keycode == KEY_LEFT)):
+			_navigate_bottom_buttons(-1)
+			get_tree().root.set_input_as_handled()
+			return
+		if event.is_action_pressed("ui_right") or (event is InputEventKey and event.pressed and (event.keycode == KEY_D or event.keycode == KEY_RIGHT)):
+			_navigate_bottom_buttons(1)
+			get_tree().root.set_input_as_handled()
+			return
+			
 		return
 	
 	# === INPUT DE TECLADO Y ACCIONES (WASD / Flechas / Gamepad) ===
+
+
 	if event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and event.keycode == KEY_W):
 		_navigate_selection(-1)
 		get_tree().root.set_input_as_handled()
@@ -1081,7 +1094,7 @@ func _navigate_jackpot_selection(direction: int):
 	_update_jackpot_selection()
 
 func _claim_selected_jackpot_item():
-	"""Reclamar el item seleccionado actual en modo jackpot (no cierra el popup)"""
+	"""Alternar (Toggle) selección del item actual en modo jackpot"""
 	if current_selected_index < 0 or current_selected_index >= item_buttons.size():
 		return
 	
@@ -1089,28 +1102,61 @@ func _claim_selected_jackpot_item():
 	if not is_instance_valid(panel):
 		return
 	
-	# Verificar si ya fue reclamado
-	if panel.has_meta("is_claimed") and panel.get_meta("is_claimed"):
-		return  # Ya reclamado, no hacer nada
+	# Verificar estado actual
+	var was_claimed = false
+	if panel.has_meta("is_claimed"):
+		was_claimed = panel.get_meta("is_claimed")
 	
-	# Marcar como reclamado
-	panel.set_meta("is_claimed", true)
-	
-	# Obtener datos del item
 	var item_data = panel.get_meta("item_data")
-	if item_data:
-		_jackpot_claimed_items.append(item_data)
-		# Emitir señal para que el juego procese el item
-		item_selected.emit(item_data)
 	
-	# Actualizar visual del panel
-	_update_claimed_panel_visual(panel)
+	if was_claimed:
+		# DESMARCAR (Unclaim)
+		panel.set_meta("is_claimed", false)
+		# Remover de la lista de reclamados (buscando por igualdad de datos/referencia)
+		# Nota: erase borra la primera ocurrencia exacta
+		_jackpot_claimed_items.erase(item_data)
+		
+		# Restaurar visual
+		_update_item_status_visual(panel, false)
+		
+	else:
+		# MARCAR (Claim)
+		panel.set_meta("is_claimed", true)
+		if item_data:
+			_jackpot_claimed_items.append(item_data)
+			# Nota: No emitimos item_selected aquí para no aplicar efectos inmediatamente
+			# item_selected.emit(item_data) 
+		
+		# Actualizar visual invirtiendo lógica
+		_update_item_status_visual(panel, true)
 	
-	# Actualizar selección visual
+	# Actualizar selección visual (borde)
 	_update_jackpot_selection()
 	
 	# Actualizar visibilidad de botones
 	_update_jackpot_buttons_visibility()
+
+func _update_item_status_visual(panel: Control, claimed: bool):
+	"""Actualizar visual del panel según estado reclamado/pendiente"""
+	var status_label = panel.find_child("StatusLabel", true, false)
+	
+	var tween = create_tween()
+	
+	if claimed:
+		if status_label:
+			status_label.text = "✅ Reclamado"
+			status_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.4))
+		
+		# Efecto "seleccionado": un poco más verde/brillante
+		tween.tween_property(panel, "modulate", Color(0.8, 1.0, 0.8, 1.0), 0.2)
+		
+	else:
+		if status_label:
+			status_label.text = "⬜ Pendiente"
+			status_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+		
+		# Restaurar color original
+		tween.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.2)
 
 func _update_jackpot_buttons_visibility():
 	if not self.has_meta("claim_selected_btn"): return
@@ -1168,17 +1214,7 @@ func _return_focus_to_items():
 	current_selected_index = item_buttons.size() - 1
 	_update_jackpot_selection()
 
-func _update_claimed_panel_visual(panel: Control):
-	"""Actualizar visual del panel cuando un item es reclamado"""
-	# Cambiar el label de estado
-	var status_label = panel.find_child("StatusLabel", true, false)
-	if status_label:
-		status_label.text = "✅ Reclamado"
-		status_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.4))
-	
-	# Aplicar efecto visual de "reclamado" (oscurecer ligeramente)
-	var tween = create_tween()
-	tween.tween_property(panel, "modulate", Color(0.7, 0.9, 0.7, 0.9), 0.2)
+
 
 func _update_jackpot_selection():
 	"""Actualizar estilos visuales de selección en modo jackpot"""
@@ -1218,4 +1254,40 @@ func _update_jackpot_selection():
 			else:
 				glow_style.border_color = Color(1.0, 0.9, 0.4, 1.0)  # Dorado para pendiente
 		glow_panel.visible = is_selected
+
+func _navigate_bottom_buttons(direction: int):
+	"""Navegar manualmente entre los botones de acción visibles"""
+	var current_focus = get_viewport().gui_get_focus_owner()
+	
+	# Encontrar el contenedor de botones (padre del claim_button)
+	var buttons_parent = null
+	if claim_button and is_instance_valid(claim_button):
+		buttons_parent = claim_button.get_parent()
+	
+	if not buttons_parent:
+		return
+
+	# Recolectar botones visibles en orden
+	var visible_buttons = []
+	for child in buttons_parent.get_children():
+		if child is Button and child.visible:
+			visible_buttons.append(child)
+	
+	if visible_buttons.is_empty(): 
+		return
+	
+	var idx = visible_buttons.find(current_focus)
+	if idx == -1:
+		# Si el foco no está en un botón conocido, ir al primero
+		visible_buttons[0].grab_focus()
+		return
+		
+	# Mover índice
+	idx += direction
+	
+	# Wrap around
+	if idx < 0: idx = visible_buttons.size() - 1
+	elif idx >= visible_buttons.size(): idx = 0
+	
+	visible_buttons[idx].grab_focus()
 
