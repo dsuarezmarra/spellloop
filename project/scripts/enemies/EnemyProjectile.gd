@@ -81,6 +81,15 @@ func _physics_process(delta: float) -> void:
 	# Mover
 	global_position += direction * speed * delta
 	
+	# Verificar colisión con decorados
+	var decor_manager = get_tree().get_first_node_in_group("decor_collision_manager")
+	if decor_manager and decor_manager.has_method("check_collision_fast"):
+		var push = decor_manager.check_collision_fast(global_position, 8.0)
+		if push.length_squared() > 1.0:
+			# Proyectil enemigo impactó decorado - destruir
+			queue_free()
+			return
+	
 	# Actualizar visual
 	if visual_node:
 		visual_node.queue_redraw()

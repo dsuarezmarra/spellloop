@@ -135,6 +135,11 @@ func initialize(player: Node2D, root: Node2D, resume_seed: int = -1) -> void:
 	player_ref = player
 	arena_root = root
 	
+	# Limpiar colisiones de decorados de partida anterior
+	var decor_manager = get_tree().get_first_node_in_group("decor_collision_manager")
+	if decor_manager and decor_manager.has_method("clear_all"):
+		decor_manager.clear_all()
+	
 	# Generar o usar seed proporcionado
 	if resume_seed >= 0:
 		# Usar seed de partida guardada
