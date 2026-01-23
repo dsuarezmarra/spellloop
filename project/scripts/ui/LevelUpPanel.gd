@@ -23,7 +23,8 @@ signal panel_closed()
 # CONSTANTES
 # ═══════════════════════════════════════════════════════════════════════════════
 
-const MAX_OPTIONS: int = 4
+const BASE_OPTIONS: int = 4          # Opciones base sin mejoras
+const MAX_POSSIBLE_OPTIONS: int = 7  # Máximo posible con mejoras (4 base + 3 max stacks)
 const OPTION_TYPES = {
 	NEW_WEAPON = "new_weapon",
 	LEVEL_UP_WEAPON = "level_up_weapon",
@@ -92,8 +93,8 @@ var _enable_slot_animation: bool = true   # Toggle para habilitar/deshabilitar a
 var _is_animating: bool = false           # Si la animación está en progreso
 var _spin_tweens: Array[Tween] = []       # Tweens de animación por panel
 var _spin_icons: Array[String] = ["🔥", "⚡", "❄️", "🛡️", "⚔️", "💀", "✨", "🌟", "💎", "🎯", "🏹", "🌿"]
-const SPIN_DURATION_PER_REEL: float = 0.5  # Segundos de spin por panel
-const SPIN_STAGGER: float = 0.2            # Delay entre paradas de paneles
+const SPIN_DURATION_PER_REEL: float = 0.3  # Segundos de spin por panel (reducido para fluidez)
+const SPIN_STAGGER: float = 0.1            # Delay entre paradas de paneles (reducido)
 
 # Referencias
 var attack_manager: AttackManager = null
@@ -139,7 +140,7 @@ func _get_max_options() -> int:
 	var extra = 0
 	if player_stats and player_stats.has_method("get_stat"):
 		extra = int(player_stats.get_stat("levelup_options"))
-	return MAX_OPTIONS + extra
+	return mini(BASE_OPTIONS + extra, MAX_POSSIBLE_OPTIONS)
 
 func _create_ui() -> void:
 	# Fondo oscuro
@@ -193,10 +194,13 @@ func _create_ui() -> void:
 	options_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(options_container)
 
-	for i in range(MAX_OPTIONS):
+	# Crear todos los paneles posibles (los extras se ocultan si no se necesitan)
+	for i in range(MAX_POSSIBLE_OPTIONS):
 		var panel = _create_option_panel(i)
 		options_container.add_child(panel)
 		option_panels.append(panel)
+		# Ocultar paneles extras por defecto (se muestran según levelup_options)
+		panel.visible = (i < BASE_OPTIONS)
 
 	# === SEPARADOR ===
 	var sep = HSeparator.new()
@@ -962,10 +966,11 @@ func _update_button_counts() -> void:
 		banish_count_label.text = "(%d)" % banish_count
 
 func _update_options_ui() -> void:
-	for i in range(MAX_OPTIONS):
+	var max_opts = _get_max_options()
+	for i in range(option_panels.size()):
 		var panel = option_panels[i]
 
-		if i < options.size():
+		if i < options.size() and i < max_opts:
 			_update_option_panel(panel, options[i])
 			panel.visible = true
 		else:
@@ -1120,27 +1125,68 @@ func _play_slot_reel_animation() -> void:
 			tween.kill()
 	_spin_tweens.clear()
 	
+	var max_opts = _get_max_options()
+	var visible_count = mini(options.size(), max_opts)
+	
 	# Mostrar todos los paneles con icono spinning
 	for i in range(option_panels.size()):
 		var panel = option_panels[i]
-		if i < options.size():
+		if i < visible_count:
 			panel.visible = true
 			_start_panel_spin(panel, i)
 		else:
 			panel.visible = false
 	
-	# Esperar y detener reels secuencialmente
-	for i in range(options.size()):
-		await get_tree().create_timer(SPIN_DURATION_PER_REEL + SPIN_STAGGER * i).timeout
+	# Esperar tiempo base de spin
+	await get_tree().create_timer(SPIN_DURATION_PER_REEL).timeout
+	if not is_instance_valid(self):
+		return
+	
+	# Revelar reels secuencialmente (sin await en cada uno para ser más rápido)
+	for i in range(visible_count):
 		if not is_instance_valid(self):
 			return
-		await _stop_panel_spin(i, options[i])
+		# Iniciar reveal del panel (no bloquea)
+		_stop_panel_spin_fast(i, options[i])
+		# Pequeño delay entre reveals
+		if i < visible_count - 1:
+			await get_tree().create_timer(SPIN_STAGGER).timeout
 	
-	# Finalizar animación
+	# DESBLOQUEAR INMEDIATAMENTE después del último reveal
+	# Las animaciones de bounce continúan en segundo plano
 	_is_animating = false
 	locked = false
 	_update_all_visuals()
 	_update_button_counts()
+
+func _stop_panel_spin_fast(index: int, option: Dictionary) -> void:
+	"""Detener spin y mostrar opción real (versión rápida sin await)"""
+	if index >= option_panels.size():
+		return
+	
+	var panel = option_panels[index]
+	
+	# Cancelar tween de spin si existe
+	if index < _spin_tweens.size() and _spin_tweens[index]:
+		_spin_tweens[index].kill()
+	
+	# Actualizar con opción real
+	_update_option_panel(panel, option)
+	
+	# Restaurar alpha
+	var name_label = panel.find_child("NameLabel", true, false) as Label
+	var desc_label = panel.find_child("DescLabel", true, false) as Label
+	if name_label:
+		name_label.modulate.a = 1.0
+	if desc_label:
+		desc_label.modulate.a = 1.0
+	
+	# Animación de bounce (no bloqueante)
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_BACK)
+	tween.tween_property(panel, "scale", Vector2(1.08, 1.08), 0.1)
+	tween.tween_property(panel, "scale", Vector2(1.0, 1.0), 0.08)
 
 func _start_panel_spin(panel: Control, _index: int) -> void:
 	"""Iniciar efecto de spin en un panel"""

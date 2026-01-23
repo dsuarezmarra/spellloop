@@ -415,23 +415,46 @@ func _create_item_button(item: Dictionary, index: int) -> Control:
 	price_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
 	if discount > 0:
-		var orig_lbl = Label.new()
-		orig_lbl.text = "🪙 %d" % original_price
-		orig_lbl.add_theme_font_size_override("font_size", 12)
-		orig_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
-		price_vbox.add_child(orig_lbl)
+		# Badge de descuento - muy visible
+		var disc_badge = Label.new()
+		disc_badge.text = "-%d%%" % discount
+		disc_badge.add_theme_font_size_override("font_size", 14)
+		disc_badge.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1))
+		disc_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		# Fondo verde brillante
+		var disc_style = StyleBoxFlat.new()
+		disc_style.bg_color = Color(0.3, 0.9, 0.3)
+		disc_style.corner_radius_top_left = 4
+		disc_style.corner_radius_top_right = 4
+		disc_style.corner_radius_bottom_left = 4
+		disc_style.corner_radius_bottom_right = 4
+		disc_style.content_margin_left = 6
+		disc_style.content_margin_right = 6
+		disc_style.content_margin_top = 2
+		disc_style.content_margin_bottom = 2
+		disc_badge.add_theme_stylebox_override("normal", disc_style)
+		price_vbox.add_child(disc_badge)
 		
-		var disc_lbl = Label.new()
-		disc_lbl.text = "-%d%%" % discount
-		disc_lbl.add_theme_font_size_override("font_size", 10)
-		disc_lbl.add_theme_color_override("font_color", Color(0.4, 1.0, 0.4))
-		price_vbox.add_child(disc_lbl)
+		# Precio original tachado
+		var orig_lbl = RichTextLabel.new()
+		orig_lbl.bbcode_enabled = true
+		orig_lbl.text = "[s]🪙 %d[/s]" % original_price
+		orig_lbl.add_theme_font_size_override("normal_font_size", 11)
+		orig_lbl.add_theme_color_override("default_color", Color(0.5, 0.5, 0.5))
+		orig_lbl.fit_content = true
+		orig_lbl.scroll_active = false
+		orig_lbl.custom_minimum_size = Vector2(60, 16)
+		price_vbox.add_child(orig_lbl)
 	
 	var price_lbl = Label.new()
 	price_lbl.text = "🪙 %d" % price
 	price_lbl.add_theme_font_size_override("font_size", 16)
 	if can_afford:
-		price_lbl.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
+		if discount > 0:
+			# Precio con descuento en verde
+			price_lbl.add_theme_color_override("font_color", Color(0.4, 1.0, 0.4))
+		else:
+			price_lbl.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
 	else:
 		price_lbl.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3))
 	price_vbox.add_child(price_lbl)
