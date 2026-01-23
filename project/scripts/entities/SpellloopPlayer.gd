@@ -106,13 +106,18 @@ func _physics_process(_delta: float) -> void:
 		# Buscar PlayerStats - move_speed es valor absoluto (ej: 50 = velocidad base)
 		var ps = get_tree().get_first_node_in_group("player_stats")
 		if ps and ps.has_method("get_stat"):
-			final_speed = ps.get_stat("move_speed")  # Valor directo, no multiplicador
-
-		# Aplicar bonus de velocidad si estamos sobre un camino (+25%)
-		var arena_manager = get_tree().get_first_node_in_group("arena_manager")
-		if arena_manager and arena_manager.has_method("is_on_path"):
-			if arena_manager.is_on_path(global_position):
-				final_speed = final_speed * (1.0 + arena_manager.get_path_speed_bonus())
+			# Verificar si estamos sobre un camino y actualizar PlayerStats
+			var arena_manager = get_tree().get_first_node_in_group("arena_manager")
+			var on_path = false
+			if arena_manager and arena_manager.has_method("is_on_path"):
+				on_path = arena_manager.is_on_path(global_position)
+			
+			# Actualizar estado de camino en PlayerStats
+			if ps.has_method("set_on_path"):
+				ps.set_on_path(on_path)
+			
+			# Obtener velocidad (ya incluye bonus de camino si aplica)
+			final_speed = ps.get_stat("move_speed")
 
 		# Aplicar slow temporal si hay
 		if wizard_player._is_slowed:

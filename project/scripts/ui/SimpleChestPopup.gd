@@ -181,33 +181,34 @@ func show_as_jackpot(items: Array):
 	claim_button.pressed.connect(_on_claim_all_pressed)
 	buttons_hbox.add_child(claim_button)
 	
-	# Botón Cerrar (rechazar resto)
-	var close_button = Button.new()
-	close_button.text = "✕ CERRAR"
-	close_button.custom_minimum_size = Vector2(150, 50)
-	close_button.add_theme_font_size_override("font_size", 16)
+	# Botón Salir (con confirmación)
+	var exit_button = Button.new()
+	exit_button.text = "✕ SALIR"
+	exit_button.custom_minimum_size = Vector2(150, 50)
+	exit_button.add_theme_font_size_override("font_size", 16)
 	
-	var style_close = StyleBoxFlat.new()
-	style_close.bg_color = Color(0.3, 0.15, 0.15)
-	style_close.border_color = Color(0.7, 0.3, 0.3)
-	style_close.set_border_width_all(2)
-	style_close.set_corner_radius_all(8)
-	close_button.add_theme_stylebox_override("normal", style_close)
+	var style_exit = StyleBoxFlat.new()
+	style_exit.bg_color = Color(0.3, 0.15, 0.15)
+	style_exit.border_color = Color(0.7, 0.3, 0.3)
+	style_exit.set_border_width_all(2)
+	style_exit.set_corner_radius_all(8)
+	exit_button.add_theme_stylebox_override("normal", style_exit)
 	
-	var style_close_hover = style_close.duplicate()
-	style_close_hover.bg_color = Color(0.4, 0.2, 0.2)
-	close_button.add_theme_stylebox_override("hover", style_close_hover)
+	var style_exit_hover = style_exit.duplicate()
+	style_exit_hover.bg_color = Color(0.4, 0.2, 0.2)
+	exit_button.add_theme_stylebox_override("hover", style_exit_hover)
 	
-	close_button.pressed.connect(_on_jackpot_close_pressed)
-	buttons_hbox.add_child(close_button)
+	exit_button.pressed.connect(_on_jackpot_exit_pressed)
+	buttons_hbox.add_child(exit_button)
 	
 	# Recentrar popup
 	await get_tree().process_frame
 	_recenter_popup()
 	
-	# Dar foco al primer item
+	# Inicializar selección visual en el primer item
+	current_selected_index = 0
 	if item_buttons.size() > 0:
-		item_buttons[0].grab_focus()
+		_update_jackpot_selection()
 
 func _setup_jackpot_items(items: Array):
 	"""Crear items para modo jackpot con botones de aceptar/rechazar"""
@@ -227,7 +228,7 @@ func _setup_jackpot_items(items: Array):
 		item_buttons.append(item_panel)
 
 func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
-	"""Crear panel de item para jackpot con botones de acción"""
+	"""Crear panel de item para jackpot (sin botones individuales, navegación WASD + Space)"""
 	var item_name = item.get("name", "Objeto Misterioso")
 	var item_desc = item.get("description", "Sin descripción")
 	var item_icon = item.get("icon", "❓")
@@ -239,6 +240,11 @@ func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 	# Panel contenedor principal
 	var panel = PanelContainer.new()
 	panel.custom_minimum_size = Vector2(600, 80)
+	
+	# Guardar datos del item en metadata para referencia
+	panel.set_meta("item_data", item.duplicate())
+	panel.set_meta("item_index", index)
+	panel.set_meta("is_claimed", false)
 	
 	var panel_style = UIVisualHelper.get_panel_style(item_rarity + 1, false, is_weapon)
 	panel.add_theme_stylebox_override("panel", panel_style)
@@ -310,49 +316,17 @@ func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 	
 	hbox.add_child(info_vbox)
 	
-	# Botones de acción
-	var actions_vbox = VBoxContainer.new()
-	actions_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	actions_vbox.add_theme_constant_override("separation", 4)
+	# Indicador de estado (reemplaza botones de acción)
+	var status_container = CenterContainer.new()
+	status_container.custom_minimum_size = Vector2(100, 0)
 	
-	# Botón Aceptar
-	var accept_btn = Button.new()
-	accept_btn.text = "✓"
-	accept_btn.custom_minimum_size = Vector2(40, 30)
-	accept_btn.add_theme_font_size_override("font_size", 18)
-	accept_btn.tooltip_text = "Aceptar"
-	
-	var accept_style = StyleBoxFlat.new()
-	accept_style.bg_color = Color(0.2, 0.5, 0.2)
-	accept_style.set_corner_radius_all(4)
-	accept_btn.add_theme_stylebox_override("normal", accept_style)
-	var accept_hover = accept_style.duplicate()
-	accept_hover.bg_color = Color(0.3, 0.7, 0.3)
-	accept_btn.add_theme_stylebox_override("hover", accept_hover)
-	
-	var item_data = item.duplicate()
-	accept_btn.pressed.connect(func(): _on_jackpot_item_accepted(index, item_data, panel))
-	actions_vbox.add_child(accept_btn)
-	
-	# Botón Rechazar
-	var reject_btn = Button.new()
-	reject_btn.text = "✕"
-	reject_btn.custom_minimum_size = Vector2(40, 30)
-	reject_btn.add_theme_font_size_override("font_size", 18)
-	reject_btn.tooltip_text = "Rechazar"
-	
-	var reject_style = StyleBoxFlat.new()
-	reject_style.bg_color = Color(0.5, 0.2, 0.2)
-	reject_style.set_corner_radius_all(4)
-	reject_btn.add_theme_stylebox_override("normal", reject_style)
-	var reject_hover = reject_style.duplicate()
-	reject_hover.bg_color = Color(0.7, 0.3, 0.3)
-	reject_btn.add_theme_stylebox_override("hover", reject_hover)
-	
-	reject_btn.pressed.connect(func(): _on_jackpot_item_rejected(index, panel))
-	actions_vbox.add_child(reject_btn)
-	
-	hbox.add_child(actions_vbox)
+	var status_label = Label.new()
+	status_label.name = "StatusLabel"
+	status_label.text = "⬜ Pendiente"
+	status_label.add_theme_font_size_override("font_size", 12)
+	status_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	status_container.add_child(status_label)
+	hbox.add_child(status_container)
 	
 	# Margen derecho
 	var margin_right = Control.new()
@@ -361,64 +335,7 @@ func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 	
 	return panel
 
-func _on_jackpot_item_accepted(index: int, item: Dictionary, panel: Control):
-	"""Item aceptado individualmente en jackpot"""
-	if popup_locked: return
-	
-	# Añadir a items reclamados
-	_jackpot_claimed_items.append(item)
-	
-	# Remover de pendientes
-	for i in range(_jackpot_pending_items.size()):
-		if _jackpot_pending_items[i].get("id", "") == item.get("id", ""):
-			_jackpot_pending_items.remove_at(i)
-			break
-	
-	# Animar y remover panel
-	var tween = create_tween()
-	tween.tween_property(panel, "modulate", Color(0.5, 1.0, 0.5, 0.5), 0.2)
-	tween.tween_property(panel, "custom_minimum_size:y", 0, 0.2)
-	tween.tween_callback(func():
-		panel.queue_free()
-		item_buttons.erase(panel)
-		_check_jackpot_complete()
-	)
-	
-	# Emitir señal de item individual
-	item_selected.emit(item)
-
-func _on_jackpot_item_rejected(index: int, panel: Control):
-	"""Item rechazado en jackpot"""
-	if popup_locked: return
-	
-	# Remover de pendientes sin añadir a reclamados
-	if index < _jackpot_pending_items.size():
-		_jackpot_pending_items.remove_at(index)
-	
-	# Animar y remover panel
-	var tween = create_tween()
-	tween.tween_property(panel, "modulate", Color(1.0, 0.5, 0.5, 0.3), 0.2)
-	tween.tween_property(panel, "custom_minimum_size:y", 0, 0.2)
-	tween.tween_callback(func():
-		panel.queue_free()
-		item_buttons.erase(panel)
-		_check_jackpot_complete()
-	)
-
-func _check_jackpot_complete():
-	"""Verificar si todos los items han sido procesados"""
-	await get_tree().process_frame
-	_recenter_popup()
-	
-	# Si no quedan items pendientes, cerrar
-	if items_vbox.get_child_count() == 0:
-		popup_locked = true
-		if _jackpot_claimed_items.size() > 0:
-			all_items_claimed.emit(_jackpot_claimed_items)
-		else:
-			skipped.emit()
-		queue_free()
-
+# Funciones legacy removidas - ahora usamos _claim_selected_jackpot_item()
 func _on_jackpot_close_pressed():
 	"""Cerrar jackpot reclamando solo los ya aceptados"""
 	if popup_locked: return
@@ -429,6 +346,108 @@ func _on_jackpot_close_pressed():
 	else:
 		skipped.emit()
 	queue_free()
+
+func _on_jackpot_exit_pressed():
+	"""Mostrar modal de confirmación antes de salir del jackpot"""
+	if popup_locked: return
+	_show_jackpot_exit_confirm_modal()
+
+func _show_jackpot_exit_confirm_modal():
+	"""Mostrar modal de confirmación para salir del jackpot"""
+	_is_skip_modal_active = true
+	
+	var confirm_modal = Control.new()
+	confirm_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	confirm_modal.z_index = 10
+	add_child(confirm_modal)
+	
+	# Bloquear input del fondo
+	var blocker = ColorRect.new()
+	blocker.color = Color(0, 0, 0, 0.8)
+	blocker.set_anchors_preset(Control.PRESET_FULL_RECT)
+	confirm_modal.add_child(blocker)
+	
+	# Panel del modal
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(450, 220)
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.15, 0.12, 0.12, 1.0)
+	style.border_color = Color(1.0, 0.6, 0.2)
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(8)
+	panel.add_theme_stylebox_override("panel", style)
+	
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	confirm_modal.add_child(center)
+	center.add_child(panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 20)
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_top", 25)
+	margin.add_theme_constant_override("margin_bottom", 25)
+	margin.add_theme_constant_override("margin_left", 30)
+	margin.add_theme_constant_override("margin_right", 30)
+	margin.add_child(vbox)
+	panel.add_child(margin)
+	
+	var label_title = Label.new()
+	label_title.text = "⚠️ ¿Salir de las Recompensas?"
+	label_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label_title.add_theme_font_size_override("font_size", 22)
+	label_title.add_theme_color_override("font_color", Color(1, 0.7, 0.3))
+	vbox.add_child(label_title)
+	
+	# Contar items pendientes
+	var pending_count = 0
+	for panel_item in item_buttons:
+		if is_instance_valid(panel_item) and panel_item.has_meta("is_claimed"):
+			if not panel_item.get_meta("is_claimed"):
+				pending_count += 1
+	
+	var label_desc = Label.new()
+	if pending_count > 0:
+		label_desc.text = "Tienes %d objeto(s) sin reclamar.\nSi sales ahora, perderás estos objetos." % pending_count
+	else:
+		label_desc.text = "Has reclamado todos los objetos.\n¿Deseas cerrar esta ventana?"
+	label_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label_desc.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
+	vbox.add_child(label_desc)
+	
+	var hbox = HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 30)
+	vbox.add_child(hbox)
+	
+	var btn_cancel = Button.new()
+	btn_cancel.text = "Volver"
+	btn_cancel.custom_minimum_size = Vector2(120, 45)
+	var cancel_style = StyleBoxFlat.new()
+	cancel_style.bg_color = Color(0.25, 0.25, 0.25)
+	cancel_style.set_corner_radius_all(6)
+	btn_cancel.add_theme_stylebox_override("normal", cancel_style)
+	btn_cancel.pressed.connect(func(): 
+		_is_skip_modal_active = false
+		confirm_modal.queue_free()
+	)
+	hbox.add_child(btn_cancel)
+	
+	var btn_confirm = Button.new()
+	btn_confirm.text = "Confirmar Salir"
+	btn_confirm.custom_minimum_size = Vector2(150, 45)
+	var style_confirm = StyleBoxFlat.new()
+	style_confirm.bg_color = Color(0.5, 0.25, 0.15)
+	style_confirm.set_corner_radius_all(6)
+	btn_confirm.add_theme_stylebox_override("normal", style_confirm)
+	btn_confirm.pressed.connect(func(): 
+		_is_skip_modal_active = false
+		_on_jackpot_close_pressed()
+	)
+	hbox.add_child(btn_confirm)
+	
+	# Foco inicial en "Volver"
+	btn_cancel.grab_focus()
 
 func _recenter_popup() -> void:
 	"""Recentrar el popup después de cambios de contenido"""
@@ -860,21 +879,20 @@ func _input(event: InputEvent):
 	if _is_skip_modal_active:
 		return
 
-	# En modo jackpot, también permitir navegación WASD para ver items antes de reclamar
+	# En modo jackpot, permitir navegación WASD y Space para reclamar item individual
 	if is_jackpot_mode:
-		# Manejar navegación W/S para explorar items (sin seleccionar)
+		# Manejar navegación W/S para explorar items
 		if event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and event.keycode == KEY_W):
-			_navigate_selection(-1)
+			_navigate_jackpot_selection(-1)
 			get_tree().root.set_input_as_handled()
 			return
 		elif event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and event.keycode == KEY_S):
-			_navigate_selection(1)
+			_navigate_jackpot_selection(1)
 			get_tree().root.set_input_as_handled()
 			return
-		# Space/Enter activa el botón Claim All
+		# Space/Enter reclama el item seleccionado (no cierra el popup)
 		elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER)):
-			if claim_button:
-				_on_claim_all_pressed()
+			_claim_selected_jackpot_item()
 			get_tree().root.set_input_as_handled()
 			return
 		return
@@ -1002,4 +1020,102 @@ func _update_button_selection():
 		
 		glow_panel.visible = is_selected
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# NAVEGACIÓN JACKPOT MODE (WASD + Space)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _navigate_jackpot_selection(direction: int):
+	"""Navegar la selección en modo jackpot arriba (-1) o abajo (+1)"""
+	if item_buttons.is_empty():
+		return
+	
+	current_selected_index += direction
+	
+	# Wrap around
+	if current_selected_index < 0:
+		current_selected_index = item_buttons.size() - 1
+	elif current_selected_index >= item_buttons.size():
+		current_selected_index = 0
+	
+	_update_jackpot_selection()
+
+func _claim_selected_jackpot_item():
+	"""Reclamar el item seleccionado actual en modo jackpot (no cierra el popup)"""
+	if current_selected_index < 0 or current_selected_index >= item_buttons.size():
+		return
+	
+	var panel = item_buttons[current_selected_index]
+	if not is_instance_valid(panel):
+		return
+	
+	# Verificar si ya fue reclamado
+	if panel.has_meta("is_claimed") and panel.get_meta("is_claimed"):
+		return  # Ya reclamado, no hacer nada
+	
+	# Marcar como reclamado
+	panel.set_meta("is_claimed", true)
+	
+	# Obtener datos del item
+	var item_data = panel.get_meta("item_data")
+	if item_data:
+		_jackpot_claimed_items.append(item_data)
+		# Emitir señal para que el juego procese el item
+		item_selected.emit(item_data)
+	
+	# Actualizar visual del panel
+	_update_claimed_panel_visual(panel)
+	
+	# Actualizar selección visual
+	_update_jackpot_selection()
+
+func _update_claimed_panel_visual(panel: Control):
+	"""Actualizar visual del panel cuando un item es reclamado"""
+	# Cambiar el label de estado
+	var status_label = panel.find_child("StatusLabel", true, false)
+	if status_label:
+		status_label.text = "✅ Reclamado"
+		status_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.4))
+	
+	# Aplicar efecto visual de "reclamado" (oscurecer ligeramente)
+	var tween = create_tween()
+	tween.tween_property(panel, "modulate", Color(0.7, 0.9, 0.7, 0.9), 0.2)
+
+func _update_jackpot_selection():
+	"""Actualizar estilos visuales de selección en modo jackpot"""
+	for i in range(item_buttons.size()):
+		var panel = item_buttons[i]
+		if not is_instance_valid(panel): continue
+		
+		var is_selected = (i == current_selected_index)
+		var is_claimed = panel.has_meta("is_claimed") and panel.get_meta("is_claimed")
+		
+		# Escala suave
+		var target_scale = Vector2(1.02, 1.02) if is_selected else Vector2(1.0, 1.0)
+		var tween = create_tween()
+		tween.tween_property(panel, "scale", target_scale, 0.1)
+		
+		# Borde brillante (Glow) - diferente color si está reclamado
+		var glow_panel = panel.get_node_or_null("JackpotGlow")
+		if not glow_panel:
+			glow_panel = Panel.new()
+			glow_panel.name = "JackpotGlow"
+			glow_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			glow_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+			var glow_style = StyleBoxFlat.new()
+			glow_style.bg_color = Color(0, 0, 0, 0)
+			glow_style.set_border_width_all(4)
+			glow_style.set_corner_radius_all(8)
+			glow_style.set_expand_margin_all(4)
+			glow_panel.add_theme_stylebox_override("panel", glow_style)
+			panel.add_child(glow_panel)
+			panel.move_child(glow_panel, 0)
+		
+		# Color del borde según estado
+		var glow_style = glow_panel.get_theme_stylebox("panel") as StyleBoxFlat
+		if is_selected:
+			if is_claimed:
+				glow_style.border_color = Color(0.4, 0.9, 0.4, 1.0)  # Verde para reclamado
+			else:
+				glow_style.border_color = Color(1.0, 0.9, 0.4, 1.0)  # Dorado para pendiente
+		glow_panel.visible = is_selected
 

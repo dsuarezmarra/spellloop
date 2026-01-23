@@ -678,6 +678,10 @@ var global_weapon_stats: GlobalWeaponStats = null
 # Referencia al player para sincronizar vida
 var player_ref: Node = null
 
+# Estado de camino (path bonus) - actualizado por SpellloopPlayer
+var _is_on_path: bool = false
+const PATH_SPEED_BONUS_PERCENT: float = 0.50  # +50% velocidad en caminos
+
 # GameManager reference
 var game_manager: Node = null
 
@@ -1063,6 +1067,11 @@ func get_stat(stat_name: String) -> float:
 		var limits = STAT_LIMITS[stat_name]
 		final_value = clampf(final_value, limits.min, limits.max)
 	
+	# BONUS DE CAMINO: Se aplica DESPUÉS del cap normal
+	# +50% de la velocidad actual cuando el player está en un camino
+	if stat_name == "move_speed" and _is_on_path:
+		final_value = final_value * (1.0 + PATH_SPEED_BONUS_PERCENT)
+	
 	return final_value
 
 func is_stat_capped(stat_name: String) -> bool:
@@ -1203,6 +1212,14 @@ func remove_temp_modifiers_by_source(source: String) -> void:
 		temp_modifiers[stat_name] = temp_modifiers[stat_name].filter(
 			func(mod): return mod.source != source
 		)
+
+func set_on_path(on_path: bool) -> void:
+	"""Actualizar estado de estar sobre un camino (para bonus de velocidad)"""
+	_is_on_path = on_path
+
+func is_on_path() -> bool:
+	"""Retorna si el player está actualmente sobre un camino"""
+	return _is_on_path
 
 func _process(delta: float) -> void:
 	"""Actualizar modificadores temporales, regeneración, growth, shield y pasivas condicionales"""
