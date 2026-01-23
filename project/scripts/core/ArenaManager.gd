@@ -33,6 +33,9 @@ enum ZoneType {
 @export var danger_zone_radius: float = 8500.0  # Radio de zona peligrosa (85% del total)
 # Death zone: desde danger_zone_radius hasta arena_radius
 
+# Offset para alinear la niebla con el borde visual de las barreras
+const FOG_RADIUS_OFFSET: float = 150.0
+
 @export_group("Boundary")
 @export var boundary_thickness: float = 200.0  # Grosor de la barrera visual
 @export var boundary_damage_per_second: float = 10.0  # Daño por segundo fuera del área
@@ -259,8 +262,8 @@ func _generate_arena() -> void:
 	_generate_paths(zones_container)
 	
 	# Fog of War: Inicialmente visible hasta el borde de SAFE
-	# Ajuste manual (-150) para que la niebla empiece justo en la línea azul ("a ras")
-	_create_fog_of_war(zones_container, safe_zone_radius - 150.0)
+	# Ajuste manual (FOG_RADIUS_OFFSET) para que la niebla empiece justo en la línea azul ("a ras")
+	_create_fog_of_war(zones_container, safe_zone_radius - FOG_RADIUS_OFFSET)
 
 func _generate_paths(parent: Node2D) -> void:
 	"""Generar caminos procedurales que radian desde el centro y se dividen por zonas"""
@@ -1290,11 +1293,12 @@ func unlock_zone(zone_type: ZoneType) -> void:
 	unlocked_zones[zone_type] = true
 	
 	# Calcular nueva visibilidad de niebla - alinear con la siguiente barrera desbloqueada
-	var new_fog_radius = safe_zone_radius
+	# Aplicar FOG_RADIUS_OFFSET para que la niebla empiece justo en el borde visual de la barrera
+	var new_fog_radius = safe_zone_radius - FOG_RADIUS_OFFSET
 	match zone_type:
-		ZoneType.MEDIUM: new_fog_radius = medium_zone_radius  # Fog hasta la barrera a DANGER
-		ZoneType.DANGER: new_fog_radius = danger_zone_radius  # Fog hasta la barrera a DEATH
-		ZoneType.DEATH: new_fog_radius = arena_radius  # Fog hasta el borde del arena
+		ZoneType.MEDIUM: new_fog_radius = medium_zone_radius - FOG_RADIUS_OFFSET  # Fog hasta la barrera a DANGER
+		ZoneType.DANGER: new_fog_radius = danger_zone_radius - FOG_RADIUS_OFFSET  # Fog hasta la barrera a DEATH
+		ZoneType.DEATH: new_fog_radius = arena_radius  # Fog hasta el borde del arena (sin offset)
 	
 	# Actualizar niebla of war
 	update_fog_radius(new_fog_radius)

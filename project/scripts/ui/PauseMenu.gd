@@ -2018,10 +2018,19 @@ func _show_upgrades_tab() -> void:
 func _create_upgrade_panel(upgrade: Dictionary, count: int = 1) -> Control:
 	var panel = PanelContainer.new()
 	panel.custom_minimum_size = Vector2(260, 100)
+	
+	# Obtener tier para colores
+	var item_tier = upgrade.get("tier", upgrade.get("rarity", 1))
+	if item_tier is String:
+		var tier_map = {"common": 1, "uncommon": 2, "rare": 3, "epic": 4, "legendary": 5}
+		item_tier = tier_map.get(item_tier.to_lower(), 1)
+	
+	var tier_color = UIVisualHelper.get_color_for_tier(item_tier)
+	
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.15, 0.15, 0.2)
-	style.border_color = Color(0.3, 0.3, 0.4)
-	style.set_border_width_all(1)
+	style.border_color = tier_color.darkened(0.3)  # Borde del color del tier
+	style.set_border_width_all(2)
 	style.set_corner_radius_all(8)
 	style.set_content_margin_all(10)
 	panel.add_theme_stylebox_override("panel", style)
@@ -2070,7 +2079,7 @@ func _create_upgrade_panel(upgrade: Dictionary, count: int = 1) -> Control:
 	var name_label = Label.new()
 	name_label.text = upgrade.get("name", "???")
 	name_label.add_theme_font_size_override("font_size", 14)
-	name_label.add_theme_color_override("font_color", VALUE_COLOR)
+	name_label.add_theme_color_override("font_color", tier_color)  # Usar tier_color ya calculado
 	header.add_child(name_label)
 	
 	if count > 1:
