@@ -24,9 +24,9 @@ func register_collision(pos: Vector2, radius: float) -> void:
 		"position": pos,
 		"radius": max(radius, MIN_COLLISION_RADIUS)
 	})
-	# Debug: Log solo los primeros 5 registros
-	if _collision_points.size() <= 5:
-		print("[DecorCollisionManager] Registrado: pos=%s, radius=%.1f (total: %d)" % [pos, radius, _collision_points.size()])
+	# Debug desactivado:
+	# if _collision_points.size() <= 5:
+	# 	print("[DecorCollisionManager] Registrado: pos=%s, radius=%.1f (total: %d)" % [pos, radius, _collision_points.size()])
 
 ## Limpiar todos los puntos de colisión (para resetear entre partidas)
 func clear_all() -> void:

@@ -718,6 +718,13 @@ func _physics_process(delta: float) -> void:
 	# Si hay movimiento, aplicar
 	if movement.length() > 0.1:
 		global_position += movement * delta
+		
+		# Aplicar colisión con decorados
+		var decor_manager = get_tree().get_first_node_in_group("decor_collision_manager")
+		if decor_manager and decor_manager.has_method("check_collision_fast"):
+			var push = decor_manager.check_collision_fast(global_position, 15.0)
+			if push.length_squared() > 0.1:
+				global_position += push
 
 	# Ejecutar habilidades especiales si aplica
 	_try_special_abilities(distance_to_player, delta)

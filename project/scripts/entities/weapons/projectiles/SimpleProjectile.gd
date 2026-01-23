@@ -394,6 +394,15 @@ func _process(delta: float) -> void:
 	# Mover en línea recta (SIN rotación)
 	global_position += direction * speed * delta
 	
+	# Verificar colisión con decorados
+	var decor_manager = get_tree().get_first_node_in_group("decor_collision_manager")
+	if decor_manager and decor_manager.has_method("check_collision_fast"):
+		var push = decor_manager.check_collision_fast(global_position, 8.0)
+		if push.length_squared() > 1.0:
+			# Proyectil impactó con decorado - destruir
+			_destroy()
+			return
+	
 	# Actualizar dirección del sprite animado
 	if animated_sprite and is_instance_valid(animated_sprite):
 		animated_sprite.set_direction(direction)
