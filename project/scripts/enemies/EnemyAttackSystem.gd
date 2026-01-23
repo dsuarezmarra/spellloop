@@ -157,8 +157,15 @@ func _setup_modular_abilities() -> void:
 			
 			"slow_attack":
 				if ability:
+			"freeze_projectile":
+				if ability:
 					if ability is EnemyAbility_Melee or ability is EnemyAbility_Ranged:
-						ability.element_type = "ice" # Ice aplica slow/freeze
+						ability.element_type = "ice"
+
+			"burn_projectile":
+				if ability:
+					if ability is EnemyAbility_Melee or ability is EnemyAbility_Ranged:
+						ability.element_type = "fire"
 
 			"fire_trail":
 				# TODO: Implementar Trail ability si es necesario, 

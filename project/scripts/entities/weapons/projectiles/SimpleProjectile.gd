@@ -154,6 +154,7 @@ func _setup_collision() -> void:
 	# Máscara 2 = enemigos
 	collision_mask = 0
 	set_collision_mask_value(2, true)
+	set_collision_mask_value(8, true) # Barrier layer (Decorations)
 	
 	# Crear collision shape si no existe
 	var shape = get_node_or_null("CollisionShape2D")

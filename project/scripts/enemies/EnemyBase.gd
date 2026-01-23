@@ -66,6 +66,7 @@ func _ready() -> void:
 	set_collision_layer_value(2, true)
 	set_collision_mask_value(3, true)
 	set_collision_mask_value(1, true)
+	set_collision_mask_value(8, true) # Barrier layer (Decorations)
 
 	# CRÍTICO: Crear CollisionShape2D si no existe
 	var collision_shape = _find_collision_shape_node(self)
