@@ -1,6 +1,15 @@
 # OrbitalManager.gd
 # Gestiona proyectiles orbitantes alrededor del jugador (arcane_orb, etc.)
 # Extraído de ProjectileFactory.gd para mejor organización
+#
+# NOTA IMPORTANTE SOBRE COLISIONES:
+# - Los orbitales son Area2D en layer 4 con máscara para layer 2 (enemigos)
+# - Los enemigos son CharacterBody2D en layer 2
+# - Para que body_entered funcione:
+#   1. Area2D.monitoring = true
+#   2. Ambos deben tener CollisionShape2D activos
+#   3. La máscara del Area2D debe incluir la capa del CharacterBody2D
+# - Las señales se conectan DESPUÉS de añadir al árbol para evitar bugs
 
 extends Node2D
 class_name OrbitalManager
@@ -27,6 +36,15 @@ var _hit_cooldown: float = 0.5
 var _cleanup_counter: int = 0
 var _enhanced_visual: Node2D = null  # OrbitalsVisualContainer
 var _use_enhanced: bool = false
+
+# Flag para debug (activar en caso de problemas)
+const DEBUG_COLLISIONS: bool = false
+
+func _ready() -> void:
+	# CRÍTICO: Respetar la pausa del juego
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	if DEBUG_COLLISIONS:
+		print("[OrbitalManager] ✓ _ready() llamado, process_mode=PAUSABLE")
 
 func update_orbitals(data: Dictionary) -> void:
 	"""Actualizar o crear orbitales con nuevos datos"""

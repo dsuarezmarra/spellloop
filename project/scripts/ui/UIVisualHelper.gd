@@ -7,10 +7,9 @@ class_name UIVisualHelper
 
 # Colores por Tier (1-5)
 const TIER_COLORS = {
-	# 1: Color(0.85, 0.85, 0.9),      # ANTES: Común (Blanco/Gris)
-	1: Color(0.4, 0.7, 1.0),        # AHORA: Azul Cielo (Para que se note el color)
-	2: Color(0.2, 0.9, 0.4),        # Poco Común (Verde neón)
-	3: Color(0.1, 0.6, 1.0),        # Raro (Azul eléctrico)
+	1: Color(0.6, 0.6, 0.65),       # Común (Gris plateado - distintivo)
+	2: Color(0.2, 0.85, 0.35),      # Poco Común (Verde brillante)
+	3: Color(0.2, 0.5, 1.0),        # Raro (Azul eléctrico)
 	4: Color(0.7, 0.2, 1.0),        # Épico (Púrpura)
 	5: Color(1.0, 0.7, 0.1),        # Legendario (Dorado/Naranja)
 }

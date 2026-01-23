@@ -251,7 +251,8 @@ func _create_option_panel(index: int) -> Control:
 	
 	# Obtener datos de la opción (si existen, si no usar defaults)
 	var option = options[index] if index < options.size() else {}
-	var raw_rarity = option.get("rarity", 1)
+	# Buscar rarity O tier (algunos usan uno, otros el otro)
+	var raw_rarity = option.get("rarity", option.get("tier", 1))
 	var rarity = _parse_rarity(raw_rarity)  # 1-based tier (Robust conversion)
 	var type = option.get("type", "upgrade")
 	var is_weapon = (type == "new_weapon" or type == "weapon" or type == "fusion")
