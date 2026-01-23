@@ -185,13 +185,19 @@ func _enforce_decor_collisions() -> void:
 	if not manager or not manager.has_method("check_collision_fast"):
 		return
 	
-	# Radio del player (basado en CollisionShape2D radius=10)
-	var player_radius = 15.0
+	# Player visual: ~125px de alto (500px * 0.25 scale)
+	# Hitbox del 80% del tamaño
+	var player_width = 30.0
 	
-	# Verificar colisiones y obtener vector de empuje
-	var push = manager.check_collision_fast(global_position, player_radius)
+	# La posición de colisión está en los PIES del player
+	# Offset hacia abajo desde global_position
+	var feet_offset = 50.0
+	var collision_pos = global_position + Vector2(0, feet_offset)
 	
-	# Si hay empuje, aplicarlo
+	# Colisión circular con radio equivalente al ancho
+	var player_radius = player_width / 2.0
+	var push = manager.check_collision_fast(collision_pos, player_radius)
+	
 	if push.length_squared() > 0.1:
 		global_position += push
 

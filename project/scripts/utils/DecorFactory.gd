@@ -200,15 +200,12 @@ static func add_collision_to_node(node: Node2D, size: Vector2) -> void:
 		return
 	
 	var manager = tree.get_first_node_in_group("decor_collision_manager")
-	if manager and manager.has_method("register_collision"):
-		# CORRECCIÓN: Los sprites de ArenaManager tienen pivot en el centro, no en la base.
-		# Necesitamos offsetar la colisión a la BASE del sprite (Y += visual_height * 0.5)
-		# para que la colisión sea en el "tronco" del árbol, no en el centro visual.
-		# Sin embargo, el offset depende de si el sprite tiene bottom-center o center pivot.
-		# ArenaManager NO usa offset, así que global_position es el CENTRO visual.
-		# Queremos colisión en la base, así que bajamos el punto de colisión.
-		var collision_pos = node.global_position + Vector2(0, visual_height * 0.35)
-		manager.register_collision(collision_pos, collision_radius)
+	if not manager or not manager.has_method("register_collision"):
+		return
+	
+	# La colisión se registra en el centro del sprite (node.global_position)
+	# El sistema de chequeo en el player/enemigos compensa la diferencia de pivotes
+	manager.register_collision(node.global_position, collision_radius)
 
 ## Crear decoración con escala y modulación personalizadas
 static func make_decor_styled(

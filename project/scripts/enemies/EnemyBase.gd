@@ -720,9 +720,12 @@ func _physics_process(delta: float) -> void:
 		global_position += movement * delta
 		
 		# Aplicar colisión con decorados
+		# Usar offset hacia los pies del enemigo (similar a player pero más pequeño)
 		var decor_manager = get_tree().get_first_node_in_group("decor_collision_manager")
 		if decor_manager and decor_manager.has_method("check_collision_fast"):
-			var push = decor_manager.check_collision_fast(global_position, 15.0)
+			var feet_offset = 25.0  # Enemigos son más pequeños que el player
+			var collision_pos = global_position + Vector2(0, feet_offset)
+			var push = decor_manager.check_collision_fast(collision_pos, 12.0)
 			if push.length_squared() > 0.1:
 				global_position += push
 
