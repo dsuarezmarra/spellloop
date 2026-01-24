@@ -712,41 +712,91 @@ class AOEEffect extends Node2D:
 
 		# print("[AOE] Activado en posición: %s, radio: %.1f" % [global_position, aoe_radius])
 
+		# Crear área de detección física (OPTIMIZACION PERFORMANCE)
+		var area = Area2D.new()
+		area.name = "DetectionArea"
+		area.collision_layer = 0
+		area.collision_mask = 4 # Capa de enemigos (Enemy = 4)
+		add_child(area)
+		
+		var shape = CollisionShape2D.new()
+		var circle = CircleShape2D.new()
+		circle.radius = aoe_radius
+		shape.shape = circle
+		area.add_child(shape)
+		
+		# Conectar señales para tracking eficiente
+		area.body_entered.connect(_on_body_entered)
+		area.body_exited.connect(_on_body_exited)
+		
 		# Crear visual (mejorado si está disponible)
 		_create_aoe_visual()
 
 		# Aplicar primer tic de daño inmediatamente
-		_apply_tick_damage()
+		# CRÍTICO: Esperar un frame físico para que el área detecte colisiones iniciales
+		# o usar query manual si se necesita instantáneo. 
+		# Para consistencia con old logic, forzamos un update manual del physics state o aceptamos 1 frame delay.
+		# Aceptamos 1 frame delay para _enemies_in_area, pero para el primer tick usamos PhysicsDirectSpaceState
+		# para dar feedback instantáneo al spawnear (importante para armas reactivas)
+		
+		_initial_burst_check()
 		_ticks_applied = 1
+
+	func _initial_burst_check() -> void:
+		"""Check inicial instantáneo usando RayCast/ShapeCast para no esperar al frame de física"""
+		var space = get_world_2d().direct_space_state
+		var query = PhysicsShapeQueryParameters2D.new()
+		var circle = CircleShape2D.new()
+		circle.radius = aoe_radius
+		query.shape = circle
+		query.transform = global_transform
+		query.collision_mask = 4 # Enemy layer
+		query.collide_with_bodies = true
+		query.collide_with_areas = true
+		
+		var results = space.intersect_shape(query, 64) # Max 64 enemies burst detection
+		for res in results:
+			var collider = res.collider
+			if collider and collider.is_in_group("enemies"):
+				var id = collider.get_instance_id()
+				_enemies_in_area[id] = collider
+				_apply_damage_tick(collider)
 
 	func _on_body_entered(body: Node2D) -> void:
 		if body.is_in_group("enemies"):
 			var enemy_id = body.get_instance_id()
-			if not _enemies_in_area.has(enemy_id):
-				_enemies_in_area[enemy_id] = 0.0  # Puede recibir daño inmediatamente
-				# print("[AOE] Body entered: %s" % body.name)
+			_enemies_in_area[enemy_id] = body
+
+	func _on_body_exited(body: Node2D) -> void:
+		var enemy_id = body.get_instance_id()
+		_enemies_in_area.erase(enemy_id)
 
 	func _on_area_entered(area: Area2D) -> void:
+		# Fallback para enemigos que son areas
 		var parent = area.get_parent()
 		if parent and parent.is_in_group("enemies"):
 			var enemy_id = parent.get_instance_id()
-			if not _enemies_in_area.has(enemy_id):
-				_enemies_in_area[enemy_id] = 0.0
-				# print("[AOE] Area entered: %s" % parent.name)
+			_enemies_in_area[enemy_id] = parent
 
 	func _apply_tick_damage() -> void:
-		"""Aplicar un tic de daño a todos los enemigos en el área"""
-		if not get_tree():
-			return
-		var enemies = get_tree().get_nodes_in_group("enemies")
-
-		for enemy in enemies:
-			if not is_instance_valid(enemy):
-				continue
+		"""Aplicar un tic de daño a todos los enemigos ACTUALMENTE en el área"""
+		# OPTIMIZACIÓN: Solo iterar sobre los enemigos detectados por física
+		# Esto reduce complejidad de O(TotalEnemies) a O(EnemiesInRadius)
+		
+		var ids_to_remove = []
+		
+		for enemy_id in _enemies_in_area:
+			var enemy = _enemies_in_area[enemy_id]
 			
-			var dist = global_position.distance_to(enemy.global_position)
-			if dist <= aoe_radius:
+			# Validar que siga existiendo (pudo morir)
+			if is_instance_valid(enemy):
 				_apply_damage_tick(enemy)
+			else:
+				ids_to_remove.append(enemy_id)
+		
+		# Limpiar referencias inválidas
+		for id in ids_to_remove:
+			_enemies_in_area.erase(id)
 
 	func _apply_damage_tick(enemy: Node) -> void:
 		"""Aplicar daño de un tic a un enemigo"""

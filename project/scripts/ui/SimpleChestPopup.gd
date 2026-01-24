@@ -934,18 +934,19 @@ func _input(event: InputEvent):
 			get_tree().root.set_input_as_handled()
 			return
 		elif event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and event.keycode == KEY_S):
+			# Navegación hacia botones inferiores desde el último item
+			if current_selected_index == item_buttons.size() - 1:
+				_focus_bottom_buttons()
+				get_tree().root.set_input_as_handled()
+				return
+			
+			# Navegación normal entre items
 			_navigate_jackpot_selection(1)
 			get_tree().root.set_input_as_handled()
 			return
 		# Space/Enter reclama el item seleccionado (no cierra el popup)
 		elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER)):
 			_claim_selected_jackpot_item()
-			get_tree().root.set_input_as_handled()
-			return
-			
-		# Navegación hacia botones inferiores desde el último item
-		if (event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and event.keycode == KEY_S)) and current_selected_index == item_buttons.size() - 1:
-			_focus_bottom_buttons()
 			get_tree().root.set_input_as_handled()
 			return
 			

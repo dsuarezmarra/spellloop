@@ -73,7 +73,7 @@ static func get_chest_loot(chest_type: int, luck_modifier: float = 1.0, context:
 		"upgrade":
 			# Elite asegura mejores mejoras (min tier 2)
 			var min_tier = 2 if chest_type == ChestType.ELITE else 1
-			item = _generate_upgrade_loot(chest_type, luck_modifier, min_tier)
+			item = _generate_upgrade_loot(chest_type, luck_modifier, min_tier, context)
 		"weapon":
 			item = _generate_weapon_loot(chest_type, luck_modifier, context)
 			
@@ -81,6 +81,23 @@ static func get_chest_loot(chest_type: int, luck_modifier: float = 1.0, context:
 		items.append(item)
 		
 	return items
+
+static func _get_player_stats(context: Object, tree: SceneTree = null) -> Node:
+	"""Helper para obtener PlayerStats desde contexto o grupo global"""
+	# 1. Intentar desde contexto (AttackManager)
+	if context and context.has_method("get_player_stats"):
+		# Si AttackManager tiene getter
+		return context.get_player_stats()
+	if context and "player_stats" in context:
+		return context.player_stats
+		
+	# 2. Intentar buscar globalmente (si tenemos tree)
+	if tree:
+		var nodes = tree.get_nodes_in_group("player_stats")
+		if not nodes.is_empty():
+			return nodes[0]
+			
+	return null
 
 static func _generate_boss_loot(luck: float, context: Object) -> Array:
 	"""
@@ -135,7 +152,7 @@ static func _generate_boss_loot(luck: float, context: Object) -> Array:
 	# La config actual da "gold_large" y "stat_upgrade_tier_3" garantizados en default.
 	# Si la lista de items sigue vacía (por error), fallback
 	if items.is_empty():
-		items.append(_generate_upgrade_loot(ChestType.BOSS, luck, 3))
+		items.append(_generate_upgrade_loot(ChestType.BOSS, luck, 3, context))
 	
 	return items
 
@@ -146,12 +163,12 @@ static func _resolve_loot_string(key: String, luck: float, context: Object) -> D
 		"weapon_upgrade":
 			return _generate_weapon_loot(ChestType.BOSS, luck, context)
 		"stat_upgrade_tier_3":
-			return _generate_upgrade_loot(ChestType.BOSS, luck, 3)
+			return _generate_upgrade_loot(ChestType.BOSS, luck, 3, context)
 		"stat_upgrade_tier_4":
-			return _generate_upgrade_loot(ChestType.BOSS, luck, 4)
+			return _generate_upgrade_loot(ChestType.BOSS, luck, 4, context)
 		"unique_upgrade":
 			# Intentar tier 5 (Legendario/Unico)
-			return _generate_upgrade_loot(ChestType.BOSS, luck, 5)
+			return _generate_upgrade_loot(ChestType.BOSS, luck, 5, context)
 		_:
 			printerr("LootManager: Clave desconocida de BossDatabase: ", key)
 			return {}
@@ -202,7 +219,7 @@ static func _generate_healing_loot(chest_type: int) -> Dictionary:
 		"icon": icon
 	}
 
-static func _generate_upgrade_loot(chest_type: int, luck: float, min_tier_override: int = 1) -> Dictionary:
+static func _generate_upgrade_loot(chest_type: int, luck: float, min_tier_override: int = 1, context: Object = null) -> Dictionary:
 	"""
 	Generar una mejora aleatoria desde la base de datos de mejoras.
 	min_tier_override: Fuerza un tier mínimo (para Elites/Jefes)
@@ -234,18 +251,47 @@ static func _generate_upgrade_loot(chest_type: int, luck: float, min_tier_overri
 		if chest_type == ChestType.ELITE and min_tier < 2: min_tier = 2
 		if chest_type == ChestType.BOSS and min_tier < 3: min_tier = 3
 		
+		# Obtener PlayerStats para filtrado inteligente
+		var player_stats = _get_player_stats(context, Engine.get_main_loop().current_scene.get_tree() if Engine.get_main_loop() else null)
+
 		var valid_upgrades = []
 		for up in all_upgrades:
-			if up.get("tier", 1) >= min_tier:
-				# Aplicar suerte
-				var tier = up.get("tier", 1)
-				var weight = 1.0
+			# Validar si cumple requisitos base
+			if up.get("tier", 1) < min_tier:
+				continue
 				
-				# Preferir altos tiers para cofres buenos
-				if tier > min_tier:
-					weight = 1.0 + (luck - 1.0) * 0.5
+			# -----------------------------------------------------------
+			# FILTRO INTELIGENTE (Fix Upgrade Duplicates)
+			# -----------------------------------------------------------
+			if player_stats:
+				var up_id = up.get("id", "")
 				
-				valid_upgrades.append({"data": up, "weight": weight})
+				# 1. Filtrar únicos ya obtenidos
+				if up.get("is_unique", false) and player_stats.has_method("has_unique_upgrade"):
+					if player_stats.has_unique_upgrade(up_id):
+						continue
+						
+				# 2. Filtrar mejoras maxeadas por stacks
+				var max_stacks = up.get("max_stacks", 0)
+				if max_stacks > 0 and player_stats.has_method("get_upgrade_stacks"):
+					if player_stats.get_upgrade_stacks(up_id) >= max_stacks:
+						continue
+						
+				# 3. Filtrar mejoras inútiles (stats capeados)
+				if player_stats.has_method("would_upgrade_be_useful"):
+					if not player_stats.would_upgrade_be_useful(up):
+						continue
+			# -----------------------------------------------------------
+
+			# Aplicar suerte
+			var tier = up.get("tier", 1)
+			var weight = 1.0
+			
+			# Preferir altos tiers para cofres buenos
+			if tier > min_tier:
+				weight = 1.0 + (luck - 1.0) * 0.5
+			
+			valid_upgrades.append({"data": up, "weight": weight})
 		
 		if valid_upgrades.size() > 0:
 			var picked = _weighted_random(valid_upgrades)
@@ -382,7 +428,7 @@ const DISCOUNT_CHANCE: float = 0.20  # 20% probabilidad de descuento
 const DISCOUNT_MIN: int = 10
 const DISCOUNT_MAX: int = 90
 
-static func get_random_shop_loot(chest_type: int, count: int, luck: float = 1.0) -> Array:
+static func get_random_shop_loot(chest_type: int, count: int, luck: float = 1.0, context: Object = null) -> Array:
 	"""
 	Generar items para cofre tipo tienda.
 	Retorna array de items con precios y descuentos.
@@ -405,13 +451,13 @@ static func get_random_shop_loot(chest_type: int, count: int, luck: float = 1.0)
 			
 	# Generar items
 	for i in range(count):
-		var item = _generate_shop_item(chest_type, base_tier, luck)
+		var item = _generate_shop_item(chest_type, base_tier, luck, context)
 		if item:
 			items.append(item)
 	
 	return items
 
-static func _generate_shop_item(chest_type: int, base_tier: int, luck: float) -> Dictionary:
+static func _generate_shop_item(chest_type: int, base_tier: int, luck: float, context: Object = null) -> Dictionary:
 	"""Generar un item para tienda con precio"""
 	
 	var item = {}
@@ -422,18 +468,18 @@ static func _generate_shop_item(chest_type: int, base_tier: int, luck: float) ->
 		var roll = randf()
 		if roll < 0.5:
 			# Intentar sacar item de BossDatabase (si implementado) o fallback a upgrade alto
-			item = _generate_shop_boss_item(luck)
+			item = _generate_shop_boss_item(luck, context)
 		elif roll < 0.8:
 			item = _generate_shop_weapon(base_tier, luck)
 		else:
-			item = _generate_shop_upgrade(base_tier, 0, luck)
+			item = _generate_shop_upgrade(base_tier, 0, luck, context)
 	else:
 		# Lógica estándar
 		var is_weapon = randf() < 0.2  # 20% armas
 		if is_weapon:
 			item = _generate_shop_weapon(base_tier, luck)
 		else:
-			item = _generate_shop_upgrade(base_tier, 0, luck)
+			item = _generate_shop_upgrade(base_tier, 0, luck, context)
 	
 	if item.is_empty():
 		return {}
@@ -489,7 +535,7 @@ static func _generate_shop_weapon(base_tier: int, luck: float) -> Dictionary:
 		"rarity": base_tier
 	}
 
-static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float) -> Dictionary:
+static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float, context: Object = null) -> Dictionary:
 	"""Generar upgrade para tienda"""
 	var UpgradeDB = load("res://scripts/data/UpgradeDatabase.gd")
 	if not UpgradeDB:
@@ -520,6 +566,37 @@ static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float)
 		return t >= base_tier and t <= target_tier + 1
 	)
 	
+	# FILTRO DE UPGRADES SHOP (Nuevo)
+	var player_stats = _get_player_stats(context, Engine.get_main_loop().current_scene.get_tree() if Engine.get_main_loop() else null)
+	if player_stats:
+		var filtered = []
+		for up in eligible:
+			var up_id = up.get("id", "")
+			# 1. Filtrar únicos
+			if up.get("is_unique", false) and player_stats.has_unique_upgrade(up_id):
+				continue
+			# 2. Filtrar max stacks
+			var max_stacks = up.get("max_stacks", 0)
+			if max_stacks > 0 and player_stats.get_upgrade_stacks(up_id) >= max_stacks:
+				continue
+			# 3. Filtrar capped
+			if not player_stats.would_upgrade_be_useful(up):
+				continue
+			filtered.append(up)
+		eligible = filtered
+	
+	if eligible.is_empty():
+		# Si filtramos todo (muy avanzado el juego), dar oro o cura
+		return {
+			"type": "gold",
+			"id": "gold_bag_shop",
+			"name": "Reembolso",
+			"amount": 100,
+			"rarity": 1,
+			"icon": "💰",
+			"tier": 1
+		}
+	
 	if eligible.is_empty():
 		eligible = all_upgrades
 	
@@ -536,19 +613,19 @@ static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float)
 		"effects": upgrade.get("effects", [])
 	}
 
-static func _generate_shop_boss_item(luck: float) -> Dictionary:
+static func _generate_shop_boss_item(luck: float, context: Object = null) -> Dictionary:
 	"""Generar item de jefe (Legendario/Único)"""
 	if not ClassDB.class_exists("BossDatabase") and not ResourceLoader.exists("res://scripts/data/BossDatabase.gd"):
-		return _generate_shop_upgrade(4, 0, luck)
+		return _generate_shop_upgrade(4, 0, luck, context)
 		
 	var BossDB = load("res://scripts/data/BossDatabase.gd")
-	if not BossDB: return _generate_shop_upgrade(4, 0, luck)
+	if not BossDB: return _generate_shop_upgrade(4, 0, luck, context)
 	
 	var loot_table = BossDB.get_boss_loot("default")
 	var pool = loot_table.get("pool", [])
 	
 	if pool.is_empty():
-		return _generate_shop_upgrade(4, 0, luck)
+		return _generate_shop_upgrade(4, 0, luck, context)
 		
 	var pick = pool[randi() % pool.size()]
 	
@@ -556,10 +633,10 @@ static func _generate_shop_boss_item(luck: float) -> Dictionary:
 		"weapon_upgrade":
 			return _generate_shop_weapon(4, luck) # Tier 4 weapon
 		"stat_upgrade_tier_3":
-			return _generate_shop_upgrade(3, 0, luck)
+			return _generate_shop_upgrade(3, 0, luck, context)
 		"stat_upgrade_tier_4":
-			return _generate_shop_upgrade(4, 0, luck)
+			return _generate_shop_upgrade(4, 0, luck, context)
 		"unique_upgrade":
-			return _generate_shop_upgrade(5, 0, luck * 1.5) # Try for unique
+			return _generate_shop_upgrade(5, 0, luck * 1.5, context) # Try for unique
 			
-	return _generate_shop_upgrade(3, 0, luck)
+	return _generate_shop_upgrade(3, 0, luck, context)

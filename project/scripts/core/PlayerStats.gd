@@ -1666,7 +1666,7 @@ func apply_upgrade(upgrade_data) -> bool:
 	# 2. Verificar límite de stacks (si aplica)
 	var max_stacks = upgrade_dict.get("max_stacks", 0)
 	if max_stacks > 0:
-		var current_stacks = _count_upgrade_stacks(upgrade_id)
+		var current_stacks = get_upgrade_stacks(upgrade_id)
 		if current_stacks >= max_stacks:
 			print("[PlayerStats] ⚠️ Límite de stacks alcanzado para: %s (%d/%d)" % [upgrade_id, current_stacks, max_stacks])
 			return false
@@ -1843,7 +1843,7 @@ func add_upgrade(upgrade_data: Dictionary) -> void:
 	if upgrade_data.get("is_unique", false):
 		register_unique_upgrade(upgrade_entry["id"])
 
-func _count_upgrade_stacks(upgrade_id: String) -> int:
+func get_upgrade_stacks(upgrade_id: String) -> int:
 	"""Contar cuántas veces se ha obtenido una mejora específica"""
 	var count = 0
 	for upgrade in collected_upgrades:

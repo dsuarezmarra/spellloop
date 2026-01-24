@@ -17,13 +17,13 @@ extends Node
 const ENABLED: bool = true
 
 ## Mostrar logs de daño de armas (OUTPUT)
-const LOG_WEAPON_DAMAGE: bool = true
+const LOG_WEAPON_DAMAGE: bool = false
 
 ## Mostrar logs de daño al player (INPUT)
-const LOG_PLAYER_DAMAGE: bool = true
+const LOG_PLAYER_DAMAGE: bool = false
 
 ## Mostrar extras en los logs (crit, effect, etc.)
-const SHOW_EXTRAS: bool = true
+const SHOW_EXTRAS: bool = false
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # API PÚBLICA

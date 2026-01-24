@@ -419,7 +419,15 @@ func _create_shop_popup():
 	# Calcular cantidad de items (1-3 + bonus por tiempo)
 	var count = clampi(2 + int(game_time_minutes / 5.0), 2, 5)
 	
-	items_inside = LootManager.get_random_shop_loot(loot_chest_type, count, luck)
+	# Contexto para filtrado (AttackManager)
+	var context = null
+	if player_ref:
+		if "attack_manager" in player_ref:
+			context = player_ref.attack_manager
+		elif player_ref.has_node("AttackManager"):
+			context = player_ref.get_node("AttackManager")
+
+	items_inside = LootManager.get_random_shop_loot(loot_chest_type, count, luck, context)
 	
 	if items_inside.is_empty():
 		# Fallback: generar al menos un item
