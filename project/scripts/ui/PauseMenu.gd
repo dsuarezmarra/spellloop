@@ -2588,4 +2588,4 @@ func _disable_buttons_recursive(node: Node, disabled: bool) -> void:
 		_disable_buttons_recursive(child, disabled)
 
 func _play_button_sound() -> void:
-	AudioManager.play("sfx_ui_click")
+	AudioManager.play_fixed("sfx_ui_click")

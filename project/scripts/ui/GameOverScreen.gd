@@ -198,7 +198,7 @@ func _on_menu_pressed() -> void:
 	# La transición de escena se maneja en Game.gd
 
 func _play_button_sound() -> void:
-	AudioManager.play("sfx_ui_click")
+	AudioManager.play_fixed("sfx_ui_click")
 
 func _play_game_over_sound() -> void:
 	# Game over sound not generated yet

@@ -529,6 +529,7 @@ func _navigate_horizontal(direction: int) -> void:
 			button_index = 2
 
 	_update_all_visuals()
+	AudioManager.play_fixed("sfx_ui_hover")
 
 func _navigate_vertical(direction: int) -> void:
 	# En modo eliminar, no permitir cambiar de fila
@@ -543,6 +544,7 @@ func _navigate_vertical(direction: int) -> void:
 		current_row = Row.OPTIONS
 
 	_update_all_visuals()
+	AudioManager.play_fixed("sfx_ui_hover")
 
 func _confirm_selection() -> void:
 	# En modo eliminar, confirmar = eliminar la opción seleccionada
@@ -570,6 +572,7 @@ func _select_option() -> void:
 
 	locked = true
 	var selected = options[option_index]
+	AudioManager.play_fixed("sfx_ui_confirm")
 	_apply_option(selected)
 	option_selected.emit(selected)
 	_close_panel()

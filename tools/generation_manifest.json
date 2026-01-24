@@ -604,5 +604,83 @@
         "name": "sfx_death_slime",
         "variations": 4,
         "prompt": "magical anime game sound effect, slime enemy death, goo splatter, blob defeat, wet explosion"
+    },
+    {
+        "category": "sfx/gameplay",
+        "name": "sfx_level_up",
+        "variations": 3,
+        "prompt": "magical anime game sound effect, epic level up fanfare, triumphant ascending chime, power boost celebration, satisfying reward"
+    },
+    {
+        "category": "sfx/gameplay",
+        "name": "sfx_xp_pickup",
+        "variations": 4,
+        "prompt": "magical anime game sound effect, experience orb collect, soft magical absorption, energy pickup, gentle satisfying chime"
+    },
+    {
+        "category": "sfx/gameplay",
+        "name": "sfx_footstep_grass",
+        "variations": 6,
+        "prompt": "game sound effect, soft footstep on grass, gentle step, walking on meadow, subtle movement sound"
+    },
+    {
+        "category": "sfx/gameplay",
+        "name": "sfx_footstep_stone",
+        "variations": 6,
+        "prompt": "game sound effect, footstep on stone floor, castle step, light walking on dungeon stone, subtle movement"
+    },
+    {
+        "category": "sfx/gameplay",
+        "name": "sfx_footstep_sand",
+        "variations": 6,
+        "prompt": "game sound effect, footstep on sand, desert walking, soft sandy step, beach movement sound"
+    },
+    {
+        "category": "sfx/gameplay",
+        "name": "sfx_footstep_snow",
+        "variations": 6,
+        "prompt": "game sound effect, footstep on snow, crunchy winter step, cold walking sound, icy terrain movement"
+    },
+    {
+        "category": "sfx/gameplay",
+        "name": "sfx_footstep_water",
+        "variations": 4,
+        "prompt": "game sound effect, footstep in shallow water, splash step, wet walking, puddle movement sound"
+    },
+    {
+        "category": "sfx/gameplay",
+        "name": "sfx_chest_open",
+        "variations": 3,
+        "prompt": "magical anime game sound effect, treasure chest opening, wooden lid creak, magical reveal, exciting reward discovery"
+    },
+    {
+        "category": "sfx/gameplay",
+        "name": "sfx_item_pickup",
+        "variations": 4,
+        "prompt": "magical anime game sound effect, item pickup, magical collection, satisfying grab, loot acquired"
+    },
+    {
+        "category": "sfx/gameplay",
+        "name": "sfx_dash",
+        "variations": 4,
+        "prompt": "magical anime game sound effect, quick dash movement, fast whoosh, speed boost, agile dodge sound"
+    },
+    {
+        "category": "sfx/gameplay",
+        "name": "sfx_critical_hit",
+        "variations": 4,
+        "prompt": "magical anime game sound effect, critical hit impact, powerful strike, extra damage burst, devastating blow"
+    },
+    {
+        "category": "sfx/ui",
+        "name": "sfx_pause_open",
+        "variations": 2,
+        "prompt": "magical anime game sound effect, pause menu opening, time stops, gentle interface appear, soft magical freeze"
+    },
+    {
+        "category": "sfx/ui",
+        "name": "sfx_pause_close",
+        "variations": 2,
+        "prompt": "magical anime game sound effect, pause menu closing, time resumes, interface disappear, gentle magical unfreeze"
     }
 ]

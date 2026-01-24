@@ -715,6 +715,152 @@
     ],
     "bus": "SFX"
   },
+  "sfx_chest_open": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_chest_open_01.mp3",
+      "res://audio/sfx/gameplay/sfx_chest_open_02.mp3",
+      "res://audio/sfx/gameplay/sfx_chest_open_03.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_critical_hit": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_critical_hit_01.mp3",
+      "res://audio/sfx/gameplay/sfx_critical_hit_02.mp3",
+      "res://audio/sfx/gameplay/sfx_critical_hit_03.mp3",
+      "res://audio/sfx/gameplay/sfx_critical_hit_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_dash": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_dash_01.mp3",
+      "res://audio/sfx/gameplay/sfx_dash_02.mp3",
+      "res://audio/sfx/gameplay/sfx_dash_03.mp3",
+      "res://audio/sfx/gameplay/sfx_dash_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_footstep_grass": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_footstep_grass_01.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_grass_02.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_grass_03.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_grass_04.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_grass_05.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_grass_06.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_footstep_sand": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_footstep_sand_01.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_sand_02.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_sand_03.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_sand_04.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_sand_05.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_sand_06.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_footstep_snow": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_footstep_snow_01.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_snow_02.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_snow_03.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_snow_04.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_snow_05.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_snow_06.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_footstep_stone": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_footstep_stone_01.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_stone_02.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_stone_03.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_stone_04.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_stone_05.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_stone_06.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_footstep_water": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_footstep_water_01.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_water_02.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_water_03.mp3",
+      "res://audio/sfx/gameplay/sfx_footstep_water_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_item_pickup": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_item_pickup_01.mp3",
+      "res://audio/sfx/gameplay/sfx_item_pickup_02.mp3",
+      "res://audio/sfx/gameplay/sfx_item_pickup_03.mp3",
+      "res://audio/sfx/gameplay/sfx_item_pickup_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_level_up": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_level_up_01.mp3",
+      "res://audio/sfx/gameplay/sfx_level_up_02.mp3",
+      "res://audio/sfx/gameplay/sfx_level_up_03.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
   "sfx_player_death": {
     "files": [
       "res://audio/sfx/gameplay/sfx_player_death_01.mp3",
@@ -813,6 +959,20 @@
     ],
     "bus": "SFX"
   },
+  "sfx_xp_pickup": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_xp_pickup_01.mp3",
+      "res://audio/sfx/gameplay/sfx_xp_pickup_02.mp3",
+      "res://audio/sfx/gameplay/sfx_xp_pickup_03.mp3",
+      "res://audio/sfx/gameplay/sfx_xp_pickup_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
   "sfx_status_burn_loop": {
     "files": [
       "res://audio/sfx/status/sfx_status_burn_loop.mp3"
@@ -854,6 +1014,30 @@
     "pitch_scale": [
       1.0,
       1.0
+    ],
+    "bus": "SFX"
+  },
+  "sfx_pause_close": {
+    "files": [
+      "res://audio/sfx/ui/sfx_pause_close_01.mp3",
+      "res://audio/sfx/ui/sfx_pause_close_02.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_pause_open": {
+    "files": [
+      "res://audio/sfx/ui/sfx_pause_open_01.mp3",
+      "res://audio/sfx/ui/sfx_pause_open_02.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
     ],
     "bus": "SFX"
   },

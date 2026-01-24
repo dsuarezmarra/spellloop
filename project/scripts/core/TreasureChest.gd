@@ -265,6 +265,10 @@ func _ready():
 
 func trigger_chest_interaction():
 	if is_opened: return
+	
+	# Play chest opening sound
+	AudioManager.play_fixed("sfx_chest_open")
+	
 	get_tree().paused = true
 	create_chest_popup()
 

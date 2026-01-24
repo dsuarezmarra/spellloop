@@ -614,10 +614,10 @@ func _on_back_pressed() -> void:
 	back_pressed.emit()
 
 func _play_button_sound() -> void:
-	AudioManager.play("sfx_ui_click")
+	AudioManager.play_fixed("sfx_ui_click")
 
 func _play_navigate_sound() -> void:
-	AudioManager.play("sfx_ui_hover")
+	AudioManager.play_fixed("sfx_ui_hover")
 
 # =============================================================================
 # PUBLIC API

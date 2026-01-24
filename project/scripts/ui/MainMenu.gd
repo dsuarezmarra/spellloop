@@ -315,7 +315,7 @@ func _on_quit_pressed() -> void:
 	get_tree().quit()
 
 func _play_button_sound() -> void:
-	AudioManager.play("sfx_ui_click")
+	AudioManager.play_fixed("sfx_ui_click")
 
 func _start_game() -> void:
 	# Transición con fade
@@ -422,7 +422,7 @@ func _navigate_menu(direction: int) -> void:
 		return
 
 	current_button_index = wrapi(current_button_index + direction, 0, menu_buttons.size())
-	AudioManager.play("sfx_ui_hover")
+	AudioManager.play_fixed("sfx_ui_hover")
 	_highlight_current_button()
 
 func _activate_current_button() -> void:

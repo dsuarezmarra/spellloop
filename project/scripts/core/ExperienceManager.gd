@@ -395,6 +395,12 @@ func _on_coin_collected(value: int) -> void:
 	# Emitir señales
 	streak_updated.emit(streak_count, current_streak_value, streak_multiplier)
 	coin_collected.emit(final_value, total_coins)
+	
+	# Play coin collection sound with streak-based musical notes
+	# sfx_streak_01 through sfx_streak_08 form an ascending musical scale
+	var streak_sfx_index = clampi(streak_count, 1, 8)
+	var sfx_id = "sfx_streak_%02d" % streak_sfx_index
+	AudioManager.play_fixed(sfx_id)
 
 	# Guardar en SaveManager si existe
 	_save_coins_to_progression(final_value)

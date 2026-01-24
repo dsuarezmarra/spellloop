@@ -353,7 +353,7 @@ func _on_back_pressed() -> void:
 	back_pressed.emit()
 
 func _play_button_sound() -> void:
-	AudioManager.play("sfx_ui_click")
+	AudioManager.play_fixed("sfx_ui_click")
 
 func refresh() -> void:
 	"""Refrescar los datos de los slots"""
