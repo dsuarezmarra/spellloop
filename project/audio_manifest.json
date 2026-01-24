@@ -1,4 +1,37 @@
 {
+  "music_boss_theme": {
+    "files": [
+      "res://audio/music/bosses/music_boss_theme.mp3"
+    ],
+    "volume_db": -12.0,
+    "pitch_scale": [
+      1.0,
+      1.0
+    ],
+    "bus": "Music"
+  },
+  "music_gameplay_loop": {
+    "files": [
+      "res://audio/music/gameplay/music_gameplay_loop.mp3"
+    ],
+    "volume_db": -12.0,
+    "pitch_scale": [
+      1.0,
+      1.0
+    ],
+    "bus": "Music"
+  },
+  "music_intro_theme": {
+    "files": [
+      "res://audio/music/menu/music_intro_theme.mp3"
+    ],
+    "volume_db": -12.0,
+    "pitch_scale": [
+      1.0,
+      1.0
+    ],
+    "bus": "Music"
+  },
   "sfx_streak": {
     "files": [
       "res://audio/sfx/coins/sfx_streak_01.mp3",
@@ -10,7 +43,7 @@
       "res://audio/sfx/coins/sfx_streak_07.mp3",
       "res://audio/sfx/coins/sfx_streak_08.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -8.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -22,7 +55,7 @@
       "res://audio/sfx/enemies/sfx_boss_alarm_01.mp3",
       "res://audio/sfx/enemies/sfx_boss_alarm_02.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -10.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -36,7 +69,7 @@
       "res://audio/sfx/enemies/sfx_death_armor_03.mp3",
       "res://audio/sfx/enemies/sfx_death_armor_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -50,7 +83,7 @@
       "res://audio/sfx/enemies/sfx_death_bone_03.mp3",
       "res://audio/sfx/enemies/sfx_death_bone_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -64,7 +97,7 @@
       "res://audio/sfx/enemies/sfx_death_flesh_03.mp3",
       "res://audio/sfx/enemies/sfx_death_flesh_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -78,7 +111,7 @@
       "res://audio/sfx/enemies/sfx_death_ghost_03.mp3",
       "res://audio/sfx/enemies/sfx_death_ghost_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -92,7 +125,7 @@
       "res://audio/sfx/enemies/sfx_death_slime_03.mp3",
       "res://audio/sfx/enemies/sfx_death_slime_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -105,7 +138,7 @@
       "res://audio/sfx/enemies/sfx_elite_spawn_02.mp3",
       "res://audio/sfx/enemies/sfx_elite_spawn_03.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -119,7 +152,7 @@
       "res://audio/sfx/enemies/sfx_enemy_spawn_03.mp3",
       "res://audio/sfx/enemies/sfx_enemy_spawn_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -10.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -135,7 +168,7 @@
       "res://audio/sfx/enemies/sfx_hit_armor_05.mp3",
       "res://audio/sfx/enemies/sfx_hit_armor_06.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -151,7 +184,7 @@
       "res://audio/sfx/enemies/sfx_hit_bone_05.mp3",
       "res://audio/sfx/enemies/sfx_hit_bone_06.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -167,7 +200,7 @@
       "res://audio/sfx/enemies/sfx_hit_flesh_05.mp3",
       "res://audio/sfx/enemies/sfx_hit_flesh_06.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -183,7 +216,7 @@
       "res://audio/sfx/enemies/sfx_hit_ghost_05.mp3",
       "res://audio/sfx/enemies/sfx_hit_ghost_06.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -199,7 +232,7 @@
       "res://audio/sfx/enemies/sfx_hit_slime_05.mp3",
       "res://audio/sfx/enemies/sfx_hit_slime_06.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -210,7 +243,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_absolute_zero.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -221,7 +254,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_abyss.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -232,7 +265,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_arcane_storm.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -243,7 +276,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_aurora.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -254,7 +287,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_blizzard.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -265,7 +298,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_cosmic_barrier.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -276,7 +309,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_cosmic_void.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -287,7 +320,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_crystal_guardian.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -298,7 +331,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_dark_flame.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -309,7 +342,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_dark_lightning.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -320,7 +353,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_decay.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -331,7 +364,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_eclipse.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -342,7 +375,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_firestorm.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -353,7 +386,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_frostbite.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -364,7 +397,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_frostvine.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -375,7 +408,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_frost_orb.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -386,7 +419,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_frozen_thunder.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -397,7 +430,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_gaia.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -408,7 +441,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_glacier.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -419,7 +452,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_hellfire.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -430,7 +463,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_inferno_orb.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -441,7 +474,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_life_orbs.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -452,7 +485,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_phantom_blade.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -463,7 +496,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_plasma_bolt.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -474,7 +507,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_pollen_storm.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -485,7 +518,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_prism_wind.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -496,7 +529,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_radiant_stone.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -507,7 +540,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_rift_quake.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -518,7 +551,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_sandstorm.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -529,7 +562,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_seismic_bolt.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -540,7 +573,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_shadow_orbs.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -551,7 +584,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_solar_bloom.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -562,7 +595,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_solar_flare.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -573,7 +606,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_soul_reaper.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -584,7 +617,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_steam_cannon.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -595,7 +628,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_stone_fang.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -606,7 +639,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_storm_caller.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -617,7 +650,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_thunder_bloom.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -628,7 +661,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_thunder_spear.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -639,7 +672,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_twilight.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -650,7 +683,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_void_bolt.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -661,7 +694,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_void_storm.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -672,7 +705,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_volcano.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -683,7 +716,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_wildfire.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -694,7 +727,7 @@
     "files": [
       "res://audio/sfx/fusions/sfx_fusion_wind_orbs.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -708,7 +741,7 @@
       "res://audio/sfx/gameplay/sfx_barrier_hit_03.mp3",
       "res://audio/sfx/gameplay/sfx_barrier_hit_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -721,7 +754,7 @@
       "res://audio/sfx/gameplay/sfx_chest_open_02.mp3",
       "res://audio/sfx/gameplay/sfx_chest_open_03.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -735,7 +768,7 @@
       "res://audio/sfx/gameplay/sfx_critical_hit_03.mp3",
       "res://audio/sfx/gameplay/sfx_critical_hit_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -749,7 +782,7 @@
       "res://audio/sfx/gameplay/sfx_dash_03.mp3",
       "res://audio/sfx/gameplay/sfx_dash_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -766,7 +799,7 @@
       "res://audio/sfx/gameplay/sfx_footstep_grass_05.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_grass_06.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -15.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -783,7 +816,7 @@
       "res://audio/sfx/gameplay/sfx_footstep_sand_05.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_sand_06.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -15.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -800,7 +833,7 @@
       "res://audio/sfx/gameplay/sfx_footstep_snow_05.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_snow_06.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -15.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -817,7 +850,7 @@
       "res://audio/sfx/gameplay/sfx_footstep_stone_05.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_stone_06.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -15.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -831,7 +864,7 @@
       "res://audio/sfx/gameplay/sfx_footstep_water_03.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_water_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -15.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -845,7 +878,7 @@
       "res://audio/sfx/gameplay/sfx_item_pickup_03.mp3",
       "res://audio/sfx/gameplay/sfx_item_pickup_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -8.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -858,7 +891,7 @@
       "res://audio/sfx/gameplay/sfx_level_up_02.mp3",
       "res://audio/sfx/gameplay/sfx_level_up_03.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -872,7 +905,7 @@
       "res://audio/sfx/gameplay/sfx_player_death_03.mp3",
       "res://audio/sfx/gameplay/sfx_player_death_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -886,7 +919,7 @@
       "res://audio/sfx/gameplay/sfx_player_heal_03.mp3",
       "res://audio/sfx/gameplay/sfx_player_heal_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -902,7 +935,7 @@
       "res://audio/sfx/gameplay/sfx_player_hurt_05.mp3",
       "res://audio/sfx/gameplay/sfx_player_hurt_06.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -915,7 +948,7 @@
       "res://audio/sfx/gameplay/sfx_player_revive_02.mp3",
       "res://audio/sfx/gameplay/sfx_player_revive_03.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -929,7 +962,7 @@
       "res://audio/sfx/gameplay/sfx_shield_absorb_03.mp3",
       "res://audio/sfx/gameplay/sfx_shield_absorb_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -943,7 +976,7 @@
       "res://audio/sfx/gameplay/sfx_shield_break_03.mp3",
       "res://audio/sfx/gameplay/sfx_shield_break_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -956,7 +989,7 @@
       "res://audio/sfx/gameplay/sfx_turret_lock_02.mp3",
       "res://audio/sfx/gameplay/sfx_turret_lock_03.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -970,7 +1003,7 @@
       "res://audio/sfx/gameplay/sfx_xp_pickup_03.mp3",
       "res://audio/sfx/gameplay/sfx_xp_pickup_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -8.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -981,10 +1014,10 @@
     "files": [
       "res://audio/sfx/status/sfx_status_burn_loop.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
-      1.0,
-      1.0
+      0.95,
+      1.05
     ],
     "bus": "SFX"
   },
@@ -992,10 +1025,10 @@
     "files": [
       "res://audio/sfx/status/sfx_status_curse_loop.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
-      1.0,
-      1.0
+      0.95,
+      1.05
     ],
     "bus": "SFX"
   },
@@ -1003,10 +1036,10 @@
     "files": [
       "res://audio/sfx/status/sfx_status_freeze_loop.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
-      1.0,
-      1.0
+      0.95,
+      1.05
     ],
     "bus": "SFX"
   },
@@ -1014,10 +1047,10 @@
     "files": [
       "res://audio/sfx/status/sfx_status_poison_loop.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
-      1.0,
-      1.0
+      0.95,
+      1.05
     ],
     "bus": "SFX"
   },
@@ -1026,7 +1059,7 @@
       "res://audio/sfx/ui/sfx_pause_close_01.mp3",
       "res://audio/sfx/ui/sfx_pause_close_02.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1038,7 +1071,7 @@
       "res://audio/sfx/ui/sfx_pause_open_01.mp3",
       "res://audio/sfx/ui/sfx_pause_open_02.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1051,7 +1084,7 @@
       "res://audio/sfx/ui/sfx_rarity_common_02.mp3",
       "res://audio/sfx/ui/sfx_rarity_common_03.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1064,7 +1097,7 @@
       "res://audio/sfx/ui/sfx_rarity_legendary_02.mp3",
       "res://audio/sfx/ui/sfx_rarity_legendary_03.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1075,10 +1108,10 @@
     "files": [
       "res://audio/sfx/ui/sfx_slot_spin_loop.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
-      1.0,
-      1.0
+      0.95,
+      1.05
     ],
     "bus": "SFX"
   },
@@ -1089,7 +1122,7 @@
       "res://audio/sfx/ui/sfx_slot_stop_03.mp3",
       "res://audio/sfx/ui/sfx_slot_stop_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1103,7 +1136,7 @@
       "res://audio/sfx/ui/sfx_ui_cancel_03.mp3",
       "res://audio/sfx/ui/sfx_ui_cancel_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -9.0,
     "pitch_scale": [
       1.0,
       1.0
@@ -1117,7 +1150,7 @@
       "res://audio/sfx/ui/sfx_ui_click_03.mp3",
       "res://audio/sfx/ui/sfx_ui_click_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -9.0,
     "pitch_scale": [
       1.0,
       1.0
@@ -1131,7 +1164,7 @@
       "res://audio/sfx/ui/sfx_ui_confirm_03.mp3",
       "res://audio/sfx/ui/sfx_ui_confirm_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -9.0,
     "pitch_scale": [
       1.0,
       1.0
@@ -1144,7 +1177,7 @@
       "res://audio/sfx/ui/sfx_ui_error_02.mp3",
       "res://audio/sfx/ui/sfx_ui_error_03.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -9.0,
     "pitch_scale": [
       1.0,
       1.0
@@ -1158,7 +1191,7 @@
       "res://audio/sfx/ui/sfx_ui_hover_03.mp3",
       "res://audio/sfx/ui/sfx_ui_hover_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -9.0,
     "pitch_scale": [
       1.0,
       1.0
@@ -1172,7 +1205,7 @@
       "res://audio/sfx/weapons/sfx_arcane_cast_03.mp3",
       "res://audio/sfx/weapons/sfx_arcane_cast_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1186,7 +1219,7 @@
       "res://audio/sfx/weapons/sfx_arcane_hit_03.mp3",
       "res://audio/sfx/weapons/sfx_arcane_hit_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1200,7 +1233,7 @@
       "res://audio/sfx/weapons/sfx_fire_cast_03.mp3",
       "res://audio/sfx/weapons/sfx_fire_cast_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1214,7 +1247,7 @@
       "res://audio/sfx/weapons/sfx_fire_hit_03.mp3",
       "res://audio/sfx/weapons/sfx_fire_hit_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1228,7 +1261,7 @@
       "res://audio/sfx/weapons/sfx_ice_cast_03.mp3",
       "res://audio/sfx/weapons/sfx_ice_cast_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1242,7 +1275,7 @@
       "res://audio/sfx/weapons/sfx_ice_hit_03.mp3",
       "res://audio/sfx/weapons/sfx_ice_hit_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1256,7 +1289,7 @@
       "res://audio/sfx/weapons/sfx_lightning_cast_03.mp3",
       "res://audio/sfx/weapons/sfx_lightning_cast_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1270,7 +1303,7 @@
       "res://audio/sfx/weapons/sfx_lightning_hit_03.mp3",
       "res://audio/sfx/weapons/sfx_lightning_hit_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1284,7 +1317,7 @@
       "res://audio/sfx/weapons/sfx_nature_cast_03.mp3",
       "res://audio/sfx/weapons/sfx_nature_cast_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1298,7 +1331,7 @@
       "res://audio/sfx/weapons/sfx_nature_hit_03.mp3",
       "res://audio/sfx/weapons/sfx_nature_hit_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1312,7 +1345,7 @@
       "res://audio/sfx/weapons/sfx_shadow_cast_03.mp3",
       "res://audio/sfx/weapons/sfx_shadow_cast_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1326,7 +1359,7 @@
       "res://audio/sfx/weapons/sfx_shadow_hit_03.mp3",
       "res://audio/sfx/weapons/sfx_shadow_hit_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1340,7 +1373,7 @@
       "res://audio/sfx/weapons/sfx_void_cast_03.mp3",
       "res://audio/sfx/weapons/sfx_void_cast_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1354,7 +1387,7 @@
       "res://audio/sfx/weapons/sfx_void_hit_03.mp3",
       "res://audio/sfx/weapons/sfx_void_hit_04.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1365,7 +1398,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_absolute_zero_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1376,7 +1409,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_abyss_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1387,7 +1420,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_arcane_orb_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1398,7 +1431,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_arcane_storm_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1409,7 +1442,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_aurora_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1420,7 +1453,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_blizzard_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1431,7 +1464,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_cosmic_barrier_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1442,7 +1475,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_cosmic_void_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1453,7 +1486,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_crystal_guardian_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1464,7 +1497,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_dark_flame_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1475,7 +1508,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_dark_lightning_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1486,7 +1519,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_decay_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1497,7 +1530,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_earth_spike_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1508,7 +1541,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_eclipse_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1519,7 +1552,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_firestorm_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1530,7 +1563,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_fire_wand_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1541,7 +1574,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_frostbite_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1552,7 +1585,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_frostvine_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1563,7 +1596,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_frost_orb_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1574,7 +1607,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_frozen_thunder_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1585,7 +1618,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_gaia_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1596,7 +1629,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_glacier_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1607,7 +1640,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_hellfire_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1618,7 +1651,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_ice_wand_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1629,7 +1662,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_inferno_orb_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1640,7 +1673,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_life_orbs_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1651,7 +1684,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_lightning_wand_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1662,7 +1695,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_light_beam_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1673,7 +1706,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_nature_staff_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1684,7 +1717,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_phantom_blade_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1695,7 +1728,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_plasma_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1706,7 +1739,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_pollen_storm_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1717,7 +1750,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_prism_wind_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1728,7 +1761,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_radiant_stone_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1739,7 +1772,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_rift_quake_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1750,7 +1783,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_sandstorm_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1761,7 +1794,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_seismic_bolt_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1772,7 +1805,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_shadow_dagger_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1783,7 +1816,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_shadow_orbs_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1794,7 +1827,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_solar_bloom_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1805,7 +1838,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_solar_flare_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1816,7 +1849,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_soul_reaper_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1827,7 +1860,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_steam_cannon_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1838,7 +1871,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_stone_fang_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1849,7 +1882,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_storm_caller_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1860,7 +1893,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_thunder_bloom_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1871,7 +1904,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_thunder_spear_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1882,7 +1915,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_twilight_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1893,7 +1926,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_void_bolt_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1904,7 +1937,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_void_pulse_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1915,7 +1948,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_void_storm_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1926,7 +1959,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_volcano_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1937,7 +1970,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_wildfire_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1948,7 +1981,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_wind_blade_01.mp3"
     ],
-    "volume_db": 0.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
@@ -1959,51 +1992,7 @@
     "files": [
       "res://audio/sfx/weapons/sfx_weapon_wind_orbs_01.mp3"
     ],
-    "volume_db": 0.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
-    "bus": "SFX"
-  },
-  "sfx_footstep_grass": {
-    "files": [
-      "res://audio/sfx/gameplay/sfx_footstep_grass.mp3"
-    ],
-    "volume_db": -5.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
-    "bus": "SFX"
-  },
-  "sfx_footstep_sand": {
-    "files": [
-      "res://audio/sfx/gameplay/sfx_footstep_sand.mp3"
-    ],
-    "volume_db": -5.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
-    "bus": "SFX"
-  },
-  "sfx_footstep_snow": {
-    "files": [
-      "res://audio/sfx/gameplay/sfx_footstep_snow.mp3"
-    ],
-    "volume_db": -5.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
-    "bus": "SFX"
-  },
-  "sfx_footstep_stone": {
-    "files": [
-      "res://audio/sfx/gameplay/sfx_footstep_stone.mp3"
-    ],
-    "volume_db": -5.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05
