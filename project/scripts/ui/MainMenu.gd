@@ -36,6 +36,53 @@ func _setup_ui() -> void:
 	if version_label:
 		version_label.text = "v" + GAME_VERSION
 
+	# Fondo de pantalla (Wallpaper)
+	# Fondo de pantalla (Wallpaper)
+	# 1. Eliminar cualquier fondo opaco existente (ColorRect por defecto de Godot)
+	var existing_bg = get_node_or_null("Background") # Nombre común para el ColorRect de fondo
+	if existing_bg:
+		existing_bg.visible = false
+		existing_bg.queue_free() # Eliminarlo para asegurar que no bloquee
+		
+	# 2. Cargar e inyectar el texture rect
+	var bg_tex = load("res://assets/ui/backgrounds/main_menu_bg.png")
+	
+	# Fallback: Carga directa del sistema de archivos (Bypasea import)
+	if not bg_tex:
+		var img = Image.new()
+		var err = img.load_from_file("res://assets/ui/backgrounds/main_menu_bg.png")
+		if err == OK:
+			bg_tex = ImageTexture.create_from_image(img)
+		else:
+			print("ERROR CARGANDO WALLPAPER: ", err)
+
+	if bg_tex:
+		var bg_rect = get_node_or_null("BackgroundRect")
+		if not bg_rect:
+			bg_rect = TextureRect.new()
+			bg_rect.name = "BackgroundRect"
+			bg_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			bg_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+			bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+			bg_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE # Importante para no bloquear clicks
+			bg_rect.z_index = -100 # Forzar al fondo absoluto
+			
+			# Insertar como primer hijo
+			add_child(bg_rect)
+			move_child(bg_rect, 0)
+			
+			# DEBUG VISUAL: Texto rojo gigante si cargó
+			var debug = Label.new()
+			debug.text = "WALLPAPER LOADED: " + str(bg_tex != null)
+			debug.add_theme_color_override("font_color", Color.RED)
+			debug.add_theme_font_size_override("font_size", 40)
+			debug.position = Vector2(50, 50)
+			debug.z_index = 4096 
+			add_child(debug)
+		
+		bg_rect.texture = bg_tex
+		bg_rect.visible = true # Asegurar visibilidad
+
 	# Animación de entrada
 	modulate.a = 0
 	var tween = create_tween()

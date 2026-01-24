@@ -41,6 +41,26 @@ func _ready() -> void:
 	if slot_buttons.size() > 0:
 		slot_buttons[0].grab_focus()
 
+	# Añadir fondo si no existe
+	var bg_tex = load("res://assets/ui/backgrounds/main_menu_bg.png")
+	
+	# Fallback de carga directa
+	if not bg_tex:
+		var img = Image.new()
+		if img.load_from_file("res://assets/ui/backgrounds/main_menu_bg.png") == OK:
+			bg_tex = ImageTexture.create_from_image(img)
+	
+	if bg_tex and not has_node("BackgroundRect"):
+		var bg = TextureRect.new()
+		bg.name = "BackgroundRect"
+		bg.texture = bg_tex
+		bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bg.z_index = -10 # Al fondo
+		add_child(bg)
+		move_child(bg, 0)
+
 func _create_slot_ui() -> void:
 	"""Crear los 3 slots de guardado visualmente"""
 	if not slots_container:

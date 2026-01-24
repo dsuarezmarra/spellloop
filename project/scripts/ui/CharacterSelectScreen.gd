@@ -108,18 +108,54 @@ func _load_characters() -> void:
 
 func _build_ui() -> void:
 	"""Build the UI programmatically"""
-	# Background
-	var bg = ColorRect.new()
-	bg.name = "Background"
-	bg.color = Color(0.05, 0.05, 0.08, 0.98)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(bg)
+	
+	# Background (Wallpaper)
+	# Buscar si ya existe un fondo en la escena y eliminarlo
+	var existing_bg = get_node_or_null("Background")
+	if existing_bg:
+		existing_bg.queue_free()
 
-	# Vignette effect (darker edges)
+	var bg = TextureRect.new()
+	bg.name = "Background"
+	
+	# Intentar cargar la textura
+	var bg_path = "res://assets/ui/backgrounds/character_select_bg.png"
+	var bg_tex = load(bg_path)
+	
+	# Fallback: Carga directa
+	if not bg_tex:
+		var img = Image.new()
+		var err = img.load_from_file(bg_path)
+		if err == OK:
+			bg_tex = ImageTexture.create_from_image(img)
+
+	if bg_tex:
+		bg.texture = bg_tex
+	else:
+		push_error("No se pudo cargar el fondo desde: " + bg_path)
+		# Fallback visual claro (Rojo oscuro) para debug
+		var placeholder = GradientTexture2D.new()
+		placeholder.fill_from = Vector2(0, 0)
+		placeholder.fill_to = Vector2(1, 1)
+		placeholder.gradient = Gradient.new()
+		placeholder.gradient.add_point(0.0, Color(0.2, 0.0, 0.0)) # ROJO para indicar error
+		placeholder.gradient.add_point(1.0, Color(0.1, 0.0, 0.0))
+		bg.texture = placeholder
+		
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.z_index = -100 # Fondo absoluto
+	add_child(bg)
+	move_child(bg, 0)
+
+	# Vignette effect (darker edges) - Asegurar que esté SOBRE el fondo pero BAJO la UI
 	var vignette = ColorRect.new()
 	vignette.name = "Vignette"
 	vignette.set_anchors_preset(Control.PRESET_FULL_RECT)
-	vignette.color = Color(0, 0, 0, 0)
+	vignette.color = Color(0, 0, 0, 0.3) # Un poco más oscuro para que el texto resalte
+	vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(vignette)
 
 	# Title at top
