@@ -362,10 +362,44 @@ func _create_option_panel(index: int) -> Control:
 
 func _create_action_button(index: int, icon: String, text: String, count_format: String) -> Control:
 	var panel = PanelContainer.new()
-# ... (inside _create_action_button)
+	panel.custom_minimum_size = Vector2(160, 60)
+	panel.name = "Button_%d" % index
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = BUTTON_BG
+	style.border_color = UNSELECTED_COLOR
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(10)
+	panel.add_theme_stylebox_override("panel", style)
+
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 10)
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	panel.add_child(hbox)
+
+	var icon_label = Label.new()
+	icon_label.name = "Icon"
+	icon_label.text = icon
+	icon_label.add_theme_font_size_override("font_size", 24)
+	hbox.add_child(icon_label)
+
+	var text_vbox = VBoxContainer.new()
+	text_vbox.add_theme_constant_override("separation", 2)
+	hbox.add_child(text_vbox)
+
+	var text_label = Label.new()
+	text_label.name = "Text"
+	text_label.text = text
+	text_label.add_theme_font_size_override("font_size", 16)
+	text_vbox.add_child(text_label)
+
 	if count_format != "":
 		var count_label = Label.new()
-		# ... (lines 395-399)
+		count_label.name = "Count"
+		count_label.text = count_format % 0
+		count_label.add_theme_font_size_override("font_size", 12)
+		count_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 		text_vbox.add_child(count_label)
 	
 	# Audio: Conectar señal de hover
