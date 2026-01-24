@@ -22,7 +22,7 @@ STABLE_AUDIO_URL = "https://api.stability.ai/v2beta/stable-audio/generate" # Upd
 ELEVENLABS_SFX_URL = "https://api.elevenlabs.io/v1/sound-generation"
 ELEVENLABS_TTS_URL = "https://api.elevenlabs.io/v1/text-to-speech"
 
-OUTPUT_DIR = Path("audio")
+OUTPUT_DIR = Path("project/audio")
 
 def generate_elevenlabs_sfx(prompt, duration_seconds=2.0):
     """Generate SFX using ElevenLabs API"""

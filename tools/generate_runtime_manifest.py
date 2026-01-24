@@ -2,8 +2,8 @@ import os
 import json
 from pathlib import Path
 
-AUDIO_DIR = Path("audio")
-MANIFEST_FILE = Path("audio_manifest.json")
+AUDIO_DIR = "project/audio"
+MANIFEST_FILE = "project/audio_manifest.json"
 
 def generate_runtime_manifest():
     manifest = {}

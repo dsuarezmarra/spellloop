@@ -1,8 +1,8 @@
 # Audio Assets Report
     
 ## Status
-- **Total Sounds**: 79 groups (175 files)
-- **Missing**: 188
+- **Total Sounds**: 0 groups (0 files)
+- **Missing**: 363
 - **Format Issues**: 0
 
 ## Setup

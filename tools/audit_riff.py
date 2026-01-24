@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-AUDIO_DIR = Path("audio")
+AUDIO_DIR = Path("project/audio")
 
 def audit_riff():
     print("🔍 Scanning for invalid WAV headers...")

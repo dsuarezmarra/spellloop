@@ -6,8 +6,8 @@ import math
 from pathlib import Path
 
 MANIFEST_PATH = Path("tools/generation_manifest.json")
-AUDIO_DIR = Path("audio")
-RUNTIME_MANIFEST_PATH = Path("audio_manifest.json")
+AUDIO_DIR = Path("project/audio")
+RUNTIME_MANIFEST_PATH = Path("project/audio_manifest.json")
 
 def read_wav_properties(file_path):
     try:
@@ -143,21 +143,11 @@ def main(final_mode=False, export_missing=None, export_silence=None):
                 silence_files.append(silence_str)
                 
                 # Create recovery entry for silent file
-                # Check for -70dB threshold for aggressive regeneration?
-                # User said: "regenerar solo los que sigan 'muertos' (los -80 dB o peor)"
-                # "Para los que queden por debajo de -70 dB... regenerarlos con prompts más agresivos"
-                # We will export ALL < -50dB here, and let the generator decide or specific arg?
-                # Actually, let's filter here -> if exporting silence for regeneration, export the object.
-                
                 silent_recovery_entry = item.copy()
                 silent_recovery_entry["name"] = f"{name}{suffix}"
                 silent_recovery_entry["variations"] = 1
-                silent_recovery_entry["current_db"] = props["rms_db"] # Pass DB to generator for logic
+                silent_recovery_entry["current_db"] = props["rms_db"]
                 
-                # Check if we should add simple list or objects
-                # We need a separate list for object export, reusing silence_files for display is fine
-                # But for export_silence JSON, we want objects.
-                # Let's add to a new list 'silent_assets_list'
                 if "silent_assets_list" not in locals(): silent_assets_list = []
                 silent_assets_list.append(silent_recovery_entry)
 
@@ -175,37 +165,38 @@ def main(final_mode=False, export_missing=None, export_silence=None):
             }
 
     # Summary
-    print(f"\n📊 SUMMARY:")
+    print(f"\nSUMMARY:")
     print(f"   Expected: {expected_count}")
     print(f"   Found:    {found_count}")
     print(f"   Missing:  {len(missing_files)}")
     print(f"   Invalid:  {len(invalid_files)}")
     
     if missing_files:
-        print("\n❌ MISSING / ZERO-BYTE FILES:")
+        print("\nMISSING / ZERO-BYTE FILES:")
         for f in missing_files[:10]: # Limit output
             print(f"   - {f}")
         if len(missing_files) > 10:
             print(f"   ... and {len(missing_files)-10} more.")
             
     if invalid_files:
-        print("\n⚠️ FORMAT WARNINGS:")
+        print("\nFORMAT WARNINGS:")
         for f in invalid_files[:10]:
             print(f"   - {f}")
             
     if clipping_files:
-        print(f"\n🔊 CLIPPING DETECTED ({len(clipping_files)} files):")
+        print(f"\nCLIPPING DETECTED ({len(clipping_files)} files):")
         # Just a warning, stable audio can be loud
     
     if silence_files:
-        print(f"\n🔇 SILENCE DETECTED ({len(silence_files)} files):")
+        print(f"\nSILENCE DETECTED ({len(silence_files)} files):")
         for f in silence_files:
            print(f"   - {f}")
 
     # Generate Runtime JSON
+    print(f"DEBUG: runtime_manifest keys: {list(runtime_manifest.keys())}")
     with open(RUNTIME_MANIFEST_PATH, "w", encoding="utf-8") as f:
         json.dump(runtime_manifest, f, indent=2)
-    print(f"\n✅ Generated runtime manifest: {RUNTIME_MANIFEST_PATH}")
+    print(f"\nGenerated runtime manifest: {RUNTIME_MANIFEST_PATH}")
     
     # Generate README
     readme_content = f"""# Audio Assets Report

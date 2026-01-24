@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 import sys
 
-AUDIO_DIR = Path("audio")
+AUDIO_DIR = Path("project/audio")
 
 def delete_files(json_path):
     if not Path(json_path).exists():
