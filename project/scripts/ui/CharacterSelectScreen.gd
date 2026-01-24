@@ -606,11 +606,11 @@ func _on_play_pressed() -> void:
 	if not (selected_character_id in unlocked_character_ids):
 		return
 
-	_play_button_sound()
+	AudioManager.play_fixed("sfx_ui_character_select")
 	character_selected.emit(selected_character_id)
 
 func _on_back_pressed() -> void:
-	_play_button_sound()
+	AudioManager.play_fixed("sfx_ui_back")
 	back_pressed.emit()
 
 func _play_button_sound() -> void:

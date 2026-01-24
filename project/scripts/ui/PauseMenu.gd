@@ -125,6 +125,7 @@ func _create_ui() -> void:
 		btn.custom_minimum_size = Vector2(150, 40)
 		btn.add_theme_font_size_override("font_size", 16)
 		btn.pressed.connect(_on_tab_pressed.bind(i))
+		btn.mouse_entered.connect(_on_element_hover)
 		btn.focus_mode = Control.FOCUS_NONE  # Desactivar foco nativo, usamos manual
 		tabs_container.add_child(btn)
 		tab_buttons.append(btn)
@@ -154,6 +155,7 @@ func _create_ui() -> void:
 	resume_btn.custom_minimum_size = Vector2(180, 45)
 	resume_btn.add_theme_font_size_override("font_size", 18)
 	resume_btn.pressed.connect(_on_resume_pressed)
+	resume_btn.mouse_entered.connect(_on_element_hover)
 	resume_btn.focus_mode = Control.FOCUS_NONE
 	buttons_row.add_child(resume_btn)
 	action_buttons.append(resume_btn)
@@ -164,6 +166,7 @@ func _create_ui() -> void:
 	options_btn.custom_minimum_size = Vector2(180, 45)
 	options_btn.add_theme_font_size_override("font_size", 18)
 	options_btn.pressed.connect(_on_options_pressed)
+	options_btn.mouse_entered.connect(_on_element_hover)
 	options_btn.focus_mode = Control.FOCUS_NONE
 	buttons_row.add_child(options_btn)
 	action_buttons.append(options_btn)
@@ -174,6 +177,7 @@ func _create_ui() -> void:
 	quit_btn.custom_minimum_size = Vector2(180, 45)
 	quit_btn.add_theme_font_size_override("font_size", 18)
 	quit_btn.pressed.connect(_on_quit_pressed)
+	quit_btn.mouse_entered.connect(_on_element_hover)
 	quit_btn.focus_mode = Control.FOCUS_NONE
 	buttons_row.add_child(quit_btn)
 	action_buttons.append(quit_btn)
@@ -352,6 +356,7 @@ func _update_tabs_visual() -> void:
 			btn.remove_theme_stylebox_override("hover")
 
 func _on_tab_pressed(tab_index: int) -> void:
+	AudioManager.play_fixed("sfx_ui_click")
 	current_tab = tab_index
 	current_nav_row = NavRow.TABS
 	_update_tabs_visual()
@@ -1511,7 +1516,14 @@ func _create_weapon_card(weapon) -> Control:
 	if description != "":
 		card.tooltip_text = description
 
+	# Conectar señal de hover para sonido
+	if not card.mouse_entered.is_connected(_on_element_hover):
+		card.mouse_entered.connect(_on_element_hover)
+
 	return card
+
+func _on_element_hover() -> void:
+	AudioManager.play_fixed("sfx_ui_hover")
 
 func _add_weapon_stat(grid: GridContainer, icon: String, stat_name: String, value: String, value_color: Color = Color(0.9, 0.9, 1.0)) -> void:
 	"""Añadir stat de arma al grid"""
@@ -2097,6 +2109,10 @@ func _create_upgrade_panel(upgrade: Dictionary, count: int = 1) -> Control:
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(desc)
 
+	# Conectar señal de hover para sonido
+	if not panel.mouse_entered.is_connected(_on_element_hover):
+		panel.mouse_entered.connect(_on_element_hover)
+
 	return panel
 
 # ===============================================================================
@@ -2254,9 +2270,14 @@ func _navigate_vertical(direction: int) -> void:
 
 	if old_row != current_nav_row:
 		_update_navigation_visuals()
+		AudioManager.play_fixed("sfx_ui_hover")
+	elif content_scroll and content_items.size() > 0 and direction != 0:
+		# Si hubo scroll o cambio de selección
+		AudioManager.play_fixed("sfx_ui_hover")
 
 func _navigate_horizontal(direction: int) -> void:
 	"""Navegar izquierda/derecha dentro de la fila actual"""
+	var changed = false
 	match current_nav_row:
 		NavRow.TABS:
 			current_tab = (current_tab + direction) % tab_buttons.size()
@@ -2264,17 +2285,23 @@ func _navigate_horizontal(direction: int) -> void:
 				current_tab = tab_buttons.size() - 1
 			_update_tabs_visual()
 			_show_tab_content()
+			changed = true
 		NavRow.CONTENT:
 			if content_items.size() > 0:
 				content_selection = (content_selection + direction) % content_items.size()
 				if content_selection < 0:
 					content_selection = content_items.size() - 1
 				_update_content_selection_visual()
+				changed = true
 		NavRow.ACTIONS:
 			action_selection = (action_selection + direction) % action_buttons.size()
 			if action_selection < 0:
 				action_selection = action_buttons.size() - 1
 			_update_action_buttons_visual()
+			changed = true
+			
+	if changed:
+		AudioManager.play_fixed("sfx_ui_hover")
 
 func _activate_current_selection() -> void:
 	"""Activar el elemento seleccionado actualmente"""

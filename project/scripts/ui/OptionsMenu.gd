@@ -149,10 +149,16 @@ func _setup_wasd_navigation() -> void:
 func _collect_focusable_controls(node: Node) -> void:
 	"""Recolectar controles focusables en orden"""
 	if node is Button or node is HSlider or node is CheckBox or node is SpinBox or node is OptionButton:
-		focusable_controls.append(node as Control)
+		var control = node as Control
+		focusable_controls.append(control)
+		if not control.mouse_entered.is_connected(_on_element_hover):
+			control.mouse_entered.connect(_on_element_hover)
 
 	for child in node.get_children():
 		_collect_focusable_controls(child)
+
+func _on_element_hover() -> void:
+	AudioManager.play_fixed("sfx_ui_hover")
 
 func _get_audio_manager() -> Node:
 	if get_tree() and get_tree().root:
@@ -262,6 +268,7 @@ func _navigate(direction: int) -> void:
 
 	current_focus_index = wrapi(current_focus_index + direction, 0, focusable_controls.size())
 	focusable_controls[current_focus_index].grab_focus()
+	AudioManager.play_fixed("sfx_ui_hover")
 
 func _adjust_slider(direction: int) -> void:
 	"""Ajustar slider o dropdown si el control actual lo soporta"""
@@ -269,12 +276,20 @@ func _adjust_slider(direction: int) -> void:
 		return
 
 	var current = focusable_controls[current_focus_index]
+	var changed = false
+	
 	if current is HSlider:
 		current.value += direction * current.step * 5  # 5 pasos por pulsacion
+		changed = true
 	elif current is OptionButton:
 		var new_idx = wrapi(current.selected + direction, 0, current.item_count)
-		current.selected = new_idx
-		current.item_selected.emit(new_idx)
+		if new_idx != current.selected:
+			current.selected = new_idx
+			current.item_selected.emit(new_idx)
+			changed = true
+			
+	if changed:
+		AudioManager.play_fixed("sfx_ui_click")
 
 func _activate_current() -> void:
 	"""Activar el control actual (para botones)"""
@@ -283,4 +298,6 @@ func _activate_current() -> void:
 
 	var current = focusable_controls[current_focus_index]
 	if current is Button:
+		AudioManager.play_fixed("sfx_ui_confirm")
 		current.pressed.emit()
+

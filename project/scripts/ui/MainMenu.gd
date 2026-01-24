@@ -142,19 +142,36 @@ func _highlight_current_button() -> void:
 		if btn and is_instance_valid(btn):
 			btn.grab_focus()
 
-func _connect_signals() -> void:
-	if play_button and not play_button.pressed.is_connected(_on_play_pressed):
-		play_button.pressed.connect(_on_play_pressed)
-	if resume_button and not resume_button.pressed.is_connected(_on_resume_pressed):
-		resume_button.pressed.connect(_on_resume_pressed)
-	if options_button and not options_button.pressed.is_connected(_on_options_pressed):
-		options_button.pressed.connect(_on_options_pressed)
-	if quit_button and not quit_button.pressed.is_connected(_on_quit_pressed):
-		quit_button.pressed.connect(_on_quit_pressed)
-
 func _play_menu_music() -> void:
-	# Menu music not implemented yet - would use AudioManager.play_music("music_menu")
-	pass
+	AudioManager.play_music("music_intro_theme")
+
+func _connect_signals() -> void:
+	if play_button:
+		if not play_button.pressed.is_connected(_on_play_pressed):
+			play_button.pressed.connect(_on_play_pressed)
+		if not play_button.mouse_entered.is_connected(_on_button_hover):
+			play_button.mouse_entered.connect(_on_button_hover)
+
+	if resume_button:
+		if not resume_button.pressed.is_connected(_on_resume_pressed):
+			resume_button.pressed.connect(_on_resume_pressed)
+		if not resume_button.mouse_entered.is_connected(_on_button_hover):
+			resume_button.mouse_entered.connect(_on_button_hover)
+			
+	if options_button:
+		if not options_button.pressed.is_connected(_on_options_pressed):
+			options_button.pressed.connect(_on_options_pressed)
+		if not options_button.mouse_entered.is_connected(_on_button_hover):
+			options_button.mouse_entered.connect(_on_button_hover)
+
+	if quit_button:
+		if not quit_button.pressed.is_connected(_on_quit_pressed):
+			quit_button.pressed.connect(_on_quit_pressed)
+		if not quit_button.mouse_entered.is_connected(_on_button_hover):
+			quit_button.mouse_entered.connect(_on_button_hover)
+
+func _on_button_hover() -> void:
+	AudioManager.play_fixed("sfx_ui_hover")
 
 func _get_audio_manager() -> Node:
 	var tree = get_tree()

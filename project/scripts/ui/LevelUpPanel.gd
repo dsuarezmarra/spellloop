@@ -353,52 +353,29 @@ func _create_option_panel(index: int) -> Control:
 	indicator.add_theme_stylebox_override("panel", ind_style)
 	panel.add_child(indicator)
 	indicator.visible = false
+	
+	# Audio: Conectar señal de hover
+	if not panel.mouse_entered.is_connected(_on_element_hover):
+		panel.mouse_entered.connect(_on_element_hover)
 
 	return panel
 
 func _create_action_button(index: int, icon: String, text: String, count_format: String) -> Control:
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(160, 60)
-	panel.name = "Button_%d" % index
-
-	var style = StyleBoxFlat.new()
-	style.bg_color = BUTTON_BG
-	style.border_color = UNSELECTED_COLOR
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(8)
-	style.set_content_margin_all(10)
-	panel.add_theme_stylebox_override("panel", style)
-
-	var hbox = HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 10)
-	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	panel.add_child(hbox)
-
-	var icon_label = Label.new()
-	icon_label.name = "Icon"
-	icon_label.text = icon
-	icon_label.add_theme_font_size_override("font_size", 24)
-	hbox.add_child(icon_label)
-
-	var text_vbox = VBoxContainer.new()
-	text_vbox.add_theme_constant_override("separation", 2)
-	hbox.add_child(text_vbox)
-
-	var text_label = Label.new()
-	text_label.name = "Text"
-	text_label.text = text
-	text_label.add_theme_font_size_override("font_size", 16)
-	text_vbox.add_child(text_label)
-
+# ... (inside _create_action_button)
 	if count_format != "":
 		var count_label = Label.new()
-		count_label.name = "Count"
-		count_label.text = count_format % 0
-		count_label.add_theme_font_size_override("font_size", 12)
-		count_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+		# ... (lines 395-399)
 		text_vbox.add_child(count_label)
+	
+	# Audio: Conectar señal de hover
+	if not panel.mouse_entered.is_connected(_on_element_hover):
+		panel.mouse_entered.connect(_on_element_hover)
 
 	return panel
+
+func _on_element_hover() -> void:
+	AudioManager.play_fixed("sfx_ui_hover")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INPUT - NAVEGACIÓN COMPLETA
@@ -580,6 +557,7 @@ func _select_option() -> void:
 func _on_reroll() -> void:
 	if locked or reroll_count <= 0:
 		return
+	AudioManager.play_fixed("sfx_ui_click")
 
 	# Consumir reroll en PlayerStats si es posible
 	if player_stats and player_stats.has_method("consume_reroll"):
@@ -622,6 +600,7 @@ func _on_reroll() -> void:
 func _on_banish() -> void:
 	if locked or banish_count <= 0 or options.size() == 0:
 		return
+	AudioManager.play_fixed("sfx_ui_click")
 
 	# Activar modo de selección para eliminar
 	banish_mode = true
@@ -670,6 +649,7 @@ func _cancel_banish_mode() -> void:
 func _on_skip() -> void:
 	if locked:
 		return
+	AudioManager.play_fixed("sfx_ui_click")
 
 	skip_used.emit()
 	_close_panel()
@@ -763,6 +743,7 @@ func _show_confirm_modal() -> void:
 	cancel_btn.add_theme_font_size_override("font_size", 14)
 	cancel_btn.focus_mode = Control.FOCUS_NONE
 	cancel_btn.pressed.connect(_on_confirm_modal_cancel)
+	cancel_btn.mouse_entered.connect(_on_element_hover)
 	btn_container.add_child(cancel_btn)
 	_confirm_modal_buttons.append(cancel_btn)
 	
@@ -774,6 +755,7 @@ func _show_confirm_modal() -> void:
 	confirm_btn.add_theme_font_size_override("font_size", 14)
 	confirm_btn.focus_mode = Control.FOCUS_NONE
 	confirm_btn.pressed.connect(_on_confirm_modal_confirm)
+	confirm_btn.mouse_entered.connect(_on_element_hover)
 	btn_container.add_child(confirm_btn)
 	_confirm_modal_buttons.append(confirm_btn)
 	
@@ -782,10 +764,12 @@ func _show_confirm_modal() -> void:
 
 func _on_confirm_modal_cancel() -> void:
 	"""Cerrar modal y volver a elegir"""
+	AudioManager.play_fixed("sfx_ui_back")
 	_hide_confirm_modal()
 
 func _on_confirm_modal_confirm() -> void:
 	"""Confirmar pérdida de mejora y cerrar panel"""
+	AudioManager.play_fixed("sfx_ui_confirm")
 	_hide_confirm_modal()
 	_close_panel()
 
@@ -803,6 +787,7 @@ func _navigate_confirm_modal(direction: int) -> void:
 	if _confirm_modal_selection < 0:
 		_confirm_modal_selection = _confirm_modal_buttons.size() - 1
 	_update_confirm_modal_visuals()
+	AudioManager.play_fixed("sfx_ui_hover")
 
 func _activate_confirm_modal_selection() -> void:
 	"""Activar el botón seleccionado del modal"""

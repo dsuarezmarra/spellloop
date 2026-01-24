@@ -260,6 +260,36 @@ func _setup_navigation() -> void:
 func _connect_signals() -> void:
 	if back_button:
 		back_button.pressed.connect(_on_back_pressed)
+		if not back_button.mouse_entered.is_connected(_on_element_hover):
+			back_button.mouse_entered.connect(_on_element_hover)
+
+func _on_element_hover() -> void:
+	AudioManager.play_fixed("sfx_ui_hover")
+
+func _input(event: InputEvent) -> void:
+# ... (existing input logic)
+
+func _create_slot_panel(slot_index: int) -> PanelContainer:
+	# ... (start of function)
+	var panel = PanelContainer.new()
+	# ...
+	# Botón de seleccionar
+	var select_btn = Button.new()
+	# ... (setup)
+	select_btn.pressed.connect(_on_slot_selected.bind(slot_index))
+	if not select_btn.mouse_entered.is_connected(_on_element_hover):
+		select_btn.mouse_entered.connect(_on_element_hover)
+	inner_vbox.add_child(select_btn)
+	slot_buttons.append(select_btn)
+	
+	# Botón de borrar
+	var delete_btn = Button.new()
+	# ... (setup)
+	delete_btn.pressed.connect(_on_delete_slot.bind(slot_index))
+	if not delete_btn.mouse_entered.is_connected(_on_element_hover):
+		delete_btn.mouse_entered.connect(_on_element_hover)
+	# ...
+	return panel
 
 func _input(event: InputEvent) -> void:
 	if not visible:
@@ -299,6 +329,37 @@ func _navigate_slots(direction: int) -> void:
 	
 	current_slot_index = wrapi(current_slot_index + direction, 0, slot_buttons.size())
 	slot_buttons[current_slot_index].grab_focus()
+	AudioManager.play_fixed("sfx_ui_hover")
+
+func _create_slot_panel(slot_index: int) -> PanelContainer:
+	"""Crear un panel individual de slot con estilo mejorado"""
+	var panel = PanelContainer.new()
+	# ... (rest of function setup)
+	
+	# ... (inside button creation)
+	# Botón de seleccionar
+	var select_btn = Button.new()
+	select_btn.name = "SelectButton"
+	# ...
+	select_btn.pressed.connect(_on_slot_selected.bind(slot_index))
+	select_btn.mouse_entered.connect(_on_element_hover)
+	inner_vbox.add_child(select_btn)
+	slot_buttons.append(select_btn)
+	
+	# Botón de borrar (pequeño, debajo)
+	var delete_btn = Button.new()
+	delete_btn.name = "DeleteButton"
+	# ...
+	delete_btn.pressed.connect(_on_delete_slot.bind(slot_index))
+	delete_btn.mouse_entered.connect(_on_element_hover)
+	delete_btn.visible = false  # Solo visible si hay datos
+	inner_vbox.add_child(delete_btn)
+	
+	# ...
+	return panel
+
+func _on_element_hover() -> void:
+	AudioManager.play_fixed("sfx_ui_hover")
 
 func _navigate_to_slots() -> void:
 	"""Mover focus a los slots"""
