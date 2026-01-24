@@ -1,0 +1,1034 @@
+[
+  {
+    "category": "sfx/gameplay",
+    "name": "sfx_player_hurt",
+    "prompt": "Generic low grunt, breath knocked out, anime style male voice, high fidelity, game sfx",
+    "engine": "elevenlabs",
+    "variations": 6,
+    "duration": 1.5
+  },
+  {
+    "category": "sfx/gameplay",
+    "name": "sfx_player_death",
+    "prompt": "Heartbeat stopping effect, low boom, high pitched ear ringing fade, tinnitus, high fidelity, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 4.0
+  },
+  {
+    "category": "sfx/gameplay",
+    "name": "sfx_player_heal",
+    "prompt": "Magical ascending chimes, holy glitter sound, divine healing, rpg potion, high fidelity, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.5
+  },
+  {
+    "category": "sfx/gameplay",
+    "name": "sfx_player_revive",
+    "prompt": "Epic angelic choir chord, rising orchestral swell, resurrection fanfare, high fidelity, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.5
+  },
+  {
+    "category": "sfx/gameplay",
+    "name": "sfx_shield_absorb",
+    "prompt": "Sci-fi energy deflection, metallic forcefield hum impact, shield block, high fidelity, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.5
+  },
+  {
+    "category": "sfx/gameplay",
+    "name": "sfx_shield_break",
+    "prompt": "Shattering glass mixed with power down fizzle, energy shield broken, high fidelity, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.5
+  },
+  {
+    "category": "sfx/gameplay",
+    "name": "sfx_turret_lock",
+    "prompt": "Heavy mechanical latching sound, hydraulic piston lock, metallic clunk, high fidelity, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.5
+  },
+  {
+    "category": "sfx/gameplay",
+    "name": "sfx_barrier_hit",
+    "prompt": "Low frequency force field bounce, rubbery distortion, magic barrier impact, high fidelity, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.5
+  },
+  {
+    "category": "sfx/status",
+    "name": "sfx_status_burn_loop",
+    "prompt": "Cracking fire, sizzling flesh loop, camp fire, burning texture, seamless loop, consistent texture",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 10.0
+  },
+  {
+    "category": "sfx/status",
+    "name": "sfx_status_poison_loop",
+    "prompt": "Boiling liquid, bubbling mud loop, acid, toxic sludge, seamless loop, consistent texture",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 10.0
+  },
+  {
+    "category": "sfx/status",
+    "name": "sfx_status_freeze_loop",
+    "prompt": "Ice cracking tension, cold wind whistle loop, freezing atmosphere, seamless loop, consistent texture",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 10.0
+  },
+  {
+    "category": "sfx/status",
+    "name": "sfx_status_curse_loop",
+    "prompt": "Eerie whispers, reverse audio reverb loop, dark magic aura, seamless loop, consistent texture",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 10.0
+  },
+  {
+    "category": "sfx/weapons",
+    "name": "sfx_ice_cast",
+    "prompt": "High pitched ice shattering sound, sharp glass breaking, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/weapons",
+    "name": "sfx_ice_hit",
+    "prompt": "Crunchy ice impact, freezing sound, cold snap, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/weapons",
+    "name": "sfx_fire_cast",
+    "prompt": "Fireball whoosh, torch swing, ignition sound, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/weapons",
+    "name": "sfx_fire_hit",
+    "prompt": "Explosion, fire crackle, scorch mark sound, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/weapons",
+    "name": "sfx_lightning_cast",
+    "prompt": "Electric zap, tesla coil spark, high voltage snap, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/weapons",
+    "name": "sfx_lightning_hit",
+    "prompt": "Thunder crack, static discharge, electric pop, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/weapons",
+    "name": "sfx_arcane_cast",
+    "prompt": "Magical synth chime, mana release, soft sparkle woosh, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/weapons",
+    "name": "sfx_arcane_hit",
+    "prompt": "Soft magical thud, ethereal chime, resonant ping, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/weapons",
+    "name": "sfx_shadow_cast",
+    "prompt": "Sharp metal swish, assassin blade throw, air cut, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/weapons",
+    "name": "sfx_shadow_hit",
+    "prompt": "Wet slice, critical hit sound, fabric tearing, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/weapons",
+    "name": "sfx_nature_cast",
+    "prompt": "Leaves rustle swish, wood creak, organic swing, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/weapons",
+    "name": "sfx_nature_hit",
+    "prompt": "Wood crack, branch snap, organic thud, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/weapons",
+    "name": "sfx_void_cast",
+    "prompt": "Reverse suction sound, bass pulse, dark energy release, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/weapons",
+    "name": "sfx_void_hit",
+    "prompt": "Deep sub bass thud, distorted reality impact, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_steam_cannon",
+    "prompt": "Violent steam release, high pressure hiss, explosion, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_frozen_thunder",
+    "prompt": "Cracking ice followed by an electric snap, thunder freeze, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_frost_orb",
+    "prompt": "Ethereal synth chime with a underlying cold wind layer, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_frostbite",
+    "prompt": "Sharp icicle stab mixed with a ghostly whisper, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_blizzard",
+    "prompt": "Howling wind gale with sleet impact texture, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_glacier",
+    "prompt": "Massive deep ice shift, like a glacier calving (heavy bass), magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_aurora",
+    "prompt": "Beautiful shimmering glass veil, high frequency magical hum, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_absolute_zero",
+    "prompt": "All sound being sucked out (reverse audio) then a freezing snap, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_plasma_bolt",
+    "prompt": "Sci-fi energy weapon, thick superheated electric arc, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_inferno_orb",
+    "prompt": "Burning low pad loop with magical twinkles, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_hellfire",
+    "prompt": "Demonic roar mixed with crackling fire, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_wildfire",
+    "prompt": "Fast spreading fire crackle, dry wood combustion, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_firestorm",
+    "prompt": "Roaring tornado of fire, heavy wind buffeting, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_volcano",
+    "prompt": "Deep seismic rumble + explosive lava splatter, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_solar_flare",
+    "prompt": "Intense high pitched laser burn, Sci-fi heat beam, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_dark_flame",
+    "prompt": "Low distorted fire, deep bass rumble, evil fire, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_storm_caller",
+    "prompt": "Rolling thunder strike, heavy rain ambiance sting, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_arcane_storm",
+    "prompt": "Electric zaps mixed with crystal bell chimes, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_dark_lightning",
+    "prompt": "Distorted electric synth, glitchy digital tear, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_thunder_bloom",
+    "prompt": "Organic wood cracking with an electric overlay, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_seismic_bolt",
+    "prompt": "Heavy rock impact with a high pitched static discharge, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_thunder_spear",
+    "prompt": "Sharp, instant divine thunderclap. Very loud and punchy, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_void_bolt",
+    "prompt": "Deep bass sub-drop followed by a static pop, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_shadow_orbs",
+    "prompt": "Spooky minor key chime, dark ambient pad, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_soul_reaper",
+    "prompt": "Wailing ghost scream, soul draining effect, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_crystal_guardian",
+    "prompt": "Heavy resonant crystal hum, stone grinding, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_life_orbs",
+    "prompt": "Positive major key chime, organic bubbly sound, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_wind_orbs",
+    "prompt": "Fast flute-like whistle, airy synth pad, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_cosmic_barrier",
+    "prompt": "Sci-fi forcefield hum, angelic choir chord, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_cosmic_void",
+    "prompt": "Deep space drone, pulsating low frequency signal, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_phantom_blade",
+    "prompt": "High pitched spectral whistle, air cutting blade, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_stone_fang",
+    "prompt": "Deep stone scrape with a dark reverb tail, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_twilight",
+    "prompt": "Perfect harmony of a high bell and low bass drone, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_abyss",
+    "prompt": "Terrifying deep guttural growl, abyss ambiance, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_pollen_storm",
+    "prompt": "Soft shaker/maraca sound, swirling leaves, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_gaia",
+    "prompt": "Deep forest movement, tree falling massive impact, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_solar_bloom",
+    "prompt": "Photosynthesis sound, high pitched warm synth swell, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_decay",
+    "prompt": "Wet decomposition squelch, rotting sound (gross/organic), magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_sandstorm",
+    "prompt": "Dry sand hissing, coarse friction noise, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_prism_wind",
+    "prompt": "Crystal glass wind chimes, light passing through prism, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_void_storm",
+    "prompt": "Vacuum cleaner from hell, intense suction wind, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_radiant_stone",
+    "prompt": "Heavy stone impact with a holy flash sound, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_rift_quake",
+    "prompt": "Tearing reality sound, deep earth groan, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_eclipse",
+    "prompt": "The Inception braaam sound. Epic, massive, final, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/fusions",
+    "name": "sfx_fusion_frostvine",
+    "prompt": "Ice forming rapidly on wood, freezing plant texture, magical anime, game sfx",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/ui",
+    "name": "sfx_ui_click",
+    "prompt": "Short crisp woodblock, UI click, japanese mobile game style",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 0.5
+  },
+  {
+    "category": "sfx/ui",
+    "name": "sfx_ui_hover",
+    "prompt": "Very short high pitched soft bubble pop, subtle tick",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 0.5
+  },
+  {
+    "category": "sfx/ui",
+    "name": "sfx_ui_confirm",
+    "prompt": "Positive chime, magical sparkle, rising pitch, ping",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 0.5
+  },
+  {
+    "category": "sfx/ui",
+    "name": "sfx_ui_cancel",
+    "prompt": "Soft low thud, wood bonk, negative UI",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 0.5
+  },
+  {
+    "category": "sfx/ui",
+    "name": "sfx_ui_error",
+    "prompt": "Soft round buzzer, negative sound, eh-eh",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 0.5
+  },
+  {
+    "category": "sfx/ui",
+    "name": "sfx_slot_spin_loop",
+    "prompt": "Mechanical reel spinning loop, rapid clicking, slot machine",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 4.0
+  },
+  {
+    "category": "sfx/ui",
+    "name": "sfx_slot_stop",
+    "prompt": "Heavy metallic clunk, bell ding, slot stop",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 0.8
+  },
+  {
+    "category": "sfx/ui",
+    "name": "sfx_rarity_common",
+    "prompt": "Simple high tick, coin ping",
+    "engine": "elevenlabs",
+    "variations": 3,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/ui",
+    "name": "sfx_rarity_legendary",
+    "prompt": "Holy choir major chord fanfare, epic reveal",
+    "engine": "elevenlabs",
+    "variations": 3,
+    "duration": 3.0
+  },
+  {
+    "category": "sfx/coins",
+    "name": "sfx_streak_01",
+    "prompt": "Magical coin pickup chime, note 1 of C Major scale, clean sine wave",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/coins",
+    "name": "sfx_streak_02",
+    "prompt": "Magical coin pickup chime, note 2 of C Major scale, clean sine wave",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/coins",
+    "name": "sfx_streak_03",
+    "prompt": "Magical coin pickup chime, note 3 of C Major scale, clean sine wave",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/coins",
+    "name": "sfx_streak_04",
+    "prompt": "Magical coin pickup chime, note 4 of C Major scale, clean sine wave",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/coins",
+    "name": "sfx_streak_05",
+    "prompt": "Magical coin pickup chime, note 5 of C Major scale, clean sine wave",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/coins",
+    "name": "sfx_streak_06",
+    "prompt": "Magical coin pickup chime, note 6 of C Major scale, clean sine wave",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/coins",
+    "name": "sfx_streak_07",
+    "prompt": "Magical coin pickup chime, note 7 of C Major scale, clean sine wave",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/coins",
+    "name": "sfx_streak_08",
+    "prompt": "Magical coin pickup chime, note 8 of C Major scale, clean sine wave",
+    "engine": "elevenlabs",
+    "variations": 1,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/footsteps/ArcaneWastes",
+    "name": "sfx_ambience_arcanewastes_loop",
+    "prompt": "Ambience loop for ArcaneWastes biome, magical atmosphere, background noise",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 30.0
+  },
+  {
+    "category": "sfx/footsteps/ArcaneWastes",
+    "name": "sfx_footstep_arcanewastes_ground",
+    "prompt": "Footstep on ArcaneWastes ground surface, running, foley",
+    "engine": "stable_audio",
+    "variations": 8,
+    "duration": 0.3
+  },
+  {
+    "category": "sfx/footsteps/ArcaneWastes_path",
+    "name": "sfx_footstep_arcanewastes_path",
+    "prompt": "Footstep on stone path in ArcaneWastes, hard surface, running",
+    "engine": "stable_audio",
+    "variations": 8,
+    "duration": 0.3
+  },
+  {
+    "category": "sfx/footsteps/Death",
+    "name": "sfx_ambience_death_loop",
+    "prompt": "Ambience loop for Death biome, magical atmosphere, background noise",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 30.0
+  },
+  {
+    "category": "sfx/footsteps/Death",
+    "name": "sfx_footstep_death_ground",
+    "prompt": "Footstep on Death ground surface, running, foley",
+    "engine": "stable_audio",
+    "variations": 8,
+    "duration": 0.3
+  },
+  {
+    "category": "sfx/footsteps/Death_path",
+    "name": "sfx_footstep_death_path",
+    "prompt": "Footstep on stone path in Death, hard surface, running",
+    "engine": "stable_audio",
+    "variations": 8,
+    "duration": 0.3
+  },
+  {
+    "category": "sfx/footsteps/Desert",
+    "name": "sfx_ambience_desert_loop",
+    "prompt": "Ambience loop for Desert biome, magical atmosphere, background noise",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 30.0
+  },
+  {
+    "category": "sfx/footsteps/Desert",
+    "name": "sfx_footstep_desert_ground",
+    "prompt": "Footstep on Desert ground surface, running, foley",
+    "engine": "stable_audio",
+    "variations": 8,
+    "duration": 0.3
+  },
+  {
+    "category": "sfx/footsteps/Desert_path",
+    "name": "sfx_footstep_desert_path",
+    "prompt": "Footstep on stone path in Desert, hard surface, running",
+    "engine": "stable_audio",
+    "variations": 8,
+    "duration": 0.3
+  },
+  {
+    "category": "sfx/footsteps/Forest",
+    "name": "sfx_ambience_forest_loop",
+    "prompt": "Ambience loop for Forest biome, magical atmosphere, background noise",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 30.0
+  },
+  {
+    "category": "sfx/footsteps/Forest",
+    "name": "sfx_footstep_forest_ground",
+    "prompt": "Footstep on Forest ground surface, running, foley",
+    "engine": "stable_audio",
+    "variations": 8,
+    "duration": 0.3
+  },
+  {
+    "category": "sfx/footsteps/Forest_path",
+    "name": "sfx_footstep_forest_path",
+    "prompt": "Footstep on stone path in Forest, hard surface, running",
+    "engine": "stable_audio",
+    "variations": 8,
+    "duration": 0.3
+  },
+  {
+    "category": "sfx/footsteps/Grassland",
+    "name": "sfx_ambience_grassland_loop",
+    "prompt": "Ambience loop for Grassland biome, magical atmosphere, background noise",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 30.0
+  },
+  {
+    "category": "sfx/footsteps/Grassland",
+    "name": "sfx_footstep_grassland_ground",
+    "prompt": "Footstep on Grassland ground surface, running, foley",
+    "engine": "stable_audio",
+    "variations": 8,
+    "duration": 0.3
+  },
+  {
+    "category": "sfx/footsteps/Grassland_path",
+    "name": "sfx_footstep_grassland_path",
+    "prompt": "Footstep on stone path in Grassland, hard surface, running",
+    "engine": "stable_audio",
+    "variations": 8,
+    "duration": 0.3
+  },
+  {
+    "category": "sfx/footsteps/Lava",
+    "name": "sfx_ambience_lava_loop",
+    "prompt": "Ambience loop for Lava biome, magical atmosphere, background noise",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 30.0
+  },
+  {
+    "category": "sfx/footsteps/Lava",
+    "name": "sfx_footstep_lava_ground",
+    "prompt": "Footstep on Lava ground surface, running, foley",
+    "engine": "stable_audio",
+    "variations": 8,
+    "duration": 0.3
+  },
+  {
+    "category": "sfx/footsteps/Lava_path",
+    "name": "sfx_footstep_lava_path",
+    "prompt": "Footstep on stone path in Lava, hard surface, running",
+    "engine": "stable_audio",
+    "variations": 8,
+    "duration": 0.3
+  },
+  {
+    "category": "sfx/footsteps/Snow",
+    "name": "sfx_ambience_snow_loop",
+    "prompt": "Ambience loop for Snow biome, magical atmosphere, background noise",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 30.0
+  },
+  {
+    "category": "sfx/footsteps/Snow",
+    "name": "sfx_footstep_snow_ground",
+    "prompt": "Footstep on Snow ground surface, running, foley",
+    "engine": "stable_audio",
+    "variations": 8,
+    "duration": 0.3
+  },
+  {
+    "category": "sfx/footsteps/Snow_path",
+    "name": "sfx_footstep_snow_path",
+    "prompt": "Footstep on stone path in Snow, hard surface, running",
+    "engine": "stable_audio",
+    "variations": 8,
+    "duration": 0.3
+  },
+  {
+    "category": "sfx/enemies",
+    "name": "sfx_hit_flesh",
+    "prompt": "Impact sound on flesh material, hit feedback, damage",
+    "engine": "elevenlabs",
+    "variations": 6,
+    "duration": 0.5
+  },
+  {
+    "category": "sfx/enemies",
+    "name": "sfx_death_flesh",
+    "prompt": "Death sound of flesh creature, collapsing, destruction",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.5
+  },
+  {
+    "category": "sfx/enemies",
+    "name": "sfx_hit_bone",
+    "prompt": "Impact sound on bone material, hit feedback, damage",
+    "engine": "elevenlabs",
+    "variations": 6,
+    "duration": 0.5
+  },
+  {
+    "category": "sfx/enemies",
+    "name": "sfx_death_bone",
+    "prompt": "Death sound of bone creature, collapsing, destruction",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.5
+  },
+  {
+    "category": "sfx/enemies",
+    "name": "sfx_hit_slime",
+    "prompt": "Impact sound on slime material, hit feedback, damage",
+    "engine": "elevenlabs",
+    "variations": 6,
+    "duration": 0.5
+  },
+  {
+    "category": "sfx/enemies",
+    "name": "sfx_death_slime",
+    "prompt": "Death sound of slime creature, collapsing, destruction",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.5
+  },
+  {
+    "category": "sfx/enemies",
+    "name": "sfx_hit_ghost",
+    "prompt": "Impact sound on ghost material, hit feedback, damage",
+    "engine": "elevenlabs",
+    "variations": 6,
+    "duration": 0.5
+  },
+  {
+    "category": "sfx/enemies",
+    "name": "sfx_death_ghost",
+    "prompt": "Death sound of ghost creature, collapsing, destruction",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.5
+  },
+  {
+    "category": "sfx/enemies",
+    "name": "sfx_hit_armor",
+    "prompt": "Impact sound on armor material, hit feedback, damage",
+    "engine": "elevenlabs",
+    "variations": 6,
+    "duration": 0.5
+  },
+  {
+    "category": "sfx/enemies",
+    "name": "sfx_death_armor",
+    "prompt": "Death sound of armor creature, collapsing, destruction",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.5
+  },
+  {
+    "category": "sfx/enemies",
+    "name": "sfx_enemy_spawn",
+    "prompt": "Soft poof, mud squelch spawn, monster appearing",
+    "engine": "elevenlabs",
+    "variations": 4,
+    "duration": 1.0
+  },
+  {
+    "category": "sfx/enemies",
+    "name": "sfx_elite_spawn",
+    "prompt": "Orchestral brass sting, danger alarm, mini boss spawn",
+    "engine": "elevenlabs",
+    "variations": 3,
+    "duration": 2.5
+  },
+  {
+    "category": "sfx/enemies",
+    "name": "sfx_boss_alarm",
+    "prompt": "Air raid siren mixed with heartbeat, boss warning",
+    "engine": "elevenlabs",
+    "variations": 2,
+    "duration": 4.0
+  },
+  {
+    "category": "music",
+    "name": "music_menu_theme",
+    "prompt": "Orchestral fantasy menu theme, harps, light flutes, magical atmosphere, hopeful, seamless loop, high fidelity",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 60.0
+  },
+  {
+    "category": "music",
+    "name": "music_gameplay_start",
+    "prompt": "Energetic battle theme start, orchestral staccato strings, driving percussion, seamless loop, high fidelity",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 60.0
+  },
+  {
+    "category": "music",
+    "name": "music_gameplay_intense",
+    "prompt": "Intense epic battle music, brass swells, fast tempo, anime fight, seamless loop, high fidelity",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 60.0
+  },
+  {
+    "category": "music",
+    "name": "music_boss_intro",
+    "prompt": "Ominous orchestral sting, low brass blast, danger panic, seamless loop, high fidelity",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 5.0
+  },
+  {
+    "category": "music",
+    "name": "music_boss_loop",
+    "prompt": "High stakes boss music, gothic choir, heavy percussion, rapid tempo, seamless loop, high fidelity",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 60.0
+  },
+  {
+    "category": "music",
+    "name": "music_victory",
+    "prompt": "Final Fantasy style victory fanfare, trumpets, triumphant, major key, seamless loop, high fidelity",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 60.0
+  },
+  {
+    "category": "music",
+    "name": "music_defeat",
+    "prompt": "Sad emotional piano chord, fading into a somber wind sound, seamless loop, high fidelity",
+    "engine": "stable_audio",
+    "variations": 1,
+    "duration": 60.0
+  }
+]
