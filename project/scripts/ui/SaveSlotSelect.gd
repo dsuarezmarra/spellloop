@@ -312,8 +312,7 @@ func _navigate_slots(direction: int) -> void:
 
 
 
-func _on_element_hover() -> void:
-	AudioManager.play_fixed("sfx_ui_hover")
+
 
 func _navigate_to_slots() -> void:
 	"""Mover focus a los slots"""

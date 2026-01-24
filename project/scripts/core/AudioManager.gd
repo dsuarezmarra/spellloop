@@ -133,6 +133,10 @@ func play_music(music_id: String, fade_time: float = 1.0) -> void:
 	if not stream:
 		return
 	
+	# Force loop mode if supported
+	if stream.get("loop") != null:
+		stream.loop = true
+	
 	music_player.stream = stream
 	music_player.volume_db = entry.get("volume_db", -3.0) + linear_to_db(music_volume)
 	music_player.play()
