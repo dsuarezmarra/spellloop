@@ -512,6 +512,9 @@ func _start_game() -> void:
 	game_running = true
 	game_time = 0.0
 	is_paused = false
+	
+	# Iniciar música de gameplay
+	AudioManager.play_music("music_gameplay_loop")
 
 	# CRÍTICO: Resetear AttackManager para nueva partida
 	# Esto limpia armas, stats y mejoras de la partida anterior
@@ -823,6 +826,7 @@ func _input(event: InputEvent) -> void:
 func _pause_game() -> void:
 	is_paused = true
 	get_tree().paused = true  # Pausar el árbol del juego
+	AudioManager.pause_music(true)
 	# Debug desactivado: print("⏸️ [Game] Juego pausado - is_paused=%s, tree.paused=%s" % [is_paused, get_tree().paused])
 	if pause_menu and not _paused_by_focus_loss:
 		pause_menu.show_pause_menu(game_time)
@@ -833,6 +837,7 @@ func _resume_game() -> void:
 		return
 	is_paused = false
 	get_tree().paused = false
+	AudioManager.pause_music(false)
 
 func _on_resume_game() -> void:
 	# Solo reanudar si no hay level up activo
@@ -840,6 +845,7 @@ func _on_resume_game() -> void:
 		return
 	is_paused = false
 	get_tree().paused = false  # Reanudar el árbol del juego
+	AudioManager.pause_music(false)
 	# Debug desactivado: print("▶️ [Game] Juego reanudado - is_paused=%s, tree.paused=%s" % [is_paused, get_tree().paused])
 
 func _update_hud() -> void:

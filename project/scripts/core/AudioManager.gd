@@ -145,6 +145,10 @@ func stop_music(fade_time: float = 1.0) -> void:
 	"""Stop current music."""
 	music_player.stop()
 
+func pause_music(paused: bool) -> void:
+	"""Pause or resume current music."""
+	music_player.stream_paused = paused
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # VOLUME CONTROL API (for Options Menu)
 # ═══════════════════════════════════════════════════════════════════════════════

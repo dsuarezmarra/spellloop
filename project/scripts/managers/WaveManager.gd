@@ -540,6 +540,9 @@ func _spawn_boss(boss_id: String) -> void:
 		
 		boss_spawned.emit(boss_id)
 		_show_boss_spawn_announcement(boss_id)
+		
+		# Cambiar a música de jefe
+		AudioManager.play_music("music_boss_theme")
 
 func _on_boss_enemy_died(_enemy_node, _enemy_type_id, _exp_value, _enemy_tier, _is_elite, _is_boss, boss_id: String) -> void:
 	"""Callback cuando el boss muere - recibe todos los parámetros de enemy_died más boss_id bindeado"""
@@ -547,6 +550,9 @@ func _on_boss_enemy_died(_enemy_node, _enemy_type_id, _exp_value, _enemy_tier, _
 	current_boss = null
 	boss_defeated.emit(boss_id)
 	# Debug desactivado: print("WaveManager: Boss derrotado - %s" % boss_id)
+	
+	# Volver a música de gameplay
+	AudioManager.play_music("music_gameplay_loop")
 
 func _show_boss_warning(boss_id: String) -> void:
 	# Debug desactivado: print("⚠️ ¡BOSS INCOMING: %s!" % boss_id)
