@@ -465,24 +465,10 @@ func _spawn_projectiles(player: Node2D, targets: Array, final_damage: float, cri
 	Crear proyectiles del arma
 	Override para comportamiento específico de cada tipo
 	"""
-	# Play weapon cast sound based on element
-	var cast_sfx = "sfx_arcane_cast"  # Default
-	match element:
-		WeaponDatabase.Element.FIRE:
-			cast_sfx = "sfx_fire_cast"
-		WeaponDatabase.Element.ICE:
-			cast_sfx = "sfx_ice_cast"
-		WeaponDatabase.Element.LIGHTNING:
-			cast_sfx = "sfx_lightning_cast"
-		WeaponDatabase.Element.ARCANE:
-			cast_sfx = "sfx_arcane_cast"
-		WeaponDatabase.Element.SHADOW:
-			cast_sfx = "sfx_shadow_cast"
-		WeaponDatabase.Element.NATURE:
-			cast_sfx = "sfx_nature_cast"
-		WeaponDatabase.Element.VOID:
-			cast_sfx = "sfx_void_cast"
-	AudioManager.play(cast_sfx)
+	# Play weapon cast sound - unique per weapon for deterministic audio
+	# Format: sfx_weapon_{weapon_id} (e.g., sfx_weapon_fire_wand, sfx_weapon_ice_staff)
+	var weapon_sfx = "sfx_weapon_%s" % id
+	AudioManager.play_fixed(weapon_sfx)
 	
 	match projectile_type:
 		WeaponDatabase.ProjectileType.SINGLE:

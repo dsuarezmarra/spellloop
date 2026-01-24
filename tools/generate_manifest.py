@@ -27,9 +27,10 @@ def generate_manifest():
     
     for root, dirs, files in os.walk(AUDIO_DIR):
         for file in files:
-            # Only process audio files
             if not file.lower().endswith(('.wav', '.ogg', '.mp3')):
                 continue
+            
+            print(f"DEBUG: Found file {file}")
             
             file_count += 1
             abs_path = Path(root) / file

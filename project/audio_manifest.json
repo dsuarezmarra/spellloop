@@ -758,6 +758,7 @@
   },
   "sfx_footstep_grass": {
     "files": [
+      "res://audio/sfx/gameplay/sfx_footstep_grass.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_grass_01.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_grass_02.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_grass_03.mp3",
@@ -774,6 +775,7 @@
   },
   "sfx_footstep_sand": {
     "files": [
+      "res://audio/sfx/gameplay/sfx_footstep_sand.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_sand_01.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_sand_02.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_sand_03.mp3",
@@ -790,6 +792,7 @@
   },
   "sfx_footstep_snow": {
     "files": [
+      "res://audio/sfx/gameplay/sfx_footstep_snow.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_snow_01.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_snow_02.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_snow_03.mp3",
@@ -806,6 +809,7 @@
   },
   "sfx_footstep_stone": {
     "files": [
+      "res://audio/sfx/gameplay/sfx_footstep_stone.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_stone_01.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_stone_02.mp3",
       "res://audio/sfx/gameplay/sfx_footstep_stone_03.mp3",
@@ -1351,6 +1355,655 @@
       "res://audio/sfx/weapons/sfx_void_hit_04.mp3"
     ],
     "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_absolute_zero": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_absolute_zero_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_abyss": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_abyss_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_arcane_orb": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_arcane_orb_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_arcane_storm": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_arcane_storm_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_aurora": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_aurora_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_blizzard": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_blizzard_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_cosmic_barrier": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_cosmic_barrier_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_cosmic_void": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_cosmic_void_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_crystal_guardian": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_crystal_guardian_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_dark_flame": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_dark_flame_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_dark_lightning": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_dark_lightning_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_decay": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_decay_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_earth_spike": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_earth_spike_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_eclipse": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_eclipse_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_firestorm": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_firestorm_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_fire_wand": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_fire_wand_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_frostbite": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_frostbite_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_frostvine": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_frostvine_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_frost_orb": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_frost_orb_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_frozen_thunder": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_frozen_thunder_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_gaia": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_gaia_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_glacier": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_glacier_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_hellfire": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_hellfire_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_ice_wand": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_ice_wand_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_inferno_orb": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_inferno_orb_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_life_orbs": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_life_orbs_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_lightning_wand": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_lightning_wand_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_light_beam": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_light_beam_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_nature_staff": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_nature_staff_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_phantom_blade": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_phantom_blade_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_plasma": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_plasma_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_pollen_storm": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_pollen_storm_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_prism_wind": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_prism_wind_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_radiant_stone": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_radiant_stone_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_rift_quake": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_rift_quake_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_sandstorm": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_sandstorm_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_seismic_bolt": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_seismic_bolt_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_shadow_dagger": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_shadow_dagger_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_shadow_orbs": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_shadow_orbs_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_solar_bloom": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_solar_bloom_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_solar_flare": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_solar_flare_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_soul_reaper": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_soul_reaper_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_steam_cannon": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_steam_cannon_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_stone_fang": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_stone_fang_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_storm_caller": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_storm_caller_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_thunder_bloom": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_thunder_bloom_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_thunder_spear": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_thunder_spear_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_twilight": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_twilight_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_void_bolt": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_void_bolt_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_void_pulse": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_void_pulse_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_void_storm": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_void_storm_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_volcano": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_volcano_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_wildfire": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_wildfire_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_wind_blade": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_wind_blade_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_weapon_wind_orbs": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_weapon_wind_orbs_01.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_footstep_grass": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_footstep_grass.mp3"
+    ],
+    "volume_db": -5.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_footstep_sand": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_footstep_sand.mp3"
+    ],
+    "volume_db": -5.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_footstep_snow": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_footstep_snow.mp3"
+    ],
+    "volume_db": -5.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_footstep_stone": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_footstep_stone.mp3"
+    ],
+    "volume_db": -5.0,
     "pitch_scale": [
       0.95,
       1.05

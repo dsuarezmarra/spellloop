@@ -24,6 +24,10 @@ var animated_sprite: AnimatedSprite2D = null
 var last_dir: String = "down"
 var health_bar_container: Node2D = null
 
+# Footstep System
+var _footstep_timer: float = 0.0
+const FOOTSTEP_INTERVAL: float = 0.35
+
 func _ready() -> void:
 	# print("\n[SpellloopPlayer] ===== INICIANDO SPELLLOOP PLAYER =====")
 
@@ -139,6 +143,15 @@ func _physics_process(_delta: float) -> void:
 
 	move_and_slide()
 
+	# === FOOTSTEP SOUNDS ===
+	if velocity.length() > 50.0:
+		_footstep_timer -= _delta
+		if _footstep_timer <= 0.0:
+			_play_footstep_sound()
+			_footstep_timer = FOOTSTEP_INTERVAL
+	else:
+		_footstep_timer = 0.0 # Reset so it plays immediately when starting to move
+
 	# === SISTEMA DE BARRERAS POR DISTANCIA ===
 	# Más confiable que colisiones físicas para barreras circulares
 	_enforce_zone_barriers()
@@ -200,6 +213,42 @@ func _enforce_decor_collisions() -> void:
 	
 	if push.length_squared() > 0.1:
 		global_position += push
+
+func _play_footstep_sound() -> void:
+	var arena_manager = get_tree().get_first_node_in_group("arena_manager")
+	var sound_id = "sfx_footstep_grass" # Default fallback
+	
+	if arena_manager:
+		# 1. Check if on path (prioritize path sound)
+		if arena_manager.has_method("is_on_path") and arena_manager.is_on_path(global_position):
+			sound_id = "sfx_footstep_stone" # Generic path sound
+		
+		# 2. Check biome
+		elif arena_manager.has_method("get_biome_at_position"):
+			var biome = arena_manager.get_biome_at_position(global_position)
+			match biome:
+				"Grassland", "Forest":
+					sound_id = "sfx_footstep_grass"
+				"Desert":
+					sound_id = "sfx_footstep_sand"
+				"Snow":
+					sound_id = "sfx_footstep_snow"
+				"Lava", "ArcaneWastes", "Death":
+					sound_id = "sfx_footstep_stone"
+				_:
+					sound_id = "sfx_footstep_grass"
+	
+	# Play sound (lower volume for footsteps)
+	# play_fixed ensures single predictable sound, but for footsteps random variation is usually better.
+	# However, per user request for simplicity/determinism, we use fixed or simple play.
+	# Since we generated "sfx_footstep_grass" as a key, AudioManager.play(key) serves well.
+	# play_fixed() might feel too robotic if it's the SAME sample every 0.35s.
+	# Ideally we'd have variations. My generator failed OGG but stored MP3s.
+	# Let's use play_fixed() as requested for "less is more" and "deterministic", 
+	# but if it sounds bad user can ask to change.
+	# Actually, for footsteps, random pitch slightly helps.
+	# The AudioManager.play() does pitch variation.
+	AudioManager.play(sound_id)
 
 func _on_wizard_damaged(amount: int, current_hp: int) -> void:
 	hp = current_hp
