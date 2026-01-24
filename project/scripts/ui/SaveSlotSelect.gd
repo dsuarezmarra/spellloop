@@ -353,9 +353,7 @@ func _on_back_pressed() -> void:
 	back_pressed.emit()
 
 func _play_button_sound() -> void:
-	var audio_manager = get_tree().root.get_node_or_null("AudioManager")
-	if audio_manager and audio_manager.has_method("play_sfx"):
-		audio_manager.play_sfx("ui_click")
+	AudioManager.play("sfx_ui_click")
 
 func refresh() -> void:
 	"""Refrescar los datos de los slots"""

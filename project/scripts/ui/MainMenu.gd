@@ -153,9 +153,8 @@ func _connect_signals() -> void:
 		quit_button.pressed.connect(_on_quit_pressed)
 
 func _play_menu_music() -> void:
-	var audio_manager = _get_audio_manager()
-	if audio_manager and audio_manager.has_method("play_music"):
-		audio_manager.play_music("menu")
+	# Menu music not implemented yet - would use AudioManager.play_music("music_menu")
+	pass
 
 func _get_audio_manager() -> Node:
 	var tree = get_tree()
@@ -316,9 +315,7 @@ func _on_quit_pressed() -> void:
 	get_tree().quit()
 
 func _play_button_sound() -> void:
-	var audio_manager = _get_audio_manager()
-	if audio_manager and audio_manager.has_method("play_sfx"):
-		audio_manager.play_sfx("ui_click")
+	AudioManager.play("sfx_ui_click")
 
 func _start_game() -> void:
 	# Transición con fade
@@ -425,6 +422,7 @@ func _navigate_menu(direction: int) -> void:
 		return
 
 	current_button_index = wrapi(current_button_index + direction, 0, menu_buttons.size())
+	AudioManager.play("sfx_ui_hover")
 	_highlight_current_button()
 
 func _activate_current_button() -> void:

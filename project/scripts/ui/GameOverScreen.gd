@@ -198,15 +198,8 @@ func _on_menu_pressed() -> void:
 	# La transición de escena se maneja en Game.gd
 
 func _play_button_sound() -> void:
-	var tree = get_tree()
-	if tree and tree.root:
-		var audio_manager = tree.root.get_node_or_null("AudioManager")
-		if audio_manager and audio_manager.has_method("play_sfx"):
-			audio_manager.play_sfx("ui_click")
+	AudioManager.play("sfx_ui_click")
 
 func _play_game_over_sound() -> void:
-	var tree = get_tree()
-	if tree and tree.root:
-		var audio_manager = tree.root.get_node_or_null("AudioManager")
-		if audio_manager and audio_manager.has_method("play_sfx"):
-			audio_manager.play_sfx("game_over")
+	# Game over sound not generated yet
+	pass

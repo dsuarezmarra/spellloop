@@ -2588,8 +2588,4 @@ func _disable_buttons_recursive(node: Node, disabled: bool) -> void:
 		_disable_buttons_recursive(child, disabled)
 
 func _play_button_sound() -> void:
-	var tree = get_tree()
-	if tree and tree.root:
-		var audio_manager = tree.root.get_node_or_null("AudioManager")
-		if audio_manager and audio_manager.has_method("play_sfx"):
-			audio_manager.play_sfx("ui_click")
+	AudioManager.play("sfx_ui_click")

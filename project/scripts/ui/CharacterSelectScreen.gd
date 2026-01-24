@@ -614,16 +614,10 @@ func _on_back_pressed() -> void:
 	back_pressed.emit()
 
 func _play_button_sound() -> void:
-	if get_tree() and get_tree().root:
-		var audio = get_tree().root.get_node_or_null("AudioManager")
-		if audio and audio.has_method("play_sfx"):
-			audio.play_sfx("ui_click")
+	AudioManager.play("sfx_ui_click")
 
 func _play_navigate_sound() -> void:
-	if get_tree() and get_tree().root:
-		var audio = get_tree().root.get_node_or_null("AudioManager")
-		if audio and audio.has_method("play_sfx"):
-			audio.play_sfx("ui_hover")
+	AudioManager.play("sfx_ui_hover")
 
 # =============================================================================
 # PUBLIC API
