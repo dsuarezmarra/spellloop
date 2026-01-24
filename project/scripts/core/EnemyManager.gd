@@ -444,6 +444,18 @@ func _on_enemy_died(enemy: Node, type_id: String = "", exp_value: int = 0, enemy
 	var pos = Vector2.ZERO
 	if is_instance_valid(enemy) and enemy is Node2D:
 		pos = enemy.global_position
+	
+	# Play death sound based on enemy type
+	var death_sfx = "sfx_death_flesh"  # Default
+	if "skeleton" in type_id or "bone" in type_id:
+		death_sfx = "sfx_death_bone"
+	elif "armor" in type_id or "knight" in type_id or "golem" in type_id:
+		death_sfx = "sfx_death_armor"
+	elif "ghost" in type_id or "spirit" in type_id or "wisp" in type_id:
+		death_sfx = "sfx_death_ghost"
+	elif "slime" in type_id or "blob" in type_id or "ooze" in type_id:
+		death_sfx = "sfx_death_slime"
+	AudioManager.play(death_sfx)
 
 	# SPAWN COFRES PARA ÉLITES Y BOSSES
 	if (is_elite or is_boss) and chest_scene:

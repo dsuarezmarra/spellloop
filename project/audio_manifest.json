@@ -1,1 +1,1176 @@
-{}
+{
+  "sfx_streak": {
+    "files": [
+      "res://audio/sfx/coins/sfx_streak_01.mp3",
+      "res://audio/sfx/coins/sfx_streak_02.mp3",
+      "res://audio/sfx/coins/sfx_streak_03.mp3",
+      "res://audio/sfx/coins/sfx_streak_04.mp3",
+      "res://audio/sfx/coins/sfx_streak_05.mp3",
+      "res://audio/sfx/coins/sfx_streak_06.mp3",
+      "res://audio/sfx/coins/sfx_streak_07.mp3",
+      "res://audio/sfx/coins/sfx_streak_08.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_boss_alarm": {
+    "files": [
+      "res://audio/sfx/enemies/sfx_boss_alarm_01.mp3",
+      "res://audio/sfx/enemies/sfx_boss_alarm_02.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_death_armor": {
+    "files": [
+      "res://audio/sfx/enemies/sfx_death_armor_01.mp3",
+      "res://audio/sfx/enemies/sfx_death_armor_02.mp3",
+      "res://audio/sfx/enemies/sfx_death_armor_03.mp3",
+      "res://audio/sfx/enemies/sfx_death_armor_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_death_bone": {
+    "files": [
+      "res://audio/sfx/enemies/sfx_death_bone_01.mp3",
+      "res://audio/sfx/enemies/sfx_death_bone_02.mp3",
+      "res://audio/sfx/enemies/sfx_death_bone_03.mp3",
+      "res://audio/sfx/enemies/sfx_death_bone_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_death_flesh": {
+    "files": [
+      "res://audio/sfx/enemies/sfx_death_flesh_01.mp3",
+      "res://audio/sfx/enemies/sfx_death_flesh_02.mp3",
+      "res://audio/sfx/enemies/sfx_death_flesh_03.mp3",
+      "res://audio/sfx/enemies/sfx_death_flesh_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_death_ghost": {
+    "files": [
+      "res://audio/sfx/enemies/sfx_death_ghost_01.mp3",
+      "res://audio/sfx/enemies/sfx_death_ghost_02.mp3",
+      "res://audio/sfx/enemies/sfx_death_ghost_03.mp3",
+      "res://audio/sfx/enemies/sfx_death_ghost_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_death_slime": {
+    "files": [
+      "res://audio/sfx/enemies/sfx_death_slime_01.mp3",
+      "res://audio/sfx/enemies/sfx_death_slime_02.mp3",
+      "res://audio/sfx/enemies/sfx_death_slime_03.mp3",
+      "res://audio/sfx/enemies/sfx_death_slime_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_elite_spawn": {
+    "files": [
+      "res://audio/sfx/enemies/sfx_elite_spawn_01.mp3",
+      "res://audio/sfx/enemies/sfx_elite_spawn_02.mp3",
+      "res://audio/sfx/enemies/sfx_elite_spawn_03.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_enemy_spawn": {
+    "files": [
+      "res://audio/sfx/enemies/sfx_enemy_spawn_01.mp3",
+      "res://audio/sfx/enemies/sfx_enemy_spawn_02.mp3",
+      "res://audio/sfx/enemies/sfx_enemy_spawn_03.mp3",
+      "res://audio/sfx/enemies/sfx_enemy_spawn_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_hit_armor": {
+    "files": [
+      "res://audio/sfx/enemies/sfx_hit_armor_01.mp3",
+      "res://audio/sfx/enemies/sfx_hit_armor_02.mp3",
+      "res://audio/sfx/enemies/sfx_hit_armor_03.mp3",
+      "res://audio/sfx/enemies/sfx_hit_armor_04.mp3",
+      "res://audio/sfx/enemies/sfx_hit_armor_05.mp3",
+      "res://audio/sfx/enemies/sfx_hit_armor_06.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_hit_bone": {
+    "files": [
+      "res://audio/sfx/enemies/sfx_hit_bone_01.mp3",
+      "res://audio/sfx/enemies/sfx_hit_bone_02.mp3",
+      "res://audio/sfx/enemies/sfx_hit_bone_03.mp3",
+      "res://audio/sfx/enemies/sfx_hit_bone_04.mp3",
+      "res://audio/sfx/enemies/sfx_hit_bone_05.mp3",
+      "res://audio/sfx/enemies/sfx_hit_bone_06.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_hit_flesh": {
+    "files": [
+      "res://audio/sfx/enemies/sfx_hit_flesh_01.mp3",
+      "res://audio/sfx/enemies/sfx_hit_flesh_02.mp3",
+      "res://audio/sfx/enemies/sfx_hit_flesh_03.mp3",
+      "res://audio/sfx/enemies/sfx_hit_flesh_04.mp3",
+      "res://audio/sfx/enemies/sfx_hit_flesh_05.mp3",
+      "res://audio/sfx/enemies/sfx_hit_flesh_06.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_hit_ghost": {
+    "files": [
+      "res://audio/sfx/enemies/sfx_hit_ghost_01.mp3",
+      "res://audio/sfx/enemies/sfx_hit_ghost_02.mp3",
+      "res://audio/sfx/enemies/sfx_hit_ghost_03.mp3",
+      "res://audio/sfx/enemies/sfx_hit_ghost_04.mp3",
+      "res://audio/sfx/enemies/sfx_hit_ghost_05.mp3",
+      "res://audio/sfx/enemies/sfx_hit_ghost_06.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_hit_slime": {
+    "files": [
+      "res://audio/sfx/enemies/sfx_hit_slime_01.mp3",
+      "res://audio/sfx/enemies/sfx_hit_slime_02.mp3",
+      "res://audio/sfx/enemies/sfx_hit_slime_03.mp3",
+      "res://audio/sfx/enemies/sfx_hit_slime_04.mp3",
+      "res://audio/sfx/enemies/sfx_hit_slime_05.mp3",
+      "res://audio/sfx/enemies/sfx_hit_slime_06.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_absolute_zero": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_absolute_zero.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_abyss": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_abyss.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_arcane_storm": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_arcane_storm.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_aurora": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_aurora.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_blizzard": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_blizzard.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_cosmic_barrier": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_cosmic_barrier.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_cosmic_void": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_cosmic_void.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_crystal_guardian": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_crystal_guardian.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_dark_flame": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_dark_flame.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_dark_lightning": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_dark_lightning.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_decay": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_decay.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_eclipse": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_eclipse.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_firestorm": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_firestorm.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_frostbite": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_frostbite.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_frostvine": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_frostvine.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_frost_orb": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_frost_orb.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_frozen_thunder": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_frozen_thunder.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_gaia": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_gaia.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_glacier": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_glacier.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_hellfire": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_hellfire.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_inferno_orb": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_inferno_orb.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_life_orbs": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_life_orbs.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_phantom_blade": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_phantom_blade.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_plasma_bolt": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_plasma_bolt.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_pollen_storm": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_pollen_storm.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_prism_wind": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_prism_wind.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_radiant_stone": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_radiant_stone.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_rift_quake": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_rift_quake.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_sandstorm": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_sandstorm.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_seismic_bolt": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_seismic_bolt.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_shadow_orbs": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_shadow_orbs.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_solar_bloom": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_solar_bloom.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_solar_flare": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_solar_flare.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_soul_reaper": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_soul_reaper.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_steam_cannon": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_steam_cannon.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_stone_fang": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_stone_fang.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_storm_caller": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_storm_caller.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_thunder_bloom": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_thunder_bloom.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_thunder_spear": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_thunder_spear.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_twilight": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_twilight.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_void_bolt": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_void_bolt.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_void_storm": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_void_storm.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_volcano": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_volcano.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_wildfire": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_wildfire.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fusion_wind_orbs": {
+    "files": [
+      "res://audio/sfx/fusions/sfx_fusion_wind_orbs.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_barrier_hit": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_barrier_hit_01.mp3",
+      "res://audio/sfx/gameplay/sfx_barrier_hit_02.mp3",
+      "res://audio/sfx/gameplay/sfx_barrier_hit_03.mp3",
+      "res://audio/sfx/gameplay/sfx_barrier_hit_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_player_death": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_player_death_01.mp3",
+      "res://audio/sfx/gameplay/sfx_player_death_02.mp3",
+      "res://audio/sfx/gameplay/sfx_player_death_03.mp3",
+      "res://audio/sfx/gameplay/sfx_player_death_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_player_heal": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_player_heal_01.mp3",
+      "res://audio/sfx/gameplay/sfx_player_heal_02.mp3",
+      "res://audio/sfx/gameplay/sfx_player_heal_03.mp3",
+      "res://audio/sfx/gameplay/sfx_player_heal_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_player_hurt": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_player_hurt_01.mp3",
+      "res://audio/sfx/gameplay/sfx_player_hurt_02.mp3",
+      "res://audio/sfx/gameplay/sfx_player_hurt_03.mp3",
+      "res://audio/sfx/gameplay/sfx_player_hurt_04.mp3",
+      "res://audio/sfx/gameplay/sfx_player_hurt_05.mp3",
+      "res://audio/sfx/gameplay/sfx_player_hurt_06.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_player_revive": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_player_revive_01.mp3",
+      "res://audio/sfx/gameplay/sfx_player_revive_02.mp3",
+      "res://audio/sfx/gameplay/sfx_player_revive_03.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_shield_absorb": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_shield_absorb_01.mp3",
+      "res://audio/sfx/gameplay/sfx_shield_absorb_02.mp3",
+      "res://audio/sfx/gameplay/sfx_shield_absorb_03.mp3",
+      "res://audio/sfx/gameplay/sfx_shield_absorb_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_shield_break": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_shield_break_01.mp3",
+      "res://audio/sfx/gameplay/sfx_shield_break_02.mp3",
+      "res://audio/sfx/gameplay/sfx_shield_break_03.mp3",
+      "res://audio/sfx/gameplay/sfx_shield_break_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_turret_lock": {
+    "files": [
+      "res://audio/sfx/gameplay/sfx_turret_lock_01.mp3",
+      "res://audio/sfx/gameplay/sfx_turret_lock_02.mp3",
+      "res://audio/sfx/gameplay/sfx_turret_lock_03.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_status_burn_loop": {
+    "files": [
+      "res://audio/sfx/status/sfx_status_burn_loop.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      1.0,
+      1.0
+    ],
+    "bus": "SFX"
+  },
+  "sfx_status_curse_loop": {
+    "files": [
+      "res://audio/sfx/status/sfx_status_curse_loop.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      1.0,
+      1.0
+    ],
+    "bus": "SFX"
+  },
+  "sfx_status_freeze_loop": {
+    "files": [
+      "res://audio/sfx/status/sfx_status_freeze_loop.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      1.0,
+      1.0
+    ],
+    "bus": "SFX"
+  },
+  "sfx_status_poison_loop": {
+    "files": [
+      "res://audio/sfx/status/sfx_status_poison_loop.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      1.0,
+      1.0
+    ],
+    "bus": "SFX"
+  },
+  "sfx_rarity_common": {
+    "files": [
+      "res://audio/sfx/ui/sfx_rarity_common_01.mp3",
+      "res://audio/sfx/ui/sfx_rarity_common_02.mp3",
+      "res://audio/sfx/ui/sfx_rarity_common_03.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_rarity_legendary": {
+    "files": [
+      "res://audio/sfx/ui/sfx_rarity_legendary_01.mp3",
+      "res://audio/sfx/ui/sfx_rarity_legendary_02.mp3",
+      "res://audio/sfx/ui/sfx_rarity_legendary_03.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_slot_spin_loop": {
+    "files": [
+      "res://audio/sfx/ui/sfx_slot_spin_loop.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      1.0,
+      1.0
+    ],
+    "bus": "SFX"
+  },
+  "sfx_slot_stop": {
+    "files": [
+      "res://audio/sfx/ui/sfx_slot_stop_01.mp3",
+      "res://audio/sfx/ui/sfx_slot_stop_02.mp3",
+      "res://audio/sfx/ui/sfx_slot_stop_03.mp3",
+      "res://audio/sfx/ui/sfx_slot_stop_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_ui_cancel": {
+    "files": [
+      "res://audio/sfx/ui/sfx_ui_cancel_01.mp3",
+      "res://audio/sfx/ui/sfx_ui_cancel_02.mp3",
+      "res://audio/sfx/ui/sfx_ui_cancel_03.mp3",
+      "res://audio/sfx/ui/sfx_ui_cancel_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      1.0,
+      1.0
+    ],
+    "bus": "SFX"
+  },
+  "sfx_ui_click": {
+    "files": [
+      "res://audio/sfx/ui/sfx_ui_click_01.mp3",
+      "res://audio/sfx/ui/sfx_ui_click_02.mp3",
+      "res://audio/sfx/ui/sfx_ui_click_03.mp3",
+      "res://audio/sfx/ui/sfx_ui_click_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      1.0,
+      1.0
+    ],
+    "bus": "SFX"
+  },
+  "sfx_ui_confirm": {
+    "files": [
+      "res://audio/sfx/ui/sfx_ui_confirm_01.mp3",
+      "res://audio/sfx/ui/sfx_ui_confirm_02.mp3",
+      "res://audio/sfx/ui/sfx_ui_confirm_03.mp3",
+      "res://audio/sfx/ui/sfx_ui_confirm_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      1.0,
+      1.0
+    ],
+    "bus": "SFX"
+  },
+  "sfx_ui_error": {
+    "files": [
+      "res://audio/sfx/ui/sfx_ui_error_01.mp3",
+      "res://audio/sfx/ui/sfx_ui_error_02.mp3",
+      "res://audio/sfx/ui/sfx_ui_error_03.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      1.0,
+      1.0
+    ],
+    "bus": "SFX"
+  },
+  "sfx_ui_hover": {
+    "files": [
+      "res://audio/sfx/ui/sfx_ui_hover_01.mp3",
+      "res://audio/sfx/ui/sfx_ui_hover_02.mp3",
+      "res://audio/sfx/ui/sfx_ui_hover_03.mp3",
+      "res://audio/sfx/ui/sfx_ui_hover_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      1.0,
+      1.0
+    ],
+    "bus": "SFX"
+  },
+  "sfx_arcane_cast": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_arcane_cast_01.mp3",
+      "res://audio/sfx/weapons/sfx_arcane_cast_02.mp3",
+      "res://audio/sfx/weapons/sfx_arcane_cast_03.mp3",
+      "res://audio/sfx/weapons/sfx_arcane_cast_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_arcane_hit": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_arcane_hit_01.mp3",
+      "res://audio/sfx/weapons/sfx_arcane_hit_02.mp3",
+      "res://audio/sfx/weapons/sfx_arcane_hit_03.mp3",
+      "res://audio/sfx/weapons/sfx_arcane_hit_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fire_cast": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_fire_cast_01.mp3",
+      "res://audio/sfx/weapons/sfx_fire_cast_02.mp3",
+      "res://audio/sfx/weapons/sfx_fire_cast_03.mp3",
+      "res://audio/sfx/weapons/sfx_fire_cast_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_fire_hit": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_fire_hit_01.mp3",
+      "res://audio/sfx/weapons/sfx_fire_hit_02.mp3",
+      "res://audio/sfx/weapons/sfx_fire_hit_03.mp3",
+      "res://audio/sfx/weapons/sfx_fire_hit_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_ice_cast": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_ice_cast_01.mp3",
+      "res://audio/sfx/weapons/sfx_ice_cast_02.mp3",
+      "res://audio/sfx/weapons/sfx_ice_cast_03.mp3",
+      "res://audio/sfx/weapons/sfx_ice_cast_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_ice_hit": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_ice_hit_01.mp3",
+      "res://audio/sfx/weapons/sfx_ice_hit_02.mp3",
+      "res://audio/sfx/weapons/sfx_ice_hit_03.mp3",
+      "res://audio/sfx/weapons/sfx_ice_hit_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_lightning_cast": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_lightning_cast_01.mp3",
+      "res://audio/sfx/weapons/sfx_lightning_cast_02.mp3",
+      "res://audio/sfx/weapons/sfx_lightning_cast_03.mp3",
+      "res://audio/sfx/weapons/sfx_lightning_cast_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_lightning_hit": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_lightning_hit_01.mp3",
+      "res://audio/sfx/weapons/sfx_lightning_hit_02.mp3",
+      "res://audio/sfx/weapons/sfx_lightning_hit_03.mp3",
+      "res://audio/sfx/weapons/sfx_lightning_hit_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_nature_cast": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_nature_cast_01.mp3",
+      "res://audio/sfx/weapons/sfx_nature_cast_02.mp3",
+      "res://audio/sfx/weapons/sfx_nature_cast_03.mp3",
+      "res://audio/sfx/weapons/sfx_nature_cast_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_nature_hit": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_nature_hit_01.mp3",
+      "res://audio/sfx/weapons/sfx_nature_hit_02.mp3",
+      "res://audio/sfx/weapons/sfx_nature_hit_03.mp3",
+      "res://audio/sfx/weapons/sfx_nature_hit_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_shadow_cast": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_shadow_cast_01.mp3",
+      "res://audio/sfx/weapons/sfx_shadow_cast_02.mp3",
+      "res://audio/sfx/weapons/sfx_shadow_cast_03.mp3",
+      "res://audio/sfx/weapons/sfx_shadow_cast_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_shadow_hit": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_shadow_hit_01.mp3",
+      "res://audio/sfx/weapons/sfx_shadow_hit_02.mp3",
+      "res://audio/sfx/weapons/sfx_shadow_hit_03.mp3",
+      "res://audio/sfx/weapons/sfx_shadow_hit_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_void_cast": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_void_cast_01.mp3",
+      "res://audio/sfx/weapons/sfx_void_cast_02.mp3",
+      "res://audio/sfx/weapons/sfx_void_cast_03.mp3",
+      "res://audio/sfx/weapons/sfx_void_cast_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  },
+  "sfx_void_hit": {
+    "files": [
+      "res://audio/sfx/weapons/sfx_void_hit_01.mp3",
+      "res://audio/sfx/weapons/sfx_void_hit_02.mp3",
+      "res://audio/sfx/weapons/sfx_void_hit_03.mp3",
+      "res://audio/sfx/weapons/sfx_void_hit_04.mp3"
+    ],
+    "volume_db": 0.0,
+    "pitch_scale": [
+      0.95,
+      1.05
+    ],
+    "bus": "SFX"
+  }
+}

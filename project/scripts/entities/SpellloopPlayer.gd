@@ -215,6 +215,9 @@ func _on_wizard_died() -> void:
 func take_damage(amount: int, element: String = "physical", attacker: Node = null) -> void:
 	if wizard_player:
 		wizard_player.take_damage(amount, element, attacker)
+		
+		# Play hurt sound
+		AudioManager.play("sfx_player_hurt")
 
 		# === THORNS LOGIC ===
 		if attacker and is_instance_valid(attacker) and attacker.has_method("take_damage"):
@@ -247,6 +250,7 @@ func heal(amount: int) -> void:
 	if wizard_player:
 		wizard_player.heal(amount)
 		_play_heal_animation()
+		AudioManager.play("sfx_player_heal")
 
 # Propagar métodos de efectos de estado al WizardPlayer
 func apply_slow(amount: float, duration: float) -> void:

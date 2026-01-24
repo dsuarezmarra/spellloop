@@ -1285,6 +1285,18 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 	if final_damage > 0:
 		var is_crit = final_damage >= amount * 1.5  # Detectar crítico
 		FloatingText.spawn_damage(global_position + Vector2(0, -20), final_damage, is_crit)
+		
+		# Play hit sound based on enemy type
+		var hit_sfx = "sfx_hit_flesh"  # Default
+		if "skeleton" in enemy_id or "bone" in enemy_id:
+			hit_sfx = "sfx_hit_bone"
+		elif "armor" in enemy_id or "knight" in enemy_id or "golem" in enemy_id:
+			hit_sfx = "sfx_hit_armor"
+		elif "ghost" in enemy_id or "spirit" in enemy_id or "wisp" in enemy_id:
+			hit_sfx = "sfx_hit_ghost"
+		elif "slime" in enemy_id or "blob" in enemy_id or "ooze" in enemy_id:
+			hit_sfx = "sfx_hit_slime"
+		AudioManager.play(hit_sfx)
 
 	# Calcular HP actual antes del daño para overkill
 	var hp_before = health_component.current_health if health_component else hp
