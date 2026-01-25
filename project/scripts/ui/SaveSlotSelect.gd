@@ -555,6 +555,8 @@ func _create_delete_popup(slot_index: int) -> void:
 	var overlay = Panel.new()
 	overlay.name = "DeleteOverlay"
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP # Bloquear clics detrás
+	
 	# Stylebox transparente oscuro
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0, 0, 0, 0.8)
@@ -625,8 +627,10 @@ func _create_delete_popup(slot_index: int) -> void:
 	btn_cancel.focus_neighbor_right = btn_delete.get_path()
 	btn_delete.focus_neighbor_left = btn_cancel.get_path()
 	
-	# Focus start
-	btn_cancel.grab_focus()
+	# Focus start (Wait for frame to ensure validity)
+	if is_inside_tree():
+		await get_tree().process_frame
+		btn_cancel.grab_focus()
 
 func _confirm_delete_slot(slot_index: int, overlay: Control) -> void:
 	"""Confirmar borrado de slot"""

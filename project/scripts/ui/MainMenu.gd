@@ -472,15 +472,16 @@ func _on_play_pressed() -> void:
 	play_pressed.emit()
 	_change_screen(Screen.SLOTS)
 
-# Reemplazar _show_slot_select duplicado por el helper
+# Helper: Load OR Reuse Slot Screen
 func _load_slot_screen() -> void:
+	if slot_select_screen and is_instance_valid(slot_select_screen):
+		return # Already loaded
+		
 	var slot_scene = load("res://scenes/ui/SaveSlotSelect.tscn")
 	if not slot_scene:
 		_start_game_with_default_slot() # Fallback
 		return
 
-	if slot_select_screen: slot_select_screen.queue_free()
-	
 	slot_select_screen = slot_scene.instantiate()
 	add_child(slot_select_screen)
 	move_child(slot_select_screen, -1)
@@ -497,6 +498,9 @@ func _on_slot_selected(slot_index: int) -> void:
 	_change_screen(Screen.CHARACTERS)
 
 func _load_character_screen() -> void:
+	if character_select_screen and is_instance_valid(character_select_screen):
+		return # Already loaded
+		
 	var char_scene = load("res://scenes/ui/CharacterSelectScreen.tscn")
 	if not char_scene:
 		_start_game_with_default_character()
