@@ -136,7 +136,15 @@ func _ready():
 	popup_bg.position = (screen_size - popup_bg.size) / 2
 	
 	# Inicializar selección
+	# Inicializar selección
 	current_selected_index = 0
+	
+	# Restaurar estado si fue configurado antes de _ready
+	if is_jackpot_mode:
+		show_as_jackpot(_jackpot_pending_items)
+	elif not available_items.is_empty():
+		setup_items(available_items)
+	
 	_update_jackpot_selection()
 
 func _input(event: InputEvent) -> void:
@@ -375,7 +383,9 @@ func show_as_jackpot(items: Array):
 	_jackpot_pending_items = items.duplicate()
 	_jackpot_claimed_items = []
 	
-	# Actualizar título
+	# Si no estamos listos (sin UI), diferir para _ready
+	if not _main_vbox:
+		return
 	for child in _main_vbox.get_children():
 		if child is Label:
 			child.text = "¡RECOMPENSA LEGENDARIA!"
@@ -610,7 +620,7 @@ func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 func _on_jackpot_close_pressed():
 	pass # Legacy stub
 
-func _on_jackpot_item_pressed(index: int, item: Dictionary):
+func _on_jackpot_item_pressed(index: int, _item: Dictionary):
 	"""Manejar click/selección de item en jackpot"""
 	if popup_locked: return
 	
@@ -797,6 +807,11 @@ func _recenter_popup() -> void:
 func setup_items(items: Array):
 	"""Configurar los items disponibles"""
 	available_items = items
+	
+	# Si no estamos listos, esperar a _ready
+	if not items_vbox:
+		return
+		
 	item_buttons.clear() 
 	
 	# Limpiar items previos
@@ -994,8 +1009,8 @@ func _shake_popup() -> void:
 	var intensity = 2.0
 	
 	for i in range(6):
-		var offset = Vector2(randf_range(-intensity, intensity), randf_range(-intensity, intensity))
-		_popup_bg.position = original_pos + offset
+		var anim_offset = Vector2(randf_range(-intensity, intensity), randf_range(-intensity, intensity))
+		_popup_bg.position = original_pos + anim_offset
 		intensity += 1.0
 		await get_tree().create_timer(0.04).timeout
 		if not is_instance_valid(self):
@@ -1018,7 +1033,7 @@ func _flash_screen(color: Color) -> void:
 	
 	await get_tree().create_timer(BURST_DURATION).timeout
 
-func _reveal_item_animated(btn: Control, index: int) -> void:
+func _reveal_item_animated(btn: Control, _index: int) -> void:
 	"""Revelar un item con animación de entrada"""
 	if not is_instance_valid(btn):
 		return

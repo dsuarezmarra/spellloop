@@ -79,6 +79,9 @@ func _apply_premium_style() -> void:
 			btn.add_theme_stylebox_override("pressed", style_pressed)
 			btn.add_theme_stylebox_override("focus", style_hover) # Focus usa estilo hover para gamepad
 			
+			# Force Uppercase
+			btn.text = btn.text.to_upper()
+			
 			# Tipografía
 			btn.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
 			btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.6)) # Texto dorado al hover
@@ -234,14 +237,14 @@ func _update_resume_button() -> void:
 	if resume_button:
 		resume_button.visible = can_resume_game
 		if can_resume_game and SessionState:
-			resume_button.text = ">> Reanudar (%s)" % SessionState.get_paused_time_formatted()
+			resume_button.text = ">> REANUDAR (%s)" % SessionState.get_paused_time_formatted()
 
 	# Actualizar texto del botón de jugar
 	if play_button:
 		if can_resume_game:
-			play_button.text = "🎮 Nueva Partida"
+			play_button.text = "🎮 NUEVA PARTIDA"
 		else:
-			play_button.text = "🎮 Jugar"
+			play_button.text = "🎮 JUGAR"
 
 func _create_resume_button() -> void:
 	"""Crear el boton de reanudar dinamicamente si no existe en la escena"""
@@ -249,7 +252,7 @@ func _create_resume_button() -> void:
 		var parent = play_button.get_parent()
 		resume_button = Button.new()
 		resume_button.name = "ResumeButton"
-		resume_button.text = ">> Reanudar"
+		resume_button.text = ">> REANUDAR"
 		resume_button.custom_minimum_size = play_button.custom_minimum_size
 		resume_button.visible = false
 
