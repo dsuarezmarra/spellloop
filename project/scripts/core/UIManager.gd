@@ -31,8 +31,7 @@ const GAME_OVER_SCENE = "res://scenes/ui/GameOverMenu.tscn"
 
 # Current UI state
 var current_scene_name: String = ""
-# Current UI state
-var current_scene_name: String = ""
+
 var modal_stack: Array = []
 var popup_queue: Array = [] # Queue for overlapping popups
 var is_modal_open: bool = false

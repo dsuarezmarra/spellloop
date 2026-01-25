@@ -288,85 +288,111 @@ func _load_slot_data() -> void:
 		_update_slot_display(i, slot_data)
 
 func _update_slot_display(slot_index: int, slot_data) -> void:
-	"""Actualizar la visualización de un slot"""
+	"""Actualizar la visualización de un slot con contenido dinámico"""
 	if slot_index >= slot_panels.size():
 		return
 	
 	var panel = slot_panels[slot_index]
-	# Update these paths to match new hierarchy
-	var info_container = panel.get_node_or_null("VBoxContainer/MarginContainer/VBoxContainer/InfoContainer")
-	# The buttons are now in an actions VBox at the end of inner_vbox
-	# Structure: Panel -> VBox -> Margin -> InnerVBox -> ActionsVBox (Child index 4?)
-	var inner_vbox = panel.get_node_or_null("VBoxContainer/MarginContainer/VBoxContainer")
-	if not inner_vbox: return
 	
-	var actions_vbox = inner_vbox.get_child(inner_vbox.get_child_count() - 1)
+	# Buscar nodos clave en la nueva jerarquía
+	# Panel -> VBox -> Margin(Info) -> InnerVBox -> InfoContainer
+	# Panel -> VBox -> Margin(Actions) -> ActionsVBox
+	
+	# Acceso seguro via find_child (más robusto que paths hardcodeados)
+	var info_container = panel.find_child("InfoContainer", true, false)
+	var actions_vbox = panel.find_child("ActionsVBox", true, false)
+	
+	if not info_container or not actions_vbox:
+		return
+		
 	var select_btn = actions_vbox.get_node_or_null("SelectButton")
 	var delete_btn = actions_vbox.get_node_or_null("DeleteButton")
-	
-	if not info_container:
-		return
 	
 	# Limpiar info anterior
 	for child in info_container.get_children():
 		child.queue_free()
 	
 	if slot_data == null or slot_data.is_empty():
-		# Slot vacío
-		var empty_label = Label.new()
-		empty_label.text = "NUEVA PARTIDA"
-		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		empty_label.add_theme_font_size_override("font_size", 22)
-		empty_label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.6)) # Greenish for new
-		info_container.add_child(empty_label)
+		# --- SLOT VACÍO ---
+		var empty_display = VBoxContainer.new()
+		empty_display.alignment = BoxContainer.ALIGNMENT_CENTER
+		empty_display.add_theme_constant_override("separation", 10)
 		
-		var hint_label = Label.new()
-		hint_label.text = "¡Tu leyenda comienza aquí!"
-		hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		hint_label.add_theme_font_size_override("font_size", 14)
-		hint_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
-		info_container.add_child(hint_label)
+		var icon = Label.new()
+		icon.text = "✨"
+		icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		icon.add_theme_font_size_override("font_size", 48)
+		empty_display.add_child(icon)
+		
+		var label = Label.new()
+		label.text = "NUEVA PARTIDA"
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.add_theme_font_size_override("font_size", 18)
+		label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.8))
+		empty_display.add_child(label)
+		
+		info_container.add_child(empty_display)
 		
 		if select_btn:
-			select_btn.text = "CREAR PARTIDA"
+			select_btn.text = "CREAR"
+			select_btn.modulate = Color(0.8, 1.0, 0.8) # Tinte verdoso
 		if delete_btn:
-			delete_btn.visible = false
+			delete_btn.visible = false # No mostrar borrar si está vacío
+			
 	else:
-		# Slot con datos
+		# --- SLOT CON DATOS ---
 		var player_data = slot_data.get("player_data", {})
 		
-		# Mejor puntuación
-		var score_label = Label.new()
-		score_label.text = "🏆 %d" % player_data.get("best_score", 0)
-		score_label.add_theme_font_size_override("font_size", 20)
-		score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		score_label.add_theme_color_override("font_color", Color(1, 0.8, 0.2)) # Gold
-		info_container.add_child(score_label)
+		# Avatar / Icono Class (Placeholder)
+		var avatar = Label.new()
+		avatar.text = "🧙‍♂️" # Mago genérico
+		avatar.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		avatar.add_theme_font_size_override("font_size", 64)
+		info_container.add_child(avatar)
 		
-		# Runs e Info
-		var stats_info = Label.new()
+		# Stats Grid
+		var stats_vbox = VBoxContainer.new()
+		stats_vbox.add_theme_constant_override("separation", 5)
+		
+		# Mejor Puntuación
+		var score_hbox = HBoxContainer.new()
+		score_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		var score_val = player_data.get("best_score", 0)
+		var score_lbl = Label.new()
+		score_lbl.text = "🏆 %d" % score_val
+		score_lbl.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2)) # Gold
+		score_hbox.add_child(score_lbl)
+		stats_vbox.add_child(score_hbox)
+		
+		# Runs
+		var runs_val = player_data.get("total_runs", 0)
+		var runs_lbl = Label.new()
+		runs_lbl.text = "Partidas: %d" % runs_val
+		runs_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		runs_lbl.add_theme_color_override("font_color", Color(0.8, 0.8, 0.9))
+		stats_vbox.add_child(runs_lbl)
+		
+		# Tiempo
 		var playtime = player_data.get("total_playtime", 0.0)
 		var hours = int(playtime) / 3600
-		var runs = player_data.get("total_runs", 0)
-		stats_info.text = "Runs: %d | Tiempo: %dh" % [runs, hours]
-		stats_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		stats_info.add_theme_font_size_override("font_size", 14)
-		stats_info.add_theme_color_override("font_color", Color(0.8, 0.8, 0.9))
-		info_container.add_child(stats_info)
+		var mins = (int(playtime) % 3600) / 60
+		var time_lbl = Label.new()
+		time_lbl.text = "%dh %02dm" % [hours, mins]
+		time_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		time_lbl.add_theme_font_size_override("font_size", 12)
+		time_lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+		stats_vbox.add_child(time_lbl)
+		
+		info_container.add_child(stats_vbox)
 		
 		if select_btn:
 			select_btn.text = "CONTINUAR"
+			select_btn.modulate = Color(1.0, 1.0, 1.0)
 		if delete_btn:
 			delete_btn.visible = true
 			delete_btn.disabled = false
-			delete_btn.modulate = Color(1, 1, 1, 1)
-
-	# Lógica para mostrar siempre el botón de borrado pero desactivado si está vacío
-	# Esto ayuda a que el usuario vea dónde está la funcionalidad
-	if (slot_data == null or slot_data.is_empty()) and delete_btn:
-		delete_btn.visible = true
-		delete_btn.disabled = true
-		delete_btn.modulate = Color(1, 1, 1, 0.3) # Semi-transparent
+			delete_btn.text = "Borrar Progreso"
+			delete_btn.modulate = Color(1, 1, 1, 0.8)
 
 func _setup_navigation() -> void:
 	"""Configurar navegación WASD"""
