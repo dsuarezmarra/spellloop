@@ -149,7 +149,6 @@ func _setup_ui() -> void:
 				debug_label.text = debug_msg
 	else:
 		if debug_label: debug_label.visible = false
-	else:
 		debug_msg += "Resource Load: SUCCESS\n"
 		
 	if bg_tex and background_rect:
@@ -334,27 +333,21 @@ func _show_slot_select() -> void:
 	slot_select_screen.slot_selected.connect(_on_slot_selected)
 	slot_select_screen.back_pressed.connect(_on_slot_back)
 
-	# Ocultar el menú principal mientras se muestra la selección
-	if ui_container:
+	# Ocultar el menú principal (Toda la capa UI) mientras se muestra la selección
+	if has_node("UILayer"):
+		$UILayer.visible = false
+	elif ui_container:
 		ui_container.visible = false
 
 func _on_slot_selected(slot_index: int) -> void:
 	"""Callback cuando se selecciona un slot"""
+	# Guardar slot seleccionado
 	_pending_slot_index = slot_index
-
-	# Activar el slot en SaveManager
-	var save_manager = get_tree().root.get_node_or_null("SaveManager")
-	if save_manager and save_manager.has_method("set_active_slot"):
-		save_manager.set_active_slot(slot_index)
-
-	# Guardar slot en SessionState
-	if SessionState:
-		SessionState.set_save_slot(slot_index)
-
-	# Ocultar pantalla de slots y mostrar selección de personaje
+	
+	# Ocultar selector de slots
 	if slot_select_screen:
 		slot_select_screen.visible = false
-
+		
 	_show_character_select()
 
 func _show_character_select() -> void:

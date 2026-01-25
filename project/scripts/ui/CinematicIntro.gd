@@ -60,8 +60,8 @@ func _ready() -> void:
 		# Si no hay video, saltar directo
 		debug_msg("NO VIDEO FILE FOUND AT: " + final_path)
 		# DEBUG: No saltar automáticamente para que el usuario pueda leer el error
-		# await get_tree().create_timer(2.0).timeout
-		# _go_to_main_menu()
+		await get_tree().create_timer(4.0).timeout
+		# _go_to_main_menu() # DISABLED FOR DEBUGGING
 
 func debug_msg(text: String) -> void:
 	print(text)
@@ -78,7 +78,7 @@ func _input(event: InputEvent) -> void:
 func _on_video_stream_player_finished() -> void:
 	debug_msg("Video Finished.")
 	await get_tree().create_timer(1.0).timeout
-	_go_to_main_menu()
+	# _go_to_main_menu() # DISABLED FOR DEBUGGING
 
 func _go_to_main_menu() -> void:
 	# Evitar llamadas dobles

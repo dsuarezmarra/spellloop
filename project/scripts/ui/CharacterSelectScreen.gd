@@ -119,38 +119,42 @@ func _build_ui() -> void:
 	bg.name = "Background"
 	
 	# Intentar cargar la textura
+	# Intentar cargar la textura
+	# FORZAR CARGA DESDE DISK para evitar cache de recursos antiguos
 	var bg_path = "res://assets/ui/backgrounds/character_select_bg.png"
-	var bg_tex = load(bg_path)
+	var bg_tex = null
 	
-	# Fallback: Carga directa
-	if not bg_tex:
-		var global_path = ProjectSettings.globalize_path(bg_path)
-		var img = Image.load_from_file(global_path)
-		# Fallback bytes
-		if not img and FileAccess.file_exists(global_path):
-			var bytes = FileAccess.get_file_as_bytes(global_path)
-			if bytes.size() > 0:
-				img = Image.new()
-				# Deteccion automatica
-				var h = bytes.slice(0, 4)
-				var err = ERR_FILE_UNRECOGNIZED
-				
-				if h[0] == 0xFF and h[1] == 0xD8: # JPG
-					err = img.load_jpg_from_buffer(bytes)
-				elif h[0] == 0x89 and h[1] == 0x50: # PNG
-					err = img.load_png_from_buffer(bytes)
-				elif h[0] == 0x52: # WebP (RIFF)
-					err = img.load_webp_from_buffer(bytes)
-				else:
-					# Brute force
-					err = img.load_png_from_buffer(bytes)
-					if err != OK: err = img.load_jpg_from_buffer(bytes)
-					if err != OK: err = img.load_webp_from_buffer(bytes)
-				
-				if err != OK: img = null
-				
-		if img:
-			bg_tex = ImageTexture.create_from_image(img)
+	var global_path = ProjectSettings.globalize_path(bg_path)
+	var img = Image.load_from_file(global_path)
+	
+	# Fallback bytes si load_from_file falla (para formatos raros)
+	if not img and FileAccess.file_exists(global_path):
+		var bytes = FileAccess.get_file_as_bytes(global_path)
+		if bytes.size() > 0:
+			img = Image.new()
+			# Format Detective
+			var h = bytes.slice(0, 4)
+			var err = ERR_FILE_UNRECOGNIZED
+			
+			if h[0] == 0xFF and h[1] == 0xD8: # JPG
+				err = img.load_jpg_from_buffer(bytes)
+			elif h[0] == 0x89 and h[1] == 0x50: # PNG
+				err = img.load_png_from_buffer(bytes)
+			elif h[0] == 0x52: # WebP (RIFF)
+				err = img.load_webp_from_buffer(bytes)
+			else:
+				# Brute force
+				err = img.load_png_from_buffer(bytes)
+				if err != OK: err = img.load_jpg_from_buffer(bytes)
+				if err != OK: err = img.load_webp_from_buffer(bytes)
+			
+			if err != OK: img = null
+			
+	if img:
+		bg_tex = ImageTexture.create_from_image(img)
+	else:
+		# Fallback final a load() normal
+		bg_tex = load(bg_path)
 
 	if bg_tex:
 		bg.texture = bg_tex
