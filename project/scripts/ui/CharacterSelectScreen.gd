@@ -124,9 +124,8 @@ func _build_ui() -> void:
 	
 	# Fallback: Carga directa
 	if not bg_tex:
-		var img = Image.new()
-		var err = img.load_from_file(bg_path)
-		if err == OK:
+		var img = Image.load_from_file(bg_path)
+		if img:
 			bg_tex = ImageTexture.create_from_image(img)
 
 	if bg_tex:

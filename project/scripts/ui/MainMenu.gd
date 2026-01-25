@@ -47,14 +47,14 @@ func _setup_ui() -> void:
 	# 2. Cargar e inyectar el texture rect
 	var bg_tex = load("res://assets/ui/backgrounds/main_menu_bg.png")
 	
-	# Fallback: Carga directa del sistema de archivos (Bypasea import)
+	# Fallback: Carga directa del sistema de archivos (Correcto para Godot 4.x)
 	if not bg_tex:
-		var img = Image.new()
-		var err = img.load_from_file("res://assets/ui/backgrounds/main_menu_bg.png")
-		if err == OK:
+		# Image.load_from_file es estatico y devuelve una Image (o null)
+		var img = Image.load_from_file("res://assets/ui/backgrounds/main_menu_bg.png")
+		if img:
 			bg_tex = ImageTexture.create_from_image(img)
 		else:
-			print("ERROR CARGANDO WALLPAPER: ", err)
+			print("ERROR CARGANDO WALLPAPER: Image.load_from_file devolvio null")
 
 	if bg_tex:
 		var bg_rect = get_node_or_null("BackgroundRect")

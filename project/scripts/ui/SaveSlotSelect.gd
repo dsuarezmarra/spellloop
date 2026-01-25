@@ -46,9 +46,8 @@ func _ready() -> void:
 	
 	# Fallback de carga directa
 	if not bg_tex:
-		var img = Image.new()
-		var err = img.load_from_file("res://assets/ui/backgrounds/main_menu_bg.png")
-		if err == OK:
+		var img = Image.load_from_file("res://assets/ui/backgrounds/main_menu_bg.png")
+		if img:
 			bg_tex = ImageTexture.create_from_image(img)
 	
 	if bg_tex and not has_node("BackgroundRect"):
