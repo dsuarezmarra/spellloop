@@ -95,7 +95,7 @@ static func check_execute(tree: SceneTree, enemy: Node) -> bool:
 	if attack_manager == null:
 		return false
 	
-	var execute_threshold = float(attack_manager.get_player_stat("execute_threshold")) if attack_manager.has_method("get_player_stat") else 0.0
+	var execute_threshold = attack_manager.get_player_stat("execute_threshold") if attack_manager.has_method("get_player_stat") else 0.0
 	if execute_threshold <= 0:
 		return false
 	
@@ -145,7 +145,7 @@ static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
 	if attack_manager == null:
 		return
 	
-	var life_steal = float(attack_manager.get_player_stat("life_steal")) if attack_manager.has_method("get_player_stat") else 0.0
+	var life_steal = attack_manager.get_player_stat("life_steal") if attack_manager.has_method("get_player_stat") else 0.0
 	if life_steal <= 0:
 		return
 	

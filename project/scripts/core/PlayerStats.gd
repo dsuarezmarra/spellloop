@@ -1243,7 +1243,7 @@ func _update_conditional_passives(_delta: float) -> void:
 			if not _tailwind_active:
 				_tailwind_active = true
 				# Añadir como modificador temporal permanente mientras está activo
-				var base_speed = get_base_stat("move_speed")
+				var base_speed = stats.move_speed
 				var bonus = base_speed * 0.15
 				add_temp_modifier("move_speed", bonus, 999999.0, "tailwind_passive")
 		else:
