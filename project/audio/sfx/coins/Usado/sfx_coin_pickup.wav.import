@@ -7,7 +7,7 @@ path="res://.godot/imported/sfx_coin_pickup.wav-c0d14feb897ef1fa651f73fd637cedfe
 
 [deps]
 
-source_file="res://assets/audio/sfx/pickups/Usado/sfx_coin_pickup.wav"
+source_file="res://audio/sfx/coins/Usado/sfx_coin_pickup.wav"
 dest_files=["res://.godot/imported/sfx_coin_pickup.wav-c0d14feb897ef1fa651f73fd637cedfe.sample"]
 
 [params]
