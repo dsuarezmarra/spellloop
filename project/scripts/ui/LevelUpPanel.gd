@@ -1176,6 +1176,10 @@ func _play_slot_reel_animation() -> void:
 		if stream:
 			_slot_loop_player.stream = stream
 			_slot_loop_player.pitch_scale = 1.0
+			# Ajuste de volumen: El usuario pidió una reducción del 30% (aprox -4dB a -5dB desde 0)
+			# Nota: Manifest dice -10dB, pero al cargarlo directo sonaba a 0dB. 
+			# -5.0dB es un buen punto medio.
+			_slot_loop_player.volume_db = -5.0
 			_slot_loop_player.play()
 	
 	# Esperar tiempo base de spin

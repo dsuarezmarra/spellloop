@@ -716,7 +716,9 @@ class AOEEffect extends Node2D:
 		var area = Area2D.new()
 		area.name = "DetectionArea"
 		area.collision_layer = 0
-		area.collision_mask = 4 # Capa de enemigos (Enemy = 4)
+		# FIX: Enemigos están en Layer 2 (EnemyBase), pero algunas configs pueden usar Layer 3 (4).
+		# Usamos máscara 6 (2 + 4) para cubrir ambos casos.
+		area.collision_mask = 6 
 		add_child(area)
 		
 		var shape = CollisionShape2D.new()
@@ -741,7 +743,7 @@ class AOEEffect extends Node2D:
 		
 		_initial_burst_check()
 		_ticks_applied = 1
-
+	
 	func _initial_burst_check() -> void:
 		"""Check inicial instantáneo usando RayCast/ShapeCast para no esperar al frame de física"""
 		var space = get_world_2d().direct_space_state
@@ -750,7 +752,7 @@ class AOEEffect extends Node2D:
 		circle.radius = aoe_radius
 		query.shape = circle
 		query.transform = global_transform
-		query.collision_mask = 4 # Enemy layer
+		query.collision_mask = 6 # Enemy layer (2 + 4)
 		query.collide_with_bodies = true
 		query.collide_with_areas = true
 		

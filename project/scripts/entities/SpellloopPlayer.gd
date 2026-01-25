@@ -297,9 +297,19 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 
 func heal(amount: int) -> void:
 	if wizard_player:
-		wizard_player.heal(amount)
-		_play_heal_animation()
-		AudioManager.play("sfx_player_heal")
+		# Lógica de curación inteligente
+		# Solo curar si realmente falta vida
+		if wizard_player.hp < wizard_player.max_hp:
+			var healed_amount = wizard_player.heal(amount)
+			# Solo reproducir feedback si la curación fue efectiva (> 0)
+			if healed_amount > 0:
+				_play_heal_animation()
+				# Evitar spam de sonido si es regeneración pequeña (opcional, pero buena práctica)
+				# Por ahora lo dejamos siempre que cure algo
+				AudioManager.play("sfx_player_heal")
+		else:
+			# Vida llena - ignorar curación y efectos
+			pass
 
 # Propagar métodos de efectos de estado al WizardPlayer
 func apply_slow(amount: float, duration: float) -> void:

@@ -453,9 +453,11 @@ func _show_jackpot_exit_confirm_modal():
 	cancel_style.set_corner_radius_all(6)
 	btn_cancel.add_theme_stylebox_override("normal", cancel_style)
 	btn_cancel.pressed.connect(func(): 
+		AudioManager.play("sfx_ui_cancel")
 		_is_skip_modal_active = false
 		confirm_modal.queue_free()
 	)
+	btn_cancel.mouse_entered.connect(func(): AudioManager.play("sfx_ui_navigation"))
 	hbox.add_child(btn_cancel)
 	
 	var btn_confirm = Button.new()
@@ -466,9 +468,11 @@ func _show_jackpot_exit_confirm_modal():
 	style_confirm.set_corner_radius_all(6)
 	btn_confirm.add_theme_stylebox_override("normal", style_confirm)
 	btn_confirm.pressed.connect(func(): 
+		AudioManager.play("sfx_ui_confirm")
 		_is_skip_modal_active = false
 		_on_jackpot_close_pressed()
 	)
+	btn_confirm.mouse_entered.connect(func(): AudioManager.play("sfx_ui_navigation"))
 	hbox.add_child(btn_confirm)
 	
 	# Foco inicial en "Volver"
@@ -599,8 +603,18 @@ func setup_items(items: Array):
 		# Conectar señales
 		var item_index = i
 		var item_data = item.duplicate()
-		button.pressed.connect(func(): _on_button_pressed(item_index, item_data))
-		button.mouse_entered.connect(func(): _on_button_hover(item_index))
+		button.pressed.connect(func(): 
+			AudioManager.play("sfx_ui_confirm")
+			_on_button_pressed(item_index, item_data)
+		)
+		button.mouse_entered.connect(func(): 
+			AudioManager.play("sfx_ui_navigation")
+			_on_button_hover(item_index)
+		)
+		button.focus_entered.connect(func():
+			AudioManager.play("sfx_ui_navigation")
+			# _on_button_hover(item_index) # Opcional: sincronizar hover visual con foco
+		)
 		
 		items_vbox.add_child(button)
 		item_buttons.append(button)
@@ -814,28 +828,30 @@ func _show_confirm_skip_modal():
 	btn_cancel.text = "Volver"
 	btn_cancel.custom_minimum_size = Vector2(100, 40)
 	btn_cancel.pressed.connect(func(): 
+		AudioManager.play("sfx_ui_cancel")
 		_is_skip_modal_active = false
 		confirm_modal.queue_free()
 		_modal_btn_cancel = null
 		_modal_btn_confirm = null
 	)
+	btn_cancel.mouse_entered.connect(func(): AudioManager.play("sfx_ui_navigation"))
 	hbox.add_child(btn_cancel)
 	_modal_btn_cancel = btn_cancel
 	
 	var btn_confirm = Button.new()
-	btn_confirm.text = "Confirmar"
-	btn_confirm.custom_minimum_size = Vector2(140, 40)
+	btn_confirm.text = "Saltar"
+	btn_confirm.custom_minimum_size = Vector2(100, 40)
 	var style_confirm = StyleBoxFlat.new()
 	style_confirm.bg_color = Color(0.6, 0.2, 0.2)
-	style_confirm.set_corner_radius_all(4)
+	style_confirm.set_corner_radius_all(6)
 	btn_confirm.add_theme_stylebox_override("normal", style_confirm)
 	btn_confirm.pressed.connect(func(): 
+		AudioManager.play("sfx_ui_confirm")
 		_is_skip_modal_active = false
 		skipped.emit()
 		queue_free()
-		_modal_btn_cancel = null
-		_modal_btn_confirm = null
 	)
+	btn_confirm.mouse_entered.connect(func(): AudioManager.play("sfx_ui_navigation"))
 	hbox.add_child(btn_confirm)
 	_modal_btn_confirm = btn_confirm
 	

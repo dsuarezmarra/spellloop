@@ -2003,7 +2003,7 @@
       "res://audio/sfx/ui/sfx_slot_stop_03.mp3",
       "res://audio/sfx/ui/sfx_slot_stop_04.mp3"
     ],
-    "volume_db": -8.0,
+    "volume_db": -11.0,
     "pitch_scale": [
       0.95,
       1.05

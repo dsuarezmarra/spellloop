@@ -368,11 +368,17 @@ func _collect(collector: Node2D) -> void:
 	# Mejor: Llamar a AudioManager.play_pitch("sfx_coin_pickup", pitch) - Si no existe, lo añado.
 	
 	# Si no existe, usaré un AudioStreamPlayer temporal aquí mismo para garantizar prioridad.
+	# Si no existe, usaré un AudioStreamPlayer temporal aquí mismo para garantizar prioridad.
 	var audio_player = AudioStreamPlayer.new()
 	audio_player.stream = load("res://audio/sfx/pickups/sfx_coin_pickup.wav")
 	audio_player.pitch_scale = pitch
-	audio_player.volume_db = linear_to_db(0.7) # Volumen adecuado
+	# Volumen reducido según petición (-5dB extra sobre el original -9dB del manifest)
+	# Si cargamos el stream directo, no usa el volumen del manifest (AudioStreamPlayer no lee JSON).
+	# El manifest decía -9.0. Aquí ponemos -14.0 para hacerlo menos intrusivo.
+	audio_player.volume_db = -12.0 
 	audio_player.bus = "SFX"
+	# CRÍTICO: Asegurar que suena incluso si hay pausa (ej. al recoger última moneda de nivel)
+	audio_player.process_mode = Node.PROCESS_MODE_ALWAYS
 	audio_player.finished.connect(audio_player.queue_free)
 	get_tree().root.add_child(audio_player) # Añadir al root para que no muera con queue_free() de la moneda
 	audio_player.play()

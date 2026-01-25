@@ -400,7 +400,7 @@ func _on_coin_collected(value: int) -> void:
 	# sfx_streak_01 through sfx_streak_08 form an ascending musical scale
 	var streak_sfx_index = clampi(streak_count, 1, 8)
 	var sfx_id = "sfx_streak_%02d" % streak_sfx_index
-	AudioManager.play_fixed(sfx_id)
+	# AudioManager.play_fixed(sfx_id) # Desactivado para usar el nuevo sfx_coin_pickup consistente
 
 	# Guardar en SaveManager si existe
 	_save_coins_to_progression(final_value)

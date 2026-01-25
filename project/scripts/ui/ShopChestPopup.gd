@@ -84,16 +84,19 @@ func _input(event: InputEvent) -> void:
 	
 	if event.is_action_pressed("ui_up") or event.is_action_pressed("move_up"):
 		get_viewport().set_input_as_handled()
+		AudioManager.play("sfx_ui_navigation")
 		_navigate_selection(-1)
 		return
 	
 	if event.is_action_pressed("ui_down") or event.is_action_pressed("move_down"):
 		get_viewport().set_input_as_handled()
+		AudioManager.play("sfx_ui_navigation")
 		_navigate_selection(1)
 		return
 	
 	if event.is_action_pressed("ui_accept"):  # Space/Enter
 		get_viewport().set_input_as_handled()
+		AudioManager.play("sfx_ui_confirm")
 		_activate_selection()
 		return
 
@@ -284,14 +287,22 @@ func _build_confirm_modal():
 	var cancel_btn = Button.new()
 	cancel_btn.text = "Cancelar"
 	cancel_btn.custom_minimum_size = Vector2(100, 35)
-	cancel_btn.pressed.connect(_on_confirm_cancel)
+	cancel_btn.pressed.connect(func(): 
+		AudioManager.play("sfx_ui_cancel") # Cancel sound
+		_on_confirm_cancel()
+	)
+	cancel_btn.mouse_entered.connect(func(): AudioManager.play("sfx_ui_navigation"))
 	buttons_hbox.add_child(cancel_btn)
 	modal_cancel_btn = cancel_btn  # Store reference
 	
 	var confirm_btn = Button.new()
 	confirm_btn.text = "Salir"
 	confirm_btn.custom_minimum_size = Vector2(100, 35)
-	confirm_btn.pressed.connect(_on_confirm_exit)
+	confirm_btn.pressed.connect(func():
+		AudioManager.play("sfx_ui_confirm") # Confirm exiting
+		_on_confirm_exit()
+	)
+	confirm_btn.mouse_entered.connect(func(): AudioManager.play("sfx_ui_navigation"))
 	var confirm_style = StyleBoxFlat.new()
 	confirm_style.bg_color = Color(0.6, 0.2, 0.2)
 	confirm_style.set_corner_radius_all(4)
@@ -468,11 +479,22 @@ func _create_item_button(item: Dictionary, index: int) -> Control:
 	
 	# Conectar señal
 	var item_data = item.duplicate()
-	btn.pressed.connect(func(): _on_item_pressed(index, item_data))
+	btn.pressed.connect(func(): 
+		AudioManager.play("sfx_ui_confirm")
+		_on_item_pressed(index, item_data)
+	)
 	
-	# Conectar señales de foco para feedback visual
-	btn.focus_entered.connect(func(): _on_item_focus_entered(btn))
+	# Conectar señales de foco para feedback visual y audio
+	btn.focus_entered.connect(func(): 
+		AudioManager.play("sfx_ui_navigation")
+		_on_item_focus_entered(btn)
+	)
 	btn.focus_exited.connect(func(): _on_item_focus_exited(btn))
+	
+	# Audio para mouse hover
+	btn.mouse_entered.connect(func(): 
+		AudioManager.play("sfx_ui_navigation")
+	)
 	
 	return btn
 
