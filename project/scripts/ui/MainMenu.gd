@@ -74,7 +74,11 @@ func _setup_ui() -> void:
 		version_label.text = "v" + GAME_VERSION
 
 	# Cargar Background
-	var bg_path = "res://assets/ui/backgrounds/main_menu_bg.png"
+	# Prioridad: JPG (nuevo formato 16:9)
+	var bg_path = "res://assets/ui/backgrounds/main_menu_bg.jpg"
+	if not FileAccess.file_exists(bg_path):
+		bg_path = "res://assets/ui/backgrounds/main_menu_bg.png"
+		
 	var bg_tex = load(bg_path)
 	
 	var debug_msg = "Path: " + bg_path + "\n"
@@ -211,6 +215,58 @@ func _create_resume_button() -> void:
 		_apply_premium_style()
 
 		resume_button.pressed.connect(_on_resume_pressed)
+
+	# Add a background panel for the menu buttons
+	var vbox = $UILayer/UIContainer/VBoxContainer
+	if vbox:
+		# Check if already exists
+		if not vbox.get_node_or_null("MenuBackground"):
+			var bg_panel = Panel.new()
+			bg_panel.name = "MenuBackground"
+			bg_panel.show_behind_parent = true
+			bg_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			
+			# Style
+			var style = StyleBoxFlat.new()
+			style.bg_color = Color(0, 0, 0, 0.5) # Semi-transparent black
+			style.set_corner_radius_all(20)
+			# Add blur? No simple blur in StyleBox.
+			style.shadow_color = Color(0, 0, 0, 0.5)
+			style.shadow_size = 20
+			bg_panel.add_theme_stylebox_override("panel", style)
+			
+			# Add as child of UIContainer, but positioned behind VBox?
+			# Actually VBox handles layout. We want it BEHIND the VBox.
+			# Let's add it to UIContainer and set anchors to match VBox with padding.
+			# But VBox size is dynamic. 
+			
+			# Easier: Add it as a child of VBox but ignore layout? Node, PanelContainer.
+			# Better: Wrap VBox contents in a PanelContainer? Too risky for script.
+			
+			# Let's just place it manually relative to VBox if possible, or make it a fixed center panel.
+			# The VBox is centered.
+			
+			# Let's add it to UIContainer, sibling of VBox.
+			$UILayer/UIContainer.add_child(bg_panel)
+			$UILayer/UIContainer.move_child(bg_panel, 0) # Send to back
+			
+			bg_panel.set_anchors_preset(Control.PRESET_CENTER)
+			# Hardcoded size estimate based on buttons
+			bg_panel.custom_minimum_size = Vector2(300, 400) 
+			bg_panel.size = Vector2(300, 400)
+			bg_panel.position = vbox.position - Vector2(25, 25) # Offset estimate
+			# Actually, linking it to VBox signal 'resized' is better but keeping it simple:
+			# Just a centered panel.
+			
+			# Let's use PRESET_CENTER for both.
+			
+	if title_label:
+		title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+		title_label.add_theme_constant_override("shadow_offset_x", 6)
+		title_label.add_theme_constant_override("shadow_offset_y", 6)
+		title_label.add_theme_constant_override("shadow_outline_size", 4)
+		title_label.add_theme_font_size_override("font_size", 80) # Bigger title
+		title_label.add_theme_color_override("font_color", Color(1, 0.8, 0.2)) # More golden
 
 func _set_initial_focus() -> void:
 	"""Establecer foco en el boton apropiado"""

@@ -119,9 +119,11 @@ func _build_ui() -> void:
 	bg.name = "Background"
 	
 	# Intentar cargar la textura
-	# Intentar cargar la textura
 	# FORZAR CARGA DESDE DISK para evitar cache de recursos antiguos
-	var bg_path = "res://assets/ui/backgrounds/character_select_bg.png"
+	var bg_path = "res://assets/ui/backgrounds/character_select_bg.jpg"
+	if not FileAccess.file_exists(bg_path):
+		bg_path = "res://assets/ui/backgrounds/character_select_bg.png"
+		
 	var bg_tex = null
 	
 	var global_path = ProjectSettings.globalize_path(bg_path)

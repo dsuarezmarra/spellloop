@@ -2,12 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bovbd22gimkxd"
-valid=false
+uid="uid://be31fis18naka"
+path="res://.godot/imported/character_select_bg.png-8d25a18b21b964deae643c1b22eb7594.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://assets/ui/backgrounds/character_select_bg.png"
+dest_files=["res://.godot/imported/character_select_bg.png-8d25a18b21b964deae643c1b22eb7594.ctex"]
 
 [params]
 

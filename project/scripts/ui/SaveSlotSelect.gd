@@ -42,11 +42,15 @@ func _ready() -> void:
 		slot_buttons[0].grab_focus()
 
 	# Añadir fondo si no existe
-	var bg_tex = load("res://assets/ui/backgrounds/main_menu_bg.png")
+	var bg_path = "res://assets/ui/backgrounds/main_menu_bg.jpg"
+	if not FileAccess.file_exists(bg_path):
+		bg_path = "res://assets/ui/backgrounds/main_menu_bg.png"
+		
+	var bg_tex = load(bg_path)
 	
 	# Fallback de carga directa
 	if not bg_tex:
-		var global_path = ProjectSettings.globalize_path("res://assets/ui/backgrounds/main_menu_bg.png")
+		var global_path = ProjectSettings.globalize_path(bg_path)
 		var img = Image.load_from_file(global_path)
 		# Fallback bytes
 		if not img and FileAccess.file_exists(global_path):
@@ -293,6 +297,15 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 			select_btn.text = "CONTINUAR"
 		if delete_btn:
 			delete_btn.visible = true
+			delete_btn.disabled = false
+			delete_btn.modulate = Color(1, 1, 1, 1)
+
+	# Lógica para mostrar siempre el botón de borrado pero desactivado si está vacío
+	# Esto ayuda a que el usuario vea dónde está la funcionalidad
+	if (slot_data == null or slot_data.is_empty()) and delete_btn:
+		delete_btn.visible = true
+		delete_btn.disabled = true
+		delete_btn.modulate = Color(1, 1, 1, 0.3) # Semi-transparent
 
 func _setup_navigation() -> void:
 	"""Configurar navegación WASD"""
