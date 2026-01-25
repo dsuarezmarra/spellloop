@@ -141,27 +141,53 @@ func _ready():
 	_update_jackpot_selection()
 
 func _input(event: InputEvent) -> void:
-	"""Manejar input manual para navegación robusta (WASD/Flechas)"""
-	if not is_inside_tree() or popup_locked or _is_skip_modal_active:
+	"""Manejar input manual para navegación robusta (WASD/Flechas) - Soporta Jackpot y Standard"""
+	if not is_inside_tree() or popup_locked:
 		return
 		
+	# 1. Logic para Modal de Skip (Legacy)
+	if _is_skip_modal_active:
+		if _modal_btn_cancel and _modal_btn_confirm and event.is_pressed():
+			if event.is_action("ui_left") or (event is InputEventKey and (event.keycode == KEY_A or event.keycode == KEY_LEFT)):
+				_modal_btn_cancel.grab_focus()
+				get_tree().root.set_input_as_handled()
+			elif event.is_action("ui_right") or (event is InputEventKey and (event.keycode == KEY_D or event.keycode == KEY_RIGHT)):
+				_modal_btn_confirm.grab_focus()
+				get_tree().root.set_input_as_handled()
+		return
+
 	# Solo actuar si el input es presionado
 	if not event.is_pressed():
 		return
 
 	# Detección de acciones de navegación
-	var up = event.is_action("ui_up") or event.is_action("move_up")
-	var down = event.is_action("ui_down") or event.is_action("move_down")
-	var left = event.is_action("ui_left") or event.is_action("move_left")
-	var right = event.is_action("ui_right") or event.is_action("move_right")
-	var accept = event.is_action("ui_accept")
+	var up = event.is_action("ui_up") or event.is_action("move_up") or (event is InputEventKey and event.keycode == KEY_W)
+	var down = event.is_action("ui_down") or event.is_action("move_down") or (event is InputEventKey and event.keycode == KEY_S)
+	var left = event.is_action("ui_left") or event.is_action("move_left") or (event is InputEventKey and event.keycode == KEY_A)
+	var right = event.is_action("ui_right") or event.is_action("move_right") or (event is InputEventKey and event.keycode == KEY_D)
+	var accept = event.is_action("ui_accept") or (event is InputEventKey and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER))
 	
 	if not (up or down or left or right or accept):
 		return
 		
+	# 2. STANDARD MODE (Legacy logic)
+	if not is_jackpot_mode:
+		if up:
+			_navigate_selection(-1)
+			get_tree().root.set_input_as_handled()
+		elif down:
+			_navigate_selection(1)
+			get_tree().root.set_input_as_handled()
+		elif accept:
+			if current_selected_index >= 0 and current_selected_index < item_buttons.size():
+				_select_item_at_index(current_selected_index)
+			get_tree().root.set_input_as_handled()
+		return
+		
+	# 3. JACKPOT MODE (New robust logic)
 	get_viewport().set_input_as_handled()
 	
-	# === LOGICA DE NAVEGACIÓN ===
+	# === LOGICA DE NAVEGACIÓN JACKPOT ===
 	var total_items = item_buttons.size()
 	
 	# Determinar si estamos en botones de abajo
@@ -1198,126 +1224,7 @@ func create_panel_style() -> StyleBox:
 	style.set_corner_radius_all(8)
 	return style
 
-func _input(event: InputEvent):
-	"""Capturar input para navegación con WASD/Joystick y selección con Space/X"""
-	if popup_locked:
-		return
-		
-	if _is_skip_modal_active:
-		# Lógica de navegación específica para el modal de skip
-		if _modal_btn_cancel and _modal_btn_confirm:
-			# A/Left -> Cancel
-			if event.is_action_pressed("ui_left") or (event is InputEventKey and event.pressed and (event.keycode == KEY_A or event.keycode == KEY_LEFT)):
-				_modal_btn_cancel.grab_focus()
-				get_tree().root.set_input_as_handled()
-			# D/Right -> Confirm
-			elif event.is_action_pressed("ui_right") or (event is InputEventKey and event.pressed and (event.keycode == KEY_D or event.keycode == KEY_RIGHT)):
-				_modal_btn_confirm.grab_focus()
-				get_tree().root.set_input_as_handled()
-			# Space/Enter -> Trigger focused (Standard UI behavior usually handles this, but ensuring focus is enough)
-		return
 
-	# En modo jackpot, permitir navegación WASD y Space para reclamar item individual
-	if is_jackpot_mode:
-		# Manejar navegación W/S para explorar items
-		if event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and event.keycode == KEY_W):
-			_navigate_jackpot_selection(-1)
-			get_tree().root.set_input_as_handled()
-			return
-		elif event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and event.keycode == KEY_S):
-			# Navegación hacia botones inferiores desde el último item
-			if current_selected_index == item_buttons.size() - 1:
-				_focus_bottom_buttons()
-				get_tree().root.set_input_as_handled()
-				return
-			
-			# Navegación normal entre items
-			_navigate_jackpot_selection(1)
-			get_tree().root.set_input_as_handled()
-			return
-		# Space/Enter reclama el item seleccionado (no cierra el popup)
-		elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER)):
-			_claim_selected_jackpot_item()
-			get_tree().root.set_input_as_handled()
-			return
-			
-		return
-	
-	# Manejo especial para cuando el foco está en los botones de abajo (Jackpot)
-	if is_jackpot_mode and _is_focus_on_buttons:
-		if event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and event.keycode == KEY_W):
-			_return_focus_to_items()
-			get_tree().root.set_input_as_handled()
-			return
-			
-		# Navegación lateral manual entre botones (A/D/Left/Right)
-		if event.is_action_pressed("ui_left") or (event is InputEventKey and event.pressed and (event.keycode == KEY_A or event.keycode == KEY_LEFT)):
-			_navigate_bottom_buttons(-1)
-			get_tree().root.set_input_as_handled()
-			return
-		if event.is_action_pressed("ui_right") or (event is InputEventKey and event.pressed and (event.keycode == KEY_D or event.keycode == KEY_RIGHT)):
-			_navigate_bottom_buttons(1)
-			get_tree().root.set_input_as_handled()
-			return
-			
-		return
-	
-	# === INPUT DE TECLADO Y ACCIONES (WASD / Flechas / Gamepad) ===
-
-
-	if event.is_action_pressed("ui_up") or (event is InputEventKey and event.pressed and event.keycode == KEY_W):
-		_navigate_selection(-1)
-		get_tree().root.set_input_as_handled()
-		return
-	elif event.is_action_pressed("ui_down") or (event is InputEventKey and event.pressed and event.keycode == KEY_S):
-		_navigate_selection(1)
-		get_tree().root.set_input_as_handled()
-		return
-	elif event.is_action_pressed("ui_accept") or (event is InputEventKey and event.pressed and event.keycode == KEY_SPACE):
-		if current_selected_index >= 0 and current_selected_index < item_buttons.size():
-			_select_item_at_index(current_selected_index)
-		get_tree().root.set_input_as_handled()
-		return
-
-	if event is InputEventKey and event.pressed:
-		match event.keycode:
-			KEY_1, KEY_2, KEY_3:
-				var idx = event.keycode - KEY_1
-				if idx < item_buttons.size() - 1: # Excluir skip button si es el ultimo
-					_select_item_at_index(idx)
-					get_tree().root.set_input_as_handled()
-			
-			KEY_ENTER:
-				if current_selected_index >= 0 and current_selected_index < item_buttons.size():
-					_select_item_at_index(current_selected_index)
-				get_tree().root.set_input_as_handled()
-			
-			KEY_ESCAPE:
-				get_tree().root.set_input_as_handled()
-	
-	# === INPUT DE GAMEPAD (Joystick / Botones) ===
-	if event is InputEventJoypadButton and event.pressed:
-		match event.button_index:
-			JOY_BUTTON_DPAD_UP:
-				_navigate_selection(-1)
-				get_tree().root.set_input_as_handled()
-			JOY_BUTTON_DPAD_DOWN:
-				_navigate_selection(1)
-				get_tree().root.set_input_as_handled()
-			JOY_BUTTON_A:
-				if current_selected_index >= 0 and current_selected_index < item_buttons.size():
-					_select_item_at_index(current_selected_index)
-				get_tree().root.set_input_as_handled()
-	
-	# === JOYSTICK ANALÓGICO ===
-	if event is InputEventJoypadMotion:
-		if event.axis == JOY_AXIS_LEFT_Y:
-			if event.axis_value < -0.5:
-				_navigate_selection(-1)
-				get_tree().root.set_input_as_handled()
-			elif event.axis_value > 0.5:
-				_navigate_selection(1)
-				get_tree().root.set_input_as_handled()
 
 func _navigate_selection(direction: int):
 	"""Navegar la selección arriba (-1) o abajo (+1)"""
@@ -1387,220 +1294,5 @@ func _update_button_selection():
 		
 		glow_panel.visible = is_selected
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# NAVEGACIÓN JACKPOT MODE (WASD + Space)
-# ═══════════════════════════════════════════════════════════════════════════════
 
-func _navigate_jackpot_selection(direction: int):
-	"""Navegar la selección en modo jackpot arriba (-1) o abajo (+1)"""
-	if item_buttons.is_empty():
-		return
-	
-	current_selected_index += direction
-	
-	# Wrap around
-	if current_selected_index < 0:
-		current_selected_index = item_buttons.size() - 1
-	elif current_selected_index >= item_buttons.size():
-		current_selected_index = 0
-	
-	_update_jackpot_selection()
-
-func _claim_selected_jackpot_item():
-	"""Alternar (Toggle) selección del item actual en modo jackpot"""
-	if current_selected_index < 0 or current_selected_index >= item_buttons.size():
-		return
-	
-	var panel = item_buttons[current_selected_index]
-	if not is_instance_valid(panel):
-		return
-	
-	# Verificar estado actual
-	var was_claimed = false
-	if panel.has_meta("is_claimed"):
-		was_claimed = panel.get_meta("is_claimed")
-	
-	var item_data = panel.get_meta("item_data")
-	
-	if was_claimed:
-		# DESMARCAR (Unclaim)
-		panel.set_meta("is_claimed", false)
-		# Remover de la lista de reclamados (buscando por igualdad de datos/referencia)
-		# Nota: erase borra la primera ocurrencia exacta
-		_jackpot_claimed_items.erase(item_data)
-		
-		# Restaurar visual
-		_update_item_status_visual(panel, false)
-		
-	else:
-		# MARCAR (Claim)
-		panel.set_meta("is_claimed", true)
-		if item_data:
-			_jackpot_claimed_items.append(item_data)
-			# Nota: No emitimos item_selected aquí para no aplicar efectos inmediatamente
-			# item_selected.emit(item_data) 
-		
-		# Actualizar visual invirtiendo lógica
-		_update_item_status_visual(panel, true)
-	
-	# Actualizar selección visual (borde)
-	_update_jackpot_selection()
-	
-	# Actualizar visibilidad de botones
-	_update_jackpot_buttons_visibility()
-
-func _update_item_status_visual(panel: Control, claimed: bool):
-	"""Actualizar visual del panel según estado reclamado/pendiente"""
-	var status_label = panel.find_child("StatusLabel", true, false)
-	
-	var tween = create_tween()
-	
-	if claimed:
-		if status_label:
-			status_label.text = "✅ Reclamado"
-			status_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.4))
-		
-		# Efecto "seleccionado": un poco más verde/brillante
-		tween.tween_property(panel, "modulate", Color(0.8, 1.0, 0.8, 1.0), 0.2)
-		
-	else:
-		if status_label:
-			status_label.text = "⬜ Pendiente"
-			status_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-		
-		# Restaurar color original
-		tween.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.2)
-
-func _update_jackpot_buttons_visibility():
-	if not self.has_meta("claim_selected_btn"): return
-	var btn = self.get_meta("claim_selected_btn")
-	
-	# Mostrar "Reclamar Seleccionados" si hay items reclamados pero no todos
-	var has_claims = _jackpot_claimed_items.size() > 0
-	var all_claimed = _jackpot_claimed_items.size() == (_jackpot_claimed_items.size() + _jackpot_pending_items.size()) # Simplificado
-	# Mejor contar items totales vs reclamados
-	var total_items = item_buttons.size()
-	var claimed_count = 0
-	for panel in item_buttons:
-		if is_instance_valid(panel) and panel.has_meta("is_claimed") and panel.get_meta("is_claimed"):
-			claimed_count += 1
-			
-	btn.visible = (claimed_count > 0 and claimed_count < total_items)
-	
-	# Ajustar botón de Claim All si ya todo está reclamado? 
-	# No, Claim All siempre útil para "el resto".
-
-func _on_claim_selected_pressed():
-	"""Terminar el jackpot llevando solo lo seleccionado"""
-	if popup_locked: return
-	popup_locked = true
-	
-	if _jackpot_claimed_items.size() > 0:
-		all_items_claimed.emit(_jackpot_claimed_items)
-	else:
-		skipped.emit()
-	queue_free()
-
-var _is_focus_on_buttons: bool = false
-
-func _focus_bottom_buttons():
-	"""Mover foco a los botones de abajo"""
-	_is_focus_on_buttons = true
-	current_selected_index = -1
-	_update_jackpot_selection() # Limpiar selección visual items
-	
-	# Intentar focusear "Reclamar Todo" o "Reclamar Seleccionados"
-	if claim_button and is_instance_valid(claim_button) and claim_button.visible:
-		claim_button.grab_focus()
-	elif self.has_meta("claim_selected_btn"):
-		var btn = self.get_meta("claim_selected_btn")
-		if btn and is_instance_valid(btn) and btn.visible:
-			btn.grab_focus()
-
-func _return_focus_to_items():
-	"""Volver foco a la lista de items"""
-	_is_focus_on_buttons = false
-	# Liberar foco de botones
-	var focus_owner = get_viewport().gui_get_focus_owner()
-	if focus_owner: focus_owner.release_focus()
-	
-	current_selected_index = item_buttons.size() - 1
-	_update_jackpot_selection()
-
-
-
-func _update_jackpot_selection():
-	"""Actualizar estilos visuales de selección en modo jackpot"""
-	for i in range(item_buttons.size()):
-		var panel = item_buttons[i]
-		if not is_instance_valid(panel): continue
-		
-		var is_selected = (i == current_selected_index)
-		var is_claimed = panel.has_meta("is_claimed") and panel.get_meta("is_claimed")
-		
-		# Escala suave
-		var target_scale = Vector2(1.02, 1.02) if is_selected else Vector2(1.0, 1.0)
-		var tween = create_tween()
-		tween.tween_property(panel, "scale", target_scale, 0.1)
-		
-		# Borde brillante (Glow) - diferente color si está reclamado
-		var glow_panel = panel.get_node_or_null("JackpotGlow")
-		if not glow_panel:
-			glow_panel = Panel.new()
-			glow_panel.name = "JackpotGlow"
-			glow_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			glow_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
-			var glow_style = StyleBoxFlat.new()
-			glow_style.bg_color = Color(0, 0, 0, 0)
-			glow_style.set_border_width_all(4)
-			glow_style.set_corner_radius_all(8)
-			glow_style.set_expand_margin_all(4)
-			glow_panel.add_theme_stylebox_override("panel", glow_style)
-			panel.add_child(glow_panel)
-			panel.move_child(glow_panel, 0)
-		
-		# Color del borde según estado
-		var glow_style = glow_panel.get_theme_stylebox("panel") as StyleBoxFlat
-		if is_selected:
-			if is_claimed:
-				glow_style.border_color = Color(0.4, 0.9, 0.4, 1.0)  # Verde para reclamado
-			else:
-				glow_style.border_color = Color(1.0, 0.9, 0.4, 1.0)  # Dorado para pendiente
-		glow_panel.visible = is_selected
-
-func _navigate_bottom_buttons(direction: int):
-	"""Navegar manualmente entre los botones de acción visibles"""
-	var current_focus = get_viewport().gui_get_focus_owner()
-	
-	# Encontrar el contenedor de botones (padre del claim_button)
-	var buttons_parent = null
-	if claim_button and is_instance_valid(claim_button):
-		buttons_parent = claim_button.get_parent()
-	
-	if not buttons_parent:
-		return
-
-	# Recolectar botones visibles en orden
-	var visible_buttons = []
-	for child in buttons_parent.get_children():
-		if child is Button and child.visible:
-			visible_buttons.append(child)
-	
-	if visible_buttons.is_empty(): 
-		return
-	
-	var idx = visible_buttons.find(current_focus)
-	if idx == -1:
-		# Si el foco no está en un botón conocido, ir al primero
-		visible_buttons[0].grab_focus()
-		return
-		
-	# Mover índice
-	idx += direction
-	
-	# Wrap around
-	if idx < 0: idx = visible_buttons.size() - 1
-	elif idx >= visible_buttons.size(): idx = 0
-	
-	visible_buttons[idx].grab_focus()
 

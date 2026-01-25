@@ -34,7 +34,7 @@ func setup(data: Dictionary) -> void:
 		var attack_manager = tree.get_first_node_in_group("attack_manager")
 		if attack_manager and attack_manager.has_method("get_player_stat"):
 			var bonus_chains = attack_manager.get_player_stat("chain_count")
-			if bonus_chains > 0:
+			if bonus_chains != null and bonus_chains > 0:
 				chain_count += int(bonus_chains)
 	
 	chain_range = data.get("range", 150.0) * 0.5
