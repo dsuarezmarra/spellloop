@@ -186,7 +186,9 @@ func _ready() -> void:
 
 func get_stat(stat_name: String) -> float:
 	"""Obtener valor de un stat global (con caps aplicados)"""
-	var raw_value = stats.get(stat_name, BASE_GLOBAL_STATS.get(stat_name, 0.0))
+	var default_val = BASE_GLOBAL_STATS.get(stat_name, 0.0)
+	var val = stats.get(stat_name, default_val)
+	var raw_value: float = float(val) if val != null else float(default_val)
 	
 	# Aplicar límites si existen
 	if GLOBAL_STAT_LIMITS.has(stat_name):
@@ -197,7 +199,9 @@ func get_stat(stat_name: String) -> float:
 
 func get_raw_stat(stat_name: String) -> float:
 	"""Obtener valor sin aplicar cap (para mostrar valor real acumulado)"""
-	return stats.get(stat_name, BASE_GLOBAL_STATS.get(stat_name, 0.0))
+	var default_val = BASE_GLOBAL_STATS.get(stat_name, 0.0)
+	var val = stats.get(stat_name, default_val)
+	return float(val) if val != null else float(default_val)
 
 func is_stat_capped(stat_name: String) -> bool:
 	"""Verificar si un stat global ha alcanzado su límite máximo"""

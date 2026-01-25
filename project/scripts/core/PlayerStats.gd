@@ -1015,7 +1015,8 @@ func get_stat(stat_name: String) -> float:
 		if is_glass > 0 or is_pact > 0:
 			return 1.0
 			
-	var base_value = stats.get(stat_name, 0.0)
+	var val = stats.get(stat_name, 0.0)
+	var base_value: float = float(val) if val != null else 0.0
 	var temp_bonus = _get_temp_modifier_total(stat_name)
 	var final_value = base_value + temp_bonus
 	

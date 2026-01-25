@@ -1338,7 +1338,9 @@ func generate_options() -> void:
 
 	var luck = 0.0
 	if player_stats and player_stats.has_method("get_stat"):
-		luck = player_stats.get_stat("luck")
+		var luck_stat = player_stats.get_stat("luck")
+		if luck_stat != null:
+			luck = float(luck_stat)
 
 	var possible_options: Array = []
 
