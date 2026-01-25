@@ -146,16 +146,21 @@ func _try_create_animated_visual() -> bool:
 	
 	return true
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# OPTIMIZACIÓN: Cache de texturas para evitar generación procedural por instancia
+# ═══════════════════════════════════════════════════════════════════════════════
+static var _texture_cache: Dictionary = {}
+
 func _setup_collision() -> void:
 	# Capa 4 = proyectiles del jugador
 	collision_layer = 0
 	set_collision_layer_value(4, true)
 	
-	# Máscara 2 = enemigos
+	# Máscara: Enemigos (2), Breakables/Props (3), Barriers (8)
 	collision_mask = 0
-	set_collision_mask_value(2, true)
-	set_collision_mask_value(8, true) # Barrier layer (Decorations)
-	set_collision_mask_value(8, true) # Barrier layer (Decorations)
+	set_collision_mask_value(2, true) # Enemies
+	set_collision_mask_value(3, true) # Breakables / Special Enemies
+	set_collision_mask_value(8, true) # Barriers/Decorations
 	
 	# Crear collision shape si no existe
 	var shape = get_node_or_null("CollisionShape2D")
@@ -170,12 +175,12 @@ func _setup_collision() -> void:
 		
 		# Ajustes por tipo de elemento
 		match element_type:
-			"ice": hitbox_mult = 1.15    # Hielo debe ser preciso
-			"fire": hitbox_mult = 1.35   # Fuego se siente más expansivo
-			"arcane": hitbox_mult = 1.3  # Magia pura es generosa
-			"nature": hitbox_mult = 1.2  # Naturaleza estándar
-			"dark": hitbox_mult = 1.25   # Oscuridad estándar
-			"lightning": hitbox_mult = 1.4 # Rayos deben impactar fácil
+			"ice": hitbox_mult = 1.15
+			"fire": hitbox_mult = 1.35
+			"arcane": hitbox_mult = 1.3
+			"nature": hitbox_mult = 1.2
+			"dark": hitbox_mult = 1.25
+			"lightning": hitbox_mult = 1.4
 		
 		# Calcular radio final
 		circle.radius = (projectile_size * 0.5) * hitbox_mult
@@ -186,31 +191,43 @@ func _setup_collision() -> void:
 		shape.modulate = Color(1, 0, 0, 0.5)
 
 func _create_visual() -> void:
-	"""Crear visual según tipo de elemento"""
+	"""Crear visual según tipo de elemento (Optimizado con Cache)"""
 	sprite = Sprite2D.new()
 	sprite.name = "Sprite"
 	
+	# Generar clave única para el cache
 	var size = int(projectile_size * 2.5)
-	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
-	var center = Vector2(size / 2.0, size / 2.0)
+	var cache_key = "%s_%d_%s" % [element_type, size, projectile_color.to_html()]
 	
-	match element_type:
-		"ice":
-			_draw_ice_shard(image, size, center)
-		"fire":
-			_draw_fireball(image, size, center)
-		"arcane":
-			_draw_arcane_orb(image, size, center)
-		"lightning":
-			_draw_lightning_bolt(image, size, center)
-		"dark":
-			_draw_dark_orb(image, size, center)
-		"nature":
-			_draw_leaf(image, size, center)
-		_:
-			_draw_default_orb(image, size, center)
+	var texture: Texture2D
 	
-	var texture = ImageTexture.create_from_image(image)
+	if _texture_cache.has(cache_key):
+		# HIT CACHE: Usar textura existente
+		texture = _texture_cache[cache_key]
+	else:
+		# MISS CACHE: Generar textura costosa UNA sola vez
+		var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
+		var center = Vector2(size / 2.0, size / 2.0)
+		
+		match element_type:
+			"ice":
+				_draw_ice_shard(image, size, center)
+			"fire":
+				_draw_fireball(image, size, center)
+			"arcane":
+				_draw_arcane_orb(image, size, center)
+			"lightning":
+				_draw_lightning_bolt(image, size, center)
+			"dark":
+				_draw_dark_orb(image, size, center)
+			"nature":
+				_draw_leaf(image, size, center)
+			_:
+				_draw_default_orb(image, size, center)
+		
+		texture = ImageTexture.create_from_image(image)
+		_texture_cache[cache_key] = texture
+	
 	sprite.texture = texture
 	sprite.centered = true
 	add_child(sprite)
