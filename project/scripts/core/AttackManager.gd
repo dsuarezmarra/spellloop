@@ -587,6 +587,7 @@ func _process(delta: float) -> void:
 		# Verificar si el arma tiene los métodos necesarios
 		if not weapon.has_method("tick_cooldown") or not weapon.has_method("is_ready_to_fire"):
 			# Arma legacy: manejar cooldown manualmente
+			push_warning("[AttackManager] ⚠️ DETECTED LEGACY WEAPON: %s" % _get_weapon_id(weapon))
 			_process_legacy_weapon(weapon, delta)
 			continue
 

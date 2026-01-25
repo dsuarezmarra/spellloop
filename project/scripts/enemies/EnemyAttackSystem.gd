@@ -329,6 +329,7 @@ func _perform_attack() -> void:
 			_perform_ranged_attack()
 		_:
 			# Melee por defecto
+			push_warning("[EnemyAttackSystem] ⚠️ FALLBACK ATTACK USED for %s (Archetype: %s) - Should use Modular Ability" % [enemy.name, archetype])
 			if is_ranged:
 				_perform_ranged_attack()
 			else:
