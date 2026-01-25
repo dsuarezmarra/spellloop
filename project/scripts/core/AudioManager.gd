@@ -18,6 +18,10 @@ var sfx_volume: float = 1.0
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	# Registrar en grupo para compatibilidad con scripts legacy que usan get_nodes_in_group
+	add_to_group("audio_manager")
+	
 	_init_audio_system()
 	_load_volume_settings()
 

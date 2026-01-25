@@ -447,7 +447,10 @@ func level_up_weapon(weapon) -> bool:
 	# Solo armas BaseWeapon soportan level_up
 	if weapon is BaseWeapon:
 		if not weapon.can_level_up():
-			# Debug desactivado: print("[AttackManager] %s ya está al nivel máximo" % _get_weapon_name(weapon))
+			# Debug para investigar bug de Light Beam
+			push_warning("[AttackManager] ⚠️ Imposible subir nivel a %s (ID: %s). Nivel: %d, Max: %d" % [
+				_get_weapon_name(weapon), _get_weapon_id(weapon), weapon.level, weapon.max_level
+			])
 			return false
 		
 		var success = weapon.level_up()

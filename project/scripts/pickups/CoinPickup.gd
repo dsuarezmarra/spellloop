@@ -361,24 +361,9 @@ func _collect(collector: Node2D) -> void:
 		CoinType.DIAMOND: pitch = 2.5
 		CoinType.PURPLE: pitch = 3.0
 	
-	
-	# Usar sistema centralizado en AudioManager para gestión eficiente de voces
-	# Esto garantiza que suenen todas incluso si hay muchas juntas (pool dedicado)
-	var audio_manager = get_tree().get_first_node_in_group("audio_manager")
-	if audio_manager and audio_manager.has_method("play_coin_sfx"):
-		# Usar el nuevo sistema robusto
-		audio_manager.play_coin_sfx(pitch)
-	else:
-		# Fallback legacy si no encontramos el manager actualizado
-		var audio_player = AudioStreamPlayer.new()
-		audio_player.stream = load("res://audio/sfx/pickups/sfx_coin_pickup.wav")
-		audio_player.pitch_scale = pitch
-		audio_player.volume_db = -12.0 
-		audio_player.bus = "SFX"
-		audio_player.process_mode = Node.PROCESS_MODE_ALWAYS
-		audio_player.finished.connect(audio_player.queue_free)
-		get_tree().root.add_child(audio_player)
-		audio_player.play()
+	# FIX: Usar Singleton Global directamente
+	# El método anterior fallaba al buscar por grupo "audio_manager" y caía en un fallback con ruta errónea
+	AudioManager.play_coin_sfx(pitch)
 
 	# NOTA: NO llamar directamente a exp_manager.on_coin_collected()
 

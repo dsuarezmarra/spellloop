@@ -239,13 +239,34 @@ func add_stat(stat_name: String, value: float) -> void:
 		global_stat_changed.emit(stat_name, old_value, stats[stat_name])
 
 func multiply_stat(stat_name: String, value: float) -> void:
-	"""Multiplicar un stat (para multiplicadores)"""
+	"""Multiplicar un stat (Normalizado a Aditivo para evitar exponenciales)"""
 	if stat_name in stats:
 		var old_value = stats[stat_name]
-		stats[stat_name] *= value
+		
+		# FIX: Evitar escalado exponencial (e.g. 1.2 * 1.2 = 1.44).
+		# Convertimos multiplicadores de mejora a aditivos (1.0 + 0.2 + 0.2 = 1.4).
+		# Esto mantiene el balance del juego a largo plazo.
+		var additive_stats = [
+			"damage_mult", "area_mult", "projectile_speed_mult", 
+			"duration_mult", "knockback_mult", "attack_speed_mult", "range_mult"
+		]
+		
+		# Solo aplicar lógica aditiva si es un buff positivo (> 1.0) normal
+		# Si es un debuff (< 1.0) o valor especial, mantenemos multiplicación
+		if stat_name in additive_stats and value > 1.0:
+			var bonus = value - 1.0
+			stats[stat_name] += bonus
+		else:
+			stats[stat_name] *= value
+			
 		# DEBUG: Log crítico para Pacifista
 		if stat_name == "damage_mult":
-			print("🔴 [GlobalWeaponStats] damage_mult MULTIPLICADO: %.2f × %.2f = %.2f" % [old_value, value, stats[stat_name]])
+			print("🔴 [GlobalWeaponStats] damage_mult ACTUALIZADO: %.2f -> %.2f (Op: %s con %.2f)" % [
+				old_value, stats[stat_name], 
+				"SUMA" if (stat_name in additive_stats and value > 1.0) else "MULT", 
+				value
+			])
+			
 		global_stat_changed.emit(stat_name, old_value, stats[stat_name])
 
 func set_stat(stat_name: String, value: float) -> void:
