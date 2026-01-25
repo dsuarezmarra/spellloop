@@ -12,6 +12,9 @@ var music_player: AudioStreamPlayer
 const SFX_POOL_SIZE = 32
 const SETTINGS_PATH = "user://audio_settings.cfg"
 
+# Cache for loaded streams to avoid disk hitting on every play
+var stream_cache: Dictionary = {}
+
 # Volume settings (0.0 to 1.0)
 var music_volume: float = 1.0
 var sfx_volume: float = 1.0
@@ -42,9 +45,6 @@ func _init_audio_system():
 		add_child(player)
 		sfx_players.append(player)
 	
-	# SETUP DEDICATED COIN PLAYER (High Polyphony) - Now using Pool
-	# _setup_coin_player() removed (superseded by pool)
-	
 	# Ensure audio buses exist
 	_ensure_audio_buses()
 
@@ -67,6 +67,14 @@ func _ensure_audio_buses():
 		sfx_idx = AudioServer.get_bus_count() - 1
 		AudioServer.set_bus_name(sfx_idx, "SFX")
 		AudioServer.set_bus_send(sfx_idx, "Master")
+
+	# Check for UI bus
+	var ui_idx = AudioServer.get_bus_index("UI")
+	if ui_idx == -1:
+		AudioServer.add_bus()
+		ui_idx = AudioServer.get_bus_count() - 1
+		AudioServer.set_bus_name(ui_idx, "UI")
+		AudioServer.set_bus_send(ui_idx, "Master")
 
 func play(audio_id: String, volume_offset: float = 0.0) -> void:
 	"""Play a sound effect with random variation (for variety sounds like projectiles)."""
@@ -95,10 +103,9 @@ func _play_internal(audio_id: String, volume_offset: float, random_variation: bo
 	else:
 		file_path = files[0]
 	
-	# Load stream
-	var stream = load(file_path)
+	# Load stream (with cache)
+	var stream = _get_stream(file_path)
 	if not stream:
-		push_error("[AudioManager] Failed to load: " + file_path)
 		return
 	
 	# Find free player
@@ -109,7 +116,10 @@ func _play_internal(audio_id: String, volume_offset: float, random_variation: bo
 	# Configure and play
 	player.stream = stream
 	var base_volume = entry.get("volume_db", 0.0) + volume_offset
-	player.volume_db = base_volume + linear_to_db(sfx_volume)
+	
+	# FIX: Removed double volume application. The Bus ("SFX") already handles the global reduction.
+	# Only apply local offsets here.
+	player.volume_db = base_volume
 	
 	# Only use pitch variation for random mode
 	if random_variation:
@@ -124,6 +134,22 @@ func _play_internal(audio_id: String, volume_offset: float, random_variation: bo
 	player.bus = entry.get("bus", "SFX")
 	player.play()
 
+func _get_stream(path: String) -> AudioStream:
+	if stream_cache.has(path):
+		return stream_cache[path]
+	
+	if not FileAccess.file_exists(path):
+		push_warning("[AudioManager] File not found: " + path)
+		return null
+		
+	var stream = load(path)
+	if stream:
+		stream_cache[path] = stream
+	else:
+		push_error("[AudioManager] Failed to load: " + path)
+		
+	return stream
+
 func play_music(music_id: String, fade_time: float = 1.0) -> void:
 	"""Play music track."""
 	if not manifest.has(music_id):
@@ -136,7 +162,8 @@ func play_music(music_id: String, fade_time: float = 1.0) -> void:
 	if files.is_empty():
 		return
 	
-	var stream = load(files[0])
+	# Normalize path loading
+	var stream = _get_stream(files[0])
 	if not stream:
 		return
 	
@@ -145,7 +172,8 @@ func play_music(music_id: String, fade_time: float = 1.0) -> void:
 		stream.loop = true
 	
 	music_player.stream = stream
-	music_player.volume_db = entry.get("volume_db", -3.0) + linear_to_db(music_volume)
+	# FIX: Removed double volume application. Bus handles it.
+	music_player.volume_db = entry.get("volume_db", -3.0) 
 	music_player.play()
 
 func stop_music(fade_time: float = 1.0) -> void:
@@ -208,76 +236,53 @@ func _get_free_player() -> AudioStreamPlayer:
 # COIN SFX SYSTEM (High Polyphony)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-var coin_player: AudioStreamPlayer
-const COIN_SFX_PATH = "res://assets/audio/sfx/pickups/Usado/sfx_coin_pickup.wav"
-
-func _setup_coin_player() -> void:
-	coin_player = AudioStreamPlayer.new()
-	coin_player.name = "CoinPlayer"
-	coin_player.bus = "SFX"
-	# Permitir muchas voces simultáneas para el mismo sonido
-	coin_player.max_polyphony = 64 
-	add_child(coin_player)
-	
-	# Pre-cargar el sonido
-	var stream = load(COIN_SFX_PATH)
-	if stream:
-		coin_player.stream = stream
-	else:
-		push_warning("[AudioManager] Coin SFX not found at: " + COIN_SFX_PATH)
-
-func play_coin_sfx(pitch: float = 1.0) -> void:
-	"""
-	Reproducir sonido de moneda con alta polifonía.
-	Garantiza que siempre suene incluso si hay muchas monedas juntas.
-	"""
-	if not coin_player:
-		return
-		
-	if not coin_player.stream:
-		# Intentar recargar si falló al inicio
-		var stream = load(COIN_SFX_PATH)
-		if stream:
-			coin_player.stream = stream
-		else:
-			return
-
-	# Ajustar pitch y reproducir
-	# NOTA: En Godot 4, cambiar pitch_scale afecta a TODAS las voces activas de este player si no es polifónico real.
-	# Pero con max_polyphony, cada trigger 'play()' genera una voz nueva con los parámetros actuales?
-	# VERIFICACIÓN: AudioStreamPlayer.play() dice: "If the stream is not playing, plays it. If it is already playing, adds a new voice... but parameters like pitch are shared per Node in some versions."
-	# Si cambiar pitch afecta a todos, entonces necesitamos un pool específico para monedas.
-	# HACK: Para monedas, el pitch cambia muy rápido. Si el nodo comparte pitch, sonará raro.
-	# SOLUCIÓN: Usar un mini-pool de monedas si el pitch es variable.
-	
-	# REVISIÓN: Si cambiamos pitch_scale, afecta al nodo entero.
-	# Por lo tanto, para tener distintos pitch SIMULTÁNEOS, necesitamos múltiples nodos.
-	# VOLVEMOS AL POOL, pero específico para monedas.
-	
-	_play_coin_from_pool(pitch)
-
 # Mini-Pool para monedas (permite pitch variable simultáneo)
 var coin_pool: Array[AudioStreamPlayer] = []
 const COIN_POOL_SIZE = 32 # Aumentado para soportar imanes masivos
 var coin_pool_idx = 0
 
-func _play_coin_from_pool(pitch: float) -> void:
+func play_coin_sfx(pitch: float = 1.0) -> void:
+	"""
+	Reproducir sonido de moneda con alta polifonía usando el manifest.
+	"""
+	var audio_id = "sfx_coin_pickup"
+	if not manifest.has(audio_id):
+		return
+		
+	var entry = manifest[audio_id]
+	var files = entry.get("files", [])
+	if files.is_empty():
+		return
+		
+	var file_path = files[0]
+	var stream = _get_stream(file_path)
+	if not stream:
+		return
+
 	if coin_pool.is_empty():
 		# Crear pool bajo demanda
+		# Nota: Recibe bus del manifest si existe, sino default "SFX"
+		var target_bus = entry.get("bus", "SFX")
+		
 		for i in range(COIN_POOL_SIZE):
 			var p = AudioStreamPlayer.new()
-			p.bus = "SFX"
-			p.stream = load(COIN_SFX_PATH)
+			p.bus = target_bus 
 			add_child(p)
 			coin_pool.append(p)
 	
 	# Usar Round Robin para sobrescribir el más viejo si todos están ocupados
-	# Esto garantiza que siempre suene el nuevo, cortando el más viejo si es necesario
 	var player = coin_pool[coin_pool_idx]
 	
+	# Ensure stream is set (optimized by cache)
+	if player.stream != stream:
+		player.stream = stream
+
 	player.pitch_scale = pitch
-	# Priorizar sonido: Volumen más alto (-5.0db en vez de -12)
-	player.volume_db = -5.0 + linear_to_db(sfx_volume) 
+	# FIX: Removed double volume application. 
+	# Usar volume_db del manifest (-6.0) en lugar de hardcodeado -5.0
+	var base_db = entry.get("volume_db", -6.0)
+	player.volume_db = base_db # AudioServer bus handles sfx_volume reduction
+	
 	player.play()
 	
 	coin_pool_idx = (coin_pool_idx + 1) % COIN_POOL_SIZE
