@@ -270,9 +270,18 @@ func _process_run_progression(run_data: Dictionary) -> void:
 	if run_data.has("rooms_completed"):
 		stats["rooms_completed"] += run_data["rooms_completed"]
 	
+	# Calculate Score logic
+	var score = run_data.get("score", 0)
+	if score == 0:
+		# Calculate score if not provided
+		# Example: 10 pts per enemy, 1 pt per second survived (approx)
+		var enemies = run_data.get("enemies_defeated", 0)
+		var duration = run_data.get("duration", 0)
+		score = (enemies * 10) + int(duration)
+		
 	# Update best score
-	if run_data.has("score") and run_data["score"] > player_data["best_score"]:
-		player_data["best_score"] = run_data["score"]
+	if score > player_data.get("best_score", 0):
+		player_data["best_score"] = score
 	
 	# Add meta currency based on performance
 	var currency_gained = _calculate_meta_currency(run_data)
@@ -281,9 +290,11 @@ func _process_run_progression(run_data: Dictionary) -> void:
 	# Increment total runs
 	player_data["total_runs"] += 1
 	
-	# Add playtime
+	# Add playtime (accumulator)
 	if run_data.has("duration"):
-		player_data["total_playtime"] += run_data["duration"]
+		var added_time = run_data["duration"]
+		var current_time = player_data.get("total_playtime", 0.0)
+		player_data["total_playtime"] = current_time + added_time
 
 	# Emit player data changed so UI can update immediately
 	player_data_changed.emit(player_data.duplicate(true))

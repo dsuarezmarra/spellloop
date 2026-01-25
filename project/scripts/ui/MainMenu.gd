@@ -147,6 +147,8 @@ func _setup_ui() -> void:
 		final_path = ProjectSettings.globalize_path(bg_path)
 		debug_msg += "Global Path: " + final_path + "\n"
 		
+		# Intentar cargar via Image.load_from_file
+		var img = Image.load_from_file(final_path)
 
 		# Fallback Nuclear: Leer bytes crudos (si load_from_file falla)
 		if not img:
@@ -280,7 +282,9 @@ func _create_resume_button() -> void:
 		bg_panel.name = "MenuBackground"
 		
 		# Configurar layout del Panel para centrarlo
-		bg_panel.set_anchors_preset(Control.PRESET_CENTER)
+		bg_panel.anchors_preset = Control.PRESET_CENTER
+		bg_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		bg_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 		
 		# Estilo del Panel (Caja ajustada)
 		var style = StyleBoxFlat.new()
@@ -300,12 +304,19 @@ func _create_resume_button() -> void:
 		parent.add_child(bg_panel)
 		bg_panel.add_child(vbox)
 		
-		# Asegurar que el Panel esté centrado en el UIContainer
-		# (Asumiendo que UIContainer es Full Rect o Center)
+		# Asegurar posición correcta del panel background
+		bg_panel.position = Vector2.ZERO # Reset position offset
 		
-	# Quitar textos no deseados
+	# Quitar textos no deseados (Incluyendo subtítulo)
 	if title_label: title_label.visible = false
 	if version_label: version_label.visible = false
+	
+	# Buscar el subtitulo perdido
+	var labels = find_children("*", "Label", true)
+	for l in labels:
+		if l.text == "Roguelike Bullet Heaven":
+			l.visible = false
+			break
 
 func _set_initial_focus() -> void:
 	"""Establecer foco en el boton apropiado"""
@@ -571,10 +582,23 @@ func _show_options() -> void:
 		if options_scene:
 			options_menu = options_scene.instantiate()
 			options_menu.name = "OptionsMenu"
-			add_child(options_menu)
-
+			
+			# Añadir al UILayer para estar encima
+			if has_node("UILayer"):
+				$UILayer.add_child(options_menu)
+			else:
+				add_child(options_menu)
+				
+			# Asegurar Z-index alto por si acaso
+			if options_menu is Control:
+				options_menu.z_index = 100
+				
 	if options_menu:
 		options_menu.visible = true
+		# Move to front
+		if options_menu.get_parent():
+			options_menu.get_parent().move_child(options_menu, -1)
+			
 		if options_menu.has_signal("closed"):
 			if not options_menu.closed.is_connected(_on_options_closed):
 				options_menu.closed.connect(_on_options_closed)
