@@ -545,6 +545,53 @@ func _show_options_internal() -> void:
 func _on_options_closed() -> void:
 	_change_screen(Screen.MAIN_MENU)
 
+func _on_resume_pressed() -> void:
+	_play_button_sound()
+	resume_pressed.emit()
+	_resume_game()
+
+func _resume_game() -> void:
+	"""Reanudar la partida guardada"""
+	var tween = create_tween()
+	tween.tween_property(self, "modulate:a", 0.0, 0.3)
+	await tween.finished
+
+	var scene_path = "res://scenes/game/Game.tscn"
+	if SessionState and SessionState.game_scene_path:
+		scene_path = SessionState.game_scene_path
+	get_tree().change_scene_to_file(scene_path)
+
+func _on_quit_pressed() -> void:
+	_play_button_sound()
+	quit_pressed.emit()
+	await get_tree().create_timer(0.2).timeout
+	get_tree().quit()
+
+func _play_button_sound() -> void:
+	AudioManager.play_fixed("sfx_ui_click")
+
+func _start_game() -> void:
+	var tween = create_tween()
+	tween.tween_property(self, "modulate:a", 0.0, 0.3)
+	await tween.finished
+	get_tree().change_scene_to_file("res://scenes/game/Game.tscn")
+
+func _start_game_with_default_slot() -> void:
+	var save_manager = get_tree().root.get_node_or_null("SaveManager")
+	if save_manager and save_manager.has_method("set_active_slot"):
+		save_manager.set_active_slot(0)
+	_start_game()
+
+func _start_game_with_default_character() -> void:
+	if SessionState:
+		SessionState.start_new_game(_pending_slot_index, "frost_mage")
+	_start_game()
+
+func _on_character_selected(character_id: String) -> void:
+	if SessionState:
+		SessionState.start_new_game(_pending_slot_index, character_id)
+	_start_game()
+
 
 func _input(event: InputEvent) -> void:
 	# Si hay subscreens visibles, ignorar input del menu principal
