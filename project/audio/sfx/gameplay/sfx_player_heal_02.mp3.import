@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://5ifpwekle6qq"
-path="res://.godot/imported/sfx_player_heal_02.mp3-4a3e28fa63dc6e422a46ac1e853c8a8b.mp3str"
+path="res://.godot/imported/sfx_player_heal_02.mp3-c58d3bce757e45e43ced66e036c2f1e6.mp3str"
 
 [deps]
 
-source_file="res://audio/sfx/gameplay/Usado/sfx_player_heal_02.mp3"
-dest_files=["res://.godot/imported/sfx_player_heal_02.mp3-4a3e28fa63dc6e422a46ac1e853c8a8b.mp3str"]
+source_file="res://audio/sfx/gameplay/sfx_player_heal_02.mp3"
+dest_files=["res://.godot/imported/sfx_player_heal_02.mp3-c58d3bce757e45e43ced66e036c2f1e6.mp3str"]
 
 [params]
 

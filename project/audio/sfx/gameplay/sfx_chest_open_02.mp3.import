@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://cidpib0efaadn"
-path="res://.godot/imported/sfx_chest_open_02.mp3-af2db572013cfa2db6f2f13e93b885e8.mp3str"
+path="res://.godot/imported/sfx_chest_open_02.mp3-39481acf503b3c8653e7226ff2f3c920.mp3str"
 
 [deps]
 
-source_file="res://audio/sfx/gameplay/Usado/sfx_chest_open_02.mp3"
-dest_files=["res://.godot/imported/sfx_chest_open_02.mp3-af2db572013cfa2db6f2f13e93b885e8.mp3str"]
+source_file="res://audio/sfx/gameplay/sfx_chest_open_02.mp3"
+dest_files=["res://.godot/imported/sfx_chest_open_02.mp3-39481acf503b3c8653e7226ff2f3c920.mp3str"]
 
 [params]
 
