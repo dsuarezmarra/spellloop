@@ -361,27 +361,24 @@ func _collect(collector: Node2D) -> void:
 		CoinType.DIAMOND: pitch = 2.5
 		CoinType.PURPLE: pitch = 3.0
 	
-	# Usar play_fixed o play con un truco para pasar el pitch exacto
-	# AudioManager no tiene API directa para forzar pitch arbitrario en "play_fixed" fácilmente sin modificarlo,
-	# pero si usamos el sistema normal, podemos definir variaciones.
-	# HACK: Modificaremos AudioManager si es necesario, o usaremos un player temporal local.
-	# Mejor: Llamar a AudioManager.play_pitch("sfx_coin_pickup", pitch) - Si no existe, lo añado.
 	
-	# Si no existe, usaré un AudioStreamPlayer temporal aquí mismo para garantizar prioridad.
-	# Si no existe, usaré un AudioStreamPlayer temporal aquí mismo para garantizar prioridad.
-	var audio_player = AudioStreamPlayer.new()
-	audio_player.stream = load("res://audio/sfx/pickups/sfx_coin_pickup.wav")
-	audio_player.pitch_scale = pitch
-	# Volumen reducido según petición (-5dB extra sobre el original -9dB del manifest)
-	# Si cargamos el stream directo, no usa el volumen del manifest (AudioStreamPlayer no lee JSON).
-	# El manifest decía -9.0. Aquí ponemos -14.0 para hacerlo menos intrusivo.
-	audio_player.volume_db = -12.0 
-	audio_player.bus = "SFX"
-	# CRÍTICO: Asegurar que suena incluso si hay pausa (ej. al recoger última moneda de nivel)
-	audio_player.process_mode = Node.PROCESS_MODE_ALWAYS
-	audio_player.finished.connect(audio_player.queue_free)
-	get_tree().root.add_child(audio_player) # Añadir al root para que no muera con queue_free() de la moneda
-	audio_player.play()
+	# Usar sistema centralizado en AudioManager para gestión eficiente de voces
+	# Esto garantiza que suenen todas incluso si hay muchas juntas (pool dedicado)
+	var audio_manager = get_tree().get_first_node_in_group("audio_manager")
+	if audio_manager and audio_manager.has_method("play_coin_sfx"):
+		# Usar el nuevo sistema robusto
+		audio_manager.play_coin_sfx(pitch)
+	else:
+		# Fallback legacy si no encontramos el manager actualizado
+		var audio_player = AudioStreamPlayer.new()
+		audio_player.stream = load("res://audio/sfx/pickups/sfx_coin_pickup.wav")
+		audio_player.pitch_scale = pitch
+		audio_player.volume_db = -12.0 
+		audio_player.bus = "SFX"
+		audio_player.process_mode = Node.PROCESS_MODE_ALWAYS
+		audio_player.finished.connect(audio_player.queue_free)
+		get_tree().root.add_child(audio_player)
+		audio_player.play()
 
 	# NOTA: NO llamar directamente a exp_manager.on_coin_collected()
 

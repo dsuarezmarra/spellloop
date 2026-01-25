@@ -879,14 +879,11 @@ func _play_shield_absorb_effect() -> void:
 	tween.tween_property(animated_sprite, "modulate", Color(0.5, 0.8, 2.0, 1.0), 0.1)
 	tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.2)
 
-func heal(amount: int) -> void:
+func heal(amount: int) -> int:
 	"""Curar al personaje (aplica curse si está activo)"""
 	if health_component:
 		var old_hp = health_component.current_health
 		var final_heal = amount
-		# Aplicar curse si está activo
-		if _is_cursed:
-			final_heal = int(amount * (1.0 - _curse_amount))
 		# Aplicar curse si está activo
 		if _is_cursed:
 			final_heal = int(amount * (1.0 - _curse_amount))
@@ -911,6 +908,9 @@ func heal(amount: int) -> void:
 			_spawn_heal_particles()
 		
 		# Debug desactivado: print("[%s] Curación: +%d (HP: %d/%d)%s" % [character_class, healed, health_component.current_health, max_hp, " [CURSED]" if _is_cursed else ""])
+		
+		return healed
+	return 0
 
 func _spawn_heal_particles() -> void:
 	"""Crear partículas de curación verde"""
@@ -1119,7 +1119,7 @@ func _play_revive_effects() -> void:
 	if audio_manager and audio_manager.has_method("play_sfx"):
 		audio_manager.play_sfx("phoenix_resurrection")
 
-var _revive_immunity_timer: float = 0.0
+
 
 func _grant_revive_immunity(duration: float) -> void:
 	"""Otorgar inmunidad temporal tras revivir"""
@@ -1798,3 +1798,5 @@ func _remove_turret_buff() -> void:
 		player_stats.remove_temp_modifiers_by_source("turret_bonus")
 	
 	modulate = Color.WHITE
+
+

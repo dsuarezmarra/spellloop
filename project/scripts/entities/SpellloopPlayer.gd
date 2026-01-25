@@ -90,6 +90,9 @@ func _ready() -> void:
 	max_hp = wizard_player.max_hp
 	move_speed = wizard_player.move_speed
 
+	# Forzar actualización inicial de la barra de vida
+	update_health_bar()
+
 	# print("[SpellloopPlayer] ===== OK: SPELLLOOP PLAYER LISTO =====\n")
 
 func _physics_process(_delta: float) -> void:

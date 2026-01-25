@@ -38,6 +38,9 @@ func _init_audio_system():
 		add_child(player)
 		sfx_players.append(player)
 	
+	# SETUP DEDICATED COIN PLAYER (High Polyphony)
+	_setup_coin_player()
+	
 	# Ensure audio buses exist
 	_ensure_audio_buses()
 
@@ -196,3 +199,80 @@ func _get_free_player() -> AudioStreamPlayer:
 		if not player.playing:
 			return player
 	return null
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COIN SFX SYSTEM (High Polyphony)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+var coin_player: AudioStreamPlayer
+const COIN_SFX_PATH = "res://audio/sfx/pickups/sfx_coin_pickup.wav"
+
+func _setup_coin_player() -> void:
+	coin_player = AudioStreamPlayer.new()
+	coin_player.name = "CoinPlayer"
+	coin_player.bus = "SFX"
+	# Permitir muchas voces simultáneas para el mismo sonido
+	coin_player.max_polyphony = 64 
+	add_child(coin_player)
+	
+	# Pre-cargar el sonido
+	var stream = load(COIN_SFX_PATH)
+	if stream:
+		coin_player.stream = stream
+	else:
+		push_warning("[AudioManager] Coin SFX not found at: " + COIN_SFX_PATH)
+
+func play_coin_sfx(pitch: float = 1.0) -> void:
+	"""
+	Reproducir sonido de moneda con alta polifonía.
+	Garantiza que siempre suene incluso si hay muchas monedas juntas.
+	"""
+	if not coin_player:
+		return
+		
+	if not coin_player.stream:
+		# Intentar recargar si falló al inicio
+		var stream = load(COIN_SFX_PATH)
+		if stream:
+			coin_player.stream = stream
+		else:
+			return
+
+	# Ajustar pitch y reproducir
+	# NOTA: En Godot 4, cambiar pitch_scale afecta a TODAS las voces activas de este player si no es polifónico real.
+	# Pero con max_polyphony, cada trigger 'play()' genera una voz nueva con los parámetros actuales?
+	# VERIFICACIÓN: AudioStreamPlayer.play() dice: "If the stream is not playing, plays it. If it is already playing, adds a new voice... but parameters like pitch are shared per Node in some versions."
+	# Si cambiar pitch afecta a todos, entonces necesitamos un pool específico para monedas.
+	# HACK: Para monedas, el pitch cambia muy rápido. Si el nodo comparte pitch, sonará raro.
+	# SOLUCIÓN: Usar un mini-pool de monedas si el pitch es variable.
+	
+	# REVISIÓN: Si cambiamos pitch_scale, afecta al nodo entero.
+	# Por lo tanto, para tener distintos pitch SIMULTÁNEOS, necesitamos múltiples nodos.
+	# VOLVEMOS AL POOL, pero específico para monedas.
+	
+	_play_coin_from_pool(pitch)
+
+# Mini-Pool para monedas (permite pitch variable simultáneo)
+var coin_pool: Array[AudioStreamPlayer] = []
+const COIN_POOL_SIZE = 16 # Suficiente para overlaps con distinto pitch
+var coin_pool_idx = 0
+
+func _play_coin_from_pool(pitch: float) -> void:
+	if coin_pool.is_empty():
+		# Crear pool bajo demanda
+		for i in range(COIN_POOL_SIZE):
+			var p = AudioStreamPlayer.new()
+			p.bus = "SFX"
+			p.stream = load(COIN_SFX_PATH)
+			add_child(p)
+			coin_pool.append(p)
+	
+	# Usar Round Robin para sobrescribir el más viejo si todos están ocupados
+	# Esto garantiza que siempre suene el nuevo, cortando el más viejo si es necesario
+	var player = coin_pool[coin_pool_idx]
+	
+	player.pitch_scale = pitch
+	player.volume_db = -12.0 + linear_to_db(sfx_volume) # Respetar volumen global
+	player.play()
+	
+	coin_pool_idx = (coin_pool_idx + 1) % COIN_POOL_SIZE
