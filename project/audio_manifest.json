@@ -66,11 +66,12 @@
     "files": [
       "res://audio/sfx/pickups/sfx_coin_pickup.wav"
     ],
-    "volume_db": -9.0,
+    "volume_db": -6.0,
     "pitch_scale": [
       1.0,
       1.0
     ],
+    "max_polyphony": 8,
     "bus": "SFX"
   },
   "sfx_death_armor": {
