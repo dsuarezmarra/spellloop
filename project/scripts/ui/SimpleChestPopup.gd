@@ -629,12 +629,7 @@ func _update_claim_selected_button():
 	if btn:
 		btn.visible = (count > 0 and count < item_buttons.size())
 
-func _on_claim_all_pressed():
-	if popup_locked: return
-	popup_locked = true
-	# All pending items
-	all_items_claimed.emit(_jackpot_pending_items)
-	queue_free()
+
 
 func _on_claim_selected_pressed():
 	if popup_locked: return
