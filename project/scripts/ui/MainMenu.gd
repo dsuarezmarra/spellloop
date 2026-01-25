@@ -414,207 +414,143 @@ var slot_select_screen: Control = null
 var character_select_screen: Control = null
 var _pending_slot_index: int = 0
 
+enum Screen { MAIN_MENU, SLOTS, CHARACTERS, OPTIONS }
+var current_screen: int = Screen.MAIN_MENU
+
+func _change_screen(target: int) -> void:
+	"""Centralized function to switch screens and prevent overlaps"""
+	print("[MainMenu] Switching to screen: ", target)
+	current_screen = target
+	
+	# 1. HIDE EVERYTHING FIRST
+	if has_node("UILayer"): $UILayer.visible = false
+	if ui_container: ui_container.visible = false
+	
+	if slot_select_screen and is_instance_valid(slot_select_screen):
+		slot_select_screen.visible = false
+		
+	if character_select_screen and is_instance_valid(character_select_screen):
+		character_select_screen.visible = false
+		
+	var options_menu = get_node_or_null("OptionsMenu")
+	if options_menu and is_instance_valid(options_menu):
+		options_menu.visible = false
+		
+	# 2. SHOW TARGET
+	match target:
+		Screen.MAIN_MENU:
+			if has_node("UILayer"): $UILayer.visible = true
+			elif ui_container: ui_container.visible = true
+			# Restore focus
+			_update_button_list()
+			_highlight_current_button()
+			
+		Screen.SLOTS:
+			if not slot_select_screen or not is_instance_valid(slot_select_screen):
+				_load_slot_screen() # Helper to instantiate
+			
+			if slot_select_screen:
+				slot_select_screen.visible = true
+				slot_select_screen.z_index = 100
+				slot_select_screen.refresh()
+				
+		Screen.CHARACTERS:
+			if not character_select_screen or not is_instance_valid(character_select_screen):
+				_load_character_screen() # Helper to instantiate
+				
+			if character_select_screen:
+				character_select_screen.visible = true
+				character_select_screen.z_index = 200
+				if character_select_screen.has_method("show_screen"):
+					character_select_screen.show_screen()
+					
+		Screen.OPTIONS:
+			_show_options_internal()
+
 func _on_play_pressed() -> void:
 	_play_button_sound()
 	play_pressed.emit()
+	_change_screen(Screen.SLOTS)
 
-	# Mostrar pantalla de selección de slot
-	_show_slot_select()
-
-func _show_slot_select() -> void:
-	"""Mostrar pantalla de selección de slot de guardado"""
-	if slot_select_screen and is_instance_valid(slot_select_screen):
-		slot_select_screen.visible = true
-		slot_select_screen.z_index = 100 # Force top
-		slot_select_screen.refresh()
-		return
-
-	# Cargar la escena de selección de slot
+# Reemplazar _show_slot_select duplicado por el helper
+func _load_slot_screen() -> void:
 	var slot_scene = load("res://scenes/ui/SaveSlotSelect.tscn")
 	if not slot_scene:
-		push_warning("[MainMenu] No se pudo cargar SaveSlotSelect.tscn")
-		# Fallback: iniciar juego directamente
-		_start_game_with_default_slot()
+		_start_game_with_default_slot() # Fallback
 		return
 
+	if slot_select_screen: slot_select_screen.queue_free()
+	
 	slot_select_screen = slot_scene.instantiate()
 	add_child(slot_select_screen)
-	move_child(slot_select_screen, -1) # Ensure top of tree
-	slot_select_screen.z_index = 100 # Force rendering on top
-
-	# Conectar señales
+	move_child(slot_select_screen, -1)
+	
 	slot_select_screen.slot_selected.connect(_on_slot_selected)
 	slot_select_screen.back_pressed.connect(_on_slot_back)
 
-	# Ocultar el menú principal (Toda la capa UI) mientras se muestra la selección
-	if has_node("UILayer"):
-		$UILayer.visible = false
-	elif ui_container:
-		ui_container.visible = false
+# Compatibility wrapper if needed, or remove
+func _show_slot_select() -> void:
+	_change_screen(Screen.SLOTS)
 
 func _on_slot_selected(slot_index: int) -> void:
-	"""Callback cuando se selecciona un slot"""
-	# Guardar slot seleccionado
 	_pending_slot_index = slot_index
-	
-	# Ocultar selector de slots
-	if slot_select_screen:
-		slot_select_screen.visible = false
-		
-	_show_character_select()
+	_change_screen(Screen.CHARACTERS)
 
-func _show_character_select() -> void:
-	"""Mostrar pantalla de selección de personaje"""
-	if character_select_screen and is_instance_valid(character_select_screen):
-		character_select_screen.visible = true
-		if character_select_screen.has_method("show_screen"):
-			character_select_screen.show_screen()
-		return
-
-	# Cargar la escena de selección de personaje
+func _load_character_screen() -> void:
 	var char_scene = load("res://scenes/ui/CharacterSelectScreen.tscn")
 	if not char_scene:
-		push_warning("[MainMenu] No se pudo cargar CharacterSelectScreen.tscn")
-		# Fallback: iniciar juego con personaje por defecto
 		_start_game_with_default_character()
 		return
-
+		
 	character_select_screen = char_scene.instantiate()
 	add_child(character_select_screen)
-
-	# Mostrar la pantalla
-	character_select_screen.show_screen()
-
-	# Conectar señales
+	move_child(character_select_screen, -1)
+	
 	character_select_screen.character_selected.connect(_on_character_selected)
 	character_select_screen.back_pressed.connect(_on_character_back)
 
-func _on_character_selected(character_id: String) -> void:
-	"""Callback cuando se selecciona un personaje"""
-	# Guardar personaje en SessionState
-	if SessionState:
-		SessionState.start_new_game(_pending_slot_index, character_id)
-
-	# Iniciar juego
-	_start_game()
+func _show_character_select() -> void:
+	_change_screen(Screen.CHARACTERS)
 
 func _on_character_back() -> void:
-	"""Callback cuando se vuelve de la selección de personaje"""
-	# Ocultar pantalla de personajes
-	if character_select_screen:
-		character_select_screen.visible = false
-
-	# Mostrar pantalla de slots
-	if slot_select_screen:
-		slot_select_screen.visible = true
-		if slot_select_screen.has_method("refresh"):
-			slot_select_screen.refresh()
-
-func _start_game_with_default_character() -> void:
-	"""Iniciar juego con personaje por defecto (fallback)"""
-	if SessionState:
-		SessionState.start_new_game(_pending_slot_index, "frost_mage")
-	_start_game()
-
+	_change_screen(Screen.SLOTS)
+	
 func _on_slot_back() -> void:
-	"""Callback cuando se vuelve de la selección de slot"""
-	# Ocultar pantalla de slots
-	if slot_select_screen:
-		slot_select_screen.visible = false
-
-	# Mostrar menú principal
-	if has_node("UILayer"):
-		$UILayer.visible = true
-	elif ui_container:
-		ui_container.visible = true
-
-	# Actualizar navegación
-	_update_button_list()
-	_highlight_current_button()
-
-func _start_game_with_default_slot() -> void:
-	"""Iniciar juego con slot por defecto (fallback)"""
-	var save_manager = get_tree().root.get_node_or_null("SaveManager")
-	if save_manager and save_manager.has_method("set_active_slot"):
-		save_manager.set_active_slot(0)
-	_start_game()
-
-func _on_resume_pressed() -> void:
-	_play_button_sound()
-	resume_pressed.emit()
-	_resume_game()
-
+	_change_screen(Screen.MAIN_MENU)
+	
 func _on_options_pressed() -> void:
 	_play_button_sound()
 	options_pressed.emit()
-	_show_options()
-
-func _on_quit_pressed() -> void:
-	_play_button_sound()
-	quit_pressed.emit()
-	# Pequeña espera para que suene el botón
-	await get_tree().create_timer(0.2).timeout
-	get_tree().quit()
-
-func _play_button_sound() -> void:
-	AudioManager.play_fixed("sfx_ui_click")
-
-func _start_game() -> void:
-	# Transición con fade
-	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.3)
-	await tween.finished
-
-	# Cambiar a la escena del juego
-	get_tree().change_scene_to_file("res://scenes/game/Game.tscn")
-
-func _resume_game() -> void:
-	"""Reanudar la partida guardada"""
-	# Transicion con fade
-	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.3)
-	await tween.finished
-
-	# Volver a la escena de juego (el estado se restaurara alli)
-	var scene_path = "res://scenes/game/Game.tscn"
-	if SessionState and SessionState.game_scene_path:
-		scene_path = SessionState.game_scene_path
-	get_tree().change_scene_to_file(scene_path)
-
+	_change_screen(Screen.OPTIONS)
+	
 func _show_options() -> void:
-	# Buscar o crear el menú de opciones
+	_change_screen(Screen.OPTIONS)
+
+func _show_options_internal() -> void:
 	var options_menu = get_node_or_null("OptionsMenu")
 	if not options_menu:
-		var options_scene = load("res://scenes/ui/OptionsMenu.tscn")
-		if options_scene:
-			options_menu = options_scene.instantiate()
+		var scene = load("res://scenes/ui/OptionsMenu.tscn")
+		if scene:
+			options_menu = scene.instantiate()
 			options_menu.name = "OptionsMenu"
+			if has_node("UILayer"): $UILayer.add_child(options_menu)
+			else: add_child(options_menu)
+			options_menu.z_index = 300
 			
-			# Añadir al UILayer para estar encima
-			if has_node("UILayer"):
-				$UILayer.add_child(options_menu)
-			else:
-				add_child(options_menu)
-				
-			# Asegurar Z-index alto por si acaso
-			if options_menu is Control:
-				options_menu.z_index = 100
-				
 	if options_menu:
 		options_menu.visible = true
-		# Move to front
-		if options_menu.get_parent():
-			options_menu.get_parent().move_child(options_menu, -1)
-			
-		if options_menu.has_signal("closed"):
-			if not options_menu.closed.is_connected(_on_options_closed):
-				options_menu.closed.connect(_on_options_closed)
+		if options_menu.has_signal("closed") and not options_menu.closed.is_connected(_on_options_closed):
+			options_menu.closed.connect(_on_options_closed)
 
 func _on_options_closed() -> void:
-	_update_button_list()
-	_highlight_current_button()
+	_change_screen(Screen.MAIN_MENU)
+
 
 func _input(event: InputEvent) -> void:
+	# Si hay subscreens visibles, ignorar input del menu principal
+	if slot_select_screen and slot_select_screen.visible: return
+	if character_select_screen and character_select_screen.visible: return
+
 	# Si hay un submenu de opciones abierto, no procesar
 	var options_menu = get_node_or_null("OptionsMenu")
 	if options_menu and options_menu.visible:

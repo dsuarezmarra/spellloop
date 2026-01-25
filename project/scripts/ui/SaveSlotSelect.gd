@@ -547,18 +547,91 @@ func _on_slot_selected(slot_index: int) -> void:
 	slot_selected.emit(slot_index)
 
 func _on_delete_slot(slot_index: int) -> void:
-	"""Callback para borrar un slot"""
-	# Mostrar confirmación
-	var confirm_dialog = ConfirmationDialog.new()
-	confirm_dialog.dialog_text = "¿Borrar Slot %d?\n\nEsto eliminará TODO el progreso\nde esta partida permanentemente." % (slot_index + 1)
-	confirm_dialog.ok_button_text = "Borrar"
-	confirm_dialog.cancel_button_text = "Cancelar"
-	confirm_dialog.confirmed.connect(_confirm_delete_slot.bind(slot_index))
-	add_child(confirm_dialog)
-	confirm_dialog.popup_centered()
+	"""Callback para borrar un slot - Abre Popup Personalizado"""
+	_create_delete_popup(slot_index)
 
-func _confirm_delete_slot(slot_index: int) -> void:
+func _create_delete_popup(slot_index: int) -> void:
+	# Fondo oscuro bloqueante
+	var overlay = Panel.new()
+	overlay.name = "DeleteOverlay"
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	# Stylebox transparente oscuro
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0, 0, 0, 0.8)
+	overlay.add_theme_stylebox_override("panel", style)
+	add_child(overlay)
+	
+	# Panel Central
+	var panel = PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.1, 0.05, 0.15)
+	panel_style.border_color = Color(0.8, 0.2, 0.2)
+	panel_style.set_border_width_all(2)
+	panel_style.set_corner_radius_all(12)
+	panel.add_theme_stylebox_override("panel", panel_style)
+	overlay.add_child(panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 20)
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_top", 20)
+	margin.add_theme_constant_override("margin_bottom", 20)
+	margin.add_theme_constant_override("margin_left", 30)
+	margin.add_theme_constant_override("margin_right", 30)
+	margin.add_child(vbox)
+	panel.add_child(margin)
+	
+	# Texto
+	var lbl = Label.new()
+	lbl.text = "¿BORRAR SLOT %d?" % (slot_index + 1)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.add_theme_font_size_override("font_size", 24)
+	lbl.add_theme_color_override("font_color", Color(1, 0.3, 0.3))
+	vbox.add_child(lbl)
+	
+	var sub = Label.new()
+	sub.text = "Esta acción es irreversible.\nTu mago perderá todo su poder."
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	vbox.add_child(sub)
+	
+	# Botones
+	var hbox = HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 20)
+	vbox.add_child(hbox)
+	
+	var btn_cancel = Button.new()
+	btn_cancel.text = "CANCELAR"
+	btn_cancel.custom_minimum_size = Vector2(120, 40)
+	btn_cancel.pressed.connect(overlay.queue_free)
+	btn_cancel.pressed.connect(_play_button_sound)
+	# Restaurar foco al cerrar
+	btn_cancel.tree_exiting.connect(func(): slot_buttons[current_slot_index].grab_focus())
+	hbox.add_child(btn_cancel)
+	
+	var btn_delete = Button.new()
+	btn_delete.text = "BORRAR"
+	btn_delete.custom_minimum_size = Vector2(120, 40)
+	var del_style = StyleBoxFlat.new()
+	del_style.bg_color = Color(0.6, 0.2, 0.2)
+	btn_delete.add_theme_stylebox_override("normal", del_style)
+	btn_delete.pressed.connect(_confirm_delete_slot.bind(slot_index, overlay))
+	btn_delete.pressed.connect(_play_button_sound)
+	hbox.add_child(btn_delete)
+	
+	# Neighbors
+	btn_cancel.focus_neighbor_right = btn_delete.get_path()
+	btn_delete.focus_neighbor_left = btn_cancel.get_path()
+	
+	# Focus start
+	btn_cancel.grab_focus()
+
+func _confirm_delete_slot(slot_index: int, overlay: Control) -> void:
 	"""Confirmar borrado de slot"""
+	if overlay: overlay.queue_free()
+	
 	var save_manager = get_tree().root.get_node_or_null("SaveManager")
 	if save_manager and save_manager.has_method("delete_slot"):
 		save_manager.delete_slot(slot_index)
