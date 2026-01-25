@@ -466,6 +466,9 @@ func _change_screen(target: int) -> void:
 				character_select_screen.z_index = 200
 				if character_select_screen.has_method("show_screen"):
 					character_select_screen.show_screen()
+				# Asegurar input focus
+				if character_select_screen.has_method("take_focus"):
+					character_select_screen.take_focus()
 					
 		Screen.OPTIONS:
 			_show_options_internal()

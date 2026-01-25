@@ -709,3 +709,15 @@ func hide_screen() -> void:
 func get_selected_character() -> String:
 	"""Get selected character ID"""
 	return selected_character_id
+
+func take_focus() -> void:
+	"""Force focus to enable input processing"""
+	visible = true
+	# Give the engine a frame to process visibility before grabbing focus
+	if is_inside_tree():
+		await get_tree().process_frame
+	
+	# Since this screen handles input via _input(event), 
+	# we just need to make sure we are the focus owner to receive GUI events if needed,
+	# or simply ensure no other control is stealing focus.
+	grab_focus()

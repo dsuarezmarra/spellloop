@@ -497,7 +497,14 @@ func _input(event: InputEvent) -> void:
 			KEY_S: get_viewport().push_input(ev_down)
 			KEY_A: get_viewport().push_input(ev_left)
 			KEY_D: get_viewport().push_input(ev_right)
-			KEY_ESCAPE: _on_back_pressed()
+			KEY_ESCAPE:
+				# Manejo especial para Overlay
+				var overlay = get_node_or_null("DeleteOverlay")
+				if overlay:
+					overlay.queue_free()
+					take_focus()
+				else:
+					_on_back_pressed()
 			KEY_SPACE, KEY_ENTER:
 				# Manually trigger press if ui_accept is failing
 				var focus = get_viewport().gui_get_focus_owner()
