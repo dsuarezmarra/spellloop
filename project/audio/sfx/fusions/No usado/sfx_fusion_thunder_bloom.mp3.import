@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://pin6o1hl7f3j"
+path="res://.godot/imported/sfx_fusion_thunder_bloom.mp3-7826b1fb02b163e767cd618291c9b88f.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/fusions/No usado/sfx_fusion_thunder_bloom.mp3"
+dest_files=["res://.godot/imported/sfx_fusion_thunder_bloom.mp3-7826b1fb02b163e767cd618291c9b88f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cwct5tf2exhkd"
+path="res://.godot/imported/sfx_rarity_legendary_02.mp3-80ae1218cdb7b5dd6d83f91d379e438d.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/ui/No usado/sfx_rarity_legendary_02.mp3"
+dest_files=["res://.godot/imported/sfx_rarity_legendary_02.mp3-80ae1218cdb7b5dd6d83f91d379e438d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

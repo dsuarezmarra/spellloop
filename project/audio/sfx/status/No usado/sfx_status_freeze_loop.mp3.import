@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://0553bq5wsjvw"
+path="res://.godot/imported/sfx_status_freeze_loop.mp3-ea46a7ad191d80c0356a829f4fbe5589.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/status/No usado/sfx_status_freeze_loop.mp3"
+dest_files=["res://.godot/imported/sfx_status_freeze_loop.mp3-ea46a7ad191d80c0356a829f4fbe5589.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://4vmas8q5vpt6"
+path="res://.godot/imported/sfx_elite_spawn_02.mp3-e47839bbcc449c53b17932b7b59f8241.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/enemies/No usado/sfx_elite_spawn_02.mp3"
+dest_files=["res://.godot/imported/sfx_elite_spawn_02.mp3-e47839bbcc449c53b17932b7b59f8241.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

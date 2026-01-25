@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://olb1ra4tohva"
+path="res://.godot/imported/sfx_weapon_plasma_01.mp3-7053174eaae0e71646dbdc41b154a134.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/weapons/No usado/sfx_weapon_plasma_01.mp3"
+dest_files=["res://.godot/imported/sfx_weapon_plasma_01.mp3-7053174eaae0e71646dbdc41b154a134.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

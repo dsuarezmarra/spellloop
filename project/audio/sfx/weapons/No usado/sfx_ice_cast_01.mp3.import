@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bfe3i5xrt5833"
+path="res://.godot/imported/sfx_ice_cast_01.mp3-e72750380c1758b5f32bfc03ea70d632.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/weapons/No usado/sfx_ice_cast_01.mp3"
+dest_files=["res://.godot/imported/sfx_ice_cast_01.mp3-e72750380c1758b5f32bfc03ea70d632.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

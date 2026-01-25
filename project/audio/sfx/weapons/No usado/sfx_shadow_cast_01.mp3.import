@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ceautx4gb5e8p"
+path="res://.godot/imported/sfx_shadow_cast_01.mp3-cca68e12d9c63103b2646b25e4680568.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/weapons/No usado/sfx_shadow_cast_01.mp3"
+dest_files=["res://.godot/imported/sfx_shadow_cast_01.mp3-cca68e12d9c63103b2646b25e4680568.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://3b4ta5dea5yv"
+path="res://.godot/imported/sfx_level_up_01.mp3-f5675d806735a50c3c0c877fca264a00.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/gameplay/No usado/sfx_level_up_01.mp3"
+dest_files=["res://.godot/imported/sfx_level_up_01.mp3-f5675d806735a50c3c0c877fca264a00.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

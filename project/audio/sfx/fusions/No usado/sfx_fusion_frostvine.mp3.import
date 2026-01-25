@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://d1vjbt3bxjbij"
+path="res://.godot/imported/sfx_fusion_frostvine.mp3-21f4fc34c85aa21f4f49046881076ff4.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/fusions/No usado/sfx_fusion_frostvine.mp3"
+dest_files=["res://.godot/imported/sfx_fusion_frostvine.mp3-21f4fc34c85aa21f4f49046881076ff4.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

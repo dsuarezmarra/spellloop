@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cnivli5t2q1ry"
+path="res://.godot/imported/sfx_status_poison_loop.mp3-746bf2dcf149927cd5a49ac7fbc80ad0.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/status/No usado/sfx_status_poison_loop.mp3"
+dest_files=["res://.godot/imported/sfx_status_poison_loop.mp3-746bf2dcf149927cd5a49ac7fbc80ad0.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

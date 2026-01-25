@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bg2btxw7umcej"
+path="res://.godot/imported/sfx_fusion_hellfire.mp3-d7739fa504f726dc36306b75cb033d3f.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/fusions/No usado/sfx_fusion_hellfire.mp3"
+dest_files=["res://.godot/imported/sfx_fusion_hellfire.mp3-d7739fa504f726dc36306b75cb033d3f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dvy3c6cc6jdea"
+path="res://.godot/imported/sfx_death_bone_03.mp3-faa73d004b8493d1cc4a1bc1663e1d3c.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/enemies/No usado/sfx_death_bone_03.mp3"
+dest_files=["res://.godot/imported/sfx_death_bone_03.mp3-faa73d004b8493d1cc4a1bc1663e1d3c.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

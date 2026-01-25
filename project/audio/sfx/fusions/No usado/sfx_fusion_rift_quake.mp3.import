@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dt2cudbr1mtjx"
+path="res://.godot/imported/sfx_fusion_rift_quake.mp3-f7e868454d3426fd0d8b5033419d6027.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/fusions/No usado/sfx_fusion_rift_quake.mp3"
+dest_files=["res://.godot/imported/sfx_fusion_rift_quake.mp3-f7e868454d3426fd0d8b5033419d6027.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

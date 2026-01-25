@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://jrmt3en4y1b"
-path="res://.godot/imported/sfx_ui_hover_04.mp3-c97cfd8d6b6a94399f1783c61c48872f.mp3str"
+path="res://.godot/imported/sfx_ui_hover_04.mp3-72cad6253da0ed58aef049216a66220b.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/ui/No usado/sfx_ui_hover_04.mp3"
-dest_files=["res://.godot/imported/sfx_ui_hover_04.mp3-c97cfd8d6b6a94399f1783c61c48872f.mp3str"]
+dest_files=["res://.godot/imported/sfx_ui_hover_04.mp3-72cad6253da0ed58aef049216a66220b.mp3str"]
 
 [params]
 

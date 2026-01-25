@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://chaptpwoxkk8o"
+path="res://.godot/imported/sfx_footstep_grass_06.mp3-a3d44d3331b74106568770b597a7c52f.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/gameplay/No usado/sfx_footstep_grass_06.mp3"
+dest_files=["res://.godot/imported/sfx_footstep_grass_06.mp3-a3d44d3331b74106568770b597a7c52f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://s1xpxgblfh0b"
+path="res://.godot/imported/sfx_weapon_cosmic_barrier_01.mp3-76dc787450a75e2f2368e9f883d6238a.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/weapons/No usado/sfx_weapon_cosmic_barrier_01.mp3"
+dest_files=["res://.godot/imported/sfx_weapon_cosmic_barrier_01.mp3-76dc787450a75e2f2368e9f883d6238a.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

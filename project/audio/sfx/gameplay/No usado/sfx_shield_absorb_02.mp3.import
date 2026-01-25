@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dqs0f6qscp3pk"
+path="res://.godot/imported/sfx_shield_absorb_02.mp3-82ae6b1c6f874b02cac0d2a78869efa9.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/gameplay/No usado/sfx_shield_absorb_02.mp3"
+dest_files=["res://.godot/imported/sfx_shield_absorb_02.mp3-82ae6b1c6f874b02cac0d2a78869efa9.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

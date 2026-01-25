@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bpiea3nrbakv4"
+path="res://.godot/imported/sfx_player_death_04.mp3-65f16c4eb7887eb91217eb8d0f97e2ef.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/gameplay/No usado/sfx_player_death_04.mp3"
+dest_files=["res://.godot/imported/sfx_player_death_04.mp3-65f16c4eb7887eb91217eb8d0f97e2ef.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

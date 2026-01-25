@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cjrp0u2y6ug1t"
+path="res://.godot/imported/sfx_death_armor_01.mp3-44596dc81217172930837d8fc0656ef5.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/enemies/No usado/sfx_death_armor_01.mp3"
+dest_files=["res://.godot/imported/sfx_death_armor_01.mp3-44596dc81217172930837d8fc0656ef5.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

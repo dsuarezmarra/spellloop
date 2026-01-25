@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c3m63v342517v"
+path="res://.godot/imported/sfx_fusion_radiant_stone.mp3-9c9195042f9fb52903a9d6f5b87ca1f0.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/fusions/No usado/sfx_fusion_radiant_stone.mp3"
+dest_files=["res://.godot/imported/sfx_fusion_radiant_stone.mp3-9c9195042f9fb52903a9d6f5b87ca1f0.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bnak7xgo8ahdm"
+path="res://.godot/imported/sfx_void_hit_04.mp3-af6a04b9d7a7e2ac2fc3d0d043286460.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/weapons/No usado/sfx_void_hit_04.mp3"
+dest_files=["res://.godot/imported/sfx_void_hit_04.mp3-af6a04b9d7a7e2ac2fc3d0d043286460.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

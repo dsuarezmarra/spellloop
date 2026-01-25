@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b67h8xjh2031p"
+path="res://.godot/imported/sfx_footstep_stone.mp3-18f7f5d3727409ab69a1a4c0a89f7105.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/gameplay/No usado/sfx_footstep_stone.mp3"
+dest_files=["res://.godot/imported/sfx_footstep_stone.mp3-18f7f5d3727409ab69a1a4c0a89f7105.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

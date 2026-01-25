@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dnxjyu1ap6qx6"
+path="res://.godot/imported/sfx_weapon_thunder_bloom_01.mp3-75249dbd22dc89ca9a8c84b709614817.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/weapons/No usado/sfx_weapon_thunder_bloom_01.mp3"
+dest_files=["res://.godot/imported/sfx_weapon_thunder_bloom_01.mp3-75249dbd22dc89ca9a8c84b709614817.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

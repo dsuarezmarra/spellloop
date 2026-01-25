@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b2mqednydqrcp"
+path="res://.godot/imported/sfx_streak_06.mp3-3f74d9519183233dd8fce08044fdd4f5.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/coins/No usado/sfx_streak_06.mp3"
+dest_files=["res://.godot/imported/sfx_streak_06.mp3-3f74d9519183233dd8fce08044fdd4f5.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

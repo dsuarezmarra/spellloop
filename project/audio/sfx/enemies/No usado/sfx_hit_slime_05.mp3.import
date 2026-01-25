@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cea0tqid6b3uf"
+path="res://.godot/imported/sfx_hit_slime_05.mp3-d8a6dfc75a82c41ea1d6a1e50243072d.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/enemies/No usado/sfx_hit_slime_05.mp3"
+dest_files=["res://.godot/imported/sfx_hit_slime_05.mp3-d8a6dfc75a82c41ea1d6a1e50243072d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

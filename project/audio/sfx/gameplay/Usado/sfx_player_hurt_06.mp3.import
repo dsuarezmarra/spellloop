@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dyxclosfun1sp"
-path="res://.godot/imported/sfx_player_hurt_06.mp3-2a08d351bdf40be38a80d886773cd9fb.mp3str"
+path="res://.godot/imported/sfx_player_hurt_06.mp3-4953b1b99849af989a43297b1a87768b.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/gameplay/Usado/sfx_player_hurt_06.mp3"
-dest_files=["res://.godot/imported/sfx_player_hurt_06.mp3-2a08d351bdf40be38a80d886773cd9fb.mp3str"]
+dest_files=["res://.godot/imported/sfx_player_hurt_06.mp3-4953b1b99849af989a43297b1a87768b.mp3str"]
 
 [params]
 

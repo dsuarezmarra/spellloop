@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://lnfkn84yh0nt"
+
+[deps]
+
+files=["res://audio_audit_preview.status.translation", "res://audio_audit_preview.evidence.translation"]
+
+source_file="res://audio_audit_preview.csv"
+dest_files=["res://audio_audit_preview.status.translation", "res://audio_audit_preview.evidence.translation"]
+
+[params]
+
+compress=true
+delimiter=0

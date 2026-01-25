@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://vkwofprhkrsy"
+path="res://.godot/imported/sfx_player_revive_03.mp3-7a2518203b193e51b87ec8bf8b3a80df.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/gameplay/No usado/sfx_player_revive_03.mp3"
+dest_files=["res://.godot/imported/sfx_player_revive_03.mp3-7a2518203b193e51b87ec8bf8b3a80df.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

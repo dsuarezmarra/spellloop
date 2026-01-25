@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bmygsru8c1sgf"
-path="res://.godot/imported/music_boss_theme.mp3-39d8fceb9ab0af104d3aa959cf350c5d.mp3str"
+path="res://.godot/imported/music_boss_theme.mp3-3a577a2a68e7711f1757fe1ede7336ea.mp3str"
 
 [deps]
 
 source_file="res://audio/music/bosses/Usado/music_boss_theme.mp3"
-dest_files=["res://.godot/imported/music_boss_theme.mp3-39d8fceb9ab0af104d3aa959cf350c5d.mp3str"]
+dest_files=["res://.godot/imported/music_boss_theme.mp3-3a577a2a68e7711f1757fe1ede7336ea.mp3str"]
 
 [params]
 

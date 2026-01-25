@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://cxe83dh3k68s4"
+path="res://.godot/imported/sfx_fusion_frostbite.mp3-8cdb13206bbf66a5c33fe75ec16b4c20.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/fusions/No usado/sfx_fusion_frostbite.mp3"
+dest_files=["res://.godot/imported/sfx_fusion_frostbite.mp3-8cdb13206bbf66a5c33fe75ec16b4c20.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

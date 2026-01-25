@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bo3yeyhjt6s4d"
+path="res://.godot/imported/sfx_arcane_hit_01.mp3-2ae879d3c9b3276e563038127d7bd96d.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/weapons/No usado/sfx_arcane_hit_01.mp3"
+dest_files=["res://.godot/imported/sfx_arcane_hit_01.mp3-2ae879d3c9b3276e563038127d7bd96d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

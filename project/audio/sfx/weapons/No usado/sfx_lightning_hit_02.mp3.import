@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://6h2113g1pvuw"
+path="res://.godot/imported/sfx_lightning_hit_02.mp3-f9a7e2669d97f057e8d2d93752ed5f45.mp3str"
+
+[deps]
+
+source_file="res://audio/sfx/weapons/No usado/sfx_lightning_hit_02.mp3"
+dest_files=["res://.godot/imported/sfx_lightning_hit_02.mp3-f9a7e2669d97f057e8d2d93752ed5f45.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
