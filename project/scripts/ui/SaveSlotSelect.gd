@@ -88,6 +88,10 @@ func _ready() -> void:
 		bg.z_index = -10 # Al fondo
 		add_child(bg)
 		move_child(bg, 0)
+		
+	# FORCE UPPERCASE TITLE
+	if title_label:
+		title_label.text = "SELECCIONA TU PARTIDA"
 
 func _create_slot_ui() -> void:
 	"""Crear los 3 slots de guardado visualmente"""
@@ -239,6 +243,14 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	delete_btn.visible = false 
 	actions_vbox.add_child(delete_btn)
 	
+	# --- NAVIGATION LINKS ---
+	# Link vertical manual
+	select_btn.focus_neighbor_bottom = delete_btn.get_path()
+	delete_btn.focus_neighbor_top = select_btn.get_path()
+	
+	# Link horizontal manual is done in _setup_navigation
+	
+	
 	# TRACKING para animaciones del panel completo
 	# Usamos el focus signal del botón PRINCIPAL para animar el panel padre
 	select_btn.focus_entered.connect(_highlight_panel.bind(panel, true))
@@ -343,9 +355,12 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		# --- SLOT CON DATOS ---
 		var player_data = slot_data.get("player_data", {})
 		
-		# Avatar / Icono Class (Placeholder)
+		# Avatar / Icono Class (Variado)
+		var icons = ["⚔️", "🔮", "📜", "🎒", "🧪"]
+		var icon_char = icons[slot_index % icons.size()]
+		
 		var avatar = Label.new()
-		avatar.text = "🧙‍♂️" # Mago genérico
+		avatar.text = icon_char
 		avatar.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		avatar.add_theme_font_size_override("font_size", 64)
 		info_container.add_child(avatar)
@@ -396,16 +411,55 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 
 func _setup_navigation() -> void:
 	"""Configurar navegación WASD"""
-	# Desactivar navegación por flechas
-	for btn in slot_buttons:
-		btn.focus_neighbor_top = btn.get_path()
-		btn.focus_neighbor_bottom = btn.get_path()
-		btn.focus_neighbor_left = btn.get_path()
-		btn.focus_neighbor_right = btn.get_path()
+	# Desactivar navegación por flechas y configurar vecinos manualmente
+	var num_active = slot_buttons.size()
 	
+	for i in range(num_active):
+		var btn = slot_buttons[i]
+		# Get panels to find inner buttons
+		var panel = slot_panels[i]
+		var select_btn = btn # This is the select button from slot_buttons array
+		var delete_btn = panel.find_child("DeleteButton", true, false)
+		
+		var prev_idx = (i - 1 + num_active) % num_active
+		var next_idx = (i + 1) % num_active
+		
+		# Select Button Horizontal Links
+		select_btn.focus_neighbor_left = slot_buttons[prev_idx].get_path()
+		select_btn.focus_neighbor_right = slot_buttons[next_idx].get_path()
+		
+		# Delete Button Horizontal Links (if visible)
+		if delete_btn:
+			var prev_del = slot_panels[prev_idx].find_child("DeleteButton", true, false)
+			var next_del = slot_panels[next_idx].find_child("DeleteButton", true, false)
+			
+			# Si el vecino no tiene delete button (vacio), ir al select del vecino
+			if prev_del and prev_del.visible:
+				delete_btn.focus_neighbor_left = prev_del.get_path()
+			else:
+				delete_btn.focus_neighbor_left = slot_buttons[prev_idx].get_path() # Fallback to select
+				
+			if next_del and next_del.visible:
+				delete_btn.focus_neighbor_right = next_del.get_path()
+			else:
+				delete_btn.focus_neighbor_right = slot_buttons[next_idx].get_path() # Fallback to select
+				
+			# Vertical down to back button
+			if back_button:
+				delete_btn.focus_neighbor_bottom = back_button.get_path()
+
 	if back_button:
-		back_button.focus_neighbor_top = back_button.get_path()
-		back_button.focus_neighbor_bottom = back_button.get_path()
+		# Back Button Up Link -> Middle Slot Delete (or Select)
+		var mid_idx = 1 if num_active > 1 else 0
+		var mid_panel = slot_panels[mid_idx]
+		var mid_del = mid_panel.find_child("DeleteButton", true, false)
+		var mid_select = slot_buttons[mid_idx]
+		
+		if mid_del and mid_del.visible:
+			back_button.focus_neighbor_top = mid_del.get_path()
+		else:
+			back_button.focus_neighbor_top = mid_select.get_path()
+			
 		back_button.focus_neighbor_left = back_button.get_path()
 		back_button.focus_neighbor_right = back_button.get_path()
 
@@ -426,32 +480,21 @@ func _input(event: InputEvent) -> void:
 	if not visible:
 		return
 	
-	var handled = false
-	
-	# Navegación con WASD
+	# Usar sistema de foco nativo para WASD simulando UI actions
 	if event is InputEventKey and event.pressed:
+		var ev_up = InputEventAction.new(); ev_up.action = "ui_up"; ev_up.pressed = true
+		var ev_down = InputEventAction.new(); ev_down.action = "ui_down"; ev_down.pressed = true
+		var ev_left = InputEventAction.new(); ev_left.action = "ui_left"; ev_left.pressed = true
+		var ev_right = InputEventAction.new(); ev_right.action = "ui_right"; ev_right.pressed = true
+		
 		match event.keycode:
-			KEY_A:
-				_navigate_slots(-1)
-				handled = true
-			KEY_D:
-				_navigate_slots(1)
-				handled = true
-			KEY_W:
-				_navigate_to_slots()
-				handled = true
-			KEY_S:
-				_navigate_to_back()
-				handled = true
-			KEY_SPACE, KEY_ENTER:
-				_activate_current()
-				handled = true
-			KEY_ESCAPE:
-				_on_back_pressed()
-				handled = true
-	
-	if handled:
-		get_viewport().set_input_as_handled()
+			KEY_W: get_viewport().push_input(ev_up)
+			KEY_S: get_viewport().push_input(ev_down)
+			KEY_A: get_viewport().push_input(ev_left)
+			KEY_D: get_viewport().push_input(ev_right)
+			KEY_ESCAPE: _on_back_pressed()
+			
+	# Space/Enter handled natively by buttons if focused
 
 func _navigate_slots(direction: int) -> void:
 	"""Navegar entre slots"""

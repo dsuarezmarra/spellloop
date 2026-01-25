@@ -147,11 +147,10 @@ func _setup_ui() -> void:
 		final_path = ProjectSettings.globalize_path(bg_path)
 		debug_msg += "Global Path: " + final_path + "\n"
 		
-		# Intentar cargar via Image.load_from_file
-		var img = Image.load_from_file(final_path)
-		
+
 		# Fallback Nuclear: Leer bytes crudos (si load_from_file falla)
 		if not img:
+
 			debug_msg += "Image.load_from_file: NULL. Trying Byte Read...\n"
 			if FileAccess.file_exists(final_path):
 				var bytes = FileAccess.get_file_as_bytes(final_path)
@@ -271,57 +270,42 @@ func _create_resume_button() -> void:
 
 		resume_button.pressed.connect(_on_resume_pressed)
 
-	# Add a background panel for the menu buttons
+
+	# --- BACKGROUND BOX ADJUSTMENT ---
+	# En lugar de un panel manual, vamos a envolver el VBox en un PanelContainer
 	var vbox = $UILayer/UIContainer/VBoxContainer
-	if vbox:
-		# Check if already exists
-		if not vbox.get_node_or_null("MenuBackground"):
-			var bg_panel = Panel.new()
-			bg_panel.name = "MenuBackground"
-			bg_panel.show_behind_parent = true
-			bg_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			
-			# Style
-			var style = StyleBoxFlat.new()
-			style.bg_color = Color(0, 0, 0, 0.5) # Semi-transparent black
-			style.set_corner_radius_all(20)
-			# Add blur? No simple blur in StyleBox.
-			style.shadow_color = Color(0, 0, 0, 0.5)
-			style.shadow_size = 20
-			bg_panel.add_theme_stylebox_override("panel", style)
-			
-			# Add as child of UIContainer, but positioned behind VBox?
-			# Actually VBox handles layout. We want it BEHIND the VBox.
-			# Let's add it to UIContainer and set anchors to match VBox with padding.
-			# But VBox size is dynamic. 
-			
-			# Easier: Add it as a child of VBox but ignore layout? Node, PanelContainer.
-			# Better: Wrap VBox contents in a PanelContainer? Too risky for script.
-			
-			# Let's just place it manually relative to VBox if possible, or make it a fixed center panel.
-			# The VBox is centered.
-			
-			# Let's add it to UIContainer, sibling of VBox.
-			$UILayer/UIContainer.add_child(bg_panel)
-			$UILayer/UIContainer.move_child(bg_panel, 0) # Send to back
-			
-			bg_panel.set_anchors_preset(Control.PRESET_CENTER)
-			# Hardcoded size estimate based on buttons
-			bg_panel.custom_minimum_size = Vector2(300, 400) 
-			bg_panel.size = Vector2(300, 400)
-			bg_panel.position = vbox.position - Vector2(25, 25) # Offset estimate
-			# Actually, linking it to VBox signal 'resized' is better but keeping it simple:
-			# Just a centered panel.
-			
-			# Let's use PRESET_CENTER for both.
-			
-	if title_label:
-		title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
-		title_label.add_theme_constant_override("shadow_offset_x", 6)
-		title_label.add_theme_constant_override("shadow_offset_y", 6)
-		title_label.add_theme_constant_override("shadow_outline_size", 4)
-		title_label.add_theme_font_size_override("font_size", 80) # Bigger title
-		title_label.add_theme_color_override("font_color", Color(1, 0.8, 0.2)) # More golden
+	if vbox and not vbox.get_parent() is PanelContainer:
+		var parent = vbox.get_parent()
+		var bg_panel = PanelContainer.new()
+		bg_panel.name = "MenuBackground"
+		
+		# Configurar layout del Panel para centrarlo
+		bg_panel.set_anchors_preset(Control.PRESET_CENTER)
+		
+		# Estilo del Panel (Caja ajustada)
+		var style = StyleBoxFlat.new()
+		style.bg_color = Color(0, 0, 0, 0.5) # Negro semi-transparente
+		style.set_corner_radius_all(20)
+		style.shadow_color = Color(0, 0, 0, 0.5)
+		style.shadow_size = 20
+		# Padding interno
+		style.content_margin_top = 20
+		style.content_margin_bottom = 20
+		style.content_margin_left = 30
+		style.content_margin_right = 30
+		bg_panel.add_theme_stylebox_override("panel", style)
+		
+		# Reparenting: VBox dentro del Panel
+		parent.remove_child(vbox)
+		parent.add_child(bg_panel)
+		bg_panel.add_child(vbox)
+		
+		# Asegurar que el Panel esté centrado en el UIContainer
+		# (Asumiendo que UIContainer es Full Rect o Center)
+		
+	# Quitar textos no deseados
+	if title_label: title_label.visible = false
+	if version_label: version_label.visible = false
 
 func _set_initial_focus() -> void:
 	"""Establecer foco en el boton apropiado"""
@@ -521,7 +505,9 @@ func _on_slot_back() -> void:
 		slot_select_screen.visible = false
 
 	# Mostrar menú principal
-	if ui_container:
+	if has_node("UILayer"):
+		$UILayer.visible = true
+	elif ui_container:
 		ui_container.visible = true
 
 	# Actualizar navegación

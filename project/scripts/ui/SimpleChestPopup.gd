@@ -1316,6 +1316,3 @@ func _update_button_selection():
 			btn.move_child(glow_panel, 0)
 		
 		glow_panel.visible = is_selected
-
-
-
