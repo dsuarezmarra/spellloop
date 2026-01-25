@@ -65,6 +65,7 @@ var _is_cursed: bool = false
 
 # I-Frames (Invulnerabilidad temporal post-daño)
 var _invulnerability_timer: float = 0.0
+var _revive_immunity_timer: float = 0.0
 
 # ========== REGENERACIÓN ==========
 var _regen_accumulator: float = 0.0
@@ -155,7 +156,7 @@ func _initialize_health_component() -> void:
 		if stats and stats.has_method("get_stat"):
 			var stats_max = stats.get_stat("max_health")
 			if stats_max > 0 and stats_max != max_hp:
-				max_hp = int(stats_max)
+				max_hp = maxi(1, int(stats_max))
 				health_component.set_max_health(max_hp)
 				print("[%s] Sincronizado Max HP con PlayerStats: %d" % [character_class, max_hp])
 
@@ -1116,19 +1117,7 @@ func _play_revive_effects() -> void:
 	if audio_manager and audio_manager.has_method("play_sfx"):
 		audio_manager.play_sfx("phoenix_resurrection")
 
-var _revive_immunity_timer: float = 0.0
 
-func _grant_revive_immunity(duration: float) -> void:
-	"""Otorgar inmunidad temporal tras revivir"""
-	_revive_immunity_timer = duration
-
-func _update_revive_immunity(delta: float) -> void:
-	"""Actualizar timer de inmunidad de revive"""
-	if _revive_immunity_timer > 0:
-		_revive_immunity_timer -= delta
-		# Efecto visual de parpadeo durante inmunidad
-		if animated_sprite:
-			animated_sprite.modulate.a = 0.5 + 0.5 * sin(_revive_immunity_timer * 10.0)
 
 func _apply_enemy_slow_aura() -> void:
 	"""Aplicar ralentización pasiva a enemigos cercanos (stat: enemy_slow_aura)"""
@@ -1793,3 +1782,17 @@ func _remove_turret_buff() -> void:
 		player_stats.remove_temp_modifiers_by_source("turret_bonus")
 	
 	modulate = Color.WHITE
+
+func _update_revive_immunity(_delta: float) -> void:
+	"""Actualizar lógica visual de inmunidad de revivir"""
+	if _revive_immunity_timer > 0:
+		# Efecto visual de parpadeo durante inmunidad
+		if animated_sprite:
+			animated_sprite.modulate.a = 0.5 + 0.5 * sin(_revive_immunity_timer * 10.0)
+	else:
+		if animated_sprite and animated_sprite.modulate.a < 1.0:
+			animated_sprite.modulate.a = 1.0
+
+func _grant_revive_immunity(duration: float) -> void:
+	_revive_immunity_timer = duration
+	FloatingText.spawn_text(global_position + Vector2(0, -60), "IMMUNE!", Color.GOLD)

@@ -95,7 +95,7 @@ static func check_execute(tree: SceneTree, enemy: Node) -> bool:
 	if attack_manager == null:
 		return false
 	
-	var execute_threshold = attack_manager.get_player_stat("execute_threshold") if attack_manager.has_method("get_player_stat") else 0.0
+	var execute_threshold = float(attack_manager.get_player_stat("execute_threshold")) if attack_manager.has_method("get_player_stat") else 0.0
 	if execute_threshold <= 0:
 		return false
 	
@@ -145,7 +145,7 @@ static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
 	if attack_manager == null:
 		return
 	
-	var life_steal = attack_manager.get_player_stat("life_steal") if attack_manager.has_method("get_player_stat") else 0.0
+	var life_steal = float(attack_manager.get_player_stat("life_steal")) if attack_manager.has_method("get_player_stat") else 0.0
 	if life_steal <= 0:
 		return
 	
@@ -188,7 +188,7 @@ static func get_modified_effect_duration(tree: SceneTree, base_duration: float) 
 	# OPTIMIZACIÓN: Usar cache en lugar de get_nodes_in_group
 	var player_stats = _get_cached_player_stats(tree)
 	if player_stats and player_stats.has_method("get_stat"):
-		var duration_mult = player_stats.get_stat("status_duration_mult")
+		var duration_mult = float(player_stats.get_stat("status_duration_mult"))
 		if duration_mult > 0:
 			return base_duration * duration_mult
 	
@@ -212,22 +212,22 @@ static func apply_status_effects_chance(tree: SceneTree, enemy: Node) -> void:
 		return
 	
 	# Obtener multiplicador de duración
-	var status_duration_mult = player_stats.get_stat("status_duration_mult")
+	var status_duration_mult = float(player_stats.get_stat("status_duration_mult"))
 	if status_duration_mult <= 0:
 		status_duration_mult = 1.0
 	
 	# === BURN CHANCE ===
-	var burn_chance = player_stats.get_stat("burn_chance")
+	var burn_chance = float(player_stats.get_stat("burn_chance"))
 	if burn_chance > 0 and randf() < burn_chance:
 		if enemy.has_method("apply_burn"):
-			var burn_dmg = player_stats.get_stat("burn_damage") if player_stats.has_method("get_stat") else 3.0
+			var burn_dmg = float(player_stats.get_stat("burn_damage")) if player_stats.has_method("get_stat") else 3.0
 			if burn_dmg <= 0:
 				burn_dmg = 3.0
 			enemy.apply_burn(burn_dmg, 3.0 * status_duration_mult)  # 3s base duration
 			# print("[StatusEffect] 🔥 Burn aplicado! (chance: %.0f%%)" % (burn_chance * 100))
 	
 	# === FREEZE CHANCE ===
-	var freeze_chance = player_stats.get_stat("freeze_chance")
+	var freeze_chance = float(player_stats.get_stat("freeze_chance"))
 	if freeze_chance > 0 and randf() < freeze_chance:
 		if enemy.has_method("apply_freeze"):
 			enemy.apply_freeze(1.0, 1.0 * status_duration_mult)  # 1s freeze
@@ -236,7 +236,7 @@ static func apply_status_effects_chance(tree: SceneTree, enemy: Node) -> void:
 			enemy.apply_slow(0.5, 2.0 * status_duration_mult)  # Fallback: 50% slow 2s
 	
 	# === BLEED CHANCE ===
-	var bleed_chance = player_stats.get_stat("bleed_chance")
+	var bleed_chance = float(player_stats.get_stat("bleed_chance"))
 	if bleed_chance > 0 and randf() < bleed_chance:
 		if enemy.has_method("apply_bleed"):
 			enemy.apply_bleed(2.0, 4.0 * status_duration_mult)  # 2 dmg/s for 4s
@@ -263,19 +263,19 @@ static func get_conditional_damage_multiplier(tree: SceneTree, enemy: Node) -> f
 	var multiplier = 1.0
 	
 	# === DAMAGE VS SLOWED ===
-	var damage_vs_slowed = player_stats.get_stat("damage_vs_slowed")
+	var damage_vs_slowed = float(player_stats.get_stat("damage_vs_slowed"))
 	if damage_vs_slowed > 0:
 		if "_is_slowed" in enemy and enemy._is_slowed:
 			multiplier += damage_vs_slowed
 	
 	# === DAMAGE VS BURNING ===
-	var damage_vs_burning = player_stats.get_stat("damage_vs_burning")
+	var damage_vs_burning = float(player_stats.get_stat("damage_vs_burning"))
 	if damage_vs_burning > 0:
 		if "_is_burning" in enemy and enemy._is_burning:
 			multiplier += damage_vs_burning
 	
 	# === DAMAGE VS FROZEN ===
-	var damage_vs_frozen = player_stats.get_stat("damage_vs_frozen")
+	var damage_vs_frozen = float(player_stats.get_stat("damage_vs_frozen"))
 	if damage_vs_frozen > 0:
 		if "_is_frozen" in enemy and enemy._is_frozen:
 			multiplier += damage_vs_frozen
