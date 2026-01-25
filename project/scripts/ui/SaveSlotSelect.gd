@@ -41,6 +41,18 @@ func _ready() -> void:
 	_setup_navigation()
 	_connect_signals()
 	
+	# 1. Eliminar botón Volver (Redundante, usar ESC)
+	if back_button:
+		back_button.visible = false
+		back_button.process_mode = Node.PROCESS_MODE_DISABLED
+		
+	# 2. Hacer panel transparente
+	var main_panel = get_node_or_null("Panel")
+	if main_panel:
+		var transparent_style = StyleBoxFlat.new()
+		transparent_style.bg_color = Color(0, 0, 0, 0)
+		main_panel.add_theme_stylebox_override("panel", transparent_style)
+	
 	# Focus en el primer slot
 	if slot_buttons.size() > 0:
 		slot_buttons[0].grab_focus()
@@ -449,24 +461,10 @@ func _setup_navigation() -> void:
 			else:
 				delete_btn.focus_neighbor_right = slot_buttons[next_idx].get_path() # Fallback to select
 				
-			# Vertical down to back button
-			if back_button:
-				delete_btn.focus_neighbor_bottom = back_button.get_path()
+			# Vertical down (ciclado o nada)
+			delete_btn.focus_neighbor_bottom = delete_btn.get_path() # Stay on delete
 
-	if back_button:
-		# Back Button Up Link -> Middle Slot Delete (or Select)
-		var mid_idx = 1 if num_active > 1 else 0
-		var mid_panel = slot_panels[mid_idx]
-		var mid_del = mid_panel.find_child("DeleteButton", true, false)
-		var mid_select = slot_buttons[mid_idx]
-		
-		if mid_del and mid_del.visible:
-			back_button.focus_neighbor_top = mid_del.get_path()
-		else:
-			back_button.focus_neighbor_top = mid_select.get_path()
-			
-		back_button.focus_neighbor_left = back_button.get_path()
-		back_button.focus_neighbor_right = back_button.get_path()
+	# (Back Button logic removed)
 
 func _connect_signals() -> void:
 	if back_button:

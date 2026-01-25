@@ -282,9 +282,9 @@ func _create_resume_button() -> void:
 			bg_panel = PanelContainer.new()
 			bg_panel.name = "MenuBackground"
 			
-			# Configurar Estilo
+			# Configurar Estilo (TRANSPARENTE como solicitado)
 			var style = StyleBoxFlat.new()
-			style.bg_color = Color(0, 0, 0, 0.6)
+			style.bg_color = Color(0, 0, 0, 0.0) # Totalmente transparente
 			style.set_corner_radius_all(16)
 			style.content_margin_top = 30
 			style.content_margin_bottom = 30
@@ -439,8 +439,19 @@ func _change_screen(target: int) -> void:
 	# 2. SHOW TARGET
 	match target:
 		Screen.MAIN_MENU:
-			if has_node("UILayer"): $UILayer.visible = true
-			elif ui_container: ui_container.visible = true
+			if has_node("UILayer"): 
+				$UILayer.visible = true
+				# Asegurar que el contenido interno sea visible
+				var ui_container = $UILayer.get_node_or_null("UIContainer")
+				if ui_container: ui_container.visible = true
+				
+				# Resetear fade si se quedó a medias
+				modulate.a = 1.0
+				
+			elif ui_container: 
+				ui_container.visible = true
+				modulate.a = 1.0
+				
 			# Restore focus
 			_update_button_list()
 			_highlight_current_button()
@@ -543,14 +554,21 @@ func _show_options_internal() -> void:
 		if scene:
 			options_menu = scene.instantiate()
 			options_menu.name = "OptionsMenu"
-			if has_node("UILayer"): $UILayer.add_child(options_menu)
-			else: add_child(options_menu)
+			# Add DIRECTLY to MainMenu, not UILayer, because UILayer is hidden in OPTIONS mode
+			add_child(options_menu)
 			options_menu.z_index = 300
 			
 	if options_menu:
 		options_menu.visible = true
+		if options_menu.get_parent():
+			options_menu.get_parent().move_child(options_menu, -1)
+			
 		if options_menu.has_signal("closed") and not options_menu.closed.is_connected(_on_options_closed):
 			options_menu.closed.connect(_on_options_closed)
+			
+		# Focus options immediately
+		if options_menu.has_method("take_focus"):
+			options_menu.take_focus()
 
 func _on_options_closed() -> void:
 	_change_screen(Screen.MAIN_MENU)

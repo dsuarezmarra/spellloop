@@ -252,6 +252,9 @@ func _damage_enemy(enemy: Node) -> void:
 		ProjectileFactory.apply_life_steal(get_tree(), damage_result.final_damage)
 		ProjectileFactory.check_execute(get_tree(), enemy)
 		ProjectileFactory.apply_status_effects_chance(get_tree(), enemy)
+		
+		# Feedback auditivo (Solo al impactar)
+		AudioManager.play("sfx_hit_ghost", 0.1) # Pitch variation + slightly louder? No, keep volume default.
 	
 	# Knockback
 	var final_knockback = knockback

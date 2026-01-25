@@ -467,8 +467,10 @@ func _spawn_projectiles(player: Node2D, targets: Array, final_damage: float, cri
 	"""
 	# Play weapon cast sound - unique per weapon for deterministic audio
 	# Format: sfx_weapon_{weapon_id} (e.g., sfx_weapon_fire_wand, sfx_weapon_ice_staff)
-	var weapon_sfx = "sfx_weapon_%s" % id
-	AudioManager.play_fixed(weapon_sfx)
+	# FIX: No reproducir sonido para armas orbitales (son persistentes y el sonido molesta)
+	if projectile_type != WeaponDatabase.ProjectileType.ORBIT:
+		var weapon_sfx = "sfx_weapon_%s" % id
+		AudioManager.play_fixed(weapon_sfx)
 	
 	match projectile_type:
 		WeaponDatabase.ProjectileType.SINGLE:
