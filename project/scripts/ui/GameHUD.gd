@@ -104,6 +104,35 @@ var streak_value_label: Label = null
 var streak_multiplier_label: Label = null
 var streak_bar: ProgressBar = null
 
+func show_levelup_popup(upgrades: Array) -> void:
+	"""Show level up selection screen using UIManager queue"""
+	# Instantiate popup
+	var popup_scene = load("res://scenes/ui/LevelUpPanel.tscn")
+	if not popup_scene:
+		push_warning("[GameHUD] Failed to load LevelUpPanel.tscn")
+		return
+
+	var popup = popup_scene.instantiate()
+	
+	# Setup upgrades data
+	if popup.has_method("setup_options"):
+		popup.setup_options(upgrades)
+	
+	# Connect signals if needed (though LevelUpPanel usually handles its own logic)
+	# e.g. on upgrade selected
+	
+	# Request via UIManager
+	var ui_manager = get_tree().root.get_node_or_null("UIManager")
+	if not ui_manager:
+		# Fallback if no UIManager (shouldn't happen in normal play)
+		add_child(popup)
+	else:
+		ui_manager.request_popup(popup)
+
+func hide_levelup_popup() -> void:
+	# Deprecated/Unused with UIManager handling closing
+	pass
+
 func _create_streak_bar():
 	# Crear dinámicamente la barra de racha debajo de las monedas
 	var coins_container = get_node_or_null("Control/TopRight/CoinsContainer")

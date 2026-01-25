@@ -37,39 +37,91 @@ func _ready() -> void:
 	_setup_wasd_navigation()
 
 func _apply_premium_style() -> void:
-	# Estilo base para botones
+	# 🎨 ESTILO MAGICAL VOID & GOLD
+	
+	# Configurar título con Glow
+	if title_label:
+		title_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.6)) # Oro pálido
+		title_label.add_theme_color_override("font_shadow_color", Color(0.6, 0.2, 0.8, 0.6)) # Sombra púrpura
+		title_label.add_theme_constant_override("shadow_offset_x", 0)
+		title_label.add_theme_constant_override("shadow_offset_y", 4)
+		title_label.add_theme_constant_override("shadow_outline_size", 8)
+	
+	# Estilo Base de Botones (Glassmorphism Dark)
 	var style_normal = StyleBoxFlat.new()
-	style_normal.bg_color = Color(0.15, 0.15, 0.25, 0.9)
-	style_normal.border_color = Color(0.4, 0.5, 0.8, 0.5)
-	style_normal.set_border_width_all(2)
-	style_normal.set_corner_radius_all(8)
+	style_normal.bg_color = Color(0.05, 0.05, 0.1, 0.80) # Casi negro azulado, semi-transparente
+	style_normal.border_color = Color(0.3, 0.2, 0.5, 0.5) # Borde púrpura tenue
+	style_normal.set_border_width_all(1)
+	style_normal.set_corner_radius_all(12)
+	style_normal.content_margin_top = 10
+	style_normal.content_margin_bottom = 10
 	
+	# Estilo Hover (Glow Dorado)
 	var style_hover = style_normal.duplicate()
-	style_hover.bg_color = Color(0.25, 0.25, 0.4, 1.0)
-	style_hover.border_color = Color(1.0, 0.8, 0.2, 1.0) # Gold border on hover
+	style_hover.bg_color = Color(0.15, 0.15, 0.25, 0.9)
+	style_hover.border_color = Color(1.0, 0.8, 0.2, 1.0) # Borde Dorado Brillante
+	style_hover.set_border_width_all(2)
+	style_hover.shadow_color = Color(1.0, 0.8, 0.2, 0.4) # Glow dorado
+	style_hover.shadow_size = 8
 	
+	# Estilo Pressed (Energía contenida)
 	var style_pressed = style_normal.duplicate()
 	style_pressed.bg_color = Color(0.1, 0.1, 0.15, 1.0)
-	style_pressed.border_color = Color(0.8, 0.6, 0.1, 1.0)
+	style_pressed.border_color = Color(0.8, 0.4, 1.0, 1.0) # Borde Púrpura intenso
+	style_pressed.shadow_size = 2
 	
 	var buttons = [play_button, options_button, quit_button, resume_button]
+	
 	for btn in buttons:
 		if btn:
 			btn.add_theme_stylebox_override("normal", style_normal)
 			btn.add_theme_stylebox_override("hover", style_hover)
 			btn.add_theme_stylebox_override("pressed", style_pressed)
-			btn.add_theme_stylebox_override("focus", style_hover)
+			btn.add_theme_stylebox_override("focus", style_hover) # Focus usa estilo hover para gamepad
+			
+			# Tipografía
 			btn.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
-			btn.add_theme_color_override("font_hover_color", Color(1.0, 0.9, 0.5))
-			btn.add_theme_constant_override("h_separation", 10)
+			btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.6)) # Texto dorado al hover
+			btn.add_theme_color_override("font_outline_color", Color.BLACK)
+			btn.add_theme_constant_override("outline_size", 4)
+			btn.add_theme_font_size_override("font_size", 24)
+			
+			# Conectar animaciones de hover si no están conectadas
+			if not btn.mouse_entered.is_connected(_on_button_hover_anim.bind(btn)):
+				btn.mouse_entered.connect(_on_button_hover_anim.bind(btn))
+			if not btn.mouse_exited.is_connected(_on_button_exit_anim.bind(btn)):
+				btn.mouse_exited.connect(_on_button_exit_anim.bind(btn))
+			if not btn.focus_entered.is_connected(_on_button_hover_anim.bind(btn)):
+				btn.focus_entered.connect(_on_button_hover_anim.bind(btn))
+			if not btn.focus_exited.is_connected(_on_button_exit_anim.bind(btn)):
+				btn.focus_exited.connect(_on_button_exit_anim.bind(btn))
 
-	if title_label:
-		title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5))
-		title_label.add_theme_constant_override("shadow_offset_x", 4)
-		title_label.add_theme_constant_override("shadow_offset_y", 4)
-		title_label.add_theme_color_override("font_color", Color(1, 0.9, 0.8))
+func _on_button_hover_anim(btn: Button) -> void:
+	# Animación de escala sutil "Pop"
+	if not btn: return
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_BACK)
+	tween.tween_property(btn, "scale", Vector2(1.05, 1.05), 0.1)
+	# Sonido UI
+	AudioManager.play_fixed("sfx_ui_hover")
+
+func _on_button_exit_anim(btn: Button) -> void:
+	if not btn: return
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.1)
 
 func _setup_ui() -> void:
+	# Asegurar pivotes centrales para animaciones de escala
+	var buttons = [play_button, options_button, quit_button, resume_button]
+	for btn in buttons:
+		if btn:
+			btn.pivot_offset = btn.size / 2
+			# Note: Button size might not be ready yet if containers haven't sorted.
+			# Using call_deferred to update pivot after layout
+			btn.call_deferred("set_pivot_offset", btn.size / 2)
+
 	if version_label:
 		version_label.text = "v" + GAME_VERSION
 

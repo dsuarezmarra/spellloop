@@ -107,113 +107,174 @@ func _create_slot_ui() -> void:
 		slot_panels.append(slot_panel)
 
 func _create_slot_panel(slot_index: int) -> PanelContainer:
-	"""Crear un panel individual de slot con estilo mejorado"""
+	"""Crear un panel individual de slot con estilo CARTA ARCANA"""
 	var panel = PanelContainer.new()
 	panel.name = "Slot%d" % (slot_index + 1)
-	panel.custom_minimum_size = Vector2(280, 340)  # Ligeramente más grande
+	panel.custom_minimum_size = Vector2(300, 420)  # Formato carta vertical
+	panel.pivot_offset = Vector2(150, 210) # Centro para animaciones
 	
-	# Estilo del panel mejorado (Premium Dark/Gold)
+	# 🎨 ESTILO CARTA ARCANA
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.1, 0.15, 0.95) # Dark Blue/Purple background
-	style.border_color = Color(1.0, 0.84, 0.0) # Gold Border
+	style.bg_color = Color(0.08, 0.05, 0.12, 0.9) # Fondo oscuro púrpura
+	style.border_color = Color(0.4, 0.3, 0.6, 1.0) # Borde inactivo (púrpura apagado)
 	style.set_border_width_all(2)
-	style.set_corner_radius_all(8)
-	
-	# Sombra elegante
+	style.set_corner_radius_all(16)
 	style.shadow_color = Color(0, 0, 0, 0.5)
-	style.shadow_size = 10
-	style.shadow_offset = Vector2(0, 4)
+	style.shadow_size = 15
+	style.shadow_offset = Vector2(0, 8)
 	panel.add_theme_stylebox_override("panel", style)
 	
+	# Contenedor Vertical Principal
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 15)
+	vbox.add_theme_constant_override("separation", 0) # Control manual con spacers
 	panel.add_child(vbox)
 	
-	# Margen interno
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 20)
-	margin.add_theme_constant_override("margin_right", 20)
-	margin.add_theme_constant_override("margin_top", 25)
-	margin.add_theme_constant_override("margin_bottom", 25)
+	# --- HEADER (Número de Slot) ---
+	var header_margin = MarginContainer.new()
+	header_margin.add_theme_constant_override("margin_top", 15)
+	header_margin.add_theme_constant_override("margin_bottom", 15)
+	vbox.add_child(header_margin)
 	
-	var inner_vbox = VBoxContainer.new()
-	inner_vbox.add_theme_constant_override("separation", 12)
-	margin.add_child(inner_vbox)
-	
-	# Título del slot
 	var slot_title = Label.new()
 	slot_title.name = "SlotTitle"
-	slot_title.text = "Slot %d" % (slot_index + 1)
+	slot_title.text = "SLOT %d" % (slot_index + 1)
 	slot_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	slot_title.add_theme_font_size_override("font_size", 28)
-	slot_title.add_theme_color_override("font_color", Color(1, 0.9, 0.6)) # Light Gold
-	inner_vbox.add_child(slot_title)
+	slot_title.add_theme_font_size_override("font_size", 20)
+	slot_title.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7)) # Texto grisáceo
+	slot_title.add_theme_constant_override("letter_spacing", 4)
+	header_margin.add_child(slot_title)
 	
-	# Separador dorado
-	var sep = HSeparator.new()
-	sep.add_theme_constant_override("separation", 20)
-	# (Opcional: Estilar el separador si fuera necesario, pero por defecto vale)
-	inner_vbox.add_child(sep)
+	# Separator visual
+	var sep_line = ColorRect.new()
+	sep_line.custom_minimum_size = Vector2(0, 2)
+	sep_line.color = Color(0.2, 0.2, 0.3)
+	vbox.add_child(sep_line)
 	
-	# Info del slot
+	# --- BODY (Info del save) ---
+	var info_margin = MarginContainer.new()
+	info_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	info_margin.add_theme_constant_override("margin_left", 20)
+	info_margin.add_theme_constant_override("margin_right", 20)
+	info_margin.add_theme_constant_override("margin_top", 30)
+	info_margin.add_theme_constant_override("margin_bottom", 30)
+	vbox.add_child(info_margin)
+	
+	var inner_vbox = VBoxContainer.new()
+	inner_vbox.name = "InnerVBox" # Necesario para buscarlo luego
+	inner_vbox.add_theme_constant_override("separation", 15)
+	inner_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	info_margin.add_child(inner_vbox)
+	
+	# Contenedor específico para la info dinámica (Stats, "Vacio", etc)
 	var info_container = VBoxContainer.new()
 	info_container.name = "InfoContainer"
-	info_container.add_theme_constant_override("separation", 8)
-	info_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	info_container.alignment = BoxContainer.ALIGNMENT_CENTER 
 	inner_vbox.add_child(info_container)
 	
-	# Spacer
-	var spacer = Control.new()
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	inner_vbox.add_child(spacer)
+	# --- FOOTER (Acciones) ---
+	var actions_margin = MarginContainer.new()
+	actions_margin.add_theme_constant_override("margin_left", 20)
+	actions_margin.add_theme_constant_override("margin_right", 20)
+	actions_margin.add_theme_constant_override("margin_bottom", 25)
+	vbox.add_child(actions_margin)
 	
-	# Botonera acciones
 	var actions_vbox = VBoxContainer.new()
-	actions_vbox.add_theme_constant_override("separation", 10)
-	inner_vbox.add_child(actions_vbox)
+	actions_vbox.name = "ActionsVBox"
+	actions_vbox.add_theme_constant_override("separation", 12)
+	actions_margin.add_child(actions_vbox)
 
-	# Botón de seleccionar (Principal)
+	# 1. Botón JUGAR (Grande, Dorado)
 	var select_btn = Button.new()
 	select_btn.name = "SelectButton"
 	select_btn.text = "JUGAR"
-	select_btn.custom_minimum_size = Vector2(0, 50)
-	select_btn.add_theme_font_size_override("font_size", 20)
-	# Estilo botón normal
+	select_btn.custom_minimum_size = Vector2(0, 55)
+	select_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	
+	# Estilo Base Botón Jugar
 	var btn_style = StyleBoxFlat.new()
-	btn_style.bg_color = Color(0.2, 0.2, 0.3, 1.0)
-	btn_style.border_color = Color(0.4, 0.4, 0.6)
+	btn_style.bg_color = Color(0.15, 0.15, 0.25, 1.0)
+	btn_style.border_color = Color(0.6, 0.5, 0.3) # Oro apagado
 	btn_style.set_border_width_all(1)
-	btn_style.set_corner_radius_all(4)
+	btn_style.set_corner_radius_all(8)
+	
+	# Estilo Hover Botón Jugar
+	var btn_hover = btn_style.duplicate()
+	btn_hover.bg_color = Color(0.2, 0.2, 0.35, 1.0)
+	btn_hover.border_color = Color(1.0, 0.8, 0.2) # Oro brillante
+	btn_hover.set_border_width_all(2)
+	btn_hover.shadow_color = Color(1, 0.8, 0.2, 0.3)
+	btn_hover.shadow_size = 8
+	
 	select_btn.add_theme_stylebox_override("normal", btn_style)
+	select_btn.add_theme_stylebox_override("hover", btn_hover)
+	select_btn.add_theme_stylebox_override("pressed", btn_style)
+	select_btn.add_theme_stylebox_override("focus", btn_hover)
+	select_btn.add_theme_font_size_override("font_size", 22)
+	select_btn.add_theme_color_override("font_color", Color.WHITE)
+	select_btn.add_theme_color_override("font_hover_color", Color(1, 0.9, 0.5))
 	
 	select_btn.pressed.connect(_on_slot_selected.bind(slot_index))
+	
+	# Animaciones Hover Botón
+	select_btn.mouse_entered.connect(_anim_btn_scale.bind(select_btn, 1.02))
+	select_btn.mouse_exited.connect(_anim_btn_scale.bind(select_btn, 1.0))
+	select_btn.focus_entered.connect(_anim_btn_scale.bind(select_btn, 1.02))
+	select_btn.focus_exited.connect(_anim_btn_scale.bind(select_btn, 1.0))
+	
 	actions_vbox.add_child(select_btn)
 	slot_buttons.append(select_btn)
 	
-	# Botón de borrar (Rojo / Danger)
+	# 2. Botón BORRAR (Discreto, Texto Rojo)
 	var delete_btn = Button.new()
 	delete_btn.name = "DeleteButton"
-	delete_btn.text = "BORRAR / REINICIAR"
-	delete_btn.custom_minimum_size = Vector2(0, 35)
-	delete_btn.add_theme_font_size_override("font_size", 14)
-	delete_btn.add_theme_color_override("font_color", Color(1, 0.4, 0.4))
+	delete_btn.text = "Borrar Partida"
+	delete_btn.flat = true # Estilo solo texto para no ensuciar
+	delete_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	delete_btn.add_theme_color_override("font_color", Color(0.7, 0.3, 0.3, 0.6)) # Rojo apagado
+	delete_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.3, 0.3, 1.0)) # Rojo vivo
+	delete_btn.add_theme_color_override("font_focus_color", Color(1.0, 0.3, 0.3, 1.0))
+	delete_btn.add_theme_font_size_override("font_size", 12)
 	
-	var del_style = StyleBoxFlat.new()
-	del_style.bg_color = Color(0.2, 0.05, 0.05, 0.8)
-	del_style.border_color = Color(0.5, 0.1, 0.1)
-	del_style.set_border_width_all(1)
-	del_style.set_corner_radius_all(4)
-	delete_btn.add_theme_stylebox_override("normal", del_style)
-
 	delete_btn.pressed.connect(_on_delete_slot.bind(slot_index))
-	# Inicialmente oculto, se gestiona en update
 	delete_btn.visible = false 
 	actions_vbox.add_child(delete_btn)
 	
-	# Añadir el margin container al vbox principal
-	vbox.add_child(margin)
+	# TRACKING para animaciones del panel completo
+	# Usamos el focus signal del botón PRINCIPAL para animar el panel padre
+	select_btn.focus_entered.connect(_highlight_panel.bind(panel, true))
+	select_btn.focus_exited.connect(_highlight_panel.bind(panel, false))
+	select_btn.mouse_entered.connect(_highlight_panel.bind(panel, true))
+	select_btn.mouse_exited.connect(_highlight_panel.bind(panel, false))
 	
 	return panel
+
+# Ayudantes de Animación
+func _anim_btn_scale(btn: Control, scale_val: float) -> void:
+	var t = create_tween()
+	t.tween_property(btn, "scale", Vector2(scale_val, scale_val), 0.1)
+	if scale_val > 1.0:
+		AudioManager.play_fixed("sfx_ui_hover")
+
+func _highlight_panel(panel: PanelContainer, highlighted: bool) -> void:
+	var sb = panel.get_theme_stylebox("panel") as StyleBoxFlat
+	if not sb: return
+	
+	var t = create_tween()
+	t.set_parallel(true)
+	
+	if highlighted:
+		# Glow Activo
+		t.tween_property(sb, "border_color", Color(1.0, 0.8, 0.2, 1.0), 0.2) # Dorado
+		t.tween_property(panel, "scale", Vector2(1.03, 1.03), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		# Título color
+		var lbl = panel.find_child("SlotTitle")
+		if lbl: lbl.modulate = Color(1, 0.9, 0.5)
+	else:
+		# Reposo
+		t.tween_property(sb, "border_color", Color(0.4, 0.3, 0.6, 1.0), 0.2) # Púrpura
+		t.tween_property(panel, "scale", Vector2(1.0, 1.0), 0.2)
+		var lbl = panel.find_child("SlotTitle")
+		if lbl: lbl.modulate = Color(1, 1, 1)
 
 func _load_slot_data() -> void:
 	"""Cargar y mostrar datos de cada slot"""

@@ -44,19 +44,18 @@ const ITEM_REVEAL_DELAY: float = 0.15
 static var active_instances: int = 0
 
 func _enter_tree():
-	active_instances += 1
-	get_tree().paused = true
-	# print("[SimpleChestPopup] Popup abierto. Activos: %d" % active_instances)
-
+	# Pause is now handled by UIManager if used via request_popup
+	# Legacy fallback:
+	if not get_tree().root.has_node("UIManager") or not get_tree().root.get_node("UIManager").is_modal_open:
+		active_instances += 1
+		get_tree().paused = true
+	
 func _exit_tree():
-	active_instances -= 1
-	if active_instances <= 0:
-		active_instances = 0
-		get_tree().paused = false
-		# print("[SimpleChestPopup] Todos los popups cerrados. Juego reanudado.")
-	else:
-		pass
-		# print("[SimpleChestPopup] Popup cerrado. Restantes: %d (Juego sigue pausado)" % active_instances)
+	# Legacy fallback logic:
+	if active_instances > 0:
+		active_instances -= 1
+		if active_instances <= 0:
+			get_tree().paused = false
 
 func _ready():
 	# CanvasLayer siempre está al frente (no afectado por cámara)

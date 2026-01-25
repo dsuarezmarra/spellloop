@@ -38,8 +38,8 @@ func _init_audio_system():
 		add_child(player)
 		sfx_players.append(player)
 	
-	# SETUP DEDICATED COIN PLAYER (High Polyphony)
-	_setup_coin_player()
+	# SETUP DEDICATED COIN PLAYER (High Polyphony) - Now using Pool
+	# _setup_coin_player() removed (superseded by pool)
 	
 	# Ensure audio buses exist
 	_ensure_audio_buses()
@@ -254,7 +254,7 @@ func play_coin_sfx(pitch: float = 1.0) -> void:
 
 # Mini-Pool para monedas (permite pitch variable simultáneo)
 var coin_pool: Array[AudioStreamPlayer] = []
-const COIN_POOL_SIZE = 16 # Suficiente para overlaps con distinto pitch
+const COIN_POOL_SIZE = 32 # Aumentado para soportar imanes masivos
 var coin_pool_idx = 0
 
 func _play_coin_from_pool(pitch: float) -> void:

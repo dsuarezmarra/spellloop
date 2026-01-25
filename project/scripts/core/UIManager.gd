@@ -31,7 +31,10 @@ const GAME_OVER_SCENE = "res://scenes/ui/GameOverMenu.tscn"
 
 # Current UI state
 var current_scene_name: String = ""
+# Current UI state
+var current_scene_name: String = ""
 var modal_stack: Array = []
+var popup_queue: Array = [] # Queue for overlapping popups
 var is_modal_open: bool = false
 
 # UI node references
@@ -168,6 +171,71 @@ func show_game_over_menu(run_data: Dictionary = {}) -> void:
 	if game_over_scene:
 		show_modal(game_over_scene, {"run_data": run_data})
 
+func request_popup(popup_node: Node) -> void:
+	"""Request to show a popup. Adds to queue if a modal is already open."""
+	if not popup_node:
+		return
+		
+	if is_modal_open:
+		popup_queue.append(popup_node)
+		# Debug desactivado: print("[UIManager] Popup queued. Queue size: ", popup_queue.size())
+		return
+		
+	_show_popup_instance(popup_node)
+
+func _show_popup_instance(popup_node: Node) -> void:
+	"""Internal: Show a popup instance immediately"""
+	# Add to modal stack and container
+	modal_stack.append(popup_node)
+	modal_container.add_child(popup_node)
+	
+	# Connect tree_exited to detecting closing if manual queue_free is used
+	if not popup_node.tree_exited.is_connected(_on_popup_tree_exited):
+		popup_node.tree_exited.connect(_on_popup_tree_exited)
+	
+	is_modal_open = true
+	modal_opened.emit(popup_node.name)
+	
+	# Pause game if not already paused (optional, usually popups handle it but UIManager can enforce)
+	if not get_tree().paused:
+		get_tree().paused = true
+
+func _on_popup_tree_exited():
+	"""Detect when a generic popup is closed (freed)"""
+	# Ensure clean state
+	if modal_stack.size() > 0:
+		# Check if the closed node was the top modal (it should be)
+		# But since it's already freed, we might need careful check or just trust logic
+		pass
+	
+	# Attempt to Process next in queue after a frame to allow cleanup
+	call_deferred("_process_popup_queue")
+
+func _process_popup_queue() -> void:
+	# Filter invalidated nodes
+	modal_stack = modal_stack.filter(func(x): return is_instance_valid(x))
+	
+	if not modal_stack.is_empty():
+		is_modal_open = true
+		return
+		
+	is_modal_open = false
+	
+	if not popup_queue.is_empty():
+		var next_popup = popup_queue.pop_front()
+		if is_instance_valid(next_popup):
+			_show_popup_instance(next_popup)
+		else:
+			_process_popup_queue() # Recursive skip invalid
+	else:
+		# Queue empty, unpause?
+		# Only unpause if we paused it. 
+		# For now, let's assume popups handle their own pause state logic or we force unpause 
+		# if we want UIManager to be the authority.
+		# But TreasureChest manually reused pause. Let's rely on _exit_tree of popup to unpause?
+		# Or better: UIManager manages pause.
+		pass
+
 func show_modal(modal_scene: PackedScene, data: Dictionary = {}) -> void:
 	"""Show a modal dialog"""
 	if not modal_scene:
@@ -213,6 +281,9 @@ func close_current_modal() -> void:
 	modal_closed.emit(modal_name)
 	
 	# Debug desactivado: print("[UIManager] Closed modal: ", modal_name)
+	
+	# Trigger queue check
+	_process_popup_queue()
 
 func close_all_modals() -> void:
 	"""Close all open modals"""

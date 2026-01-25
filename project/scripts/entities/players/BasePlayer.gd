@@ -1799,5 +1799,3 @@ func _remove_turret_buff() -> void:
 		player_stats.remove_temp_modifiers_by_source("turret_bonus")
 	
 	modulate = Color.WHITE
-
-

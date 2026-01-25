@@ -269,7 +269,7 @@ func trigger_chest_interaction():
 	# Play chest opening sound
 	AudioManager.play_fixed("sfx_chest_open")
 	
-	get_tree().paused = true
+	# Pause handled by UIManager/Popup Queue
 	create_chest_popup()
 
 func create_chest_popup():
@@ -281,7 +281,15 @@ func create_chest_popup():
 	# Popup normal para otros tipos
 	ui_opened.emit()
 	var popup_instance = SimpleChestPopup.new()
-	get_tree().current_scene.add_child(popup_instance)
+	
+	# Request via UIManager to handle queue and pausing
+	var ui_manager = get_tree().root.get_node_or_null("UIManager")
+	if ui_manager and ui_manager.has_method("request_popup"):
+		ui_manager.request_popup(popup_instance)
+	else:
+		# Fallback
+		get_tree().paused = true
+		get_tree().current_scene.add_child(popup_instance)
 	
 	var items_with_names = []
 	for i in range(items_inside.size()):
