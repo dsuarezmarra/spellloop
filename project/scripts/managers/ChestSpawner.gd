@@ -73,7 +73,8 @@ func _on_spawn_timer_timeout() -> void:
 	# Limpiar cofres inválidos
 	_cleanup_invalid_chests()
 	
-	# Sin límite de cofres - siempre spawnear
+	# FIX: Ignorar límite global de cofres (max_simultaneous_chests)
+	# Solo nos importa spawnear cerca del player periódicamente
 	
 	# Calcular posición en la zona del player
 	var spawn_pos = _calculate_spawn_position_in_player_zone()
@@ -89,61 +90,34 @@ func _on_spawn_timer_timeout() -> void:
 	_schedule_next_spawn()
 
 func _calculate_spawn_position_in_player_zone() -> Vector2:
-	"""Calcular posición válida dentro de la zona actual del player"""
+	"""Calcular posición válida CERCA del player (Donut Spawn)"""
 	if not is_instance_valid(player_ref):
 		return Vector2.INF
 	
 	var player_pos = player_ref.global_position
 	
-	# Obtener zona actual del player
-	var player_zone = 0  # SAFE por defecto
-	if arena_manager and arena_manager.has_method("get_zone_at_position"):
-		player_zone = arena_manager.get_zone_at_position(player_pos)
-	
-	# Obtener límites de radio para esta zona
-	var inner_radius = 0.0
-	var outer_radius = 10000.0  # Fallback grande
-	
-	if arena_manager:
-		match player_zone:
-			0:  # SAFE
-				inner_radius = 0.0
-				outer_radius = arena_manager.safe_zone_radius if "safe_zone_radius" in arena_manager else 2500.0
-			1:  # MEDIUM
-				inner_radius = arena_manager.safe_zone_radius if "safe_zone_radius" in arena_manager else 2500.0
-				outer_radius = arena_manager.medium_zone_radius if "medium_zone_radius" in arena_manager else 5500.0
-			2:  # DANGER
-				inner_radius = arena_manager.medium_zone_radius if "medium_zone_radius" in arena_manager else 5500.0
-				outer_radius = arena_manager.danger_zone_radius if "danger_zone_radius" in arena_manager else 8500.0
-			3:  # DEATH
-				inner_radius = arena_manager.danger_zone_radius if "danger_zone_radius" in arena_manager else 8500.0
-				outer_radius = arena_manager.arena_radius if "arena_radius" in arena_manager else 10000.0
-	
-	# Intentar varias posiciones dentro de la zona
-	for _attempt in range(30):
-		# Ángulo aleatorio
+	# Intentar encontrar posición válida sin stackear
+	for _attempt in range(20):
+		# Generar posición en donut alrededor del player
 		var angle = randf() * TAU
-		# Radio aleatorio dentro de la zona
-		var spawn_radius = randf_range(inner_radius + 100.0, outer_radius - 100.0)
-		var candidate_pos = Vector2.from_angle(angle) * spawn_radius
+		var distance = randf_range(min_distance_from_player, max_distance_from_player)
+		var candidate_pos = player_pos + Vector2.from_angle(angle) * distance
 		
-		# Verificar distancia mínima al player
-		if candidate_pos.distance_to(player_pos) < min_distance_from_player:
-			continue
-		
-		# Verificar distancia a otros cofres
+		# Verificar distancia solo con cofres CERCANOS (ignorar los lejanos)
 		var too_close = false
 		for chest in active_chests:
 			if is_instance_valid(chest):
-				if chest.global_position.distance_to(candidate_pos) < min_distance_between_chests:
+				# Optimización: Distancia cuadrada
+				if chest.global_position.distance_squared_to(candidate_pos) < min_distance_between_chests * min_distance_between_chests:
 					too_close = true
 					break
 		
 		if not too_close:
 			return candidate_pos
 	
-	# Fallback: spawn cerca del player si no se encontró posición en zona
-	return player_pos + Vector2.from_angle(randf() * TAU) * randf_range(min_distance_from_player, max_distance_from_player)
+	# Fallback: Si está muy lleno, spawnear igual (Prioridad al User Request: "Que aparezca")
+	var fallback_angle = randf() * TAU
+	return player_pos + Vector2.from_angle(fallback_angle) * min_distance_from_player
 
 func _spawn_shop_chest(pos: Vector2) -> void:
 	"""Crear cofre tipo tienda en la posición"""

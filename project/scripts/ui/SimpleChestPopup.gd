@@ -814,11 +814,17 @@ func setup_items(items: Array):
 		
 	item_buttons.clear() 
 	
-	# Limpiar items previos
+	# Limpiar items previos (Inmediatamente para evitar duplicados visuales)
 	for child in items_vbox.get_children():
+		items_vbox.remove_child(child)
 		child.queue_free()
 	
-	await get_tree().process_frame
+	# Resetear referencias
+	item_buttons.clear()
+	skip_button = null
+	
+	# NO usar await aquí, causa duplicados si se llama dos veces rápido
+	# await get_tree().process_frame
 	
 	# Crear botones complejos
 	for i in range(items.size()):

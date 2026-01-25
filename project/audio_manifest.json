@@ -64,7 +64,7 @@
   },
   "sfx_coin_pickup": {
     "files": [
-      "res://audio/sfx/pickups/sfx_coin_pickup.wav"
+      "res://assets/audio/sfx/pickups/sfx_coin_pickup.wav"
     ],
     "volume_db": -6.0,
     "pitch_scale": [

@@ -12,6 +12,14 @@ var language_codes: Array[String] = []
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
+	# ✨ POLISH: Transparencia y Estilo
+	var panel = get_node_or_null("Panel")
+	if panel:
+		var style = StyleBoxFlat.new()
+		style.bg_color = Color(0.0, 0.0, 0.0, 0.85) # Fondo oscuro translúcido
+		style.set_corner_radius_all(12)
+		panel.add_theme_stylebox_override("panel", style)
+
 	# Wire sliders to AudioManager if available
 	var am = _get_audio_manager()
 	if am:
@@ -29,12 +37,12 @@ func _ready():
 	# Setup language selector
 	_setup_language_selector()
 
-	# Conectar boton de cerrar - buscar en ruta correcta
+	# ✨ POLISH: Ocultar botón "Back" (limpieza visual)
+	# El usuario puede cerrar con ESC o B (Gamepad)
 	var close_button = get_node_or_null("Panel/VBox/CloseButton")
 	if close_button:
-		if not close_button.pressed.is_connected(_on_close_pressed):
-			close_button.pressed.connect(_on_close_pressed)
-
+		close_button.visible = false
+		
 	# Configurar navegacion WASD
 	_setup_wasd_navigation()
 

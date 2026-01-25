@@ -253,8 +253,18 @@ func _damage_enemy(enemy: Node) -> void:
 		ProjectileFactory.check_execute(get_tree(), enemy)
 		ProjectileFactory.apply_status_effects_chance(get_tree(), enemy)
 		
-		# Feedback auditivo (Solo al impactar)
-		AudioManager.play("sfx_hit_ghost", 0.1) # Pitch variation + slightly louder? No, keep volume default.
+		# Feedback auditivo distintivo según arma (Fake SevenLabs)
+		var hit_sfx = "sfx_hit_ghost"
+		match orbital_weapon_id:
+			"ice_wand", "glacier": hit_sfx = "sfx_hit_armor" # Sonido seco/cortante
+			"fire_wand", "hellfire": hit_sfx = "sfx_hit_flesh" # Sonido impacto orgánico
+			"lightning_staff", "storm_caller": hit_sfx = "sfx_hit_bone" # Sonido crujiente
+			"nature_staff", "gaia": hit_sfx = "sfx_hit_slime" # Sonido suave
+			"void_staff", "void_storm": hit_sfx = "sfx_hit_ghost" # Sonido etéreo
+			
+		# Solo reproducir si el enemigo sigue siendo válido (evitar ruido extra al morir)
+		if is_instance_valid(enemy):
+			AudioManager.play(hit_sfx, -0.1)
 	
 	# Knockback
 	var final_knockback = knockback

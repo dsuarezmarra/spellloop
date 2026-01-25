@@ -205,7 +205,7 @@ func _get_free_player() -> AudioStreamPlayer:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 var coin_player: AudioStreamPlayer
-const COIN_SFX_PATH = "res://audio/sfx/pickups/sfx_coin_pickup.wav"
+const COIN_SFX_PATH = "res://assets/audio/sfx/pickups/sfx_coin_pickup.wav"
 
 func _setup_coin_player() -> void:
 	coin_player = AudioStreamPlayer.new()
@@ -272,7 +272,8 @@ func _play_coin_from_pool(pitch: float) -> void:
 	var player = coin_pool[coin_pool_idx]
 	
 	player.pitch_scale = pitch
-	player.volume_db = -12.0 + linear_to_db(sfx_volume) # Respetar volumen global
+	# Priorizar sonido: Volumen más alto (-5.0db en vez de -12)
+	player.volume_db = -5.0 + linear_to_db(sfx_volume) 
 	player.play()
 	
 	coin_pool_idx = (coin_pool_idx + 1) % COIN_POOL_SIZE
