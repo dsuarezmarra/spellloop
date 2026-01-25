@@ -240,7 +240,7 @@ func _create_ui() -> void:
 	# Audio Player dedicado para el loop de slots
 	_slot_loop_player = AudioStreamPlayer.new()
 	_slot_loop_player.name = "SlotLoopPlayer"
-	_slot_loop_player.bus = "UI" # Use UI bus
+	_slot_loop_player.bus = "SFX" # Use SFX bus for volume control
 	add_child(_slot_loop_player)
 
 func _parse_rarity(value) -> int:
@@ -1176,8 +1176,9 @@ func _play_slot_reel_animation() -> void:
 		if stream:
 			_slot_loop_player.stream = stream
 			_slot_loop_player.pitch_scale = 1.0
-			# Ajuste de volumen: Reducido drásticamente (-10dB) por feedback de usuario
-			_slot_loop_player.volume_db = -10.0
+			# Ajuste de volumen: Reducido drásticamente (-12dB) por feedback de usuario
+			_slot_loop_player.volume_db = -12.0
+			_slot_loop_player.bus = "SFX" # Ensure SFX bus
 			_slot_loop_player.play()
 	
 	# Esperar tiempo base de spin

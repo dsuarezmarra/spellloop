@@ -767,8 +767,9 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 			for enemy in enemies:
 				if global_position.distance_to(enemy.global_position) < 250: # Rango de nova
 					if enemy.has_method("apply_freeze"):
-						enemy.apply_freeze(2.0)
-					if enemy.has_method("apply_knockback"):
+					# Freeze strength (0.9) and duration (2.0)
+					enemy.apply_freeze(0.9, 2.0)
+				if enemy.has_method("apply_knockback"):
 						var dir = (enemy.global_position - global_position).normalized()
 						enemy.apply_knockback(dir * 300)
 			

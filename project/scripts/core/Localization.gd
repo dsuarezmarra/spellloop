@@ -236,6 +236,15 @@ func _get_default_translations(language_code: String) -> Dictionary:
 					"spell_unlocked": "Nuevo hechizo desbloqueado: {0}",
 					"mage_unlocked": "Nuevo mago desbloqueado: {0}",
 					"achievement_unlocked": "Logro desbloqueado: {0}"
+				},
+				"chest": {
+					"title": "¡Escoge tu recompensa!",
+					"jackpot_title": "¡RECOMPENSA LEGENDARIA!",
+					"claim_all": "Reclamar Todo",
+					"claim_selected": "Reclamar Seleccionados",
+					"exit": "Salir",
+					"status_pending": "Pendiente",
+					"status_selected": "Seleccionado"
 				}
 			}
 		_:

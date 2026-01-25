@@ -679,9 +679,12 @@ class AOEEffect extends Node2D:
 		"""Configurar el daño por tics basado en el arma"""
 		if AOE_TICK_CONFIG.has(weapon_id):
 			var config = AOE_TICK_CONFIG[weapon_id]
-			damage_per_tick = config.get("damage_per_tick", damage / 4.0)
+			# FIX: Ignorar damage_per_tick hardcodeado en config para permitir escalado
+			# Usar la configuración solo para timing (intervalo) y conteo
 			tick_interval = config.get("tick_interval", 0.25)
 			total_ticks = config.get("total_ticks", 4)
+			# Distribuir el daño total dinámico entre los tics
+			damage_per_tick = damage / float(total_ticks)
 		else:
 			# Configuración por defecto: distribuir el daño en tics
 			total_ticks = max(2, int(duration / 0.25))

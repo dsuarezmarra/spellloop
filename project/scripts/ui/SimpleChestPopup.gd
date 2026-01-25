@@ -185,7 +185,8 @@ func _input(event: InputEvent) -> void:
 		return
 		
 	# 3. JACKPOT MODE (New robust logic)
-	get_viewport().set_input_as_handled()
+	# IMPORTANT: Do not consume input immediately if we want to allow child controls to handle it?
+	# Acts as filter.
 	
 	# === LOGICA DE NAVEGACIÓN JACKPOT ===
 	var total_items = item_buttons.size()
@@ -201,6 +202,8 @@ func _input(event: InputEvent) -> void:
 	var claim_sel_btn = get_meta("claim_selected_btn", null)
 	var has_claim_sel = (claim_sel_btn and claim_sel_btn.visible)
 	
+	var input_handled = false
+	
 	# Moverse
 	if up:
 		AudioManager.play("sfx_ui_navigation")
@@ -211,9 +214,9 @@ func _input(event: InputEvent) -> void:
 			# En lista de items -> mover arriba
 			current_selected_index -= 1
 			if current_selected_index < 0:
-				current_selected_index = idx_claim # Wrap to bottom? O stay 0? stay 0 mejor.
-				current_selected_index = 0
+				current_selected_index = 0 # Stay at top
 		_update_jackpot_selection()
+		input_handled = true
 		
 	elif down:
 		AudioManager.play("sfx_ui_navigation")
@@ -224,9 +227,10 @@ func _input(event: InputEvent) -> void:
 			# Del último item -> al primer botón de acción (Claim)
 			current_selected_index = idx_claim
 		else:
-			# En botones de abajo -> no hacer nada o wrap a top? Stay.
+			# En botones de abajo -> stay
 			pass
 		_update_jackpot_selection()
+		input_handled = true
 		
 	elif left or right:
 		AudioManager.play("sfx_ui_navigation")
@@ -249,10 +253,15 @@ func _input(event: InputEvent) -> void:
 				else:
 					current_selected_index = idx_claim
 			_update_jackpot_selection()
+			input_handled = true
 			
 	elif accept:
 		AudioManager.play("sfx_ui_confirm")
 		_trigger_selection()
+		input_handled = true
+
+	if input_handled:
+		get_viewport().set_input_as_handled()
 
 func _trigger_selection():
 	"""Ejecutar acción del elemento seleccionado"""
@@ -385,7 +394,7 @@ func show_as_jackpot(items: Array):
 	
 	# Botón Reclamar Todo
 	claim_button = Button.new()
-	claim_button.text = "✓ RECLAMAR TODO"
+	claim_button.text = "✓ " + Localization.L("chest.claim_all").to_upper() # Localized
 	claim_button.custom_minimum_size = Vector2(200, 50)
 	claim_button.add_theme_font_size_override("font_size", 16)
 	
@@ -430,7 +439,7 @@ func show_as_jackpot(items: Array):
 	
 	# Botón Salir (con confirmación)
 	var exit_button = Button.new()
-	exit_button.text = "✕ SALIR"
+	exit_button.text = "✕ " + Localization.L("chest.exit").to_upper() # Localized
 	exit_button.custom_minimum_size = Vector2(150, 50)
 	exit_button.add_theme_font_size_override("font_size", 16)
 	
