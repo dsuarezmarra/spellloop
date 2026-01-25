@@ -453,6 +453,9 @@ func _change_screen(target: int) -> void:
 				slot_select_screen.visible = true
 				slot_select_screen.z_index = 100
 				slot_select_screen.refresh()
+				# Asegurar input focus
+				if slot_select_screen.has_method("take_focus"):
+					slot_select_screen.take_focus()
 				
 		Screen.CHARACTERS:
 			if not character_select_screen or not is_instance_valid(character_select_screen):

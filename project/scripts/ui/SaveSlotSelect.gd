@@ -654,3 +654,13 @@ func _play_button_sound() -> void:
 func refresh() -> void:
 	"""Refrescar los datos de los slots"""
 	_load_slot_data()
+	
+func take_focus() -> void:
+	"""Forzar foco en el slot actual (usado al volver de otros menús)"""
+	if slot_buttons.size() > 0:
+		# Asegurar que el indice es valido
+		current_slot_index = clampi(current_slot_index, 0, slot_buttons.size() - 1)
+		# Pequeña espera para que el motor procese la visibilidad
+		if is_inside_tree():
+			await get_tree().process_frame
+		slot_buttons[current_slot_index].grab_focus()
