@@ -584,12 +584,7 @@ func _process(delta: float) -> void:
 		if weapon == null:
 			continue
 
-		# Verificar si el arma tiene los métodos necesarios
-		if not weapon.has_method("tick_cooldown") or not weapon.has_method("is_ready_to_fire"):
-			# Arma legacy: manejar cooldown manualmente
-			push_warning("[AttackManager] ⚠️ DETECTED LEGACY WEAPON: %s" % _get_weapon_id(weapon))
-			_process_legacy_weapon(weapon, delta)
-			continue
+
 
 		# Decrementar cooldown
 		weapon.tick_cooldown(delta)
@@ -611,25 +606,7 @@ func _process(delta: float) -> void:
 					# Mayor attack_speed = menor cooldown (atacas más rápido)
 					# Menor attack_speed = mayor cooldown (atacas más lento)
 					weapon.current_cooldown = weapon.cooldown / attack_speed_mult
-			else:
-				# Arma NO-BaseWeapon pero con métodos tick_cooldown/is_ready_to_fire
-				var gs = _get_combined_global_stats()
-				_apply_global_stats_to_legacy_weapon(weapon, gs)
-				# Capturar si el arma realmente disparó (si retorna bool)
-				var result = weapon.perform_attack(player)
-				_restore_legacy_weapon_base_stats(weapon)
-				# Si perform_attack retorna bool, usar ese valor; si no, asumir que disparó
-				did_fire = result if typeof(result) == TYPE_BOOL else true
-				
-				# Para armas NO-BaseWeapon, resetear cooldown manualmente con mejora de atk speed
-				var attack_speed_mult = maxf(gs.get("attack_speed_mult", 1.0), 0.1)
-				if weapon.has_method("reset_cooldown"):
-					weapon.reset_cooldown()
-					# Ajustar cooldown por velocidad de ataque
-					if "current_cooldown" in weapon and "base_cooldown" in weapon:
-						weapon.current_cooldown = weapon.base_cooldown / attack_speed_mult
-				elif "current_cooldown" in weapon and "base_cooldown" in weapon:
-					weapon.current_cooldown = weapon.base_cooldown / attack_speed_mult
+
 			
 			# Solo activar animación de cast si realmente disparó y NO es orbital
 			if did_fire and _should_play_cast_animation(weapon):
@@ -637,42 +614,7 @@ func _process(delta: float) -> void:
 			if did_fire:
 				weapon_fired.emit(weapon, player.global_position)
 
-func _process_legacy_weapon(weapon, delta: float) -> void:
-	"""Procesar arma legacy (como IceWand original) con stats globales aplicados"""
-	# Las armas legacy tienen current_cooldown y base_cooldown
-	if weapon.has_method("perform_attack"):
-		# Obtener stats globales para aplicar (incluye PlayerStats)
-		var gs = _get_combined_global_stats()
-		
-		# Aplicar multiplicador de velocidad de ataque al cooldown (evitar división por cero)
-		var attack_speed_mult = maxf(gs.get("attack_speed_mult", 1.0), 0.1)
-		var effective_cooldown = weapon.base_cooldown / attack_speed_mult if "base_cooldown" in weapon else 1.0 / attack_speed_mult
-		
-		if "current_cooldown" in weapon:
-			weapon.current_cooldown -= delta
-			if weapon.current_cooldown <= 0:
-				# Verificar que el árbol siga válido
-				if not player.get_tree():
-					return
-				
-				# Aplicar stats globales ANTES de disparar
-				_apply_global_stats_to_legacy_weapon(weapon, gs)
-				
-				# Capturar si el arma realmente disparó
-				var result = weapon.perform_attack(player)
-				var did_fire_legacy = result if typeof(result) == TYPE_BOOL else true
-				
-				# Restaurar valores base después de disparar
-				_restore_legacy_weapon_base_stats(weapon)
-				
-				# Usar cooldown efectivo (con mejoras de velocidad)
-				weapon.current_cooldown = effective_cooldown
-				
-				# Solo activar animación de cast si realmente disparó y no es orbital
-				if did_fire_legacy and _should_play_cast_animation(weapon):
-					_trigger_cast_animation()
-				if did_fire_legacy:
-					weapon_fired.emit(weapon, player.global_position)
+
 
 func _should_play_cast_animation(weapon) -> bool:
 	"""Determinar si el arma debe activar la animación de cast al disparar"""
@@ -683,11 +625,7 @@ func _should_play_cast_animation(weapon) -> bool:
 		if weapon.target_type == WeaponDatabase.TargetType.ORBIT:
 			return false
 	
-	# Para armas legacy, verificar por nombre o propiedades
-	if "projectile_type" in weapon:
-		var ptype = weapon.projectile_type
-		if ptype == WeaponDatabase.ProjectileType.ORBIT:
-			return false
+
 	
 	# También excluir armas de aura/pasivas si las hay
 	if weapon.has_method("is_passive_weapon") and weapon.is_passive_weapon():
@@ -705,55 +643,7 @@ func _trigger_cast_animation() -> void:
 		if wizard and wizard.has_method("play_cast_animation"):
 			wizard.play_cast_animation()
 
-func _apply_global_stats_to_legacy_weapon(weapon, gs: Dictionary) -> void:
-	"""Aplicar stats globales temporalmente a un arma legacy antes de disparar"""
-	# Guardar valores originales si no los tenemos
-	if not weapon.has_meta("_original_damage"):
-		weapon.set_meta("_original_damage", weapon.damage if "damage" in weapon else 0)
-		weapon.set_meta("_original_projectile_speed", weapon.projectile_speed if "projectile_speed" in weapon else 400.0)
-		weapon.set_meta("_original_projectile_count", weapon.projectile_count if "projectile_count" in weapon else 1)
-		weapon.set_meta("_original_knockback", weapon.knockback_force if "knockback_force" in weapon else 100.0)
-		weapon.set_meta("_original_pierce", weapon.pierce if "pierce" in weapon else 0)
-		weapon.set_meta("_original_crit_chance", weapon.crit_chance if "crit_chance" in weapon else 0.05)
-		weapon.set_meta("_original_crit_damage", weapon.crit_damage if "crit_damage" in weapon else 2.0)
-	
-	# Obtener valores originales
-	var base_damage = weapon.get_meta("_original_damage", weapon.damage if "damage" in weapon else 0)
-	var base_proj_speed = weapon.get_meta("_original_projectile_speed", weapon.projectile_speed if "projectile_speed" in weapon else 400.0)
-	var base_proj_count = weapon.get_meta("_original_projectile_count", weapon.projectile_count if "projectile_count" in weapon else 1)
-	var base_knockback = weapon.get_meta("_original_knockback", weapon.knockback_force if "knockback_force" in weapon else 100.0)
-	var base_pierce = weapon.get_meta("_original_pierce", weapon.pierce if "pierce" in weapon else 0)
-	
-	# Aplicar multiplicadores globales
-	# FÓRMULA CORRECTA: (base + flat) * mult
-	if "damage" in weapon:
-		var damage_flat = gs.get("damage_flat", 0)
-		var damage_mult = gs.get("damage_mult", 1.0)
-		weapon.damage = int((base_damage + damage_flat) * damage_mult)
-	if "projectile_speed" in weapon:
-		weapon.projectile_speed = base_proj_speed * gs.get("projectile_speed_mult", 1.0)
-	if "projectile_count" in weapon:
-		weapon.projectile_count = base_proj_count + int(gs.get("extra_projectiles", 0))
-	if "knockback_force" in weapon:
-		weapon.knockback_force = base_knockback * gs.get("knockback_mult", 1.0)
-	if "pierce" in weapon:
-		weapon.pierce = base_pierce + int(gs.get("extra_pierce", 0))
-	# Aplicar críticos globales
-	if "crit_chance" in weapon:
-		weapon.crit_chance = gs.get("crit_chance", 0.05)
-	if "crit_damage" in weapon:
-		weapon.crit_damage = gs.get("crit_damage", 2.0)
 
-func _restore_legacy_weapon_base_stats(weapon) -> void:
-	"""Restaurar valores base del arma legacy después de disparar"""
-	if weapon.has_meta("_original_damage") and "damage" in weapon:
-		weapon.damage = weapon.get_meta("_original_damage")
-	if weapon.has_meta("_original_projectile_speed") and "projectile_speed" in weapon:
-		weapon.projectile_speed = weapon.get_meta("_original_projectile_speed")
-	if weapon.has_meta("_original_projectile_count") and "projectile_count" in weapon:
-		weapon.projectile_count = weapon.get_meta("_original_projectile_count")
-	if weapon.has_meta("_original_knockback") and "knockback_force" in weapon:
-		weapon.knockback_force = weapon.get_meta("_original_knockback")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONTROL
