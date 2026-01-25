@@ -32,6 +32,10 @@ func _L(key: String, fallback: String = "") -> String:
 	return fallback if fallback != "" else key
 
 func _ready() -> void:
+	# Asegurar que el control ocupe toda la pantalla pero no bloquee inputs
+	set_anchors_preset(Control.PRESET_FULL_RECT)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
 	_create_slot_ui()
 	_load_slot_data()
 	_setup_navigation()
@@ -86,6 +90,7 @@ func _ready() -> void:
 		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 		bg.z_index = -10 # Al fondo
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE # NO BLOQUEAR CLICS
 		add_child(bg)
 		move_child(bg, 0)
 		
@@ -493,6 +498,11 @@ func _input(event: InputEvent) -> void:
 			KEY_A: get_viewport().push_input(ev_left)
 			KEY_D: get_viewport().push_input(ev_right)
 			KEY_ESCAPE: _on_back_pressed()
+			KEY_SPACE, KEY_ENTER:
+				# Manually trigger press if ui_accept is failing
+				var focus = get_viewport().gui_get_focus_owner()
+				if focus and focus is Button:
+					focus.pressed.emit()
 			
 	# Space/Enter handled natively by buttons if focused
 

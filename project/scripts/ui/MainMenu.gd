@@ -274,40 +274,44 @@ func _create_resume_button() -> void:
 
 
 	# --- BACKGROUND BOX ADJUSTMENT ---
-	# En lugar de un panel manual, vamos a envolver el VBox en un PanelContainer
+	# Crear el panel background si no existe
 	var vbox = $UILayer/UIContainer/VBoxContainer
-	if vbox and not vbox.get_parent() is PanelContainer:
-		var parent = vbox.get_parent()
-		var bg_panel = PanelContainer.new()
-		bg_panel.name = "MenuBackground"
-		
-		# Configurar layout del Panel para centrarlo
-		bg_panel.anchors_preset = Control.PRESET_CENTER
-		bg_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-		bg_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
-		
-		# Estilo del Panel (Caja ajustada)
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0, 0, 0, 0.5) # Negro semi-transparente
-		style.set_corner_radius_all(20)
-		style.shadow_color = Color(0, 0, 0, 0.5)
-		style.shadow_size = 20
-		# Padding interno
-		style.content_margin_top = 20
-		style.content_margin_bottom = 20
-		style.content_margin_left = 30
-		style.content_margin_right = 30
-		bg_panel.add_theme_stylebox_override("panel", style)
-		
-		# Reparenting: VBox dentro del Panel
-		parent.remove_child(vbox)
-		parent.add_child(bg_panel)
-		bg_panel.add_child(vbox)
-		
-		# Asegurar posición correcta del panel background
-		bg_panel.position = Vector2.ZERO # Reset position offset
-		
-	# Quitar textos no deseados (Incluyendo subtítulo)
+	if vbox:
+		var bg_panel = vbox.get_node_or_null("MenuBackground")
+		if not bg_panel:
+			bg_panel = PanelContainer.new()
+			bg_panel.name = "MenuBackground"
+			
+			# Configurar Estilo
+			var style = StyleBoxFlat.new()
+			style.bg_color = Color(0, 0, 0, 0.6)
+			style.set_corner_radius_all(16)
+			style.content_margin_top = 30
+			style.content_margin_bottom = 30
+			style.content_margin_left = 40
+			style.content_margin_right = 40
+			bg_panel.add_theme_stylebox_override("panel", style)
+			
+			# REPARENTING ROBUSTO
+			# 1. Obtener padre actual
+			var parent = vbox.get_parent()
+			# 2. Reemplazar VBox con Panel en el arbol
+			parent.remove_child(vbox)
+			parent.add_child(bg_panel)
+			# 3. Meter VBox dentro del Panel
+			bg_panel.add_child(vbox)
+			
+			# 4. CONFIGURAR ANCHORS PARA CENTRADO PERFECTO
+			bg_panel.set_anchors_preset(Control.PRESET_CENTER)
+			bg_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+			bg_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+			# Resetear offsets para evitar desplazamiento
+			bg_panel.offset_left = 0
+			bg_panel.offset_top = 0
+			bg_panel.offset_right = 0
+			bg_panel.offset_bottom = 0
+			
+	# Quitar textos no deseados
 	if title_label: title_label.visible = false
 	if version_label: version_label.visible = false
 	
@@ -421,6 +425,7 @@ func _show_slot_select() -> void:
 	"""Mostrar pantalla de selección de slot de guardado"""
 	if slot_select_screen and is_instance_valid(slot_select_screen):
 		slot_select_screen.visible = true
+		slot_select_screen.z_index = 100 # Force top
 		slot_select_screen.refresh()
 		return
 
@@ -434,6 +439,8 @@ func _show_slot_select() -> void:
 
 	slot_select_screen = slot_scene.instantiate()
 	add_child(slot_select_screen)
+	move_child(slot_select_screen, -1) # Ensure top of tree
+	slot_select_screen.z_index = 100 # Force rendering on top
 
 	# Conectar señales
 	slot_select_screen.slot_selected.connect(_on_slot_selected)
