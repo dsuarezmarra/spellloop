@@ -138,6 +138,202 @@ func _ready():
 	
 	# Inicializar selección
 	current_selected_index = 0
+	_update_jackpot_selection()
+
+func _input(event: InputEvent) -> void:
+	"""Manejar input manual para navegación robusta (WASD/Flechas)"""
+	if not is_inside_tree() or popup_locked or _is_skip_modal_active:
+		return
+		
+	# Solo actuar si el input es presionado
+	if not event.is_pressed():
+		return
+
+	# Detección de acciones de navegación
+	var up = event.is_action("ui_up") or event.is_action("move_up")
+	var down = event.is_action("ui_down") or event.is_action("move_down")
+	var left = event.is_action("ui_left") or event.is_action("move_left")
+	var right = event.is_action("ui_right") or event.is_action("move_right")
+	var accept = event.is_action("ui_accept")
+	
+	if not (up or down or left or right or accept):
+		return
+		
+	get_viewport().set_input_as_handled()
+	
+	# === LOGICA DE NAVEGACIÓN ===
+	var total_items = item_buttons.size()
+	
+	# Determinar si estamos en botones de abajo
+	# Definimos indices virtuales para los botones de abajo:
+	# N = Claim All, N+1 = Claim Selected (si visible), N+2 = Exit
+	var idx_claim = total_items
+	var idx_claim_sel = total_items + 1
+	var idx_exit = total_items + 2
+
+	# Revisar visibilidad de "Claim Selected" para ajustar navegación
+	var claim_sel_btn = get_meta("claim_selected_btn", null)
+	var has_claim_sel = (claim_sel_btn and claim_sel_btn.visible)
+	
+	# Moverse
+	if up:
+		AudioManager.play("sfx_ui_navigation")
+		if current_selected_index >= idx_claim:
+			# Desde botones de abajo -> ir al último item
+			current_selected_index = total_items - 1
+		else:
+			# En lista de items -> mover arriba
+			current_selected_index -= 1
+			if current_selected_index < 0:
+				current_selected_index = idx_claim # Wrap to bottom? O stay 0? stay 0 mejor.
+				current_selected_index = 0
+		_update_jackpot_selection()
+		
+	elif down:
+		AudioManager.play("sfx_ui_navigation")
+		if current_selected_index < total_items - 1:
+			# En lista de items -> mover abajo
+			current_selected_index += 1
+		elif current_selected_index == total_items - 1:
+			# Del último item -> al primer botón de acción (Claim)
+			current_selected_index = idx_claim
+		else:
+			# En botones de abajo -> no hacer nada o wrap a top? Stay.
+			pass
+		_update_jackpot_selection()
+		
+	elif left or right:
+		AudioManager.play("sfx_ui_navigation")
+		# Navegación horizontal SOLO para botones de abajo
+		if current_selected_index >= total_items:
+			if has_claim_sel:
+				# Layout: [Claim All] [Claim Selected] [Exit]
+				# indices: idx_claim, idx_claim_sel, idx_exit
+				# Haremos ciclico simple entre ellos
+				var buttons = [idx_claim, idx_claim_sel, idx_exit]
+				var current_pos = buttons.find(current_selected_index)
+				if current_pos != -1:
+					var dir = -1 if left else 1
+					var new_pos = wrapi(current_pos + dir, 0, buttons.size())
+					current_selected_index = buttons[new_pos]
+			else:
+				# Layout: [Claim All] [Exit]
+				if current_selected_index == idx_claim:
+					current_selected_index = idx_exit
+				else:
+					current_selected_index = idx_claim
+			_update_jackpot_selection()
+			
+	elif accept:
+		AudioManager.play("sfx_ui_confirm")
+		_trigger_selection()
+
+func _trigger_selection():
+	"""Ejecutar acción del elemento seleccionado"""
+	var total_items = item_buttons.size()
+	var idx_claim = total_items
+	var idx_claim_sel = total_items + 1
+	var idx_exit = total_items + 2
+	
+	if current_selected_index < total_items:
+		# Toggle item selection
+		var btn = item_buttons[current_selected_index]
+		if btn.has_method("_gui_input"): # Hack, actually call logic directly
+			# Simular logica de toggle
+			var item_data = btn.get_meta("item_data")
+			_on_jackpot_item_pressed(current_selected_index, item_data)
+	elif current_selected_index == idx_claim:
+		if claim_button: claim_button.pressed.emit()
+	elif current_selected_index == idx_claim_sel:
+		var btn = get_meta("claim_selected_btn", null)
+		if btn: btn.pressed.emit()
+	elif current_selected_index == idx_exit:
+		pass # El botón de exit es especial, tiene su referencia local en setup
+		# Necesitamos buscarlo o invocar _on_jackpot_exit_pressed directo
+		_on_jackpot_exit_pressed()
+		
+func _update_jackpot_selection():
+	"""Actualizar visuales de selección (Border/Glow)"""
+	var total_items = item_buttons.size()
+	
+	# 1. Resetear visuales de items
+	for i in range(total_items):
+		var panel = item_buttons[i]
+		if not is_instance_valid(panel): continue
+		
+		# Buscar o crear glow visual
+		var glow = panel.get_node_or_null("SelectionGlow")
+		if not glow:
+			glow = _create_glow_panel()
+			panel.add_child(glow)
+		
+		glow.visible = (i == current_selected_index)
+		panel.modulate = Color(1.1, 1.1, 1.1) if (i == current_selected_index) else Color.WHITE
+		panel.scale = Vector2(1.02, 1.02) if (i == current_selected_index) else Vector2.ONE
+
+	# 2. Resetear visuales de botones de abajo
+	var btns = [claim_button, get_meta("claim_selected_btn", null)]
+	# Buscamos el boton Exit en la jerarguia (ultimo hijo de buttons_hbox)
+	if _main_vbox.get_child_count() > 0:
+		var hbox = _main_vbox.get_child(_main_vbox.get_child_count()-1)
+		if hbox is HBoxContainer:
+			for child in hbox.get_children():
+				if child.text.contains("SALIR"):
+					btns.append(child)
+	
+	var idx_claim = total_items
+	var idx_claim_sel = total_items + 1
+	var idx_exit = total_items + 2 # Ojo con logica
+	
+	# Mapeo de botones a indices
+	var btn_indices = {}
+	if claim_button: btn_indices[claim_button] = idx_claim
+	var c_sel = get_meta("claim_selected_btn", null)
+	if c_sel: btn_indices[c_sel] = idx_claim_sel
+	# El de salir es tricky encontrarlo, asumimos que es el ultimo append en btns (index 2 si hay 3, index 1 si hay 2)
+	# Mejor logica: iterar btns y checkear indices
+	
+	# Simplificacion: comprobar cada caso
+	_highlight_button(claim_button, current_selected_index == idx_claim)
+	
+	var c_sel_btn = get_meta("claim_selected_btn", null)
+	if c_sel_btn:
+		_highlight_button(c_sel_btn, current_selected_index == idx_claim_sel)
+		
+	# Encontrar exit btn
+	var exit_btn = null
+	if _main_vbox.get_child_count() > 0:
+		var last_child = _main_vbox.get_children().back()
+		if last_child is HBoxContainer:
+			for c in last_child.get_children():
+				if "SALIR" in c.text:
+					exit_btn = c
+	if exit_btn:
+		_highlight_button(exit_btn, current_selected_index == idx_exit)
+
+func _create_glow_panel() -> Panel:
+	var p = Panel.new()
+	p.name = "SelectionGlow"
+	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	p.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color.TRANSPARENT
+	style.border_color = Color(1, 0.8, 0.2)
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(4)
+	style.set_expand_margin_all(5)
+	p.add_theme_stylebox_override("panel", style)
+	return p
+
+func _highlight_button(btn: Button, selected: bool):
+	if not btn: return
+	var glow = btn.get_node_or_null("SelectionGlow")
+	if not glow:
+		glow = _create_glow_panel()
+		btn.add_child(glow)
+	glow.visible = selected
+	btn.modulate = Color(1.2, 1.2, 1.2) if selected else Color.WHITE
+	btn.scale = Vector2(1.05, 1.05) if selected else Vector2.ONE
 
 func show_as_jackpot(items: Array):
 	"""Mostrar modo Jackpot (múltiples premios) - Items seleccionables individualmente"""
@@ -282,6 +478,22 @@ func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 	hbox.add_theme_constant_override("separation", 10)
 	panel.add_child(hbox)
 	
+	# Input handling para click de ratón
+	panel.gui_input.connect(func(event):
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			AudioManager.play("sfx_ui_confirm")
+			_on_jackpot_item_pressed(index, item.duplicate())
+			# Actualizar selección visual al hacer click también
+			current_selected_index = index
+			_update_jackpot_selection()
+	)
+	# Mouse enter para actualizar selección visual (consistencia mouse/teclado)
+	panel.mouse_entered.connect(func():
+		AudioManager.play("sfx_ui_navigation")
+		current_selected_index = index
+		_update_jackpot_selection()
+	)
+	
 	# Margen izquierdo
 	var margin_left = Control.new()
 	margin_left.custom_minimum_size = Vector2(10, 0)
@@ -362,12 +574,80 @@ func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 
 # Funciones legacy removidas - ahora usamos _claim_selected_jackpot_item()
 func _on_jackpot_close_pressed():
-	"""Cerrar jackpot reclamando solo los ya aceptados"""
+	pass # Legacy stub
+
+func _on_jackpot_item_pressed(index: int, item: Dictionary):
+	"""Manejar click/selección de item en jackpot"""
+	if popup_locked: return
+	
+	# Implementación de toggle visual y lógico
+	var panel = item_buttons[index]
+	var is_claimed = panel.get_meta("is_claimed", false)
+	is_claimed = !is_claimed 
+	panel.set_meta("is_claimed", is_claimed)
+	
+	_update_jackpot_item_visual(panel, is_claimed)
+	_update_claim_selected_button()
+
+func _update_jackpot_item_visual(panel: Control, is_selected: bool):
+	"""Actualizar visual del item"""
+	var style = panel.get_theme_stylebox("panel").duplicate()
+	if is_selected:
+		style.border_color = Color(0.2, 1.0, 0.4)
+		style.bg_color = Color(0.1, 0.3, 0.1, 0.8)
+		style.set_border_width_all(3) # Ensure border width matches
+		var status = panel.find_child("StatusLabel", true, false)
+		if status:
+			status.text = "✅ Seleccionado"
+			status.add_theme_color_override("font_color", Color(0.4, 1.0, 0.4))
+	else:
+		var item_data = panel.get_meta("item_data")
+		var rarity = item_data.get("rarity", 0) # Fallback to 0 if missing
+		# Assuming rarity is 0-indexed in our data, but helper expects 1-indexed tier usually?
+		# Logic in _create_jackpot_item_panel used: item_rarity + 1
+		# So create style with correct tier
+		# Note: UIVisualHelper.get_panel_style(tier, ...)
+		var tier = rarity + 1
+		var is_weapon = (item_data.get("type") == "weapon")
+		var base_style = UIVisualHelper.get_panel_style(tier, false, is_weapon)
+		style.border_color = base_style.border_color
+		style.bg_color = base_style.bg_color
+		
+		var status = panel.find_child("StatusLabel", true, false)
+		if status:
+			status.text = "⬜ Pendiente"
+			status.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+			
+	panel.add_theme_stylebox_override("panel", style)
+
+func _update_claim_selected_button():
+	var count = 0
+	for p in item_buttons:
+		if p.get_meta("is_claimed", false):
+			count += 1
+	var btn = get_meta("claim_selected_btn", null)
+	if btn:
+		btn.visible = (count > 0 and count < item_buttons.size())
+
+func _on_claim_all_pressed():
 	if popup_locked: return
 	popup_locked = true
+	# All pending items
+	all_items_claimed.emit(_jackpot_pending_items)
+	queue_free()
+
+func _on_claim_selected_pressed():
+	if popup_locked: return
+	popup_locked = true
+	var selected_items = []
+	for p in item_buttons:
+		if p.get_meta("is_claimed", false):
+			selected_items.append(p.get_meta("item_data"))
 	
-	if _jackpot_claimed_items.size() > 0:
-		all_items_claimed.emit(_jackpot_claimed_items)
+	# Si no hay seleccionados, preguntar o asumir skip? 
+	# El botón solo aparece si hay > 0, así que seguro hay items.
+	if selected_items.size() > 0:
+		all_items_claimed.emit(selected_items)
 	else:
 		skipped.emit()
 	queue_free()
