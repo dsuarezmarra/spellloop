@@ -62,6 +62,17 @@
     ],
     "bus": "SFX"
   },
+  "sfx_coin_pickup": {
+    "files": [
+      "res://audio/sfx/pickups/sfx_coin_pickup.wav"
+    ],
+    "volume_db": -9.0,
+    "pitch_scale": [
+      1.0,
+      1.0
+    ],
+    "bus": "SFX"
+  },
   "sfx_death_armor": {
     "files": [
       "res://audio/sfx/enemies/sfx_death_armor_01.mp3",

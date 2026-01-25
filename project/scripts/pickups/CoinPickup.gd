@@ -350,12 +350,34 @@ func _collect(collector: Node2D) -> void:
 
 	# Efecto visual de recolección
 	_spawn_collection_effect()
+	
+	# SONIDO DE MONEDA
+	# Escalar pitch según tipo: Bronze=1.0, Silver=1.2... 
+	var pitch = 1.0
+	match coin_type:
+		CoinType.BRONZE: pitch = 1.5
+		CoinType.SILVER: pitch = 1.8
+		CoinType.GOLD: pitch = 2.1
+		CoinType.DIAMOND: pitch = 2.5
+		CoinType.PURPLE: pitch = 3.0
+	
+	# Usar play_fixed o play con un truco para pasar el pitch exacto
+	# AudioManager no tiene API directa para forzar pitch arbitrario en "play_fixed" fácilmente sin modificarlo,
+	# pero si usamos el sistema normal, podemos definir variaciones.
+	# HACK: Modificaremos AudioManager si es necesario, o usaremos un player temporal local.
+	# Mejor: Llamar a AudioManager.play_pitch("sfx_coin_pickup", pitch) - Si no existe, lo añado.
+	
+	# Si no existe, usaré un AudioStreamPlayer temporal aquí mismo para garantizar prioridad.
+	var audio_player = AudioStreamPlayer.new()
+	audio_player.stream = load("res://audio/sfx/pickups/sfx_coin_pickup.wav")
+	audio_player.pitch_scale = pitch
+	audio_player.volume_db = linear_to_db(0.7) # Volumen adecuado
+	audio_player.bus = "SFX"
+	audio_player.finished.connect(audio_player.queue_free)
+	get_tree().root.add_child(audio_player) # Añadir al root para que no muera con queue_free() de la moneda
+	audio_player.play()
 
 	# NOTA: NO llamar directamente a exp_manager.on_coin_collected()
-	# porque la señal coin_collected ya está conectada en ExperienceManager
-	# y eso causaría conteo doble
-
-	# print("🪙 Moneda recogida: +%d" % coin_value)
 
 	# Destruir
 	queue_free()
