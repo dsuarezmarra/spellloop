@@ -106,6 +106,9 @@ var hint_label: Label = null
 var options_container: HBoxContainer = null
 var buttons_container: HBoxContainer = null
 
+# Audio
+var _slot_loop_player: AudioStreamPlayer = null
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -233,6 +236,12 @@ func _create_ui() -> void:
 	nav_help.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
 	nav_help.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(nav_help)
+
+	# Audio Player dedicado para el loop de slots
+	_slot_loop_player = AudioStreamPlayer.new()
+	_slot_loop_player.name = "SlotLoopPlayer"
+	_slot_loop_player.bus = "UI" # Use UI bus
+	add_child(_slot_loop_player)
 
 func _parse_rarity(value) -> int:
 	if value is int:
@@ -1159,6 +1168,16 @@ func _play_slot_reel_animation() -> void:
 		else:
 			panel.visible = false
 	
+	# INICIO SONIDO LOOP
+	if _slot_loop_player:
+		# Cargar resource directamente (o buscar en AudioManager si tuviera API para obtener path/stream)
+		# Asumimos path conocido por audio_manifest.json
+		var stream = load("res://audio/sfx/ui/sfx_slot_spin_loop.mp3")
+		if stream:
+			_slot_loop_player.stream = stream
+			_slot_loop_player.pitch_scale = 1.0
+			_slot_loop_player.play()
+	
 	# Esperar tiempo base de spin
 	await get_tree().create_timer(SPIN_DURATION_PER_REEL).timeout
 	if not is_instance_valid(self):
@@ -1170,9 +1189,17 @@ func _play_slot_reel_animation() -> void:
 			return
 		# Iniciar reveal del panel (no bloquea)
 		_stop_panel_spin_fast(i, options[i])
+		
+		# SONIDO STOP (Golpe seco al parar cada uno)
+		AudioManager.play_fixed("sfx_slot_stop")
+		
 		# Pequeño delay entre reveals
 		if i < visible_count - 1:
 			await get_tree().create_timer(SPIN_STAGGER).timeout
+	
+	# DETENER SONIDO LOOP
+	if _slot_loop_player:
+		_slot_loop_player.stop()
 	
 	# DESBLOQUEAR INMEDIATAMENTE después del último reveal
 	# Las animaciones de bounce continúan en segundo plano
@@ -1285,6 +1312,10 @@ func skip_slot_animation() -> void:
 		if tween and tween.is_valid():
 			tween.kill()
 	_spin_tweens.clear()
+	
+	# Detener sonido
+	if _slot_loop_player:
+		_slot_loop_player.stop()
 	
 	# Mostrar opciones finales
 	_is_animating = false
