@@ -156,11 +156,13 @@ func _setup_collision() -> void:
 	collision_layer = 0
 	set_collision_layer_value(4, true)
 	
-	# Máscara: Enemigos (2), Breakables/Props (3), Barriers (8)
+	# Máscara: Enemigos (2), Breakables (3), Barriers (4, 5, 8)
 	collision_mask = 0
 	set_collision_mask_value(2, true) # Enemies
 	set_collision_mask_value(3, true) # Breakables / Special Enemies
-	set_collision_mask_value(8, true) # Barriers/Decorations
+	set_collision_mask_value(4, true) # Low Barriers / Props
+	set_collision_mask_value(5, true) # Mid Barriers
+	set_collision_mask_value(8, true) # High Barriers/Decorations
 	
 	# Crear collision shape si no existe
 	var shape = get_node_or_null("CollisionShape2D")

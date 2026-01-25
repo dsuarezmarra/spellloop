@@ -150,8 +150,8 @@ func _create_orbital(index: int) -> Area2D:
 	orbital.collision_layer = 0
 	orbital.set_collision_layer_value(4, true)
 	orbital.collision_mask = 0
-	orbital.set_collision_mask_value(2, true)  # Detectar SOLO enemigos para evitar lag/spam
-	# orbital.set_collision_mask_value(3, false) # NO detectar otros proyectiles/loot
+	orbital.set_collision_mask_value(2, true)  # Detectar enemigos base
+	orbital.set_collision_mask_value(3, true)  # Detectar breakables/élites
 	
 	# CRÍTICO: Habilitar monitoreo para detectar colisiones
 	orbital.monitoring = true
