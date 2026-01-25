@@ -46,7 +46,31 @@ func _ready() -> void:
 	
 	# Fallback de carga directa
 	if not bg_tex:
-		var img = Image.load_from_file("res://assets/ui/backgrounds/main_menu_bg.png")
+		var global_path = ProjectSettings.globalize_path("res://assets/ui/backgrounds/main_menu_bg.png")
+		var img = Image.load_from_file(global_path)
+		# Fallback bytes
+		if not img and FileAccess.file_exists(global_path):
+			var bytes = FileAccess.get_file_as_bytes(global_path)
+			if bytes.size() > 0:
+				img = Image.new()
+				# Deteccion automatica
+				var h = bytes.slice(0, 4)
+				var err = ERR_FILE_UNRECOGNIZED
+				
+				if h[0] == 0xFF and h[1] == 0xD8: # JPG
+					err = img.load_jpg_from_buffer(bytes)
+				elif h[0] == 0x89 and h[1] == 0x50: # PNG
+					err = img.load_png_from_buffer(bytes)
+				elif h[0] == 0x52: # WebP (RIFF)
+					err = img.load_webp_from_buffer(bytes)
+				else:
+					# Brute force
+					err = img.load_png_from_buffer(bytes)
+					if err != OK: err = img.load_jpg_from_buffer(bytes)
+					if err != OK: err = img.load_webp_from_buffer(bytes)
+				
+				if err != OK: img = null
+				
 		if img:
 			bg_tex = ImageTexture.create_from_image(img)
 	
@@ -84,86 +108,103 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	panel.name = "Slot%d" % (slot_index + 1)
 	panel.custom_minimum_size = Vector2(280, 340)  # Ligeramente más grande
 	
-	# Estilo del panel mejorado (más elegante)
+	# Estilo del panel mejorado (Premium Dark/Gold)
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.12, 0.12, 0.18, 0.95)
-	style.border_color = Color(0.3, 0.4, 0.5)
-	style.set_border_width_all(3)
-	style.set_corner_radius_all(12)
-	# Sombra sutil
-	style.shadow_color = Color(0, 0, 0, 0.3)
-	style.shadow_size = 8
-	style.shadow_offset = Vector2(4, 4)
+	style.bg_color = Color(0.1, 0.1, 0.15, 0.95) # Dark Blue/Purple background
+	style.border_color = Color(1.0, 0.84, 0.0) # Gold Border
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	
+	# Sombra elegante
+	style.shadow_color = Color(0, 0, 0, 0.5)
+	style.shadow_size = 10
+	style.shadow_offset = Vector2(0, 4)
 	panel.add_theme_stylebox_override("panel", style)
 	
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 10)
+	vbox.add_theme_constant_override("separation", 15)
 	panel.add_child(vbox)
 	
 	# Margen interno
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 20)
 	margin.add_theme_constant_override("margin_right", 20)
-	margin.add_theme_constant_override("margin_top", 20)
-	margin.add_theme_constant_override("margin_bottom", 20)
+	margin.add_theme_constant_override("margin_top", 25)
+	margin.add_theme_constant_override("margin_bottom", 25)
 	
 	var inner_vbox = VBoxContainer.new()
-	inner_vbox.add_theme_constant_override("separation", 10)
+	inner_vbox.add_theme_constant_override("separation", 12)
 	margin.add_child(inner_vbox)
 	
-	# Título del slot con icono grande
+	# Título del slot
 	var slot_title = Label.new()
 	slot_title.name = "SlotTitle"
-	slot_title.text = "📁 %s %d" % [_L("ui.save_slots.slot"), slot_index + 1]
+	slot_title.text = "Slot %d" % (slot_index + 1)
 	slot_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	slot_title.add_theme_font_size_override("font_size", 26)
-	slot_title.add_theme_color_override("font_color", Color(1, 0.85, 0.4))
+	slot_title.add_theme_font_size_override("font_size", 28)
+	slot_title.add_theme_color_override("font_color", Color(1, 0.9, 0.6)) # Light Gold
 	inner_vbox.add_child(slot_title)
 	
-	# Separador
+	# Separador dorado
 	var sep = HSeparator.new()
+	sep.add_theme_constant_override("separation", 20)
+	# (Opcional: Estilar el separador si fuera necesario, pero por defecto vale)
 	inner_vbox.add_child(sep)
 	
-	# Info del slot (se actualizará con datos reales)
+	# Info del slot
 	var info_container = VBoxContainer.new()
 	info_container.name = "InfoContainer"
-	info_container.add_theme_constant_override("separation", 5)
+	info_container.add_theme_constant_override("separation", 8)
+	info_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	inner_vbox.add_child(info_container)
-	
-	# Placeholder - se actualizará en _load_slot_data
-	var status_label = Label.new()
-	status_label.name = "StatusLabel"
-	status_label.text = "Vacío"
-	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	status_label.add_theme_font_size_override("font_size", 16)
-	status_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
-	info_container.add_child(status_label)
 	
 	# Spacer
 	var spacer = Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	inner_vbox.add_child(spacer)
 	
-	# Botón de seleccionar
+	# Botonera acciones
+	var actions_vbox = VBoxContainer.new()
+	actions_vbox.add_theme_constant_override("separation", 10)
+	inner_vbox.add_child(actions_vbox)
+
+	# Botón de seleccionar (Principal)
 	var select_btn = Button.new()
 	select_btn.name = "SelectButton"
-	select_btn.text = "Seleccionar"
-	select_btn.custom_minimum_size = Vector2(0, 40)
-	select_btn.add_theme_font_size_override("font_size", 18)
+	select_btn.text = "JUGAR"
+	select_btn.custom_minimum_size = Vector2(0, 50)
+	select_btn.add_theme_font_size_override("font_size", 20)
+	# Estilo botón normal
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color(0.2, 0.2, 0.3, 1.0)
+	btn_style.border_color = Color(0.4, 0.4, 0.6)
+	btn_style.set_border_width_all(1)
+	btn_style.set_corner_radius_all(4)
+	select_btn.add_theme_stylebox_override("normal", btn_style)
+	
 	select_btn.pressed.connect(_on_slot_selected.bind(slot_index))
-	inner_vbox.add_child(select_btn)
+	actions_vbox.add_child(select_btn)
 	slot_buttons.append(select_btn)
 	
-	# Botón de borrar (pequeño, debajo)
+	# Botón de borrar (Rojo / Danger)
 	var delete_btn = Button.new()
 	delete_btn.name = "DeleteButton"
-	delete_btn.text = "🗑️ Borrar"
-	delete_btn.custom_minimum_size = Vector2(0, 30)
+	delete_btn.text = "BORRAR / REINICIAR"
+	delete_btn.custom_minimum_size = Vector2(0, 35)
 	delete_btn.add_theme_font_size_override("font_size", 14)
-	delete_btn.add_theme_color_override("font_color", Color(0.8, 0.3, 0.3))
+	delete_btn.add_theme_color_override("font_color", Color(1, 0.4, 0.4))
+	
+	var del_style = StyleBoxFlat.new()
+	del_style.bg_color = Color(0.2, 0.05, 0.05, 0.8)
+	del_style.border_color = Color(0.5, 0.1, 0.1)
+	del_style.set_border_width_all(1)
+	del_style.set_corner_radius_all(4)
+	delete_btn.add_theme_stylebox_override("normal", del_style)
+
 	delete_btn.pressed.connect(_on_delete_slot.bind(slot_index))
-	delete_btn.visible = false  # Solo visible si hay datos
-	inner_vbox.add_child(delete_btn)
+	# Inicialmente oculto, se gestiona en update
+	delete_btn.visible = false 
+	actions_vbox.add_child(delete_btn)
 	
 	# Añadir el margin container al vbox principal
 	vbox.add_child(margin)
@@ -187,9 +228,16 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		return
 	
 	var panel = slot_panels[slot_index]
+	# Update these paths to match new hierarchy
 	var info_container = panel.get_node_or_null("VBoxContainer/MarginContainer/VBoxContainer/InfoContainer")
-	var delete_btn = panel.get_node_or_null("VBoxContainer/MarginContainer/VBoxContainer/DeleteButton")
-	var select_btn = panel.get_node_or_null("VBoxContainer/MarginContainer/VBoxContainer/SelectButton")
+	# The buttons are now in an actions VBox at the end of inner_vbox
+	# Structure: Panel -> VBox -> Margin -> InnerVBox -> ActionsVBox (Child index 4?)
+	var inner_vbox = panel.get_node_or_null("VBoxContainer/MarginContainer/VBoxContainer")
+	if not inner_vbox: return
+	
+	var actions_vbox = inner_vbox.get_child(inner_vbox.get_child_count() - 1)
+	var select_btn = actions_vbox.get_node_or_null("SelectButton")
+	var delete_btn = actions_vbox.get_node_or_null("DeleteButton")
 	
 	if not info_container:
 		return
@@ -201,64 +249,48 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 	if slot_data == null or slot_data.is_empty():
 		# Slot vacío
 		var empty_label = Label.new()
-		empty_label.text = "🆕 Nueva Partida"
+		empty_label.text = "NUEVA PARTIDA"
 		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		empty_label.add_theme_font_size_override("font_size", 18)
-		empty_label.add_theme_color_override("font_color", Color(0.5, 0.7, 0.5))
+		empty_label.add_theme_font_size_override("font_size", 22)
+		empty_label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.6)) # Greenish for new
 		info_container.add_child(empty_label)
 		
 		var hint_label = Label.new()
-		hint_label.text = "Sin progreso"
+		hint_label.text = "¡Tu leyenda comienza aquí!"
 		hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		hint_label.add_theme_font_size_override("font_size", 14)
-		hint_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+		hint_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 		info_container.add_child(hint_label)
 		
 		if select_btn:
-			select_btn.text = "▶ Iniciar"
+			select_btn.text = "CREAR PARTIDA"
 		if delete_btn:
 			delete_btn.visible = false
 	else:
 		# Slot con datos
 		var player_data = slot_data.get("player_data", {})
 		
-		# Total de runs
-		var runs_label = Label.new()
-		runs_label.text = "🎮 Runs: %d" % player_data.get("total_runs", 0)
-		runs_label.add_theme_font_size_override("font_size", 16)
-		info_container.add_child(runs_label)
-		
 		# Mejor puntuación
 		var score_label = Label.new()
-		score_label.text = "🏆 Mejor: %d" % player_data.get("best_score", 0)
-		score_label.add_theme_font_size_override("font_size", 16)
+		score_label.text = "🏆 %d" % player_data.get("best_score", 0)
+		score_label.add_theme_font_size_override("font_size", 20)
+		score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		score_label.add_theme_color_override("font_color", Color(1, 0.8, 0.2)) # Gold
 		info_container.add_child(score_label)
 		
-		# Moneda meta
-		var currency_label = Label.new()
-		currency_label.text = "💎 Meta: %d" % player_data.get("meta_currency", 0)
-		currency_label.add_theme_font_size_override("font_size", 16)
-		info_container.add_child(currency_label)
-		
-		# Tiempo total jugado
+		# Runs e Info
+		var stats_info = Label.new()
 		var playtime = player_data.get("total_playtime", 0.0)
 		var hours = int(playtime) / 3600
-		var minutes = (int(playtime) % 3600) / 60
-		var time_label = Label.new()
-		time_label.text = "⏱️ %dh %dm" % [hours, minutes]
-		time_label.add_theme_font_size_override("font_size", 16)
-		info_container.add_child(time_label)
-		
-		# Estadísticas adicionales
-		var stats = slot_data.get("statistics", {})
-		var enemies_label = Label.new()
-		enemies_label.text = "💀 Enemigos: %d" % stats.get("enemies_defeated", 0)
-		enemies_label.add_theme_font_size_override("font_size", 14)
-		enemies_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-		info_container.add_child(enemies_label)
+		var runs = player_data.get("total_runs", 0)
+		stats_info.text = "Runs: %d | Tiempo: %dh" % [runs, hours]
+		stats_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		stats_info.add_theme_font_size_override("font_size", 14)
+		stats_info.add_theme_color_override("font_color", Color(0.8, 0.8, 0.9))
+		info_container.add_child(stats_info)
 		
 		if select_btn:
-			select_btn.text = "▶ Continuar"
+			select_btn.text = "CONTINUAR"
 		if delete_btn:
 			delete_btn.visible = true
 

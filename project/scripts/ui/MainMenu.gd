@@ -10,11 +10,14 @@ signal resume_pressed
 signal options_pressed
 signal quit_pressed
 
-@onready var play_button: Button = $VBoxContainer/PlayButton
-@onready var options_button: Button = $VBoxContainer/OptionsButton
-@onready var quit_button: Button = $VBoxContainer/QuitButton
-@onready var title_label: Label = $TitleLabel
-@onready var version_label: Label = $VersionLabel
+@onready var play_button: Button = $UILayer/UIContainer/VBoxContainer/PlayButton
+@onready var options_button: Button = $UILayer/UIContainer/VBoxContainer/OptionsButton
+@onready var quit_button: Button = $UILayer/UIContainer/VBoxContainer/QuitButton
+@onready var title_label: Label = $UILayer/UIContainer/TitleLabel
+@onready var version_label: Label = $UILayer/UIContainer/VersionLabel
+@onready var debug_label: Label = $UILayer/DebugLabel
+@onready var background_rect: TextureRect = $BackgroundLayer/BackgroundRect
+@onready var ui_container: Control = $UILayer/UIContainer
 
 # Se crea dinámicamente si hay partida activa
 var resume_button: Button = null
@@ -27,61 +30,134 @@ const GAME_VERSION = "0.1.0-alpha"
 
 func _ready() -> void:
 	_setup_ui()
+	_apply_premium_style()
 	_connect_signals()
 	_play_menu_music()
 	_update_resume_button()
 	_setup_wasd_navigation()
 
+func _apply_premium_style() -> void:
+	# Estilo base para botones
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(0.15, 0.15, 0.25, 0.9)
+	style_normal.border_color = Color(0.4, 0.5, 0.8, 0.5)
+	style_normal.set_border_width_all(2)
+	style_normal.set_corner_radius_all(8)
+	
+	var style_hover = style_normal.duplicate()
+	style_hover.bg_color = Color(0.25, 0.25, 0.4, 1.0)
+	style_hover.border_color = Color(1.0, 0.8, 0.2, 1.0) # Gold border on hover
+	
+	var style_pressed = style_normal.duplicate()
+	style_pressed.bg_color = Color(0.1, 0.1, 0.15, 1.0)
+	style_pressed.border_color = Color(0.8, 0.6, 0.1, 1.0)
+	
+	var buttons = [play_button, options_button, quit_button, resume_button]
+	for btn in buttons:
+		if btn:
+			btn.add_theme_stylebox_override("normal", style_normal)
+			btn.add_theme_stylebox_override("hover", style_hover)
+			btn.add_theme_stylebox_override("pressed", style_pressed)
+			btn.add_theme_stylebox_override("focus", style_hover)
+			btn.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
+			btn.add_theme_color_override("font_hover_color", Color(1.0, 0.9, 0.5))
+			btn.add_theme_constant_override("h_separation", 10)
+
+	if title_label:
+		title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5))
+		title_label.add_theme_constant_override("shadow_offset_x", 4)
+		title_label.add_theme_constant_override("shadow_offset_y", 4)
+		title_label.add_theme_color_override("font_color", Color(1, 0.9, 0.8))
+
 func _setup_ui() -> void:
 	if version_label:
 		version_label.text = "v" + GAME_VERSION
 
-	# Fondo de pantalla (Wallpaper)
-	# Fondo de pantalla (Wallpaper)
-	# 1. Eliminar cualquier fondo opaco existente (ColorRect por defecto de Godot)
-	var existing_bg = get_node_or_null("Background") # Nombre común para el ColorRect de fondo
-	if existing_bg:
-		existing_bg.visible = false
-		existing_bg.queue_free() # Eliminarlo para asegurar que no bloquee
-		
-	# 2. Cargar e inyectar el texture rect
-	var bg_tex = load("res://assets/ui/backgrounds/main_menu_bg.png")
+	# Cargar Background
+	var bg_path = "res://assets/ui/backgrounds/main_menu_bg.png"
+	var bg_tex = load(bg_path)
+	
+	var debug_msg = "Path: " + bg_path + "\n"
 	
 	# Fallback: Carga directa del sistema de archivos (Correcto para Godot 4.x)
+	var final_path = bg_path
 	if not bg_tex:
-		# Image.load_from_file es estatico y devuelve una Image (o null)
-		var img = Image.load_from_file("res://assets/ui/backgrounds/main_menu_bg.png")
+		debug_msg += "Resource Load: FAILED\n"
+		
+		# Intentar convertir res:// a ruta absoluta del sistema
+		final_path = ProjectSettings.globalize_path(bg_path)
+		debug_msg += "Global Path: " + final_path + "\n"
+		
+		# Intentar cargar via Image.load_from_file
+		var img = Image.load_from_file(final_path)
+		
+		# Fallback Nuclear: Leer bytes crudos (si load_from_file falla)
+		if not img:
+			debug_msg += "Image.load_from_file: NULL. Trying Byte Read...\n"
+			if FileAccess.file_exists(final_path):
+				var bytes = FileAccess.get_file_as_bytes(final_path)
+				if bytes.size() > 0:
+					img = Image.new()
+					
+					# --- FORMAT DETECTIVE ---
+					var header = bytes.slice(0, 4)
+					debug_msg += "Header: %02X %02X %02X %02X\n" % [header[0], header[1], header[2], header[3]]
+					
+					var err = ERR_FILE_UNRECOGNIZED
+					
+					# 1. Try PNG (89 50 4E 47)
+					if header[0] == 0x89 and header[1] == 0x50:
+						debug_msg += "Format: PNG detected\n"
+						err = img.load_png_from_buffer(bytes)
+					
+					# 2. Try JPG (FF D8)
+					elif header[0] == 0xFF and header[1] == 0xD8:
+						debug_msg += "Format: Jpeg detected (renamed?)\n"
+						err = img.load_jpg_from_buffer(bytes)
+						
+					# 3. Try WebP (RIFF....WEBP)
+					elif header[0] == 0x52 and header[1] == 0x49: # 'R', 'I'
+						debug_msg += "Format: WebP detected (renamed?)\n"
+						err = img.load_webp_from_buffer(bytes)
+						
+					# 4. Fallback: Try all in order
+						debug_msg += "Format: Unknown. Trying brute force...\n"
+						err = img.load_png_from_buffer(bytes)
+						if err != OK: err = img.load_jpg_from_buffer(bytes)
+						if err != OK: err = img.load_webp_from_buffer(bytes)
+					
+					if err != OK:
+						debug_msg += "Buffer Load: FAILED (Err " + str(err) + ")\n"
+						img = null 
+					else:
+						# SUCCESS! Ocultar debug
+						if debug_label: debug_label.visible = false
+						debug_msg += "Buffer Load: SUCCESS\n"
+				else:
+					debug_msg += "FileAccess: ERROR (0 bytes read)\n"
+			else:
+				debug_msg += "FileAccess: EXISTANCE CHECK FAILED\n"
+		
 		if img:
+			# Confirmar success final
+			if debug_label: debug_label.visible = false
 			bg_tex = ImageTexture.create_from_image(img)
 		else:
-			print("ERROR CARGANDO WALLPAPER: Image.load_from_file devolvio null")
-
-	if bg_tex:
-		var bg_rect = get_node_or_null("BackgroundRect")
-		if not bg_rect:
-			bg_rect = TextureRect.new()
-			bg_rect.name = "BackgroundRect"
-			bg_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			bg_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-			bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
-			bg_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE # Importante para no bloquear clicks
-			bg_rect.z_index = -100 # Forzar al fondo absoluto
-			
-			# Insertar como primer hijo
-			add_child(bg_rect)
-			move_child(bg_rect, 0)
-			
-			# DEBUG VISUAL: Texto rojo gigante si cargó
-			var debug = Label.new()
-			debug.text = "WALLPAPER LOADED: " + str(bg_tex != null)
-			debug.add_theme_color_override("font_color", Color.RED)
-			debug.add_theme_font_size_override("font_size", 40)
-			debug.position = Vector2(50, 50)
-			debug.z_index = 4096 
-			add_child(debug)
+			debug_msg += "FATAL: Could not load image in any way.\n"
+			if debug_label: 
+				debug_label.visible = true
+				debug_label.text = debug_msg
+	else:
+		if debug_label: debug_label.visible = false
+	else:
+		debug_msg += "Resource Load: SUCCESS\n"
 		
-		bg_rect.texture = bg_tex
-		bg_rect.visible = true # Asegurar visibilidad
+	if bg_tex and background_rect:
+		background_rect.texture = bg_tex
+		background_rect.visible = true
+	
+	if debug_label:
+		debug_label.text = debug_msg
 
 	# Animación de entrada
 	modulate.a = 0
@@ -128,14 +204,12 @@ func _create_resume_button() -> void:
 		else:
 			resume_button.add_theme_font_size_override("font_size", 24)
 
-		# Insertar antes del boton de jugar
-		var play_index = parent.get_child_count()
-		for i in parent.get_child_count():
-			if parent.get_child(i) == play_button:
-				play_index = i
-				break
-		parent.add_child(resume_button)
-		parent.move_child(resume_button, play_index)
+		# Add to VBox at index 0 (top)
+		$UILayer/UIContainer/VBoxContainer.add_child(resume_button)
+		$UILayer/UIContainer/VBoxContainer.move_child(resume_button, 0)
+		
+		# Apply style
+		_apply_premium_style()
 
 		resume_button.pressed.connect(_on_resume_pressed)
 
@@ -261,10 +335,8 @@ func _show_slot_select() -> void:
 	slot_select_screen.back_pressed.connect(_on_slot_back)
 
 	# Ocultar el menú principal mientras se muestra la selección
-	$VBoxContainer.visible = false
-	$TitleLabel.visible = false
-	if has_node("SubtitleLabel"):
-		$SubtitleLabel.visible = false
+	if ui_container:
+		ui_container.visible = false
 
 func _on_slot_selected(slot_index: int) -> void:
 	"""Callback cuando se selecciona un slot"""
@@ -345,10 +417,8 @@ func _on_slot_back() -> void:
 		slot_select_screen.visible = false
 
 	# Mostrar menú principal
-	$VBoxContainer.visible = true
-	$TitleLabel.visible = true
-	if has_node("SubtitleLabel"):
-		$SubtitleLabel.visible = true
+	if ui_container:
+		ui_container.visible = true
 
 	# Actualizar navegación
 	_update_button_list()
