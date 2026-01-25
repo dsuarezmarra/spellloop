@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dd6uhynhn673c"
-path="res://.godot/imported/sfx_weapon_gaia_01.mp3-90ac82834c0b64ef47fe6873f00ed4e2.mp3str"
+path="res://.godot/imported/sfx_weapon_gaia_01.mp3-f71a89a5e6bea5c6b8f94d87fbcbb896.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_gaia_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_gaia_01.mp3-90ac82834c0b64ef47fe6873f00ed4e2.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_gaia_01.mp3-f71a89a5e6bea5c6b8f94d87fbcbb896.mp3str"]
 
 [params]
 

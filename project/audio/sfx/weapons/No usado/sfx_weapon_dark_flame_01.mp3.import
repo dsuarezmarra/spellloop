@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://beh4vl4pxdefw"
-path="res://.godot/imported/sfx_weapon_dark_flame_01.mp3-1151674a8fc0957de07ba31afc01aa76.mp3str"
+path="res://.godot/imported/sfx_weapon_dark_flame_01.mp3-7388eb396cc3ce1019b518e02fb309f6.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_dark_flame_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_dark_flame_01.mp3-1151674a8fc0957de07ba31afc01aa76.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_dark_flame_01.mp3-7388eb396cc3ce1019b518e02fb309f6.mp3str"]
 
 [params]
 

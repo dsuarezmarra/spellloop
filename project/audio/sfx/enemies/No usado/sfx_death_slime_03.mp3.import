@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dq75l088v208l"
-path="res://.godot/imported/sfx_death_slime_03.mp3-ea528409cf81e2566fd565aae0ac8c88.mp3str"
+path="res://.godot/imported/sfx_death_slime_03.mp3-6b7d0320ab013ae3ae39c5908461d874.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/enemies/No usado/sfx_death_slime_03.mp3"
-dest_files=["res://.godot/imported/sfx_death_slime_03.mp3-ea528409cf81e2566fd565aae0ac8c88.mp3str"]
+dest_files=["res://.godot/imported/sfx_death_slime_03.mp3-6b7d0320ab013ae3ae39c5908461d874.mp3str"]
 
 [params]
 

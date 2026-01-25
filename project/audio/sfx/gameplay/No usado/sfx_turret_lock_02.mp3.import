@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://c2ioh7d8g55r"
-path="res://.godot/imported/sfx_turret_lock_02.mp3-8e0a6f7370cf95a267ebaf994bc87bdb.mp3str"
+path="res://.godot/imported/sfx_turret_lock_02.mp3-e298d549cb41b1774c270204142ea920.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/gameplay/No usado/sfx_turret_lock_02.mp3"
-dest_files=["res://.godot/imported/sfx_turret_lock_02.mp3-8e0a6f7370cf95a267ebaf994bc87bdb.mp3str"]
+dest_files=["res://.godot/imported/sfx_turret_lock_02.mp3-e298d549cb41b1774c270204142ea920.mp3str"]
 
 [params]
 

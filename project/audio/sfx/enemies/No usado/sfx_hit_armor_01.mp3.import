@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dobqkq6n2jis1"
-path="res://.godot/imported/sfx_hit_armor_01.mp3-615055f20a7743efce07a824a9dcfbcb.mp3str"
+path="res://.godot/imported/sfx_hit_armor_01.mp3-63e16196baf1d92071fed42afdb85b86.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/enemies/No usado/sfx_hit_armor_01.mp3"
-dest_files=["res://.godot/imported/sfx_hit_armor_01.mp3-615055f20a7743efce07a824a9dcfbcb.mp3str"]
+dest_files=["res://.godot/imported/sfx_hit_armor_01.mp3-63e16196baf1d92071fed42afdb85b86.mp3str"]
 
 [params]
 

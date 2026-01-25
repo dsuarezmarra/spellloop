@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://c2q16nbbalj3x"
-path="res://.godot/imported/sfx_weapon_abyss_01.mp3-0108524649c21ba08e0e0596c15f7310.mp3str"
+path="res://.godot/imported/sfx_weapon_abyss_01.mp3-8f82342d954e9c25b0ed0f6b2f39e81d.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_abyss_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_abyss_01.mp3-0108524649c21ba08e0e0596c15f7310.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_abyss_01.mp3-8f82342d954e9c25b0ed0f6b2f39e81d.mp3str"]
 
 [params]
 

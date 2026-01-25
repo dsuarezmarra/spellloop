@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dekvskq6g7ofy"
-path="res://.godot/imported/sfx_weapon_wind_blade_01.mp3-94db6d22f1b2ca64c841aa96f24d8cee.mp3str"
+path="res://.godot/imported/sfx_weapon_wind_blade_01.mp3-e60815397d699be5f5b54c285d60c5c9.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_wind_blade_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_wind_blade_01.mp3-94db6d22f1b2ca64c841aa96f24d8cee.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_wind_blade_01.mp3-e60815397d699be5f5b54c285d60c5c9.mp3str"]
 
 [params]
 

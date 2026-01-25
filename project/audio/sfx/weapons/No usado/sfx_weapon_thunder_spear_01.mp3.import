@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://xygcwigy6u1n"
-path="res://.godot/imported/sfx_weapon_thunder_spear_01.mp3-383d8ca227308852d6874767bf7fb7fa.mp3str"
+path="res://.godot/imported/sfx_weapon_thunder_spear_01.mp3-045bb331a9cb16447afda6d075e8cbe0.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_thunder_spear_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_thunder_spear_01.mp3-383d8ca227308852d6874767bf7fb7fa.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_thunder_spear_01.mp3-045bb331a9cb16447afda6d075e8cbe0.mp3str"]
 
 [params]
 

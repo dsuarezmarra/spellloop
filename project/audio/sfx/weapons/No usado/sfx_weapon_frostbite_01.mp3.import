@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bb8frwi57wolm"
-path="res://.godot/imported/sfx_weapon_frostbite_01.mp3-c69157eef8b647d2695cf13946fba023.mp3str"
+path="res://.godot/imported/sfx_weapon_frostbite_01.mp3-4aacac328a6319a798f81a32033783da.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_frostbite_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_frostbite_01.mp3-c69157eef8b647d2695cf13946fba023.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_frostbite_01.mp3-4aacac328a6319a798f81a32033783da.mp3str"]
 
 [params]
 

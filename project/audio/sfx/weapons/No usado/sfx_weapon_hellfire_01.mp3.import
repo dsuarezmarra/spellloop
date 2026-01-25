@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://eqi376iq1k2w"
-path="res://.godot/imported/sfx_weapon_hellfire_01.mp3-e5b827839172eb5797555b5d00c4fb02.mp3str"
+path="res://.godot/imported/sfx_weapon_hellfire_01.mp3-7533e3ff674df7e0051dbfe3fe72f38f.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_hellfire_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_hellfire_01.mp3-e5b827839172eb5797555b5d00c4fb02.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_hellfire_01.mp3-7533e3ff674df7e0051dbfe3fe72f38f.mp3str"]
 
 [params]
 

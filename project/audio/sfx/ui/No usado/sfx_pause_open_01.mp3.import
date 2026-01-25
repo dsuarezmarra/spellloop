@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://boo7diwa6orff"
-path="res://.godot/imported/sfx_pause_open_01.mp3-0fe516586611c3b18c89cd0d32a0f141.mp3str"
+path="res://.godot/imported/sfx_pause_open_01.mp3-02e35c17ac1149076eb4cf1259d48bc3.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/ui/No usado/sfx_pause_open_01.mp3"
-dest_files=["res://.godot/imported/sfx_pause_open_01.mp3-0fe516586611c3b18c89cd0d32a0f141.mp3str"]
+dest_files=["res://.godot/imported/sfx_pause_open_01.mp3-02e35c17ac1149076eb4cf1259d48bc3.mp3str"]
 
 [params]
 

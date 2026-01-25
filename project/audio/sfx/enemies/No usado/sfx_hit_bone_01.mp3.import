@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dswaukll5fg1"
-path="res://.godot/imported/sfx_hit_bone_01.mp3-09e675e1133e622272978acd09bd122a.mp3str"
+path="res://.godot/imported/sfx_hit_bone_01.mp3-a0d5ee6f27d60674197a42d3e527a912.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/enemies/No usado/sfx_hit_bone_01.mp3"
-dest_files=["res://.godot/imported/sfx_hit_bone_01.mp3-09e675e1133e622272978acd09bd122a.mp3str"]
+dest_files=["res://.godot/imported/sfx_hit_bone_01.mp3-a0d5ee6f27d60674197a42d3e527a912.mp3str"]
 
 [params]
 

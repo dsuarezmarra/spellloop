@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://s7g6vbq1fk11"
-path="res://.godot/imported/sfx_fusion_eclipse.mp3-2ddc28ed57dbd1e9b07e536a47fd7a07.mp3str"
+path="res://.godot/imported/sfx_fusion_eclipse.mp3-e06289324cc551b4d96e917a481a38d9.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/fusions/No usado/sfx_fusion_eclipse.mp3"
-dest_files=["res://.godot/imported/sfx_fusion_eclipse.mp3-2ddc28ed57dbd1e9b07e536a47fd7a07.mp3str"]
+dest_files=["res://.godot/imported/sfx_fusion_eclipse.mp3-e06289324cc551b4d96e917a481a38d9.mp3str"]
 
 [params]
 

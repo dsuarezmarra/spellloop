@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dmk2gr6xdvujx"
-path="res://.godot/imported/sfx_weapon_radiant_stone_01.mp3-1e9ea2b9eaf3b0e8242a4f9460007527.mp3str"
+path="res://.godot/imported/sfx_weapon_radiant_stone_01.mp3-311030bcd5f1e950af56143fa512dfdb.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_radiant_stone_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_radiant_stone_01.mp3-1e9ea2b9eaf3b0e8242a4f9460007527.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_radiant_stone_01.mp3-311030bcd5f1e950af56143fa512dfdb.mp3str"]
 
 [params]
 

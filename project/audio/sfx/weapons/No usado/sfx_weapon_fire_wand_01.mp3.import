@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://crw3665slkmcj"
-path="res://.godot/imported/sfx_weapon_fire_wand_01.mp3-9aca4a502a24919a6fff1ea4d45621e5.mp3str"
+path="res://.godot/imported/sfx_weapon_fire_wand_01.mp3-5e9d4e69a057b79770e8c9d3d3779859.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_fire_wand_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_fire_wand_01.mp3-9aca4a502a24919a6fff1ea4d45621e5.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_fire_wand_01.mp3-5e9d4e69a057b79770e8c9d3d3779859.mp3str"]
 
 [params]
 

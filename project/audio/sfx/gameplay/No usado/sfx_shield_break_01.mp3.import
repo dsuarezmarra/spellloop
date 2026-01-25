@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bvuxnkiy0e6qp"
-path="res://.godot/imported/sfx_shield_break_01.mp3-8804545532665dc0e0a1c2961311069a.mp3str"
+path="res://.godot/imported/sfx_shield_break_01.mp3-b605d4b54294a25db4a30c18b28c4bb6.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/gameplay/No usado/sfx_shield_break_01.mp3"
-dest_files=["res://.godot/imported/sfx_shield_break_01.mp3-8804545532665dc0e0a1c2961311069a.mp3str"]
+dest_files=["res://.godot/imported/sfx_shield_break_01.mp3-b605d4b54294a25db4a30c18b28c4bb6.mp3str"]
 
 [params]
 

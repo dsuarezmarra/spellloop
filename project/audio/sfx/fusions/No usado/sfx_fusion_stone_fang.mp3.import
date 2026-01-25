@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://2pvwonxxubmo"
-path="res://.godot/imported/sfx_fusion_stone_fang.mp3-247f745f320cb940a8cb40cf7244f01a.mp3str"
+path="res://.godot/imported/sfx_fusion_stone_fang.mp3-488a6737db94799f3f3bcb582baa0f58.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/fusions/No usado/sfx_fusion_stone_fang.mp3"
-dest_files=["res://.godot/imported/sfx_fusion_stone_fang.mp3-247f745f320cb940a8cb40cf7244f01a.mp3str"]
+dest_files=["res://.godot/imported/sfx_fusion_stone_fang.mp3-488a6737db94799f3f3bcb582baa0f58.mp3str"]
 
 [params]
 

@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bb5a5wjpgy561"
-path="res://.godot/imported/sfx_hit_flesh_02.mp3-5c39015996da7ca7852137f0386f0c40.mp3str"
+path="res://.godot/imported/sfx_hit_flesh_02.mp3-d59d429121f43e37126bc04e461631a3.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/enemies/No usado/sfx_hit_flesh_02.mp3"
-dest_files=["res://.godot/imported/sfx_hit_flesh_02.mp3-5c39015996da7ca7852137f0386f0c40.mp3str"]
+dest_files=["res://.godot/imported/sfx_hit_flesh_02.mp3-d59d429121f43e37126bc04e461631a3.mp3str"]
 
 [params]
 

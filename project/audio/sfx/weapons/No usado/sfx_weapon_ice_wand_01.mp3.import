@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dhr41wm2o40e4"
-path="res://.godot/imported/sfx_weapon_ice_wand_01.mp3-5f0687779a54d2bff94879b1e3a7cacb.mp3str"
+path="res://.godot/imported/sfx_weapon_ice_wand_01.mp3-fc24a93c45711382407709be84f36a7f.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_ice_wand_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_ice_wand_01.mp3-5f0687779a54d2bff94879b1e3a7cacb.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_ice_wand_01.mp3-fc24a93c45711382407709be84f36a7f.mp3str"]
 
 [params]
 

@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dy832374tq0la"
-path="res://.godot/imported/sfx_status_burn_loop.mp3-664d5232544b62308308833c69a67505.mp3str"
+path="res://.godot/imported/sfx_status_burn_loop.mp3-20ac348c3d0847ef3fe124b544b71d99.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/status/No usado/sfx_status_burn_loop.mp3"
-dest_files=["res://.godot/imported/sfx_status_burn_loop.mp3-664d5232544b62308308833c69a67505.mp3str"]
+dest_files=["res://.godot/imported/sfx_status_burn_loop.mp3-20ac348c3d0847ef3fe124b544b71d99.mp3str"]
 
 [params]
 

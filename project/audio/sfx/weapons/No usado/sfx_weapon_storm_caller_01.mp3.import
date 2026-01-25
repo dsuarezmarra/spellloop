@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://8usat8v20165"
-path="res://.godot/imported/sfx_weapon_storm_caller_01.mp3-310c06a8aab19808a966cbfab0666a88.mp3str"
+path="res://.godot/imported/sfx_weapon_storm_caller_01.mp3-1d1e7b205b4c15cc11752fe9ca9efd7f.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_storm_caller_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_storm_caller_01.mp3-310c06a8aab19808a966cbfab0666a88.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_storm_caller_01.mp3-1d1e7b205b4c15cc11752fe9ca9efd7f.mp3str"]
 
 [params]
 

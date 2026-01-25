@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dnxjyu1ap6qx6"
-path="res://.godot/imported/sfx_weapon_thunder_bloom_01.mp3-75249dbd22dc89ca9a8c84b709614817.mp3str"
+path="res://.godot/imported/sfx_weapon_thunder_bloom_01.mp3-dac7ccf468fb2e94a9c7da357373d74e.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_thunder_bloom_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_thunder_bloom_01.mp3-75249dbd22dc89ca9a8c84b709614817.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_thunder_bloom_01.mp3-dac7ccf468fb2e94a9c7da357373d74e.mp3str"]
 
 [params]
 

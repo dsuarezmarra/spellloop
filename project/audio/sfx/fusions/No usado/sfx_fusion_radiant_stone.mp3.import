@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://c3m63v342517v"
-path="res://.godot/imported/sfx_fusion_radiant_stone.mp3-9c9195042f9fb52903a9d6f5b87ca1f0.mp3str"
+path="res://.godot/imported/sfx_fusion_radiant_stone.mp3-e8094d8da00d49aeaac71a08bfdcc22b.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/fusions/No usado/sfx_fusion_radiant_stone.mp3"
-dest_files=["res://.godot/imported/sfx_fusion_radiant_stone.mp3-9c9195042f9fb52903a9d6f5b87ca1f0.mp3str"]
+dest_files=["res://.godot/imported/sfx_fusion_radiant_stone.mp3-e8094d8da00d49aeaac71a08bfdcc22b.mp3str"]
 
 [params]
 

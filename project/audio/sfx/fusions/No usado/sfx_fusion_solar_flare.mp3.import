@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://by1he6w7ajp2i"
-path="res://.godot/imported/sfx_fusion_solar_flare.mp3-877a46a1901a91c0589cc7021f91a6b3.mp3str"
+path="res://.godot/imported/sfx_fusion_solar_flare.mp3-3d53fce4967d4ca94200151771a76884.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/fusions/No usado/sfx_fusion_solar_flare.mp3"
-dest_files=["res://.godot/imported/sfx_fusion_solar_flare.mp3-877a46a1901a91c0589cc7021f91a6b3.mp3str"]
+dest_files=["res://.godot/imported/sfx_fusion_solar_flare.mp3-3d53fce4967d4ca94200151771a76884.mp3str"]
 
 [params]
 

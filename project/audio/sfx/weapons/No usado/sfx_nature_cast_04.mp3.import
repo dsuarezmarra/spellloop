@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://c134d152pp1on"
-path="res://.godot/imported/sfx_nature_cast_04.mp3-51c796b24f41a848416838dd3bbe77ca.mp3str"
+path="res://.godot/imported/sfx_nature_cast_04.mp3-87d90b0d8b112ef9a735f47948d06040.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_nature_cast_04.mp3"
-dest_files=["res://.godot/imported/sfx_nature_cast_04.mp3-51c796b24f41a848416838dd3bbe77ca.mp3str"]
+dest_files=["res://.godot/imported/sfx_nature_cast_04.mp3-87d90b0d8b112ef9a735f47948d06040.mp3str"]
 
 [params]
 

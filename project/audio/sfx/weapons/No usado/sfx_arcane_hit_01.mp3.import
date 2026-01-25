@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bo3yeyhjt6s4d"
-path="res://.godot/imported/sfx_arcane_hit_01.mp3-2ae879d3c9b3276e563038127d7bd96d.mp3str"
+path="res://.godot/imported/sfx_arcane_hit_01.mp3-2183cf28d272692d1d6a5b5bfec5c77c.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_arcane_hit_01.mp3"
-dest_files=["res://.godot/imported/sfx_arcane_hit_01.mp3-2ae879d3c9b3276e563038127d7bd96d.mp3str"]
+dest_files=["res://.godot/imported/sfx_arcane_hit_01.mp3-2183cf28d272692d1d6a5b5bfec5c77c.mp3str"]
 
 [params]
 

@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bbkn5ttwwfv7o"
-path="res://.godot/imported/sfx_weapon_blizzard_01.mp3-18b9f50ea98bb44e4804a0c2275975c5.mp3str"
+path="res://.godot/imported/sfx_weapon_blizzard_01.mp3-94691026846c56509455085c05b202b0.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_blizzard_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_blizzard_01.mp3-18b9f50ea98bb44e4804a0c2275975c5.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_blizzard_01.mp3-94691026846c56509455085c05b202b0.mp3str"]
 
 [params]
 

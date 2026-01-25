@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://ct6xb26v7h2m5"
-path="res://.godot/imported/sfx_rarity_legendary_03.mp3-d8d36566f3888faeb44ac4d5a5b754b0.mp3str"
+path="res://.godot/imported/sfx_rarity_legendary_03.mp3-10879d423f840f129461eb0e438ee33d.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/ui/No usado/sfx_rarity_legendary_03.mp3"
-dest_files=["res://.godot/imported/sfx_rarity_legendary_03.mp3-d8d36566f3888faeb44ac4d5a5b754b0.mp3str"]
+dest_files=["res://.godot/imported/sfx_rarity_legendary_03.mp3-10879d423f840f129461eb0e438ee33d.mp3str"]
 
 [params]
 

@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://cem8akg5y4c50"
-path="res://.godot/imported/sfx_item_pickup_01.mp3-88cc33e22690ff89caf97c72c29e7195.mp3str"
+path="res://.godot/imported/sfx_item_pickup_01.mp3-521d8eb9d9f219603f09cfde6ba09abd.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/gameplay/No usado/sfx_item_pickup_01.mp3"
-dest_files=["res://.godot/imported/sfx_item_pickup_01.mp3-88cc33e22690ff89caf97c72c29e7195.mp3str"]
+dest_files=["res://.godot/imported/sfx_item_pickup_01.mp3-521d8eb9d9f219603f09cfde6ba09abd.mp3str"]
 
 [params]
 

@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://cwluig2xyy2q6"
-path="res://.godot/imported/sfx_weapon_glacier_01.mp3-e218d0c3bb5ff977644e8727cab47c80.mp3str"
+path="res://.godot/imported/sfx_weapon_glacier_01.mp3-fabc0c72dfbe54e00b875249323a72f0.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_glacier_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_glacier_01.mp3-e218d0c3bb5ff977644e8727cab47c80.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_glacier_01.mp3-fabc0c72dfbe54e00b875249323a72f0.mp3str"]
 
 [params]
 

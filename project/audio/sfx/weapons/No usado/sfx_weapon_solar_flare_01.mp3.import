@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://de7yo4mcexu5c"
-path="res://.godot/imported/sfx_weapon_solar_flare_01.mp3-61d06caa632778c0f58920d14cddee65.mp3str"
+path="res://.godot/imported/sfx_weapon_solar_flare_01.mp3-dcfd4e1af88cd7e97431aa7b65dd5a33.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_solar_flare_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_solar_flare_01.mp3-61d06caa632778c0f58920d14cddee65.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_solar_flare_01.mp3-dcfd4e1af88cd7e97431aa7b65dd5a33.mp3str"]
 
 [params]
 

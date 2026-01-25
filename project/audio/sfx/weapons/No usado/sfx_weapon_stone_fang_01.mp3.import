@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://7fu4upnd2fi2"
-path="res://.godot/imported/sfx_weapon_stone_fang_01.mp3-53cf7d274017df50e5bf8821ae335b02.mp3str"
+path="res://.godot/imported/sfx_weapon_stone_fang_01.mp3-91b7133ef2a6e5ebd9728cc198d6bdc3.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_stone_fang_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_stone_fang_01.mp3-53cf7d274017df50e5bf8821ae335b02.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_stone_fang_01.mp3-91b7133ef2a6e5ebd9728cc198d6bdc3.mp3str"]
 
 [params]
 

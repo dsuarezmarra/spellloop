@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dyq753rmvb8h2"
-path="res://.godot/imported/sfx_weapon_cosmic_void_01.mp3-ff400040d2ca38061156ffc919608790.mp3str"
+path="res://.godot/imported/sfx_weapon_cosmic_void_01.mp3-412b60ad987109e063b4a8f2034fae8c.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_cosmic_void_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_cosmic_void_01.mp3-ff400040d2ca38061156ffc919608790.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_cosmic_void_01.mp3-412b60ad987109e063b4a8f2034fae8c.mp3str"]
 
 [params]
 

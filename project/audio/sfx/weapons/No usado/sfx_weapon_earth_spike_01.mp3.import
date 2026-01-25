@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bpweqiltridwb"
-path="res://.godot/imported/sfx_weapon_earth_spike_01.mp3-980d4135c087a5b445899463aa233da9.mp3str"
+path="res://.godot/imported/sfx_weapon_earth_spike_01.mp3-abdabc3d565868d4d49135cb47886efe.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_earth_spike_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_earth_spike_01.mp3-980d4135c087a5b445899463aa233da9.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_earth_spike_01.mp3-abdabc3d565868d4d49135cb47886efe.mp3str"]
 
 [params]
 

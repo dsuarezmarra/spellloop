@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bsvnkdvbwxyc0"
-path="res://.godot/imported/sfx_footstep_water_03.mp3-5ff8044e426df3c59874a0baf64168a2.mp3str"
+path="res://.godot/imported/sfx_footstep_water_03.mp3-61fe9c8db3d06bf6b2edf010b59c65aa.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/gameplay/No usado/sfx_footstep_water_03.mp3"
-dest_files=["res://.godot/imported/sfx_footstep_water_03.mp3-5ff8044e426df3c59874a0baf64168a2.mp3str"]
+dest_files=["res://.godot/imported/sfx_footstep_water_03.mp3-61fe9c8db3d06bf6b2edf010b59c65aa.mp3str"]
 
 [params]
 

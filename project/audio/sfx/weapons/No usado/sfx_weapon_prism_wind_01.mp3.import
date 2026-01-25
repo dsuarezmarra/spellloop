@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bihm4a3je7v0t"
-path="res://.godot/imported/sfx_weapon_prism_wind_01.mp3-0ea3623309e56dc78d3240dbf4b706e1.mp3str"
+path="res://.godot/imported/sfx_weapon_prism_wind_01.mp3-d743c0e81a581356766eaa3f72cdbc19.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_prism_wind_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_prism_wind_01.mp3-0ea3623309e56dc78d3240dbf4b706e1.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_prism_wind_01.mp3-d743c0e81a581356766eaa3f72cdbc19.mp3str"]
 
 [params]
 

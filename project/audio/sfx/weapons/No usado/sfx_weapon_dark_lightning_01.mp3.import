@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://ddg5iffno3txm"
-path="res://.godot/imported/sfx_weapon_dark_lightning_01.mp3-fd9b88de1a909398dd3438137caa9a6d.mp3str"
+path="res://.godot/imported/sfx_weapon_dark_lightning_01.mp3-df80315edc2be34aeeba1a867e0cc615.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_dark_lightning_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_dark_lightning_01.mp3-fd9b88de1a909398dd3438137caa9a6d.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_dark_lightning_01.mp3-df80315edc2be34aeeba1a867e0cc615.mp3str"]
 
 [params]
 

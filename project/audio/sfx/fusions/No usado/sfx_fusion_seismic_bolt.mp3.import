@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://46levjccuaib"
-path="res://.godot/imported/sfx_fusion_seismic_bolt.mp3-4e89f5d79ac2558273accd4e1843b20f.mp3str"
+path="res://.godot/imported/sfx_fusion_seismic_bolt.mp3-2d0dd8aedc541a0f8587b73b5ab94b48.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/fusions/No usado/sfx_fusion_seismic_bolt.mp3"
-dest_files=["res://.godot/imported/sfx_fusion_seismic_bolt.mp3-4e89f5d79ac2558273accd4e1843b20f.mp3str"]
+dest_files=["res://.godot/imported/sfx_fusion_seismic_bolt.mp3-2d0dd8aedc541a0f8587b73b5ab94b48.mp3str"]
 
 [params]
 

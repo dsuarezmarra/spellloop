@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bs44es6km4k1e"
-path="res://.godot/imported/sfx_footstep_grass_01.mp3-bb37062e8bff4a5d642f2d6788354d3d.mp3str"
+path="res://.godot/imported/sfx_footstep_grass_01.mp3-d1f295e37f2ed590aa8a679281ab3b24.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/gameplay/No usado/sfx_footstep_grass_01.mp3"
-dest_files=["res://.godot/imported/sfx_footstep_grass_01.mp3-bb37062e8bff4a5d642f2d6788354d3d.mp3str"]
+dest_files=["res://.godot/imported/sfx_footstep_grass_01.mp3-d1f295e37f2ed590aa8a679281ab3b24.mp3str"]
 
 [params]
 

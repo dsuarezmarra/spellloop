@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bsu7pfneiis0u"
-path="res://.godot/imported/sfx_shield_absorb_03.mp3-32803f662af423d166e8f75968b2cd75.mp3str"
+path="res://.godot/imported/sfx_shield_absorb_03.mp3-797506c4e65a32f513c4e5942108c73e.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/gameplay/No usado/sfx_shield_absorb_03.mp3"
-dest_files=["res://.godot/imported/sfx_shield_absorb_03.mp3-32803f662af423d166e8f75968b2cd75.mp3str"]
+dest_files=["res://.godot/imported/sfx_shield_absorb_03.mp3-797506c4e65a32f513c4e5942108c73e.mp3str"]
 
 [params]
 

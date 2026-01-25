@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bfm125alefcwd"
-path="res://.godot/imported/sfx_hit_slime_06.mp3-069b3aea97f82e57c0260c7ede09cda3.mp3str"
+path="res://.godot/imported/sfx_hit_slime_06.mp3-2921301227341f80330973b203088746.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/enemies/No usado/sfx_hit_slime_06.mp3"
-dest_files=["res://.godot/imported/sfx_hit_slime_06.mp3-069b3aea97f82e57c0260c7ede09cda3.mp3str"]
+dest_files=["res://.godot/imported/sfx_hit_slime_06.mp3-2921301227341f80330973b203088746.mp3str"]
 
 [params]
 

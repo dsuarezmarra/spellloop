@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dty51rdpfteto"
-path="res://.godot/imported/sfx_weapon_twilight_01.mp3-755c4fd5d5c39799de66b0b3f4886588.mp3str"
+path="res://.godot/imported/sfx_weapon_twilight_01.mp3-ea26bfb872693cf805c3d427d431f088.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_twilight_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_twilight_01.mp3-755c4fd5d5c39799de66b0b3f4886588.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_twilight_01.mp3-ea26bfb872693cf805c3d427d431f088.mp3str"]
 
 [params]
 

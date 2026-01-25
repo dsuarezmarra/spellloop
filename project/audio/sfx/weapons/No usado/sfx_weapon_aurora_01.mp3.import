@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dygumpfhlkmfs"
-path="res://.godot/imported/sfx_weapon_aurora_01.mp3-0c9d66d00034bf5f79ff6bacbc2bddd2.mp3str"
+path="res://.godot/imported/sfx_weapon_aurora_01.mp3-9453411b767032f054bd0ada1fee1b3c.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_aurora_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_aurora_01.mp3-0c9d66d00034bf5f79ff6bacbc2bddd2.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_aurora_01.mp3-9453411b767032f054bd0ada1fee1b3c.mp3str"]
 
 [params]
 

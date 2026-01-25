@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dkhhknjiu3fw7"
-path="res://.godot/imported/sfx_death_armor_03.mp3-18b465545c1a074d4722351cf2a6c069.mp3str"
+path="res://.godot/imported/sfx_death_armor_03.mp3-bb50db2d1b67cc78777badd9ddd82700.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/enemies/No usado/sfx_death_armor_03.mp3"
-dest_files=["res://.godot/imported/sfx_death_armor_03.mp3-18b465545c1a074d4722351cf2a6c069.mp3str"]
+dest_files=["res://.godot/imported/sfx_death_armor_03.mp3-bb50db2d1b67cc78777badd9ddd82700.mp3str"]
 
 [params]
 

@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://c4aeqg1cscnph"
-path="res://.godot/imported/sfx_arcane_cast_01.mp3-deea93d9d04bf41e09a0fcfb83639534.mp3str"
+path="res://.godot/imported/sfx_arcane_cast_01.mp3-2a73cc8f0d5dda0cff06f3dd872ee46b.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_arcane_cast_01.mp3"
-dest_files=["res://.godot/imported/sfx_arcane_cast_01.mp3-deea93d9d04bf41e09a0fcfb83639534.mp3str"]
+dest_files=["res://.godot/imported/sfx_arcane_cast_01.mp3-2a73cc8f0d5dda0cff06f3dd872ee46b.mp3str"]
 
 [params]
 

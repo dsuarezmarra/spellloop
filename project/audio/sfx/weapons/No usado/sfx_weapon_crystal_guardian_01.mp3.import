@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://b3r6ccp2penob"
-path="res://.godot/imported/sfx_weapon_crystal_guardian_01.mp3-ddfce64c48da7e59148831f0657e1baa.mp3str"
+path="res://.godot/imported/sfx_weapon_crystal_guardian_01.mp3-454b3e266004543f4e39066a883cfcf3.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_crystal_guardian_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_crystal_guardian_01.mp3-ddfce64c48da7e59148831f0657e1baa.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_crystal_guardian_01.mp3-454b3e266004543f4e39066a883cfcf3.mp3str"]
 
 [params]
 

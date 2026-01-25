@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://brsolrm0m428d"
-path="res://.godot/imported/sfx_fusion_thunder_spear.mp3-d289f536a070b78c1efa9685c18d50f3.mp3str"
+path="res://.godot/imported/sfx_fusion_thunder_spear.mp3-13bd1969ba1c8b3998de0d16f81ec7ee.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/fusions/No usado/sfx_fusion_thunder_spear.mp3"
-dest_files=["res://.godot/imported/sfx_fusion_thunder_spear.mp3-d289f536a070b78c1efa9685c18d50f3.mp3str"]
+dest_files=["res://.godot/imported/sfx_fusion_thunder_spear.mp3-13bd1969ba1c8b3998de0d16f81ec7ee.mp3str"]
 
 [params]
 

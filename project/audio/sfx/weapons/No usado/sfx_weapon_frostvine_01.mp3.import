@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dnqyorga5b8kq"
-path="res://.godot/imported/sfx_weapon_frostvine_01.mp3-c345c68bf135eeeb0e7bd50653805aa6.mp3str"
+path="res://.godot/imported/sfx_weapon_frostvine_01.mp3-2cc0a2fb15b2bc917cfcfc664b200e45.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_frostvine_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_frostvine_01.mp3-c345c68bf135eeeb0e7bd50653805aa6.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_frostvine_01.mp3-2cc0a2fb15b2bc917cfcfc664b200e45.mp3str"]
 
 [params]
 

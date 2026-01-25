@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://qw680gtessys"
-path="res://.godot/imported/sfx_critical_hit_02.mp3-32b8d66bd2f98e83411cfbede50d7b99.mp3str"
+path="res://.godot/imported/sfx_critical_hit_02.mp3-1de29705de0b7ab32c71642134e0adb8.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/gameplay/No usado/sfx_critical_hit_02.mp3"
-dest_files=["res://.godot/imported/sfx_critical_hit_02.mp3-32b8d66bd2f98e83411cfbede50d7b99.mp3str"]
+dest_files=["res://.godot/imported/sfx_critical_hit_02.mp3-1de29705de0b7ab32c71642134e0adb8.mp3str"]
 
 [params]
 

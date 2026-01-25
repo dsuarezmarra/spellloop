@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bg3mjhy8hbcnn"
-path="res://.godot/imported/sfx_weapon_frozen_thunder_01.mp3-8d267f58426471e8d907e96b7aac4bdb.mp3str"
+path="res://.godot/imported/sfx_weapon_frozen_thunder_01.mp3-371d6e03b1f00ba13d6b81a3b600b58c.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_frozen_thunder_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_frozen_thunder_01.mp3-8d267f58426471e8d907e96b7aac4bdb.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_frozen_thunder_01.mp3-371d6e03b1f00ba13d6b81a3b600b58c.mp3str"]
 
 [params]
 

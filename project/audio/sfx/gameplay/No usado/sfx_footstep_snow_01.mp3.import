@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dxqey38ljil68"
-path="res://.godot/imported/sfx_footstep_snow_01.mp3-eb82497cd4757fce6e11d349a5a9abd7.mp3str"
+path="res://.godot/imported/sfx_footstep_snow_01.mp3-ff8caf260c016f0b9bd62beca5fc0ec9.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/gameplay/No usado/sfx_footstep_snow_01.mp3"
-dest_files=["res://.godot/imported/sfx_footstep_snow_01.mp3-eb82497cd4757fce6e11d349a5a9abd7.mp3str"]
+dest_files=["res://.godot/imported/sfx_footstep_snow_01.mp3-ff8caf260c016f0b9bd62beca5fc0ec9.mp3str"]
 
 [params]
 

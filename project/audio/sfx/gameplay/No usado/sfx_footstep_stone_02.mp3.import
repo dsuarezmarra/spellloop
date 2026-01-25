@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://bm2265ss3qdpo"
-path="res://.godot/imported/sfx_footstep_stone_02.mp3-69000777340a0c9cb43b99a7a3bc1854.mp3str"
+path="res://.godot/imported/sfx_footstep_stone_02.mp3-6cbac976590515cbb82f70b32245f234.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/gameplay/No usado/sfx_footstep_stone_02.mp3"
-dest_files=["res://.godot/imported/sfx_footstep_stone_02.mp3-69000777340a0c9cb43b99a7a3bc1854.mp3str"]
+dest_files=["res://.godot/imported/sfx_footstep_stone_02.mp3-6cbac976590515cbb82f70b32245f234.mp3str"]
 
 [params]
 

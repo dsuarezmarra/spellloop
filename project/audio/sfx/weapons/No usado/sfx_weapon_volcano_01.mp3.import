@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://o7xl4kaae0a6"
-path="res://.godot/imported/sfx_weapon_volcano_01.mp3-4dc3c9b3dfd096415580e8beb60bb2de.mp3str"
+path="res://.godot/imported/sfx_weapon_volcano_01.mp3-5de46dab114d368499512c1ee4eae0f7.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_volcano_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_volcano_01.mp3-4dc3c9b3dfd096415580e8beb60bb2de.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_volcano_01.mp3-5de46dab114d368499512c1ee4eae0f7.mp3str"]
 
 [params]
 

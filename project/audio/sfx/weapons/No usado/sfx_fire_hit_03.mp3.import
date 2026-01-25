@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://6pdkuc764yin"
-path="res://.godot/imported/sfx_fire_hit_03.mp3-78d623582e04511aa42b835421f65c7b.mp3str"
+path="res://.godot/imported/sfx_fire_hit_03.mp3-ecac5763afa8edabe746f87ac0c3fcdf.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_fire_hit_03.mp3"
-dest_files=["res://.godot/imported/sfx_fire_hit_03.mp3-78d623582e04511aa42b835421f65c7b.mp3str"]
+dest_files=["res://.godot/imported/sfx_fire_hit_03.mp3-ecac5763afa8edabe746f87ac0c3fcdf.mp3str"]
 
 [params]
 

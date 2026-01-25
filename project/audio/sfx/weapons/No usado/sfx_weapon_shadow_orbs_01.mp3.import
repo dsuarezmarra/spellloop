@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dyw15bf08gl66"
-path="res://.godot/imported/sfx_weapon_shadow_orbs_01.mp3-74f64edcf37a28ceed1fe4b1ecefc148.mp3str"
+path="res://.godot/imported/sfx_weapon_shadow_orbs_01.mp3-0d18526509e7acf402026c4f2ca87084.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_shadow_orbs_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_shadow_orbs_01.mp3-74f64edcf37a28ceed1fe4b1ecefc148.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_shadow_orbs_01.mp3-0d18526509e7acf402026c4f2ca87084.mp3str"]
 
 [params]
 

@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://cil7c684rex7n"
-path="res://.godot/imported/sfx_barrier_hit_03.mp3-cf05a93c0e0827b605aee4dc934a94dc.mp3str"
+path="res://.godot/imported/sfx_barrier_hit_03.mp3-075a68efa108e63ba61aa43abc419374.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/gameplay/No usado/sfx_barrier_hit_03.mp3"
-dest_files=["res://.godot/imported/sfx_barrier_hit_03.mp3-cf05a93c0e0827b605aee4dc934a94dc.mp3str"]
+dest_files=["res://.godot/imported/sfx_barrier_hit_03.mp3-075a68efa108e63ba61aa43abc419374.mp3str"]
 
 [params]
 

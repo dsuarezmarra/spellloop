@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://drymbtl17alfx"
-path="res://.godot/imported/sfx_status_curse_loop.mp3-d85f181bf77ba9e97d18d196906103da.mp3str"
+path="res://.godot/imported/sfx_status_curse_loop.mp3-f75c6516a4fcb19db0791ef1b3b30aac.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/status/No usado/sfx_status_curse_loop.mp3"
-dest_files=["res://.godot/imported/sfx_status_curse_loop.mp3-d85f181bf77ba9e97d18d196906103da.mp3str"]
+dest_files=["res://.godot/imported/sfx_status_curse_loop.mp3-f75c6516a4fcb19db0791ef1b3b30aac.mp3str"]
 
 [params]
 

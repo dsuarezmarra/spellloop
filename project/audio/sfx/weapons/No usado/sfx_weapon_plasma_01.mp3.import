@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://olb1ra4tohva"
-path="res://.godot/imported/sfx_weapon_plasma_01.mp3-7053174eaae0e71646dbdc41b154a134.mp3str"
+path="res://.godot/imported/sfx_weapon_plasma_01.mp3-73bd8ff12b069a814ba528ba58bac1a1.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_plasma_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_plasma_01.mp3-7053174eaae0e71646dbdc41b154a134.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_plasma_01.mp3-73bd8ff12b069a814ba528ba58bac1a1.mp3str"]
 
 [params]
 

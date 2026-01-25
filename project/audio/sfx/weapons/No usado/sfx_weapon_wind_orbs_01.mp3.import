@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://clcetee6t3qqb"
-path="res://.godot/imported/sfx_weapon_wind_orbs_01.mp3-a7806dece1fb6084f6b47e076a5aa0b9.mp3str"
+path="res://.godot/imported/sfx_weapon_wind_orbs_01.mp3-53116e3e733d85604eb44ce72b3522d1.mp3str"
 
 [deps]
 
 source_file="res://audio/sfx/weapons/No usado/sfx_weapon_wind_orbs_01.mp3"
-dest_files=["res://.godot/imported/sfx_weapon_wind_orbs_01.mp3-a7806dece1fb6084f6b47e076a5aa0b9.mp3str"]
+dest_files=["res://.godot/imported/sfx_weapon_wind_orbs_01.mp3-53116e3e733d85604eb44ce72b3522d1.mp3str"]
 
 [params]
 
