@@ -209,7 +209,7 @@ func _get_free_player() -> AudioStreamPlayer:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 var coin_player: AudioStreamPlayer
-const COIN_SFX_PATH = "res://assets/audio/sfx/pickups/sfx_coin_pickup.wav"
+const COIN_SFX_PATH = "res://assets/audio/sfx/pickups/Usado/sfx_coin_pickup.wav"
 
 func _setup_coin_player() -> void:
 	coin_player = AudioStreamPlayer.new()
