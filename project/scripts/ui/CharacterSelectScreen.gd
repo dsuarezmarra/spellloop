@@ -678,6 +678,18 @@ func _on_back_pressed() -> void:
 	AudioManager.play_fixed("sfx_ui_back")
 	back_pressed.emit()
 
+func _on_back_button_pressed():
+	AudioManager.play_fixed("sfx_ui_back")
+	# ... back logic ...
+	hide()
+
+func _on_confirm_button_pressed():
+	AudioManager.play_fixed("sfx_ui_confirm")
+	# ... confirm logic ...
+
+func _on_character_hovered():
+	AudioManager.play_fixed("sfx_ui_character_select") # Or navigation/hover
+
 func _play_button_sound() -> void:
 	AudioManager.play_fixed("sfx_ui_click")
 

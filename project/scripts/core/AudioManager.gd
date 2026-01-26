@@ -17,7 +17,7 @@ var stream_cache: Dictionary = {}
 
 # Volume settings (0.0 to 1.0)
 var music_volume: float = 1.0
-var sfx_volume: float = 1.0
+var debug_audio: bool = OS.is_debug_build()
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -25,8 +25,14 @@ func _ready():
 	# Registrar en grupo para compatibilidad con scripts legacy que usan get_nodes_in_group
 	add_to_group("audio_manager")
 	
+	# Ensure audio buses exist FIRST
+	_ensure_audio_buses()
+	
 	_init_audio_system()
 	_load_volume_settings()
+	
+	if debug_audio:
+		validate_manifest()
 
 func _init_audio_system():
 	# Load manifest
@@ -44,9 +50,30 @@ func _init_audio_system():
 		player.bus = "SFX"
 		add_child(player)
 		sfx_players.append(player)
+
+func validate_manifest() -> void:
+	"""Runtime validation of audio assets (Debug only)."""
+	print("[AudioManager] Validating manifest...")
+	var empty_ids = 0
+	var broken_paths = 0
 	
-	# Ensure audio buses exist
-	_ensure_audio_buses()
+	for id in manifest:
+		var entry = manifest[id]
+		var files = entry.get("files", [])
+		
+		if files.is_empty():
+			push_warning("[AudioManager] ID '%s' has no files defined" % id)
+			empty_ids += 1
+		
+		for path in files:
+			if not FileAccess.file_exists(path):
+				push_warning("[AudioManager] ID '%s' points to missing file: %s" % [id, path])
+				broken_paths += 1
+	
+	if empty_ids > 0 or broken_paths > 0:
+		print("[AudioManager] Validation finished with issues: %d empty IDs, %d broken paths." % [empty_ids, broken_paths])
+	else:
+		print("[AudioManager] Validation passed cleanly.")
 
 func _ensure_audio_buses():
 	"""Create audio buses if they don't exist."""
@@ -87,13 +114,16 @@ func play_fixed(audio_id: String, volume_offset: float = 0.0) -> void:
 func _play_internal(audio_id: String, volume_offset: float, random_variation: bool) -> void:
 	"""Internal play method."""
 	if not manifest.has(audio_id):
-		# push_warning("[AudioManager] Sound not found: " + audio_id)
+		if debug_audio:
+			push_warning("[AudioManager] Sound not found: " + audio_id)
 		return
 	
 	var entry = manifest[audio_id]
 	var files = entry.get("files", [])
 	
 	if files.is_empty():
+		if debug_audio:
+			push_warning("[AudioManager] ID '%s' is empty" % audio_id)
 		return
 	
 	# Pick variation - random or first
@@ -117,11 +147,9 @@ func _play_internal(audio_id: String, volume_offset: float, random_variation: bo
 	player.stream = stream
 	var base_volume = entry.get("volume_db", 0.0) + volume_offset
 	
-	# FIX: Removed double volume application. The Bus ("SFX") already handles the global reduction.
-	# Only apply local offsets here.
 	player.volume_db = base_volume
 	
-	# Only use pitch variation for random mode
+	# Only use pitch variation for random mode AND if configured
 	if random_variation:
 		var pitch_range = entry.get("pitch_scale", [1.0, 1.0])
 		if pitch_range is Array and pitch_range.size() >= 2:
@@ -139,7 +167,8 @@ func _get_stream(path: String) -> AudioStream:
 		return stream_cache[path]
 	
 	if not FileAccess.file_exists(path):
-		push_warning("[AudioManager] File not found: " + path)
+		if debug_audio:
+			push_warning("[AudioManager] File not found: " + path)
 		return null
 		
 	var stream = load(path)

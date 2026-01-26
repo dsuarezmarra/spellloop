@@ -315,12 +315,23 @@ func hide_pause_menu() -> void:
 	tween.tween_property(self, "modulate:a", 0.0, 0.15)
 	await tween.finished
 
-	visible = false
-	get_tree().paused = false
+	close_pause_menu() # Call the new close function
 
 func close() -> void:
 	"""Alias para hide_pause_menu - usado por Game.gd"""
 	hide_pause_menu()
+
+func _on_resume_pressed():
+	AudioManager.play_fixed("sfx_ui_click")
+	close_pause_menu()
+
+func _on_options_pressed():
+	AudioManager.play_fixed("sfx_ui_click")
+	# ... open options ...
+
+func _on_quit_pressed():
+	AudioManager.play_fixed("sfx_ui_back")
+	# ... quit logic ...
 
 func _update_time_display() -> void:
 	var time_label = main_panel.find_child("TimeLabel", true, false) as Label

@@ -100,12 +100,11 @@ def post_process_audio(input_path: Path, output_path: Path) -> bool:
     """
     global FFMPEG_AVAILABLE
     
+    # FORCE DISABLE FFMPEG - User reported failures, prioritize raw files
+    FFMPEG_AVAILABLE = False
+    
     if FFMPEG_AVAILABLE is None:
         FFMPEG_AVAILABLE = check_ffmpeg_available()
-        if not FFMPEG_AVAILABLE:
-            print("   [INFO] ffmpeg not found - using raw audio files")
-    
-    if not FFMPEG_AVAILABLE:
         # Just use the raw file as-is (already MP3 from ElevenLabs)
         import shutil
         try:

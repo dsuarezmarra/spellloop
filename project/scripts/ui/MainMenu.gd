@@ -590,13 +590,10 @@ func _resume_game() -> void:
 	get_tree().change_scene_to_file(scene_path)
 
 func _on_quit_pressed() -> void:
-	_play_button_sound()
+	AudioManager.play_fixed("sfx_ui_back")
 	quit_pressed.emit()
 	await get_tree().create_timer(0.2).timeout
 	get_tree().quit()
-
-func _play_button_sound() -> void:
-	AudioManager.play_fixed("sfx_ui_click")
 
 func _start_game() -> void:
 	var tween = create_tween()
