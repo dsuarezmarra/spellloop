@@ -1172,7 +1172,7 @@ func _play_slot_reel_animation() -> void:
 	if _slot_loop_player:
 		# Cargar resource directamente (o buscar en AudioManager si tuviera API para obtener path/stream)
 		# Asumimos path conocido por audio_manifest.json
-		var stream = load("res://audio/sfx/ui/Usado/sfx_slot_spin_loop.mp3")
+		var stream = load("res://audio/sfx/ui/sfx_slot_spin_loop.mp3")
 		if stream:
 			_slot_loop_player.stream = stream
 			_slot_loop_player.pitch_scale = 1.0
