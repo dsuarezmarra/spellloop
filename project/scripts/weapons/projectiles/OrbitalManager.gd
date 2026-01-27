@@ -29,6 +29,7 @@ var knockback: float = 20.0
 var effect: String = "none"
 var effect_value: float = 0.0
 var effect_duration: float = 0.0
+var hit_sound: String = ""
 
 # Active Shooting (Storm)
 var _active_shooting_timer: float = 0.0
@@ -79,6 +80,7 @@ func update_orbitals(data: Dictionary) -> void:
 	effect = data.get("effect", "none")
 	effect_value = data.get("effect_value", 0.0)
 	effect_duration = data.get("effect_duration", 0.0)
+	hit_sound = data.get("hit_sound", "")
 	
 	# Detectar si debe disparar activamente (chain effect + orbital)
 	if effect == "chain":
@@ -254,13 +256,20 @@ func _damage_enemy(enemy: Node) -> void:
 		ProjectileFactory.apply_status_effects_chance(get_tree(), enemy)
 		
 		# Feedback auditivo distintivo según arma (Fake SevenLabs)
+		# Feedback auditivo distintivo según arma
 		var hit_sfx = "sfx_hit_ghost"
-		match orbital_weapon_id:
-			"ice_wand", "glacier": hit_sfx = "sfx_hit_armor" # Sonido seco/cortante
-			"fire_wand", "hellfire": hit_sfx = "sfx_hit_flesh" # Sonido impacto orgánico
-			"lightning_staff", "storm_caller": hit_sfx = "sfx_hit_bone" # Sonido crujiente
-			"nature_staff", "gaia": hit_sfx = "sfx_hit_slime" # Sonido suave
-			"void_staff", "void_storm": hit_sfx = "sfx_hit_ghost" # Sonido etéreo
+		
+		# 1. Priorizar sonido configurado en metadatos (BaseWeapon -> hit_sound)
+		if hit_sound != "":
+			hit_sfx = hit_sound
+		else:
+			# 2. Fallback legacy hardcoded
+			match orbital_weapon_id:
+				"ice_wand", "glacier": hit_sfx = "sfx_hit_armor" # Sonido seco/cortante
+				"fire_wand", "hellfire": hit_sfx = "sfx_hit_flesh" # Sonido impacto orgánico
+				"lightning_staff", "storm_caller": hit_sfx = "sfx_hit_bone" # Sonido crujiente
+				"nature_staff", "gaia": hit_sfx = "sfx_hit_slime" # Sonido suave
+				"void_staff", "void_storm": hit_sfx = "sfx_hit_ghost" # Sonido etéreo
 			
 		# Solo reproducir si el enemigo sigue siendo válido (evitar ruido extra al morir)
 		if is_instance_valid(enemy):

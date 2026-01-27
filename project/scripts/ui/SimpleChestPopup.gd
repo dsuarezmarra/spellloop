@@ -597,12 +597,14 @@ func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 		icon_rect.add_child(emoji_lbl)
 	
 	icon_panel.add_child(icon_rect)
+	icon_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Fix: Permitir clicks en el padre
 	hbox.add_child(icon_panel)
 	
 	# Info (nombre + descripción)
 	var info_vbox = VBoxContainer.new()
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	info_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Fix: Permitir clicks en el padre
 	
 	var name_lbl = Label.new()
 	name_lbl.text = item_name
@@ -629,6 +631,7 @@ func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 	status_label.add_theme_font_size_override("font_size", 12)
 	status_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	status_container.add_child(status_label)
+	status_container.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Fix: Permitir clicks en el padre
 	hbox.add_child(status_container)
 	
 	# Margen derecho
@@ -695,7 +698,12 @@ func _update_claim_selected_button():
 			count += 1
 	var btn = get_meta("claim_selected_btn", null)
 	if btn:
-		btn.visible = (count > 0 and count < item_buttons.size())
+		# Mostrar siempre que haya algo seleccionado (incluso si es todo)
+		btn.visible = (count > 0)
+		
+		# Opcional: Ocultar "Claim All" si ya mostramos "Claim Selected" para evitar redundancia
+		if claim_button:
+			claim_button.visible = (count == 0)
 
 
 
@@ -1081,6 +1089,16 @@ func _reveal_item_animated(btn: Control, _index: int) -> void:
 
 func _add_skip_button():
 	"""Agregar botón de Skip al final de la lista"""
+	# Fix duplicados: Checkear si ya existe un botón de skip
+	if is_instance_valid(skip_button) and skip_button.get_parent() == items_vbox:
+		return
+		
+	for child in items_vbox.get_children():
+		if child is Button and "Saltar" in child.text:
+			# Ya existe, actualizar referencia y salir
+			skip_button = child
+			return
+			
 	skip_button = Button.new()
 	skip_button.text = "Saltar (Sin Recompensa)"
 	skip_button.custom_minimum_size = Vector2(250, 45)

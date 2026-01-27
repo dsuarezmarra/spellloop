@@ -57,6 +57,9 @@ var effect: String = "none"
 var effect_value: float = 0.0
 var effect_duration: float = 0.0
 
+# Audio/Visual
+var hit_sound: String = ""
+
 # Cooldown tracking
 var current_cooldown: float = 0.0
 var ready_to_fire: bool = true
@@ -119,6 +122,9 @@ func _initialize_from_data(data: Dictionary) -> void:
 	
 	# Efecto (el tipo, no el valor - el valor ya se aplica en _apply_base_stats)
 	effect = data.get("effect", "none")
+	
+	# Audio
+	hit_sound = data.get("hit_sound", "")
 
 func _apply_base_stats() -> void:
 	"""Aplicar stats base sin modificadores"""
@@ -725,7 +731,8 @@ func _build_projectile_data(dmg: float, crit: float) -> Dictionary:
 		"color": color,
 		"effect": effect,
 		"effect_value": effect_value,
-		"effect_duration": effect_duration
+		"effect_duration": effect_duration,
+		"hit_sound": hit_sound
 	}
 
 func _get_global_weapon_stats() -> Dictionary:
