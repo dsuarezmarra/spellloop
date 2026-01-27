@@ -656,7 +656,6 @@ const FUSIONS: Dictionary = {
 		"effect_duration": 0.0,
 		
 		"color": Color(0.9, 0.8, 1.0),
-		"color": Color(0.9, 0.8, 1.0),
 		"icon": "🌟",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_cosmic_barrier"
@@ -850,7 +849,6 @@ const FUSIONS: Dictionary = {
 		"effect_duration": 0.3,
 		
 		"color": Color(0.6, 0.5, 0.8),
-		"color": Color(0.6, 0.5, 0.8),
 		"icon": "💎",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_crystal_guardian"
@@ -911,7 +909,6 @@ const FUSIONS: Dictionary = {
 		"effect": "slow",
 		"effect_value": 0.4,
 		"effect_duration": 2.0,
-		"color": Color(0.5, 0.8, 1.0),
 		"color": Color(0.5, 0.8, 1.0),
 		"icon": "🔮❄️",
 		"tags": ["orbital", "no_pierce"],
@@ -1110,7 +1107,6 @@ const FUSIONS: Dictionary = {
 		"effect_value": 4.0,
 		"effect_duration": 3.0,
 		"color": Color(1.0, 0.5, 0.2),
-		"color": Color(1.0, 0.5, 0.2),
 		"icon": "🔮🔥",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_inferno_orb"
@@ -1280,7 +1276,6 @@ const FUSIONS: Dictionary = {
 		"effect_value": 1,
 		"effect_duration": 0.0,
 		"color": Color(0.8, 0.5, 1.0),
-		"color": Color(0.8, 0.5, 1.0),
 		"icon": "🔮⚡",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_arcane_storm"
@@ -1425,7 +1420,6 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.25,
 		"effect_duration": 3.0,
 		"color": Color(0.4, 0.2, 0.5),
-		"color": Color(0.4, 0.2, 0.5),
 		"icon": "🔮🗡️",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_shadow_orbs"
@@ -1454,7 +1448,6 @@ const FUSIONS: Dictionary = {
 		"effect": "lifesteal",
 		"effect_value": 3,  # Buffed from 2
 		"effect_duration": 0.0,
-		"color": Color(0.5, 0.9, 0.6),
 		"color": Color(0.5, 0.9, 0.6),
 		"icon": "🔮🌿",
 		"tags": ["orbital", "no_pierce"],
@@ -1485,7 +1478,6 @@ const FUSIONS: Dictionary = {
 		"effect_value": 1.8,
 		"effect_duration": 0.0,
 		"color": Color(0.7, 0.8, 1.0),
-		"color": Color(0.7, 0.8, 1.0),
 		"icon": "🔮🌪️",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_wind_orbs"
@@ -1514,7 +1506,6 @@ const FUSIONS: Dictionary = {
 		"effect": "shadow_mark",
 		"effect_value": 1.5,
 		"effect_duration": 3.0,
-		"color": Color(0.3, 0.1, 0.4),
 		"color": Color(0.3, 0.1, 0.4),
 		"icon": "🔮🕳️",
 		"tags": ["orbital", "no_pierce"],
