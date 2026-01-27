@@ -291,8 +291,14 @@ func _process_run_progression(run_data: Dictionary) -> void:
 	player_data["total_runs"] += 1
 	
 	# Add playtime (accumulator)
+	# Add playtime (accumulator)
+	var added_time = 0.0
 	if run_data.has("duration"):
-		var added_time = run_data["duration"]
+		added_time = float(run_data["duration"])
+	elif run_data.has("time_survived"):
+		added_time = float(run_data["time_survived"])
+
+	if added_time > 0:
 		var current_time = player_data.get("total_playtime", 0.0)
 		player_data["total_playtime"] = current_time + added_time
 

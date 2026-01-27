@@ -409,7 +409,10 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		var hours = int(playtime) / 3600
 		var mins = (int(playtime) % 3600) / 60
 		var time_lbl = Label.new()
-		time_lbl.text = "%dh %02dm" % [hours, mins]
+		if playtime > 0 and playtime < 60:
+			time_lbl.text = "< 1m"
+		else:
+			time_lbl.text = "%dh %02dm" % [hours, mins]
 		time_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		time_lbl.add_theme_font_size_override("font_size", 12)
 		time_lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
