@@ -323,12 +323,12 @@ func hide_pause_menu() -> void:
 	# 1. Comprobar popups de cofres activos
 	var chest_popups = get_tree().get_nodes_in_group("chest_popup")
 	for popup in chest_popups:
-		if is_instance_valid(popup) and popup.is_visible_in_tree():
+		if is_instance_valid(popup) and popup.visible:
 			can_unpause = false
 			break
 			
 	# 2. Comprobar otros menús (como LevelUp)
-	if get_tree().get_nodes_in_group("levelup_popup").any(func(x): return x.is_visible_in_tree()):
+	if get_tree().get_nodes_in_group("levelup_popup").any(func(x): return x.visible):
 		can_unpause = false
 		
 	if can_unpause:
@@ -341,7 +341,7 @@ func close() -> void:
 func _update_time_display() -> void:
 	var time_label = main_panel.find_child("TimeLabel", true, false) as Label
 	if time_label:
-		var minutes = int(game_time) / 60
+		var minutes = int(floor(game_time / 60.0))
 		var seconds = int(game_time) % 60
 		time_label.text = "    Tiempo: %02d:%02d" % [minutes, seconds]
 
@@ -849,7 +849,7 @@ func _get_value_color(stat_name: String, value: float) -> Color:
 	const COLOR_NEUTRAL = Color(0.8, 0.8, 0.8) # Gris - base
 	
 	# === STATS DONDE MENOS ES MEJOR ===
-	var less_is_better = ["damage_taken_mult", "curse"]
+	var _less_is_better = ["damage_taken_mult", "curse"]
 	
 	# === STATS DONDE MÁS ES PEOR (pero se muestran como positivos) ===
 	# curse es especial: más curse = más dificultad = malo
@@ -1053,7 +1053,7 @@ func _create_active_buffs_section(parent: VBoxContainer) -> void:
 			var buff_chip = _create_buff_chip(effect.stat, effect.mod)
 			buffs_grid.add_child(buff_chip)
 
-func _create_growth_summary_chip(count: int, total_bonus: float) -> Control:
+func _create_growth_summary_chip(count: int, _total_bonus: float) -> Control:
 	"""Crear chip resumido para efectos de growth"""
 	var chip = PanelContainer.new()
 	var style = StyleBoxFlat.new()
@@ -1747,7 +1747,7 @@ func _create_weapon_details_popup(weapon) -> Control:
 		_add_detail_stat(stats_grid, "⏱️ Cooldown", "%.2fs" % stats.get("cooldown_final", 1.0))
 		
 		# Proyectiles
-		var proj_base = stats.get("projectile_count_base", 1)
+		var _proj_base = stats.get("projectile_count_base", 1)
 		var proj_final = stats.get("projectile_count_final", 1)
 		var proj_extra = stats.get("extra_projectiles", 0)
 		if proj_extra > 0:
@@ -1915,7 +1915,7 @@ func _add_detail_stat(grid: GridContainer, stat_name: String, value: String) -> 
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	grid.add_child(value_label)
 
-func _add_stat_with_bonus(grid: GridContainer, stat_name: String, base_value: float, final_value: float, multiplier: float, suffix: String = "") -> void:
+func _add_stat_with_bonus(grid: GridContainer, stat_name: String, base_value: float, final_value: float, _multiplier: float, suffix: String = "") -> void:
 	"""Añadir stat al grid mostrando valor base y final si hay bonus"""
 	var name_label = Label.new()
 	name_label.text = stat_name
@@ -1974,7 +1974,7 @@ func _handle_weapon_popup_input(event: InputEvent) -> bool:
 	
 	# Scroll con W/S o flechas arriba/abajo
 	if _weapon_popup_scroll and is_instance_valid(_weapon_popup_scroll):
-		var scroll_amount = 50.0  # Píxeles por pulsación
+		var scroll_amount = 50  # Píxeles por pulsación
 		if event.is_action_pressed("ui_up") or event.is_action_pressed("move_up"):
 			_weapon_popup_scroll.scroll_vertical -= scroll_amount
 			return true
