@@ -573,19 +573,22 @@ const XP_SCALING: float = 1.15  # Cada nivel requiere 15% más XP
 const STAT_LIMITS: Dictionary = {
 	# Multiplicadores
 	# damage_mult: SIN CAP - el daño puede crecer infinitamente
-	# pickup_range: SIN CAP - puede crecer infinitamente
-	# xp_mult: SIN CAP - puede crecer infinitamente
-	# gold_mult: SIN CAP - puede crecer infinitamente
+	# gold_mult: Cap at 3.0x
+	# xp_mult: Cap at 3.0x
 	
 	"damage_taken_mult": {"min": 0.1, "max": 3.0},
-	"move_speed": {"min": 30.0, "max": 500.0},  # Valor absoluto en px/s (aumentado de 300)
-	"area_mult": {"min": 0.5, "max": 3.0},
-	"projectile_speed_mult": {"min": 0.5, "max": 3.0},
+	"move_speed": {"min": 30.0, "max": 500.0},
+	"area_mult": {"min": 0.5, "max": 2.0},       # NERFED: 3.0 -> 2.0
+	"projectile_speed_mult": {"min": 0.5, "max": 2.0}, # NERFED: 3.0 -> 2.0
 	"duration_mult": {"min": 0.5, "max": 3.0},
 	"knockback_mult": {"min": 0.0, "max": 5.0},
-	"attack_speed_mult": {"min": 0.1, "max": 5.0},
-	"range_mult": {"min": 0.5, "max": 5.0},      # Aumentado de 3.0 a 5.0
+	"attack_speed_mult": {"min": 0.1, "max": 3.0}, # NERFED: 5.0 -> 3.0
+	"range_mult": {"min": 0.5, "max": 3.0},      # NERFED: 5.0 -> 3.0
 	"magnet_strength": {"min": 0.5, "max": 5.0},
+	"pickup_range": {"min": 10.0, "max": 1000.0}, # Cap at 1000px
+	"xp_mult": {"min": 0.1, "max": 3.0},          # Cap at 3.0x
+	"gold_mult": {"min": 0.1, "max": 3.0},        # Cap at 3.0x
+	"cooldown_mult": {"min": 0.25, "max": 2.0},   # NEW: Cap min cooldown at 25% (75% reduction)
 
 	# Probabilidades (0-100%)
 	"crit_chance": {"min": 0.0, "max": 1.0},

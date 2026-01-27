@@ -1037,7 +1037,7 @@ const FUSIONS: Dictionary = {
 		"projectile_speed": 0.0,
 		"projectile_count": 1,
 		"pierce": 999,
-		"area": 2.2,
+		"area": 1.5, # NERFED: 2.2 -> 1.5
 		"duration": 1.2,
 		"knockback": -150.0,
 		"target_type": TargetType.AREA,
@@ -1177,7 +1177,7 @@ const FUSIONS: Dictionary = {
 		"projectile_speed": 0.0,
 		"projectile_count": 1,
 		"pierce": 999,
-		"area": 2.0,
+		"area": 1.6, # NERFED: 2.0 -> 1.6
 		"duration": 0.8,
 		"knockback": 180.0,
 		"target_type": TargetType.RANDOM,
@@ -1199,7 +1199,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Llamarada Solar",
 		"description": "Un rayo de fuego solar que incinera todo",
 		"components": ["fire_wand", "light_beam"],
-		"damage": 35,
+		"damage": 25, # NERFED: 35 -> 25
 		"cooldown": 1.9,
 		"range": 580.0,
 		"projectile_speed": 999.0,
@@ -1233,7 +1233,7 @@ const FUSIONS: Dictionary = {
 		"projectile_speed": 0.0,
 		"projectile_count": 1,
 		"pierce": 999,
-		"area": 2.3,
+		"area": 1.5, # NERFED: 2.3 -> 1.5
 		"duration": 1.3,
 		"knockback": -180.0,
 		"target_type": TargetType.AREA,
@@ -1318,9 +1318,9 @@ const FUSIONS: Dictionary = {
 		"projectile_count": 2,
 		"pierce": 0,
 		"area": 1.0,
-		"element": 2, # Lightning (fixes hitbox default fallback)
-		"projectile_size": 20.0, # Larger visual
-		"hitbox_mult": 1.5, # Larger hitbox
+		"element": 2, # Lightning
+		"projectile_size": 16.0, # NERFED: 20.0 -> 16.0
+		"hitbox_mult": 1.5,
 		"duration": 2.5,
 		"knockback": 50.0,
 		"target_type": TargetType.HOMING,
@@ -1342,7 +1342,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Rayo Sísmico",
 		"description": "Rayos que crean ondas sísmicas al impactar",
 		"components": ["lightning_wand", "earth_spike"],
-		"damage": 32,  # BUFFED from 28
+		"damage": 24, # NERFED: 32 -> 24
 		"cooldown": 1.4,  # BUFFED from 1.7
 		"range": 350.0,
 		"projectile_speed": 600.0,

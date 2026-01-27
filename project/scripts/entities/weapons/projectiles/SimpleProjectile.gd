@@ -545,7 +545,10 @@ func _handle_hit(target: Node) -> void:
 				if elite_mult < 0.1: elite_mult = 1.0 # Safety check
 				final_damage = int(final_damage * elite_mult)
 				# print("⚔️ Elite Hit! Damage x%.2f" % elite_mult)
-				
+	
+	# Play Hit Sound
+	_play_hit_sound()
+
 	# -----------------------------------------------------------
 	# LÓGICA DE NUEVOS OBJETOS (Phase 3)
 	# -----------------------------------------------------------
@@ -598,6 +601,8 @@ func _handle_hit(target: Node) -> void:
 		if russian_roulette > 0:
 			if randf() < 0.01: # 1%
 				final_damage *= 10.0
+
+
 				FloatingText.spawn_custom(target.global_position + Vector2(0, -60), "JACKPOT!", Color.GOLD)
 				_play_roulette_sound()
 			# Opcional: penalización en tiros normales? "Ruleta rusa" implica riesgo.
@@ -990,4 +995,29 @@ func _destroy() -> void:
 		ProjectilePool.release(self)
 	else:
 		queue_free()
+
+func _play_hit_sound() -> void:
+	"""Reproducir sonido de impacto basado en metadata o elemento"""
+	# 1. Intentar sonido específico del arma
+	var hit_sound = get_meta("hit_sound", "")
+	
+	# 2. Si no hay específico, usar genérico por elemento
+	if hit_sound == "":
+		match element_type:
+			"ice": hit_sound = "sfx_ice_hit"
+			"fire": hit_sound = "sfx_fire_hit"
+			"arcane": hit_sound = "sfx_arcane_hit"
+			"lightning": hit_sound = "sfx_lightning_hit"
+			"nature": hit_sound = "sfx_nature_hit"
+			"dark": hit_sound = "sfx_shadow_hit" # Dark maps to Shadow SFX
+			_: hit_sound = "sfx_hit_flesh" # Default fallback
+			
+	# 3. Reproducir si AudioManager está disponible
+	if hit_sound != "":
+		var audio_manager = get_tree().get_first_node_in_group("audio_manager")
+		if audio_manager and audio_manager.has_method("play_sfx_random_pitch"):
+			# Prefer random pitch for variety
+			audio_manager.play_sfx_random_pitch(hit_sound)
+		elif audio_manager and audio_manager.has_method("play"):
+			audio_manager.play(hit_sound)
 
