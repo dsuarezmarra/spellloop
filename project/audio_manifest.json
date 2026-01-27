@@ -619,79 +619,6 @@
     ],
     "bus": "SFX"
   },
-  "sfx_footstep_grass": {
-    "files": [
-      "res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_01.mp3",
-      "res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_02.mp3",
-      "res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_03.mp3",
-      "res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_04.mp3",
-      "res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_05.mp3",
-      "res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_06.mp3"
-    ],
-    "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
-    "bus": "SFX"
-  },
-  "sfx_footstep_sand": {
-    "files": [
-      "res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_01.mp3",
-      "res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_02.mp3",
-      "res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_03.mp3",
-      "res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_04.mp3",
-      "res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_05.mp3",
-      "res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_06.mp3"
-    ],
-    "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
-    "bus": "SFX"
-  },
-  "sfx_footstep_snow": {
-    "files": [
-      "res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_01.mp3",
-      "res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_02.mp3",
-      "res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_03.mp3",
-      "res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_04.mp3",
-      "res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_05.mp3",
-      "res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_06.mp3"
-    ],
-    "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
-    "bus": "SFX"
-  },
-  "sfx_footstep_stone": {
-    "files": [
-      "res://audio/footsteps/grass/path/sfx_footstep_grass_path_01.mp3",
-      "res://audio/footsteps/grass/path/sfx_footstep_grass_path_02.mp3",
-      "res://audio/footsteps/grass/path/sfx_footstep_grass_path_03.mp3",
-      "res://audio/footsteps/grass/path/sfx_footstep_grass_path_04.mp3",
-      "res://audio/footsteps/grass/path/sfx_footstep_grass_path_05.mp3",
-      "res://audio/footsteps/grass/path/sfx_footstep_grass_path_06.mp3"
-    ],
-    "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
-    "bus": "SFX"
-  },
-  "sfx_footstep_water": {
-    "files": [],
-    "volume_db": -15.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
-    "bus": "SFX"
-  },
   "sfx_item_pickup": {
     "files": [
       "res://audio/sfx/gameplay/sfx_item_pickup_02.mp3"
@@ -1732,196 +1659,102 @@
       1.02
     ]
   },
-  "sfx_footstep_grass_ground": {
+  "sfx_footstep_grassland_ground": {
     "files": [
-      "res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_01.mp3",
-      "res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_02.mp3",
-      "res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_03.mp3",
-      "res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_04.mp3",
-      "res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_05.mp3",
-      "res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_06.mp3"
+      "res://audio/footsteps/grassland/sfx_footstep_grassland.mp3"
     ],
     "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
     "bus": "SFX"
   },
-  "sfx_footstep_grass_path": {
+  "sfx_footstep_grassland_path": {
     "files": [
-      "res://audio/footsteps/grass/path/sfx_footstep_grass_path_01.mp3",
-      "res://audio/footsteps/grass/path/sfx_footstep_grass_path_02.mp3",
-      "res://audio/footsteps/grass/path/sfx_footstep_grass_path_03.mp3",
-      "res://audio/footsteps/grass/path/sfx_footstep_grass_path_04.mp3",
-      "res://audio/footsteps/grass/path/sfx_footstep_grass_path_05.mp3",
-      "res://audio/footsteps/grass/path/sfx_footstep_grass_path_06.mp3"
+      "res://audio/footsteps/grassland/sfx_footstep_grassland.mp3"
     ],
     "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
     "bus": "SFX"
   },
-  "sfx_footstep_sand_ground": {
+  "sfx_footstep_forest_ground": {
     "files": [
-      "res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_01.mp3",
-      "res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_02.mp3",
-      "res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_03.mp3",
-      "res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_04.mp3",
-      "res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_05.mp3",
-      "res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_06.mp3"
+      "res://audio/footsteps/forest/sfx_footstep_forest.mp3"
     ],
     "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
     "bus": "SFX"
   },
-  "sfx_footstep_sand_path": {
+  "sfx_footstep_forest_path": {
     "files": [
-      "res://audio/footsteps/sand/path/sfx_footstep_sand_path_01.mp3",
-      "res://audio/footsteps/sand/path/sfx_footstep_sand_path_02.mp3",
-      "res://audio/footsteps/sand/path/sfx_footstep_sand_path_03.mp3",
-      "res://audio/footsteps/sand/path/sfx_footstep_sand_path_04.mp3",
-      "res://audio/footsteps/sand/path/sfx_footstep_sand_path_05.mp3",
-      "res://audio/footsteps/sand/path/sfx_footstep_sand_path_06.mp3"
+      "res://audio/footsteps/forest/sfx_footstep_forest.mp3"
     ],
     "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
+    "bus": "SFX"
+  },
+  "sfx_footstep_desert_ground": {
+    "files": [
+      "res://audio/footsteps/desert/sfx_footstep_desert.mp3"
     ],
+    "volume_db": -14.0,
+    "bus": "SFX"
+  },
+  "sfx_footstep_desert_path": {
+    "files": [
+      "res://audio/footsteps/desert/sfx_footstep_desert.mp3"
+    ],
+    "volume_db": -14.0,
     "bus": "SFX"
   },
   "sfx_footstep_snow_ground": {
     "files": [
-      "res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_01.mp3",
-      "res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_02.mp3",
-      "res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_03.mp3",
-      "res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_04.mp3",
-      "res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_05.mp3",
-      "res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_06.mp3"
+      "res://audio/footsteps/snow/sfx_footstep_snow.mp3"
     ],
     "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
     "bus": "SFX"
   },
   "sfx_footstep_snow_path": {
     "files": [
-      "res://audio/footsteps/snow/path/sfx_footstep_snow_path_01.mp3",
-      "res://audio/footsteps/snow/path/sfx_footstep_snow_path_02.mp3",
-      "res://audio/footsteps/snow/path/sfx_footstep_snow_path_03.mp3",
-      "res://audio/footsteps/snow/path/sfx_footstep_snow_path_04.mp3",
-      "res://audio/footsteps/snow/path/sfx_footstep_snow_path_05.mp3",
-      "res://audio/footsteps/snow/path/sfx_footstep_snow_path_06.mp3"
+      "res://audio/footsteps/snow/sfx_footstep_snow.mp3"
     ],
     "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
     "bus": "SFX"
   },
   "sfx_footstep_lava_ground": {
     "files": [
-      "res://audio/footsteps/lava/ground/sfx_footstep_lava_ground_01.mp3",
-      "res://audio/footsteps/lava/ground/sfx_footstep_lava_ground_02.mp3",
-      "res://audio/footsteps/lava/ground/sfx_footstep_lava_ground_03.mp3",
-      "res://audio/footsteps/lava/ground/sfx_footstep_lava_ground_04.mp3",
-      "res://audio/footsteps/lava/ground/sfx_footstep_lava_ground_05.mp3",
-      "res://audio/footsteps/lava/ground/sfx_footstep_lava_ground_06.mp3"
+      "res://audio/footsteps/lava/sfx_footstep_lava.mp3"
     ],
     "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
     "bus": "SFX"
   },
   "sfx_footstep_lava_path": {
     "files": [
-      "res://audio/footsteps/lava/path/sfx_footstep_lava_path_01.mp3",
-      "res://audio/footsteps/lava/path/sfx_footstep_lava_path_02.mp3",
-      "res://audio/footsteps/lava/path/sfx_footstep_lava_path_03.mp3",
-      "res://audio/footsteps/lava/path/sfx_footstep_lava_path_04.mp3",
-      "res://audio/footsteps/lava/path/sfx_footstep_lava_path_05.mp3",
-      "res://audio/footsteps/lava/path/sfx_footstep_lava_path_06.mp3"
+      "res://audio/footsteps/lava/sfx_footstep_lava.mp3"
     ],
     "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
     "bus": "SFX"
   },
-  "sfx_footstep_arcane_ground": {
+  "sfx_footstep_arcane_wastes_ground": {
     "files": [
-      "res://audio/footsteps/arcane/ground/sfx_footstep_arcane_ground_01.mp3",
-      "res://audio/footsteps/arcane/ground/sfx_footstep_arcane_ground_02.mp3",
-      "res://audio/footsteps/arcane/ground/sfx_footstep_arcane_ground_03.mp3",
-      "res://audio/footsteps/arcane/ground/sfx_footstep_arcane_ground_04.mp3",
-      "res://audio/footsteps/arcane/ground/sfx_footstep_arcane_ground_05.mp3",
-      "res://audio/footsteps/arcane/ground/sfx_footstep_arcane_ground_06.mp3"
+      "res://audio/footsteps/arcane_wastes/sfx_footstep_arcane_wastes.mp3"
     ],
     "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
     "bus": "SFX"
   },
-  "sfx_footstep_arcane_path": {
+  "sfx_footstep_arcane_wastes_path": {
     "files": [
-      "res://audio/footsteps/arcane/path/sfx_footstep_arcane_path_01.mp3",
-      "res://audio/footsteps/arcane/path/sfx_footstep_arcane_path_02.mp3",
-      "res://audio/footsteps/arcane/path/sfx_footstep_arcane_path_03.mp3",
-      "res://audio/footsteps/arcane/path/sfx_footstep_arcane_path_04.mp3",
-      "res://audio/footsteps/arcane/path/sfx_footstep_arcane_path_05.mp3",
-      "res://audio/footsteps/arcane/path/sfx_footstep_arcane_path_06.mp3"
+      "res://audio/footsteps/arcane_wastes/sfx_footstep_arcane_wastes.mp3"
     ],
     "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
     "bus": "SFX"
   },
-  "sfx_footstep_void_ground": {
+  "sfx_footstep_death_ground": {
     "files": [
-      "res://audio/footsteps/void/ground/sfx_footstep_void_ground_01.mp3",
-      "res://audio/footsteps/void/ground/sfx_footstep_void_ground_02.mp3",
-      "res://audio/footsteps/void/ground/sfx_footstep_void_ground_03.mp3",
-      "res://audio/footsteps/void/ground/sfx_footstep_void_ground_04.mp3",
-      "res://audio/footsteps/void/ground/sfx_footstep_void_ground_05.mp3",
-      "res://audio/footsteps/void/ground/sfx_footstep_void_ground_06.mp3"
+      "res://audio/footsteps/death/sfx_footstep_death.mp3"
     ],
     "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
     "bus": "SFX"
   },
-  "sfx_footstep_void_path": {
+  "sfx_footstep_death_path": {
     "files": [
-      "res://audio/footsteps/void/path/sfx_footstep_void_path_01.mp3",
-      "res://audio/footsteps/void/path/sfx_footstep_void_path_02.mp3",
-      "res://audio/footsteps/void/path/sfx_footstep_void_path_03.mp3",
-      "res://audio/footsteps/void/path/sfx_footstep_void_path_04.mp3",
-      "res://audio/footsteps/void/path/sfx_footstep_void_path_05.mp3",
-      "res://audio/footsteps/void/path/sfx_footstep_void_path_06.mp3"
+      "res://audio/footsteps/death/sfx_footstep_death.mp3"
     ],
     "volume_db": -14.0,
-    "pitch_scale": [
-      0.95,
-      1.05
-    ],
     "bus": "SFX"
   }
 }

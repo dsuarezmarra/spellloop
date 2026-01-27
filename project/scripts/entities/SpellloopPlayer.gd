@@ -229,22 +229,24 @@ func _play_footstep_sound() -> void:
 			is_on_path = arena_manager.is_on_path(global_position)
 	
 	# Mapping biomes to ID keys (lowercase)
-	var biome_key = "grass" # default
+	var biome_key = "grassland" # default
 	match biome:
-		"Grassland", "Forest":
-			biome_key = "grass"
+		"Grassland":
+			biome_key = "grassland"
+		"Forest":
+			biome_key = "forest"
 		"Desert":
-			biome_key = "sand"
+			biome_key = "desert"
 		"Snow":
 			biome_key = "snow"
 		"Lava", "Volcano":
 			biome_key = "lava"
 		"ArcaneWastes", "Arcane":
-			biome_key = "arcane"
+			biome_key = "arcane_wastes"
 		"Death", "Void":
-			biome_key = "void"
+			biome_key = "death"
 		_:
-			biome_key = "grass"
+			biome_key = "grassland"
 			
 	var surface = "path" if is_on_path else "ground"
 	var sound_id = "sfx_footstep_%s_%s" % [biome_key, surface]

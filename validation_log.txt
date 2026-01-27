@@ -1,0 +1,31 @@
+﻿Gathering existing files...
+
+--- Validating Manifest ---
+[Manifest] Error: ID 'sfx_footstep_grass' points to missing file 'res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_01.mp3'
+[Manifest] Error: ID 'sfx_footstep_grass' points to missing file 'res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_02.mp3'
+[Manifest] Error: ID 'sfx_footstep_grass' points to missing file 'res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_03.mp3'
+[Manifest] Error: ID 'sfx_footstep_grass' points to missing file 'res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_04.mp3'
+[Manifest] Error: ID 'sfx_footstep_grass' points to missing file 'res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_05.mp3'
+[Manifest] Error: ID 'sfx_footstep_grass' points to missing file 'res://audio/footsteps/grass/ground/sfx_footstep_grass_ground_06.mp3'
+[Manifest] Error: ID 'sfx_footstep_sand' points to missing file 'res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_01.mp3'
+[Manifest] Error: ID 'sfx_footstep_sand' points to missing file 'res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_02.mp3'
+[Manifest] Error: ID 'sfx_footstep_sand' points to missing file 'res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_03.mp3'
+[Manifest] Error: ID 'sfx_footstep_sand' points to missing file 'res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_04.mp3'
+[Manifest] Error: ID 'sfx_footstep_sand' points to missing file 'res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_05.mp3'
+[Manifest] Error: ID 'sfx_footstep_sand' points to missing file 'res://audio/footsteps/sand/ground/sfx_footstep_sand_ground_06.mp3'
+[Manifest] Error: ID 'sfx_footstep_snow' points to missing file 'res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_01.mp3'
+[Manifest] Error: ID 'sfx_footstep_snow' points to missing file 'res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_02.mp3'
+[Manifest] Error: ID 'sfx_footstep_snow' points to missing file 'res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_03.mp3'
+[Manifest] Error: ID 'sfx_footstep_snow' points to missing file 'res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_04.mp3'
+[Manifest] Error: ID 'sfx_footstep_snow' points to missing file 'res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_05.mp3'
+[Manifest] Error: ID 'sfx_footstep_snow' points to missing file 'res://audio/footsteps/snow/ground/sfx_footstep_snow_ground_06.mp3'
+[Manifest] Error: ID 'sfx_footstep_stone' points to missing file 'res://audio/footsteps/grass/path/sfx_footstep_grass_path_01.mp3'
+[Manifest] Error: ID 'sfx_footstep_stone' points to missing file 'res://audio/footsteps/grass/path/sfx_footstep_grass_path_02.mp3'
+[Manifest] Error: ID 'sfx_footstep_stone' points to missing file 'res://audio/footsteps/grass/path/sfx_footstep_grass_path_03.mp3'
+[Manifest] Error: ID 'sfx_footstep_stone' points to missing file 'res://audio/footsteps/grass/path/sfx_footstep_grass_path_04.mp3'
+[Manifest] Error: ID 'sfx_footstep_stone' points to missing file 'res://audio/footsteps/grass/path/sfx_footstep_grass_path_05.mp3'
+[Manifest] Error: ID 'sfx_footstep_stone' points to missing file 'res://audio/footsteps/grass/path/sfx_footstep_grass_path_06.mp3'
+
+--- Validating Codebase Direct References ---
+
+Validation Complete. Errors: 24
