@@ -788,20 +788,43 @@ func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
 		chain_damage *= 0.8  # Reducir daño progresivamente
 
 func _find_chain_target(from_pos: Vector2, exclude: Array) -> Node:
-	"""Buscar siguiente objetivo para chain"""
-	var enemies = get_tree().get_nodes_in_group("enemies")
+	"""Buscar siguiente objetivo para chain (OPTIMIZADO: Spatial Partitioning)"""
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsShapeQueryParameters2D.new()
+	var circle = CircleShape2D.new()
+	var range_val = 250.0 # Rango de chain aumentado para facilitar conexiones
+	
+	circle.radius = range_val
+	query.shape = circle
+	query.transform = Transform2D(0, from_pos)
+	
+	# Mascara 2 (Layer 2) = Enemies, Mascara 6 (Layer 2+3) = Enemies + Bosses
+	query.collision_mask = 2 | 4 
+	query.collide_with_bodies = true
+	query.collide_with_areas = true
+	
+	# Query espacial eficiente (Max 12 candidatos cercanos)
+	var results = space_state.intersect_shape(query, 12)
+	
 	var closest: Node = null
-	var closest_dist = 200.0  # Rango máximo de chain
+	var closest_dist_sq = range_val * range_val
 	
-	for enemy in enemies:
-		if enemy in exclude or not is_instance_valid(enemy):
+	for res in results:
+		var collider = res.collider
+		if collider in exclude or not is_instance_valid(collider):
 			continue
-		var dist = from_pos.distance_to(enemy.global_position)
-		if dist < closest_dist:
-			closest = enemy
-			closest_dist = dist
-	
+			
+		# Verificación extra de grupo por seguridad
+		if not collider.is_in_group("enemies"):
+			continue
+			
+		var dist_sq = from_pos.distance_squared_to(collider.global_position)
+		if dist_sq < closest_dist_sq:
+			closest_dist_sq = dist_sq
+			closest = collider
+			
 	return closest
+
 
 func _spawn_chain_lightning_visual(from_pos: Vector2, to_pos: Vector2) -> void:
 	"""Crear efecto visual de rayo entre posiciones"""

@@ -21,6 +21,7 @@ var chest_rarity: int = 0  # ItemsDefinitions.ItemRarity.WHITE (numeric fallback
 var is_opened: bool = false
 var interaction_range: float = 60.0
 var popup_shown: bool = false  # Control para evitar múltiples popups
+var popup_shown_internal: bool = false # Internal guard for trigger execution
 
 # Variables específicas para SHOP chests
 var is_shop_chest: bool = false
@@ -265,6 +266,10 @@ func _ready():
 
 func trigger_chest_interaction():
 	if is_opened: return
+	
+	# Guard clause to prevent double execution (fix duplicate UI)
+	if popup_shown_internal: return
+	popup_shown_internal = true
 	
 	# Play chest opening sound
 	AudioManager.play_fixed("sfx_chest_open")

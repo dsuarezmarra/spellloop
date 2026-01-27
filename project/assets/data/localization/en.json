@@ -37,6 +37,11 @@
 			"time": "Time",
 			"delete": "Delete",
 			"back": "Back"
+		},
+		"chest": {
+			"claim_all": "Claim All",
+			"claim_selected": "Claim Selected",
+			"exit": "Exit"
 		}
 	}
 }

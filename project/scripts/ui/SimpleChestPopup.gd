@@ -396,14 +396,26 @@ func show_as_jackpot(items: Array):
 	_setup_jackpot_items(items)
 	
 	# Contenedor para botones de acción al final
-	var buttons_hbox = HBoxContainer.new()
-	buttons_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	buttons_hbox.add_theme_constant_override("separation", 20)
-	_main_vbox.add_child(buttons_hbox)
+	# Buscar si ya existe para evitar duplicados
+	var buttons_hbox = null
+	for child in _main_vbox.get_children():
+		if child is HBoxContainer and child.get_child_count() > 0 and child.get_child(0) is Button:
+			buttons_hbox = child
+			# Limpiar botones anteriores si existen
+			for btn in buttons_hbox.get_children():
+				btn.queue_free()
+			break
+	
+	if not buttons_hbox:
+		buttons_hbox = HBoxContainer.new()
+		buttons_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		buttons_hbox.add_theme_constant_override("separation", 20)
+		_main_vbox.add_child(buttons_hbox)
 	
 	# Botón Reclamar Todo
 	claim_button = Button.new()
-	claim_button.text = "✓ " + Localization.L("chest.claim_all").to_upper() # Localized
+	var claim_text = Localization.L("chest.claim_all") if Localization.has_method("L") else "RECLAMAR TODO"
+	claim_button.text = "✓ " + claim_text.to_upper()
 	claim_button.custom_minimum_size = Vector2(200, 50)
 	claim_button.add_theme_font_size_override("font_size", 16)
 	
@@ -423,7 +435,13 @@ func show_as_jackpot(items: Array):
 	
 	# Botón Reclamar Seleccionados (Nuevo)
 	var claim_selected_btn = Button.new()
-	claim_selected_btn.text = "✓ RECLAMAR SELECCIONADOS"
+	# Fallback hardcodeado si no existe key, pero añadiremos la key en json
+	var claim_sel_text = "RECLAMAR SELECCIONADOS" 
+	if Localization.has_method("L"):
+		var loc = Localization.L("chest.claim_selected")
+		if loc != "chest.claim_selected": claim_sel_text = loc
+	
+	claim_selected_btn.text = "✓ " + claim_sel_text.to_upper()
 	claim_selected_btn.custom_minimum_size = Vector2(240, 50)
 	claim_selected_btn.add_theme_font_size_override("font_size", 16)
 	claim_selected_btn.visible = false # Oculto por defecto, se muestra si hay selección parcial
@@ -448,7 +466,8 @@ func show_as_jackpot(items: Array):
 	
 	# Botón Salir (con confirmación)
 	var exit_button = Button.new()
-	exit_button.text = "✕ " + Localization.L("chest.exit").to_upper() # Localized
+	var exit_text = Localization.L("chest.exit") if Localization.has_method("L") else "SALIR"
+	exit_button.text = "✕ " + exit_text.to_upper()
 	exit_button.custom_minimum_size = Vector2(150, 50)
 	exit_button.add_theme_font_size_override("font_size", 16)
 	

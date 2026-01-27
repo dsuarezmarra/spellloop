@@ -37,6 +37,11 @@
 			"time": "Tiempo",
 			"delete": "Eliminar",
 			"back": "Atras"
+		},
+		"chest": {
+			"claim_all": "Reclamar Todo",
+			"claim_selected": "Reclamar Seleccionados",
+			"exit": "Salir"
 		}
 	}
 }

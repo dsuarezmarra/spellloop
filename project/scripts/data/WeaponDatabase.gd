@@ -1314,10 +1314,13 @@ const FUSIONS: Dictionary = {
 		"damage": 16,
 		"cooldown": 1.1,
 		"range": 480.0,
-		"projectile_speed": 300.0,
+		"projectile_speed": 340.0, # Buffed speed
 		"projectile_count": 2,
 		"pierce": 0,
 		"area": 1.0,
+		"element": 2, # Lightning (fixes hitbox default fallback)
+		"projectile_size": 20.0, # Larger visual
+		"hitbox_mult": 1.5, # Larger hitbox
 		"duration": 2.5,
 		"knockback": 50.0,
 		"target_type": TargetType.HOMING,
