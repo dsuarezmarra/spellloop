@@ -1565,6 +1565,8 @@ const FUSIONS: Dictionary = {
 		"effect_duration": 0.3,
 		"color": Color(0.3, 0.2, 0.3),
 		"icon": "🗡️🪨",
+		"element": 4, # DARK (Shadow)
+		"hit_sound": "sfx_weapon_cosmic_void",
 		"tags": ["projectile", "no_duration"]
 	},
 	

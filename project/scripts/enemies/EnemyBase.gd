@@ -1411,12 +1411,16 @@ func apply_knockback(knockback_force: Vector2) -> void:
 	# Reproducir efecto visual: hacer parpadear el sprite
 	var sprite = animated_sprite if animated_sprite else _find_sprite_node(self)
 	if sprite:
-		var tween = create_tween()
-		tween.set_trans(Tween.TRANS_QUAD)
-		tween.set_ease(Tween.EASE_OUT)
+		# OPTIMIZACIÓN: Matar tween anterior para evitar conflicto y overhead
+		if _knockback_tween and _knockback_tween.is_valid():
+			_knockback_tween.kill()
+			
+		_knockback_tween = create_tween()
+		_knockback_tween.set_trans(Tween.TRANS_QUAD)
+		_knockback_tween.set_ease(Tween.EASE_OUT)
 		var original_color = sprite.modulate
-		tween.tween_property(sprite, "modulate", Color.WHITE.lightened(0.2), 0.05)
-		tween.tween_property(sprite, "modulate", original_color, 0.05)
+		_knockback_tween.tween_property(sprite, "modulate", Color.WHITE.lightened(0.2), 0.05)
+		_knockback_tween.tween_property(sprite, "modulate", original_color, 0.05)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SISTEMA DE EFECTOS DE ESTADO
@@ -1461,6 +1465,7 @@ var _shadow_mark_bonus: float = 0.0  # % de daño extra (ej: 0.25 = 25%)
 
 # Para el efecto visual persistente
 var _status_tween: Tween = null
+var _knockback_tween: Tween = null # Tween dedicado para efectos visuales de knockback
 var _current_status_color: Color = Color.WHITE
 
 const BURN_TICK_INTERVAL: float = 0.5  # Daño de quemadura cada 0.5s

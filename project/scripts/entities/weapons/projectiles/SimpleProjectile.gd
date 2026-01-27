@@ -368,6 +368,7 @@ func _draw_default_orb(image: Image, size: int, center: Vector2) -> void:
 # OPTIMIZACIÓN: Límite global de sistemas de partículas activos
 const MAX_ACTIVE_TRAILS: int = 30
 static var _active_trail_count: int = 0
+static var _active_hit_particle_count: int = 0 # Counter for active hit particles
 
 func _create_trail() -> void:
 	"""Crear partículas de estela según elemento (con límite global)"""
@@ -376,6 +377,7 @@ func _create_trail() -> void:
 		return
 	
 	SimpleProjectile._active_trail_count += 1
+
 	
 	trail_particles = CPUParticles2D.new()
 	trail_particles.name = "Trail"
@@ -866,6 +868,13 @@ func _get_player() -> Node:
 
 func _spawn_hit_effect() -> void:
 	"""Crear efecto visual simple al impactar"""
+	# OPTIMIZACIÓN: Límite global de partículas de impacto
+	const MAX_HIT_PARTICLES: int = 40
+	if SimpleProjectile._active_hit_particle_count >= MAX_HIT_PARTICLES:
+		return
+
+	SimpleProjectile._active_hit_particle_count += 1
+
 	# Partículas simples de impacto
 	var particles = CPUParticles2D.new()
 	particles.emitting = true
@@ -891,11 +900,12 @@ func _spawn_hit_effect() -> void:
 		effect.global_position = global_position
 		get_tree().root.add_child(effect)
 	
-	# Auto-destruir partículas
+	# Auto-destruir partículas y decrementar contador
 	var timer = get_tree().create_timer(0.5)
 	timer.timeout.connect(func(): 
 		if is_instance_valid(particles):
 			particles.queue_free()
+		SimpleProjectile._active_hit_particle_count = maxi(0, SimpleProjectile._active_hit_particle_count - 1)
 	)
 
 func _spawn_lifesteal_effect(player: Node) -> void:
