@@ -484,6 +484,9 @@ func _change_screen(target: int) -> void:
 		Screen.OPTIONS:
 			_show_options_internal()
 
+func _play_button_sound() -> void:
+	AudioManager.play_fixed("sfx_ui_click")
+
 func _on_play_pressed() -> void:
 	_play_button_sound()
 	play_pressed.emit()

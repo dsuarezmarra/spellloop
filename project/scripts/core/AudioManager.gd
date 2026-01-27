@@ -17,6 +17,7 @@ var stream_cache: Dictionary = {}
 
 # Volume settings (0.0 to 1.0)
 var music_volume: float = 1.0
+var sfx_volume: float = 1.0
 var debug_audio: bool = OS.is_debug_build()
 
 func _ready():
