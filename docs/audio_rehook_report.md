@@ -18,7 +18,7 @@
 - ID `sfx_death_armor`: `res://audio/sfx/enemies/sfx_death_armor_03.mp3` missing. -> **NO REPLACEMENT**
 - ID `sfx_death_armor`: `res://audio/sfx/enemies/sfx_death_armor_04.mp3` missing. -> **NO REPLACEMENT**
 - ID `sfx_death_bone`: `res://audio/sfx/enemies/sfx_death_bone_01.mp3` missing. -> **NO REPLACEMENT**
-- ID `sfx_death_bone`: `res://audio/sfx/enemies/sfx_death_bone_02.mp3` missing. -> **NO REPLACEMENT**
+- ID `sfx_death_bone`: `res://audio/sfx/enemies/sfx_death_bone_02.mp3` missing. -> **NO REPLACEMENT**      
 - ID `sfx_death_bone`: `res://audio/sfx/enemies/sfx_death_bone_03.mp3` missing. -> **NO REPLACEMENT**
 - ID `sfx_death_bone`: `res://audio/sfx/enemies/sfx_death_bone_04.mp3` missing. -> **NO REPLACEMENT**
 - ID `sfx_death_flesh`: `res://audio/sfx/enemies/sfx_death_flesh_01.mp3` missing. -> **NO REPLACEMENT**
@@ -290,6 +290,7 @@
 ### Code Updates
 - Replace 1 direct file paths in code/resources.
 ## 4. Manual Resolutions
-- **UI Sounds (sfx_ui_cancel, sfx_ui_back)**: Manually mapped to es://audio/sfx/ui/sfx_ui_cancel_01.mp3 alias.
+- **UI Sounds (sfx_ui_cancel, sfx_ui_back)**: Manually mapped to 
+es://audio/sfx/ui/sfx_ui_cancel_01.mp3 alias.
 - **UI Navigation (sfx_ui_navigation)**: Added silent definition to suppress runtime warnings (no suitable file found).
 - **BOM Fix**: Removed invalid Byte Order Mark from music_boss_theme path.
