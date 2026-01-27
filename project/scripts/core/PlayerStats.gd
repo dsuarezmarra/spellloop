@@ -1365,31 +1365,7 @@ func _get_player_current_health() -> float:
 
 	return current_health
 	
-func initialize_from_character(character_id: String) -> void:
-	"""Inicializar stats base desde el personaje seleccionado"""
-	var char_data = CharacterDatabase.get_character(character_id)
-	if char_data.is_empty():
-		push_warning("[PlayerStats] Character not found: %s" % character_id)
-		return
-		
-	# print("[PlayerStats] Inicializando stats para: %s" % character_id)
-	
-	# Resetear a base
-	stats = BASE_STATS.duplicate(true)
-	temp_modifiers.clear()
-	
-	# Aplicar stats del personaje
-	var char_stats = char_data.get("stats", {})
-	for stat_name in char_stats:
-		var value = char_stats[stat_name]
-		# Usar set_stat para manejar límites y lógica
-		set_stat(stat_name, float(value))
-		
-	# Asegurar que la vida actual empiece llena con el nuevo max_health
-	current_health = stats["max_health"]
-	health_changed.emit(current_health, stats["max_health"])
-	
-	# print("[PlayerStats] Stats inicializados. Max HP: %.0f" % stats["max_health"])
+
 
 
 func _update_shield_regen(delta: float) -> void:
