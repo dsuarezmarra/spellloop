@@ -58,6 +58,7 @@ func _exit_tree():
 			get_tree().paused = false
 
 func _ready():
+	add_to_group("chest_popup")
 	# CanvasLayer siempre está al frente (no afectado por cámara)
 	layer = 100
 	
@@ -414,7 +415,7 @@ func show_as_jackpot(items: Array):
 	
 	# Botón Reclamar Todo
 	claim_button = Button.new()
-	var claim_text = Localization.L("chest.claim_all") if Localization.has_method("L") else "RECLAMAR TODO"
+	var claim_text = Localization.L("ui.chest.claim_all") if Localization.has_method("L") else "RECLAMAR TODO"
 	claim_button.text = "✓ " + claim_text.to_upper()
 	claim_button.custom_minimum_size = Vector2(200, 50)
 	claim_button.add_theme_font_size_override("font_size", 16)
@@ -438,8 +439,8 @@ func show_as_jackpot(items: Array):
 	# Fallback hardcodeado si no existe key, pero añadiremos la key en json
 	var claim_sel_text = "RECLAMAR SELECCIONADOS" 
 	if Localization.has_method("L"):
-		var loc = Localization.L("chest.claim_selected")
-		if loc != "chest.claim_selected": claim_sel_text = loc
+		var loc = Localization.L("ui.chest.claim_selected")
+		if loc != "ui.chest.claim_selected": claim_sel_text = loc
 	
 	claim_selected_btn.text = "✓ " + claim_sel_text.to_upper()
 	claim_selected_btn.custom_minimum_size = Vector2(240, 50)
@@ -466,7 +467,7 @@ func show_as_jackpot(items: Array):
 	
 	# Botón Salir (con confirmación)
 	var exit_button = Button.new()
-	var exit_text = Localization.L("chest.exit") if Localization.has_method("L") else "SALIR"
+	var exit_text = Localization.L("ui.chest.exit") if Localization.has_method("L") else "SALIR"
 	exit_button.text = "✕ " + exit_text.to_upper()
 	exit_button.custom_minimum_size = Vector2(150, 50)
 	exit_button.add_theme_font_size_override("font_size", 16)
@@ -502,8 +503,10 @@ func _setup_jackpot_items(items: Array):
 	# Limpiar items previos
 	for child in items_vbox.get_children():
 		child.queue_free()
+		items_vbox.remove_child(child) # Force removal from tree immediately
 	
-	await get_tree().process_frame
+	# Removed dangerous await that caused duplication race conditions
+	# await get_tree().process_frame
 	
 	for i in range(items.size()):
 		var item = items[i]
@@ -637,7 +640,9 @@ func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 
 # Funciones legacy removidas - ahora usamos _claim_selected_jackpot_item()
 func _on_jackpot_close_pressed():
-	pass # Legacy stub
+	"""Callback cuando se confirma salir del jackpot (descartar todo)"""
+	skipped.emit()
+	queue_free()
 
 func _on_jackpot_item_pressed(index: int, _item: Dictionary):
 	"""Manejar click/selección de item en jackpot"""
@@ -1245,6 +1250,11 @@ func _on_button_hover(button_index: int):
 func _process_item_selection(item: Dictionary, button_index: int):
 	"""Procesar la selección de item"""
 	if popup_locked:
+		return
+		
+	# Support for Jackpot Mode toggling (Keyboard/Gamepad)
+	if is_jackpot_mode:
+		_on_jackpot_item_pressed(button_index, item)
 		return
 	
 	popup_locked = true

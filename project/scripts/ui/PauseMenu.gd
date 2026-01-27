@@ -316,7 +316,23 @@ func hide_pause_menu() -> void:
 	await tween.finished
 	
 	visible = false
-	get_tree().paused = false
+	
+	# Verificar si hay otros menús bloqueantes antes de quitar la pausa
+	var can_unpause = true
+	
+	# 1. Comprobar popups de cofres activos
+	var chest_popups = get_tree().get_nodes_in_group("chest_popup")
+	for popup in chest_popups:
+		if is_instance_valid(popup) and popup.is_visible_in_tree():
+			can_unpause = false
+			break
+			
+	# 2. Comprobar otros menús (como LevelUp)
+	if get_tree().get_nodes_in_group("levelup_popup").any(func(x): return x.is_visible_in_tree()):
+		can_unpause = false
+		
+	if can_unpause:
+		get_tree().paused = false
 
 func close() -> void:
 	"""Alias para hide_pause_menu - usado por Game.gd"""

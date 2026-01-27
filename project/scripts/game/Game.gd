@@ -1252,6 +1252,7 @@ func _save_run_stats() -> void:
 		# Convertir run_stats al formato esperado por SaveManager
 		var run_data = {
 			"time_survived": run_stats.get("time", 0.0),
+			"duration": run_stats.get("time", 0.0), # Fix: SaveManager expects "duration"
 			"level_reached": run_stats.get("level", 1),
 			"enemies_defeated": run_stats.get("kills", 0),
 			"gold_collected": run_stats.get("gold", 0),

@@ -425,7 +425,7 @@ func spend_meta_currency(amount: int) -> bool:
 		return true
 	return false
 
-func save_dungeon_completion(dungeon_seed: int, rewards: Dictionary) -> void:
+func save_dungeon_completion(dungeon_seed: int, rewards: Dictionary, duration: float = 0.0) -> void:
 	"""Save dungeon completion data"""
 	# Debug desactivado: print("[SaveManager] Saving dungeon completion...")
 	
@@ -448,7 +448,8 @@ func save_dungeon_completion(dungeon_seed: int, rewards: Dictionary) -> void:
 		"seed": dungeon_seed,
 		"rewards": rewards,
 		"timestamp": ts,
-		"duration": 0  # Placeholder
+		"duration": duration,
+		"score": 0 # Let _process_run_progression calculate it based on stats
 	}
 	
 	save_run_data(run_data)
