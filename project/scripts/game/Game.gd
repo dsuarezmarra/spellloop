@@ -112,6 +112,9 @@ func _setup_game() -> void:
 	remaining_banishes = 2
 	pending_level_ups.clear()
 	level_up_panel_active = false
+	
+	# Crear sistemas CRÍTICOS (Stats) antes que nada
+	_create_player_stats()  # IMPORTANTE: Crear antes que el player
 
 	# Crear player
 	_create_player()
@@ -119,8 +122,7 @@ func _setup_game() -> void:
 	# Crear arena (debe ser antes de otros sistemas para que tengan contexto)
 	_create_arena_manager()
 
-	# Crear sistemas
-	_create_player_stats()  # IMPORTANTE: Crear antes que otros sistemas
+	# Crear otros sistemas
 	_create_enemy_manager()
 	_create_wave_manager()  # Pasa _is_resuming para skip_auto_init
 	_create_experience_manager()

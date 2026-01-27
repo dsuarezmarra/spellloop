@@ -174,8 +174,9 @@ func _input(event: InputEvent) -> void:
 	var left = event.is_action("ui_left") or event.is_action("move_left") or (event is InputEventKey and event.keycode == KEY_A)
 	var right = event.is_action("ui_right") or event.is_action("move_right") or (event is InputEventKey and event.keycode == KEY_D)
 	var accept = event.is_action("ui_accept") or (event is InputEventKey and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER))
+	var cancel = event.is_action("ui_cancel") or (event is InputEventKey and event.keycode == KEY_ESCAPE)
 	
-	if not (up or down or left or right or accept):
+	if not (up or down or left or right or accept or cancel):
 		return
 		
 	# 2. STANDARD MODE (Legacy logic)
@@ -266,6 +267,11 @@ func _input(event: InputEvent) -> void:
 	elif accept:
 		AudioManager.play("sfx_ui_confirm")
 		_trigger_selection()
+		input_handled = true
+
+	elif cancel:
+		AudioManager.play("sfx_ui_cancel")
+		_on_jackpot_exit_pressed()
 		input_handled = true
 
 	if input_handled:
@@ -432,6 +438,7 @@ func show_as_jackpot(items: Array):
 	claim_button.add_theme_stylebox_override("hover", style_claim_hover)
 	
 	claim_button.pressed.connect(_on_claim_all_pressed)
+	claim_button.focus_mode = Control.FOCUS_NONE # Desactivar foco automático para usar navegación manual
 	buttons_hbox.add_child(claim_button)
 	
 	# Botón Reclamar Seleccionados (Nuevo)
@@ -446,6 +453,7 @@ func show_as_jackpot(items: Array):
 	claim_selected_btn.custom_minimum_size = Vector2(240, 50)
 	claim_selected_btn.add_theme_font_size_override("font_size", 16)
 	claim_selected_btn.visible = false # Oculto por defecto, se muestra si hay selección parcial
+	claim_selected_btn.focus_mode = Control.FOCUS_NONE # Desactivar foco automático
 	
 	var style_sel = StyleBoxFlat.new()
 	style_sel.bg_color = Color(0.15, 0.3, 0.4)
@@ -471,6 +479,7 @@ func show_as_jackpot(items: Array):
 	exit_button.text = "✕ " + exit_text.to_upper()
 	exit_button.custom_minimum_size = Vector2(150, 50)
 	exit_button.add_theme_font_size_override("font_size", 16)
+	exit_button.focus_mode = Control.FOCUS_NONE # Desactivar foco automático
 	
 	var style_exit = StyleBoxFlat.new()
 	style_exit.bg_color = Color(0.3, 0.15, 0.15)
