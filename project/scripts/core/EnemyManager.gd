@@ -805,15 +805,15 @@ func from_save_data(data: Dictionary) -> void:
 # SISTEMA DE DESPAWN/RESPAWN PARA RENDIMIENTO
 # ═══════════════════════════════════════════════════════════════════════════════
 
-const DESPAWN_DISTANCE: float = 850.0  # Reducido para ser más agresivo (era 1000)
-const DESPAWN_CHECK_INTERVAL: float = 0.2  # Más frecuente (era 0.5)
+const DESPAWN_DISTANCE: float = 1500.0  # Aumentado a 2000px por petición del usuario
+const DESPAWN_CHECK_INTERVAL: float = 1.0  # Menos frecuente ya que la distancia es mayor
 var despawn_check_timer: float = 0.0
 
 func _process_enemy_despawn(delta: float) -> void:
 	"""
-	Sistema de despawn/respawn para rendimiento:
-	- Enemigos a más de DESPAWN_DISTANCE del jugador son teletransportados cerca
-	- Bosses y élites están exentos
+	Sistema de despawn para evitar enemigos perdidos e inútiles:
+	- Enemigos a más de DESPAWN_DISTANCE del jugador son eliminados
+	- Esto libera slots para que spawneen nuevos cerca del jugador
 	"""
 	if not player:
 		return
@@ -824,7 +824,9 @@ func _process_enemy_despawn(delta: float) -> void:
 	despawn_check_timer = 0.0
 	
 	var player_pos = player.global_position
-	var enemies_to_respawn: Array = []
+	# Usar una lista separada para eliminar de forma segura mientras iteramos?
+	# Mejor iterar al revés o usar `to_remove`
+	var to_despawn: Array = []
 	
 	for enemy in active_enemies:
 		if not is_instance_valid(enemy):
@@ -834,52 +836,23 @@ func _process_enemy_despawn(delta: float) -> void:
 		if enemy.get("is_boss") or enemy.get("is_elite"):
 			continue
 		
-		# Calcular distancia
+		# Calcular distancia al cuadrado para rendimiento (aunque con 1s interval no es tan crítico)
+		# Usamos distance_to para claridad con el valor de 1500
 		var dist = enemy.global_position.distance_to(player_pos)
 		
-		# Si está muy lejos, reciclar
+		# Si está muy lejos, eliminar para que spawnee uno nuevo cerca
 		if dist > DESPAWN_DISTANCE:
-			enemies_to_respawn.append(enemy)
+			to_despawn.append(enemy)
 	
-	# Respawnear enemigos lejos cerca del jugador
-	for enemy in enemies_to_respawn:
-		_respawn_enemy_near_player(enemy)
+	# Procesar eliminaciones
+	for enemy in to_despawn:
+		if is_instance_valid(enemy):
+			active_enemies.erase(enemy)
+			enemy.queue_free()
+            # No emitimos enemy_died para no dar XP/Logros por despawn por distancia
+	
+	if not to_despawn.is_empty() and debug_spawns:
+		print("[EnemyManager] Despawneados %d enemigos lejanos (>%dpx)" % [to_despawn.size(), int(DESPAWN_DISTANCE)])
 
-func _respawn_enemy_near_player(enemy: Node2D) -> void:
-	"""Teletransportar un enemigo a una posición cerca del jugador"""
-	if not is_instance_valid(enemy) or not player:
-		return
-	
-	var arena_manager = _get_arena_manager()
-	var new_pos = Vector2.ZERO
-	var valid_pos = false
-	
-	# Intentar encontrar una posición válida (desbloqueada)
-	for i in range(5):
-		var angle = randf() * TAU
-		# Aparecer JUSTO fuera de la pantalla (aprox 600-800)
-		var distance = randf_range(600.0, 800.0)
-		var candidate = player.global_position + Vector2.from_angle(angle) * distance
-		
-		if arena_manager:
-			# Verificar si la zona está desbloqueada
-			var zone = arena_manager.get_zone_at_position(candidate)
-			if arena_manager.is_zone_unlocked(zone):
-				new_pos = candidate
-				valid_pos = true
-				break
-		else:
-			new_pos = candidate
-			valid_pos = true
-			break
-	
-	if valid_pos:
-		# Teletransportar enemigo
-		enemy.global_position = new_pos
-		
-		# Resetear navegación si tiene
-		if enemy.has_method("reset_navigation"):
-			enemy.reset_navigation()
-	else:
-		# Si no encontramos lugar válido, matarlo para que el spawner cree uno nuevo limpio
-		enemy.queue_free()
+# _respawn_enemy_near_player ELIMINADO en favor de queue_free + spawn natural
+

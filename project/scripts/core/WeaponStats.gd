@@ -373,6 +373,23 @@ func get_final_stat(stat_name: String, global_stats: Dictionary = {}) -> float:
 	# Calcular final
 	var final_value = (base_value + flat_bonus) * local_mult * global_mult
 	
+	# APLICAR CAPS GLOBALES (CRITICO PARA PERFORMANCE)
+	# Verificar si hay un límite definido en GlobalWeaponStats con el mismo nombre
+	if GlobalWeaponStats.GLOBAL_STAT_LIMITS.has(stat_name):
+		var limit = GlobalWeaponStats.GLOBAL_STAT_LIMITS[stat_name]
+		final_value = clampf(final_value, limit.get("min", -99999.0), limit.get("max", 99999.0))
+	
+	# Verificar caso especial de area_mult (stat derivado)
+	if stat_name == "area":
+		# Limitar área total también (base * mult)
+		# Suponiendo base 1.0, el limite de area_mult 2.5 limita el total a 2.5
+		pass 
+	if stat_name == "area_mult":
+		# Asegurar que incluso los multiplicadores locales no excedan el cap global
+		if GlobalWeaponStats.GLOBAL_STAT_LIMITS.has("area_mult"):
+			var limit = GlobalWeaponStats.GLOBAL_STAT_LIMITS["area_mult"]
+			final_value = clampf(final_value, limit.get("min", 0.1), limit.get("max", 3.0))
+
 	return final_value
 
 func get_final_damage(global_stats: Dictionary = {}) -> int:
@@ -388,7 +405,16 @@ func get_final_attack_speed(global_stats: Dictionary = {}) -> float:
 	var local_mult = modified_stats.get("attack_speed_mult", 1.0)
 	var global_mult = global_stats.get("attack_speed_mult", 1.0)
 	
-	return base_speed * local_mult * global_mult
+	var final_speed = base_speed * local_mult * global_mult
+	
+	# CAP: Velocidad máxima 5.0/s (0.2s cooldown) para evitar colapsos
+	# Viene de GLOBAL_STAT_LIMITS si existe, sino hardcoded
+	var max_speed = 5.0
+	if GlobalWeaponStats.GLOBAL_STAT_LIMITS.has("attack_speed_mult"):
+		# Usamos el max del mult como referencia aproximada
+		max_speed = GlobalWeaponStats.GLOBAL_STAT_LIMITS["attack_speed_mult"].max
+		
+	return minf(final_speed, max_speed)
 
 func get_final_cooldown(global_stats: Dictionary = {}) -> float:
 	"""
@@ -405,14 +431,21 @@ func get_final_projectile_count(global_stats: Dictionary = {}) -> int:
 	var base = modified_stats.get("projectile_count", 1)
 	var extra_local = modified_stats.get("extra_projectiles", 0)
 	var extra_global = global_stats.get("extra_projectiles", 0)
-	return base + extra_local + extra_global
+	
+	var total = base + extra_local + extra_global
+	
+	# CAP HARDCODEADO: Máximo 5 proyectiles totales por petición de usuario
+	# Esto es para prevenir caídas de FPS extremas
+	return mini(total, 5)
 
 func get_final_pierce(global_stats: Dictionary = {}) -> int:
 	"""Calcular penetración total"""
 	var base = modified_stats.get("pierce", 0)
 	var extra_local = modified_stats.get("extra_pierce", 0)
 	var extra_global = global_stats.get("extra_pierce", 0)
-	return base + extra_local + extra_global
+	
+	var total = base + extra_local + extra_global
+	return mini(total, 10) # Cap de seguridad
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MEJORAS

@@ -946,11 +946,22 @@ func _create_global_weapon_stats_section(parent: VBoxContainer) -> void:
 		var base_value = stat_info.base
 		var current_value = global_stats.get(stat_name, base_value)
 		
+		# Verificar si está al límite (Cap)
+		var is_capped = false
+		if attack_manager and attack_manager.has_method("get_global_weapon_stats"): # O acceder directamente si es variable
+			# Intentar acceder al gws para verificar el cap
+			var gws = attack_manager.global_weapon_stats if "global_weapon_stats" in attack_manager else null
+			if gws and gws.has_method("is_stat_capped"):
+				is_capped = gws.is_stat_capped(stat_name)
+		
 		# Icono + Nombre
 		var name_label = Label.new()
 		name_label.text = "%s %s" % [stat_info.icon, stat_info.name]
 		name_label.add_theme_font_size_override("font_size", 11)
-		name_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
+		if is_capped:
+			name_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2)) # Dorado
+		else:
+			name_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
 		name_label.custom_minimum_size = Vector2(110, 0)
 		grid.add_child(name_label)
 		
@@ -979,10 +990,15 @@ func _create_global_weapon_stats_section(parent: VBoxContainer) -> void:
 				if current_value != base_value:
 					value_color = Color(0.3, 1.0, 0.4) if current_value > base_value else Color(1.0, 0.4, 0.4)
 		
+		# Override si está al cap
+		if is_capped:
+			value_text += " (MAX)"
+			value_color = Color(1.0, 0.85, 0.2) # Dorado
+			
 		value_label.text = value_text
 		value_label.add_theme_font_size_override("font_size", 11)
 		value_label.add_theme_color_override("font_color", value_color)
-		value_label.custom_minimum_size = Vector2(50, 0)
+		value_label.custom_minimum_size = Vector2(80, 0) # Un poco más ancho para (MAX)
 		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		grid.add_child(value_label)
 

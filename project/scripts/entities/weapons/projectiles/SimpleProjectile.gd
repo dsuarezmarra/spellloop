@@ -42,6 +42,18 @@ var projectile_size: float = 12.0
 var trail_particles: CPUParticles2D = null
 var _weapon_id: String = ""  # Para buscar visual data
 
+# === OPTIMIZATION CACHE ===
+var _decor_manager: Node = null
+var _audio_manager: Node = null
+var _player_stats: Node = null
+var _player: Node = null
+var _physics_query: PhysicsShapeQueryParameters2D = null
+var _physics_circle: CircleShape2D = null
+var _cached_hit_sound: String = ""
+
+# Static cache for expensive assets
+static var _cached_heal_texture: Texture2D = null
+
 # Colores por elemento
 const ELEMENT_COLORS = {
 	"ice": Color(0.4, 0.8, 1.0, 1.0),      # Azul hielo
@@ -55,6 +67,22 @@ const ELEMENT_COLORS = {
 func _ready() -> void:
 	# CRÍTICO: Respetar la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	
+	# INITIALIZE CACHE
+	var tree = get_tree()
+	if tree:
+		_decor_manager = tree.get_first_node_in_group("decor_collision_manager")
+		_audio_manager = tree.get_first_node_in_group("audio_manager")
+		_player_stats = tree.get_first_node_in_group("player_stats")
+		var players = tree.get_nodes_in_group("player")
+		if players.size() > 0:
+			_player = players[0]
+			
+	# Reuse physics objects
+	_physics_query = PhysicsShapeQueryParameters2D.new()
+	_physics_circle = CircleShape2D.new()
+	_physics_query.shape = _physics_circle
+	_physics_query.collision_mask = 2 | 4 # Default mask
 	
 	# Configuración básica
 	z_index = 10
@@ -448,6 +476,9 @@ func configure_and_launch(data: Dictionary, start_pos: Vector2, target_vec: Vect
 	else:
 		direction = (target_vec - start_pos).normalized()
 	
+	# CACHE SOUND
+	_cached_hit_sound = "" # Reset
+	
 	# Resetear estado de ejecución
 	current_lifetime = 0.0
 	enemies_hit.clear()
@@ -534,25 +565,33 @@ func _handle_hit(target: Node) -> void:
 	# -----------------------------------------------------------
 	# Calcular distancia desde el jugador al enemigo (NO la distancia recorrida por el proyectil)
 	var player_to_enemy_distance: float = 0.0
-	var player = get_tree().get_first_node_in_group("player")
-	if player and target:
-		player_to_enemy_distance = player.global_position.distance_to(target.global_position)
+	# Use cached Player reference (re-fetch if invalid)
+	if not is_instance_valid(_player):
+		_player = _get_player()
+		
+	if _player and target:
+		player_to_enemy_distance = _player.global_position.distance_to(target.global_position)
 	
 	# 1. Tiro Certero (Sharpshooter): +damage si enemigo lejos (> 300 del jugador)
-	var ps = get_tree().get_first_node_in_group("player_stats")
-	if ps:
+	# Use cached Player Stats (re-fetch if invalid)
+	if not is_instance_valid(_player_stats):
+		if get_tree():
+			_player_stats = get_tree().get_first_node_in_group("player_stats")
+			
+	if _player_stats:
 		# Check Sharpshooter - usa distancia del jugador al enemigo
-		var sharpshooter_val = ps.get_stat("long_range_damage_bonus") if ps.has_method("get_stat") else 0.0
+		var sharpshooter_val = _player_stats.get_stat("long_range_damage_bonus") if _player_stats.has_method("get_stat") else 0.0
 		if sharpshooter_val > 0 and player_to_enemy_distance > 300:
 			final_damage = int(final_damage * (1.0 + sharpshooter_val))
 			
+			
 		# 2. Peleador Callejero (Street Brawler): +damage si enemigo cerca (< 150 del jugador)
-		var brawler_val = ps.get_stat("close_range_damage_bonus") if ps.has_method("get_stat") else 0.0
+		var brawler_val = _player_stats.get_stat("close_range_damage_bonus") if _player_stats.has_method("get_stat") else 0.0
 		if brawler_val > 0 and player_to_enemy_distance < 150:
 			final_damage = int(final_damage * (1.0 + brawler_val))
 			
 		# 3. Verdugo (Executioner): +damage si enemigo Low HP (< 30%)
-		var executioner_val = ps.get_stat("low_hp_damage_bonus") if ps.has_method("get_stat") else 0.0
+		var executioner_val = _player_stats.get_stat("low_hp_damage_bonus") if _player_stats.has_method("get_stat") else 0.0
 		if executioner_val > 0:
 			var hp_pct = 1.0
 			if target.has_method("get_health_percent"):
@@ -564,7 +603,7 @@ func _handle_hit(target: Node) -> void:
 				final_damage = int(final_damage * (1.0 + executioner_val))
 		
 		# 4. Combustión Instantánea (Combustion - Rework): Burn aplica daño instantáneo
-		var combustion_active = ps.get_stat("combustion_active") if ps.has_method("get_stat") else 0.0
+		var combustion_active = _player_stats.get_stat("combustion_active") if _player_stats.has_method("get_stat") else 0.0
 		if combustion_active > 0:
 			# Si aplicamos quemadura, aplicamos su daño total instantáneamente
 			var burn_chance = get_meta("burn_chance", 0.0)
@@ -577,7 +616,7 @@ func _handle_hit(target: Node) -> void:
 
 		# 5. Ruleta Rusa (Russian Roulette): 1% chance de 4x daño, o 0 daño?
 		# Descripción: "1% chance for massive damage" -> Digamos 10x daño
-		var russian_roulette = ps.get_stat("russian_roulette") if ps.has_method("get_stat") else 0.0
+		var russian_roulette = _player_stats.get_stat("russian_roulette") if _player_stats.has_method("get_stat") else 0.0
 		if russian_roulette > 0:
 			if randf() < 0.01: # 1%
 				final_damage *= 10.0
@@ -589,7 +628,7 @@ func _handle_hit(target: Node) -> void:
 			# Por ahora solo bonus masivo.
 			
 		# 9. Hemorragia (Hemorrhage): Chance de aplicar Sangrado
-		var bleed_chance = ps.get_stat("bleed_on_hit_chance") if ps.has_method("get_stat") else 0.0
+		var bleed_chance = _player_stats.get_stat("bleed_on_hit_chance") if _player_stats.has_method("get_stat") else 0.0
 		if bleed_chance > 0 and randf() < bleed_chance:
 			if target.has_method("apply_bleed"):
 				# Daño de sangrado base o proporcional
@@ -773,23 +812,21 @@ func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
 		chain_damage *= 0.8  # Reducir daño progresivamente
 
 func _find_chain_target(from_pos: Vector2, exclude: Array) -> Node:
-	"""Buscar siguiente objetivo para chain (OPTIMIZADO: Spatial Partitioning)"""
+	"""Buscar siguiente objetivo para chain (OPTIMIZADO: Reuse Query Object)"""
 	var space_state = get_world_2d().direct_space_state
-	var query = PhysicsShapeQueryParameters2D.new()
-	var circle = CircleShape2D.new()
-	var range_val = 250.0 # Rango de chain aumentado para facilitar conexiones
+	var range_val = 250.0 
 	
-	circle.radius = range_val
-	query.shape = circle
-	query.transform = Transform2D(0, from_pos)
+	if _physics_query == null:
+		_physics_query = PhysicsShapeQueryParameters2D.new()
+		_physics_circle = CircleShape2D.new()
+		_physics_query.shape = _physics_circle
+		_physics_query.collision_mask = 2 | 4
 	
-	# Mascara 2 (Layer 2) = Enemies, Mascara 6 (Layer 2+3) = Enemies + Bosses
-	query.collision_mask = 2 | 4 
-	query.collide_with_bodies = true
-	query.collide_with_areas = true
+	_physics_circle.radius = range_val
+	_physics_query.transform = Transform2D(0, from_pos)
 	
 	# Query espacial eficiente (Max 12 candidatos cercanos)
-	var results = space_state.intersect_shape(query, 12)
+	var results = space_state.intersect_shape(_physics_query, 12)
 	
 	var closest: Node = null
 	var closest_dist_sq = range_val * range_val
@@ -904,10 +941,10 @@ func _process(delta: float) -> void:
 	# Mover en la dirección actual
 	global_position += direction * speed * delta
 	
-	# Verificar colisión con decorados
-	var decor_manager = get_tree().get_first_node_in_group("decor_collision_manager")
-	if decor_manager and decor_manager.has_method("check_collision_fast"):
-		var push = decor_manager.check_collision_fast(global_position, 8.0)
+	# Verificar colisión con decorados (OPTIMIZED: Use cached manager)
+	# Check only if we have a valid reference
+	if is_instance_valid(_decor_manager) and _decor_manager.has_method("check_collision_fast"):
+		var push = _decor_manager.check_collision_fast(global_position, 8.0)
 		if push.length_squared() > 1.0:
 			# Proyectil impactó con decorado - destruir
 			_destroy()
@@ -992,24 +1029,28 @@ func _spawn_lifesteal_effect(player: Node) -> void:
 	)
 
 func _spawn_heal_flash(player: Node) -> void:
-	"""Crear flash verde en el jugador al recibir curación"""
+	"""Crear flash verde en el jugador al recibir curación (Optimized Texture Cache)"""
 	if not is_instance_valid(player):
 		return
 	
 	# Crear un sprite temporal con efecto de curación
 	var flash = Sprite2D.new()
-	var img = Image.create(32, 32, false, Image.FORMAT_RGBA8)
 	
-	# Dibujar un círculo verde suave
-	var center = Vector2(16, 16)
-	for x in range(32):
-		for y in range(32):
-			var dist = Vector2(x, y).distance_to(center)
-			if dist < 14:
-				var alpha = 1.0 - (dist / 14.0)
-				img.set_pixel(x, y, Color(0.3, 1.0, 0.4, alpha * 0.7))
+	# Use lazy-initialized static cache
+	if SimpleProjectile._cached_heal_texture == null:
+		var img = Image.create(32, 32, false, Image.FORMAT_RGBA8)
+		# Dibujar un círculo verde suave
+		var center = Vector2(16, 16)
+		for x in range(32):
+			for y in range(32):
+				var dist = Vector2(x, y).distance_to(center)
+				if dist < 14:
+					var alpha = 1.0 - (dist / 14.0)
+					img.set_pixel(x, y, Color(0.3, 1.0, 0.4, alpha * 0.7))
+		
+		SimpleProjectile._cached_heal_texture = ImageTexture.create_from_image(img)
 	
-	flash.texture = ImageTexture.create_from_image(img)
+	flash.texture = SimpleProjectile._cached_heal_texture
 	flash.z_index = 100
 	flash.scale = Vector2(2.0, 2.0)
 	
@@ -1048,21 +1089,29 @@ func _play_hit_sound() -> void:
 	
 	# 2. Si no hay específico, usar genérico por elemento
 	if hit_sound == "":
-		match element_type:
-			"ice": hit_sound = "sfx_ice_hit"
-			"fire": hit_sound = "sfx_fire_hit"
-			"arcane": hit_sound = "sfx_arcane_hit"
-			"lightning": hit_sound = "sfx_lightning_hit"
-			"nature": hit_sound = "sfx_nature_hit"
-			"dark": hit_sound = "sfx_shadow_hit" # Dark maps to Shadow SFX
-			_: hit_sound = "sfx_hit_flesh" # Default fallback
+		if _cached_hit_sound != "":
+			hit_sound = _cached_hit_sound
+		else:
+			match element_type:
+				"ice": hit_sound = "sfx_ice_hit"
+				"fire": hit_sound = "sfx_fire_hit"
+				"arcane": hit_sound = "sfx_arcane_hit"
+				"lightning": hit_sound = "sfx_lightning_hit"
+				"nature": hit_sound = "sfx_nature_hit"
+				"dark": hit_sound = "sfx_shadow_hit" # Dark maps to Shadow SFX
+				_: hit_sound = "sfx_hit_flesh" # Default fallback
+			_cached_hit_sound = hit_sound
 			
-	# 3. Reproducir si AudioManager está disponible
+	# 3. Reproducir si AudioManager está disponible (usando cache)
 	if hit_sound != "":
-		var audio_manager = get_tree().get_first_node_in_group("audio_manager")
-		if audio_manager and audio_manager.has_method("play_sfx_random_pitch"):
+		# Refetch if invalid (e.g. scene reload)
+		if not is_instance_valid(_audio_manager):
+			if get_tree():
+				_audio_manager = get_tree().get_first_node_in_group("audio_manager")
+		
+		if _audio_manager and _audio_manager.has_method("play_sfx_random_pitch"):
 			# Prefer random pitch for variety
-			audio_manager.play_sfx_random_pitch(hit_sound)
-		elif audio_manager and audio_manager.has_method("play"):
-			audio_manager.play(hit_sound)
+			_audio_manager.play_sfx_random_pitch(hit_sound)
+		elif _audio_manager and _audio_manager.has_method("play"):
+			_audio_manager.play(hit_sound)
 

@@ -131,55 +131,81 @@ func _setup_animations() -> void:
 	# Aplicar transparencia del 30% a todos los AOE
 	sprite.modulate.a = 0.7
 
+	# Aplicar transparencia del 30% a todos los AOE
+	sprite.modulate.a = 0.7
+
+# Cache estático para animaciones procedurales
+static var _procedural_cache: Dictionary = {}
+
 func _setup_procedural() -> void:
-	"""Crear animaciones procedurales estilo cartoon"""
-	var frames = SpriteFrames.new()
-	# OPTIMIZACIÓN: Usar tamaño fijo pequeño y escalar el sprite
-	# En lugar de generar imágenes enormes, generamos a 64px y escalamos
-	var base_size = 64  # Tamaño fijo para generación
-	var target_scale = _radius * 2.0 / float(base_size)  # Escala para alcanzar el radio deseado
+	"""Crear animaciones procedurales estilo cartoon (OPTIMIZADO: Cache estático)"""
+	# Generar clave única basada en el ID del arma o colores
+	var cache_key = "default"
+	if visual_data and visual_data.id:
+		cache_key = visual_data.id
+	elif visual_data:
+		cache_key = str(visual_data.primary_color) + str(visual_data.secondary_color)
 	
-	# Colores por defecto o del visual_data
-	var primary = visual_data.primary_color if visual_data else Color(0.4, 0.8, 1.0)
-	var secondary = visual_data.secondary_color if visual_data else Color(0.2, 0.5, 0.9)
-	var accent = visual_data.accent_color if visual_data else Color.WHITE
-	var outline = visual_data.outline_color if visual_data else Color(0.1, 0.2, 0.4)
+	var target_scale = 1.0
+	var base_size = 64
+	if _radius > 0:
+		target_scale = _radius * 2.0 / float(base_size)
 	
-	# Appear animation (4 frames)
-	frames.add_animation("appear")
-	frames.set_animation_speed("appear", 12)
-	frames.set_animation_loop("appear", false)
-	for i in range(4):
-		var tex = _generate_aoe_frame("appear", i, 4, base_size, primary, secondary, accent, outline)
-		frames.add_frame("appear", tex)
-	
-	# Active animation (6 frames, loop)
-	frames.add_animation("active")
-	frames.set_animation_speed("active", 10)
-	frames.set_animation_loop("active", true)
-	for i in range(6):
-		var tex = _generate_aoe_frame("active", i, 6, base_size, primary, secondary, accent, outline)
-		frames.add_frame("active", tex)
-	
-	# Fade animation (4 frames)
-	frames.add_animation("fade")
-	frames.set_animation_speed("fade", 12)
-	frames.set_animation_loop("fade", false)
-	for i in range(4):
-		var tex = _generate_aoe_frame("fade", i, 4, base_size, primary, secondary, accent, outline)
-		frames.add_frame("fade", tex)
-	
-	sprite.sprite_frames = frames
+	# Usar cache si existe
+	if _procedural_cache.has(cache_key):
+		sprite.sprite_frames = _procedural_cache[cache_key]
+	else:
+		# GENERAR NUEVO (Solo una vez)
+		var frames = SpriteFrames.new()
+		var primary = visual_data.primary_color if visual_data else Color(0.4, 0.8, 1.0)
+		var secondary = visual_data.secondary_color if visual_data else Color(0.2, 0.5, 0.9)
+		var accent = visual_data.accent_color if visual_data else Color.WHITE
+		var outline = visual_data.outline_color if visual_data else Color(0.1, 0.2, 0.4)
+		
+		# Appear animation (4 frames)
+		frames.add_animation("appear")
+		frames.set_animation_speed("appear", 12)
+		frames.set_animation_loop("appear", false)
+		for i in range(4):
+			var tex = _generate_aoe_frame("appear", i, 4, base_size, primary, secondary, accent, outline)
+			frames.add_frame("appear", tex)
+		
+		# Active animation (6 frames, loop)
+		frames.add_animation("active")
+		frames.set_animation_speed("active", 10)
+		frames.set_animation_loop("active", true)
+		for i in range(6):
+			var tex = _generate_aoe_frame("active", i, 6, base_size, primary, secondary, accent, outline)
+			frames.add_frame("active", tex)
+		
+		# Fade animation (4 frames)
+		frames.add_animation("fade")
+		frames.set_animation_speed("fade", 12)
+		frames.set_animation_loop("fade", false)
+		for i in range(4):
+			var tex = _generate_aoe_frame("fade", i, 4, base_size, primary, secondary, accent, outline)
+			frames.add_frame("fade", tex)
+			
+		# Guardar en cache
+		_procedural_cache[cache_key] = frames
+		sprite.sprite_frames = frames
+
 	sprite.scale = Vector2.ONE * target_scale  # Escalar para alcanzar el tamaño correcto
 	
 	# Aplicar transparencia del 30% a todos los AOE
 	sprite.modulate.a = 0.7
 	
-	# Crear glow y ring con tamaño pequeño y escalar
+	# Crear glow y ring (Procedural simple, bajo costo, no cachear textura por ahora pero si sprite)
+	# Nota: _create_glow_texture y _create_ring_texture generan Textura, no sprite frames.
+	# Podríamos cachear también las texturas estáticas.
+	
+	var primary = visual_data.primary_color if visual_data else Color(0.4, 0.8, 1.0)
+	var accent = visual_data.accent_color if visual_data else Color.WHITE
+	var outline = visual_data.outline_color if visual_data else Color(0.1, 0.2, 0.4)
+	
 	_create_glow_texture(base_size, primary)
 	glow_sprite.scale = Vector2.ONE * target_scale * 1.5
 	
-	# Crear ring
 	_create_ring_texture(base_size, outline, accent)
 	ring_sprite.scale = Vector2.ONE * target_scale * 1.2
 

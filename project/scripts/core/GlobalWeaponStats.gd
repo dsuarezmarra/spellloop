@@ -48,23 +48,23 @@ const BASE_GLOBAL_STATS: Dictionary = {
 # NOTA: damage_mult NO tiene cap (puede crecer infinitamente)
 const GLOBAL_STAT_LIMITS: Dictionary = {
 	# Multiplicadores con límite
-	"attack_speed_mult": {"min": 0.1, "max": 5.0},
-	"projectile_speed_mult": {"min": 0.5, "max": 3.0},
-	"area_mult": {"min": 0.5, "max": 3.0},
-	"range_mult": {"min": 0.5, "max": 5.0},  # Aumentado a 5.0
+	"attack_speed_mult": {"min": 0.1, "max": 3.0}, # Reducido de 5.0 para evitar lag
+	"projectile_speed_mult": {"min": 0.5, "max": 2.5},
+	"area_mult": {"min": 0.5, "max": 2.0}, # Reducido de 3.0 para evitar screen clutter
+	"range_mult": {"min": 0.5, "max": 3.0},  
 	"duration_mult": {"min": 0.5, "max": 3.0},
 	"knockback_mult": {"min": 0.0, "max": 5.0},
 	
 	# Planos con límite
-	"extra_projectiles": {"min": 0, "max": 10},
-	"extra_pierce": {"min": 0, "max": 20},
-	"chain_count": {"min": 0, "max": 10},
+	"extra_projectiles": {"min": 0, "max": 5}, # CRÍTICO: Limitado a 5 por petición explícita
+	"extra_pierce": {"min": 0, "max": 10},
+	"chain_count": {"min": 0, "max": 8},
 	
 	# Probabilidades
 	"crit_chance": {"min": 0.0, "max": 1.0},  # Máximo 100%
 	
 	# Efectos
-	"life_steal": {"min": 0.0, "max": 0.5},   # Máximo 50%
+	"life_steal": {"min": 0.0, "max": 0.3},   # Máximo 30%
 }
 
 # Metadatos para UI
