@@ -120,17 +120,42 @@ static func spawn_custom(pos: Vector2, txt: String, col: Color = Color.WHITE) ->
     spawn_text(pos, txt, col)
 
 static func _spawn_text(pos: Vector2, txt: String, col: Color, size: int, dur: float) -> void:
-    if not instance: return
+    var tree = Engine.get_main_loop() as SceneTree
+    if not tree:
+        return
+        
+    # LAZY INITIALIZATION: Si no es Autoload, crearlo manualmente
+    if not instance:
+        var root = tree.current_scene
+        if root:
+             # Buscar si ya existe uno en la escena (revive tras reload)
+            var existing = root.find_child("FloatingTextManager", true, false)
+            if existing:
+                instance = existing
+            else:
+                instance = FloatingText.new()
+                instance.name = "FloatingTextManager"
+                root.call_deferred("add_child", instance)
+                # Esperar un frame o forzar setup? 
+                # call_deferred significa que no estará listo AHORA.
+                # Hack: si no está en el tree, no podemos usarlo este frame para pooling.
+                # Fallback: instanciar directo sin pool por este frame.
     
-    var tree = instance.get_tree()
-    if not tree or not tree.current_scene: return
-    
-    # Obtener del pool
+    if not instance or not instance.is_inside_tree():
+        # Fallback de emergencia si no está listo el singleton
+        var temp = FloatingTextInstance.new()
+        if tree.current_scene:
+            tree.current_scene.add_child(temp)
+            temp.global_position = pos + Vector2(randf_range(-10, 10), randf_range(-5, 5))
+            temp.setup(txt, col, size, dur)
+            temp.visible = true
+        return
+
+    # Usar Singleton (Pool)
     var floating = instance.get_from_pool()
     
     # Añadir a la escena SI NO ESTÁ YA
     if floating.get_parent() != tree.current_scene:
-        # Asegurar que no tenga padre (si viene del pool limpio)
         if floating.get_parent(): floating.get_parent().remove_child(floating)
         tree.current_scene.add_child(floating)
     
@@ -159,6 +184,10 @@ class FloatingTextInstance extends Node2D:
         _label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
         _label.add_theme_constant_override("outline_size", 3)
         add_child(_label)
+        
+        # Asegurar que se ve por encima de todo
+        z_index = 100
+        z_as_relative = false
 
     func setup(txt: String, col: Color, size: int, dur: float) -> void:
         _duration = dur

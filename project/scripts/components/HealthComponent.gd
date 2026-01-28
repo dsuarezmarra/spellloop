@@ -36,8 +36,13 @@ func take_damage(amount: int, element_type: String = "physical") -> void:
 	current_health -= amount
 	current_health = max(current_health, 0)
 	
+	
 	damaged.emit(amount, element_type)
 	health_changed.emit(current_health, max_health)
+	
+	# Visualizar daño
+	if owner_node is Node2D:
+		FloatingText.spawn_damage(owner_node.global_position, amount)
 	
 	# Debug (comentado para producción)
 	# if current_health > 0:

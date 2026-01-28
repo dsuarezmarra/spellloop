@@ -104,10 +104,14 @@ func _execute_chain_sequence() -> void:
 		
 		var wait_time = 0.0
 		while not visual_finished and wait_time < 2.0:
-			await get_tree().process_frame
+			var tree = get_tree()
+			if not tree:
+				break
+			await tree.process_frame
 			wait_time += get_process_delta_time()
 	else:
-		await get_tree().create_timer(1.0).timeout
+		if get_tree():
+			await get_tree().create_timer(1.0).timeout
 		
 	if is_instance_valid(self):
 		queue_free()
