@@ -366,10 +366,23 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 
 	var type_id = str(enemy_data.get("id", "unknown"))
 
-	# Crear CharacterBody2D con script EnemyBase
-	var enemy = CharacterBody2D.new()
-	enemy.set_script(EnemyBaseScript)
+	# POOLING OPTIMIZATION
+	var enemy = null
+	var enemy_pool = get_tree().get_first_node_in_group("enemy_pool")
+	if enemy_pool and enemy_pool.has_method("get_enemy"):
+		enemy = enemy_pool.get_enemy()
+	else:
+		# Fallback
+		enemy = CharacterBody2D.new()
+		enemy.set_script(EnemyBaseScript)
+	
 	enemy.name = "Enemy_%s" % type_id
+	
+	# Asegurar modo de procesamiento activo (por si viene del pool disabled)
+	enemy.process_mode = Node.PROCESS_MODE_PAUSABLE
+	enemy.set_physics_process(true)
+	enemy.set_process(true)
+	enemy.visible = true
 
 	# Inicializar con datos de la base de datos
 	if enemy.has_method("initialize_from_database"):
@@ -398,11 +411,12 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 	if enemy_data.get("is_boss", false):
 		enemy.set("is_boss", true)
 
-	# Conectar señal de muerte
+	# Conectar señal de muerte (SOLO SI NO ESTA CONECTADA)
 	if enemy.has_signal("enemy_died"):
-		enemy.enemy_died.connect(_on_enemy_died)
+		if not enemy.enemy_died.is_connected(_on_enemy_died):
+			enemy.enemy_died.connect(_on_enemy_died)
 
-	# Asegurar visibilidad
+	# Asegurar visibilidad y z-index
 	enemy.visible = true
 	enemy.z_index = 0
 
@@ -410,10 +424,12 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 	var root_scene = get_tree().current_scene if get_tree() else null
 	if root_scene and root_scene.has_node("WorldRoot/EnemiesRoot"):
 		var er = root_scene.get_node("WorldRoot/EnemiesRoot")
-		er.add_child(enemy)
+		if enemy.get_parent() != er:
+			er.add_child(enemy)
 		enemy.position = er.to_local(world_pos)
 	else:
-		add_child(enemy)
+		if not enemy.get_parent():
+			add_child(enemy)
 		enemy.global_position = world_pos
 
 	active_enemies.append(enemy)
@@ -426,7 +442,7 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 	if debug_spawns:
 		var tier = enemy_data.get("tier", 1)
 		var hp = enemy_data.get("final_hp", enemy_data.get("base_hp", 0))
-		print("[EnemyManager] Spawned T%d %s (HP:%d) at %s" % [tier, enemy_data.get("name", "?"), hp, world_pos])
+		print("[EnemyManager] Spawned T%d %s (HP:%d) at %s POOL:%s" % [tier, enemy_data.get("name", "?"), hp, world_pos, str(enemy_pool != null)])
 
 	return enemy
 

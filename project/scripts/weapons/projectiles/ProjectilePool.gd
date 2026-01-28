@@ -89,6 +89,7 @@ func get_projectile() -> SimpleProjectile:
 	_reset_projectile(projectile)
 	
 	_active_count += 1
+	if PerfTracker: PerfTracker.track_projectile_spawned()
 	return projectile
 
 func return_projectile(projectile: SimpleProjectile) -> void:
@@ -115,6 +116,7 @@ func return_projectile(projectile: SimpleProjectile) -> void:
 		projectile.queue_free()
 	
 	_active_count -= 1
+	if PerfTracker: PerfTracker.track_projectile_destroyed()
 
 func _reset_projectile(projectile: SimpleProjectile) -> void:
 	"""Resetear un proyectil a su estado inicial"""

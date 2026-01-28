@@ -73,6 +73,14 @@ func _ready() -> void:
 
 	# Añadir al grupo para fácil acceso
 	add_to_group("coins")
+	
+	if PerfTracker:
+		PerfTracker.track_pickup_spawned()
+
+func _exit_tree() -> void:
+	if PerfTracker:
+		PerfTracker.track_pickup_collected() # Or destroyed, same counter
+
 
 
 	# Z-index para que esté sobre el suelo pero debajo de entidades

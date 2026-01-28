@@ -57,6 +57,10 @@ var zigzag_direction: float = 1.0
 # Dirección actual del enemigo (para animación)
 var current_direction: Vector2 = Vector2.DOWN
 
+func _enter_tree() -> void:
+	if PerfTracker:
+		PerfTracker.track_enemy_spawned()
+
 func _ready() -> void:
 	"""Inicializar al cargar la escena. Ejecutado ANTES de las subclases."""
 	# CRÍTICO: Respetar la pausa del juego (Game.gd tiene ALWAYS, pero enemigos deben pausarse)
@@ -98,6 +102,20 @@ func _ready() -> void:
 
 	# Si no hay spritesheet, usar sprite estático como fallback
 	if not spritesheet_loaded:
+		_load_static_sprite()
+	
+	# OPTIMIZATION: Physics Culling (VisibilityEnabler2D)
+	var enabler = VisibilityEnabler2D.new()
+	enabler.name = "CullingEnabler"
+	enabler.rect = Rect2(-100, -100, 200, 200) # Generous bounds
+	enabler.process_parent = true
+	enabler.physics_process_parent = true
+	enabler.pause_animations = true
+	add_child(enabler)
+
+func _exit_tree() -> void:
+	if PerfTracker:
+		PerfTracker.track_enemy_death()
 		var sprite = _find_sprite_node(self)
 		if not sprite:
 			sprite = Sprite2D.new()
@@ -1858,6 +1876,13 @@ func die() -> void:
 			attack_system.cleanup_boss()
 	
 	enemy_died.emit(self, enemy_id, exp_value, enemy_tier, is_elite, is_boss)
+	
+	if has_meta("pooled"):
+		var pool = get_tree().get_first_node_in_group("enemy_pool")
+		if pool and pool.has_method("return_enemy"):
+			pool.return_enemy(self)
+			return
+
 	queue_free()
 
 func _on_health_died() -> void:

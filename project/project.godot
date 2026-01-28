@@ -30,6 +30,7 @@ SessionState="*res://scripts/core/SessionState.gd"
 ProjectilePool="*res://scripts/weapons/projectiles/ProjectilePool.gd"
 DamageLogger="*res://scripts/core/DamageLogger.gd"
 DecorCollisionManager="*res://scripts/core/DecorCollisionManager.gd"
+PerfTracker="*res://scripts/debug/PerfTracker.gd"
 
 [display]
 
