@@ -287,10 +287,9 @@ func _trigger_selection():
 	if current_selected_index < total_items:
 		# Toggle item selection
 		var btn = item_buttons[current_selected_index]
-		if btn.has_method("_gui_input"): # Hack, actually call logic directly
-			# Simular logica de toggle
-			var item_data = btn.get_meta("item_data")
-			_on_jackpot_item_pressed(current_selected_index, item_data)
+		# Simular logica de toggle
+		var item_data = btn.get_meta("item_data")
+		_on_jackpot_item_pressed(current_selected_index, item_data)
 	elif current_selected_index == idx_claim:
 		if claim_button: claim_button.pressed.emit()
 	elif current_selected_index == idx_claim_sel:
