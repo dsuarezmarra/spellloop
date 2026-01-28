@@ -1,5 +1,4 @@
 extends Node
-class_name PerfTracker
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PERFORMANCE TRACKER (DIAGNOSTICS & OPTIMIZATION)
@@ -86,7 +85,7 @@ func _process(delta: float) -> void:
 	counters["objects_nodes"] = Performance.get_monitor(Performance.OBJECT_NODE_COUNT)
 	# Note: PHYSICS_PROCESS_FRAME_TIME is only valid in physics_process, using TIME_PHYSICS_PROCESS often returns 0 in process
 	# We rely on an estimate or reading inside physics process if needed, but Monitor works usually.
-	counters["physics_time_ms"] = Performance.get_monitor(Performance.PHYSICS_PROCESS_FRAME_TIME) * 1000.0
+	counters["physics_time_ms"] = Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
 	counters["node_count"] = get_tree().get_node_count()
 	
 	# 2. Check for Spikes

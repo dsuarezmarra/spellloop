@@ -104,14 +104,27 @@ func _ready() -> void:
 	if not spritesheet_loaded:
 		_load_static_sprite()
 	
-	# OPTIMIZATION: Physics Culling (VisibilityEnabler2D)
-	var enabler = VisibilityEnabler2D.new()
+	# OPTIMIZATION: Physics Culling (VisibleOnScreenEnabler2D)
+	var enabler = VisibleOnScreenEnabler2D.new()
 	enabler.name = "CullingEnabler"
 	enabler.rect = Rect2(-100, -100, 200, 200) # Generous bounds
-	enabler.process_parent = true
-	enabler.physics_process_parent = true
-	enabler.pause_animations = true
+	enabler.enable_node_path = ".." # Target parent
 	add_child(enabler)
+
+func _load_static_sprite() -> void:
+	var sprite = _find_sprite_node(self)
+	if not sprite:
+		sprite = Sprite2D.new()
+		sprite.name = "Sprite2D"
+		add_child(sprite)
+	_load_enemy_sprite(sprite)
+	
+	# Aplicar escala al sprite estático
+	var enemy_scale = _get_scale_for_tier()
+	if sprite:
+		sprite.scale = Vector2(enemy_scale, enemy_scale)
+		sprite.centered = true
+
 
 func _exit_tree() -> void:
 	if PerfTracker:
@@ -860,7 +873,7 @@ func _calculate_archetype_movement(direction: Vector2, distance: float, delta: f
 
 	return movement
 
-func _try_special_abilities(distance: float, delta: float) -> void:
+func _try_special_abilities(distance: float, _delta: float) -> void:
 	"""Intentar usar habilidades especiales según arquetipo"""
 
 	# CHARGER: Carga hacia el jugador
