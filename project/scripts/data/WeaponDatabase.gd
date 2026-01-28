@@ -603,29 +603,27 @@ const FUSIONS: Dictionary = {
 		"id": "soul_reaper",
 		"name": "Soul Reaper",
 		"name_es": "Segador de Almas",
-		"description": "Dagas espectrales que drenan la esencia vital de los enemigos",
+		"description": "Dagas vivientes que absorben la esencia vital",
 		"components": ["shadow_dagger", "nature_staff"],
-		
-		"damage": 12,
-		"cooldown": 0.5,
+		"damage": 20,  # BUFFED from 12 (Optimizacion de rendimiento)
+		"cooldown": 0.65,  # NERFED from 0.5
 		"range": 450.0,
-		"projectile_speed": 400.0,
-		"projectile_count": 3,
-		"pierce": 5,
-		"area": 1.0,
-		"duration": 2.5,
-		"knockback": 40.0,
-		
+		"projectile_speed": 480.0,
+		"projectile_count": 2,  # REDUCED from 3 for performance
+		"pierce": 3,
+		"area": 1.2,
+		"duration": 0.0,
+		"knockback": 60.0,
 		"target_type": TargetType.HOMING,
 		"projectile_type": ProjectileType.MULTI,
-		
-		"effect": "lifesteal",
-		"effect_value": 2,  # 2 HP por kill (nerfed from 3)
+		"effect": "execute",
+		"effect_value": 0.15,
 		"effect_duration": 0.0,
-		
-		"color": Color(0.4, 0.2, 0.5),
-		"icon": "💀",
-		"tags": ["projectile", "homing"]
+		"color": Color(0.2, 0.6, 0.3),
+		"icon": "🗡️☠️",
+		"element": 4, # Dark
+		"projectile_size": 18.0,
+		"tags": ["projectile", "homing", "no_duration"]
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1570,6 +1568,8 @@ const FUSIONS: Dictionary = {
 		"tags": ["projectile", "no_duration"]
 	},
 	
+
+	
 	# ─────────────────────────────────────────────────────────────────────────────
 	# SHADOW + LIGHT: TWILIGHT - Crepúsculo
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1775,15 +1775,15 @@ const FUSIONS: Dictionary = {
 		"id": "prism_wind",
 		"name": "Prism Wind",
 		"name_es": "Viento Prismático",
-		"description": "Cuchillas de luz refractada que critican a menudo",
+		"description": "Cuchillas refractadas de alta potencia",
 		"components": ["wind_blade", "light_beam"],
-		"damage": 18,
-		"cooldown": 0.6,
+		"damage": 25,  # BUFFED from 18 (Optimizacion de rendimiento)
+		"cooldown": 0.7, # NERFED from 0.6
 		"range": 420.0,
 		"projectile_speed": 500.0,
-		"projectile_count": 3,  # Nerfed from 4
+		"projectile_count": 2,  # REDUCED from 3 for performance
 		"pierce": 2,
-		"area": 1.0,
+		"area": 1.3,  # BUFFED from 1.0 (compensate density)
 		"duration": 0.0,
 		"knockback": 90.0,
 		"target_type": TargetType.DIRECTION,

@@ -856,20 +856,11 @@ func _get_player() -> Node:
 		if players.size() > 0:
 			return players[0]
 	return null
-	
-	# Efecto de impacto
-	_spawn_hit_effect()
-	
-	# Verificar pierce
-	if pierces_remaining > 0:
-		pierces_remaining -= 1
-	else:
-		_destroy()
 
 func _spawn_hit_effect() -> void:
 	"""Crear efecto visual simple al impactar"""
 	# OPTIMIZACIÓN: Límite global de partículas de impacto
-	const MAX_HIT_PARTICLES: int = 40
+	const MAX_HIT_PARTICLES: int = 60 # BUFF from 40 for more feedback
 	if SimpleProjectile._active_hit_particle_count >= MAX_HIT_PARTICLES:
 		return
 
@@ -894,19 +885,85 @@ func _spawn_hit_effect() -> void:
 	particles.global_position = global_position
 	get_tree().current_scene.add_child(particles)
 	
+	# Conectar finished para limpiar el contador (FIX!)
+	particles.finished.connect(_on_hit_particles_finished)
+	# Auto-destrucción segura
+	particles.finished.connect(particles.queue_free)
+	
 	# Instanciar efecto visual extra si existe
 	if hit_vfx_scene:
 		var effect = hit_vfx_scene.instantiate()
 		effect.global_position = global_position
-		get_tree().root.add_child(effect)
+		get_tree().current_scene.add_child(effect)
+
+static func _on_hit_particles_finished() -> void:
+	"""Callback cuando un efecto de impacto termina"""
+	SimpleProjectile._active_hit_particle_count = maxi(0, SimpleProjectile._active_hit_particle_count - 1)
+
+# Variable para el homing target
+var _homing_target: Node2D = null
+var _homing_check_timer: float = 0.0
+
+func _process(delta: float) -> void:
+	# Actualizar lifetime
+	current_lifetime += delta
+	if current_lifetime >= lifetime:
+		_destroy()
+		return
 	
-	# Auto-destruir partículas y decrementar contador
-	var timer = get_tree().create_timer(0.5)
-	timer.timeout.connect(func(): 
-		if is_instance_valid(particles):
-			particles.queue_free()
-		SimpleProjectile._active_hit_particle_count = maxi(0, SimpleProjectile._active_hit_particle_count - 1)
-	)
+	# LÓGICA HOMING (NUEVO)
+	# Si tenemos la meta de ser homing, intentar girar hacia enemigos
+	var target_type = get_meta("target_type_override", "") # Buscar override primero
+	if target_type == "": # Si no hay override check weapon db logic (simplificado aquí)
+		# En el futuro pasar target_type explícito en configure_and_launch
+		var wid = get_meta("weapon_id", "")
+		if wid == "nature_staff" or wid == "soul_reaper" or wid == "wildfire" or wid == "frostvine" or wid == "thunder_bloom":
+			target_type = "homing"
+	
+	if target_type == "homing":
+		_process_homing(delta)
+	
+	# Mover en la dirección actual
+	global_position += direction * speed * delta
+	
+	# Verificar colisión con decorados
+	var decor_manager = get_tree().get_first_node_in_group("decor_collision_manager")
+	if decor_manager and decor_manager.has_method("check_collision_fast"):
+		var push = decor_manager.check_collision_fast(global_position, 8.0)
+		if push.length_squared() > 1.0:
+			# Proyectil impactó con decorado - destruir
+			_destroy()
+			return
+	
+	# Actualizar dirección del sprite animado para que rote
+	if animated_sprite and is_instance_valid(animated_sprite):
+		animated_sprite.set_direction(direction)
+
+func _process_homing(delta: float) -> void:
+	"""Lógica de seguimiento de enemigos"""
+	# Buscar objetivo periódicamente (cada 0.1s)
+	_homing_check_timer -= delta
+	if _homing_check_timer <= 0:
+		_homing_check_timer = 0.1
+		_update_homing_target()
+	
+	if is_instance_valid(_homing_target):
+		# Girar suavemente hacia el objetivo
+		var desired_dir = (_homing_target.global_position - global_position).normalized()
+		# Factor de giro (turn rate)
+		var turn_speed = 5.0 # Radianes por segundo (aprox)
+		direction = direction.slerp(desired_dir, turn_speed * delta).normalized()
+
+func _update_homing_target() -> void:
+	"""Encontrar enemigo más cercano para homing"""
+	# Si el target actual sigue vivo y cerca, mantenerlo?
+	if is_instance_valid(_homing_target) and _homing_target.global_position.distance_squared_to(global_position) < 400*400:
+		return
+		
+	# Buscar nuevo (reutilizar lógica de chain target pero con rango amplio)
+	var new_target = _find_chain_target(global_position, [])
+	if new_target:
+		_homing_target = new_target
 
 func _spawn_lifesteal_effect(player: Node) -> void:
 	"""Crear efecto visual de lifesteal - partículas verdes volando hacia el jugador"""
