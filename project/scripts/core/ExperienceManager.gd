@@ -241,6 +241,66 @@ func create_coin(position: Vector2, base_value: int = 1) -> Node2D:
 		
 	return _create_coin_fallback_system(position, final_value, 0)
 
+func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
+	"""Spawnear monedas al morir un enemigo basado en su tier"""
+	# Decidir si dropea monedas
+	var drop_chance = base_coin_drop_chance
+	if is_boss:
+		drop_chance = 1.0  # Bosses siempre dropean
+	elif is_elite:
+		drop_chance = 1.0  # Élites siempre dropean
+
+	if randf() > drop_chance:
+		return  # No drop
+
+	# Determinar tipo de moneda según tier/elite/boss
+	var coin_type = _get_coin_type_for_enemy(enemy_tier, is_elite, is_boss)
+
+	# Calcular cantidad de monedas
+	var coin_count = 1
+	match enemy_tier:
+		1:
+			coin_count = randi_range(1, 2)
+		2:
+			coin_count = randi_range(1, 3)
+		3:
+			coin_count = randi_range(2, 3)
+		4:
+			coin_count = randi_range(2, 4)
+		5:  # Boss tier
+			coin_count = randi_range(5, 8)
+
+	# Multiplicadores especiales
+	if is_elite:
+		coin_count = int(coin_count * 2)
+	if is_boss:
+		coin_count = int(coin_count * 2.5)
+
+	# Crear las monedas con pequeño offset aleatorio
+	for i in range(coin_count):
+		var offset = Vector2(randf_range(-20, 20), randf_range(-20, 20))
+		_create_coin_with_type(position + offset, coin_type)
+
+func _get_coin_type_for_enemy(tier: int, is_elite: bool, is_boss: bool) -> int:
+	"""Determinar el tipo de moneda según el enemigo"""
+	# CoinType enum: BRONZE=0, SILVER=1, GOLD=2, DIAMOND=3, PURPLE=4
+	if is_boss:
+		return 4  # PURPLE
+	elif is_elite:
+		return 3  # DIAMOND
+	else:
+		match tier:
+			1:
+				return 0  # BRONZE
+			2:
+				return 1  # SILVER
+			3, 4:
+				return 2  # GOLD
+			5:
+				return 3  # DIAMOND
+			_:
+				return 0  # BRONZE
+
 func _create_fallback_coin() -> Node2D:
 	"""Crear moneda simple si no hay escena"""
 	var coin = Area2D.new()

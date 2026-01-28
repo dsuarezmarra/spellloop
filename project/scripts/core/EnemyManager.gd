@@ -385,6 +385,21 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 	enemy.visible = true
 
 	# Inicializar con datos de la base de datos
+	# Añadir al árbol de escena PRIMERO para que get_tree() funcione en initialize()
+	# Esto permite que AnimatedEnemySprite acceda al ResourceManager y use el caché
+	enemy.visible = false # Ocultar mientras se inicializa
+	var root_scene = get_tree().current_scene if get_tree() else null
+	if root_scene and root_scene.has_node("WorldRoot/EnemiesRoot"):
+		var er = root_scene.get_node("WorldRoot/EnemiesRoot")
+		if enemy.get_parent() != er:
+			er.add_child(enemy)
+		enemy.position = er.to_local(world_pos)
+	else:
+		if not enemy.get_parent():
+			add_child(enemy)
+		enemy.global_position = world_pos
+
+	# Inicializar con datos de la base de datos (Ahora get_tree() es válido)
 	if enemy.has_method("initialize_from_database"):
 		enemy.initialize_from_database(enemy_data, player)
 	elif enemy.has_method("initialize"):
@@ -416,21 +431,9 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 		if not enemy.enemy_died.is_connected(_on_enemy_died):
 			enemy.enemy_died.connect(_on_enemy_died)
 
-	# Asegurar visibilidad y z-index
+	# Asegurar visibilidad y z-index FINAL
 	enemy.visible = true
 	enemy.z_index = 0
-
-	# Añadir al árbol de escena
-	var root_scene = get_tree().current_scene if get_tree() else null
-	if root_scene and root_scene.has_node("WorldRoot/EnemiesRoot"):
-		var er = root_scene.get_node("WorldRoot/EnemiesRoot")
-		if enemy.get_parent() != er:
-			er.add_child(enemy)
-		enemy.position = er.to_local(world_pos)
-	else:
-		if not enemy.get_parent():
-			add_child(enemy)
-		enemy.global_position = world_pos
 
 	active_enemies.append(enemy)
 	enemy_spawned.emit(enemy)
