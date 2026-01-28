@@ -13,6 +13,7 @@ signal quit_pressed
 @onready var play_button: Button = $UILayer/UIContainer/VBoxContainer/PlayButton
 @onready var options_button: Button = $UILayer/UIContainer/VBoxContainer/OptionsButton
 @onready var quit_button: Button = $UILayer/UIContainer/VBoxContainer/QuitButton
+@onready var debug_button: Button = $UILayer/UIContainer/VBoxContainer/DebugButton
 @onready var title_label: Label = $UILayer/UIContainer/TitleLabel
 @onready var version_label: Label = $UILayer/UIContainer/VersionLabel
 @onready var debug_label: Label = $UILayer/DebugLabel
@@ -34,7 +35,23 @@ func _ready() -> void:
 	_connect_signals()
 	_play_menu_music()
 	_update_resume_button()
+	_play_menu_music()
+	_update_resume_button()
 	_setup_wasd_navigation()
+	_setup_debug_button()
+
+func _setup_debug_button() -> void:
+	if debug_button:
+		if OS.is_debug_build():
+			debug_button.visible = true
+			debug_button.pressed.connect(_on_debug_pressed)
+			# Add to buttons list for animation/style
+			if not debug_button.mouse_entered.is_connected(_on_button_hover):
+				debug_button.mouse_entered.connect(_on_button_hover)
+		else:
+			debug_button.visible = false
+			# Remove from parent to avoid layout gaps? Or just hide.
+			# debug_button.queue_free() # Better to just hide to avoid errors if referenced
 
 func _apply_premium_style() -> void:
 	# 🎨 ESTILO MAGICAL VOID & GOLD
@@ -360,6 +377,8 @@ func _update_button_list() -> void:
 		menu_buttons.append(options_button)
 	if quit_button and is_instance_valid(quit_button):
 		menu_buttons.append(quit_button)
+	if debug_button and is_instance_valid(debug_button) and debug_button.visible:
+		menu_buttons.append(debug_button)
 
 	# Resetear indice si es necesario
 	if current_button_index >= menu_buttons.size():
@@ -597,6 +616,20 @@ func _on_quit_pressed() -> void:
 	quit_pressed.emit()
 	await get_tree().create_timer(0.2).timeout
 	get_tree().quit()
+
+func _on_debug_pressed() -> void:
+	_play_button_sound()
+	print("[MainMenu] Launching Item Validation Runner...")
+	# Instantiate TestRunner scene
+	var runner_scene = load("res://scripts/debug/item_validation/TestRunner.tscn")
+	if runner_scene:
+		var runner = runner_scene.instantiate()
+		get_tree().root.add_child(runner)
+		# Trigger sanity check immediately
+		if runner.has_method("run_sanity_check"):
+			runner.run_sanity_check()
+	else:
+		print("Error: Could not load TestRunner.tscn")
 
 func _start_game() -> void:
 	var tween = create_tween()

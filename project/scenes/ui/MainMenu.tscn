@@ -96,6 +96,13 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "🚪  SALIR"
 
+[node name="DebugButton" type="Button" parent="UILayer/UIContainer/VBoxContainer"]
+custom_minimum_size = Vector2(240, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+theme_override_font_sizes/font_size = 20
+text = "🐞  DEBUG TESTS"
+
 [node name="VersionLabel" type="Label" parent="UILayer/UIContainer"]
 layout_mode = 1
 anchors_preset = 3

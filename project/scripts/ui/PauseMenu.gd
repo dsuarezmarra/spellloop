@@ -1489,7 +1489,6 @@ func _create_weapon_card(weapon) -> Control:
 		var dmg_base = full_stats.get("damage_base", 0)
 		var dmg_final = full_stats.get("damage_final", 0)
 		if dmg_final != dmg_base:
-		if dmg_final != dmg_base:
 			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%s→%s" % [_format_large_number(dmg_base), _format_large_number(dmg_final)], Color(0.3, 1.0, 0.4))
 		else:
 			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%s" % _format_large_number(dmg_final))
@@ -1569,7 +1568,6 @@ func _create_weapon_card(weapon) -> Control:
 				_add_weapon_stat(stats_grid, "🗡️", "Atravesar", "%d" % pierce_final)
 	else:
 		# Fallback: usar datos del weapon directamente (sin full_stats)
-		if "damage" in weapon:
 		if "damage" in weapon:
 			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%s" % _format_large_number(weapon.damage))
 		if "cooldown" in weapon:
