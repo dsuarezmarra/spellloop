@@ -60,6 +60,10 @@ var current_direction: Vector2 = Vector2.DOWN
 func _enter_tree() -> void:
 	if PerfTracker:
 		PerfTracker.track_enemy_spawned()
+	
+	# Asegurar que está en el grupo para detección de proyectiles
+	if not is_in_group("enemies"):
+		add_to_group("enemies")
 
 func _ready() -> void:
 	"""Inicializar al cargar la escena. Ejecutado ANTES de las subclases."""
@@ -111,6 +115,22 @@ func _ready() -> void:
 	enabler.enable_node_path = ".." # Target parent
 	add_child(enabler)
 
+	# Configurar z_index
+	self.z_index = 0
+	
+	# Inicializar sistema de iconos de estado
+	_initialize_status_icon_display()
+
+	# Inicializar sistema de ataque
+	if attack_system:
+		attack_system.initialize(
+			attack_cooldown,
+			attack_range,
+			damage,
+			false,  # is_ranged
+			null    # projectile_scene
+		)
+
 func _load_static_sprite() -> void:
 	var sprite = _find_sprite_node(self)
 	if not sprite:
@@ -129,40 +149,6 @@ func _load_static_sprite() -> void:
 func _exit_tree() -> void:
 	if PerfTracker:
 		PerfTracker.track_enemy_death()
-		var sprite = _find_sprite_node(self)
-		if not sprite:
-			sprite = Sprite2D.new()
-			sprite.name = "Sprite2D"
-			add_child(sprite)
-		_load_enemy_sprite(sprite)
-
-		# Aplicar escala al sprite estático
-		var enemy_scale = _get_scale_for_tier()
-		if sprite:
-			sprite.scale = Vector2(enemy_scale, enemy_scale)
-			sprite.centered = true
-
-	# Añadir a grupo de enemigos para detección
-	add_to_group("enemies")
-
-	# print("[EnemyBase] ✓ _ready() tier=%d animated=%s" % [enemy_tier, spritesheet_loaded])
-
-	# Configurar z_index
-	self.z_index = 0
-	
-	# Inicializar sistema de iconos de estado
-	_initialize_status_icon_display()
-
-	# Inicializar sistema de ataque
-	if attack_system:
-		attack_system.initialize(
-			attack_cooldown,
-			attack_range,
-			damage,
-			false,  # is_ranged
-			null    # projectile_scene
-		)
-		# print("[EnemyBase] ✓ Sistema de ataque inicializado para %s" % name)
 
 func _initialize_status_icon_display() -> void:
 	"""Inicializar display de iconos de estado para enemigos"""

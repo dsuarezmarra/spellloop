@@ -1,108 +1,95 @@
 # DecorCollisionManager.gd
-# Singleton que gestiona colisiones con decorados basadas en distancia
-# Este enfoque replica el sistema de barreras de zona que SÍ funciona
-# NOTA: No usar class_name ya que está registrado como autoload
+# Singleton que gestiona colisiones con decorados usando Spatial Partitioning (Grid) para O(1) performance.
+# Optimizado para evitar iterar miles de objetos.
 
 extends Node
 
-# Almacén de colisiones de decorados
-# Cada entrada: { "position": Vector2, "radius": float }
+# Almacén maestro
 var _collision_points: Array = []
+
+# GRID SYSTEM (Spatial Hashing)
+var _grid: Dictionary = {}
+const CELL_SIZE: float = 256.0 # Tamaño de celda (ajustar según densidad)
 
 # Distancia mínima de colisión por defecto
 const MIN_COLLISION_RADIUS = 20.0
 
-# Radio de búsqueda para optimización (solo verificar decorados cercanos)
-const SEARCH_RADIUS = 500.0
-
 func _ready() -> void:
-	add_to_group("decor_collision_manager")
+    add_to_group("decor_collision_manager")
 
 ## Registrar un punto de colisión de decorado
 func register_collision(pos: Vector2, radius: float) -> void:
-	_collision_points.append({
-		"position": pos,
-		"radius": max(radius, MIN_COLLISION_RADIUS)
-	})
-	# Debug desactivado:
-	# if _collision_points.size() <= 5:
-	# 	print("[DecorCollisionManager] Registrado: pos=%s, radius=%.1f (total: %d)" % [pos, radius, _collision_points.size()])
+    var entry = {
+        "position": pos,
+        "radius": max(radius, MIN_COLLISION_RADIUS)
+    }
+    _collision_points.append(entry)
+    
+    # Añadir al Grid
+    var cell_key = _get_cell_key(pos)
+    if not _grid.has(cell_key):
+        _grid[cell_key] = []
+    _grid[cell_key].append(entry)
 
-## Limpiar todos los puntos de colisión (para resetear entre partidas)
+## Convertir posición a clave de celda
+func _get_cell_key(pos: Vector2) -> Vector2i:
+    return Vector2i(floor(pos.x / CELL_SIZE), floor(pos.y / CELL_SIZE))
+
+## Limpiar todos los puntos de colisión
 func clear_all() -> void:
-	_collision_points.clear()
+    _collision_points.clear()
+    _grid.clear()
 
 ## Obtener número de colisiones registradas (debug)
 func get_collision_count() -> int:
-	return _collision_points.size()
+    return _collision_points.size()
 
-## Verificar colisión y obtener vector de corrección
-## Retorna Vector2.ZERO si no hay colisión, o un vector de empuje si la hay
+## Verificar colisión (Optimizado con Grid)
 func check_collision(entity_pos: Vector2, entity_radius: float = 15.0) -> Vector2:
-	var push_vector = Vector2.ZERO
-	
-	for col in _collision_points:
-		var col_pos: Vector2 = col["position"]
-		var col_radius: float = col["radius"]
-		
-		# Optimización: saltar si está muy lejos
-		var dist_sq = entity_pos.distance_squared_to(col_pos)
-		if dist_sq > SEARCH_RADIUS * SEARCH_RADIUS:
-			continue
-		
-		# Distancia de separación requerida
-		var min_dist = entity_radius + col_radius
-		var dist = sqrt(dist_sq)
-		
-		# Si está dentro del radio de colisión, calcular empuje
-		if dist < min_dist and dist > 0.01:
-			var direction = (entity_pos - col_pos).normalized()
-			var overlap = min_dist - dist
-			push_vector += direction * overlap
-	
-	return push_vector
+    return check_collision_fast(entity_pos, entity_radius)
 
-## Versión optimizada que solo verifica los N decorados más cercanos
-func check_collision_fast(entity_pos: Vector2, entity_radius: float = 15.0, max_checks: int = 20) -> Vector2:
-	var push_vector = Vector2.ZERO
-	var checks_done = 0
-	
-	for col in _collision_points:
-		var col_pos: Vector2 = col["position"]
-		var col_radius: float = col["radius"]
-		
-		var dist_sq = entity_pos.distance_squared_to(col_pos)
-		
-		# Solo verificar si está relativamente cerca
-		var check_dist = entity_radius + col_radius + 50.0  # 50px margen
-		if dist_sq > check_dist * check_dist:
-			continue
-		
-		checks_done += 1
-		
-		var dist = sqrt(dist_sq)
-		var min_dist = entity_radius + col_radius
-		
-		if dist < min_dist and dist > 0.01:
-			var direction = (entity_pos - col_pos).normalized()
-			var overlap = min_dist - dist
-			push_vector += direction * overlap
-		
-		if checks_done >= max_checks:
-			break
-	
-	return push_vector
+## Versión optimizada que usa Grid para buscar solo locales
+func check_collision_fast(entity_pos: Vector2, entity_radius: float = 15.0, _max_checks: int = 20) -> Vector2:
+    var push_vector = Vector2.ZERO
+    
+    # Calcular celda de la entidad
+    var center_cell = _get_cell_key(entity_pos)
+    
+    # Revisar celda actual y las 8 vecinas (3x3)
+    for x in range(center_cell.x - 1, center_cell.x + 2):
+        for y in range(center_cell.y - 1, center_cell.y + 2):
+            var key = Vector2i(x, y)
+            if _grid.has(key):
+                for col in _grid[key]:
+                    var col_pos: Vector2 = col["position"]
+                    var col_radius: float = col["radius"]
+                    
+                    var dist_sq = entity_pos.distance_squared_to(col_pos)
+                    var min_dist = entity_radius + col_radius
+                    
+                    if dist_sq < min_dist * min_dist:
+                        var dist = sqrt(dist_sq)
+                        if dist > 0.01: # Evitar división por cero
+                            var direction = (entity_pos - col_pos) / dist # Normalized manually
+                            var overlap = min_dist - dist
+                            push_vector += direction * overlap
+                            
+                            # Early exit si el empuje es significativo? 
+                            # No, mejor acumular para suavidad, pero limitamos iteraciones implícitamente por el grid.
+    
+    return push_vector # Retorna vector acumulado
 
 ## Obtener el decorado más cercano a una posición (para debug)
 func get_nearest_collision(pos: Vector2) -> Dictionary:
-	var nearest = {}
-	var min_dist = INF
-	
-	for col in _collision_points:
-		var dist = pos.distance_to(col["position"])
-		if dist < min_dist:
-			min_dist = dist
-			nearest = col.duplicate()
-			nearest["distance"] = dist
-	
-	return nearest
+    # Para esto seguimos iterando todo porque es debug y safety
+    var nearest = {}
+    var min_dist = INF
+    
+    for col in _collision_points:
+        var dist = pos.distance_to(col["position"])
+        if dist < min_dist:
+            min_dist = dist
+            nearest = col.duplicate()
+            nearest["distance"] = dist
+    
+    return nearest

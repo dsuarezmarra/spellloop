@@ -30,15 +30,29 @@ def analyze_log(filepath):
         ft = s.get("frame_time_ms", 0)
         fps = s.get("fps", 0)
         ctx = s.get("counters", {})
-        print(f"{ft:.1f}ms (FPS: {fps}) | Enemies: {ctx.get('enemies_alive')} | Proj: {ctx.get('projectiles_alive')}")
+        print(f"{ft:.1f}ms (FPS: {fps})")
+        # Print breakdown of counters
+        keys = list(ctx.keys())
+        keys.sort()
+        for k in keys:
+            print(f"   - {k}: {ctx[k]}")
+        
+        # Print recent events if available
+        events = s.get("recent_events", [])
+        if events:
+            print("   Context Events:")
+            for e in events[-3:]: # Last 3
+                print(f"   - {e.get('event')} (t={e.get('timestamp')})")
+        print("-" * 40)
 
 if __name__ == "__main__":
-    log_dir = os.path.expanduser("~/.godot/app_userdata/Spellloop/perf_logs")
-    # Adjust for Windows specific path if needed, usually %APPDATA%/Godot/... or local "user://"
-    # For now, simplistic input or glob
-    
-    files = glob.glob("*.jsonl")
-    if files:
-        analyze_log(files[-1])
+    if len(sys.argv) > 1:
+        analyze_log(sys.argv[1])
     else:
-        print("No log files found in current dir. Provide path as argument.")
+        # Fallback to current dir search
+        files = glob.glob("*.jsonl")
+        if files:
+            analyze_log(files[-1])
+        else:
+            print("Usage: python validate_perf_logs.py <path_to_log_file>")
+            print("Or run in a directory with .jsonl files.")
