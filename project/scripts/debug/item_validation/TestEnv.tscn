@@ -1,3 +1,20 @@
-[gd_scene format=3 uid="uid://testenv000000"]
+[gd_scene load_steps=4 format=3 uid="uid://testenv000000"]
+
+[ext_resource type="Script" path="res://scripts/core/AttackManager.gd" id="1_am"]
+[ext_resource type="Script" path="res://scripts/core/PlayerStats.gd" id="2_ps"]
+[ext_resource type="Script" path="res://scripts/debug/item_validation/MockPlayer.gd" id="3_mp"]
 
 [node name="TestEnv" type="Node2D"]
+
+[node name="MockPlayer" type="CharacterBody2D" parent="."]
+script = ExtResource("3_mp")
+
+[node name="PlayerStats" type="Node" parent="."]
+script = ExtResource("2_ps")
+
+[node name="AttackManager" type="Node" parent="."]
+script = ExtResource("1_am")
+
+[node name="Projectiles" type="Node2D" parent="."]
+
+[node name="Enemies" type="Node2D" parent="."]
