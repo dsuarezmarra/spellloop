@@ -31,6 +31,7 @@ var ambient_atmosphere: Node = null # Sistema de partículas ambientales
 # Estado del juego
 var game_running: bool = false
 var game_time: float = 0.0
+var session_start_time: float = 0.0 # Tiempo de juego al iniciar/resumir esta sesión
 var is_paused: bool = false
 
 # Contadores de Reroll/Banish persistentes para toda la partida
@@ -533,6 +534,7 @@ func _connect_hud_to_player() -> void:
 func _start_game() -> void:
 	game_running = true
 	game_time = 0.0
+	session_start_time = 0.0
 	is_paused = false
 	
 	# Iniciar música de gameplay
@@ -566,6 +568,7 @@ func _resume_saved_game() -> void:
 
 	# Restaurar tiempo de juego
 	game_time = _saved_state.get("game_time", 0.0)
+	session_start_time = game_time # Marcar incio de esta sesión de juego
 
 	# Restaurar tiempo en WaveManager para que la dificultad sea correcta
 	if wave_manager:
@@ -1244,6 +1247,9 @@ func player_died() -> void:
 	if not game_running:
 		return  # Evitar múltiples llamadas
 
+	# Guardar tiempo jugado en esta sesión
+	save_session_playtime()
+
 	game_running = false
 
 	# Guardar estadísticas finales de la run
@@ -1445,3 +1451,12 @@ func _update_atmosphere_biome(zone_id: int, _zone_name: String) -> void:
 	if "selected_biomes" in arena_manager:
 		var biome = arena_manager.selected_biomes.get(zone_id, "Grassland")
 		ambient_atmosphere.set_biome(biome)
+
+func save_session_playtime() -> void:
+	"""Guardar el tiempo jugado en esta sesión específica"""
+	var delta_time = game_time - session_start_time
+	if delta_time > 0:
+		SaveManager.add_playtime(delta_time)
+		# Avanzar el start time para no contar doble si se llama de nuevo sin salir
+		session_start_time = game_time
+

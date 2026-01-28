@@ -2475,6 +2475,10 @@ func _on_quit_pressed() -> void:
 	_play_button_sound()
 	quit_to_menu_pressed.emit()
 
+	# Nuevo: Guardar tiempo de juego acumulado en esta sesión (para estadísticas globales)
+	if get_tree().current_scene.has_method("save_session_playtime"):
+		get_tree().current_scene.save_session_playtime()
+
 	# Guardar el estado completo del juego para poder reanudarlo
 	_save_game_state_for_resume()
 

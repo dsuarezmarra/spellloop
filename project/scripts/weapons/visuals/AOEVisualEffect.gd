@@ -45,6 +45,10 @@ var _radius: float = 100.0
 var _duration: float = 0.5
 var _active_time: float = 0.0
 
+# Límite máximo de escala visual para evitar overdraw masivo
+# (aprox 4.0 con sprites de 64px = 256px radio visual, suficiente para pantalla)
+const MAX_VISUAL_SCALE: float = 4.0
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -126,11 +130,12 @@ func _setup_animations() -> void:
 	var sprite_scale = _radius * 2.0 / visual_data.frame_size.x
 	if visual_data.base_scale != 1.0:
 		sprite_scale *= visual_data.base_scale
+	
+	# CAP: Limitar escala visual (No afecta área lógica de daño, solo visual)
+	sprite_scale = minf(sprite_scale, MAX_VISUAL_SCALE)
+	
 	sprite.scale = Vector2.ONE * sprite_scale
 	
-	# Aplicar transparencia del 30% a todos los AOE
-	sprite.modulate.a = 0.7
-
 	# Aplicar transparencia del 30% a todos los AOE
 	sprite.modulate.a = 0.7
 

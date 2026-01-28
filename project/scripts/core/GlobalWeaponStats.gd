@@ -48,17 +48,22 @@ const BASE_GLOBAL_STATS: Dictionary = {
 # NOTA: damage_mult NO tiene cap (puede crecer infinitamente)
 const GLOBAL_STAT_LIMITS: Dictionary = {
 	# Multiplicadores con límite
-	"attack_speed_mult": {"min": 0.1, "max": 3.0}, # Reducido de 5.0 para evitar lag
+	"attack_speed_mult": {"min": 0.1, "max": 3.0}, # Max 300% vel ataque
 	"projectile_speed_mult": {"min": 0.5, "max": 2.5},
-	"area_mult": {"min": 0.5, "max": 2.0}, # Reducido de 3.0 para evitar screen clutter
+	"area_mult": {"min": 0.5, "max": 3.0}, # Max 300% mult (antes 2.0 pero ignorado)
 	"range_mult": {"min": 0.5, "max": 3.0},  
 	"duration_mult": {"min": 0.5, "max": 3.0},
 	"knockback_mult": {"min": 0.0, "max": 5.0},
 	
-	# Planos con límite
-	"extra_projectiles": {"min": 0, "max": 5}, # CRÍTICO: Limitado a 5 por petición explícita
+	# Planos con límite (Bonos globales)
+	"extra_projectiles": {"min": 0, "max": 5}, # Max +5 global
 	"extra_pierce": {"min": 0, "max": 10},
 	"chain_count": {"min": 0, "max": 8},
+	
+	# Límites Absolutos (Usados por WeaponStats.get_final_stat)
+	"area": {"min": 0.1, "max": 4.0}, # Max Area absoluta 400%
+	"projectile_count": {"min": 1, "max": 10}, # Max 10 proyectiles totales por arma
+	"damage": {"min": 1, "max": 99999},
 	
 	# Probabilidades
 	"crit_chance": {"min": 0.0, "max": 1.0},  # Máximo 100%

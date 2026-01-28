@@ -1299,10 +1299,11 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 		final_damage = int(final_damage * (1.0 + _shadow_mark_bonus))
 
 	# Mostrar texto flotante de daño
-	if final_damage > 0:
-		var is_crit = final_damage >= amount * 1.5  # Detectar crítico
-		FloatingText.spawn_damage(global_position + Vector2(0, -20), final_damage, is_crit)
-		# Enemy hit sounds removed - user preference for minimal audio
+	# REMOVED: Now handled by HealthComponent to avoid duplicates
+	# if final_damage > 0:
+	#	var is_crit = final_damage >= amount * 1.5  # Detectar crítico
+	#	FloatingText.spawn_damage(global_position + Vector2(0, -20), final_damage, is_crit)
+
 
 	# Calcular HP actual antes del daño para overkill
 	var hp_before = health_component.current_health if health_component else hp

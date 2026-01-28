@@ -382,8 +382,10 @@ func get_final_stat(stat_name: String, global_stats: Dictionary = {}) -> float:
 	# Verificar caso especial de area_mult (stat derivado)
 	if stat_name == "area":
 		# Limitar área total también (base * mult)
-		# Suponiendo base 1.0, el limite de area_mult 2.5 limita el total a 2.5
-		pass 
+		if GlobalWeaponStats.GLOBAL_STAT_LIMITS.has("area"):
+			var limit = GlobalWeaponStats.GLOBAL_STAT_LIMITS["area"]
+			final_value = clampf(final_value, limit.get("min", 0.1), limit.get("max", 4.0))
+			
 	if stat_name == "area_mult":
 		# Asegurar que incluso los multiplicadores locales no excedan el cap global
 		if GlobalWeaponStats.GLOBAL_STAT_LIMITS.has("area_mult"):
@@ -434,9 +436,12 @@ func get_final_projectile_count(global_stats: Dictionary = {}) -> int:
 	
 	var total = base + extra_local + extra_global
 	
-	# CAP HARDCODEADO: Máximo 5 proyectiles totales por petición de usuario
-	# Esto es para prevenir caídas de FPS extremas
-	return mini(total, 5)
+	# CAP: Usar límite global si existe
+	if GlobalWeaponStats.GLOBAL_STAT_LIMITS.has("projectile_count"):
+		var limit = GlobalWeaponStats.GLOBAL_STAT_LIMITS["projectile_count"]
+		return mini(total, int(limit.get("max", 10)))
+		
+	return mini(total, 10) # Fallback cap de seguridad
 
 func get_final_pierce(global_stats: Dictionary = {}) -> int:
 	"""Calcular penetración total"""

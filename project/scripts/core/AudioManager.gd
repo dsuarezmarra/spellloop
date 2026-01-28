@@ -102,7 +102,9 @@ func _ensure_audio_buses():
 		AudioServer.add_bus()
 		ui_idx = AudioServer.get_bus_count() - 1
 		AudioServer.set_bus_name(ui_idx, "UI")
-		AudioServer.set_bus_send(ui_idx, "Master")
+	
+	# Route UI -> SFX so SFX slider controls UI volume too
+	AudioServer.set_bus_send(ui_idx, "SFX")
 
 func play(audio_id: String, volume_offset: float = 0.0) -> void:
 	"""Play a sound effect with random variation (for variety sounds like projectiles)."""

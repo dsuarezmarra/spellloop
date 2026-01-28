@@ -23,23 +23,37 @@ func _ready():
 	# Wire sliders to AudioManager if available
 	var am = _get_audio_manager()
 	if am:
-		var music_slider = get_node_or_null("Panel/VBox/MusicContainer/MusicSlider")
-		var sfx_slider = get_node_or_null("Panel/VBox/SFXContainer/SFXSlider")
-
+		# Busqueda robusta de nodos (no depende de rutas exactas)
+		var music_slider = find_child("MusicSlider", true, false)
+		var sfx_slider = find_child("SFXSlider", true, false)
+		
 		if music_slider and am.has_method("get_music_volume"):
+			# Configurar slider para rango 0-1
+			music_slider.min_value = 0.0
+			music_slider.max_value = 1.0
+			music_slider.step = 0.05
+			
 			music_slider.value = am.get_music_volume()
-			music_slider.value_changed.connect(_on_music_volume_changed)
+			if not music_slider.value_changed.is_connected(_on_music_volume_changed):
+				music_slider.value_changed.connect(_on_music_volume_changed)
+			_update_volume_label("music", music_slider.value)
 
 		if sfx_slider and am.has_method("get_sfx_volume"):
+			# Configurar slider para rango 0-1
+			sfx_slider.min_value = 0.0
+			sfx_slider.max_value = 1.0
+			sfx_slider.step = 0.05
+			
 			sfx_slider.value = am.get_sfx_volume()
-			sfx_slider.value_changed.connect(_on_sfx_volume_changed)
+			if not sfx_slider.value_changed.is_connected(_on_sfx_volume_changed):
+				sfx_slider.value_changed.connect(_on_sfx_volume_changed)
+			_update_volume_label("sfx", sfx_slider.value)
 
 	# Setup language selector
 	_setup_language_selector()
 
 	# ✨ POLISH: Ocultar botón "Back" (limpieza visual)
-	# El usuario puede cerrar con ESC o B (Gamepad)
-	var close_button = get_node_or_null("Panel/VBox/CloseButton")
+	var close_button = find_child("CloseButton", true, false)
 	if close_button:
 		close_button.visible = false
 		
@@ -48,7 +62,7 @@ func _ready():
 
 func _setup_language_selector() -> void:
 	"""Setup the language dropdown with available languages"""
-	var language_option = get_node_or_null("Panel/VBox/LanguageContainer/LanguageOption")
+	var language_option = find_child("LanguageOption", true, false)
 	if not language_option:
 		return
 
@@ -112,26 +126,39 @@ func _refresh_ui_texts() -> void:
 	if not loc:
 		return
 	
-	# Actualizar textos usando el sistema de localización
-	var title_label = get_node_or_null("Panel/VBox/TitleLabel")
+	# Usar find_child para robustez
+	var title_label = find_child("TitleLabel", true, false)
 	if title_label:
 		title_label.text = "⚙️ " + loc.L("ui.options.title")
 	
-	var music_label = get_node_or_null("Panel/VBox/MusicContainer/MusicLabel")
-	if music_label:
-		music_label.text = "🎵 " + loc.L("ui.options.music")
+	var am = _get_audio_manager()
+	if am:
+		_update_volume_label("music", am.get_music_volume())
+		_update_volume_label("sfx", am.get_sfx_volume())
 	
-	var sfx_label = get_node_or_null("Panel/VBox/SFXContainer/SFXLabel")
-	if sfx_label:
-		sfx_label.text = "🔊 " + loc.L("ui.options.sfx")
-	
-	var lang_label = get_node_or_null("Panel/VBox/LanguageContainer/LanguageLabel")
+	var lang_label = find_child("LanguageLabel", true, false)
 	if lang_label:
 		lang_label.text = "🌐 " + loc.L("ui.options.language")
 	
-	var close_button = get_node_or_null("Panel/VBox/CloseButton")
+	var close_button = find_child("CloseButton", true, false)
 	if close_button:
 		close_button.text = loc.L("ui.options.close")
+
+func _update_volume_label(type: String, value: float) -> void:
+	"""Actualizar etiqueta de volumen con porcentaje"""
+	var loc = _get_localization()
+	var prefix = ""
+	var label_node = null
+	
+	if type == "music":
+		label_node = find_child("MusicLabel", true, false)
+		prefix = "🎵 " + (loc.L("ui.options.music") if loc else "Music")
+	elif type == "sfx":
+		label_node = find_child("SFXLabel", true, false)
+		prefix = "🔊 " + (loc.L("ui.options.sfx") if loc else "SFX")
+		
+	if label_node:
+		label_node.text = "%s: %d%%" % [prefix, int(value * 100)]
 
 func _setup_wasd_navigation() -> void:
 	"""Configurar controles navegables y desactivar navegacion por flechas"""
@@ -177,6 +204,7 @@ func _on_music_volume_changed(v: float) -> void:
 	var am = _get_audio_manager()
 	if am and am.has_method("set_music_volume"):
 		am.set_music_volume(v)
+		_update_volume_label("music", v)
 		if am.has_method("save_volume_settings"):
 			am.save_volume_settings()
 
@@ -184,14 +212,16 @@ func _on_sfx_volume_changed(v: float) -> void:
 	var am = _get_audio_manager()
 	if am and am.has_method("set_sfx_volume"):
 		am.set_sfx_volume(v)
+		_update_volume_label("sfx", v)
 		if am.has_method("save_volume_settings"):
 			am.save_volume_settings()
-
+			
 func _on_close_pressed() -> void:
 	visible = false
 	closed.emit()
 
 func _input(event: InputEvent) -> void:
+
 	if not visible:
 		return
 

@@ -291,16 +291,20 @@ func _process_run_progression(run_data: Dictionary) -> void:
 	player_data["total_runs"] += 1
 	
 	# Add playtime (accumulator)
-	# Add playtime (accumulator)
-	var added_time = 0.0
-	if run_data.has("duration"):
-		added_time = float(run_data["duration"])
-	elif run_data.has("time_survived"):
-		added_time = float(run_data["time_survived"])
+	# Add playtime (handled via explicit add_playtime calls now)
+	# Playtime is updated incrementally via Game.save_session_playtime -> SaveManager.add_playtime
+	pass
 
-	if added_time > 0:
-		var current_time = player_data.get("total_playtime", 0.0)
-		player_data["total_playtime"] = current_time + added_time
+func add_playtime(seconds: float) -> void:
+	"""Add seconds to total playtime and save"""
+	if seconds <= 0: return
+	
+	var player_data = get_player_progression()
+	var current_time = player_data.get("total_playtime", 0.0)
+	player_data["total_playtime"] = current_time + seconds
+	
+	save_game_data()
+	# Debug desactivado: print("[SaveManager] Playtime updated: +%.1fs (Total: %.1fh)" % [seconds, player_data["total_playtime"]/3600.0])
 
 	# Emit player data changed so UI can update immediately
 	player_data_changed.emit(player_data.duplicate(true))
