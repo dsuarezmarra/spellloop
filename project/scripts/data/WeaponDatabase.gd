@@ -1519,11 +1519,11 @@ const FUSIONS: Dictionary = {
 		"name_es": "Hoja Fantasma",
 		"description": "Cuchillas espectrales rápidas que atraviesan todo",
 		"components": ["shadow_dagger", "wind_blade"],
-		"damage": 9,
+		"damage": 12,  # BUFFED from 9 (Optimizacion)
 		"cooldown": 0.35,
 		"range": 400.0,
 		"projectile_speed": 580.0,
-		"projectile_count": 4,
+		"projectile_count": 3, # REDUCED from 4
 		"pierce": 5,
 		"area": 0.9,
 		"duration": 0.0,
