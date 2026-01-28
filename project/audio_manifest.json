@@ -12,7 +12,10 @@
   },
   "music_gameplay_loop": {
     "files": [
-      "res://audio/music/gameplay/music_gameplay_loop.mp3"
+      "res://audio/music/gameplay/music_gameplay_loop.mp3",
+      "res://audio/music/gameplay/music_gameplay_loop2.mp3",
+      "res://audio/music/gameplay/music_gameplay_loop3.mp3",
+      "res://audio/music/gameplay/music_gameplay_loop4.mp3"
     ],
     "volume_db": -12.0,
     "pitch_scale": [

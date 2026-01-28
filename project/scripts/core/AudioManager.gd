@@ -194,8 +194,11 @@ func play_music(music_id: String, fade_time: float = 1.0) -> void:
 	if files.is_empty():
 		return
 	
-	# Normalize path loading
-	var stream = _get_stream(files[0])
+	# Pick random file from variations (supports random music per run)
+	var file_path = files.pick_random()
+	print("[AudioManager] Playing music track: %s (of %d variations)" % [file_path.get_file(), files.size()])
+	
+	var stream = _get_stream(file_path)
 	if not stream:
 		return
 	
