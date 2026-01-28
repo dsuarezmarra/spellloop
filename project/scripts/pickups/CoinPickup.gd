@@ -369,44 +369,33 @@ func _collect(collector: Node2D) -> void:
 		CoinType.DIAMOND: pitch = 2.5
 		CoinType.PURPLE: pitch = 3.0
 	
-	# FIX: Usar Singleton Global directamente
-	# El método anterior fallaba al buscar por grupo "audio_manager" y caía en un fallback con ruta errónea
-	AudioManager.play_coin_sfx(pitch)
+	# Usar Singleton Global directamente
+	if AudioManager:
+		AudioManager.play_coin_sfx(pitch)
+	else:
+		# Fallback seguro
+		pass
 
-	# NOTA: NO llamar directamente a exp_manager.on_coin_collected()
+	# Destruir / Devolver al pool
+	_finish()
 
-	# Destruir
-	queue_free()
+func _finish() -> void:
+	# Intentar devolver al pool si existe singleton
+	var tree = get_tree()
+	if tree:
+		var pool = tree.get_first_node_in_group("pickup_pool")
+		if pool and pool.has_method("return_pickup"):
+			pool.return_pickup(self)
+			return
+			
+	call_deferred("queue_free")
 
 func _spawn_collection_effect() -> void:
 	"""Crear efecto visual al recoger"""
-	# Crear texto flotante "+X"
-	var text_scene_path = "res://scenes/ui/FloatingText.tscn"
-	if ResourceLoader.exists(text_scene_path):
-		var text_scene = load(text_scene_path)
-		var text_instance = text_scene.instantiate()
-		get_tree().current_scene.add_child(text_instance)
-		text_instance.global_position = global_position
-		if text_instance.has_method("setup"):
-			text_instance.setup("+%d" % coin_value, _get_color_for_value())
-	else:
-		# Fallback: crear texto simple
-		_create_simple_floating_text()
-
-func _create_simple_floating_text() -> void:
-	"""Crear texto flotante simple sin escena"""
-	var label = Label.new()
-	label.text = "+%d" % coin_value
-	label.add_theme_color_override("font_color", _get_color_for_value())
-	label.add_theme_font_size_override("font_size", 14)
-	label.global_position = global_position - Vector2(10, 20)
-	get_tree().current_scene.add_child(label)
-
-	# Animación de subir y desaparecer
-	var tween = label.create_tween()
-	tween.parallel().tween_property(label, "position:y", label.position.y - 30, 0.5)
-	tween.parallel().tween_property(label, "modulate:a", 0.0, 0.5)
-	tween.tween_callback(label.queue_free)
+	# Usar sistema optimizado FloatingText (Pooling)
+	FloatingText.spawn_custom(global_position, "+%d" % coin_value, _get_color_for_value())
+	
+	# No crear Labels manuales ni cargar escenas innecesarias.
 
 func _find_experience_manager() -> Node:
 	"""Buscar ExperienceManager en el árbol"""

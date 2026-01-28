@@ -76,33 +76,60 @@ func _process(delta: float) -> void:
 
 func load_spritesheet(path: String) -> bool:
 	"""Cargar un spritesheet de 3 poses con gaps de 8px y extraer frames"""
-	if not ResourceLoader.exists(path):
-		push_warning("[AnimatedEnemySprite] Spritesheet no encontrado: %s" % path)
-		return false
+	# VERIFICAR CACHE EN RESOURCE MANAGER
+	var rm = null
+	var tree = get_tree()
+	if tree:
+		rm = tree.get_first_node_in_group("resource_manager")
+
+	var cached_regions = []
+	if rm and rm.has_method("get_cached_regions"):
+		cached_regions = rm.get_cached_regions(path)
 	
-	spritesheet_texture = load(path)
+	# CARGAR TEXTURA (Usar cache si existe en RM o cargar)
+	if rm and rm.has_method("get_resource"):
+		spritesheet_texture = rm.get_resource(path)
+	
+	if not spritesheet_texture:
+		if not ResourceLoader.exists(path):
+			push_warning("[AnimatedEnemySprite] Spritesheet no encontrado: %s" % path)
+			return false
+		spritesheet_texture = load(path)
+	
 	if not spritesheet_texture:
 		push_warning("[AnimatedEnemySprite] Error al cargar: %s" % path)
 		return false
 	
-	# Detectar regiones de sprites analizando la imagen
-	var img = spritesheet_texture.get_image()
-	var img_width = img.get_width()
-	var img_height = img.get_height()
+	# OBTENER REGIONES (Cache o Calcular)
+	var sprite_regions = []
 	
-	# Encontrar las 3 regiones de sprites detectando columnas con contenido
-	var sprite_regions = _detect_sprite_regions(img)
-	
-	if sprite_regions.size() != 3:
-		# Fallback: dividir en 3 partes iguales (compatibilidad con spritesheets antiguos)
-		push_warning("[AnimatedEnemySprite] No se detectaron 3 sprites, usando división simple")
-		var simple_width = img_width / 3
-		sprite_regions = [
-			Rect2(0, 0, simple_width, img_height),
-			Rect2(simple_width, 0, simple_width, img_height),
-			Rect2(simple_width * 2, 0, simple_width, img_height)
-		]
-	
+	if not cached_regions.is_empty():
+		sprite_regions = cached_regions
+		# Debug desactivado: print("⚡ [AnimatedEnemySprite] Usando regiones en caché para %s" % path)
+	else:
+		# CALCULO COSTOSO (Solo la primera vez)
+		var img = spritesheet_texture.get_image()
+		var img_width = img.get_width()
+		var img_height = img.get_height()
+		
+		# Encontrar las 3 regiones de sprites detectando columnas con contenido
+		sprite_regions = _detect_sprite_regions(img)
+		
+		# Validar y Cachear
+		if sprite_regions.size() != 3:
+			push_warning("[AnimatedEnemySprite] No se detectaron 3 sprites, usando división simple")
+			var simple_width = float(img_width) / 3.0
+			sprite_regions = [
+				Rect2(0, 0, simple_width, img_height),
+				Rect2(simple_width, 0, simple_width, img_height),
+				Rect2(simple_width * 2, 0, simple_width, img_height)
+			]
+		
+		# Guardar en Cache
+		if rm and rm.has_method("cache_regions"):
+			rm.cache_regions(path, sprite_regions)
+			print("💾 [AnimatedEnemySprite] Regiones calculadas y cacheadas para %s" % path)
+
 	# Guardar dimensiones del primer frame como referencia
 	frame_width = int(sprite_regions[0].size.x)
 	frame_height = int(sprite_regions[0].size.y)
@@ -150,20 +177,21 @@ func _detect_sprite_regions(img: Image) -> Array[Rect2]:
 	var regions: Array[Rect2] = []
 	var region_start = columns_with_content[0]
 	var region_end = columns_with_content[0]
+	var y_bounds_loop = Vector2.ZERO # Variable para uso en loop para evitar shadowing
 	
 	for i in range(1, columns_with_content.size()):
 		var col = columns_with_content[i]
 		# Si hay un gap de más de 4 píxeles, es una nueva región
 		if col - region_end > 4:
 			# Encontrar el bounding box vertical para esta región
-			var y_bounds = _find_vertical_bounds(img, region_start, region_end)
-			regions.append(Rect2(region_start, y_bounds.x, region_end - region_start + 1, y_bounds.y - y_bounds.x + 1))
+			y_bounds_loop = _find_vertical_bounds(img, region_start, region_end)
+			regions.append(Rect2(region_start, y_bounds_loop.x, region_end - region_start + 1, y_bounds_loop.y - y_bounds_loop.x + 1))
 			region_start = col
 		region_end = col
 	
 	# Agregar la última región
-	var y_bounds = _find_vertical_bounds(img, region_start, region_end)
-	regions.append(Rect2(region_start, y_bounds.x, region_end - region_start + 1, y_bounds.y - y_bounds.x + 1))
+	var y_bounds_final = _find_vertical_bounds(img, region_start, region_end)
+	regions.append(Rect2(region_start, y_bounds_final.x, region_end - region_start + 1, y_bounds_final.y - y_bounds_final.x + 1))
 	
 	return regions
 

@@ -127,6 +127,8 @@ func _setup_game() -> void:
 	_create_wave_manager()  # Pasa _is_resuming para skip_auto_init
 	_create_experience_manager()
 	_create_chest_spawner()  # Sistema de cofres tipo tienda
+	_create_pickup_pool()    # Pool de monedas y pickups
+	_create_resource_manager() # Carga recursos pesados
 
 	# Crear UI
 	_create_ui()
@@ -326,6 +328,24 @@ func _create_chest_spawner() -> void:
 		# Inicializar con referencias
 		if chest_spawner.has_method("initialize"):
 			chest_spawner.initialize(player, arena_manager, pickups_root)
+
+func _create_pickup_pool() -> void:
+	var pp_script = load("res://scripts/managers/PickupPool.gd")
+	if pp_script:
+		var pickup_pool = pp_script.new()
+		pickup_pool.name = "PickupPool"
+		add_child(pickup_pool)
+	else:
+		push_error("[Game] No se pudo cargar PickupPool.gd")
+
+func _create_resource_manager() -> void:
+	var rm_script = load("res://scripts/managers/ResourceManager.gd")
+	if rm_script:
+		var resource_manager = rm_script.new()
+		resource_manager.name = "ResourceManager"
+		add_child(resource_manager)
+	else:
+		push_error("[Game] No se pudo cargar ResourceManager.gd")
 
 func _create_ui() -> void:
 	# HUD
