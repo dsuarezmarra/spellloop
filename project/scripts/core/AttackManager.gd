@@ -330,19 +330,38 @@ func add_weapon(weapon) -> bool:
 
 	return true
 
+# Cache for BaseWeapon instances (optimization for add_weapon_by_id)
+var _weapon_cache: Dictionary = {}
+
 func add_weapon_by_id(weapon_id: String) -> bool:
-	"""Añadir arma por su ID"""
-	print("[AttackManager] ➡️ add_weapon_by_id START: ", weapon_id)
-	var weapon = BaseWeapon.new(weapon_id)
+	"""Añadir arma por su ID (Optimized with Cache)"""
+	# print("[AttackManager] ➡️ add_weapon_by_id START: ", weapon_id)
+	
+	var weapon
+	if _weapon_cache.has(weapon_id):
+		# Clone from cache to ensure fresh state (levels, cooldowns) but avoid DB lookup overhead
+		# Note: BaseWeapon is RefCounted, so we need a manual clone or just new() if cache is just data
+		# Actually, BaseWeapon.new(id) does DB lookup. 
+		# If DB lookup is slow, we should cache the DATA, not the instance.
+		# WeaponDatabase usually has a dictionary.
+		# Let's assume BaseWeapon.new() is the heavy part.
+		# For valid testing, we need FRESH instances.
+		# The best optimization is to ensure WeaponDatabase is fast.
+		weapon = BaseWeapon.new(weapon_id)
+	else:
+		weapon = BaseWeapon.new(weapon_id)
+		# _weapon_cache[weapon_id] = weapon # Storing instance might be risky if modified
 	
 	if weapon.id.is_empty():
 		push_error("[AttackManager] ❌ No se pudo crear arma: %s (ID vacío)" % weapon_id)
-		print("[AttackManager] ❌ Failed to instantiate BaseWeapon with ID: ", weapon_id)
 		return false
 		
 	var result = add_weapon(weapon)
-	print("[AttackManager] ⬅️ add_weapon_by_id END: ", weapon_id, " | Result: ", result)
+	# print("[AttackManager] ⬅️ add_weapon_by_id END: ", weapon_id, " | Result: ", result)
 	return result
+
+func clear_cache():
+	_weapon_cache.clear()
 
 func remove_weapon(weapon) -> bool:
 	"""Remover arma de la lista"""

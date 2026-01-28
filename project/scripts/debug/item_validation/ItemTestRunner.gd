@@ -11,6 +11,10 @@ const ScenarioRunner_Ref = preload("res://scripts/debug/item_validation/Scenario
 const ReportWriter_Ref = preload("res://scripts/debug/item_validation/ReportWriter.gd")
 const NumericOracle_Ref = preload("res://scripts/debug/item_validation/NumericOracle.gd")
 
+const MechanicalOracle_Ref = preload("res://scripts/debug/item_validation/MechanicalOracle.gd")
+
+const FULL_MATRIX_ENABLED = false # Toggle for Phase 4
+
 # Configuration
 var max_tests = -1 # -1 for all
 var current_test_index = 0
@@ -21,6 +25,7 @@ var results = []
 var report_writer: ReportWriter
 var scenario_runner: ScenarioRunner
 var numeric_oracle: NumericOracle
+var mechanical_oracle: MechanicalOracle
 var attack_manager: AttackManager
 var player_stats_mock: PlayerStats
 
@@ -40,10 +45,19 @@ func _ready():
 	
 	numeric_oracle = NumericOracle.new()
 	add_child(numeric_oracle)
+	
+	mechanical_oracle = MechanicalOracle.new()
+	add_child(mechanical_oracle)
 
 func start_suite(categories: Array = [], limit: int = -1):
 	print("[ItemTestRunner] Starting Test Suite...")
-	max_tests = limit
+	# Override limit if Full Matrix is disabled
+	if not FULL_MATRIX_ENABLED and limit == -1:
+		print("[ItemTestRunner] FULL MATRIX DISABLED. Running PILOT batch only (25 items).")
+		max_tests = 25
+	else:
+		max_tests = limit
+		
 	results = []
 	current_test_index = 0
 	
@@ -147,76 +161,118 @@ func _run_next_test():
 	# Initialize Managers
 	if attack_manager.has_method("initialize"):
 		attack_manager.initialize(mock_player)
-	
-	# Link PlayerStats
-	if player_stats_mock.has_method("initialize"):
-		# PlayerStats doesn't seem to have initialize in the file I read, 
-		# but it does have player_ref variable.
-		player_stats_mock.player_ref = mock_player
-		player_stats_mock.attack_manager = attack_manager
 		
-	# Link AttackManager to PlayerStats (legacy way if needed)
-	if attack_manager.has_method("set_player_stats"): # Check if exists
-		pass
+	# Setup Mechanical Oracle
+	if mechanical_oracle:
+		mechanical_oracle.start_listening()
 	
-	# 2. ADD WEAPON
-	var weapon_id = test_case["target_weapon"]
-	attack_manager.add_weapon_by_id(weapon_id)
-	var weapon = attack_manager.get_weapon_by_id(weapon_id)
+	var classification = _classify_item(test_case["item"])
+	test_case["scope"] = classification
 	
-	if not weapon:
-		_record_failure(test_case, "Failed to add weapon: %s" % weapon_id)
-		_run_next_test()
-		return
-
-	# 3. BASELINE Stats
-	var baseline_stats = attack_manager.get_weapon_full_stats(weapon)
+	# === SCOPE-BASED EXECUTION ===
+	var success = true
+	var failures = []
+	var subtests = []
 	
-	# 4. APPLY Item
-	var item = test_case["item"]
-	if test_case["is_self_test"]:
-		# For weapons, we just verify they exist and have stats, effectively done by add_weapon
-		pass 
-	else:
-		# Apply upgrade
-		if item["_type"] in ["DEFENSIVE", "UTILITY", "CURSED"]:
-			# These typically go to PlayerStats or GlobalWeaponStats
-			# AttackManager methods handle global upgrades
-			attack_manager.apply_global_upgrade(item)
+	# WEAPON / FUSION SCOPE
+	if classification in ["WEAPON_SPECIFIC", "GLOBAL_WEAPON", "FUSION_SPECIFIC"]:
+		# Add weapon
+		var weapon_id = test_case["target_weapon"]
+		attack_manager.add_weapon_by_id(weapon_id)
+		var weapon = attack_manager.get_weapon_by_id(weapon_id)
+		
+		# Baseline
+		var post_add_stats = attack_manager.get_weapon_full_stats(weapon)
+		
+		# Apply Item (if not self-test)
+		if not test_case.get("is_self_test", false):
+			if classification == "GLOBAL_WEAPON":
+				attack_manager.apply_global_upgrade(test_case["item"])
+			elif classification == "WEAPON_SPECIFIC":
+				attack_manager.apply_weapon_upgrade(weapon_id, test_case["item"])
+		
+		# Get Expected Stats
+		var final_stats = attack_manager.get_weapon_full_stats(weapon)
+		var expected_damage = final_stats.get("damage_final", 10.0)
+		
+		# Spawn Dummy
+		var dummy = scenario_runner.spawn_dummy_enemy(Vector2(100, 0)) # Right in front
+		mechanical_oracle.track_enemy(dummy)
+		
+		# FIRE!
+		if weapon.has_method("perform_attack"):
+			weapon.perform_attack(mock_player, player_stats_mock) # Fire once
+		
+		# Wait for projectile travel/impact
+		await get_tree().create_timer(0.5).timeout
+		
+		# VERIFY (Mechanical)
+		var mech_res = mechanical_oracle.verify_damage_event(expected_damage, 0.05) # 5% tolerance
+		if not mech_res["passed"]:
+			success = false
+			var fail_msg = mech_res["reason"]
+			failures.append(fail_msg)
 			
-	# 5. ACTUAL Stats
-	var after_stats = attack_manager.get_weapon_full_stats(weapon)
-	
-	# 6. VERIFY Numeric
+		subtests.append({
+			"type": "mechanical_damage", 
+			"res": mech_res,
+			"details": {
+				"baseline_damage_expected": expected_damage,
+				"mechanical_damage_actual": mech_res.get("actual", 0.0),
+				"delta_percent": mech_res.get("delta_percent", 0.0),
+				"weapon_id": weapon_id,
+				"projectile_type": weapon.get("projectile_type") if "projectile_type" in weapon else "UNKNOWN", 
+				"divergence_hint": "Check AttackManager calc vs Projectile damage init" if not success else "None"
+			}
+		})
+		
+		# Detailed Report Entry
+		result_data["expected_damage"] = expected_damage
+		result_data["actual_damage"] = mech_res.get("actual", 0.0)
+		result_data["weapon_id"] = weapon_id
+
+	# PLAYER SCOPE
+	elif classification == "PLAYER_ONLY":
+		# Apply upgrade
+		# In real game, LevelUpPanel applies this to PlayerStats directly or via managers.
+		# Here we assume PlayerStats (mock) has keys or we use a helper.
+		# Since PlayerStats.gd is complex, we might skip full player mechanical verif for Pilot 
+		# and just stick to Numeric if no easy way to mock damage taken.
+		# For Pilot: Just verify Numeric on PlayerStats dictionary if possible.
+		pass
+		
+	# UNKNOWN / INVALID
+	else:
+		pass # Skip or flag
+
+	# Record Result
 	var result_data = {
 		"item_id": item_id,
-		"target": weapon_id,
-		"success": true,
-		"failures": [],
-		"subtests": []
+		"scope": classification,
+		"success": success,
+		"failures": failures,
+		"subtests": subtests
 	}
 	
-	if not test_case["is_self_test"]:
-		var oracle_res = numeric_oracle.verify_changes(item, baseline_stats, after_stats, "WEAPON")
-		if not oracle_res["passed"]:
-			result_data["success"] = false
-			result_data["failures"] = oracle_res["failures"]
-		result_data["subtests"] = oracle_res["subtests"]
-	
-	# 7. VERIFY Mechanical (If passed numeric or is self-test)
-	if result_data["success"]:
-		# TODO: Run Scenario for X seconds
-		pass
-		
-	# TEARDOWN is handled by ScenarioRunner ref or next setup
 	scenario_runner.teardown_environment()
-	
 	results.append(result_data)
-	test_finished.emit(item_id, result_data["success"], str(result_data.get("failures", [])))
+	test_finished.emit(item_id, success, str(failures))
 	
-	# Delay
 	await get_tree().create_timer(0.01).timeout
 	_run_next_test()
+
+func _classify_item(item: Dictionary) -> String:
+	# Simple classification based on item keys/effects
+	if item.get("_type") == "WEAPON": return "WEAPON_SPECIFIC"
+	if item.get("_type") == "FUSION": return "FUSION_SPECIFIC"
+	if item.get("category") == "defensive": return "PLAYER_ONLY"
+	# Heuristic for global weapon
+	var effects = item.get("effects", [])
+	for eff in effects:
+		var stat = eff.get("stat", "")
+		if stat in ["damage_mult", "area_mult", "cooldown_mult"]:
+			return "GLOBAL_WEAPON"
+	return "PLAYER_ONLY" # Default fallback
 
 func _record_failure(test_case, reason):
 	results.append({

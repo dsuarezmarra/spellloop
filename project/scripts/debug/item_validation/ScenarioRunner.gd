@@ -16,11 +16,31 @@ func setup_environment() -> Node:
 	return current_env_instance
 
 func teardown_environment():
+	# 1. Reset AttackManager Logic
+	if is_instance_valid(current_env_instance):
+		var am = current_env_instance.get_node_or_null("AttackManager")
+		if am and am.has_method("reset_for_new_game"):
+			am.reset_for_new_game()
+	
+	# 2. Clear Projectile Pool (Globals)
+	if ProjectilePool.instance:
+		ProjectilePool.instance.clear_pool()
+		# Re-prewarm to prevent startup lag on next test? 
+		# Or just leave empty. Ideally re-prewarm for consistency.
+		ProjectilePool.instance._prewarm_pool(20)
+		
+	# 3. Destroy Environment
 	if is_instance_valid(current_env_instance):
 		current_env_instance.queue_free()
+		current_env_instance = null
+		
+	# 4. Force Garbage Collection (Godot handles RefCounted, but we want nodes gone now)
+	# No direct GC command in GDScript safe to use generally, but queue_free handles nodes.
 
-# Helper to run mechanical simulation
-func run_simulation(duration: float, callback: Callable):
-	# Wait for duration then callback
-	await get_tree().create_timer(duration).timeout
-	callback.call()
+func spawn_dummy_enemy(position: Vector2) -> Node:
+	var dummy_scene = load("res://scripts/debug/item_validation/DummyEnemy.tscn")
+	var dummy = dummy_scene.instantiate()
+	dummy.position = position
+	if current_env_instance:
+		current_env_instance.get_node("Enemies").add_child(dummy)
+	return dummy
