@@ -1459,4 +1459,3 @@ func save_session_playtime() -> void:
 		SaveManager.add_playtime(delta_time)
 		# Avanzar el start time para no contar doble si se llama de nuevo sin salir
 		session_start_time = game_time
-

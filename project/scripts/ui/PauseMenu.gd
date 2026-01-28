@@ -804,10 +804,17 @@ func _format_stat_value_fallback(stat_name: String, value: float) -> String:
 					  "xp_mult", "coin_value_mult", "crit_damage", "projectile_speed_mult", 
 					  "duration_mult", "knockback_mult", "gold_mult", "magnet_strength",
 					  "status_duration_mult", "elite_damage_mult"]:
-		if value >= 1.0:
-			return "+%.0f%%" % ((value - 1.0) * 100)
+		var percent = (value - 1.0) * 100
+		if abs(percent) >= 10000:
+			if value >= 1.0:
+				return "+" + _format_large_number(percent) + "%"
+			else:
+				return _format_large_number(percent) + "%"
 		else:
-			return "%.0f%%" % ((value - 1.0) * 100)
+			if value >= 1.0:
+				return "+%.0f%%" % percent
+			else:
+				return "%.0f%%" % percent
 	
 	# damage_taken_mult - Caso especial (mostrar como x1.0 o reducción)
 	if stat_name == "damage_taken_mult":
@@ -821,13 +828,19 @@ func _format_stat_value_fallback(stat_name: String, value: float) -> String:
 	# Stats enteros
 	if stat_name in ["extra_projectiles", "thorns", "revives", "reroll_count", "banish_count", 
 					  "levelup_options", "chain_count", "kill_heal", "burn_damage"]:
+		if abs(value) >= 10000:
+			return ("+" if value > 0 else "") + _format_large_number(value)
 		return "+%d" % int(value) if value > 0 else "%d" % int(value)
 	
 	# Stats con decimales especiales (por segundo)
 	if stat_name in ["health_regen", "shield_regen"]:
+		if abs(value) >= 10000:
+			return _format_large_number(value) + "/s"
 		return "%.1f/s" % value
 	
 	# Default
+	if abs(value) >= 10000:
+		return _format_large_number(value)
 	if value == int(value):
 		return "%d" % int(value)
 	return "%.1f" % value
@@ -973,7 +986,11 @@ func _create_global_weapon_stats_section(parent: VBoxContainer) -> void:
 		match stat_info.format:
 			"mult":
 				if abs(current_value - base_value) > 0.001:
-					value_text = "+%.0f%%" % ((current_value - 1.0) * 100) if current_value >= 1.0 else "%.0f%%" % ((current_value - 1.0) * 100)
+					var percent = (current_value - 1.0) * 100
+					if abs(percent) >= 10000:
+						value_text = ("+" if percent > 0 else "") + _format_large_number(percent) + "%"
+					else:
+						value_text = "+%.0f%%" % percent if current_value >= 1.0 else "%.0f%%" % percent
 					value_color = Color(0.3, 1.0, 0.4) if current_value > base_value else Color(1.0, 0.4, 0.4)
 				else:
 					value_text = "+0%"
@@ -982,11 +999,18 @@ func _create_global_weapon_stats_section(parent: VBoxContainer) -> void:
 				if abs(current_value - base_value) > 0.01:
 					value_color = Color(0.3, 1.0, 0.4) if current_value > base_value else Color(1.0, 0.4, 0.4)
 			"percent":
-				value_text = "%.0f%%" % (current_value * 100)
+				var percent = current_value * 100
+				if abs(percent) >= 10000:
+					value_text = _format_large_number(percent) + "%"
+				else:
+					value_text = "%.0f%%" % percent
 				if abs(current_value - base_value) > 0.001:
 					value_color = Color(0.3, 1.0, 0.4) if current_value > base_value else Color(1.0, 0.4, 0.4)
 			"int":
-				value_text = "+%d" % int(current_value) if current_value > 0 else "%d" % int(current_value)
+				if abs(current_value) >= 10000:
+					value_text = ("+" if current_value > 0 else "") + _format_large_number(current_value)
+				else:
+					value_text = "+%d" % int(current_value) if current_value > 0 else "%d" % int(current_value)
 				if current_value != base_value:
 					value_color = Color(0.3, 1.0, 0.4) if current_value > base_value else Color(1.0, 0.4, 0.4)
 		
@@ -1001,6 +1025,16 @@ func _create_global_weapon_stats_section(parent: VBoxContainer) -> void:
 		value_label.custom_minimum_size = Vector2(80, 0) # Un poco más ancho para (MAX)
 		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		grid.add_child(value_label)
+
+func _format_large_number(value: float) -> String:
+	"""Formatear números grandes con sufijos K, M, B"""
+	if value >= 1_000_000_000:
+		return "%.1fB" % (value / 1_000_000_000.0)
+	if value >= 1_000_000:
+		return "%.1fM" % (value / 1_000_000.0)
+	if value >= 10_000:
+		return "%.1fK" % (value / 1_000.0)
+	return "%.0f" % value
 
 func _create_active_buffs_section(parent: VBoxContainer) -> void:
 	"""Crear sección de buffs/debuffs activos"""
@@ -1064,10 +1098,35 @@ func _create_active_buffs_section(parent: VBoxContainer) -> void:
 		effects_by_source.erase("growth_bonus")
 
 	# Mostrar el resto de efectos normalmente
+	# Mostrar el resto de efectos normalmente (CON LÍMITE)
+	var max_display_buffs = 24  # Límite para evitar lag con muchos buffs
+	var displayed_count = 0
+	var hidden_count = 0
+	
 	for source in effects_by_source:
 		for effect in effects_by_source[source]:
-			var buff_chip = _create_buff_chip(effect.stat, effect.mod)
-			buffs_grid.add_child(buff_chip)
+			if displayed_count < max_display_buffs:
+				var buff_chip = _create_buff_chip(effect.stat, effect.mod)
+				buffs_grid.add_child(buff_chip)
+				displayed_count += 1
+			else:
+				hidden_count += 1
+	
+	# Mostrar chip de resumen si hay ocultos
+	if hidden_count > 0:
+		var more_chip = PanelContainer.new()
+		var m_style = StyleBoxFlat.new()
+		m_style.bg_color = Color(0.3, 0.3, 0.4)
+		m_style.set_corner_radius_all(12)
+		m_style.set_content_margin_all(5)
+		more_chip.add_theme_stylebox_override("panel", m_style)
+		
+		var m_lbl = Label.new()
+		m_lbl.text = "+%d más" % hidden_count
+		m_lbl.add_theme_font_size_override("font_size", 11)
+		more_chip.add_child(m_lbl)
+		more_chip.tooltip_text = "%d efectos adicionales activos" % hidden_count
+		buffs_grid.add_child(more_chip)
 
 func _create_growth_summary_chip(count: int, _total_bonus: float) -> Control:
 	"""Crear chip resumido para efectos de growth"""
@@ -1430,9 +1489,10 @@ func _create_weapon_card(weapon) -> Control:
 		var dmg_base = full_stats.get("damage_base", 0)
 		var dmg_final = full_stats.get("damage_final", 0)
 		if dmg_final != dmg_base:
-			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%d→%d" % [dmg_base, dmg_final], Color(0.3, 1.0, 0.4))
+		if dmg_final != dmg_base:
+			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%s→%s" % [_format_large_number(dmg_base), _format_large_number(dmg_final)], Color(0.3, 1.0, 0.4))
 		else:
-			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%.0f" % dmg_final)
+			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%s" % _format_large_number(dmg_final))
 		
 		# ═══ VELOCIDAD DE ATAQUE ═══
 		var as_base = full_stats.get("attack_speed_base", 1.0)
@@ -1510,7 +1570,8 @@ func _create_weapon_card(weapon) -> Control:
 	else:
 		# Fallback: usar datos del weapon directamente (sin full_stats)
 		if "damage" in weapon:
-			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%.0f" % weapon.damage)
+		if "damage" in weapon:
+			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%s" % _format_large_number(weapon.damage))
 		if "cooldown" in weapon:
 			var attack_speed = 1.0 / weapon.cooldown if weapon.cooldown > 0 else 1.0
 			_add_weapon_stat(stats_grid, "⚡", "Vel. Ataque", "%.2f/s" % attack_speed)
