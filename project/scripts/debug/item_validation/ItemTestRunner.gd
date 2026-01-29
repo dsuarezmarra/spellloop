@@ -35,6 +35,9 @@ var start_time_ms: int = 0
 var is_measure_mode: bool = false
 var git_commit: String = "unknown"
 var test_seed: int = 1337
+var run_id: String = ""
+var discovery_count: int = 0
+var scheduled_count: int = 0
 
 # References to Databases
 # upgrade_database.gd, weapon_database.gd, weapon_fusion_manager.gd are AutoLoads or Global Classes
@@ -437,29 +440,14 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 		iter_result["weapon_id"] = weapon_id
 		if "measurements" in mech_res:
 			iter_result["measurements"] = mech_res["measurements"]
-
-	return iter_result
+            
+		return iter_result
 
 	# PLAYER SCOPE
-	elif classification == "PLAYER_ONLY":
-		# ... (kept same)
-		pass
+	if classification == "PLAYER_ONLY":
+		pass # Placeholder for player tests
 		
-	# UNKNOWN / INVALID
-	else:
-		pass # Skip or flag
-
-	# Finalize Result
-	result_data["success"] = success
-	result_data["failures"] = failures
-	result_data["subtests"] = subtests
-	
-	scenario_runner.teardown_environment()
-	results.append(result_data)
-	test_finished.emit(item_id, success, str(failures))
-	
-	await get_tree().create_timer(0.01).timeout
-	_run_next_test()
+	return iter_result
 
 func _classify_item(item: Dictionary) -> String:
 	# Simple classification based on item keys/effects

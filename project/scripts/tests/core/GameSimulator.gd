@@ -10,7 +10,7 @@ var player: Node2D
 var tree: SceneTree
 
 # Mock player class for testing
-class MockPlayer extends Node2D:
+class SimMockPlayer extends Node2D:
 	var mock_position: Vector2 = Vector2.ZERO
 	
 	func get_mock_position() -> Vector2:
@@ -18,7 +18,7 @@ class MockPlayer extends Node2D:
 
 func setup(scene_tree: SceneTree):
 	tree = scene_tree
-	player = MockPlayer.new()
+	player = SimMockPlayer.new()
 	player.name = "MockPlayer"
 	
 	attack_manager = AttackManager.new()
