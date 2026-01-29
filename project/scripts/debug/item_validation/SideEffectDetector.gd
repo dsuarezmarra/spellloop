@@ -95,27 +95,67 @@ func _clear_data() -> void:
 func _capture_player_state(player: Node) -> Dictionary:
 	var state = {}
 	
-	# Try to get PlayerStats component
+	# Try to get PlayerStats component from multiple locations
 	var player_stats = null
+	
+	# 1. Try direct child
 	if player.has_node("PlayerStats"):
 		player_stats = player.get_node("PlayerStats")
+	# 2. Try player's get_stats method
 	elif player.has_method("get_stats"):
 		player_stats = player.get_stats()
+	# 3. Try if player IS PlayerStats
 	elif player is PlayerStats:
 		player_stats = player
+	# 4. Try sibling (TestEnv structure: MockPlayer and PlayerStats are siblings)
+	elif player.get_parent() and player.get_parent().has_node("PlayerStats"):
+		player_stats = player.get_parent().get_node("PlayerStats")
+	# 5. Try global PlayerStats singleton if available
+	elif Engine.has_singleton("PlayerStats"):
+		player_stats = Engine.get_singleton("PlayerStats")
+	# 6. Try finding in tree
+	else:
+		var nodes = player.get_tree().get_nodes_in_group("player_stats")
+		if not nodes.is_empty():
+			player_stats = nodes[0]
 	
 	if player_stats != null:
-		# Capture all known stats
+		# Capture all known stats (including aliases for different naming conventions)
 		var stat_list = [
-			"max_hp", "current_hp", "armor", "regen", "movement_speed",
-			"pickup_range", "damage_mult", "area_mult", "cooldown_mult",
-			"projectile_speed", "projectile_count", "piercing",
+			# Health stats
+			"max_hp", "max_health", "health_max", "current_hp", "current_health",
+			# Defensive stats
+			"armor", "defence", "damage_reduction", "damage_taken_mult",
+			"regen", "health_regen", "hp_regen",
+			"dodge_chance", "evasion",
+			"life_steal", "lifesteal",
+			"thorns", "thorns_percent", "thorns_damage",
+			"shield", "barrier",
+			# Movement
+			"movement_speed", "move_speed", "speed",
+			"pickup_range",
+			# Offensive multipliers
+			"damage_mult", "damage_multiplier", "damage_base", "base_damage",
+			"area_mult", "area_multiplier",
+			"cooldown_mult", "cooldown_reduction",
+			"projectile_speed",
+			"projectile_count", "projectile_count_final",
+			"piercing", "pierce", "pierce_final",
+			"attack_speed_mult", "attack_speed",
+			"duration_mult", "duration",
+			"knockback", "range_mult", "chain_count",
+			# Status chance
 			"burn_chance", "burn_damage", "burn_duration",
 			"freeze_chance", "freeze_duration",
 			"slow_chance", "slow_amount", "slow_duration",
 			"bleed_chance", "bleed_damage", "bleed_duration",
-			"crit_chance", "crit_damage", "luck", "shield",
-			"xp_mult", "gold_mult", "max_weapons"
+			"stun_chance", "stun_duration",
+			# Critical
+			"crit_chance", "critical_chance", "crit_damage", "critical_damage",
+			# Economy/Luck
+			"luck", "xp_mult", "gold_mult",
+			# Other
+			"max_weapons"
 		]
 		
 		for stat_name in stat_list:
@@ -123,6 +163,33 @@ func _capture_player_state(player: Node) -> Dictionary:
 				state[stat_name] = player_stats.get_stat(stat_name)
 			elif stat_name in player_stats:
 				state[stat_name] = player_stats.get(stat_name)
+	
+	# Also capture GlobalWeaponStats (some stats like life_steal are there)
+	var global_weapon_stats = null
+	if player.get_tree():
+		var gws_nodes = player.get_tree().get_nodes_in_group("global_weapon_stats")
+		if not gws_nodes.is_empty():
+			global_weapon_stats = gws_nodes[0]
+	
+	# Fallback: Try to find GlobalWeaponStats as sibling or in parent
+	if not global_weapon_stats and player.get_parent():
+		global_weapon_stats = player.get_parent().get_node_or_null("GlobalWeaponStats")
+	
+	if global_weapon_stats:
+		var weapon_stats_list = [
+			"life_steal", "lifesteal",
+			"damage_mult", "area_mult", "cooldown_mult", 
+			"projectile_speed", "projectile_count",
+			"pierce", "chain_count", "knockback",
+			"crit_chance", "crit_damage",
+			"burn_chance", "freeze_chance", "bleed_chance", "slow_chance"
+		]
+		for stat_name in weapon_stats_list:
+			if global_weapon_stats.has_method("get_stat"):
+				var val = global_weapon_stats.get_stat(stat_name)
+				# Only override if not already captured or if this value is non-zero
+				if not state.has(stat_name) or (val != 0.0 and state.get(stat_name, 0.0) == 0.0):
+					state[stat_name] = val
 	
 	# Capture position
 	if player.has_method("get_global_position"):

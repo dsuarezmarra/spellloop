@@ -574,6 +574,19 @@ func _run_next_test():
 	# Initialize Managers
 	if attack_manager.has_method("initialize"):
 		attack_manager.initialize(mock_player)
+	
+	# Reset PlayerStats to baseline before each test
+	if player_stats_mock:
+		# Call _reset_stats directly (available in all PlayerStats)
+		if player_stats_mock.has_method("_reset_stats"):
+			player_stats_mock._reset_stats()
+		elif player_stats_mock.has_method("reset_to_defaults"):
+			player_stats_mock.reset_to_defaults()
+		elif player_stats_mock.has_method("reset"):
+			player_stats_mock.reset()
+		elif player_stats_mock.has_method("initialize_from_character"):
+			# Use generic character as reset
+			player_stats_mock.initialize_from_character("default")
 		
 	# Setup Mechanical Oracle
 	if mechanical_oracle:
@@ -609,18 +622,27 @@ func _run_next_test():
 	var failures = []
 	var subtests = []
 	
-	# Phase 5: 3x execution for median (Noise Control)
+	# Phase 5: Execution iterations for noise control
+	# PLAYER_ONLY items don't need multiple iterations (no combat variance)
+	var num_iterations = 1 if classification == "PLAYER_ONLY" else 3
 	var iteration_results = []
-	for i in range(3):
+	for i in range(num_iterations):
+		# Reset PlayerStats between iterations to avoid accumulation
+		if i > 0 and classification == "PLAYER_ONLY" and player_stats_mock:
+			if player_stats_mock.has_method("_reset_stats"):
+				player_stats_mock._reset_stats()
+		
 		var iter_res = await _execute_test_iteration(test_case, env, classification)
 		iteration_results.append(iter_res)
-		# Reset between iterations
+		# Reset oracles between iterations
 		mechanical_oracle.start_listening()
 		status_oracle.start_listening()
 	
-	# Select Median based on actual_damage
-	iteration_results.sort_custom(func(a, b): return a["actual_damage"] < b["actual_damage"])
-	var final_iter_res = iteration_results[1] # Index 1 is median of 3
+	# Select Median based on actual_damage (or first if single iteration)
+	var final_iter_res = iteration_results[0]
+	if num_iterations == 3:
+		iteration_results.sort_custom(func(a, b): return a["actual_damage"] < b["actual_damage"])
+		final_iter_res = iteration_results[1] # Index 1 is median of 3
 	
 	# === CONTRACT VALIDATION (Phase 6) ===
 	if strict_contract_mode and contract_oracle:
@@ -828,33 +850,33 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 			# If implicitly defined by effect value
 			if main_effect == "burn": expected_burn = final_stats.get("effect_value", 3.0)
 			
-			var res = status_oracle.verify_status("burn", {"damage": expected_burn})
+			var res = status_oracle.verify_status_strict("burn", {"damage": expected_burn})
 			status_results.append({"status": "burn", "res": res})
 			
 		# Check for Freeze
 		if main_effect == "freeze" or final_stats.get("freeze_chance", 0) > 0:
-			var res = status_oracle.verify_status("freeze", {"amount": 1.0})
+			var res = status_oracle.verify_status_strict("freeze", {"amount": 1.0})
 			status_results.append({"status": "freeze", "res": res})
 			
 		# Check for Slow (if not frozen, often implicit or separate)
 		if main_effect == "slow" or final_stats.get("slow_chance", 0) > 0:
 			# Slow amount varies, usually 0.5 or from stat
-			var res = status_oracle.verify_status("slow", {}) 
+			var res = status_oracle.verify_status_strict("slow", {}) 
 			status_results.append({"status": "slow", "res": res})
 			
 		# Check for Bleed
 		if main_effect == "bleed" or final_stats.get("bleed_chance", 0) > 0:
-			var res = status_oracle.verify_status("bleed", {"damage": final_stats.get("bleed_damage", 2.0)})
+			var res = status_oracle.verify_status_strict("bleed", {"damage": final_stats.get("bleed_damage", 2.0)})
 			status_results.append({"status": "bleed", "res": res})
 			
 		# Check for Stun
 		if main_effect == "stun":
-			var res = status_oracle.verify_status("stun", {})
+			var res = status_oracle.verify_status_strict("stun", {})
 			status_results.append({"status": "stun", "res": res})
 
 		# Check for Blind
 		if main_effect == "blind":
-			var res = status_oracle.verify_status("blind", {})
+			var res = status_oracle.verify_status_strict("blind", {})
 			status_results.append({"status": "blind", "res": res})
 
 		
@@ -882,9 +904,48 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 			
 		return iter_result
 
-	# PLAYER SCOPE
+	# PLAYER SCOPE - Apply upgrade and verify stat changes
 	if classification == "PLAYER_ONLY":
-		pass # Placeholder for player tests
+		# Get the item definition
+		var item_data = test_case["item"]
+		var effects = item_data.get("effects", [])
+		
+		# Capture baseline state before applying upgrade
+		# The SideEffectDetector already captured this in start_monitoring()
+		
+		# Apply the upgrade to player stats
+		if player_stats_mock and player_stats_mock.has_method("apply_upgrade"):
+			player_stats_mock.apply_upgrade(item_data)
+		elif player_stats_mock and player_stats_mock.has_method("apply_upgrade_by_id"):
+			player_stats_mock.apply_upgrade_by_id(item_id)
+		elif player_stats_mock and player_stats_mock.has_method("apply_effects"):
+			player_stats_mock.apply_effects(effects)
+		else:
+			# Manual fallback: Apply each effect directly
+			for effect in effects:
+				var stat_name = effect.get("stat", "")
+				var value = effect.get("value", 0)
+				var operation = effect.get("operation", "add")
+				
+				if stat_name and player_stats_mock:
+					# Try to apply via set_stat method
+					if player_stats_mock.has_method("modify_stat"):
+						player_stats_mock.modify_stat(stat_name, value, operation)
+					elif player_stats_mock.has_method("add_modifier"):
+						player_stats_mock.add_modifier(stat_name, value, operation)
+					elif stat_name in player_stats_mock:
+						# Direct property access fallback
+						var current = player_stats_mock.get(stat_name)
+						if operation == "add":
+							player_stats_mock.set(stat_name, current + value)
+						elif operation == "multiply":
+							player_stats_mock.set(stat_name, current * value)
+		
+		# Wait a frame for any deferred property updates
+		await get_tree().process_frame
+		
+		# Verification is handled by ContractOracle in the calling code
+		# which will capture the new state via SideEffectDetector.stop_monitoring()
 		
 	return iter_result
 

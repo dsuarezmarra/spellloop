@@ -575,10 +575,14 @@ func generate_contract_validation_report(results: Array, metadata: Dictionary = 
 					file.store_line("")
 					file.store_line("**Violations:**")
 					for violation in result.get("violations", []):
+						# ContractOracle uses: stat, reason, expected_final/expected_value, actual
+						var detail = violation.get("stat", violation.get("reason", "unknown"))
+						var expected = violation.get("expected_final", violation.get("expected_value", "?"))
+						var actual_val = violation.get("actual", "?")
 						file.store_line("- %s: Expected `%s`, Actual `%s`" % [
-							violation.get("detail", "unknown"),
-							str(violation.get("expected", "?")),
-							str(violation.get("actual", "?"))
+							detail,
+							str(expected),
+							str(actual_val)
 						])
 					file.store_line("")
 		file.store_line("")
