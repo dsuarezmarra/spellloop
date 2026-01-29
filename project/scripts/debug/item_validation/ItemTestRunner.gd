@@ -10,7 +10,8 @@ signal all_tests_completed(report_path)
 const ScenarioRunner_Ref = preload("res://scripts/debug/item_validation/ScenarioRunner.gd")
 const ReportWriter_Ref = preload("res://scripts/debug/item_validation/ReportWriter.gd")
 const NumericOracle_Ref = preload("res://scripts/debug/item_validation/NumericOracle.gd")
-const StatusEffectOracle_Ref = preload("res://scripts/debug/item_validation/StatusEffectOracle.gd")
+# Changed to var for robust loading
+var StatusEffectOracle_Ref 
 
 const MechanicalOracle_Ref = preload("res://scripts/debug/item_validation/MechanicalOracle.gd")
 
@@ -46,6 +47,25 @@ var scheduled_count: int = 0
 
 func _ready():
 	print("[ItemTestRunner] _ready reached.")
+	
+	# Robust Load of StatusEffectOracle
+	StatusEffectOracle_Ref = load("res://scripts/debug/item_validation/StatusEffectOracle.gd")
+	if not StatusEffectOracle_Ref:
+		push_error("[ItemTestRunner] CRITICAL: Failed to load StatusEffectOracle.gd")
+		var writer = ReportWriter_Ref.new()
+		add_child(writer) # Need to add child to use? No, static helper usually, but let's see implementation.
+		# Actually ReportWriter methods are instance methods in the current context.
+		var fail_res = [{
+			"item_id": "CRITICAL_FAILURE",
+			"success": false,
+			"failures": ["StatusEffectOracle.gd failed to load (Parse Error or Missing File)"],
+			"subtests": []
+		}]
+		writer.generate_report(fail_res, {"error": "script_load_failure"})
+		writer.generate_summary_md(fail_res, "user://test_reports/FATAL_ERROR.jsonl", {"error": "script_load_failure"})
+		get_tree().quit(1)
+		return
+
 	seed(1337) # Task 2: Force Deterministic Global RNG
 	var hb = FileAccess.open("ready_check.txt", FileAccess.WRITE)
 	hb.store_string("READY AT " + Time.get_datetime_string_from_system())
@@ -335,7 +355,7 @@ func _run_next_test():
 	if mechanical_oracle:
 		mechanical_oracle.is_measure_mode = is_measure_mode
 		mechanical_oracle.start_listening()
-        
+		
 	if status_oracle:
 		status_oracle.start_listening()
 	
@@ -484,18 +504,18 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 			
 			var res = status_oracle.verify_status("burn", {"damage": expected_burn})
 			status_results.append({"status": "burn", "res": res})
-            
+			
 		# Check for Freeze
 		if main_effect == "freeze" or final_stats.get("freeze_chance", 0) > 0:
 			var res = status_oracle.verify_status("freeze", {"amount": 1.0})
 			status_results.append({"status": "freeze", "res": res})
-            
+			
 		# Check for Slow (if not frozen, often implicit or separate)
 		if main_effect == "slow" or final_stats.get("slow_chance", 0) > 0:
 			# Slow amount varies, usually 0.5 or from stat
 			var res = status_oracle.verify_status("slow", {}) 
 			status_results.append({"status": "slow", "res": res})
-            
+			
 		# Check for Bleed
 		if main_effect == "bleed" or final_stats.get("bleed_chance", 0) > 0:
 			var res = status_oracle.verify_status("bleed", {"damage": final_stats.get("bleed_damage", 2.0)})
@@ -533,7 +553,7 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 		iter_result["weapon_id"] = weapon_id
 		if "measurements" in mech_res:
 			iter_result["measurements"] = mech_res["measurements"]
-            
+			
 		return iter_result
 
 	# PLAYER SCOPE
@@ -571,17 +591,27 @@ func _exit_run():
 	get_tree().quit()
 
 func _cleanup():
-	if scenario_runner:
+	if scenario_runner and is_instance_valid(scenario_runner):
 		scenario_runner.teardown_environment()
+		scenario_runner.queue_free()
 	
 	# Clear Oracle data by cycling listening state
-	if mechanical_oracle:
-		mechanical_oracle.start_listening()
+	if mechanical_oracle and is_instance_valid(mechanical_oracle):
 		mechanical_oracle.stop_listening()
+		mechanical_oracle.queue_free()
 	
-	if status_oracle:
-		status_oracle.start_listening()
+	if status_oracle and is_instance_valid(status_oracle):
 		status_oracle.stop_listening()
+		status_oracle.queue_free()
+	
+	if numeric_oracle and is_instance_valid(numeric_oracle):
+		numeric_oracle.queue_free()
+		
+	if report_writer and is_instance_valid(report_writer):
+		report_writer.queue_free()
+		
+	if attack_manager and is_instance_valid(attack_manager):
+		attack_manager.queue_free()
 
 func _finish_suite():
 	print("[ItemTestRunner] Suite Finished. Checking for results...")
@@ -618,5 +648,3 @@ func _finish_suite():
 	print("[ItemTestRunner] Final Stats: Scheduled=%d, Executed=%d, Time=%dms" % [scheduled_count, results.size(), duration])
 	
 	_exit_run()
-
-

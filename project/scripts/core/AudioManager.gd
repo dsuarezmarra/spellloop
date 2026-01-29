@@ -21,6 +21,12 @@ var sfx_volume: float = 1.0
 var debug_audio: bool = OS.is_debug_build()
 
 func _ready():
+	# Headless check FIRST - prevent any audio initialization
+	if Headless.is_headless():
+		print("[AudioManager] Headless mode detected. Disabling audio system completely.")
+		process_mode = Node.PROCESS_MODE_DISABLED # Disable processing
+		return
+
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
 	# Registrar en grupo para compatibilidad con scripts legacy que usan get_nodes_in_group
@@ -31,10 +37,6 @@ func _ready():
 	
 	_init_audio_system()
 	_load_volume_settings()
-	
-	if "--headless" in OS.get_cmdline_args():
-		print("[AudioManager] Headless mode detected. Skipping debug validation.")
-		return
 	
 	if debug_audio:
 		validate_manifest()
@@ -111,10 +113,12 @@ func _ensure_audio_buses():
 	AudioServer.set_bus_send(ui_idx, "SFX")
 
 func play(audio_id: String, volume_offset: float = 0.0) -> void:
-	"""Play a sound effect with random variation (for variety sounds like projectiles)."""
+	if Headless.is_headless(): return
 	_play_internal(audio_id, volume_offset, true)
 
 func play_fixed(audio_id: String, volume_offset: float = 0.0) -> void:
+	"""Play a sound effect with FIXED first variation (for deterministic feedback like UI)."""
+	if Headless.is_headless(): return
 	"""Play a sound effect with FIXED first variation (for deterministic feedback like UI)."""
 	_play_internal(audio_id, volume_offset, false)
 
@@ -188,6 +192,8 @@ func _get_stream(path: String) -> AudioStream:
 
 func play_music(music_id: String, fade_time: float = 1.0) -> void:
 	"""Play music track."""
+	if Headless.is_headless(): return
+	
 	if not manifest.has(music_id):
 		push_warning("[AudioManager] Music not found: " + music_id)
 		return

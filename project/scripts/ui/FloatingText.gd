@@ -30,7 +30,8 @@ func _ready() -> void:
         instance = self
     z_index = 100
     
-    if "--headless" in OS.get_cmdline_args():
+    # Check headless using central helper if possible, or robust check here
+    if Headless.is_headless():
         _is_headless = true
         return
 

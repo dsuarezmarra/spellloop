@@ -162,4 +162,3 @@ func is_bleeding() -> bool: return _is_bleeding
 func is_frozen() -> bool: return _freeze_timer > 0
 func is_slowed() -> bool: return _slow_timer > 0
 func is_stunned() -> bool: return _stun_timer > 0
-

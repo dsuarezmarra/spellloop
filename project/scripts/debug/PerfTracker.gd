@@ -38,6 +38,11 @@ const LOG_DIR = "user://perf_logs"
 var _current_log_file: String = ""
 
 func _ready() -> void:
+	if Headless.is_headless():
+		enabled = false
+		process_mode = Node.PROCESS_MODE_DISABLED
+		return
+
 	process_mode = Node.PROCESS_MODE_ALWAYS # Run even when paused
 	_init_logs()
 	print("[PerfTracker] Initialized. Logs at: ", ProjectSettings.globalize_path(LOG_DIR))

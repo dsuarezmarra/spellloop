@@ -9,6 +9,10 @@ var _btn_toggle: Button
 var visible_mode: bool = false # Starts hidden or false
 
 func _ready() -> void:
+	if Headless.is_headless():
+		queue_free()
+		return
+
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 128 # Very high layer to be on top of everything
 	

@@ -125,14 +125,8 @@ func generate_summary_md(results_mem: Array, jsonl_path: String, metadata: Dicti
 				var reason = r_res.get("reason", "No details")
 				file.store_line("| %s | %s | %s | %s |" % [item_id, status, r_pass, reason])
 	
-	file.close() # Explicit close writer
-	return md_path
-	
 	deltas.sort_custom(func(a, b): return abs(a["delta"]) > abs(b["delta"]))
 	
-	file.store_line("# Item Validation Summary")
-	file.store_line("Run ID: %s" % metadata.get("run_id", meta_from_file.get("run_id", "N/A")))
-	file.store_line("Date: %s" % Time.get_datetime_string_from_system())
 	file.store_line("")
 	file.store_line("## Metadata")
 	file.store_line("- **Started At**: %s" % metadata.get("started_at", "N/A"))
@@ -185,6 +179,7 @@ func generate_summary_md(results_mem: Array, jsonl_path: String, metadata: Dicti
 	
 	
 	_update_daily_index(md_path, total, passed, violations, bugs, metadata)
+	file.close() # Explicit close writer
 	return md_path
 
 func _update_daily_index(path: String, total: int, passed: int, violations: int, bugs: int, metadata: Dictionary):
