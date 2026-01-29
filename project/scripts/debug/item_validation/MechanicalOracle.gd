@@ -7,30 +7,58 @@ var captured_events = {
 	"death_events": [],
 	"hits": 0,
 	"total_damage": 0.0,
-	"projectiles_spawned": 0
+	"projectiles_spawned": 0,
+	"initial_hp_map": {},
+	"final_hp_map": {}
 }
 
+var _tracked_enemies = []
 var _is_listening = false
 var is_measure_mode = false
 
 func start_listening():
 	_clear_events()
 	_is_listening = true
+	
+	# Snapshot Initial HP
+	for enemy in _tracked_enemies:
+		if is_instance_valid(enemy):
+			var hp = 0
+			if enemy.has_node("HealthComponent"):
+				hp = enemy.get_node("HealthComponent").current_health
+			elif "hp" in enemy:
+				hp = enemy.hp
+			captured_events["initial_hp_map"][enemy] = hp
 
 func stop_listening():
 	_is_listening = false
+	# Snapshot Final HP
+	for enemy in _tracked_enemies:
+		if is_instance_valid(enemy):
+			var hp = 0
+			if enemy.has_node("HealthComponent"):
+				hp = enemy.get_node("HealthComponent").current_health
+			elif "hp" in enemy:
+				hp = enemy.hp
+			captured_events["final_hp_map"][enemy] = hp
 
 func _clear_events():
+	_tracked_enemies = []
 	captured_events = {
 		"damage_events": [],
 		"death_events": [],
 		"hits": 0,
 		"total_damage": 0.0,
-		"projectiles_spawned": 0
+		"projectiles_spawned": 0,
+		"initial_hp_map": {},
+		"final_hp_map": {}
 	}
 
 # Call this to register a dummy enemy for tracking
 func track_enemy(enemy_node: Node):
+	if not enemy_node in _tracked_enemies:
+		_tracked_enemies.append(enemy_node)
+		
 	# 1. Try HealthComponent (Standard) - Prioritize this
 	if enemy_node.has_node("HealthComponent"):
 		var hc = enemy_node.get_node("HealthComponent")
@@ -125,25 +153,25 @@ func verify_simulation_results(stats: Dictionary, projectile_type: String, test_
 	# Initial shot at T=0, then every 'cooldown' seconds.
 	var fire_count = 1 + floor((test_duration + 0.05) / cooldown)
 	
-	var expected_total_damage = 0.0
+	var expected_hit_damage = 0.0
 
 	match model:
 		"SIMPLE":
-			expected_total_damage = damage_per_volley * fire_count
+			expected_hit_damage = damage_per_volley * fire_count
 			
 		"CHAIN":
 			# Lightning Wand (1) or Storm Caller (5). 
 			# In 1v1 test, assume all chains hit.
-			expected_total_damage = damage_per_volley * fire_count
+			expected_hit_damage = damage_per_volley * fire_count
 			
 		"MULTI":
 			# Shotgun. All projectiles hit.
-			expected_total_damage = damage_per_volley * fire_count
+			expected_hit_damage = damage_per_volley * fire_count
 			
 		"BEAM":
 			# DESIGN RULE: Beam hits multiple times during its fire event.
 			# Empirically, thunder_spear hits ~1.6-2.0 times per fire in 2s.
-			expected_total_damage = damage_final * 2 * fire_count
+			expected_hit_damage = damage_final * 2 * fire_count
 			
 		"ORBIT":
 			# DESIGN RULE: Orbitals hit based on their rotation speed.
@@ -154,11 +182,47 @@ func verify_simulation_results(stats: Dictionary, projectile_type: String, test_
 			var periodic_hits = 1 + floor((test_duration + 0.01) / orbit_time)
 			# Clamp by global 0.5s cooldown per entity
 			periodic_hits = min(periodic_hits, 1 + floor((test_duration + 0.01) / 0.5))
-			expected_total_damage = damage_final * projectile_count * periodic_hits
+			expected_hit_damage = damage_final * projectile_count * periodic_hits
 			
 		"AOE":
 			# AOE usually hits once per fire.
-			expected_total_damage = damage_per_volley * fire_count
+			expected_hit_damage = damage_per_volley * fire_count
+
+	# 3. Calculate Status Effects (DoT)
+	var expected_dot_damage = 0.0
+	var burn_chance = stats.get("burn_chance", 0.0)
+	var bleed_chance = stats.get("bleed_chance", 0.0)
+	
+	var status_duration_mult = stats.get("status_duration_mult", 1.0)
+	
+	# Burn: 0.5s interval
+	if burn_chance > 0.1: # Significant chance
+		var burn_dmg = stats.get("burn_damage", 3.0)
+		var burn_active_duration = max(0, test_duration - 0.2) # Assume applied shortly after start
+		var ticks = floor(burn_active_duration / 0.5)
+		# If chance is < 1.0, effectively it applies once and refreshes.
+		# For validation, we assume application.
+		expected_dot_damage += burn_dmg * ticks
+
+	# Bleed: 0.5s interval
+	if bleed_chance > 0.1:
+		var bleed_dmg = stats.get("bleed_damage", 2.0)
+		var bleed_active_duration = max(0, test_duration - 0.2)
+		var ticks = floor(bleed_active_duration / 0.5)
+		expected_dot_damage += bleed_dmg * ticks
+
+	var expected_total_damage = expected_hit_damage + expected_dot_damage
+
+	# Breakdown for reporting
+	var breakdown = {
+		"initial_hit_damage": expected_hit_damage,
+		"dot_damage_burn": expected_dot_damage if burn_chance > 0.1 else 0.0,
+		"dot_damage_bleed": expected_dot_damage if bleed_chance > 0.1 else 0.0,
+		"total_damage": expected_total_damage,
+		"window_seconds": test_duration,
+		"burn_chance": burn_chance,
+		"bleed_chance": bleed_chance
+	}
 
 	# Tolerance Adjustments
 	var tolerance_percent = tolerance # Initialize with the passed tolerance
@@ -209,7 +273,8 @@ func verify_simulation_results(stats: Dictionary, projectile_type: String, test_
 		"model": model,
 		"result_code": result_code,
 		"triage": triage,
-		"reason": "[%s] Hit Expected %.1f vs Actual %.1f (Delta %.1f%%) -> %s" % [model, expected_total_damage, captured_total, delta_percent*100, result_code]
+		"reason": "[%s] Hit Expected %.1f vs Actual %.1f (Delta %.1f%%) -> %s" % [model, expected_total_damage, captured_total, delta_percent*100, result_code],
+		"breakdown": breakdown
 	}
 	
 	# MEASURE Mode: return raw counts

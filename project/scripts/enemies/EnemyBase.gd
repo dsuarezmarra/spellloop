@@ -1310,7 +1310,7 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 
 	# Aplicar daño a través del HealthComponent
 	if health_component:
-		health_component.take_damage(final_damage, "physical")
+		health_component.take_damage(final_damage, _element)
 	else:
 		pass  # Bloque else
 		# Fallback si no hay HealthComponent (no debería pasar)

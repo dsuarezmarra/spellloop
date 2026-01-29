@@ -41,6 +41,7 @@ var test_seed: int = 1337
 
 func _ready():
 	print("[ItemTestRunner] _ready reached.")
+	seed(1337) # Task 2: Force Deterministic Global RNG
 	var hb = FileAccess.open("ready_check.txt", FileAccess.WRITE)
 	hb.store_string("READY AT " + Time.get_datetime_string_from_system())
 	hb.close()
@@ -400,12 +401,29 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 			mechanical_oracle.track_enemy(dummy)
 		
 		# FIRE!
+		var p_stats_dict = {}
 		if weapon.has_method("perform_attack"):
-			var p_stats_dict = player_stats_mock.get_all_stats() if player_stats_mock.has_method("get_all_stats") else {}
+			p_stats_dict = player_stats_mock.get_all_stats() if player_stats_mock.has_method("get_all_stats") else {}
 			weapon.perform_attack(mock_player, p_stats_dict)
+			
+		# Merge Player Stats into Final Stats for Oracle (so it sees burn_chance etc.)
+		final_stats.merge(p_stats_dict, true)
 		
-		var test_window = 2.0
+		# Task 1: Dynamic Window
+		var test_window = 1.0 # Default for SIMPLE/MULTI/CHAIN
+		match p_type:
+			"AOE": test_window = 1.2
+			"BEAM": test_window = 1.5
+			"ORBIT": test_window = 2.0
+			
+		# Extended window for DoTs
+		if final_stats.get("burn_chance", 0) > 0 or final_stats.get("bleed_chance", 0) > 0:
+			test_window = max(test_window, 2.0)
+		
 		await get_tree().create_timer(test_window).timeout
+		
+		# Capture final state
+		mechanical_oracle.stop_listening()
 		
 		var mech_res = mechanical_oracle.verify_simulation_results(final_stats, str(p_type), test_window, 0.15)
 		
