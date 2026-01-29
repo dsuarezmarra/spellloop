@@ -244,35 +244,60 @@ func add_stat(stat_name: String, value: float) -> void:
 		global_stat_changed.emit(stat_name, old_value, stats[stat_name])
 
 func multiply_stat(stat_name: String, value: float) -> void:
-	"""Multiplicar un stat (Normalizado a Aditivo para evitar exponenciales)"""
-	if stat_name in stats:
-		var old_value = stats[stat_name]
+	"""
+	Multiplicar un stat CORRECTAMENTE.
+	
+	Para evitar escalado exponencial descontrolado, usamos un sistema de 
+	acumulación de bonos que luego se aplica como multiplicador final:
+	- Base = 1.0
+	- +10% daño → bonus = 0.10 → resultado = base + bonus = 1.10
+	- +20% daño → bonus = 0.30 → resultado = base + bonus = 1.30
+	- -10% daño (debuff) → multiplicar directamente el resultado
+	
+	Esto evita 1.1 * 1.2 = 1.32 exponencial, a favor de 1.0 + 0.1 + 0.2 = 1.30 lineal.
+	Los debuffs (< 1.0) SÍ multiplican para que reduzcan correctamente.
+	"""
+	if stat_name not in stats:
+		return
 		
-		# FIX: Evitar escalado exponencial (e.g. 1.2 * 1.2 = 1.44).
-		# Convertimos multiplicadores de mejora a aditivos (1.0 + 0.2 + 0.2 = 1.4).
-		# Esto mantiene el balance del juego a largo plazo.
-		var additive_stats = [
-			"damage_mult", "area_mult", "projectile_speed_mult", 
-			"duration_mult", "knockback_mult", "attack_speed_mult", "range_mult"
-		]
+	var old_value = stats[stat_name]
+	
+	# Stats que usan acumulación aditiva de bonus (evita exponencial)
+	const ADDITIVE_BONUS_STATS = [
+		"damage_mult", "area_mult", "projectile_speed_mult", 
+		"duration_mult", "knockback_mult", "attack_speed_mult", "range_mult"
+	]
+	
+	var is_buff = value > 1.0
+	var is_debuff = value < 1.0 and value > 0.0
+	var uses_additive_bonus = stat_name in ADDITIVE_BONUS_STATS
+	
+	if uses_additive_bonus and is_buff:
+		# BUFF: Acumular bonus aditivamente (1.1 → +0.1 bonus)
+		var bonus = value - 1.0
+		stats[stat_name] += bonus
+	elif is_debuff:
+		# DEBUFF: Multiplicar para reducir correctamente
+		# Ejemplo: damage_mult = 1.3, aplicar 0.9 → 1.3 * 0.9 = 1.17
+		stats[stat_name] *= value
+	else:
+		# Caso especial (value == 1.0, value <= 0, etc): multiplicar normal
+		stats[stat_name] *= value
+	
+	# DEBUG: Solo en builds de desarrollo
+	if OS.is_debug_build() and stat_name == "damage_mult":
+		var op_type = "ADDITIVE_BONUS" if (uses_additive_bonus and is_buff) else "MULTIPLY"
+		print("[GlobalWeaponStats] damage_mult: %.3f -> %.3f (op=%s, value=%.3f)" % [
+			old_value, stats[stat_name], op_type, value
+		])
 		
-		# Solo aplicar lógica aditiva si es un buff positivo (> 1.0) normal
-		# Si es un debuff (< 1.0) o valor especial, mantenemos multiplicación
-		if stat_name in additive_stats and value > 1.0:
-			var bonus = value - 1.0
-			stats[stat_name] += bonus
-		else:
-			stats[stat_name] *= value
-			
-		# DEBUG: Log crítico para Pacifista
-		if stat_name == "damage_mult":
-			print("🔴 [GlobalWeaponStats] damage_mult ACTUALIZADO: %.2f -> %.2f (Op: %s con %.2f)" % [
-				old_value, stats[stat_name], 
-				"SUMA" if (stat_name in additive_stats and value > 1.0) else "MULT", 
-				value
+		# ASSERT: Detectar bug si multiply se aplica como suma cuando debería ser mult
+		if is_debuff and stats[stat_name] >= old_value:
+			push_error("[GlobalWeaponStats] BUG: Debuff (%.2f) no redujo el stat! old=%.2f new=%.2f" % [
+				value, old_value, stats[stat_name]
 			])
 			
-		global_stat_changed.emit(stat_name, old_value, stats[stat_name])
+	global_stat_changed.emit(stat_name, old_value, stats[stat_name])
 
 func set_stat(stat_name: String, value: float) -> void:
 	"""Establecer valor directo de un stat"""

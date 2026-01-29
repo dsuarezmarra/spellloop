@@ -20,6 +20,9 @@ var music_volume: float = 1.0
 var sfx_volume: float = 1.0
 var debug_audio: bool = OS.is_debug_build()
 
+# Current music tracking for idempotency
+var _current_music_id: String = ""
+
 func _ready():
 	# Headless check FIRST - prevent any audio initialization
 	if Headless.is_headless():
@@ -58,29 +61,45 @@ func _init_audio_system():
 		add_child(player)
 		sfx_players.append(player)
 
-func validate_manifest() -> void:
-	"""Runtime validation of audio assets (Debug only)."""
+func validate_manifest() -> Dictionary:
+	"""
+	Runtime validation of audio assets (Debug only).
+	Returns a dictionary with validation results for instrumentation.
+	"""
 	print("[AudioManager] Validating manifest...")
-	var empty_ids = 0
-	var broken_paths = 0
+	var empty_ids: Array[String] = []
+	var broken_paths: Array[String] = []
 	
 	for id in manifest:
 		var entry = manifest[id]
 		var files = entry.get("files", [])
 		
 		if files.is_empty():
-			push_warning("[AudioManager] ID '%s' has no files defined" % id)
-			empty_ids += 1
+			empty_ids.append(id)
+			if debug_audio:
+				push_warning("[AudioManager] ID '%s' has no files defined" % id)
 		
 		for path in files:
 			if not FileAccess.file_exists(path):
-				push_warning("[AudioManager] ID '%s' points to missing file: %s" % [id, path])
-				broken_paths += 1
+				broken_paths.append("%s -> %s" % [id, path])
+				if debug_audio:
+					push_warning("[AudioManager] ID '%s' points to missing file: %s" % [id, path])
 	
-	if empty_ids > 0 or broken_paths > 0:
-		print("[AudioManager] Validation finished with issues: %d empty IDs, %d broken paths." % [empty_ids, broken_paths])
+	var result = {
+		"total_ids": manifest.size(),
+		"empty_ids_count": empty_ids.size(),
+		"broken_paths_count": broken_paths.size(),
+		"empty_ids": empty_ids,
+		"broken_paths": broken_paths,
+		"valid": empty_ids.is_empty() and broken_paths.is_empty()
+	}
+	
+	if result["valid"]:
+		print("[AudioManager] ✓ Validation passed cleanly.")
 	else:
-		print("[AudioManager] Validation passed cleanly.")
+		print("[AudioManager] ⚠ Validation finished with issues: %d empty IDs, %d broken paths." % [empty_ids.size(), broken_paths.size()])
+	
+	return result
 
 func _ensure_audio_buses():
 	"""Create audio buses if they don't exist."""
@@ -191,8 +210,18 @@ func _get_stream(path: String) -> AudioStream:
 	return stream
 
 func play_music(music_id: String, fade_time: float = 1.0) -> void:
-	"""Play music track."""
+	"""
+	Play music track with idempotency.
+	If the same music_id is already playing, this call is ignored to prevent
+	duplicate playback and unnecessary restarts.
+	"""
 	if Headless.is_headless(): return
+	
+	# IDEMPOTENCY: Skip if this track is already playing
+	if _current_music_id == music_id and music_player.playing:
+		if debug_audio:
+			print("[AudioManager] Music '%s' already playing, skipping" % music_id)
+		return
 	
 	if not manifest.has(music_id):
 		push_warning("[AudioManager] Music not found: " + music_id)
@@ -216,13 +245,17 @@ func play_music(music_id: String, fade_time: float = 1.0) -> void:
 	if stream.get("loop") != null:
 		stream.loop = true
 	
+	# Track current music for idempotency
+	_current_music_id = music_id
+	
 	music_player.stream = stream
 	# FIX: Removed double volume application. Bus handles it.
 	music_player.volume_db = entry.get("volume_db", -3.0) 
 	music_player.play()
 
 func stop_music(fade_time: float = 1.0) -> void:
-	"""Stop current music."""
+	"""Stop current music and clear tracking."""
+	_current_music_id = ""
 	music_player.stop()
 
 func pause_music(paused: bool) -> void:

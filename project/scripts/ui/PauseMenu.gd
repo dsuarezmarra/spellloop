@@ -547,8 +547,6 @@ func _create_stats_section(parent: VBoxContainer, category: String, title: Strin
 	title_label.add_theme_font_size_override("font_size", 14)
 	title_label.add_theme_color_override("font_color", CATEGORY_COLORS.get(category, Color.WHITE))
 	parent.add_child(title_label)
-	
-	print("[PauseMenu] Rendering category '%s' with %d stats: %s" % [category, stats_list.size(), stats_list])
 
 	for stat_name in stats_list:
 		var row = _create_compact_stat_row(stat_name)

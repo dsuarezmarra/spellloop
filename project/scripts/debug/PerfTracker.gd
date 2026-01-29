@@ -191,3 +191,102 @@ func _append_to_log(data: Dictionary) -> void:
 # --- UTILS ---
 func get_current_metrics() -> Dictionary:
 	return _last_metrics_pack
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METRICS AGGREGATION (Minute-by-Minute Report)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+var _minute_timer: float = 0.0
+var _minute_samples: Array = []
+const MINUTE_REPORT_INTERVAL: float = 60.0
+
+func _aggregate_minute_metrics() -> void:
+	"""Agregar métricas del último minuto y generar reporte"""
+	if _minute_samples.is_empty():
+		return
+	
+	var fps_values = []
+	var ft_values = []
+	var projectile_values = []
+	var enemy_values = []
+	var draw_call_values = []
+	
+	for sample in _minute_samples:
+		fps_values.append(sample.get("fps", 0))
+		ft_values.append(sample.get("ft_ms", 0))
+		var c = sample.get("counters", {})
+		projectile_values.append(c.get("projectiles_alive", 0))
+		enemy_values.append(c.get("enemies_alive", 0))
+		draw_call_values.append(c.get("draw_calls", 0))
+	
+	var report = {
+		"event": "minute_report",
+		"timestamp": Time.get_unix_time_from_system(),
+		"samples": _minute_samples.size(),
+		"fps": {
+			"min": fps_values.min() if fps_values.size() > 0 else 0,
+			"max": fps_values.max() if fps_values.size() > 0 else 0,
+			"avg": _array_avg(fps_values)
+		},
+		"frame_time_ms": {
+			"min": ft_values.min() if ft_values.size() > 0 else 0,
+			"max": ft_values.max() if ft_values.size() > 0 else 0,
+			"avg": _array_avg(ft_values)
+		},
+		"projectiles": {
+			"min": projectile_values.min() if projectile_values.size() > 0 else 0,
+			"max": projectile_values.max() if projectile_values.size() > 0 else 0,
+			"avg": _array_avg(projectile_values)
+		},
+		"enemies": {
+			"min": enemy_values.min() if enemy_values.size() > 0 else 0,
+			"max": enemy_values.max() if enemy_values.size() > 0 else 0,
+			"avg": _array_avg(enemy_values)
+		},
+		"draw_calls": {
+			"min": draw_call_values.min() if draw_call_values.size() > 0 else 0,
+			"max": draw_call_values.max() if draw_call_values.size() > 0 else 0,
+			"avg": _array_avg(draw_call_values)
+		}
+	}
+	
+	# Agregar stats de subsistemas si están disponibles
+	if ProjectilePool and ProjectilePool.instance:
+		report["projectile_pool"] = ProjectilePool.instance.get_stats()
+	
+	# Agregar stats del ResourceManager
+	var rm = get_tree().get_first_node_in_group("resource_manager")
+	if rm and rm.has_method("get_precache_stats"):
+		report["resource_manager"] = rm.get_precache_stats()
+	
+	# Log report
+	print_rich("[color=cyan][PerfTracker] 📊 MINUTE REPORT (samples: %d)[/color]" % _minute_samples.size())
+	print("   FPS: min=%d avg=%.1f max=%d" % [report.fps.min, report.fps.avg, report.fps.max])
+	print("   Projectiles: max=%d | Enemies: max=%d | DrawCalls: max=%d" % [
+		report.projectiles.max, report.enemies.max, report.draw_calls.max
+	])
+	
+	_append_to_log(report)
+	_minute_samples.clear()
+
+func _array_avg(arr: Array) -> float:
+	if arr.is_empty():
+		return 0.0
+	var total = 0.0
+	for v in arr:
+		total += v
+	return total / arr.size()
+
+func _physics_process(delta: float) -> void:
+	if not enabled:
+		return
+	
+	# Agregar sample cada 10 frames físicos (~6 samples/seg a 60fps)
+	if _frame_count % 10 == 0:
+		_minute_samples.append(_last_metrics_pack.duplicate(true))
+	
+	# Generar reporte cada minuto
+	_minute_timer += delta
+	if _minute_timer >= MINUTE_REPORT_INTERVAL:
+		_minute_timer = 0.0
+		_aggregate_minute_metrics()

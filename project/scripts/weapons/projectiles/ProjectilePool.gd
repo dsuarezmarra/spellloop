@@ -5,6 +5,9 @@
 # USO:
 # - ProjectilePool.get_projectile() en lugar de SimpleProjectile.new()
 # - ProjectilePool.return_projectile(proj) en lugar de queue_free()
+#
+# OPTIMIZACIÓN: Sistema de degradación progresiva para mantener FPS estable
+# cuando hay demasiados proyectiles activos.
 
 extends Node
 # NOTA: No usar class_name aquí porque es un autoload
@@ -23,10 +26,20 @@ const INITIAL_POOL_SIZE: int = 50
 const MAX_POOL_SIZE: int = 500
 const GROW_AMOUNT: int = 20
 
+# === SISTEMA DE DEGRADACIÓN PROGRESIVA ===
+# Umbrales para controlar la explosión de proyectiles
+const SOFT_LIMIT: int = 150      # A partir de aquí: reducir trails y efectos
+const HARD_LIMIT: int = 220      # A partir de aquí: denegar nuevos proyectiles de baja prioridad
+const CRITICAL_LIMIT: int = 280  # A partir de aquí: forzar cleanup agresivo
+
+# Estado de degradación (0=normal, 1=soft, 2=hard, 3=critical)
+var degradation_level: int = 0
+
 # Estadísticas para debug
 var stats_created: int = 0
 var stats_reused: int = 0
 var stats_returned: int = 0
+var stats_denied: int = 0  # Proyectiles denegados por límite
 
 func _ready() -> void:
 	# Establecer singleton
@@ -66,8 +79,14 @@ func get_projectile() -> SimpleProjectile:
 	"""
 	Obtener un proyectil del pool (o crear uno nuevo si está vacío).
 	El proyectil viene sin parent - el llamador debe añadirlo al árbol.
+	
+	NOTA: Este método NUNCA devuelve null. Si necesitas prioridad,
+	usa get_projectile_prioritized() que sí puede denegar.
 	"""
 	var projectile: SimpleProjectile
+	
+	# Actualizar nivel de degradación
+	_update_degradation_level()
 	
 	if _available_pool.is_empty():
 		# Pool vacío - crear más proyectiles
@@ -91,6 +110,77 @@ func get_projectile() -> SimpleProjectile:
 	_active_count += 1
 	if PerfTracker: PerfTracker.track_projectile_spawned()
 	return projectile
+
+func get_projectile_prioritized(priority: int = 1) -> SimpleProjectile:
+	"""
+	Obtener proyectil con sistema de prioridad.
+	
+	PRIORIDAD:
+	- 0 = Baja (ej: sub-proyectiles, fragmentos): Denegado en HARD_LIMIT
+	- 1 = Normal (ej: proyectiles de arma principal): Siempre permitido
+	- 2 = Alta (ej: proyectiles del player, especiales): Siempre permitido
+	
+	Returns: SimpleProjectile o null si la solicitud es denegada por límites.
+	"""
+	_update_degradation_level()
+	
+	# Aplicar throttling según prioridad y nivel de degradación
+	if degradation_level >= 2 and priority == 0:
+		# HARD LIMIT: Denegar proyectiles de baja prioridad
+		stats_denied += 1
+		return null
+	
+	if degradation_level >= 3:
+		# CRITICAL: Denegar TODO excepto prioridad alta
+		if priority < 2:
+			stats_denied += 1
+			return null
+		# Forzar cleanup de proyectiles más viejos
+		_force_cleanup_oldest(10)
+	
+	return get_projectile()
+
+func _update_degradation_level() -> void:
+	"""Actualizar nivel de degradación basado en proyectiles activos"""
+	var old_level = degradation_level
+	
+	if _active_count >= CRITICAL_LIMIT:
+		degradation_level = 3
+	elif _active_count >= HARD_LIMIT:
+		degradation_level = 2
+	elif _active_count >= SOFT_LIMIT:
+		degradation_level = 1
+	else:
+		degradation_level = 0
+	
+	# Log cambio de nivel (solo una vez)
+	if degradation_level != old_level and degradation_level > 0:
+		print("[ProjectilePool] ⚠️ Degradation level: %d (active: %d)" % [degradation_level, _active_count])
+
+func _force_cleanup_oldest(count: int) -> void:
+	"""Forzar limpieza de los proyectiles más viejos en el árbol"""
+	# Buscar proyectiles activos y destruir los más viejos
+	var projectiles_node = get_tree().get_first_node_in_group("projectiles_container")
+	if not projectiles_node:
+		return
+	
+	var children = projectiles_node.get_children()
+	var cleaned = 0
+	for child in children:
+		if child is SimpleProjectile and cleaned < count:
+			return_projectile(child)
+			cleaned += 1
+	
+	if cleaned > 0:
+		print("[ProjectilePool] 🧹 Forced cleanup: %d projectiles" % cleaned)
+
+func is_soft_limited() -> bool:
+	"""Check if visual effects should be reduced (trails, particles)"""
+	return degradation_level >= 1
+
+func is_hard_limited() -> bool:
+	"""Check if low-priority projectiles should be denied"""
+	return degradation_level >= 2
 
 func return_projectile(projectile: SimpleProjectile) -> void:
 	"""
@@ -191,14 +281,19 @@ func get_stats() -> Dictionary:
 		"total_created": stats_created,
 		"total_reused": stats_reused,
 		"total_returned": stats_returned,
+		"total_denied": stats_denied,
+		"degradation_level": degradation_level,
+		"soft_limit": SOFT_LIMIT,
+		"hard_limit": HARD_LIMIT,
+		"critical_limit": CRITICAL_LIMIT,
 		"reuse_rate": float(stats_reused) / float(stats_reused + stats_created) if (stats_reused + stats_created) > 0 else 0.0
 	}
 
 func print_stats() -> void:
 	"""Imprimir estadísticas del pool"""
 	var s = get_stats()
-	print("[ProjectilePool] 📊 Pool: %d disponibles, %d activos | Creados: %d, Reutilizados: %d (%.1f%%)" % [
-		s.available, s.active, s.total_created, s.total_reused, s.reuse_rate * 100
+	print("[ProjectilePool] 📊 Pool: %d disponibles, %d activos (deg:%d) | Creados: %d, Reutilizados: %d (%.1f%%), Denegados: %d" % [
+		s.available, s.active, s.degradation_level, s.total_created, s.total_reused, s.reuse_rate * 100, s.total_denied
 	])
 
 func reset_stats() -> void:
