@@ -443,7 +443,8 @@ func generate_contract_validation_report(results: Array, metadata: Dictionary = 
 		"CONTRACT_VIOLATION": [],
 		"SIDE_EFFECT": [],
 		"BUG": [],
-		"DESIGN_VIOLATION": []
+		"DESIGN_VIOLATION": [],
+		"SKIPPED": []  # Task 2: Track skipped tests due to missing event simulation
 	}
 	
 	for res in results:
@@ -451,6 +452,21 @@ func generate_contract_validation_report(results: Array, metadata: Dictionary = 
 		var is_success = res.get("success", false)
 		var failures = res.get("failures", [])
 		var subtests = res.get("subtests", [])
+		
+		# Check for SKIPPED status first
+		var is_skipped = res.get("skipped", false)
+		var skip_reason = res.get("skip_reason", "")
+		
+		# Also check for skip markers in failures
+		for f in failures:
+			if f.begins_with("SKIPPED:"):
+				is_skipped = true
+				skip_reason = f.replace("SKIPPED:", "").strip_edges()
+		
+		if is_skipped:
+			res["skip_reason"] = skip_reason  # Ensure it's set for reporting
+			categories["SKIPPED"].append(res)
+			continue
 		
 		# Categorize based on failure types
 		var has_contract_violation = false
@@ -513,7 +529,7 @@ func generate_contract_validation_report(results: Array, metadata: Dictionary = 
 	file.store_line("")
 	file.store_line("| Category | Count | Percentage |")
 	file.store_line("|----------|-------|------------|")
-	for cat in ["PASS", "CONTRACT_VIOLATION", "SIDE_EFFECT", "DESIGN_VIOLATION", "BUG"]:
+	for cat in ["PASS", "CONTRACT_VIOLATION", "SIDE_EFFECT", "DESIGN_VIOLATION", "BUG", "SKIPPED"]:
 		var count = categories[cat].size()
 		var pct = (float(count) / total * 100) if total > 0 else 0
 		var emoji = _get_category_emoji(cat)
@@ -606,6 +622,24 @@ func generate_contract_validation_report(results: Array, metadata: Dictionary = 
 			file.store_line("| `%s` | %.1f%% | %.2f | %.2f |" % [item_id, delta, expected, actual])
 		file.store_line("")
 	
+	# SKIPPED Tests (Task 2: Event simulation required)
+	if categories["SKIPPED"].size() > 0:
+		file.store_line("## ⏭️ SKIPPED TESTS")
+		file.store_line("These items require event simulation that was not available:")
+		file.store_line("")
+		file.store_line("| Item | Scope | Required Events | Reason |")
+		file.store_line("|------|-------|-----------------|--------|")
+		for res in categories["SKIPPED"]:
+			var item_id = res.get("item_id", "unknown")
+			var scope = res.get("scope", "UNKNOWN")
+			var skip_reason = res.get("skip_reason", "Unknown")
+			var required_events = res.get("required_events", [])
+			var events_str = ", ".join(required_events) if not required_events.is_empty() else "N/A"
+			file.store_line("| `%s` | %s | %s | %s |" % [item_id, scope, events_str, skip_reason])
+		file.store_line("")
+		file.store_line("> **Action Required**: Enable event simulation in ItemTestRunner or implement missing event handlers.")
+		file.store_line("")
+	
 	# Passed Items (collapsed)
 	file.store_line("## ✅ PASSED ITEMS (%d)" % categories["PASS"].size())
 	file.store_line("")
@@ -662,4 +696,5 @@ func _get_category_emoji(category: String) -> String:
 		"SIDE_EFFECT": return "🟡"
 		"DESIGN_VIOLATION": return "🟣"
 		"BUG": return "🔴"
+		"SKIPPED": return "⏭️"
 		_: return "⚪"

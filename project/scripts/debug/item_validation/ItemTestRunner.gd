@@ -40,12 +40,30 @@ var player_stats_mock: PlayerStats
 # Contract Validation Mode
 var strict_contract_mode: bool = true  # Enable strict contract validation
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# RNG DETERMINISTA - Task 3
+# ═══════════════════════════════════════════════════════════════════════════════
+var deterministic_seed: bool = true  # When true, force fixed seed for reproducibility
+var test_seed: int = 1337  # Seed used when deterministic_seed=true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SIMULACIÓN DE EVENTOS - Task 2
+# ═══════════════════════════════════════════════════════════════════════════════
+var event_simulation_enabled: bool = true  # Enable event simulation for on_hit, on_kill, etc.
+var simulated_hits: int = 10  # Number of on_hit events to simulate
+var simulated_kills: int = 5  # Number of on_kill events to simulate
+var simulated_time_seconds: float = 60.0  # Time to simulate for per_minute effects
+var simulated_pickups: int = 3  # Number of on_pickup events to simulate
+
+# Items that require specific events to test properly
+# Key = item_id, Value = array of required events
+var _event_requirements: Dictionary = {}
+
 # Metadata for Reporting
 var empty_reason: String = ""
 var start_time_ms: int = 0
 var is_measure_mode: bool = false
 var git_commit: String = "unknown"
-var test_seed: int = 1337
 var run_id: String = ""
 var discovery_count: int = 0
 var scheduled_count: int = 0
@@ -74,7 +92,15 @@ func _ready():
 		get_tree().quit(1)
 		return
 
-	seed(1337) # Task 2: Force Deterministic Global RNG
+	seed(test_seed) # Task 3: Deterministic RNG (configurable via deterministic_seed flag)
+	if deterministic_seed:
+		print("[ItemTestRunner] Deterministic RNG enabled with seed: %d" % test_seed)
+	else:
+		# Use random seed based on time
+		var random_seed = Time.get_ticks_usec()
+		seed(random_seed)
+		test_seed = random_seed
+		print("[ItemTestRunner] Random RNG enabled with seed: %d" % test_seed)
 	var hb = FileAccess.open("ready_check.txt", FileAccess.WRITE)
 	hb.store_string("READY AT " + Time.get_datetime_string_from_system())
 	hb.close()
@@ -952,6 +978,203 @@ func _build_observed_behavior(iter_result: Dictionary, test_case: Dictionary) ->
 			observed["enemies_hit"] = max(observed["enemies_hit"], mech_res.get("enemies_damaged", 0))
 	
 	return observed
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SIMULACIÓN DE EVENTOS - Task 2
+# Simula on_hit, on_kill, on_pickup, time_passed para testear items condicionales
+# ═══════════════════════════════════════════════════════════════════════════════
+
+## Detecta qué eventos requiere un item para funcionar
+func _detect_required_events(item: Dictionary) -> Array:
+	var required = []
+	var desc = item.get("description", "").to_lower()
+	var effects = item.get("effects", [])
+	
+	# Inferir de descripción
+	if "matar" in desc or "kill" in desc or "al eliminar" in desc:
+		required.append("on_kill")
+	if "impactar" in desc or "golpear" in desc or "al atacar" in desc or "on hit" in desc:
+		required.append("on_hit")
+	if "recoger" in desc or "pickup" in desc:
+		required.append("on_pickup")
+	if "por minuto" in desc or "cada segundo" in desc or "per minute" in desc:
+		required.append("time_passed")
+	if "recibir daño" in desc or "al ser golpeado" in desc:
+		required.append("on_damage_taken")
+	
+	# Inferir de efectos
+	for effect in effects:
+		var stat = effect.get("stat", "")
+		if "on_hit" in stat or "on_kill" in stat:
+			if "on_kill" in stat and not "on_kill" in required:
+				required.append("on_kill")
+			if "on_hit" in stat and not "on_hit" in required:
+				required.append("on_hit")
+	
+	# Cache para futuras referencias
+	var item_id = item.get("id", "")
+	if item_id != "":
+		_event_requirements[item_id] = required
+	
+	return required
+
+## Simula eventos on_hit para un item
+func simulate_on_hit(count: int, env: Node, item: Dictionary = {}) -> Dictionary:
+	var result = {
+		"event_type": "on_hit",
+		"count": count,
+		"triggered": 0,
+		"effects_observed": []
+	}
+	
+	if not event_simulation_enabled:
+		return result
+	
+	var mock_player = env.get_node_or_null("MockPlayer")
+	if not mock_player:
+		result["error"] = "MockPlayer not found"
+		return result
+	
+	# Simular N impactos
+	for i in range(count):
+		# Emitir señal de hit si existe
+		if mock_player.has_signal("on_hit_dealt"):
+			mock_player.emit_signal("on_hit_dealt", {
+				"damage": 10.0,
+				"target": null,
+				"crit": false,
+				"iteration": i
+			})
+			result["triggered"] += 1
+		elif mock_player.has_method("_on_hit_dealt"):
+			mock_player._on_hit_dealt(10.0, null, false)
+			result["triggered"] += 1
+		
+		# Pequeña espera para procesar
+		await get_tree().process_frame
+	
+	return result
+
+## Simula eventos on_kill para un item
+func simulate_on_kill(count: int, env: Node, item: Dictionary = {}) -> Dictionary:
+	var result = {
+		"event_type": "on_kill",
+		"count": count,
+		"triggered": 0,
+		"effects_observed": []
+	}
+	
+	if not event_simulation_enabled:
+		return result
+	
+	var mock_player = env.get_node_or_null("MockPlayer")
+	if not mock_player:
+		result["error"] = "MockPlayer not found"
+		return result
+	
+	# Simular N kills
+	for i in range(count):
+		if mock_player.has_signal("on_enemy_killed"):
+			mock_player.emit_signal("on_enemy_killed", {
+				"enemy_type": "test_dummy",
+				"xp_value": 10,
+				"iteration": i
+			})
+			result["triggered"] += 1
+		elif mock_player.has_method("_on_enemy_killed"):
+			mock_player._on_enemy_killed("test_dummy", 10)
+			result["triggered"] += 1
+		
+		await get_tree().process_frame
+	
+	return result
+
+## Simula recoger items/XP
+func simulate_on_pickup(count: int, env: Node, item: Dictionary = {}) -> Dictionary:
+	var result = {
+		"event_type": "on_pickup",
+		"count": count,
+		"triggered": 0,
+		"effects_observed": []
+	}
+	
+	if not event_simulation_enabled:
+		return result
+	
+	var mock_player = env.get_node_or_null("MockPlayer")
+	if not mock_player:
+		result["error"] = "MockPlayer not found"
+		return result
+	
+	for i in range(count):
+		if mock_player.has_signal("on_item_picked"):
+			mock_player.emit_signal("on_item_picked", {
+				"item_type": "xp_orb",
+				"value": 5,
+				"iteration": i
+			})
+			result["triggered"] += 1
+		
+		await get_tree().process_frame
+	
+	return result
+
+## Simula paso del tiempo para efectos per_minute
+func simulate_time_passed(seconds: float, env: Node, item: Dictionary = {}) -> Dictionary:
+	var result = {
+		"event_type": "time_passed",
+		"seconds": seconds,
+		"triggered": false,
+		"stat_before": {},
+		"stat_after": {}
+	}
+	
+	if not event_simulation_enabled:
+		return result
+	
+	var mock_player = env.get_node_or_null("MockPlayer")
+	if not mock_player:
+		result["error"] = "MockPlayer not found"
+		return result
+	
+	# Capturar stats antes
+	if mock_player.has_method("get_all_stats"):
+		result["stat_before"] = mock_player.get_all_stats().duplicate()
+	
+	# Simular el paso del tiempo
+	if mock_player.has_method("_process_game_time"):
+		mock_player._process_game_time(seconds)
+		result["triggered"] = true
+	elif mock_player.has_signal("game_time_updated"):
+		mock_player.emit_signal("game_time_updated", seconds)
+		result["triggered"] = true
+	
+	# Esperar procesamiento
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	# Capturar stats después
+	if mock_player.has_method("get_all_stats"):
+		result["stat_after"] = mock_player.get_all_stats().duplicate()
+	
+	return result
+
+## Verifica si un test debe ser SKIPPED por falta de eventos
+func _should_skip_for_events(item: Dictionary) -> Dictionary:
+	var skip_info = {
+		"should_skip": false,
+		"reason": "",
+		"required_events": []
+	}
+	
+	if not event_simulation_enabled:
+		var required = _detect_required_events(item)
+		if not required.is_empty():
+			skip_info["should_skip"] = true
+			skip_info["required_events"] = required
+			skip_info["reason"] = "Event simulation disabled. Required events: %s" % str(required)
+	
+	return skip_info
 
 func _exit_run():
 	print("[ItemTestRunner] Exiting...")

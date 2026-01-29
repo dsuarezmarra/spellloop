@@ -50,9 +50,8 @@ param(
 $ErrorActionPreference = 'Stop'
 
 # === Configuration ===
-# $PSScriptRoot = c:\git\spellloop\tools
-# Parent = c:\git\spellloop
-$ProjectPath = Join-Path (Split-Path $PSScriptRoot -Parent) 'project'
+$ProjectPath = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+$ProjectPath = Join-Path $ProjectPath 'project'
 
 # Find Godot executable
 if (-not $GodotPath) {
