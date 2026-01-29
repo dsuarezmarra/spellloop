@@ -14,6 +14,8 @@ const NumericOracle_Ref = preload("res://scripts/debug/item_validation/NumericOr
 var StatusEffectOracle_Ref 
 
 const MechanicalOracle_Ref = preload("res://scripts/debug/item_validation/MechanicalOracle.gd")
+const ContractOracle_Ref = preload("res://scripts/debug/item_validation/ContractOracle.gd")
+const SideEffectDetector_Ref = preload("res://scripts/debug/item_validation/SideEffectDetector.gd")
 
 const FULL_MATRIX_ENABLED = true # Toggle for Phase 4
 
@@ -30,8 +32,13 @@ var scenario_runner: ScenarioRunner
 var numeric_oracle: NumericOracle
 var mechanical_oracle: MechanicalOracle
 var status_oracle: StatusEffectOracle
+var contract_oracle: ContractOracle
+var side_effect_detector: SideEffectDetector
 var attack_manager: AttackManager
 var player_stats_mock: PlayerStats
+
+# Contract Validation Mode
+var strict_contract_mode: bool = true  # Enable strict contract validation
 
 # Metadata for Reporting
 var empty_reason: String = ""
@@ -86,6 +93,12 @@ func _ready():
     
 	status_oracle = StatusEffectOracle_Ref.new()
 	add_child(status_oracle)
+	
+	contract_oracle = ContractOracle_Ref.new()
+	add_child(contract_oracle)
+	
+	side_effect_detector = SideEffectDetector_Ref.new()
+	add_child(side_effect_detector)
 	
 	var args = OS.get_cmdline_args() + OS.get_cmdline_user_args()
 	print("[ItemTestRunner] Args: ", args)
@@ -543,6 +556,16 @@ func _run_next_test():
 		
 	if status_oracle:
 		status_oracle.start_listening()
+		status_oracle.set_strict_mode(strict_contract_mode)
+	
+	# Setup Side Effect Detector for contract validation
+	if side_effect_detector and strict_contract_mode:
+		side_effect_detector.start_monitoring(mock_player)
+	
+	# Infer Contract from Item Definition
+	var item_contract = {}
+	if contract_oracle and strict_contract_mode:
+		item_contract = contract_oracle.infer_contract(test_case["item"])
 	
 	var classification = _classify_item(test_case["item"])
 	test_case["scope"] = classification
@@ -572,6 +595,83 @@ func _run_next_test():
 	# Select Median based on actual_damage
 	iteration_results.sort_custom(func(a, b): return a["actual_damage"] < b["actual_damage"])
 	var final_iter_res = iteration_results[1] # Index 1 is median of 3
+	
+	# === CONTRACT VALIDATION (Phase 6) ===
+	if strict_contract_mode and contract_oracle:
+		# Stop side effect detector and collect data
+		if side_effect_detector:
+			side_effect_detector.stop_monitoring()
+		
+		# Build baseline and actual states from test results
+		var baseline_state = {}
+		var actual_state = {}
+		var status_data = {}
+		var damage_data = {}
+		
+		if side_effect_detector:
+			baseline_state = side_effect_detector.player_state_before
+			actual_state = side_effect_detector.player_state_after
+		
+		# Get status data from status oracle
+		if status_oracle:
+			var status_report = status_oracle.get_detailed_report()
+			status_data["applied"] = []
+			for entry in status_report:
+				status_data["applied"].append(entry.get("effect", ""))
+		
+		# Get damage data from iteration result
+		damage_data = {
+			"total_damage": final_iter_res.get("actual_damage", 0.0),
+			"expected_damage": final_iter_res.get("expected_damage", 0.0)
+		}
+		
+		# Validate against contract
+		var contract_result = contract_oracle.validate_contract(
+			item_contract, baseline_state, actual_state, status_data, damage_data
+		)
+		
+		# Add contract validation to subtests
+		final_iter_res["subtests"].append({
+			"type": "contract_validation",
+			"contract": item_contract,
+			"result": contract_result
+		})
+		
+		# If contract validation failed, mark test as failed
+		if not contract_result["passed"]:
+			final_iter_res["success"] = false
+			for violation in contract_result["violations"]:
+				final_iter_res["failures"].append(
+					"CONTRACT: %s - Expected: %s, Actual: %s" % [
+						violation.get("detail", "unknown"),
+						str(violation.get("expected", "?")),
+						str(violation.get("actual", "?"))
+					]
+				)
+		
+		# Check for side effects (potential bugs)
+		if side_effect_detector:
+			var declared_effects = {
+				"stats": item_contract.get("stat_effects", {}).keys(),
+				"statuses": item_contract.get("status_effects", []),
+				"damage_types": ["normal"] if item_contract.get("damage_type", "") == "" else [item_contract.get("damage_type", "normal")],
+				"affects_player": item_contract.get("target_scope", "") == "player",
+				"affects_enemies": item_contract.get("target_scope", "") in ["enemy", "aoe", ""]
+			}
+			var side_effect_report = side_effect_detector.detect_side_effects(declared_effects)
+			
+			final_iter_res["subtests"].append({
+				"type": "side_effect_detection",
+				"result": side_effect_report
+			})
+			
+			if side_effect_report["has_side_effects"]:
+				# Side effects may indicate bugs
+				if side_effect_report["severity"] == "critical":
+					final_iter_res["success"] = false
+					final_iter_res["failures"].append("BUG: %s" % side_effect_report["summary"])
+				elif side_effect_report["severity"] == "major":
+					final_iter_res["failures"].append("SIDE_EFFECT: %s" % side_effect_report["summary"])
 	
 	# Finalize Result
 	result_data["success"] = final_iter_res["success"]
@@ -801,6 +901,58 @@ func _record_failure(test_case, reason):
 		"failures": [reason]
 	})
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONTRACT VALIDATION HELPERS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _build_observed_behavior(iter_result: Dictionary, test_case: Dictionary) -> Dictionary:
+	"""
+	Builds the observed behavior dictionary from test results.
+	This is compared against the inferred contract.
+	"""
+	var observed = {
+		"stat_changes": {},
+		"status_effects_applied": [],
+		"damage_dealt": 0.0,
+		"enemies_hit": 0,
+		"special_behaviors": []
+	}
+	
+	# Extract damage from mechanical oracle results
+	observed["damage_dealt"] = iter_result.get("actual_damage", 0.0)
+	
+	# Extract status effects from status oracle
+	if status_oracle:
+		var status_report = status_oracle.get_detailed_report()
+		for entry in status_report:
+			observed["status_effects_applied"].append({
+				"name": entry.get("effect", ""),
+				"duration": entry.get("expected_duration", 0),
+				"ticks": entry.get("ticks", 0),
+				"total_damage": entry.get("total_damage", 0.0),
+				"params": entry.get("params", {})
+			})
+			observed["enemies_hit"] = max(observed["enemies_hit"], 1)
+	
+	# Extract stat changes from side effect detector
+	if side_effect_detector:
+		var all_events = side_effect_detector.get_all_events()
+		for event in all_events.get("stat_change_events", []):
+			var stat_name = event.get("stat", "")
+			observed["stat_changes"][stat_name] = {
+				"delta": event.get("delta", 0),
+				"old_value": event.get("old_value", 0),
+				"new_value": event.get("new_value", 0)
+			}
+	
+	# Count enemies hit from subtests
+	for subtest in iter_result.get("subtests", []):
+		if subtest.get("type") == "mechanical_damage":
+			var mech_res = subtest.get("res", {})
+			observed["enemies_hit"] = max(observed["enemies_hit"], mech_res.get("enemies_damaged", 0))
+	
+	return observed
+
 func _exit_run():
 	print("[ItemTestRunner] Exiting...")
 	_exiting = true  # Signal all async operations to abort
@@ -876,6 +1028,12 @@ func _finish_suite():
 	if run_id.begins_with("full_cycle_") or run_id.begins_with("scope_"):
 		var fc_path = report_writer.generate_full_cycle_report(results, metadata)
 		print("[ItemTestRunner] Full Cycle Report saved to: %s" % fc_path)
+	
+	# Generate Contract Validation report if strict mode is enabled
+	if strict_contract_mode:
+		metadata["strict_contract_mode"] = true
+		var cv_path = report_writer.generate_contract_validation_report(results, metadata)
+		print("[ItemTestRunner] Contract Validation Report saved to: %s" % cv_path)
 	
 	all_tests_completed.emit(path)
 	print("[ItemTestRunner] Report saved to: %s" % path)

@@ -409,3 +409,257 @@ func generate_full_cycle_report(results: Array, metadata: Dictionary = {}) -> St
 	
 	file.close()
 	return full_path
+
+
+## =================== CONTRACT VALIDATION REPORT =====================
+## Generates a report focused on contract violations and side effects
+
+func generate_contract_validation_report(results: Array, metadata: Dictionary = {}) -> String:
+	"""
+	Generates a comprehensive contract-based validation report.
+	Shows:
+	- Contract violations (item doesn't do what it says)
+	- Side effects (item does things it shouldn't)
+	- Bugs (unexpected behavior)
+	- Design violations (parameter mismatch)
+	"""
+	var user_dir = "user://test_reports/"
+	var dir = DirAccess.open("user://")
+	if not dir.dir_exists("test_reports"):
+		dir.make_dir("test_reports")
+		
+	var timestamp = Time.get_datetime_string_from_system().replace(":", "-")
+	var filename = "contract_validation_report_%s.md" % timestamp
+	var full_path = user_dir + filename
+	
+	var file = FileAccess.open(full_path, FileAccess.WRITE)
+	if not file:
+		print("[ReportWriter] Failed to open file: %s" % full_path)
+		return ""
+	
+	# Categorize results by issue type
+	var categories = {
+		"PASS": [],
+		"CONTRACT_VIOLATION": [],
+		"SIDE_EFFECT": [],
+		"BUG": [],
+		"DESIGN_VIOLATION": []
+	}
+	
+	for res in results:
+		var item_id = res.get("item_id", "unknown")
+		var is_success = res.get("success", false)
+		var failures = res.get("failures", [])
+		var subtests = res.get("subtests", [])
+		
+		# Categorize based on failure types
+		var has_contract_violation = false
+		var has_side_effect = false
+		var has_bug = false
+		var has_violation = false
+		
+		for f in failures:
+			if f.begins_with("CONTRACT:"):
+				has_contract_violation = true
+			elif f.begins_with("BUG:"):
+				has_bug = true
+			elif f.begins_with("SIDE_EFFECT:"):
+				has_side_effect = true
+		
+		# Also check subtests for result codes
+		for sub in subtests:
+			var res_data = sub.get("res", {})
+			if sub.get("type") == "contract_validation":
+				if not res_data.get("passed", true):
+					has_contract_violation = true
+			elif sub.get("type") == "side_effect_detection":
+				if res_data.get("has_side_effects", false):
+					if res_data.get("severity") == "critical":
+						has_bug = true
+					elif res_data.get("severity") == "major":
+						has_side_effect = true
+			elif sub.get("type") == "mechanical_damage":
+				var code = res_data.get("result_code", "PASS")
+				if code == "BUG":
+					has_bug = true
+				elif code == "DESIGN_VIOLATION":
+					has_violation = true
+		
+		# Assign to primary category (priority order)
+		if has_bug:
+			categories["BUG"].append(res)
+		elif has_contract_violation:
+			categories["CONTRACT_VIOLATION"].append(res)
+		elif has_side_effect:
+			categories["SIDE_EFFECT"].append(res)
+		elif has_violation:
+			categories["DESIGN_VIOLATION"].append(res)
+		elif is_success:
+			categories["PASS"].append(res)
+		else:
+			categories["DESIGN_VIOLATION"].append(res)  # Fallback for other failures
+	
+	# === WRITE REPORT ===
+	file.store_line("# 📋 Contract Validation Report")
+	file.store_line("**Date**: %s" % metadata.get("started_at", Time.get_datetime_string_from_system()))
+	file.store_line("**Run ID**: %s" % metadata.get("run_id", "N/A"))
+	file.store_line("**Git Commit**: %s" % metadata.get("git_commit", "unknown"))
+	file.store_line("**Strict Mode**: %s" % ("Enabled" if metadata.get("strict_contract_mode", true) else "Disabled"))
+	file.store_line("")
+	
+	# Summary
+	var total = results.size()
+	file.store_line("## 📊 Summary")
+	file.store_line("")
+	file.store_line("| Category | Count | Percentage |")
+	file.store_line("|----------|-------|------------|")
+	for cat in ["PASS", "CONTRACT_VIOLATION", "SIDE_EFFECT", "DESIGN_VIOLATION", "BUG"]:
+		var count = categories[cat].size()
+		var pct = (float(count) / total * 100) if total > 0 else 0
+		var emoji = _get_category_emoji(cat)
+		file.store_line("| %s %s | %d | %.1f%% |" % [emoji, cat, count, pct])
+	file.store_line("")
+	
+	# Critical Issues Section
+	if categories["BUG"].size() > 0:
+		file.store_line("## 🔴 BUGS (Critical)")
+		file.store_line("These items have unexpected behavior that indicates code bugs:")
+		file.store_line("")
+		file.store_line("| Item | Scope | Failures |")
+		file.store_line("|------|-------|----------|")
+		for res in categories["BUG"]:
+			var item_id = res.get("item_id", "unknown")
+			var scope = res.get("scope", "UNKNOWN")
+			var failures_str = ", ".join(res.get("failures", []))
+			if failures_str.length() > 80:
+				failures_str = failures_str.substr(0, 77) + "..."
+			file.store_line("| `%s` | %s | %s |" % [item_id, scope, failures_str])
+		file.store_line("")
+	
+	# Contract Violations
+	if categories["CONTRACT_VIOLATION"].size() > 0:
+		file.store_line("## 🟠 CONTRACT VIOLATIONS")
+		file.store_line("These items do not do exactly what their description says:")
+		file.store_line("")
+		for res in categories["CONTRACT_VIOLATION"]:
+			var item_id = res.get("item_id", "unknown")
+			file.store_line("### `%s`" % item_id)
+			
+			# Extract contract details from subtests
+			for sub in res.get("subtests", []):
+				if sub.get("type") == "contract_validation":
+					var contract = sub.get("contract", {})
+					var result = sub.get("result", {})
+					
+					file.store_line("**Expected Contract:**")
+					for stat in contract.get("stat_effects", {}):
+						var eff = contract["stat_effects"][stat]
+						file.store_line("- %s: %s %s" % [stat, eff.get("operation", "add"), str(eff.get("value", 0))])
+					
+					file.store_line("")
+					file.store_line("**Violations:**")
+					for violation in result.get("violations", []):
+						file.store_line("- %s: Expected `%s`, Actual `%s`" % [
+							violation.get("detail", "unknown"),
+							str(violation.get("expected", "?")),
+							str(violation.get("actual", "?"))
+						])
+					file.store_line("")
+		file.store_line("")
+	
+	# Side Effects
+	if categories["SIDE_EFFECT"].size() > 0:
+		file.store_line("## 🟡 SIDE EFFECTS")
+		file.store_line("These items produce effects not declared in their description:")
+		file.store_line("")
+		file.store_line("| Item | Undeclared Effect | Severity |")
+		file.store_line("|------|-------------------|----------|")
+		for res in categories["SIDE_EFFECT"]:
+			var item_id = res.get("item_id", "unknown")
+			for sub in res.get("subtests", []):
+				if sub.get("type") == "side_effect_detection":
+					var se_result = sub.get("result", {})
+					for eff in se_result.get("undeclared_stat_changes", []):
+						file.store_line("| `%s` | %s (%+.2f) | %s |" % [
+							item_id, eff.get("stat", "?"), eff.get("delta", 0), eff.get("severity", "?")
+						])
+					for eff in se_result.get("undeclared_status_effects", []):
+						file.store_line("| `%s` | Status: %s | %s |" % [
+							item_id, eff.get("status", "?"), eff.get("severity", "?")
+						])
+		file.store_line("")
+	
+	# Design Violations
+	if categories["DESIGN_VIOLATION"].size() > 0:
+		file.store_line("## 🟣 DESIGN VIOLATIONS")
+		file.store_line("These items have parameter mismatches (values outside expected tolerance):")
+		file.store_line("")
+		file.store_line("| Item | Delta | Expected | Actual |")
+		file.store_line("|------|-------|----------|--------|")
+		for res in categories["DESIGN_VIOLATION"]:
+			var item_id = res.get("item_id", "unknown")
+			var expected = res.get("expected_damage", 0)
+			var actual = res.get("actual_damage", 0)
+			var delta = 0.0
+			if expected > 0:
+				delta = (actual - expected) / expected * 100
+			file.store_line("| `%s` | %.1f%% | %.2f | %.2f |" % [item_id, delta, expected, actual])
+		file.store_line("")
+	
+	# Passed Items (collapsed)
+	file.store_line("## ✅ PASSED ITEMS (%d)" % categories["PASS"].size())
+	file.store_line("")
+	if categories["PASS"].size() > 0:
+		file.store_line("<details>")
+		file.store_line("<summary>Click to expand %d passing items</summary>" % categories["PASS"].size())
+		file.store_line("")
+		var passed_list = []
+		for res in categories["PASS"]:
+			passed_list.append("`%s`" % res.get("item_id", "unknown"))
+		file.store_line(", ".join(passed_list))
+		file.store_line("")
+		file.store_line("</details>")
+	else:
+		file.store_line("No items passed contract validation.")
+	file.store_line("")
+	
+	# Action Items
+	file.store_line("---")
+	file.store_line("## 🔧 Action Items")
+	file.store_line("")
+	
+	if categories["BUG"].size() > 0:
+		file.store_line("### P0 - Critical Bugs (%d)" % categories["BUG"].size())
+		for res in categories["BUG"]:
+			file.store_line("- [ ] `%s`" % res.get("item_id"))
+		file.store_line("")
+	
+	if categories["CONTRACT_VIOLATION"].size() > 0:
+		file.store_line("### P1 - Contract Violations (%d)" % categories["CONTRACT_VIOLATION"].size())
+		for res in categories["CONTRACT_VIOLATION"]:
+			file.store_line("- [ ] `%s`" % res.get("item_id"))
+		file.store_line("")
+	
+	if categories["SIDE_EFFECT"].size() > 0:
+		file.store_line("### P2 - Side Effects (%d)" % categories["SIDE_EFFECT"].size())
+		for res in categories["SIDE_EFFECT"]:
+			file.store_line("- [ ] `%s`" % res.get("item_id"))
+		file.store_line("")
+	
+	if categories["DESIGN_VIOLATION"].size() > 0:
+		file.store_line("### P3 - Design Violations (%d)" % categories["DESIGN_VIOLATION"].size())
+		for res in categories["DESIGN_VIOLATION"]:
+			file.store_line("- [ ] `%s`" % res.get("item_id"))
+		file.store_line("")
+	
+	file.close()
+	return full_path
+
+func _get_category_emoji(category: String) -> String:
+	match category:
+		"PASS": return "✅"
+		"CONTRACT_VIOLATION": return "🟠"
+		"SIDE_EFFECT": return "🟡"
+		"DESIGN_VIOLATION": return "🟣"
+		"BUG": return "🔴"
+		_: return "⚪"
