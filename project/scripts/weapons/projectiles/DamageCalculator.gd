@@ -27,10 +27,16 @@ static func calculate_final_damage(
 	result.base_damage = base_damage
 	result.final_damage = base_damage
 	
-	if not is_instance_valid(target) or not is_instance_valid(player):
+	if not is_instance_valid(target):
 		return result
 	
-	var tree = player.get_tree()
+	# Player puede ser null (ej: tests sintéticos), pero stats pueden venir del group "player_stats"
+	var tree = null
+	if is_instance_valid(player):
+		tree = player.get_tree()
+	elif is_instance_valid(target):
+		tree = target.get_tree()
+		
 	if not tree:
 		return result
 	
@@ -38,7 +44,9 @@ static func calculate_final_damage(
 	var ps = tree.get_first_node_in_group("player_stats")
 	
 	# 1. Bonificadores de distancia
-	var player_to_enemy_distance = player.global_position.distance_to(target.global_position)
+	var player_to_enemy_distance = 0.0
+	if is_instance_valid(player):
+		player_to_enemy_distance = player.global_position.distance_to(target.global_position)
 	
 	if ps and ps.has_method("get_stat"):
 		# Brawler: +daño si enemigo cerca (< 150 del jugador)

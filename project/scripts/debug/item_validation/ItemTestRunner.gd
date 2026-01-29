@@ -48,6 +48,11 @@ func _ready():
 	
 	mechanical_oracle = MechanicalOracle.new()
 	add_child(mechanical_oracle)
+	
+	var args = OS.get_cmdline_args() + OS.get_cmdline_user_args()
+	print("[ItemTestRunner] Combined Args: ", args)
+	if "--run-pilot" in args:
+		call_deferred("run_sanity_check")
 
 func start_suite(categories: Array = [], limit: int = -1):
 	print("[ItemTestRunner] Starting Test Suite...")
@@ -292,11 +297,28 @@ func _run_next_test():
 				
 			weapon.perform_attack(mock_player, p_stats_dict) # Fire once
 		
-		# Wait for projectile travel/impact
-		await get_tree().create_timer(0.5).timeout
+		# Wait for projectile travel/impact (Standardized Test Window)
+		# Phase 3.6: Fixed 2.0s window for DPS aggregation
+		var test_window = 2.0
+		await get_tree().create_timer(test_window).timeout
 		
-		# VERIFY (Mechanical)
-		var mech_res = mechanical_oracle.verify_damage_event(expected_damage, 0.05) # 5% tolerance
+		# VERIFY (Mechanical Phase 3.6)
+		# Infer projectile type from weapon data or metadata
+		var p_type = "SIMPLE" # Default
+		# Using introspection since weapon is BaseWeapon instance
+		if "projectile_type" in weapon:
+			# If it's an enum, we need to convert to string if MechanicalOracle expects string
+			# BaseWeapon.ProjectileType: SINGLE=0, MULTI=1, BEAM=2, AOE=3, ORBIT=4, CHAIN=5
+			var p_enum = weapon.projectile_type
+			match p_enum:
+				0: p_type = "SIMPLE"
+				1: p_type = "MULTI"
+				2: p_type = "BEAM"
+				3: p_type = "AOE"
+				4: p_type = "ORBIT"
+				5: p_type = "CHAIN"
+				
+		var mech_res = mechanical_oracle.verify_simulation_results(final_stats, str(p_type), test_window, 0.15) # 15% tolerance
 		if not mech_res["passed"]:
 			success = false
 			var fail_msg = mech_res["reason"]

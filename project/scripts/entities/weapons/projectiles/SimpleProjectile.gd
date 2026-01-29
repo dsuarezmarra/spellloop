@@ -531,6 +531,12 @@ func _handle_hit(target: Node) -> void:
 	
 	# Calcular daño final usando el sistema centralizado
 	# Esto aplica: Crit, Sharpehooter, Brawler, Executioner, Elite Damage
+	# Refresh cached player ref if needed
+	if not is_instance_valid(_player):
+		_player = _get_player()
+
+	# Calcular daño final usando el sistema centralizado
+	# NOTA: _player puede ser null en tests sintéticos, DamageCalculator debe manejarlo
 	var damage_result = DamageCalculator.calculate_final_damage(
 		damage, target, _player, 
 		get_meta("crit_chance", 0.0), 
@@ -1057,4 +1063,3 @@ func _play_hit_sound() -> void:
 			_audio_manager.play_sfx_random_pitch(hit_sound)
 		elif _audio_manager and _audio_manager.has_method("play"):
 			_audio_manager.play(hit_sound)
-
