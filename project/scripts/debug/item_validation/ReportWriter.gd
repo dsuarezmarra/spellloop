@@ -1,7 +1,7 @@
 extends Node
 class_name ReportWriter
 
-func generate_report(results: Array) -> String:
+func generate_report(results: Array, metadata: Dictionary = {}) -> String:
 	var user_dir = "user://test_reports/"
 	var dir = DirAccess.open("user://")
 	if not dir.dir_exists("test_reports"):
@@ -16,58 +16,137 @@ func generate_report(results: Array) -> String:
 		print("[ReportWriter] Failed to open file: %s" % full_path)
 		return ""
 		
+	# First line: Metadata
+	var meta_wrapped = {"type": "metadata", "data": metadata}
+	file.store_line(JSON.stringify(meta_wrapped))
+	
 	for res in results:
 		file.store_line(JSON.stringify(res))
 		
 	return full_path
 
-func generate_summary_md(results: Array, output_path_jsonl: String) -> String:
-	var md_path = output_path_jsonl.replace(".jsonl", ".md").replace("item_validation_report", "item_validation_summary")
+func generate_summary_md(results_mem: Array, jsonl_path: String, metadata: Dictionary = {}) -> String:
+	var md_path = jsonl_path.replace(".jsonl", ".md").replace("item_validation_report", "item_validation_summary")
 	var file = FileAccess.open(md_path, FileAccess.WRITE)
 	if not file:
 		return ""
 		
+	# ROBUST PARSING OF JSONL
+	var results = []
+	var parse_errors = 0
+	var meta_from_file = {}
+	
+	var r_file = FileAccess.open(jsonl_path, FileAccess.READ)
+	if r_file:
+		while not r_file.eof_reached():
+			var line = r_file.get_line().strip_edges()
+			if line.is_empty(): continue
+			
+			var json = JSON.new()
+			var error = json.parse(line)
+			if error != OK:
+				parse_errors += 1
+				continue
+				
+			var data = json.get_data()
+			if typeof(data) == TYPE_DICTIONARY:
+				if data.get("type") == "metadata":
+					meta_from_file = data.get("data", {})
+				else:
+					# Validate schema
+					if _validate_entry(data):
+						results.append(data)
+					else:
+						data["PARSE_ERROR"] = true
+						results.append(data)
+						parse_errors += 1
+	else:
+		# Fallback to memory if file read fails (unlikely)
+		results = results_mem
+		
 	var total = results.size()
 	var passed = 0
-	var failed = 0
+	var violations = 0
+	var bugs = 0
 	var scopes = {}
-	var mech_count = 0
+	var deltas = []
 	
 	for res in results:
-		if res.get("success", false):
-			passed += 1
-		else:
-			failed += 1
+		if res.get("PARSE_ERROR", false): continue
 		
+		var item_id = res.get("item_id", "unknown")
+		var is_success = res.get("success", false)
 		var scope = res.get("scope", "UNKNOWN")
 		scopes[scope] = scopes.get(scope, 0) + 1
 		
 		var subtests = res.get("subtests", [])
+		var has_violation = false
+		var has_bug = false
+		
 		for sub in subtests:
+			var res_data = sub.get("res", {})
+			var code = res_data.get("result_code", "PASS")
+			if code == "BUG": has_bug = true
+			elif code == "DESIGN_VIOLATION": has_violation = true
+			
 			if sub.get("type") == "mechanical_damage":
-				mech_count += 1
-				break
+				var delta = res_data.get("delta_percent", 0.0)
+				deltas.append({"id": item_id, "delta": delta, "actual": res_data.get("actual"), "expected": res_data.get("expected")})
+		
+		if has_bug: bugs += 1
+		elif has_violation: violations += 1
+		
+		if is_success: passed += 1
+	
+	deltas.sort_custom(func(a, b): return abs(a["delta"]) > abs(b["delta"]))
 	
 	file.store_line("# Item Validation Summary")
+	file.store_line("Run ID: %s" % metadata.get("run_id", meta_from_file.get("run_id", "N/A")))
 	file.store_line("Date: %s" % Time.get_datetime_string_from_system())
 	file.store_line("")
+	file.store_line("## Metadata")
+	file.store_line("- **Started At**: %s" % metadata.get("started_at", "N/A"))
+	file.store_line("- **Scheduled Tests**: %d" % metadata.get("scheduled_tests_count", 0))
+	file.store_line("- **Parsed Tests**: %d" % results.size())
+	file.store_line("- **Parse Errors**: %d" % parse_errors)
+	if metadata.get("empty_reason"):
+		file.store_line("- **Empty Queue Reason**: %s" % metadata.get("empty_reason"))
+	file.store_line("")
 	file.store_line("## Metrics")
-	file.store_line("- **Total Tests**: %d" % total)
-	file.store_line("- **Passed**: %d" % passed)
-	file.store_line("- **Failed**: %d" % failed)
-	file.store_line("- **Mechanical Verified**: %d" % mech_count)
+	file.store_line("- **Total Valid Items**: %d" % results.size())
+	file.store_line("- **%% Passed**: %.1f%% (%d)" % [(float(passed)/total*100) if total > 0 else 0, passed])
+	file.store_line("- **%% Design Violations**: %.1f%% (%d)" % [(float(violations)/total*100) if total > 0 else 0, violations])
+	file.store_line("- **Bugs Detected**: %d" % bugs)
+	file.store_line("")
+	file.store_line("## Top 20 Most Extreme Deltas")
+	file.store_line("| Item | Delta %% | Actual | Expected |")
+	file.store_line("| :--- | :--- | :--- | :--- |")
+	for i in range(min(20, deltas.size())):
+		var d = deltas[i]
+		file.store_line("| %s | %.1f%% | %.1f | %.1f |" % [d.id, d.delta * 100, d.actual, d.expected])
+		
 	file.store_line("")
 	file.store_line("## Scope Coverage")
 	for s in scopes:
 		file.store_line("- %s: %d" % [s, scopes[s]])
 		
 	file.store_line("")
-	file.store_line("## Failures")
-	if failed == 0:
-		file.store_line("No failures.")
+	file.store_line("## Failures (Bugs & Violations)")
+	if (total - passed + parse_errors) == 0:
+		file.store_line("No issues found.")
 	else:
+		if parse_errors > 0:
+			file.store_line("- **CRITICAL**: %d Parse Errors detected in JSONL." % parse_errors)
 		for res in results:
-			if not res.get("success", false):
+			if res.get("PARSE_ERROR"):
+				file.store_line("- **Malformed Entry**: Schema validation failed.")
+			elif not res.get("success", false) or res.get("failures", []).size() > 0:
 				file.store_line("- **%s**: %s" % [res.get("item_id"), str(res.get("failures"))])
 	
 	return md_path
+
+func _validate_entry(data: Dictionary) -> bool:
+	var required = ["item_id", "scope", "success", "failures", "subtests"]
+	for k in required:
+		if not k in data: return false
+	return true

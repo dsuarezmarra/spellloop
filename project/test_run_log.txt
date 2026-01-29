@@ -1,0 +1,11 @@
+﻿Godot Engine v4.5.1.stable.official.f62fdbde1 - https://godotengine.org
+
+[AudioManager] Loaded 178 audio definitions
+[AudioManager] Validating manifest...
+[AudioManager] Validation finished with issues: 76 empty IDs, 0 broken paths.
+[Localization] Auto-detected system language: es
+[PerfTracker] Initialized. Logs at: C:/Users/Usuario/AppData/Roaming/Godot/app_userdata/Spellloop/perf_logs
+[38;5;208m[PerfTracker] ÔÜá´©Å LAG SPIKE DETECTED: 28.27 ms (FPS: 130)[39m[0m
+   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
+[38;5;208m[PerfTracker] ÔÜá´©Å LAG SPIKE DETECTED: 25.68 ms (FPS: 133)[39m[0m
+   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0

@@ -13,7 +13,7 @@ const NumericOracle_Ref = preload("res://scripts/debug/item_validation/NumericOr
 
 const MechanicalOracle_Ref = preload("res://scripts/debug/item_validation/MechanicalOracle.gd")
 
-const FULL_MATRIX_ENABLED = false # Toggle for Phase 4
+const FULL_MATRIX_ENABLED = true # Toggle for Phase 4
 
 # Configuration
 var max_tests = -1 # -1 for all
@@ -29,33 +29,52 @@ var mechanical_oracle: MechanicalOracle
 var attack_manager: AttackManager
 var player_stats_mock: PlayerStats
 
+# Metadata for Reporting
+var run_id: String = ""
+var discovery_count: int = 0
+var scheduled_count: int = 0
+var empty_reason: String = ""
+
 # References to Databases
 # upgrade_database.gd, weapon_database.gd, weapon_fusion_manager.gd are AutoLoads or Global Classes
 
 func _ready():
-	if not OS.is_debug_build():
-		queue_free()
-		return
-		
-	report_writer = ReportWriter.new()
+	print("[ItemTestRunner] _ready reached.")
+	var hb = FileAccess.open("ready_check.txt", FileAccess.WRITE)
+	hb.store_string("READY AT " + Time.get_datetime_string_from_system())
+	hb.close()
+	
+	report_writer = ReportWriter_Ref.new()
 	add_child(report_writer)
 	
-	scenario_runner = ScenarioRunner.new()
+	scenario_runner = ScenarioRunner_Ref.new()
 	add_child(scenario_runner)
 	
-	numeric_oracle = NumericOracle.new()
+	numeric_oracle = NumericOracle_Ref.new()
 	add_child(numeric_oracle)
 	
-	mechanical_oracle = MechanicalOracle.new()
+	mechanical_oracle = MechanicalOracle_Ref.new()
 	add_child(mechanical_oracle)
 	
 	var args = OS.get_cmdline_args() + OS.get_cmdline_user_args()
-	print("[ItemTestRunner] Combined Args: ", args)
+	print("[ItemTestRunner] Args: ", args)
 	if "--run-pilot" in args:
+		print("[ItemTestRunner] Pilot mode detected.")
 		call_deferred("run_sanity_check")
+	elif "--run-full" in args:
+		print("[ItemTestRunner] Full Matrix mode detected.")
+		var batch_size = -1
+		var offset = 0
+		for arg in args:
+			if arg.begins_with("--batch-size="):
+				batch_size = arg.split("=")[1].to_int()
+			if arg.begins_with("--offset="):
+				offset = arg.split("=")[1].to_int()
+		call_deferred("start_suite", [], batch_size, offset)
 
-func start_suite(categories: Array = [], limit: int = -1):
-	print("[ItemTestRunner] Starting Test Suite...")
+func start_suite(categories: Array = [], limit: int = -1, offset: int = 0):
+	run_id = "run_" + str(str(Time.get_unix_time_from_system()).hash())
+	print("[ItemTestRunner] Starting Test Suite %s (Batch Size: %d, Offset: %d)..." % [run_id, limit, offset])
 	# Override limit if Full Matrix is disabled
 	if not FULL_MATRIX_ENABLED and limit == -1:
 		print("[ItemTestRunner] FULL MATRIX DISABLED. Running PILOT batch only (25 items).")
@@ -68,7 +87,14 @@ func start_suite(categories: Array = [], limit: int = -1):
 	
 	# Discovery Phase
 	var items = _discover_items(categories)
-	print("[ItemTestRunner] Discovered %d items." % items.size())
+	discovery_count = items.size()
+	print("[ItemTestRunner] Discovered %d items." % discovery_count)
+	
+	if discovery_count == 0:
+		empty_reason = "No items discovered in categories: %s" % str(categories)
+		print("[ItemTestRunner] ERROR: %s" % empty_reason)
+		_finish_suite()
+		return
 	
 	# Build Applicability Matrix & Test Queue
 	if max_tests == 25 and not FULL_MATRIX_ENABLED:
@@ -76,11 +102,25 @@ func start_suite(categories: Array = [], limit: int = -1):
 	else:
 		test_queue = _build_test_queue(items)
 	
-	if max_tests > 0 and max_tests != 25: # Careful not to slice the pilot queue which interacts with method logic
-		if test_queue.size() > max_tests:
-			test_queue.resize(max_tests)
+	# 3. Batching Logic
+	if offset > 0:
+		if offset < test_queue.size():
+			test_queue = test_queue.slice(offset)
+		else:
+			test_queue = []
 			
-	print("[ItemTestRunner] Scheduled %d tests." % test_queue.size())
+	if limit > 0:
+		if test_queue.size() > limit:
+			test_queue.resize(limit)
+			
+	scheduled_count = test_queue.size()
+	if scheduled_count == 0:
+		empty_reason = "Scheduled tests count is 0 (offset %d, limit %d, total items %d)" % [offset, limit, discovery_count]
+		print("[ItemTestRunner] ERROR: %s" % empty_reason)
+		_finish_suite()
+		return
+		
+	print("[ItemTestRunner] Scheduled %d tests (starting from offset %d)." % [scheduled_count, offset])
 	
 	# Start Execution
 	_run_next_test()
@@ -279,9 +319,27 @@ func _run_next_test():
 		# Get Expected Stats
 		var final_stats = attack_manager.get_weapon_full_stats(weapon)
 		var expected_damage = final_stats.get("damage_final", 10.0)
+		var weapon_range = final_stats.get("range", 100.0)
+		
+		# Infer projectile type early for environment setup
+		var p_type = "SIMPLE" # Default
+		if "projectile_type" in weapon:
+			var p_enum = weapon.projectile_type
+			match p_enum:
+				0: p_type = "SIMPLE"
+				1: p_type = "MULTI"
+				2: p_type = "BEAM"
+				3: p_type = "AOE"
+				4: p_type = "ORBIT"
+				5: p_type = "CHAIN"
 		
 		# Spawn Dummy
-		var dummy = scenario_runner.spawn_dummy_enemy(Vector2(100, 0)) # Right in front
+		# Phase 5: For ORBIT type, spawn at range radius to ensure collision
+		var spawn_pos = Vector2(100, 0)
+		if p_type == "ORBIT":
+			spawn_pos = Vector2(weapon_range, 0)
+			
+		var dummy = scenario_runner.spawn_dummy_enemy(spawn_pos)
 		mechanical_oracle.track_enemy(dummy)
 		
 		# FIRE!
@@ -303,24 +361,14 @@ func _run_next_test():
 		await get_tree().create_timer(test_window).timeout
 		
 		# VERIFY (Mechanical Phase 3.6)
-		# Infer projectile type from weapon data or metadata
-		var p_type = "SIMPLE" # Default
-		# Using introspection since weapon is BaseWeapon instance
-		if "projectile_type" in weapon:
-			# If it's an enum, we need to convert to string if MechanicalOracle expects string
-			# BaseWeapon.ProjectileType: SINGLE=0, MULTI=1, BEAM=2, AOE=3, ORBIT=4, CHAIN=5
-			var p_enum = weapon.projectile_type
-			match p_enum:
-				0: p_type = "SIMPLE"
-				1: p_type = "MULTI"
-				2: p_type = "BEAM"
-				3: p_type = "AOE"
-				4: p_type = "ORBIT"
-				5: p_type = "CHAIN"
-				
 		var mech_res = mechanical_oracle.verify_simulation_results(final_stats, str(p_type), test_window, 0.15) # 15% tolerance
+		
+		var res_code = mech_res.get("result_code", "PASS")
+		if res_code == "BUG":
+			success = false # Stop on BUG
+		
+		# Continue on DESIGN_VIOLATION, but add to failures for reporting
 		if not mech_res["passed"]:
-			success = false
 			var fail_msg = mech_res["reason"]
 			failures.append(fail_msg)
 			
@@ -384,9 +432,31 @@ func _record_failure(test_case, reason):
 	})
 
 func _finish_suite():
-	print("[ItemTestRunner] Suite Finished. Generating Report...")
-	var path = report_writer.generate_report(results)
-	var md_path = report_writer.generate_summary_md(results, path)
+	print("[ItemTestRunner] Suite Finished. Checking for results...")
+	
+	if results.is_empty():
+		var reason = empty_reason if empty_reason != "" else "No tests were executed (stopped early or crashed)."
+		print("[ItemTestRunner] ERROR: %s - Skipping report generation." % reason)
+		get_tree().quit()
+		return
+
+	var metadata = {
+		"run_id": run_id,
+		"started_at": Time.get_datetime_string_from_system(),
+		"seed": 1337,
+		"FULL_MATRIX_ENABLED": FULL_MATRIX_ENABLED,
+		"batch_index": current_test_index - results.size(), # Approximate offset
+		"batch_size": max_tests,
+		"discovered_items_count": discovery_count,
+		"scheduled_tests_count": scheduled_count
+	}
+
+	print("[ItemTestRunner] Generating Report for %d results..." % results.size())
+	var path = report_writer.generate_report(results, metadata)
+	var md_path = report_writer.generate_summary_md(results, path, metadata)
 	all_tests_completed.emit(path)
 	print("[ItemTestRunner] Report saved to: %s" % path)
 	print("[ItemTestRunner] Summary saved to: %s" % md_path)
+	
+	# Always quit when finished in batch mode
+	get_tree().quit()
