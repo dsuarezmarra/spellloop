@@ -23,21 +23,30 @@ var _active_instances: Array = []
 const MAX_ACTIVE_TEXTS: int = 150 # Límite duro para evitar degradación de FPS
 const MAX_POOL_SIZE: int = 200
 
+var _is_headless: bool = false
+
 func _ready() -> void:
     if instance == null:
         instance = self
     z_index = 100
     
+    if "--headless" in OS.get_cmdline_args():
+        _is_headless = true
+        return
+
     # Pre-warm pool
     for i in range(20):
         _create_new_instance_for_pool()
 
 func _create_new_instance_for_pool() -> void:
+
     var inst = FloatingTextInstance.new()
     inst.visible = false
     _pool.append(inst)
 
 func get_from_pool() -> FloatingTextInstance:
+    if _is_headless: return null
+
     # Si hay límite excedido, reciclar el más viejo activo
     if _active_instances.size() >= MAX_ACTIVE_TEXTS:
         var oldest = _active_instances.pop_front()

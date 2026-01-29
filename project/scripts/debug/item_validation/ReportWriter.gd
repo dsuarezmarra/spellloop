@@ -23,6 +23,7 @@ func generate_report(results: Array, metadata: Dictionary = {}) -> String:
 	for res in results:
 		file.store_line(JSON.stringify(res))
 		
+	file.close() # Explicit close
 	return full_path
 
 func generate_summary_md(results_mem: Array, jsonl_path: String, metadata: Dictionary = {}) -> String:
@@ -60,6 +61,7 @@ func generate_summary_md(results_mem: Array, jsonl_path: String, metadata: Dicti
 						data["PARSE_ERROR"] = true
 						results.append(data)
 						parse_errors += 1
+		r_file.close() # Explicit close reader
 	else:
 		# Fallback to memory if file read fails (unlikely)
 		results = results_mem
@@ -97,6 +99,34 @@ func generate_summary_md(results_mem: Array, jsonl_path: String, metadata: Dicti
 		elif has_violation: violations += 1
 		
 		if is_success: passed += 1
+	
+	# Write MD Content
+	file.store_line("# Item Validation Summary")
+	file.store_line("Date: %s" % metadata.get("started_at", "N/A"))
+	file.store_line("Run ID: %s" % metadata.get("run_id", "N/A"))
+	file.store_line("Total Tests: %d" % total)
+	file.store_line("- Passed: %d" % passed)
+	file.store_line("- Violations: %d" % violations)
+	file.store_line("- Bugs: %d" % bugs)
+	file.store_line("- Parse Errors: %d" % parse_errors)
+
+	file.store_line("\n## Status Verification Results")
+	file.store_line("| Item ID | Status | Result | Details |")
+	file.store_line("|---|---|---|---|")
+
+	for res in results:
+		var item_id = res.get("item_id", "unknown")
+		var subtests = res.get("subtests", [])
+		for sub in subtests:
+			if sub.get("type") == "status_verification":
+				var status = sub.get("status", "N/A")
+				var r_res = sub.get("res", {})
+				var r_pass = "✅" if r_res.get("passed", false) else "❌"
+				var reason = r_res.get("reason", "No details")
+				file.store_line("| %s | %s | %s | %s |" % [item_id, status, r_pass, reason])
+	
+	file.close() # Explicit close writer
+	return md_path
 	
 	deltas.sort_custom(func(a, b): return abs(a["delta"]) > abs(b["delta"]))
 	

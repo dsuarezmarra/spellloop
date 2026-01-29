@@ -10,6 +10,7 @@ signal all_tests_completed(report_path)
 const ScenarioRunner_Ref = preload("res://scripts/debug/item_validation/ScenarioRunner.gd")
 const ReportWriter_Ref = preload("res://scripts/debug/item_validation/ReportWriter.gd")
 const NumericOracle_Ref = preload("res://scripts/debug/item_validation/NumericOracle.gd")
+const StatusEffectOracle_Ref = preload("res://scripts/debug/item_validation/StatusEffectOracle.gd")
 
 const MechanicalOracle_Ref = preload("res://scripts/debug/item_validation/MechanicalOracle.gd")
 
@@ -26,6 +27,7 @@ var report_writer: ReportWriter
 var scenario_runner: ScenarioRunner
 var numeric_oracle: NumericOracle
 var mechanical_oracle: MechanicalOracle
+var status_oracle: StatusEffectOracle
 var attack_manager: AttackManager
 var player_stats_mock: PlayerStats
 
@@ -60,6 +62,9 @@ func _ready():
 	
 	mechanical_oracle = MechanicalOracle_Ref.new()
 	add_child(mechanical_oracle)
+    
+	status_oracle = StatusEffectOracle_Ref.new()
+	add_child(status_oracle)
 	
 	var args = OS.get_cmdline_args() + OS.get_cmdline_user_args()
 	print("[ItemTestRunner] Args: ", args)
@@ -76,6 +81,8 @@ func _ready():
 	if "--run-pilot" in args:
 		print("[ItemTestRunner] Pilot mode detected.")
 		call_deferred("run_sanity_check")
+	elif "--run-status-pilot" in args:
+		call_deferred("run_status_pilot")
 	elif "--run-full" in args:
 		print("[ItemTestRunner] Full Matrix mode detected.")
 		var batch_size = -1
@@ -145,6 +152,35 @@ func run_sanity_check():
 	print("[ItemTestRunner] Running PILOT V2 (25 items, Quota-based)...")
 	# Force 25 limit to trigger pilot queue logic
 	start_suite([], 25)
+
+func run_status_pilot():
+	print("[ItemTestRunner] Running STATUS Verification Pilot...")
+	var target_ids = [
+		"fire_wand", "ice_wand", "lightning_wand", "arcane_orb", 
+		"light_beam", "wind_blade", "earth_spike", "nature_staff", 
+		"shadow_dagger", "void_pulse"
+	]
+	
+	var items = []
+	# Find these items in WeaponDatabase
+	for id in target_ids:
+		if id in WeaponDatabase.WEAPONS:
+			var item = WeaponDatabase.WEAPONS[id].duplicate(true)
+			item["_type"] = "WEAPON"
+			items.append(item)
+		else:
+			print("WARNING: Item %s not found in WeaponDatabase!" % id)
+			
+	test_queue = _build_test_queue(items)
+	run_id = "status_pilot_" + str(Time.get_unix_time_from_system())
+	start_time_ms = Time.get_ticks_msec()
+	scheduled_count = test_queue.size()
+	results = []
+	current_test_index = 0
+	
+	print("[ItemTestRunner] Scheduled %d status verification tests." % scheduled_count)
+	_run_next_test()
+
 
 func _discover_items(categories: Array) -> Array:
 	var items = []
@@ -299,6 +335,9 @@ func _run_next_test():
 	if mechanical_oracle:
 		mechanical_oracle.is_measure_mode = is_measure_mode
 		mechanical_oracle.start_listening()
+        
+	if status_oracle:
+		status_oracle.start_listening()
 	
 	var classification = _classify_item(test_case["item"])
 	test_case["scope"] = classification
@@ -323,6 +362,7 @@ func _run_next_test():
 		iteration_results.append(iter_res)
 		# Reset between iterations
 		mechanical_oracle.start_listening()
+		status_oracle.start_listening()
 	
 	# Select Median based on actual_damage
 	iteration_results.sort_custom(func(a, b): return a["actual_damage"] < b["actual_damage"])
@@ -402,6 +442,7 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 			if p_type == "ORBIT": spawn_pos = Vector2(weapon_range, 0)
 			var dummy = scenario_runner.spawn_dummy_enemy(spawn_pos)
 			mechanical_oracle.track_enemy(dummy)
+			status_oracle.track_enemy(dummy)
 		
 		# FIRE!
 		var p_stats_dict = {}
@@ -427,10 +468,62 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 		
 		# Capture final state
 		mechanical_oracle.stop_listening()
+		status_oracle.stop_listening()
 		
 		var mech_res = mechanical_oracle.verify_simulation_results(final_stats, str(p_type), test_window, 0.15)
 		
+		# STATUS VERIFICATION
+		var status_results = []
+		var main_effect = final_stats.get("effect", "none")
+		
+		# Check for Burn
+		if main_effect == "burn" or final_stats.get("burn_chance", 0) > 0:
+			var expected_burn = final_stats.get("burn_damage", 3.0)
+			# If implicitly defined by effect value
+			if main_effect == "burn": expected_burn = final_stats.get("effect_value", 3.0)
+			
+			var res = status_oracle.verify_status("burn", {"damage": expected_burn})
+			status_results.append({"status": "burn", "res": res})
+            
+		# Check for Freeze
+		if main_effect == "freeze" or final_stats.get("freeze_chance", 0) > 0:
+			var res = status_oracle.verify_status("freeze", {"amount": 1.0})
+			status_results.append({"status": "freeze", "res": res})
+            
+		# Check for Slow (if not frozen, often implicit or separate)
+		if main_effect == "slow" or final_stats.get("slow_chance", 0) > 0:
+			# Slow amount varies, usually 0.5 or from stat
+			var res = status_oracle.verify_status("slow", {}) 
+			status_results.append({"status": "slow", "res": res})
+            
+		# Check for Bleed
+		if main_effect == "bleed" or final_stats.get("bleed_chance", 0) > 0:
+			var res = status_oracle.verify_status("bleed", {"damage": final_stats.get("bleed_damage", 2.0)})
+			status_results.append({"status": "bleed", "res": res})
+			
+		# Check for Stun
+		if main_effect == "stun":
+			var res = status_oracle.verify_status("stun", {})
+			status_results.append({"status": "stun", "res": res})
+
+		# Check for Blind
+		if main_effect == "blind":
+			var res = status_oracle.verify_status("blind", {})
+			status_results.append({"status": "blind", "res": res})
+
+		
 		iter_result["success"] = (mech_res.get("result_code", "PASS") != "BUG")
+		
+		# Validate Status Results
+		for s_res in status_results:
+			if not s_res["res"]["passed"]:
+				iter_result["success"] = false
+				iter_result["failures"].append("Status Fail [%s]: %s" % [s_res["status"], s_res["res"]["reason"]])
+			iter_result["subtests"].append({"type": "status_verification", "status": s_res["status"], "res": s_res["res"]})
+
+		# Attach detailed per-instance status logs
+		iter_result["status_details"] = status_oracle.get_detailed_report()
+
 		if not mech_res["passed"]:
 			iter_result["failures"].append(mech_res["reason"])
 			
@@ -469,13 +562,34 @@ func _record_failure(test_case, reason):
 		"failures": [reason]
 	})
 
+func _exit_run():
+	print("[ItemTestRunner] Exiting...")
+	_cleanup()
+	# Wait for cleanup to propagate (freed nodes)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	get_tree().quit()
+
+func _cleanup():
+	if scenario_runner:
+		scenario_runner.teardown_environment()
+	
+	# Clear Oracle data by cycling listening state
+	if mechanical_oracle:
+		mechanical_oracle.start_listening()
+		mechanical_oracle.stop_listening()
+	
+	if status_oracle:
+		status_oracle.start_listening()
+		status_oracle.stop_listening()
+
 func _finish_suite():
 	print("[ItemTestRunner] Suite Finished. Checking for results...")
 	
 	if results.is_empty():
 		var reason = empty_reason if empty_reason != "" else "No tests were executed (stopped early or crashed)."
 		print("[ItemTestRunner] ERROR: %s - Skipping report generation." % reason)
-		get_tree().quit()
+		_exit_run()
 		return
 
 	var duration = Time.get_ticks_msec() - start_time_ms
@@ -491,6 +605,7 @@ func _finish_suite():
 		"batch_size": max_tests,
 		"discovered_items_count": discovery_count,
 		"scheduled_tests_count": scheduled_count,
+		"executed_tests_count": results.size(),
 		"empty_reason": empty_reason
 	}
 
@@ -500,6 +615,8 @@ func _finish_suite():
 	all_tests_completed.emit(path)
 	print("[ItemTestRunner] Report saved to: %s" % path)
 	print("[ItemTestRunner] Summary saved to: %s" % md_path)
+	print("[ItemTestRunner] Final Stats: Scheduled=%d, Executed=%d, Time=%dms" % [scheduled_count, results.size(), duration])
 	
-	# Always quit when finished in batch mode
-	get_tree().quit()
+	_exit_run()
+
+

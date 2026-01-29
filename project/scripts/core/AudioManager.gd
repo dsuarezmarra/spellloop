@@ -32,6 +32,10 @@ func _ready():
 	_init_audio_system()
 	_load_volume_settings()
 	
+	if "--headless" in OS.get_cmdline_args():
+		print("[AudioManager] Headless mode detected. Skipping debug validation.")
+		return
+	
 	if debug_audio:
 		validate_manifest()
 

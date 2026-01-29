@@ -34,8 +34,9 @@ func teardown_environment():
 		current_env_instance.queue_free()
 		current_env_instance = null
 		
-	# 4. Force Garbage Collection (Godot handles RefCounted, but we want nodes gone now)
-	# No direct GC command in GDScript safe to use generally, but queue_free handles nodes.
+	# 4. Wait for memory release
+	await get_tree().process_frame
+	await get_tree().process_frame
 
 func spawn_dummy_enemy(position: Vector2) -> Node:
 	var dummy_scene = load("res://scripts/debug/item_validation/DummyEnemy.tscn")

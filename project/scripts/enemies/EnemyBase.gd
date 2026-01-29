@@ -1454,6 +1454,10 @@ var _is_frozen: bool = false  # Separado de slow para visual diferente
 var _is_bleeding: bool = false  # Efecto bleed (DoT) - phantom_blade
 var _is_shadow_marked: bool = false  # Marca de sombra - shadow_orbs (daño extra)
 
+# Test Hooks Signals
+signal status_applied(name, duration, params)
+signal status_removed(name)
+
 # Sistema de iconos de estado
 var status_icon_display: StatusIconDisplay = null
 
@@ -1509,6 +1513,8 @@ func apply_slow(amount: float, duration: float) -> void:
 		_slow_timer = duration
 		_is_slowed = true
 
+	status_applied.emit("slow", _slow_timer, {"amount": _slow_amount})
+
 	# Aplicar reducción de velocidad
 	speed = _base_speed * (1.0 - _slow_amount)
 
@@ -1532,6 +1538,8 @@ func apply_freeze(amount: float, duration: float) -> void:
 	_slow_amount = max(_slow_amount, amount)
 	_is_slowed = true
 	_slow_timer = max(_slow_timer, duration)
+
+	status_applied.emit("freeze", _freeze_timer, {"amount": amount})
 
 	# Aplicar reducción de velocidad
 	speed = _base_speed * (1.0 - _slow_amount)
@@ -1559,6 +1567,8 @@ func apply_burn(damage_per_tick: float, duration: float) -> void:
 		_burn_tick_timer = 0.0
 		_is_burning = true
 
+	status_applied.emit("burn", _burn_timer, {"damage": _burn_damage})
+
 	# Actualizar icono de estado
 	if status_icon_display:
 		status_icon_display.add_effect("burn", _burn_timer)
@@ -1581,6 +1591,8 @@ func apply_stun(duration: float) -> void:
 		speed = 0.0  # Paralizar
 		can_attack = false  # No puede atacar
 
+	status_applied.emit("stun", _stun_timer, {})
+
 	# Actualizar icono de estado
 	if status_icon_display:
 		status_icon_display.add_effect("stun", _stun_timer)
@@ -1599,6 +1611,8 @@ func apply_pull(target_position: Vector2, force: float, duration: float) -> void
 	_pull_timer = duration
 	_is_pulled = true
 
+	status_applied.emit("pull", _pull_timer, {"force": force})
+
 	# Actualizar icono de estado
 	if status_icon_display:
 		status_icon_display.add_effect("pull", _pull_timer)
@@ -1612,6 +1626,8 @@ func apply_blind(duration: float) -> void:
 	"""
 	_blind_timer = max(_blind_timer, duration)
 	_is_blinded = true
+
+	status_applied.emit("blind", _blind_timer, {})
 
 	# Actualizar icono de estado
 	if status_icon_display:
@@ -1635,6 +1651,8 @@ func apply_bleed(damage_per_tick: float, duration: float) -> void:
 		_bleed_tick_timer = 0.0
 		_is_bleeding = true
 
+	status_applied.emit("bleed", _bleed_timer, {"damage": _bleed_damage})
+
 	# Actualizar icono de estado
 	if status_icon_display:
 		status_icon_display.add_effect("bleed", _bleed_timer)
@@ -1655,6 +1673,8 @@ func apply_shadow_mark(bonus_damage: float, duration: float) -> void:
 		_shadow_mark_bonus = bonus_damage
 		_shadow_mark_timer = duration
 		_is_shadow_marked = true
+
+	status_applied.emit("shadow_mark", _shadow_mark_timer, {"bonus": _shadow_mark_bonus})
 
 	# Actualizar icono de estado
 	if status_icon_display:
@@ -1747,6 +1767,7 @@ func _process_status_effects(delta: float) -> void:
 			_is_stunned = false
 			can_attack = true
 			status_changed = true
+			status_removed.emit("stun")
 			if status_icon_display:
 				status_icon_display.remove_effect("stun")
 			if _base_speed > 0:
@@ -1758,6 +1779,7 @@ func _process_status_effects(delta: float) -> void:
 		if _freeze_timer <= 0:
 			_is_frozen = false
 			status_changed = true
+			status_removed.emit("freeze")
 			if status_icon_display:
 				status_icon_display.remove_effect("freeze")
 
@@ -1768,6 +1790,7 @@ func _process_status_effects(delta: float) -> void:
 			_is_slowed = false
 			_slow_amount = 0.0
 			status_changed = true
+			status_removed.emit("slow")
 			if status_icon_display:
 				status_icon_display.remove_effect("slow")
 			if _base_speed > 0:
@@ -1788,6 +1811,7 @@ func _process_status_effects(delta: float) -> void:
 			_is_burning = false
 			_burn_damage = 0.0
 			status_changed = true
+			status_removed.emit("burn")
 			if status_icon_display:
 				status_icon_display.remove_effect("burn")
 
@@ -1797,6 +1821,7 @@ func _process_status_effects(delta: float) -> void:
 		if _blind_timer <= 0:
 			_is_blinded = false
 			status_changed = true
+			status_removed.emit("blind")
 			if status_icon_display:
 				status_icon_display.remove_effect("blind")
 
@@ -1821,6 +1846,7 @@ func _process_status_effects(delta: float) -> void:
 			_is_bleeding = false
 			_bleed_damage = 0.0
 			status_changed = true
+			status_removed.emit("bleed")
 			if status_icon_display:
 				status_icon_display.remove_effect("bleed")
 
@@ -1831,6 +1857,7 @@ func _process_status_effects(delta: float) -> void:
 			_is_shadow_marked = false
 			_shadow_mark_bonus = 0.0
 			status_changed = true
+			status_removed.emit("shadow_mark")
 			if status_icon_display:
 				status_icon_display.remove_effect("shadow_mark")
 
@@ -1844,6 +1871,7 @@ func _process_status_effects(delta: float) -> void:
 		if _pull_timer <= 0:
 			_is_pulled = false
 			status_changed = true
+			status_removed.emit("pull")
 			if status_icon_display:
 				status_icon_display.remove_effect("pull")
 
