@@ -1,7 +1,7 @@
 Godot Engine v4.5.1.stable.official.f62fdbde1 - https://godotengine.org
 
-SCRIPT ERROR: Parse Error: Identifier "p_type" not declared in the current scope.
-   at: GDScript::reload (res://scripts/debug/item_validation/ItemTestRunner.gd:327)
+SCRIPT ERROR: Parse Error: Expected statement, found "elif" instead.
+   at: GDScript::reload (res://scripts/debug/item_validation/ItemTestRunner.gd:426)
 ERROR: Failed to load script "res://scripts/debug/item_validation/ItemTestRunner.gd" with error "Parse error".
    at: load (modules/gdscript/gdscript.cpp:3041)
 [AudioManager] Loaded 178 audio definitions
@@ -389,22 +389,6 @@ WARNING: [AudioManager] ID 'sfx_void_hit' has no files defined
 [AudioManager] Validation finished with issues: 76 empty IDs, 0 broken paths.
 [Localization] Auto-detected system language: es
 [PerfTracker] Initialized. Logs at: C:/Users/Usuario/AppData/Roaming/Godot/app_userdata/Spellloop/perf_logs
-[38;5;208m[PerfTracker] ⚠️ LAG SPIKE DETECTED: 25.03 ms (FPS: 129)[39m[0m
-   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
-[38;5;208m[PerfTracker] ⚠️ LAG SPIKE DETECTED: 26.37 ms (FPS: 134)[39m[0m
-   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
-[38;5;208m[PerfTracker] ⚠️ LAG SPIKE DETECTED: 25.94 ms (FPS: 131)[39m[0m
-   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
-[38;5;208m[PerfTracker] ⚠️ LAG SPIKE DETECTED: 26.45 ms (FPS: 132)[39m[0m
-   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
-[38;5;208m[PerfTracker] ⚠️ LAG SPIKE DETECTED: 27.39 ms (FPS: 145)[39m[0m
-   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
-[38;5;208m[PerfTracker] ⚠️ LAG SPIKE DETECTED: 27.03 ms (FPS: 144)[39m[0m
-   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
-[38;5;208m[PerfTracker] ⚠️ LAG SPIKE DETECTED: 28.85 ms (FPS: 134)[39m[0m
-   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
-[38;5;208m[PerfTracker] ⚠️ LAG SPIKE DETECTED: 26.47 ms (FPS: 129)[39m[0m
-   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
 ERROR: BUG: Unreferenced static string to 0: servers
    at: unref (core/string/string_name.cpp:116)
 ERROR: BUG: Unreferenced static string to 0: .

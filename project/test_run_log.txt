@@ -9,3 +9,21 @@
    Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
 [38;5;208m[PerfTracker] ÔÜá´©Å LAG SPIKE DETECTED: 25.68 ms (FPS: 133)[39m[0m
    Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
+[38;5;208m[PerfTracker] ÔÜá´©Å LAG SPIKE DETECTED: 27.44 ms (FPS: 133)[39m[0m
+   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
+[38;5;208m[PerfTracker] ÔÜá´©Å LAG SPIKE DETECTED: 25.61 ms (FPS: 133)[39m[0m
+   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
+[38;5;208m[PerfTracker] ÔÜá´©Å LAG SPIKE DETECTED: 25.64 ms (FPS: 132)[39m[0m
+   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
+[38;5;208m[PerfTracker] ÔÜá´©Å LAG SPIKE DETECTED: 27.59 ms (FPS: 128)[39m[0m
+   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
+[38;5;208m[PerfTracker] ÔÜá´©Å LAG SPIKE DETECTED: 27.74 ms (FPS: 132)[39m[0m
+   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
+[38;5;208m[PerfTracker] ÔÜá´©Å LAG SPIKE DETECTED: 26.04 ms (FPS: 142)[39m[0m
+   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
+[38;5;208m[PerfTracker] ÔÜá´©Å LAG SPIKE DETECTED: 25.97 ms (FPS: 129)[39m[0m
+   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
+[38;5;208m[PerfTracker] ÔÜá´©Å LAG SPIKE DETECTED: 26.11 ms (FPS: 131)[39m[0m
+   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0
+[38;5;208m[PerfTracker] ÔÜá´©Å LAG SPIKE DETECTED: 26.06 ms (FPS: 145)[39m[0m
+   Context: Nodes: 68 | Enm: 0 | Proj: 0 | Draw: 0

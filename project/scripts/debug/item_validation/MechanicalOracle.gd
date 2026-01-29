@@ -11,6 +11,7 @@ var captured_events = {
 }
 
 var _is_listening = false
+var is_measure_mode = false
 
 func start_listening():
 	_clear_events()
@@ -180,23 +181,47 @@ func verify_simulation_results(stats: Dictionary, projectile_type: String, test_
 		passed = true
 	
 	var result_code = "PASS"
+	var triage = "NONE"
+	
 	if not passed:
 		if delta_percent > 3.0: 
 			result_code = "BUG"
 		else:
 			result_code = "DESIGN_VIOLATION"
+			
+		# Task 2: Automated Triage (A/B/C)
+		if model in ["BEAM", "CHAIN"]:
+			triage = "MODEL_GAP" # Beams/Chains are hard to model perfectly
+		elif model == "ORBIT":
+			triage = "TEST_ENV_GAP" # Orbit depends heavily on dummy placement
+		elif stats.get("crit_chance", 0) > 0.1 or stats.get("life_steal", 0) > 0:
+			triage = "MODEL_GAP" # Crit/Lifesteal adds variance/complexity
+		else:
+			triage = "BALANCE_REAL"
 	else:
 		result_code = "DESIGN_ACCEPTABLE"
-	
-	return {
+		
+	var report = {
 		"passed": passed,
 		"expected": expected_total_damage,
 		"actual": captured_total,
 		"delta_percent": delta_percent,
 		"model": model,
 		"result_code": result_code,
+		"triage": triage,
 		"reason": "[%s] Hit Expected %.1f vs Actual %.1f (Delta %.1f%%) -> %s" % [model, expected_total_damage, captured_total, delta_percent*100, result_code]
 	}
+	
+	# MEASURE Mode: return raw counts
+	if is_measure_mode:
+		report["measurements"] = {
+			"hits": captured_events["hits"],
+			"total_damage": captured_events["total_damage"],
+			"duration": test_duration,
+			"avg_damage_per_hit": captured_events["total_damage"] / max(1, captured_events["hits"])
+		}
+		
+	return report
 
 func verify_projectile_count(expected_count: int) -> Dictionary:
 	var actual = captured_events["hits"]

@@ -30,10 +30,11 @@ var attack_manager: AttackManager
 var player_stats_mock: PlayerStats
 
 # Metadata for Reporting
-var run_id: String = ""
-var discovery_count: int = 0
-var scheduled_count: int = 0
 var empty_reason: String = ""
+var start_time_ms: int = 0
+var is_measure_mode: bool = false
+var git_commit: String = "unknown"
+var test_seed: int = 1337
 
 # References to Databases
 # upgrade_database.gd, weapon_database.gd, weapon_fusion_manager.gd are AutoLoads or Global Classes
@@ -58,6 +59,16 @@ func _ready():
 	
 	var args = OS.get_cmdline_args() + OS.get_cmdline_user_args()
 	print("[ItemTestRunner] Args: ", args)
+	
+	if "--measure-only" in args:
+		is_measure_mode = true
+		print("[ItemTestRunner] MEASURE mode enabled.")
+		
+	# Try to get git commit
+	var commit_output = []
+	var err = OS.execute("git", ["rev-parse", "--short", "HEAD"], commit_output)
+	if err == 0 and commit_output.size() > 0:
+		git_commit = commit_output[0].strip_edges()
 	if "--run-pilot" in args:
 		print("[ItemTestRunner] Pilot mode detected.")
 		call_deferred("run_sanity_check")
@@ -74,6 +85,7 @@ func _ready():
 
 func start_suite(categories: Array = [], limit: int = -1, offset: int = 0):
 	run_id = "run_" + str(str(Time.get_unix_time_from_system()).hash())
+	start_time_ms = Time.get_ticks_msec()
 	print("[ItemTestRunner] Starting Test Suite %s (Batch Size: %d, Offset: %d)..." % [run_id, limit, offset])
 	# Override limit if Full Matrix is disabled
 	if not FULL_MATRIX_ENABLED and limit == -1:
@@ -281,6 +293,7 @@ func _run_next_test():
 		
 	# Setup Mechanical Oracle
 	if mechanical_oracle:
+		mechanical_oracle.is_measure_mode = is_measure_mode
 		mechanical_oracle.start_listening()
 	
 	var classification = _classify_item(test_case["item"])
@@ -299,33 +312,67 @@ func _run_next_test():
 	var failures = []
 	var subtests = []
 	
+	# Phase 5: 3x execution for median (Noise Control)
+	var iteration_results = []
+	for i in range(3):
+		var iter_res = await _execute_test_iteration(test_case, env, classification)
+		iteration_results.append(iter_res)
+		# Reset between iterations
+		mechanical_oracle.start_listening()
+	
+	# Select Median based on actual_damage
+	iteration_results.sort_custom(func(a, b): return a["actual_damage"] < b["actual_damage"])
+	var final_iter_res = iteration_results[1] # Index 1 is median of 3
+	
+	# Finalize Result
+	result_data["success"] = final_iter_res["success"]
+	result_data["failures"] = final_iter_res["failures"]
+	result_data["subtests"] = final_iter_res["subtests"]
+	result_data["expected_damage"] = final_iter_res["expected_damage"]
+	result_data["actual_damage"] = final_iter_res["actual_damage"]
+	result_data["weapon_id"] = final_iter_res.get("weapon_id", "")
+	if is_measure_mode and "measurements" in final_iter_res:
+		result_data["measurements"] = final_iter_res["measurements"]
+	
+	scenario_runner.teardown_environment()
+	results.append(result_data)
+	test_finished.emit(item_id, result_data["success"], str(result_data["failures"]))
+	
+	await get_tree().create_timer(0.01).timeout
+	_run_next_test()
+
+func _execute_test_iteration(test_case: Dictionary, env: Node, classification: String) -> Dictionary:
+	var mock_player = env.get_node("MockPlayer")
+	var item_id = test_case["item"]["id"]
+	var iter_result = {
+		"success": true,
+		"failures": [],
+		"subtests": [],
+		"actual_damage": 0.0,
+		"expected_damage": 0.0
+	}
+	
+	# Clean any previous dummies
+	for dummy in get_tree().get_nodes_in_group("test_dummy"):
+		dummy.queue_free()
+	await get_tree().process_frame
+	
 	# WEAPON / FUSION SCOPE
 	if classification in ["WEAPON_SPECIFIC", "GLOBAL_WEAPON", "FUSION_SPECIFIC"]:
-		# Add weapon
 		var weapon_id = test_case["target_weapon"]
-		attack_manager.add_weapon_by_id(weapon_id)
 		var weapon = attack_manager.get_weapon_by_id(weapon_id)
-		
-		# Baseline
-		var _post_add_stats = attack_manager.get_weapon_full_stats(weapon)
-		
-		# Apply Item (if not self-test)
-		if not test_case.get("is_self_test", false):
-			if classification == "GLOBAL_WEAPON":
-				attack_manager.apply_global_upgrade(test_case["item"])
-			elif classification == "WEAPON_SPECIFIC":
-				attack_manager.apply_weapon_upgrade(weapon_id, test_case["item"])
-		
-		# Get Expected Stats
+		if not weapon: # Re-add if missing
+			attack_manager.add_weapon_by_id(weapon_id)
+			weapon = attack_manager.get_weapon_by_id(weapon_id)
+			
 		var final_stats = attack_manager.get_weapon_full_stats(weapon)
 		var expected_damage = final_stats.get("damage_final", 10.0)
 		var weapon_range = final_stats.get("range", 100.0)
 		
-		# Infer projectile type early for environment setup
-		var p_type = "SIMPLE" # Default
+		# Infer projectile type
+		var p_type = "SIMPLE" 
 		if "projectile_type" in weapon:
-			var p_enum = weapon.projectile_type
-			match p_enum:
+			match int(weapon.projectile_type):
 				0: p_type = "SIMPLE"
 				1: p_type = "MULTI"
 				2: p_type = "BEAM"
@@ -333,62 +380,47 @@ func _run_next_test():
 				4: p_type = "ORBIT"
 				5: p_type = "CHAIN"
 		
-		# Spawn Dummy
-		# Phase 5: For ORBIT type, spawn at range radius to ensure collision
-		var spawn_pos = Vector2(100, 0)
-		if p_type == "ORBIT":
-			spawn_pos = Vector2(weapon_range, 0)
-			
-		var dummy = scenario_runner.spawn_dummy_enemy(spawn_pos)
-		mechanical_oracle.track_enemy(dummy)
+		# Spawn Dummies
+		if p_type == "CHAIN":
+			# Spawn 3 dummies to measure bounces
+			for d_idx in range(3):
+				var pos = Vector2(100 + (d_idx * 50), 0)
+				var dummy = scenario_runner.spawn_dummy_enemy(pos)
+				mechanical_oracle.track_enemy(dummy)
+		elif p_type == "AOE":
+			# Spawn 2 dummies in AOE area
+			var dummy1 = scenario_runner.spawn_dummy_enemy(Vector2(50, 0))
+			var dummy2 = scenario_runner.spawn_dummy_enemy(Vector2(-50, 0))
+			mechanical_oracle.track_enemy(dummy1)
+			mechanical_oracle.track_enemy(dummy2)
+		else:
+			var spawn_pos = Vector2(100, 0)
+			if p_type == "ORBIT": spawn_pos = Vector2(weapon_range, 0)
+			var dummy = scenario_runner.spawn_dummy_enemy(spawn_pos)
+			mechanical_oracle.track_enemy(dummy)
 		
 		# FIRE!
 		if weapon.has_method("perform_attack"):
-			# Convert Node to Dictionary via the helper we just added
-			var p_stats_dict = {}
-			if player_stats_mock.has_method("get_all_stats"):
-				p_stats_dict = player_stats_mock.get_all_stats()
-			else:
-				# Fallback: manually construct minimal if needed, or pass empty.
-				# Though current issue is passing Object where Dict is expected.
-				pass
-				
-			weapon.perform_attack(mock_player, p_stats_dict) # Fire once
+			var p_stats_dict = player_stats_mock.get_all_stats() if player_stats_mock.has_method("get_all_stats") else {}
+			weapon.perform_attack(mock_player, p_stats_dict)
 		
-		# Wait for projectile travel/impact (Standardized Test Window)
-		# Phase 3.6: Fixed 2.0s window for DPS aggregation
 		var test_window = 2.0
 		await get_tree().create_timer(test_window).timeout
 		
-		# VERIFY (Mechanical Phase 3.6)
-		var mech_res = mechanical_oracle.verify_simulation_results(final_stats, str(p_type), test_window, 0.15) # 15% tolerance
+		var mech_res = mechanical_oracle.verify_simulation_results(final_stats, str(p_type), test_window, 0.15)
 		
-		var res_code = mech_res.get("result_code", "PASS")
-		if res_code == "BUG":
-			success = false # Stop on BUG
-		
-		# Continue on DESIGN_VIOLATION, but add to failures for reporting
+		iter_result["success"] = (mech_res.get("result_code", "PASS") != "BUG")
 		if not mech_res["passed"]:
-			var fail_msg = mech_res["reason"]
-			failures.append(fail_msg)
+			iter_result["failures"].append(mech_res["reason"])
 			
-		subtests.append({
-			"type": "mechanical_damage", 
-			"res": mech_res,
-			"details": {
-				"baseline_damage_expected": expected_damage,
-				"mechanical_damage_actual": mech_res.get("actual", 0.0),
-				"delta_percent": mech_res.get("delta_percent", 0.0),
-				"weapon_id": weapon_id,
-				"projectile_type": weapon.get("projectile_type") if "projectile_type" in weapon else "UNKNOWN", 
-				"divergence_hint": "Check AttackManager calc vs Projectile damage init" if not success else "None"
-			}
-		})
-		
-		# Detailed Report Entry
-		result_data["expected_damage"] = expected_damage
-		result_data["actual_damage"] = mech_res.get("actual", 0.0)
-		result_data["weapon_id"] = weapon_id
+		iter_result["subtests"].append({"type": "mechanical_damage", "res": mech_res})
+		iter_result["expected_damage"] = mech_res.get("expected", 0.0)
+		iter_result["actual_damage"] = mech_res.get("actual", 0.0)
+		iter_result["weapon_id"] = weapon_id
+		if "measurements" in mech_res:
+			iter_result["measurements"] = mech_res["measurements"]
+
+	return iter_result
 
 	# PLAYER SCOPE
 	elif classification == "PLAYER_ONLY":
@@ -440,15 +472,20 @@ func _finish_suite():
 		get_tree().quit()
 		return
 
+	var duration = Time.get_ticks_msec() - start_time_ms
 	var metadata = {
 		"run_id": run_id,
 		"started_at": Time.get_datetime_string_from_system(),
-		"seed": 1337,
+		"git_commit": git_commit,
+		"duration_ms": duration,
+		"test_seed": test_seed,
+		"is_measure_mode": is_measure_mode,
 		"FULL_MATRIX_ENABLED": FULL_MATRIX_ENABLED,
 		"batch_index": current_test_index - results.size(), # Approximate offset
 		"batch_size": max_tests,
 		"discovered_items_count": discovery_count,
-		"scheduled_tests_count": scheduled_count
+		"scheduled_tests_count": scheduled_count,
+		"empty_reason": empty_reason
 	}
 
 	print("[ItemTestRunner] Generating Report for %d results..." % results.size())

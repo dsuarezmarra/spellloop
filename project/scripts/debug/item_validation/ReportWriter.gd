@@ -106,11 +106,21 @@ func generate_summary_md(results_mem: Array, jsonl_path: String, metadata: Dicti
 	file.store_line("")
 	file.store_line("## Metadata")
 	file.store_line("- **Started At**: %s" % metadata.get("started_at", "N/A"))
+	file.store_line("- **Git Commit**: %s" % metadata.get("git_commit", "N/A"))
+	file.store_line("- **Duration**: %d ms" % metadata.get("duration_ms", 0))
+	file.store_line("- **Seed**: %d" % metadata.get("test_seed", 1337))
 	file.store_line("- **Scheduled Tests**: %d" % metadata.get("scheduled_tests_count", 0))
 	file.store_line("- **Parsed Tests**: %d" % results.size())
 	file.store_line("- **Parse Errors**: %d" % parse_errors)
+	if metadata.get("is_measure_mode"):
+		file.store_line("- **Mode**: MEASURE ONLY")
 	if metadata.get("empty_reason"):
 		file.store_line("- **Empty Queue Reason**: %s" % metadata.get("empty_reason"))
+	
+	if total == 0:
+		file.store_line("")
+		file.store_line("> [!CAUTION]")
+		file.store_line("> **RUN FAILED**: Zero tests were parsed. Check logs for engine crash or empty queue.")
 	file.store_line("")
 	file.store_line("## Metrics")
 	file.store_line("- **Total Valid Items**: %d" % results.size())
@@ -143,7 +153,40 @@ func generate_summary_md(results_mem: Array, jsonl_path: String, metadata: Dicti
 			elif not res.get("success", false) or res.get("failures", []).size() > 0:
 				file.store_line("- **%s**: %s" % [res.get("item_id"), str(res.get("failures"))])
 	
+	
+	_update_daily_index(md_path, total, passed, violations, bugs, metadata)
 	return md_path
+
+func _update_daily_index(path: String, total: int, passed: int, violations: int, bugs: int, metadata: Dictionary):
+	var user_dir = "user://test_reports/"
+	var date_str = Time.get_date_string_from_system()
+	var index_path = user_dir + "index_%s.md" % date_str
+	
+	var mode_suffix = " [MEASURE]" if metadata.get("is_measure_mode") else ""
+	var status = "✅" if total == passed else "⚠️"
+	if total == 0: status = "❌"
+	
+	var line = "| %s | %s | %d | %d/%d | %d | %d | [Summary](%s) |" % [
+		Time.get_time_string_from_system(),
+		metadata.get("run_id", "N/A") + mode_suffix,
+		total,
+		passed, total,
+		violations,
+		bugs,
+		path.get_file()
+	]
+	
+	var file: FileAccess
+	if FileAccess.file_exists(index_path):
+		file = FileAccess.open(index_path, FileAccess.READ_WRITE)
+		file.seek_end()
+	else:
+		file = FileAccess.open(index_path, FileAccess.WRITE)
+		file.store_line("# Daily Test Index - %s" % date_str)
+		file.store_line("| Time | Run ID | Total | Pass | Viol | Bugs | Link |")
+		file.store_line("| :--- | :--- | :--- | :--- | :--- | :--- | :--- |")
+	
+	file.store_line(line)
 
 func _validate_entry(data: Dictionary) -> bool:
 	var required = ["item_id", "scope", "success", "failures", "subtests"]
