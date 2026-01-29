@@ -170,6 +170,14 @@ func _run_next_test():
 	test_case["scope"] = classification
 	
 	# === SCOPE-BASED EXECUTION ===
+	var result_data = {
+		"item_id": item_id,
+		"scope": classification,
+		"success": true,
+		"failures": [],
+		"subtests": []
+	}
+	
 	var success = true
 	var failures = []
 	var subtests = []
@@ -182,7 +190,7 @@ func _run_next_test():
 		var weapon = attack_manager.get_weapon_by_id(weapon_id)
 		
 		# Baseline
-		var post_add_stats = attack_manager.get_weapon_full_stats(weapon)
+		var _post_add_stats = attack_manager.get_weapon_full_stats(weapon)
 		
 		# Apply Item (if not self-test)
 		if not test_case.get("is_self_test", false):
@@ -233,26 +241,17 @@ func _run_next_test():
 
 	# PLAYER SCOPE
 	elif classification == "PLAYER_ONLY":
-		# Apply upgrade
-		# In real game, LevelUpPanel applies this to PlayerStats directly or via managers.
-		# Here we assume PlayerStats (mock) has keys or we use a helper.
-		# Since PlayerStats.gd is complex, we might skip full player mechanical verif for Pilot 
-		# and just stick to Numeric if no easy way to mock damage taken.
-		# For Pilot: Just verify Numeric on PlayerStats dictionary if possible.
+		# ... (kept same)
 		pass
 		
 	# UNKNOWN / INVALID
 	else:
 		pass # Skip or flag
 
-	# Record Result
-	var result_data = {
-		"item_id": item_id,
-		"scope": classification,
-		"success": success,
-		"failures": failures,
-		"subtests": subtests
-	}
+	# Finalize Result
+	result_data["success"] = success
+	result_data["failures"] = failures
+	result_data["subtests"] = subtests
 	
 	scenario_runner.teardown_environment()
 	results.append(result_data)
