@@ -451,12 +451,15 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 				var pos = Vector2(100 + (d_idx * 50), 0)
 				var dummy = scenario_runner.spawn_dummy_enemy(pos)
 				mechanical_oracle.track_enemy(dummy)
+				status_oracle.track_enemy(dummy)
 		elif p_type == "AOE":
 			# Spawn 2 dummies in AOE area
 			var dummy1 = scenario_runner.spawn_dummy_enemy(Vector2(50, 0))
 			var dummy2 = scenario_runner.spawn_dummy_enemy(Vector2(-50, 0))
 			mechanical_oracle.track_enemy(dummy1)
 			mechanical_oracle.track_enemy(dummy2)
+			status_oracle.track_enemy(dummy1)
+			status_oracle.track_enemy(dummy2)
 		else:
 			var spawn_pos = Vector2(100, 0)
 			if p_type == "ORBIT": spawn_pos = Vector2(weapon_range, 0)

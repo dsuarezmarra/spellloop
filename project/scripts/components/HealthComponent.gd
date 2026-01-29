@@ -40,8 +40,8 @@ func take_damage(amount: int, element_type: String = "physical") -> void:
 	damaged.emit(amount, element_type)
 	health_changed.emit(current_health, max_health)
 	
-	# Visualizar daño
-	if owner_node is Node2D:
+	# Visualizar daño - ONLY if NOT headless
+	if not Headless.is_headless() and owner_node is Node2D:
 		FloatingText.spawn_damage(owner_node.global_position, amount)
 	
 	# Debug (comentado para producción)

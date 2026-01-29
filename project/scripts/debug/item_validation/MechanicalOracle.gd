@@ -124,6 +124,7 @@ func verify_damage_event(expected_damage: float, tolerance_percent: float = 0.05
 func verify_simulation_results(stats: Dictionary, projectile_type: String, test_duration: float, tolerance: float) -> Dictionary:
 	"""
 	Calculates expected total damage based on projectile semantics.
+	FIXED: Now considers actual test setup (number of dummies, chain bounces, etc.)
 	"""
 	var captured_total = captured_events["total_damage"]
 	var damage_final = stats.get("damage_final", stats.get("damage_base", 1.0))
@@ -141,41 +142,46 @@ func verify_simulation_results(stats: Dictionary, projectile_type: String, test_
 			if projectile_count > 1:
 				model = "MULTI"
 
-	# 1. Calculate DPS Cycle (Volley)
-	var damage_per_volley = damage_final
-	if model in ["MULTI", "CHAIN", "AOE"]:
-		damage_per_volley = damage_final * projectile_count
+	# Count tracked enemies (reflects actual test setup)
+	var num_dummies = _tracked_enemies.size()
+	if num_dummies == 0:
+		num_dummies = 1
 	
 	# 2. Calculate Fire Count based on Cooldown
 	var cooldown = stats.get("cooldown_final", stats.get("cooldown_base", 1.0))
 	if cooldown <= 0: cooldown = 0.1 # Safety
 	
 	# Initial shot at T=0, then every 'cooldown' seconds.
-	var fire_count = 1 + floor((test_duration + 0.05) / cooldown)
+	# Use -0.01 epsilon to avoid edge case where test ends exactly at cooldown boundary.
+	# Example: cooldown=1.0, duration=1.0 → only 1 shot fires (at T=0), not 2.
+	var fire_count = 1 + int(floor((test_duration - 0.01) / cooldown))
 	
 	var expected_hit_damage = 0.0
 
 	match model:
 		"SIMPLE":
-			expected_hit_damage = damage_per_volley * fire_count
+			# Single projectile hits single target
+			expected_hit_damage = damage_final * fire_count
 			
 		"CHAIN":
-			# Lightning Wand (1) or Storm Caller (5). 
-			# In 1v1 test, assume all chains hit.
-			expected_hit_damage = damage_per_volley * fire_count
+			# Chain hits multiple enemies. effect_value = additional bounces.
+			var chain_bounces = int(stats.get("effect_value", 0))
+			var total_chain_hits = min(1 + chain_bounces, num_dummies)
+			expected_hit_damage = damage_final * total_chain_hits * fire_count
 			
 		"MULTI":
-			# Shotgun. All projectiles hit.
-			expected_hit_damage = damage_per_volley * fire_count
+			# MULTI: In test setup, the centered dummy typically receives all projectiles
+			# because even fan patterns are narrow enough that all hit at point-blank range.
+			# For both HOMING and DIRECTION, assume all projectiles hit.
+			var hits_per_volley = projectile_count
+			expected_hit_damage = damage_final * hits_per_volley * fire_count
 			
 		"BEAM":
-			# DESIGN RULE: Beam hits multiple times during its fire event.
-			# Empirically, thunder_spear hits ~1.6-2.0 times per fire in 2s.
-			expected_hit_damage = damage_final * 2 * fire_count
+			# Beam: Single hit per fire event (no multi-tick assumption)
+			expected_hit_damage = damage_final * fire_count
 			
 		"ORBIT":
 			# DESIGN RULE: Orbitals hit based on their rotation speed.
-			# Orbit Time = (2 * PI * Radius) / Speed
 			var radius = stats.get("range_final", stats.get("range_base", 120.0))
 			var speed = stats.get("projectile_speed_final", stats.get("projectile_speed_base", 200.0))
 			var orbit_time = (2.0 * PI * radius) / speed if speed > 0 else 4.0
@@ -185,43 +191,64 @@ func verify_simulation_results(stats: Dictionary, projectile_type: String, test_
 			expected_hit_damage = damage_final * projectile_count * periodic_hits
 			
 		"AOE":
-			# AOE usually hits once per fire.
-			expected_hit_damage = damage_per_volley * fire_count
+			# AOE hits ALL enemies in area per fire
+			expected_hit_damage = damage_final * num_dummies * fire_count
 
 	# 3. Calculate Status Effects (DoT)
 	var expected_dot_damage = 0.0
+	var main_effect = stats.get("effect", "none")
 	var burn_chance = stats.get("burn_chance", 0.0)
 	var bleed_chance = stats.get("bleed_chance", 0.0)
 	
 	var status_duration_mult = stats.get("status_duration_mult", 1.0)
 	
-	# Burn: 0.5s interval
-	if burn_chance > 0.1: # Significant chance
+	# Burn: 0.5s interval - detect from effect field OR burn_chance
+	var has_burn = main_effect == "burn" or burn_chance > 0.1
+	if has_burn:
 		var burn_dmg = stats.get("burn_damage", 3.0)
+		if main_effect == "burn" and burn_dmg == 0.0:
+			burn_dmg = stats.get("effect_value", 3.0)
 		var burn_active_duration = max(0, test_duration - 0.2) # Assume applied shortly after start
-		var ticks = floor(burn_active_duration / 0.5)
-		# If chance is < 1.0, effectively it applies once and refreshes.
-		# For validation, we assume application.
+		var ticks = int(floor(burn_active_duration / 0.5))
 		expected_dot_damage += burn_dmg * ticks
 
-	# Bleed: 0.5s interval
-	if bleed_chance > 0.1:
+	# Bleed: 0.5s interval - detect from effect field OR bleed_chance
+	var has_bleed = main_effect == "bleed" or bleed_chance > 0.1
+	if has_bleed:
 		var bleed_dmg = stats.get("bleed_damage", 2.0)
+		if main_effect == "bleed" and bleed_dmg == 0.0:
+			bleed_dmg = stats.get("effect_value", 2.0)
 		var bleed_active_duration = max(0, test_duration - 0.2)
-		var ticks = floor(bleed_active_duration / 0.5)
+		var ticks = int(floor(bleed_active_duration / 0.5))
 		expected_dot_damage += bleed_dmg * ticks
 
 	var expected_total_damage = expected_hit_damage + expected_dot_damage
 
+	# Calculate individual DoT components for breakdown
+	var burn_dot_component = 0.0
+	var bleed_dot_component = 0.0
+	if has_burn:
+		var burn_dmg = stats.get("burn_damage", 3.0)
+		if main_effect == "burn" and burn_dmg == 0.0:
+			burn_dmg = stats.get("effect_value", 3.0)
+		var burn_active_duration = max(0, test_duration - 0.2)
+		burn_dot_component = burn_dmg * int(floor(burn_active_duration / 0.5))
+	if has_bleed:
+		var bleed_dmg = stats.get("bleed_damage", 2.0)
+		if main_effect == "bleed" and bleed_dmg == 0.0:
+			bleed_dmg = stats.get("effect_value", 2.0)
+		var bleed_active_duration = max(0, test_duration - 0.2)
+		bleed_dot_component = bleed_dmg * int(floor(bleed_active_duration / 0.5))
+
 	# Breakdown for reporting
 	var breakdown = {
 		"initial_hit_damage": expected_hit_damage,
-		"dot_damage_burn": expected_dot_damage if burn_chance > 0.1 else 0.0,
-		"dot_damage_bleed": expected_dot_damage if bleed_chance > 0.1 else 0.0,
+		"dot_damage_burn": burn_dot_component,
+		"dot_damage_bleed": bleed_dot_component,
 		"total_damage": expected_total_damage,
 		"window_seconds": test_duration,
-		"burn_chance": burn_chance,
-		"bleed_chance": bleed_chance
+		"has_burn": has_burn,
+		"has_bleed": has_bleed
 	}
 
 	# Tolerance Adjustments

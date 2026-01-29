@@ -1109,7 +1109,18 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 		
 		# Críticos (globales)
 		"crit_chance": crit_chance,
-		"crit_damage": crit_damage
+		"crit_damage": crit_damage,
+		
+		# Efectos de estado (para validación)
+		"effect": original_data.get("effect", "none"),
+		"effect_value": original_data.get("effect_value", 0.0),
+		"effect_duration": original_data.get("effect_duration", 0.0),
+		"burn_damage": original_data.get("effect_value", 3.0) if original_data.get("effect", "") == "burn" else 0.0,
+		"bleed_damage": original_data.get("effect_value", 2.0) if original_data.get("effect", "") == "bleed" else 0.0,
+		
+		# Targeting (para validación de MULTI)
+		"target_type": original_data.get("target_type", 0),
+		"projectile_type": original_data.get("projectile_type", 0)
 	}
 
 func get_info() -> Dictionary:
