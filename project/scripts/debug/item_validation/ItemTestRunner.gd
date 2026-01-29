@@ -641,7 +641,7 @@ func _run_next_test():
 	# Select Median based on actual_damage (or first if single iteration)
 	var final_iter_res = iteration_results[0]
 	if num_iterations == 3:
-		iteration_results.sort_custom(func(a, b): return a["actual_damage"] < b["actual_damage"])
+		iteration_results.sort_custom(func(a, b): return a.get("actual_damage", 0.0) < b.get("actual_damage", 0.0))
 		final_iter_res = iteration_results[1] # Index 1 is median of 3
 	
 	# === CONTRACT VALIDATION (Phase 6) ===
@@ -678,7 +678,9 @@ func _run_next_test():
 			item_contract, baseline_state, actual_state, status_data, damage_data
 		)
 		
-		# Add contract validation to subtests
+		# Add contract validation to subtests (ensure subtests exists)
+		if not "subtests" in final_iter_res:
+			final_iter_res["subtests"] = []
 		final_iter_res["subtests"].append({
 			"type": "contract_validation",
 			"contract": item_contract,
@@ -884,16 +886,16 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 		
 		# Validate Status Results
 		for s_res in status_results:
-			if not s_res["res"]["passed"]:
+			if not s_res["res"].get("passed", true):
 				iter_result["success"] = false
-				iter_result["failures"].append("Status Fail [%s]: %s" % [s_res["status"], s_res["res"]["reason"]])
+				iter_result["failures"].append("Status Fail [%s]: %s" % [s_res["status"], s_res["res"].get("reason", "unknown")])
 			iter_result["subtests"].append({"type": "status_verification", "status": s_res["status"], "res": s_res["res"]})
 
 		# Attach detailed per-instance status logs
 		iter_result["status_details"] = status_oracle.get_detailed_report()
 
-		if not mech_res["passed"]:
-			iter_result["failures"].append(mech_res["reason"])
+		if not mech_res.get("passed", true):
+			iter_result["failures"].append(mech_res.get("reason", "unknown mechanical failure"))
 			
 		iter_result["subtests"].append({"type": "mechanical_damage", "res": mech_res})
 		iter_result["expected_damage"] = mech_res.get("expected", 0.0)
