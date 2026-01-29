@@ -579,7 +579,11 @@ class BeamEffect extends Node2D:
 			if not ProjectileVisualManager.instance:
 				push_warning("[BeamEffect] ProjectileVisualManager.instance es null")
 
-		# Fallback: visual simple
+		# Fallback: visual simple (skip in headless mode)
+		if Headless.is_headless():
+			# En modo headless, solo ejecutar lógica sin visual
+			return
+		
 		var line = Line2D.new()
 		line.width = beam_width
 		line.default_color = color
@@ -1002,7 +1006,14 @@ class AOEEffect extends Node2D:
 			if not ProjectileVisualManager.instance:
 				push_warning("[AOEEffect] ProjectileVisualManager.instance es null")
 
-		# Fallback: visual simple
+		# Fallback: visual simple (skip in headless mode)
+		if Headless.is_headless():
+			# En modo headless, solo programar auto-destrucción sin visual
+			await get_tree().process_frame
+			if is_instance_valid(self):
+				call_deferred("queue_free")
+			return
+			
 		scale = Vector2(0.1, 0.1)
 		modulate.a = 1.0
 

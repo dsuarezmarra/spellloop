@@ -100,9 +100,21 @@ func return_projectile(projectile: SimpleProjectile) -> void:
 	if projectile == null or not is_instance_valid(projectile):
 		return
 	
-	# Remover del árbol si todavía está
+	# Desactivar el proyectil inmediatamente para evitar más callbacks
+	projectile.set_deferred("monitoring", false)
+	projectile.set_deferred("monitorable", false)
+	
+	# Diferir la remoción del árbol para evitar errores en callbacks de física
 	if projectile.is_inside_tree():
-		projectile.get_parent().remove_child(projectile)
+		projectile.get_parent().call_deferred("remove_child", projectile)
+	
+	# Limpiar estado (diferido para que ocurra después de remove_child)
+	call_deferred("_complete_return", projectile)
+
+func _complete_return(projectile: SimpleProjectile) -> void:
+	"""Completa el retorno del proyectil al pool (llamado diferidamente)"""
+	if projectile == null or not is_instance_valid(projectile):
+		return
 	
 	# Limpiar estado
 	_cleanup_projectile(projectile)
@@ -112,8 +124,8 @@ func return_projectile(projectile: SimpleProjectile) -> void:
 		_available_pool.append(projectile)
 		stats_returned += 1
 	else:
-		# Pool lleno - destruir el proyectil
-		projectile.queue_free()
+		# Pool lleno - destruir el proyectil (ya diferido aquí)
+		projectile.call_deferred("queue_free")
 	
 	_active_count -= 1
 	if PerfTracker: PerfTracker.track_projectile_destroyed()

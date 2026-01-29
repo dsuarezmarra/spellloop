@@ -104,6 +104,17 @@ func _ready():
 		call_deferred("run_sanity_check")
 	elif "--run-status-pilot" in args:
 		call_deferred("run_status_pilot")
+	elif "--run-full-cycle" in args:
+		print("[ItemTestRunner] FULL CYCLE mode detected - Testing ALL items by scope.")
+		call_deferred("run_full_cycle")
+	elif "--run-scope" in args:
+		# Parse --scope=WEAPON_SPECIFIC or --scope=PLAYER_ONLY etc
+		var scope_filter = ""
+		for arg in args:
+			if arg.begins_with("--scope="):
+				scope_filter = arg.split("=")[1]
+		print("[ItemTestRunner] Scope-filtered mode: %s" % scope_filter)
+		call_deferred("run_by_scope", scope_filter)
 	elif "--run-full" in args:
 		print("[ItemTestRunner] Full Matrix mode detected.")
 		var batch_size = -1
@@ -202,28 +213,146 @@ func run_status_pilot():
 	print("[ItemTestRunner] Scheduled %d status verification tests." % scheduled_count)
 	_run_next_test()
 
+## ================== FULL CYCLE MODE ==================
+## Runs ALL items organized by scope for comprehensive validation
+
+func run_full_cycle():
+	"""
+	Execute a complete test cycle of all 143+ items organized by scope.
+	Generates a comprehensive report showing which items work/fail per category.
+	"""
+	run_id = "full_cycle_" + str(str(Time.get_unix_time_from_system()).hash())
+	start_time_ms = Time.get_ticks_msec()
+	results = []
+	current_test_index = 0
+	
+	# Discover ALL items
+	var all_items = _discover_items([])
+	discovery_count = all_items.size()
+	print("[ItemTestRunner] FULL CYCLE: Discovered %d total items." % discovery_count)
+	
+	# Classify and organize by scope
+	var scope_buckets = {
+		"PLAYER_ONLY": [],
+		"GLOBAL_WEAPON": [],
+		"WEAPON_SPECIFIC": [],
+		"FUSION_SPECIFIC": []
+	}
+	
+	for item in all_items:
+		var scope = _classify_item(item)
+		if scope in scope_buckets:
+			scope_buckets[scope].append(item)
+		else:
+			scope_buckets["PLAYER_ONLY"].append(item)
+	
+	# Print scope breakdown
+	print("[ItemTestRunner] === SCOPE BREAKDOWN ===")
+	for scope in scope_buckets:
+		print("  %s: %d items" % [scope, scope_buckets[scope].size()])
+	
+	# Build unified test queue with scope metadata
+	test_queue = []
+	for scope in ["WEAPON_SPECIFIC", "FUSION_SPECIFIC", "GLOBAL_WEAPON", "PLAYER_ONLY"]:
+		var scope_items = scope_buckets[scope]
+		var scope_tests = _build_test_queue(scope_items)
+		for t in scope_tests:
+			t["_scope_tag"] = scope
+		test_queue.append_array(scope_tests)
+	
+	scheduled_count = test_queue.size()
+	print("[ItemTestRunner] FULL CYCLE: Scheduled %d tests across all scopes." % scheduled_count)
+	
+	_run_next_test()
+
+func run_by_scope(scope_filter: String):
+	"""
+	Run tests only for items matching a specific scope.
+	Valid scopes: PLAYER_ONLY, GLOBAL_WEAPON, WEAPON_SPECIFIC, FUSION_SPECIFIC
+	"""
+	run_id = "scope_%s_%s" % [scope_filter.to_lower(), str(Time.get_unix_time_from_system()).hash()]
+	start_time_ms = Time.get_ticks_msec()
+	results = []
+	current_test_index = 0
+	
+	var all_items = _discover_items([])
+	discovery_count = all_items.size()
+	
+	# Filter by scope
+	var filtered_items = []
+	for item in all_items:
+		var scope = _classify_item(item)
+		if scope == scope_filter:
+			filtered_items.append(item)
+	
+	if filtered_items.is_empty():
+		empty_reason = "No items found for scope: %s" % scope_filter
+		print("[ItemTestRunner] ERROR: %s" % empty_reason)
+		_finish_suite()
+		return
+	
+	print("[ItemTestRunner] SCOPE [%s]: Found %d items (of %d total)." % [scope_filter, filtered_items.size(), discovery_count])
+	
+	test_queue = _build_test_queue(filtered_items)
+	scheduled_count = test_queue.size()
+	
+	print("[ItemTestRunner] Scheduled %d tests for scope %s." % [scheduled_count, scope_filter])
+	_run_next_test()
+
 
 func _discover_items(categories: Array) -> Array:
 	var items = []
 	
-	# 1. UPGRADES (Defensive, Utility, Offensive - if exposed)
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 1. PLAYER UPGRADES (UpgradeDatabase)
+	# ═══════════════════════════════════════════════════════════════════════════
 	if categories.is_empty() or "UPGRADES" in categories:
 		if UpgradeDatabase:
 			_append_dictionary_items(items, UpgradeDatabase.DEFENSIVE_UPGRADES, "DEFENSIVE")
 			_append_dictionary_items(items, UpgradeDatabase.UTILITY_UPGRADES, "UTILITY")
-			# Check if conditional/cursed are exposed
-			if "CURSED_UPGRADES" in UpgradeDatabase:
-				_append_dictionary_items(items, UpgradeDatabase.CURSED_UPGRADES, "CURSED")
+			_append_dictionary_items(items, UpgradeDatabase.OFFENSIVE_UPGRADES, "OFFENSIVE")
+			_append_dictionary_items(items, UpgradeDatabase.CURSED_UPGRADES, "CURSED")
+			_append_dictionary_items(items, UpgradeDatabase.UNIQUE_UPGRADES, "UNIQUE")
 	
-	# 2. WEAPONS
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 2. WEAPON UPGRADES (WeaponUpgradeDatabase)
+	# ═══════════════════════════════════════════════════════════════════════════
+	if categories.is_empty() or "WEAPON_UPGRADES" in categories:
+		if WeaponUpgradeDatabase:
+			_append_dictionary_items(items, WeaponUpgradeDatabase.GLOBAL_UPGRADES, "WEAPON_GLOBAL")
+			_append_dictionary_items(items, WeaponUpgradeDatabase.SPECIFIC_UPGRADES, "WEAPON_SPECIFIC_UPG")
+			_append_dictionary_items(items, WeaponUpgradeDatabase.WEAPON_SPECIFIC_UPGRADES, "WEAPON_ONLY_UPG")
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 3. WEAPONS
+	# ═══════════════════════════════════════════════════════════════════════════
 	if categories.is_empty() or "WEAPONS" in categories:
 		if WeaponDatabase:
 			_append_dictionary_items(items, WeaponDatabase.WEAPONS, "WEAPON")
 	
-	# 3. FUSIONS
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 4. FUSIONS
+	# ═══════════════════════════════════════════════════════════════════════════
 	if categories.is_empty() or "FUSIONS" in categories:
 		if WeaponDatabase:
 			_append_dictionary_items(items, WeaponDatabase.FUSIONS, "FUSION")
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 5. CHARACTERS (CharacterDatabase)
+	# ═══════════════════════════════════════════════════════════════════════════
+	if categories.is_empty() or "CHARACTERS" in categories:
+		if CharacterDatabase:
+			_append_dictionary_items(items, CharacterDatabase.CHARACTERS, "CHARACTER")
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 6. ENEMIES (EnemyDatabase - 4 Tiers)
+	# ═══════════════════════════════════════════════════════════════════════════
+	if categories.is_empty() or "ENEMIES" in categories:
+		if EnemyDatabase:
+			_append_dictionary_items(items, EnemyDatabase.TIER_1_ENEMIES, "ENEMY_T1")
+			_append_dictionary_items(items, EnemyDatabase.TIER_2_ENEMIES, "ENEMY_T2")
+			_append_dictionary_items(items, EnemyDatabase.TIER_3_ENEMIES, "ENEMY_T3")
+			_append_dictionary_items(items, EnemyDatabase.TIER_4_ENEMIES, "ENEMY_T4")
 		
 	return items
 
@@ -238,12 +367,10 @@ func _build_test_queue(items: Array) -> Array:
 	var queue = []
 	for item in items:
 		# APPLICABILITY MATRIX LOGIC
-		
-		# Define standard test weapons to verify against
-		var _test_weapons = ["ice_wand"] # Default
+		var item_type = item.get("_type", "")
 		
 		# Specialized testing based on item type
-		if item["_type"] == "WEAPON" or item["_type"] == "FUSION":
+		if item_type == "WEAPON" or item_type == "FUSION":
 			# Test the weapon itself
 			queue.append({
 				"item": item,
@@ -251,12 +378,35 @@ func _build_test_queue(items: Array) -> Array:
 				"is_self_test": true,
 				"scenario": "mechanical_verification"
 			})
-		else:
-			# It's an upgrade. Test applicability.
-			# For now, we test against a standard weapon to verify stats.
+		elif item_type == "CHARACTER":
+			# Test character stats and passive validation
 			queue.append({
 				"item": item,
-				"target_weapon": "ice_wand", # Can be expanded to test against multiple types
+				"target_weapon": item.get("starting_weapon", "ice_wand"),
+				"is_self_test": true,
+				"scenario": "character_verification"
+			})
+		elif item_type in ["ENEMY_T1", "ENEMY_T2", "ENEMY_T3", "ENEMY_T4"]:
+			# Test enemy stats and behavior validation
+			queue.append({
+				"item": item,
+				"target_weapon": "ice_wand",
+				"is_self_test": true,
+				"scenario": "enemy_verification"
+			})
+		elif item_type in ["WEAPON_GLOBAL", "WEAPON_SPECIFIC_UPG", "WEAPON_ONLY_UPG"]:
+			# Weapon upgrades - test against ice_wand
+			queue.append({
+				"item": item,
+				"target_weapon": "ice_wand",
+				"is_self_test": false,
+				"scenario": "weapon_upgrade_verification"
+			})
+		else:
+			# Player upgrades - test applicability
+			queue.append({
+				"item": item,
+				"target_weapon": "ice_wand",
 				"is_self_test": false,
 				"scenario": "numeric_verification"
 			})
@@ -271,18 +421,22 @@ func _build_pilot_queue(items: Array) -> Array:
 	var buckets = {
 		"PLAYER_ONLY": [],
 		"WEAPON": [], # GLOBAL_WEAPON or WEAPON_SPECIFIC
-		"FUSION": []
+		"FUSION": [],
+		"CHARACTER": [],
+		"ENEMY": [],
+		"WEAPON_UPGRADE": []
 	}
 	
 	# Pre-classify
 	for item in items:
 		var scope = _classify_item(item)
-		if scope == "PLAYER_ONLY":
-			buckets["PLAYER_ONLY"].append(item)
-		elif scope == "FUSION_SPECIFIC":
-			buckets["FUSION"].append(item)
-		else: # GLOBAL_WEAPON, WEAPON_SPECIFIC
-			buckets["WEAPON"].append(item)
+		match scope:
+			"PLAYER_ONLY": buckets["PLAYER_ONLY"].append(item)
+			"FUSION_SPECIFIC": buckets["FUSION"].append(item)
+			"CHARACTER": buckets["CHARACTER"].append(item)
+			"ENEMY": buckets["ENEMY"].append(item)
+			"GLOBAL_WEAPON": buckets["WEAPON_UPGRADE"].append(item)
+			_: buckets["WEAPON"].append(item) # WEAPON_SPECIFIC, etc
 			
 	# Shuffle buckets
 	for key in buckets:
@@ -295,22 +449,31 @@ func _build_pilot_queue(items: Array) -> Array:
 			arr[i] = arr[j]
 			arr[j] = temp
 			
-	# Select Quotas
+	# Select Quotas (total ~35 items for pilot)
 	var pilot_items = []
 	
-	# 10 PLAYER
-	pilot_items.append_array(buckets["PLAYER_ONLY"].slice(0, min(10, buckets["PLAYER_ONLY"].size())))
+	# 8 PLAYER
+	pilot_items.append_array(buckets["PLAYER_ONLY"].slice(0, min(8, buckets["PLAYER_ONLY"].size())))
 	
-	# 10 WEAPON
-	pilot_items.append_array(buckets["WEAPON"].slice(0, min(10, buckets["WEAPON"].size())))
+	# 8 WEAPON
+	pilot_items.append_array(buckets["WEAPON"].slice(0, min(8, buckets["WEAPON"].size())))
 	
 	# 5 FUSION
 	pilot_items.append_array(buckets["FUSION"].slice(0, min(5, buckets["FUSION"].size())))
 	
+	# 5 WEAPON_UPGRADE
+	pilot_items.append_array(buckets["WEAPON_UPGRADE"].slice(0, min(5, buckets["WEAPON_UPGRADE"].size())))
+	
+	# 3 CHARACTER
+	pilot_items.append_array(buckets["CHARACTER"].slice(0, min(3, buckets["CHARACTER"].size())))
+	
+	# 6 ENEMY (mix of tiers)
+	pilot_items.append_array(buckets["ENEMY"].slice(0, min(6, buckets["ENEMY"].size())))
+	
 	# Fallback fill if short
 	var current_count = pilot_items.size()
-	if current_count < 25:
-		var needed = 25 - current_count
+	if current_count < 35:
+		var needed = 35 - current_count
 		# Try fill from WEAPON first
 		var used_ids = []
 		for pi in pilot_items: used_ids.append(pi["id"])
@@ -332,21 +495,42 @@ func _build_pilot_queue(items: Array) -> Array:
 	return _build_test_queue(pilot_items)
 
 func _run_next_test():
+	if _exiting:
+		return
+		
 	if current_test_index >= test_queue.size():
 		_finish_suite()
 		return
+	
+	# Micro-pause every 10 tests to let physics settle
+	if current_test_index > 0 and current_test_index % 10 == 0:
+		print("[ItemTestRunner] Progress: %d/%d tests completed..." % [current_test_index, test_queue.size()])
+		await get_tree().process_frame
+		await get_tree().process_frame
+		if _exiting: return
 		
 	var test_case = test_queue[current_test_index]
 	current_test_index += 1
 	
 	var item_id = test_case["item"]["id"]
+	print("[ItemTestRunner] [%d/%d] Testing: %s" % [current_test_index, test_queue.size(), item_id])
 	test_started.emit(item_id)
 	
 	# 1. SETUP Environment (now async due to cleanup)
 	var env = await scenario_runner.setup_environment()
-	attack_manager = env.get_node("AttackManager")
-	player_stats_mock = env.get_node("PlayerStats")
-	var mock_player = env.get_node("MockPlayer")
+	if _exiting or not env:
+		print("[ItemTestRunner] WARNING: Environment setup failed or exiting for %s" % item_id)
+		return
+		
+	attack_manager = env.get_node_or_null("AttackManager")
+	player_stats_mock = env.get_node_or_null("PlayerStats")
+	var mock_player = env.get_node_or_null("MockPlayer")
+	
+	if not attack_manager or not player_stats_mock or not mock_player:
+		_record_failure(test_case, "Environment setup failed - missing nodes")
+		await get_tree().process_frame
+		_run_next_test()
+		return
 	
 	# Initialize Managers
 	if attack_manager.has_method("initialize"):
@@ -579,11 +763,30 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 	return iter_result
 
 func _classify_item(item: Dictionary) -> String:
-	# Simple classification based on item keys/effects
-	if item.get("_type") == "WEAPON": return "WEAPON_SPECIFIC"
-	if item.get("_type") == "FUSION": return "FUSION_SPECIFIC"
+	# Classification based on item type
+	var item_type = item.get("_type", "")
+	
+	# Direct type mappings
+	match item_type:
+		"WEAPON": return "WEAPON_SPECIFIC"
+		"FUSION": return "FUSION_SPECIFIC"
+		"CHARACTER": return "CHARACTER"
+		"ENEMY_T1", "ENEMY_T2", "ENEMY_T3", "ENEMY_T4": return "ENEMY"
+		"WEAPON_GLOBAL": return "GLOBAL_WEAPON"
+		"WEAPON_SPECIFIC_UPG": return "WEAPON_SPECIFIC"
+		"WEAPON_ONLY_UPG": return "WEAPON_SPECIFIC"
+		"DEFENSIVE", "UTILITY", "CURSED", "UNIQUE": return "PLAYER_ONLY"
+		"OFFENSIVE": 
+			# Offensive upgrades may affect weapons or player
+			var effects = item.get("effects", [])
+			for eff in effects:
+				var stat = eff.get("stat", "")
+				if stat in ["damage_mult", "area_mult", "cooldown_mult", "projectile_speed"]:
+					return "GLOBAL_WEAPON"
+			return "PLAYER_ONLY"
+	
+	# Fallback heuristics
 	if item.get("category") == "defensive": return "PLAYER_ONLY"
-	# Heuristic for global weapon
 	var effects = item.get("effects", [])
 	for eff in effects:
 		var stat = eff.get("stat", "")
@@ -668,6 +871,12 @@ func _finish_suite():
 	print("[ItemTestRunner] Generating Report for %d results..." % results.size())
 	var path = report_writer.generate_report(results, metadata)
 	var md_path = report_writer.generate_summary_md(results, path, metadata)
+	
+	# Generate Full Cycle report if it's a full cycle run
+	if run_id.begins_with("full_cycle_") or run_id.begins_with("scope_"):
+		var fc_path = report_writer.generate_full_cycle_report(results, metadata)
+		print("[ItemTestRunner] Full Cycle Report saved to: %s" % fc_path)
+	
 	all_tests_completed.emit(path)
 	print("[ItemTestRunner] Report saved to: %s" % path)
 	print("[ItemTestRunner] Summary saved to: %s" % md_path)

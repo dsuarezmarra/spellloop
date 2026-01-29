@@ -218,3 +218,194 @@ func _validate_entry(data: Dictionary) -> bool:
 	for k in required:
 		if not k in data: return false
 	return true
+
+## =================== FULL CYCLE REPORT =====================
+## Generates a comprehensive report organized by scope
+
+func generate_full_cycle_report(results: Array, metadata: Dictionary = {}) -> String:
+	"""
+	Generates a detailed report organized by scope, showing:
+	- Per-scope pass/fail counts
+	- Broken items by scope  
+	- Items needing implementation
+	"""
+	var user_dir = "user://test_reports/"
+	var dir = DirAccess.open("user://")
+	if not dir.dir_exists("test_reports"):
+		dir.make_dir("test_reports")
+		
+	var timestamp = Time.get_datetime_string_from_system().replace(":", "-")
+	var filename = "full_cycle_report_%s.md" % timestamp
+	var full_path = user_dir + filename
+	
+	var file = FileAccess.open(full_path, FileAccess.WRITE)
+	if not file:
+		print("[ReportWriter] Failed to open file: %s" % full_path)
+		return ""
+	
+	# Organize results by scope
+	var by_scope = {
+		"WEAPON_SPECIFIC": {"passed": [], "failed": [], "not_implemented": []},
+		"FUSION_SPECIFIC": {"passed": [], "failed": [], "not_implemented": []},
+		"GLOBAL_WEAPON": {"passed": [], "failed": [], "not_implemented": []},
+		"PLAYER_ONLY": {"passed": [], "failed": [], "not_implemented": []}
+	}
+	
+	for res in results:
+		var scope = res.get("scope", "PLAYER_ONLY")
+		if scope not in by_scope:
+			scope = "PLAYER_ONLY"
+			
+		var item_id = res.get("item_id", "unknown")
+		var is_success = res.get("success", false)
+		var failures = res.get("failures", [])
+		
+		# Check if it's "not implemented" vs actual bug
+		var is_not_impl = false
+		for f in failures:
+			if "not implemented" in f.to_lower() or "placeholder" in f.to_lower():
+				is_not_impl = true
+				break
+		
+		if is_success:
+			by_scope[scope]["passed"].append(res)
+		elif is_not_impl:
+			by_scope[scope]["not_implemented"].append(res)
+		else:
+			by_scope[scope]["failed"].append(res)
+	
+	# === WRITE REPORT ===
+	file.store_line("# 🔄 Full Cycle Validation Report")
+	file.store_line("**Date**: %s" % metadata.get("started_at", Time.get_datetime_string_from_system()))
+	file.store_line("**Run ID**: %s" % metadata.get("run_id", "N/A"))
+	file.store_line("**Git Commit**: %s" % metadata.get("git_commit", "N/A"))
+	file.store_line("**Duration**: %d ms" % metadata.get("duration_ms", 0))
+	file.store_line("")
+	file.store_line("---")
+	file.store_line("")
+	
+	# Executive Summary
+	var total = results.size()
+	var total_passed = 0
+	var total_failed = 0
+	var total_not_impl = 0
+	
+	for scope in by_scope:
+		total_passed += by_scope[scope]["passed"].size()
+		total_failed += by_scope[scope]["failed"].size()
+		total_not_impl += by_scope[scope]["not_implemented"].size()
+	
+	file.store_line("## 📊 Executive Summary")
+	file.store_line("")
+	file.store_line("| Metric | Count | Percentage |")
+	file.store_line("|--------|-------|------------|")
+	file.store_line("| ✅ Passed | %d | %.1f%% |" % [total_passed, (float(total_passed)/total*100) if total > 0 else 0])
+	file.store_line("| ❌ Failed (Bugs) | %d | %.1f%% |" % [total_failed, (float(total_failed)/total*100) if total > 0 else 0])
+	file.store_line("| ⚠️ Not Implemented | %d | %.1f%% |" % [total_not_impl, (float(total_not_impl)/total*100) if total > 0 else 0])
+	file.store_line("| **Total Items** | %d | 100%% |" % total)
+	file.store_line("")
+	
+	# Scope Breakdown Summary
+	file.store_line("## 🎯 Scope Coverage")
+	file.store_line("")
+	file.store_line("| Scope | Passed | Failed | Not Impl | Total | Health |")
+	file.store_line("|-------|--------|--------|----------|-------|--------|")
+	
+	for scope in ["WEAPON_SPECIFIC", "FUSION_SPECIFIC", "GLOBAL_WEAPON", "PLAYER_ONLY"]:
+		var p = by_scope[scope]["passed"].size()
+		var f = by_scope[scope]["failed"].size()
+		var n = by_scope[scope]["not_implemented"].size()
+		var t = p + f + n
+		var health = "✅" if f == 0 else ("⚠️" if f < 3 else "❌")
+		if t == 0:
+			health = "➖"
+		file.store_line("| %s | %d | %d | %d | %d | %s |" % [scope, p, f, n, t, health])
+	
+	file.store_line("")
+	
+	# === Per-Scope Details ===
+	for scope in ["WEAPON_SPECIFIC", "FUSION_SPECIFIC", "GLOBAL_WEAPON", "PLAYER_ONLY"]:
+		var data = by_scope[scope]
+		var total_scope = data["passed"].size() + data["failed"].size() + data["not_implemented"].size()
+		if total_scope == 0:
+			continue
+			
+		file.store_line("---")
+		file.store_line("")
+		file.store_line("## 📂 %s (%d items)" % [scope, total_scope])
+		file.store_line("")
+		
+		# Failed items (BUGS) - Most important
+		if data["failed"].size() > 0:
+			file.store_line("### ❌ Bugs Detected (%d)" % data["failed"].size())
+			file.store_line("")
+			file.store_line("| Item ID | Expected | Actual | Delta | Failure Reason |")
+			file.store_line("|---------|----------|--------|-------|----------------|")
+			
+			for res in data["failed"]:
+				var item_id = res.get("item_id", "unknown")
+				var expected = res.get("expected_damage", 0)
+				var actual = res.get("actual_damage", 0)
+				var delta = ((actual - expected) / expected * 100) if expected > 0 else 0
+				var reason = str(res.get("failures", []))
+				if reason.length() > 80:
+					reason = reason.substr(0, 77) + "..."
+				file.store_line("| %s | %.1f | %.1f | %.1f%% | %s |" % [item_id, expected, actual, delta, reason])
+			
+			file.store_line("")
+		
+		# Not implemented items
+		if data["not_implemented"].size() > 0:
+			file.store_line("### ⚠️ Not Implemented (%d)" % data["not_implemented"].size())
+			file.store_line("")
+			var ni_list = []
+			for res in data["not_implemented"]:
+				ni_list.append("`%s`" % res.get("item_id", "unknown"))
+			file.store_line(", ".join(ni_list))
+			file.store_line("")
+		
+		# Passed items (collapsed for brevity)
+		if data["passed"].size() > 0:
+			file.store_line("### ✅ Passed (%d)" % data["passed"].size())
+			file.store_line("")
+			file.store_line("<details>")
+			file.store_line("<summary>Click to expand passed items</summary>")
+			file.store_line("")
+			var passed_list = []
+			for res in data["passed"]:
+				passed_list.append("`%s`" % res.get("item_id", "unknown"))
+			file.store_line(", ".join(passed_list))
+			file.store_line("")
+			file.store_line("</details>")
+			file.store_line("")
+	
+	# Action Items Section
+	file.store_line("---")
+	file.store_line("")
+	file.store_line("## 🔧 Action Items")
+	file.store_line("")
+	
+	if total_failed > 0:
+		file.store_line("### Priority 1: Fix Bugs (%d items)" % total_failed)
+		file.store_line("These items have incorrect behavior and need immediate fixes:")
+		file.store_line("")
+		for scope in by_scope:
+			for res in by_scope[scope]["failed"]:
+				file.store_line("- [ ] `%s` (%s)" % [res.get("item_id"), scope])
+		file.store_line("")
+	
+	if total_not_impl > 0:
+		file.store_line("### Priority 2: Implement Missing (%d items)" % total_not_impl)
+		file.store_line("These items need their effects/logic implemented:")
+		file.store_line("")
+		for scope in by_scope:
+			for res in by_scope[scope]["not_implemented"]:
+				file.store_line("- [ ] `%s` (%s)" % [res.get("item_id"), scope])
+		file.store_line("")
+	
+	if total_failed == 0 and total_not_impl == 0:
+		file.store_line("🎉 **All items passed!** No action items required.")
+		file.store_line("")
+	
+	file.close()
+	return full_path
