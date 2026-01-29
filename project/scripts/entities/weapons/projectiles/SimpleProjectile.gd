@@ -529,123 +529,66 @@ func _handle_hit(target: Node) -> void:
 	# Debug desactivado por spam: print("🎯 Proj Hit Target: ", target.name)
 	enemies_hit.append(target)
 	
-	# Calcular daño final (con crítico si aplica)
-	var final_damage = damage
-	var crit_chance = get_meta("crit_chance", 0.0)
-	var crit_damage_mult = get_meta("crit_damage", 2.0)  # Obtener multiplicador de crítico
-	if randf() < crit_chance:
-		final_damage *= crit_damage_mult  # Usar multiplicador variable
-	
-	# Aplicar multiplicador de daño condicional (damage_vs_slowed/burning/frozen)
-	var conditional_mult = ProjectileFactory.get_conditional_damage_multiplier(get_tree(), target)
-	if conditional_mult > 1.0:
-		final_damage = int(float(final_damage) * conditional_mult)
-	
-	# Verificar daño contra élites
-	var is_elite_target = false
-	if target.has_method("is_elite") and target.is_elite():
-		is_elite_target = true
-	elif "is_elite" in target and target.is_elite:
-		is_elite_target = true
-		
-	if is_elite_target:
-		var ps = get_tree().get_first_node_in_group("player_stats")
-		if ps and ps.has_method("get_stat"):
-			var elite_mult = ps.get_stat("elite_damage_mult")
-			if elite_mult > 0:
-				if elite_mult < 0.1: elite_mult = 1.0 # Safety check
-				final_damage = int(final_damage * elite_mult)
-				# print("⚔️ Elite Hit! Damage x%.2f" % elite_mult)
-	
-	# Play Hit Sound
-	_play_hit_sound()
+	# Calcular daño final usando el sistema centralizado
+	# Esto aplica: Crit, Sharpehooter, Brawler, Executioner, Elite Damage
+	var damage_result = DamageCalculator.calculate_final_damage(
+		damage, target, _player, 
+		get_meta("crit_chance", 0.0), 
+		get_meta("crit_damage", 2.0)
+	)
+	var final_damage = damage_result.final_damage # Keep float for further multipliers
 
 	# -----------------------------------------------------------
-	# LÓGICA DE NUEVOS OBJETOS (Phase 3)
+	# LÓGICA DE NUEVOS OBJETOS (Phase 3 Extra Effects)
 	# -----------------------------------------------------------
-	# Calcular distancia desde el jugador al enemigo (NO la distancia recorrida por el proyectil)
-	var player_to_enemy_distance: float = 0.0
-	# Use cached Player reference (re-fetch if invalid)
-	if not is_instance_valid(_player):
-		_player = _get_player()
-		
-	if _player and target:
-		player_to_enemy_distance = _player.global_position.distance_to(target.global_position)
-	
-	# 1. Tiro Certero (Sharpshooter): +damage si enemigo lejos (> 300 del jugador)
 	# Use cached Player Stats (re-fetch if invalid)
 	if not is_instance_valid(_player_stats):
 		if get_tree():
 			_player_stats = get_tree().get_first_node_in_group("player_stats")
 			
-	if _player_stats:
-		# Check Sharpshooter - usa distancia del jugador al enemigo
-		var sharpshooter_val = _player_stats.get_stat("long_range_damage_bonus") if _player_stats.has_method("get_stat") else 0.0
-		if sharpshooter_val > 0 and player_to_enemy_distance > 300:
-			final_damage = int(final_damage * (1.0 + sharpshooter_val))
-			
-			
-		# 2. Peleador Callejero (Street Brawler): +damage si enemigo cerca (< 150 del jugador)
-		var brawler_val = _player_stats.get_stat("close_range_damage_bonus") if _player_stats.has_method("get_stat") else 0.0
-		if brawler_val > 0 and player_to_enemy_distance < 150:
-			final_damage = int(final_damage * (1.0 + brawler_val))
-			
-		# 3. Verdugo (Executioner): +damage si enemigo Low HP (< 30%)
-		var executioner_val = _player_stats.get_stat("low_hp_damage_bonus") if _player_stats.has_method("get_stat") else 0.0
-		if executioner_val > 0:
-			var hp_pct = 1.0
-			if target.has_method("get_health_percent"):
-				hp_pct = target.get_health_percent()
-			elif "health_component" in target and target.health_component:
-				hp_pct = target.health_component.get_health_percent()
-			
-			if hp_pct < 0.30: # 30% HP threshold
-				final_damage = int(final_damage * (1.0 + executioner_val))
-		
+	if _player_stats and _player_stats.has_method("get_stat"):
 		# 4. Combustión Instantánea (Combustion - Rework): Burn aplica daño instantáneo
-		var combustion_active = _player_stats.get_stat("combustion_active") if _player_stats.has_method("get_stat") else 0.0
+		var combustion_active = _player_stats.get_stat("combustion_active")
 		if combustion_active > 0:
 			# Si aplicamos quemadura, aplicamos su daño total instantáneamente
 			var burn_chance = get_meta("burn_chance", 0.0)
-			# Asumimos que si hay status_effect manager o similar, aplicamos daño extra
 			# Simplificación: +50% daño extra como "explosión" si el proyectil tiene elemento fuego
 			if get_meta("element", "") == "fire" or burn_chance > 0:
 				var burn_dmg = final_damage * 0.5
-				target.take_damage(int(burn_dmg))
+				if target.has_method("take_damage"):
+					target.take_damage(int(burn_dmg))
 				FloatingText.spawn_custom(target.global_position + Vector2(10, -40), "COMB!", Color.ORANGE_RED)
 
-		# 5. Ruleta Rusa (Russian Roulette): 1% chance de 4x daño, o 0 daño?
-		# Descripción: "1% chance for massive damage" -> Digamos 10x daño
-		var russian_roulette = _player_stats.get_stat("russian_roulette") if _player_stats.has_method("get_stat") else 0.0
+		# 5. Ruleta Rusa (Russian Roulette): 1% chance de 10x daño
+		var russian_roulette = _player_stats.get_stat("russian_roulette")
 		if russian_roulette > 0:
 			if randf() < 0.01: # 1%
 				final_damage *= 10.0
-
-
 				FloatingText.spawn_custom(target.global_position + Vector2(0, -60), "JACKPOT!", Color.GOLD)
 				_play_roulette_sound()
-			# Opcional: penalización en tiros normales? "Ruleta rusa" implica riesgo.
-			# Por ahora solo bonus masivo.
-			
+
 		# 9. Hemorragia (Hemorrhage): Chance de aplicar Sangrado
-		var bleed_chance = _player_stats.get_stat("bleed_on_hit_chance") if _player_stats.has_method("get_stat") else 0.0
+		var bleed_chance = _player_stats.get_stat("bleed_on_hit_chance")
 		if bleed_chance > 0 and randf() < bleed_chance:
 			if target.has_method("apply_bleed"):
 				# Daño de sangrado base o proporcional
-				var bleed_dmg = max(1, damage * 0.2) # 20% del daño del golpe
+				var bleed_dmg = max(1, damage * 0.2) # 20% del daño BASE
 				target.apply_bleed(bleed_dmg, 3.0)
 				FloatingText.spawn_custom(target.global_position + Vector2(-10, -30), "BLEED", Color.RED)
 	# -----------------------------------------------------------
-	# -----------------------------------------------------------
 	
+	# Conditional Multiplier (Status Effects) - Not yet in DamageCalculator
+	var conditional_mult = ProjectileFactory.get_conditional_damage_multiplier(get_tree(), target)
+	if conditional_mult > 1.0:
+		final_damage *= conditional_mult
+
 	# Aplicar daño
 	if target.has_method("take_damage"):
-		target.take_damage(final_damage)
+		target.take_damage(int(final_damage))
 		
 		# LOG: Registrar daño aplicado
 		var weapon_id = get_meta("weapon_id", "unknown_projectile")
-		var is_crit = final_damage > damage  # Si hay diferencia, fue crítico
-		DamageLogger.log_weapon_damage(weapon_id, target.name, final_damage, {"crit": is_crit, "effect": get_meta("effect", "none")})
+		DamageLogger.log_weapon_damage(weapon_id, target.name, int(final_damage), {"crit": damage_result.is_crit, "effect": get_meta("effect", "none")})
 		
 		# Aplicar life steal
 		ProjectileFactory.apply_life_steal(get_tree(), final_damage)
@@ -656,7 +599,7 @@ func _handle_hit(target: Node) -> void:
 	elif target.has_node("HealthComponent"):
 		var hc = target.get_node("HealthComponent")
 		if hc.has_method("take_damage"):
-			hc.take_damage(final_damage, "physical")
+			hc.take_damage(int(final_damage), "physical")
 			# Aplicar life steal
 			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
 			# Verificar execute threshold después del daño

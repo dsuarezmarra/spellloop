@@ -66,9 +66,12 @@ func start_suite(categories: Array = [], limit: int = -1):
 	print("[ItemTestRunner] Discovered %d items." % items.size())
 	
 	# Build Applicability Matrix & Test Queue
-	test_queue = _build_test_queue(items)
+	if max_tests == 25 and not FULL_MATRIX_ENABLED:
+		test_queue = _build_pilot_queue(items)
+	else:
+		test_queue = _build_test_queue(items)
 	
-	if max_tests > 0:
+	if max_tests > 0 and max_tests != 25: # Careful not to slice the pilot queue which interacts with method logic
 		if test_queue.size() > max_tests:
 			test_queue.resize(max_tests)
 			
@@ -78,8 +81,9 @@ func start_suite(categories: Array = [], limit: int = -1):
 	_run_next_test()
 
 func run_sanity_check():
-	print("[ItemTestRunner] Running Sanity Check (5 items)...")
-	start_suite([], 5)
+	print("[ItemTestRunner] Running PILOT V2 (25 items, Quota-based)...")
+	# Force 25 limit to trigger pilot queue logic
+	start_suite([], 25)
 
 func _discover_items(categories: Array) -> Array:
 	var items = []
@@ -140,6 +144,74 @@ func _build_test_queue(items: Array) -> Array:
 			})
 			
 	return queue
+
+func _build_pilot_queue(items: Array) -> Array:
+	print("[ItemTestRunner] Building PILOT V2 Queue (Quota-based)...")
+	var rng = RandomNumberGenerator.new()
+	rng.seed = 1337 # Deterministic Seed
+	
+	var buckets = {
+		"PLAYER_ONLY": [],
+		"WEAPON": [], # GLOBAL_WEAPON or WEAPON_SPECIFIC
+		"FUSION": []
+	}
+	
+	# Pre-classify
+	for item in items:
+		var scope = _classify_item(item)
+		if scope == "PLAYER_ONLY":
+			buckets["PLAYER_ONLY"].append(item)
+		elif scope == "FUSION_SPECIFIC":
+			buckets["FUSION"].append(item)
+		else: # GLOBAL_WEAPON, WEAPON_SPECIFIC
+			buckets["WEAPON"].append(item)
+			
+	# Shuffle buckets
+	for key in buckets:
+		var arr = buckets[key]
+		# Custom shuffle with seed
+		var n = arr.size()
+		for i in range(n - 1, 0, -1):
+			var j = rng.randi_range(0, i)
+			var temp = arr[i]
+			arr[i] = arr[j]
+			arr[j] = temp
+			
+	# Select Quotas
+	var pilot_items = []
+	
+	# 10 PLAYER
+	pilot_items.append_array(buckets["PLAYER_ONLY"].slice(0, min(10, buckets["PLAYER_ONLY"].size())))
+	
+	# 10 WEAPON
+	pilot_items.append_array(buckets["WEAPON"].slice(0, min(10, buckets["WEAPON"].size())))
+	
+	# 5 FUSION
+	pilot_items.append_array(buckets["FUSION"].slice(0, min(5, buckets["FUSION"].size())))
+	
+	# Fallback fill if short
+	var current_count = pilot_items.size()
+	if current_count < 25:
+		var needed = 25 - current_count
+		# Try fill from WEAPON first
+		var used_ids = []
+		for pi in pilot_items: used_ids.append(pi["id"])
+		
+		for w in buckets["WEAPON"]:
+			if needed == 0: break
+			if not w["id"] in used_ids:
+				pilot_items.append(w)
+				needed -= 1
+				
+		# Then Player
+		for p in buckets["PLAYER_ONLY"]:
+			if needed == 0: break
+			if not p["id"] in used_ids:
+				pilot_items.append(p)
+				needed -= 1
+
+	print("[ItemTestRunner] Pilot Queue Item Count: ", pilot_items.size())
+	return _build_test_queue(pilot_items)
 
 func _run_next_test():
 	if current_test_index >= test_queue.size():
@@ -209,7 +281,16 @@ func _run_next_test():
 		
 		# FIRE!
 		if weapon.has_method("perform_attack"):
-			weapon.perform_attack(mock_player, player_stats_mock) # Fire once
+			# Convert Node to Dictionary via the helper we just added
+			var p_stats_dict = {}
+			if player_stats_mock.has_method("get_all_stats"):
+				p_stats_dict = player_stats_mock.get_all_stats()
+			else:
+				# Fallback: manually construct minimal if needed, or pass empty.
+				# Though current issue is passing Object where Dict is expected.
+				pass
+				
+			weapon.perform_attack(mock_player, p_stats_dict) # Fire once
 		
 		# Wait for projectile travel/impact
 		await get_tree().create_timer(0.5).timeout
@@ -283,5 +364,7 @@ func _record_failure(test_case, reason):
 func _finish_suite():
 	print("[ItemTestRunner] Suite Finished. Generating Report...")
 	var path = report_writer.generate_report(results)
+	var md_path = report_writer.generate_summary_md(results, path)
 	all_tests_completed.emit(path)
 	print("[ItemTestRunner] Report saved to: %s" % path)
+	print("[ItemTestRunner] Summary saved to: %s" % md_path)

@@ -471,37 +471,30 @@ class BeamEffect extends Node2D:
 		_create_beam_visual(end_pos)
 
 	func _apply_damage(enemy: Node) -> void:
-		var final_damage = damage
-
-		# Verificar crítico
-		if randf() < crit_chance:
-			final_damage *= crit_damage  # Usar multiplicador de crítico variable
+		# Use cached player for calculators
+		var player = _get_player()
 		
-		# Aplicar multiplicador de daño condicional (damage_vs_slowed/burning/frozen)
-		var conditional_mult = ProjectileFactory.get_conditional_damage_multiplier(get_tree(), enemy)
-		if conditional_mult > 1.0:
-			final_damage *= conditional_mult
-
-		if enemy.has_method("take_damage"):
-			enemy.take_damage(int(final_damage))
-			
-			# LOG: Registrar daño de beam
-			var is_crit = final_damage > damage
-			DamageLogger.log_beam_damage(weapon_id, enemy.name, int(final_damage), is_crit)
-			
-			# Aplicar life steal
-			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
-			# Verificar execute threshold después del daño
-			ProjectileFactory.check_execute(get_tree(), enemy)
-			# Aplicar efectos de estado por probabilidad (burn, freeze, bleed)
-			ProjectileFactory.apply_status_effects_chance(get_tree(), enemy)
-
-		# Aplicar knockback
-		if knockback != 0 and enemy.has_method("apply_knockback"):
-			var kb_dir = (enemy.global_position - global_position).normalized()
-			enemy.apply_knockback(kb_dir * knockback)
+		# Calcular daño final usando el sistema centralizado
+		var damage_result = DamageCalculator.calculate_final_damage(
+			damage, enemy, player, crit_chance, crit_damage
+		)
 		
-		# Aplicar efectos especiales
+		# Aplicar daño y todos los efectos asociados
+		DamageCalculator.apply_damage_with_effects(
+			get_tree(),
+			enemy,
+			damage_result,
+			(enemy.global_position - global_position).normalized(), # Knockback direction
+			knockback
+		)
+		
+		# LOG: Registrar daño de beam (usando el valor final calculado)
+		# Note: apply_damage_with_effects doesn't log specifically for "BEAM", so we keep explicit log here if needed
+		# or move logging inside DamageCalculator (ideal for v2)
+		# For now, we log here for consistency with debugging requirements
+		DamageLogger.log_beam_damage(weapon_id, enemy.name, damage_result.get_int_damage(), damage_result.is_crit)
+
+		# Aplicar efectos especiales (que no maneja DamageCalculator aún)
 		_apply_effect(enemy)
 	
 	func _apply_effect(enemy: Node) -> void:
@@ -805,34 +798,39 @@ class AOEEffect extends Node2D:
 
 	func _apply_damage_tick(enemy: Node) -> void:
 		"""Aplicar daño de un tic a un enemigo"""
-		var final_damage = damage_per_tick
-		var is_crit = false
+		# Use cached player for calculators
+		var player = null
+		if not get_tree():
+			return
 		
-		if randf() < crit_chance:
-			final_damage *= crit_damage  # Usar multiplicador de crítico variable
-			is_crit = true
-		
-		# Aplicar multiplicador de daño condicional (damage_vs_slowed/burning/frozen)
-		var conditional_mult = ProjectileFactory.get_conditional_damage_multiplier(get_tree(), enemy)
-		if conditional_mult > 1.0:
-			final_damage *= conditional_mult
+		var players = get_tree().get_nodes_in_group("player")
+		if players.size() > 0:
+			player = players[0]
+			
+		# Calcular daño final usando el sistema centralizado
+		# Nota: damage_per_tick ya debería incluir modificadores del arma, 
+		# pero NO modificadores situacionales del jugador (brawler, etc.)
+		var damage_result = DamageCalculator.calculate_final_damage(
+			damage_per_tick, enemy, player, crit_chance, crit_damage
+		)
 
+		var final_damage = damage_result.get_int_damage()
+
+		# Aplicar daño
 		if enemy.has_method("take_damage"):
-			enemy.take_damage(int(final_damage))
+			enemy.take_damage(final_damage)
 			
 			# LOG: Registrar daño AOE con info de ticks
-			DamageLogger.log_aoe_damage(weapon_id, enemy.name, int(final_damage), "tick %d/%d" % [_ticks_applied, total_ticks])
+			DamageLogger.log_aoe_damage(weapon_id, enemy.name, final_damage, "tick %d/%d" % [_ticks_applied, total_ticks])
 			
-			# Aplicar life steal
-			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
-			# Verificar execute threshold después del daño
+			# Modulo de efectos secundarios centralizado
+			# No usamos apply_damage_with_effects DIRECTAMENTE porque AOE requiere lógica propia para logging y knockback
+			# pero llamamos a los helpers individuales
+			ProjectileFactory.apply_life_steal(get_tree(), damage_result.final_damage)
 			ProjectileFactory.check_execute(get_tree(), enemy)
-			# Aplicar efectos de estado por probabilidad (solo primer hit)
+			
 			if not _enemies_damaged.has(enemy.get_instance_id()):
 				ProjectileFactory.apply_status_effects_chance(get_tree(), enemy)
-			# Debug de crítico (desactivado en producción)
-			# if is_crit:
-			#	print("[AOE] ⚡ CRIT! %s recibe %d daño (tick %d/%d)" % [enemy.name, int(final_damage), _ticks_applied, total_ticks])
 
 		# Aplicar knockback solo en el primer tic (para no empujar continuamente)
 		var enemy_id = enemy.get_instance_id()

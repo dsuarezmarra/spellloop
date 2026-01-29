@@ -30,20 +30,43 @@ func _clear_events():
 
 # Call this to register a dummy enemy for tracking
 func track_enemy(enemy_node: Node):
+	# 1. Try HealthComponent (Standard)
 	if enemy_node.has_node("HealthComponent"):
 		var hc = enemy_node.get_node("HealthComponent")
+		# Standard SpellLoop Signal: damaged(amount: int, type: String)
+		if hc.has_signal("damaged"):
+			if not hc.damaged.is_connected(_on_damaged_signal):
+				hc.damaged.connect(_on_damaged_signal.bind(enemy_node))
+		
+		# Fallback/Legacy
 		if not hc.health_changed.is_connected(_on_health_changed):
 			hc.health_changed.connect(_on_health_changed)
 		if not hc.died.is_connected(_on_died):
 			hc.died.connect(_on_died)
 			
+	# 2. Try Direct Signals (DummyEnemy)
+	if enemy_node.has_signal("damage_taken"):
+		# DummyEnemy: damage_taken(amount, is_crit)
+		if not enemy_node.damage_taken.is_connected(_on_direct_damage_taken):
+			enemy_node.damage_taken.connect(_on_direct_damage_taken.bind(enemy_node))
+			
 	# Start tracking damage numbers if possible (e.g. from DamageLogger signal if available)
 	# For now we rely on HealthComponent changes
 
 # Event Handlers
-func _on_health_changed(current, max_hp):
-	if not _is_listening: return
-	# Infer damage from delta (requires keeping track of previous hp, simplified for now)
+func _on_damaged_signal(amount, _type, target_node):
+	# HealthComponent signal: damaged(amount, type)
+	# We assume is_crit is false here unless we have better info, or use a heuristic
+	# But typically Projectile handles the crit calculation. 
+	# For strict checking, we rely on the numeric value.
+	log_damage(amount, false, target_node)
+
+func _on_direct_damage_taken(amount, is_crit, target_node):
+	# DummyEnemy signal: damage_taken(amount, is_crit)
+	log_damage(amount, is_crit, target_node)
+
+func _on_health_changed(_current, _max_hp):
+	# Legacy fallback, ignore if we are getting explicit damage signals
 	pass
 
 func log_damage(amount, is_crit, target):

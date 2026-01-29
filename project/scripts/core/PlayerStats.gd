@@ -1093,6 +1093,13 @@ func get_base_stat(stat_name: String) -> float:
 	"""Obtener valor base sin modificadores temporales"""
 	return stats.get(stat_name, 0.0)
 
+func get_all_stats() -> Dictionary:
+	"""Helper para tests: obtener todos los stats calculados en un Diccionario"""
+	var computed = {}
+	for k in stats.keys():
+		computed[k] = get_stat(k)
+	return computed
+
 func _get_temp_modifier_total(stat_name: String) -> float:
 	"""Obtener suma de modificadores temporales"""
 	if not temp_modifiers.has(stat_name):
