@@ -182,17 +182,54 @@ func verify_simulation_results(stats: Dictionary, projectile_type: String, test_
 			
 		"ORBIT":
 			# DESIGN RULE: Orbitals hit based on their rotation speed.
-			var radius = stats.get("range_final", stats.get("range_base", 120.0))
+			# OrbitalManager uses: _rotation_angle += orbital_speed * delta * 0.01
+			# Angular speed = speed * 0.01 rad/s
 			var speed = stats.get("projectile_speed_final", stats.get("projectile_speed_base", 200.0))
-			var orbit_time = (2.0 * PI * radius) / speed if speed > 0 else 4.0
-			var periodic_hits = 1 + floor((test_duration + 0.01) / orbit_time)
-			# Clamp by global 0.5s cooldown per entity
-			periodic_hits = min(periodic_hits, 1 + floor((test_duration + 0.01) / 0.5))
-			expected_hit_damage = damage_final * projectile_count * periodic_hits
+			var angular_speed = speed * 0.01 if speed > 0 else 0.5
+			
+			# Time between consecutive orbitals hitting the same point
+			var time_between_orbitals = (TAU / projectile_count) / angular_speed
+			
+			# Enemy hit cooldown (from OrbitalManager._hit_cooldown)
+			var hit_cooldown = 0.5
+			
+			# Effective interval = max of physical separation and cooldown
+			var effective_interval = max(time_between_orbitals, hit_cooldown)
+			
+			# First hit at T=0, then every effective_interval
+			var total_hits = 1 + int(floor(test_duration / effective_interval))
+			
+			expected_hit_damage = damage_final * total_hits
 			
 		"AOE":
-			# AOE hits ALL enemies in area per fire
-			expected_hit_damage = damage_final * num_dummies * fire_count
+			# AOE weapons use tick-based damage system
+			# CONFIG from ProjectileFactory.AOEEffect.AOE_TICK_CONFIG
+			var aoe_tick_config = {
+				"earth_spike": {"tick_interval": 0.25, "total_ticks": 2},
+				"void_pulse": {"tick_interval": 0.25, "total_ticks": 4},
+				"rift_quake": {"tick_interval": 0.3, "total_ticks": 5},
+				"glacier": {"tick_interval": 0.2, "total_ticks": 3},
+				"absolute_zero": {"tick_interval": 0.3, "total_ticks": 4},
+				"volcano": {"tick_interval": 0.25, "total_ticks": 3},
+				"dark_flame": {"tick_interval": 0.25, "total_ticks": 5},
+				"seismic_bolt": {"tick_interval": 0.25, "total_ticks": 3},
+				"void_storm": {"tick_interval": 0.25, "total_ticks": 8},
+				"gaia": {"tick_interval": 0.25, "total_ticks": 3},
+				"decay": {"tick_interval": 0.25, "total_ticks": 6},
+				"radiant_stone": {"tick_interval": 0.2, "total_ticks": 3},
+				"steam_cannon": {"tick_interval": 0.2, "total_ticks": 3},
+			}
+			
+			var weapon_id = stats.get("weapon_id", stats.get("id", ""))
+			var total_ticks = 4  # default
+			if aoe_tick_config.has(weapon_id):
+				total_ticks = aoe_tick_config[weapon_id]["total_ticks"]
+			
+			# Damage per tick is distributed: damage / total_ticks, then int() truncated
+			var damage_per_tick = int(damage_final / float(total_ticks))
+			var total_aoe_damage = damage_per_tick * total_ticks
+			
+			expected_hit_damage = total_aoe_damage * num_dummies * fire_count
 
 	# 3. Calculate Status Effects (DoT)
 	var expected_dot_damage = 0.0

@@ -4,9 +4,10 @@ class_name ScenarioRunner
 var current_env_instance: Node
 
 func setup_environment() -> Node:
-	# Clean previous
+	# Clean previous - use call_deferred to avoid physics callback errors
 	if is_instance_valid(current_env_instance):
-		current_env_instance.queue_free()
+		current_env_instance.call_deferred("queue_free")
+		await get_tree().process_frame
 	
 	# Instantiate TestEnv
 	var scene = load("res://scripts/debug/item_validation/TestEnv.tscn")
@@ -29,9 +30,9 @@ func teardown_environment():
 		# Or just leave empty. Ideally re-prewarm for consistency.
 		ProjectilePool.instance._prewarm_pool(20)
 		
-	# 3. Destroy Environment
+	# 3. Destroy Environment - use call_deferred to avoid physics callback errors
 	if is_instance_valid(current_env_instance):
-		current_env_instance.queue_free()
+		current_env_instance.call_deferred("queue_free")
 		current_env_instance = null
 		
 	# 4. Wait for memory release

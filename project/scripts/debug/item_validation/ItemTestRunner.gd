@@ -22,6 +22,7 @@ var max_tests = -1 # -1 for all
 var current_test_index = 0
 var test_queue = []
 var results = []
+var _exiting: bool = false  # Flag to prevent new operations during exit
 
 # Nodes
 var report_writer: ReportWriter
@@ -341,8 +342,8 @@ func _run_next_test():
 	var item_id = test_case["item"]["id"]
 	test_started.emit(item_id)
 	
-	# 1. SETUP Environment
-	var env = scenario_runner.setup_environment()
+	# 1. SETUP Environment (now async due to cleanup)
+	var env = await scenario_runner.setup_environment()
 	attack_manager = env.get_node("AttackManager")
 	player_stats_mock = env.get_node("PlayerStats")
 	var mock_player = env.get_node("MockPlayer")
@@ -402,7 +403,9 @@ func _run_next_test():
 	results.append(result_data)
 	test_finished.emit(item_id, result_data["success"], str(result_data["failures"]))
 	
-	await get_tree().create_timer(0.01).timeout
+	# Use process_frame instead of create_timer to avoid SceneTreeTimer leak on quit
+	await get_tree().process_frame
+	if _exiting: return
 	_run_next_test()
 
 func _execute_test_iteration(test_case: Dictionary, env: Node, classification: String) -> Dictionary:
@@ -416,9 +419,9 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 		"expected_damage": 0.0
 	}
 	
-	# Clean any previous dummies
+	# Clean any previous dummies - use call_deferred to avoid physics callback errors
 	for dummy in get_tree().get_nodes_in_group("test_dummy"):
-		dummy.queue_free()
+		dummy.call_deferred("queue_free")
 	await get_tree().process_frame
 	
 	# WEAPON / FUSION SCOPE
@@ -487,7 +490,17 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 		if final_stats.get("burn_chance", 0) > 0 or final_stats.get("bleed_chance", 0) > 0:
 			test_window = max(test_window, 2.0)
 		
-		await get_tree().create_timer(test_window).timeout
+		# Use Timer node instead of SceneTreeTimer to avoid leak on early quit
+		var test_timer = Timer.new()
+		test_timer.one_shot = true
+		test_timer.wait_time = test_window
+		add_child(test_timer)
+		test_timer.start()
+		await test_timer.timeout
+		test_timer.queue_free()
+		
+		if _exiting: 
+			return iter_result
 		
 		# Capture final state
 		mechanical_oracle.stop_listening()
@@ -587,6 +600,7 @@ func _record_failure(test_case, reason):
 
 func _exit_run():
 	print("[ItemTestRunner] Exiting...")
+	_exiting = true  # Signal all async operations to abort
 	_cleanup()
 	# Wait for cleanup to propagate (freed nodes)
 	await get_tree().process_frame
@@ -594,6 +608,12 @@ func _exit_run():
 	get_tree().quit()
 
 func _cleanup():
+	# Kill any active timers first (prevents GDScriptFunctionState leaks)
+	for child in get_children():
+		if child is Timer:
+			child.stop()
+			child.queue_free()
+	
 	if scenario_runner and is_instance_valid(scenario_runner):
 		scenario_runner.teardown_environment()
 		scenario_runner.queue_free()
@@ -613,7 +633,10 @@ func _cleanup():
 	if report_writer and is_instance_valid(report_writer):
 		report_writer.queue_free()
 		
+	# Clean up weapons properly before freeing AttackManager
 	if attack_manager and is_instance_valid(attack_manager):
+		if attack_manager.has_method("reset_for_new_game"):
+			attack_manager.reset_for_new_game()
 		attack_manager.queue_free()
 
 func _finish_suite():

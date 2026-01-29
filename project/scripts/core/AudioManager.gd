@@ -290,6 +290,9 @@ func play_coin_sfx(pitch: float = 1.0) -> void:
 	"""
 	Reproducir sonido de moneda con alta polifonía usando el manifest.
 	"""
+	# HEADLESS GUARD
+	if Headless.is_headless(): return
+	
 	var audio_id = "sfx_coin_pickup"
 	if not manifest.has(audio_id):
 		return

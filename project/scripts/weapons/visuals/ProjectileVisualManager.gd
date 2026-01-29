@@ -1481,6 +1481,10 @@ func _create_weapon_visual_data(weapon_id: String, weapon_data: Dictionary) -> P
 
 func create_projectile_visual(weapon_id: String, weapon_data: Dictionary = {}) -> AnimatedProjectileSprite:
 	"""Crear sprite animado para proyectil normal"""
+	# HEADLESS GUARD: Skip visual creation in headless/test mode
+	if Headless.is_headless():
+		return null
+	
 	var visual_data = get_visual_data(weapon_id, weapon_data)
 	var sprite = AnimatedProjectileSprite.new()
 	sprite.setup(visual_data)
@@ -1498,6 +1502,10 @@ func create_projectile_visual(weapon_id: String, weapon_data: Dictionary = {}) -
 func create_aoe_visual(weapon_id: String, radius: float, duration: float = 0.5,
 		weapon_data: Dictionary = {}) -> AOEVisualEffect:
 	"""Crear efecto visual AOE"""
+	# HEADLESS GUARD
+	if Headless.is_headless():
+		return null
+	
 	var visual_data = get_visual_data(weapon_id, weapon_data)
 	var effect = AOEVisualEffect.new()
 	effect.setup(visual_data, radius, duration)
@@ -1508,6 +1516,10 @@ func create_aoe_visual(weapon_id: String, radius: float, duration: float = 0.5,
 func create_beam_visual(weapon_id: String, length: float, direction: Vector2,
 		width: float = 12.0, weapon_data: Dictionary = {}) -> BeamVisualEffect:
 	"""Crear efecto visual de rayo"""
+	# HEADLESS GUARD
+	if Headless.is_headless():
+		return null
+	
 	var visual_data = get_visual_data(weapon_id, weapon_data)
 	var effect = BeamVisualEffect.new()
 	effect.setup(visual_data, length, direction, width)
@@ -1515,6 +1527,10 @@ func create_beam_visual(weapon_id: String, length: float, direction: Vector2,
 
 func create_chain_visual(weapon_id: String, chain_count: int = 2, weapon_data: Dictionary = {}) -> Node2D:
 	"""Crear efecto visual de cadena de rayos - cada arma tiene su propia clase"""
+	# HEADLESS GUARD
+	if Headless.is_headless():
+		return null
+	
 	var visual_data = get_visual_data(weapon_id, weapon_data)
 
 	match weapon_id:
@@ -1542,6 +1558,10 @@ func create_chain_visual(weapon_id: String, chain_count: int = 2, weapon_data: D
 func create_orbit_visual(weapon_id: String, orbital_count: int, orbit_radius: float,
 		weapon_data: Dictionary = {}) -> OrbitalsVisualContainer:
 	"""Crear contenedor con múltiples orbes visuales"""
+	# HEADLESS GUARD
+	if Headless.is_headless():
+		return null
+	
 	var visual_data = get_visual_data(weapon_id, weapon_data)
 	var container = OrbitalsVisualContainer.new()
 	container.setup(visual_data, orbital_count, orbit_radius, 24.0)

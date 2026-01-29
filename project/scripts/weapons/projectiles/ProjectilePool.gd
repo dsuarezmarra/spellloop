@@ -203,7 +203,8 @@ func clear_pool() -> void:
 	"""Limpiar completamente el pool (usar al cambiar de escena)"""
 	for projectile in _available_pool:
 		if is_instance_valid(projectile):
-			projectile.queue_free()
+			# Use call_deferred to avoid physics callback errors
+			projectile.call_deferred("queue_free")
 	_available_pool.clear()
 	_active_count = 0
 
