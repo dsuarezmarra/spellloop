@@ -16,6 +16,9 @@ class_name SideEffectDetector
 # - Cambios de posición no esperados
 # - Señales emitidas no esperadas
 
+# Usar StatResolver para lista completa de stats
+const StatResolverScript = preload("res://scripts/debug/item_validation/StatResolver.gd")
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # STATE TRACKING
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -120,43 +123,16 @@ func _capture_player_state(player: Node) -> Dictionary:
 			player_stats = nodes[0]
 	
 	if player_stats != null:
-		# Capture all known stats (including aliases for different naming conventions)
-		var stat_list = [
-			# Health stats
-			"max_hp", "max_health", "health_max", "current_hp", "current_health",
-			# Defensive stats
-			"armor", "defence", "damage_reduction", "damage_taken_mult",
-			"regen", "health_regen", "hp_regen",
-			"dodge_chance", "evasion",
-			"life_steal", "lifesteal",
-			"thorns", "thorns_percent", "thorns_damage",
-			"shield", "barrier",
-			# Movement
-			"movement_speed", "move_speed", "speed",
-			"pickup_range",
-			# Offensive multipliers
-			"damage_mult", "damage_multiplier", "damage_base", "base_damage",
-			"area_mult", "area_multiplier",
-			"cooldown_mult", "cooldown_reduction",
-			"projectile_speed",
-			"projectile_count", "projectile_count_final",
-			"piercing", "pierce", "pierce_final",
-			"attack_speed_mult", "attack_speed",
-			"duration_mult", "duration",
-			"knockback", "range_mult", "chain_count",
-			# Status chance
-			"burn_chance", "burn_damage", "burn_duration",
-			"freeze_chance", "freeze_duration",
-			"slow_chance", "slow_amount", "slow_duration",
-			"bleed_chance", "bleed_damage", "bleed_duration",
-			"stun_chance", "stun_duration",
-			# Critical
-			"crit_chance", "critical_chance", "crit_damage", "critical_damage",
-			# Economy/Luck
-			"luck", "xp_mult", "gold_mult",
-			# Other
-			"max_weapons"
-		]
+		# Capture all known stats using StatResolver's comprehensive list
+		# This includes PLAYER_STATS + GLOBAL_WEAPON_STATS + all aliases
+		var stat_list: Array = []
+		stat_list.append_array(StatResolverScript.PLAYER_STATS)
+		stat_list.append_array(StatResolverScript.GLOBAL_WEAPON_STATS)
+		
+		# Also add all alias keys so we can capture them too
+		for alias_key in StatResolverScript.STAT_ALIASES.keys():
+			if alias_key not in stat_list:
+				stat_list.append(alias_key)
 		
 		for stat_name in stat_list:
 			if player_stats.has_method("get_stat"):
@@ -176,14 +152,8 @@ func _capture_player_state(player: Node) -> Dictionary:
 		global_weapon_stats = player.get_parent().get_node_or_null("GlobalWeaponStats")
 	
 	if global_weapon_stats:
-		var weapon_stats_list = [
-			"life_steal", "lifesteal",
-			"damage_mult", "area_mult", "cooldown_mult", 
-			"projectile_speed", "projectile_count",
-			"pierce", "chain_count", "knockback",
-			"crit_chance", "crit_damage",
-			"burn_chance", "freeze_chance", "bleed_chance", "slow_chance"
-		]
+		# Use StatResolver's GLOBAL_WEAPON_STATS list
+		var weapon_stats_list = StatResolverScript.GLOBAL_WEAPON_STATS.duplicate()
 		for stat_name in weapon_stats_list:
 			if global_weapon_stats.has_method("get_stat"):
 				var val = global_weapon_stats.get_stat(stat_name)
