@@ -77,9 +77,6 @@ func _execute_chain_sequence() -> void:
 	var current_pos = global_position
 	var current_target = first_target
 	var chains_done = 0
-	
-	# DEBUG: Log chain creation
-	print("🔗 [ChainProjectile] START chain_count=%d, weapon=%s, target=%s" % [chain_count, weapon_id, first_target.name if first_target else "null"])
 
 	while chains_done < chain_count and current_target != null and is_instance_valid(current_target):
 		var target_pos = current_target.global_position
@@ -91,8 +88,6 @@ func _execute_chain_sequence() -> void:
 			)
 
 		_apply_damage_to_target(current_target)
-		# DEBUG: Log each hit
-		print("🔗 [ChainProjectile] HIT #%d → %s (dmg=%d)" % [chains_done + 1, current_target.name, int(damage)])
 		enemies_hit.append(current_target)
 
 		if chains_done < chain_count - 1:

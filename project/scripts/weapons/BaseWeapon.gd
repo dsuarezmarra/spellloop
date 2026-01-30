@@ -632,9 +632,6 @@ func _spawn_chain(player: Node2D, targets: Array, dmg: float, crit: float) -> vo
 	var extra = int(global_stats.get("extra_projectiles", 0))
 	var count = projectile_count + extra
 	
-	# DEBUG: Log chain spawn
-	print("⚡ [BaseWeapon._spawn_chain] %s: projectile_count=%d, extra=%d, count=%d, targets=%d" % [id, projectile_count, extra, count, targets.size()])
-	
 	# Crear múltiples cadenas - si hay menos enemigos que proyectiles,
 	# disparar múltiples cadenas al mismo objetivo
 	targets.shuffle()

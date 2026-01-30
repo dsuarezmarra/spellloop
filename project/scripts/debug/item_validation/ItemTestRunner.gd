@@ -757,6 +757,7 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 	for dummy in get_tree().get_nodes_in_group("test_dummy"):
 		dummy.call_deferred("queue_free")
 	await get_tree().process_frame
+	await get_tree().process_frame  # Extra frame to ensure deferred calls complete
 	
 	# WEAPON / FUSION SCOPE
 	if classification in ["WEAPON_SPECIFIC", "GLOBAL_WEAPON", "FUSION_SPECIFIC"]:
@@ -804,6 +805,13 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 			mechanical_oracle.track_enemy(dummy)
 			status_oracle.track_enemy(dummy)
 		
+		# CRITICAL FIX: Disable AttackManager auto-fire during manual test
+		# The AttackManager._process() would fire weapons automatically, causing duplicate hits
+		var was_active = false
+		if attack_manager and "is_active" in attack_manager:
+			was_active = attack_manager.is_active
+			attack_manager.is_active = false
+		
 		# FIRE!
 		var p_stats_dict = {}
 		if weapon.has_method("perform_attack"):
@@ -832,6 +840,10 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 		test_timer.start()
 		await test_timer.timeout
 		test_timer.queue_free()
+		
+		# Restore AttackManager state
+		if attack_manager and "is_active" in attack_manager:
+			attack_manager.is_active = was_active
 		
 		if _exiting: 
 			return iter_result

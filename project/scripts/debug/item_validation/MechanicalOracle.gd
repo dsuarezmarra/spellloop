@@ -43,6 +43,16 @@ func stop_listening():
 			captured_events["final_hp_map"][enemy] = hp
 
 func _clear_events():
+	# Disconnect signals from previously tracked enemies to avoid ghost events
+	for enemy in _tracked_enemies:
+		if is_instance_valid(enemy):
+			if enemy.has_node("HealthComponent"):
+				var hc = enemy.get_node("HealthComponent")
+				if hc.has_signal("damaged") and hc.damaged.is_connected(_on_damaged_signal):
+					hc.damaged.disconnect(_on_damaged_signal)
+			if enemy.has_signal("damage_taken") and enemy.damage_taken.is_connected(_on_direct_damage_taken):
+				enemy.damage_taken.disconnect(_on_direct_damage_taken)
+	
 	_tracked_enemies = []
 	captured_events = {
 		"damage_events": [],
