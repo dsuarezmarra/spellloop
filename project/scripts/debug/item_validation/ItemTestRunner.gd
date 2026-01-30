@@ -59,6 +59,13 @@ var simulated_pickups: int = 3  # Number of on_pickup events to simulate
 # Key = item_id, Value = array of required events
 var _event_requirements: Dictionary = {}
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# DEBUG INSTRUMENTATION - Verifies harness fixes are working
+# ═══════════════════════════════════════════════════════════════════════════════
+var DEBUG_HARNESS_FIX: bool = false  # Set to true to enable verbose fix verification logs
+var _debug_attack_mgr_fires_during_test: int = 0  # Counter for any fires during disabled window
+var _debug_tracked_enemies_at_clear: int = 0  # Number of enemies being disconnected
+
 # Metadata for Reporting
 var empty_reason: String = ""
 var start_time_ms: int = 0
@@ -811,11 +818,15 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 		if attack_manager and "is_active" in attack_manager:
 			was_active = attack_manager.is_active
 			attack_manager.is_active = false
+			if DEBUG_HARNESS_FIX:
+				print("[DEBUG_HARNESS_FIX] AttackManager.is_active: %s -> false (DISABLED for test)" % str(was_active))
 		
 		# FIRE!
 		var p_stats_dict = {}
 		if weapon.has_method("perform_attack"):
 			p_stats_dict = player_stats_mock.get_all_stats() if player_stats_mock.has_method("get_all_stats") else {}
+			if DEBUG_HARNESS_FIX:
+				print("[DEBUG_HARNESS_FIX] Manual fire: weapon.perform_attack() called for %s" % item_id)
 			weapon.perform_attack(mock_player, p_stats_dict)
 			
 		# Merge Player Stats into Final Stats for Oracle (so it sees burn_chance etc.)
@@ -843,6 +854,9 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 		
 		# Restore AttackManager state
 		if attack_manager and "is_active" in attack_manager:
+			if DEBUG_HARNESS_FIX:
+				print("[DEBUG_HARNESS_FIX] Test window complete. Hits counted: %d" % mechanical_oracle.captured_events["hits"])
+				print("[DEBUG_HARNESS_FIX] AttackManager.is_active: false -> %s (RESTORED)" % str(was_active))
 			attack_manager.is_active = was_active
 		
 		if _exiting: 
