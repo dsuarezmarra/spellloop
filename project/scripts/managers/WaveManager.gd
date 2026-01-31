@@ -625,7 +625,51 @@ func _spawn_elite() -> void:
 	
 	var spawn_pos = _get_random_spawn_position()
 	
-	# Crear élite con escalado
+	# === ELITE TELEGRAPH SYSTEM ===
+	# Show warning for 1.5 seconds before elite spawns
+	_show_elite_telegraph(spawn_pos, enemy_id, tier)
+
+func _show_elite_telegraph(spawn_pos: Vector2, enemy_id: String, tier: int) -> void:
+	"""Show warning visual before elite spawns"""
+	const TELEGRAPH_DURATION: float = 1.5
+	
+	# Create warning visual
+	var warning = _create_elite_warning_visual(spawn_pos, TELEGRAPH_DURATION)
+	
+	# Play warning sound
+	if AudioManager:
+		AudioManager.play_fixed("sfx_elite_warning")
+	
+	# Show announcement immediately
+	_show_wave_announcement("⚠️ ELITE INCOMING!")
+	
+	# Schedule actual spawn after telegraph
+	var tree = get_tree()
+	if tree:
+		var spawn_data = {
+			"enemy_id": enemy_id,
+			"spawn_pos": spawn_pos,
+			"tier": tier,
+			"warning": warning
+		}
+		tree.create_timer(TELEGRAPH_DURATION).timeout.connect(
+			_complete_elite_spawn.bind(spawn_data)
+		)
+
+func _complete_elite_spawn(spawn_data: Dictionary) -> void:
+	"""Actually spawn the elite after telegraph completes"""
+	if not enemy_manager or not player:
+		return
+	
+	var enemy_id = spawn_data.get("enemy_id", "")
+	var spawn_pos = spawn_data.get("spawn_pos", Vector2.ZERO)
+	var warning = spawn_data.get("warning")
+	
+	# Clean up warning visual
+	if is_instance_valid(warning):
+		warning.queue_free()
+	
+	# Create élite with escalado
 	var elite_multipliers = {
 		"hp_multiplier": infinite_scaling_multipliers.hp,
 		"damage_multiplier": infinite_scaling_multipliers.damage
@@ -636,11 +680,122 @@ func _spawn_elite() -> void:
 	if active_elite:
 		elites_spawned_this_game += 1
 		elite_spawned.emit(enemy_id)
-		_show_wave_announcement(SpawnConfig.ELITE_CONFIG.spawn_announcement)
+		
+		# Spawn impact effect
+		_create_elite_spawn_impact(spawn_pos)
 		
 		# Conectar señal de muerte
 		if active_elite.has_signal("enemy_died"):
 			active_elite.enemy_died.connect(_on_elite_enemy_died)
+
+func _create_elite_warning_visual(pos: Vector2, duration: float) -> Node2D:
+	"""Create the warning circle that appears before elite spawn"""
+	var warning = Node2D.new()
+	warning.name = "EliteWarning"
+	warning.global_position = pos
+	warning.z_index = 5
+	
+	# Add to scene
+	var tree = get_tree()
+	if tree and tree.current_scene:
+		tree.current_scene.add_child(warning)
+	
+	# Animation state
+	var time_elapsed: float = 0.0
+	var radius: float = 80.0
+	
+	# Visual drawing
+	var visual = Node2D.new()
+	warning.add_child(visual)
+	
+	# Colors
+	var warning_color = Color(0.8, 0.1, 0.1, 0.8)  # Dark red
+	var pulse_color = Color(1.0, 0.3, 0.1, 0.5)    # Orange-red
+	
+	visual.draw.connect(func():
+		var progress = time_elapsed / duration
+		var pulse = sin(time_elapsed * 8.0) * 0.2 + 1.0
+		var current_radius = radius * pulse
+		
+		# Outer pulsing circle
+		visual.draw_arc(Vector2.ZERO, current_radius, 0, TAU, 32, 
+			warning_color, 4.0)
+		
+		# Inner fill (grows over time)
+		var fill_radius = radius * progress * 0.8
+		visual.draw_circle(Vector2.ZERO, fill_radius, 
+			Color(pulse_color.r, pulse_color.g, pulse_color.b, 0.3 * progress))
+		
+		# Warning lines (X pattern)
+		var line_len = radius * 0.6
+		var line_alpha = 0.5 + sin(time_elapsed * 10.0) * 0.3
+		var line_color = Color(1.0, 0.2, 0.1, line_alpha)
+		visual.draw_line(Vector2(-line_len, -line_len), Vector2(line_len, line_len), line_color, 3.0)
+		visual.draw_line(Vector2(-line_len, line_len), Vector2(line_len, -line_len), line_color, 3.0)
+		
+		# Center skull/danger indicator
+		if progress > 0.5:
+			var skull_alpha = (progress - 0.5) * 2.0
+			visual.draw_circle(Vector2.ZERO, 15, Color(1.0, 0.9, 0.1, skull_alpha))
+	)
+	
+	# Animation timer
+	var timer = Timer.new()
+	timer.wait_time = 0.016  # ~60 FPS
+	timer.autostart = true
+	warning.add_child(timer)
+	
+	timer.timeout.connect(func():
+		time_elapsed += 0.016
+		if is_instance_valid(visual):
+			visual.queue_redraw()
+	)
+	
+	return warning
+
+func _create_elite_spawn_impact(pos: Vector2) -> void:
+	"""Create impact effect when elite materializes"""
+	var impact = Node2D.new()
+	impact.global_position = pos
+	impact.z_index = 10
+	
+	var tree = get_tree()
+	if tree and tree.current_scene:
+		tree.current_scene.add_child(impact)
+	
+	var anim: float = 0.0
+	var visual = Node2D.new()
+	impact.add_child(visual)
+	
+	visual.draw.connect(func():
+		var expand = anim * 120.0
+		var alpha = 1.0 - anim
+		
+		# Shockwave rings
+		for i in range(3):
+			var ring_r = expand * (0.5 + i * 0.3)
+			var ring_a = alpha * (1.0 - i * 0.3)
+			visual.draw_arc(Vector2.ZERO, ring_r, 0, TAU, 32, 
+				Color(1.0, 0.3, 0.1, ring_a), 4.0 - i)
+		
+		# Center flash
+		if anim < 0.3:
+			var flash_a = (0.3 - anim) / 0.3
+			visual.draw_circle(Vector2.ZERO, 30 * (1.0 - anim), 
+				Color(1.0, 1.0, 0.8, flash_a))
+	)
+	
+	# Animate and cleanup
+	var tween = impact.create_tween()
+	tween.tween_method(func(v):
+		anim = v
+		if is_instance_valid(visual):
+			visual.queue_redraw()
+	, 0.0, 1.0, 0.4)
+	tween.tween_callback(func():
+		if is_instance_valid(impact):
+			impact.queue_free()
+	)
 
 func _on_elite_enemy_died(_enemy_node, _enemy_type_id, _exp_value, _enemy_tier, _is_elite, _is_boss) -> void:
 	"""Callback cuando el élite muere - recibe todos los parámetros de enemy_died"""

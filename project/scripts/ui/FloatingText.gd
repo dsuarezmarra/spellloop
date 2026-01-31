@@ -88,6 +88,10 @@ static func spawn_damage(pos: Vector2, amount: int, is_crit: bool = false) -> vo
 	var col = Color(1.0, 0.3, 0.3) if not is_crit else Color(1.0, 0.8, 0.2)
 	var size = 16 if not is_crit else 22
 	_spawn_text(pos, str(amount), col, size, 0.8)
+	
+	# === CRIT FEEDBACK ===
+	if is_crit:
+		_apply_crit_feedback(pos)
 
 static func spawn_player_damage(pos: Vector2, amount: int, element: String = "physical") -> void:
 	var col: Color
@@ -128,6 +132,31 @@ static func spawn_text(pos: Vector2, txt: String, col: Color = Color.WHITE) -> v
 
 static func spawn_custom(pos: Vector2, txt: String, col: Color = Color.WHITE) -> void:
 	spawn_text(pos, txt, col)
+
+static func _apply_crit_feedback(_pos: Vector2) -> void:
+	"""Apply screen shake and sound on critical hit"""
+	if Headless.is_headless():
+		return
+	
+	var tree = Engine.get_main_loop() as SceneTree
+	if not tree:
+		return
+	
+	# Screen shake (micro-shake for crits)
+	var camera = tree.get_first_node_in_group("camera")
+	if not camera:
+		camera = tree.get_first_node_in_group("game_camera")
+	
+	if camera:
+		if camera.has_method("minor_shake"):
+			camera.minor_shake()
+		elif camera.has_method("shake"):
+			camera.shake(0.15, 0.08)  # Very subtle shake for crits
+	
+	# Crit sound effect
+	if AudioManager:
+		AudioManager.play_fixed("sfx_crit_hit")
+
 
 static func _spawn_text(pos: Vector2, txt: String, col: Color, size: int, dur: float) -> void:
 	# HEADLESS GUARD: Critical - prevents ALL visual operations in headless mode
