@@ -384,6 +384,14 @@ func initialize_from_database(data: Dictionary, player) -> void:
 	# Colisión
 	var collision_radius = float(data.get("collision_radius", 16.0))
 	var collision_shape = _find_collision_shape_node(self)
+	
+	# FALLBACK: Si no existe collision shape (Headless/Race condition), crearlo ahora.
+	if not collision_shape:
+		collision_shape = CollisionShape2D.new()
+		collision_shape.name = "CollisionShape2D"
+		collision_shape.shape = CircleShape2D.new()
+		add_child(collision_shape)
+		
 	if collision_shape and collision_shape.shape is CircleShape2D:
 		collision_shape.shape.radius = collision_radius
 

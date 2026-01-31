@@ -10,7 +10,7 @@ var _results = []
 
 func _init():
 	print("🔥 Status Effects Audit Runner Starting...")
-	print("=" * 60)
+	print("=".repeat(60))
 	
 	# Verify CombatDiagnostics is present/mocked for feedback check
 	var diag_script = load("res://scripts/tools/CombatDiagnostics.gd")
@@ -63,6 +63,8 @@ func track_feedback(type, info):
 	await _test_bleed(EnemyScript, diag_node)
 	
 	root_node.queue_free()
+	await process_frame
+	await process_frame
 
 func _test_burn(EnemyScript, diag_node):
 	var dummy = _create_dummy(EnemyScript)
@@ -87,7 +89,7 @@ func _test_burn(EnemyScript, diag_node):
 	# Use 'process_frame' loop to let timers tick
 	while wait < 1.1: # Wait > 1.0s for typical tick
 		await process_frame
-		var delta = get_process_delta_time()
+		var delta = 0.016 # Fixed delta for headless audit
 		wait += delta
 		# Force physics process manually in headless audit
 		if dummy.has_method("_physics_process"):

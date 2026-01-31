@@ -25,7 +25,7 @@ const UPGRADES_TO_TEST = [
 
 func _init():
 	print("📦 Upgrades Audit Runner Starting...")
-	print("=" * 60)
+	print("=".repeat(60))
 	
 	await _run_all_tests()
 	
@@ -158,9 +158,9 @@ func _log_result(upgrade_id: String, status: String, message: String):
 	})
 
 func _print_report():
-	print("\n" + "=" * 60)
+	print("\n" + "=".repeat(60))
 	print("📋 UPGRADES AUDIT REPORT")
-	print("=" * 60)
+	print("=".repeat(60))
 	print("Total Tests: %d" % _total_tests)
 	print("Passed: %d" % _passed_tests)
 	print("Failed: %d" % _failed_tests)
@@ -186,7 +186,7 @@ func _print_report():
 		file.store_string("\n**Result**: %d/%d passed\n" % [_passed_tests, _total_tests])
 		print("\n📄 Report saved to: %s" % report_path)
 	
-	print("=" * 60)
+	print("=".repeat(60))
 	if _failed_tests > 0:
 		print("❌ AUDIT FAILED - Some upgrades do not apply correctly!")
 	else:

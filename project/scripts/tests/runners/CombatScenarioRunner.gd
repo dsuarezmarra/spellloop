@@ -46,6 +46,17 @@ func _init():
 	await _run_scaling_validation(DBClass)
 	await _run_status_validation(DBClass)
 	
+	# Global cleanup wait
+	for i in range(5):
+		await process_frame
+		
+	# Force cleanup of any remaining nodes in root (projectiles?)
+	for child in root.get_children():
+		if child != self:
+			child.queue_free()
+			
+	await process_frame
+		
 	_print_report()
 	quit(_failed_tests > 0)
 
@@ -92,7 +103,12 @@ func _run_contract_validation(OracleClass, DBClass):
 		# EnemyBase usually has all logic internal or uses other singletons.
 		# If EnemyBase uses EnemyDatabase.get_ Something, it will crash if global is not there.
 		# But initialize_from_database accepts 'data' dict.
+		# Initialize
 		enemy.initialize_from_database(data, dummy_player)
+		
+		# CRITICAL: Disable processing to prevent Attribute/AttackSystem from running 
+		# and spawning projectiles (which leak because they become siblings)
+		enemy.process_mode = Node.PROCESS_MODE_DISABLED
 		
 		# Check Contract
 		# We must pass DBClass to Oracle too because Oracle uses EnemyDatabase global.
@@ -128,6 +144,11 @@ func _run_contract_validation(OracleClass, DBClass):
 		await process_frame # Let queue_free happen
 	
 	dummy_player.queue_free()
+	
+	# Wait for cleanup to propagate
+	await process_frame
+	await process_frame
+
 
 func _run_scaling_validation(DBClass):
 	print("\n📈 Starting Scaling Validation...")

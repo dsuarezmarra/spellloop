@@ -27,7 +27,7 @@ var _failed_tests = 0
 
 func _init():
 	print("🔫 Weapon Damage Audit Runner Starting...")
-	print("=" * 60)
+	print("=".repeat(60))
 	
 	await _run_all_tests()
 	
@@ -95,6 +95,8 @@ func _run_all_tests():
 		if is_instance_valid(dummy):
 			dummy.queue_free()
 		
+		# Allow cleanup to propagate
+		await process_frame
 		await process_frame
 	
 	# Cleanup
@@ -208,9 +210,9 @@ func _log_result(weapon_id: String, status: String, message: String):
 	})
 
 func _print_report():
-	print("\n" + "=" * 60)
+	print("\n" + "=".repeat(60))
 	print("📋 WEAPON DAMAGE AUDIT REPORT")
-	print("=" * 60)
+	print("=".repeat(60))
 	print("Total Tests: %d" % _total_tests)
 	print("Passed: %d" % _passed_tests)
 	print("Failed: %d" % _failed_tests)
@@ -236,7 +238,7 @@ func _print_report():
 		file.store_string("\n**Result**: %d/%d passed\n" % [_passed_tests, _total_tests])
 		print("\n📄 Report saved to: %s" % report_path)
 	
-	print("=" * 60)
+	print("=".repeat(60))
 	if _failed_tests > 0:
 		print("❌ AUDIT FAILED - Some weapons do not deal damage!")
 	else:

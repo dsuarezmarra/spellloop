@@ -1,11 +1,10 @@
 # Phase 5: Enemy & Combat Validation Report
-**Date**: 2026-02-01T00:35:46
+**Date**: 2026-02-01T00:54:07
 
 ## 1. Enemy Contract Validation
 | ID | Tier | HP | Dmg | Spd | Size | Result |
 |---|---|---|---|---|---|---|
-| tier_1_esqueleto_aprendiz | 1 | 20 | 6 | 45 | 14 | ❌ FAIL |
-> ⚠️ tier_1_esqueleto_aprendiz: [FAIL] collision_shape: Expected CircleShape2D, Got None (Missing collision shape)
+| tier_1_esqueleto_aprendiz | 1 | 20 | 6 | 45 | 14 | ✅ PASS |
 | tier_1_duende_sombrio | 1 | 12 | 5 | 70 | 12 | ✅ PASS |
 | tier_1_slime_arcano | 1 | 35 | 5 | 25 | 12 | ✅ PASS |
 | tier_1_murcielago_etereo | 1 | 10 | 4 | 55 | 10 | ✅ PASS |

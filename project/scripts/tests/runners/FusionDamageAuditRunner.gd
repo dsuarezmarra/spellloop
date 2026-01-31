@@ -16,7 +16,7 @@ enum ProjectileType { SINGLE=0, MULTI=1, BEAM=2, AOE=3, ORBIT=4, CHAIN=5 }
 
 func _init():
 	print("🌀 Fusion Damage Audit Runner Starting...")
-	print("=" * 60)
+	print("=".repeat(60))
 	
 	await _run_all_tests()
 	

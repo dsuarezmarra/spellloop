@@ -78,7 +78,10 @@ func load_spritesheet(path: String) -> bool:
 	"""Cargar un spritesheet de 3 poses con gaps de 8px y extraer frames"""
 	# VERIFICAR CACHE EN RESOURCE MANAGER
 	var rm = null
-	var tree = get_tree()
+	var tree = null
+	if is_inside_tree():
+		tree = get_tree()
+	
 	if tree:
 		rm = tree.get_first_node_in_group("resource_manager")
 

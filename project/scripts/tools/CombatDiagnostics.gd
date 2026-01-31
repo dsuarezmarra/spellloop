@@ -40,9 +40,9 @@ func _ready() -> void:
 	# Add to diagnostic group
 	add_to_group("diagnostics")
 	
-	print("═" * 60)
+	print("═".repeat(60))
 	print("📊 COMBAT DIAGNOSTICS ACTIVE")
-	print("═" * 60)
+	print("═".repeat(60))
 
 func _process(delta: float) -> void:
 	if not AGGREGATED_REPORTING:
@@ -137,9 +137,9 @@ func print_interim_report() -> void:
 	"""Print interim report of current session"""
 	var elapsed = (Time.get_ticks_msec() - _session_start) / 1000.0
 	
-	print("\n" + "─" * 50)
+	print("\n" + "─".repeat(50))
 	print("📊 COMBAT STATS @ %.1fs" % elapsed)
-	print("─" * 50)
+	print("─".repeat(50))
 	
 	if weapon_stats.is_empty():
 		print("  No weapon activity recorded")
@@ -166,7 +166,7 @@ func print_interim_report() -> void:
 		for type in feedback_stats:
 			print("  %s: %d events" % [type, feedback_stats[type]])
 	
-	print("─" * 50 + "\n")
+	print("─".repeat(50) + "\n")
 
 static func generate_full_report() -> String:
 	"""Generate full markdown report"""

@@ -154,8 +154,10 @@ static func _apply_crit_feedback(_pos: Vector2) -> void:
 			camera.shake(0.15, 0.08)  # Very subtle shake for crits
 	
 	# Crit sound effect
-	if AudioManager:
-		AudioManager.play_fixed("sfx_crit_hit")
+	var audio_manager = tree.root.get_node_or_null("AudioManager")
+	if audio_manager:
+		audio_manager.play_fixed("sfx_crit_hit")
+
 
 
 static func _spawn_text(pos: Vector2, txt: String, col: Color, size: int, dur: float) -> void:
