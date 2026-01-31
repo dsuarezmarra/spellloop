@@ -499,23 +499,35 @@ func _spawn_projectiles(player: Node2D, targets: Array, final_damage: float, cri
 
 func _spawn_single_projectile(player: Node2D, targets: Array, dmg: float, crit: float) -> void:
 	"""Crear proyectil(es) - respeta projectile_count incluso para armas SINGLE"""
-	if targets.is_empty():
-		return
+	var base_direction: Vector2
 	
-	var target = targets[0]
-	var base_direction = (target.global_position - player.global_position).normalized()
+	# FIX: DIRECTION type weapons should still fire even without targets
+	if targets.is_empty():
+		# For DIRECTION weapons, use movement direction; otherwise skip
+		if target_type == WeaponDatabase.TargetType.DIRECTION:
+			if player.velocity.length() > 10.0:  # Moving
+				base_direction = player.velocity.normalized()
+			elif player.has_method("get_facing_direction"):
+				base_direction = player.get_facing_direction()
+			else:
+				base_direction = Vector2.RIGHT  # Fallback
+		else:
+			return  # Non-DIRECTION weapons need a target
+	else:
+		var target = targets[0]
+		base_direction = (target.global_position - player.global_position).normalized()
 	
 	# Aplicar extra_projectiles global
 	var global_stats = _get_global_weapon_stats()
 	var extra = int(global_stats.get("extra_projectiles", 0))
 	var count = projectile_count + extra
 	
-	# Si solo hay 1 proyectil, disparar directo al objetivo
+	# Si solo hay 1 proyectil, disparar directo
 	if count <= 1:
 		_create_projectile(player, base_direction, dmg, crit)
 		return
 	
-	# Múltiples proyectiles: disparar en abanico hacia el objetivo
+	# Múltiples proyectiles: disparar en abanico
 	var spread_angle = deg_to_rad(12.0)  # 12 grados entre cada proyectil
 	var start_angle = -spread_angle * (count - 1) / 2.0
 	
@@ -523,6 +535,7 @@ func _spawn_single_projectile(player: Node2D, targets: Array, dmg: float, crit: 
 		var angle = start_angle + spread_angle * i
 		var direction = base_direction.rotated(angle)
 		_create_projectile(player, direction, dmg, crit)
+
 
 func _spawn_multi_projectiles(player: Node2D, targets: Array, dmg: float, crit: float) -> void:
 	"""Crear múltiples proyectiles en abanico o hacia múltiples objetivos"""

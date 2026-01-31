@@ -223,6 +223,12 @@ func _complete_return(projectile: SimpleProjectile) -> void:
 
 func _reset_projectile(projectile: SimpleProjectile) -> void:
 	"""Resetear un proyectil a su estado inicial"""
+	# CRÍTICO: Re-habilitar detección de colisiones (deshabilitada en return_projectile)
+	projectile.monitoring = true
+	projectile.monitorable = true
+	projectile.set_process(true)
+	projectile.set_physics_process(true)
+	
 	# Stats por defecto
 	projectile.damage = 10
 	projectile.speed = 400.0

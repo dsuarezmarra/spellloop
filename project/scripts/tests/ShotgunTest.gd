@@ -9,7 +9,20 @@ func _init():
 	print("⏳ STARTING SHOTGUN FAIRNESS TEST...")
 	
 	# Mock Objects
-	var player = load("res://scripts/entities/players/BasePlayer.gd").new()
+	# Cargar script de BasePlayer como archivo de texto para parchear dependencias faltantes (Autoloads)
+	var file = FileAccess.open("res://scripts/entities/players/BasePlayer.gd", FileAccess.READ)
+	var source = file.get_as_text()
+	
+	# MOCK: Comentar llamadas a DamageLogger y FloatingText con 'pass' para evitar errores de indentación
+	source = source.replace("DamageLogger.log", "pass; # DamageLogger.log")
+	source = source.replace("FloatingText.spawn", "pass; # FloatingText.spawn")
+	
+	# Cargar script dinámico
+	var player_script = GDScript.new()
+	player_script.source_code = source
+	player_script.reload()
+	
+	var player = player_script.new()
 	player.name = "TestPlayer"
 	
 	# Mock dependencies

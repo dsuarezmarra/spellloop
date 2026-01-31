@@ -1055,20 +1055,33 @@ func _spawn_heal_flash(player: Node) -> void:
 	tween.chain().tween_callback(flash.queue_free)
 
 func _destroy() -> void:
-	# Si tenemos visual animado, reproducir impacto
-	if animated_sprite and is_instance_valid(animated_sprite):
-		# Detener movimiento
-		set_process(false)
-		set_physics_process(false) # Stop physics movement too
-		# Reproducir animación de impacto
-		animated_sprite.play_impact()
-		# Esperar a que termine
-		await animated_sprite.impact_finished
+	# Desactivar lógica inmediatamente para evitar más callbacks
+	set_process(false)
+	set_physics_process(false)
+	monitoring = false  # Detener detección de colisiones
 	
+	# Si tenemos visual animado, reproducir impacto con callback (sin await)
+	if animated_sprite and is_instance_valid(animated_sprite):
+		animated_sprite.play_impact()
+		# Usar callback en lugar de await para evitar crash por async sin await
+		if animated_sprite.has_signal("impact_finished"):
+			animated_sprite.impact_finished.connect(_on_impact_finished, CONNECT_ONE_SHOT)
+		else:
+			# Sin animación de impacto, finalizar directamente
+			_finalize_destroy()
+	else:
+		# Sin visual animado, finalizar directamente
+		_finalize_destroy()
+
+func _on_impact_finished() -> void:
+	"""Callback para cuando termina la animación de impacto"""
+	_finalize_destroy()
+
+func _finalize_destroy() -> void:
+	"""Lógica final de destrucción/pool return"""
 	destroyed.emit()
 	
 	# OPTIMIZACIÓN: Devolver al pool en lugar de destruir
-	# Esto permite reutilizar el proyectil sin crear uno nuevo
 	if has_meta("_pooled") and get_meta("_pooled") == true:
 		ProjectilePool.release(self)
 	else:
