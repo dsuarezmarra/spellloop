@@ -299,11 +299,18 @@ func _verify_nodes():
 
 func update_health(current: int, max_val: int):
 	if hp_bar:
+		# VISUAL FIX: Clampear valores para evitar negativos (caso Blood Pact -133/1)
+		var display_current = clampi(current, 0, max_val)
+		if max_val == 1: # Caso especial Blood Pact/Glass Cannon
+			display_current = current if current > 0 else 0
+			# Si por alguna razón el current real es mayor a 1 (sync lag), lo mostramos como 1
+			if current >= 1: display_current = 1
+			
 		hp_bar.max_value = max_val
-		hp_bar.value = current
+		hp_bar.value = display_current
 		# Actualizar texto dentro de la barra si existe
 		var lbl = hp_bar.get_node_or_null("Label")
-		if lbl: lbl.text = "%d / %d" % [current, max_val]
+		if lbl: lbl.text = "%d / %d" % [display_current, max_val]
 
 func update_shield(current: int, max_val: int):
 	if shield_bar:

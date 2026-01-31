@@ -502,7 +502,7 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 		"name": "Torreta",
 		"description": "Activa modo Torreta tras 2s quieto.",
 		"icon": "🏰",
-		"category": "defensive",
+		"category": "unique",
 		"tier": 3,
 		"max_stacks": 1,
 		"effects": [{"stat": "turret_mode_enabled", "value": 1, "operation": "add"}]
