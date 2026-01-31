@@ -23,7 +23,9 @@ func setup_environment() -> Node:
 	current_env_instance = scene.instantiate()
 	add_child(current_env_instance)
 	
-	# Wait for nodes to be ready
+	# Wait 2 frames for nodes to be ready (allows _ready() and group registration)
+	# This ensures GlobalWeaponStats.add_to_group("global_weapon_stats") has executed
+	await get_tree().process_frame
 	await get_tree().process_frame
 	
 	return current_env_instance

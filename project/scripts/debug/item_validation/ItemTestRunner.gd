@@ -579,12 +579,20 @@ func _run_next_test():
 	attack_manager = env.get_node_or_null("AttackManager")
 	player_stats_mock = env.get_node_or_null("PlayerStats")
 	var mock_player = env.get_node_or_null("MockPlayer")
+	var global_weapon_stats = env.get_node_or_null("GlobalWeaponStats")
 	
 	if not attack_manager or not player_stats_mock or not mock_player:
 		_record_failure(test_case, "Environment setup failed - missing nodes")
 		await get_tree().process_frame
 		_run_next_test()
 		return
+	
+	# CRITICAL: Connect PlayerStats to its dependencies for weapon stat routing
+	# Without this, weapon stats (damage_mult, attack_speed_mult, etc.) won't reach GlobalWeaponStats
+	if player_stats_mock and global_weapon_stats:
+		player_stats_mock.global_weapon_stats = global_weapon_stats
+	if player_stats_mock and attack_manager:
+		player_stats_mock.attack_manager = attack_manager
 	
 	# Initialize Managers
 	if attack_manager.has_method("initialize"):
