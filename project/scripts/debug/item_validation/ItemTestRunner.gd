@@ -1,3 +1,9 @@
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# WARNING: DO NOT LOAD THIS SCRIPT IN RUNTIME (RELEASE) BUILDS
+# This script is part of the DEBUG/QA Harness.
+# Loading it in production will cause crashes or undefined behavior.
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 extends Node
 class_name ItemTestRunner
 

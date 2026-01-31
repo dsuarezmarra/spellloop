@@ -316,6 +316,17 @@ func clear_pool() -> void:
 	_available_pool.clear()
 	_active_count = 0
 
+func get_stats() -> Dictionary:
+	return {
+		"active": _active_count,
+		"pooled": _available_pool.size(),
+		"total_created": stats_created,
+		"reused": stats_reused,
+		"returned": stats_returned,
+		"denied": stats_denied,
+		"degradation_level": degradation_level
+	}
+
 func _exit_tree() -> void:
 	clear_pool()
 	ProjectilePool.instance = null

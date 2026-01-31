@@ -174,6 +174,48 @@ func _try_create_animated_visual() -> bool:
 	
 	return true
 
+func _physics_process(delta: float) -> void:
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# OPTIMIZACIÓN: Collision LOD & Physics Throttling
+	# ═══════════════════════════════════════════════════════════════════════════════
+	var pool = ProjectilePool.instance
+	if pool:
+		var deg_level = pool.degradation_level
+		
+		# Nivel 2 (Hard Limit): Actualizar física solo en frames alternos
+		# Reducir carga de CPU a la mitad para proyectiles masivos
+		if deg_level >= 2:
+			var frame = Engine.get_physics_frames()
+			# Usar ID de instancia para distribuir carga (par/impar)
+			if (get_instance_id() + frame) % 2 == 0:
+				return 
+				# NOTA: Al saltar frame, se mueve "menos" distancia visualmente si no compensamos,
+				# pero para proyectiles masivos es preferible "slowdown" a "stutter".
+				# Alternativa: mover double distance next frame, pero eso rompe colisiones.
+
+		# Nivel 3 (Critical): Desactivar partículas si no son esenciales
+		if deg_level >= 3:
+			if trail_particles and trail_particles.emitting:
+				trail_particles.emitting = false
+
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# MOVIMIENTO
+	# ═══════════════════════════════════════════════════════════════════════════════
+	global_position += direction * speed * delta
+	
+	# Gestionar rotación visual continuada (si es necesario)
+	if animated_sprite:
+		animated_sprite.rotation = direction.angle()
+
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# LIFETIME
+	# ═══════════════════════════════════════════════════════════════════════════════
+	current_lifetime += delta
+	if current_lifetime >= lifetime:
+		# Return to pool instead of queue_free
+		_destroy()
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # OPTIMIZACIÓN: Cache de texturas para evitar generación procedural por instancia
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1015,8 +1057,10 @@ func _spawn_heal_flash(player: Node) -> void:
 func _destroy() -> void:
 	# Si tenemos visual animado, reproducir impacto
 	if animated_sprite and is_instance_valid(animated_sprite):
+	if animated_sprite and is_instance_valid(animated_sprite):
 		# Detener movimiento
 		set_process(false)
+		set_physics_process(false) # Stop physics movement too
 		# Reproducir animación de impacto
 		animated_sprite.play_impact()
 		# Esperar a que termine

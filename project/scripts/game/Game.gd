@@ -137,8 +137,23 @@ func _setup_game() -> void:
 	# Configurar cámara
 	_setup_camera()
 
-	# Inicializar sistemas
+	# 5. Inicializar sistemas
 	_initialize_systems()
+	
+	# 6. GUARD RAIL: Verificar integridad del runtime (Debug Check)
+	if OS.is_debug_build():
+		_verify_runtime_integrity()
+
+func _verify_runtime_integrity() -> void:
+	# Assert fail si encontramos nodos de QA/Debug en el arbol principal
+	# Esto previene regresiones donde el MainMenu o Autoloads cargan tests inadvertidamente.
+	var forbidden_nodes = ["ItemTestRunner", "StructureValidator", "TestRunner", "CalibrationSuite"]
+	for node_name in forbidden_nodes:
+		if get_tree().root.find_child(node_name, true, false):
+			push_error("CRITICAL: Forbidden Debug Node '%s' found in Runtime Scene!" % node_name)
+			# En un entorno estricto, esto deberia crashear:
+			assert(false, "FATAL: Debug/QA dependency leaked into Runtime! Check MainMenu or Autoloads.")
+
 
 	# Comenzar o reanudar partida
 	if _is_resuming:

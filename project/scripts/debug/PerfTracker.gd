@@ -85,11 +85,14 @@ func _process(delta: float) -> void:
 	var now = Time.get_ticks_msec()
 	
 	# 1. Update Engine Monitors
+	var current_node_count = Performance.get_monitor(Performance.OBJECT_NODE_COUNT)
+	var nodes_created_delta = current_node_count - counters.get("objects_nodes", current_node_count)
+	counters["objects_nodes"] = current_node_count
+	# Store delta for spike analysis
+	counters["nodes_created_delta"] = nodes_created_delta
+	
 	counters["draw_calls"] = Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
 	counters["memory_static_mb"] = Performance.get_monitor(Performance.MEMORY_STATIC) / 1024.0 / 1024.0
-	counters["objects_nodes"] = Performance.get_monitor(Performance.OBJECT_NODE_COUNT)
-	# Note: PHYSICS_PROCESS_FRAME_TIME is only valid in physics_process, using TIME_PHYSICS_PROCESS often returns 0 in process
-	# We rely on an estimate or reading inside physics process if needed, but Monitor works usually.
 	counters["physics_time_ms"] = Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
 	counters["node_count"] = get_tree().get_node_count()
 	
@@ -170,9 +173,24 @@ func _capture_spike_snapshot(frame_time: float) -> void:
 		"recent_events": _event_buffer.duplicate() # Include context
 	}
 	
+	var pool_stats = {}
+	if ProjectilePool and ProjectilePool.instance:
+		pool_stats = ProjectilePool.instance.get_stats()
+
 	print_rich("[color=orange][PerfTracker] ⚠️ LAG SPIKE DETECTED: %.2f ms (FPS: %d)[/color]" % [frame_time, snapshot.fps])
-	print("   Context: Nodes: %d | Enm: %d | Proj: %d | Draw: %d" % [counters.get("node_count", 0), counters.get("enemies_alive",0), counters.get("projectiles_alive",0), counters.get("draw_calls",0)])
+	print("   Analysis: Nodes +%d | DrawCalls: %d | PhysTime: %.2f ms" % [
+		counters.get("nodes_created_delta", 0), 
+		counters.get("draw_calls",0),
+		counters.get("physics_time_ms", 0)
+	])
+	if not pool_stats.is_empty():
+		print("   Pool State: Active: %d | Pooled: %d | DegradeLvl: %d" % [
+			pool_stats.get("active", -1), 
+			pool_stats.get("pooled", -1), 
+			pool_stats.get("degradation_level", -1)
+		])
 	
+	snapshot["projectile_pool"] = pool_stats
 	_append_to_log(snapshot)
 
 
