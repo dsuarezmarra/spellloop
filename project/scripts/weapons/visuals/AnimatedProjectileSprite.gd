@@ -393,11 +393,19 @@ func play_impact() -> void:
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation("impact"):
 		sprite.play("impact")
 	else:
-		# Auto-destruir después de un momento
-		await get_tree().create_timer(0.2).timeout
-		impact_finished.emit()
+		# Sin animación de impacto - usar timer callback en lugar de await
+		var tree = get_tree()
+		if tree:
+			tree.create_timer(0.2).timeout.connect(_on_fallback_impact_finished, CONNECT_ONE_SHOT)
+		else:
+			# Sin tree, emitir señal inmediatamente
+			impact_finished.emit()
 	
 	animation_changed.emit("impact")
+
+func _on_fallback_impact_finished() -> void:
+	"""Callback cuando termina el impacto sin animación"""
+	impact_finished.emit()
 
 func set_direction(dir: Vector2) -> void:
 	"""Actualizar la dirección del proyectil"""
