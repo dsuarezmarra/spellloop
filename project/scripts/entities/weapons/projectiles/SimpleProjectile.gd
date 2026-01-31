@@ -1057,7 +1057,6 @@ func _spawn_heal_flash(player: Node) -> void:
 func _destroy() -> void:
 	# Si tenemos visual animado, reproducir impacto
 	if animated_sprite and is_instance_valid(animated_sprite):
-	if animated_sprite and is_instance_valid(animated_sprite):
 		# Detener movimiento
 		set_process(false)
 		set_physics_process(false) # Stop physics movement too

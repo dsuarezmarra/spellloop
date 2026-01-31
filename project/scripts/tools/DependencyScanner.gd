@@ -12,16 +12,20 @@ const SCAN_DIRS = [
 	"res://scripts/weapons",
 	"res://scripts/entities",
 	"res://scripts/components",
-	"res://scripts/managers"
+	"res://scripts/managers",
+	"res://scripts/data"
 ]
 
 const FORBIDDEN_TOKENS = [
 	"res://scripts/debug",
 	"scripts/debug/",
+	"res://scripts/tests",
+	"scripts/tests/",
 	"ItemTestRunner",
 	"StructureValidator",
 	"TestRunner.tscn",
-	"CalibrationSuite"
+	"CalibrationSuite",
+	"StressTest"
 ]
 
 const ALLOWED_FILES = [

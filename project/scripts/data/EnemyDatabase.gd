@@ -40,6 +40,17 @@ const TIER_SCALING = {
 	5: {"hp": 1.0, "damage": 1.0, "speed": 1.0, "xp": 3.0}      # Boss XP HUGE NERF: 15.0 -> 3.0
 }
 
+# Perfiles de Daño Base (para Tier 1)
+# Se multiplican por TIER_SCALING[tier].damage
+const DAMAGE_PROFILES = {
+	"very_low": 3,  # Swarmers, weak range
+	"low": 4,       # Standard range, fast weak melee
+	"medium": 5,    # Standard melee
+	"high": 6,      # Heavy hitters
+	"very_high": 8, # Telegraphed heavy attacks
+	"extreme": 10   # Ultimates/Explosions
+}
+
 # Escalado exponencial post-minuto 20 (cada 5 minutos)
 const EXPONENTIAL_SCALING_BASE = 1.6  # 60% más fuerte cada 5 min (was 1.5)
 
@@ -434,7 +445,8 @@ const TIER_4_ENEMIES = {
 		"tier": 4,
 		"archetype": "tank",
 		"base_hp": 200,
-		"base_damage": 45,
+		"damage_profile": "high", # 6 * 4.0 = 24
+		# "base_damage": 25,
 		"base_speed": 25.0,
 		"base_xp": 18,
 		"attack_range": 50.0,
@@ -458,7 +470,8 @@ const TIER_4_ENEMIES = {
 		"tier": 4,
 		"archetype": "aoe",
 		"base_hp": 140,
-		"base_damage": 38,
+		"damage_profile": "medium", # 5 * 4.0 = 20
+		# "base_damage": 22,
 		"base_speed": 35.0,
 		"base_xp": 16,
 		"attack_range": 200.0,
@@ -481,7 +494,8 @@ const TIER_4_ENEMIES = {
 		"tier": 4,
 		"archetype": "aoe",
 		"base_hp": 130,
-		"base_damage": 18,
+		"damage_profile": "medium", # 5 * 4.0 = 20
+		# "base_damage": 20,
 		"base_speed": 32.0,
 		"base_xp": 16,
 		"attack_range": 220.0,
@@ -504,7 +518,8 @@ const TIER_4_ENEMIES = {
 		"tier": 4,
 		"archetype": "multi",
 		"base_hp": 110,
-		"base_damage": 38,
+		"damage_profile": "medium", # 5 * 4.0 = 20
+		# "base_damage": 22,
 		"base_speed": 30.0,
 		"base_xp": 20,
 		"attack_range": 280.0,
@@ -526,7 +541,8 @@ const TIER_4_ENEMIES = {
 		"tier": 4,
 		"archetype": "breath",
 		"base_hp": 180,
-		"base_damage": 32,
+		"damage_profile": "medium", # 5 * 4.0 = 20
+		# "base_damage": 20,
 		"base_speed": 40.0,
 		"base_xp": 22,
 		"attack_range": 180.0,
@@ -775,20 +791,50 @@ const BOSSES = {
 # FUNCIONES DE ACCESO
 # ═══════════════════════════════════════════════════════════════════════════════
 
+static func _prepare_enemy_data(enemy_data: Dictionary) -> Dictionary:
+	"""Helper para preparar datos y aplicar cálculos dinámicos"""
+
+	var scaled = enemy_data.duplicate(true)
+	
+	# Calcular daño dinámico si tiene perfil
+	if scaled.has("damage_profile"):
+		var profile = scaled.damage_profile
+		var tier = scaled.get("tier", 1)
+		var base_profile = DAMAGE_PROFILES.get(profile, 5) # Default medium
+		var tier_mult = TIER_SCALING[tier].damage
+		scaled["base_damage"] = int(base_profile * tier_mult)
+		
+	return scaled
+
 static func get_all_tier_1() -> Dictionary:
-	return TIER_1_ENEMIES.duplicate(true)
+	var result = {}
+	for key in TIER_1_ENEMIES:
+		result[key] = _prepare_enemy_data(TIER_1_ENEMIES[key])
+	return result
 
 static func get_all_tier_2() -> Dictionary:
-	return TIER_2_ENEMIES.duplicate(true)
+	var result = {}
+	for key in TIER_2_ENEMIES:
+		result[key] = _prepare_enemy_data(TIER_2_ENEMIES[key])
+	return result
 
 static func get_all_tier_3() -> Dictionary:
-	return TIER_3_ENEMIES.duplicate(true)
+	var result = {}
+	for key in TIER_3_ENEMIES:
+		result[key] = _prepare_enemy_data(TIER_3_ENEMIES[key])
+	return result
 
 static func get_all_tier_4() -> Dictionary:
-	return TIER_4_ENEMIES.duplicate(true)
+	var result = {}
+	for key in TIER_4_ENEMIES:
+		result[key] = _prepare_enemy_data(TIER_4_ENEMIES[key])
+	return result
 
 static func get_all_bosses() -> Dictionary:
-	return BOSSES.duplicate(true)
+	var result = {}
+	for key in BOSSES:
+		result[key] = _prepare_enemy_data(BOSSES[key])
+	return result
 
 static func get_enemy_by_id(enemy_id: String) -> Dictionary:
 	"""Obtener datos de un enemigo por su ID"""
@@ -796,7 +842,7 @@ static func get_enemy_by_id(enemy_id: String) -> Dictionary:
 	for dict in [TIER_1_ENEMIES, TIER_2_ENEMIES, TIER_3_ENEMIES, TIER_4_ENEMIES, BOSSES]:
 		for key in dict:
 			if dict[key].id == enemy_id or key == enemy_id:
-				return dict[key].duplicate(true)
+				return _prepare_enemy_data(dict[key])
 	return {}
 
 static func get_enemies_for_tier(tier: int) -> Array:
@@ -812,7 +858,7 @@ static func get_enemies_for_tier(tier: int) -> Array:
 		5: source = BOSSES
 	
 	for key in source:
-		enemies.append(source[key].duplicate(true))
+		enemies.append(_prepare_enemy_data(source[key]))
 	
 	return enemies
 

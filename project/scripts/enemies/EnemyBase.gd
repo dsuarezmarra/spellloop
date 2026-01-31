@@ -58,8 +58,9 @@ var zigzag_direction: float = 1.0
 var current_direction: Vector2 = Vector2.DOWN
 
 func _enter_tree() -> void:
-	if PerfTracker:
-		PerfTracker.track_enemy_spawned()
+	var perf_tracker = get_node_or_null("/root/PerfTracker")
+	if perf_tracker:
+		perf_tracker.track_enemy_spawned()
 	
 	# Asegurar que está en el grupo para detección de proyectiles
 	if not is_in_group("enemies"):
@@ -147,8 +148,9 @@ func _load_static_sprite() -> void:
 
 
 func _exit_tree() -> void:
-	if PerfTracker:
-		PerfTracker.track_enemy_death()
+	var perf_tracker = get_node_or_null("/root/PerfTracker")
+	if perf_tracker:
+		perf_tracker.track_enemy_death()
 
 func _initialize_status_icon_display() -> void:
 	"""Inicializar display de iconos de estado para enemigos"""

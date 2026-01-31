@@ -38,7 +38,7 @@ const LOG_DIR = "user://perf_logs"
 var _current_log_file: String = ""
 
 func _ready() -> void:
-	if Headless.is_headless():
+	if Headless.is_headless() and not "--enable-perf-tracker" in OS.get_cmdline_args():
 		enabled = false
 		process_mode = Node.PROCESS_MODE_DISABLED
 		return
