@@ -153,6 +153,18 @@ func _ready():
 	var err = OS.execute("git", ["rev-parse", "--short", "HEAD"], commit_output)
 	if err == 0 and commit_output.size() > 0:
 		git_commit = commit_output[0].strip_edges()
+	var is_scope_run = false
+	var scope_filter_arg = ""
+	
+	for arg in args:
+		if arg == "--run-scope":
+			is_scope_run = true
+		elif arg.begins_with("--run-scope="):
+			is_scope_run = true
+			scope_filter_arg = arg.split("=")[1]
+		elif arg.begins_with("--scope="):
+			scope_filter_arg = arg.split("=")[1]
+
 	if "--run-pilot" in args:
 		print("[ItemTestRunner] Pilot mode detected.")
 		call_deferred("run_sanity_check")
@@ -161,14 +173,9 @@ func _ready():
 	elif "--run-full-cycle" in args:
 		print("[ItemTestRunner] FULL CYCLE mode detected - Testing ALL items by scope.")
 		call_deferred("run_full_cycle")
-	elif "--run-scope" in args:
-		# Parse --scope=WEAPON_SPECIFIC or --scope=PLAYER_ONLY etc
-		var scope_filter = ""
-		for arg in args:
-			if arg.begins_with("--scope="):
-				scope_filter = arg.split("=")[1]
-		print("[ItemTestRunner] Scope-filtered mode: %s" % scope_filter)
-		call_deferred("run_by_scope", scope_filter)
+	elif is_scope_run:
+		print("[ItemTestRunner] Scope-filtered mode: %s" % scope_filter_arg)
+		call_deferred("run_by_scope", scope_filter_arg)
 	elif "--run-full" in args:
 		print("[ItemTestRunner] Full Matrix mode detected.")
 		var batch_size = -1
@@ -622,7 +629,7 @@ func _run_next_test():
 	
 	# Setup Side Effect Detector for contract validation
 	if side_effect_detector and strict_contract_mode:
-		side_effect_detector.start_monitoring(mock_player)
+		side_effect_detector.start_monitoring(mock_player, global_weapon_stats)
 	
 	# Infer Contract from Item Definition
 	var item_contract = {}

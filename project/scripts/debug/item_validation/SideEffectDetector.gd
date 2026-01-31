@@ -42,16 +42,18 @@ var other_events: Array = []
 # Configuration
 var _is_active: bool = false
 var _player_ref: Node = null
+var _gws_ref: Node = null  # FIX: Explicit GWS reference to avoid zombie instances
 var _tracked_enemies: Array = []
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LIFECYCLE
 # ═══════════════════════════════════════════════════════════════════════════════
 
-func start_monitoring(player: Node) -> void:
+func start_monitoring(player: Node, gws_override: Node = null) -> void:
 	_clear_data()
 	_is_active = true
 	_player_ref = player
+	_gws_ref = gws_override
 	
 	# Take initial player snapshot
 	if is_instance_valid(player):
@@ -90,6 +92,7 @@ func _clear_data() -> void:
 	other_events = []
 	_tracked_enemies = []
 	_player_ref = null
+	_gws_ref = null
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STATE CAPTURE
@@ -142,24 +145,45 @@ func _capture_player_state(player: Node) -> Dictionary:
 	
 	# Also capture GlobalWeaponStats (some stats like life_steal are there)
 	var global_weapon_stats = null
-	if player.get_tree():
+	
+	# 0. Use explicit override if set
+	if _gws_ref and is_instance_valid(_gws_ref):
+		global_weapon_stats = _gws_ref
+	
+	# 5. Try finding in group (only if no override)
+	if not global_weapon_stats:
 		var gws_nodes = player.get_tree().get_nodes_in_group("global_weapon_stats")
 		if not gws_nodes.is_empty():
 			global_weapon_stats = gws_nodes[0]
+			print("[SideEffectDetector] Found GWS via group. ID: %s" % global_weapon_stats.get_instance_id())
 	
 	# Fallback: Try to find GlobalWeaponStats as sibling or in parent
 	if not global_weapon_stats and player.get_parent():
 		global_weapon_stats = player.get_parent().get_node_or_null("GlobalWeaponStats")
+		if global_weapon_stats:
+			print("[SideEffectDetector] Found GWS via parent: ", global_weapon_stats)
+
+	# FIX 3: Extra fallback - Search all siblings explicitly
+	if not global_weapon_stats and player.get_parent():
+		for child in player.get_parent().get_children():
+			if child.name == "GlobalWeaponStats" or child is GlobalWeaponStats:
+				global_weapon_stats = child
+				print("[SideEffectDetector] Found GWS via sibling search: ", global_weapon_stats)
+				break
 	
+	if not global_weapon_stats:
+		print("[SideEffectDetector] WARNING: GlobalWeaponStats NOT FOUND for player: ", player)
+
 	if global_weapon_stats:
 		# Use StatResolver's GLOBAL_WEAPON_STATS list
 		var weapon_stats_list = StatResolverScript.GLOBAL_WEAPON_STATS.duplicate()
 		for stat_name in weapon_stats_list:
 			if global_weapon_stats.has_method("get_stat"):
 				var val = global_weapon_stats.get_stat(stat_name)
-				# Only override if not already captured or if this value is non-zero
-				if not state.has(stat_name) or (val != 0.0 and state.get(stat_name, 0.0) == 0.0):
-					state[stat_name] = val
+				
+				# FIX: Always update if we have a value from GWS
+				# Previously: only if state value was 0.0, which failed for multipliers (base 1.0) or crit (base 0.05)
+				state[stat_name] = val
 	
 	# Capture position
 	if player.has_method("get_global_position"):
