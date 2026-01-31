@@ -612,7 +612,7 @@ const STAT_LIMITS: Dictionary = {
 	"damage_vs_slowed": {"min": 0.0, "max": 2.0},    # Máximo +200%
 	"damage_vs_burning": {"min": 0.0, "max": 2.0},   # Máximo +200%
 	"damage_vs_frozen": {"min": 0.0, "max": 3.0},    # Máximo +300%
-	"low_hp_damage_bonus": {"min": 0.0, "max": 0.1}, # Máximo +10% por 10% HP perdido
+	"low_hp_damage_bonus": {"min": 0.0, "max": 10.0}, # Máximo +1000% (Unlocked for Executioner item)
 	"full_hp_damage_bonus": {"min": 0.0, "max": 1.0}, # Máximo +100%
 
 	# Valores planos con límite
@@ -1022,6 +1022,9 @@ func get_stat(stat_name: String) -> float:
 	var base_value: float = float(val) if val != null else 0.0
 	var temp_bonus = _get_temp_modifier_total(stat_name)
 	var final_value = base_value + temp_bonus
+	
+	if stat_name == "luck":
+		print("[PlayerStats] get_stat luck: base=%.4f temp=%.4f final=%.4f" % [base_value, temp_bonus, final_value])
 	
 	# Lógica especial para damage_mult (Investor / Momentum)
 	if stat_name == "damage_mult":

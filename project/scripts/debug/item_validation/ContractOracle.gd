@@ -434,6 +434,8 @@ func _validate_single_effect(expected: Dictionary, baseline: Dictionary, actual:
 		expected_final = baseline_val + value
 	elif operation == "multiply":
 		expected_final = baseline_val * value
+	elif operation == "set":
+		expected_final = value
 	
 	# Calculate delta
 	var delta = abs(actual_val - expected_final)
@@ -448,13 +450,13 @@ func _validate_single_effect(expected: Dictionary, baseline: Dictionary, actual:
 	result["delta_percent"] = delta_percent
 	
 	# Check tolerance
-	if operation == "add":
+	if operation == "add" or operation == "set":
 		if delta > tolerance:
 			result["passed"] = false
 			result["reason"] = "Value mismatch: expected %.3f, got %.3f (delta %.3f > tol %.3f)" % [
 				expected_final, actual_val, delta, tolerance
 			]
-			result["detail"] = "%s (add)" % stat
+			result["detail"] = "%s (%s)" % [stat, operation]
 			result["expected"] = expected_final
 			result["actual"] = actual_val
 	else:  # multiply

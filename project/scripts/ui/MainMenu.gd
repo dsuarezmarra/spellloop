@@ -42,16 +42,8 @@ func _ready() -> void:
 
 func _setup_debug_button() -> void:
 	if debug_button:
-		if OS.is_debug_build():
-			debug_button.visible = true
-			debug_button.pressed.connect(_on_debug_pressed)
-			# Add to buttons list for animation/style
-			if not debug_button.mouse_entered.is_connected(_on_button_hover):
-				debug_button.mouse_entered.connect(_on_button_hover)
-		else:
-			debug_button.visible = false
-			# Remove from parent to avoid layout gaps? Or just hide.
-			# debug_button.queue_free() # Better to just hide to avoid errors if referenced
+		debug_button.visible = false
+
 
 func _apply_premium_style() -> void:
 	# 🎨 ESTILO MAGICAL VOID & GOLD
@@ -618,18 +610,8 @@ func _on_quit_pressed() -> void:
 	get_tree().quit()
 
 func _on_debug_pressed() -> void:
-	_play_button_sound()
-	print("[MainMenu] Launching Item Validation Runner...")
-	# Instantiate TestRunner scene
-	var runner_scene = load("res://scripts/debug/item_validation/TestRunner.tscn")
-	if runner_scene:
-		var runner = runner_scene.instantiate()
-		get_tree().root.add_child(runner)
-		# Trigger sanity check immediately
-		if runner.has_method("run_sanity_check"):
-			runner.run_sanity_check()
-	else:
-		print("Error: Could not load TestRunner.tscn")
+	pass
+
 
 func _start_game() -> void:
 	var tween = create_tween()

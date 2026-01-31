@@ -403,9 +403,8 @@ func _fetch_item(spec: Dictionary) -> Dictionary:
 					return UpgradeDatabase.UTILITY_UPGRADES.get(item_id, {})
 				"OFFENSIVE_UPGRADES":
 					# Buscar en OFFENSIVE_UPGRADES (si existe) o en otra colección
-					if UpgradeDatabase.has("OFFENSIVE_UPGRADES"):
-						return UpgradeDatabase.OFFENSIVE_UPGRADES.get(item_id, {})
-					return {}
+					# Buscar en OFFENSIVE_UPGRADES
+					return UpgradeDatabase.OFFENSIVE_UPGRADES.get(item_id, {})
 		"WeaponDatabase":
 			if collection == "WEAPONS":
 				return WeaponDatabase.WEAPONS.get(item_id, {})

@@ -1353,8 +1353,8 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 	# ─────────────────────────────────────────────────────────────────────────────
 	# SUERTE
 	# ─────────────────────────────────────────────────────────────────────────────
-	"luck_1": {
-		"id": "luck_1",
+	"luck_minor": {
+		"id": "luck_minor",
 		"name": "Fortuna Menor",
 		"description": "+8% suerte (mejores drops).",
 		"icon": "🍀",
@@ -1363,6 +1363,7 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 		"max_stacks": 6,
 		"effects": [{"stat": "luck", "value": 0.08, "operation": "add"}]
 	},
+
 	"luck_2": {
 		"id": "luck_2",
 		"name": "Fortuna",
@@ -1785,7 +1786,10 @@ const CURSED_UPGRADES: Dictionary = {
 		"category": "cursed",
 		"tier": 5,
 		"max_stacks": 1,
-		"effects": [{"stat": "blood_pact", "value": 1, "operation": "add"}]
+		"effects": [
+			{"stat": "blood_pact", "value": 1, "operation": "add"},
+			{"stat": "max_health", "value": 1, "operation": "set"}
+		]
 	},
 	# [NUEVO] Miope (Near Sighted)
 	"near_sighted": {
@@ -2397,7 +2401,8 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"max_stacks": 1,
 		"effects": [
 			{"stat": "damage_mult", "value": 2.0, "operation": "multiply"},
-			{"stat": "is_glass_cannon", "value": 1, "operation": "add"}
+			{"stat": "is_glass_cannon", "value": 1, "operation": "add"},
+			{"stat": "max_health", "value": 1, "operation": "set"}
 		]
 	},
 	"unique_soy_milk": {

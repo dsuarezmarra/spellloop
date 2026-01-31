@@ -28,4 +28,33 @@ static func load_manifest() -> Dictionary:
 		push_error("[AudioLoader] Manifest must be a dictionary")
 		return {}
 	
-	return data
+	# FILTER AND VALIDATE
+	var clean_data = {}
+	var empty_count = 0
+	
+	for id in data:
+		# Check 1: Empty ID
+		if id == "" or str(id).item_id_is_empty():
+			empty_count += 1
+			continue
+			
+		var entry = data[id]
+		if typeof(entry) != TYPE_DICTIONARY:
+			continue
+			
+		# Check 2: Files array
+		var files = entry.get("files", [])
+		if files.is_empty():
+			# push_warning("[AudioLoader] Skipping '%s': No files defined" % id)
+			continue
+			
+		clean_data[id] = entry
+		
+	if empty_count > 0:
+		print("[AudioLoader] Cleaned %d empty IDs during load." % empty_count)
+	
+	return clean_data
+	
+static func item_id_is_empty(s: String) -> bool:
+	return s == null or s.strip_edges() == ""
+

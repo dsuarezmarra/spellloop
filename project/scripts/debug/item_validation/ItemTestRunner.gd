@@ -144,6 +144,23 @@ func _ready():
 	var args = OS.get_cmdline_args() + OS.get_cmdline_user_args()
 	print("[ItemTestRunner] Args: ", args)
 	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# INTEGRITY CHECK
+	# ═══════════════════════════════════════════════════════════════════════════
+	print("[ItemTestRunner] Running Structure Integrity Check...")
+	var validation_result = StructureValidator.validate_integrity()
+	if not validation_result.passed:
+		print("[ItemTestRunner] FATAL: Integrity violation detected!")
+		for err in validation_result.errors:
+			print(err)
+		# Force exit with error code
+		print("Exiting due to integrity violations.")
+		get_tree().quit(1)
+		return
+	print("[ItemTestRunner] Integrity check passed. (%d items, %d unique IDs)" % [
+		validation_result.stats.total_items, validation_result.stats.unique_ids
+	])
+	
 	if "--measure-only" in args:
 		is_measure_mode = true
 		print("[ItemTestRunner] MEASURE mode enabled.")
