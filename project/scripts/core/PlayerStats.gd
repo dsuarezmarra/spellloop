@@ -1023,8 +1023,7 @@ func get_stat(stat_name: String) -> float:
 	var temp_bonus = _get_temp_modifier_total(stat_name)
 	var final_value = base_value + temp_bonus
 	
-	if stat_name == "luck":
-		print("[PlayerStats] get_stat luck: base=%.4f temp=%.4f final=%.4f" % [base_value, temp_bonus, final_value])
+
 	
 	# Lógica especial para damage_mult (Investor / Momentum)
 	if stat_name == "damage_mult":

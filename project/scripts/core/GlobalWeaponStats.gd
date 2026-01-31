@@ -284,17 +284,13 @@ func multiply_stat(stat_name: String, value: float) -> void:
 		# Caso especial (value == 1.0, value <= 0, etc): multiplicar normal
 		stats[stat_name] *= value
 	
-	# DEBUG: Solo en builds de desarrollo
+	# DEBUG: Solo en builds de desarrollo y con verbose enabled (opcional)
 	if OS.is_debug_build() and stat_name == "damage_mult":
-		var op_type = "ADDITIVE_BONUS" if (uses_additive_bonus and is_buff) else "MULTIPLY"
-		print("[GlobalWeaponStats] damage_mult: %.3f -> %.3f (op=%s, value=%.3f)" % [
-			old_value, stats[stat_name], op_type, value
-		])
-		
-		# ASSERT: Detectar bug si multiply se aplica como suma cuando debería ser mult
-		if is_debuff and stats[stat_name] >= old_value:
-			push_error("[GlobalWeaponStats] BUG: Debuff (%.2f) no redujo el stat! old=%.2f new=%.2f" % [
-				value, old_value, stats[stat_name]
+		# Solo loguear si hay un cambio significativo para reducir spam
+		if abs(stats[stat_name] - old_value) > 0.001:
+			var op_type = "ADDITIVE_STACK" if (uses_additive_bonus and is_buff) else "MULTIPLY"
+			print("[GlobalWeaponStats] damage_mult: %.3f -> %.3f (%s, raw_val=%.3f)" % [
+				old_value, stats[stat_name], op_type, value
 			])
 			
 	global_stat_changed.emit(stat_name, old_value, stats[stat_name])

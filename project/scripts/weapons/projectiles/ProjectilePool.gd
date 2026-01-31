@@ -22,13 +22,14 @@ var _available_pool: Array[SimpleProjectile] = []
 var _active_count: int = 0
 
 # Configuración
-const INITIAL_POOL_SIZE: int = 50
+# Configuración
+const INITIAL_POOL_SIZE: int = 200 # Aumentado de 50 para evitar spikes iniciales
 const MAX_POOL_SIZE: int = 500
-const GROW_AMOUNT: int = 20
+const GROW_AMOUNT: int = 50  # Aumentado de 20 para menos reallocations
 
 # === SISTEMA DE DEGRADACIÓN PROGRESIVA ===
 # Umbrales para controlar la explosión de proyectiles
-const SOFT_LIMIT: int = 150      # A partir de aquí: reducir trails y efectos
+const SOFT_LIMIT: int = 120      # Aumentada agresividad (antes 150)
 const HARD_LIMIT: int = 220      # A partir de aquí: denegar nuevos proyectiles de baja prioridad
 const CRITICAL_LIMIT: int = 280  # A partir de aquí: forzar cleanup agresivo
 

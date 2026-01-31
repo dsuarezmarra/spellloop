@@ -34,7 +34,7 @@ static func load_manifest() -> Dictionary:
 	
 	for id in data:
 		# Check 1: Empty ID
-		if id == "" or str(id).item_id_is_empty():
+		if id == "" or item_id_is_empty(str(id)):
 			empty_count += 1
 			continue
 			
