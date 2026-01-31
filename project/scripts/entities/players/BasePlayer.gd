@@ -71,6 +71,12 @@ var _revive_immunity_timer: float = 0.0  # Added to prevent Nil crash
 var _regen_accumulator: float = 0.0
 var _player_stats_ref: Node = null
 
+# ========== PHASE 11: FAIRNESS OPS ==========
+var _damage_queue: Array = []
+var _frame_damage_scheduled: bool = false
+var _last_hit_context: Dictionary = {}
+
+
 # ========== SISTEMA VISUAL DE DEBUFFS ==========
 var _status_visual_node: Node2D = null
 var _status_aura_timer: float = 0.0
@@ -672,8 +678,8 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 			FloatingText.spawn_text(global_position + Vector2(0, -35), "DODGE!", Color(0.3, 0.9, 1.0))
 			return
 	
-	# OTORGAR I-FRAMES (0.5s de inmunidad tras recibir daño)
-	_invulnerability_timer = 0.5
+	# I-Frames ahora se aplican en _process_frame_damage (Dinámicos)
+	# _invulnerability_timer = 0.5 
 	
 	var final_damage = amount
 	
@@ -717,79 +723,155 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	if _is_weakened:
 		final_damage = int(final_damage * (1.0 + _weakness_amount))
 	
-	# Aplicar daño al HealthComponent
-	health_component.take_damage(final_damage)
+	# === PHASE 11: SHOTGUN PREVENTION (QUEUE) ===
+	# En lugar de aplicar daño directo, lo encolamos para procesarlo al final del frame.
+	# Esto permite agrupar múltiples impactos simultáneos.
 	
-	# LOG: Registrar daño recibido por el player
-	var attacker_name = attacker.name if attacker and is_instance_valid(attacker) else "environment"
-	DamageLogger.log_player_damage(attacker_name, final_damage, element)
-	
-	# IMPORTANTE: Notificar a PlayerStats que recibió daño (para el delay del escudo)
-	if player_stats and player_stats.has_method("on_damage_taken"):
-		player_stats.on_damage_taken()
-	
-	# 6. THORNS - Reflejar daño al atacante
-	if attacker and is_instance_valid(attacker) and player_stats:
-		_apply_thorns_damage(attacker, amount, player_stats)
-	
-	# Emitir señal para feedback visual (screen shake, vignette, etc.)
-	player_took_damage.emit(final_damage, element)
-	
-	# Mostrar texto flotante de daño sobre el player
-	FloatingText.spawn_player_damage(global_position + Vector2(0, -35), final_damage, element)
-	
-	# Efecto visual de impacto
-	_play_damage_flash(element)
+	if final_damage > 0:
+		_damage_queue.append({
+			"amount": final_damage,
+			"element": element,
+			"attacker": attacker
+		})
+		
+		if not _frame_damage_scheduled:
+			_frame_damage_scheduled = true
+			call_deferred("_process_frame_damage")
+		
+		# Feedback inmediato parcial (para shield/armor) se mantiene arriba
+		# Pero el feedback de HP (flash, texto final) se mueve a _process_frame_damage
 	
 	var armor_text = " [ARMOR: -%d]" % (amount - final_damage) if effective_armor > 0 and amount > final_damage else ""
 	# Debug desactivado: print("[%s] 💥 Daño recibido: %d → %d (%s) (HP: %d/%d)%s%s" % [character_class, amount, final_damage, element, health_component.current_health, max_hp, " [WEAKENED]" if _is_weakened else "", armor_text])
 
-	# -----------------------------------------------------------
-	# LÓGICA DE NUEVOS OBJETOS (Phase 3)
-	# -----------------------------------------------------------
-	if player_stats and player_stats.has_method("get_stat"):
-		# 1. Grit (Valor): Invulnerabilidad si daño > 10% HP Max
-		# grit_active es un flag (0 o 1)
-		if player_stats.get_stat("grit_active") > 0:
-			var threshold = max_hp * 0.10
-			if final_damage >= threshold:
-				# Otorgar 1s de invulnerabilidad (si existe el método)
-				if health_component.has_method("set_invulnerable"):
-					health_component.set_invulnerable(1.0)
-					FloatingText.spawn_custom(global_position + Vector2(0, -50), "🛡️ GRIT!", Color.GOLD)
+func _process_frame_damage() -> void:
+	"""Procesa todo el daño acumulado en este frame (Anti-Shotgun)"""
+	_frame_damage_scheduled = false
+	if _damage_queue.is_empty():
+		return
+		
+	# 1. Ordenar por daño (Mayor a menor)
+	_damage_queue.sort_custom(func(a, b): return a.amount > b.amount)
+	
+	# 2. Calcular daño agregado
+	# El golpe más fuerte cuenta 100%. Los siguientes cuentan 25%.
+	var primary_hit = _damage_queue[0]
+	var total_damage = float(primary_hit.amount)
+	
+	for i in range(1, _damage_queue.size()):
+		total_damage += float(_damage_queue[i].amount) * 0.25
+		
+	var final_applied_damage = int(total_damage)
+	
+	if final_applied_damage <= 0:
+		_damage_queue.clear()
+		return
 
-		# 2. Frost Nova (Nova de Escarcha): Explotar al recibir daño
-		if player_stats.get_stat("frost_nova_on_hit") > 0:
-			var nova_scene = load("res://scenes/projectiles/IceNova.tscn")
-			# Fallback si no existe escena dedicada, usar lógica manual
-			# Buscamos enemigos cercanos y aplicamos freeze
-			var enemies = get_tree().get_nodes_in_group("enemies")
-			for enemy in enemies:
-				if global_position.distance_to(enemy.global_position) < 250: # Rango de nova
-					if enemy.has_method("apply_freeze"):
-						# Freeze strength (0.9) and duration (2.0)
-						enemy.apply_freeze(0.9, 2.0)
-					if enemy.has_method("apply_knockback"):
-						var dir = (enemy.global_position - global_position).normalized()
-						enemy.apply_knockback(dir * 300)
+	# 3. Aplicar al componente de salud
+	if health_component:
+		health_component.take_damage(final_applied_damage)
+		
+		# Notificar estadísticas
+		var player_stats = get_tree().get_first_node_in_group("player_stats")
+		if player_stats and player_stats.has_method("on_damage_taken"):
+			player_stats.on_damage_taken()
 			
-			# Visual effect (reutilizamos shockwave o similar si existe)
-			_spawn_nova_effect()
-			
-		# 6. Vínculo de Alma (Soul Link): Distribuir daño a enemigos cercanos
-		var soul_link_pct = player_stats.get_stat("soul_link_percent")
-		if soul_link_pct > 0:
-			var enemies = get_tree().get_nodes_in_group("enemies")
-			var link_radius = 400.0
-			var damage_to_share = int(final_damage * soul_link_pct)
-			
-			if damage_to_share > 0:
-				for enemy in enemies:
-					if global_position.distance_to(enemy.global_position) < link_radius:
-						if enemy.has_method("take_damage"):
-							enemy.take_damage(damage_to_share)
-							# Visual: Beam/Line logic would be cool but keep it simple for now
-							FloatingText.spawn_custom(enemy.global_position + Vector2(0, -50), "LINK!", Color.MAGENTA)
+	# 4. Registrar contexto para Death Audit
+	_last_hit_context = {
+		"source": primary_hit.attacker.name if is_instance_valid(primary_hit.attacker) else "Environment",
+		"damage": final_applied_damage,
+		"element": primary_hit.element,
+		"time": Time.get_ticks_msec(),
+		"density": _get_enemy_density(),
+		"queue_size": _damage_queue.size()
+	}
+	
+	# 5. Feedback Visual (Solo uno por frame)
+	DamageLogger.log_player_damage(_last_hit_context.source, final_applied_damage, primary_hit.element)
+	player_took_damage.emit(final_applied_damage, primary_hit.element)
+	FloatingText.spawn_player_damage(global_position + Vector2(0, -35), final_applied_damage, primary_hit.element)
+	_play_damage_flash(primary_hit.element)
+	
+	# 6. I-FRAMES DINÁMICOS
+	_apply_dynamic_iframes()
+	
+	# 7. Grit / Thorns / Etc (Triggered on 'real' damage)
+	_process_post_damage_effects(final_applied_damage, primary_hit.attacker)
+	
+	_damage_queue.clear()
+
+func _get_enemy_density() -> int:
+	# Buscar EnemyManager
+	# O simplemente contar nodos en grupo "enemies" cercanos
+	var count = 0
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if is_instance_valid(enemy) and enemy.global_position.distance_squared_to(global_position) < 22500: # 150px ^ 2
+			count += 1
+	return count
+
+func _apply_dynamic_iframes() -> void:
+	# Base: 0.5s
+	var base_iframe = 0.5
+	
+	# Bonus por densidad (Fairness en hordas)
+	var density = _get_enemy_density()
+	var density_bonus = minf(float(density) * 0.02, 0.15) # Max +0.15s (con ~8 enemigos)
+	
+	_invulnerability_timer = base_iframe + density_bonus
+
+func _process_post_damage_effects(amount: int, primary_attacker: Node) -> void:
+	# Lógica movida de take_damage original para ejecutarse solo una vez por frame
+	
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if not player_stats: return
+
+	# 1. Grit
+	if amount >= max_hp * 0.10: # 10% HP check
+		if player_stats.has_method("get_stat") and player_stats.get_stat("grit_active") > 0:
+			if health_component.has_method("set_invulnerable"):
+				health_component.set_invulnerable(1.0)
+				FloatingText.spawn_custom(global_position + Vector2(0, -50), "🛡️ GRIT!", Color.GOLD)
+
+	# 2. Frost Nova
+	if player_stats.has_method("get_stat") and player_stats.get_stat("frost_nova_on_hit") > 0:
+		_trigger_frost_nova()
+
+	# 3. Soul Link
+	if player_stats.has_method("get_stat") and player_stats.get_stat("soul_link_percent") > 0:
+		_trigger_soul_link(amount, player_stats)
+
+	# 4. Thorns (Solo al primary attacker para no spamear)
+	if is_instance_valid(primary_attacker):
+		_apply_thorns_damage(primary_attacker, amount, player_stats)
+
+func _trigger_frost_nova() -> void:
+	# Lógica extraída
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if global_position.distance_to(enemy.global_position) < 250:
+			if enemy.has_method("apply_freeze"): enemy.apply_freeze(0.9, 2.0)
+			if enemy.has_method("apply_knockback"):
+				var dir = (enemy.global_position - global_position).normalized()
+				enemy.apply_knockback(dir * 300)
+	_spawn_nova_effect()
+
+func _trigger_soul_link(amount: int, stats: Node) -> void:
+	var soul_link_pct = stats.get_stat("soul_link_percent")
+	var link_radius = 400.0
+	var damage_to_share = int(amount * soul_link_pct)
+	if damage_to_share <= 0: return
+	
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if global_position.distance_to(enemy.global_position) < link_radius:
+			if enemy.has_method("take_damage"):
+				enemy.take_damage(damage_to_share)
+				FloatingText.spawn_custom(enemy.global_position + Vector2(0, -50), "LINK!", Color.MAGENTA)
+
+	# -----------------------------------------------------------
+	# LÓGICA DE NUEVOS OBJETOS (Phase 3) - PROCESADA EN _process_post_damage_effects
+	# -----------------------------------------------------------
 	# -----------------------------------------------------------
 
 func _apply_thorns_damage(attacker: Node, damage_received: int, player_stats: Node) -> void:
@@ -1027,6 +1109,15 @@ func _play_death_animation() -> void:
 
 func _on_death_animation_finished() -> void:
 	"""Callback cuando termina la animación de muerte"""
+	# Death Audit
+	if not _last_hit_context.is_empty():
+		print("💀 DEATH AUDIT: Source=[%s] Dmg=[%d] Elem=[%s] Density=[%d] QueueSize=[%d]" % 
+			[_last_hit_context.get("source", "?"), _last_hit_context.get("damage", 0),
+			_last_hit_context.get("element", "?"), _last_hit_context.get("density", 0),
+			_last_hit_context.get("queue_size", 0)])
+	else:
+		print("💀 DEATH AUDIT: Source=Unknown (Instant Kill or Logic Error?)")
+		
 	player_died.emit()
 
 func _trigger_revive(player_stats: Node, current_revives: int) -> void:
