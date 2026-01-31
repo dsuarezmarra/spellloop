@@ -167,6 +167,10 @@ static func _spawn_text(pos: Vector2, txt: String, col: Color, size: int, dur: f
 	if not tree:
 		return
 	
+	# DIAGNOSTICS HOOK (Validation Phase 14C)
+	if tree.has_group("diagnostics"):
+		tree.call_group("diagnostics", "track_feedback", "text", txt)
+	
 	if not tree.current_scene:
 		return
 	

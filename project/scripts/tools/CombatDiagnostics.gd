@@ -22,6 +22,7 @@ const REPORT_INTERVAL: float = 10.0
 static var weapon_stats: Dictionary = {}  # weapon_id -> {shots, hits, damage, crits}
 static var status_stats: Dictionary = {}  # status_type -> {applied, ticks, total_damage}
 static var upgrade_stats: Dictionary = {}  # upgrade_id -> {expected_stat, verified}
+static var feedback_stats: Dictionary = {"text": 0, "sfx": 0, "vfx": 0}  # type -> count
 
 ## Singleton access
 static var instance: CombatDiagnostics = null
@@ -118,6 +119,16 @@ static func track_upgrade_applied(upgrade_id: String, stat_name: String, old_val
 		var icon = "✅" if verified else "❌"
 		print("[COMBAT] %s Upgrade %s: %s %.2f → %.2f" % [icon, upgrade_id, stat_name, old_value, new_value])
 
+static func track_feedback(type: String, info: String = "") -> void:
+	"""Call when feedback is spawned (text, sfx, vfx)"""
+	if feedback_stats.has(type):
+		feedback_stats[type] += 1
+	else:
+		feedback_stats[type] = 1
+		
+	if REALTIME_MONITORING:
+		print("[COMBAT] 👁️ Feedback (%s): %s" % [type, info])
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # REPORTING
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -149,6 +160,11 @@ func print_interim_report() -> void:
 		for status in status_stats:
 			var s = status_stats[status]
 			print("  %s: %d applied, %d ticks, %.0f total dmg" % [status, s.applied, s.ticks, s.total_damage])
+
+	if not feedback_stats.is_empty():
+		print("\n👁️ Feedback Generated:")
+		for type in feedback_stats:
+			print("  %s: %d events" % [type, feedback_stats[type]])
 	
 	print("─" * 50 + "\n")
 
@@ -221,6 +237,7 @@ static func reset() -> void:
 	weapon_stats.clear()
 	status_stats.clear()
 	upgrade_stats.clear()
+	feedback_stats = {"text": 0, "sfx": 0, "vfx": 0}
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INTERNAL
