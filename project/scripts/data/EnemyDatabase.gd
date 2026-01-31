@@ -157,7 +157,7 @@ const TIER_1_ENEMIES = {
 		"base_xp": 2,
 		"attack_range": 24.0,
 		"attack_cooldown": 1.3,
-		"collision_radius": 18.0,
+		"collision_radius": 12.0, # Was 18.0 (1.61x ratio fixed)
 		"description": "Masa gelatinosa imbuida de magia. Lenta pero resistente.",
 		"special_abilities": ["split_on_death"],
 		"modifiers": {
@@ -266,7 +266,7 @@ const TIER_2_ENEMIES = {
 		"base_xp": 5,
 		"attack_range": 40.0,
 		"attack_cooldown": 2.0,
-		"collision_radius": 22.0,
+		"collision_radius": 15.0, # Was 22.0 (1.53x ratio fixed)
 		"description": "Construcción mágica masiva. Extremadamente resistente.",
 		"special_abilities": ["stomp_attack", "damage_reduction"],
 		"modifiers": {
@@ -451,7 +451,7 @@ const TIER_4_ENEMIES = {
 		"base_xp": 18,
 		"attack_range": 50.0,
 		"attack_cooldown": 2.2,
-		"collision_radius": 28.0,
+		"collision_radius": 22.0, # Was 28.0 (1.35x ratio fixed)
 		"description": "Gigante imbuido de magia ancestral. Devastador en combate.",
 		"special_abilities": ["stomp_attack", "aoe_slam", "damage_reduction"],
 		"modifiers": {

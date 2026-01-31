@@ -12,7 +12,7 @@ extends Resource
 @export var ability_name: String = "Base Ability"
 
 @export_group("Visuals")
-@export var telegraph_time: float = 0.0 # Tiempo de advertencia antes de ejecutar
+@export var telegraph_time: float = 0.5 # Tiempo de advertencia antes de ejecutar
 
 ## Ejecutar la habilidad
 ## Retorna true si se ejecutó con éxito
