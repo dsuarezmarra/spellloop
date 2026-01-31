@@ -198,6 +198,8 @@ func _create_dummy(EnemyScript):
 	dummy.speed = 100.0
 	# Add to scene to activate processing
 	root.current_scene.add_child(dummy)
+	# Disable processing to prevent AI logic/Attacks from running
+	dummy.process_mode = Node.PROCESS_MODE_DISABLED
 	return dummy
 
 func _pass(msg):

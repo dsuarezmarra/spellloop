@@ -70,6 +70,9 @@ func _run_all_tests():
 		
 		root.add_child(dummy)
 		
+		# Disable processing to prevent leaks from AI Logic
+		dummy.process_mode = Node.PROCESS_MODE_DISABLED
+		
 		# Position dummy near player
 		dummy.global_position = mock_player.global_position + Vector2(100, 0)
 		
