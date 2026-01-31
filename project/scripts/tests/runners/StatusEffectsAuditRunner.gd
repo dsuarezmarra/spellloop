@@ -87,8 +87,11 @@ func _test_burn(EnemyScript, diag_node):
 	# Use 'process_frame' loop to let timers tick
 	while wait < 1.1: # Wait > 1.0s for typical tick
 		await process_frame
-		wait += get_process_delta_time() # approx
-		dummy._process(get_process_delta_time()) # Force process if headless doesn't
+		var delta = get_process_delta_time()
+		wait += delta
+		# Force physics process manually in headless audit
+		if dummy.has_method("_physics_process"):
+			dummy._physics_process(delta)
 		
 		# In headless, SceneTree timers work, but 'delta' in _process relies on engine loop
 		# Check HP
@@ -169,8 +172,11 @@ func _test_bleed(EnemyScript, diag_node):
 	var damage_detected = false
 	while wait < 1.1:
 		await process_frame
-		wait += 0.016
-		dummy._process(0.016)
+		var delta = 0.016 # Fixed step for stability
+		wait += delta
+		if dummy.has_method("_physics_process"):
+			dummy._physics_process(delta)
+			
 		if dummy.hp < start_hp:
 			damage_detected = true
 			break

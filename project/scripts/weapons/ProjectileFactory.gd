@@ -247,40 +247,9 @@ static func apply_status_effects_chance(tree: SceneTree, enemy: Node) -> void:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 static func get_conditional_damage_multiplier(tree: SceneTree, enemy: Node) -> float:
-	"""
-	Calculate extra damage multiplier based on enemy status effects.
-	Returns a multiplier (1.0 = no bonus, 1.25 = +25% damage, etc.)
-	Checks: damage_vs_slowed, damage_vs_burning, damage_vs_frozen
-	"""
-	if tree == null or enemy == null or not is_instance_valid(enemy):
-		return 1.0
-	
-	# OPTIMIZACIÓN: Usar cache en lugar de get_nodes_in_group
-	var player_stats = _get_cached_player_stats(tree)
-	if not player_stats or not player_stats.has_method("get_stat"):
-		return 1.0
-	
-	var multiplier = 1.0
-	
-	# === DAMAGE VS SLOWED ===
-	var damage_vs_slowed = float(player_stats.get_stat("damage_vs_slowed"))
-	if damage_vs_slowed > 0:
-		if "_is_slowed" in enemy and enemy._is_slowed:
-			multiplier += damage_vs_slowed
-	
-	# === DAMAGE VS BURNING ===
-	var damage_vs_burning = float(player_stats.get_stat("damage_vs_burning"))
-	if damage_vs_burning > 0:
-		if "_is_burning" in enemy and enemy._is_burning:
-			multiplier += damage_vs_burning
-	
-	# === DAMAGE VS FROZEN ===
-	var damage_vs_frozen = float(player_stats.get_stat("damage_vs_frozen"))
-	if damage_vs_frozen > 0:
-		if "_is_frozen" in enemy and enemy._is_frozen:
-			multiplier += damage_vs_frozen
-	
-	return multiplier
+	# DEPRECATED: Logic moved to DamageCalculator.calculate_final_damage
+	# Keeping stub for safety against missed dynamic calls.
+	return 1.0
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CREACIÓN DE PROYECTILES
@@ -1008,10 +977,7 @@ class AOEEffect extends Node2D:
 
 		# Fallback: visual simple (skip in headless mode)
 		if Headless.is_headless():
-			# En modo headless, solo programar auto-destrucción sin visual
-			await get_tree().process_frame
-			if is_instance_valid(self):
-				call_deferred("queue_free")
+			# En modo headless, NO destruir aquí. Dejar que _process maneje la duración.
 			return
 			
 		scale = Vector2(0.1, 0.1)

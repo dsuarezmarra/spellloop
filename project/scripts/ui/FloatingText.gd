@@ -159,17 +159,18 @@ static func _apply_crit_feedback(_pos: Vector2) -> void:
 
 
 static func _spawn_text(pos: Vector2, txt: String, col: Color, size: int, dur: float) -> void:
+	var tree = Engine.get_main_loop() as SceneTree
+	
+	# DIAGNOSTICS HOOK (Moved up for Headless Audit support)
+	if tree and tree.has_group("diagnostics"):
+		tree.call_group("diagnostics", "track_feedback", "text", txt)
+
 	# HEADLESS GUARD: Critical - prevents ALL visual operations in headless mode
 	if Headless.is_headless():
 		return
 	
-	var tree = Engine.get_main_loop() as SceneTree
 	if not tree:
 		return
-	
-	# DIAGNOSTICS HOOK (Validation Phase 14C)
-	if tree.has_group("diagnostics"):
-		tree.call_group("diagnostics", "track_feedback", "text", txt)
 	
 	if not tree.current_scene:
 		return

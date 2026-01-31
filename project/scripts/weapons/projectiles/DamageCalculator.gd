@@ -72,6 +72,35 @@ static func calculate_final_damage(
 	# 2. Bonus vs élites
 	result.final_damage = _apply_elite_bonus(result.final_damage, target, ps)
 	
+	# 2.5 Bonus condicionales (Status Effects) - Migrado de ProjectileFactory
+	if ps and ps.has_method("get_stat"):
+		var cond_mult = 1.0
+		
+		# VS SLOWED
+		var damage_vs_slowed = ps.get_stat("damage_vs_slowed")
+		if damage_vs_slowed > 0:
+			# Check internal property or method
+			if ("_is_slowed" in target and target._is_slowed) or (target.has_method("is_slowed") and target.is_slowed()):
+				cond_mult += damage_vs_slowed
+				result.bonus_applied.append("vs_slowed")
+				
+		# VS BURNING
+		var damage_vs_burning = ps.get_stat("damage_vs_burning")
+		if damage_vs_burning > 0:
+			if ("_is_burning" in target and target._is_burning) or (target.has_method("is_burning") and target.is_burning()):
+				cond_mult += damage_vs_burning
+				result.bonus_applied.append("vs_burning")
+				
+		# VS FROZEN
+		var damage_vs_frozen = ps.get_stat("damage_vs_frozen")
+		if damage_vs_frozen > 0:
+			if ("_is_frozen" in target and target._is_frozen) or (target.has_method("is_frozen") and target.is_frozen()):
+				cond_mult += damage_vs_frozen
+				result.bonus_applied.append("vs_frozen")
+				
+		if cond_mult > 1.0:
+			result.final_damage *= cond_mult
+	
 	# 3. Crítico (al final para que aplique sobre todos los bonuses)
 	if randf() < crit_chance:
 		result.final_damage *= crit_damage

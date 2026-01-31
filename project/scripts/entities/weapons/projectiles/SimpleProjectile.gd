@@ -625,10 +625,10 @@ func _handle_hit(target: Node) -> void:
 				FloatingText.spawn_custom(target.global_position + Vector2(-10, -30), "BLEED", Color.RED)
 	# -----------------------------------------------------------
 	
-	# Conditional Multiplier (Status Effects) - Not yet in DamageCalculator
-	var conditional_mult = ProjectileFactory.get_conditional_damage_multiplier(get_tree(), target)
-	if conditional_mult > 1.0:
-		final_damage *= conditional_mult
+	# Conditional Multiplier (Status Effects) -> NOW HANDLED IN DamageCalculator
+	# var conditional_mult = ProjectileFactory.get_conditional_damage_multiplier(get_tree(), target)
+	# if conditional_mult > 1.0:
+	#	final_damage *= conditional_mult
 
 	# Aplicar daño
 	if target.has_method("take_damage"):
