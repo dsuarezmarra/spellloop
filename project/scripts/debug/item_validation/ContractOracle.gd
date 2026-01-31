@@ -401,7 +401,11 @@ func _validate_single_effect(expected: Dictionary, baseline: Dictionary, actual:
 		"operation": operation,
 		"expected_value": value,
 		"actual_delta": 0.0,
-		"reason": ""
+		"reason": "",
+		# Standardized keys for ItemTestRunner integration
+		"detail": stat,
+		"expected": null,
+		"actual": null
 	}
 	
 	# Check primary key
@@ -450,12 +454,18 @@ func _validate_single_effect(expected: Dictionary, baseline: Dictionary, actual:
 			result["reason"] = "Value mismatch: expected %.3f, got %.3f (delta %.3f > tol %.3f)" % [
 				expected_final, actual_val, delta, tolerance
 			]
+			result["detail"] = "%s (add)" % stat
+			result["expected"] = expected_final
+			result["actual"] = actual_val
 	else:  # multiply
 		if delta_percent > tolerance:
 			result["passed"] = false
 			result["reason"] = "Multiplier mismatch: expected %.3f, got %.3f (delta %.1f%% > tol %.1f%%)" % [
 				expected_final, actual_val, delta_percent * 100, tolerance * 100
 			]
+			result["detail"] = "%s (mult)" % stat
+			result["expected"] = expected_final
+			result["actual"] = actual_val
 	
 	return result
 
@@ -470,7 +480,11 @@ func _validate_status_effect(expected_status: Dictionary, status_data: Dictionar
 		"status": status_name,
 		"expected_chance": expected_chance,
 		"expected_params": expected_params,
-		"reason": ""
+		"reason": "",
+		# Standardized keys for ItemTestRunner integration
+		"detail": "status_%s" % status_name,
+		"expected": "applied",
+		"actual": "not_applied"
 	}
 	
 	# Check if status was tracked
@@ -494,9 +508,14 @@ func _validate_status_effect(expected_status: Dictionary, status_data: Dictionar
 	if found_instances == 0 and expected_chance >= 1.0:
 		result["passed"] = false
 		result["reason"] = "Status '%s' was expected but never applied" % status_name
+		result["actual"] = "not_applied (0 instances)"
 	elif not param_mismatches.is_empty():
 		result["passed"] = false
 		result["reason"] = "Status '%s' param mismatches: %s" % [status_name, ", ".join(param_mismatches)]
+		result["expected"] = str(expected_params)
+		result["actual"] = "mismatched: %s" % ", ".join(param_mismatches)
+	else:
+		result["actual"] = "applied (%d instances)" % found_instances
 	
 	return result
 
@@ -559,15 +578,19 @@ func _detect_extra_status(contract: Dictionary, status_data: Dictionary) -> Arra
 
 func _validate_damage(contract: Dictionary, damage_data: Dictionary) -> Dictionary:
 	"""Valida que un arma/fusión hace el daño esperado."""
-	var result = {
-		"passed": true,
-		"expected_damage": damage_data.get("expected", 0),
-		"actual_damage": damage_data.get("actual", 0),
-		"reason": ""
-	}
-	
 	var expected = damage_data.get("expected", 0)
 	var actual = damage_data.get("actual", 0)
+	
+	var result = {
+		"passed": true,
+		"expected_damage": expected,
+		"actual_damage": actual,
+		"reason": "",
+		# Standardized keys for ItemTestRunner integration
+		"detail": "damage_dealt",
+		"expected": expected,
+		"actual": actual
+	}
 	
 	if expected == 0:
 		result["passed"] = true  # No damage expected
@@ -577,6 +600,7 @@ func _validate_damage(contract: Dictionary, damage_data: Dictionary) -> Dictiona
 		result["passed"] = false
 		result["is_zero_damage"] = true
 		result["reason"] = "Zero damage dealt when %.1f expected - CRITICAL BUG" % expected
+		result["detail"] = "damage_zero"
 		return result
 	
 	var delta_percent = abs(actual - expected) / expected
@@ -587,6 +611,7 @@ func _validate_damage(contract: Dictionary, damage_data: Dictionary) -> Dictiona
 		result["reason"] = "Damage mismatch: expected %.1f, got %.1f (delta %.1f%%)" % [
 			expected, actual, delta_percent * 100
 		]
+		result["detail"] = "damage_mismatch (%.1f%%)" % (delta_percent * 100)
 	
 	return result
 

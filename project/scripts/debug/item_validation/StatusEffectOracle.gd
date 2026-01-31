@@ -202,7 +202,8 @@ func verify_status_strict(effect_name: String, expected: Dictionary) -> Dictiona
 		"checks": [],
 		"failures": [],
 		"instances_found": 0,
-		"enemies_affected": 0
+		"enemies_affected": 0,
+		"reason": ""  # Human-readable summary for ItemTestRunner
 	}
 	
 	var must_apply = expected.get("must_apply", true)
@@ -229,6 +230,7 @@ func verify_status_strict(effect_name: String, expected: Dictionary) -> Dictiona
 			"actual": "Status was never applied",
 			"severity": "critical"
 		})
+		result["reason"] = "application: expected Status '%s' to be applied, got Status was never applied" % effect_name
 		return result
 	
 	# Check 2: Correct number of enemies affected?
@@ -359,6 +361,18 @@ func verify_status_strict(effect_name: String, expected: Dictionary) -> Dictiona
 					"status": "PASS",
 					"value": actual_amount
 				})
+	# Build human-readable reason from failures
+	if not result["passed"] and not result["failures"].is_empty():
+		var reasons = []
+		for f in result["failures"]:
+			reasons.append("%s: expected %s, got %s" % [
+				f.get("check", "unknown"),
+				str(f.get("expected", "?")),
+				str(f.get("actual", "?"))
+			])
+		result["reason"] = "; ".join(reasons)
+	elif result["passed"]:
+		result["reason"] = "Status '%s' verified successfully" % effect_name
 	
 	return result
 

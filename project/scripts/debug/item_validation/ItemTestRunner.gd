@@ -66,6 +66,14 @@ var DEBUG_HARNESS_FIX: bool = false  # Set to true to enable verbose fix verific
 var _debug_attack_mgr_fires_during_test: int = 0  # Counter for any fires during disabled window
 var _debug_tracked_enemies_at_clear: int = 0  # Number of enemies being disconnected
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# QA PHYSICS & SIMULATION CONFIG (T1-T3)
+# ═══════════════════════════════════════════════════════════════════════════════
+var USE_PHYSICS_FRAMES: bool = true  # T2: Use physics_frame instead of Timer for test window
+var QA_SIMULATE_DAMAGE: bool = false  # T3: Fallback mode that bypasses physics collision
+var DEBUG_PHYSICS: bool = false  # T1: Log physics frame count and collision diagnostics
+var PHYSICS_FPS: int = 60  # Assumed physics tick rate for frame calculation
+
 # Metadata for Reporting
 var empty_reason: String = ""
 var start_time_ms: int = 0
@@ -634,6 +642,21 @@ func _run_next_test():
 	var num_iterations = 1 if classification == "PLAYER_ONLY" else 3
 	var iteration_results = []
 	for i in range(num_iterations):
+		# Reset oracles at START of each iteration (not after)
+		mechanical_oracle.start_listening()
+		status_oracle.start_listening()
+		
+		# Reset weapon cooldown to ensure it can fire each iteration
+		if classification in ["WEAPON_SPECIFIC", "GLOBAL_WEAPON", "FUSION_SPECIFIC"]:
+			var weapon_id = test_case.get("target_weapon", "")
+			if weapon_id and attack_manager:
+				var weapon = attack_manager.get_weapon_by_id(weapon_id)
+				if weapon:
+					weapon.ready_to_fire = true
+					weapon.current_cooldown = 0.0
+					if DEBUG_PHYSICS:
+						print("[DEBUG_PHYSICS] Iteration %d/%d - Reset cooldown for %s" % [i + 1, num_iterations, weapon_id])
+		
 		# Reset PlayerStats between iterations to avoid accumulation
 		if i > 0 and classification == "PLAYER_ONLY" and player_stats_mock:
 			if player_stats_mock.has_method("_reset_stats"):
@@ -641,9 +664,6 @@ func _run_next_test():
 		
 		var iter_res = await _execute_test_iteration(test_case, env, classification)
 		iteration_results.append(iter_res)
-		# Reset oracles between iterations
-		mechanical_oracle.start_listening()
-		status_oracle.start_listening()
 	
 	# Select Median based on actual_damage (or first if single iteration)
 	var final_iter_res = iteration_results[0]
@@ -675,9 +695,10 @@ func _run_next_test():
 				status_data["applied"].append(entry.get("effect", ""))
 		
 		# Get damage data from iteration result
+		# Keys must match what ContractOracle._validate_damage expects
 		damage_data = {
-			"total_damage": final_iter_res.get("actual_damage", 0.0),
-			"expected_damage": final_iter_res.get("expected_damage", 0.0)
+			"actual": final_iter_res.get("actual_damage", 0.0),
+			"expected": final_iter_res.get("expected_damage", 0.0)
 		}
 		
 		# Validate against contract
@@ -807,7 +828,13 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 			status_oracle.track_enemy(dummy2)
 		else:
 			var spawn_pos = Vector2(100, 0)
-			if p_type == "ORBIT": spawn_pos = Vector2(weapon_range, 0)
+			# T5: ORBIT weapons - spawn dummy INSIDE the orbital radius (70% of weapon_range)
+			# This ensures the orbital projectiles actually pass through the dummy
+			if p_type == "ORBIT":
+				var orbital_radius = weapon_range * 0.7  # Typical orbital radius is smaller than weapon range
+				spawn_pos = Vector2(orbital_radius, 0)
+				if DEBUG_PHYSICS:
+					print("[DEBUG_PHYSICS] ORBIT dummy spawned at radius %.1f (weapon_range=%.1f)" % [orbital_radius, weapon_range])
 			var dummy = scenario_runner.spawn_dummy_enemy(spawn_pos)
 			mechanical_oracle.track_enemy(dummy)
 			status_oracle.track_enemy(dummy)
@@ -843,14 +870,41 @@ func _execute_test_iteration(test_case: Dictionary, env: Node, classification: S
 		if final_stats.get("burn_chance", 0) > 0 or final_stats.get("bleed_chance", 0) > 0:
 			test_window = max(test_window, 2.0)
 		
-		# Use Timer node instead of SceneTreeTimer to avoid leak on early quit
-		var test_timer = Timer.new()
-		test_timer.one_shot = true
-		test_timer.wait_time = test_window
-		add_child(test_timer)
-		test_timer.start()
-		await test_timer.timeout
-		test_timer.queue_free()
+		# T2: USE PHYSICS FRAMES instead of Timer for reliable collision detection in headless
+		if USE_PHYSICS_FRAMES:
+			var physics_frames_needed = int(test_window * PHYSICS_FPS)
+			if DEBUG_PHYSICS:
+				print("[DEBUG_PHYSICS] Starting physics frame loop: %d frames (%.2fs at %d FPS)" % [
+					physics_frames_needed, test_window, PHYSICS_FPS])
+				print("[DEBUG_PHYSICS] Dummy position: %s, MockPlayer position: %s" % [
+					str(_get_first_dummy_position()), str(mock_player.global_position)])
+			
+			var frames_processed = 0
+			for i in range(physics_frames_needed):
+				if _exiting:
+					break
+				await get_tree().physics_frame
+				frames_processed += 1
+				
+				# Check for hits every 10 frames for debug
+				if DEBUG_PHYSICS and i % 10 == 0 and i > 0:
+					print("[DEBUG_PHYSICS] Frame %d/%d - Hits: %d, Damage: %.1f" % [
+						i, physics_frames_needed, 
+						mechanical_oracle.captured_events["hits"],
+						mechanical_oracle.captured_events["total_damage"]])
+			
+			if DEBUG_PHYSICS:
+				print("[DEBUG_PHYSICS] Loop complete. Processed %d physics frames. Final hits: %d" % [
+					frames_processed, mechanical_oracle.captured_events["hits"]])
+		else:
+			# Legacy Timer-based approach (fallback, may not work in headless)
+			var test_timer = Timer.new()
+			test_timer.one_shot = true
+			test_timer.wait_time = test_window
+			add_child(test_timer)
+			test_timer.start()
+			await test_timer.timeout
+			test_timer.queue_free()
 		
 		# Restore AttackManager state
 		if attack_manager and "is_active" in attack_manager:
@@ -1353,3 +1407,14 @@ func _finish_suite():
 	print("[ItemTestRunner] Final Stats: Scheduled=%d, Executed=%d, Time=%dms" % [scheduled_count, results.size(), duration])
 	
 	_exit_run()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# HELPER FUNCTIONS (T1 Diagnostics)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _get_first_dummy_position() -> Vector2:
+	"""Get position of first test dummy for debug logging."""
+	var dummies = get_tree().get_nodes_in_group("test_dummy")
+	if dummies.size() > 0:
+		return dummies[0].global_position
+	return Vector2.ZERO
