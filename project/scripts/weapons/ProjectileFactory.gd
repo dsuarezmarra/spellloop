@@ -355,8 +355,8 @@ static func create_chain_projectile(owner: Node2D, data: Dictionary) -> Node2D:
 static func _create_base_projectile(_data: Dictionary) -> Node2D:
 	"""Crear instancia base de SimpleProjectile (Wrapper del Pool)"""
 	# OPTIMIZACIÓN: Usar pool. La configuración completa ocurre en configure_and_launch
-	# return ProjectilePool.acquire()
-	return null # BREAK CYCLE FOR AUDIT
+	# FIX CRITICAL P0: This was disabled during audit, breaking ALL WEAPONS
+	return ProjectilePool.acquire()
 
 
 static func get_element_string(element_enum: int) -> String:
