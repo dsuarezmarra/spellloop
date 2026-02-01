@@ -270,9 +270,18 @@ static func create_projectile(owner: Node2D, data: Dictionary) -> Node2D:
 	projectile.global_position = start_pos
 	projectile.direction = dir
 	projectile.damage = data.get("damage", 10.0)
-	projectile.speed = data.get("projectile_speed", 400.0)
+	
+	# FIX: Support both speed keys (BaseWeapon uses "speed")
+	var p_speed = data.get("speed", data.get("projectile_speed", 400.0))
+	projectile.speed = p_speed
+	
 	projectile.pierce_count = data.get("pierce", 0)
-	projectile.lifetime = data.get("duration", 3.0)
+	
+	# CRITICAL FIX: Calculate lifetime from range/speed
+	# duration is usually 0.0 for projectiles (it's for status effects)
+	var p_range = data.get("range", 300.0)
+	projectile.lifetime = p_range / maxf(p_speed, 1.0)
+	
 	projectile.knockback_force = data.get("knockback", 100.0)
 	projectile.element_type = get_element_string(data.get("element", 0))
 	projectile.projectile_color = data.get("color", Color.WHITE)
