@@ -1,4 +1,4 @@
-TRACE: Start
+TRACE: Start V3
 TRACE: Loads OK
 TRACE: Running Basic
 BASIC: Start
@@ -7,8 +7,11 @@ TRACE: Running Crit
 CRIT: Start
 TRACE: Running Status
 STATUS: Start
+REPORT: PASS - DoT Applied Damage
 TRACE: Running Chain
 CHAIN: Start
 TRACE: Running Pierce
 PIERCE: Start
+REPORT: PASS - Global: OK
 TRACE: Logic Done
+REPORT: Printing 2 results

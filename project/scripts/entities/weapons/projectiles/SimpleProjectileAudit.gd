@@ -1,7 +1,7 @@
-class_name AutoFrames
-extends Node
+extends Node2D
+class_name SimpleProjectileAudit
 
-# HIJACKED FOR AUDIT - SimpleProjectile Logic
+# AUDIT SAFE V3 - TEMP FILE
 
 @export var damage: int = 10
 @export var speed: float = 400.0
@@ -10,9 +10,6 @@ extends Node
 @export var pierce_count: int = 0
 @export var hit_vfx_scene: PackedScene
 @export var element_type: String = "ice"
-
-# Node compatibility
-var global_position: Vector2 = Vector2.ZERO
 
 var start_pos: Vector2 = Vector2.ZERO
 var direction: Vector2 = Vector2.RIGHT
@@ -73,6 +70,9 @@ func _handle_hit(target):
     var final_damage = float(damage)
     _trace("Base Damage: " + str(final_damage))
     
+    # Bypass player stats for basic audit
+    
+    # Apply Damage
     var applied = false
     var has_method = target.has_method("take_damage")
     _trace("Target has take_damage? " + str(has_method))
@@ -89,10 +89,14 @@ func _handle_hit(target):
     if applied:
         pass
 
-    # Knockback - SKIP because Node doesn't support transforms well?
-    # Actually global_position is present, but target.apply_knockback might need Vector2
-    
+    # Knockback
+    var final_knockback = knockback_force
+    if get_meta("effect") == "knockback_bonus": final_knockback *= get_meta("effect_value", 0.0)
+    if final_knockback > 0 and target.has_method("apply_knockback"):
+        target.apply_knockback(direction * final_knockback)
+        
     _apply_effect(target)
+    # emit_signal("hit_enemy", target, final_damage) # Signal call
     
     if pierces_remaining > 0: pierces_remaining -= 1
     else: queue_free()
