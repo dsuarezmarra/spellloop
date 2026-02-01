@@ -118,7 +118,7 @@ func get_projectile():
 	if PerfTracker: PerfTracker.track_projectile_spawned()
 	return projectile
 
-func get_projectile_prioritized(priority: int = 1) -> SimpleProjectile:
+func get_projectile_prioritized(priority: int = 1):
 	"""
 	Obtener proyectil con sistema de prioridad.
 	
@@ -174,7 +174,7 @@ func _force_cleanup_oldest(count: int) -> void:
 	var children = projectiles_node.get_children()
 	var cleaned = 0
 	for child in children:
-		if child is SimpleProjectile and cleaned < count:
+		if child.has_method("configure_and_launch") and cleaned < count:  # Duck-type check instead of is SimpleProjectile
 			return_projectile(child)
 			cleaned += 1
 	
@@ -189,7 +189,7 @@ func is_hard_limited() -> bool:
 	"""Check if low-priority projectiles should be denied"""
 	return degradation_level >= 2
 
-func return_projectile(projectile: SimpleProjectile) -> void:
+func return_projectile(projectile) -> void:
 	"""
 	Devolver un proyectil al pool para reutilización.
 	IMPORTANTE: El proyectil debe ser removido del árbol antes de llamar esto.
@@ -208,7 +208,7 @@ func return_projectile(projectile: SimpleProjectile) -> void:
 	# Limpiar estado (diferido para que ocurra después de remove_child)
 	call_deferred("_complete_return", projectile)
 
-func _complete_return(projectile: SimpleProjectile) -> void:
+func _complete_return(projectile) -> void:
 	"""Completa el retorno del proyectil al pool (llamado diferidamente)"""
 	if projectile == null or not is_instance_valid(projectile):
 		return
@@ -227,7 +227,7 @@ func _complete_return(projectile: SimpleProjectile) -> void:
 	_active_count -= 1
 	if PerfTracker: PerfTracker.track_projectile_destroyed()
 
-func _reset_projectile(projectile: SimpleProjectile) -> void:
+func _reset_projectile(projectile) -> void:
 	"""Resetear un proyectil a su estado inicial"""
 	# CRÍTICO: Re-habilitar detección de colisiones (deshabilitada en return_projectile)
 	projectile.monitoring = true
@@ -264,7 +264,7 @@ func _reset_projectile(projectile: SimpleProjectile) -> void:
 	projectile.visible = true
 	projectile.global_position = Vector2.ZERO
 
-func _cleanup_projectile(projectile: SimpleProjectile) -> void:
+func _cleanup_projectile(projectile) -> void:
 	"""Limpiar un proyectil antes de devolverlo al pool"""
 	# Desconectar señales que podrían haberse conectado
 	if projectile.body_entered.is_connected(projectile._on_body_entered):
@@ -274,7 +274,7 @@ func _cleanup_projectile(projectile: SimpleProjectile) -> void:
 	
 	# Limpiar hijos dinámicos (partículas, sprites generados)
 	for child in projectile.get_children():
-		if child.name == "Trail" or child.name == "Sprite" or child is AnimatedProjectileSprite:
+		if child.name == "Trail" or child.name == "Sprite" or child.has_method("play_flight"):  # Duck-type instead of is AnimatedProjectileSprite
 			child.queue_free()
 	
 	# Remover de grupos de armas

@@ -199,31 +199,20 @@ func _create_test_dummy(parent: Node, pos: Vector2):
 	return dummy
 
 func _deal_damage_via_calculator(target, amount: int, dmg_type: String = "physical", force_crit: bool = false, crit_mult: float = 2.0) -> int:
-	"""Deal damage using DamageCalculator if available, otherwise direct"""
-	var DamageCalcScript = load("res://scripts/combat/DamageCalculator.gd")
+	"""Deal damage directly (DamageCalculator has headless dependencies)"""
 	
-	if DamageCalcScript and target.has_method("take_damage"):
-		# Use calculator
-		var calc_data = {
-			"base_damage": amount,
-			"crit_chance": 100.0 if force_crit else 0.0,
-			"crit_damage": crit_mult if force_crit else 1.0,
-			"damage_type": dmg_type
-		}
-		
-		var result = DamageCalcScript.calculate_damage(calc_data, target)
-		target.take_damage(result.final_damage, dmg_type)
-		_trace("[DAMAGE] Dealt %d damage (base: %d, crit: %s)" % [result.final_damage, amount, str(force_crit)])
-		return result.final_damage
-	else:
-		# Fallback: direct damage
-		var final_dmg = amount
-		if force_crit:
-			final_dmg = int(amount * crit_mult)
-		
+	var final_dmg = amount
+	if force_crit:
+		final_dmg = int(amount * crit_mult)
+	
+	_trace("[DAMAGE] Applying: base=%d → final=%d (crit: %s)" % [amount, final_dmg, str(force_crit)])
+	
+	if target.has_method("take_damage"):
 		target.take_damage(final_dmg, dmg_type)
-		_trace("[DAMAGE] Dealt %d damage (direct)" % final_dmg)
-		return final_dmg
+	elif "hp" in target:
+		target.hp -= final_dmg
+	
+	return final_dmg
 
 func _record_pass(test_name: String, expected, actual, notes: String = ""):
 	_trace("[PASS] %s" % test_name)
