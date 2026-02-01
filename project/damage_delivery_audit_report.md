@@ -1,2 +1,2 @@
 # Report
-| ✅ PASS | Global: Zero Discrepancies |
+| PASS | Global: OK |

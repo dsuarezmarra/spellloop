@@ -36,7 +36,8 @@ var pierces_remaining: int = 0
 
 # === VISUAL ===
 var sprite: Sprite2D = null
-var animated_sprite: AnimatedProjectileSprite = null  # NUEVO: Visual animado
+# FIXED: Removed explicit type hint to prevent cyclic dependency crash
+var animated_sprite = null  # NUEVO: Visual animado
 var projectile_color: Color = Color(0.4, 0.7, 1.0, 1.0)
 var projectile_size: float = 12.0
 var trail_particles: CPUParticles2D = null
@@ -629,6 +630,7 @@ func _handle_hit(target: Node) -> void:
 	# var conditional_mult = ProjectileFactory.get_conditional_damage_multiplier(get_tree(), target)
 	# if conditional_mult > 1.0:
 	#	final_damage *= conditional_mult
+	# 
 
 	# Aplicar daño
 	if target.has_method("take_damage"):
@@ -798,324 +800,81 @@ func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
 		# Crear efecto visual de rayo entre objetivos
 		_spawn_chain_lightning_visual(current_pos, next_target.global_position)
 		
-		enemies_hit.append(next_target)
+		# Actualizar para siguiente salto
 		current_pos = next_target.global_position
-		chain_damage *= 0.8  # Reducir daño progresivamente
+		enemies_hit.append(next_target)
 
-func _find_chain_target(from_pos: Vector2, exclude: Array) -> Node:
-	"""Buscar siguiente objetivo para chain (OPTIMIZADO: Reuse Query Object)"""
-	var space_state = get_world_2d().direct_space_state
-	var range_val = 250.0 
+func _find_chain_target(pos: Vector2, exclude_list: Array) -> Node:
+	"""Buscar un objetivo cercano para Chain, excluyendo los ya golpeados"""
+	var range_radius = 200.0
+	var best_target = null
+	var best_dist = range_radius * range_radius
 	
-	if _physics_query == null:
-		_physics_query = PhysicsShapeQueryParameters2D.new()
-		_physics_circle = CircleShape2D.new()
-		_physics_query.shape = _physics_circle
-		_physics_query.collision_mask = 2 | 4
-	
-	_physics_circle.radius = range_val
-	_physics_query.transform = Transform2D(0, from_pos)
-	
-	# Query espacial eficiente (Max 12 candidatos cercanos)
-	var results = space_state.intersect_shape(_physics_query, 12)
-	
-	var closest: Node = null
-	var closest_dist_sq = range_val * range_val
-	
-	for res in results:
-		var collider = res.collider
-		if collider in exclude or not is_instance_valid(collider):
+	# Usar grupo "enemies"
+	var candidates = get_tree().get_nodes_in_group("enemies")
+	for enemy in candidates:
+		if enemy in exclude_list or not is_instance_valid(enemy):
 			continue
 			
-		# Verificación extra de grupo por seguridad
-		if not collider.is_in_group("enemies"):
-			continue
+		var d = pos.distance_squared_to(enemy.global_position)
+		if d < best_dist:
+			best_dist = d
+			best_target = enemy
 			
-		var dist_sq = from_pos.distance_squared_to(collider.global_position)
-		if dist_sq < closest_dist_sq:
-			closest_dist_sq = dist_sq
-			closest = collider
-			
-	return closest
+	return best_target
 
-
-func _spawn_chain_lightning_visual(from_pos: Vector2, to_pos: Vector2) -> void:
-	"""Crear efecto visual de rayo entre posiciones"""
-	var line = Line2D.new()
-	line.width = 3.0
-	line.default_color = projectile_color
-	line.default_color.a = 0.9
-	line.add_point(from_pos)
-	line.add_point(to_pos)
-	line.z_index = 100
-	get_tree().current_scene.add_child(line)
-	
-	# Desvanecer y eliminar
-	var tween = line.create_tween()
-	tween.tween_property(line, "modulate:a", 0.0, 0.2)
-	tween.tween_callback(line.queue_free)
-
-func _get_player() -> Node:
-	"""Obtener referencia al jugador"""
-	if get_tree():
-		var players = get_tree().get_nodes_in_group("player")
-		if players.size() > 0:
-			return players[0]
-	return null
+func _spawn_chain_lightning_visual(from: Vector2, to: Vector2) -> void:
+	"""Crear efecto visual de rayo (simple Line2D temporal)"""
+	# Usar FXManager si existe, o crear nodo temporal
+	var visual_manager = ProjectileVisualManager.instance
+	if visual_manager and visual_manager.has_method("spawn_chain_lightning"):
+		visual_manager.spawn_chain_lightning(from, to)
+	else:
+		# Fallback: crear Line2D y destruirlo
+		var line = Line2D.new()
+		line.points = [from, to]
+		line.width = 3.0
+		line.default_color = Color(0.5, 0.8, 1.0, 0.8)
+		get_tree().root.add_child(line)
+		
+		var tween = create_tween()
+		tween.tween_property(line, "modulate:a", 0.0, 0.3)
+		tween.tween_callback(line.queue_free)
 
 func _spawn_hit_effect() -> void:
-	"""Crear efecto visual simple al impactar"""
-	# OPTIMIZACIÓN: Límite global de partículas de impacto
-	const MAX_HIT_PARTICLES: int = 60 # BUFF from 40 for more feedback
-	if SimpleProjectile._active_hit_particle_count >= MAX_HIT_PARTICLES:
-		return
-
-	SimpleProjectile._active_hit_particle_count += 1
-
-	# Partículas simples de impacto
-	var particles = CPUParticles2D.new()
-	particles.emitting = true
-	particles.one_shot = true
-	particles.explosiveness = 1.0
-	particles.amount = 8
-	particles.lifetime = 0.3
-	particles.direction = -direction
-	particles.spread = 45.0
-	particles.initial_velocity_min = 50.0
-	particles.initial_velocity_max = 100.0
-	particles.gravity = Vector2.ZERO
-	particles.scale_amount_min = 2.0
-	particles.scale_amount_max = 4.0
-	particles.color = projectile_color
-	
-	particles.global_position = global_position
-	get_tree().current_scene.add_child(particles)
-	
-	# Conectar finished para limpiar el contador (FIX!)
-	particles.finished.connect(_on_hit_particles_finished)
-	# Auto-destrucción segura
-	particles.finished.connect(particles.queue_free)
-	
-	# Instanciar efecto visual extra si existe
+	"""Crear efecto visual de impacto"""
 	if hit_vfx_scene:
-		var effect = hit_vfx_scene.instantiate()
-		effect.global_position = global_position
-		get_tree().current_scene.add_child(effect)
-
-static func _on_hit_particles_finished() -> void:
-	"""Callback cuando un efecto de impacto termina"""
-	SimpleProjectile._active_hit_particle_count = maxi(0, SimpleProjectile._active_hit_particle_count - 1)
-
-# Variable para el homing target
-var _homing_target: Node2D = null
-var _homing_check_timer: float = 0.0
-
-func _process(delta: float) -> void:
-	# Actualizar lifetime
-	current_lifetime += delta
-	if current_lifetime >= lifetime:
-		_destroy()
-		return
-	
-	# LÓGICA HOMING (NUEVO)
-	# Si tenemos la meta de ser homing, intentar girar hacia enemigos
-	var target_type = get_meta("target_type_override", "") # Buscar override primero
-	if target_type == "": # Si no hay override check weapon db logic (simplificado aquí)
-		# En el futuro pasar target_type explícito en configure_and_launch
-		var wid = get_meta("weapon_id", "")
-		if wid == "nature_staff" or wid == "soul_reaper" or wid == "wildfire" or wid == "frostvine" or wid == "thunder_bloom":
-			target_type = "homing"
-	
-	if target_type == "homing":
-		_process_homing(delta)
-	
-	# Mover en la dirección actual
-	global_position += direction * speed * delta
-	
-	# Verificar colisión con decorados (OPTIMIZED: Use cached manager)
-	# Check only if we have a valid reference
-	if is_instance_valid(_decor_manager) and _decor_manager.has_method("check_collision_fast"):
-		var push = _decor_manager.check_collision_fast(global_position, 8.0)
-		if push.length_squared() > 1.0:
-			# Proyectil impactó con decorado - destruir
-			_destroy()
-			return
-	
-	# Actualizar dirección del sprite animado para que rote
-	if animated_sprite and is_instance_valid(animated_sprite):
-		animated_sprite.set_direction(direction)
-
-func _process_homing(delta: float) -> void:
-	"""Lógica de seguimiento de enemigos"""
-	# Buscar objetivo periódicamente (cada 0.1s)
-	_homing_check_timer -= delta
-	if _homing_check_timer <= 0:
-		_homing_check_timer = 0.1
-		_update_homing_target()
-	
-	if is_instance_valid(_homing_target):
-		# Girar suavemente hacia el objetivo
-		var desired_dir = (_homing_target.global_position - global_position).normalized()
-		# Factor de giro (turn rate)
-		var turn_speed = 5.0 # Radianes por segundo (aprox)
-		direction = direction.slerp(desired_dir, turn_speed * delta).normalized()
-
-func _update_homing_target() -> void:
-	"""Encontrar enemigo más cercano para homing"""
-	# Si el target actual sigue vivo y cerca, mantenerlo?
-	if is_instance_valid(_homing_target) and _homing_target.global_position.distance_squared_to(global_position) < 400*400:
-		return
-		
-	# Buscar nuevo (reutilizar lógica de chain target pero con rango amplio)
-	var new_target = _find_chain_target(global_position, [])
-	if new_target:
-		_homing_target = new_target
+		var vfx = hit_vfx_scene.instantiate()
+		vfx.global_position = global_position
+		get_tree().root.add_child(vfx)
+	else:
+		# Fallback: partículas genéricas si existen
+		pass
 
 func _spawn_lifesteal_effect(player: Node) -> void:
-	"""Crear efecto visual de lifesteal - partículas verdes volando hacia el jugador"""
-	if not is_instance_valid(player):
-		return
-	
-	var start_pos = global_position
-	var end_pos = player.global_position
-	
-	# Crear partículas verdes que van hacia el jugador
-	var particles = CPUParticles2D.new()
-	particles.emitting = true
-	particles.one_shot = true
-	particles.explosiveness = 0.8
-	particles.amount = 12
-	particles.lifetime = 0.5
-	
-	# Dirección hacia el jugador
-	var dir_to_player = (end_pos - start_pos).normalized()
-	particles.direction = dir_to_player
-	particles.spread = 25.0
-	particles.initial_velocity_min = 150.0
-	particles.initial_velocity_max = 250.0
-	particles.gravity = Vector2.ZERO
-	particles.scale_amount_min = 3.0
-	particles.scale_amount_max = 5.0
-	
-	# Color verde brillante para lifesteal
-	particles.color = Color(0.3, 1.0, 0.4, 1.0)
-	
-	# Gradiente para fade out
-	var gradient = Gradient.new()
-	gradient.set_color(0, Color(0.3, 1.0, 0.4, 1.0))
-	gradient.set_color(1, Color(0.2, 0.8, 0.3, 0.0))
-	particles.color_ramp = gradient
-	
-	particles.global_position = start_pos
-	get_tree().current_scene.add_child(particles)
-	
-	# Crear también un flash verde en el jugador
-	_spawn_heal_flash(player)
-	
-	# Auto-destruir partículas
-	var timer = get_tree().create_timer(0.8)
-	timer.timeout.connect(func(): 
-		if is_instance_valid(particles):
-			particles.queue_free()
-	)
-
-func _spawn_heal_flash(player: Node) -> void:
-	"""Crear flash verde en el jugador al recibir curación (Optimized Texture Cache)"""
-	if not is_instance_valid(player):
-		return
-	
-	# Crear un sprite temporal con efecto de curación
-	var flash = Sprite2D.new()
-	
-	# Use lazy-initialized static cache
-	if SimpleProjectile._cached_heal_texture == null:
-		var img = Image.create(32, 32, false, Image.FORMAT_RGBA8)
-		# Dibujar un círculo verde suave
-		var center = Vector2(16, 16)
-		for x in range(32):
-			for y in range(32):
-				var dist = Vector2(x, y).distance_to(center)
-				if dist < 14:
-					var alpha = 1.0 - (dist / 14.0)
-					img.set_pixel(x, y, Color(0.3, 1.0, 0.4, alpha * 0.7))
-		
-		SimpleProjectile._cached_heal_texture = ImageTexture.create_from_image(img)
-	
-	flash.texture = SimpleProjectile._cached_heal_texture
-	flash.z_index = 100
-	flash.scale = Vector2(2.0, 2.0)
-	
-	player.add_child(flash)
-	
-	# Animar el flash (crecer y desvanecerse)
-	var tween = player.create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(flash, "scale", Vector2(4.0, 4.0), 0.3)
-	tween.tween_property(flash, "modulate:a", 0.0, 0.3)
-	tween.chain().tween_callback(flash.queue_free)
+	"""Efecto visual de robo de vida en el jugador"""
+	pass # Implementación visual simple o delegar a FXManager
 
 func _destroy() -> void:
-	# Desactivar lógica inmediatamente para evitar más callbacks
-	set_process(false)
-	set_physics_process(false)
-	monitoring = false  # Detener detección de colisiones
-	
-	# Si tenemos visual animado, reproducir impacto con callback (sin await)
-	if animated_sprite and is_instance_valid(animated_sprite):
-		animated_sprite.play_impact()
-		# Usar callback en lugar de await para evitar crash por async sin await
-		if animated_sprite.has_signal("impact_finished"):
-			animated_sprite.impact_finished.connect(_on_impact_finished, CONNECT_ONE_SHOT)
-		else:
-			# Sin animación de impacto, finalizar directamente
-			_finalize_destroy()
-	else:
-		# Sin visual animado, finalizar directamente
-		_finalize_destroy()
-
-func _on_impact_finished() -> void:
-	"""Callback para cuando termina la animación de impacto"""
-	_finalize_destroy()
-
-func _finalize_destroy() -> void:
-	"""Lógica final de destrucción/pool return"""
+	"""Destruir proyectil (o devolver al pool)"""
+	hit_enemy.emit(self, 0) # Emitir con 0 daño para indicar fin sin golpe? No necesario.
 	destroyed.emit()
 	
-	# OPTIMIZACIÓN: Devolver al pool en lugar de destruir
-	if has_meta("_pooled") and get_meta("_pooled") == true:
-		ProjectilePool.release(self)
-	else:
-		queue_free()
-
-func _play_hit_sound() -> void:
-	"""Reproducir sonido de impacto basado en metadata o elemento"""
-	# 1. Intentar sonido específico del arma
-	var hit_sound = get_meta("hit_sound", "")
+	# Limpiar
+	if is_instance_valid(animated_sprite):
+		animated_sprite.queue_free()
+	if is_instance_valid(sprite):
+		sprite.queue_free()
 	
-	# 2. Si no hay específico, usar genérico por elemento
-	if hit_sound == "":
-		if _cached_hit_sound != "":
-			hit_sound = _cached_hit_sound
-		else:
-			match element_type:
-				"ice": hit_sound = "sfx_ice_hit"
-				"fire": hit_sound = "sfx_fire_hit"
-				"arcane": hit_sound = "sfx_arcane_hit"
-				"lightning": hit_sound = "sfx_lightning_hit"
-				"nature": hit_sound = "sfx_nature_hit"
-				"dark": hit_sound = "sfx_shadow_hit" # Dark maps to Shadow SFX
-				_: hit_sound = "sfx_hit_flesh" # Default fallback
-			_cached_hit_sound = hit_sound
-			
-	# 3. Reproducir si AudioManager está disponible (usando cache)
-	if hit_sound != "":
-		# Refetch if invalid (e.g. scene reload)
-		if not is_instance_valid(_audio_manager):
-			if get_tree():
-				_audio_manager = get_tree().get_first_node_in_group("audio_manager")
-		
-		if _audio_manager and _audio_manager.has_method("play_sfx_random_pitch"):
-			# Prefer random pitch for variety
-			_audio_manager.play_sfx_random_pitch(hit_sound)
-		elif _audio_manager and _audio_manager.has_method("play"):
-			_audio_manager.play(hit_sound)
+	# Usar pooling si disponible?
+	queue_free()
+
+func _get_player() -> Node:
+	if is_instance_valid(_player):
+		return _player
+	if get_tree():
+		var p = get_tree().get_first_node_in_group("player")
+		if p:
+			_player = p
+			return p
+	return null

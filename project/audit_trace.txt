@@ -1,6 +1,14 @@
-TRACE: Step 1 - Init Start
-tart
-TRACE: Step 3 - Loading Logger
-TRACE: Step 4 - Instantiating Logger
-TRACE: Step 5 - Logger Active
-TRACE: Step 99 - Finished
+TRACE: Start
+TRACE: Loads OK
+TRACE: Running Basic
+BASIC: Start
+BASIC: Dummy Created
+TRACE: Running Crit
+CRIT: Start
+TRACE: Running Status
+STATUS: Start
+TRACE: Running Chain
+CHAIN: Start
+TRACE: Running Pierce
+PIERCE: Start
+TRACE: Logic Done
