@@ -251,13 +251,20 @@ func _reset_projectile(projectile) -> void:
 	projectile.start_pos = Vector2.ZERO
 	
 	# Limpiar metas
-	projectile.remove_meta("effect") if projectile.has_meta("effect") else null
-	projectile.remove_meta("effect_value") if projectile.has_meta("effect_value") else null
-	projectile.remove_meta("effect_duration") if projectile.has_meta("effect_duration") else null
-	projectile.remove_meta("crit_chance") if projectile.has_meta("crit_chance") else null
-	projectile.remove_meta("crit_damage") if projectile.has_meta("crit_damage") else null
-	projectile.remove_meta("weapon_id") if projectile.has_meta("weapon_id") else null
-	projectile.remove_meta("weapon_color") if projectile.has_meta("weapon_color") else null
+	if projectile.has_meta("effect"):
+		projectile.remove_meta("effect")
+	if projectile.has_meta("effect_value"):
+		projectile.remove_meta("effect_value")
+	if projectile.has_meta("effect_duration"):
+		projectile.remove_meta("effect_duration")
+	if projectile.has_meta("crit_chance"):
+		projectile.remove_meta("crit_chance")
+	if projectile.has_meta("crit_damage"):
+		projectile.remove_meta("crit_damage")
+	if projectile.has_meta("weapon_id"):
+		projectile.remove_meta("weapon_id")
+	if projectile.has_meta("weapon_color"):
+		projectile.remove_meta("weapon_color")
 	
 	# Visual - resetear modulate
 	projectile.modulate = Color.WHITE
