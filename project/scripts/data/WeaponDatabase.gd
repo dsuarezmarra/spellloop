@@ -201,29 +201,30 @@ const WEAPONS: Dictionary = {
 	"shadow_dagger": {
 		"id": "shadow_dagger",
 		"name": "Shadow Dagger",
-		"name_es": "Daga Sombría",
-		"description": "Lanza dagas oscuras que atraviesan múltiples enemigos",
+		"name_es": "Daga de Sombra",
+		"description": "Lanza dagas oscuras que atraviesan enemigos",
 		"element": Element.SHADOW,
-		"rarity": "common",
+		"rarity": "rare",
 		
-		"damage": 7,
-		"cooldown": 1.0,  # NERFED from 0.9
+		"damage": 18,
+		"cooldown": 1.2,
 		"range": 450.0,
-		"projectile_speed": 500.0,
+		"projectile_speed": 520.0,
 		"projectile_count": 1,
-		"pierce": 2,  # NERFED from 3
-		"area": 0.8,
+		"pierce": 2,  # Atraviesa 2 enemigos
+		"area": 0.9,
 		"duration": 0.0,
 		"knockback": 30.0,
 		
-		"target_type": TargetType.DIRECTION,
+		"target_type": TargetType.DIRECTION,  # Sigue dirección de movimiento
 		"projectile_type": ProjectileType.SINGLE,
 		
-		"effect": "none",
-		"effect_value": 0,
-		"effect_duration": 0.0,
+		"effect": "curse",
+		"effect_value": 1.5,  # Multiplicador de daño recibido
+		"effect_duration": 3.0,
 		
-		"tags": ["projectile", "no_duration"],
+		# Tags de Mecanicas
+		"tags": ["projectile", "pierce", "skill_shot"],
 		
 		"color": Color(0.3, 0.1, 0.4),
 		"icon": "🗡️"
