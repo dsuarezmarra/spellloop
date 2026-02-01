@@ -33,6 +33,10 @@ func take_damage(amount: int, element_type: String = "physical") -> void:
 	if not is_alive:
 		return
 	
+	# P0.2: Check invulnerability
+	if is_invulnerable():
+		return
+	
 	current_health -= amount
 	current_health = max(current_health, 0)
 	
@@ -87,3 +91,20 @@ func set_max_health(new_max: int) -> void:
 	max_health = new_max
 	current_health = min(current_health, max_health)
 	health_changed.emit(current_health, max_health)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P0.2: INVULNERABILITY SYSTEM (for I-Frame Visual Feedback)
+# ═══════════════════════════════════════════════════════════════════════════════
+var _invulnerability_timer: float = 0.0
+
+func _process(delta: float) -> void:
+	if _invulnerability_timer > 0.0:
+		_invulnerability_timer -= delta
+
+func set_invulnerable(duration: float) -> void:
+	"""Set invulnerability for specified duration"""
+	_invulnerability_timer = duration
+
+func is_invulnerable() -> bool:
+	"""Check if currently invulnerable"""
+	return _invulnerability_timer > 0.0

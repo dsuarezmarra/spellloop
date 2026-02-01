@@ -681,25 +681,17 @@ func _update_iframes_visual() -> void:
 	if OS.has_feature("headless") or not animated_sprite:
 		return
 	
-	# Check if wizard_player isınvulnerable via BasePlayer's system
+	# Check if wizard_player is invulnerable via BasePlayer's system
 	var is_invulnerable = false
-	if wizard_player and wizard_player.health_component:
-		# BasePlayer uses _invulnerability_timer internally
-		# We can't access it directly, so we check if the player just took damage
-		# and assume brief invulnerability. Alternatively, add a public method to BasePlayer.
-		# For now, simple approach: check if there's an active damage flash
-		pass  # TODO: Need BasePlayer.is_invulnerable() public method
+	if wizard_player and wizard_player.has_method("is_invulnerable"):
+		is_invulnerable = wizard_player.is_invulnerable()
 	
-	# For Phase 13, we'll implement a simpler version:
-	# Flash when health_component indicates recent damage (proxy for i-frames)
-	# This is a simplified implementation - ideally BasePlayer should expose is_invulnerable()
-	
-	#if is_invulnerable and not _invulnerable_visual_active:
-	#	_start_invulnerability_flash()
-	#	_invulnerable_visual_active = true
-	#elif not is_invulnerable and _invulnerable_visual_active:
-	#	_stop_invulnerability_flash()
-	#	_invulnerable_visual_active = false
+	if is_invulnerable and not _invulnerable_visual_active:
+		_start_invulnerability_flash()
+		_invulnerable_visual_active = true
+	elif not is_invulnerable and _invulnerable_visual_active:
+		_stop_invulnerability_flash()
+		_invulnerable_visual_active = false
 
 func _start_invulnerability_flash() -> void:
 	"""Start flashing effect for i-frames"""
