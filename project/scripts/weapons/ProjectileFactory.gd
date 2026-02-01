@@ -263,19 +263,34 @@ static func create_projectile(owner: Node2D, data: Dictionary) -> Node2D:
 	if projectile == null:
 		return null
 
-	# Añadir al árbol primero para asegurar ciclo de vida correcto
+	# Configurar propiedades del proyectil ANTES de añadirlo al árbol
+	var start_pos = data.get("start_position", owner.global_position)
+	var dir = data.get("direction", Vector2.RIGHT)
+	
+	projectile.global_position = start_pos
+	projectile.direction = dir
+	projectile.damage = data.get("damage", 10.0)
+	projectile.speed = data.get("projectile_speed", 400.0)
+	projectile.pierce_count = data.get("pierce", 0)
+	projectile.lifetime = data.get("duration", 3.0)
+	projectile.knockback_force = data.get("knockback", 100.0)
+	projectile.element_type = get_element_string(data.get("element", 0))
+	projectile.projectile_color = data.get("color", Color.WHITE)
+	
+	# Metadata para efectos y visuals
+	projectile.set_meta("weapon_id", data.get("weapon_id", ""))
+	projectile.set_meta("effect", data.get("effect", "none"))
+	projectile.set_meta("effect_value", data.get("effect_value", 0.0))
+	projectile.set_meta("effect_duration", data.get("effect_duration", 0.0))
+	projectile.set_meta("crit_chance", data.get("crit_chance", 0.0))
+	projectile.set_meta("crit_damage", data.get("crit_damage", 2.0))
+
+	# Añadir al árbol DESPUÉS de configurar
 	var tree = owner.get_tree()
 	if tree and tree.current_scene:
 		tree.current_scene.add_child(projectile)
 	else:
 		owner.get_parent().add_child(projectile)
-
-	# CRÍTICO: Usar configure_and_launch para inicialización ATÓMICA y UNIFICADA
-	# Esto asegura que todos los stats, efectos y visuales se configuren en un solo paso
-	var start_pos = data.get("start_position", owner.global_position)
-	var dir = data.get("direction", Vector2.RIGHT)
-	
-	projectile.configure_and_launch(data, start_pos, dir, true)
 
 	return projectile
 
