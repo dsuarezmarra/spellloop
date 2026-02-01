@@ -7,6 +7,7 @@ extends Node2D
 var radius: float = 100.0
 var duration: float = 1.0
 var warning_color: Color = Color(1.0, 0.2, 0.2, 0.4)
+var auto_cleanup: bool = true  # Auto-destroy when duration ends
 var _current_time: float = 0.0
 
 func setup(r: float, d: float, c: Color = Color(1.0, 0.2, 0.2, 0.4)) -> void:
@@ -22,8 +23,10 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_current_time += delta
 	if _current_time >= duration:
-		# Stay full until removed by caller, or queue_free if we want auto-cleanup?
-		# Logic implies caller removes it. But let's clamp for visuals.
+		if auto_cleanup:
+			queue_free()  # FIX: Auto-cleanup to prevent orphans
+			return
+		# If not auto-cleanup, stay full until removed by caller
 		_current_time = duration
 	
 	queue_redraw()

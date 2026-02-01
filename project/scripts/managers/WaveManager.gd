@@ -749,6 +749,12 @@ func _create_elite_warning_visual(pos: Vector2, duration: float) -> Node2D:
 		time_elapsed += 0.016
 		if is_instance_valid(visual):
 			visual.queue_redraw()
+		
+		# Cleanup when animation finishes
+		if time_elapsed >= duration:
+			timer.stop()
+			if is_instance_valid(warning):
+				warning.queue_free()  # FIX: Prevent visual leak
 	)
 	
 	return warning
