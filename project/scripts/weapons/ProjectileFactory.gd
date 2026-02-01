@@ -294,6 +294,12 @@ static func create_projectile(owner: Node2D, data: Dictionary) -> Node2D:
 	projectile.set_meta("crit_chance", data.get("crit_chance", 0.0))
 	projectile.set_meta("crit_damage", data.get("crit_damage", 2.0))
 
+	# REGENERAR COMPLETO: Stats y Visuales para proyectiles reutilizados
+	if projectile.has_method("reinitialize"):
+		projectile.reinitialize()
+	elif projectile.has_method("initialize_visuals"):
+		projectile.initialize_visuals()
+
 	# Añadir al árbol DESPUÉS de configurar
 	var tree = owner.get_tree()
 	if tree and tree.current_scene:

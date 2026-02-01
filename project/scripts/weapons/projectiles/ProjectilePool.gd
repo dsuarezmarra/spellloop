@@ -213,6 +213,12 @@ func _complete_return(projectile) -> void:
 	if projectile == null or not is_instance_valid(projectile):
 		return
 	
+	# PREVENCIÓN DE DUPLICADOS: Verificar si ya está en el pool (evita "previously freed" crash)
+	if projectile in _available_pool:
+		# Ya está devuelto, solo corregir contador si es necesario
+		_active_count = maxi(0, _active_count - 1)
+		return
+
 	# Limpiar estado
 	_cleanup_projectile(projectile)
 	
@@ -224,7 +230,7 @@ func _complete_return(projectile) -> void:
 		# Pool lleno - destruir el proyectil (ya diferido aquí)
 		projectile.call_deferred("queue_free")
 	
-	_active_count -= 1
+	_active_count = maxi(0, _active_count - 1)
 	if PerfTracker: PerfTracker.track_projectile_destroyed()
 
 func _reset_projectile(projectile) -> void:
@@ -267,17 +273,22 @@ func _reset_projectile(projectile) -> void:
 		projectile.remove_meta("weapon_color")
 	
 	# Visual - resetear modulate
-	projectile.modulate = Color.WHITE
 	projectile.visible = true
 	projectile.global_position = Vector2.ZERO
+	
+	# ASEGURAR CONEXIÓN DE SEÑALES (Safety check)
+	if not projectile.body_entered.is_connected(projectile._on_body_entered):
+		projectile.body_entered.connect(projectile._on_body_entered)
+	if not projectile.area_entered.is_connected(projectile._on_area_entered):
+		projectile.area_entered.connect(projectile._on_area_entered)
 
 func _cleanup_projectile(projectile) -> void:
 	"""Limpiar un proyectil antes de devolverlo al pool"""
-	# Desconectar señales que podrían haberse conectado
-	if projectile.body_entered.is_connected(projectile._on_body_entered):
-		projectile.body_entered.disconnect(projectile._on_body_entered)
-	if projectile.area_entered.is_connected(projectile._on_area_entered):
-		projectile.area_entered.disconnect(projectile._on_area_entered)
+	# NO desconectar señales internas propias (body_entered, area_entered del propio script)
+	# Solo desconectar señales externas si las hubiera
+	
+	# Desconectar señales de otros objetos (opcional, si hubiera listeners externos)
+	# Pero mantener las propias funcionales para el siguiente uso.
 	
 	# Limpiar hijos dinámicos (partículas, sprites generados)
 	for child in projectile.get_children():

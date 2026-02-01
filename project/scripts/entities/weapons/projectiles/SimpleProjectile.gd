@@ -41,6 +41,7 @@ var projectile_color: Color = Color(0.4, 0.7, 1.0, 1.0)
 var projectile_size: float = 12.0
 var trail_particles: CPUParticles2D = null
 var _weapon_id: String = ""  # Para buscar visual data
+var _is_destroyed: bool = false  # Protección contra doble destrucción
 
 # Colores por elemento
 const ELEMENT_COLORS = {
@@ -164,8 +165,14 @@ func _setup_collision() -> void:
 	if not shape:
 		shape = CollisionShape2D.new()
 		shape.name = "CollisionShape2D"
-		var circle = CircleShape2D.new()
+		shape.shape = CircleShape2D.new()
+		add_child(shape)
 		
+		# Debug visual (solo visible si 'Visible Collision Shapes' está activo en Debug)
+		shape.modulate = Color(1, 0, 0, 0.5)
+
+	# CALCULAR RADIO (SIEMPRE, para soportar cambio de tipo en pooling)
+	if shape.shape is CircleShape2D:
 		# AUMENTO DE HITBOX (Mejora de "Game Feel")
 		# Multiplicador base: 25% más grande que el sprite visual por defecto
 		var hitbox_mult = 1.25
@@ -180,9 +187,7 @@ func _setup_collision() -> void:
 			"lightning": hitbox_mult = 1.4 # Rayos deben impactar fácil
 		
 		# Calcular radio final
-		circle.radius = (projectile_size * 0.5) * hitbox_mult
-		shape.shape = circle
-		add_child(shape)
+		shape.shape.radius = (projectile_size * 0.5) * hitbox_mult
 		
 		# Debug visual (solo visible si 'Visible Collision Shapes' está activo en Debug)
 		shape.modulate = Color(1, 0, 0, 0.5)
@@ -385,11 +390,26 @@ func _on_trail_destroyed() -> void:
 	"""Callback cuando un trail se destruye"""
 	SimpleProjectile._active_trail_count = maxi(0, SimpleProjectile._active_trail_count - 1)
 
+func reinitialize() -> void:
+	"""Reinicializar stats y visuales para pooling"""
+	_is_destroyed = false  # Resetear guard
+	pierces_remaining = pierce_count
+	
+	# Recalcular color
+	if has_meta("weapon_color"):
+		projectile_color = get_meta("weapon_color")
+	elif ELEMENT_COLORS.has(element_type):
+		projectile_color = ELEMENT_COLORS[element_type]
+		
+	# Actualizar colisión y visuales
+	_setup_collision()
+	initialize_visuals()
 
 func _process(delta: float) -> void:
-	# Actualizar lifetime
+	# Verificar tiempo de vida
 	current_lifetime += delta
 	if current_lifetime >= lifetime:
+		# Expiró: Destruir sin efectos de impacto overkill
 		_destroy()
 		return
 	
@@ -924,6 +944,10 @@ func _spawn_heal_flash(player: Node) -> void:
 	tween.chain().tween_callback(flash.queue_free)
 
 func _destroy() -> void:
+	if _is_destroyed:
+		return
+	_is_destroyed = true
+	
 	# Si tenemos visual animado, reproducir impacto
 	if animated_sprite and is_instance_valid(animated_sprite):
 		# Detener movimiento
