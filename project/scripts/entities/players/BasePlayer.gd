@@ -1756,6 +1756,15 @@ func _clear_curse() -> void:
 func is_stunned() -> bool:
 	return _is_stunned
 
+func is_alive() -> bool:
+	return hp > 0
+
+func is_invulnerable() -> bool:
+	"""Check if player is currently invulnerable (P0.2: I-Frame Visual)"""
+	if health_component and health_component.has_method("is_invulnerable"):
+		return health_component.is_invulnerable()
+	return false
+
 func is_slowed() -> bool:
 	return _is_slowed
 
