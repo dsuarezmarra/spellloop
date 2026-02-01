@@ -106,6 +106,25 @@ static func calculate_final_damage(
 		result.final_damage *= crit_damage
 		result.is_crit = true
 	
+	# AUDIT HOOK (Static Check safe for execution)
+	if is_instance_valid(target) and Script.is_instance_of(load("res://scripts/tools/DamageDeliveryLogger.gd"), Object):
+		# We need a way to pass this ID out? Or Store it on the result object?
+		# Result object is transient. We can attach it as meta to the target for the next step (HealthComponent)
+		# But this is static.
+		# Let's verify if the Logger is loaded in Tree? No, it's a tool script reference.
+		# Actually, we rely on autoload name "DamageDeliveryLogger" if present.
+		pass 
+	
+	# Real implementation: Check if Logger singleton exists (it won't be autoloaded in game, but instantiated in runner)
+	# Runner will add it to root.
+	var logger = target.get_tree().root.get_node_or_null("DamageDeliveryLogger")
+	if logger:
+		# Hack: Store event_id on result for transport
+		var weapon_id = "unknown" # Need to pass this in? Not in signature.
+		# We'll create a new field in DamageResult or use meta
+		var id = logger.log_calculation("calc_event", target, int(result.final_damage), result.is_crit)
+		target.set_meta("last_damage_event_id", id)
+
 	return result
 
 ## Obtener porcentaje de vida del enemigo

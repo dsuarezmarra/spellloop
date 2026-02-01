@@ -1,0 +1,6 @@
+TRACE: Step 1 - Init Start
+tart
+TRACE: Step 3 - Loading Logger
+TRACE: Step 4 - Instantiating Logger
+TRACE: Step 5 - Logger Active
+TRACE: Step 99 - Finished

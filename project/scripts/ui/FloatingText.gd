@@ -167,6 +167,14 @@ static func _spawn_text(pos: Vector2, txt: String, col: Color, size: int, dur: f
 	if tree and tree.has_group("diagnostics"):
 		tree.call_group("diagnostics", "track_feedback", "text", txt)
 
+	# AUDIT HOOK (New for Phase 15)
+	var logger = tree.root.get_node_or_null("DamageDeliveryLogger")
+	if logger:
+		var is_crit = (col == Color(1.0, 0.8, 0.2)) # Heuristic based on spawn_damage color
+		# Try parse int
+		var amt = txt.to_int()
+		logger.log_feedback(amt, is_crit, pos)
+
 	# HEADLESS GUARD: Critical - prevents ALL visual operations in headless mode
 	if Headless.is_headless():
 		return

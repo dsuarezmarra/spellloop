@@ -31,7 +31,7 @@ func _run_tests():
 
 	# Setup simple scene
 	var root_node = Node2D.new()
-	var root_node = Node2D.new()
+
 	# root.current_scene = root_node # ERROR: Cannot assign to Window in headless layout sometimes
 	root.add_child(root_node)
 	

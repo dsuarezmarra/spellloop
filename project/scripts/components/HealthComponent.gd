@@ -40,6 +40,14 @@ func take_damage(amount: int, element_type: String = "physical") -> void:
 	damaged.emit(amount, element_type)
 	health_changed.emit(current_health, max_health)
 	
+	# AUDIT HOOK
+	if is_instance_valid(owner_node) and owner_node.has_meta("last_damage_event_id"):
+		var logger = get_tree().root.get_node_or_null("DamageDeliveryLogger")
+		if logger:
+			var event_id = owner_node.get_meta("last_damage_event_id")
+			logger.log_application(event_id, amount)
+			owner_node.remove_meta("last_damage_event_id") # Clean up
+	
 	# Visualizar daño - FloatingText handles headless/diagnostics logic
 	if owner_node is Node2D:
 		FloatingText.spawn_damage(owner_node.global_position, amount)
