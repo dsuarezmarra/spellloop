@@ -109,18 +109,17 @@ func _ready() -> void:
 	if not spritesheet_loaded:
 		_load_static_sprite()
 	
-	# OPTIMIZATION: Physics Culling (VisibleOnScreenEnabler2D)
-	var enabler = VisibleOnScreenEnabler2D.new()
-	enabler.name = "CullingEnabler"
-	enabler.rect = Rect2(-100, -100, 200, 200) # Generous bounds
-	enabler.enable_node_path = ".." # Target parent
-	add_child(enabler)
+	# FIX: Eliminado VisibleOnScreenEnabler2D porque congelaba a los enemigos fuera de pantalla
+	# impidiendo que se acercaran al jugador. En este género, los enemigos deben moverse siempre.
 
 	# Configurar z_index
 	self.z_index = 0
 	
-	# Inicializar sistema de iconos de estado
+	# 124: Inicializar sistema de iconos de estado
 	_initialize_status_icon_display()
+
+	# CRÍTICO: Añadir al grupo "enemies" para que las armas puedan encontrarlos
+	add_to_group("enemies")
 
 	# Inicializar sistema de ataque
 	if attack_system:
