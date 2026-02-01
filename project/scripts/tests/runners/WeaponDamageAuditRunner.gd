@@ -72,6 +72,8 @@ func _run_all_tests():
 		
 		# Disable processing to prevent leaks from AI Logic
 		dummy.process_mode = Node.PROCESS_MODE_DISABLED
+		if dummy.attack_system:
+			dummy.attack_system.queue_free() # Force destroy to prevent ANY auto-attacks/leaks
 		
 		# Position dummy near player
 		dummy.global_position = mock_player.global_position + Vector2(100, 0)

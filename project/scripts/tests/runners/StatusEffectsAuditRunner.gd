@@ -31,7 +31,8 @@ func _run_tests():
 
 	# Setup simple scene
 	var root_node = Node2D.new()
-	root.current_scene = root_node
+	var root_node = Node2D.new()
+	# root.current_scene = root_node # ERROR: Cannot assign to Window in headless layout sometimes
 	root.add_child(root_node)
 	
 	# Create Diagnostics listener group
@@ -197,9 +198,19 @@ func _create_dummy(EnemyScript):
 	dummy.max_hp = 1000
 	dummy.speed = 100.0
 	# Add to scene to activate processing
-	root.current_scene.add_child(dummy)
+	# Add to scene to activate processing
+	# root.current_scene might be null, so search for our root_node
+	var scene_root = root.get_node("Node2D") 
+	if not scene_root: scene_root = root.get_child(0)
+	if scene_root:
+		scene_root.add_child(dummy)
+	else:
+		root.add_child(dummy)
 	# Disable processing to prevent AI logic/Attacks from running
 	dummy.process_mode = Node.PROCESS_MODE_DISABLED
+	if dummy.attack_system:
+		dummy.attack_system.queue_free() # Force destroy to prevent ANY auto-attacks/leaks
+	
 	return dummy
 
 func _pass(msg):

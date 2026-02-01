@@ -109,6 +109,8 @@ func _run_contract_validation(OracleClass, DBClass):
 		# CRITICAL: Disable processing to prevent Attribute/AttackSystem from running 
 		# and spawning projectiles (which leak because they become siblings)
 		enemy.process_mode = Node.PROCESS_MODE_DISABLED
+		if enemy.attack_system:
+			enemy.attack_system.queue_free() # Force destroy to prevent ANY auto-attacks/leaks
 		
 		# Check Contract
 		# We must pass DBClass to Oracle too because Oracle uses EnemyDatabase global.
