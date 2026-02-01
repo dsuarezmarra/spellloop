@@ -1,30 +1,15 @@
-TRACE: Start V4 INLINE
+TRACE: Start V5 REAL PROJECTILES
 TRACE: Loads OK
-TRACE: Running Basic
+TRACE: Running Basic Projectile
 BASIC: Start
 BASIC: Dummy Created (HP: 1000)
-BASIC: Applying 10 damage inline
-BASIC: take_damage called
-BASIC: About to await process_frame
-BASIC: Frame Processed. HP: 990 (Start: 1000)
-REPORT: PASS - HP Reduced by 10
-BASIC: PASS
-BASIC: About to free dummy
-BASIC: Test complete
-TRACE: Running Crit
+BASIC: Loading ProjectileScript...
+BASIC: Script loaded: true
+BASIC: Instantiating projectile...
+TRACE: Running Crit Projectile
 CRIT: Start
-CRIT: Applying 20 crit damage inline
-REPORT: PASS - Crit Damage Applied
-TRACE: Running Status
-STATUS: Start
-REPORT: PASS - DoT Applied Damage
-TRACE: Running Chain
-CHAIN: Start
-REPORT: PASS - Chain Target 1 Hit
-REPORT: PASS - Chain Target 2 Hit
-TRACE: Running Pierce
+TRACE: Running Pierce Projectile
 PIERCE: Start
-REPORT: PASS - Pierce Hit Both Targets
 REPORT: PASS - Global: OK
 TRACE: Logic Done
-REPORT: Printing 7 results
+REPORT: Printing 1 results

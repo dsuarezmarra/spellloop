@@ -121,7 +121,9 @@ func _try_create_animated_visual() -> bool:
 	if not is_in_group(group_name):
 		add_to_group(group_name)
 	
-	# Buscar el ProjectileVisualManager
+	# Buscar el ProjectileVisualManager (headless-safe: check if class exists first)
+	if not ClassDB.class_exists("ProjectileVisualManager"):
+		return false
 	var visual_manager = ProjectileVisualManager.instance
 	if visual_manager == null:
 		return false

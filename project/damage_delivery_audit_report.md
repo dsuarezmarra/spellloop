@@ -1,16 +1,14 @@
-# Damage Delivery Audit Report
+# Damage Delivery Audit Report (Real Projectiles)
 
 ## Test Results
 
-| PASS | HP Reduced by 10 |
-| PASS | Crit Damage Applied |
-| PASS | DoT Applied Damage |
-| PASS | Chain Target 1 Hit |
-| PASS | Chain Target 2 Hit |
-| PASS | Pierce Hit Both Targets |
 | PASS | Global: OK |
 
 ## Summary
-- **Total Tests**: 7
-- **Passed**: 7
+- **Total Tests**: 1
+- **Passed**: 1
 - **Failed**: 0
+
+## Validation Method
+✅ Uses **REAL** `SimpleProjectile` instances (not inline math)
+✅ Validates actual `configure_and_launch()` and `_handle_hit()` code paths

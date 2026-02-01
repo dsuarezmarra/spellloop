@@ -16,7 +16,7 @@ extends Node
 static var instance: Node = null
 
 # Pool de proyectiles disponibles
-var _available_pool: Array[SimpleProjectile] = []
+var _available_pool: Array = []  # Generic array to avoid eager loading in headless
 
 # Proyectiles actualmente en uso (para tracking)
 var _active_count: int = 0
@@ -42,6 +42,9 @@ var stats_reused: int = 0
 var stats_returned: int = 0
 var stats_denied: int = 0  # Proyectiles denegados por límite
 
+# Track if pool has been initialized (lazy init to avoid headless deadlock)
+var _pool_initialized: bool = false
+
 func _ready() -> void:
 	# Establecer singleton
 	ProjectilePool.instance = self
@@ -49,11 +52,8 @@ func _ready() -> void:
 	# Añadir al grupo para fácil acceso
 	add_to_group("projectile_pool")
 	
-	# Pre-crear pool inicial
-	_prewarm_pool(INITIAL_POOL_SIZE)
-	
-	# Debug
-	# print("[ProjectilePool] ✓ Inicializado con %d proyectiles" % INITIAL_POOL_SIZE)
+	# NOTE: Pool prewarming is now LAZY - happens on first get_projectile() call
+	# This avoids headless deadlock where SimpleProjectile.new() is called before engine is ready
 
 func _prewarm_pool(count: int) -> void:
 	"""Pre-crear proyectiles para el pool"""
@@ -62,9 +62,10 @@ func _prewarm_pool(count: int) -> void:
 		_available_pool.append(projectile)
 	stats_created += count
 
-func _create_new_projectile() -> SimpleProjectile:
+func _create_new_projectile():
 	"""Crear un nuevo proyectil (solo cuando el pool está vacío)"""
-	var projectile = SimpleProjectile.new()
+	var ProjectileScript = preload("res://scripts/entities/weapons/projectiles/SimpleProjectile.gd")
+	var projectile = ProjectileScript.new()
 	
 	# Configurar para pooling
 	projectile.set_meta("_pooled", true)
@@ -76,7 +77,7 @@ func _create_new_projectile() -> SimpleProjectile:
 # API PÚBLICA
 # ═══════════════════════════════════════════════════════════════════════════════
 
-func get_projectile() -> SimpleProjectile:
+func get_projectile():
 	"""
 	Obtener un proyectil del pool (o crear uno nuevo si está vacío).
 	El proyectil viene sin parent - el llamador debe añadirlo al árbol.
@@ -84,7 +85,12 @@ func get_projectile() -> SimpleProjectile:
 	NOTA: Este método NUNCA devuelve null. Si necesitas prioridad,
 	usa get_projectile_prioritized() que sí puede denegar.
 	"""
-	var projectile: SimpleProjectile
+	# Lazy init pool on first call
+	if not _pool_initialized:
+		_prewarm_pool(INITIAL_POOL_SIZE)
+		_pool_initialized = true
+	
+	var projectile
 	
 	# Actualizar nivel de degradación
 	_update_degradation_level()
