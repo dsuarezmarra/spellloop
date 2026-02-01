@@ -231,6 +231,45 @@ const WEAPONS: Dictionary = {
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
+	# WIND BLADE - Fan of wind projectiles (Wind Runner starting weapon)
+	# ─────────────────────────────────────────────────────────────────────────────
+	"wind_blade": {
+		"id": "wind_blade",
+		"name": "Wind Blade",
+		"name_es": "Hoja de Viento",
+		"description": "Lanza cuchillas de viento en abanico",
+		"element": Element.WIND,
+		"rarity": "common",
+		
+		# Stats base
+		"damage": 8,
+		"cooldown": 1.2,
+		"range": 400.0,
+		"projectile_speed": 450.0,
+		"projectile_count": 3,  # Fan pattern
+		"pierce": 0,
+		"area": 1.0,
+		"duration": 0.0,
+		"knockback": 50.0,
+		
+		# Comportamiento
+		"target_type": TargetType.DIRECTION,  # Follows movement direction
+		"projectile_type": ProjectileType.MULTI,  # Multiple projectiles in fan
+		
+		# Efecto especial
+		"effect": "none",
+		"effect_value": 0,
+		"effect_duration": 0.0,
+		
+		# Visual
+		"color": Color(0.7, 1.0, 0.9),  # Light cyan/wind color
+		"icon": "🌪️",
+		
+		# Tags
+		"tags": ["projectile", "multi_shot", "direction"]
+	},
+	
+	# ─────────────────────────────────────────────────────────────────────────────
 	# NATURE STAFF - Proyectiles homing que curan
 	# ─────────────────────────────────────────────────────────────────────────────
 	"nature_staff": {
