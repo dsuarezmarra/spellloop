@@ -613,6 +613,8 @@ func _process(delta: float) -> void:
 
 		# Comprobar si está lista para disparar
 		if weapon.is_ready_to_fire():
+			# print_rich("[color=green][AM] 💥 Attempting to fire: %s (CD: %s)[/color]" % [weapon.id, weapon.current_cooldown])
+			
 			# Verificar que el árbol siga válido antes de disparar
 			if not player.get_tree():
 				return
@@ -620,8 +622,14 @@ func _process(delta: float) -> void:
 			var did_fire = false
 			if weapon is BaseWeapon:
 				did_fire = weapon.perform_attack(player, player_stats)
+				
+				if not did_fire:
+					pass
+					# print_rich("[color=red][AM] ⚠️ Weapon %s failed to fire (perform_attack returned false)[/color]" % weapon.id)
+				
 				# CRÍTICO: Aplicar attack_speed_mult global al cooldown del arma
 				if did_fire and "current_cooldown" in weapon:
+					# print_rich("[color=green][AM] ✅ FIRED: %s. New Cooldown pending...[/color]" % weapon.id)
 					var gs = _get_combined_global_stats()
 					var attack_speed_mult = maxf(gs.get("attack_speed_mult", 1.0), 0.1)
 					# Siempre aplicar el multiplicador (tanto buffs como debuffs)

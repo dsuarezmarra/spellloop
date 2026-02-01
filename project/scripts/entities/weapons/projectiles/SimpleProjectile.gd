@@ -121,12 +121,14 @@ func _try_create_animated_visual() -> bool:
 	if not is_in_group(group_name):
 		add_to_group(group_name)
 	
-	# Buscar el ProjectileVisualManager (headless-safe: check if class exists first)
-	if not ClassDB.class_exists("ProjectileVisualManager"):
+	# 124: Buscar el ProjectileVisualManager
+	# NOTA: ClassDB.class_exists solo funciona para clases nativas, no scripts.
+	# Usamos directamente la referencia estática o verificamos si la instancia existe.
+	
+	if not ProjectileVisualManager.instance:
 		return false
+		
 	var visual_manager = ProjectileVisualManager.instance
-	if visual_manager == null:
-		return false
 	
 	# Obtener weapon_data para el visual
 	var weapon_data = WeaponDatabase.get_weapon_data(_weapon_id)
