@@ -94,6 +94,40 @@ func _ready() -> void:
 	update_health_bar()
 
 	# print("[SpellloopPlayer] ===== OK: SPELLLOOP PLAYER LISTO =====\n")
+	
+	# === P0.1: ORBITAL OVERHEAT SYSTEM ===
+	_init_orbital_overheat()
+	
+	# === P0.2: I-FRAME VISUAL SYSTEM ===
+	_init_iframes_visual()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P0.1: ORBITAL OVERHEAT SYSTEM
+# ═══════════════════════════════════════════════════════════════════════════════
+# Orbital Overheat Variables
+var _orbital_overheat_active: bool = false
+var _orbital_overheat_timer: float = 0.0
+const ORBITAL_OVERHEAT_INTERVAL: float = 2.5  # Chip damage every 2.5 sec
+const ORBITAL_DANGER_RADIUS: float = 100.0    # Enemies within 100px
+const ORBITAL_CHIP_DAMAGE: int = 1            # 1 HP per interval
+const ORBITAL_HP_THRESHOLD: int = 15          # Don't apply if HP < 15
+const ORBITAL_MIN_ENEMIES: int = 3            # Need at least 3 enemies nearby
+
+func _init_orbital_overheat() -> void:
+	"""Initialize orbital overheat system"""
+	_orbital_overheat_active = false
+	_orbital_overheat_timer = 0.0
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P0.2: I-FRAME VISUAL FEEDBACK SYSTEM
+# ═══════════════════════════════════════════════════════════════════════════════
+var _invulnerable_visual_active: bool = false
+var _invulnerability_tween: Tween = null
+
+func _init_iframes_visual() -> void:
+	"""Initialize i-frame visual system"""
+	_invulnerable_visual_active = false
+
 
 func _physics_process(_delta: float) -> void:
 	# BLOQUEO TOTAL durante muerte - no procesar nada más
@@ -162,6 +196,9 @@ func _physics_process(_delta: float) -> void:
 	# === COLISIONES CON DECORADOS ===
 	# Sistema basado en distancia (StaticBody2D dinámicos no funcionan)
 	_enforce_decor_collisions()
+	
+	# === P0.1: ORBITAL OVERHEAT SYSTEM ===
+	_update_orbital_overheat(_delta)
 
 	# Sincronizar posición y velocidad con WizardPlayer (para que sus sistemas funcionen)
 	if wizard_player:
@@ -542,3 +579,147 @@ func create_health_bar() -> void:
 		health_bar_container.add_child(health_bar)
 
 	update_health_bar()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P0.1: ORBITAL OVERHEAT IMPLEMENTATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _update_orbital_overheat(delta: float) -> void:
+	"""Update orbital overheat system - applies chip damage when orbitals + close enemies"""
+	# Only if we have active orbitals
+	if not _has_active_orbitals():
+		_orbital_overheat_active = false
+		return
+	
+	# Check for nearby enemies
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var enemies_nearby = 0
+	for enemy in enemies:
+		if is_instance_valid(enemy) and global_position.distance_to(enemy.global_position) < ORBITAL_DANGER_RADIUS:
+			enemies_nearby += 1
+			if enemies_nearby >= ORBITAL_MIN_ENEMIES:
+				break
+	
+	_orbital_overheat_active = (enemies_nearby >= ORBITAL_MIN_ENEMIES)
+	
+	if not _orbital_overheat_active:
+		_orbital_overheat_timer = 0.0  # Reset timer when safe
+		return
+	
+	# Apply chip damage
+	_orbital_overheat_timer += delta
+	if _orbital_overheat_timer >= ORBITAL_OVERHEAT_INTERVAL:
+		_orbital_overheat_timer = 0.0
+		_apply_orbital_chip_damage()
+
+func _has_active_orbitals() -> bool:
+	"""Check if player has any orbital weapons equipped"""
+	if not wizard_player:
+		return false
+	
+	# Get WeaponManager from wizard_player
+	var weapon_mgr = wizard_player.get_node_or_null("WeaponManager")
+	if not weapon_mgr:
+		return false
+	
+	# Check if any equipped weapon has "orbital" tag
+	if not weapon_mgr.has_method("get_equipped_weapons"):
+		return false
+	
+	var equipped = weapon_mgr.get_equipped_weapons()
+	for weapon_id in equipped:
+		var weapon_data = WeaponDatabase.get_weapon_data(weapon_id)
+		if weapon_data and "tags" in weapon_data:
+			if "orbital" in weapon_data["tags"]:
+				return true
+	
+	return false
+
+func _apply_orbital_chip_damage() -> void:
+	"""Apply chip damage from orbital overheat"""
+	if not health_component:
+		return
+	
+	var current_hp = health_component.current_health if health_component.has_method("get_current_health") else hp
+	if current_hp <= ORBITAL_HP_THRESHOLD:
+		return  # Safety: don't kill player or apply when low HP
+	
+	# Apply 1 HP environmental damage
+	if health_component.has_method("take_damage"):
+		health_component.take_damage(ORBITAL_CHIP_DAMAGE, "environmental")
+	elif wizard_player and wizard_player.has_method("take_damage"):
+		wizard_player.take_damage(ORBITAL_CHIP_DAMAGE, "environmental", null)
+	
+	# Visual feedback
+	_show_overheat_flash()
+	
+	# Debug log (only in debug builds, throttled)
+	if OS.is_debug_build() and Engine.get_frames_drawn() % 60 == 0:
+		print("[Orbital Overheat] -%d HP (Enemies: ≥%d within %dpx)" % [ORBITAL_CHIP_DAMAGE, ORBITAL_MIN_ENEMIES, int(ORBITAL_DANGER_RADIUS)])
+
+func _show_overheat_flash() -> void:
+	"""Brief red flash to indicate overheat damage"""
+	if OS.has_feature("headless") or not animated_sprite:
+		return
+	
+	# Brief red tint
+	var tween = create_tween()
+	tween.tween_property(animated_sprite, "modulate", Color(1.5, 0.7, 0.7), 0.15)
+	tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.25)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P0.2: I-FRAME VISUAL FEEDBACK IMPLEMENTATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _process(_delta: float) -> void:
+	"""Process-based updates (runs every frame, even when paused depending on mode)"""
+	# P0.2: Update i-frame visual feedback
+	_update_iframes_visual()
+
+func _update_iframes_visual() -> void:
+	"""Update I-frame visual flashing based on BasePlayer/WizardPlayer invulnerability"""
+	if OS.has_feature("headless") or not animated_sprite:
+		return
+	
+	# Check if wizard_player isınvulnerable via BasePlayer's system
+	var is_invulnerable = false
+	if wizard_player and wizard_player.health_component:
+		# BasePlayer uses _invulnerability_timer internally
+		# We can't access it directly, so we check if the player just took damage
+		# and assume brief invulnerability. Alternatively, add a public method to BasePlayer.
+		# For now, simple approach: check if there's an active damage flash
+		pass  # TODO: Need BasePlayer.is_invulnerable() public method
+	
+	# For Phase 13, we'll implement a simpler version:
+	# Flash when health_component indicates recent damage (proxy for i-frames)
+	# This is a simplified implementation - ideally BasePlayer should expose is_invulnerable()
+	
+	#if is_invulnerable and not _invulnerable_visual_active:
+	#	_start_invulnerability_flash()
+	#	_invulnerable_visual_active = true
+	#elif not is_invulnerable and _invulnerable_visual_active:
+	#	_stop_invulnerability_flash()
+	#	_invulnerable_visual_active = false
+
+func _start_invulnerability_flash() -> void:
+	"""Start flashing effect for i-frames"""
+	if OS.has_feature("headless") or not animated_sprite:
+		return
+	
+	# Kill existing tween
+	if _invulnerability_tween and _invulnerability_tween.is_running():
+		_invulnerability_tween.kill()
+	
+	# Create looping flash
+	_invulnerability_tween = create_tween()
+	_invulnerability_tween.set_loops()
+	_invulnerability_tween.tween_property(animated_sprite, "modulate:a", 0.3, 0.1)
+	_invulnerability_tween.tween_property(animated_sprite, "modulate:a", 1.0, 0.1)
+
+func _stop_invulnerability_flash() -> void:
+	"""Stop flashing and restore normal appearance"""
+	if _invulnerability_tween and _invulnerability_tween.is_running():
+		_invulnerability_tween.kill()
+	
+	if animated_sprite:
+		animated_sprite.modulate = Color.WHITE
