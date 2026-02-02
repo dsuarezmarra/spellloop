@@ -99,7 +99,7 @@ func _update_streak_value(count: int, total_value: int, multiplier: float = 1.0)
 		mtween.tween_property(streak_multiplier_label, "rotation_degrees", 0.0, 0.2)
 
 var streak_bar_container: HBoxContainer = null
-var streak_icon: Label = null # Usaremos emoji por ahora, o texture si hay
+var streak_icon: TextureRect = null
 var streak_value_label: Label = null
 var streak_multiplier_label: Label = null
 var streak_bar: ProgressBar = null
@@ -144,10 +144,11 @@ func _create_streak_bar():
 			streak_bar_container.alignment = BoxContainer.ALIGNMENT_END
 			streak_bar_container.add_theme_constant_override("separation", 5)
 			
-			# 1. Icono Dinamita (Usaremos Emoji por simplicidad y estilo)
-			streak_icon = Label.new()
-			streak_icon.text = "🧨"
-			streak_icon.add_theme_font_size_override("font_size", 20)
+			# 1. Icono Dinamita (TextureRect)
+			streak_icon = TextureRect.new()
+			streak_icon.texture = load("res://assets/ui/hud/icon_streak_bomb.png")
+			streak_icon.expand_mode = TextureRect.EXPAND_KEEP_ASPECT_CENTERED
+			streak_icon.custom_minimum_size = Vector2(32, 32)
 			streak_bar_container.add_child(streak_icon)
 			
 			# 2. Barra de Mecha (Progreso inverso)
