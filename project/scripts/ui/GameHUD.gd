@@ -147,7 +147,8 @@ func _create_streak_bar():
 			# 1. Icono Dinamita (TextureRect)
 			streak_icon = TextureRect.new()
 			streak_icon.texture = load("res://assets/ui/hud/icon_streak_bomb.png")
-			streak_icon.expand_mode = TextureRect.EXPAND_KEEP_ASPECT_CENTERED
+			streak_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			streak_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			streak_icon.custom_minimum_size = Vector2(32, 32)
 			streak_bar_container.add_child(streak_icon)
 			
