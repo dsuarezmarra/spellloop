@@ -541,38 +541,35 @@ func _create_elite_aura() -> void:
 	if aura_sprite:
 		return
 
-	# Crear un sprite circular para el aura
+	# Crear un sprite circular para el aura usando el asset
 	aura_sprite = Sprite2D.new()
 	aura_sprite.name = "EliteAura"
-
-	# Crear textura procedural para el aura
-	var aura_size = 64
-	var image = Image.create(aura_size, aura_size, false, Image.FORMAT_RGBA8)
-	var center = Vector2(aura_size / 2.0, aura_size / 2.0)
-	var radius = aura_size / 2.0
-
-	for x in range(aura_size):
-		for y in range(aura_size):
-			var dist = Vector2(x, y).distance_to(center)
-			if dist < radius:
-				var alpha = (1.0 - dist / radius) * 0.5
-				var color = Color(aura_color.r, aura_color.g, aura_color.b, alpha)
-				image.set_pixel(x, y, color)
-			else:
-				image.set_pixel(x, y, Color(0, 0, 0, 0))
-
-	var texture = ImageTexture.create_from_image(image)
-	aura_sprite.texture = texture
+	
+	var tex = load("res://assets/vfx/aura_elite_floor.png")
+	if tex:
+		aura_sprite.texture = tex
+	else:
+		push_warning("Missing elite aura asset")
+		
 	aura_sprite.z_index = -1
-	aura_sprite.scale = Vector2(elite_size_scale * 1.5, elite_size_scale * 1.5)
+	# El asset es 128x128 aprox. Ajustar escala según tamaño del enemigo.
+	# Base scale para que sobresalga un poco
+	var base_scale = elite_size_scale * 0.8 
+	aura_sprite.scale = Vector2(base_scale, base_scale)
 
 	add_child(aura_sprite)
 
-	# Animar el aura con pulsación
+	# Animar el aura: Rotación continua + Pulsación suave
 	var tween = create_tween()
 	tween.set_loops()
-	tween.tween_property(aura_sprite, "scale", Vector2(elite_size_scale * 1.8, elite_size_scale * 1.8), 0.8)
-	tween.tween_property(aura_sprite, "scale", Vector2(elite_size_scale * 1.5, elite_size_scale * 1.5), 0.8)
+	tween.set_parallel(true)
+	
+	# Rotación completa en 4 segundos
+	tween.tween_property(aura_sprite, "rotation_degrees", 360.0, 4.0).from(0.0)
+	
+	# Pulsación de escala
+	tween.tween_property(aura_sprite, "scale", Vector2(base_scale * 1.1, base_scale * 1.1), 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.chain().tween_property(aura_sprite, "scale", Vector2(base_scale, base_scale), 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 func _find_sprite_node(node: Node) -> Sprite2D:
 	"""Buscar el primer Sprite2D en el árbol del nodo"""

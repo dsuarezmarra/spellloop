@@ -18,6 +18,7 @@ enum CoinType { BRONZE, SILVER, GOLD, DIAMOND, PURPLE }
 var coin_type: CoinType = CoinType.BRONZE
 
 # === SPRITESHEETS ===
+# === SPRITESHEETS ===
 const COIN_SPRITES = {
 	CoinType.BRONZE: "res://assets/sprites/pickups/coins/coin_bronze_spin.png",
 	CoinType.SILVER: "res://assets/sprites/pickups/coins/coin_silver_spin.png",

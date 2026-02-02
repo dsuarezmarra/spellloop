@@ -2422,13 +2422,29 @@ func _update_content_selection_visual() -> void:
 		if item.has("panel") and item.panel:
 			var panel = item.panel as PanelContainer
 			if panel:
-				var style = panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
-				if i == content_selection and current_nav_row == NavRow.CONTENT:
-					style.border_color = SELECTED_TAB
-					style.set_border_width_all(3)
-				else:
-					style.border_color = Color(0.3, 0.3, 0.4)
-					style.set_border_width_all(1)
+				var style = panel.get_theme_stylebox("panel").duplicate()
+				
+				# Determinar si está seleccionado
+				var is_selected = (i == content_selection and current_nav_row == NavRow.CONTENT)
+				
+				if style is StyleBoxFlat:
+					if is_selected:
+						style.border_color = SELECTED_TAB
+						style.set_border_width_all(3)
+					else:
+						style.border_color = Color(0.3, 0.3, 0.4)
+						style.set_border_width_all(1)
+				elif style is StyleBoxTexture:
+					# Para texturas, usaremos tinte (modulate_color)
+					if is_selected:
+						style.modulate_color = SELECTED_TAB
+					else:
+						# Mantener color original del helper o resetear
+						# Asumimos que el helper devuelve blanco o un tinte base. 
+						# Si queremos ser precisos, deberíamos leer el base_style nuevamente
+						# pero por ahora resetear a blanco es seguro.
+						style.modulate_color = Color.WHITE
+						
 				panel.add_theme_stylebox_override("panel", style)
 
 func _update_action_buttons_visual() -> void:

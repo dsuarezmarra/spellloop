@@ -44,8 +44,8 @@ func _ready() -> void:
 	collision.shape = shape
 	add_child(collision)
 	
-	# Crear visual mejorado
-	_create_enhanced_visual()
+	# Crear visual (Sprite)
+	_setup_sprite_visual()
 	
 	# Conectar señal de colisión
 	body_entered.connect(_on_body_entered)
@@ -53,6 +53,47 @@ func _ready() -> void:
 	# Rotar hacia dirección de movimiento
 	if direction != Vector2.ZERO:
 		rotation = direction.angle()
+
+func _setup_sprite_visual() -> void:
+	"""Configurar Sprite2D usando atlas"""
+	var sprite = Sprite2D.new()
+	sprite.name = "Sprite"
+	
+	# Cargar textura atlas
+	var tex = load("res://assets/sprites/projectiles/enemy_projectiles.png")
+	if tex:
+		sprite.texture = tex
+		# Configurar atlas (6 columnas, 1 fila? O rejilla?)
+		# Asumimos que es el sheet generado en fase 4 que tenía 6 columnas.
+		sprite.hframes = 6
+		sprite.vframes = 1
+		
+		# Mapear frame según elemento
+		# Order in generated sheet: Ice, Fire, Arcane, Lightning, Dark, Nature (need to verify order or assume logic)
+		# Update: The split logic usually works alphabetically or fixed order. 
+		# Let's assume order based on common generation prompts: Ice, Fire, Arcane, Lightning, Dark, Poison.
+		
+		var frame_idx = 0
+		match element_type:
+			"ice": frame_idx = 0
+			"fire": frame_idx = 1
+			"arcane": frame_idx = 2
+			"lightning": frame_idx = 3
+			"dark", "shadow", "void": frame_idx = 4
+			"poison", "nature": frame_idx = 5
+			_: frame_idx = 2 # Default to Arcane
+			
+		sprite.frame = frame_idx
+		
+		# Escala para ser visible
+		sprite.scale = Vector2(1.5, 1.5)
+	
+	visual_node = sprite # Usamos sprite como visual node
+	add_child(visual_node)
+	
+	# Añadir trail si es necesario (ParticleTrail o simple line)
+	# Por ahora desactivamos el draw manual del trail complejo
+
 
 func initialize(p_direction: Vector2, p_speed: float, p_damage: int, p_lifetime: float = 5.0, p_element: String = "physical") -> void:
 	"""Inicializar el proyectil con parámetros"""
@@ -160,54 +201,7 @@ func _apply_element_effect(target: Node) -> void:
 				target.apply_poison(2.0, 4.0)  # 2 daño/tick por 4s
 				# print("[EnemyProjectile] ☠️ Aplica Poison!")
 
-func _create_enhanced_visual() -> void:
-	"""Crear visual ÉPICO mejorado del proyectil con estela"""
-	visual_node = Node2D.new()
-	visual_node.name = "Visual"
-	# Visual se dibuja en coordenadas globales relativas al parent
-	visual_node.top_level = true
-	visual_node.z_index = 55  # Más visible
-	add_child(visual_node)
-	
-	visual_node.draw.connect(_draw_projectile)
-
-func _draw_projectile() -> void:
-	"""Dibujar proyectil ÉPICO con estela y efectos mejorados según elemento"""
-	var color = _get_element_color()
-	# Boost brightness
-	var bright = Color(min(color.r + 0.6, 1.0), min(color.g + 0.6, 1.0), min(color.b + 0.6, 1.0), 1.0)
-	var pos = global_position
-	# Faster pulse
-	var pulse = 0.9 + sin(_time * 18) * 0.2
-	
-	# === ESTELA ÉPICA CON GRADIENTE MEJORADO ===
-	if trail_positions.size() > 1:
-		# Estela ancha difusa (Glow)
-		var points = PackedVector2Array(trail_positions)
-		visual_node.draw_polyline(points, Color(color.r, color.g, color.b, 0.3), 18.0)
-		
-		# Estela núcleo brillante
-		visual_node.draw_polyline(points, Color(bright.r, bright.g, bright.b, 0.8), 6.0)
-		
-		# Línea central blanca
-		visual_node.draw_polyline(points, Color(1, 1, 1, 0.5), 2.0)
-	
-	# === VISUAL ESPECÍFICO POR ELEMENTO ===
-	match element_type:
-		"fire":
-			_draw_fire_projectile(pos, pulse, color, bright)
-		"ice":
-			_draw_ice_projectile(pos, pulse, color, bright)
-		"dark", "shadow", "void":
-			_draw_dark_projectile(pos, pulse, color, bright)
-		"arcane":
-			_draw_arcane_projectile(pos, pulse, color, bright)
-		"poison":
-			_draw_poison_projectile(pos, pulse, color, bright)
-		"lightning":
-			_draw_lightning_projectile(pos, pulse, color, bright)
-		_:
-			_draw_default_projectile(pos, pulse, color, bright)
+# Procedural drawing removed in favor of Sprites
 
 func _draw_fire_projectile(pos: Vector2, pulse: float, color: Color, bright_color: Color) -> void:
 	"""Proyectil de fuego ÉPICO"""
@@ -424,279 +418,43 @@ func _get_element_color() -> Color:
 			return Color(0.85, 0.85, 0.9)
 
 func _spawn_hit_effect() -> void:
-	"""Crear efecto visual de impacto espectacular según elemento"""
-	var color = _get_element_color()
-	var bright_color = Color(color.r + 0.4, color.g + 0.4, color.b + 0.4, 1.0).clamp()
-	var elem = element_type
-	
-	# Crear efecto de explosión
+	"""Crear efecto visual de impacto usando Sprite Sheet"""
 	var effect = Node2D.new()
 	effect.global_position = global_position
 	effect.top_level = true
+	effect.z_index = 60
 	
 	var parent = get_parent()
 	if parent:
 		parent.add_child(effect)
 	
-	var anim_progress = 0.0
-	var impact_time = 0.0
-	
-	effect.draw.connect(func():
-		var alpha = (1.0 - anim_progress) * 0.9
+	# Sprite Animado manual (para no depender de SpriteFrames resource)
+	var sprite = Sprite2D.new()
+	sprite.texture = load("res://assets/sprites/vfx/explosion_impact.png")
+	if sprite.texture:
+		sprite.hframes = 5
+		sprite.vframes = 1
+		sprite.frame = 0
+		sprite.scale = Vector2(1.5, 1.5)
 		
-		match elem:
-			"fire":
-				_draw_fire_impact(effect, anim_progress, alpha)
-			"ice":
-				_draw_ice_impact(effect, anim_progress, alpha)
-			"dark", "shadow", "void":
-				_draw_dark_impact(effect, anim_progress, alpha)
-			"arcane":
-				_draw_arcane_impact(effect, anim_progress, alpha)
-			"poison":
-				_draw_poison_impact(effect, anim_progress, alpha)
-			"lightning":
-				_draw_lightning_impact(effect, anim_progress, alpha)
-			_:
-				_draw_default_impact(effect, anim_progress, alpha, color, bright_color)
-	)
-	
-	# Animar y destruir - duración más larga
-	var tween = effect.create_tween()
-	tween.tween_method(func(val):
-		anim_progress = val
-		if is_instance_valid(effect):
-			effect.queue_redraw()
-	, 0.0, 1.0, 0.5)  # 0.35 -> 0.5 para ver mejor el efecto
-	tween.tween_callback(func():
-		if is_instance_valid(effect):
-			effect.queue_free()
-	)
-
-func _draw_fire_impact(effect: Node2D, progress: float, alpha: float) -> void:
-	"""Impacto de fuego ÉPICO - explosión masiva con llamas"""
-	var radius = 45 * progress  # Más grande
-	
-	# Múltiples ondas de calor
-	effect.draw_arc(Vector2.ZERO, radius * 1.4, 0, TAU, 32, Color(1.0, 0.3, 0.0, alpha * 0.25), 4.0)
-	effect.draw_arc(Vector2.ZERO, radius * 1.2, 0, TAU, 32, Color(1.0, 0.45, 0.0, alpha * 0.35), 3.5)
-	effect.draw_arc(Vector2.ZERO, radius, 0, TAU, 32, Color(1.0, 0.55, 0.1, alpha * 0.45), 3.0)
-	
-	# Explosión de fuego con gradiente
-	effect.draw_circle(Vector2.ZERO, radius * 0.85, Color(1.0, 0.35, 0.0, alpha * 0.45))
-	effect.draw_circle(Vector2.ZERO, radius * 0.65, Color(1.0, 0.5, 0.05, alpha * 0.6))
-	effect.draw_circle(Vector2.ZERO, radius * 0.45, Color(1.0, 0.7, 0.2, alpha * 0.75))
-	effect.draw_circle(Vector2.ZERO, radius * 0.25, Color(1.0, 0.9, 0.5, alpha * 0.9))
-	effect.draw_circle(Vector2.ZERO, radius * 0.1, Color(1.0, 1.0, 0.85, alpha))
-	
-	# Chispas voladoras más dramáticas
-	for i in range(12):
-		var angle = (TAU / 12) * i + progress * 2.5
-		var spark_dist = radius * (0.4 + progress * 0.65)
-		var spark_pos = Vector2(cos(angle), sin(angle)) * spark_dist
-		var spark_size = 5.5 * (1.0 - progress)
-		effect.draw_circle(spark_pos, spark_size, Color(1.0, 0.75, 0.25, alpha * 0.9))
-		effect.draw_circle(spark_pos, spark_size * 0.5, Color(1.0, 0.95, 0.7, alpha))
-	
-	# Llamas saliendo hacia afuera
-	for i in range(8):
-		var flame_angle = (TAU / 8) * i
-		var flame_length = radius * 0.7 * progress
-		var flame_end = Vector2(cos(flame_angle), sin(flame_angle)) * flame_length
-		effect.draw_line(Vector2.ZERO, flame_end, Color(1.0, 0.5, 0.1, alpha * 0.6), 4.0 * (1.0 - progress * 0.5))
-
-func _draw_ice_impact(effect: Node2D, progress: float, alpha: float) -> void:
-	"""Impacto de hielo ÉPICO - cristales rompiéndose espectacularmente"""
-	var radius = 40 * progress  # Más grande
-	
-	# Múltiples ondas de frío
-	effect.draw_arc(Vector2.ZERO, radius * 1.3, 0, TAU, 32, Color(0.3, 0.7, 1.0, alpha * 0.3), 3.5)
-	effect.draw_arc(Vector2.ZERO, radius * 1.1, 0, TAU, 32, Color(0.45, 0.8, 1.0, alpha * 0.4), 3.0)
-	effect.draw_arc(Vector2.ZERO, radius, 0, TAU, 32, Color(0.55, 0.88, 1.0, alpha * 0.5), 2.5)
-	
-	# Centro helado con gradiente
-	effect.draw_circle(Vector2.ZERO, radius * 0.7, Color(0.4, 0.85, 1.0, alpha * 0.5))
-	effect.draw_circle(Vector2.ZERO, radius * 0.5, Color(0.6, 0.92, 1.0, alpha * 0.65))
-	effect.draw_circle(Vector2.ZERO, radius * 0.3, Color(0.8, 0.97, 1.0, alpha * 0.8))
-	effect.draw_circle(Vector2.ZERO, radius * 0.12, Color(1.0, 1.0, 1.0, alpha))
-	
-	# Fragmentos de hielo más dramáticos
-	for i in range(10):
-		var angle = (TAU / 10) * i + progress * 0.5
-		var frag_dist = radius * (0.35 + progress * 0.7)
-		var frag_pos = Vector2(cos(angle), sin(angle)) * frag_dist
-		var frag_size = 7 * (1.0 - progress * 0.8)
-		effect.draw_circle(frag_pos, frag_size, Color(0.65, 0.93, 1.0, alpha * 0.85))
-		effect.draw_circle(frag_pos, frag_size * 0.55, Color(0.9, 1.0, 1.0, alpha * 0.95))
-		effect.draw_circle(frag_pos, frag_size * 0.25, Color(1.0, 1.0, 1.0, alpha))
-	
-	# Cristales de hielo volando
-	for i in range(6):
-		var crystal_angle = (TAU / 6) * i + PI / 6
-		var crystal_dist = radius * progress * 0.9
-		var crystal_end = Vector2(cos(crystal_angle), sin(crystal_angle)) * crystal_dist
-		effect.draw_line(Vector2.ZERO, crystal_end, Color(0.75, 0.95, 1.0, alpha * 0.5), 2.5 * (1.0 - progress * 0.5))
-
-func _draw_dark_impact(effect: Node2D, progress: float, alpha: float) -> void:
-	"""Impacto oscuro ÉPICO - vórtice colapsando dramáticamente"""
-	var radius = 42 * progress  # Más grande
-	
-	# Anillos del vacío múltiples
-	for i in range(5):
-		var ring_r = radius * (1.0 - i * 0.17)
-		var ring_alpha = alpha * (1.0 - i * 0.18)
-		var ring_width = 3.0 - i * 0.4
-		effect.draw_arc(Vector2.ZERO, ring_r, 0, TAU, 32, Color(0.55, 0.12, 0.75, ring_alpha), ring_width)
-	
-	# Espirales de energía oscura
-	for i in range(3):
-		var spiral_angle = progress * 6 + (TAU / 3) * i
-		var spiral_r = radius * 0.7
-		var spiral_end = Vector2(cos(spiral_angle), sin(spiral_angle)) * spiral_r
-		effect.draw_line(Vector2.ZERO, spiral_end, Color(0.7, 0.25, 0.9, alpha * 0.6), 2.5)
-	
-	# Núcleo oscuro que colapsa con gradiente
-	var collapse = 1.0 - progress
-	effect.draw_circle(Vector2.ZERO, 18 * collapse, Color(0.15, 0.0, 0.22, alpha * 0.75))
-	effect.draw_circle(Vector2.ZERO, 12 * collapse, Color(0.3, 0.05, 0.42, alpha * 0.85))
-	effect.draw_circle(Vector2.ZERO, 7 * collapse, Color(0.55, 0.18, 0.75, alpha * 0.95))
-	effect.draw_circle(Vector2.ZERO, 3 * collapse, Color(0.8, 0.45, 1.0, alpha))
-	
-	# Partículas de sombra dispersándose
-	for i in range(12):
-		var angle = (TAU / 12) * i - progress * 4
-		var shadow_dist = radius * 0.75
-		var shadow_pos = Vector2(cos(angle), sin(angle)) * shadow_dist
-		var shadow_size = 5 * (1.0 - progress * 0.7)
-		effect.draw_circle(shadow_pos, shadow_size, Color(0.45, 0.05, 0.55, alpha * 0.7))
-		effect.draw_circle(shadow_pos, shadow_size * 0.5, Color(0.65, 0.25, 0.85, alpha * 0.85))
-
-func _draw_arcane_impact(effect: Node2D, progress: float, alpha: float) -> void:
-	"""Impacto arcano ÉPICO - runas brillando intensamente"""
-	var radius = 40 * progress  # Más grande
-	
-	# Círculos mágicos concéntricos
-	effect.draw_arc(Vector2.ZERO, radius * 1.2, 0, TAU, 32, Color(0.85, 0.35, 1.0, alpha * 0.35), 3.5)
-	effect.draw_arc(Vector2.ZERO, radius, 0, TAU, 32, Color(0.9, 0.45, 1.0, alpha * 0.5), 3.0)
-	effect.draw_arc(Vector2.ZERO, radius * 0.75, 0, TAU, 32, Color(0.93, 0.55, 1.0, alpha * 0.55), 2.5)
-	effect.draw_arc(Vector2.ZERO, radius * 0.5, 0, TAU, 32, Color(0.95, 0.65, 1.0, alpha * 0.45), 2.0)
-	
-	# Destellos centrales con gradiente
-	effect.draw_circle(Vector2.ZERO, radius * 0.45, Color(0.85, 0.55, 1.0, alpha * 0.5))
-	effect.draw_circle(Vector2.ZERO, radius * 0.3, Color(0.92, 0.7, 1.0, alpha * 0.7))
-	effect.draw_circle(Vector2.ZERO, radius * 0.15, Color(1.0, 0.88, 1.0, alpha * 0.9))
-	effect.draw_circle(Vector2.ZERO, radius * 0.06, Color(1.0, 1.0, 1.0, alpha))
-	
-	# Runas/símbolos dispersándose más elaborados
-	for i in range(10):
-		var angle = (TAU / 10) * i + progress * 5
-		var rune_dist = radius * 0.65
-		var rune_pos = Vector2(cos(angle), sin(angle)) * rune_dist
-		var rune_size = 4.5 * (1.0 - progress * 0.4)
-		effect.draw_circle(rune_pos, rune_size, Color(0.95, 0.75, 1.0, alpha * 0.8))
-		effect.draw_circle(rune_pos, rune_size * 0.5, Color(1.0, 0.92, 1.0, alpha))
-	
-	# Rayos mágicos hacia afuera
-	for i in range(6):
-		var ray_angle = (TAU / 6) * i + progress * 2
-		var ray_end = Vector2(cos(ray_angle), sin(ray_angle)) * radius
-		effect.draw_line(Vector2.ZERO, ray_end, Color(1.0, 0.8, 1.0, alpha * 0.5), 2.0 * (1.0 - progress * 0.5))
-
-func _draw_poison_impact(effect: Node2D, progress: float, alpha: float) -> void:
-	"""Impacto de veneno ÉPICO - salpicadura tóxica masiva"""
-	var radius = 38 * progress  # Más grande
-	
-	# Neblina tóxica expandiéndose
-	effect.draw_circle(Vector2.ZERO, radius * 1.2, Color(0.25, 0.7, 0.08, alpha * 0.2))
-	effect.draw_circle(Vector2.ZERO, radius, Color(0.28, 0.75, 0.1, alpha * 0.3))
-	
-	# Mancha principal con gradiente
-	effect.draw_circle(Vector2.ZERO, radius * 0.75, Color(0.22, 0.72, 0.08, alpha * 0.45))
-	effect.draw_circle(Vector2.ZERO, radius * 0.55, Color(0.35, 0.85, 0.15, alpha * 0.6))
-	effect.draw_circle(Vector2.ZERO, radius * 0.35, Color(0.48, 0.93, 0.25, alpha * 0.75))
-	effect.draw_circle(Vector2.ZERO, radius * 0.15, Color(0.65, 1.0, 0.4, alpha * 0.9))
-	
-	# Gotas salpicando más dramáticas
-	for i in range(12):
-		var angle = (TAU / 12) * i + sin(progress * 3 + i) * 0.2
-		var drop_dist = radius * (0.3 + progress * 0.75)
-		var drop_pos = Vector2(cos(angle), sin(angle)) * drop_dist
-		var drop_size = (6.5 - (i % 4) * 0.8) * (1.0 - progress * 0.6)
-		effect.draw_circle(drop_pos, max(drop_size, 1.5), Color(0.38, 0.92, 0.18, alpha * 0.8))
-		effect.draw_circle(drop_pos, max(drop_size * 0.5, 0.8), Color(0.55, 1.0, 0.35, alpha * 0.9))
-	
-	# Burbujas tóxicas emergiendo
-	for i in range(6):
-		var bubble_pos = Vector2(sin(progress * 8 + i * 2) * radius * 0.4, cos(progress * 8 + i * 2) * radius * 0.4)
-		var bubble_size = 4 * (0.5 + sin(progress * 10 + i) * 0.3)
-		effect.draw_circle(bubble_pos, bubble_size, Color(0.35, 0.88, 0.2, alpha * 0.6))
-
-func _draw_lightning_impact(effect: Node2D, progress: float, alpha: float) -> void:
-	"""Impacto de rayo ÉPICO - descarga eléctrica masiva"""
-	var radius = 38 * progress  # Más grande
-	
-	# Flash central masivo
-	effect.draw_circle(Vector2.ZERO, radius * 0.7, Color(1.0, 1.0, 0.45, alpha * 0.45))
-	effect.draw_circle(Vector2.ZERO, radius * 0.5, Color(1.0, 1.0, 0.65, alpha * 0.6))
-	effect.draw_circle(Vector2.ZERO, radius * 0.3, Color(1.0, 1.0, 0.82, alpha * 0.8))
-	effect.draw_circle(Vector2.ZERO, radius * 0.12, Color(1.0, 1.0, 0.95, alpha))
-	
-	# Rayos saliendo más elaborados con bifurcaciones
-	for i in range(10):
-		var base_angle = (TAU / 10) * i
-		var angle_var = sin(progress * 15 + i * 2) * 0.25
-		var angle = base_angle + angle_var
-		var bolt_end = Vector2(cos(angle), sin(angle)) * radius
-		var bolt_mid = bolt_end * 0.55 + Vector2(sin(i + progress * 10) * 6, cos(i + progress * 10) * 6)
+		# Modulate color based on element
+		sprite.modulate = _get_element_color()
+		# Add some brightness/additive feel?
+		# sprite.modulate = sprite.modulate * 1.5
 		
-		# Rayo principal
-		effect.draw_line(Vector2.ZERO, bolt_mid, Color(1.0, 1.0, 0.55, alpha * 0.9), 3.0)
-		effect.draw_line(bolt_mid, bolt_end, Color(1.0, 1.0, 0.4, alpha * 0.7), 2.0)
+		effect.add_child(sprite)
 		
-		# Bifurcación
-		var branch_angle = angle + (0.5 if i % 2 == 0 else -0.5)
-		var branch_end = bolt_mid + Vector2(cos(branch_angle), sin(branch_angle)) * radius * 0.3
-		effect.draw_line(bolt_mid, branch_end, Color(1.0, 1.0, 0.7, alpha * 0.5), 1.5)
-	
-	# Chispas voladoras
-	for i in range(8):
-		var spark_angle = (TAU / 8) * i + progress * 6
-		var spark_dist = radius * (0.4 + progress * 0.4)
-		var spark_pos = Vector2(cos(spark_angle), sin(spark_angle)) * spark_dist
-		effect.draw_circle(spark_pos, 3.5 * (1.0 - progress * 0.7), Color(1.0, 1.0, 0.85, alpha * 0.75))
-	
-	# Arco eléctrico exterior
-	effect.draw_arc(Vector2.ZERO, radius * 0.9, 0, TAU, 24, Color(1.0, 1.0, 0.5, alpha * 0.4), 2.5)
+		# Animar frames manualmente con Tween
+		var tween = create_tween()
+		tween.tween_method(func(frame: int):
+			sprite.frame = frame
+		, 0, 4, 0.3) # 5 frames en 0.3s
+		
+		tween.tween_callback(effect.queue_free)
+	else:
+		# Fallback cleanup
+		effect.queue_free()
 
-func _draw_default_impact(effect: Node2D, progress: float, alpha: float, color: Color, bright_color: Color) -> void:
-	"""Impacto genérico ÉPICO mejorado"""
-	var radius = 42 * progress  # Más grande
-	
-	# Anillos expansivos múltiples
-	for i in range(4):
-		var ring_radius = radius * (1.15 - i * 0.22)
-		var ring_alpha = alpha * (1.0 - i * 0.2)
-		var ring_width = 3.5 - i * 0.6
-		if ring_radius > 0:
-			effect.draw_arc(Vector2.ZERO, ring_radius, 0, TAU, 28, Color(color.r, color.g, color.b, ring_alpha * 0.65), ring_width)
-	
-	# Centro brillante con gradiente
-	effect.draw_circle(Vector2.ZERO, radius * 0.55, Color(color.r, color.g, color.b, alpha * 0.4))
-	effect.draw_circle(Vector2.ZERO, radius * 0.4, Color(bright_color.r, bright_color.g, bright_color.b, alpha * 0.6))
-	effect.draw_circle(Vector2.ZERO, radius * 0.25, Color(min(bright_color.r + 0.2, 1), min(bright_color.g + 0.2, 1), min(bright_color.b + 0.2, 1), alpha * 0.8))
-	effect.draw_circle(Vector2.ZERO, radius * 0.1, Color(1, 1, 1, alpha))
-	
-	# Partículas de explosión más elaboradas
-	for i in range(12):
-		var angle = (TAU / 12) * i + progress * 1.5
-		var particle_dist = radius * (0.45 + progress * 0.35)
-		var particle_pos = Vector2(cos(angle), sin(angle)) * particle_dist
-		var particle_size = 5 * (1.0 - progress * 0.7)
-		effect.draw_circle(particle_pos, particle_size, Color(bright_color.r, bright_color.g, bright_color.b, alpha * 0.8))
-		effect.draw_circle(particle_pos, particle_size * 0.5, Color(1, 1, 1, alpha * 0.9))
-	
-	# Rayos hacia afuera
-	for i in range(6):
-		var ray_angle = (TAU / 6) * i
-		var ray_end = Vector2(cos(ray_angle), sin(ray_angle)) * radius * 0.85
-		effect.draw_line(Vector2.ZERO, ray_end, Color(bright_color.r, bright_color.g, bright_color.b, alpha * 0.45), 2.0 * (1.0 - progress * 0.6))
+# Sprite impact logic handles visuals now.
+
+# _draw_lightning_impact and _draw_default_impact removed.

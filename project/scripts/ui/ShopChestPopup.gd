@@ -362,8 +362,13 @@ func _create_item_button(item: Dictionary, index: int) -> Control:
 	var style_hover = UIVisualHelper.get_panel_style(tier, true, is_weapon)
 	
 	if not can_afford:
-		style_normal.bg_color = Color(0.1, 0.05, 0.05, 0.8)
-		style_normal.border_color = Color(0.4, 0.2, 0.2)
+		# Darken/Redden using modulate
+		var dark_red = Color(0.5, 0.3, 0.3)
+		if "modulate_color" in style_normal:
+			style_normal.modulate_color = dark_red
+		else:
+			# Fallback if somehow not texture (unlikely)
+			pass
 	
 	btn.add_theme_stylebox_override("normal", style_normal)
 	btn.add_theme_stylebox_override("hover", style_hover)

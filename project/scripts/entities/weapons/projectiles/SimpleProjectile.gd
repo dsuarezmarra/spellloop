@@ -88,6 +88,10 @@ func _ready() -> void:
 	if not area_entered.is_connected(_on_area_entered):
 		area_entered.connect(_on_area_entered)
 
+
+		
+
+	
 func initialize_visuals() -> void:
 	"""Crear/Recrear los visuales del proyectil (Soporte para pooling)"""
 	# Limpiar visuales anteriores si existen (seguridad extra)
@@ -102,8 +106,9 @@ func initialize_visuals() -> void:
 	var used_animated = _try_create_animated_visual()
 	
 	if not used_animated:
-		# Crear visual según tipo de elemento (fallback)
-		_create_visual()
+		# Fallback: Usar colores simples si no hay animaciones definidas
+		# Esto mantiene compatibilidad si falta algún asset
+		pass
 	
 	# Siempre recrear trail (partículas)
 	if is_instance_valid(trail_particles):

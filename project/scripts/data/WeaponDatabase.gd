@@ -84,7 +84,8 @@ const WEAPONS: Dictionary = {
 		
 		# Visual
 		"color": Color(0.4, 0.8, 1.0),
-		"icon": "❄️",
+		"icon": "res://assets/icons/ice_wand.png",
+		"texture_path": "res://assets/icons/ice_wand.png",
 		
 		# Tags de Mecanicas
 		"tags": ["projectile", "single_target"]
@@ -119,7 +120,8 @@ const WEAPONS: Dictionary = {
 		"effect_duration": 4.0,
 		
 		"color": Color(1.0, 0.4, 0.1),
-		"icon": "🔥",
+		"icon": "res://assets/icons/fire_wand.png",
+		"texture_path": "res://assets/icons/fire_wand.png",
 		"tags": ["projectile", "area_splash", "dot"]
 	},
 	
@@ -155,7 +157,8 @@ const WEAPONS: Dictionary = {
 		"tags": ["chain", "no_pierce", "projectile"],
 		
 		"color": Color(1.0, 1.0, 0.3),
-		"icon": "⚡"
+		"icon": "res://assets/icons/icon_wand_lightning.png",
+		"texture_path": "res://assets/icons/icon_wand_lightning.png"
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -192,7 +195,8 @@ const WEAPONS: Dictionary = {
 		"hit_sound": "sfx_weapon_arcane_orb",
 		
 		"color": Color(0.7, 0.3, 1.0),
-		"icon": "💜"
+		"icon": "res://assets/icons/icon_orb_arcane.png",
+		"texture_path": "res://assets/icons/icon_orb_arcane.png"
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────

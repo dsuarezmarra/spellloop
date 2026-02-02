@@ -29,45 +29,32 @@ const TYPE_COLORS = {
 static func get_color_for_tier(tier: int) -> Color:
 	return TIER_COLORS.get(tier, TIER_COLORS[1])
 
-static func get_panel_style(tier: int, is_hover: bool = false, is_weapon: bool = false) -> StyleBoxFlat:
+static func get_panel_style(tier: int, is_hover: bool = false, is_weapon: bool = false) -> StyleBox:
 	var tier_color = get_color_for_tier(tier)
-	var style = StyleBoxFlat.new()
-	
-	# Color de fondo base oscuro (Gris oscuro/negro)
+	var style_tex = StyleBoxTexture.new()
 	var base_bg = Color(0.08, 0.08, 0.12)
 	
+	# Load panel texture
 	if is_weapon:
-		# Armas: Fondo más agresivo y saturado
-		# Mezclar base oscura con un 25% del color del tier
-		style.bg_color = base_bg.lerp(tier_color, 0.25)
-		style.bg_color.a = 0.95
-		style.border_width_left = 4
-		style.border_width_top = 4
-		style.border_width_right = 4
-		style.border_width_bottom = 4
+		# Could have a specific weapon panel variants, for now reuse with tint or just standard
+		style_tex.texture = load("res://assets/ui/skins/panel_stone_9slice.png")
+		style_tex.modulate_color = base_bg.lerp(tier_color, 0.3) # Tint it
 	else:
-		# Items normales: Fondo más visible (Solicitud Usuario)
-		# Mezclar base oscura con un 40% del color del tier (era 15%)
-		style.bg_color = base_bg.lerp(tier_color, 0.4)
-		style.bg_color.a = 0.95
-		style.border_width_left = 2
-		style.border_width_top = 2
-		style.border_width_right = 2
-		style.border_width_bottom = 2
+		style_tex.texture = load("res://assets/ui/skins/panel_stone_9slice.png")
+		if tier > 1:
+			style_tex.modulate_color = Color.WHITE.lerp(tier_color, 0.1)
 		
-	if is_hover:
-		# Al hacer hover, aclarar ligeramente el fondo y el borde
-		style.bg_color = style.bg_color.lightened(0.15)
-		style.border_color = tier_color.lightened(0.2)
-	else:
-		style.border_color = tier_color
-		
-	style.corner_radius_top_left = 8
-	style.corner_radius_top_right = 8
-	style.corner_radius_bottom_right = 8
-	style.corner_radius_bottom_left = 8
+	# 9-Slice Margins (Based on the generated image usually ~32px-40px for 128px image)
+	# The prompt asked for thick golden ornate frame. Let's precise 32.
+	style_tex.texture_margin_left = 32
+	style_tex.texture_margin_top = 32
+	style_tex.texture_margin_right = 32
+	style_tex.texture_margin_bottom = 32
 	
-	return style
+	if is_hover:
+		style_tex.modulate_color = style_tex.modulate_color.lightened(0.2)
+		
+	return style_tex
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # EFECTOS VISUALES

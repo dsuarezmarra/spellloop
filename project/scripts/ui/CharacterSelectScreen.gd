@@ -57,6 +57,20 @@ func _ready() -> void:
 	# Get Localization autoload reference
 	if get_tree() and get_tree().root:
 		Localization = get_tree().root.get_node_or_null("Localization")
+	
+	# Add Background
+	var bg = TextureRect.new()
+	bg.texture = load("res://assets/ui/backgrounds/char_select_hall.png")
+	if bg.texture:
+		bg.name = "Background"
+		bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		bg.anchor_right = 1.0
+		bg.anchor_bottom = 1.0
+		bg.z_index = -100
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(bg)
+		move_child(bg, 0) # Ensure it's at the back
 
 	_load_characters()
 	_build_ui()

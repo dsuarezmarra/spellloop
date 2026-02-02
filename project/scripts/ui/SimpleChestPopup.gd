@@ -672,25 +672,25 @@ func _update_jackpot_item_visual(panel: Control, is_selected: bool):
 	"""Actualizar visual del item"""
 	var style = panel.get_theme_stylebox("panel").duplicate()
 	if is_selected:
-		style.border_color = Color(0.2, 1.0, 0.4)
-		style.bg_color = Color(0.1, 0.3, 0.1, 0.8)
-		style.set_border_width_all(3) # Ensure border width matches
+		# Green tint for selected
+		style.modulate_color = Color(0.4, 1.0, 0.4)
+		
 		var status = panel.find_child("StatusLabel", true, false)
 		if status:
 			status.text = "✅ Seleccionado"
 			status.add_theme_color_override("font_color", Color(0.4, 1.0, 0.4))
 	else:
 		var item_data = panel.get_meta("item_data")
-		var rarity = item_data.get("rarity", 0) # Fallback to 0 if missing
-		# Assuming rarity is 0-indexed in our data, but helper expects 1-indexed tier usually?
-		# Logic in _create_jackpot_item_panel used: item_rarity + 1
-		# So create style with correct tier
-		# Note: UIVisualHelper.get_panel_style(tier, ...)
+		var rarity = item_data.get("rarity", 0) 
 		var tier = rarity + 1
 		var is_weapon = (item_data.get("type") == "weapon")
 		var base_style = UIVisualHelper.get_panel_style(tier, false, is_weapon)
-		style.border_color = base_style.border_color
-		style.bg_color = base_style.bg_color
+		
+		# Copy modulate color from base
+		if "modulate_color" in base_style:
+			style.modulate_color = base_style.modulate_color
+		else:
+			style.modulate_color = Color.WHITE
 		
 		var status = panel.find_child("StatusLabel", true, false)
 		if status:
