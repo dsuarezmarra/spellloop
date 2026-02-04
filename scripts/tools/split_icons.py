@@ -130,53 +130,29 @@ if __name__ == "__main__":
         "upgrade_fire_damage", "upgrade_fire_area", "upgrade_fire_burn", "upgrade_fire_multishot",
         "upgrade_lightning_damage", "upgrade_lightning_speed", "upgrade_lightning_chain", "upgrade_lightning_multishot"
     ]
-    split_grid(os.path.join(input_base, "icon_rpg_set_09.png"), output_base, batch_4_names, trim_images=True)
+    # --- COMMENTED OUT OTHER BATCHES TO FOCUS ON BATCH 15 ---
+    # split_grid(os.path.join(input_base, "icon_rpg_set_01.png"), output_base, batch_1_names, trim_images=True)
+    # split_grid(os.path.join(input_base, "icon_rpg_set_09.png"), output_base, batch_4_names, trim_images=True)
+    # split_grid(os.path.join(input_base, "icon_rpg_set_10.png"), output_base, batch_5_names, trim_images=True)
+    # split_grid(os.path.join(input_base, "icon_rpg_set_11.png"), output_base, batch_6_names, trim_images=True)
+    # split_grid(os.path.join(input_base, "icon_rpg_set_12.png"), output_base, batch_7_names, trim_images=True)
+    # split_grid(os.path.join(input_base, "icon_rpg_set_13.png"), output_base, batch_8_names, trim_images=True)
+    # split_grid(os.path.join(input_base, "icon_rpg_set_14.png"), output_base, batch_10_names, trim_images=False, force_grid=(3, 4))
 
-    # BATCH 5: Nature, Earth & Wind -> icon_rpg_set_10.png
-    batch_5_names = [
-        "upgrade_nature_heal", "upgrade_nature_duration", "upgrade_nature_multishot", "upgrade_nature_damage",
-        "upgrade_earth_area", "upgrade_earth_stun", "upgrade_earth_damage", "upgrade_earth_speed",
-        "upgrade_wind_knockback", "upgrade_wind_pierce", "upgrade_wind_area", "upgrade_wind_multishot"
-    ]
-    split_grid(os.path.join(input_base, "icon_rpg_set_10.png"), output_base, batch_5_names, trim_images=True)
-
-    # BATCH 6: Shadow, Light, Arcane & Void -> icon_rpg_set_11.png
-    batch_6_names = [
-        "upgrade_shadow_pierce", "upgrade_shadow_crit", "upgrade_shadow_speed", "upgrade_light_speed",
-        "upgrade_light_area", "upgrade_light_crit", "upgrade_arcane_count", "upgrade_arcane_speed",
-        "upgrade_arcane_area", "upgrade_void_pull", "upgrade_void_area", "upgrade_void_damage"
-    ]
-    split_grid(os.path.join(input_base, "icon_rpg_set_11.png"), output_base, batch_6_names, trim_images=True)
-
-    # BATCH 7: Fusion Upgrades & Mastery -> icon_rpg_set_12.png
-    batch_7_names = [
-        "upgrade_fusion_damage", "upgrade_fusion_area", "upgrade_fusion_speed", "upgrade_fusion_multishot",
-        "upgrade_fusion_pierce", "upgrade_fusion_crit", "upgrade_fusion_mastery", "upgrade_weapon_mastery",
-        "upgrade_generic_damage", "upgrade_generic_speed", "upgrade_generic_area", "upgrade_generic_multishot"
-    ]
-    split_grid(os.path.join(input_base, "icon_rpg_set_12.png"), output_base, batch_7_names, trim_images=True)
-
-    # --- PHASE 3 BATCH (Misc UI) ---
+    # --- REMEDIAL BATCH (Global Upgrades) ---
+    print("--- RUNNING BATCH 15 ONLY ---")
     
-    # BATCH 8: UI & Utility Icons -> icon_rpg_set_13.png (Renamed from 14 per user input)
-    batch_8_names = [
-        "ui_random_character", "ui_locked_character", "ui_reroll", "ui_banish",
-        "ui_skip", "pickup_gold_coin", "pickup_xp_gem", "pickup_health_heart",
-        "stat_armor", "stat_speed", "stat_damage", "stat_cooldown"
+    # BATCH 15: Global Stat Upgrades -> icon_rpg_set_15.png
+    # Order matches icon_prompts_remedial.md (3x4 grid)
+    # Row 1: Damage, Attack Speed, Crit Chance, Crit Damage
+    # Row 2: Area, Duration, Knockback, Pierce
+    # Row 3: Proj Count, Range, Proj Speed, Flat Damage
+    batch_15_names = [
+        "upgrade_global_damage", "upgrade_global_attack_speed", "upgrade_global_crit_chance", "upgrade_global_crit_damage",
+        "upgrade_global_area", "upgrade_global_duration", "upgrade_global_knockback", "upgrade_global_pierce",
+        "upgrade_global_proj_count", "upgrade_global_range", "upgrade_global_proj_speed", "upgrade_global_flat_damage"
     ]
-    # NOTE: User provided the UI grid as set_13
-    split_grid(os.path.join(input_base, "icon_rpg_set_13.png"), output_base, batch_8_names, trim_images=True)
-
-    # --- PHASE 4 BATCH (Save Slots) ---
-
-    # BATCH 10: Save Slots & UI -> icon_rpg_set_14.png
-    batch_10_names = [
-        "ui_new_game_sparkles", "ui_save_slot_swords", "ui_save_slot_orb", "ui_save_slot_scroll",
-        "ui_save_slot_backpack", "ui_save_slot_potion", "ui_empty_slot_plus", "ui_delete_trash",
-        "ui_settings_gear", "ui_trophy_cup", "ui_timer_clock", "ui_endless_infinity"
-    ]
-    # DISABLE TRIM FOR THIS BATCH to fix bad cuts
-    # FORCE GRID 3x4 (3 rows, 4 cols) because image is square but content is landscape
-    split_grid(os.path.join(input_base, "icon_rpg_set_14.png"), output_base, batch_10_names, trim_images=False, force_grid=(3, 4))
+    # FORCE 3 ROWS 4 COLS just to be safe, though auto-detect should work
+    split_grid(os.path.join(input_base, "icon_rpg_set_15.png"), output_base, batch_15_names, trim_images=True, force_grid=(3, 4))
 
     print("All Phases Processing complete.")
