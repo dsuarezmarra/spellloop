@@ -601,7 +601,8 @@ func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 			icon_rect.texture = load(item_icon)
 		else:
 			var emoji_lbl = Label.new()
-			emoji_lbl.text = item_icon
+			# Mostrar emoji fallback si es una ruta que no existe, no mostrar la ruta como texto
+			emoji_lbl.text = "❓" if item_icon.begins_with("res://") else item_icon
 			emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			emoji_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 			emoji_lbl.add_theme_font_size_override("font_size", 28)
@@ -940,7 +941,8 @@ func setup_items(items: Array):
 			icon_rect.texture = icon_tex
 		else:
 			var emoji_lbl = Label.new()
-			emoji_lbl.text = item_icon
+			# Mostrar emoji fallback si es una ruta que no existe, no mostrar la ruta como texto
+			emoji_lbl.text = "❓" if item_icon.begins_with("res://") else item_icon
 			emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			emoji_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 			emoji_lbl.add_theme_font_size_override("font_size", 32)

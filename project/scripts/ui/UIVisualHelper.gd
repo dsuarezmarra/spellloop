@@ -109,3 +109,53 @@ static func spawn_confetti(parent: Node, position: Vector2, color: Color = Color
 	# Auto-borrado
 	var timer = parent.get_tree().create_timer(2.0)
 	timer.timeout.connect(particles.queue_free)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ICONOS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+static func load_icon_or_fallback(icon_path: String, fallback_emoji: String = "❓") -> Variant:
+	"""
+	Intenta cargar una textura de icono. Si falla, devuelve null.
+	Uso: var tex = UIVisualHelper.load_icon_or_fallback(path)
+	     if tex: icon_rect.texture = tex else: mostrar fallback
+	"""
+	if icon_path.begins_with("res://") and ResourceLoader.exists(icon_path):
+		return load(icon_path)
+	return null
+
+static func get_safe_icon_text(icon: String, fallback: String = "❓") -> String:
+	"""
+	Si el icono es una ruta (res://...), devuelve el fallback en vez de mostrar la ruta.
+	Si es un emoji/texto normal, lo devuelve tal cual.
+	"""
+	if icon.begins_with("res://"):
+		return fallback
+	return icon
+
+static func setup_icon_display(container: Control, icon_path: String, size: Vector2 = Vector2(48, 48), fallback_emoji: String = "❓") -> void:
+	"""
+	Configura un container con TextureRect si la imagen existe,
+	o Label con emoji fallback si no.
+	"""
+	# Limpiar hijos previos
+	for child in container.get_children():
+		child.queue_free()
+	
+	if icon_path.begins_with("res://") and ResourceLoader.exists(icon_path):
+		var tex_rect = TextureRect.new()
+		tex_rect.texture = load(icon_path)
+		tex_rect.custom_minimum_size = size
+		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tex_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		container.add_child(tex_rect)
+	else:
+		var icon_label = Label.new()
+		# Si es ruta que no existe, mostrar fallback; si no es ruta, mostrar el texto original
+		icon_label.text = fallback_emoji if icon_path.begins_with("res://") else icon_path
+		icon_label.add_theme_font_size_override("font_size", int(size.x * 0.7))
+		icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		icon_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		icon_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+		container.add_child(icon_label)

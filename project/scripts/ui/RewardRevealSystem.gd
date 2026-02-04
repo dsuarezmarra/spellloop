@@ -469,7 +469,8 @@ func _create_reel_item_display(icon: String, item_name: String, color: Color) ->
 		icon_container.add_child(tex_rect)
 	else:
 		var icon_label = Label.new()
-		icon_label.text = icon
+		# Mostrar emoji fallback si es una ruta que no existe, no mostrar la ruta como texto
+		icon_label.text = "❓" if icon.begins_with("res://") else icon
 		icon_label.add_theme_font_size_override("font_size", 56)
 		icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		icon_label.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -616,7 +617,8 @@ func _create_floating_item(icon: String, item_name: String, color: Color) -> Con
 		icon_container.add_child(tex_rect)
 	else:
 		var icon_label = Label.new()
-		icon_label.text = icon
+		# Mostrar emoji fallback si es una ruta que no existe, no mostrar la ruta como texto
+		icon_label.text = "❓" if icon.begins_with("res://") else icon
 		icon_label.add_theme_font_size_override("font_size", 72)
 		icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		icon_label.set_anchors_preset(Control.PRESET_FULL_RECT)
