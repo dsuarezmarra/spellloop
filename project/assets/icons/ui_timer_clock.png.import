@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ctj01q3tcms2x"
-path="res://.godot/imported/icon_rpg_set_04.png-4d4a305c26cf2e407a72faeb80467d9e.ctex"
+uid="uid://n5prpqamg7r0"
+path="res://.godot/imported/ui_timer_clock.png-3c73cb5086175c895adb1c1a102e7c19.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/icon_rpg_set_04.png"
-dest_files=["res://.godot/imported/icon_rpg_set_04.png-4d4a305c26cf2e407a72faeb80467d9e.ctex"]
+source_file="res://assets/icons/ui_timer_clock.png"
+dest_files=["res://.godot/imported/ui_timer_clock.png-3c73cb5086175c895adb1c1a102e7c19.ctex"]
 
 [params]
 

@@ -435,6 +435,8 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 			delete_btn.visible = true
 			delete_btn.disabled = false
 			delete_btn.text = "Borrar Progreso"
+			delete_btn.icon = load("res://assets/icons/ui_delete_trash.png")
+			delete_btn.expand_icon = true
 			delete_btn.modulate = Color(1, 1, 1, 0.8)
 
 func _setup_navigation() -> void:

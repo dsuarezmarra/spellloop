@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dteu3d505ufrl"
-path="res://.godot/imported/ui_banish.png-1d09fb173bb4fa5c9e7f6cac0d360421.ctex"
+uid="uid://c07gpc0dhme3y"
+path="res://.godot/imported/ui_delete_trash.png-ef2a9ca6249df8f913da0b78e632c536.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/ui_banish.png"
-dest_files=["res://.godot/imported/ui_banish.png-1d09fb173bb4fa5c9e7f6cac0d360421.ctex"]
+source_file="res://assets/icons/ui_delete_trash.png"
+dest_files=["res://.godot/imported/ui_delete_trash.png-ef2a9ca6249df8f913da0b78e632c536.ctex"]
 
 [params]
 

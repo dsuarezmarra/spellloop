@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfja4e5jxpo18"
-path="res://.godot/imported/icon_rpg_set_01.png-61fc9420ab24348227f721f132ed0bd1.ctex"
+uid="uid://di7wilbheyolw"
+path="res://.godot/imported/ui_endless_infinity.png-6feecda72e8f70d487538fe70bce10b3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/icon_rpg_set_01.png"
-dest_files=["res://.godot/imported/icon_rpg_set_01.png-61fc9420ab24348227f721f132ed0bd1.ctex"]
+source_file="res://assets/icons/ui_endless_infinity.png"
+dest_files=["res://.godot/imported/ui_endless_infinity.png-6feecda72e8f70d487538fe70bce10b3.ctex"]
 
 [params]
 

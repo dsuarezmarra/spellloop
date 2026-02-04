@@ -38,7 +38,16 @@ func _ready() -> void:
 	_play_menu_music()
 	_update_resume_button()
 	_setup_wasd_navigation()
+	_setup_wasd_navigation()
 	_setup_debug_button()
+	_set_icons()
+
+func _set_icons() -> void:
+	if options_button:
+		options_button.icon = load("res://assets/icons/ui_settings_gear.png")
+		options_button.expand_icon = true
+		# Adjust icon spacing or size if needed
+
 
 func _setup_debug_button() -> void:
 	if debug_button:

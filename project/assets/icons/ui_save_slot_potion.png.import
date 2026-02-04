@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://l4ugvqojpxv6"
-path="res://.godot/imported/ui_reroll.png-a94827d90d31b1f7ab8098184a5deb90.ctex"
+uid="uid://d3lb6g65sqosf"
+path="res://.godot/imported/ui_save_slot_potion.png-01888460abe44e1d771a56c8852b75db.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/ui_reroll.png"
-dest_files=["res://.godot/imported/ui_reroll.png-a94827d90d31b1f7ab8098184a5deb90.ctex"]
+source_file="res://assets/icons/ui_save_slot_potion.png"
+dest_files=["res://.godot/imported/ui_save_slot_potion.png-01888460abe44e1d771a56c8852b75db.ctex"]
 
 [params]
 
