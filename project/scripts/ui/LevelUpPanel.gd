@@ -1025,23 +1025,26 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 
 	# Icono
 	var icon_value = option.get("icon", "✨")
-	var is_image_path = str(icon_value).begins_with("res://") or str(icon_value).ends_with(".png")
+	var icon_str = str(icon_value).strip_edges()
+	var is_image_path = icon_str.begins_with("res://") or icon_str.ends_with(".png")
 
 	if icon_label and icon_texture:
 		if is_image_path:
 			icon_label.visible = false
 			icon_texture.visible = true
-			var texture = load(str(icon_value))
-			if texture:
-				icon_texture.texture = texture
+			
+			if ResourceLoader.exists(icon_str):
+				var texture = load(icon_str)
+				if texture:
+					icon_texture.texture = texture
+				else:
+					_set_fallback_icon(icon_label, icon_texture)
 			else:
-				icon_label.visible = true
-				icon_texture.visible = false
-				icon_label.text = "✨"
+				_set_fallback_icon(icon_label, icon_texture)
 		else:
 			icon_label.visible = true
 			icon_texture.visible = false
-			icon_label.text = str(icon_value)
+			icon_label.text = icon_str
 
 	# Nombre con color basado en TIER y tipo especial
 	if name_label:
@@ -1055,6 +1058,19 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 
 func _update_panel_style(panel: Control, option: Dictionary) -> void:
 	"""Actualiza el estilo visual del panel basándose en tier y tipo."""
+
+func _set_fallback_icon(label: Label, texture: TextureRect) -> void:
+	"""Muestra un icono de fallback cuando falla la carga de imagen"""
+	label.visible = true
+	texture.visible = false
+	label.text = "❓" # Placeholder
+	label.add_theme_color_override("font_color", Color(1, 0, 1))
+
+func _update_style_implementation(panel: Control, option: Dictionary) -> void:
+	pass # Helper dummy if needed, but we keep original logic separated
+
+# Original style logic start
+
 	var option_type = option.get("type", "")
 	var is_weapon = (option_type == OPTION_TYPES.NEW_WEAPON or 
 					 option_type == OPTION_TYPES.LEVEL_UP_WEAPON or 
