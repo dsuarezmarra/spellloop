@@ -11,10 +11,11 @@ def trim(im, border_color):
         return im.crop(bbox)
     return im
 
-def split_grid(image_path, output_dir, names=None, final_size=64, trim_images=True):
+def split_grid(image_path, output_dir, names=None, final_size=64, trim_images=True, force_grid=None):
     """
     Splits an image into a grid of 12 cells (3x4 or 4x3 auto-detected)
     and saves each cell centered.
+    force_grid: tuple (rows, cols) to override auto-detection
     """
     if not os.path.exists(image_path):
         print(f"Image not found: {image_path}")
@@ -28,16 +29,17 @@ def split_grid(image_path, output_dir, names=None, final_size=64, trim_images=Tr
     
     w, h = img.size
     
-    # Auto-detect layout for 12 items
-    # If landscape, likely 4 cols x 3 rows. If portrait, 3 cols x 4 rows.
-    # User feedback: "grid 3x4" usually means 3 rows, 4 columns (Matrix notation) = Landscape
-    if w > h:
-        cols = 4
-        rows = 3
+    # Auto-detect layout if not forced
+    if force_grid:
+        rows, cols = force_grid
     else:
-        # Fallback or vertical variation
-        cols = 3
-        rows = 4
+        # Default Auto-detect
+        if w > h:
+            cols = 4
+            rows = 3
+        else:
+            cols = 3
+            rows = 4
         
     cell_w = w // cols
     cell_h = h // rows
@@ -174,6 +176,7 @@ if __name__ == "__main__":
         "ui_settings_gear", "ui_trophy_cup", "ui_timer_clock", "ui_endless_infinity"
     ]
     # DISABLE TRIM FOR THIS BATCH to fix bad cuts
-    split_grid(os.path.join(input_base, "icon_rpg_set_14.png"), output_base, batch_10_names, trim_images=False)
+    # FORCE GRID 3x4 (3 rows, 4 cols) because image is square but content is landscape
+    split_grid(os.path.join(input_base, "icon_rpg_set_14.png"), output_base, batch_10_names, trim_images=False, force_grid=(3, 4))
 
     print("All Phases Processing complete.")
