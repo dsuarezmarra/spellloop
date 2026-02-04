@@ -441,6 +441,9 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
 	# Emitir señal de boss si aplica
 	if enemy_data.get("is_boss", false) or type_id.find("boss") != -1:
 		boss_spawned.emit(enemy)
+	
+	# Efecto visual de spawn (humo/puff)
+	_spawn_puff_effect(world_pos, _get_spawn_puff_color(enemy_data))
 
 	if debug_spawns:
 		var tier = enemy_data.get("tier", 1)
@@ -805,15 +808,19 @@ func from_save_data(data: Dictionary) -> void:
 # SISTEMA DE DESPAWN/RESPAWN PARA RENDIMIENTO
 # ═══════════════════════════════════════════════════════════════════════════════
 
-const DESPAWN_DISTANCE: float = 1500.0  # Aumentado a 2000px por petición del usuario
-const DESPAWN_CHECK_INTERVAL: float = 1.0  # Menos frecuente ya que la distancia es mayor
+const DESPAWN_DISTANCE: float = 900.0        # Distancia máxima antes de eliminar
+const TELEPORT_DISTANCE: float = 750.0       # Distancia para teleportar enemigos atascados
+const DESPAWN_CHECK_INTERVAL: float = 0.5    # Chequear cada 0.5s para respuesta rápida
+const STUCK_VELOCITY_THRESHOLD: float = 10.0 # Velocidad mínima hacia el jugador
 var despawn_check_timer: float = 0.0
+var _enemy_last_positions: Dictionary = {}  # Para detectar enemigos atascados
 
 func _process_enemy_despawn(delta: float) -> void:
 	"""
-	Sistema de despawn para evitar enemigos perdidos e inútiles:
-	- Enemigos a más de DESPAWN_DISTANCE del jugador son eliminados
-	- Esto libera slots para que spawneen nuevos cerca del jugador
+	Sistema mejorado de despawn/teleport:
+	- Enemigos a más de DESPAWN_DISTANCE: eliminados
+	- Enemigos a más de TELEPORT_DISTANCE que estén atascados: teleportados cerca
+	- Excluye bosses y élites
 	"""
 	if not player:
 		return
@@ -824,35 +831,178 @@ func _process_enemy_despawn(delta: float) -> void:
 	despawn_check_timer = 0.0
 	
 	var player_pos = player.global_position
-	# Usar una lista separada para eliminar de forma segura mientras iteramos?
-	# Mejor iterar al revés o usar `to_remove`
 	var to_despawn: Array = []
+	var to_teleport: Array = []
 	
 	for enemy in active_enemies:
 		if not is_instance_valid(enemy):
 			continue
 		
-		# No despawnear bosses ni élites
+		# No tocar bosses ni élites
 		if enemy.get("is_boss") or enemy.get("is_elite"):
 			continue
 		
-		# Calcular distancia al cuadrado para rendimiento (aunque con 1s interval no es tan crítico)
-		# Usamos distance_to para claridad con el valor de 1500
-		var dist = enemy.global_position.distance_to(player_pos)
+		var enemy_id = enemy.get_instance_id()
+		var enemy_pos = enemy.global_position
+		var dist = enemy_pos.distance_to(player_pos)
 		
-		# Si está muy lejos, eliminar para que spawnee uno nuevo cerca
+		# Caso 1: Muy lejos -> despawnear
 		if dist > DESPAWN_DISTANCE:
 			to_despawn.append(enemy)
+			_enemy_last_positions.erase(enemy_id)
+			continue
+		
+		# Caso 2: En zona de teleport -> verificar si está atascado
+		if dist > TELEPORT_DISTANCE:
+			var is_stuck = false
+			
+			# Verificar si apenas se ha movido desde el último check
+			if _enemy_last_positions.has(enemy_id):
+				var last_pos = _enemy_last_positions[enemy_id]
+				var moved = enemy_pos.distance_to(last_pos)
+				var dir_to_player = (player_pos - enemy_pos).normalized()
+				var movement_dir = (enemy_pos - last_pos).normalized() if moved > 0.1 else Vector2.ZERO
+				
+				# Atascado si: apenas se movió O se movió alejándose del jugador
+				if moved < STUCK_VELOCITY_THRESHOLD * DESPAWN_CHECK_INTERVAL:
+					is_stuck = true
+				elif movement_dir.dot(dir_to_player) < -0.3:  # Se aleja del jugador
+					is_stuck = true
+			
+			_enemy_last_positions[enemy_id] = enemy_pos
+			
+			if is_stuck:
+				to_teleport.append(enemy)
+		else:
+			# Limpiar tracking si está en rango normal
+			_enemy_last_positions.erase(enemy_id)
+	
+	# Procesar teleports
+	for enemy in to_teleport:
+		if is_instance_valid(enemy):
+			_teleport_enemy_near_player(enemy, player_pos)
 	
 	# Procesar eliminaciones
 	for enemy in to_despawn:
 		if is_instance_valid(enemy):
 			active_enemies.erase(enemy)
+			# Retornar al pool si es posible
+			if enemy.has_meta("pooled"):
+				var pool = get_tree().get_first_node_in_group("enemy_pool")
+				if pool and pool.has_method("return_enemy"):
+					pool.return_enemy(enemy)
+					continue
 			enemy.queue_free()
-            # No emitimos enemy_died para no dar XP/Logros por despawn por distancia
 	
-	if not to_despawn.is_empty() and debug_spawns:
-		print("[EnemyManager] Despawneados %d enemigos lejanos (>%dpx)" % [to_despawn.size(), int(DESPAWN_DISTANCE)])
+	if debug_spawns and (not to_despawn.is_empty() or not to_teleport.is_empty()):
+		print("[EnemyManager] Despawn: %d | Teleport: %d" % [to_despawn.size(), to_teleport.size()])
 
-# _respawn_enemy_near_player ELIMINADO en favor de queue_free + spawn natural
+func _teleport_enemy_near_player(enemy: Node2D, player_pos: Vector2) -> void:
+	"""Teleporta un enemigo atascado cerca del jugador con efecto visual"""
+	# Calcular nueva posición cerca del jugador
+	var angle = randf() * TAU
+	var distance = spawn_distance + randf_range(-50, 50)
+	var new_pos = player_pos + Vector2.from_angle(angle) * distance
+	
+	# Crear efecto de humo en posición antigua
+	_spawn_puff_effect(enemy.global_position, Color(0.5, 0.5, 0.5, 0.7))
+	
+	# Mover enemigo
+	enemy.global_position = new_pos
+	
+	# Crear efecto de humo en nueva posición
+	_spawn_puff_effect(new_pos, Color(0.6, 0.6, 0.6, 0.8))
+	
+	# Actualizar posición de tracking
+	_enemy_last_positions[enemy.get_instance_id()] = new_pos
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EFECTOS VISUALES DE SPAWN
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _get_spawn_puff_color(enemy_data: Dictionary) -> Color:
+	"""Determina el color del efecto de spawn según el tipo de enemigo"""
+	if enemy_data.get("is_boss", false):
+		return Color(0.8, 0.2, 0.2, 0.9)  # Rojo para bosses
+	elif enemy_data.get("is_elite", false):
+		return Color(1.0, 0.8, 0.2, 0.9)  # Dorado para élites
+	else:
+		var tier = enemy_data.get("tier", 1)
+		match tier:
+			1: return Color(0.7, 0.7, 0.7, 0.7)  # Gris claro
+			2: return Color(0.5, 0.7, 0.5, 0.7)  # Verde suave
+			3: return Color(0.5, 0.5, 0.8, 0.7)  # Azul suave
+			4: return Color(0.7, 0.5, 0.8, 0.7)  # Púrpura suave
+			_: return Color(0.6, 0.6, 0.6, 0.7)
+
+func _spawn_puff_effect(pos: Vector2, color: Color) -> void:
+	"""Crea un efecto de humo/puff en la posición dada"""
+	var root = get_tree().current_scene if get_tree() else null
+	if not root:
+		return
+	
+	# Crear nodo para el efecto
+	var puff = Node2D.new()
+	puff.global_position = pos
+	puff.z_index = 10
+	
+	# Añadir script inline para la animación
+	var puff_script = GDScript.new()
+	puff_script.source_code = """
+extends Node2D
+
+var lifetime: float = 0.4
+var elapsed: float = 0.0
+var puff_color: Color = Color.WHITE
+var particles: Array = []
+const PARTICLE_COUNT: int = 8
+
+func _ready():
+	# Crear partículas de humo
+	for i in range(PARTICLE_COUNT):
+		var angle = (TAU / PARTICLE_COUNT) * i + randf() * 0.3
+		var speed = randf_range(30, 60)
+		particles.append({
+			"offset": Vector2.ZERO,
+			"velocity": Vector2.from_angle(angle) * speed,
+			"size": randf_range(8, 16),
+			"alpha": 1.0
+		})
+
+func _process(delta):
+	elapsed += delta
+	var progress = elapsed / lifetime
+	
+	if progress >= 1.0:
+		queue_free()
+		return
+	
+	# Actualizar partículas
+	for p in particles:
+		p.offset += p.velocity * delta
+		p.velocity *= 0.92  # Fricción
+		p.alpha = 1.0 - progress
+		p.size *= 1.02  # Expandir
+	
+	queue_redraw()
+
+func _draw():
+	for p in particles:
+		var c = puff_color
+		c.a = p.alpha * puff_color.a
+		draw_circle(p.offset, p.size, c)
+		# Borde más claro
+		var border_c = Color(1, 1, 1, c.a * 0.3)
+		draw_arc(p.offset, p.size, 0, TAU, 12, border_c, 1.5)
+"""
+	puff_script.reload()
+	puff.set_script(puff_script)
+	puff.set("puff_color", color)
+	
+	# Añadir al árbol
+	if root.has_node("WorldRoot"):
+		root.get_node("WorldRoot").add_child(puff)
+	else:
+		root.add_child(puff)
+
 
