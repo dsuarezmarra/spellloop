@@ -570,6 +570,80 @@ func _create_elite_aura() -> void:
 	# Pulsación de escala
 	tween.tween_property(aura_sprite, "scale", Vector2(base_scale * 1.1, base_scale * 1.1), 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tween.chain().tween_property(aura_sprite, "scale", Vector2(base_scale, base_scale), 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	
+	# NUEVO: Añadir glow/aura de color por shader al sprite del enemigo
+	_apply_elite_glow_shader()
+
+func _apply_elite_glow_shader() -> void:
+	"""Aplica un shader de glow estilo Dragon Ball al sprite del enemigo élite"""
+	# Buscar el sprite principal del enemigo
+	var target_sprite: Node = null
+	if animated_sprite:
+		target_sprite = animated_sprite
+	else:
+		target_sprite = _find_sprite_node(self)
+	
+	if not target_sprite:
+		return
+	
+	# Crear shader de glow animado
+	var shader_code = """
+shader_type canvas_item;
+
+uniform vec4 glow_color : source_color = vec4(1.0, 0.6, 0.1, 1.0);
+uniform float glow_intensity : hint_range(0.0, 3.0) = 1.5;
+uniform float pulse_speed : hint_range(0.0, 10.0) = 3.0;
+uniform float glow_size : hint_range(0.0, 20.0) = 4.0;
+
+void fragment() {
+	vec4 original = texture(TEXTURE, UV);
+	
+	// Calcular el pulso del glow
+	float pulse = 0.7 + 0.3 * sin(TIME * pulse_speed);
+	float current_glow = glow_size * pulse;
+	
+	// Detectar bordes para el glow
+	float outline = 0.0;
+	vec2 pixel_size = vec2(1.0) / vec2(textureSize(TEXTURE, 0));
+	
+	for (float angle = 0.0; angle < 6.28; angle += 0.785) {
+		vec2 offset = vec2(cos(angle), sin(angle)) * pixel_size * current_glow;
+		float sample_alpha = texture(TEXTURE, UV + offset).a;
+		outline = max(outline, sample_alpha);
+	}
+	
+	// Si el pixel actual está vacío pero hay algo cerca, dibujar glow
+	if (original.a < 0.1 && outline > 0.1) {
+		float glow_alpha = outline * glow_intensity * pulse * 0.6;
+		COLOR = vec4(glow_color.rgb, glow_alpha);
+	} else {
+		// Pixel original con tinte de glow
+		vec3 tinted = mix(original.rgb, glow_color.rgb, 0.15 * pulse);
+		COLOR = vec4(tinted, original.a);
+	}
+}
+"""
+	
+	var shader = Shader.new()
+	shader.code = shader_code
+	
+	var material = ShaderMaterial.new()
+	material.shader = shader
+	
+	# Establecer colores según el tipo de élite (amarillo/naranja/rojo)
+	var elite_colors = [
+		Color(1.0, 0.8, 0.1, 1.0),   # Amarillo dorado
+		Color(1.0, 0.5, 0.1, 1.0),   # Naranja
+		Color(1.0, 0.2, 0.1, 1.0),   # Rojo
+	]
+	# Elegir color basado en tier o aleatorio
+	var color_index = (enemy_tier - 1) % elite_colors.size()
+	material.set_shader_parameter("glow_color", elite_colors[color_index])
+	material.set_shader_parameter("glow_intensity", 1.5)
+	material.set_shader_parameter("pulse_speed", 3.0)
+	material.set_shader_parameter("glow_size", 5.0)
+	
+	target_sprite.material = material
 
 func _find_sprite_node(node: Node) -> Sprite2D:
 	"""Buscar el primer Sprite2D en el árbol del nodo"""

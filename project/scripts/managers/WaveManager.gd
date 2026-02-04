@@ -689,7 +689,7 @@ func _complete_elite_spawn(spawn_data: Dictionary) -> void:
 			active_elite.enemy_died.connect(_on_elite_enemy_died)
 
 func _create_elite_warning_visual(pos: Vector2, duration: float) -> Node2D:
-	"""Create the warning circle that appears before elite spawn"""
+	"""Create the warning visual using animated spritesheet before elite spawn"""
 	var warning = Node2D.new()
 	warning.name = "EliteWarning"
 	warning.global_position = pos
@@ -700,48 +700,119 @@ func _create_elite_warning_visual(pos: Vector2, duration: float) -> Node2D:
 	if tree and tree.current_scene:
 		tree.current_scene.add_child(warning)
 	
-	# Animation state
+	# Cargar el spritesheet de aura de spawn (3 frames horizontales)
+	var spritesheet_path = "res://assets/sprites/rares/unnamed-removebg-preview.png"
+	var spritesheet = load(spritesheet_path)
+	
+	if spritesheet:
+		# Crear AnimatedSprite2D para el spritesheet
+		var anim_sprite = AnimatedSprite2D.new()
+		anim_sprite.name = "SpawnAura"
+		
+		# Crear SpriteFrames con la animación
+		var sprite_frames = SpriteFrames.new()
+		sprite_frames.add_animation("pulse")
+		sprite_frames.set_animation_speed("pulse", 8.0)  # 8 FPS para animación fluida
+		sprite_frames.set_animation_loop("pulse", true)
+		
+		# El spritesheet tiene 3 frames horizontales
+		# Dimensiones aproximadas: 500x244 total, cada frame ~166x244
+		var frame_width = spritesheet.get_width() / 3
+		var frame_height = spritesheet.get_height()
+		
+		for i in range(3):
+			var atlas_tex = AtlasTexture.new()
+			atlas_tex.atlas = spritesheet
+			atlas_tex.region = Rect2(i * frame_width, 0, frame_width, frame_height)
+			sprite_frames.add_frame("pulse", atlas_tex)
+		
+		anim_sprite.sprite_frames = sprite_frames
+		anim_sprite.animation = "pulse"
+		anim_sprite.play()
+		
+		# Escala para que sea visible pero no demasiado grande
+		var target_size = 120.0  # Tamaño deseado en píxeles
+		var scale_factor = target_size / frame_height
+		anim_sprite.scale = Vector2(scale_factor, scale_factor)
+		
+		warning.add_child(anim_sprite)
+		
+		# Animación de aparición y desaparición
+		var tween = create_tween()
+		tween.set_parallel(true)
+		
+		# Fade in rápido
+		anim_sprite.modulate.a = 0.0
+		tween.tween_property(anim_sprite, "modulate:a", 1.0, 0.3)
+		
+		# Escala pulsante durante la duración
+		var pulse_tween = create_tween()
+		pulse_tween.set_loops(int(duration / 0.5))  # Pulsar varias veces
+		pulse_tween.tween_property(anim_sprite, "scale", Vector2(scale_factor * 1.15, scale_factor * 1.15), 0.25).set_trans(Tween.TRANS_SINE)
+		pulse_tween.tween_property(anim_sprite, "scale", Vector2(scale_factor, scale_factor), 0.25).set_trans(Tween.TRANS_SINE)
+		
+		# Rotación lenta
+		var rotation_tween = create_tween()
+		rotation_tween.set_loops()
+		rotation_tween.tween_property(anim_sprite, "rotation_degrees", 360.0, 3.0).from(0.0)
+		
+		# Timer para cleanup
+		var cleanup_timer = Timer.new()
+		cleanup_timer.wait_time = duration
+		cleanup_timer.one_shot = true
+		cleanup_timer.autostart = true
+		warning.add_child(cleanup_timer)
+		
+		cleanup_timer.timeout.connect(func():
+			if is_instance_valid(warning):
+				# Fade out antes de destruir
+				var fade_tween = create_tween()
+				fade_tween.tween_property(anim_sprite, "modulate:a", 0.0, 0.2)
+				fade_tween.tween_callback(func():
+					if is_instance_valid(warning):
+						warning.queue_free()
+				)
+		)
+	else:
+		# Fallback: dibujo por código si no hay spritesheet
+		push_warning("Missing elite spawn spritesheet, using fallback")
+		_create_fallback_warning_visual(warning, duration)
+	
+	return warning
+
+func _create_fallback_warning_visual(warning: Node2D, duration: float) -> void:
+	"""Fallback visual si el spritesheet no está disponible"""
 	var time_elapsed: float = 0.0
 	var radius: float = 80.0
 	
-	# Visual drawing
 	var visual = Node2D.new()
 	warning.add_child(visual)
 	
-	# Colors
-	var warning_color = Color(0.8, 0.1, 0.1, 0.8)  # Dark red
-	var pulse_color = Color(1.0, 0.3, 0.1, 0.5)    # Orange-red
+	var warning_color = Color(1.0, 0.6, 0.1, 0.8)  # Naranja dorado
+	var pulse_color = Color(1.0, 0.8, 0.2, 0.5)    # Amarillo
 	
 	visual.draw.connect(func():
 		var progress = time_elapsed / duration
 		var pulse = sin(time_elapsed * 8.0) * 0.2 + 1.0
 		var current_radius = radius * pulse
 		
-		# Outer pulsing circle
+		# Círculo exterior pulsante
 		visual.draw_arc(Vector2.ZERO, current_radius, 0, TAU, 32, 
 			warning_color, 4.0)
 		
-		# Inner fill (grows over time)
+		# Relleno interior (crece con el tiempo)
 		var fill_radius = radius * progress * 0.8
 		visual.draw_circle(Vector2.ZERO, fill_radius, 
 			Color(pulse_color.r, pulse_color.g, pulse_color.b, 0.3 * progress))
 		
-		# Warning lines (X pattern)
-		var line_len = radius * 0.6
-		var line_alpha = 0.5 + sin(time_elapsed * 10.0) * 0.3
-		var line_color = Color(1.0, 0.2, 0.1, line_alpha)
-		visual.draw_line(Vector2(-line_len, -line_len), Vector2(line_len, line_len), line_color, 3.0)
-		visual.draw_line(Vector2(-line_len, line_len), Vector2(line_len, -line_len), line_color, 3.0)
-		
-		# Center skull/danger indicator
+		# Símbolo de peligro en el centro
 		if progress > 0.5:
-			var skull_alpha = (progress - 0.5) * 2.0
-			visual.draw_circle(Vector2.ZERO, 15, Color(1.0, 0.9, 0.1, skull_alpha))
+			var symbol_alpha = (progress - 0.5) * 2.0
+			visual.draw_circle(Vector2.ZERO, 15, Color(1.0, 0.9, 0.1, symbol_alpha))
 	)
 	
-	# Animation timer
 	var timer = Timer.new()
-	timer.wait_time = 0.016  # ~60 FPS
+	timer.wait_time = 0.016
 	timer.autostart = true
 	warning.add_child(timer)
 	
@@ -750,14 +821,10 @@ func _create_elite_warning_visual(pos: Vector2, duration: float) -> Node2D:
 		if is_instance_valid(visual):
 			visual.queue_redraw()
 		
-		# Cleanup when animation finishes
 		if time_elapsed >= duration:
 			timer.stop()
 			if is_instance_valid(warning):
-				warning.queue_free()  # FIX: Prevent visual leak
-	)
-	
-	return warning
+				warning.queue_free()
 
 func _create_elite_spawn_impact(pos: Vector2) -> void:
 	"""Create impact effect when elite materializes"""
