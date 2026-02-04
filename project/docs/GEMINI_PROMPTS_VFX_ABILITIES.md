@@ -565,7 +565,7 @@ OUTPUT: Single PNG file, 256x256 pixels, named "beam_flame_breath_spritesheet.pn
 ### PROMPT 3.2: Void Beam (El Corazón del Vacío)
 
 ```
-Create a sprite sheet for a cartoon/funko pop style game. The sheet should be 512x64 pixels (8 columns x 1 row, each cell 64x64 pixels - HORIZONTAL BEAM).
+Create a sprite sheet for a cartoon/funko pop style game. The sheet should be 512x64 pixels (4x2 grid, 64x64 cells) - HORIZONTAL BEAM).
 
 STYLE REQUIREMENTS:
 - Dark void energy beam
