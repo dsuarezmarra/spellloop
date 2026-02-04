@@ -826,7 +826,7 @@ const FUSIONS: Dictionary = {
 		"effect_duration": 2.0,
 		
 		"color": Color(0.3, 0.1, 0.4),
-		"icon": "res://assets/icons/upgrade_global_area.png",
+		"icon": "res://assets/icons/fusion_void_storm.png",
 		"tags": ["aoe", "no_pierce"]
 	},
 	
@@ -858,7 +858,7 @@ const FUSIONS: Dictionary = {
 		"effect_duration": 0.3,
 		
 		"color": Color(0.6, 0.5, 0.8),
-		"icon": "res://assets/icons/upgrade_earth_stun.png",
+		"icon": "res://assets/icons/fusion_crystal_guardian.png",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_crystal_guardian"
 	},

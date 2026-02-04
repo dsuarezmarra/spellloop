@@ -1736,7 +1736,7 @@ const CURSED_UPGRADES: Dictionary = {
 		"id": "chaos",
 		"name": "Caos Primordial",
 		"description": "+30% Stats Ofensivos, -20% Stats Defensivos.",
-		"icon": "res://assets/icons/icon_magnet_attract.png",
+		"icon": "res://assets/icons/fusion_abyss.png",
 		"category": "cursed",
 		"tier": 4,
 		"max_stacks": 1,
