@@ -30,10 +30,12 @@ def split_grid(image_path, output_dir, names=None, final_size=64):
     
     # Auto-detect layout for 12 items
     # If landscape, likely 4 cols x 3 rows. If portrait, 3 cols x 4 rows.
+    # User feedback: "grid 3x4" usually means 3 rows, 4 columns (Matrix notation) = Landscape
     if w > h:
         cols = 4
         rows = 3
     else:
+        # Fallback or vertical variation
         cols = 3
         rows = 4
         
@@ -57,23 +59,27 @@ def split_grid(image_path, output_dir, names=None, final_size=64):
             cell = img.crop((x1, y1, x2, y2))
             
             # --- SMART PROCESSING ---
+            # --- SMART PROCESSING DISABLED (Fix for bad cuts) ---
             # 1. Get background color from top-left pixel
-            bg_color = cell.getpixel((0, 0))
+            # bg_color = cell.getpixel((0, 0))
             
             # 2. Trim background (simple heuristic based on corner color)
             # This helps remove the solid dark grey background
-            try:
-                # Create a mask of the background color with tolerance
-                # Simple trim:
-                content = trim(cell, bg_color)
-                
-                # If trim returned full image or tiny, it might have failed or be empty
-                if content.size == cell.size:
-                     # Try more aggressive trim if corner color matches
-                     pass
-            except Exception as e:
-                print(f"Error trimming: {e}")
-                content = cell
+            # try:
+            #     # Create a mask of the background color with tolerance
+            #     # Simple trim:
+            #     content = trim(cell, bg_color)
+            #     
+            #     # If trim returned full image or tiny, it might have failed or be empty
+            #     if content.size == cell.size:
+            #          # Try more aggressive trim if corner color matches
+            #          pass
+            # except Exception as e:
+            #     print(f"Error trimming: {e}")
+            #     content = cell
+            
+            # Force Raw Content
+            content = cell
 
             # 3. Center in final canvas
             final_canvas = Image.new("RGBA", (final_size, final_size), (0,0,0,0))
@@ -159,5 +165,15 @@ if __name__ == "__main__":
     ]
     # NOTE: User provided the UI grid as set_13
     split_grid(os.path.join(input_base, "icon_rpg_set_13.png"), output_base, batch_8_names)
+
+    # --- PHASE 4 BATCH (Save Slots) ---
+
+    # BATCH 10: Save Slots & UI -> icon_rpg_set_14.png
+    batch_10_names = [
+        "ui_new_game_sparkles", "ui_save_slot_swords", "ui_save_slot_orb", "ui_save_slot_scroll",
+        "ui_save_slot_backpack", "ui_save_slot_potion", "ui_empty_slot_plus", "ui_delete_trash",
+        "ui_settings_gear", "ui_trophy_cup", "ui_timer_clock", "ui_endless_infinity"
+    ]
+    split_grid(os.path.join(input_base, "icon_rpg_set_14.png"), output_base, batch_10_names)
 
     print("All Phases Processing complete.")

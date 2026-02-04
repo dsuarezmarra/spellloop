@@ -1402,11 +1402,31 @@ func _create_weapon_card(weapon) -> Control:
 		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon_container.add_child(icon_rect)
 	else:
-		# Fallback a texto
-		var icon_lbl = Label.new()
-		icon_lbl.text = weapon.icon if "icon" in weapon else ELEMENT_ICONS.get(element, "🔮")
-		icon_lbl.add_theme_font_size_override("font_size", 32)
-		icon_container.add_child(icon_lbl)
+		# Fallback: Verificar si weapon.icon es un path o un emoji
+		var icon_str = weapon.icon if "icon" in weapon else ELEMENT_ICONS.get(element, "🔮")
+		
+		if icon_str.begins_with("res://"):
+			# Es un path que no se cargó por ID, intentar cargar directo
+			if ResourceLoader.exists(icon_str):
+				var loaded_tex = load(icon_str)
+				var icon_rect = TextureRect.new()
+				icon_rect.texture = loaded_tex
+				icon_rect.custom_minimum_size = Vector2(48, 48)
+				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon_container.add_child(icon_rect)
+			else:
+				# Path inválido, mostrar emoji default
+				var icon_lbl = Label.new()
+				icon_lbl.text = ELEMENT_ICONS.get(element, "🔮")
+				icon_lbl.add_theme_font_size_override("font_size", 32)
+				icon_container.add_child(icon_lbl)
+		else:
+			# Es texto/emoji
+			var icon_lbl = Label.new()
+			icon_lbl.text = icon_str
+			icon_lbl.add_theme_font_size_override("font_size", 32)
+			icon_container.add_child(icon_lbl)
 
 	# Info del nombre
 	var info_vbox = VBoxContainer.new()
