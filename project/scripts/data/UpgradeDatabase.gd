@@ -2611,6 +2611,7 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"max_stacks": 1,
 		"is_unique": true,
 		"is_cursed": true,
+		"effects": [
 			{"stat": "damage_mult", "value": 2.0, "operation": "multiply"},
 			{"stat": "move_speed", "value": 0.5, "operation": "multiply"}
 		]
