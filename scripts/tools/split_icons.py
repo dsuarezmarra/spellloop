@@ -115,34 +115,38 @@ if __name__ == "__main__":
     input_base = r"project/assets/icons"
     output_base = r"project/assets/icons"
 
-    # -------------------------------------------------------------------------
-    # BATCH 1: Base Weapons & Fusions -> icon_rpg_set_06.png
-    # -------------------------------------------------------------------------
-    batch_1_names = [
-        "weapon_shadow_dagger", "weapon_wind_blade", "weapon_nature_staff", "weapon_earth_spike",
-        "weapon_light_beam", "weapon_void_pulse", "fusion_steam_cannon", "fusion_storm_caller",
-        "fusion_soul_reaper", "fusion_cosmic_barrier", "fusion_rift_quake", "fusion_frostvine"
-    ]
-    split_grid(os.path.join(input_base, "icon_rpg_set_06.png"), output_base, batch_1_names)
+    # --- PHASE 2 BATCHES (Weapon & Fusion Upgrades) ---
 
-    # -------------------------------------------------------------------------
-    # BATCH 2: Fusions & Global Upgrades (Part 1) -> icon_rpg_set_07.png
-    # -------------------------------------------------------------------------
-    batch_2_names = [
-        "fusion_hellfire", "fusion_thunder_spear", "upgrade_global_damage", "upgrade_global_attack_speed",
-        "upgrade_global_area", "upgrade_global_proj_count", "upgrade_global_proj_speed", "upgrade_global_pierce",
-        "upgrade_global_crit_chance", "upgrade_global_crit_damage", "upgrade_global_duration", "upgrade_global_knockback"
+    # BATCH 4: Ice, Fire & Lightning -> icon_rpg_set_09.png
+    batch_4_names = [
+        "upgrade_ice_damage", "upgrade_ice_pierce", "upgrade_ice_area", "upgrade_ice_effect",
+        "upgrade_fire_damage", "upgrade_fire_area", "upgrade_fire_burn", "upgrade_fire_multishot",
+        "upgrade_lightning_damage", "upgrade_lightning_speed", "upgrade_lightning_chain", "upgrade_lightning_multishot"
     ]
-    split_grid(os.path.join(input_base, "icon_rpg_set_07.png"), output_base, batch_2_names)
+    split_grid(os.path.join(input_base, "icon_rpg_set_09.png"), output_base, batch_4_names)
 
-    # -------------------------------------------------------------------------
-    # BATCH 3: Global Upgrades (Part 2) & Weapon Specifics -> icon_rpg_set_08.png
-    # -------------------------------------------------------------------------
-    batch_3_names = [
-        "upgrade_global_range", "upgrade_global_flat_damage", "special_ice_frost_nova", "special_ice_deep_freeze",
-        "special_fire_inferno", "special_fire_spread", "special_lightning_chain_master", "special_lightning_overcharge",
-        "special_shadow_assassin", "special_nature_overgrowth", "special_arcane_expansion", "upgrade_defensive_grit"
+    # BATCH 5: Nature, Earth & Wind -> icon_rpg_set_10.png
+    batch_5_names = [
+        "upgrade_nature_heal", "upgrade_nature_duration", "upgrade_nature_multishot", "upgrade_nature_damage",
+        "upgrade_earth_area", "upgrade_earth_stun", "upgrade_earth_damage", "upgrade_earth_speed",
+        "upgrade_wind_knockback", "upgrade_wind_pierce", "upgrade_wind_area", "upgrade_wind_multishot"
     ]
-    split_grid(os.path.join(input_base, "icon_rpg_set_08.png"), output_base, batch_3_names)
+    split_grid(os.path.join(input_base, "icon_rpg_set_10.png"), output_base, batch_5_names)
 
-    print("Processing complete.")
+    # BATCH 6: Shadow, Light, Arcane & Void -> icon_rpg_set_11.png
+    batch_6_names = [
+        "upgrade_shadow_pierce", "upgrade_shadow_crit", "upgrade_shadow_speed", "upgrade_light_speed",
+        "upgrade_light_area", "upgrade_light_crit", "upgrade_arcane_count", "upgrade_arcane_speed",
+        "upgrade_arcane_area", "upgrade_void_pull", "upgrade_void_area", "upgrade_void_damage"
+    ]
+    split_grid(os.path.join(input_base, "icon_rpg_set_11.png"), output_base, batch_6_names)
+
+    # BATCH 7: Fusion Upgrades & Mastery -> icon_rpg_set_12.png
+    batch_7_names = [
+        "upgrade_fusion_damage", "upgrade_fusion_area", "upgrade_fusion_speed", "upgrade_fusion_multishot",
+        "upgrade_fusion_pierce", "upgrade_fusion_crit", "upgrade_fusion_mastery", "upgrade_weapon_mastery",
+        "upgrade_generic_damage", "upgrade_generic_speed", "upgrade_generic_area", "upgrade_generic_multishot"
+    ]
+    split_grid(os.path.join(input_base, "icon_rpg_set_12.png"), output_base, batch_7_names)
+
+    print("Phase 2 Processing complete.")

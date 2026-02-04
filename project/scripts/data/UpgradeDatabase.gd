@@ -2276,7 +2276,7 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"id": "unique_magnet_lord",
 		"name": "Señor del Magnetismo",
 		"description": "+200% rango recogida, +50% XP, +30% velocidad.",
-		"icon": "🧲",
+		"icon": "res://assets/icons/upgrade_void_pull.png",
 		"category": "unique",
 		"tier": 4,
 		"is_unique": true,

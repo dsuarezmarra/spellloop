@@ -425,112 +425,112 @@ const GENERIC_LEVEL_UPGRADES: Dictionary = {
 const WEAPON_SPECIFIC_UPGRADES: Dictionary = {
 	# ❄️ ICE WAND: Control y Penetración
 	"ice_wand": {
-		2: {"pierce_add": 1, "description": "+1 Penetración"},
-		3: {"damage_mult": 1.2, "description": "+20% Daño"},
-		4: {"effect_mult": 1.5, "description": "+50% Congelación (Slow)"},
-		5: {"projectile_count_add": 1, "description": "+1 Proyectil"},
-		6: {"pierce_add": 1, "description": "+1 Penetración"},
-		7: {"area_mult": 1.3, "description": "+30% Área de impacto"},
-		8: {"projectile_count_add": 2, "description": "¡VENTISCA! +2 Proyectiles"}
+		2: {"pierce_add": 1, "description": "+1 Penetración", "icon": "res://assets/icons/upgrade_ice_pierce.png"},
+		3: {"damage_mult": 1.2, "description": "+20% Daño", "icon": "res://assets/icons/upgrade_ice_damage.png"},
+		4: {"effect_mult": 1.5, "description": "+50% Congelación (Slow)", "icon": "res://assets/icons/upgrade_ice_effect.png"},
+		5: {"projectile_count_add": 1, "description": "+1 Proyectil", "icon": "res://assets/icons/upgrade_generic_multishot.png"},
+		6: {"pierce_add": 1, "description": "+1 Penetración", "icon": "res://assets/icons/upgrade_ice_pierce.png"},
+		7: {"area_mult": 1.3, "description": "+30% Área de impacto", "icon": "res://assets/icons/upgrade_ice_area.png"},
+		8: {"projectile_count_add": 2, "description": "¡VENTISCA! +2 Proyectiles", "icon": "res://assets/icons/upgrade_generic_multishot.png"}
 	},
 
 	# 🔥 FIRE WAND: Área y Daño Puro (DoT)
 	"fire_wand": {
-		2: {"area_mult": 1.25, "description": "+25% Área de explosión"},
-		3: {"damage_mult": 1.25, "description": "+25% Daño"},
-		4: {"effect_mult": 1.5, "description": "Quemadura Intensa (+50% Daño burn)"},
-		5: {"damage_mult": 1.3, "description": "+30% Daño"},
-		6: {"area_mult": 1.25, "description": "+25% Área de explosión"},
-		7: {"projectile_count_add": 1, "description": "+1 Proyectil"},
-		8: {"all_mult": 1.25, "description": "¡INFIERNO! +25% Stats y Quemadura"}
+		2: {"area_mult": 1.25, "description": "+25% Área de explosión", "icon": "res://assets/icons/upgrade_fire_area.png"},
+		3: {"damage_mult": 1.25, "description": "+25% Daño", "icon": "res://assets/icons/upgrade_fire_damage.png"},
+		4: {"effect_mult": 1.5, "description": "Quemadura Intensa (+50% Daño burn)", "icon": "res://assets/icons/upgrade_fire_burn.png"},
+		5: {"damage_mult": 1.3, "description": "+30% Daño", "icon": "res://assets/icons/upgrade_fire_damage.png"},
+		6: {"area_mult": 1.25, "description": "+25% Área de explosión", "icon": "res://assets/icons/upgrade_fire_area.png"},
+		7: {"projectile_count_add": 1, "description": "+1 Proyectil", "icon": "res://assets/icons/upgrade_fire_multishot.png"},
+		8: {"all_mult": 1.25, "description": "¡INFIERNO! +25% Stats y Quemadura", "icon": "res://assets/icons/upgrade_weapon_mastery.png"}
 	},
 
 	# ⚡ LIGHTNING WAND: Cadenas y Velocidad
 	"lightning_wand": {
-		2: {"effect_value_add": 1, "description": "+1 Salto de cadena"}, # effect_value es chain_count
-		3: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque"},
-		4: {"damage_mult": 1.25, "description": "+25% Daño"},
-		5: {"effect_value_add": 2, "description": "+2 Saltos de cadena"},
-		6: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque"},
-		7: {"damage_mult": 1.3, "description": "+30% Daño"},
-		8: {"effect_value_add": 3, "description": "¡SOBRECARGA! +3 Saltos de cadena"}
+		2: {"effect_value_add": 1, "description": "+1 Salto de cadena", "icon": "res://assets/icons/upgrade_lightning_chain.png"}, # effect_value es chain_count
+		3: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque", "icon": "res://assets/icons/upgrade_lightning_speed.png"},
+		4: {"damage_mult": 1.25, "description": "+25% Daño", "icon": "res://assets/icons/upgrade_lightning_damage.png"},
+		5: {"effect_value_add": 2, "description": "+2 Saltos de cadena", "icon": "res://assets/icons/upgrade_lightning_chain.png"},
+		6: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque", "icon": "res://assets/icons/upgrade_lightning_speed.png"},
+		7: {"damage_mult": 1.3, "description": "+30% Daño", "icon": "res://assets/icons/upgrade_lightning_damage.png"},
+		8: {"effect_value_add": 3, "description": "¡SOBRECARGA! +3 Saltos de cadena", "icon": "res://assets/icons/upgrade_lightning_chain.png"}
 	},
 
 	# 💜 ARCANE ORB: Cantidad y Velocidad (Cooldown)
 	"arcane_orb": {
-		2: {"projectile_count_add": 1, "description": "+1 Orbe adicional"},
-		3: {"damage_mult": 1.25, "description": "+25% Daño"},
-		4: {"projectile_speed_mult": 1.25, "description": "+25% Velocidad de rotación"},
-		5: {"projectile_count_add": 1, "description": "+1 Orbe adicional"},
-		6: {"area_mult": 1.25, "description": "+25% Tamaño de orbes"},
-		7: {"no_cooldown_damage_mult": 1.3, "description": "+30% Daño"},
-		8: {"projectile_count_add": 2, "description": "¡GALAXIA! +2 Orbes adicionales"}
+		2: {"projectile_count_add": 1, "description": "+1 Orbe adicional", "icon": "res://assets/icons/upgrade_arcane_count.png"},
+		3: {"damage_mult": 1.25, "description": "+25% Daño", "icon": "res://assets/icons/upgrade_generic_damage.png"},
+		4: {"projectile_speed_mult": 1.25, "description": "+25% Velocidad de rotación", "icon": "res://assets/icons/upgrade_arcane_speed.png"},
+		5: {"projectile_count_add": 1, "description": "+1 Orbe adicional", "icon": "res://assets/icons/upgrade_arcane_count.png"},
+		6: {"area_mult": 1.25, "description": "+25% Tamaño de orbes", "icon": "res://assets/icons/upgrade_arcane_area.png"},
+		7: {"no_cooldown_damage_mult": 1.3, "description": "+30% Daño", "icon": "res://assets/icons/upgrade_generic_damage.png"},
+		8: {"projectile_count_add": 2, "description": "¡GALAXIA! +2 Orbes adicionales", "icon": "res://assets/icons/upgrade_arcane_count.png"}
 	},
 
 	# 🗡️ SHADOW DAGGER: Penetración y Crítico (Simulado con daño)
 	"shadow_dagger": {
-		2: {"pierce_add": 1, "description": "+1 Penetración"},
-		3: {"damage_mult": 1.3, "description": "+30% Daño"},
-		4: {"projectile_count_add": 1, "description": "+1 Daga"},
-		5: {"pierce_add": 2, "description": "+2 Penetración"},
-		6: {"attack_speed_mult": 1.25, "description": "+25% Velocidad de Ataque"},
-		7: {"damage_mult": 1.3, "description": "+30% Daño"},
-		8: {"projectile_count_add": 2, "description": "¡LLUVIA DE HOJAS! +2 Dagas"}
+		2: {"pierce_add": 1, "description": "+1 Penetración", "icon": "res://assets/icons/upgrade_shadow_pierce.png"},
+		3: {"damage_mult": 1.3, "description": "+30% Daño", "icon": "res://assets/icons/upgrade_shadow_crit.png"},
+		4: {"projectile_count_add": 1, "description": "+1 Daga", "icon": "res://assets/icons/upgrade_generic_multishot.png"},
+		5: {"pierce_add": 2, "description": "+2 Penetración", "icon": "res://assets/icons/upgrade_shadow_pierce.png"},
+		6: {"attack_speed_mult": 1.25, "description": "+25% Velocidad de Ataque", "icon": "res://assets/icons/upgrade_shadow_speed.png"},
+		7: {"damage_mult": 1.3, "description": "+30% Daño", "icon": "res://assets/icons/upgrade_shadow_crit.png"},
+		8: {"projectile_count_add": 2, "description": "¡LLUVIA DE HOJAS! +2 Dagas", "icon": "res://assets/icons/upgrade_generic_multishot.png"}
 	},
 
 	# 🌿 NATURE STAFF: Homing y Curación (Effect)
 	"nature_staff": {
-		2: {"duration_mult": 1.5, "description": "+50% Duración (mejor persiguiendo)"},
-		3: {"damage_mult": 1.2, "description": "+20% Daño"},
-		4: {"projectile_count_add": 1, "description": "+1 Proyectil"},
-		5: {"attack_speed_mult": 1.25, "description": "+25% Velocidad de Ataque"},
-		6: {"damage_mult": 1.25, "description": "+25% Daño"},
-		7: {"projectile_count_add": 1, "description": "+1 Proyectil"},
-		8: {"effect_mult": 2.0, "description": "¡VIDA PURA! Doble Curación"}
+		2: {"duration_mult": 1.5, "description": "+50% Duración (mejor persiguiendo)", "icon": "res://assets/icons/upgrade_nature_duration.png"},
+		3: {"damage_mult": 1.2, "description": "+20% Daño", "icon": "res://assets/icons/upgrade_nature_damage.png"},
+		4: {"projectile_count_add": 1, "description": "+1 Proyectil", "icon": "res://assets/icons/upgrade_nature_multishot.png"},
+		5: {"attack_speed_mult": 1.25, "description": "+25% Velocidad de Ataque", "icon": "res://assets/icons/upgrade_generic_speed.png"},
+		6: {"damage_mult": 1.25, "description": "+25% Daño", "icon": "res://assets/icons/upgrade_nature_damage.png"},
+		7: {"projectile_count_add": 1, "description": "+1 Proyectil", "icon": "res://assets/icons/upgrade_nature_multishot.png"},
+		8: {"effect_mult": 2.0, "description": "¡VIDA PURA! Doble Curación", "icon": "res://assets/icons/upgrade_nature_heal.png"}
 	},
 
 	# 🌪️ WIND BLADE: Knockback y Cantidad
 	"wind_blade": {
-		2: {"projectile_count_add": 1, "description": "+1 Cuchilla"},
-		3: {"knockback_mult": 1.3, "description": "+30% Empuje"},
-		4: {"pierce_add": 1, "description": "+1 Penetración"},
-		5: {"area_mult": 1.25, "description": "+25% Tamaño"},
-		6: {"projectile_count_add": 1, "description": "+1 Cuchilla"},
-		7: {"damage_mult": 1.3, "description": "+30% Daño"},
-		8: {"pierce_add": 2, "description": "¡HURACÁN! +2 Penetración"}
+		2: {"projectile_count_add": 1, "description": "+1 Cuchilla", "icon": "res://assets/icons/upgrade_wind_multishot.png"},
+		3: {"knockback_mult": 1.3, "description": "+30% Empuje", "icon": "res://assets/icons/upgrade_wind_knockback.png"},
+		4: {"pierce_add": 1, "description": "+1 Penetración", "icon": "res://assets/icons/upgrade_wind_pierce.png"},
+		5: {"area_mult": 1.25, "description": "+25% Tamaño", "icon": "res://assets/icons/upgrade_wind_area.png"},
+		6: {"projectile_count_add": 1, "description": "+1 Cuchilla", "icon": "res://assets/icons/upgrade_wind_multishot.png"},
+		7: {"damage_mult": 1.3, "description": "+30% Daño", "icon": "res://assets/icons/upgrade_generic_damage.png"},
+		8: {"pierce_add": 2, "description": "¡HURACÁN! +2 Penetración", "icon": "res://assets/icons/upgrade_wind_pierce.png"}
 	},
 
 	# 🪨 EARTH SPIKE: Área y Stun (Effect)
 	"earth_spike": {
-		2: {"area_mult": 1.25, "description": "+25% Área"},
-		3: {"damage_mult": 1.3, "description": "+30% Daño"},
-		4: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque"},
-		5: {"effect_mult": 1.5, "description": "+50% Duración de Stun"},
-		6: {"area_mult": 1.3, "description": "+30% Área"},
-		7: {"damage_mult": 1.3, "description": "+30% Daño"},
-		8: {"area_mult": 1.5, "description": "¡TERREMOTO! +50% Área Masiva"}
+		2: {"area_mult": 1.25, "description": "+25% Área", "icon": "res://assets/icons/upgrade_earth_area.png"},
+		3: {"damage_mult": 1.3, "description": "+30% Daño", "icon": "res://assets/icons/upgrade_earth_damage.png"},
+		4: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque", "icon": "res://assets/icons/upgrade_earth_speed.png"},
+		5: {"effect_mult": 1.5, "description": "+50% Duración de Stun", "icon": "res://assets/icons/upgrade_earth_stun.png"},
+		6: {"area_mult": 1.3, "description": "+30% Área", "icon": "res://assets/icons/upgrade_earth_area.png"},
+		7: {"damage_mult": 1.3, "description": "+30% Daño", "icon": "res://assets/icons/upgrade_earth_damage.png"},
+		8: {"area_mult": 1.5, "description": "¡TERREMOTO! +50% Área Masiva", "icon": "res://assets/icons/upgrade_earth_area.png"}
 	},
 
 	# ✨ LIGHT BEAM: Cooldown y Daño
 	"light_beam": {
-		2: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque"},
-		3: {"damage_mult": 1.3, "description": "+30% Daño"},
-		4: {"area_mult": 1.25, "description": "+25% Grosor del rayo"},
-		5: {"attack_speed_mult": 1.25, "description": "+25% Velocidad de Ataque"},
-		6: {"damage_mult": 1.3, "description": "+30% Daño"},
-		7: {"effect_mult": 1.5, "description": "+50% Probabilidad Crítica"},
-		8: {"attack_speed_mult": 1.4, "description": "¡LUZ DIVINA! +40% Velocidad de Ataque"}
+		2: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque", "icon": "res://assets/icons/upgrade_light_speed.png"},
+		3: {"damage_mult": 1.3, "description": "+30% Daño", "icon": "res://assets/icons/upgrade_generic_damage.png"},
+		4: {"area_mult": 1.25, "description": "+25% Grosor del rayo", "icon": "res://assets/icons/upgrade_light_area.png"},
+		5: {"attack_speed_mult": 1.25, "description": "+25% Velocidad de Ataque", "icon": "res://assets/icons/upgrade_light_speed.png"},
+		6: {"damage_mult": 1.3, "description": "+30% Daño", "icon": "res://assets/icons/upgrade_generic_damage.png"},
+		7: {"effect_mult": 1.5, "description": "+50% Probabilidad Crítica", "icon": "res://assets/icons/upgrade_light_crit.png"},
+		8: {"attack_speed_mult": 1.4, "description": "¡LUZ DIVINA! +40% Velocidad de Ataque", "icon": "res://assets/icons/upgrade_light_speed.png"}
 	},
 	
 	# 🕳️ VOID PULSE: Área y Pull (Effect)
 	"void_pulse": {
-		2: {"area_mult": 1.2, "description": "+20% Área"},
-		3: {"damage_mult": 1.25, "description": "+25% Daño"},
-		4: {"effect_mult": 1.3, "description": "+30% Fuerza de atracción"},
-		5: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque"},
-		6: {"area_mult": 1.25, "description": "+25% Área"},
-		7: {"damage_mult": 1.3, "description": "+30% Daño"},
-		8: {"effect_mult": 1.5, "description": "¡AGUJERO NEGRO! +50% Atracción"}
+		2: {"area_mult": 1.2, "description": "+20% Área", "icon": "res://assets/icons/upgrade_void_area.png"},
+		3: {"damage_mult": 1.25, "description": "+25% Daño", "icon": "res://assets/icons/upgrade_void_damage.png"},
+		4: {"effect_mult": 1.3, "description": "+30% Fuerza de atracción", "icon": "res://assets/icons/upgrade_void_pull.png"},
+		5: {"attack_speed_mult": 1.2, "description": "+20% Velocidad de Ataque", "icon": "res://assets/icons/upgrade_generic_speed.png"},
+		6: {"area_mult": 1.25, "description": "+25% Área", "icon": "res://assets/icons/upgrade_void_area.png"},
+		7: {"damage_mult": 1.3, "description": "+30% Daño", "icon": "res://assets/icons/upgrade_void_damage.png"},
+		8: {"effect_mult": 1.5, "description": "¡AGUJERO NEGRO! +50% Atracción", "icon": "res://assets/icons/upgrade_void_pull.png"}
 	}
 }
 
@@ -858,7 +858,7 @@ const FUSIONS: Dictionary = {
 		"effect_duration": 0.3,
 		
 		"color": Color(0.6, 0.5, 0.8),
-		"icon": "💎",
+		"icon": "res://assets/icons/upgrade_earth_stun.png",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_crystal_guardian"
 	},
@@ -1032,7 +1032,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.6,
 		"effect_duration": 2.0,
 		"color": Color(0.7, 0.95, 0.9),
-		"icon": "🌌",
+		"icon": "res://assets/icons/fusion_cosmic_barrier.png",
 		"tags": ["beam", "no_pierce", "no_projectile_speed", "no_duration"]
 	},
 	
@@ -1605,7 +1605,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.3,
 		"effect_duration": 0.0,
 		"color": Color(0.6, 0.5, 0.7),
-		"icon": "🌅",
+		"icon": "res://assets/icons/fusion_soul_reaper.png",
 		"tags": ["projectile", "no_duration"]
 	},
 	
@@ -1691,7 +1691,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 2,
 		"effect_duration": 0.0,
 		"color": Color(0.4, 0.6, 0.3),
-		"icon": "🌍",
+		"icon": "res://assets/icons/upgrade_nature_heal.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
 	
@@ -1719,7 +1719,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 5,
 		"effect_duration": 0.0,
 		"color": Color(0.9, 1.0, 0.5),
-		"icon": "🌻",
+		"icon": "res://assets/icons/upgrade_light_area.png",
 		"tags": ["beam", "no_pierce", "no_projectile_speed", "no_duration"]
 	},
 	
@@ -1747,7 +1747,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 4,
 		"effect_duration": 0.0,
 		"color": Color(0.3, 0.4, 0.2),
-		"icon": "🍂",
+		"icon": "res://assets/icons/upgrade_void_pull.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
 	
@@ -1803,7 +1803,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.25,
 		"effect_duration": 0.0,
 		"color": Color(0.9, 0.95, 1.0),
-		"icon": "🌈",
+		"icon": "res://assets/icons/upgrade_light_crit.png",
 		"tags": ["projectile", "no_duration"]
 	},
 	
@@ -1859,7 +1859,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.25,  # Buffed from 0.2 (20% to 25%)
 		"effect_duration": 0.0,
 		"color": Color(0.5, 0.4, 0.6),
-		"icon": "🌑",
+		"icon": "res://assets/icons/upgrade_void_area.png",
 		"tags": ["beam", "no_pierce", "no_projectile_speed", "no_duration"]
 	}
 }
@@ -1869,13 +1869,13 @@ const FUSIONS: Dictionary = {
 # ═══════════════════════════════════════════════════════════════════════════════
 
 const FUSION_LEVEL_UPGRADES: Dictionary = {
-	2: {"damage_mult": 1.25, "area_mult": 1.15, "description": "+25% Daño, +15% Área"},
-	3: {"attack_speed_mult": 1.2, "duration_mult": 1.2, "description": "+20% Vel. Ataque, +20% Duración"},
-	4: {"projectile_count_add": 1, "pierce_add": 1, "description": "+1 Proyectil, +1 Perforación"},
-	5: {"damage_mult": 1.3, "crit_chance_add": 0.1, "description": "+30% Daño, +10% Crit"},
-	6: {"attack_speed_mult": 1.25, "range_mult": 1.2, "description": "+25% Vel. Ataque, +20% Rango"},
-	7: {"projectile_count_add": 2, "description": "+2 Proyectiles"},
-	8: {"all_mult": 1.4, "description": "¡MAESTRÍA DE FUSIÓN! +40% Todo"}
+	2: {"damage_mult": 1.25, "area_mult": 1.15, "description": "+25% Daño, +15% Área", "icon": "res://assets/icons/upgrade_fusion_damage.png"},
+	3: {"attack_speed_mult": 1.2, "duration_mult": 1.2, "description": "+20% Vel. Ataque, +20% Duración", "icon": "res://assets/icons/upgrade_fusion_speed.png"},
+	4: {"projectile_count_add": 1, "pierce_add": 1, "description": "+1 Proyectil, +1 Perforación", "icon": "res://assets/icons/upgrade_fusion_multishot.png"},
+	5: {"damage_mult": 1.3, "crit_chance_add": 0.1, "description": "+30% Daño, +10% Crit", "icon": "res://assets/icons/upgrade_fusion_crit.png"},
+	6: {"attack_speed_mult": 1.25, "range_mult": 1.2, "description": "+25% Vel. Ataque, +20% Rango", "icon": "res://assets/icons/upgrade_fusion_area.png"},
+	7: {"projectile_count_add": 2, "description": "+2 Proyectiles", "icon": "res://assets/icons/upgrade_fusion_multishot.png"},
+	8: {"all_mult": 1.4, "description": "¡MAESTRÍA DE FUSIÓN! +40% Todo", "icon": "res://assets/icons/upgrade_fusion_mastery.png"}
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
