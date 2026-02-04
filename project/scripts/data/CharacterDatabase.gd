@@ -82,7 +82,7 @@ const CHARACTERS: Dictionary = {
 		# Visual
 		"color_primary": Color(0.4, 0.8, 1.0),      # Ice blue
 		"color_secondary": Color(0.3, 0.6, 0.9),    # Deep blue
-		"icon": "??",
+		"icon": "res://assets/icons/frost_mage.png",
 		"sprite_folder": "frost_mage",
 		"portrait": "res://assets/sprites/players/portraits/frost_mage.png"
 	},
@@ -130,7 +130,7 @@ const CHARACTERS: Dictionary = {
 
 		"color_primary": Color(1.0, 0.4, 0.1),      # Fire orange
 		"color_secondary": Color(1.0, 0.2, 0.0),    # Intense red
-		"icon": "??",
+		"icon": "res://assets/icons/pyromancer.png",
 		"sprite_folder": "pyromancer",
 		"portrait": "res://assets/sprites/players/portraits/pyromancer.png"
 	},
@@ -178,7 +178,7 @@ const CHARACTERS: Dictionary = {
 
 		"color_primary": Color(1.0, 1.0, 0.3),      # Electric yellow
 		"color_secondary": Color(0.6, 0.4, 1.0),    # Storm purple
-		"icon": "?",
+		"icon": "res://assets/icons/storm_caller.png",
 		"sprite_folder": "storm_caller",
 		"portrait": "res://assets/sprites/players/portraits/storm_caller.png"
 	},
@@ -231,7 +231,7 @@ const CHARACTERS: Dictionary = {
 
 		"color_primary": Color(0.7, 0.3, 1.0),      # Arcane purple
 		"color_secondary": Color(0.5, 0.2, 0.8),    # Dark purple
-		"icon": "??",
+		"icon": "res://assets/icons/arcanist.png",
 		"sprite_folder": "arcanist",
 		"portrait": "res://assets/sprites/players/portraits/arcanist.png"
 	},
@@ -284,7 +284,7 @@ const CHARACTERS: Dictionary = {
 
 		"color_primary": Color(0.3, 0.1, 0.4),      # Dark purple
 		"color_secondary": Color(0.1, 0.05, 0.15),  # Black
-		"icon": "???",
+		"icon": "res://assets/icons/shadow_blade.png",
 		"sprite_folder": "shadow_blade",
 		"portrait": "res://assets/sprites/players/portraits/shadow_blade.png"
 	},
@@ -337,7 +337,7 @@ const CHARACTERS: Dictionary = {
 
 		"color_primary": Color(0.3, 0.8, 0.2),      # Nature green
 		"color_secondary": Color(0.2, 0.5, 0.1),    # Dark green
-		"icon": "??",
+		"icon": "res://assets/icons/druid.png",
 		"sprite_folder": "druid",
 		"portrait": "res://assets/sprites/players/portraits/druid.png"
 	},
@@ -390,7 +390,7 @@ const CHARACTERS: Dictionary = {
 
 		"color_primary": Color(0.8, 0.95, 0.9),     # White greenish
 		"color_secondary": Color(0.6, 0.9, 0.85),   # Light cyan
-		"icon": "??",
+		"icon": "res://assets/icons/wind_runner.png",
 		"sprite_folder": "wind_runner",
 		"portrait": "res://assets/sprites/players/portraits/wind_runner.png"
 	},
@@ -443,7 +443,7 @@ const CHARACTERS: Dictionary = {
 
 		"color_primary": Color(0.6, 0.4, 0.2),      # Earth brown
 		"color_secondary": Color(0.4, 0.3, 0.15),   # Dark brown
-		"icon": "??",
+		"icon": "res://assets/icons/geomancer.png",
 		"sprite_folder": "geomancer",
 		"portrait": "res://assets/sprites/players/portraits/geomancer.png"
 	},
@@ -496,7 +496,7 @@ const CHARACTERS: Dictionary = {
 
 		"color_primary": Color(1.0, 1.0, 0.9),      # White gold
 		"color_secondary": Color(1.0, 0.9, 0.5),    # Gold
-		"icon": "?",
+		"icon": "res://assets/icons/paladin.png",
 		"sprite_folder": "paladin",
 		"portrait": "res://assets/sprites/players/portraits/paladin.png"
 	},
@@ -549,7 +549,7 @@ const CHARACTERS: Dictionary = {
 
 		"color_primary": Color(0.2, 0.0, 0.3),      # Void purple
 		"color_secondary": Color(0.1, 0.0, 0.2),    # Purple black
-		"icon": "??",
+		"icon": "res://assets/icons/void_walker.png",
 		"sprite_folder": "void_walker",
 		"portrait": "res://assets/sprites/players/portraits/void_walker.png"
 	}

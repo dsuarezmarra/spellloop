@@ -149,4 +149,15 @@ if __name__ == "__main__":
     ]
     split_grid(os.path.join(input_base, "icon_rpg_set_12.png"), output_base, batch_7_names)
 
-    print("Phase 2 Processing complete.")
+    # --- PHASE 3 BATCH (Misc UI) ---
+    
+    # BATCH 8: UI & Utility Icons -> icon_rpg_set_13.png (Renamed from 14 per user input)
+    batch_8_names = [
+        "ui_random_character", "ui_locked_character", "ui_reroll", "ui_banish",
+        "ui_skip", "pickup_gold_coin", "pickup_xp_gem", "pickup_health_heart",
+        "stat_armor", "stat_speed", "stat_damage", "stat_cooldown"
+    ]
+    # NOTE: User provided the UI grid as set_13
+    split_grid(os.path.join(input_base, "icon_rpg_set_13.png"), output_base, batch_8_names)
+
+    print("All Phases Processing complete.")

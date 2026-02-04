@@ -2611,9 +2611,23 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"max_stacks": 1,
 		"is_unique": true,
 		"is_cursed": true,
-		"effects": [
 			{"stat": "damage_mult", "value": 2.0, "operation": "multiply"},
 			{"stat": "move_speed", "value": 0.5, "operation": "multiply"}
+		]
+	},
+	"unique_gold_rush": {
+		"id": "unique_gold_rush",
+		"name": "Fiebre del Oro",
+		"description": "Los enemigos sueltan monedas con 5% chance. +20% oro.",
+		"icon": "res://assets/icons/pickup_gold_coin.png",
+		"category": "unique",
+		"tier": 4,
+		"max_stacks": 1,
+		"is_unique": true,
+		"is_cursed": true,
+		"effects": [
+			{"stat": "enemy_gold_drop_chance", "value": 0.05, "operation": "add"},
+			{"stat": "gold_mult", "value": 1.20, "operation": "multiply"}
 		]
 	},
 	"unique_pacifist": {
