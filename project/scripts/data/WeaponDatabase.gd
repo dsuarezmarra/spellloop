@@ -891,7 +891,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.5,
 		"effect_duration": 1.5,
 		"color": Color(0.6, 0.9, 1.0),
-		"icon": "res://assets/icons/fusion_storm_caller.png",
+		"icon": "res://assets/icons/fusion_frozen_thunder.png",
 		"tags": ["chain", "no_pierce"]
 	},
 	
@@ -919,7 +919,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.4,
 		"effect_duration": 2.0,
 		"color": Color(0.5, 0.8, 1.0),
-		"icon": "res://assets/icons/weapon_arcane_orb.png",
+		"icon": "res://assets/icons/fusion_frost_orb.png",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_frost_orb"
 	},
@@ -948,7 +948,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.45,
 		"effect_duration": 2.5,
 		"color": Color(0.2, 0.4, 0.6),
-		"icon": "res://assets/icons/weapon_shadow_dagger.png",
+		"icon": "res://assets/icons/fusion_frostbite.png",
 		"tags": ["projectile", "no_duration"]
 	},
 	
@@ -976,7 +976,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.35,
 		"effect_duration": 2.0,
 		"color": Color(0.8, 0.9, 1.0),
-		"icon": "res://assets/icons/fusion_frostvine.png",
+		"icon": "res://assets/icons/fusion_blizzard.png",
 		"tags": ["projectile", "no_duration"]
 	},
 	
@@ -1004,7 +1004,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.7,
 		"effect_duration": 1.5,
 		"color": Color(0.6, 0.85, 0.95),
-		"icon": "res://assets/icons/weapon_earth_spike.png",
+		"icon": "res://assets/icons/fusion_glacier.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
 	
@@ -1032,7 +1032,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.6,
 		"effect_duration": 2.0,
 		"color": Color(0.7, 0.95, 0.9),
-		"icon": "res://assets/icons/fusion_cosmic_barrier.png",
+		"icon": "res://assets/icons/fusion_aurora.png",
 		"tags": ["beam", "no_pierce", "no_projectile_speed", "no_duration"]
 	},
 	
@@ -1060,7 +1060,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.9,
 		"effect_duration": 3.0,
 		"color": Color(0.3, 0.5, 0.7),
-		"icon": "res://assets/icons/weapon_void_pulse.png",
+		"icon": "res://assets/icons/fusion_absolute_zero.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
 	
@@ -1088,7 +1088,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 4.0,
 		"effect_duration": 3.0,
 		"color": Color(1.0, 0.6, 0.8),
-		"icon": "res://assets/icons/fusion_hellfire.png",
+		"icon": "res://assets/icons/fusion_plasma.png",
 		"tags": ["chain", "no_pierce", "projectile"]
 	},
 	
@@ -1116,7 +1116,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 4.0,
 		"effect_duration": 3.0,
 		"color": Color(1.0, 0.5, 0.2),
-		"icon": "res://assets/icons/weapon_fire_wand.png",
+		"icon": "res://assets/icons/fusion_inferno_orb.png",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_inferno_orb"
 	},
@@ -1145,7 +1145,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 5.0,
 		"effect_duration": 4.5,
 		"color": Color(0.9, 0.6, 0.2),
-		"icon": "res://assets/icons/fusion_hellfire.png",
+		"icon": "res://assets/icons/fusion_wildfire.png",
 		"tags": ["projectile", "homing"]
 	},
 	
@@ -1173,7 +1173,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 3.5,
 		"effect_duration": 3.0,
 		"color": Color(1.0, 0.4, 0.0),
-		"icon": "res://assets/icons/fusion_steam_cannon.png",
+		"icon": "res://assets/icons/fusion_firestorm.png",
 		"tags": ["projectile", "no_duration"]
 	},
 	
@@ -1201,7 +1201,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 6.0,
 		"effect_duration": 4.0,
 		"color": Color(0.9, 0.3, 0.1),
-		"icon": "res://assets/icons/fusion_rift_quake.png",
+		"icon": "res://assets/icons/fusion_volcano.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
 	
@@ -1229,7 +1229,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 8.0,
 		"effect_duration": 3.0,
 		"color": Color(1.0, 0.9, 0.4),
-		"icon": "res://assets/icons/weapon_light_beam.png",
+		"icon": "res://assets/icons/fusion_solar_flare.png",
 		"tags": ["beam", "no_pierce", "no_projectile_speed", "no_duration"]
 	},
 	
@@ -1257,7 +1257,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 7.0,
 		"effect_duration": 5.0,
 		"color": Color(0.4, 0.1, 0.2),
-		"icon": "res://assets/icons/weapon_void_pulse.png",
+		"icon": "res://assets/icons/fusion_dark_flame.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
 	
@@ -1285,7 +1285,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 1,
 		"effect_duration": 0.0,
 		"color": Color(0.8, 0.5, 1.0),
-		"icon": "res://assets/icons/fusion_storm_caller.png",
+		"icon": "res://assets/icons/fusion_arcane_storm.png",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_arcane_storm"
 	},
@@ -1314,7 +1314,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 2,
 		"effect_duration": 0.0,
 		"color": Color(0.4, 0.2, 0.6),
-		"icon": "res://assets/icons/weapon_shadow_dagger.png",
+		"icon": "res://assets/icons/fusion_dark_lightning.png",
 		"tags": ["projectile", "no_duration"]
 	},
 	
@@ -1345,7 +1345,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 2,
 		"effect_duration": 0.0,
 		"color": Color(0.6, 1.0, 0.4),
-		"icon": "res://assets/icons/weapon_nature_staff.png",
+		"icon": "res://assets/icons/fusion_thunder_bloom.png",
 		"tags": ["projectile", "homing"]
 	},
 	
@@ -1373,7 +1373,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.6,
 		"effect_duration": 0.6,
 		"color": Color(0.7, 0.6, 0.3),
-		"icon": "res://assets/icons/weapon_earth_spike.png",
+		"icon": "res://assets/icons/fusion_seismic_bolt.png",
 		"tags": ["aoe", "projectile", "no_pierce"]
 	},
 	
@@ -1401,7 +1401,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 100.0,
 		"effect_duration": 0.8,
 		"color": Color(0.3, 0.1, 0.5),
-		"icon": "res://assets/icons/fusion_storm_caller.png",
+		"icon": "res://assets/icons/fusion_void_bolt.png",
 		"tags": ["chain", "no_pierce"]
 	},
 	
@@ -1429,7 +1429,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.25,
 		"effect_duration": 3.0,
 		"color": Color(0.4, 0.2, 0.5),
-		"icon": "res://assets/icons/weapon_shadow_dagger.png",
+		"icon": "res://assets/icons/fusion_shadow_orbs.png",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_shadow_orbs"
 	},
@@ -1458,7 +1458,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 3,  # Buffed from 2
 		"effect_duration": 0.0,
 		"color": Color(0.5, 0.9, 0.6),
-		"icon": "res://assets/icons/weapon_nature_staff.png",
+		"icon": "res://assets/icons/fusion_life_orbs.png",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_arcane_orb"
 	},
@@ -1487,7 +1487,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 1.8,
 		"effect_duration": 0.0,
 		"color": Color(0.7, 0.8, 1.0),
-		"icon": "res://assets/icons/weapon_wind_blade.png",
+		"icon": "res://assets/icons/fusion_wind_orbs.png",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_wind_orbs"
 	},
@@ -1516,7 +1516,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 1.5,
 		"effect_duration": 3.0,
 		"color": Color(0.3, 0.1, 0.4),
-		"icon": "res://assets/icons/weapon_void_pulse.png",
+		"icon": "res://assets/icons/fusion_cosmic_void.png",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_cosmic_void"
 	},
@@ -1545,7 +1545,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 3,  # 3 damage per tick
 		"effect_duration": 2.0,  # 2 seconds
 		"color": Color(0.4, 0.3, 0.5),
-		"icon": "res://assets/icons/weapon_shadow_dagger.png",
+		"icon": "res://assets/icons/fusion_phantom_blade.png",
 		"tags": ["projectile", "no_duration"]
 	},
 	
@@ -1573,7 +1573,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.3,
 		"effect_duration": 0.3,
 		"color": Color(0.3, 0.2, 0.3),
-		"icon": "res://assets/icons/weapon_earth_spike.png",
+		"icon": "res://assets/icons/fusion_stone_fang.png",
 		"element": 4, # DARK (Shadow)
 		"hit_sound": "sfx_weapon_cosmic_void",
 		"tags": ["projectile", "no_duration"]
@@ -1605,7 +1605,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.3,
 		"effect_duration": 0.0,
 		"color": Color(0.6, 0.5, 0.7),
-		"icon": "res://assets/icons/fusion_soul_reaper.png",
+		"icon": "res://assets/icons/fusion_twilight.png",
 		"tags": ["projectile", "no_duration"]
 	},
 	
@@ -1635,7 +1635,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 120.0,  # Fuerza de atracción hacia el punto de impacto
 		"effect_duration": 1.2,  # Tiempo que dura atrayendo
 		"color": Color(0.1, 0.0, 0.2),
-		"icon": "res://assets/icons/weapon_void_pulse.png",
+		"icon": "res://assets/icons/fusion_abyss.png",
 		"tags": ["projectile", "aoe"]
 	},
 	
@@ -1663,7 +1663,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 2,  # BUFFED from 1
 		"effect_duration": 0.0,
 		"color": Color(0.7, 0.9, 0.4),
-		"icon": "res://assets/icons/weapon_wind_blade.png",
+		"icon": "res://assets/icons/fusion_pollen_storm.png",
 		"tags": ["projectile", "homing"]
 	},
 	
@@ -1691,7 +1691,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 2,
 		"effect_duration": 0.0,
 		"color": Color(0.4, 0.6, 0.3),
-		"icon": "res://assets/icons/upgrade_nature_heal.png",
+		"icon": "res://assets/icons/fusion_gaia.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
 	
@@ -1719,7 +1719,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 5,
 		"effect_duration": 0.0,
 		"color": Color(0.9, 1.0, 0.5),
-		"icon": "res://assets/icons/upgrade_light_area.png",
+		"icon": "res://assets/icons/fusion_solar_bloom.png",
 		"tags": ["beam", "no_pierce", "no_projectile_speed", "no_duration"]
 	},
 	
@@ -1747,7 +1747,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 4,
 		"effect_duration": 0.0,
 		"color": Color(0.3, 0.4, 0.2),
-		"icon": "res://assets/icons/upgrade_void_pull.png",
+		"icon": "res://assets/icons/fusion_decay.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
 	
@@ -1775,7 +1775,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 2.0,  # Duración del blind en segundos (beneficia de effect_mult en nivel 5)
 		"effect_duration": 2.0,
 		"color": Color(0.8, 0.7, 0.5),
-		"icon": "res://assets/icons/weapon_earth_spike.png",
+		"icon": "res://assets/icons/fusion_sandstorm.png",
 		"tags": ["projectile", "no_duration"]
 	},
 	
@@ -1803,7 +1803,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.25,
 		"effect_duration": 0.0,
 		"color": Color(0.9, 0.95, 1.0),
-		"icon": "res://assets/icons/upgrade_light_crit.png",
+		"icon": "res://assets/icons/fusion_prism_wind.png",
 		"tags": ["projectile", "no_duration"]
 	},
 	
@@ -1831,7 +1831,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.8,
 		"effect_duration": 0.8,
 		"color": Color(0.9, 0.85, 0.7),
-		"icon": "res://assets/icons/weapon_light_beam.png",
+		"icon": "res://assets/icons/fusion_radiant_stone.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
 	
@@ -1859,7 +1859,7 @@ const FUSIONS: Dictionary = {
 		"effect_value": 0.25,  # Buffed from 0.2 (20% to 25%)
 		"effect_duration": 0.0,
 		"color": Color(0.5, 0.4, 0.6),
-		"icon": "res://assets/icons/upgrade_void_area.png",
+		"icon": "res://assets/icons/fusion_eclipse.png",
 		"tags": ["beam", "no_pierce", "no_projectile_speed", "no_duration"]
 	}
 }
