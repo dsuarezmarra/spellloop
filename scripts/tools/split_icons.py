@@ -1,130 +1,148 @@
 import os
-from PIL import Image
+import sys
+import math
+from PIL import Image, ImageChops
 
-# Config
-atlas_path = r"project/assets/sprites/projectiles/projectiles_base_sheet.png"
-output_dir = r"project/assets/sprites/projectiles/"
+def trim(im, border_color):
+    bg = Image.new(im.mode, im.size, border_color)
+    diff = ImageChops.difference(im, bg)
+    bbox = diff.getbbox()
+    if bbox:
+        return im.crop(bbox)
+    return im
 
-# Order: Ice, Fire, Arcane, Lightning, Void, Nature
-icon_names = [
-    "proj_ice_shard", "proj_fire_ball", "proj_arcane_orb", 
-    "proj_lightning_spark", "proj_void_bolt", "proj_nature_leaf"
-]
-
-def split_atlas():
-    if not os.path.exists(atlas_path):
-        print("Atlas not found")
+def split_grid(image_path, output_dir, names=None, final_size=64):
+    """
+    Splits an image into a grid of 12 cells (3x4 or 4x3 auto-detected)
+    and saves each cell centered.
+    """
+    if not os.path.exists(image_path):
+        print(f"Image not found: {image_path}")
         return
 
-    img = Image.open(atlas_path)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    img = Image.open(image_path)
     img = img.convert("RGBA")
     
     w, h = img.size
-    print(f"Atlas Size: {w}x{h}")
     
-    # 1. Detect Rows (Vertical projection)
-    # Scan y-axis for empty lines
-    row_ranges = []
-    in_row = False
-    start_y = 0
-    
-    # Threshold for noise (sometimes "transparent" isn't 0)
-    alpha_threshold = 10 
-    
-    for y in range(h):
-        # Check if this horizontal line has any non-transparent pixel
-        has_content = False
-        for x in range(w):
-            if img.getpixel((x, y))[3] > alpha_threshold:
-                has_content = True
-                break
+    # Auto-detect layout for 12 items
+    # If landscape, likely 4 cols x 3 rows. If portrait, 3 cols x 4 rows.
+    if w > h:
+        cols = 4
+        rows = 3
+    else:
+        cols = 3
+        rows = 4
         
-        if has_content and not in_row:
-            in_row = True
-            start_y = y
-        elif not has_content and in_row:
-            in_row = False
-            # Found a row from start_y to y
-            # Only add if significant height
-            if (y - start_y) > 10:
-                row_ranges.append((start_y, y))
+    cell_w = w // cols
+    cell_h = h // rows
     
-    # Handle last row if edge
-    if in_row:
-        row_ranges.append((start_y, h))
-        
-    print(f"Detected {len(row_ranges)} rows of icons.")
+    print(f"Processing {image_path} ({w}x{h}) -> {rows}x{cols} grid (Cell: {cell_w}x{cell_h})")
     
     count = 0
-    # 2. Process each row to find columns
-    for r_idx, (y1, y2) in enumerate(row_ranges):
-        # Crop to the row strip first to analyze columns
-        # But we can just read pixels from main img
-        
-        col_ranges = []
-        in_col = False
-        start_x = 0
-        
-        for x in range(w):
-            # Check vertical line segment within this row strip
-            has_content = False
-            for y in range(y1, y2):
-                if img.getpixel((x, y))[3] > alpha_threshold:
-                    has_content = True
-                    break
-            
-            if has_content and not in_col:
-                in_col = True
-                start_x = x
-            elif not has_content and in_col:
-                in_col = False
-                if (x - start_x) > 10:
-                    col_ranges.append((start_x, x))
-        
-        if in_col:
-            col_ranges.append((start_x, w))
-            
-        print(f"  Row {r_idx}: Detected {len(col_ranges)} items.")
-        
-        # 3. Extract and Save
-        for x1, x2 in col_ranges:
-            if count >= len(icon_names): break
-            
-            # Crop exact rect
-            icon = img.crop((x1, y1, x2, y2))
-            
-            # Optional: Trim tight bounding box around content inside this cell
-            bbox = icon.getbbox()
-            if bbox:
-                icon = icon.crop(bbox)
+    for r in range(rows):
+        for c in range(cols):
+            if names and count >= len(names):
+                break
                 
-                # Center in 64x64 canvas if needed? User asked for adapting them.
-                # Let's save as tight crop for now, or resize to uniform 64x64?
-                # User prompt said "optimized for 64x64 icon". 
-                # Let's put it in a 64x64 container centered.
+            x1 = c * cell_w
+            y1 = r * cell_h
+            x2 = x1 + cell_w
+            y2 = y1 + cell_h
+            
+            # Crop cell
+            cell = img.crop((x1, y1, x2, y2))
+            
+            # --- SMART PROCESSING ---
+            # 1. Get background color from top-left pixel
+            bg_color = cell.getpixel((0, 0))
+            
+            # 2. Trim background (simple heuristic based on corner color)
+            # This helps remove the solid dark grey background
+            try:
+                # Create a mask of the background color with tolerance
+                # Simple trim:
+                content = trim(cell, bg_color)
                 
-                final_size = 64
-                canvas = Image.new("RGBA", (final_size, final_size), (0,0,0,0))
-                
-                # Scale if too big
-                iw, ih = icon.size
-                if iw > final_size or ih > final_size:
-                    ratio = min(final_size/iw, final_size/ih)
-                    new_size = (int(iw*ratio), int(ih*ratio))
-                    icon = icon.resize(new_size, Image.Resampling.LANCZOS)
-                    iw, ih = new_size
+                # If trim returned full image or tiny, it might have failed or be empty
+                if content.size == cell.size:
+                     # Try more aggressive trim if corner color matches
+                     pass
+            except Exception as e:
+                print(f"Error trimming: {e}")
+                content = cell
+
+            # 3. Center in final canvas
+            final_canvas = Image.new("RGBA", (final_size, final_size), (0,0,0,0))
+            
+            # Resize content to fit within final_size with padding
+            target_size = int(final_size * 0.9)
+            cw, ch = content.size
+            
+            # Scale down if needed OR scale up if too small (normalization)
+            # We want icons to look uniform size
+            if cw > 0 and ch > 0:
+                scale = min(target_size / cw, target_size / ch)
+                new_w = int(cw * scale)
+                new_h = int(ch * scale)
+                content = content.resize((new_w, new_h), Image.Resampling.LANCZOS)
                 
                 # Paste centered
-                offset = ((final_size - iw) // 2, (final_size - ih) // 2)
-                canvas.paste(icon, offset)
+                off_x = (final_size - new_w) // 2
+                off_y = (final_size - new_h) // 2
+                final_canvas.paste(content, (off_x, off_y))
+            
+            # Determine filename
+            if names and count < len(names):
+                filename = names[count]
+                if not filename.endswith(".png"):
+                    filename += ".png"
+            else:
+                filename = f"icon_{r}_{c}.png"
                 
-                name = icon_names[count]
-                save_path = os.path.join(output_dir, f"{name}.png")
-                canvas.save(save_path)
-                print(f"    Saved: {name}.png")
-                
-                count += 1
+            save_path = os.path.join(output_dir, filename)
+            final_canvas.save(save_path)
+            print(f"Saved: {filename}")
+            
+            count += 1
 
 
 if __name__ == "__main__":
-    split_atlas()
+    # Base path for input images
+    input_base = r"project/assets/icons"
+    output_base = r"project/assets/icons"
+
+    # -------------------------------------------------------------------------
+    # BATCH 1: Base Weapons & Fusions -> icon_rpg_set_06.png
+    # -------------------------------------------------------------------------
+    batch_1_names = [
+        "weapon_shadow_dagger", "weapon_wind_blade", "weapon_nature_staff", "weapon_earth_spike",
+        "weapon_light_beam", "weapon_void_pulse", "fusion_steam_cannon", "fusion_storm_caller",
+        "fusion_soul_reaper", "fusion_cosmic_barrier", "fusion_rift_quake", "fusion_frostvine"
+    ]
+    split_grid(os.path.join(input_base, "icon_rpg_set_06.png"), output_base, batch_1_names)
+
+    # -------------------------------------------------------------------------
+    # BATCH 2: Fusions & Global Upgrades (Part 1) -> icon_rpg_set_07.png
+    # -------------------------------------------------------------------------
+    batch_2_names = [
+        "fusion_hellfire", "fusion_thunder_spear", "upgrade_global_damage", "upgrade_global_attack_speed",
+        "upgrade_global_area", "upgrade_global_proj_count", "upgrade_global_proj_speed", "upgrade_global_pierce",
+        "upgrade_global_crit_chance", "upgrade_global_crit_damage", "upgrade_global_duration", "upgrade_global_knockback"
+    ]
+    split_grid(os.path.join(input_base, "icon_rpg_set_07.png"), output_base, batch_2_names)
+
+    # -------------------------------------------------------------------------
+    # BATCH 3: Global Upgrades (Part 2) & Weapon Specifics -> icon_rpg_set_08.png
+    # -------------------------------------------------------------------------
+    batch_3_names = [
+        "upgrade_global_range", "upgrade_global_flat_damage", "special_ice_frost_nova", "special_ice_deep_freeze",
+        "special_fire_inferno", "special_fire_spread", "special_lightning_chain_master", "special_lightning_overcharge",
+        "special_shadow_assassin", "special_nature_overgrowth", "special_arcane_expansion", "upgrade_defensive_grit"
+    ]
+    split_grid(os.path.join(input_base, "icon_rpg_set_08.png"), output_base, batch_3_names)
+
+    print("Processing complete.")
