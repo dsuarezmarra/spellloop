@@ -596,13 +596,17 @@ func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 	if icon_tex:
 		icon_rect.texture = icon_tex
 	else:
-		var emoji_lbl = Label.new()
-		emoji_lbl.text = item_icon
-		emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		emoji_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		emoji_lbl.add_theme_font_size_override("font_size", 28)
-		emoji_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
-		icon_rect.add_child(emoji_lbl)
+		# Fallback: Check if item_icon is a path
+		if item_icon.begins_with("res://") and ResourceLoader.exists(item_icon):
+			icon_rect.texture = load(item_icon)
+		else:
+			var emoji_lbl = Label.new()
+			emoji_lbl.text = item_icon
+			emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			emoji_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			emoji_lbl.add_theme_font_size_override("font_size", 28)
+			emoji_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+			icon_rect.add_child(emoji_lbl)
 	
 	icon_panel.add_child(icon_rect)
 	icon_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Fix: Permitir clicks en el padre

@@ -11,7 +11,7 @@ def trim(im, border_color):
         return im.crop(bbox)
     return im
 
-def split_grid(image_path, output_dir, names=None, final_size=64):
+def split_grid(image_path, output_dir, names=None, final_size=64, trim_images=True):
     """
     Splits an image into a grid of 12 cells (3x4 or 4x3 auto-detected)
     and saves each cell centered.
@@ -30,17 +30,19 @@ def split_grid(image_path, output_dir, names=None, final_size=64):
     
     # Auto-detect layout for 12 items
     # If landscape, likely 4 cols x 3 rows. If portrait, 3 cols x 4 rows.
+    # User feedback: "grid 3x4" usually means 3 rows, 4 columns (Matrix notation) = Landscape
     if w > h:
         cols = 4
         rows = 3
     else:
+        # Fallback or vertical variation
         cols = 3
         rows = 4
         
     cell_w = w // cols
     cell_h = h // rows
     
-    print(f"Processing {image_path} ({w}x{h}) -> {rows}x{cols} grid (Cell: {cell_w}x{cell_h})")
+    print(f"Processing {image_path} ({w}x{h}) -> {rows}x{cols} grid (Cell: {cell_w}x{cell_h}) Trim={trim_images}")
     
     count = 0
     for r in range(rows):
@@ -57,23 +59,25 @@ def split_grid(image_path, output_dir, names=None, final_size=64):
             cell = img.crop((x1, y1, x2, y2))
             
             # --- SMART PROCESSING ---
-            # 1. Get background color from top-left pixel
-            bg_color = cell.getpixel((0, 0))
+            content = cell
             
-            # 2. Trim background (simple heuristic based on corner color)
-            # This helps remove the solid dark grey background
-            try:
-                # Create a mask of the background color with tolerance
-                # Simple trim:
-                content = trim(cell, bg_color)
+            if trim_images:
+                # 1. Get background color from top-left pixel
+                bg_color = cell.getpixel((0, 0))
                 
-                # If trim returned full image or tiny, it might have failed or be empty
-                if content.size == cell.size:
-                     # Try more aggressive trim if corner color matches
-                     pass
-            except Exception as e:
-                print(f"Error trimming: {e}")
-                content = cell
+                # 2. Trim background (simple heuristic based on corner color)
+                # This helps remove the solid dark grey background
+                try:
+                    # Create a mask of the background color with tolerance
+                    # Simple trim:
+                    trimmed = trim(cell, bg_color)
+                    
+                    # If trim returned full image or tiny, it might have failed or be empty
+                    if trimmed.size != cell.size:
+                         content = trimmed
+                except Exception as e:
+                    print(f"Error trimming: {e}")
+                    content = cell
 
             # 3. Center in final canvas
             final_canvas = Image.new("RGBA", (final_size, final_size), (0,0,0,0))
@@ -123,7 +127,7 @@ if __name__ == "__main__":
         "upgrade_fire_damage", "upgrade_fire_area", "upgrade_fire_burn", "upgrade_fire_multishot",
         "upgrade_lightning_damage", "upgrade_lightning_speed", "upgrade_lightning_chain", "upgrade_lightning_multishot"
     ]
-    split_grid(os.path.join(input_base, "icon_rpg_set_09.png"), output_base, batch_4_names)
+    split_grid(os.path.join(input_base, "icon_rpg_set_09.png"), output_base, batch_4_names, trim_images=True)
 
     # BATCH 5: Nature, Earth & Wind -> icon_rpg_set_10.png
     batch_5_names = [
@@ -131,7 +135,7 @@ if __name__ == "__main__":
         "upgrade_earth_area", "upgrade_earth_stun", "upgrade_earth_damage", "upgrade_earth_speed",
         "upgrade_wind_knockback", "upgrade_wind_pierce", "upgrade_wind_area", "upgrade_wind_multishot"
     ]
-    split_grid(os.path.join(input_base, "icon_rpg_set_10.png"), output_base, batch_5_names)
+    split_grid(os.path.join(input_base, "icon_rpg_set_10.png"), output_base, batch_5_names, trim_images=True)
 
     # BATCH 6: Shadow, Light, Arcane & Void -> icon_rpg_set_11.png
     batch_6_names = [
@@ -139,7 +143,7 @@ if __name__ == "__main__":
         "upgrade_light_area", "upgrade_light_crit", "upgrade_arcane_count", "upgrade_arcane_speed",
         "upgrade_arcane_area", "upgrade_void_pull", "upgrade_void_area", "upgrade_void_damage"
     ]
-    split_grid(os.path.join(input_base, "icon_rpg_set_11.png"), output_base, batch_6_names)
+    split_grid(os.path.join(input_base, "icon_rpg_set_11.png"), output_base, batch_6_names, trim_images=True)
 
     # BATCH 7: Fusion Upgrades & Mastery -> icon_rpg_set_12.png
     batch_7_names = [
@@ -147,7 +151,7 @@ if __name__ == "__main__":
         "upgrade_fusion_pierce", "upgrade_fusion_crit", "upgrade_fusion_mastery", "upgrade_weapon_mastery",
         "upgrade_generic_damage", "upgrade_generic_speed", "upgrade_generic_area", "upgrade_generic_multishot"
     ]
-    split_grid(os.path.join(input_base, "icon_rpg_set_12.png"), output_base, batch_7_names)
+    split_grid(os.path.join(input_base, "icon_rpg_set_12.png"), output_base, batch_7_names, trim_images=True)
 
     # --- PHASE 3 BATCH (Misc UI) ---
     
@@ -158,6 +162,17 @@ if __name__ == "__main__":
         "stat_armor", "stat_speed", "stat_damage", "stat_cooldown"
     ]
     # NOTE: User provided the UI grid as set_13
-    split_grid(os.path.join(input_base, "icon_rpg_set_13.png"), output_base, batch_8_names)
+    split_grid(os.path.join(input_base, "icon_rpg_set_13.png"), output_base, batch_8_names, trim_images=True)
+
+    # --- PHASE 4 BATCH (Save Slots) ---
+
+    # BATCH 10: Save Slots & UI -> icon_rpg_set_14.png
+    batch_10_names = [
+        "ui_new_game_sparkles", "ui_save_slot_swords", "ui_save_slot_orb", "ui_save_slot_scroll",
+        "ui_save_slot_backpack", "ui_save_slot_potion", "ui_empty_slot_plus", "ui_delete_trash",
+        "ui_settings_gear", "ui_trophy_cup", "ui_timer_clock", "ui_endless_infinity"
+    ]
+    # DISABLE TRIM FOR THIS BATCH to fix bad cuts
+    split_grid(os.path.join(input_base, "icon_rpg_set_14.png"), output_base, batch_10_names, trim_images=False)
 
     print("All Phases Processing complete.")

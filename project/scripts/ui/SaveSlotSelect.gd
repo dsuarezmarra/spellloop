@@ -347,10 +347,11 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		empty_display.alignment = BoxContainer.ALIGNMENT_CENTER
 		empty_display.add_theme_constant_override("separation", 10)
 		
-		var icon = Label.new()
-		icon.text = "✨"
-		icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		icon.add_theme_font_size_override("font_size", 48)
+		var icon = TextureRect.new()
+		icon.texture = load("res://assets/icons/ui_new_game_sparkles.png")
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.custom_minimum_size = Vector2(64, 64)
 		empty_display.add_child(icon)
 		
 		var label = Label.new()
@@ -373,13 +374,20 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		var player_data = slot_data.get("player_data", {})
 		
 		# Avatar / Icono Class (Variado)
-		var icons = ["⚔️", "🔮", "📜", "🎒", "🧪"]
-		var icon_char = icons[slot_index % icons.size()]
+		var icons = [
+			"res://assets/icons/ui_save_slot_swords.png",
+			"res://assets/icons/ui_save_slot_orb.png",
+			"res://assets/icons/ui_save_slot_scroll.png",
+			"res://assets/icons/ui_save_slot_backpack.png",
+			"res://assets/icons/ui_save_slot_potion.png"
+		]
+		var icon_path = icons[slot_index % icons.size()]
 		
-		var avatar = Label.new()
-		avatar.text = icon_char
-		avatar.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		avatar.add_theme_font_size_override("font_size", 64)
+		var avatar = TextureRect.new()
+		avatar.texture = load(icon_path)
+		avatar.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		avatar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		avatar.custom_minimum_size = Vector2(80, 80)
 		info_container.add_child(avatar)
 		
 		# Stats Grid
