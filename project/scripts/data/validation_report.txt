@@ -1,0 +1,6 @@
+Scanning UpgradeDatabase.gd...
+  ✅ All entries have IDs.
+----------------------------------------
+Scanning WeaponUpgradeDatabase.gd...
+  ✅ All entries have IDs.
+----------------------------------------

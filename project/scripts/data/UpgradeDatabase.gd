@@ -745,6 +745,7 @@ const UTILITY_UPGRADES: Dictionary = {
 	},
 	# [NUEVO] Portador de Plaga (Plague Bearer)
 	"plague_bearer": {
+		"id": "plague_bearer",
 		"icon": "res://assets/icons/icon_poison_bottle.png",
 		"name": "Portador de Plaga",
 		"description": "Al morir, los enemigos contagian sus estados.",
@@ -1594,6 +1595,7 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 	# OVERKILL (Daño excedente transferido)
 	# ─────────────────────────────────────────────────────────────────────────────
 	"overkill_1": {
+		"id": "overkill_1",
 		"icon": "res://assets/icons/icon_bomb_blast.png",
 		"name": "Explosión de Daño",
 		"description": "25% del daño excedente se transfiere a enemigos cercanos.",
@@ -1603,6 +1605,7 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 		"effects": [{"stat": "overkill_damage", "value": 0.25, "operation": "add"}]
 	},
 	"overkill_2": {
+		"id": "overkill_2",
 		"icon": "res://assets/icons/icon_bomb_blast.png",
 		"name": "Reacción en Cadena",
 		"description": "50% del daño excedente se transfiere a enemigos cercanos.",
@@ -1612,6 +1615,7 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 		"effects": [{"stat": "overkill_damage", "value": 0.50, "operation": "add"}]
 	},
 	"overkill_3": {
+		"id": "overkill_3",
 		"icon": "res://assets/icons/icon_bomb_blast.png",
 		"name": "Devastación",
 		"description": "100% del daño excedente se transfiere a enemigos cercanos.",
@@ -1789,6 +1793,7 @@ const CURSED_UPGRADES: Dictionary = {
 	},
 	# [NUEVO] Miope (Near Sighted)
 	"near_sighted": {
+		"id": "near_sighted",
 		"icon": "res://assets/icons/icon_glasses_broken.png",
 		"name": "Miope",
 		"description": "-50% Rango, +50% Daño.",
@@ -1869,6 +1874,7 @@ const CURSED_UPGRADES: Dictionary = {
 	# ÁREA vs VELOCIDAD
 	# ─────────────────────────────────────────────────────────────────────────────
 	"cursed_heavy_weapons_1": {
+		"id": "cursed_heavy_weapons_1",
 		"icon": "res://assets/icons/icon_hammer_heavy.png",
 		"name": "Armas Pesadas",
 		"description": "+40% área de efecto, pero -15% velocidad de ataque.",
@@ -1882,6 +1888,7 @@ const CURSED_UPGRADES: Dictionary = {
 		]
 	},
 	"cursed_heavy_weapons_2": {
+		"id": "cursed_heavy_weapons_2",
 		"icon": "res://assets/icons/icon_hammer_heavy.png",
 		"name": "Artillería",
 		"description": "+75% área de efecto, pero -25% velocidad de ataque.",
@@ -1899,6 +1906,7 @@ const CURSED_UPGRADES: Dictionary = {
 	# VIDA vs VELOCIDAD
 	# ─────────────────────────────────────────────────────────────────────────────
 	"cursed_tank_1": {
+		"id": "cursed_tank_1",
 		"icon": "res://assets/icons/icon_turtle_shell.png",
 		"name": "Tanque Lento",
 		"description": "+50 vida máxima, +5 armadura, pero -15% velocidad movimiento.",
@@ -1913,6 +1921,7 @@ const CURSED_UPGRADES: Dictionary = {
 		]
 	},
 	"cursed_tank_2": {
+		"id": "cursed_tank_2",
 		"icon": "res://assets/icons/icon_turtle_shell.png",
 		"name": "Fortaleza Móvil",
 		"description": "+100 vida, +10 armadura, pero -25% velocidad movimiento.",
@@ -2029,6 +2038,7 @@ const CURSED_UPGRADES: Dictionary = {
 	# ESQUIVA vs ARMADURA
 	# ─────────────────────────────────────────────────────────────────────────────
 	"cursed_nimble_1": {
+		"id": "cursed_nimble_1",
 		"icon": "res://assets/icons/icon_moon_shadow.png",
 		"name": "Danzarín de Sombras",
 		"description": "+15% esquiva, pero -5 armadura.",
@@ -2042,6 +2052,7 @@ const CURSED_UPGRADES: Dictionary = {
 		]
 	},
 	"cursed_nimble_2": {
+		"id": "cursed_nimble_2",
 		"icon": "res://assets/icons/icon_moon_shadow.png",
 		"name": "Fantasma",
 		"description": "+25% esquiva, pero -10 armadura.",
@@ -2062,6 +2073,7 @@ const CURSED_UPGRADES: Dictionary = {
 
 const UNIQUE_UPGRADES: Dictionary = {
 	"unique_phoenix_heart": {
+		"id": "unique_phoenix_heart",
 		"icon": "res://assets/icons/icon_star_revive.png",
 		"name": "Corazón de Fénix",
 		"description": "Revives al morir con 50% HP. (Se consume al usarse)",
@@ -2074,6 +2086,7 @@ const UNIQUE_UPGRADES: Dictionary = {
 	},
 
 	"unique_second_chance": {
+		"id": "unique_second_chance",
 		"icon": "res://assets/icons/icon_star_revive.png",
 		"name": "Segunda Vida",
 		"description": "Revives una vez con 50% HP + 3s invulnerabilidad. (Se consume)",
@@ -2125,6 +2138,7 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"effects": [{"stat": "chain_count", "value": 2, "operation": "add"}]
 	},
 	"unique_explosion_master": {
+		"id": "unique_explosion_master",
 		"icon": "res://assets/icons/icon_bomb_blast.png",
 		"name": "Maestro de Explosiones",
 		"description": "25% prob. de explotar al matar (50 daño en área).",
@@ -2310,7 +2324,8 @@ const UNIQUE_UPGRADES: Dictionary = {
 		]
 	},
 	"unique_affliction_master": {
-		"icon": "res://assets/icons/icon_poison_bottle.png",
+		"id": "unique_affliction_master",
+		"icon": "res://assets/icons/icon_skull_kill.png",
 		"name": "Maestro de Aflicciones",
 		"description": "+100% duración de efectos, +15% prob. congelar, +15% prob. sangrado.",
 		"category": "unique",
@@ -2339,6 +2354,7 @@ const UNIQUE_UPGRADES: Dictionary = {
 		]
 	},
 	"unique_guardian_angel": {
+		"id": "unique_guardian_angel",
 		"icon": "res://assets/icons/icon_star_revive.png",
 		"name": "Ángel Guardián",
 		"description": "+100 Escudo, +50 HP, +1 revive, regenera escudo 2s más rápido.",
