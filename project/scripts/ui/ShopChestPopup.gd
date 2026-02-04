@@ -398,13 +398,29 @@ func _create_item_button(item: Dictionary, index: int) -> Control:
 	icon_container.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	
 	var icon_str = item.get("icon", "❓")
-	var icon_lbl = Label.new()
-	icon_lbl.text = icon_str
-	icon_lbl.add_theme_font_size_override("font_size", 32)
-	icon_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	icon_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
-	icon_container.add_child(icon_lbl)
+	
+	if icon_str is String and icon_str.begins_with("res://"):
+		# Es una ruta de textura -> Cargar imagen
+		if ResourceLoader.exists(icon_str):
+			icon_container.texture = load(icon_str)
+		else:
+			# Fallback visual si la imagen no existe
+			var fallback_lbl = Label.new()
+			fallback_lbl.text = "❌"
+			fallback_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			fallback_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			fallback_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+			icon_container.add_child(fallback_lbl)
+	else:
+		# Es un emoji o texto -> Mostrar label
+		var icon_lbl = Label.new()
+		icon_lbl.text = str(icon_str)
+		icon_lbl.add_theme_font_size_override("font_size", 32)
+		icon_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		icon_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+		icon_container.add_child(icon_lbl)
+	
 	hbox.add_child(icon_container)
 	
 	# Info (nombre + descripción)

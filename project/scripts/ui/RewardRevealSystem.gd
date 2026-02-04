@@ -455,12 +455,25 @@ func _create_reel_item_display(icon: String, item_name: String, color: Color) ->
 	container.alignment = BoxContainer.ALIGNMENT_CENTER
 	container.custom_minimum_size = Vector2(160, 200)
 	
-	# Icono grande
-	var icon_label = Label.new()
-	icon_label.text = icon
-	icon_label.add_theme_font_size_override("font_size", 56)
-	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	container.add_child(icon_label)
+	var icon_container = Control.new()
+	icon_container.custom_minimum_size = Vector2(80, 80)
+	container.add_child(icon_container)
+
+	if icon.begins_with("res://") and ResourceLoader.exists(icon):
+		var tex_rect = TextureRect.new()
+		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tex_rect.custom_minimum_size = Vector2(80, 80)
+		tex_rect.texture = load(icon)
+		tex_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		icon_container.add_child(tex_rect)
+	else:
+		var icon_label = Label.new()
+		icon_label.text = icon
+		icon_label.add_theme_font_size_override("font_size", 56)
+		icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		icon_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+		icon_container.add_child(icon_label)
 	
 	# Separador
 	var sep = Control.new()
@@ -589,11 +602,25 @@ func _create_floating_item(icon: String, item_name: String, color: Color) -> Con
 	container.alignment = BoxContainer.ALIGNMENT_CENTER
 	
 	# Icono
-	var icon_label = Label.new()
-	icon_label.text = icon
-	icon_label.add_theme_font_size_override("font_size", 72)
-	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	container.add_child(icon_label)
+	var icon_container = Control.new()
+	icon_container.custom_minimum_size = Vector2(100, 100)
+	container.add_child(icon_container)
+
+	if icon.begins_with("res://") and ResourceLoader.exists(icon):
+		var tex_rect = TextureRect.new()
+		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tex_rect.custom_minimum_size = Vector2(100, 100)
+		tex_rect.texture = load(icon)
+		tex_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		icon_container.add_child(tex_rect)
+	else:
+		var icon_label = Label.new()
+		icon_label.text = icon
+		icon_label.add_theme_font_size_override("font_size", 72)
+		icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		icon_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+		icon_container.add_child(icon_label)
 	
 	# Nombre con glow
 	var name_label = Label.new()
