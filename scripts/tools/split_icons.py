@@ -59,6 +59,7 @@ def split_grid(image_path, output_dir, names=None, final_size=64, trim_images=Tr
             cell = img.crop((x1, y1, x2, y2))
             
             # --- SMART PROCESSING ---
+            # --- SMART PROCESSING ---
             content = cell
             
             if trim_images:
