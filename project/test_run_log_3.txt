@@ -1,7 +1,0 @@
-﻿Godot Engine v4.5.1.stable.official.f62fdbde1 - https://godotengine.org
-
-[AudioManager] Loaded 178 audio definitions
-[AudioManager] Validating manifest...
-[AudioManager] Validation finished with issues: 76 empty IDs, 0 broken paths.
-[Localization] Auto-detected system language: es
-[PerfTracker] Initialized. Logs at: C:/Users/Usuario/AppData/Roaming/Godot/app_userdata/Spellloop/perf_logs

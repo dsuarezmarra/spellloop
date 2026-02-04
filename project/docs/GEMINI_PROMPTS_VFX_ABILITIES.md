@@ -40,7 +40,7 @@ STYLE REQUIREMENTS:
 - Cute, chubby, rounded cartoon style (think Funko Pop meets Vampire Survivors)
 - Thick dark outlines (#661100)
 - Soft shading with no hard edges
-- Transparent background (PNG with alpha)
+- Solid black background (PNG with alpha)
 
 CONTENT - FIRE PROJECTILE:
 Row 1 (Flight Animation - 4 frames, loops):
@@ -72,7 +72,7 @@ STYLE REQUIREMENTS:
 - Cute, chubby, rounded cartoon style (Funko Pop aesthetic)
 - Thick dark outlines (#1A3A5C)
 - Soft shading, crystalline appearance
-- Transparent background (PNG with alpha)
+- Solid black background (PNG with alpha)
 
 CONTENT - ICE PROJECTILE:
 Row 1 (Flight Animation - 4 frames, loops):
@@ -104,7 +104,7 @@ STYLE REQUIREMENTS:
 - Cute, mystical cartoon style (Funko Pop aesthetic)
 - Thick dark outlines (#330066)
 - Magical glow effects
-- Transparent background (PNG with alpha)
+- Solid black background (PNG with alpha)
 
 CONTENT - ARCANE PROJECTILE:
 Row 1 (Flight Animation - 4 frames, loops):
@@ -136,7 +136,7 @@ STYLE REQUIREMENTS:
 - Cute but slightly ominous cartoon style
 - Thick dark outlines (#1A001A)
 - Dark energy with distortion effect
-- Transparent background (PNG with alpha)
+- Solid black background (PNG with alpha)
 
 CONTENT - VOID PROJECTILE:
 Row 1 (Flight Animation - 4 frames, loops):
@@ -168,7 +168,7 @@ STYLE REQUIREMENTS:
 - Cute, gooey cartoon style (Funko Pop aesthetic)
 - Thick dark outlines (#1A4D13)
 - Slimy, bubbly appearance
-- Transparent background (PNG with alpha)
+- Solid black background (PNG with alpha)
 
 CONTENT - POISON PROJECTILE:
 Row 1 (Flight Animation - 4 frames, loops):
@@ -200,7 +200,7 @@ STYLE REQUIREMENTS:
 - Cute but menacing cartoon style
 - Thick dark outlines (#1A001A)
 - Pulsating, alive appearance
-- Transparent background (PNG with alpha)
+- Solid black background (PNG with alpha)
 
 CONTENT - VOID HOMING ORB (Tracks the player):
 Row 1 (Flight Animation - 4 frames, loops):
@@ -241,7 +241,7 @@ STYLE REQUIREMENTS:
 - Cute, impactful cartoon style
 - Thick dark outlines (#661100)
 - Dynamic fire effects
-- Transparent background (PNG with alpha)
+- Solid black background (PNG with alpha)
 - TOP-DOWN VIEW (player looks from above)
 
 CONTENT - FIRE STOMP AOE (radius: 160px in-game):
@@ -277,7 +277,7 @@ STYLE REQUIREMENTS:
 - Cute but dangerous-looking fire zone
 - Thick dark outlines (#661100)
 - Persistent fire pool effect
-- Transparent background (PNG with alpha)
+- Solid black background (PNG with alpha)
 - TOP-DOWN VIEW
 
 CONTENT - FIRE ZONE (radius: 80px, persists 5 seconds):
@@ -313,7 +313,7 @@ STYLE REQUIREMENTS:
 - Beautiful, crystalline ice effect
 - Thick dark outlines (#1A3A5C)
 - Freezing, slowing visual
-- Transparent background (PNG with alpha)
+- Solid black background (PNG with alpha)
 - TOP-DOWN VIEW
 
 CONTENT - FREEZE ZONE (radius: 120px, 50% slow):
@@ -349,7 +349,7 @@ STYLE REQUIREMENTS:
 - Magical, explosive purple energy
 - Thick dark outlines (#330066)
 - Expanding wave pattern
-- Transparent background (PNG with alpha)
+- Solid black background (PNG with alpha)
 - TOP-DOWN VIEW
 
 CONTENT - ARCANE NOVA (radius: 140-180px, burst damage):
@@ -385,7 +385,7 @@ STYLE REQUIREMENTS:
 - Dark, ominous void energy
 - Thick dark outlines (#1A001A)
 - Implosion then explosion effect
-- Transparent background (PNG with alpha)
+- Solid black background (PNG with alpha)
 - TOP-DOWN VIEW
 
 CONTENT - VOID EXPLOSION (radius: 180px, high damage):
@@ -421,7 +421,7 @@ STYLE REQUIREMENTS:
 - Golden, ancient rune magic
 - Thick dark outlines (#8B6914)
 - Geometric, runic patterns
-- Transparent background (PNG with alpha)
+- Solid black background (PNG with alpha)
 - TOP-DOWN VIEW
 
 CONTENT - RUNE BLAST (radius: 100px, stuns 0.5s):
@@ -457,7 +457,7 @@ STYLE REQUIREMENTS:
 - Heavy, earthy impact
 - Thick dark outlines (#4D3319)
 - Ground-breaking effect
-- Transparent background (PNG with alpha)
+- Solid black background (PNG with alpha)
 - TOP-DOWN VIEW
 
 CONTENT - GROUND SLAM (radius: 100-120px):
@@ -538,7 +538,7 @@ STYLE REQUIREMENTS:
 - Cartoon fire breath in cone shape
 - Thick outlines (#661100)
 - 45-55 degree spread angle
-- Transparent background
+- Solid black background
 - TOP-DOWN VIEW - cone spreading from left side to right
 
 CONTENT - FLAME BREATH CONE:
@@ -571,7 +571,7 @@ STYLE REQUIREMENTS:
 - Dark void energy beam
 - Thick outlines (#1A001A)
 - Channeled/continuous beam effect
-- Transparent background
+- Solid black background
 - SIDE VIEW of beam (horizontal)
 
 CONTENT - VOID BEAM (2.5 second channel, high damage):
@@ -614,7 +614,7 @@ STYLE REQUIREMENTS:
 - Clearly visible warning indicator
 - Pulsating animation
 - Universal "danger" look
-- Transparent background
+- Solid black background
 - TOP-DOWN VIEW
 
 CONTENT - CIRCULAR WARNING (generic AOE telegraph):
@@ -645,7 +645,7 @@ STYLE REQUIREMENTS:
 - Linear charge attack warning
 - Shows direction of incoming attack
 - Pulsating animation
-- Transparent background
+- Solid black background
 - TOP-DOWN VIEW
 
 CONTENT - CHARGE LINE WARNING:
@@ -675,7 +675,7 @@ STYLE REQUIREMENTS:
 - Magical prison/trap warning
 - Golden rune aesthetics
 - Pulsating rune circle
-- Transparent background
+- Solid black background
 - TOP-DOWN VIEW
 
 CONTENT - RUNE PRISON WARNING:
@@ -712,7 +712,7 @@ STYLE REQUIREMENTS:
 - Powerful, elite enemy aura
 - Pulsating golden glow
 - Goes UNDER the enemy sprite
-- Transparent background
+- Solid black background
 - TOP-DOWN VIEW
 
 CONTENT - ELITE AURA (placed beneath elite enemies):
@@ -743,7 +743,7 @@ STYLE REQUIREMENTS:
 - Damaging void aura
 - Dark, ominous pulsing
 - Goes AROUND the enemy
-- Transparent background
+- Solid black background
 - TOP-DOWN VIEW
 
 CONTENT - DAMAGE AURA (hurts player on contact):
@@ -774,7 +774,7 @@ STYLE REQUIREMENTS:
 - Angry, enraged state aura
 - Red pulsating flames
 - Intense and threatening
-- Transparent background
+- Solid black background
 - TOP-DOWN VIEW
 
 CONTENT - ENRAGE AURA (boss is angry, +50% damage, +30% speed):
@@ -805,7 +805,7 @@ STYLE REQUIREMENTS:
 - Supportive buff effect
 - Goes on buffed enemies
 - Green corruption theme
-- Transparent background
+- Solid black background
 - TOP-DOWN VIEW
 
 CONTENT - ALLY BUFF AURA (+25% damage, +15% speed):
@@ -840,7 +840,7 @@ STYLE REQUIREMENTS:
 - Massive void pull/suction effect
 - Spiraling inward motion
 - Covers large area (radius 450px in-game)
-- Transparent background
+- Solid black background
 - TOP-DOWN VIEW
 
 CONTENT - VOID PULL (sucks player toward boss):
@@ -876,7 +876,7 @@ STYLE REQUIREMENTS:
 - Protective rune barrier
 - Hexagonal/geometric shape
 - Golden rune magic
-- Transparent background
+- Solid black background
 - Can overlay on boss
 
 CONTENT - RUNE SHIELD (absorbs 4-5 hits):
@@ -912,7 +912,7 @@ STYLE REQUIREMENTS:
 - Magical summoning circle
 - Arcane purple magic
 - Where minions appear from
-- Transparent background
+- Solid black background
 - TOP-DOWN VIEW
 
 CONTENT - SUMMON CIRCLE (spawns enemy minions):
@@ -948,7 +948,7 @@ STYLE REQUIREMENTS:
 - Dimensional tear/rift effect
 - Persists on ground dealing damage
 - Void/dark energy
-- Transparent background
+- Solid black background
 - TOP-DOWN VIEW
 
 CONTENT - REALITY TEAR (DPS zone, 7 seconds):
@@ -991,7 +991,7 @@ STYLE REQUIREMENTS (all):
 - Quick impact burst effect
 - Cartoon/funko pop style
 - 4 frames: initial hit → burst → dissipate → fade
-- Transparent background
+- Solid black background
 
 CREATE THESE 6 IMPACT SHEETS:
 

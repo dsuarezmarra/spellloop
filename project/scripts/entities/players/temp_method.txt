@@ -1,4 +1,0 @@
-func _on_stat_changed(stat_name: String, _old_value: float, _new_value: float) -> void:
-	"""Callback cuando cambian los stats globales"""
-	if stat_name == "shield_amount" or stat_name == "max_shield":
-		update_health_bar()
