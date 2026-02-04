@@ -763,22 +763,22 @@ func _create_elite_warning_visual(pos: Vector2, duration: float) -> Node2D:
 		cleanup_timer.autostart = true
 		warning.add_child(cleanup_timer)
 		
-		cleanup_timer.timeout.connect(func():
-			if is_instance_valid(warning):
-				# Fade out antes de destruir
-				var fade_tween = create_tween()
-				fade_tween.tween_property(anim_sprite, "modulate:a", 0.0, 0.2)
-				fade_tween.tween_callback(func():
-					if is_instance_valid(warning):
-						warning.queue_free()
-				)
-		)
+		cleanup_timer.timeout.connect(_on_warning_cleanup.bind(warning, anim_sprite))
 	else:
 		# Fallback: dibujo por código si no hay spritesheet
 		push_warning("Missing elite spawn spritesheet, using fallback")
 		_create_fallback_warning_visual(warning, duration)
 	
 	return warning
+
+func _on_warning_cleanup(warning: Node2D, anim_sprite: AnimatedSprite2D) -> void:
+	"""Cleanup del warning visual con fade out"""
+	if is_instance_valid(warning) and is_instance_valid(anim_sprite):
+		var fade_tween = create_tween()
+		fade_tween.tween_property(anim_sprite, "modulate:a", 0.0, 0.2)
+		fade_tween.tween_callback(warning.queue_free)
+	elif is_instance_valid(warning):
+		warning.queue_free()
 
 func _create_fallback_warning_visual(warning: Node2D, duration: float) -> void:
 	"""Fallback visual si el spritesheet no está disponible"""
@@ -825,6 +825,7 @@ func _create_fallback_warning_visual(warning: Node2D, duration: float) -> void:
 			timer.stop()
 			if is_instance_valid(warning):
 				warning.queue_free()
+	)
 
 func _create_elite_spawn_impact(pos: Vector2) -> void:
 	"""Create impact effect when elite materializes"""

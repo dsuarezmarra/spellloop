@@ -217,7 +217,8 @@ func _update_hud_health(current: float, maximum: float) -> void:
 func _update_hud_weapons() -> void:
 	if hud and hud.has_method("update_weapons"):
 		var info = attack_manager.get_info()
-		hud.update_weapons(info)
+		# Pasar el array de armas, no el diccionario completo
+		hud.update_weapons(info.get("weapons", []))
 
 func _update_hud_slots() -> void:
 	if hud and hud.has_method("update_weapon_slots"):

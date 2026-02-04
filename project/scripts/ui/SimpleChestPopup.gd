@@ -588,7 +588,13 @@ func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	
 	var icon_tex = null
-	if item_id != "":
+	
+	# Prioridad 1: Usar item_icon si es un path válido
+	if item_icon.begins_with("res://") and ResourceLoader.exists(item_icon):
+		icon_tex = load(item_icon)
+	
+	# Prioridad 2: Intentar por ID (para armas/fusiones que usan id como nombre de archivo)
+	if icon_tex == null and item_id != "":
 		var path = "res://assets/icons/%s.png" % item_id
 		if ResourceLoader.exists(path):
 			icon_tex = load(path)
@@ -596,18 +602,15 @@ func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 	if icon_tex:
 		icon_rect.texture = icon_tex
 	else:
-		# Fallback: Check if item_icon is a path
-		if item_icon.begins_with("res://") and ResourceLoader.exists(item_icon):
-			icon_rect.texture = load(item_icon)
-		else:
-			var emoji_lbl = Label.new()
-			# Mostrar emoji fallback si es una ruta que no existe, no mostrar la ruta como texto
-			emoji_lbl.text = "❓" if item_icon.begins_with("res://") else item_icon
-			emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			emoji_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-			emoji_lbl.add_theme_font_size_override("font_size", 28)
-			emoji_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
-			icon_rect.add_child(emoji_lbl)
+		# Fallback: Mostrar emoji
+		var emoji_lbl = Label.new()
+		# Mostrar emoji fallback si es una ruta que no existe, no mostrar la ruta como texto
+		emoji_lbl.text = "❓" if item_icon.begins_with("res://") else item_icon
+		emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		emoji_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		emoji_lbl.add_theme_font_size_override("font_size", 28)
+		emoji_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+		icon_rect.add_child(emoji_lbl)
 	
 	icon_panel.add_child(icon_rect)
 	icon_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Fix: Permitir clicks en el padre
@@ -927,7 +930,13 @@ func setup_items(items: Array):
 		icon_container_panel.add_theme_stylebox_override("panel", icon_style)
 		
 		var icon_tex = null
-		if item_id != "":
+		
+		# Prioridad 1: Usar item_icon si es un path válido
+		if item_icon.begins_with("res://") and ResourceLoader.exists(item_icon):
+			icon_tex = load(item_icon)
+		
+		# Prioridad 2: Intentar por ID (para armas/fusiones)
+		if icon_tex == null and item_id != "":
 			var path = "res://assets/icons/%s.png" % item_id
 			if ResourceLoader.exists(path):
 				icon_tex = load(path)

@@ -434,46 +434,68 @@ func _create_slot(item_data, is_weapon: bool) -> Control:
 	
 	# Manejo de diccionarios (Legacy/Loot)
 	if typeof(item_data) == TYPE_DICTIONARY:
-		# 1. Intentar cargar desde assets/icons/ID.png
-		if item_data.has("id"):
-			var asset_path = "res://assets/icons/%s.png" % item_data.id
-			# Doble check: ResourceLoader o FileAccess
-			if ResourceLoader.exists(asset_path) or FileAccess.file_exists(asset_path):
+		# 1. Prioridad: Usar campo "icon" si es un path válido
+		if item_data.has("icon") and typeof(item_data.icon) == TYPE_STRING:
+			if item_data.icon.begins_with("res://") and ResourceLoader.exists(item_data.icon):
+				icon_path = item_data.icon
+		
+		# 2. Intentar con prefijo weapon_ + id
+		if icon_path == "" and item_data.has("id"):
+			var asset_path = "res://assets/icons/weapon_%s.png" % item_data.id
+			if ResourceLoader.exists(asset_path):
 				icon_path = asset_path
 		
-		# 2. Fallback a propiedad (si es path explícito)
-		if icon_path == "" and item_data.has("icon_path"):
-			icon_path = item_data.icon_path
+		# 3. Intentar solo con id
+		if icon_path == "" and item_data.has("id"):
+			var asset_path = "res://assets/icons/%s.png" % item_data.id
+			if ResourceLoader.exists(asset_path):
+				icon_path = asset_path
 			
 	# Manejo de Objetos (BaseWeapon / RefCounted)
 	elif typeof(item_data) == TYPE_OBJECT:
-		var w_id = ""
-		if "id" in item_data: w_id = item_data.id
-		elif item_data.has_method("get_id"): w_id = item_data.get_id()
+		# 1. Usar campo icon del objeto si es path válido
+		if "icon" in item_data and typeof(item_data.icon) == TYPE_STRING:
+			if item_data.icon.begins_with("res://") and ResourceLoader.exists(item_data.icon):
+				icon_path = item_data.icon
 		
-		if w_id != "":
-			var asset_path = "res://assets/icons/%s.png" % w_id
-			if ResourceLoader.exists(asset_path):
-				icon_path = asset_path
+		# 2. Intentar por id
+		if icon_path == "":
+			var w_id = ""
+			if "id" in item_data: w_id = item_data.id
+			elif item_data.has_method("get_id"): w_id = item_data.get_id()
+			
+			if w_id != "":
+				var asset_path = "res://assets/icons/weapon_%s.png" % w_id
+				if ResourceLoader.exists(asset_path):
+					icon_path = asset_path
+				else:
+					asset_path = "res://assets/icons/%s.png" % w_id
+					if ResourceLoader.exists(asset_path):
+						icon_path = asset_path
 	
 	if icon_path != "":
 		slot.texture = load(icon_path)
 	
-	# Fallback a texto si no hay textura
+	# Fallback a emoji si no hay textura
 	if slot.texture == null: 
-		var text_fallback = ""
+		var text_fallback = "❓"
 		if typeof(item_data) == TYPE_DICTIONARY and item_data.has("icon"):
-			text_fallback = item_data.icon
+			var icon_val = item_data.icon
+			# Si es emoji (no path), usarlo
+			if typeof(icon_val) == TYPE_STRING and not icon_val.begins_with("res://"):
+				text_fallback = icon_val
 		elif typeof(item_data) == TYPE_OBJECT and "icon" in item_data:
-			text_fallback = item_data.icon
+			var icon_val = item_data.icon
+			if typeof(icon_val) == TYPE_STRING and not icon_val.begins_with("res://"):
+				text_fallback = icon_val
 			
-		if text_fallback.length() < 10 and text_fallback != "":
-			var lbl = Label.new()
-			lbl.text = text_fallback
-			lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-			lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
-			slot.add_child(lbl)
+		var lbl = Label.new()
+		lbl.text = text_fallback
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+		lbl.add_theme_font_size_override("font_size", 20)
+		slot.add_child(lbl)
 
 	# Nivel (si aplica)
 	if typeof(item_data) == TYPE_DICTIONARY and item_data.has("level"):
