@@ -634,11 +634,15 @@ func _on_reroll() -> void:
 					# FloatingText.spawn_text(global_position, "+%d XP" % int(xp_amount), Color.PURPLE)
 	# -----------------------------------------------
 
-	generate_options()
 	# Volver a opciones después de reroll
 	current_row = Row.OPTIONS
 	option_index = 0
-	_update_all_visuals()
+	
+	# Actualizar contador de rerolls antes de generar opciones
+	_update_button_counts()
+	
+	# Generar nuevas opciones (esto incluye la animación de tragaperras)
+	generate_options()
 
 func _on_banish() -> void:
 	if locked or banish_count <= 0 or options.size() == 0:

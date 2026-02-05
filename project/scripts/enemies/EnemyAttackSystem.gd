@@ -3780,10 +3780,15 @@ func _spawn_phase_change_effect() -> void:
 	)
 
 func _spawn_summon_visual() -> void:
-	"""Efecto de invocaciÃ³n"""
+	"""Efecto de invocacion - Usa VFXManager si disponible"""
 	if not is_instance_valid(enemy):
 		return
 	
+	# Intentar VFXManager primero
+	if _try_spawn_via_vfxmanager("summon_circle", "boss", enemy.global_position, 80.0, 1.5):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 50
@@ -3949,7 +3954,12 @@ func _spawn_curse_aura_visual(center: Vector2, radius: float) -> void:
 	)
 
 func _spawn_void_pull_visual(center: Vector2, radius: float) -> void:
-	"""Visual de void pull - espiral hacia el centro"""
+	"""Visual de void pull - Usa VFXManager si disponible"""
+	# Intentar VFXManager primero
+	if _try_spawn_via_vfxmanager("void_pull", "boss", center, radius, 2.0):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 50
@@ -4033,11 +4043,15 @@ func _spawn_void_beam_visual(origin: Vector2, direction: Vector2, length: float,
 	)
 
 func _spawn_rune_shield_visual() -> void:
-	"""Visual de escudo de runas"""
+	"""Visual de escudo de runas - Usa VFXManager si disponible"""
 	if not is_instance_valid(enemy):
 		return
 	
-	# El efecto se adjunta al enemigo
+	# Intentar VFXManager primero
+	if _try_spawn_via_vfxmanager("rune_shield", "boss", enemy.global_position, 60.0, 12.0):
+		return
+	
+	# Fallback: El efecto se adjunta al enemigo
 	var visual = Node2D.new()
 	visual.name = "RuneShieldVisual"
 	enemy.add_child(visual)
@@ -4045,7 +4059,7 @@ func _spawn_rune_shield_visual() -> void:
 	var anim = 0.0
 	
 	visual.draw.connect(func():
-		# HexÃ¡gono de escudo
+		# Hexagono de escudo
 		var radius = 40
 		var points = PackedVector2Array()
 		for i in range(7):
@@ -4078,10 +4092,15 @@ func _spawn_rune_shield_visual() -> void:
 	)
 
 func _spawn_rune_prison_visual(pos: Vector2, duration: float) -> void:
-	"""Visual de prisiÃ³n de runas"""
+	"""Visual de prision de runas - Usa VFXManager si disponible"""
+	# Intentar VFXManager primero
+	if _try_spawn_via_vfxmanager("rune_prison", "telegraph", pos, 40.0, duration):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 55  # Encima del jugador
+	effect.z_index = 55
 	effect.global_position = pos
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -4257,10 +4276,15 @@ func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
 	)
 
 func _spawn_charge_warning_visual(pos: Vector2, direction: Vector2) -> void:
-	"""Visual de advertencia de carga"""
+	"""Visual de advertencia de carga - Usa VFXManager si disponible"""
+	# Intentar VFXManager primero (charge_line telegraph)
+	if _try_spawn_via_vfxmanager("charge_line", "telegraph", pos, 100.0, 0.5):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 55  # Muy visible - es advertencia
+	effect.z_index = 55
 	effect.global_position = pos
 	effect.rotation = direction.angle()
 	
@@ -4306,10 +4330,15 @@ func _spawn_flame_breath_visual(origin: Vector2, direction: Vector2, range_dist:
 	_spawn_breath_visual(origin, direction, range_dist)
 
 func _spawn_meteor_warning(pos: Vector2, radius: float, delay: float) -> void:
-	"""Visual de advertencia de meteoro"""
+	"""Visual de advertencia de meteoro - Usa VFXManager si disponible"""
+	# Intentar VFXManager primero
+	if _try_spawn_via_vfxmanager("meteor_warning", "telegraph", pos, radius, delay):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 55  # Muy visible - es advertencia
+	effect.z_index = 55
 	effect.global_position = pos
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -4394,10 +4423,15 @@ func _spawn_meteor_impact(pos: Vector2, radius: float, damage: int) -> void:
 	)
 
 func _spawn_enrage_visual() -> void:
-	"""Visual de enrage del boss"""
+	"""Visual de enrage del boss - Usa VFXManager si disponible"""
 	if not is_instance_valid(enemy):
 		return
 	
+	# Intentar VFXManager primero (aura de enrage)
+	if _try_spawn_via_vfxmanager("enrage", "aura", enemy.global_position, 60.0, 3.0):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 55

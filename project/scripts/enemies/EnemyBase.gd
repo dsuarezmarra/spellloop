@@ -557,8 +557,9 @@ func _create_elite_aura() -> void:
 		return
 		
 	aura_sprite.z_index = -1
-	# Escala base - el aura debe sobresalir sutilmente del enemigo
-	var base_scale = elite_size_scale * 0.9
+	# Escala base - el sprite es 500x500, enemigos son ~32-64px
+	# Escalar para que el aura sea ~1.5x el tamaño del enemigo
+	var base_scale = elite_size_scale * 0.12
 	aura_sprite.scale = Vector2(base_scale, base_scale)
 	# Comenzar semi-transparente para efecto sutil
 	aura_sprite.modulate.a = 0.7
