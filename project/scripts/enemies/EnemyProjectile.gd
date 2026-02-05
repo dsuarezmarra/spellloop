@@ -55,44 +55,78 @@ func _ready() -> void:
 		rotation = direction.angle()
 
 func _setup_sprite_visual() -> void:
-	"""Configurar Sprite2D usando atlas"""
+	"""Configurar Sprite2D usando spritesheets por elemento"""
 	var sprite = Sprite2D.new()
 	sprite.name = "Sprite"
 	
-	# Cargar textura atlas
-	var tex = load("res://assets/sprites/projectiles/enemy_projectiles.png")
+	# Mapeo de elementos a spritesheets individuales
+	var PROJECTILE_SHEETS = {
+		"fire": {
+			"path": "res://assets/vfx/abilities/projectiles/fire/projectile_fire_spritesheet.png",
+			"hframes": 4, "vframes": 2
+		},
+		"ice": {
+			"path": "res://assets/vfx/abilities/projectiles/ice/projectile_ice_spritesheet.png",
+			"hframes": 4, "vframes": 2
+		},
+		"arcane": {
+			"path": "res://assets/vfx/abilities/projectiles/arcane/projectile_arcane_spritesheet.png",
+			"hframes": 4, "vframes": 2
+		},
+		"void": {
+			"path": "res://assets/vfx/abilities/projectiles/void/projectile_void_spritesheet.png",
+			"hframes": 4, "vframes": 2
+		},
+		"poison": {
+			"path": "res://assets/vfx/abilities/projectiles/poison/projectile_poison_spritesheet.png",
+			"hframes": 4, "vframes": 2
+		}
+	}
+	
+	# Mapear elemento a tipo de spritesheet
+	var sheet_type = element_type
+	match element_type:
+		"dark", "shadow": sheet_type = "void"
+		"nature": sheet_type = "poison"
+		"lightning": sheet_type = "arcane"
+		"physical": sheet_type = "arcane"
+	
+	var config = PROJECTILE_SHEETS.get(sheet_type, PROJECTILE_SHEETS["arcane"])
+	var tex = load(config["path"])
+	
 	if tex:
 		sprite.texture = tex
-		# Configurar atlas (6 columnas, 1 fila? O rejilla?)
-		# Asumimos que es el sheet generado en fase 4 que tenía 6 columnas.
-		sprite.hframes = 6
-		sprite.vframes = 1
+		sprite.hframes = config["hframes"]
+		sprite.vframes = config["vframes"]
+		sprite.centered = true
 		
-		# Mapear frame según elemento
-		# Order in generated sheet: Ice, Fire, Arcane, Lightning, Dark, Nature (need to verify order or assume logic)
-		# Update: The split logic usually works alphabetically or fixed order. 
-		# Let's assume order based on common generation prompts: Ice, Fire, Arcane, Lightning, Dark, Poison.
+		# Escala para ser visible (64x64 frames)
+		sprite.scale = Vector2(1.0, 1.0)
 		
-		var frame_idx = 0
-		match element_type:
-			"ice": frame_idx = 0
-			"fire": frame_idx = 1
-			"arcane": frame_idx = 2
-			"lightning": frame_idx = 3
-			"dark", "shadow", "void": frame_idx = 4
-			"poison", "nature": frame_idx = 5
-			_: frame_idx = 2 # Default to Arcane
-			
-		sprite.frame = frame_idx
-		
-		# Escala para ser visible
-		sprite.scale = Vector2(1.5, 1.5)
+		# Iniciar animación de frames
+		_start_projectile_animation(sprite, config["hframes"] * config["vframes"])
+	else:
+		# Fallback: crear visual procedural
+		push_warning("[EnemyProjectile] Textura no encontrada: %s" % config["path"])
+		_setup_fallback_visual(sprite)
 	
-	visual_node = sprite # Usamos sprite como visual node
+	visual_node = sprite
 	add_child(visual_node)
-	
-	# Añadir trail si es necesario (ParticleTrail o simple line)
-	# Por ahora desactivamos el draw manual del trail complejo
+
+func _start_projectile_animation(sprite: Sprite2D, total_frames: int) -> void:
+	"""Animar el sprite del proyectil en loop"""
+	var tween = create_tween()
+	tween.set_loops()  # Loop infinito
+	tween.tween_property(sprite, "frame", total_frames - 1, 0.4).from(0)
+
+func _setup_fallback_visual(sprite: Sprite2D) -> void:
+	"""Fallback visual si no hay spritesheet"""
+	# Crear textura placeholder
+	var img = Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.8, 0.3, 1.0, 0.9))
+	var tex = ImageTexture.create_from_image(img)
+	sprite.texture = tex
+	sprite.scale = Vector2(1.5, 1.5)
 
 
 func initialize(p_direction: Vector2, p_speed: float, p_damage: int, p_lifetime: float = 5.0, p_element: String = "physical") -> void:
@@ -418,7 +452,7 @@ func _get_element_color() -> Color:
 			return Color(0.85, 0.85, 0.9)
 
 func _spawn_hit_effect() -> void:
-	"""Crear efecto visual de impacto usando Sprite Sheet"""
+	"""Crear efecto visual de impacto usando spritesheets AOE existentes"""
 	var effect = Node2D.new()
 	effect.global_position = global_position
 	effect.top_level = true
@@ -427,33 +461,61 @@ func _spawn_hit_effect() -> void:
 	var parent = get_parent()
 	if parent:
 		parent.add_child(effect)
+	else:
+		effect.queue_free()
+		return
 	
-	# Sprite Animado manual (para no depender de SpriteFrames resource)
+	# Mapear elemento a spritesheet AOE apropiado para el impacto
+	var impact_sheets = {
+		"fire": "res://assets/vfx/abilities/aoe/fire/aoe_fire_stomp_spritesheet.png",
+		"ice": "res://assets/vfx/abilities/aoe/ice/aoe_freeze_zone_spritesheet.png",
+		"arcane": "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png",
+		"void": "res://assets/vfx/abilities/aoe/void/aoe_void_explosion_spritesheet.png",
+		"poison": "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png",
+		"lightning": "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png"
+	}
+	
+	var sheet_path = impact_sheets.get(element, "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png")
+	
 	var sprite = Sprite2D.new()
-	sprite.texture = load("res://assets/sprites/vfx/explosion_impact.png")
-	if sprite.texture:
-		sprite.hframes = 5
-		sprite.vframes = 1
+	var tex = load(sheet_path)
+	
+	if tex:
+		sprite.texture = tex
+		sprite.hframes = 4  # Todos los AOE sheets son 4x2
+		sprite.vframes = 2
 		sprite.frame = 0
-		sprite.scale = Vector2(1.5, 1.5)
-		
-		# Modulate color based on element
+		sprite.scale = Vector2(0.5, 0.5)  # Más pequeño para impacto de proyectil
 		sprite.modulate = _get_element_color()
-		# Add some brightness/additive feel?
-		# sprite.modulate = sprite.modulate * 1.5
 		
 		effect.add_child(sprite)
 		
-		# Animar frames manualmente con Tween
+		# Animar frames
+		var total_frames = 8
 		var tween = create_tween()
-		tween.tween_method(func(frame: int):
-			sprite.frame = frame
-		, 0, 4, 0.3) # 5 frames en 0.3s
+		tween.tween_method(func(f: int):
+			sprite.frame = f
+		, 0, total_frames - 1, 0.25)
 		
 		tween.tween_callback(effect.queue_free)
 	else:
-		# Fallback cleanup
-		effect.queue_free()
+		# Fallback: dibujo procedural simple
+		var fallback = Node2D.new()
+		effect.add_child(fallback)
+		var color = _get_element_color()
+		var progress = 0.0
+		
+		fallback.draw.connect(func():
+			var r = 15.0 * (1.0 + progress)
+			fallback.draw_circle(Vector2.ZERO, r, Color(color.r, color.g, color.b, 0.5 * (1.0 - progress)))
+		)
+		
+		var tween = create_tween()
+		tween.tween_method(func(p: float):
+			progress = p
+			fallback.queue_redraw()
+		, 0.0, 1.0, 0.2)
+		tween.tween_callback(effect.queue_free)
 
 # Sprite impact logic handles visuals now.
 

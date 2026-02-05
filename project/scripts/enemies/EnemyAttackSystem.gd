@@ -1,6 +1,6 @@
 # EnemyAttackSystem.gd
 # Sistema de ataque para enemigos - Soporta todos los arquetipos
-# Gestiona cooldowns, targeting y ejecuciÃ³n de ataques
+# Gestiona cooldowns, targeting y ejecución de ataques
 #
 # Nota: Este archivo usa lambdas con variables capturadas que se reasignan
 # intencionalmente para mantener estado local en animaciones y timers.
@@ -10,6 +10,35 @@ extends Node
 class_name EnemyAttackSystem
 
 signal attacked_player(damage: int, is_melee: bool)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# VFX MANAGER INTEGRATION
+# ══════════════════════════════════════════════════════════════════════════════
+
+## Intentar usar VFXManager para spawner efectos visuales
+## Retorna true si VFXManager manejó el efecto, false para usar fallback procedural
+func _try_spawn_via_vfxmanager(vfx_type: String, category: String, position: Vector2, radius: float = 100.0, duration: float = 0.5) -> bool:
+	if not Engine.has_singleton("VFXManager"):
+		# Intentar obtener desde el árbol si no es singleton
+		var vfx_mgr = get_node_or_null("/root/VFXManager")
+		if vfx_mgr:
+			match category:
+				"aoe":
+					vfx_mgr.spawn_aoe(vfx_type, position, radius, duration)
+					return true
+				"telegraph":
+					vfx_mgr.spawn_telegraph(vfx_type, position, radius, duration)
+					return true
+				"boss":
+					vfx_mgr.spawn_boss_vfx(vfx_type, position, radius / 100.0)
+					return true
+				"aura":
+					if is_instance_valid(enemy):
+						vfx_mgr.spawn_aura(vfx_type, enemy, true)
+						return true
+	return false
+
+# ══════════════════════════════════════════════════════════════════════════════
 
 # Propiedades de ataque
 var attack_cooldown: float = 1.5
@@ -2703,10 +2732,15 @@ func _spawn_boss_impact_effect() -> void:
 	)
 
 func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
-	"""Visual de explosiÃ³n de vacÃ­o Ã‰PICA - pÃºrpura con absorciÃ³n"""
+	"""Visual de explosion de vacio - Usa VFXManager si disponible"""
+	# Intentar VFXManager primero
+	if _try_spawn_via_vfxmanager("void_explosion", "aoe", center, radius, 0.6):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
-	effect.top_level = true  # Independiente del enemigo
-	effect.z_index = 60  # MUY alto para boss
+	effect.top_level = true
+	effect.z_index = 60
 	effect.global_position = center
 	
 	var parent = enemy.get_parent()
@@ -2894,10 +2928,15 @@ func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 	)
 
 func _spawn_fire_stomp_visual(center: Vector2, radius: float) -> void:
-	"""Visual de pisotÃ³n de fuego Ã‰PICO - onda de fuego expansiva"""
+	"""Visual de pisoton de fuego - Usa VFXManager si disponible"""
+	# Intentar VFXManager primero
+	if _try_spawn_via_vfxmanager("fire_stomp", "aoe", center, radius, 0.6):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
-	effect.top_level = true  # Independiente del enemigo
-	effect.z_index = 60  # MUY alto para boss
+	effect.top_level = true
+	effect.z_index = 60
 	effect.global_position = center
 	
 	var parent = enemy.get_parent()
@@ -3042,8 +3081,23 @@ func _get_enemy_element() -> String:
 	return "physical"
 
 func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
-	"""Crear efecto visual de AoE Ã‰PICO con animaciÃ³n de expansiÃ³n"""
+	"""Crear efecto visual de AoE - Usa VFXManager si disponible"""
 	var elem = _get_enemy_element()
+	
+	# Mapear elemento a tipo de AOE para VFXManager
+	var aoe_type = "arcane_nova"
+	match elem:
+		"fire": aoe_type = "fire_stomp"
+		"ice": aoe_type = "freeze_zone"
+		"void", "dark", "shadow": aoe_type = "void_explosion"
+		"earth": aoe_type = "ground_slam"
+		"arcane", "magic": aoe_type = "arcane_nova"
+	
+	# Intentar VFXManager primero
+	if _try_spawn_via_vfxmanager(aoe_type, "aoe", center, radius, 0.5):
+		return
+	
+	# Fallback procedural
 	var base_color = _get_element_color(elem)
 	var bright_color = Color(min(base_color.r + 0.4, 1.0), min(base_color.g + 0.4, 1.0), min(base_color.b + 0.4, 1.0), 1.0)
 	
@@ -3811,7 +3865,12 @@ func _spawn_teleport_effect(pos: Vector2, is_arrival: bool) -> void:
 	)
 
 func _spawn_arcane_nova_visual(center: Vector2, radius: float) -> void:
-	"""Visual de nova arcana"""
+	"""Visual de nova arcana - Usa VFXManager si disponible"""
+	# Intentar VFXManager primero
+	if _try_spawn_via_vfxmanager("arcane_nova", "aoe", center, radius, 0.5):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 50
@@ -4099,7 +4158,12 @@ func _spawn_counter_stance_visual() -> void:
 	)
 
 func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
-	"""Visual de golpe de tierra Ã‰PICO"""
+	"""Visual de golpe de tierra - Usa VFXManager si disponible"""
+	# Intentar VFXManager primero
+	if _try_spawn_via_vfxmanager("ground_slam", "aoe", center, radius, 0.5):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 60

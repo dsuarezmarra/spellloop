@@ -31,6 +31,7 @@ ProjectilePool="*res://scripts/weapons/projectiles/ProjectilePool.gd"
 DamageLogger="*res://scripts/core/DamageLogger.gd"
 DecorCollisionManager="*res://scripts/core/DecorCollisionManager.gd"
 PerfTracker="*res://scripts/debug/PerfTracker.gd"
+VFXManager="*res://scripts/autoloads/VFXManager.gd"
 
 [display]
 
