@@ -214,110 +214,98 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	info_container.alignment = BoxContainer.ALIGNMENT_CENTER 
 	inner_vbox.add_child(info_container)
 	
-	# --- FOOTER (Acciones) - 2 botones lado a lado en el área dorada ---
-	var actions_margin = MarginContainer.new()
-	actions_margin.add_theme_constant_override("margin_left", 8)
-	actions_margin.add_theme_constant_override("margin_right", 8)
-	actions_margin.add_theme_constant_override("margin_top", 5)
-	actions_margin.add_theme_constant_override("margin_bottom", 8)
-	vbox.add_child(actions_margin)
+	# --- BOTONES EN EL FRAME (Superpuestos sobre los huecos dorados del asset) ---
+	# Usar un Control con posicionamiento absoluto para colocar los botones exactamente
+	var buttons_overlay = Control.new()
+	buttons_overlay.name = "ButtonsOverlay"
+	buttons_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	buttons_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Solo los botones reciben clicks
+	panel.add_child(buttons_overlay)
 	
-	# HBoxContainer para los 2 botones lado a lado
-	var actions_hbox = HBoxContainer.new()
-	actions_hbox.name = "ActionsHBox"
-	actions_hbox.add_theme_constant_override("separation", 6)
-	actions_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	actions_margin.add_child(actions_hbox)
-
-	# 1. Botón CONTINUAR/CREAR (izquierda)
+	# Botón Principal (CONTINUAR/CREAR) - Hueco izquierdo del frame
 	var select_btn = Button.new()
 	select_btn.name = "SelectButton"
 	select_btn.text = "CREAR"
-	select_btn.custom_minimum_size = Vector2(120, 40)
-	select_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Posición absoluta sobre el hueco izquierdo del frame
+	select_btn.position = Vector2(28, 390)  # Ajustar según el frame
+	select_btn.custom_minimum_size = Vector2(125, 38)
 	select_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	
-	# Estilo Base Botón - oscuro semi-transparente
-	var btn_style = StyleBoxFlat.new()
-	btn_style.bg_color = Color(0.12, 0.10, 0.18, 0.95)
-	btn_style.border_color = Color(0.5, 0.4, 0.25, 0.8)
-	btn_style.set_border_width_all(1)
-	btn_style.set_corner_radius_all(4)
+	# Estilo TRANSPARENTE - solo texto visible
+	var btn_style_normal = StyleBoxFlat.new()
+	btn_style_normal.bg_color = Color(0, 0, 0, 0)  # Completamente transparente
+	btn_style_normal.set_border_width_all(0)
 	
-	# Estilo Hover Botón
-	var btn_hover = btn_style.duplicate()
-	btn_hover.bg_color = Color(0.2, 0.2, 0.35, 1.0)
-	btn_hover.border_color = Color(1.0, 0.8, 0.2)
-	btn_hover.set_border_width_all(2)
-	btn_hover.shadow_color = Color(1, 0.8, 0.2, 0.3)
-	btn_hover.shadow_size = 5
+	var btn_style_hover = StyleBoxFlat.new()
+	btn_style_hover.bg_color = Color(1.0, 0.85, 0.3, 0.15)  # Destello dorado sutil
+	btn_style_hover.set_border_width_all(0)
+	btn_style_hover.set_corner_radius_all(4)
 	
-	select_btn.add_theme_stylebox_override("normal", btn_style)
-	select_btn.add_theme_stylebox_override("hover", btn_hover)
-	select_btn.add_theme_stylebox_override("pressed", btn_style)
-	select_btn.add_theme_stylebox_override("focus", btn_hover)
-	select_btn.add_theme_font_size_override("font_size", 16)
-	select_btn.add_theme_color_override("font_color", Color.WHITE)
-	select_btn.add_theme_color_override("font_hover_color", Color(1, 0.9, 0.5))
+	var btn_style_pressed = StyleBoxFlat.new()
+	btn_style_pressed.bg_color = Color(1.0, 0.85, 0.3, 0.3)  # Dorado más intenso
+	btn_style_pressed.set_border_width_all(0)
+	
+	select_btn.add_theme_stylebox_override("normal", btn_style_normal)
+	select_btn.add_theme_stylebox_override("hover", btn_style_hover)
+	select_btn.add_theme_stylebox_override("pressed", btn_style_pressed)
+	select_btn.add_theme_stylebox_override("focus", btn_style_hover)
+	
+	# Fuente dorada para el texto
+	var font_btn = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	if font_btn:
+		select_btn.add_theme_font_override("font", font_btn)
+	select_btn.add_theme_font_size_override("font_size", 14)
+	select_btn.add_theme_color_override("font_color", Color(0.85, 0.75, 0.55))
+	select_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.7))
+	select_btn.add_theme_color_override("font_pressed_color", Color(1.0, 1.0, 0.8))
 	
 	select_btn.pressed.connect(_on_slot_selected.bind(slot_index))
-	select_btn.mouse_entered.connect(_anim_btn_scale.bind(select_btn, 1.02))
-	select_btn.mouse_exited.connect(_anim_btn_scale.bind(select_btn, 1.0))
-	select_btn.focus_entered.connect(_anim_btn_scale.bind(select_btn, 1.02))
-	select_btn.focus_exited.connect(_anim_btn_scale.bind(select_btn, 1.0))
-	
-	actions_hbox.add_child(select_btn)
-	slot_buttons.append(select_btn)
-	
-	# 2. Botón BORRAR (derecha) - mismo estilo pero rojo
-	var delete_btn = Button.new()
-	delete_btn.name = "DeleteButton"
-	delete_btn.text = "BORRAR"
-	delete_btn.custom_minimum_size = Vector2(100, 40)
-	delete_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	delete_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	
-	# Estilo base rojo oscuro
-	var del_style = StyleBoxFlat.new()
-	del_style.bg_color = Color(0.18, 0.08, 0.08, 0.95)
-	del_style.border_color = Color(0.5, 0.25, 0.25, 0.8)
-	del_style.set_border_width_all(1)
-	del_style.set_corner_radius_all(4)
-	
-	# Estilo Hover rojo
-	var del_hover = del_style.duplicate()
-	del_hover.bg_color = Color(0.35, 0.15, 0.15, 1.0)
-	del_hover.border_color = Color(1.0, 0.3, 0.3)
-	del_hover.set_border_width_all(2)
-	del_hover.shadow_color = Color(1, 0.3, 0.2, 0.3)
-	del_hover.shadow_size = 5
-	
-	delete_btn.add_theme_stylebox_override("normal", del_style)
-	delete_btn.add_theme_stylebox_override("hover", del_hover)
-	delete_btn.add_theme_stylebox_override("pressed", del_style)
-	delete_btn.add_theme_stylebox_override("focus", del_hover)
-	delete_btn.add_theme_font_size_override("font_size", 14)
-	delete_btn.add_theme_color_override("font_color", Color(0.8, 0.5, 0.5))
-	delete_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.4, 0.4))
-	
-	delete_btn.pressed.connect(_on_delete_slot.bind(slot_index))
-	delete_btn.visible = false 
-	actions_hbox.add_child(delete_btn)
-	
-	# --- NAVIGATION LINKS ---
-	# Link vertical manual
-	select_btn.focus_neighbor_bottom = delete_btn.get_path()
-	delete_btn.focus_neighbor_top = select_btn.get_path()
-	
-	# Link horizontal manual is done in _setup_navigation
-	
-	
-	# TRACKING para animaciones del panel completo
-	# Usamos el focus signal del botón PRINCIPAL para animar el panel padre
+	select_btn.mouse_entered.connect(_on_element_hover)
 	select_btn.focus_entered.connect(_highlight_panel.bind(panel, true))
 	select_btn.focus_exited.connect(_highlight_panel.bind(panel, false))
 	select_btn.mouse_entered.connect(_highlight_panel.bind(panel, true))
 	select_btn.mouse_exited.connect(_highlight_panel.bind(panel, false))
+	
+	buttons_overlay.add_child(select_btn)
+	slot_buttons.append(select_btn)
+	
+	# Botón Secundario (BORRAR) - Hueco derecho del frame (solo visible si hay datos)
+	var delete_btn = Button.new()
+	delete_btn.name = "DeleteButton"
+	delete_btn.text = "BORRAR"
+	# Posición absoluta sobre el hueco derecho del frame
+	delete_btn.position = Vector2(168, 390)  # Ajustar según el frame
+	delete_btn.custom_minimum_size = Vector2(125, 38)
+	delete_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	delete_btn.visible = false  # Solo visible si hay datos
+	
+	# Estilo TRANSPARENTE con tinte rojo en hover
+	var del_style_normal = StyleBoxFlat.new()
+	del_style_normal.bg_color = Color(0, 0, 0, 0)
+	del_style_normal.set_border_width_all(0)
+	
+	var del_style_hover = StyleBoxFlat.new()
+	del_style_hover.bg_color = Color(1.0, 0.3, 0.2, 0.2)  # Rojo sutil
+	del_style_hover.set_border_width_all(0)
+	del_style_hover.set_corner_radius_all(4)
+	
+	delete_btn.add_theme_stylebox_override("normal", del_style_normal)
+	delete_btn.add_theme_stylebox_override("hover", del_style_hover)
+	delete_btn.add_theme_stylebox_override("pressed", del_style_hover)
+	delete_btn.add_theme_stylebox_override("focus", del_style_hover)
+	
+	if font_btn:
+		delete_btn.add_theme_font_override("font", font_btn)
+	delete_btn.add_theme_font_size_override("font_size", 12)
+	delete_btn.add_theme_color_override("font_color", Color(0.7, 0.5, 0.5))
+	delete_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.5, 0.4))
+	
+	delete_btn.pressed.connect(_on_delete_slot.bind(slot_index))
+	buttons_overlay.add_child(delete_btn)
+	
+	# --- NAVIGATION LINKS ---
+	select_btn.focus_neighbor_bottom = delete_btn.get_path()
+	delete_btn.focus_neighbor_top = select_btn.get_path()
 	
 	return panel
 
@@ -369,17 +357,21 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 	
 	# Buscar nodos clave en la nueva jerarquía
 	# Panel -> VBox -> Margin(Info) -> InnerVBox -> InfoContainer
-	# Panel -> VBox -> Margin(Actions) -> ActionsHBox
+	# Panel -> ButtonsOverlay -> SelectButton, DeleteButton
 	
 	# Acceso seguro via find_child (más robusto que paths hardcodeados)
 	var info_container = panel.find_child("InfoContainer", true, false)
-	var actions_hbox = panel.find_child("ActionsHBox", true, false)
+	var buttons_overlay = panel.find_child("ButtonsOverlay", true, false)
 	
-	if not info_container or not actions_hbox:
+	if not info_container or not buttons_overlay:
 		return
 		
-	var select_btn = actions_hbox.get_node_or_null("SelectButton")
-	var delete_btn = actions_hbox.get_node_or_null("DeleteButton")
+	var select_btn = buttons_overlay.get_node_or_null("SelectButton")
+	var delete_btn = buttons_overlay.get_node_or_null("DeleteButton")
+	
+	# Cargar fuente para textos
+	var font_info = load("res://assets/ui/fonts/Quicksand-Variable.ttf")
+	var font_title = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
 	
 	# Limpiar info anterior
 	for child in info_container.get_children():
@@ -389,29 +381,36 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		# --- SLOT VACÍO ---
 		var empty_display = VBoxContainer.new()
 		empty_display.alignment = BoxContainer.ALIGNMENT_CENTER
-		empty_display.add_theme_constant_override("separation", 10)
+		empty_display.add_theme_constant_override("separation", 15)
 		
 		var icon = TextureRect.new()
 		icon.texture = load("res://assets/icons/ui_new_game_sparkles.png")
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.custom_minimum_size = Vector2(64, 64)
+		icon.custom_minimum_size = Vector2(80, 80)
 		empty_display.add_child(icon)
 		
 		var label = Label.new()
 		label.text = "NUEVA PARTIDA"
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size", 18)
-		label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.8))
+		if font_title:
+			label.add_theme_font_override("font", font_title)
+		label.add_theme_font_size_override("font_size", 16)
+		label.add_theme_color_override("font_color", Color(0.6, 0.85, 0.75))
+		label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+		label.add_theme_constant_override("shadow_offset_y", 2)
 		empty_display.add_child(label)
 		
 		info_container.add_child(empty_display)
 		
 		if select_btn:
 			select_btn.text = "CREAR"
-			select_btn.modulate = Color(0.8, 1.0, 0.8) # Tinte verdoso
+			select_btn.modulate = Color(1, 1, 1)
+			# Centrar el botón cuando el slot está vacío
+			select_btn.position = Vector2(98, 395)  # Centrado
+			select_btn.custom_minimum_size = Vector2(125, 38)
 		if delete_btn:
-			delete_btn.visible = false # No mostrar borrar si está vacío
+			delete_btn.visible = false
 			
 	else:
 		# --- SLOT CON DATOS ---
@@ -431,43 +430,55 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		avatar.texture = load(icon_path)
 		avatar.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		avatar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		avatar.custom_minimum_size = Vector2(80, 80)
+		avatar.custom_minimum_size = Vector2(64, 64)
 		info_container.add_child(avatar)
 		
-		# Stats Grid
+		# Stats Grid con estilos mejorados
 		var stats_vbox = VBoxContainer.new()
-		stats_vbox.add_theme_constant_override("separation", 5)
+		stats_vbox.add_theme_constant_override("separation", 8)
 		
-		# Mejor Puntuación
-		var score_hbox = HBoxContainer.new()
-		score_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		# Mejor Puntuación - Estilo dorado destacado
 		var score_val = player_data.get("best_score", 0)
 		var score_lbl = Label.new()
 		score_lbl.text = "🏆 %d" % score_val
-		score_lbl.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2)) # Gold
-		score_hbox.add_child(score_lbl)
-		stats_vbox.add_child(score_hbox)
+		score_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		if font_title:
+			score_lbl.add_theme_font_override("font", font_title)
+		score_lbl.add_theme_font_size_override("font_size", 20)
+		score_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
+		score_lbl.add_theme_color_override("font_shadow_color", Color(0.3, 0.2, 0.0, 0.8))
+		score_lbl.add_theme_constant_override("shadow_offset_y", 2)
+		stats_vbox.add_child(score_lbl)
 		
-		# Runs
+		# Partidas jugadas
 		var runs_val = player_data.get("total_runs", 0)
 		var runs_lbl = Label.new()
 		runs_lbl.text = "Partidas: %d" % runs_val
 		runs_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		runs_lbl.add_theme_color_override("font_color", Color(0.8, 0.8, 0.9))
+		if font_info:
+			runs_lbl.add_theme_font_override("font", font_info)
+		runs_lbl.add_theme_font_size_override("font_size", 14)
+		runs_lbl.add_theme_color_override("font_color", Color(0.85, 0.85, 0.95))
+		runs_lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
+		runs_lbl.add_theme_constant_override("shadow_offset_y", 1)
 		stats_vbox.add_child(runs_lbl)
 		
-		# Tiempo
+		# Tiempo jugado
 		var playtime = player_data.get("total_playtime", 0.0)
 		var hours = int(playtime) / 3600
 		var mins = (int(playtime) % 3600) / 60
 		var time_lbl = Label.new()
 		if playtime > 0 and playtime < 60:
-			time_lbl.text = "< 1m"
+			time_lbl.text = "Tiempo: < 1m"
 		else:
-			time_lbl.text = "%dh %02dm" % [hours, mins]
+			time_lbl.text = "Tiempo: %dh %02dm" % [hours, mins]
 		time_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		if font_info:
+			time_lbl.add_theme_font_override("font", font_info)
 		time_lbl.add_theme_font_size_override("font_size", 12)
-		time_lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+		time_lbl.add_theme_color_override("font_color", Color(0.65, 0.65, 0.75))
+		time_lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5))
+		time_lbl.add_theme_constant_override("shadow_offset_y", 1)
 		stats_vbox.add_child(time_lbl)
 		
 		info_container.add_child(stats_vbox)
@@ -475,11 +486,17 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		if select_btn:
 			select_btn.text = "CONTINUAR"
 			select_btn.modulate = Color(1.0, 1.0, 1.0)
+			# Posición izquierda cuando hay 2 botones
+			select_btn.position = Vector2(32, 395)
+			select_btn.custom_minimum_size = Vector2(120, 38)
 		if delete_btn:
 			delete_btn.visible = true
 			delete_btn.disabled = false
-			delete_btn.text = "Borrar Progreso"
-			delete_btn.modulate = Color(1, 1, 1, 0.8)
+			delete_btn.text = "BORRAR"
+			delete_btn.modulate = Color(1, 1, 1)
+			# Posición derecha
+			delete_btn.position = Vector2(168, 395)
+			delete_btn.custom_minimum_size = Vector2(120, 38)
 
 func _setup_navigation() -> void:
 	"""Configurar navegación WASD"""

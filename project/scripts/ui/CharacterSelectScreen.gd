@@ -57,25 +57,6 @@ func _ready() -> void:
 	# Get Localization autoload reference
 	if get_tree() and get_tree().root:
 		Localization = get_tree().root.get_node_or_null("Localization")
-	
-	# Add Background
-	var bg = TextureRect.new()
-	bg.texture = load("res://assets/ui/backgrounds/character_select_bg_new.png")
-	if bg.texture:
-		bg.name = "Background"
-		bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		bg.anchor_right = 1.0
-		bg.anchor_bottom = 1.0
-		# Ajuste para centrar la plataforma en pantalla (subir el fondo)
-		bg.offset_left = 0
-		bg.offset_right = 0
-		bg.offset_top = -120
-		bg.offset_bottom = 0
-		bg.z_index = -100
-		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		add_child(bg)
-		move_child(bg, 0) # Ensure it's at the back
 
 	_load_characters()
 	_build_ui()
@@ -190,13 +171,27 @@ func _build_ui() -> void:
 		placeholder.gradient.add_point(1.0, Color(0.1, 0.0, 0.0))
 		bg.texture = placeholder
 		
+	# Contenedor con clip para permitir desplazamiento
+	var bg_container = Control.new()
+	bg_container.name = "BackgroundContainer"
+	bg_container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg_container.clip_contents = true
+	bg_container.z_index = -100
+	bg_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(bg_container)
+	move_child(bg_container, 0)
+	
 	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	# Tamaño ligeramente mayor para permitir desplazar sin bordes negros
+	var screen_size = get_viewport().get_visible_rect().size
+	var extra = 200  # Margen para desplazamiento
+	bg.custom_minimum_size = screen_size + Vector2(extra, extra)
+	bg.size = screen_size + Vector2(extra, extra)
+	# Centrar base (-extra/2) y luego ajustar: +X=derecha, -Y=arriba
+	bg.position = Vector2(-extra/2 + 60, -extra/2 - 40)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bg.z_index = -100 # Fondo absoluto
-	add_child(bg)
-	move_child(bg, 0)
+	bg_container.add_child(bg)
 
 	# Vignette effect (darker edges) - Asegurar que esté SOBRE el fondo pero BAJO la UI
 	var vignette = ColorRect.new()
