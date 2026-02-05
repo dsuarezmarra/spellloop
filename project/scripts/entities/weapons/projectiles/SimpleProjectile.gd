@@ -359,8 +359,14 @@ func _draw_default_orb(image: Image, size: int, center: Vector2) -> void:
 				image.set_pixel(x, y, Color(0, 0, 0, 0))
 
 # OPTIMIZACIÓN: Límite global de sistemas de partículas activos
-const MAX_ACTIVE_TRAILS: int = 30
+const MAX_ACTIVE_TRAILS: int = 25
 static var _active_trail_count: int = 0
+
+# Armas que necesitan trails reducidos (muchos proyectiles/pierce)
+const LOW_PARTICLE_WEAPONS: Array = [
+	"hellfire", "inferno_orb", "wildfire", "firestorm",
+	"dark_flame", "arcane_storm", "void_storm", "plasma"
+]
 
 func _create_trail() -> void:
 	"""Crear partículas de estela según elemento (con límite global)"""
@@ -370,20 +376,24 @@ func _create_trail() -> void:
 	
 	SimpleProjectile._active_trail_count += 1
 	
+	# Verificar si es un arma que necesita partículas reducidas
+	var is_low_particle = _weapon_id in LOW_PARTICLE_WEAPONS
+	
 	trail_particles = CPUParticles2D.new()
 	trail_particles.name = "Trail"
 	trail_particles.emitting = true
-	trail_particles.amount = 6  # Reducido de 8 a 6 para mejor rendimiento
-	trail_particles.lifetime = 0.25  # Reducido de 0.3
+	# OPTIMIZACIÓN: Menos partículas para armas con muchos proyectiles
+	trail_particles.amount = 3 if is_low_particle else 5
+	trail_particles.lifetime = 0.15 if is_low_particle else 0.2
 	trail_particles.speed_scale = 1.5
 	trail_particles.explosiveness = 0.0
 	trail_particles.direction = Vector2(-1, 0)  # Hacia atrás
 	trail_particles.spread = 15.0
 	trail_particles.gravity = Vector2.ZERO
-	trail_particles.initial_velocity_min = 20.0
-	trail_particles.initial_velocity_max = 40.0
-	trail_particles.scale_amount_min = 0.3
-	trail_particles.scale_amount_max = 0.6
+	trail_particles.initial_velocity_min = 15.0
+	trail_particles.initial_velocity_max = 30.0
+	trail_particles.scale_amount_min = 0.2 if is_low_particle else 0.3
+	trail_particles.scale_amount_max = 0.4 if is_low_particle else 0.5
 	trail_particles.color = projectile_color
 	
 	# Conectar para decrementar contador cuando se destruya
@@ -836,34 +846,40 @@ func _get_player() -> Node:
 		_destroy()
 
 func _spawn_hit_effect() -> void:
-	"""Crear efecto visual simple al impactar"""
+	"""Crear efecto visual simple al impactar (optimizado para armas con muchos proyectiles)"""
+	# OPTIMIZACIÓN: Menos partículas para armas con muchos impactos
+	var is_low_particle = _weapon_id in LOW_PARTICLE_WEAPONS
+	var particle_amount = 4 if is_low_particle else 6
+	var particle_lifetime = 0.2 if is_low_particle else 0.25
+	
 	# Partículas simples de impacto
 	var particles = CPUParticles2D.new()
 	particles.emitting = true
 	particles.one_shot = true
 	particles.explosiveness = 1.0
-	particles.amount = 8
-	particles.lifetime = 0.3
+	particles.amount = particle_amount
+	particles.lifetime = particle_lifetime
 	particles.direction = -direction
-	particles.spread = 45.0
-	particles.initial_velocity_min = 50.0
-	particles.initial_velocity_max = 100.0
+	particles.spread = 40.0
+	particles.initial_velocity_min = 40.0
+	particles.initial_velocity_max = 80.0
 	particles.gravity = Vector2.ZERO
-	particles.scale_amount_min = 2.0
-	particles.scale_amount_max = 4.0
+	particles.scale_amount_min = 1.5
+	particles.scale_amount_max = 3.0
 	particles.color = projectile_color
 	
 	particles.global_position = global_position
 	get_tree().current_scene.add_child(particles)
 	
-	# Instanciar efecto visual extra si existe
-	if hit_vfx_scene:
+	# Instanciar efecto visual extra si existe (skip para low particle weapons)
+	if hit_vfx_scene and not is_low_particle:
 		var effect = hit_vfx_scene.instantiate()
 		effect.global_position = global_position
 		get_tree().root.add_child(effect)
 	
-	# Auto-destruir partículas
-	var timer = get_tree().create_timer(0.5)
+	# Auto-destruir partículas (más rápido para armas optimizadas)
+	var cleanup_time = 0.3 if is_low_particle else 0.4
+	var timer = get_tree().create_timer(cleanup_time)
 	timer.timeout.connect(func(): 
 		if is_instance_valid(particles):
 			particles.queue_free()

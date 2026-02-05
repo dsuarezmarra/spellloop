@@ -13,7 +13,7 @@
 			"quit": "Salir"
 		},
 		"character_select": {
-			"title": "ELIGE TU HEROE",
+			"title": "ELIGE TU HÉROE",
 			"instructions": "A/D o Flechas para navegar | ESPACIO/ENTER para seleccionar | ESC para volver",
 			"back": "ATRAS",
 			"start": "COMENZAR AVENTURA",

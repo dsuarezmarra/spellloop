@@ -70,7 +70,7 @@ const CHARACTERS: Dictionary = {
 		"passive": {
 			"id": "frozen_aura",
 			"name": "Frozen Aura",
-			"name_es": "Aura Gelida",
+			"name_es": "Aura Gélida",
 			"description": "Enemies near you are slowed by 10%",
 			"description_es": "Los enemigos cercanos son ralentizados un 10%"
 		},
@@ -122,7 +122,7 @@ const CHARACTERS: Dictionary = {
 			"name": "Burning Soul",
 			"name_es": "Alma Ardiente",
 			"description": "Fire damage burns 20% longer",
-			"description_es": "El dano de fuego quema un 20% mas de tiempo"
+			"description_es": "El daño de fuego quema un 20% más de tiempo"
 		},
 
 		"unlock_status": UnlockStatus.STARTER,
@@ -142,11 +142,11 @@ const CHARACTERS: Dictionary = {
 	"storm_caller": {
 		"id": "storm_caller",
 		"name": "Storm Caller",
-		"name_es": "Invocador de Tormentas",
+		"name_es": "Invocadora de Tormentas",
 		"title": "The Thunder Born",
-		"title_es": "El Nacido del Trueno",
+		"title_es": "La Nacida del Trueno",
 		"description": "A swift mage who commands lightning, striking multiple foes at once.",
-		"description_es": "Un mago veloz que controla el rayo, golpeando multiples enemigos a la vez.",
+		"description_es": "Una maga veloz que controla el rayo, golpeando múltiples enemigos a la vez.",
 
 		"element": Element.LIGHTNING,
 		"starting_weapon": "lightning_wand",
@@ -168,7 +168,7 @@ const CHARACTERS: Dictionary = {
 		"passive": {
 			"id": "static_charge",
 			"name": "Static Charge",
-			"name_es": "Carga Estatica",
+			"name_es": "Carga Estática",
 			"description": "Lightning chains to 1 additional enemy",
 			"description_es": "Los rayos saltan a 1 enemigo adicional"
 		},
@@ -192,9 +192,9 @@ const CHARACTERS: Dictionary = {
 		"name": "Arcanist",
 		"name_es": "Arcanista",
 		"title": "The Mystic Scholar",
-		"title_es": "El Erudito Mistico",
+		"title_es": "El Erudito Místico",
 		"description": "A defensive mage surrounded by arcane orbs that protect and damage.",
-		"description_es": "Un mago defensivo rodeado de orbes arcanos que protegen y danan.",
+		"description_es": "Un mago defensivo rodeado de orbes arcanos que protegen y dañan.",
 
 		"element": Element.ARCANE,
 		"starting_weapon": "arcane_orb",
@@ -243,7 +243,7 @@ const CHARACTERS: Dictionary = {
 	"shadow_blade": {
 		"id": "shadow_blade",
 		"name": "Shadow Blade",
-		"name_es": "Hoja Sombria",
+		"name_es": "Hoja Sombría",
 		"title": "The Phantom",
 		"title_es": "El Fantasma",
 		"description": "A deadly assassin who strikes from the shadows with piercing daggers.",
@@ -269,7 +269,7 @@ const CHARACTERS: Dictionary = {
 		"passive": {
 			"id": "shadow_step",
 			"name": "Shadow Step",
-			"name_es": "Paso Umbrio",
+			"name_es": "Paso Umbrío",
 			"description": "+1 pierce on all projectiles",
 			"description_es": "+1 penetracion en todos los proyectiles"
 		},
@@ -298,9 +298,9 @@ const CHARACTERS: Dictionary = {
 		"name": "Druid",
 		"name_es": "Druida",
 		"title": "The Nature Guardian",
-		"title_es": "El Guardian de la Naturaleza",
+		"title_es": "La Guardiana de la Naturaleza",
 		"description": "A peaceful guardian who heals through nature and uses homing magic.",
-		"description_es": "Un guardian pacifico que sana mediante la naturaleza y usa magia rastreadora.",
+		"description_es": "Una guardiana pacífica que sana mediante la naturaleza y usa magia rastreadora.",
 
 		"element": Element.NATURE,
 		"starting_weapon": "nature_staff",
@@ -322,7 +322,7 @@ const CHARACTERS: Dictionary = {
 		"passive": {
 			"id": "natures_blessing",
 			"name": "Nature's Blessing",
-			"name_es": "Bendicion Natural",
+			"name_es": "Bendición Natural",
 			"description": "Heal 1 HP when collecting experience",
 			"description_es": "Cura 1 PV al recoger experiencia"
 		},
@@ -349,11 +349,11 @@ const CHARACTERS: Dictionary = {
 	"wind_runner": {
 		"id": "wind_runner",
 		"name": "Wind Runner",
-		"name_es": "Corredor del Viento",
+		"name_es": "Corredora del Viento",
 		"title": "The Swift",
-		"title_es": "El Veloz",
+		"title_es": "La Veloz",
 		"description": "The fastest mage, using wind magic to outrun any danger.",
-		"description_es": "El mago mas rapido, usando magia de viento para escapar de cualquier peligro.",
+		"description_es": "La maga más rápida, usando magia de viento para escapar de cualquier peligro.",
 
 		"element": Element.WIND,
 		"starting_weapon": "wind_blade",
@@ -377,7 +377,7 @@ const CHARACTERS: Dictionary = {
 			"name": "Tailwind",
 			"name_es": "Viento de Cola",
 			"description": "Move 15% faster when below 50% HP",
-			"description_es": "Muevete 15% mas rapido bajo 50% de vida"
+			"description_es": "Muévete 15% más rápido bajo 50% de vida"
 		},
 
 		"unlock_status": UnlockStatus.LOCKED,
@@ -404,7 +404,7 @@ const CHARACTERS: Dictionary = {
 		"name": "Geomancer",
 		"name_es": "Geomante",
 		"title": "The Mountain",
-		"title_es": "La Montana",
+		"title_es": "La Montaña",
 		"description": "An immovable tank who crushes enemies with devastating earth magic.",
 		"description_es": "Un tanque inamovible que aplasta enemigos con magia de tierra devastadora.",
 
@@ -430,7 +430,7 @@ const CHARACTERS: Dictionary = {
 			"name": "Stone Skin",
 			"name_es": "Piel de Piedra",
 			"description": "Take 20% less damage when standing still",
-			"description_es": "Recibe 20% menos dano al estar quieto"
+			"description_es": "Recibe 20% menos daño al estar quieto"
 		},
 
 		"unlock_status": UnlockStatus.LOCKED,
@@ -438,7 +438,7 @@ const CHARACTERS: Dictionary = {
 			"type": "damage_taken",
 			"value": 10000,
 			"description": "Take 10000 total damage across all runs",
-			"description_es": "Recibe 10000 de dano total entre todas las partidas"
+			"description_es": "Recibe 10000 de daño total entre todas las partidas"
 		},
 
 		"color_primary": Color(0.6, 0.4, 0.2),      # Earth brown
@@ -455,11 +455,11 @@ const CHARACTERS: Dictionary = {
 	"paladin": {
 		"id": "paladin",
 		"name": "Paladin",
-		"name_es": "Paladin",
+		"name_es": "Paladín",
 		"title": "The Light Bringer",
 		"title_es": "El Portador de Luz",
 		"description": "A holy warrior who smites enemies with pure light and critical strikes.",
-		"description_es": "Un guerrero sagrado que castiga enemigos con luz pura y golpes criticos.",
+		"description_es": "Un guerrero sagrado que castiga enemigos con luz pura y golpes críticos.",
 
 		"element": Element.LIGHT,
 		"starting_weapon": "light_beam",
@@ -483,7 +483,7 @@ const CHARACTERS: Dictionary = {
 			"name": "Divine Judgment",
 			"name_es": "Juicio Divino",
 			"description": "Critical hits deal 50% more damage",
-			"description_es": "Los criticos hacen 50% mas de dano"
+			"description_es": "Los críticos hacen 50% más de daño"
 		},
 
 		"unlock_status": UnlockStatus.LOCKED,
@@ -508,11 +508,11 @@ const CHARACTERS: Dictionary = {
 	"void_walker": {
 		"id": "void_walker",
 		"name": "Void Walker",
-		"name_es": "Caminante del Vacio",
+		"name_es": "Caminante del Vacío",
 		"title": "The Abyss Touched",
-		"title_es": "El Tocado por el Abismo",
+		"title_es": "La Tocada por el Abismo",
 		"description": "A mysterious mage who traded his health for immense void power.",
-		"description_es": "Un mago misterioso que cambio su salud por inmenso poder del vacio.",
+		"description_es": "Una maga misteriosa que cambió su salud por inmenso poder del vacío.",
 
 		"element": Element.VOID,
 		"starting_weapon": "void_pulse",
@@ -534,7 +534,7 @@ const CHARACTERS: Dictionary = {
 		"passive": {
 			"id": "void_hunger",
 			"name": "Void Hunger",
-			"name_es": "Hambre del Vacio",
+			"name_es": "Hambre del Vacío",
 			"description": "Killing enemies heals 2 HP, but lose 0.5 HP/sec",
 			"description_es": "Matar enemigos cura 2 PV, pero pierdes 0.5 PV/seg"
 		},
