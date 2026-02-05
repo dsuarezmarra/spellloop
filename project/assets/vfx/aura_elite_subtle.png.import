@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c6fkoxr8ir4mv"
-path="res://.godot/imported/6728770d-586c-4360-a6cd-581f457b1057-removebg-preview.png-531ed73551cccbfc58894846ed8bc4c0.ctex"
+uid="uid://c2o15qskqh0lr"
+path="res://.godot/imported/aura_elite_subtle.png-2b58e0f7818f1cac1d165a653edbc3f5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/vfx/6728770d-586c-4360-a6cd-581f457b1057-removebg-preview.png"
-dest_files=["res://.godot/imported/6728770d-586c-4360-a6cd-581f457b1057-removebg-preview.png-531ed73551cccbfc58894846ed8bc4c0.ctex"]
+source_file="res://assets/vfx/aura_elite_subtle.png"
+dest_files=["res://.godot/imported/aura_elite_subtle.png-2b58e0f7818f1cac1d165a653edbc3f5.ctex"]
 
 [params]
 

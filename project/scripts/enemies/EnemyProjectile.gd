@@ -475,7 +475,7 @@ func _spawn_hit_effect() -> void:
 		"lightning": "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png"
 	}
 	
-	var sheet_path = impact_sheets.get(element, "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png")
+	var sheet_path = impact_sheets.get(element_type, "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png")
 	
 	var sprite = Sprite2D.new()
 	var tex = load(sheet_path)

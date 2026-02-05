@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dsqv1eyqifw2s"
-path="res://.godot/imported/aura_elite_floor.png-781783e780225361997ff532dce80efe.ctex"
+uid="uid://3mjh4gev1rm3"
+path="res://.godot/imported/aura_elite_rare_spritesheet.png-a666575c42b47361967d35103154fce2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/vfx/aura_elite_floor.png"
-dest_files=["res://.godot/imported/aura_elite_floor.png-781783e780225361997ff532dce80efe.ctex"]
+source_file="res://assets/vfx/abilities/auras/aura_elite_rare_spritesheet.png"
+dest_files=["res://.godot/imported/aura_elite_rare_spritesheet.png-a666575c42b47361967d35103154fce2.ctex"]
 
 [params]
 

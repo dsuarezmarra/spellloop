@@ -537,41 +537,52 @@ func _setup_enemy_visual() -> void:
 		animated_sprite.sprite_scale = enemy_scale
 
 func _create_elite_aura() -> void:
-	"""Crear efecto de aura para enemigos élite"""
+	"""Crear efecto de aura sutil para enemigos élite/rare"""
 	if aura_sprite:
 		return
 
-	# Crear un sprite circular para el aura usando el asset
+	# Crear sprite para el aura - imagen estática única
 	aura_sprite = Sprite2D.new()
 	aura_sprite.name = "EliteAura"
 	
-	var tex = load("res://assets/vfx/aura_elite_floor.png")
+	# Intentar cargar el nuevo aura sutil, fallback al antiguo
+	var tex = load("res://assets/vfx/aura_elite_subtle.png")
+	if not tex:
+		tex = load("res://assets/vfx/aura_elite_floor.png")
+	
 	if tex:
 		aura_sprite.texture = tex
 	else:
 		push_warning("Missing elite aura asset")
+		return
 		
 	aura_sprite.z_index = -1
-	# El asset es 128x128 aprox. Ajustar escala según tamaño del enemigo.
-	# Base scale para que sobresalga un poco
-	var base_scale = elite_size_scale * 0.8 
+	# Escala base - el aura debe sobresalir sutilmente del enemigo
+	var base_scale = elite_size_scale * 0.9
 	aura_sprite.scale = Vector2(base_scale, base_scale)
+	# Comenzar semi-transparente para efecto sutil
+	aura_sprite.modulate.a = 0.7
 
 	add_child(aura_sprite)
 
-	# Animar el aura: Rotación continua + Pulsación suave
-	var tween = create_tween()
-	tween.set_loops()
-	tween.set_parallel(true)
+	# Rotación muy lenta y suave (una vuelta cada 8 segundos)
+	var rotate_tween = create_tween()
+	rotate_tween.set_loops()
+	rotate_tween.tween_property(aura_sprite, "rotation_degrees", 360.0, 8.0).from(0.0)
 	
-	# Rotación completa en 4 segundos
-	tween.tween_property(aura_sprite, "rotation_degrees", 360.0, 4.0).from(0.0)
+	# Pulsación sutil de opacidad (breathing effect)
+	var alpha_tween = create_tween()
+	alpha_tween.set_loops()
+	alpha_tween.tween_property(aura_sprite, "modulate:a", 0.9, 1.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	alpha_tween.tween_property(aura_sprite, "modulate:a", 0.5, 1.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	
-	# Pulsación de escala
-	tween.tween_property(aura_sprite, "scale", Vector2(base_scale * 1.1, base_scale * 1.1), 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.chain().tween_property(aura_sprite, "scale", Vector2(base_scale, base_scale), 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	# Pulsación muy sutil de escala (apenas perceptible)
+	var pulse_tween = create_tween()
+	pulse_tween.set_loops()
+	pulse_tween.tween_property(aura_sprite, "scale", Vector2(base_scale * 1.05, base_scale * 1.05), 2.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	pulse_tween.tween_property(aura_sprite, "scale", Vector2(base_scale * 0.95, base_scale * 0.95), 2.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	
-	# NUEVO: Añadir glow/aura de color por shader al sprite del enemigo
+	# Añadir glow shader al sprite del enemigo
 	_apply_elite_glow_shader()
 
 func _apply_elite_glow_shader() -> void:
