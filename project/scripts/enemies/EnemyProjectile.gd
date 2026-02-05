@@ -492,12 +492,23 @@ func _spawn_hit_effect() -> void:
 		
 		# Animar frames
 		var total_frames = 8
-		var tween = create_tween()
+		var tween = effect.create_tween()
 		tween.tween_method(func(f: int):
 			sprite.frame = f
 		, 0, total_frames - 1, 0.25)
 		
-		tween.tween_callback(effect.queue_free)
+		tween.tween_callback(func():
+			if is_instance_valid(effect):
+				effect.queue_free()
+		)
+		
+		# SAFETY TIMEOUT: Eliminar efecto después de 1 segundo si el tween falla
+		var tree = effect.get_tree()
+		if tree:
+			tree.create_timer(1.0).timeout.connect(func():
+				if is_instance_valid(effect):
+					effect.queue_free()
+			, CONNECT_ONE_SHOT)
 	else:
 		# Fallback: dibujo procedural simple
 		var fallback = Node2D.new()
@@ -510,12 +521,24 @@ func _spawn_hit_effect() -> void:
 			fallback.draw_circle(Vector2.ZERO, r, Color(color.r, color.g, color.b, 0.5 * (1.0 - progress)))
 		)
 		
-		var tween = create_tween()
+		var tween = effect.create_tween()
 		tween.tween_method(func(p: float):
 			progress = p
-			fallback.queue_redraw()
+			if is_instance_valid(fallback):
+				fallback.queue_redraw()
 		, 0.0, 1.0, 0.2)
-		tween.tween_callback(effect.queue_free)
+		tween.tween_callback(func():
+			if is_instance_valid(effect):
+				effect.queue_free()
+		)
+		
+		# SAFETY TIMEOUT: Eliminar efecto después de 1 segundo si el tween falla
+		var tree2 = effect.get_tree()
+		if tree2:
+			tree2.create_timer(1.0).timeout.connect(func():
+				if is_instance_valid(effect):
+					effect.queue_free()
+			, CONNECT_ONE_SHOT)
 
 # Sprite impact logic handles visuals now.
 

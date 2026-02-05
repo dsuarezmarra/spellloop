@@ -67,11 +67,11 @@ func _ready() -> void:
 		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		bg.anchor_right = 1.0
 		bg.anchor_bottom = 1.0
-		# Ajuste para centrar la plataforma en pantalla
-		bg.offset_left = -50
-		bg.offset_right = 50
-		bg.offset_top = -80
-		bg.offset_bottom = 80
+		# Ajuste para centrar la plataforma en pantalla (subir el fondo)
+		bg.offset_left = 0
+		bg.offset_right = 0
+		bg.offset_top = -120
+		bg.offset_bottom = 0
 		bg.z_index = -100
 		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		add_child(bg)
@@ -226,11 +226,11 @@ func _build_ui() -> void:
 	add_child(title_label)
 
 	# Carousel center point - Ajustado para coincidir con la plataforma del fondo
-	# La plataforma en el fondo está aproximadamente a 45% desde arriba
+	# La plataforma está en la parte central-inferior de la imagen
 	carousel_center = Control.new()
 	carousel_center.name = "CarouselCenter"
 	carousel_center.set_anchors_preset(Control.PRESET_CENTER)
-	carousel_center.position = Vector2(0, -50)  # Subir un poco el carrusel
+	carousel_center.position = Vector2(0, 30)  # Bajar para que coincida con la plataforma
 	add_child(carousel_center)
 
 	# Character name (above carousel) - Con fuente personalizada
@@ -299,12 +299,12 @@ func _build_stats_panel() -> void:
 	stats_panel.name = "StatsPanel"
 	stats_panel.set_anchors_preset(Control.PRESET_CENTER)
 	# Posicionar más abajo para no pisar al personaje
-	stats_panel.anchor_top = 0.68
-	stats_panel.anchor_bottom = 0.68
-	stats_panel.offset_left = -350
-	stats_panel.offset_right = 350
+	stats_panel.anchor_top = 0.72
+	stats_panel.anchor_bottom = 0.72
+	stats_panel.offset_left = -380
+	stats_panel.offset_right = 380
 	stats_panel.offset_top = 0
-	stats_panel.offset_bottom = 220
+	stats_panel.offset_bottom = 200
 
 	# Style - Intentar usar el frame decorativo
 	var frame_tex = load("res://assets/ui/frames/stats_panel_frame.png")
@@ -629,12 +629,17 @@ func _update_stats_display() -> void:
 	sep2.add_theme_constant_override("separation", 4)
 	vbox.add_child(sep2)
 
-	# Stats grid - 3x3 compacto
+	# Stats grid - 3x3 compacto, centrado horizontalmente
+	var stats_center = HBoxContainer.new()
+	stats_center.alignment = BoxContainer.ALIGNMENT_CENTER
+	stats_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_child(stats_center)
+	
 	var stats_grid = GridContainer.new()
 	stats_grid.columns = 3
-	stats_grid.add_theme_constant_override("h_separation", 15)
-	stats_grid.add_theme_constant_override("v_separation", 2)
-	vbox.add_child(stats_grid)
+	stats_grid.add_theme_constant_override("h_separation", 40)  # Más separación horizontal
+	stats_grid.add_theme_constant_override("v_separation", 4)
+	stats_center.add_child(stats_grid)
 
 	var stats = char_data.get("stats", {})
 
@@ -661,7 +666,9 @@ func _update_stats_display() -> void:
 
 		var stat_label = Label.new()
 		stat_label.text = stat_info.name + ": " + (stat_info.format % value)
-		stat_label.add_theme_font_size_override("font_size", 12)
+		stat_label.add_theme_font_size_override("font_size", 13)
+		stat_label.custom_minimum_size = Vector2(100, 0)  # Ancho mínimo para columnas uniformes
+		stat_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 		if is_better:
 			stat_label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))

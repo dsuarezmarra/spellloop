@@ -369,17 +369,17 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 	
 	# Buscar nodos clave en la nueva jerarquía
 	# Panel -> VBox -> Margin(Info) -> InnerVBox -> InfoContainer
-	# Panel -> VBox -> Margin(Actions) -> ActionsVBox
+	# Panel -> VBox -> Margin(Actions) -> ActionsHBox
 	
 	# Acceso seguro via find_child (más robusto que paths hardcodeados)
 	var info_container = panel.find_child("InfoContainer", true, false)
-	var actions_vbox = panel.find_child("ActionsVBox", true, false)
+	var actions_hbox = panel.find_child("ActionsHBox", true, false)
 	
-	if not info_container or not actions_vbox:
+	if not info_container or not actions_hbox:
 		return
 		
-	var select_btn = actions_vbox.get_node_or_null("SelectButton")
-	var delete_btn = actions_vbox.get_node_or_null("DeleteButton")
+	var select_btn = actions_hbox.get_node_or_null("SelectButton")
+	var delete_btn = actions_hbox.get_node_or_null("DeleteButton")
 	
 	# Limpiar info anterior
 	for child in info_container.get_children():
