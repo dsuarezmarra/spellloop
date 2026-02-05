@@ -36,10 +36,11 @@ text = "🎮 Selecciona tu Partida"
 horizontal_alignment = 1
 
 [node name="SubtitleLabel" type="Label" parent="Panel/VBoxContainer"]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 16
-text = "Cada slot tiene su propio progreso independiente"
+text = ""
 horizontal_alignment = 1
 
 [node name="SlotsContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]

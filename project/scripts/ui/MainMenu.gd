@@ -12,8 +12,8 @@ signal quit_pressed
 
 # play_button ahora es TextureButton (hereda de BaseButton)
 @onready var play_button: BaseButton = $UILayer/UIContainer/VBoxContainer/PlayButton
-@onready var options_button: Button = $UILayer/UIContainer/VBoxContainer/OptionsButton
-@onready var quit_button: Button = $UILayer/UIContainer/VBoxContainer/QuitButton
+@onready var options_button: BaseButton = $UILayer/UIContainer/VBoxContainer/OptionsButton
+@onready var quit_button: BaseButton = $UILayer/UIContainer/VBoxContainer/QuitButton
 @onready var debug_button: Button = $UILayer/UIContainer/VBoxContainer/DebugButton
 @onready var title_label: Label = $UILayer/UIContainer/TitleLabel
 @onready var version_label: Label = $UILayer/UIContainer/VersionLabel
@@ -23,7 +23,7 @@ signal quit_pressed
 @onready var logo_image: TextureRect = $UILayer/UIContainer/LogoImage
 
 # Se crea dinámicamente si hay partida activa
-var resume_button: Button = null
+var resume_button: BaseButton = null
 
 # Sistema de navegacion WASD - ahora usa BaseButton para soportar TextureButton
 var menu_buttons: Array[BaseButton] = []
@@ -44,10 +44,11 @@ func _ready() -> void:
 	# Logo ya está en la escena como LogoImage (no necesita setup dinámico)
 
 func _set_icons() -> void:
-	if options_button:
-		options_button.icon = load("res://assets/icons/ui_settings_gear.png")
-		options_button.expand_icon = true
-		# Adjust icon spacing or size if needed
+	# TextureButton no tiene icono - los iconos se manejan en la textura misma
+	# Si options_button es Button regular, aplicar icono
+	if options_button and options_button is Button:
+		(options_button as Button).icon = load("res://assets/icons/ui_settings_gear.png")
+		(options_button as Button).expand_icon = true
 
 
 func _setup_logo_image() -> void:
@@ -88,51 +89,76 @@ func _setup_debug_button() -> void:
 
 
 func _setup_ambient_particles() -> void:
-	"""Crea partículas de ambiente (sparkles mágicos) para el menú principal"""
+	"""Crea partículas de ambiente (sparkles mágicos individuales) para el menú principal"""
 	var sparkle_tex = load("res://assets/ui/particles/particle_magic_sparkle.png")
 	if not sparkle_tex:
 		return
 	
-	# Crear GPUParticles2D para sparkles flotantes
-	var particles = GPUParticles2D.new()
-	particles.name = "AmbientSparkles"
-	particles.amount = 20
-	particles.lifetime = 4.0
-	particles.texture = sparkle_tex
+	# La textura tiene 4 sparkles en horizontal (1216x222, cada uno ~304px)
+	# Crear una AtlasTexture para usar solo 1 sparkle a la vez
+	var atlas_textures: Array[AtlasTexture] = []
+	var sparkle_width = 304
+	var sparkle_height = 222
+	for i in range(4):
+		var atlas = AtlasTexture.new()
+		atlas.atlas = sparkle_tex
+		atlas.region = Rect2(i * sparkle_width, 0, sparkle_width, sparkle_height)
+		atlas_textures.append(atlas)
 	
-	# Crear material de partículas
-	var mat = ParticleProcessMaterial.new()
-	mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
-	mat.emission_box_extents = Vector3(960, 540, 0)  # Cubrir toda la pantalla
-	
-	# Movimiento suave hacia arriba con variación
-	mat.direction = Vector3(0, -1, 0)
-	mat.spread = 30.0
-	mat.initial_velocity_min = 10.0
-	mat.initial_velocity_max = 30.0
-	mat.gravity = Vector3(0, -5, 0)  # Flotar hacia arriba lentamente
-	
-	# Escala con variación
-	mat.scale_min = 0.05
-	mat.scale_max = 0.15
-	
-	# Fade in/out
-	mat.color = Color(1.0, 0.95, 0.7, 0.6)  # Dorado suave semitransparente
-	
-	# Rotación lenta
-	mat.angular_velocity_min = -30.0
-	mat.angular_velocity_max = 30.0
-	
-	particles.process_material = mat
-	particles.position = Vector2(960, 540)  # Centro de la pantalla 1920x1080
-	particles.z_index = -1  # Detrás de la UI
-	
-	# Añadir al UILayer para que esté sobre el fondo
+	# Crear varios sistemas de partículas, uno por cada tipo de sparkle
 	var ui_layer = get_node_or_null("UILayer")
-	if ui_layer:
-		ui_layer.add_child(particles)
-	else:
-		add_child(particles)
+	var parent_node = ui_layer if ui_layer else self
+	
+	for i in range(4):
+		var particles = GPUParticles2D.new()
+		particles.name = "AmbientSparkle_%d" % i
+		particles.amount = 25  # 25 partículas x 4 tipos = 100 total
+		particles.lifetime = 5.0
+		particles.randomness = 1.0
+		particles.texture = atlas_textures[i]
+		
+		# Crear material de partículas
+		var mat = ParticleProcessMaterial.new()
+		mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+		mat.emission_box_extents = Vector3(960, 540, 0)  # Cubrir toda la pantalla
+		
+		# Movimiento suave en múltiples direcciones
+		mat.direction = Vector3(0, -0.5, 0)
+		mat.spread = 180.0  # Esférico para flotar en todas direcciones
+		mat.initial_velocity_min = 5.0
+		mat.initial_velocity_max = 20.0
+		mat.gravity = Vector3(0, -3, 0)  # Flotar suavemente hacia arriba
+		
+		# Escala PEQUEÑA para que sean puntos individuales
+		mat.scale_min = 0.03
+		mat.scale_max = 0.08
+		
+		# Color dorado semitransparente con variación
+		var base_hue = 0.12 + randf() * 0.05  # Variación de tono dorado
+		mat.color = Color.from_hsv(base_hue, 0.3, 1.0, 0.5)
+		
+		# Rotación lenta
+		mat.angular_velocity_min = -20.0
+		mat.angular_velocity_max = 20.0
+		
+		# Fade: Aparecer y desaparecer suavemente
+		var color_curve = Curve.new()
+		color_curve.add_point(Vector2(0.0, 0.0))
+		color_curve.add_point(Vector2(0.2, 1.0))
+		color_curve.add_point(Vector2(0.8, 1.0))
+		color_curve.add_point(Vector2(1.0, 0.0))
+		var alpha_curve = CurveTexture.new()
+		alpha_curve.curve = color_curve
+		mat.alpha_curve = alpha_curve
+		
+		particles.process_material = mat
+		particles.position = Vector2(960, 540)  # Centro de la pantalla 1920x1080
+		particles.z_index = 5  # Encima del fondo pero debajo de botones
+		
+		# Delay inicial diferente para cada sistema
+		particles.preprocess = i * 1.25
+		
+		parent_node.add_child(particles)
 
 
 func _apply_premium_style() -> void:
@@ -342,7 +368,13 @@ func _update_resume_button() -> void:
 	if resume_button:
 		resume_button.visible = can_resume_game
 		if can_resume_game and SessionState:
-			resume_button.text = ">> REANUDAR (%s)" % SessionState.get_paused_time_formatted()
+			var resume_text = "REANUDAR (%s)" % SessionState.get_paused_time_formatted()
+			# TextureButton usa un Label hijo para mostrar texto
+			var resume_label = resume_button.get_node_or_null("ResumeLabel")
+			if resume_label:
+				resume_label.text = resume_text
+			elif resume_button is Button:
+				(resume_button as Button).text = resume_text
 
 	# Actualizar texto del botón de jugar
 	if play_button:
@@ -357,21 +389,49 @@ func _update_resume_button() -> void:
 func _create_resume_button() -> void:
 	"""Crear el boton de reanudar dinamicamente si no existe en la escena"""
 	if play_button and play_button.get_parent():
-		resume_button = Button.new()
-		resume_button.name = "ResumeButton"
-		resume_button.text = ">> REANUDAR"
-		resume_button.custom_minimum_size = play_button.custom_minimum_size
-		resume_button.visible = false
-
-		# Copiar tamanio de fuente del boton de jugar
-		if play_button.has_theme_font_size_override("font_size"):
-			resume_button.add_theme_font_size_override("font_size", play_button.get_theme_font_size("font_size"))
-		else:
-			resume_button.add_theme_font_size_override("font_size", 24)
-
+		# Crear TextureButton igual que los otros botones
+		var tex_btn = TextureButton.new()
+		tex_btn.name = "ResumeButton"
+		tex_btn.custom_minimum_size = Vector2(300, 80)
+		tex_btn.visible = false
+		tex_btn.ignore_texture_size = true
+		tex_btn.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
+		
+		# Cargar texturas del botón
+		var tex_normal = load("res://assets/ui/buttons/btn_play_normal.png")
+		var tex_hover = load("res://assets/ui/buttons/btn_play_hover.png")
+		if tex_normal:
+			tex_btn.texture_normal = tex_normal
+		if tex_hover:
+			tex_btn.texture_hover = tex_hover
+			tex_btn.texture_pressed = tex_hover
+			tex_btn.texture_focused = tex_hover
+		
+		# Crear Label hijo para el texto
+		var resume_label = Label.new()
+		resume_label.name = "ResumeLabel"
+		resume_label.text = "REANUDAR"
+		resume_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		resume_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		resume_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+		
+		# Estilo del texto igual que PlayLabel
+		var font_title = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+		if font_title:
+			resume_label.add_theme_font_override("font", font_title)
+		resume_label.add_theme_font_size_override("font_size", 24)
+		resume_label.add_theme_color_override("font_color", Color(0.15, 0.1, 0.05, 1))
+		resume_label.add_theme_color_override("font_shadow_color", Color(1.0, 0.9, 0.5, 0.5))
+		resume_label.add_theme_constant_override("shadow_offset_y", 1)
+		
+		tex_btn.add_child(resume_label)
+		
 		# Add to VBox at index 0 (top)
-		$UILayer/UIContainer/VBoxContainer.add_child(resume_button)
-		$UILayer/UIContainer/VBoxContainer.move_child(resume_button, 0)
+		$UILayer/UIContainer/VBoxContainer.add_child(tex_btn)
+		$UILayer/UIContainer/VBoxContainer.move_child(tex_btn, 0)
+		
+		# Guardar referencia
+		resume_button = tex_btn
 		
 		# Apply style
 		_apply_premium_style()

@@ -60,13 +60,18 @@ func _ready() -> void:
 	
 	# Add Background
 	var bg = TextureRect.new()
-	bg.texture = load("res://assets/ui/backgrounds/char_select_hall.png")
+	bg.texture = load("res://assets/ui/backgrounds/character_select_bg_new.png")
 	if bg.texture:
 		bg.name = "Background"
 		bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		bg.anchor_right = 1.0
 		bg.anchor_bottom = 1.0
+		# Ajuste para centrar la plataforma en pantalla
+		bg.offset_left = -50
+		bg.offset_right = 50
+		bg.offset_top = -80
+		bg.offset_bottom = 80
 		bg.z_index = -100
 		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		add_child(bg)
@@ -201,7 +206,7 @@ func _build_ui() -> void:
 	vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(vignette)
 
-	# Title at top
+	# Title at top - Con fuente personalizada
 	title_label = Label.new()
 	title_label.name = "Title"
 	title_label.text = L("ui.character_select.title")
@@ -209,30 +214,44 @@ func _build_ui() -> void:
 	title_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	title_label.offset_top = 30
 	title_label.offset_bottom = 90
-	title_label.add_theme_font_size_override("font_size", 48)
+	# Cargar fuente Cinzel
+	var font_title = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	if font_title:
+		title_label.add_theme_font_override("font", font_title)
+	title_label.add_theme_font_size_override("font_size", 42)
 	title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
+	title_label.add_theme_color_override("font_shadow_color", Color(0.2, 0.1, 0.0, 0.8))
+	title_label.add_theme_constant_override("shadow_offset_x", 2)
+	title_label.add_theme_constant_override("shadow_offset_y", 3)
 	add_child(title_label)
 
-	# Carousel center point (middle of screen, moved UP to avoid stats panel)
+	# Carousel center point - Ajustado para coincidir con la plataforma del fondo
+	# La plataforma en el fondo está aproximadamente a 45% desde arriba
 	carousel_center = Control.new()
 	carousel_center.name = "CarouselCenter"
 	carousel_center.set_anchors_preset(Control.PRESET_CENTER)
-	carousel_center.position = Vector2(0, -60)  # Center position (sprites are now 128x128)
+	carousel_center.position = Vector2(0, -50)  # Subir un poco el carrusel
 	add_child(carousel_center)
 
-	# Character name (above carousel)
+	# Character name (above carousel) - Con fuente personalizada
 	character_name_label = Label.new()
 	character_name_label.name = "CharacterName"
 	character_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	character_name_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	character_name_label.anchor_top = 0.15
-	character_name_label.anchor_bottom = 0.15
+	character_name_label.anchor_top = 0.14
+	character_name_label.anchor_bottom = 0.14
 	character_name_label.offset_top = 0
-	character_name_label.offset_bottom = 40
+	character_name_label.offset_bottom = 45
 	character_name_label.offset_left = -400
 	character_name_label.offset_right = 400
-	character_name_label.add_theme_font_size_override("font_size", 36)
+	# Fuente personalizada para nombre
+	var font_name = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	if font_name:
+		character_name_label.add_theme_font_override("font", font_name)
+	character_name_label.add_theme_font_size_override("font_size", 32)
 	character_name_label.add_theme_color_override("font_color", Color(1, 1, 1))
+	character_name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+	character_name_label.add_theme_constant_override("shadow_offset_y", 2)
 	add_child(character_name_label)
 
 	# Character title (below name)
@@ -240,16 +259,24 @@ func _build_ui() -> void:
 	character_title_label.name = "CharacterTitle"
 	character_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	character_title_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	character_title_label.anchor_top = 0.20
-	character_title_label.anchor_bottom = 0.20
+	character_title_label.anchor_top = 0.19
+	character_title_label.anchor_bottom = 0.19
 	character_title_label.offset_top = 0
 	character_title_label.offset_bottom = 30
 	character_title_label.offset_left = -400
 	character_title_label.offset_right = 400
-	character_title_label.add_theme_font_size_override("font_size", 20)
+	# Fuente Quicksand para subtítulo
+	var font_body = load("res://assets/ui/fonts/Quicksand-Variable.ttf")
+	if font_body:
+		character_title_label.add_theme_font_override("font", font_body)
+	character_title_label.add_theme_font_size_override("font_size", 22)
+	# Sombra para mejor legibilidad
+	character_title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+	character_title_label.add_theme_constant_override("shadow_offset_x", 2)
+	character_title_label.add_theme_constant_override("shadow_offset_y", 2)
 	add_child(character_title_label)
 
-	# Stats panel (below carousel)
+	# Stats panel (below carousel) - Posición ajustada para no pisar al personaje
 	_build_stats_panel()
 
 	# Navigation instructions
@@ -258,8 +285,8 @@ func _build_ui() -> void:
 	instructions_label.text = L("ui.character_select.instructions")
 	instructions_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	instructions_label.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	instructions_label.offset_top = -80
-	instructions_label.offset_bottom = -50
+	instructions_label.offset_top = -50
+	instructions_label.offset_bottom = -20
 	instructions_label.add_theme_font_size_override("font_size", 16)
 	instructions_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 	add_child(instructions_label)
@@ -271,22 +298,23 @@ func _build_stats_panel() -> void:
 	stats_panel = PanelContainer.new()
 	stats_panel.name = "StatsPanel"
 	stats_panel.set_anchors_preset(Control.PRESET_CENTER)
+	# Posicionar más abajo para no pisar al personaje
 	stats_panel.anchor_top = 0.68
 	stats_panel.anchor_bottom = 0.68
-	stats_panel.offset_left = -280
-	stats_panel.offset_right = 280
+	stats_panel.offset_left = -350
+	stats_panel.offset_right = 350
 	stats_panel.offset_top = 0
-	stats_panel.offset_bottom = 200
+	stats_panel.offset_bottom = 220
 
 	# Style - Intentar usar el frame decorativo
 	var frame_tex = load("res://assets/ui/frames/stats_panel_frame.png")
 	if frame_tex:
 		var panel_style = StyleBoxTexture.new()
 		panel_style.texture = frame_tex
-		panel_style.content_margin_left = 25
-		panel_style.content_margin_right = 25
-		panel_style.content_margin_top = 40
-		panel_style.content_margin_bottom = 25
+		panel_style.content_margin_left = 40
+		panel_style.content_margin_right = 40
+		panel_style.content_margin_top = 45
+		panel_style.content_margin_bottom = 30
 		stats_panel.add_theme_stylebox_override("panel", panel_style)
 	else:
 		# Fallback programático
@@ -299,17 +327,17 @@ func _build_stats_panel() -> void:
 
 	add_child(stats_panel)
 
-	# Content
+	# Content - Márgenes reducidos
 	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 20)
-	margin.add_theme_constant_override("margin_right", 20)
-	margin.add_theme_constant_override("margin_top", 15)
-	margin.add_theme_constant_override("margin_bottom", 15)
+	margin.add_theme_constant_override("margin_left", 15)
+	margin.add_theme_constant_override("margin_right", 15)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_bottom", 8)
 	stats_panel.add_child(margin)
 
 	var vbox = VBoxContainer.new()
 	vbox.name = "StatsVBox"
-	vbox.add_theme_constant_override("separation", 8)
+	vbox.add_theme_constant_override("separation", 5)
 	margin.add_child(vbox)
 
 func _create_carousel() -> void:
@@ -557,55 +585,60 @@ func _update_stats_display() -> void:
 		vbox.add_child(locked_label)
 		return
 
-	# Description (localized)
+	# Description (localized) - Texto más compacto
 	var desc_label = Label.new()
 	desc_label.text = _get_localized_field(char_data, "description", "")
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_label.add_theme_font_size_override("font_size", 14)
+	desc_label.add_theme_font_size_override("font_size", 13)
 	desc_label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.9))
 	vbox.add_child(desc_label)
 
-	# Separator
+	# Separator sutil
 	var sep1 = HSeparator.new()
+	sep1.add_theme_constant_override("separation", 4)
 	vbox.add_child(sep1)
 
-	# Weapon and Passive (localized)
+	# Weapon and Passive (localized) - En una sola línea horizontal
+	var weapon_passive_hbox = HBoxContainer.new()
+	weapon_passive_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	weapon_passive_hbox.add_theme_constant_override("separation", 30)
+	vbox.add_child(weapon_passive_hbox)
+
 	var weapon_data = WeaponDatabase.WEAPONS.get(char_data.starting_weapon, {})
 	var weapon_name = _get_localized_field(weapon_data, "name", char_data.starting_weapon)
 	var weapon_label_text = L("ui.character_select.starting_weapon")
 
 	var weapon_label = Label.new()
 	weapon_label.text = weapon_label_text + ": " + weapon_name
-	weapon_label.add_theme_font_size_override("font_size", 15)
+	weapon_label.add_theme_font_size_override("font_size", 13)
 	weapon_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.6))
-	weapon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(weapon_label)
+	weapon_passive_hbox.add_child(weapon_label)
 
 	var passive = char_data.get("passive", {})
 	var passive_name = _get_localized_field(passive, "name", "None")
 	var passive_label_text = L("ui.character_select.passive")
 	var passive_label = Label.new()
 	passive_label.text = passive_label_text + ": " + passive_name
-	passive_label.add_theme_font_size_override("font_size", 15)
+	passive_label.add_theme_font_size_override("font_size", 13)
 	passive_label.add_theme_color_override("font_color", Color(0.6, 0.9, 1.0))
-	passive_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(passive_label)
+	weapon_passive_hbox.add_child(passive_label)
 
-	# Separator
+	# Separator sutil
 	var sep2 = HSeparator.new()
+	sep2.add_theme_constant_override("separation", 4)
 	vbox.add_child(sep2)
 
-	# Stats grid - First row (main stats)
+	# Stats grid - 3x3 compacto
 	var stats_grid = GridContainer.new()
 	stats_grid.columns = 3
-	stats_grid.add_theme_constant_override("h_separation", 20)
-	stats_grid.add_theme_constant_override("v_separation", 4)
+	stats_grid.add_theme_constant_override("h_separation", 15)
+	stats_grid.add_theme_constant_override("v_separation", 2)
 	vbox.add_child(stats_grid)
 
 	var stats = char_data.get("stats", {})
 
-	# All character stats in display order (base values = Frost Mage stats)
+	# Stats reducidos para encajar en el panel (3x3 = 9 stats)
 	var stat_display = [
 		# Row 1: Core stats
 		{"key": "max_health", "name": "HP", "base": 100, "format": "%.0f", "invert": false},
@@ -619,8 +652,6 @@ func _update_stats_display() -> void:
 		{"key": "pickup_range", "name": "RNG", "base": 100, "format": "%.0f", "invert": false},
 		{"key": "health_regen", "name": "REGEN", "base": 0.0, "format": "%.1f", "invert": false},
 		{"key": "luck", "name": "LUCK", "base": 0.0, "format": "%.0f%%", "invert": false},
-		# Row 4: XP
-		{"key": "xp_mult", "name": "XP", "base": 1.0, "format": "x%.2f", "invert": false},
 	]
 
 	for stat_info in stat_display:
@@ -630,7 +661,7 @@ func _update_stats_display() -> void:
 
 		var stat_label = Label.new()
 		stat_label.text = stat_info.name + ": " + (stat_info.format % value)
-		stat_label.add_theme_font_size_override("font_size", 13)
+		stat_label.add_theme_font_size_override("font_size", 12)
 
 		if is_better:
 			stat_label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))

@@ -659,7 +659,7 @@
     "files": [
       "res://audio/sfx/gameplay/sfx_player_heal_04.mp3"
     ],
-    "volume_db": -6.0,
+    "volume_db": -10.0,
     "pitch_scale": [
       0.95,
       1.05

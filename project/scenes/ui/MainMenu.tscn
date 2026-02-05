@@ -1,10 +1,13 @@
-[gd_scene load_steps=6 format=3 uid="uid://do0qc3fkh3w82"]
+[gd_scene load_steps=9 format=3 uid="uid://do0qc3fkh3w82"]
 
 [ext_resource type="Script" uid="uid://dp6g26nkmid80" path="res://scripts/ui/MainMenu.gd" id="1_menu"]
 [ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_play_normal.png" id="2_btn_play_normal"]
 [ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_play_hover.png" id="3_btn_play_hover"]
 [ext_resource type="Texture2D" path="res://assets/ui/logo/logo_loopialike.png" id="4_logo"]
 [ext_resource type="FontFile" path="res://assets/ui/fonts/CinzelDecorative-Bold.ttf" id="5_font_title"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_secondary_normal.png" id="6_btn_sec_normal"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_secondary_hover.png" id="7_btn_sec_hover"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/Quicksand-Variable.ttf" id="8_font_body"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -123,17 +126,57 @@ text = "JUGAR"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="OptionsButton" type="Button" parent="UILayer/UIContainer/VBoxContainer"]
-custom_minimum_size = Vector2(240, 50)
+[node name="OptionsButton" type="TextureButton" parent="UILayer/UIContainer/VBoxContainer"]
+custom_minimum_size = Vector2(300, 80)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "OPCIONES"
+texture_normal = ExtResource("2_btn_play_normal")
+texture_hover = ExtResource("3_btn_play_hover")
+texture_pressed = ExtResource("3_btn_play_hover")
+texture_focused = ExtResource("3_btn_play_hover")
+ignore_texture_size = true
+stretch_mode = 5
 
-[node name="QuitButton" type="Button" parent="UILayer/UIContainer/VBoxContainer"]
-custom_minimum_size = Vector2(240, 50)
+[node name="OptionsLabel" type="Label" parent="UILayer/UIContainer/VBoxContainer/OptionsButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_shadow_color = Color(1.0, 0.9, 0.5, 0.5)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 24
+theme_override_fonts/font = ExtResource("5_font_title")
+text = "OPCIONES"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="QuitButton" type="TextureButton" parent="UILayer/UIContainer/VBoxContainer"]
+custom_minimum_size = Vector2(300, 80)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+texture_normal = ExtResource("2_btn_play_normal")
+texture_hover = ExtResource("3_btn_play_hover")
+texture_pressed = ExtResource("3_btn_play_hover")
+texture_focused = ExtResource("3_btn_play_hover")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="QuitLabel" type="Label" parent="UILayer/UIContainer/VBoxContainer/QuitButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_shadow_color = Color(1.0, 0.9, 0.5, 0.5)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 24
+theme_override_fonts/font = ExtResource("5_font_title")
 text = "SALIR"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="DebugButton" type="Button" parent="UILayer/UIContainer/VBoxContainer"]
 custom_minimum_size = Vector2(240, 50)

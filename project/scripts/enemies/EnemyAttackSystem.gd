@@ -1496,6 +1496,9 @@ func _create_homing_projectile(spawn_pos: Vector2) -> void:
 	if parent:
 		parent.add_child(projectile)
 	
+	# Trackear para limpieza cuando muere el boss
+	_track_boss_effect(projectile)
+	
 	# Comportamiento homing
 	var lifetime = 6.0
 	var speed = 120.0  # Reducido de 180 a 120 (jugador va a 100)
@@ -1515,6 +1518,11 @@ func _create_homing_projectile(spawn_pos: Vector2) -> void:
 		
 		lifetime -= 0.016
 		if lifetime <= 0:
+			projectile.queue_free()
+			return
+		
+		# Destruir si el boss/enemy ya no existe
+		if not is_instance_valid(enemy):
 			projectile.queue_free()
 			return
 		

@@ -165,7 +165,7 @@ func _verify_runtime_integrity() -> void:
 		_start_game()
 
 func _create_player() -> void:
-	var player_scene = load("res://scenes/player/SpellloopPlayer.tscn")
+	var player_scene = load("res://scenes/player/LoopiaLikePlayer.tscn")
 	if player_scene:
 		player = player_scene.instantiate()
 		player_container.add_child(player)

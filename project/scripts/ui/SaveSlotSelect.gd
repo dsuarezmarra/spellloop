@@ -57,10 +57,10 @@ func _ready() -> void:
 	if slot_buttons.size() > 0:
 		slot_buttons[0].grab_focus()
 
-	# Añadir fondo si no existe
-	var bg_path = "res://assets/ui/backgrounds/main_menu_bg.jpg"
+	# Añadir fondo - Usar el mismo que MainMenu (nuevo)
+	var bg_path = "res://assets/ui/backgrounds/main_menu_bg_new.png"
 	if not FileAccess.file_exists(bg_path):
-		bg_path = "res://assets/ui/backgrounds/main_menu_bg.png"
+		bg_path = "res://assets/ui/backgrounds/main_menu_bg.jpg"
 		
 	var bg_tex = load(bg_path)
 	
@@ -106,9 +106,16 @@ func _ready() -> void:
 		add_child(bg)
 		move_child(bg, 0)
 		
-	# FORCE UPPERCASE TITLE
+	# Aplicar fuente personalizada y estilo al título
 	if title_label:
 		title_label.text = "SELECCIONA TU PARTIDA"
+		var font_title = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+		if font_title:
+			title_label.add_theme_font_override("font", font_title)
+		title_label.add_theme_font_size_override("font_size", 38)
+		title_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5))
+		title_label.add_theme_color_override("font_shadow_color", Color(0.1, 0.05, 0.0, 0.8))
+		title_label.add_theme_constant_override("shadow_offset_y", 3)
 
 func _create_slot_ui() -> void:
 	"""Crear los 3 slots de guardado visualmente"""
@@ -141,10 +148,12 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 		# Usar el frame como fondo transparente
 		var style = StyleBoxTexture.new()
 		style.texture = frame_tex
-		style.content_margin_left = 30
-		style.content_margin_right = 30
-		style.content_margin_top = 50
-		style.content_margin_bottom = 80
+		# Ajustar márgenes para que el contenido quede DENTRO del frame
+		# El área dorada inferior es para los botones
+		style.content_margin_left = 35
+		style.content_margin_right = 35
+		style.content_margin_top = 55
+		style.content_margin_bottom = 60  # Espacio para área dorada de botones
 		panel.add_theme_stylebox_override("panel", style)
 	else:
 		# Fallback: estilo programático
@@ -205,73 +214,95 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	info_container.alignment = BoxContainer.ALIGNMENT_CENTER 
 	inner_vbox.add_child(info_container)
 	
-	# --- FOOTER (Acciones) ---
+	# --- FOOTER (Acciones) - 2 botones lado a lado en el área dorada ---
 	var actions_margin = MarginContainer.new()
-	actions_margin.add_theme_constant_override("margin_left", 20)
-	actions_margin.add_theme_constant_override("margin_right", 20)
-	actions_margin.add_theme_constant_override("margin_bottom", 25)
+	actions_margin.add_theme_constant_override("margin_left", 8)
+	actions_margin.add_theme_constant_override("margin_right", 8)
+	actions_margin.add_theme_constant_override("margin_top", 5)
+	actions_margin.add_theme_constant_override("margin_bottom", 8)
 	vbox.add_child(actions_margin)
 	
-	var actions_vbox = VBoxContainer.new()
-	actions_vbox.name = "ActionsVBox"
-	actions_vbox.add_theme_constant_override("separation", 12)
-	actions_margin.add_child(actions_vbox)
+	# HBoxContainer para los 2 botones lado a lado
+	var actions_hbox = HBoxContainer.new()
+	actions_hbox.name = "ActionsHBox"
+	actions_hbox.add_theme_constant_override("separation", 6)
+	actions_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	actions_margin.add_child(actions_hbox)
 
-	# 1. Botón JUGAR (Grande, Dorado)
+	# 1. Botón CONTINUAR/CREAR (izquierda)
 	var select_btn = Button.new()
 	select_btn.name = "SelectButton"
-	select_btn.text = "JUGAR"
-	select_btn.custom_minimum_size = Vector2(0, 55)
+	select_btn.text = "CREAR"
+	select_btn.custom_minimum_size = Vector2(120, 40)
+	select_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	select_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	
-	# Estilo Base Botón Jugar
+	# Estilo Base Botón - oscuro semi-transparente
 	var btn_style = StyleBoxFlat.new()
-	btn_style.bg_color = Color(0.15, 0.15, 0.25, 1.0)
-	btn_style.border_color = Color(0.6, 0.5, 0.3) # Oro apagado
+	btn_style.bg_color = Color(0.12, 0.10, 0.18, 0.95)
+	btn_style.border_color = Color(0.5, 0.4, 0.25, 0.8)
 	btn_style.set_border_width_all(1)
-	btn_style.set_corner_radius_all(8)
+	btn_style.set_corner_radius_all(4)
 	
-	# Estilo Hover Botón Jugar
+	# Estilo Hover Botón
 	var btn_hover = btn_style.duplicate()
 	btn_hover.bg_color = Color(0.2, 0.2, 0.35, 1.0)
-	btn_hover.border_color = Color(1.0, 0.8, 0.2) # Oro brillante
+	btn_hover.border_color = Color(1.0, 0.8, 0.2)
 	btn_hover.set_border_width_all(2)
 	btn_hover.shadow_color = Color(1, 0.8, 0.2, 0.3)
-	btn_hover.shadow_size = 8
+	btn_hover.shadow_size = 5
 	
 	select_btn.add_theme_stylebox_override("normal", btn_style)
 	select_btn.add_theme_stylebox_override("hover", btn_hover)
 	select_btn.add_theme_stylebox_override("pressed", btn_style)
 	select_btn.add_theme_stylebox_override("focus", btn_hover)
-	select_btn.add_theme_font_size_override("font_size", 22)
+	select_btn.add_theme_font_size_override("font_size", 16)
 	select_btn.add_theme_color_override("font_color", Color.WHITE)
 	select_btn.add_theme_color_override("font_hover_color", Color(1, 0.9, 0.5))
 	
 	select_btn.pressed.connect(_on_slot_selected.bind(slot_index))
-	
-	# Animaciones Hover Botón
 	select_btn.mouse_entered.connect(_anim_btn_scale.bind(select_btn, 1.02))
 	select_btn.mouse_exited.connect(_anim_btn_scale.bind(select_btn, 1.0))
 	select_btn.focus_entered.connect(_anim_btn_scale.bind(select_btn, 1.02))
 	select_btn.focus_exited.connect(_anim_btn_scale.bind(select_btn, 1.0))
 	
-	actions_vbox.add_child(select_btn)
+	actions_hbox.add_child(select_btn)
 	slot_buttons.append(select_btn)
 	
-	# 2. Botón BORRAR (Discreto, Texto Rojo)
+	# 2. Botón BORRAR (derecha) - mismo estilo pero rojo
 	var delete_btn = Button.new()
 	delete_btn.name = "DeleteButton"
-	delete_btn.text = "Borrar Partida"
-	delete_btn.flat = true # Estilo solo texto para no ensuciar
+	delete_btn.text = "BORRAR"
+	delete_btn.custom_minimum_size = Vector2(100, 40)
+	delete_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	delete_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	delete_btn.add_theme_color_override("font_color", Color(0.7, 0.3, 0.3, 0.6)) # Rojo apagado
-	delete_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.3, 0.3, 1.0)) # Rojo vivo
-	delete_btn.add_theme_color_override("font_focus_color", Color(1.0, 0.3, 0.3, 1.0))
-	delete_btn.add_theme_font_size_override("font_size", 12)
+	
+	# Estilo base rojo oscuro
+	var del_style = StyleBoxFlat.new()
+	del_style.bg_color = Color(0.18, 0.08, 0.08, 0.95)
+	del_style.border_color = Color(0.5, 0.25, 0.25, 0.8)
+	del_style.set_border_width_all(1)
+	del_style.set_corner_radius_all(4)
+	
+	# Estilo Hover rojo
+	var del_hover = del_style.duplicate()
+	del_hover.bg_color = Color(0.35, 0.15, 0.15, 1.0)
+	del_hover.border_color = Color(1.0, 0.3, 0.3)
+	del_hover.set_border_width_all(2)
+	del_hover.shadow_color = Color(1, 0.3, 0.2, 0.3)
+	del_hover.shadow_size = 5
+	
+	delete_btn.add_theme_stylebox_override("normal", del_style)
+	delete_btn.add_theme_stylebox_override("hover", del_hover)
+	delete_btn.add_theme_stylebox_override("pressed", del_style)
+	delete_btn.add_theme_stylebox_override("focus", del_hover)
+	delete_btn.add_theme_font_size_override("font_size", 14)
+	delete_btn.add_theme_color_override("font_color", Color(0.8, 0.5, 0.5))
+	delete_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.4, 0.4))
 	
 	delete_btn.pressed.connect(_on_delete_slot.bind(slot_index))
 	delete_btn.visible = false 
-	actions_vbox.add_child(delete_btn)
+	actions_hbox.add_child(delete_btn)
 	
 	# --- NAVIGATION LINKS ---
 	# Link vertical manual
