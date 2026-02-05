@@ -1,0 +1,23 @@
+[gd_resource type="Theme" format=3 uid="uid://cloopialiketheme"]
+
+[ext_resource type="FontFile" uid="uid://cinzel_regular" path="res://assets/ui/fonts/CinzelDecorative-Regular.ttf" id="1_font_title"]
+[ext_resource type="FontFile" uid="uid://cinzel_bold" path="res://assets/ui/fonts/CinzelDecorative-Bold.ttf" id="2_font_title_bold"]
+[ext_resource type="FontFile" uid="uid://quicksand_var" path="res://assets/ui/fonts/Quicksand-Variable.ttf" id="3_font_body"]
+
+[resource]
+default_font = ExtResource("3_font_body")
+default_font_size = 18
+
+Button/colors/font_color = Color(0.9, 0.9, 1.0, 1)
+Button/colors/font_hover_color = Color(1.0, 0.95, 0.6, 1)
+Button/colors/font_pressed_color = Color(0.8, 0.6, 1.0, 1)
+Button/colors/font_focus_color = Color(1.0, 0.95, 0.6, 1)
+Button/font_sizes/font_size = 22
+Button/fonts/font = ExtResource("3_font_body")
+
+Label/colors/font_color = Color(0.95, 0.95, 1.0, 1)
+Label/colors/font_shadow_color = Color(0.0, 0.0, 0.0, 0.5)
+Label/constants/shadow_offset_x = 2
+Label/constants/shadow_offset_y = 2
+Label/font_sizes/font_size = 18
+Label/fonts/font = ExtResource("3_font_body")

@@ -276,15 +276,26 @@ func _build_stats_panel() -> void:
 	stats_panel.offset_left = -280
 	stats_panel.offset_right = 280
 	stats_panel.offset_top = 0
-	stats_panel.offset_bottom = 180
+	stats_panel.offset_bottom = 200
 
-	# Style
-	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.1, 0.1, 0.15, 0.9)
-	panel_style.border_color = Color(0.3, 0.3, 0.4)
-	panel_style.set_border_width_all(2)
-	panel_style.set_corner_radius_all(10)
-	stats_panel.add_theme_stylebox_override("panel", panel_style)
+	# Style - Intentar usar el frame decorativo
+	var frame_tex = load("res://assets/ui/frames/stats_panel_frame.png")
+	if frame_tex:
+		var panel_style = StyleBoxTexture.new()
+		panel_style.texture = frame_tex
+		panel_style.content_margin_left = 25
+		panel_style.content_margin_right = 25
+		panel_style.content_margin_top = 40
+		panel_style.content_margin_bottom = 25
+		stats_panel.add_theme_stylebox_override("panel", panel_style)
+	else:
+		# Fallback programático
+		var panel_style = StyleBoxFlat.new()
+		panel_style.bg_color = Color(0.1, 0.1, 0.15, 0.9)
+		panel_style.border_color = Color(0.3, 0.3, 0.4)
+		panel_style.set_border_width_all(2)
+		panel_style.set_corner_radius_all(10)
+		stats_panel.add_theme_stylebox_override("panel", panel_style)
 
 	add_child(stats_panel)
 

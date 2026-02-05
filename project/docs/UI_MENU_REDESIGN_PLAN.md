@@ -491,29 +491,29 @@ MainMenu
 
 ## 📋 Implementación por Fases
 
-### Fase 1: Assets Básicos (AHORA)
-1. [ ] Descargar fuentes Cinzel + Quicksand
-2. [ ] Generar logo con prompt #1
-3. [ ] Generar fondo main menu con prompt #2
-4. [ ] Generar botones con prompts #5-6
+### Fase 1: Assets Básicos (COMPLETADA ✅)
+1. [x] Descargar fuentes Cinzel + Quicksand
+2. [x] Generar logo con prompt #1
+3. [x] Generar fondo main menu con prompt #2
+4. [x] Generar botones con prompts #5-6
 
-### Fase 2: Implementar MainMenu Nuevo
-1. [ ] Importar fuentes a Godot
-2. [ ] Crear theme global con nueva tipografía
-3. [ ] Implementar nuevo layout de MainMenu
-4. [ ] Añadir partículas de ambiente
+### Fase 2: Implementar MainMenu Nuevo (COMPLETADA ✅)
+1. [x] Importar fuentes a Godot
+2. [x] Crear theme global con nueva tipografía
+3. [x] Implementar nuevo layout de MainMenu (TextureButton + Logo)
+4. [x] Añadir partículas de ambiente (GPUParticles2D sparkles)
 5. [ ] Animaciones de entrada
 
-### Fase 3: SaveSlotSelect Upgrade
-1. [ ] Generar card frame con prompt #4
-2. [ ] Rediseñar cards de slots
+### Fase 3: SaveSlotSelect Upgrade (EN PROGRESO 🔄)
+1. [x] Generar card frame con prompt #4
+2. [x] Rediseñar cards de slots (StyleBoxTexture con frame)
 3. [ ] Añadir avatar del personaje usado
 4. [ ] Animaciones hover mejoradas
 
-### Fase 4: CharacterSelect Upgrade
-1. [ ] Generar fondo con prompt #3
+### Fase 4: CharacterSelect Upgrade (EN PROGRESO 🔄)
+1. [x] Generar fondo con prompt #3
 2. [ ] Stats con barras visuales
-3. [ ] Generar stats panel con prompt #10
+3. [x] Generar stats panel con prompt #10
 4. [ ] Efecto de aparición del personaje
 
 ### Fase 5: Ranking System (Steam)

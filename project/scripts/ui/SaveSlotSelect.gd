@@ -131,19 +131,32 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	"""Crear un panel individual de slot con estilo CARTA ARCANA"""
 	var panel = PanelContainer.new()
 	panel.name = "Slot%d" % (slot_index + 1)
-	panel.custom_minimum_size = Vector2(300, 420)  # Formato carta vertical
-	panel.pivot_offset = Vector2(150, 210) # Centro para animaciones
+	panel.custom_minimum_size = Vector2(320, 450)  # Formato carta vertical
+	panel.pivot_offset = Vector2(160, 225) # Centro para animaciones
 	
-	# 🎨 ESTILO CARTA ARCANA
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.05, 0.12, 0.9) # Fondo oscuro púrpura
-	style.border_color = Color(0.4, 0.3, 0.6, 1.0) # Borde inactivo (púrpura apagado)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(16)
-	style.shadow_color = Color(0, 0, 0, 0.5)
-	style.shadow_size = 15
-	style.shadow_offset = Vector2(0, 8)
-	panel.add_theme_stylebox_override("panel", style)
+	# 🎨 Intentar cargar el frame decorativo de tarjeta
+	var frame_tex = load("res://assets/ui/frames/save_slot_card_frame.png")
+	
+	if frame_tex:
+		# Usar el frame como fondo transparente
+		var style = StyleBoxTexture.new()
+		style.texture = frame_tex
+		style.content_margin_left = 30
+		style.content_margin_right = 30
+		style.content_margin_top = 50
+		style.content_margin_bottom = 80
+		panel.add_theme_stylebox_override("panel", style)
+	else:
+		# Fallback: estilo programático
+		var style = StyleBoxFlat.new()
+		style.bg_color = Color(0.08, 0.05, 0.12, 0.9) # Fondo oscuro púrpura
+		style.border_color = Color(0.4, 0.3, 0.6, 1.0) # Borde inactivo (púrpura apagado)
+		style.set_border_width_all(2)
+		style.set_corner_radius_all(16)
+		style.shadow_color = Color(0, 0, 0, 0.5)
+		style.shadow_size = 15
+		style.shadow_offset = Vector2(0, 8)
+		panel.add_theme_stylebox_override("panel", style)
 	
 	# Contenedor Vertical Principal
 	var vbox = VBoxContainer.new()

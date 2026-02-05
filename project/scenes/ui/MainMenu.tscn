@@ -1,6 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://do0qc3fkh3w82"]
+[gd_scene load_steps=6 format=3 uid="uid://do0qc3fkh3w82"]
 
 [ext_resource type="Script" uid="uid://dp6g26nkmid80" path="res://scripts/ui/MainMenu.gd" id="1_menu"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_play_normal.png" id="2_btn_play_normal"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_play_hover.png" id="3_btn_play_hover"]
+[ext_resource type="Texture2D" path="res://assets/ui/logo/logo_loopialike.png" id="4_logo"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/CinzelDecorative-Bold.ttf" id="5_font_title"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -34,6 +38,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="TitleLabel" type="Label" parent="UILayer/UIContainer"]
+visible = false
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -47,6 +52,20 @@ theme_override_font_sizes/font_size = 64
 text = "LOOPIALIKE"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="LogoImage" type="TextureRect" parent="UILayer/UIContainer"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -350.0
+offset_top = 30.0
+offset_right = 350.0
+offset_bottom = 200.0
+grow_horizontal = 2
+texture = ExtResource("4_logo")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="SubtitleLabel" type="Label" parent="UILayer/UIContainer"]
 layout_mode = 1
@@ -78,11 +97,31 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 16
 
-[node name="PlayButton" type="Button" parent="UILayer/UIContainer/VBoxContainer"]
-custom_minimum_size = Vector2(240, 50)
+[node name="PlayButton" type="TextureButton" parent="UILayer/UIContainer/VBoxContainer"]
+custom_minimum_size = Vector2(300, 80)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+texture_normal = ExtResource("2_btn_play_normal")
+texture_hover = ExtResource("3_btn_play_hover")
+texture_pressed = ExtResource("3_btn_play_hover")
+texture_focused = ExtResource("3_btn_play_hover")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="PlayLabel" type="Label" parent="UILayer/UIContainer/VBoxContainer/PlayButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_shadow_color = Color(1.0, 0.9, 0.5, 0.5)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 28
+theme_override_fonts/font = ExtResource("5_font_title")
 text = "JUGAR"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="OptionsButton" type="Button" parent="UILayer/UIContainer/VBoxContainer"]
 custom_minimum_size = Vector2(240, 50)

@@ -10,7 +10,8 @@ signal resume_pressed
 signal options_pressed
 signal quit_pressed
 
-@onready var play_button: Button = $UILayer/UIContainer/VBoxContainer/PlayButton
+# play_button ahora es TextureButton (hereda de BaseButton)
+@onready var play_button: BaseButton = $UILayer/UIContainer/VBoxContainer/PlayButton
 @onready var options_button: Button = $UILayer/UIContainer/VBoxContainer/OptionsButton
 @onready var quit_button: Button = $UILayer/UIContainer/VBoxContainer/QuitButton
 @onready var debug_button: Button = $UILayer/UIContainer/VBoxContainer/DebugButton
@@ -19,12 +20,13 @@ signal quit_pressed
 @onready var debug_label: Label = $UILayer/DebugLabel
 @onready var background_rect: TextureRect = $BackgroundLayer/BackgroundRect
 @onready var ui_container: Control = $UILayer/UIContainer
+@onready var logo_image: TextureRect = $UILayer/UIContainer/LogoImage
 
 # Se crea dinámicamente si hay partida activa
 var resume_button: Button = null
 
-# Sistema de navegacion WASD
-var menu_buttons: Array[Button] = []
+# Sistema de navegacion WASD - ahora usa BaseButton para soportar TextureButton
+var menu_buttons: Array[BaseButton] = []
 var current_button_index: int = 0
 
 const GAME_VERSION = "0.1.0-alpha"
@@ -38,7 +40,8 @@ func _ready() -> void:
 	_setup_wasd_navigation()
 	_setup_debug_button()
 	_set_icons()
-	_setup_logo_image()
+	_setup_ambient_particles()
+	# Logo ya está en la escena como LogoImage (no necesita setup dinámico)
 
 func _set_icons() -> void:
 	if options_button:
@@ -84,6 +87,54 @@ func _setup_debug_button() -> void:
 		debug_button.visible = false
 
 
+func _setup_ambient_particles() -> void:
+	"""Crea partículas de ambiente (sparkles mágicos) para el menú principal"""
+	var sparkle_tex = load("res://assets/ui/particles/particle_magic_sparkle.png")
+	if not sparkle_tex:
+		return
+	
+	# Crear GPUParticles2D para sparkles flotantes
+	var particles = GPUParticles2D.new()
+	particles.name = "AmbientSparkles"
+	particles.amount = 20
+	particles.lifetime = 4.0
+	particles.texture = sparkle_tex
+	
+	# Crear material de partículas
+	var mat = ParticleProcessMaterial.new()
+	mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	mat.emission_box_extents = Vector3(960, 540, 0)  # Cubrir toda la pantalla
+	
+	# Movimiento suave hacia arriba con variación
+	mat.direction = Vector3(0, -1, 0)
+	mat.spread = 30.0
+	mat.initial_velocity_min = 10.0
+	mat.initial_velocity_max = 30.0
+	mat.gravity = Vector3(0, -5, 0)  # Flotar hacia arriba lentamente
+	
+	# Escala con variación
+	mat.scale_min = 0.05
+	mat.scale_max = 0.15
+	
+	# Fade in/out
+	mat.color = Color(1.0, 0.95, 0.7, 0.6)  # Dorado suave semitransparente
+	
+	# Rotación lenta
+	mat.angular_velocity_min = -30.0
+	mat.angular_velocity_max = 30.0
+	
+	particles.process_material = mat
+	particles.position = Vector2(960, 540)  # Centro de la pantalla 1920x1080
+	particles.z_index = -1  # Detrás de la UI
+	
+	# Añadir al UILayer para que esté sobre el fondo
+	var ui_layer = get_node_or_null("UILayer")
+	if ui_layer:
+		ui_layer.add_child(particles)
+	else:
+		add_child(particles)
+
+
 func _apply_premium_style() -> void:
 	# 🎨 ESTILO MAGICAL VOID & GOLD
 	
@@ -118,26 +169,31 @@ func _apply_premium_style() -> void:
 	style_pressed.border_color = Color(0.8, 0.4, 1.0, 1.0) # Borde Púrpura intenso
 	style_pressed.shadow_size = 2
 	
-	var buttons = [play_button, options_button, quit_button, resume_button]
+	var buttons: Array[BaseButton] = [play_button, options_button, quit_button, resume_button]
 	
 	for btn in buttons:
 		if btn:
-			btn.add_theme_stylebox_override("normal", style_normal)
-			btn.add_theme_stylebox_override("hover", style_hover)
-			btn.add_theme_stylebox_override("pressed", style_pressed)
-			btn.add_theme_stylebox_override("focus", style_hover) # Focus usa estilo hover para gamepad
+			# TextureButton usa texturas, no StyleBox - saltar estilos
+			var is_texture_btn = btn is TextureButton
 			
-			# Force Uppercase
-			btn.text = btn.text.to_upper()
+			if not is_texture_btn:
+				btn.add_theme_stylebox_override("normal", style_normal)
+				btn.add_theme_stylebox_override("hover", style_hover)
+				btn.add_theme_stylebox_override("pressed", style_pressed)
+				btn.add_theme_stylebox_override("focus", style_hover) # Focus usa estilo hover para gamepad
+				
+				# Force Uppercase (solo para Button con texto)
+				if btn is Button:
+					(btn as Button).text = (btn as Button).text.to_upper()
+				
+				# Tipografía
+				btn.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
+				btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.6)) # Texto dorado al hover
+				btn.add_theme_color_override("font_outline_color", Color.BLACK)
+				btn.add_theme_constant_override("outline_size", 4)
+				btn.add_theme_font_size_override("font_size", 24)
 			
-			# Tipografía
-			btn.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
-			btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.6)) # Texto dorado al hover
-			btn.add_theme_color_override("font_outline_color", Color.BLACK)
-			btn.add_theme_constant_override("outline_size", 4)
-			btn.add_theme_font_size_override("font_size", 24)
-			
-			# Conectar animaciones de hover si no están conectadas
+			# Conectar animaciones de hover (funciona para ambos tipos)
 			if not btn.mouse_entered.is_connected(_on_button_hover_anim.bind(btn)):
 				btn.mouse_entered.connect(_on_button_hover_anim.bind(btn))
 			if not btn.mouse_exited.is_connected(_on_button_exit_anim.bind(btn)):
@@ -147,7 +203,7 @@ func _apply_premium_style() -> void:
 			if not btn.focus_exited.is_connected(_on_button_exit_anim.bind(btn)):
 				btn.focus_exited.connect(_on_button_exit_anim.bind(btn))
 
-func _on_button_hover_anim(btn: Button) -> void:
+func _on_button_hover_anim(btn: BaseButton) -> void:
 	# Animación de escala sutil "Pop"
 	if not btn: return
 	var tween = create_tween()
@@ -157,7 +213,7 @@ func _on_button_hover_anim(btn: Button) -> void:
 	# Sonido UI
 	AudioManager.play_fixed("sfx_ui_hover")
 
-func _on_button_exit_anim(btn: Button) -> void:
+func _on_button_exit_anim(btn: BaseButton) -> void:
 	if not btn: return
 	var tween = create_tween()
 	tween.set_ease(Tween.EASE_OUT)
@@ -165,7 +221,7 @@ func _on_button_exit_anim(btn: Button) -> void:
 
 func _setup_ui() -> void:
 	# Asegurar pivotes centrales para animaciones de escala
-	var buttons = [play_button, options_button, quit_button, resume_button]
+	var buttons: Array[BaseButton] = [play_button, options_button, quit_button, resume_button]
 	for btn in buttons:
 		if btn:
 			btn.pivot_offset = btn.size / 2
