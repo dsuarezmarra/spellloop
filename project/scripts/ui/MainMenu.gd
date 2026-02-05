@@ -346,15 +346,17 @@ func _update_resume_button() -> void:
 
 	# Actualizar texto del botón de jugar
 	if play_button:
-		if can_resume_game:
-			play_button.text = "🎮 NUEVA PARTIDA"
-		else:
-			play_button.text = "🎮 JUGAR"
+		var new_text = "NUEVA PARTIDA" if can_resume_game else "JUGAR"
+		# TextureButton usa un Label hijo para mostrar texto
+		var play_label = play_button.get_node_or_null("PlayLabel")
+		if play_label:
+			play_label.text = new_text
+		elif play_button is Button:
+			(play_button as Button).text = new_text
 
 func _create_resume_button() -> void:
 	"""Crear el boton de reanudar dinamicamente si no existe en la escena"""
 	if play_button and play_button.get_parent():
-		var parent = play_button.get_parent()
 		resume_button = Button.new()
 		resume_button.name = "ResumeButton"
 		resume_button.text = ">> REANUDAR"
@@ -548,8 +550,8 @@ func _change_screen(target: int) -> void:
 			if has_node("UILayer"): 
 				$UILayer.visible = true
 				# Asegurar que el contenido interno sea visible
-				var ui_container = $UILayer.get_node_or_null("UIContainer")
-				if ui_container: ui_container.visible = true
+				var local_ui_container = $UILayer.get_node_or_null("UIContainer")
+				if local_ui_container: local_ui_container.visible = true
 				
 				# Resetear fade si se quedó a medias
 				modulate.a = 1.0
