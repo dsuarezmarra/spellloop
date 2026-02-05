@@ -1,0 +1,6114 @@
+{
+  "timestamp": "2026-02-05T01:22:24.032830",
+  "files_found": 28,
+  "files_with_specs": 28,
+  "files_without_specs": [],
+  "size_mismatches": [
+    {
+      "file": "aura_buff_corruption_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        256,
+        128
+      ]
+    },
+    {
+      "file": "aura_damage_void_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        512,
+        256
+      ]
+    },
+    {
+      "file": "aura_elite_floor_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        512,
+        256
+      ]
+    },
+    {
+      "file": "aura_enrage_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        512,
+        256
+      ]
+    },
+    {
+      "file": "beam_flame_breath_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        256,
+        256
+      ]
+    },
+    {
+      "file": "beam_void_beam_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        512,
+        64
+      ]
+    },
+    {
+      "file": "telegraph_charge_line_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        256,
+        128
+      ]
+    },
+    {
+      "file": "telegraph_circle_warning_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        256,
+        128
+      ]
+    },
+    {
+      "file": "telegraph_meteor_warning_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        256,
+        128
+      ]
+    },
+    {
+      "file": "telegraph_rune_prison_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        256,
+        128
+      ]
+    },
+    {
+      "file": "projectile_arcane_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        256,
+        128
+      ]
+    },
+    {
+      "file": "projectile_fire_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        256,
+        128
+      ]
+    },
+    {
+      "file": "projectile_ice_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        256,
+        128
+      ]
+    },
+    {
+      "file": "projectile_poison_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        256,
+        128
+      ]
+    },
+    {
+      "file": "projectile_void_homing_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        256,
+        128
+      ]
+    },
+    {
+      "file": "projectile_void_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        256,
+        128
+      ]
+    },
+    {
+      "file": "boss_summon_circle_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        512,
+        256
+      ]
+    },
+    {
+      "file": "boss_reality_tear_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        512,
+        256
+      ]
+    },
+    {
+      "file": "boss_void_pull_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        1024,
+        512
+      ]
+    },
+    {
+      "file": "boss_rune_shield_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        512,
+        256
+      ]
+    },
+    {
+      "file": "aoe_arcane_nova_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        1024,
+        512
+      ]
+    },
+    {
+      "file": "aoe_ground_slam_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        512,
+        256
+      ]
+    },
+    {
+      "file": "aoe_fire_stomp_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        512,
+        256
+      ]
+    },
+    {
+      "file": "aoe_fire_zone_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        1024,
+        512
+      ]
+    },
+    {
+      "file": "aoe_meteor_impact_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        512,
+        256
+      ]
+    },
+    {
+      "file": "aoe_freeze_zone_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        1024,
+        512
+      ]
+    },
+    {
+      "file": "aoe_rune_blast_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        512,
+        256
+      ]
+    },
+    {
+      "file": "aoe_void_explosion_spritesheet.png",
+      "actual": [
+        612,
+        408
+      ],
+      "expected": [
+        1024,
+        512
+      ]
+    }
+  ],
+  "analyses": {
+    "aura_buff_corruption_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        256,
+        128
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.41830065359477125,
+        0.3137254901960784
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        64,
+        64
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            58,
+            97,
+            150,
+            173
+          ],
+          "center_of_mass": [
+            106.07591740462051,
+            147.6821515674526
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            42,
+            109,
+            134,
+            173
+          ],
+          "center_of_mass": [
+            92.6510830601332,
+            148.20724561134847
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            27,
+            97,
+            118,
+            172
+          ],
+          "center_of_mass": [
+            74.7234174490745,
+            147.60929979139135
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            9,
+            109,
+            100,
+            173
+          ],
+          "center_of_mass": [
+            54.648354539435836,
+            148.0754052577257
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            59,
+            18,
+            148,
+            92
+          ],
+          "center_of_mass": [
+            104.59857805027919,
+            65.932956640218
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            37,
+            29,
+            138,
+            92
+          ],
+          "center_of_mass": [
+            90.82398186164681,
+            60.67256091678012
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            21,
+            29,
+            122,
+            92
+          ],
+          "center_of_mass": [
+            75.83890020630864,
+            61.28682090075127
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            12,
+            29,
+            101,
+            92
+          ],
+          "center_of_mass": [
+            58.607592904453334,
+            66.67122464107233
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "aura_damage_void_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        512,
+        256
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.8366013071895425,
+        0.6274509803921569
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        128,
+        128
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            48,
+            93,
+            149,
+            175
+          ],
+          "center_of_mass": [
+            100.70216708751603,
+            135.05838224130378
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            30,
+            90,
+            137,
+            175
+          ],
+          "center_of_mass": [
+            84.00193911477601,
+            133.8325166772385
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            16,
+            88,
+            153,
+            177
+          ],
+          "center_of_mass": [
+            69.23370689051639,
+            135.28821220188138
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            88,
+            112,
+            182
+          ],
+          "center_of_mass": [
+            50.486414937536864,
+            136.42492527210337
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            40,
+            15,
+            153,
+            106
+          ],
+          "center_of_mass": [
+            102.27473717987412,
+            60.0566465136819
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            15,
+            141,
+            99
+          ],
+          "center_of_mass": [
+            84.99026869672515,
+            58.278126639908095
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            11,
+            18,
+            153,
+            105
+          ],
+          "center_of_mass": [
+            68.08203305796715,
+            58.629395222934406
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            17,
+            112,
+            106
+          ],
+          "center_of_mass": [
+            54.83222798890411,
+            59.06810000068833
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "aura_elite_floor_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        512,
+        256
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.8366013071895425,
+        0.6274509803921569
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        128,
+        128
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            51,
+            105,
+            150,
+            173
+          ],
+          "center_of_mass": [
+            100.65834567814146,
+            146.0967597817908
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            35,
+            93,
+            136,
+            173
+          ],
+          "center_of_mass": [
+            85.67347733769333,
+            146.07514141652447
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            20,
+            93,
+            122,
+            174
+          ],
+          "center_of_mass": [
+            70.35589213937764,
+            147.28461415604121
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            7,
+            93,
+            109,
+            174
+          ],
+          "center_of_mass": [
+            56.63824438863792,
+            147.4640792289914
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            51,
+            13,
+            150,
+            99
+          ],
+          "center_of_mass": [
+            99.7751587692626,
+            71.7788881115645
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            39,
+            13,
+            137,
+            99
+          ],
+          "center_of_mass": [
+            88.42755960571132,
+            71.77710734667178
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            25,
+            13,
+            123,
+            98
+          ],
+          "center_of_mass": [
+            73.39163042407165,
+            71.35914392016598
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            11,
+            13,
+            110,
+            99
+          ],
+          "center_of_mass": [
+            59.73099065992957,
+            73.35557086714643
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "aura_enrage_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        512,
+        256
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.8366013071895425,
+        0.6274509803921569
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        128,
+        128
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            50,
+            88,
+            153,
+            183
+          ],
+          "center_of_mass": [
+            99.95385965838591,
+            136.70028115842553
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            90,
+            143,
+            181
+          ],
+          "center_of_mass": [
+            85.46326728860225,
+            137.646853247343
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            13,
+            89,
+            153,
+            181
+          ],
+          "center_of_mass": [
+            69.35125226682351,
+            139.243221585061
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            90,
+            111,
+            182
+          ],
+          "center_of_mass": [
+            52.142181482806805,
+            137.31310704426951
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            46,
+            20,
+            153,
+            106
+          ],
+          "center_of_mass": [
+            103.11957012925083,
+            62.92563645487705
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            20,
+            140,
+            107
+          ],
+          "center_of_mass": [
+            82.25770245605682,
+            64.40247068801334
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            13,
+            17,
+            153,
+            108
+          ],
+          "center_of_mass": [
+            68.79805355604331,
+            64.3797745603604
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            19,
+            113,
+            108
+          ],
+          "center_of_mass": [
+            52.868592673373044,
+            64.07083931439655
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "beam_flame_breath_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        256,
+        256
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.41830065359477125,
+        0.6274509803921569
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        64,
+        64
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            74,
+            86,
+            153,
+            138
+          ],
+          "center_of_mass": [
+            120.2906453237333,
+            114.99119282568866
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            78,
+            143,
+            145
+          ],
+          "center_of_mass": [
+            90.16009269229433,
+            113.89122177177252
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            5,
+            77,
+            153,
+            146
+          ],
+          "center_of_mass": [
+            71.91425575277137,
+            114.68152122142523
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            77,
+            83,
+            146
+          ],
+          "center_of_mass": [
+            39.067963412937004,
+            114.12640197245995
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            72,
+            46,
+            153,
+            112
+          ],
+          "center_of_mass": [
+            122.4727598845137,
+            83.22367322135997
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            40,
+            144,
+            114
+          ],
+          "center_of_mass": [
+            82.01727520778871,
+            80.16875265754094
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            5,
+            42,
+            153,
+            109
+          ],
+          "center_of_mass": [
+            68.28660823784772,
+            83.28632858000523
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            47,
+            77,
+            107
+          ],
+          "center_of_mass": [
+            30.65219947815222,
+            84.66664216677079
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "beam_void_beam_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        512,
+        64
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.8366013071895425,
+        0.1568627450980392
+      ],
+      "grid": [
+        8,
+        1
+      ],
+      "expected_frame_size": [
+        64,
+        64
+      ],
+      "actual_cell_size": [
+        76.5,
+        408.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            76,
+            408
+          ],
+          "content_bbox": [
+            5,
+            180,
+            57,
+            221
+          ],
+          "center_of_mass": [
+            26.995472236976152,
+            201.45307234842878
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            76,
+            0,
+            76,
+            408
+          ],
+          "content_bbox": [
+            2,
+            186,
+            69,
+            220
+          ],
+          "center_of_mass": [
+            32.12146524233492,
+            202.19759964416835
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            153,
+            0,
+            76,
+            408
+          ],
+          "content_bbox": [
+            1,
+            191,
+            74,
+            215
+          ],
+          "center_of_mass": [
+            29.785491368030915,
+            202.68805779422772
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            229,
+            0,
+            76,
+            408
+          ],
+          "content_bbox": [
+            1,
+            187,
+            76,
+            224
+          ],
+          "center_of_mass": [
+            30.42709138820279,
+            202.03629852628734
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 0,
+          "col": 4,
+          "position": [
+            306,
+            0,
+            76,
+            408
+          ],
+          "content_bbox": [
+            0,
+            180,
+            75,
+            224
+          ],
+          "center_of_mass": [
+            31.49720204923586,
+            200.97089323965508
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 0,
+          "col": 5,
+          "position": [
+            382,
+            0,
+            76,
+            408
+          ],
+          "content_bbox": [
+            0,
+            181,
+            76,
+            221
+          ],
+          "center_of_mass": [
+            31.094339964160948,
+            201.51068836316904
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 0,
+          "col": 6,
+          "position": [
+            459,
+            0,
+            76,
+            408
+          ],
+          "content_bbox": [
+            0,
+            185,
+            75,
+            217
+          ],
+          "center_of_mass": [
+            29.17407439912737,
+            201.52488120462894
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 0,
+          "col": 7,
+          "position": [
+            535,
+            0,
+            76,
+            408
+          ],
+          "content_bbox": [
+            0,
+            190,
+            66,
+            215
+          ],
+          "center_of_mass": [
+            22.85286454221015,
+            201.76824684963523
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "telegraph_charge_line_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        256,
+        128
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.41830065359477125,
+        0.3137254901960784
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        64,
+        64
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            49,
+            115,
+            153,
+            151
+          ],
+          "center_of_mass": [
+            114.72625245926587,
+            131.51696757573453
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            33,
+            113,
+            138,
+            204
+          ],
+          "center_of_mass": [
+            98.240682618143,
+            130.50646149154352
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            15,
+            108,
+            153,
+            157
+          ],
+          "center_of_mass": [
+            78.94251957583151,
+            131.62379142307068
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            101,
+            108,
+            162
+          ],
+          "center_of_mass": [
+            61.58743945892222,
+            131.54313770123076
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            49,
+            38,
+            153,
+            75
+          ],
+          "center_of_mass": [
+            115.41932537184026,
+            54.09098603470165
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            12,
+            35,
+            138,
+            120
+          ],
+          "center_of_mass": [
+            96.10624145757701,
+            54.32486254816226
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            15,
+            28,
+            153,
+            78
+          ],
+          "center_of_mass": [
+            78.84265566373496,
+            53.677319724444125
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            26,
+            108,
+            85
+          ],
+          "center_of_mass": [
+            62.72012847637781,
+            54.09727840997355
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "telegraph_circle_warning_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        256,
+        128
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.41830065359477125,
+        0.3137254901960784
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        64,
+        64
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            65,
+            104,
+            138,
+            170
+          ],
+          "center_of_mass": [
+            101.26644707368169,
+            135.58134256078986
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            44,
+            98,
+            127,
+            174
+          ],
+          "center_of_mass": [
+            84.83463553665698,
+            134.94524821948104
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            17,
+            89,
+            153,
+            183
+          ],
+          "center_of_mass": [
+            69.54721077086775,
+            136.13365468418323
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            84,
+            107,
+            189
+          ],
+          "center_of_mass": [
+            51.56919873086861,
+            135.91427703516678
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            48,
+            9,
+            153,
+            110
+          ],
+          "center_of_mass": [
+            100.80627990946451,
+            60.320889364410036
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            11,
+            139,
+            109
+          ],
+          "center_of_mass": [
+            84.75004807244251,
+            60.091577118225175
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            17,
+            15,
+            119,
+            121
+          ],
+          "center_of_mass": [
+            66.96529529306969,
+            59.671773854352395
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            3,
+            17,
+            99,
+            121
+          ],
+          "center_of_mass": [
+            51.0020137196413,
+            59.40376725541305
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "telegraph_meteor_warning_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        256,
+        128
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.41830065359477125,
+        0.3137254901960784
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        64,
+        64
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            72,
+            83,
+            153,
+            170
+          ],
+          "center_of_mass": [
+            113.84940928908922,
+            126.95977730412197
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            84,
+            131,
+            169
+          ],
+          "center_of_mass": [
+            84.74728503427295,
+            126.66195480594483
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            18,
+            86,
+            153,
+            168
+          ],
+          "center_of_mass": [
+            64.50036240772098,
+            127.0064336301663
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            88,
+            71,
+            167
+          ],
+          "center_of_mass": [
+            32.14469017926734,
+            127.17165724863601
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            74,
+            21,
+            153,
+            102
+          ],
+          "center_of_mass": [
+            114.37071020531806,
+            61.63165812107036
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            19,
+            132,
+            104
+          ],
+          "center_of_mass": [
+            86.15090509607697,
+            61.412085054516545
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            13,
+            17,
+            153,
+            105
+          ],
+          "center_of_mass": [
+            69.26359861218698,
+            61.259382027119514
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            15,
+            78,
+            109
+          ],
+          "center_of_mass": [
+            35.533323550647665,
+            61.933570453953116
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "telegraph_rune_prison_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        256,
+        128
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.41830065359477125,
+        0.3137254901960784
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        64,
+        64
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            56,
+            117,
+            149,
+            162
+          ],
+          "center_of_mass": [
+            103.35164053837701,
+            138.94993610874937
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            39,
+            116,
+            134,
+            162
+          ],
+          "center_of_mass": [
+            87.81154269056691,
+            140.09621587658768
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            18,
+            115,
+            153,
+            165
+          ],
+          "center_of_mass": [
+            68.76087855297158,
+            140.27085845535458
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            114,
+            107,
+            166
+          ],
+          "center_of_mass": [
+            52.394974281558206,
+            140.65136390220493
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            53,
+            15,
+            151,
+            86
+          ],
+          "center_of_mass": [
+            101.42336842849295,
+            61.37285902926596
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            36,
+            16,
+            136,
+            86
+          ],
+          "center_of_mass": [
+            83.89085126507449,
+            60.54200047292504
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            19,
+            15,
+            153,
+            86
+          ],
+          "center_of_mass": [
+            69.83349677795054,
+            59.08223050341616
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            8,
+            106,
+            88
+          ],
+          "center_of_mass": [
+            53.588164982544455,
+            56.848035834329416
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "projectile_arcane_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        256,
+        128
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.41830065359477125,
+        0.3137254901960784
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        64,
+        64
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            64,
+            72,
+            153,
+            157
+          ],
+          "center_of_mass": [
+            117.59227120742838,
+            117.45826982700481
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            70,
+            148,
+            157
+          ],
+          "center_of_mass": [
+            78.20820694688953,
+            113.0792550574941
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            1,
+            70,
+            153,
+            157
+          ],
+          "center_of_mass": [
+            69.15961239987229,
+            117.24977718545667
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            70,
+            79,
+            157
+          ],
+          "center_of_mass": [
+            34.213954209472035,
+            112.01689280653838
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            59,
+            61,
+            153,
+            135
+          ],
+          "center_of_mass": [
+            112.31447767186516,
+            108.56337408051526
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            41,
+            153,
+            137
+          ],
+          "center_of_mass": [
+            85.42292960775433,
+            94.8589169627532
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            36,
+            153,
+            135
+          ],
+          "center_of_mass": [
+            68.35384008453275,
+            92.99104842805707
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            38,
+            98,
+            135
+          ],
+          "center_of_mass": [
+            40.26830579235519,
+            96.34825085255221
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "projectile_fire_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        256,
+        128
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.41830065359477125,
+        0.3137254901960784
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        64,
+        64
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            79,
+            70,
+            153,
+            161
+          ],
+          "center_of_mass": [
+            123.44530656774248,
+            120.60224301063967
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            64,
+            146,
+            161
+          ],
+          "center_of_mass": [
+            80.36094680492582,
+            119.98334729026101
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            12,
+            60,
+            153,
+            161
+          ],
+          "center_of_mass": [
+            71.96321839481735,
+            118.87570941979149
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            64,
+            71,
+            161
+          ],
+          "center_of_mass": [
+            31.593330354033007,
+            118.67982353706522
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            79,
+            41,
+            153,
+            116
+          ],
+          "center_of_mass": [
+            123.07769656561592,
+            86.16462171590852
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            15,
+            153,
+            115
+          ],
+          "center_of_mass": [
+            83.34972542173941,
+            74.07190142324994
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            15,
+            153,
+            115
+          ],
+          "center_of_mass": [
+            67.72358325113895,
+            74.45804373059899
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            25,
+            72,
+            115
+          ],
+          "center_of_mass": [
+            31.92855972355812,
+            87.01566207117666
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "projectile_ice_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        256,
+        128
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.41830065359477125,
+        0.3137254901960784
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        64,
+        64
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            84,
+            66,
+            153,
+            158
+          ],
+          "center_of_mass": [
+            127.58329825571661,
+            117.88358195409188
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            71,
+            146,
+            157
+          ],
+          "center_of_mass": [
+            81.80087116301195,
+            110.79230597035807
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            1,
+            67,
+            153,
+            157
+          ],
+          "center_of_mass": [
+            67.6465762702083,
+            116.71456626588848
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            67,
+            67,
+            156
+          ],
+          "center_of_mass": [
+            28.557233437759606,
+            109.74020002802494
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            83,
+            60,
+            153,
+            142
+          ],
+          "center_of_mass": [
+            127.30431055370612,
+            110.19222219881168
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            44,
+            152,
+            142
+          ],
+          "center_of_mass": [
+            85.35951997369719,
+            105.50315962518494
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            8,
+            46,
+            153,
+            142
+          ],
+          "center_of_mass": [
+            69.39531989860178,
+            105.49325127943497
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            48,
+            77,
+            143
+          ],
+          "center_of_mass": [
+            30.127525134257525,
+            100.89017617397278
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "projectile_poison_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        256,
+        128
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.41830065359477125,
+        0.3137254901960784
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        64,
+        64
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            70,
+            72,
+            153,
+            152
+          ],
+          "center_of_mass": [
+            119.02501159570178,
+            118.22221118830814
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            69,
+            142,
+            150
+          ],
+          "center_of_mass": [
+            81.60016993429268,
+            113.07988104599512
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            2,
+            66,
+            153,
+            150
+          ],
+          "center_of_mass": [
+            70.5348731044958,
+            116.60763793261728
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            64,
+            82,
+            150
+          ],
+          "center_of_mass": [
+            36.515079747863744,
+            109.58929629153033
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            63,
+            52,
+            153,
+            128
+          ],
+          "center_of_mass": [
+            115.48833704449683,
+            102.46483315129639
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            37,
+            149,
+            127
+          ],
+          "center_of_mass": [
+            86.89339927498048,
+            93.89613952499158
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            10,
+            32,
+            153,
+            129
+          ],
+          "center_of_mass": [
+            71.08273955426459,
+            99.85040477137767
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            27,
+            85,
+            129
+          ],
+          "center_of_mass": [
+            35.15878484930723,
+            88.85724711560324
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "projectile_void_homing_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        256,
+        128
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.41830065359477125,
+        0.3137254901960784
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        64,
+        64
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            67,
+            72,
+            153,
+            151
+          ],
+          "center_of_mass": [
+            121.00730946557094,
+            115.39520166470164
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            70,
+            153,
+            150
+          ],
+          "center_of_mass": [
+            77.63729277840815,
+            111.96077565440822
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            70,
+            153,
+            150
+          ],
+          "center_of_mass": [
+            70.81661633063968,
+            114.26160041357168
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            70,
+            84,
+            150
+          ],
+          "center_of_mass": [
+            35.520906438613956,
+            108.83373095141906
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            66,
+            47,
+            153,
+            114
+          ],
+          "center_of_mass": [
+            117.9490266332886,
+            89.77423960240512
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            29,
+            153,
+            114
+          ],
+          "center_of_mass": [
+            85.6273879878368,
+            81.12866692810591
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            24,
+            153,
+            114
+          ],
+          "center_of_mass": [
+            67.30967607296347,
+            78.93048709704767
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            25,
+            87,
+            114
+          ],
+          "center_of_mass": [
+            36.67393978312209,
+            81.47434844167876
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "projectile_void_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        256,
+        128
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.41830065359477125,
+        0.3137254901960784
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        64,
+        64
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            74,
+            70,
+            153,
+            157
+          ],
+          "center_of_mass": [
+            123.01063165279118,
+            116.44963125024692
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            71,
+            142,
+            157
+          ],
+          "center_of_mass": [
+            77.66137306668443,
+            114.83546973045019
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            73,
+            153,
+            157
+          ],
+          "center_of_mass": [
+            66.93358956549963,
+            118.16475832512602
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            72,
+            77,
+            156
+          ],
+          "center_of_mass": [
+            32.32525692983644,
+            112.01383552133719
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            77,
+            60,
+            153,
+            131
+          ],
+          "center_of_mass": [
+            123.77463234157054,
+            108.88988030804441
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            40,
+            153,
+            131
+          ],
+          "center_of_mass": [
+            91.04929600952337,
+            96.26272198533525
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            39,
+            153,
+            130
+          ],
+          "center_of_mass": [
+            65.44366249376314,
+            91.7051584922491
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            44,
+            75,
+            129
+          ],
+          "center_of_mass": [
+            34.124318668817075,
+            98.50746475505582
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "boss_summon_circle_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        512,
+        256
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.8366013071895425,
+        0.6274509803921569
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        128,
+        128
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            43,
+            90,
+            153,
+            169
+          ],
+          "center_of_mass": [
+            103.12519679136366,
+            127.79197241172501
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            83,
+            148,
+            172
+          ],
+          "center_of_mass": [
+            86.21241373573736,
+            127.69267119476362
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            4,
+            57,
+            153,
+            175
+          ],
+          "center_of_mass": [
+            66.9410594457686,
+            122.25523037214091
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            25,
+            110,
+            175
+          ],
+          "center_of_mass": [
+            49.35497375934945,
+            110.75108224286109
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            51,
+            8,
+            153,
+            138
+          ],
+          "center_of_mass": [
+            106.31082036612294,
+            87.59681946235929
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            15,
+            150,
+            141
+          ],
+          "center_of_mass": [
+            86.31473075257553,
+            81.83480781747133
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            4,
+            42,
+            153,
+            137
+          ],
+          "center_of_mass": [
+            65.92437705934955,
+            90.94883414297492
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            55,
+            114,
+            127
+          ],
+          "center_of_mass": [
+            51.179090603179944,
+            87.25165306637503
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "boss_reality_tear_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        512,
+        256
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.8366013071895425,
+        0.6274509803921569
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        128,
+        128
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            54,
+            85,
+            153,
+            143
+          ],
+          "center_of_mass": [
+            105.92830842860941,
+            113.76210582291944
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            67,
+            146,
+            155
+          ],
+          "center_of_mass": [
+            84.00262854691732,
+            113.15332691575516
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            8,
+            45,
+            153,
+            163
+          ],
+          "center_of_mass": [
+            69.59774591326317,
+            110.70268512989544
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            47,
+            109,
+            172
+          ],
+          "center_of_mass": [
+            47.875459003056356,
+            109.28083762364419
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            49,
+            11,
+            153,
+            145
+          ],
+          "center_of_mass": [
+            103.52374832269862,
+            88.30897872870464
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            22,
+            146,
+            144
+          ],
+          "center_of_mass": [
+            83.41394578067988,
+            88.95475955517125
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            11,
+            54,
+            153,
+            133
+          ],
+          "center_of_mass": [
+            61.181454650211,
+            90.42072447694665
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            52,
+            105,
+            131
+          ],
+          "center_of_mass": [
+            44.943257664416905,
+            91.63103387466533
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "boss_void_pull_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        1024,
+        512
+      ],
+      "size_match": false,
+      "scale_factor": [
+        1.673202614379085,
+        1.2549019607843137
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        256,
+        256
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            62,
+            75,
+            137,
+            142
+          ],
+          "center_of_mass": [
+            97.52225995953486,
+            109.51167053506289
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            26,
+            57,
+            142,
+            163
+          ],
+          "center_of_mass": [
+            84.82465965037245,
+            108.49188858196167
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            9,
+            52,
+            153,
+            173
+          ],
+          "center_of_mass": [
+            70.18298248065759,
+            109.32641452703704
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            52,
+            120,
+            168
+          ],
+          "center_of_mass": [
+            54.42869535661624,
+            110.11684401914596
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            33,
+            8,
+            153,
+            116
+          ],
+          "center_of_mass": [
+            97.99849898872746,
+            60.09464296052763
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            7,
+            145,
+            116
+          ],
+          "center_of_mass": [
+            83.88625730904079,
+            60.35337537191559
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            11,
+            10,
+            129,
+            113
+          ],
+          "center_of_mass": [
+            68.36572219513249,
+            61.25568678645129
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            1,
+            13,
+            111,
+            106
+          ],
+          "center_of_mass": [
+            51.93307628852492,
+            56.19164253086173
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "boss_rune_shield_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        512,
+        256
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.8366013071895425,
+        0.6274509803921569
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        128,
+        128
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            51,
+            60,
+            153,
+            164
+          ],
+          "center_of_mass": [
+            103.53882099275671,
+            112.59425419350305
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            57,
+            144,
+            169
+          ],
+          "center_of_mass": [
+            83.18609856536924,
+            111.99252999854565
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            7,
+            58,
+            153,
+            170
+          ],
+          "center_of_mass": [
+            72.07406814570135,
+            111.46550121595641
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            55,
+            104,
+            170
+          ],
+          "center_of_mass": [
+            47.42424597751134,
+            109.82884000124247
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            49,
+            10,
+            153,
+            122
+          ],
+          "center_of_mass": [
+            104.0451759439632,
+            63.00214282753761
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            11,
+            147,
+            122
+          ],
+          "center_of_mass": [
+            80.11488240145097,
+            63.387304772630074
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            5,
+            9,
+            153,
+            122
+          ],
+          "center_of_mass": [
+            67.8829078245109,
+            63.53423138261751
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            9,
+            105,
+            122
+          ],
+          "center_of_mass": [
+            50.07863501121246,
+            65.39520868855743
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "aoe_arcane_nova_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        1024,
+        512
+      ],
+      "size_match": false,
+      "scale_factor": [
+        1.673202614379085,
+        1.2549019607843137
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        256,
+        256
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            82,
+            76,
+            153,
+            153
+          ],
+          "center_of_mass": [
+            123.64297690350034,
+            118.8142577530025
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            68,
+            147,
+            151
+          ],
+          "center_of_mass": [
+            82.04947426649781,
+            117.89794434510391
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            8,
+            64,
+            153,
+            154
+          ],
+          "center_of_mass": [
+            72.41116453678524,
+            114.33035058062619
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            73,
+            91,
+            153
+          ],
+          "center_of_mass": [
+            41.3358640404224,
+            117.50426457629762
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            74,
+            49,
+            153,
+            127
+          ],
+          "center_of_mass": [
+            117.50927768138567,
+            96.0898624256025
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            49,
+            153,
+            128
+          ],
+          "center_of_mass": [
+            78.3670557326721,
+            96.09410615184791
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            6,
+            51,
+            153,
+            127
+          ],
+          "center_of_mass": [
+            73.78246323292288,
+            96.2871146095355
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            51,
+            90,
+            127
+          ],
+          "center_of_mass": [
+            39.800036223759335,
+            96.40118867595451
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "aoe_ground_slam_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        512,
+        256
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.8366013071895425,
+        0.6274509803921569
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        128,
+        128
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            80,
+            89,
+            153,
+            145
+          ],
+          "center_of_mass": [
+            121.27258350070669,
+            114.71980063973815
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            81,
+            148,
+            142
+          ],
+          "center_of_mass": [
+            82.94953662681826,
+            114.17731097367539
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            4,
+            54,
+            153,
+            145
+          ],
+          "center_of_mass": [
+            71.4320264339411,
+            108.86859455597137
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            74,
+            92,
+            144
+          ],
+          "center_of_mass": [
+            39.62290708192703,
+            111.13015144293898
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            74,
+            33,
+            153,
+            119
+          ],
+          "center_of_mass": [
+            119.01231643989422,
+            78.9536104463059
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            36,
+            147,
+            121
+          ],
+          "center_of_mass": [
+            76.47909791220174,
+            82.80122819396904
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            6,
+            42,
+            153,
+            118
+          ],
+          "center_of_mass": [
+            67.4229434666865,
+            82.91921415548437
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            55,
+            88,
+            119
+          ],
+          "center_of_mass": [
+            37.00917431192661,
+            88.47458242874151
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "aoe_fire_stomp_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        512,
+        256
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.8366013071895425,
+        0.6274509803921569
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        128,
+        128
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            73,
+            75,
+            153,
+            157
+          ],
+          "center_of_mass": [
+            122.20020205271251,
+            116.50721712620248
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            63,
+            150,
+            157
+          ],
+          "center_of_mass": [
+            87.11304553896234,
+            117.60059705962944
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            10,
+            62,
+            153,
+            156
+          ],
+          "center_of_mass": [
+            76.67707856580334,
+            114.80989005675666
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            61,
+            87,
+            157
+          ],
+          "center_of_mass": [
+            38.392343611125916,
+            112.7007473036853
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            73,
+            36,
+            153,
+            133
+          ],
+          "center_of_mass": [
+            115.69512063197222,
+            90.80871837764245
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            37,
+            150,
+            132
+          ],
+          "center_of_mass": [
+            79.39172779986225,
+            89.59727036828524
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            8,
+            34,
+            153,
+            133
+          ],
+          "center_of_mass": [
+            68.90513514570702,
+            90.96162566008215
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            37,
+            91,
+            130
+          ],
+          "center_of_mass": [
+            37.13309153260747,
+            89.10949757394805
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "aoe_fire_zone_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        1024,
+        512
+      ],
+      "size_match": false,
+      "scale_factor": [
+        1.673202614379085,
+        1.2549019607843137
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        256,
+        256
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            70,
+            74,
+            153,
+            157
+          ],
+          "center_of_mass": [
+            119.62642249330408,
+            121.44118197680079
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            73,
+            150,
+            157
+          ],
+          "center_of_mass": [
+            82.17453406138085,
+            122.26183529300768
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            6,
+            64,
+            153,
+            157
+          ],
+          "center_of_mass": [
+            74.82253087703248,
+            119.7748132130134
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            65,
+            91,
+            157
+          ],
+          "center_of_mass": [
+            40.30611545451094,
+            119.07107521464171
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            74,
+            36,
+            153,
+            131
+          ],
+          "center_of_mass": [
+            117.8355181411125,
+            91.95851369484465
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            36,
+            151,
+            130
+          ],
+          "center_of_mass": [
+            76.97552488558249,
+            92.34281549770073
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            5,
+            40,
+            153,
+            129
+          ],
+          "center_of_mass": [
+            73.9012006378469,
+            92.73150385530242
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            40,
+            87,
+            129
+          ],
+          "center_of_mass": [
+            37.05059277980839,
+            91.84643491292542
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "aoe_meteor_impact_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        512,
+        256
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.8366013071895425,
+        0.6274509803921569
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        128,
+        128
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            55,
+            59,
+            146,
+            119
+          ],
+          "center_of_mass": [
+            110.36144592427524,
+            89.0191550733089
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            33,
+            59,
+            109,
+            120
+          ],
+          "center_of_mass": [
+            70.34735264935507,
+            89.17664663907235
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            58,
+            153,
+            120
+          ],
+          "center_of_mass": [
+            66.99562305382653,
+            88.85293640944707
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            58,
+            46,
+            120
+          ],
+          "center_of_mass": [
+            19.24975900841264,
+            88.32679497629888
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            64,
+            37,
+            153,
+            111
+          ],
+          "center_of_mass": [
+            109.86870639422975,
+            82.79588526982951
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            28,
+            153,
+            112
+          ],
+          "center_of_mass": [
+            79.83446114198154,
+            75.3263326033405
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            32,
+            153,
+            112
+          ],
+          "center_of_mass": [
+            61.910840937097355,
+            77.34517215108993
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            31,
+            60,
+            112
+          ],
+          "center_of_mass": [
+            21.58362174066937,
+            78.0497129036064
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "aoe_freeze_zone_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        1024,
+        512
+      ],
+      "size_match": false,
+      "scale_factor": [
+        1.673202614379085,
+        1.2549019607843137
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        256,
+        256
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            71,
+            78,
+            153,
+            160
+          ],
+          "center_of_mass": [
+            117.43129644745107,
+            124.1596249588677
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            69,
+            150,
+            160
+          ],
+          "center_of_mass": [
+            78.59456906598898,
+            125.22507896696537
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            5,
+            63,
+            153,
+            160
+          ],
+          "center_of_mass": [
+            73.02688909296587,
+            124.11331047469791
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            62,
+            90,
+            161
+          ],
+          "center_of_mass": [
+            40.16050773922243,
+            123.57887175976553
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            74,
+            39,
+            153,
+            130
+          ],
+          "center_of_mass": [
+            118.9592247592119,
+            96.57847840724024
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            39,
+            151,
+            131
+          ],
+          "center_of_mass": [
+            80.83764285424013,
+            96.81625592074666
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            7,
+            39,
+            153,
+            132
+          ],
+          "center_of_mass": [
+            73.75977830827435,
+            96.58674931244852
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            42,
+            88,
+            130
+          ],
+          "center_of_mass": [
+            37.744531899268615,
+            94.56846070556782
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "aoe_rune_blast_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        512,
+        256
+      ],
+      "size_match": false,
+      "scale_factor": [
+        0.8366013071895425,
+        0.6274509803921569
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        128,
+        128
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            81,
+            99,
+            153,
+            147
+          ],
+          "center_of_mass": [
+            119.90130854648433,
+            122.44799047396637
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            71,
+            148,
+            150
+          ],
+          "center_of_mass": [
+            82.92459017513805,
+            116.54554318310218
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            6,
+            70,
+            153,
+            153
+          ],
+          "center_of_mass": [
+            72.4654398823559,
+            112.61691099535247
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            64,
+            99,
+            152
+          ],
+          "center_of_mass": [
+            42.3437866937396,
+            114.57127418697694
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            75,
+            40,
+            153,
+            120
+          ],
+          "center_of_mass": [
+            117.80159532847591,
+            85.80443809799017
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            40,
+            153,
+            120
+          ],
+          "center_of_mass": [
+            77.60471225751468,
+            85.42831066677357
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            8,
+            46,
+            153,
+            123
+          ],
+          "center_of_mass": [
+            73.25236082544762,
+            88.76290233171221
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            47,
+            93,
+            123
+          ],
+          "center_of_mass": [
+            43.457387410712926,
+            89.53246927306233
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    },
+    "aoe_void_explosion_spritesheet.png": {
+      "actual_size": [
+        612,
+        408
+      ],
+      "expected_size": [
+        1024,
+        512
+      ],
+      "size_match": false,
+      "scale_factor": [
+        1.673202614379085,
+        1.2549019607843137
+      ],
+      "grid": [
+        4,
+        2
+      ],
+      "expected_frame_size": [
+        256,
+        256
+      ],
+      "actual_cell_size": [
+        153.0,
+        204.0
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "row": 0,
+          "col": 0,
+          "position": [
+            0,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            75,
+            76,
+            153,
+            153
+          ],
+          "center_of_mass": [
+            121.24561363093514,
+            123.31100875273258
+          ],
+          "has_content": true
+        },
+        {
+          "index": 1,
+          "row": 0,
+          "col": 1,
+          "position": [
+            153,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            69,
+            153,
+            157
+          ],
+          "center_of_mass": [
+            85.11294323981981,
+            120.45664339333253
+          ],
+          "has_content": true
+        },
+        {
+          "index": 2,
+          "row": 0,
+          "col": 2,
+          "position": [
+            306,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            4,
+            66,
+            153,
+            157
+          ],
+          "center_of_mass": [
+            72.34445935552017,
+            117.08694616434117
+          ],
+          "has_content": true
+        },
+        {
+          "index": 3,
+          "row": 0,
+          "col": 3,
+          "position": [
+            459,
+            0,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            69,
+            90,
+            157
+          ],
+          "center_of_mass": [
+            37.265240635695584,
+            118.0928729386906
+          ],
+          "has_content": true
+        },
+        {
+          "index": 4,
+          "row": 1,
+          "col": 0,
+          "position": [
+            0,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            74,
+            47,
+            153,
+            130
+          ],
+          "center_of_mass": [
+            118.28036823548635,
+            93.83942730258156
+          ],
+          "has_content": true
+        },
+        {
+          "index": 5,
+          "row": 1,
+          "col": 1,
+          "position": [
+            153,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            49,
+            153,
+            129
+          ],
+          "center_of_mass": [
+            79.3789567870616,
+            93.37253127431752
+          ],
+          "has_content": true
+        },
+        {
+          "index": 6,
+          "row": 1,
+          "col": 2,
+          "position": [
+            306,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            5,
+            49,
+            153,
+            130
+          ],
+          "center_of_mass": [
+            70.20685117538794,
+            94.5123020704901
+          ],
+          "has_content": true
+        },
+        {
+          "index": 7,
+          "row": 1,
+          "col": 3,
+          "position": [
+            459,
+            204,
+            153,
+            204
+          ],
+          "content_bbox": [
+            0,
+            43,
+            90,
+            127
+          ],
+          "center_of_mass": [
+            39.51114218306889,
+            93.48324686146555
+          ],
+          "has_content": true
+        }
+      ],
+      "total_frames": 8,
+      "frames_with_content": 8
+    }
+  }
+}
