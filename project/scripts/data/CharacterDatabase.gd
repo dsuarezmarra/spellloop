@@ -296,7 +296,7 @@ const CHARACTERS: Dictionary = {
 	"druid": {
 		"id": "druid",
 		"name": "Druid",
-		"name_es": "Druida",
+		"name_es": "Druída",
 		"title": "The Nature Guardian",
 		"title_es": "La Guardiana de la Naturaleza",
 		"description": "A peaceful guardian who heals through nature and uses homing magic.",
@@ -675,5 +675,81 @@ static func print_all_characters() -> void:
 	for char_id in CHARACTERS:
 		var c = CHARACTERS[char_id]
 		var status = "STARTER" if c.unlock_status == UnlockStatus.STARTER else "LOCKED"
-		print("%s %s (%s) - %s - Weapon: %s" % [c.icon, c.name, status, c.element, c.starting_weapon])
+		print("%s %s (%s) - %s - Weapon: %s" % [c.icon, get_character_name(char_id), status, c.element, c.starting_weapon])
 	print("=".repeat(60))
+
+# =============================================================================
+# LOCALIZATION HELPERS
+# =============================================================================
+
+static func _L(key: String) -> String:
+	"""Helper to access Localization autoload from static context"""
+	var tree = Engine.get_main_loop()
+	if tree and tree.root:
+		var loc = tree.root.get_node_or_null("Localization")
+		if loc and loc.has_method("L"):
+			return loc.L(key)
+	return key
+
+static func get_character_name(character_id: String) -> String:
+	"""Get localized character name"""
+	return _L("characters.%s.name" % character_id)
+
+static func get_character_title(character_id: String) -> String:
+	"""Get localized character title"""
+	return _L("characters.%s.title" % character_id)
+
+static func get_character_description(character_id: String) -> String:
+	"""Get localized character description"""
+	return _L("characters.%s.description" % character_id)
+
+static func get_passive_name(character_id: String) -> String:
+	"""Get localized passive ability name"""
+	return _L("characters.%s.passive_name" % character_id)
+
+static func get_passive_description(character_id: String) -> String:
+	"""Get localized passive ability description"""
+	return _L("characters.%s.passive_desc" % character_id)
+
+static func get_unlock_requirement_text(character_id: String) -> String:
+	"""Get localized unlock requirement description"""
+	if CHARACTERS.has(character_id):
+		var req = CHARACTERS[character_id].get("unlock_requirement")
+		if req and req.has("type"):
+			return _L("characters.%s.unlock_req" % character_id)
+	return ""
+
+static func get_character_localized(character_id: String) -> Dictionary:
+	"""Get character data with all text fields localized"""
+	if not CHARACTERS.has(character_id):
+		push_error("[CharacterDatabase] Character not found: " + character_id)
+		return {}
+	
+	var data = CHARACTERS[character_id].duplicate(true)
+	
+	# Override text fields with localized versions
+	data["name"] = get_character_name(character_id)
+	data["title"] = get_character_title(character_id)
+	data["description"] = get_character_description(character_id)
+	
+	# Localize passive
+	if data.has("passive"):
+		data["passive"]["name"] = get_passive_name(character_id)
+		data["passive"]["description"] = get_passive_description(character_id)
+	
+	# Remove legacy _es fields
+	data.erase("name_es")
+	data.erase("title_es")
+	data.erase("description_es")
+	if data.has("passive"):
+		data["passive"].erase("name_es")
+		data["passive"].erase("description_es")
+	
+	return data
+
+static func get_all_characters_localized() -> Array:
+	"""Get array with all characters, texts localized"""
+	var result = []
+	for char_id in CHARACTERS:
+		result.append(get_character_localized(char_id))
+	return result

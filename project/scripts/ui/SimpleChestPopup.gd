@@ -394,7 +394,7 @@ func show_as_jackpot(items: Array):
 		return
 	for child in _main_vbox.get_children():
 		if child is Label:
-			child.text = "¡RECOMPENSA LEGENDARIA!"
+			child.text = Localization.L("ui.chest.legendary_reward")
 			child.modulate = Color(1, 0.8, 0.2) # Dorado
 			break
 	
@@ -420,7 +420,7 @@ func show_as_jackpot(items: Array):
 	
 	# Botón Reclamar Todo
 	claim_button = Button.new()
-	var claim_text = Localization.L("ui.chest.claim_all") if Localization.has_method("L") else "RECLAMAR TODO"
+	var claim_text = Localization.L("ui.chest.claim_all")
 	claim_button.text = "✓ " + claim_text.to_upper()
 	claim_button.custom_minimum_size = Vector2(200, 50)
 	claim_button.add_theme_font_size_override("font_size", 16)
@@ -442,11 +442,7 @@ func show_as_jackpot(items: Array):
 	
 	# Botón Reclamar Seleccionados (Nuevo)
 	var claim_selected_btn = Button.new()
-	# Fallback hardcodeado si no existe key, pero añadiremos la key en json
-	var claim_sel_text = "RECLAMAR SELECCIONADOS" 
-	if Localization.has_method("L"):
-		var loc = Localization.L("ui.chest.claim_selected")
-		if loc != "ui.chest.claim_selected": claim_sel_text = loc
+	var claim_sel_text = Localization.L("ui.chest.claim_selected")
 	
 	claim_selected_btn.text = "✓ " + claim_sel_text.to_upper()
 	claim_selected_btn.custom_minimum_size = Vector2(240, 50)
@@ -524,8 +520,8 @@ func _setup_jackpot_items(items: Array):
 
 func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 	"""Crear panel de item para jackpot (sin botones individuales, navegación WASD + Space)"""
-	var item_name = item.get("name", "Objeto Misterioso")
-	var item_desc = item.get("description", "Sin descripción")
+	var item_name = item.get("name", Localization.L("ui.chest.unknown_item"))
+	var item_desc = item.get("description", Localization.L("ui.chest.no_description"))
 	var item_icon = item.get("icon", "❓")
 	var item_id = item.get("id", "")
 	var item_type = item.get("type", "upgrade")
@@ -643,7 +639,7 @@ func _create_jackpot_item_panel(item: Dictionary, index: int) -> Control:
 	
 	var status_label = Label.new()
 	status_label.name = "StatusLabel"
-	status_label.text = "⬜ Pendiente"
+	status_label.text = "⬜ " + Localization.L("ui.chest.pending")
 	status_label.add_theme_font_size_override("font_size", 12)
 	status_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	status_container.add_child(status_label)
@@ -685,7 +681,7 @@ func _update_jackpot_item_visual(panel: Control, is_selected: bool):
 		
 		var status = panel.find_child("StatusLabel", true, false)
 		if status:
-			status.text = "✅ Seleccionado"
+			status.text = "✅ " + Localization.L("ui.chest.selected")
 			status.add_theme_color_override("font_color", Color(0.4, 1.0, 0.4))
 	else:
 		var item_data = panel.get_meta("item_data")
@@ -702,7 +698,7 @@ func _update_jackpot_item_visual(panel: Control, is_selected: bool):
 		
 		var status = panel.find_child("StatusLabel", true, false)
 		if status:
-			status.text = "⬜ Pendiente"
+			status.text = "⬜ " + Localization.L("ui.chest.pending")
 			status.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 			
 	panel.add_theme_stylebox_override("panel", style)
@@ -785,7 +781,7 @@ func _show_jackpot_exit_confirm_modal():
 	panel.add_child(margin)
 	
 	var label_title = Label.new()
-	label_title.text = "⚠️ ¿Salir de las Recompensas?"
+	label_title.text = "⚠️ " + Localization.L("ui.chest.exit_confirm_title")
 	label_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label_title.add_theme_font_size_override("font_size", 22)
 	label_title.add_theme_color_override("font_color", Color(1, 0.7, 0.3))
@@ -800,9 +796,9 @@ func _show_jackpot_exit_confirm_modal():
 	
 	var label_desc = Label.new()
 	if pending_count > 0:
-		label_desc.text = "Tienes %d objeto(s) sin reclamar.\nSi sales ahora, perderás estos objetos." % pending_count
+		label_desc.text = Localization.L("ui.chest.pending_items", [pending_count])
 	else:
-		label_desc.text = "Has reclamado todos los objetos.\n¿Deseas cerrar esta ventana?"
+		label_desc.text = Localization.L("ui.chest.all_claimed")
 	label_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label_desc.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
 	vbox.add_child(label_desc)
@@ -813,7 +809,7 @@ func _show_jackpot_exit_confirm_modal():
 	vbox.add_child(hbox)
 	
 	var btn_cancel = Button.new()
-	btn_cancel.text = "Volver"
+	btn_cancel.text = Localization.L("common.back")
 	btn_cancel.custom_minimum_size = Vector2(120, 45)
 	var cancel_style = StyleBoxFlat.new()
 	cancel_style.bg_color = Color(0.25, 0.25, 0.25)
@@ -828,7 +824,7 @@ func _show_jackpot_exit_confirm_modal():
 	hbox.add_child(btn_cancel)
 	
 	var btn_confirm = Button.new()
-	btn_confirm.text = "Confirmar Salir"
+	btn_confirm.text = Localization.L("ui.chest.confirm_exit")
 	btn_confirm.custom_minimum_size = Vector2(150, 45)
 	var style_confirm = StyleBoxFlat.new()
 	style_confirm.bg_color = Color(0.5, 0.25, 0.15)
@@ -877,8 +873,8 @@ func setup_items(items: Array):
 	# Crear botones complejos
 	for i in range(items.size()):
 		var item = items[i]
-		var item_name = item.get("name", "Objeto Misterioso")
-		var item_desc = item.get("description", "Sin descripción")
+		var item_name = item.get("name", Localization.L("ui.chest.unknown_item"))
+		var item_desc = item.get("description", Localization.L("ui.chest.no_description"))
 		var item_icon = item.get("icon", "❓") # Emoji fallback
 		var item_id = item.get("id", "")
 		
@@ -1117,13 +1113,13 @@ func _add_skip_button():
 		return
 		
 	for child in items_vbox.get_children():
-		if child is Button and "Saltar" in child.text:
+		if child is Button and Localization.L("ui.chest.skip") in child.text:
 			# Ya existe, actualizar referencia y salir
 			skip_button = child
 			return
 			
 	skip_button = Button.new()
-	skip_button.text = "Saltar (Sin Recompensa)"
+	skip_button.text = Localization.L("ui.chest.skip_no_reward")
 	skip_button.custom_minimum_size = Vector2(250, 45)
 	skip_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	
@@ -1202,14 +1198,14 @@ func _show_confirm_skip_modal():
 	panel.add_child(margin)
 	
 	var label_title = Label.new()
-	label_title.text = "⚠️ ¿Saltar Recompensa?"
+	label_title.text = "⚠️ " + Localization.L("ui.chest.skip_confirm_title")
 	label_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label_title.add_theme_font_size_override("font_size", 22)
 	label_title.add_theme_color_override("font_color", Color(1, 0.5, 0.5))
 	vbox.add_child(label_title)
 	
 	var label_desc = Label.new()
-	label_desc.text = "Perderás esta oportunidad de obtener un objeto.\nEl cofre desaparecerá."
+	label_desc.text = Localization.L("ui.chest.skip_confirm_message")
 	label_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label_desc.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
 	vbox.add_child(label_desc)
@@ -1220,7 +1216,7 @@ func _show_confirm_skip_modal():
 	vbox.add_child(hbox)
 	
 	var btn_cancel = Button.new()
-	btn_cancel.text = "Volver"
+	btn_cancel.text = Localization.L("common.back")
 	btn_cancel.custom_minimum_size = Vector2(100, 40)
 	btn_cancel.pressed.connect(func(): 
 		AudioManager.play("sfx_ui_cancel")
@@ -1234,7 +1230,7 @@ func _show_confirm_skip_modal():
 	_modal_btn_cancel = btn_cancel
 	
 	var btn_confirm = Button.new()
-	btn_confirm.text = "Saltar"
+	btn_confirm.text = Localization.L("ui.chest.skip")
 	btn_confirm.custom_minimum_size = Vector2(100, 40)
 	var style_confirm = StyleBoxFlat.new()
 	style_confirm.bg_color = Color(0.6, 0.2, 0.2)

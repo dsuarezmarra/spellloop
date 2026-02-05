@@ -175,7 +175,7 @@ func _build_ui():
 	inner_vbox.add_child(header)
 	
 	var title = Label.new()
-	title.text = "🎁 COFRE DE TESOROS"
+	title.text = Localization.L("ui.shop_chest.title")
 	title.add_theme_font_size_override("font_size", 24)
 	title.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -216,7 +216,7 @@ func _build_ui():
 	
 	# Botón salir
 	exit_button = Button.new()
-	exit_button.text = "❌ Salir sin comprar"
+	exit_button.text = Localization.L("ui.shop_chest.exit_button")
 	exit_button.custom_minimum_size = Vector2(0, 45)
 	exit_button.pressed.connect(_on_exit_pressed)
 	_style_exit_button(exit_button)
@@ -274,7 +274,7 @@ func _build_confirm_modal():
 	modal_margin.add_child(modal_inner)
 	
 	var warn_label = Label.new()
-	warn_label.text = "⚠️ ¿Seguro que quieres salir?\nEl cofre desaparecerá."
+	warn_label.text = Localization.L("ui.shop_chest.exit_warning")
 	warn_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	warn_label.add_theme_font_size_override("font_size", 16)
 	modal_inner.add_child(warn_label)
@@ -285,7 +285,7 @@ func _build_confirm_modal():
 	modal_inner.add_child(buttons_hbox)
 	
 	var cancel_btn = Button.new()
-	cancel_btn.text = "Cancelar"
+	cancel_btn.text = Localization.L("ui.shop_chest.cancel")
 	cancel_btn.custom_minimum_size = Vector2(100, 35)
 	cancel_btn.pressed.connect(func(): 
 		AudioManager.play("sfx_ui_cancel") # Cancel sound
@@ -296,7 +296,7 @@ func _build_confirm_modal():
 	modal_cancel_btn = cancel_btn  # Store reference
 	
 	var confirm_btn = Button.new()
-	confirm_btn.text = "Salir"
+	confirm_btn.text = Localization.L("ui.shop_chest.confirm_exit")
 	confirm_btn.custom_minimum_size = Vector2(100, 35)
 	confirm_btn.pressed.connect(func():
 		AudioManager.play("sfx_ui_confirm") # Confirm exiting
@@ -429,7 +429,7 @@ func _create_item_button(item: Dictionary, index: int) -> Control:
 	info_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
 	var name_lbl = Label.new()
-	name_lbl.text = item.get("name", "Item Desconocido")
+	name_lbl.text = item.get("name", Localization.L("ui.shop_chest.unknown_item"))
 	name_lbl.add_theme_font_size_override("font_size", 16)
 	name_lbl.add_theme_color_override("font_color", UIVisualHelper.get_color_for_tier(tier))
 	if not can_afford:

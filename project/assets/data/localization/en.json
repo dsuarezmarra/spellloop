@@ -39,7 +39,9 @@
 			"credits": "CREDITS",
 			"quit": "QUIT",
 			"new_game": "NEW GAME",
-			"continue_game": "CONTINUE"
+			"continue_game": "CONTINUE",
+			"resume": "RESUME",
+			"resume_with_time": "RESUME (%s)"
 		},
 		"character_select": {
 			"title": "CHOOSE YOUR HERO",
@@ -73,8 +75,12 @@
 			"continue": "CONTINUE",
 			"delete": "DELETE",
 			"new_game": "NEW GAME",
-			"delete_confirm_title": "Delete save?",
-			"delete_confirm_message": "This action cannot be undone.",
+			"create": "CREATE",
+			"runs": "Runs: %d",
+			"time_short": "Time: < 1m",
+			"time_long": "Time: %dh %02dm",
+			"delete_confirm_title": "DELETE SLOT %d?",
+			"delete_confirm_message": "This action is irreversible.\nYour mage will lose all power.",
 			"level": "Level %d",
 			"time_played": "Time: %s",
 			"gold_earned": "Gold: %d"
@@ -93,7 +99,27 @@
 			"tab_info": "ℹ️ Info",
 			"no_items": "No items",
 			"no_weapons": "No weapons",
-			"no_passives": "No passives"
+			"no_passives": "No passives",
+			"help_text": "WASD: Navigate  |  SPACE: Select  |  ESC: Continue",
+			"level": "Level %d",
+			"arsenal": "ARSENAL",
+			"weapons_unavailable": "Weapon system not available",
+			"slots_count": "(%d / %d slots)",
+			"no_weapons_message": "You haven't obtained any weapons yet.\nLevel up to get your first weapon!",
+			"weapon_stats_global": "Weapon Stats (Global)",
+			"active_effects": "ACTIVE EFFECTS",
+			"more_effects": "+%d more",
+			"more_effects_tooltip": "%d additional active effects",
+			"special_effect": "SPECIAL EFFECT",
+			"close_button": "Close [ESC / Space]",
+			"crit_global": "CRITICALS (Global)",
+			"global_upgrades": "GLOBAL UPGRADES (%d)",
+			"level_up_for_items": "Level up to obtain items",
+			"growth_multiplier": "Growth x%d",
+			"growth_tooltip": "📈 Growth: %d stats improved\nTotal accumulated bonus",
+			"weapon_level": "Lv.%d",
+			"weapon_level_element": "Level %d/%d • %s",
+			"weapon_stats_title": "📊 WEAPON STATS"
 		},
 		"level_up": {
 			"title": "⬆️ LEVEL UP! ⬆️",
@@ -106,7 +132,17 @@
 			"rerolls_left": "%d left",
 			"banishes_left": "%d left",
 			"max_level": "MAX LEVEL",
-			"new": "NEW!"
+			"new": "NEW!",
+			"nav_help": "← → Navigate   |   ↑ ↓ Change row   |   ENTER Confirm",
+			"skip_confirm_title": "Leave without choosing upgrade?",
+			"skip_confirm_message": "You will lose this upgrade opportunity.",
+			"back_to_choose": "Back to choose",
+			"lose_upgrade": "Lose upgrade",
+			"banish_mode_hint": "DELETE MODE: Select which upgrade to remove (ESC to cancel)",
+			"choose_upgrade": "Choose an upgrade to continue",
+			"delete": "DELETE",
+			"spinning": "Spinning...",
+			"confirm_indicator": "▲ ENTER ▲"
 		},
 		"chest": {
 			"title": "Choose your reward!",
@@ -118,14 +154,33 @@
 			"gold_reward": "+%d Gold",
 			"health_reward": "+%d HP",
 			"take_all": "TAKE ALL",
-			"skip": "SKIP"
+			"skip": "SKIP",
+			"legendary_reward": "LEGENDARY REWARD!",
+			"exit_confirm_title": "Leave Rewards?",
+			"pending_items": "You have %d unclaimed item(s).\nIf you leave now, you will lose these items.",
+			"all_claimed": "You have claimed all items.\nDo you want to close this window?",
+			"confirm_exit": "Confirm Exit",
+			"selected": "Selected",
+			"pending": "Pending",
+			"skip_confirm_title": "Skip Reward?",
+			"skip_confirm_message": "You will lose this opportunity to get an item.\nThe chest will disappear.",
+			"skip_no_reward": "Skip (No Reward)",
+			"claim_all": "CLAIM ALL",
+			"claim_selected": "CLAIM SELECTED",
+			"unknown_item": "Mysterious Object",
+			"no_description": "No description"
+		},
+		"reward_reveal": {
+			"options_revealing": "Options are being revealed...",
+			"choose_upgrade": "Choose your upgrade!"
 		},
 		"shop_chest": {
-			"title": "🛒 SHOP",
-			"buy": "Buy",
-			"sold_out": "Sold Out",
-			"not_enough_gold": "Not enough gold",
-			"price": "%d 🪙"
+			"title": "🎁 TREASURE CHEST",
+			"exit_button": "❌ Leave without buying",
+			"exit_warning": "⚠️ Are you sure you want to leave?\nThe chest will disappear.",
+			"cancel": "Cancel",
+			"confirm_exit": "Leave",
+			"unknown_item": "Unknown Item"
 		},
 		"game_hud": {
 			"level": "Lv.%d",
@@ -147,40 +202,79 @@
 			"damage_taken": "Damage Taken",
 			"retry": "Retry",
 			"main_menu": "Main Menu",
-			"new_record": "NEW RECORD!"
+			"new_record": "NEW RECORD!",
+			"time": "⏱️ Time",
+			"level": "⭐ Level",
+			"enemies": "💀 Enemies",
+			"xp_total": "✨ Total XP",
+			"gold": "🪙 Gold",
+			"damage_total": "⚔️ Total Damage"
 		},
 		"tooltips": {
 			"reroll_hint": "Generate new options",
 			"banish_hint": "Remove this option permanently",
 			"upgrade_max": "Max upgrade"
+		},
+		"hud": {
+			"level": "LVL %d",
+			"hype_complete": "HYPE COMPLETE!",
+			"hype_results": "Total: %d 🪙\nMax Combo: x%.2f",
+			"boss_label": "BOSS: %s"
 		}
 	},
 	"stats": {
-		"max_health": "Max Health",
-		"health_regen": "Health Regen",
-		"move_speed": "Move Speed",
-		"armor": "Armor",
-		"damage_mult": "Damage",
-		"attack_speed_mult": "Attack Speed",
-		"cooldown_mult": "Cooldown",
-		"area_mult": "Area of Effect",
-		"pickup_range": "Pickup Range",
-		"luck": "Luck",
-		"xp_mult": "Experience",
-		"crit_chance": "Crit Chance",
-		"crit_damage": "Crit Damage",
-		"life_steal": "Life Steal",
-		"dodge_chance": "Dodge Chance",
-		"extra_projectiles": "Extra Projectiles",
-		"extra_pierce": "Extra Pierce",
-		"gold_mult": "Gold Multiplier",
-		"max_shield": "Max Shield",
-		"shield_regen": "Shield Regen",
-		"shield_regen_delay": "Shield Delay",
-		"knockback_mult": "Knockback",
-		"range_mult": "Attack Range",
-		"duration_mult": "Duration",
-		"projectile_speed_mult": "Projectile Speed"
+		"max_health": {"name": "Max Health", "desc": "Maximum health points"},
+		"health_regen": {"name": "Health Regen", "desc": "Health regenerated per second"},
+		"move_speed": {"name": "Move Speed", "desc": "Character movement speed"},
+		"armor": {"name": "Armor", "desc": "Reduces incoming damage"},
+		"damage_mult": {"name": "Damage", "desc": "Weapon damage multiplier"},
+		"attack_speed_mult": {"name": "Attack Speed", "desc": "Attacks per second (higher = faster)"},
+		"cooldown_mult": {"name": "Cooldown", "desc": "Ability cooldown reduction"},
+		"area_mult": {"name": "Area", "desc": "Area of effect size"},
+		"pickup_range": {"name": "Pickup Range", "desc": "Range to collect items"},
+		"luck": {"name": "Luck", "desc": "Affects drops and criticals"},
+		"xp_mult": {"name": "Experience", "desc": "Experience gained multiplier"},
+		"crit_chance": {"name": "Crit Chance", "desc": "Critical hit probability"},
+		"crit_damage": {"name": "Crit Damage", "desc": "Critical hit damage multiplier"},
+		"life_steal": {"name": "Life Steal", "desc": "Health stolen per attack"},
+		"dodge_chance": {"name": "Dodge Chance", "desc": "Probability to dodge attacks"},
+		"extra_projectiles": {"name": "Extra Projectiles", "desc": "Additional projectiles"},
+		"extra_pierce": {"name": "Extra Pierce", "desc": "Additional pierce"},
+		"gold_mult": {"name": "Gold Multiplier", "desc": "Gold earned multiplier"},
+		"max_shield": {"name": "Max Shield", "desc": "Maximum shield points"},
+		"shield_regen": {"name": "Shield Regen", "desc": "Shield regeneration rate"},
+		"shield_regen_delay": {"name": "Shield Delay", "desc": "Delay before shield regenerates"},
+		"knockback_mult": {"name": "Knockback", "desc": "Knockback force"},
+		"range_mult": {"name": "Range", "desc": "Attack range multiplier"},
+		"duration_mult": {"name": "Duration", "desc": "Effect duration multiplier"},
+		"projectile_speed_mult": {"name": "Projectile Speed", "desc": "Projectile velocity"},
+		"elite_damage_mult": {"name": "Elite Damage", "desc": "Extra damage to elites and bosses"},
+		"burn_chance": {"name": "Burn Chance", "desc": "Chance to burn enemies"},
+		"freeze_chance": {"name": "Freeze Chance", "desc": "Chance to freeze enemies"},
+		"bleed_chance": {"name": "Bleed Chance", "desc": "Chance to cause bleeding"},
+		"explosion_chance": {"name": "Explosion Chance", "desc": "Chance to explode on kill"},
+		"execute_threshold": {"name": "Execute Threshold", "desc": "Kills low health enemies instantly"},
+		"status_duration_mult": {"name": "Status Duration", "desc": "Duration of status effects"},
+		"kill_heal": {"name": "Kill Heal", "desc": "Health gained on kill"},
+		"burn_damage": {"name": "Burn Damage", "desc": "Damage from burning"},
+		"explosion_damage": {"name": "Explosion Damage", "desc": "Explosion damage"},
+		"close_range_damage_bonus": {"name": "Melee Damage", "desc": "Extra damage to nearby enemies"},
+		"long_range_damage_bonus": {"name": "Ranged Damage", "desc": "Extra damage to distant enemies"},
+		"damage_vs_slowed": {"name": "vs Slowed", "desc": "Extra damage to slowed enemies"},
+		"damage_vs_burning": {"name": "vs Burning", "desc": "Extra damage to burning enemies"},
+		"damage_vs_frozen": {"name": "vs Frozen", "desc": "Extra damage to frozen enemies"},
+		"low_hp_damage_bonus": {"name": "vs Low HP", "desc": "Extra damage to low health enemies"},
+		"full_hp_damage_bonus": {"name": "Full HP Bonus", "desc": "Extra damage when at full health"},
+		"revives": {"name": "Revives", "desc": "Extra lives"},
+		"reroll_count": {"name": "Rerolls", "desc": "Extra reroll chances on level up"},
+		"banish_count": {"name": "Banishes", "desc": "Extra banish charges on level up"},
+		"magnet_strength": {"name": "Magnet Strength", "desc": "Item attraction force"},
+		"levelup_options": {"name": "Level Options", "desc": "Extra options when leveling up"},
+		"chain_count": {"name": "Chain Count", "desc": "Additional chains on attacks"},
+		"infinite_pickup_range": {"name": "Infinite Pickup", "desc": "Collect items from entire map"},
+		"coin_value_mult": {"name": "Coin Value", "desc": "Coin value multiplier"},
+		"damage_flat": {"name": "Flat Damage", "desc": "Added flat damage"},
+		"damage_taken_mult": {"name": "Damage Taken", "desc": "Incoming damage multiplier"}
 	},
 	"rarity": {
 		"common": "Common",
@@ -557,5 +651,31 @@
 		"level_up": "Collect experience gems to level up",
 		"chest": "Chests contain valuable rewards",
 		"dodge": "Keep moving to avoid enemies"
+	},
+	"items": {
+		"potions": {
+			"health_potion": {
+				"name": "Health Potion",
+				"description": "Restores 30% of your health."
+			},
+			"full_elixir": {
+				"name": "Full Elixir",
+				"description": "Restores 100% of your health."
+			}
+		},
+		"weapons": {
+			"new_weapon_fallback": "New weapon"
+		}
+	},
+	"synergies": {
+		"unknown": "Unknown synergy"
+	},
+	"rarities": {
+		"common": "Common",
+		"uncommon": "Uncommon",
+		"rare": "Rare",
+		"epic": "Epic",
+		"legendary": "Legendary",
+		"unknown": "Unknown"
 	}
 }

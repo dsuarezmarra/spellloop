@@ -126,7 +126,7 @@ func show_boss_bar(boss_node: Node, display_name: String = "BOSS") -> void:
 		existing.queue_free()
 	var lbl = Label.new()
 	lbl.name = "BossLabel"
-	lbl.text = "BOSS: %s" % display_name
+	lbl.text = Localization.L("ui.hud.boss_label", [display_name])
 	lbl.anchor_left = 0.5
 	lbl.anchor_right = 0.5
 	lbl.anchor_top = 0.0

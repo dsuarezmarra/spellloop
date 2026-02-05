@@ -198,22 +198,24 @@ static func _generate_gold_loot(chest_type: int, luck: float) -> Dictionary:
 
 static func _generate_healing_loot(chest_type: int) -> Dictionary:
 	var heal_type = "potion"
-	var name = "Poción de Vida"
+	var name = Localization.L("items.potions.health_potion.name")
 	var amount = 30 # % de cura
 	var icon = "❤️"
+	var desc = Localization.L("items.potions.health_potion.description")
 	
 	if chest_type >= ChestType.ELITE:
 		heal_type = "full_potion"
-		name = "Elixir Completo"
+		name = Localization.L("items.potions.full_elixir.name")
 		amount = 100
 		icon = "💚"
+		desc = Localization.L("items.potions.full_elixir.description")
 		
 	return {
 		"id": heal_type,
 		"type": "consumable",
 		"effect": "heal",
 		"name": name,
-		"description": "Restaura el 100% de la salud." if chest_type >= ChestType.ELITE else "Restaura el 30% de la salud.",
+		"description": desc,
 		"amount": amount,
 		"rarity": 1,
 		"icon": icon
@@ -379,7 +381,7 @@ static func _generate_weapon_loot(chest_type: int, luck: float, context: Object 
 	
 	# Obtener nombre bonito y descripción si es posible
 	var w_name = selected_id.capitalize().replace("_", " ")
-	var w_desc = "Nueva arma"
+	var w_desc = Localization.L("items.weapons.new_weapon_fallback")
 	
 	if WeaponDB and WeaponDB.WEAPONS.has(selected_id):
 		w_name = WeaponDB.WEAPONS[selected_id].get("name", w_name)

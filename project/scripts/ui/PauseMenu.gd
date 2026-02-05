@@ -185,7 +185,7 @@ func _create_ui() -> void:
 	# Help text
 	var help = Label.new()
 	help.name = "HelpLabel"
-	help.text = "WASD: Navegar  |  ESPACIO: Seleccionar  |  ESC: Continuar"
+	help.text = Localization.L("ui.pause.help_text")
 	help.add_theme_font_size_override("font_size", 12)
 	help.add_theme_color_override("font_color", Color(0.4, 0.4, 0.5))
 	help.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -515,7 +515,7 @@ func _create_player_header_compact(parent: VBoxContainer) -> void:
 
 	# Nivel
 	var level_label = Label.new()
-	level_label.text = "📈 Nivel %d" % level
+	level_label.text = "📈 " + Localization.L("ui.pause.level", [level])
 	level_label.add_theme_font_size_override("font_size", 18)
 	level_label.add_theme_color_override("font_color", SELECTED_TAB)
 	header_hbox.add_child(level_label)
@@ -734,10 +734,40 @@ const DEFAULT_STAT_VALUES = {
 }
 
 func _get_stat_metadata_fallback(stat_name: String) -> Dictionary:
-	"""Obtener metadatos de un stat"""
-	if DEFAULT_STAT_METADATA.has(stat_name):
-		return DEFAULT_STAT_METADATA[stat_name]
-	return {"name": stat_name, "icon": "o", "description": ""}
+	"""Obtener metadatos de un stat usando localización"""
+	# Iconos por stat (independientes del idioma)
+	var icons = {
+		"max_health": "❤️", "health_regen": "+", "armor": "🛡️",
+		"dodge_chance": "~", "life_steal": "🩸", "damage_mult": "⚔️",
+		"attack_speed_mult": ">>", "area_mult": "○", "projectile_speed_mult": "→",
+		"duration_mult": "⏳", "extra_projectiles": "🎯", "knockback_mult": "💥",
+		"elite_damage_mult": "💀", "burn_chance": "🔥", "freeze_chance": "❄️",
+		"bleed_chance": "🩸", "explosion_chance": "💣", "execute_threshold": "⚰️",
+		"status_duration_mult": "⏳", "kill_heal": "💗", "burn_damage": "🔥",
+		"explosion_damage": "💥", "close_range_damage_bonus": "👊",
+		"long_range_damage_bonus": "🏹", "damage_vs_slowed": "🐌",
+		"damage_vs_burning": "🔥", "damage_vs_frozen": "❄️",
+		"low_hp_damage_bonus": "💔", "full_hp_damage_bonus": "💚",
+		"revives": "🆙", "reroll_count": "🎲", "banish_count": "❌",
+		"magnet_strength": "🧲", "levelup_options": "📚", "chain_count": "⚡",
+		"infinite_pickup_range": "🌐", "crit_chance": "🎯", "crit_damage": "💢",
+		"move_speed": "🏃", "pickup_range": "🧲", "xp_mult": "⭐",
+		"coin_value_mult": "🪙", "luck": "🍀", "damage_taken_mult": "💀",
+		"extra_pierce": "🗡️", "damage_flat": "➕", "range_mult": "📏",
+		"gold_mult": "🪙", "max_shield": "🛡️", "shield_regen": "🔄",
+		"shield_regen_delay": "⏱️", "cooldown_mult": "⏰"
+	}
+	var icon = icons.get(stat_name, "○")
+	var loc_name = Localization.L("stats.%s.name" % stat_name)
+	var loc_desc = Localization.L("stats.%s.desc" % stat_name)
+	
+	# Si la clave no existe, usa el nombre del stat como fallback
+	if loc_name == ("stats.%s.name" % stat_name):
+		loc_name = stat_name.capitalize().replace("_", " ")
+	if loc_desc == ("stats.%s.desc" % stat_name):
+		loc_desc = ""
+	
+	return {"name": loc_name, "icon": icon, "description": loc_desc}
 
 func _get_stat_base_value(stat_name: String) -> float:
 	"""Obtener valor base de un stat"""
@@ -905,7 +935,7 @@ func _create_global_weapon_stats_section(parent: VBoxContainer) -> void:
 	
 	# Título
 	var title = Label.new()
-	title.text = "⚔️ Stats de Armas (Global)"
+	title.text = "⚔️ " + Localization.L("ui.pause.weapon_stats_global")
 	title.add_theme_font_size_override("font_size", 14)
 	title.add_theme_color_override("font_color", Color(1.0, 0.8, 0.3))
 	parent.add_child(title)
@@ -1063,7 +1093,7 @@ func _create_active_buffs_section(parent: VBoxContainer) -> void:
 	buffs_panel.add_child(vbox)
 
 	var header = Label.new()
-	header.text = "✨ EFECTOS ACTIVOS"
+	header.text = "✨ " + Localization.L("ui.pause.active_effects")
 	header.add_theme_font_size_override("font_size", 14)
 	header.add_theme_color_override("font_color", Color(0.8, 0.6, 1.0))
 	vbox.add_child(header)
@@ -1120,10 +1150,10 @@ func _create_active_buffs_section(parent: VBoxContainer) -> void:
 		more_chip.add_theme_stylebox_override("panel", m_style)
 		
 		var m_lbl = Label.new()
-		m_lbl.text = "+%d más" % hidden_count
+		m_lbl.text = Localization.L("ui.pause.more_effects", [hidden_count])
 		m_lbl.add_theme_font_size_override("font_size", 11)
 		more_chip.add_child(m_lbl)
-		more_chip.tooltip_text = "%d efectos adicionales activos" % hidden_count
+		more_chip.tooltip_text = Localization.L("ui.pause.more_effects_tooltip", [hidden_count])
 		buffs_grid.add_child(more_chip)
 
 func _create_growth_summary_chip(count: int, _total_bonus: float) -> Control:
@@ -1145,12 +1175,12 @@ func _create_growth_summary_chip(count: int, _total_bonus: float) -> Control:
 	hbox.add_child(icon)
 
 	var info = Label.new()
-	info.text = "Growth x%d" % count
+	info.text = Localization.L("ui.pause.growth_multiplier", [count])
 	info.add_theme_font_size_override("font_size", 11)
 	info.add_theme_color_override("font_color", Color(0.5, 1.0, 0.5))
 	hbox.add_child(info)
 
-	chip.tooltip_text = "📈 Crecimiento: %d stats mejorados\nBonus total acumulado" % count
+	chip.tooltip_text = Localization.L("ui.pause.growth_tooltip", [count])
 
 	return chip
 
@@ -1283,14 +1313,14 @@ func _show_weapons_tab() -> void:
 	main_vbox.add_child(header)
 
 	var title = Label.new()
-	title.text = "⚔️ ARSENAL"
+	title.text = "⚔️ " + Localization.L("ui.pause.arsenal")
 	title.add_theme_font_size_override("font_size", 16)
 	title.add_theme_color_override("font_color", SELECTED_TAB)
 	header.add_child(title)
 
 	if not attack_manager or not attack_manager.has_method("get_weapons"):
 		var no_data = Label.new()
-		no_data.text = "Sistema de armas no disponible"
+		no_data.text = Localization.L("ui.pause.weapons_unavailable")
 		no_data.add_theme_color_override("font_color", Color(0.5, 0.4, 0.4))
 		main_vbox.add_child(no_data)
 		return
@@ -1300,14 +1330,14 @@ func _show_weapons_tab() -> void:
 	# Contador de slots
 	var max_slots = attack_manager.max_weapon_slots if "max_weapon_slots" in attack_manager else 6
 	var slots_label = Label.new()
-	slots_label.text = "(%d / %d slots)" % [weapons.size(), max_slots]
+	slots_label.text = Localization.L("ui.pause.slots_count", [weapons.size(), max_slots])
 	slots_label.add_theme_font_size_override("font_size", 14)
 	slots_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 	header.add_child(slots_label)
 
 	if weapons.is_empty():
 		var no_weapons = Label.new()
-		no_weapons.text = "🎮 Aún no has obtenido ningún arma.\n¡Sube de nivel para conseguir tu primera arma!"
+		no_weapons.text = "🎮 " + Localization.L("ui.pause.no_weapons_message")
 		no_weapons.add_theme_font_size_override("font_size", 16)
 		no_weapons.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
 		no_weapons.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -1469,7 +1499,7 @@ func _create_weapon_card(weapon) -> Control:
 	level_hbox.add_child(level_vbox)
 
 	var level_label = Label.new()
-	level_label.text = "Nv.%d" % weapon_level
+	level_label.text = Localization.L("ui.pause.weapon_level", [weapon_level])
 	level_label.add_theme_font_size_override("font_size", 18)
 	level_label.add_theme_color_override("font_color", SELECTED_TAB if weapon_level >= max_level else Color.WHITE)
 	level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -1797,7 +1827,7 @@ func _create_weapon_details_popup(weapon) -> Control:
 	# Nivel y elemento
 	var weapon_level = stats.get("level", weapon.level if "level" in weapon else 1)
 	var max_level = stats.get("max_level", weapon.max_level if "max_level" in weapon else 8)
-	var level_text = "Nivel %d/%d • %s" % [weapon_level, max_level, element.capitalize()]
+	var level_text = Localization.L("ui.pause.weapon_level_element", [weapon_level, max_level, element.capitalize()])
 	var level_label = Label.new()
 	level_label.text = level_text
 	level_label.add_theme_font_size_override("font_size", 14)
@@ -1810,7 +1840,7 @@ func _create_weapon_details_popup(weapon) -> Control:
 	
 	# === ESTADÍSTICAS BASE DEL ARMA ===
 	var stats_label = Label.new()
-	stats_label.text = "📊 STATS DEL ARMA"
+	stats_label.text = Localization.L("ui.pause.weapon_stats_title")
 	stats_label.add_theme_font_size_override("font_size", 16)
 	stats_label.add_theme_color_override("font_color", SELECTED_TAB)
 	main_vbox.add_child(stats_label)
@@ -1906,7 +1936,7 @@ func _create_weapon_details_popup(weapon) -> Control:
 	main_vbox.add_child(sep_crit)
 	
 	var crit_label = Label.new()
-	crit_label.text = "🎲 CRÍTICOS (Global)"
+	crit_label.text = "🎲 " + Localization.L("ui.pause.crit_global")
 	crit_label.add_theme_font_size_override("font_size", 16)
 	crit_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
 	main_vbox.add_child(crit_label)
@@ -1919,8 +1949,8 @@ func _create_weapon_details_popup(weapon) -> Control:
 	
 	var crit_chance = stats.get("crit_chance", 0.05)
 	var crit_damage = stats.get("crit_damage", 2.0)
-	_add_detail_stat(crit_grid, "🎲 Prob. Crítico", "%.0f%%" % (crit_chance * 100))
-	_add_detail_stat(crit_grid, "💢 Daño Crítico", "x%.1f" % crit_damage)
+	_add_detail_stat(crit_grid, "🎲 " + Localization.L("stats.crit_chance.name"), "%.0f%%" % (crit_chance * 100))
+	_add_detail_stat(crit_grid, "💢 " + Localization.L("stats.crit_damage.name"), "x%.1f" % crit_damage)
 	
 	# === MEJORAS GLOBALES ACTIVAS ===
 	var global_upgrades = stats.get("global_upgrades", [])
@@ -1929,7 +1959,7 @@ func _create_weapon_details_popup(weapon) -> Control:
 		main_vbox.add_child(sep_upgrades)
 		
 		var upgrades_title = Label.new()
-		upgrades_title.text = "📦 MEJORAS GLOBALES (%d)" % global_upgrades.size()
+		upgrades_title.text = "📦 " + Localization.L("ui.pause.global_upgrades", [global_upgrades.size()])
 		upgrades_title.add_theme_font_size_override("font_size", 16)
 		upgrades_title.add_theme_color_override("font_color", Color(0.5, 0.8, 1.0))
 		main_vbox.add_child(upgrades_title)
@@ -1953,7 +1983,7 @@ func _create_weapon_details_popup(weapon) -> Control:
 		main_vbox.add_child(sep2)
 		
 		var effect_title = Label.new()
-		effect_title.text = "✨ EFECTO ESPECIAL"
+		effect_title.text = "✨ " + Localization.L("ui.pause.special_effect")
 		effect_title.add_theme_font_size_override("font_size", 16)
 		effect_title.add_theme_color_override("font_color", element_color)
 		main_vbox.add_child(effect_title)
@@ -1983,7 +2013,7 @@ func _create_weapon_details_popup(weapon) -> Control:
 	main_vbox.add_child(close_container)
 	
 	var close_btn = Button.new()
-	close_btn.text = "Cerrar [ESC / Espacio]"
+	close_btn.text = Localization.L("ui.pause.close_button")
 	close_btn.custom_minimum_size = Vector2(200, 40)
 	close_btn.pressed.connect(_close_weapon_details)
 	close_container.add_child(close_btn)
@@ -2096,7 +2126,7 @@ func _show_upgrades_tab() -> void:
 
 	if not player_stats:
 		var no_data = Label.new()
-		no_data.text = "No hay objetos"
+		no_data.text = Localization.L("ui.pause.no_items")
 		grid.add_child(no_data)
 		return
 
@@ -2104,7 +2134,7 @@ func _show_upgrades_tab() -> void:
 
 	if upgrades.is_empty():
 		var no_upgrades = Label.new()
-		no_upgrades.text = "Sube de nivel para obtener objetos"
+		no_upgrades.text = Localization.L("ui.pause.level_up_for_items")
 		no_upgrades.add_theme_font_size_override("font_size", 16)
 		no_upgrades.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
 		grid.add_child(no_upgrades)

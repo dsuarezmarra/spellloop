@@ -39,7 +39,9 @@
 			"credits": "CRÉDITS",
 			"quit": "QUITTER",
 			"new_game": "NOUVELLE PARTIE",
-			"continue_game": "CONTINUER"
+			"continue_game": "CONTINUER",
+			"resume": "REPRENDRE",
+			"resume_with_time": "REPRENDRE (%s)"
 		},
 		"character_select": {
 			"title": "CHOISISSEZ VOTRE HÉROS",
@@ -73,8 +75,12 @@
 			"continue": "CONTINUER",
 			"delete": "SUPPRIMER",
 			"new_game": "NOUVELLE PARTIE",
-			"delete_confirm_title": "Supprimer la sauvegarde?",
-			"delete_confirm_message": "Cette action est irréversible.",
+			"create": "CRÉER",
+			"runs": "Parties: %d",
+			"time_short": "Temps: < 1m",
+			"time_long": "Temps: %dh %02dm",
+			"delete_confirm_title": "SUPPRIMER SLOT %d?",
+			"delete_confirm_message": "Cette action est irréversible.\nVotre mage perdra tout son pouvoir.",
 			"level": "Niveau %d",
 			"time_played": "Temps: %s",
 			"gold_earned": "Or: %d"
@@ -93,7 +99,27 @@
 			"tab_info": "ℹ️ Info",
 			"no_items": "Aucun objet",
 			"no_weapons": "Aucune arme",
-			"no_passives": "Aucun passif"
+			"no_passives": "Aucun passif",
+			"help_text": "WASD: Naviguer  |  ESPACE: Sélectionner  |  ESC: Continuer",
+			"level": "Niveau %d",
+			"arsenal": "ARSENAL",
+			"weapons_unavailable": "Système d'armes non disponible",
+			"slots_count": "(%d / %d emplacements)",
+			"no_weapons_message": "Vous n'avez pas encore obtenu d'armes.\nMontez de niveau pour obtenir votre première arme!",
+			"weapon_stats_global": "Stats d'Armes (Global)",
+			"active_effects": "EFFETS ACTIFS",
+			"more_effects": "+%d de plus",
+			"more_effects_tooltip": "%d effets actifs supplémentaires",
+			"special_effect": "EFFET SPÉCIAL",
+			"close_button": "Fermer [ESC / Espace]",
+			"crit_global": "CRITIQUES (Global)",
+			"global_upgrades": "AMÉLIORATIONS GLOBALES (%d)",
+			"level_up_for_items": "Montez de niveau pour obtenir des objets",
+			"growth_multiplier": "Croissance x%d",
+			"growth_tooltip": "📈 Croissance : %d stats améliorées\nBonus total accumulé",
+			"weapon_level": "Nv.%d",
+			"weapon_level_element": "Niveau %d/%d • %s",
+			"weapon_stats_title": "📊 STATS DE L'ARME"
 		},
 		"level_up": {
 			"title": "⬆️ NIVEAU SUPÉRIEUR! ⬆️",
@@ -106,7 +132,17 @@
 			"rerolls_left": "%d restant(s)",
 			"banishes_left": "%d restant(s)",
 			"max_level": "NIVEAU MAX",
-			"new": "NOUVEAU!"
+			"new": "NOUVEAU!",
+			"nav_help": "← → Naviguer   |   ↑ ↓ Changer de ligne   |   ENTRÉE Confirmer",
+			"skip_confirm_title": "Partir sans choisir d'amélioration?",
+			"skip_confirm_message": "Vous perdrez cette opportunité d'amélioration.",
+			"back_to_choose": "Retour au choix",
+			"lose_upgrade": "Perdre l'amélioration",
+			"banish_mode_hint": "MODE SUPPRESSION: Sélectionnez l'amélioration à supprimer (ESC pour annuler)",
+			"choose_upgrade": "Choisissez une amélioration pour continuer",
+			"delete": "SUPPRIMER",
+			"spinning": "Rotation...",
+			"confirm_indicator": "▲ ENTRÉE ▲"
 		},
 		"chest": {
 			"title": "Choisissez votre récompense!",
@@ -118,14 +154,33 @@
 			"gold_reward": "+%d Or",
 			"health_reward": "+%d PV",
 			"take_all": "TOUT PRENDRE",
-			"skip": "PASSER"
+			"skip": "PASSER",
+			"legendary_reward": "RÉCOMPENSE LÉGENDAIRE !",
+			"exit_confirm_title": "Quitter les récompenses ?",
+			"pending_items": "Vous avez %d objet(s) non réclamé(s).\nSi vous partez maintenant, vous perdrez ces objets.",
+			"all_claimed": "Vous avez réclamé tous les objets.\nVoulez-vous fermer cette fenêtre ?",
+			"confirm_exit": "Confirmer la sortie",
+			"selected": "Sélectionné",
+			"pending": "En attente",
+			"skip_confirm_title": "Passer la récompense ?",
+			"skip_confirm_message": "Vous perdrez cette opportunité d'obtenir un objet.\nLe coffre disparaîtra.",
+			"skip_no_reward": "Passer (pas de récompense)",
+			"claim_all": "TOUT RÉCUPÉRER",
+			"claim_selected": "RÉCUPÉRER SÉLECTION",
+			"unknown_item": "Objet Mystérieux",
+			"no_description": "Pas de description"
+		},
+		"reward_reveal": {
+			"options_revealing": "Les options sont révélées...",
+			"choose_upgrade": "Choisissez votre amélioration !"
 		},
 		"shop_chest": {
-			"title": "🛒 BOUTIQUE",
-			"buy": "Acheter",
-			"sold_out": "Épuisé",
-			"not_enough_gold": "Pas assez d'or",
-			"price": "%d 🪙"
+			"title": "🎁 COFFRE AU TRÉSOR",
+			"exit_button": "❌ Partir sans acheter",
+			"exit_warning": "⚠️ Êtes-vous sûr de vouloir partir ?\nLe coffre disparaîtra.",
+			"cancel": "Annuler",
+			"confirm_exit": "Partir",
+			"unknown_item": "Objet Inconnu"
 		},
 		"game_hud": {
 			"level": "Nv.%d",
@@ -147,40 +202,79 @@
 			"damage_taken": "Dégâts subis",
 			"retry": "Réessayer",
 			"main_menu": "Menu principal",
-			"new_record": "NOUVEAU RECORD!"
+			"new_record": "NOUVEAU RECORD!",
+			"time": "⏱️ Temps",
+			"level": "⭐ Niveau",
+			"enemies": "💀 Ennemis",
+			"xp_total": "✨ XP Total",
+			"gold": "🪙 Or",
+			"damage_total": "⚔️ Dégâts Totaux"
 		},
 		"tooltips": {
 			"reroll_hint": "Générer de nouvelles options",
 			"banish_hint": "Supprimer définitivement cette option",
 			"upgrade_max": "Niveau max"
+		},
+		"hud": {
+			"level": "NIV %d",
+			"hype_complete": "HYPE TERMINÉ !",
+			"hype_results": "Total : %d 🪙\nCombo Max : x%.2f",
+			"boss_label": "BOSS: %s"
 		}
 	},
 	"stats": {
-		"max_health": "PV Max",
-		"health_regen": "Régén. PV",
-		"move_speed": "Vitesse",
-		"armor": "Armure",
-		"damage_mult": "Dégâts",
-		"attack_speed_mult": "Vitesse d'attaque",
-		"cooldown_mult": "Recharge",
-		"area_mult": "Zone d'effet",
-		"pickup_range": "Portée de collecte",
-		"luck": "Chance",
-		"xp_mult": "Expérience",
-		"crit_chance": "Chance critique",
-		"crit_damage": "Dégâts critiques",
-		"life_steal": "Vol de vie",
-		"dodge_chance": "Esquive",
-		"extra_projectiles": "Projectiles supplémentaires",
-		"extra_pierce": "Pénétration",
-		"gold_mult": "Bonus d'or",
-		"max_shield": "Bouclier max",
-		"shield_regen": "Régén. bouclier",
-		"shield_regen_delay": "Délai bouclier",
-		"knockback_mult": "Recul",
-		"range_mult": "Portée",
-		"duration_mult": "Durée",
-		"projectile_speed_mult": "Vitesse projectile"
+		"max_health": {"name": "PV Max", "desc": "Points de vie maximum"},
+		"health_regen": {"name": "Régén. PV", "desc": "Vie régénérée par seconde"},
+		"move_speed": {"name": "Vitesse", "desc": "Vitesse de déplacement du personnage"},
+		"armor": {"name": "Armure", "desc": "Réduit les dégâts reçus"},
+		"damage_mult": {"name": "Dégâts", "desc": "Multiplicateur de dégâts des armes"},
+		"attack_speed_mult": {"name": "Vitesse d'attaque", "desc": "Attaques par seconde (plus = plus rapide)"},
+		"cooldown_mult": {"name": "Recharge", "desc": "Réduction du temps de recharge des capacités"},
+		"area_mult": {"name": "Zone", "desc": "Taille de la zone d'effet"},
+		"pickup_range": {"name": "Portée de collecte", "desc": "Portée pour collecter les objets"},
+		"luck": {"name": "Chance", "desc": "Affecte les drops et les critiques"},
+		"xp_mult": {"name": "Expérience", "desc": "Multiplicateur d'expérience gagnée"},
+		"crit_chance": {"name": "Chance critique", "desc": "Probabilité de coup critique"},
+		"crit_damage": {"name": "Dégâts critiques", "desc": "Multiplicateur de dégâts critiques"},
+		"life_steal": {"name": "Vol de vie", "desc": "Vie volée par attaque"},
+		"dodge_chance": {"name": "Esquive", "desc": "Probabilité d'esquiver les attaques"},
+		"extra_projectiles": {"name": "Projectiles supplémentaires", "desc": "Projectiles supplémentaires"},
+		"extra_pierce": {"name": "Pénétration", "desc": "Pénétration supplémentaire"},
+		"gold_mult": {"name": "Bonus d'or", "desc": "Multiplicateur d'or gagné"},
+		"max_shield": {"name": "Bouclier max", "desc": "Points de bouclier maximum"},
+		"shield_regen": {"name": "Régén. bouclier", "desc": "Taux de régénération du bouclier"},
+		"shield_regen_delay": {"name": "Délai bouclier", "desc": "Délai avant régénération du bouclier"},
+		"knockback_mult": {"name": "Recul", "desc": "Force de recul"},
+		"range_mult": {"name": "Portée", "desc": "Multiplicateur de portée d'attaque"},
+		"duration_mult": {"name": "Durée", "desc": "Multiplicateur de durée des effets"},
+		"projectile_speed_mult": {"name": "Vitesse projectile", "desc": "Vélocité des projectiles"},
+		"elite_damage_mult": {"name": "Dégâts élite", "desc": "Dégâts supplémentaires contre élites et boss"},
+		"burn_chance": {"name": "Chance brûlure", "desc": "Chance de brûler les ennemis"},
+		"freeze_chance": {"name": "Chance gel", "desc": "Chance de geler les ennemis"},
+		"bleed_chance": {"name": "Chance saignement", "desc": "Chance de provoquer un saignement"},
+		"explosion_chance": {"name": "Chance explosion", "desc": "Chance d'exploser sur un kill"},
+		"execute_threshold": {"name": "Seuil exécution", "desc": "Tue instantanément les ennemis à faible vie"},
+		"status_duration_mult": {"name": "Durée statuts", "desc": "Durée des effets de statut"},
+		"kill_heal": {"name": "Soin sur kill", "desc": "Vie gagnée sur un kill"},
+		"burn_damage": {"name": "Dégâts brûlure", "desc": "Dégâts de brûlure"},
+		"explosion_damage": {"name": "Dégâts explosion", "desc": "Dégâts d'explosion"},
+		"close_range_damage_bonus": {"name": "Dégâts mêlée", "desc": "Dégâts supplémentaires aux ennemis proches"},
+		"long_range_damage_bonus": {"name": "Dégâts distance", "desc": "Dégâts supplémentaires aux ennemis éloignés"},
+		"damage_vs_slowed": {"name": "vs Ralentis", "desc": "Dégâts supplémentaires aux ennemis ralentis"},
+		"damage_vs_burning": {"name": "vs Brûlants", "desc": "Dégâts supplémentaires aux ennemis en feu"},
+		"damage_vs_frozen": {"name": "vs Gelés", "desc": "Dégâts supplémentaires aux ennemis gelés"},
+		"low_hp_damage_bonus": {"name": "vs Faible PV", "desc": "Dégâts supplémentaires aux ennemis à faible vie"},
+		"full_hp_damage_bonus": {"name": "Bonus PV pleins", "desc": "Dégâts supplémentaires à pleine vie"},
+		"revives": {"name": "Résurrections", "desc": "Vies supplémentaires"},
+		"reroll_count": {"name": "Relances", "desc": "Chances de relance supplémentaires au niveau supérieur"},
+		"banish_count": {"name": "Bannissements", "desc": "Charges de bannissement supplémentaires au niveau supérieur"},
+		"magnet_strength": {"name": "Force aimant", "desc": "Force d'attraction des objets"},
+		"levelup_options": {"name": "Options niveau", "desc": "Options supplémentaires au niveau supérieur"},
+		"chain_count": {"name": "Chaînes", "desc": "Chaînes supplémentaires sur les attaques"},
+		"infinite_pickup_range": {"name": "Collecte infinie", "desc": "Collecte les objets de toute la carte"},
+		"coin_value_mult": {"name": "Valeur pièces", "desc": "Multiplicateur de valeur des pièces"},
+		"damage_flat": {"name": "Dégâts fixes", "desc": "Dégâts fixes ajoutés"},
+		"damage_taken_mult": {"name": "Dégâts reçus", "desc": "Multiplicateur des dégâts reçus"}
 	},
 	"rarity": {
 		"common": "Commun",
@@ -527,5 +621,31 @@
 		"level_up": "Collectez l'XP pour monter de niveau",
 		"chest": "Les coffres contiennent des récompenses",
 		"dodge": "Restez en mouvement"
+	},
+	"items": {
+		"potions": {
+			"health_potion": {
+				"name": "Potion de Vie",
+				"description": "Restaure 30% de votre santé."
+			},
+			"full_elixir": {
+				"name": "Élixir Complet",
+				"description": "Restaure 100% de votre santé."
+			}
+		},
+		"weapons": {
+			"new_weapon_fallback": "Nouvelle arme"
+		}
+	},
+	"synergies": {
+		"unknown": "Synergie inconnue"
+	},
+	"rarities": {
+		"common": "Commun",
+		"uncommon": "Peu commun",
+		"rare": "Rare",
+		"epic": "Épique",
+		"legendary": "Légendaire",
+		"unknown": "Inconnu"
 	}
 }

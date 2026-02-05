@@ -34,12 +34,14 @@
 	"ui": {
 		"main_menu": {
 			"title": "主菜单",
-			"play": "开始游戏",
+			"play": "开始",
 			"options": "设置",
 			"credits": "制作人员",
 			"quit": "退出",
 			"new_game": "新游戏",
-			"continue_game": "继续"
+			"continue_game": "继续",
+			"resume": "继续游戏",
+			"resume_with_time": "继续 (%s)"
 		},
 		"character_select": {
 			"title": "选择你的英雄",
@@ -73,8 +75,12 @@
 			"continue": "继续",
 			"delete": "删除",
 			"new_game": "新游戏",
-			"delete_confirm_title": "删除存档？",
-			"delete_confirm_message": "此操作无法撤销。",
+			"create": "创建",
+			"runs": "游玩次数: %d",
+			"time_short": "时间: < 1分钟",
+			"time_long": "时间: %d小时%02d分",
+			"delete_confirm_title": "删除存档 %d？",
+			"delete_confirm_message": "此操作不可撤销。\n你的法师将失去所有力量。",
 			"level": "等级 %d",
 			"time_played": "游戏时间: %s",
 			"gold_earned": "金币: %d"
@@ -93,7 +99,27 @@
 			"tab_info": "ℹ️ 信息",
 			"no_items": "无物品",
 			"no_weapons": "无武器",
-			"no_passives": "无被动"
+			"no_passives": "无被动",
+			"help_text": "WASD: 导航  |  空格: 选择  |  ESC: 继续",
+			"level": "等级 %d",
+			"arsenal": "武器库",
+			"weapons_unavailable": "武器系统不可用",
+			"slots_count": "(%d / %d 槽位)",
+			"no_weapons_message": "你还没有获得任何武器。\n升级以获取你的第一把武器！",
+			"weapon_stats_global": "武器属性（全局）",
+			"active_effects": "激活效果",
+			"more_effects": "+%d 个",
+			"more_effects_tooltip": "%d 个额外激活效果",
+			"special_effect": "特殊效果",
+			"close_button": "关闭 [ESC / 空格]",
+			"crit_global": "暴击（全局）",
+			"global_upgrades": "全局强化 (%d)",
+			"level_up_for_items": "升级以获取物品",
+			"growth_multiplier": "成长 x%d",
+			"growth_tooltip": "📈 成长: %d属性提升\n总累计加成",
+			"weapon_level": "等级%d",
+			"weapon_level_element": "等级 %d/%d • %s",
+			"weapon_stats_title": "📊 武器属性"
 		},
 		"level_up": {
 			"title": "⬆️ 升级！ ⬆️",
@@ -106,7 +132,17 @@
 			"rerolls_left": "剩余%d次",
 			"banishes_left": "剩余%d次",
 			"max_level": "最高等级",
-			"new": "新！"
+			"new": "新！",
+			"nav_help": "← → 导航   |   ↑ ↓ 换行   |   ENTER 确认",
+			"skip_confirm_title": "不选择强化就离开？",
+			"skip_confirm_message": "你将失去这次强化机会。",
+			"back_to_choose": "返回选择",
+			"lose_upgrade": "放弃强化",
+			"banish_mode_hint": "删除模式：选择要移除的强化（ESC取消）",
+			"choose_upgrade": "选择一个强化以继续",
+			"delete": "删除",
+			"spinning": "旋转中...",
+			"confirm_indicator": "▲ 确定 ▲"
 		},
 		"chest": {
 			"title": "选择奖励！",
@@ -118,14 +154,33 @@
 			"gold_reward": "+%d 金币",
 			"health_reward": "+%d 生命",
 			"take_all": "全部拿走",
-			"skip": "跳过"
+			"skip": "跳过",
+			"legendary_reward": "传说奖励！",
+			"exit_confirm_title": "放弃奖励？",
+			"pending_items": "你有%d个未领取的物品。\n如果现在离开，你将失去这些物品。",
+			"all_claimed": "你已领取所有物品。\n想要关闭此窗口吗？",
+			"confirm_exit": "确认退出",
+			"selected": "已选择",
+			"pending": "待选",
+			"skip_confirm_title": "跳过奖励？",
+			"skip_confirm_message": "你将失去获得物品的机会。\n宝箱将消失。",
+			"skip_no_reward": "跳过（无奖励）",
+			"claim_all": "全部领取",
+			"claim_selected": "领取已选",
+			"unknown_item": "神秘物品",
+			"no_description": "暂无描述"
+		},
+		"reward_reveal": {
+			"options_revealing": "选项正在揭示...",
+			"choose_upgrade": "选择你的升级！"
 		},
 		"shop_chest": {
-			"title": "🛒 商店",
-			"buy": "购买",
-			"sold_out": "售罄",
-			"not_enough_gold": "金币不足",
-			"price": "%d 🪙"
+			"title": "🎁 宝箱",
+			"exit_button": "❌ 不购买离开",
+			"exit_warning": "⚠️ 确定要离开吗？\n宝箱将消失。",
+			"cancel": "取消",
+			"confirm_exit": "离开",
+			"unknown_item": "未知物品"
 		},
 		"game_hud": {
 			"level": "等级%d",
@@ -147,40 +202,79 @@
 			"damage_taken": "承受伤害",
 			"retry": "重试",
 			"main_menu": "主菜单",
-			"new_record": "新纪录！"
+			"new_record": "新纪录！",
+			"time": "⏱️ 时间",
+			"level": "⭐ 等级",
+			"enemies": "💀 敌人",
+			"xp_total": "✨ 总经验",
+			"gold": "🪙 金币",
+			"damage_total": "⚔️ 总伤害"
 		},
 		"tooltips": {
 			"reroll_hint": "生成新选项",
 			"banish_hint": "永久移除此选项",
 			"upgrade_max": "已满级"
+		},
+		"hud": {
+			"level": "等级 %d",
+			"hype_complete": "连击完成！",
+			"hype_results": "总计: %d 🪙\n最高连击: x%.2f",
+			"boss_label": "首领: %s"
 		}
 	},
 	"stats": {
-		"max_health": "最大生命",
-		"health_regen": "生命恢复",
-		"move_speed": "移动速度",
-		"armor": "护甲",
-		"damage_mult": "伤害",
-		"attack_speed_mult": "攻击速度",
-		"cooldown_mult": "冷却时间",
-		"area_mult": "范围效果",
-		"pickup_range": "拾取范围",
-		"luck": "幸运",
-		"xp_mult": "经验",
-		"crit_chance": "暴击率",
-		"crit_damage": "暴击伤害",
-		"life_steal": "生命偷取",
-		"dodge_chance": "闪避率",
-		"extra_projectiles": "额外弹道",
-		"extra_pierce": "穿透",
-		"gold_mult": "金币加成",
-		"max_shield": "最大护盾",
-		"shield_regen": "护盾恢复",
-		"shield_regen_delay": "护盾延迟",
-		"knockback_mult": "击退",
-		"range_mult": "射程",
-		"duration_mult": "持续时间",
-		"projectile_speed_mult": "弹道速度"
+		"max_health": {"name": "最大生命", "desc": "最大生命值"},
+		"health_regen": {"name": "生命恢复", "desc": "每秒恢复的生命值"},
+		"move_speed": {"name": "移动速度", "desc": "角色移动速度"},
+		"armor": {"name": "护甲", "desc": "减少受到的伤害"},
+		"damage_mult": {"name": "伤害", "desc": "武器伤害倍率"},
+		"attack_speed_mult": {"name": "攻击速度", "desc": "每秒攻击次数（越高越快）"},
+		"cooldown_mult": {"name": "冷却时间", "desc": "技能冷却时间减少"},
+		"area_mult": {"name": "范围", "desc": "效果范围大小"},
+		"pickup_range": {"name": "拾取范围", "desc": "拾取物品的范围"},
+		"luck": {"name": "幸运", "desc": "影响掉落和暴击"},
+		"xp_mult": {"name": "经验", "desc": "获得经验倍率"},
+		"crit_chance": {"name": "暴击率", "desc": "暴击概率"},
+		"crit_damage": {"name": "暴击伤害", "desc": "暴击伤害倍率"},
+		"life_steal": {"name": "生命偷取", "desc": "每次攻击偷取的生命值"},
+		"dodge_chance": {"name": "闪避率", "desc": "闪避攻击的概率"},
+		"extra_projectiles": {"name": "额外弹道", "desc": "额外的弹道数"},
+		"extra_pierce": {"name": "穿透", "desc": "额外穿透数"},
+		"gold_mult": {"name": "金币加成", "desc": "获得金币倍率"},
+		"max_shield": {"name": "最大护盾", "desc": "最大护盾值"},
+		"shield_regen": {"name": "护盾恢复", "desc": "护盾恢复速度"},
+		"shield_regen_delay": {"name": "护盾延迟", "desc": "护盾恢复前的延迟"},
+		"knockback_mult": {"name": "击退", "desc": "击退力度"},
+		"range_mult": {"name": "射程", "desc": "攻击射程倍率"},
+		"duration_mult": {"name": "持续时间", "desc": "效果持续时间倍率"},
+		"projectile_speed_mult": {"name": "弹道速度", "desc": "弹道速度"},
+		"elite_damage_mult": {"name": "精英伤害", "desc": "对精英和Boss的额外伤害"},
+		"burn_chance": {"name": "燃烧几率", "desc": "点燃敌人的几率"},
+		"freeze_chance": {"name": "冰冻几率", "desc": "冻结敌人的几率"},
+		"bleed_chance": {"name": "流血几率", "desc": "造成流血的几率"},
+		"explosion_chance": {"name": "爆炸几率", "desc": "击杀时爆炸的几率"},
+		"execute_threshold": {"name": "处决阈值", "desc": "立即击杀低血量敌人"},
+		"status_duration_mult": {"name": "状态持续", "desc": "状态效果持续时间"},
+		"kill_heal": {"name": "击杀回血", "desc": "击杀时获得的生命值"},
+		"burn_damage": {"name": "燃烧伤害", "desc": "燃烧造成的伤害"},
+		"explosion_damage": {"name": "爆炸伤害", "desc": "爆炸伤害"},
+		"close_range_damage_bonus": {"name": "近战伤害", "desc": "对近距离敌人的额外伤害"},
+		"long_range_damage_bonus": {"name": "远程伤害", "desc": "对远距离敌人的额外伤害"},
+		"damage_vs_slowed": {"name": "vs 减速", "desc": "对减速敌人的额外伤害"},
+		"damage_vs_burning": {"name": "vs 燃烧", "desc": "对燃烧敌人的额外伤害"},
+		"damage_vs_frozen": {"name": "vs 冰冻", "desc": "对冰冻敌人的额外伤害"},
+		"low_hp_damage_bonus": {"name": "vs 低血量", "desc": "对低血量敌人的额外伤害"},
+		"full_hp_damage_bonus": {"name": "满血加成", "desc": "满血时的额外伤害"},
+		"revives": {"name": "复活", "desc": "额外生命"},
+		"reroll_count": {"name": "重新随机", "desc": "升级时额外的重随次数"},
+		"banish_count": {"name": "移除", "desc": "升级时额外的移除次数"},
+		"magnet_strength": {"name": "磁铁力量", "desc": "物品吸引力"},
+		"levelup_options": {"name": "升级选项", "desc": "升级时的额外选项"},
+		"chain_count": {"name": "连锁次数", "desc": "攻击的额外连锁次数"},
+		"infinite_pickup_range": {"name": "无限拾取", "desc": "从整个地图拾取物品"},
+		"coin_value_mult": {"name": "金币价值", "desc": "金币价值倍率"},
+		"damage_flat": {"name": "固定伤害", "desc": "增加的固定伤害"},
+		"damage_taken_mult": {"name": "受到伤害", "desc": "受到伤害倍率"}
 	},
 	"rarity": {
 		"common": "普通",
@@ -527,5 +621,31 @@
 		"level_up": "收集经验升级",
 		"chest": "宝箱包含奖励",
 		"dodge": "保持移动躲避敌人"
+	},
+	"items": {
+		"potions": {
+			"health_potion": {
+				"name": "生命药水",
+				"description": "恢复30%生命值。"
+			},
+			"full_elixir": {
+				"name": "完全药剂",
+				"description": "恢复100%生命值。"
+			}
+		},
+		"weapons": {
+			"new_weapon_fallback": "新武器"
+		}
+	},
+	"synergies": {
+		"unknown": "未知协同效果"
+	},
+	"rarities": {
+		"common": "普通",
+		"uncommon": "稀有",
+		"rare": "精良",
+		"epic": "史诗",
+		"legendary": "传说",
+		"unknown": "未知"
 	}
 }

@@ -368,7 +368,7 @@ func _update_resume_button() -> void:
 	if resume_button:
 		resume_button.visible = can_resume_game
 		if can_resume_game and SessionState:
-			var resume_text = "REANUDAR (%s)" % SessionState.get_paused_time_formatted()
+			var resume_text = Localization.L("ui.main_menu.resume_with_time", [SessionState.get_paused_time_formatted()])
 			# TextureButton usa un Label hijo para mostrar texto
 			var resume_label = resume_button.get_node_or_null("ResumeLabel")
 			if resume_label:
@@ -378,7 +378,7 @@ func _update_resume_button() -> void:
 
 	# Actualizar texto del botón de jugar
 	if play_button:
-		var new_text = "NUEVA PARTIDA" if can_resume_game else "JUGAR"
+		var new_text = Localization.L("ui.main_menu.new_game") if can_resume_game else Localization.L("ui.main_menu.play")
 		# TextureButton usa un Label hijo para mostrar texto
 		var play_label = play_button.get_node_or_null("PlayLabel")
 		if play_label:
@@ -410,7 +410,7 @@ func _create_resume_button() -> void:
 		# Crear Label hijo para el texto
 		var resume_label = Label.new()
 		resume_label.name = "ResumeLabel"
-		resume_label.text = "REANUDAR"
+		resume_label.text = Localization.L("ui.main_menu.resume")
 		resume_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		resume_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		resume_label.set_anchors_preset(Control.PRESET_FULL_RECT)

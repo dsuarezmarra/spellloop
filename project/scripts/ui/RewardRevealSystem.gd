@@ -247,7 +247,7 @@ func reveal_level_up_options(options: Array, title: String = "⬆ LEVEL UP! ⬆"
 	current_mode = RevealMode.SLOT_REEL
 	items_to_reveal = options
 	title_label.text = title
-	subtitle_label.text = "Las opciones se están revelando..."
+	subtitle_label.text = Localization.L("ui.reward_reveal.options_revealing")
 	
 	_start_reveal()
 	await _animate_slot_reels(options)
@@ -368,7 +368,7 @@ func _animate_slot_reels(options: Array) -> void:
 	await get_tree().create_timer(0.2).timeout
 	_pulse_all_reels()
 	
-	subtitle_label.text = "¡Elige tu mejora!"
+	subtitle_label.text = Localization.L("ui.reward_reveal.choose_upgrade")
 	is_revealing = false
 	all_items_revealed.emit(options)
 

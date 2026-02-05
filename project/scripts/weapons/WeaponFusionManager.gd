@@ -285,7 +285,7 @@ func get_synergy_description(fusion_result) -> String:
 	}
 	
 	var fusion_id = ""
-	var default_desc = "Sinergia desconocida"
+	var default_desc = Localization.L("synergies.unknown")
 	
 	if fusion_result is BaseWeapon:
 		fusion_id = fusion_result.id

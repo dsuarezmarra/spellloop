@@ -417,7 +417,7 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		empty_display.add_child(icon)
 		
 		var label = Label.new()
-		label.text = "NUEVA PARTIDA"
+		label.text = Localization.L("ui.save_slots.new_game")
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		if font_title:
 			label.add_theme_font_override("font", font_title)
@@ -430,7 +430,7 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		info_container.add_child(empty_display)
 		
 		if select_btn:
-			select_btn.text = "CREAR"
+			select_btn.text = Localization.L("ui.save_slots.create")
 			select_btn.modulate = Color(1, 1, 1)
 			# Centrar el botón cuando el slot está vacío
 			select_btn.position = Vector2(115, 472)  # Centrado (nuevo tamaño)
@@ -479,7 +479,7 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		# Partidas jugadas
 		var runs_val = player_data.get("total_runs", 0)
 		var runs_lbl = Label.new()
-		runs_lbl.text = "Partidas: %d" % runs_val
+		runs_lbl.text = Localization.L("ui.save_slots.runs", [runs_val])
 		runs_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		if font_info:
 			runs_lbl.add_theme_font_override("font", font_info)
@@ -495,9 +495,9 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		var mins = (int(playtime) % 3600) / 60
 		var time_lbl = Label.new()
 		if playtime > 0 and playtime < 60:
-			time_lbl.text = "Tiempo: < 1m"
+			time_lbl.text = Localization.L("ui.save_slots.time_short")
 		else:
-			time_lbl.text = "Tiempo: %dh %02dm" % [hours, mins]
+			time_lbl.text = Localization.L("ui.save_slots.time_long", [hours, mins])
 		time_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		if font_info:
 			time_lbl.add_theme_font_override("font", font_info)
@@ -510,7 +510,7 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		info_container.add_child(stats_vbox)
 		
 		if select_btn:
-			select_btn.text = "CONTINUAR"
+			select_btn.text = Localization.L("ui.save_slots.continue")
 			select_btn.modulate = Color(1.0, 1.0, 1.0)
 			# Posición izquierda cuando hay 2 botones (nuevo tamaño)
 			select_btn.position = Vector2(35, 472)
@@ -518,7 +518,7 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		if delete_btn:
 			delete_btn.visible = true
 			delete_btn.disabled = false
-			delete_btn.text = "BORRAR"
+			delete_btn.text = Localization.L("common.delete")
 			delete_btn.modulate = Color(1, 1, 1)
 			# Posición derecha (nuevo tamaño)
 			delete_btn.position = Vector2(195, 472)
@@ -689,14 +689,14 @@ func _create_delete_popup(slot_index: int) -> void:
 	
 	# Texto
 	var lbl = Label.new()
-	lbl.text = "¿BORRAR SLOT %d?" % (slot_index + 1)
+	lbl.text = Localization.L("ui.save_slots.delete_confirm_title", [slot_index + 1])
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.add_theme_font_size_override("font_size", 24)
 	lbl.add_theme_color_override("font_color", Color(1, 0.3, 0.3))
 	vbox.add_child(lbl)
 	
 	var sub = Label.new()
-	sub.text = "Esta acción es irreversible.\nTu mago perderá todo su poder."
+	sub.text = Localization.L("ui.save_slots.delete_confirm_message")
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 	vbox.add_child(sub)
@@ -708,7 +708,7 @@ func _create_delete_popup(slot_index: int) -> void:
 	vbox.add_child(hbox)
 	
 	var btn_cancel = Button.new()
-	btn_cancel.text = "CANCELAR"
+	btn_cancel.text = Localization.L("common.cancel")
 	btn_cancel.custom_minimum_size = Vector2(120, 40)
 	btn_cancel.pressed.connect(overlay.queue_free)
 	btn_cancel.pressed.connect(_play_button_sound)
@@ -717,7 +717,7 @@ func _create_delete_popup(slot_index: int) -> void:
 	hbox.add_child(btn_cancel)
 	
 	var btn_delete = Button.new()
-	btn_delete.text = "BORRAR"
+	btn_delete.text = Localization.L("common.delete")
 	btn_delete.custom_minimum_size = Vector2(120, 40)
 	var del_style = StyleBoxFlat.new()
 	del_style.bg_color = Color(0.6, 0.2, 0.2)

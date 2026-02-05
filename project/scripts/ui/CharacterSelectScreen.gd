@@ -546,10 +546,10 @@ func _update_stats_display() -> void:
 
 	# Update name and title (use localized versions)
 	if character_name_label:
-		character_name_label.text = _get_localized_field(char_data, "name", "???") if is_unlocked else "???"
+		character_name_label.text = L("characters.%s.name" % char_data.id) if is_unlocked else "???"
 
 	if character_title_label:
-		character_title_label.text = _get_localized_field(char_data, "title", "") if is_unlocked else L("ui.character_select.locked")
+		character_title_label.text = L("characters.%s.title" % char_data.id) if is_unlocked else L("ui.character_select.locked")
 		character_title_label.add_theme_color_override("font_color", char_data.color_primary if is_unlocked else Color(0.5, 0.5, 0.5))
 
 	# Update stats panel
@@ -582,7 +582,7 @@ func _update_stats_display() -> void:
 
 	# Description (localized) - Texto más compacto
 	var desc_label = Label.new()
-	desc_label.text = _get_localized_field(char_data, "description", "")
+	desc_label.text = L("characters.%s.description" % char_data.id)
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.add_theme_font_size_override("font_size", 13)
@@ -601,7 +601,7 @@ func _update_stats_display() -> void:
 	vbox.add_child(weapon_passive_hbox)
 
 	var weapon_data = WeaponDatabase.WEAPONS.get(char_data.starting_weapon, {})
-	var weapon_name = _get_localized_field(weapon_data, "name", char_data.starting_weapon)
+	var weapon_name = L("weapons.%s.name" % char_data.starting_weapon)
 	var weapon_label_text = L("ui.character_select.starting_weapon")
 
 	var weapon_label = Label.new()
@@ -611,7 +611,7 @@ func _update_stats_display() -> void:
 	weapon_passive_hbox.add_child(weapon_label)
 
 	var passive = char_data.get("passive", {})
-	var passive_name = _get_localized_field(passive, "name", "None")
+	var passive_name = L("characters.%s.passive_name" % char_data.id)
 	var passive_label_text = L("ui.character_select.passive")
 	var passive_label = Label.new()
 	passive_label.text = passive_label_text + ": " + passive_name

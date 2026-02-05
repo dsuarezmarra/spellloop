@@ -932,5 +932,50 @@ static func get_rarity_color(rarity: String) -> Color:
 	return RARITY_COLORS.get(rarity, Color.WHITE)
 
 static func get_rarity_name(rarity: String) -> String:
-	"""Obtener nombre de rareza en español"""
-	return RARITY_NAMES.get(rarity, "Desconocido")
+	"""Obtener nombre de rareza localizado"""
+	var key = "rarities." + rarity
+	var result = _L(key)
+	# Si la clave no existe en localization, usar fallback
+	if result == key:
+		return RARITY_NAMES.get(rarity, _L("rarities.unknown"))
+	return result
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LOCALIZACIÓN HELPERS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+static func _L(key: String, args: Array = []) -> String:
+	"""Helper para acceder a Localization desde funciones estáticas"""
+	var loc = Engine.get_main_loop().root.get_node_or_null("/root/Localization")
+	if loc and loc.has_method("L"):
+		return loc.L(key, args)
+	return key
+
+static func get_upgrade_name(upgrade_id: String) -> String:
+	"""Obtener nombre localizado de un upgrade"""
+	var key = "upgrades." + upgrade_id + ".name"
+	var result = _L(key)
+	# Si no hay traducción, usar el nombre hardcodeado como fallback
+	if result == key:
+		var upgrade = get_upgrade(upgrade_id)
+		return upgrade.get("name", upgrade_id)
+	return result
+
+static func get_upgrade_description(upgrade_id: String) -> String:
+	"""Obtener descripción localizada de un upgrade"""
+	var key = "upgrades." + upgrade_id + ".description"
+	var result = _L(key)
+	# Si no hay traducción, usar la descripción hardcodeada como fallback
+	if result == key:
+		var upgrade = get_upgrade(upgrade_id)
+		return upgrade.get("description", "")
+	return result
+
+static func get_upgrade_localized(upgrade_id: String) -> Dictionary:
+	"""Obtener upgrade con nombre y descripción localizados"""
+	var upgrade = get_upgrade(upgrade_id).duplicate()
+	if upgrade.is_empty():
+		return {}
+	upgrade["name"] = get_upgrade_name(upgrade_id)
+	upgrade["description"] = get_upgrade_description(upgrade_id)
+	return upgrade

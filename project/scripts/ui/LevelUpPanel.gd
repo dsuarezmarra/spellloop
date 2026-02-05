@@ -231,7 +231,7 @@ func _create_ui() -> void:
 
 	# === AYUDA DE NAVEGACIÓN ===
 	var nav_help = Label.new()
-	nav_help.text = "← → Navegar   |   ↑ ↓ Cambiar fila   |   ENTER Confirmar"
+	nav_help.text = Localization.L("ui.level_up.nav_help")
 	nav_help.add_theme_font_size_override("font_size", 12)
 	nav_help.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
 	nav_help.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -762,7 +762,7 @@ func _show_confirm_modal() -> void:
 	
 	# Icono y título
 	var title_label = Label.new()
-	title_label.text = "⚠️ ¿Salir sin elegir mejora?"
+	title_label.text = "⚠️ " + Localization.L("ui.level_up.skip_confirm_title")
 	title_label.add_theme_font_size_override("font_size", 22)
 	title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -770,7 +770,7 @@ func _show_confirm_modal() -> void:
 	
 	# Mensaje
 	var msg_label = Label.new()
-	msg_label.text = "Perderás esta oportunidad de mejora."
+	msg_label.text = Localization.L("ui.level_up.skip_confirm_message")
 	msg_label.add_theme_font_size_override("font_size", 16)
 	msg_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
 	msg_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -785,7 +785,7 @@ func _show_confirm_modal() -> void:
 	# Botón Cancelar (volver a elegir)
 	var cancel_btn = Button.new()
 	cancel_btn.name = "CancelBtn"
-	cancel_btn.text = "Volver a elegir"
+	cancel_btn.text = Localization.L("ui.level_up.back_to_choose")
 	cancel_btn.custom_minimum_size = Vector2(150, 45)
 	cancel_btn.add_theme_font_size_override("font_size", 14)
 	cancel_btn.focus_mode = Control.FOCUS_NONE
@@ -797,7 +797,7 @@ func _show_confirm_modal() -> void:
 	# Botón Confirmar (perder mejora)
 	var confirm_btn = Button.new()
 	confirm_btn.name = "ConfirmBtn"
-	confirm_btn.text = "Perder mejora"
+	confirm_btn.text = Localization.L("ui.level_up.lose_upgrade")
 	confirm_btn.custom_minimum_size = Vector2(150, 45)
 	confirm_btn.add_theme_font_size_override("font_size", 14)
 	confirm_btn.focus_mode = Control.FOCUS_NONE
@@ -900,10 +900,10 @@ const BANISH_COLOR = Color(1.0, 0.3, 0.3)  # Rojo para modo eliminar
 func _update_hint_text() -> void:
 	if hint_label:
 		if banish_mode:
-			hint_label.text = "❌ MODO ELIMINAR: Selecciona qué mejora quitar (ESC para cancelar)"
+			hint_label.text = "❌ " + Localization.L("ui.level_up.banish_mode_hint")
 			hint_label.add_theme_color_override("font_color", BANISH_COLOR)
 		else:
-			hint_label.text = "Elige una mejora para continuar"
+			hint_label.text = Localization.L("ui.level_up.choose_upgrade")
 			hint_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 
 func _update_all_visuals() -> void:
@@ -935,14 +935,13 @@ func _update_all_visuals() -> void:
 			style.set_border_width_all(2)
 		panel.add_theme_stylebox_override("panel", style)
 
-		var indicator = panel.find_child("Indicator", true, false) as Label
 		if indicator:
 			indicator.visible = is_selected
 			if banish_mode:
-				indicator.text = "❌ ELIMINAR ❌"
+				indicator.text = "❌ " + Localization.L("ui.level_up.delete") + " ❌"
 				indicator.add_theme_color_override("font_color", BANISH_COLOR)
 			else:
-				indicator.text = "▲ ENTER ▲"
+				indicator.text = Localization.L("ui.level_up.confirm_indicator")
 				indicator.add_theme_color_override("font_color", SELECTED_COLOR)
 
 	# Actualizar botones (ocultos en modo eliminar)
@@ -1271,7 +1270,7 @@ func _start_panel_spin(panel: Control, _index: int) -> void:
 		name_label.text = "???"
 		name_label.modulate.a = 0.5
 	if desc_label:
-		desc_label.text = "Girando..."
+		desc_label.text = Localization.L("ui.level_up.spinning")
 		desc_label.modulate.a = 0.3
 	if type_label:
 		type_label.text = "🎰"

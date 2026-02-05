@@ -219,7 +219,7 @@ func _on_streak_finished(total_value: int, max_multiplier: float):
 		popup.size = Vector2(200, 100)
 	
 	var title = Label.new()
-	title.text = "HYPE COMPLETE!"
+	title.text = Localization.L("ui.hud.hype_complete")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 24)
 	title.add_theme_color_override("font_color", Color(1.0, 0.84, 0.0)) # Dorado
@@ -228,7 +228,7 @@ func _on_streak_finished(total_value: int, max_multiplier: float):
 	popup.add_child(title)
 	
 	var result = Label.new()
-	result.text = "Total: %d 🪙\nMax Combo: x%.2f" % [total_value, max_multiplier]
+	result.text = Localization.L("ui.hud.hype_results", [total_value, max_multiplier])
 	result.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	result.add_theme_font_size_override("font_size", 18)
 	result.add_theme_constant_override("outline_size", 4)
@@ -336,7 +336,7 @@ func update_exp(current: int, max_val: int):
 
 func update_level(level: int):
 	if level_label:
-		level_label.text = "LVL %d" % level
+		level_label.text = Localization.L("ui.hud.level", [level])
 
 func update_time(seconds: float):
 	if time_label:

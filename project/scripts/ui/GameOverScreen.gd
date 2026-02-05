@@ -144,29 +144,29 @@ func _display_stats() -> void:
 	var time_survived = final_stats.get("time", 0.0)
 	var minutes = int(time_survived) / 60
 	var seconds = int(time_survived) % 60
-	_add_stat_line("⏱️ Tiempo", "%02d:%02d" % [minutes, seconds])
+	_add_stat_line(Localization.L("ui.game_over.time"), "%02d:%02d" % [minutes, seconds])
 
 	# Nivel alcanzado
 	var level = final_stats.get("level", 1)
-	_add_stat_line("⭐ Nivel", str(level))
+	_add_stat_line(Localization.L("ui.game_over.level"), str(level))
 
 	# Enemigos eliminados
 	var kills = final_stats.get("kills", 0)
-	_add_stat_line("💀 Enemigos", str(kills))
+	_add_stat_line(Localization.L("ui.game_over.enemies"), str(kills))
 
 	# XP total obtenida
 	var xp = final_stats.get("xp_total", 0)
-	_add_stat_line("✨ XP Total", str(xp))
+	_add_stat_line(Localization.L("ui.game_over.xp_total"), str(xp))
 
 	# Oro recogido
 	var gold = final_stats.get("gold", 0)
 	if gold > 0:
-		_add_stat_line("🪙 Oro", str(gold))
+		_add_stat_line(Localization.L("ui.game_over.gold"), str(gold))
 
 	# Daño total
 	var damage = final_stats.get("damage_dealt", 0)
 	if damage > 0:
-		_add_stat_line("⚔️ Daño Total", str(damage))
+		_add_stat_line(Localization.L("ui.game_over.damage_total"), str(damage))
 
 func _add_stat_line(label_text: String, value_text: String) -> void:
 	var hbox = HBoxContainer.new()
