@@ -189,7 +189,7 @@ func _build_ui() -> void:
 	bg.custom_minimum_size = screen_size + Vector2(extra, extra)
 	bg.size = screen_size + Vector2(extra, extra)
 	# Centrar base (-extra/2) y luego ajustar: +X=derecha, -Y=arriba
-	bg.position = Vector2(-extra/2 + 60, -extra/2 - 40)
+	bg.position = Vector2(-extra/2 + 75, -extra/2 - 40)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bg_container.add_child(bg)
 
