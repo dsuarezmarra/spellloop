@@ -48,6 +48,18 @@ var AOE_CONFIG = {
 	"rune_blast": {
 		"path": VFX_BASE_PATH + "aoe/rune/aoe_rune_blast_spritesheet.png",
 		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.4
+	},
+	"damage_zone_fire": {
+		"path": VFX_BASE_PATH + "aoe/fire/aoe_damage_zone_fire_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.8
+	},
+	"damage_zone_void": {
+		"path": VFX_BASE_PATH + "aoe/void/aoe_damage_zone_void_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.8
+	},
+	"elite_slam": {
+		"path": VFX_BASE_PATH + "aoe/earth/aoe_elite_slam_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.5
 	}
 }
 
@@ -76,6 +88,10 @@ var PROJECTILE_CONFIG = {
 	"poison": {
 		"path": VFX_BASE_PATH + "projectiles/poison/projectile_poison_spritesheet.png",
 		"hframes": 4, "vframes": 2, "frame_size": Vector2(64, 64), "duration": 0.4
+	},
+	"homing_orb": {
+		"path": VFX_BASE_PATH + "projectiles/void/projectile_homing_orb_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.5
 	}
 }
 
@@ -100,6 +116,14 @@ var AURA_CONFIG = {
 	"enrage": {
 		"path": VFX_BASE_PATH + "auras/aura_enrage_spritesheet.png",
 		"hframes": 6, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.6
+	},
+	"elite_rage": {
+		"path": VFX_BASE_PATH + "auras/aura_elite_rage_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.7
+	},
+	"elite_shield": {
+		"path": VFX_BASE_PATH + "auras/aura_elite_shield_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.8
 	}
 }
 
@@ -152,6 +176,14 @@ var BOSS_CONFIG = {
 	"rune_shield": {
 		"path": VFX_BASE_PATH + "boss_specific/guardian_runas/boss_rune_shield_spritesheet.png",
 		"hframes": 4, "vframes": 2, "frame_size": Vector2(192, 192), "duration": 0.5
+	},
+	"orbital": {
+		"path": VFX_BASE_PATH + "boss_specific/minotauro/boss_orbital_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.6
+	},
+	"phase_change": {
+		"path": VFX_BASE_PATH + "boss_specific/minotauro/boss_phase_change_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 1.0
 	}
 }
 
@@ -620,3 +652,61 @@ func get_all_projectile_elements() -> Array:
 func clear_cache() -> void:
 	"""Limpiar cache de texturas (para hot-reload)"""
 	_texture_cache.clear()
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MÉTODOS PARA SPRITES ADJUNTOS A NODOS
+# ══════════════════════════════════════════════════════════════════════════════
+
+func create_animated_sprite(vfx_type: String, category: String) -> AnimatedSprite2D:
+	"""Crear un AnimatedSprite2D que puede adjuntarse a cualquier nodo"""
+	var config: Dictionary = {}
+	
+	match category:
+		"aoe":
+			config = AOE_CONFIG.get(vfx_type, {})
+		"projectile":
+			config = PROJECTILE_CONFIG.get(vfx_type, {})
+		"aura":
+			config = AURA_CONFIG.get(vfx_type, {})
+		"boss":
+			config = BOSS_CONFIG.get(vfx_type, {})
+		"telegraph":
+			config = TELEGRAPH_CONFIG.get(vfx_type, {})
+		"beam":
+			config = BEAM_CONFIG.get(vfx_type, {})
+	
+	if config.is_empty():
+		return null
+	
+	var tex = _get_texture(config["path"])
+	if not tex:
+		return null
+	
+	var sprite_frames = _create_sprite_frames_from_sheet(tex, config, "default", true)
+	
+	var sprite = AnimatedSprite2D.new()
+	sprite.sprite_frames = sprite_frames
+	sprite.play("default")
+	sprite.centered = true
+	
+	return sprite
+
+func spawn_projectile_attached(projectile_type: String, parent: Node2D) -> AnimatedSprite2D:
+	"""Crear sprite de proyectil y adjuntarlo a un nodo padre"""
+	var config = PROJECTILE_CONFIG.get(projectile_type, {})
+	if config.is_empty():
+		return null
+	
+	var tex = _get_texture(config["path"])
+	if not tex:
+		return null
+	
+	var sprite_frames = _create_sprite_frames_from_sheet(tex, config, "default", true)
+	
+	var sprite = AnimatedSprite2D.new()
+	sprite.sprite_frames = sprite_frames
+	sprite.play("default")
+	sprite.centered = true
+	
+	parent.add_child(sprite)
+	return sprite

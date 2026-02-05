@@ -500,7 +500,12 @@ func _activate_elite_shield() -> void:
 	# print("[Elite] ðŸ‘‘ðŸ›¡ï¸ %s activÃ³ Elite Shield! (%d cargas)" % [enemy.name, elite_shield_charges])
 
 func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
-	"""Visual ÉPICO de slam élite (Mejorado)"""
+	"""Visual ÉPICO de slam élite - Usa VFXManager si disponible"""
+	# Intentar VFXManager primero
+	if _try_spawn_via_vfxmanager("elite_slam", "aoe", center, radius, 0.5):
+		return
+	
+	# Fallback: Visual procedural
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 65
@@ -566,10 +571,15 @@ func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
 	)
 
 func _spawn_elite_rage_visual() -> void:
-	"""Visual ÉPICO de rage élite (Mejorado)"""
+	"""Visual ÉPICO de rage élite - Usa VFXManager si disponible"""
 	if not is_instance_valid(enemy):
 		return
 	
+	# Intentar VFXManager primero (aura que sigue al enemigo)
+	if _try_spawn_via_vfxmanager("elite_rage", "aura", enemy.global_position, 75.0, 1.0):
+		return
+	
+	# Fallback: Visual procedural
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 65
@@ -630,11 +640,15 @@ func _spawn_elite_rage_visual() -> void:
 	)
 
 func _spawn_elite_shield_visual() -> void:
-	"""Visual de escudo Ã©lite"""
+	"""Visual de escudo élite - Usa VFXManager si disponible"""
 	if not is_instance_valid(enemy):
 		return
 	
-	# El efecto se adjunta al enemigo
+	# Intentar VFXManager primero (aura que sigue al enemigo)
+	if _try_spawn_via_vfxmanager("elite_shield", "aura", enemy.global_position, 50.0, 12.0):
+		return
+	
+	# Fallback: El efecto se adjunta al enemigo
 	var visual = Node2D.new()
 	visual.name = "EliteShieldVisual"
 	enemy.add_child(visual)
@@ -1616,7 +1630,7 @@ func _boss_leave_damage_trail() -> void:
 	)
 
 func _spawn_boss_orbitals(count: int) -> void:
-	"""Crear orbitales que giran alrededor del boss"""
+	"""Crear orbitales que giran alrededor del boss - Usa VFXManager para visual"""
 	if not is_instance_valid(enemy):
 		return
 	
@@ -1629,6 +1643,7 @@ func _spawn_boss_orbitals(count: int) -> void:
 	var elem = _get_enemy_element()
 	var color = _get_element_color(elem)
 	var damage = int(attack_damage * 0.3)
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
 	
 	for i in range(count):
 		var orbital = Area2D.new()
@@ -1643,9 +1658,19 @@ func _spawn_boss_orbitals(count: int) -> void:
 		shape.shape = circle
 		orbital.add_child(shape)
 		
-		# Visual
-		var visual = Node2D.new()
-		orbital.add_child(visual)
+		# Intentar usar VFXManager para el visual
+		var using_vfx = false
+		if vfx_mgr and vfx_mgr.has_method("create_animated_sprite"):
+			var sprite = vfx_mgr.create_animated_sprite("orbital", "boss")
+			if sprite:
+				sprite.scale = Vector2(0.3, 0.3)  # Escalar para que quepa como orbital
+				orbital.add_child(sprite)
+				using_vfx = true
+		
+		# Visual fallback procedural
+		if not using_vfx:
+			var visual = Node2D.new()
+			orbital.add_child(visual)
 		
 		visual.draw.connect(func():
 			visual.draw_circle(Vector2.ZERO, 18, Color(color.r, color.g, color.b, 0.4))
@@ -3475,25 +3500,34 @@ func _create_boss_projectile_internal(direction: Vector2, damage: int, element: 
 		projectile.initialize(direction, projectile_speed * 1.2, damage, 5.0, element)
 
 func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float, element: String) -> void:
-	"""Crear orbe Ã‰PICO que persigue al jugador"""
+	"""Crear orbe ÉPICO que persigue al jugador - Usa VFXManager para visual"""
 	if not is_instance_valid(enemy) or not is_instance_valid(player):
 		return
 	
-	var orb = Node2D.new()  # Usar Node2D simple, colisiÃ³n por distancia
+	var orb = Node2D.new()  # Usar Node2D simple, colisión por distancia
 	orb.name = "HomingOrb"
 	orb.top_level = true  # No se mueve con el enemigo si este muere
 	orb.global_position = pos
 	orb.z_index = 65  # MUY visible, encima de casi todo
 	
-	# Visual mejorado - MUY GRANDE Y BRILLANTE
-	var visual = Node2D.new()
-	orb.add_child(visual)
-	var color = _get_element_color(element)
-	var bright_color = Color(min(color.r + 0.4, 1.0), min(color.g + 0.4, 1.0), min(color.b + 0.4, 1.0), 1.0)
-	var orb_time = 0.0
+	# Intentar usar VFXManager para el visual del orbe
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	var using_vfx = false
+	if vfx_mgr and vfx_mgr.has_method("spawn_projectile_attached"):
+		var sprite = vfx_mgr.spawn_projectile_attached("homing_orb", orb)
+		if sprite:
+			using_vfx = true
 	
-	# Trail del orbe
-	var trail_positions: Array = []
+	# Visual fallback si VFXManager no tiene el método o falla
+	if not using_vfx:
+		var visual = Node2D.new()
+		orb.add_child(visual)
+		var color = _get_element_color(element)
+		var bright_color = Color(min(color.r + 0.4, 1.0), min(color.g + 0.4, 1.0), min(color.b + 0.4, 1.0), 1.0)
+		var orb_time = 0.0
+		
+		# Trail del orbe
+		var trail_positions: Array = []
 	var max_trail = 12
 	
 	visual.draw.connect(func():
@@ -3650,15 +3684,22 @@ func _spawn_orb_impact_effect(pos: Vector2, color: Color) -> void:
 	)
 
 func _spawn_damage_zone(pos: Vector2, radius: float, dps: int, duration: float, element: String) -> void:
-	"""Crear zona de daÃ±o persistente"""
+	"""Crear zona de daño persistente - Usa VFXManager para visual"""
 	if not is_instance_valid(enemy) or not is_instance_valid(player):
 		return
 	
+	# Determinar tipo de zona según elemento
+	var zone_type = "damage_zone_fire" if element in ["fire", "lava"] else "damage_zone_void"
+	
+	# Intentar spawn visual via VFXManager (solo para el efecto visual)
+	_try_spawn_via_vfxmanager(zone_type, "aoe", pos, radius, duration)
+	
+	# Crear zona de daño (lógica de daño siempre se ejecuta)
 	var zone = Node2D.new()
 	zone.name = "DamageZone"
 	zone.global_position = pos
 	
-	# Visual
+	# Visual fallback si VFXManager no está disponible
 	var visual = Node2D.new()
 	zone.add_child(visual)
 	var color = _get_element_color(element)
@@ -3712,10 +3753,15 @@ func _spawn_damage_zone(pos: Vector2, radius: float, dps: int, duration: float, 
 # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 func _spawn_phase_change_effect() -> void:
-	"""Efecto visual de cambio de fase Ã‰PICO"""
+	"""Efecto visual de cambio de fase - Usa VFXManager si disponible"""
 	if not is_instance_valid(enemy):
 		return
 	
+	# Intentar VFXManager primero
+	if _try_spawn_via_vfxmanager("phase_change", "boss", enemy.global_position, 150.0, 1.0):
+		return
+	
+	# Fallback: Visual procedural épico
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 70  # Encima de todo
