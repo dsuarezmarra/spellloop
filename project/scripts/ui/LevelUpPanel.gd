@@ -176,7 +176,7 @@ func _create_ui() -> void:
 
 	# === TÍTULO ===
 	title_label = Label.new()
-	title_label.text = "⬆️ ¡SUBISTE DE NIVEL! ⬆️"
+	title_label.text = Localization.L("ui.level_up.title")
 	title_label.add_theme_font_size_override("font_size", 32)
 	title_label.add_theme_color_override("font_color", SELECTED_COLOR)
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -185,7 +185,7 @@ func _create_ui() -> void:
 	# === INSTRUCCIONES ===
 	hint_label = Label.new()
 	hint_label.name = "HintLabel"
-	hint_label.text = "Elige una mejora para continuar"
+	hint_label.text = Localization.L("ui.level_up.subtitle")
 	hint_label.add_theme_font_size_override("font_size", 14)
 	hint_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

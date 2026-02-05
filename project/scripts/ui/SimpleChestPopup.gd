@@ -110,7 +110,7 @@ func _ready():
 	
 	# Título
 	var title = Label.new()
-	title.text = "¡Escoge tu recompensa!"
+	title.text = Localization.L("ui.chest.title")
 	title.add_theme_font_size_override("font_size", 24)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_main_vbox.add_child(title)

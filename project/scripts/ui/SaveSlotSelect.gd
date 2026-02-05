@@ -108,7 +108,7 @@ func _ready() -> void:
 		
 	# Aplicar fuente personalizada y estilo al título
 	if title_label:
-		title_label.text = "SELECCIONA TU PARTIDA"
+		title_label.text = Localization.L("ui.save_slots.title")
 		var font_title = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
 		if font_title:
 			title_label.add_theme_font_override("font", font_title)
@@ -180,7 +180,7 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	
 	var slot_title = Label.new()
 	slot_title.name = "SlotTitle"
-	slot_title.text = "SLOT %d" % (slot_index + 1)
+	slot_title.text = Localization.L("ui.save_slots.slot", [slot_index + 1])
 	slot_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var font_slot = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
 	if font_slot:
@@ -230,7 +230,7 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	# Botón Principal (CONTINUAR/CREAR) - Hueco izquierdo del frame
 	var select_btn = Button.new()
 	select_btn.name = "SelectButton"
-	select_btn.text = "CREAR"
+	select_btn.text = Localization.L("common.new")
 	# Posición absoluta sobre el hueco izquierdo del frame (escalado)
 	select_btn.position = Vector2(35, 472)  # Ajustado para slot más grande
 	select_btn.custom_minimum_size = Vector2(150, 45)
@@ -289,7 +289,7 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	# Botón Secundario (BORRAR) - Hueco derecho del frame (solo visible si hay datos)
 	var delete_btn = Button.new()
 	delete_btn.name = "DeleteButton"
-	delete_btn.text = "BORRAR"
+	delete_btn.text = Localization.L("common.delete")
 	# Posición absoluta sobre el hueco derecho del frame (escalado)
 	delete_btn.position = Vector2(195, 472)  # Ajustado para slot más grande
 	delete_btn.custom_minimum_size = Vector2(150, 45)

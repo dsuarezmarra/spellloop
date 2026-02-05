@@ -100,7 +100,7 @@ func _create_ui() -> void:
 	vbox.add_child(header)
 
 	var title = Label.new()
-	title.text = "⏸️ PAUSA"
+	title.text = Localization.L("ui.pause.title")
 	title.add_theme_font_size_override("font_size", 28)
 	title.add_theme_color_override("font_color", SELECTED_TAB)
 	header.add_child(title)
@@ -118,7 +118,7 @@ func _create_ui() -> void:
 	tabs_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(tabs_container)
 
-	var tab_names = ["📊 Stats", "⚔️ Armas", "🎒 Objetos"]
+	var tab_names = [Localization.L("ui.pause.tab_stats"), Localization.L("ui.pause.tab_weapons"), Localization.L("ui.pause.tab_items")]
 	for i in range(tab_names.size()):
 		var btn = Button.new()
 		btn.text = tab_names[i]
@@ -151,7 +151,7 @@ func _create_ui() -> void:
 
 	var resume_btn = Button.new()
 	resume_btn.name = "ResumeButton"
-	resume_btn.text = ">  Continuar"
+	resume_btn.text = ">  " + Localization.L("ui.pause.resume")
 	resume_btn.custom_minimum_size = Vector2(180, 45)
 	resume_btn.add_theme_font_size_override("font_size", 18)
 	resume_btn.pressed.connect(_on_resume_pressed)
@@ -162,7 +162,7 @@ func _create_ui() -> void:
 
 	var options_btn = Button.new()
 	options_btn.name = "OptionsButton"
-	options_btn.text = "*  Opciones"
+	options_btn.text = "*  " + Localization.L("ui.pause.options")
 	options_btn.custom_minimum_size = Vector2(180, 45)
 	options_btn.add_theme_font_size_override("font_size", 18)
 	options_btn.pressed.connect(_on_options_pressed)
@@ -173,7 +173,7 @@ func _create_ui() -> void:
 
 	var quit_btn = Button.new()
 	quit_btn.name = "QuitButton"
-	quit_btn.text = "#  Menu"
+	quit_btn.text = "#  " + Localization.L("common.quit")
 	quit_btn.custom_minimum_size = Vector2(180, 45)
 	quit_btn.add_theme_font_size_override("font_size", 18)
 	quit_btn.pressed.connect(_on_quit_pressed)
@@ -343,7 +343,7 @@ func _update_time_display() -> void:
 	if time_label:
 		var minutes = int(floor(game_time / 60.0))
 		var seconds = int(game_time) % 60
-		time_label.text = "    Tiempo: %02d:%02d" % [minutes, seconds]
+		time_label.text = "    " + Localization.L("ui.pause.time", [minutes, seconds])
 
 func _update_tabs_visual() -> void:
 	for i in range(tab_buttons.size()):
