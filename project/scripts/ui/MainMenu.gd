@@ -35,12 +35,10 @@ func _ready() -> void:
 	_connect_signals()
 	_play_menu_music()
 	_update_resume_button()
-	_play_menu_music()
-	_update_resume_button()
-	_setup_wasd_navigation()
 	_setup_wasd_navigation()
 	_setup_debug_button()
 	_set_icons()
+	_setup_logo_image()
 
 func _set_icons() -> void:
 	if options_button:
@@ -48,6 +46,38 @@ func _set_icons() -> void:
 		options_button.expand_icon = true
 		# Adjust icon spacing or size if needed
 
+
+func _setup_logo_image() -> void:
+	"""Reemplaza el texto del título con el logo PNG si está disponible"""
+	var logo_tex = load("res://assets/ui/logo/logo_loopialike.png")
+	if not logo_tex or not title_label:
+		return
+	
+	# Crear TextureRect para el logo
+	var logo_rect = TextureRect.new()
+	logo_rect.name = "LogoImage"
+	logo_rect.texture = logo_tex
+	logo_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	logo_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	logo_rect.custom_minimum_size = Vector2(600, 300)  # Tamaño apropiado
+	
+	# Copiar posición del label
+	logo_rect.layout_mode = 1
+	logo_rect.anchors_preset = Control.PRESET_CENTER_TOP
+	logo_rect.anchor_left = 0.5
+	logo_rect.anchor_right = 0.5
+	logo_rect.offset_left = -300
+	logo_rect.offset_right = 300
+	logo_rect.offset_top = 40
+	logo_rect.offset_bottom = 200
+	logo_rect.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	
+	# Añadir al mismo padre que el título
+	var parent = title_label.get_parent()
+	if parent:
+		parent.add_child(logo_rect)
+		# Ocultar el label de texto
+		title_label.visible = false
 
 func _setup_debug_button() -> void:
 	if debug_button:
@@ -147,10 +177,10 @@ func _setup_ui() -> void:
 		version_label.text = "v" + GAME_VERSION
 
 	# Cargar Background
-	# Prioridad: JPG (nuevo formato 16:9)
-	var bg_path = "res://assets/ui/backgrounds/main_menu_bg.jpg"
+	# Usar el nuevo fondo procesado
+	var bg_path = "res://assets/ui/backgrounds/main_menu_bg_new.png"
 	if not FileAccess.file_exists(bg_path):
-		bg_path = "res://assets/ui/backgrounds/main_menu_bg.png"
+		bg_path = "res://assets/ui/backgrounds/main_menu_bg.jpg"
 		
 	var bg_tex = load(bg_path)
 	

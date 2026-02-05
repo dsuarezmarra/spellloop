@@ -177,6 +177,9 @@ Resolution: 1920x1080 pixels
 **Tamaño**: 400×550 pixels (vertical card ratio)
 **Fondo**: Transparente
 
+**NOTA IMPORTANTE**: Este marco NO debe contener texto. Los botones "JUGAR" y "BORRAR PARTIDA" 
+se añadirán como elementos UI separados en Godot para permitir localización multi-idioma.
+
 **PROMPT**:
 ```
 Create a fantasy game save slot card frame/border for a roguelike game.
@@ -187,16 +190,33 @@ Design:
 - CORNERS: Small glowing crystals (blue and orange) embedded in the metal
 - TOP: A decorative crown or magical symbol at the top center
 - EDGES: Subtle magical runes etched into the metal border
-- CENTER: Completely empty/transparent (this is where save data will be displayed)
-- BOTTOM: A decorative footer area for the "PLAY" button
+- CENTER: Completely empty/transparent - this is the main content area where save data will be displayed (character avatar, stats, progress)
+- BOTTOM SECTION: Two separate decorative button placeholders at the footer:
+  * LEFT BUTTON AREA: An ornate golden button shape/frame (empty, no text) - for "PLAY" action
+  * RIGHT BUTTON AREA: A smaller, darker/silver button shape/frame (empty, no text) - for "DELETE" action
+  * Both button areas should be clearly defined shapes but WITHOUT any text inside them
+  * The buttons should look like clickable gem/crystal inlays
 - STYLE: Premium fantasy game card, like Hearthstone or MTG card border
 - MATERIAL: Looks like enchanted metal with a slight glow
 - Background: Transparent (PNG with alpha)
+
+CRITICAL: Do NOT include any text, words, or letters anywhere in the design. 
+All text will be added dynamically by the game engine for localization support.
+The button areas should be empty decorative frames/shapes only.
 
 The frame should look expensive, magical, and premium - like holding an ancient artifact.
 
 Size: 400x550 pixels
 ```
+
+**ALTERNATIVA - Assets separados** (recomendado para mayor flexibilidad):
+
+En lugar de un solo marco con botones integrados, considera generar:
+1. `save_slot_card_frame.png` - Solo el marco exterior (sin área de botones)
+2. `btn_slot_play.png` - Botón decorativo para "JUGAR" (vacío, sin texto)
+3. `btn_slot_delete.png` - Botón pequeño para "BORRAR" (vacío, sin texto)
+
+Esto permite posicionar los botones independientemente y reutilizarlos.
 
 ### ═══════════════════════════════════════════════════════════════
 ### ASSET 5: Botón Principal (JUGAR/PLAY)
@@ -206,9 +226,12 @@ Size: 400x550 pixels
 **Tamaño**: 400×80 pixels
 **Fondo**: Transparente
 
+**NOTA IMPORTANTE**: Este botón NO debe contener texto. El texto "JUGAR", "PLAY", etc.
+se añadirá como Label superpuesto en Godot para permitir localización multi-idioma.
+
 **PROMPT**:
 ```
-Create a fantasy game button for the main "PLAY" action in a video game menu.
+Create a fantasy game button background/frame for a video game menu (primary action button).
 
 Design:
 - Shape: Horizontal pill/capsule shape with pointed ends (like a gem or crystal)
@@ -217,8 +240,11 @@ Design:
 - BORDER: Thin metallic gold frame around the crystal
 - EFFECTS: Subtle magical sparkles/particles embedded in the crystal
 - LIGHTING: Inner glow effect, looks like it's powered by magic
-- TEXT AREA: Clear center area for text overlay
+- CENTER: Clear, empty area where text will be overlaid by the game engine
 - Background: Transparent (PNG)
+
+CRITICAL: Do NOT include any text, words, letters, or symbols in the design.
+This is a button BACKGROUND only - text will be added dynamically for localization.
 
 The button should look like pressing it activates powerful magic - inviting and exciting.
 
@@ -230,14 +256,15 @@ Size: 400x80 pixels
 
 **PROMPT**:
 ```
-Create the HOVER/ACTIVE state of a fantasy game button.
+Create the HOVER/ACTIVE state of a fantasy game button background.
 
-Same as the normal button but:
+Same design as the normal button but with enhanced effects:
 - BRIGHTER: The inner glow is more intense
 - MORE PARTICLES: Additional magical sparkles visible
-- SLIGHT SCALE: Appears 5% larger (will be scaled in-game)
 - GLOW: Strong outer glow effect (gold/orange aura around the button)
 - The crystal looks like it's pulsing with energy, ready to be activated
+
+CRITICAL: Do NOT include any text, words, or letters. Empty button background only.
 
 Size: 400x80 pixels, transparent background
 ```
@@ -250,9 +277,12 @@ Size: 400x80 pixels, transparent background
 **Tamaño**: 280×60 pixels
 **Fondo**: Transparente
 
+**NOTA IMPORTANTE**: Este botón NO debe contener texto. El texto "OPCIONES", "SALIR", etc.
+se añadirá como Label superpuesto en Godot para permitir localización multi-idioma.
+
 **PROMPT**:
 ```
-Create a secondary fantasy game button for menu options.
+Create a secondary fantasy game button background/frame for menu options.
 
 Design:
 - Shape: Rounded rectangle, more subtle than the main button
@@ -260,12 +290,33 @@ Design:
 - COLOR: Deep blue-gray (#2C3E50) with silver edges, subtle blue inner glow
 - BORDER: Thin silver metallic frame
 - EFFECTS: Very subtle magical particles, understated elegance
+- CENTER: Clear, empty area where text will be overlaid by the game engine
 - STYLE: Clearly secondary to the main button, but still magical
 - Background: Transparent (PNG)
+
+CRITICAL: Do NOT include any text, words, letters, or symbols in the design.
+This is a button BACKGROUND only - text will be added dynamically for localization.
 
 Should be elegant but not compete with the main action button.
 
 Size: 280x60 pixels
+```
+
+**Nombre archivo**: `btn_secondary_hover.png`
+**Tamaño**: 280×60 pixels
+
+**PROMPT**:
+```
+Create the HOVER state of a secondary fantasy game button background.
+
+Same design as the normal secondary button but:
+- BRIGHTER: Slightly more intense silver/blue glow
+- GLOW: Subtle outer glow effect (silver/cyan aura)
+- More visible magical particles
+
+CRITICAL: Do NOT include any text, words, or letters. Empty button background only.
+
+Size: 280x60 pixels, transparent background
 ```
 
 ### ═══════════════════════════════════════════════════════════════
@@ -355,6 +406,9 @@ Size: 64x64 pixels, transparent background
 **Tamaño**: 500×400 pixels
 **Fondo**: Transparente (solo el marco)
 
+**NOTA IMPORTANTE**: Este marco NO debe contener texto. El nombre del personaje, stats, etc.
+se añadirán como Labels superpuestos en Godot para permitir localización multi-idioma.
+
 **PROMPT**:
 ```
 Create a fantasy UI panel frame for displaying character stats in a game.
@@ -363,13 +417,17 @@ Design:
 - Shape: Rectangular panel with ornate fantasy borders
 - STYLE: Ancient parchment/scroll look combined with magical crystal inlays
 - BORDER: Metallic bronze/gold frame with magical gems at corners
-- TOP: A decorative header area for the character name
+- TOP: A decorative header banner/ribbon area (empty, no text) - for character name overlay
 - CORNERS: Small glowing crystals (blue/purple)
 - TEXTURE: Subtle parchment or leather texture for the background area
+- INTERIOR: Empty content area with semi-transparent dark background
 - OVERALL: Should look like an ancient magical tome page
-- Background of the inner area: Semi-transparent dark (so game content shows through)
 
-Size: 500x400 pixels
+CRITICAL: Do NOT include any text, words, letters, numbers, or stat labels.
+All text content will be added dynamically by the game engine for localization.
+The panel should be a decorative FRAME only with empty content areas.
+
+Size: 500x400 pixels, transparent outer background
 ```
 
 ---
