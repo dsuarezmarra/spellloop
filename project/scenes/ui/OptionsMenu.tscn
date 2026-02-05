@@ -36,7 +36,7 @@ theme_override_constants/separation = 20
 [node name="TitleLabel" type="Label" parent="Panel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "⚙️ OPCIONES"
+text = "OPCIONES"
 horizontal_alignment = 1
 
 [node name="MusicContainer" type="VBoxContainer" parent="Panel/VBox"]

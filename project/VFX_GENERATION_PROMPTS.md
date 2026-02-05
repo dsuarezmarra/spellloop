@@ -1,6 +1,6 @@
 # VFX Asset Generation Prompts
 
-Use these prompts with an AI image generator (Midjourney, DALL-E, Stable Diffusion) to create additional VFX assets for SpellLoop.
+Use these prompts with an AI image generator (Midjourney, DALL-E, Stable Diffusion) to create additional VFX assets for Loopialike.
 
 ---
 

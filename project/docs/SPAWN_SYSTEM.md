@@ -1,4 +1,4 @@
-# Sistema de Spawn y Oleadas - SpellLoop
+# Sistema de Spawn y Oleadas - Loopialike
 
 ## 📋 Resumen
 

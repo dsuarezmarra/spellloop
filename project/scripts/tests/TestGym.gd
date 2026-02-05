@@ -70,7 +70,7 @@ func setup_environment():
 
 func spawn_player():
 	var possible_paths = [
-		"res://scenes/player/SpellloopPlayer.tscn",
+		"res://scenes/player/LoopiaLikePlayer.tscn",
 		"res://scenes/entities/Player.tscn"
 	]
 	

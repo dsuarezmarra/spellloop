@@ -76,7 +76,7 @@ SPECS = {
 # RUTAS
 # =============================================================================
 
-BASE_PATH = Path(r"C:\git\spellloop\project\assets\vfx\abilities")
+BASE_PATH = Path(r"C:\git\loopialike\project\assets\vfx\abilities")
 BACKUP_PATH = BASE_PATH / "_originals_backup"
 REPORT_PATH = BASE_PATH / "_processing_report.json"
 

@@ -1,4 +1,4 @@
-# 🎨 VFX Audit Report - Spellloop
+# 🎨 VFX Audit Report - Loopialike
 
 **Fecha:** 5 de Febrero 2026  
 **Estado:** ⚠️ REQUIERE ATENCIÓN

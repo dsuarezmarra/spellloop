@@ -1,5 +1,5 @@
 extends Node
-# Sistema de Magias y Combinaciones - Spellloop
+# Sistema de Magias y Combinaciones - Loopialike
 # Paleta global de colores: Primary [#8B5CF6, #3B82F6, #EF4444] - Opposite [#FACC15, #F97316, #10B981]
 
 # Tipos base de magia

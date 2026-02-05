@@ -4,7 +4,7 @@ extends SceneTree
 const GameSimulator = preload("res://scripts/tests/core/GameSimulator.gd")
 
 func _init():
-	print("🚀 Iniciando SpellLoop Test Bench...")
+	print("🚀 Iniciando Loopialike Test Bench...")
 	
 	var sim = GameSimulator.new()
 	sim.setup(self)

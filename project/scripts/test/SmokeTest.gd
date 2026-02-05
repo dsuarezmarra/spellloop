@@ -1,5 +1,5 @@
 # SmokeTest.gd
-# Integration test for Spellloop Core Systems
+# Integration test for Loopialike Core Systems
 # Verifies: GameManager, AttackManager, Enemy instantiation, Damage Logic
 extends Node2D
 

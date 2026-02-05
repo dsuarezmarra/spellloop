@@ -114,7 +114,7 @@ func _get_default_translations(language_code: String) -> Dictionary:
 			return {
 				"ui": {
 					"main_menu": {
-						"title": "SPELLLOOP",
+						"title": "LOOPIALIKE",
 						"new_run": "New Run",
 						"continue": "Continue",
 						"settings": "Settings",
@@ -178,7 +178,7 @@ func _get_default_translations(language_code: String) -> Dictionary:
 			return {
 				"ui": {
 					"main_menu": {
-						"title": "SPELLLOOP",
+						"title": "LOOPIALIKE",
 						"new_run": "Nueva Partida",
 						"continue": "Continuar",
 						"settings": "Configuracion",

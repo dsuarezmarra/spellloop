@@ -276,8 +276,8 @@ func _get_player() -> Node:
 	# MÃ©todo 4: Buscar en la estructura del Ã¡rbol
 	var tree = Engine.get_main_loop()
 	if tree and tree.root:
-		# Buscar Game/PlayerContainer/SpellloopPlayer
-		var sp = tree.root.get_node_or_null("Game/PlayerContainer/SpellloopPlayer")
+		# Buscar Game/PlayerContainer/LoopiaLikePlayer
+		var sp = tree.root.get_node_or_null("Game/PlayerContainer/LoopiaLikePlayer")
 		if sp:
 			return sp
 	
@@ -1663,7 +1663,7 @@ func _spawn_boss_orbitals(count: int) -> void:
 		if vfx_mgr and vfx_mgr.has_method("create_animated_sprite"):
 			var sprite = vfx_mgr.create_animated_sprite("orbital", "boss")
 			if sprite:
-				sprite.scale = Vector2(0.3, 0.3)  # Escalar para que quepa como orbital
+				sprite.scale = Vector2(0.3, 0.3)
 				orbital.add_child(sprite)
 				using_vfx = true
 		
@@ -1671,13 +1671,14 @@ func _spawn_boss_orbitals(count: int) -> void:
 		if not using_vfx:
 			var visual = Node2D.new()
 			orbital.add_child(visual)
-		
-		visual.draw.connect(func():
-			visual.draw_circle(Vector2.ZERO, 18, Color(color.r, color.g, color.b, 0.4))
-			visual.draw_circle(Vector2.ZERO, 12, color)
-			visual.draw_circle(Vector2.ZERO, 6, Color(1, 1, 1, 0.9))
-		)
-		visual.queue_redraw()
+			var orb_color = color  # Capturar en scope local
+			
+			visual.draw.connect(func():
+				visual.draw_circle(Vector2.ZERO, 18, Color(orb_color.r, orb_color.g, orb_color.b, 0.4))
+				visual.draw_circle(Vector2.ZERO, 12, orb_color)
+				visual.draw_circle(Vector2.ZERO, 6, Color(1, 1, 1, 0.9))
+			)
+			visual.queue_redraw()
 		
 		# Metadata para movimiento
 		orbital.set_meta("angle", (TAU / count) * i)
@@ -3504,11 +3505,19 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	if not is_instance_valid(enemy) or not is_instance_valid(player):
 		return
 	
-	var orb = Node2D.new()  # Usar Node2D simple, colisión por distancia
+	var orb = Node2D.new()
 	orb.name = "HomingOrb"
-	orb.top_level = true  # No se mueve con el enemigo si este muere
+	orb.top_level = true
 	orb.global_position = pos
-	orb.z_index = 65  # MUY visible, encima de casi todo
+	orb.z_index = 65
+	
+	# Variables de visual (declaradas a nivel de función para acceso en lambdas)
+	var color = _get_element_color(element)
+	var bright_color = Color(min(color.r + 0.4, 1.0), min(color.g + 0.4, 1.0), min(color.b + 0.4, 1.0), 1.0)
+	var orb_visual: Node2D = null
+	var trail_positions: Array = []
+	var max_trail = 12
+	var orb_time_ref = {"value": 0.0}
 	
 	# Intentar usar VFXManager para el visual del orbe
 	var vfx_mgr = get_node_or_null("/root/VFXManager")
@@ -3518,116 +3527,105 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 		if sprite:
 			using_vfx = true
 	
-	# Visual fallback si VFXManager no tiene el método o falla
+	# Visual fallback procedural
 	if not using_vfx:
-		var visual = Node2D.new()
-		orb.add_child(visual)
-		var color = _get_element_color(element)
-		var bright_color = Color(min(color.r + 0.4, 1.0), min(color.g + 0.4, 1.0), min(color.b + 0.4, 1.0), 1.0)
-		var orb_time = 0.0
+		orb_visual = Node2D.new()
+		orb.add_child(orb_visual)
 		
-		# Trail del orbe
-		var trail_positions: Array = []
-	var max_trail = 12
-	
-	visual.draw.connect(func():
-		var pulse = 1.0 + sin(orb_time * 8) * 0.25
-		
-		# Dibujar trail primero (detrÃ¡s del orbe)
-		for i in range(trail_positions.size()):
-			var trail_pos = trail_positions[i] - orb.global_position
-			var trail_alpha = float(i) / max_trail * 0.5
-			var trail_size = 8 * (float(i) / max_trail)
-			visual.draw_circle(trail_pos, trail_size, Color(color.r, color.g, color.b, trail_alpha))
-		
-		# Glow exterior MUY grande
-		visual.draw_circle(Vector2.ZERO, 35 * pulse, Color(color.r, color.g, color.b, 0.15))
-		visual.draw_circle(Vector2.ZERO, 28 * pulse, Color(color.r, color.g, color.b, 0.25))
-		visual.draw_circle(Vector2.ZERO, 22 * pulse, Color(color.r, color.g, color.b, 0.4))
-		
-		# Cuerpo principal mÃ¡s grande
-		visual.draw_circle(Vector2.ZERO, 18 * pulse, color)
-		
-		# Anillo de energÃ­a rotando
-		var ring_angle = orb_time * 5
-		visual.draw_arc(Vector2.ZERO, 22 * pulse, ring_angle, ring_angle + PI * 1.5, 16, bright_color, 2.0)
-		
-		# NÃºcleo brillante
-		visual.draw_circle(Vector2.ZERO, 12 * pulse, bright_color)
-		
-		# Centro blanco brillante
-		visual.draw_circle(Vector2.ZERO, 6, Color(1, 1, 1, 0.98))
-		
-		# PartÃ­culas orbitando
-		for i in range(4):
-			var orbit_angle = orb_time * 6 + (TAU / 4) * i
-			var orbit_pos = Vector2(cos(orbit_angle), sin(orbit_angle)) * 25 * pulse
-			visual.draw_circle(orbit_pos, 4, bright_color)
-	)
-	visual.queue_redraw()
+		orb_visual.draw.connect(func():
+			var pulse = 1.0 + sin(orb_time_ref.value * 8) * 0.25
+			
+			# Dibujar trail
+			for i in range(trail_positions.size()):
+				var trail_pos = trail_positions[i] - orb.global_position
+				var trail_alpha = float(i) / max_trail * 0.5
+				var trail_size = 8 * (float(i) / max_trail)
+				orb_visual.draw_circle(trail_pos, trail_size, Color(color.r, color.g, color.b, trail_alpha))
+			
+			# Glow exterior
+			orb_visual.draw_circle(Vector2.ZERO, 35 * pulse, Color(color.r, color.g, color.b, 0.15))
+			orb_visual.draw_circle(Vector2.ZERO, 28 * pulse, Color(color.r, color.g, color.b, 0.25))
+			orb_visual.draw_circle(Vector2.ZERO, 22 * pulse, Color(color.r, color.g, color.b, 0.4))
+			
+			# Cuerpo principal
+			orb_visual.draw_circle(Vector2.ZERO, 18 * pulse, color)
+			
+			# Anillo de energía
+			var ring_angle = orb_time_ref.value * 5
+			orb_visual.draw_arc(Vector2.ZERO, 22 * pulse, ring_angle, ring_angle + PI * 1.5, 16, bright_color, 2.0)
+			
+			# Núcleo brillante
+			orb_visual.draw_circle(Vector2.ZERO, 12 * pulse, bright_color)
+			orb_visual.draw_circle(Vector2.ZERO, 6, Color(1, 1, 1, 0.98))
+			
+			# Partículas orbitando
+			for i in range(4):
+				var orbit_angle = orb_time_ref.value * 6 + (TAU / 4) * i
+				var orbit_pos = Vector2(cos(orbit_angle), sin(orbit_angle)) * 25 * pulse
+				orb_visual.draw_circle(orbit_pos, 4, bright_color)
+		)
+		orb_visual.queue_redraw()
 	
 	var parent = enemy.get_parent()
 	if parent:
 		parent.add_child(orb)
 	
-	# Trackear el efecto para limpieza cuando muera el boss
 	_track_boss_effect(orb)
 	
 	# Variables para tracking
-	var time_alive = 0.0
+	var time_alive_ref = {"value": 0.0}
 	var player_ref = player
-	var has_hit = false
-	var hit_radius = 28.0  # Radio de colisiÃ³n mÃ¡s grande
+	var has_hit_ref = {"value": false}
+	var hit_radius = 28.0
 	
-	# Usar timer para movimiento y colisiÃ³n por distancia
+	# Timer para movimiento
 	var timer = Timer.new()
 	timer.wait_time = 0.016
 	timer.autostart = true
 	orb.add_child(timer)
 	
 	timer.timeout.connect(func():
-		if not is_instance_valid(orb) or has_hit:
+		if not is_instance_valid(orb) or has_hit_ref.value:
 			return
 		if not is_instance_valid(player_ref):
 			orb.queue_free()
 			return
 		
-		time_alive += 0.016
-		orb_time += 0.016
+		time_alive_ref.value += 0.016
+		orb_time_ref.value += 0.016
 		
-		# Guardar posiciÃ³n para trail
+		# Trail
 		trail_positions.push_front(orb.global_position)
 		if trail_positions.size() > max_trail:
 			trail_positions.pop_back()
 		
-		# Check duraciÃ³n
-		if time_alive >= duration:
-			# Efecto de desvanecimiento
+		# Check duración
+		if time_alive_ref.value >= duration:
 			var tween = orb.create_tween()
 			tween.tween_property(orb, "modulate:a", 0.0, 0.4)
 			tween.tween_callback(orb.queue_free)
 			return
 		
-		# Mover hacia player con aceleraciÃ³n
+		# Mover hacia player
 		var dir = (player_ref.global_position - orb.global_position).normalized()
-		var current_speed = speed * (1.0 + time_alive * 0.3)  # Acelera con el tiempo
+		var current_speed = speed * (1.0 + time_alive_ref.value * 0.3)
 		orb.global_position += dir * current_speed * 0.016
 		
 		# Actualizar visual
-		visual.queue_redraw()
+		if orb_visual and is_instance_valid(orb_visual):
+			orb_visual.queue_redraw()
 		
-		# CHECK POR DISTANCIA (mÃ¡s fiable que Area2D)
+		# Check colisión
 		var dist = orb.global_position.distance_to(player_ref.global_position)
 		if dist < hit_radius:
-			has_hit = true
+			has_hit_ref.value = true
 			if player_ref.has_method("take_damage"):
 				player_ref.call("take_damage", damage, element)
-				# print("[HomingOrb] ðŸ”® Impacto en player: %d daÃ±o (%s)" % [damage, element])
-			# Efecto de impacto Ã‰PICO
 			_spawn_orb_impact_effect(orb.global_position, color)
 			orb.queue_free()
 			return
 	)
+
 
 func _spawn_orb_impact_effect(pos: Vector2, color: Color) -> void:
 	"""Crear efecto visual de impacto de orbe Ã‰PICO"""

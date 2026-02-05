@@ -1,4 +1,4 @@
-# 📊 ANÁLISIS DE BALANCE DE ARMAS - SPELLLOOP
+# 📊 ANÁLISIS DE BALANCE DE ARMAS - LOOPIALIKE
 
 **Fecha:** 4 de enero de 2026  
 **Versión:** 1.0

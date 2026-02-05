@@ -360,7 +360,7 @@ func _setup_background() -> void:
 	bg_layer.add_child(bg)
 
 func _create_player() -> void:
-	var scene = load("res://scenes/player/SpellloopPlayer.tscn")
+	var scene = load("res://scenes/player/LoopiaLikePlayer.tscn")
 	if scene:
 		player = scene.instantiate()
 		add_child(player)

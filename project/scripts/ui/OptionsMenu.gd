@@ -129,7 +129,7 @@ func _refresh_ui_texts() -> void:
 	# Usar find_child para robustez
 	var title_label = find_child("TitleLabel", true, false)
 	if title_label:
-		title_label.text = "⚙️ " + loc.L("ui.options.title")
+		title_label.text = loc.L("ui.options.title")
 	
 	var am = _get_audio_manager()
 	if am:

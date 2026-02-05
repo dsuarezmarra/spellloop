@@ -681,7 +681,7 @@ var global_weapon_stats: GlobalWeaponStats = null
 # Referencia al player para sincronizar vida
 var player_ref: Node = null
 
-# Estado de camino (path bonus) - actualizado por SpellloopPlayer
+# Estado de camino (path bonus) - actualizado por LoopiaLikePlayer
 var _is_on_path: bool = false
 const PATH_SPEED_BONUS_PERCENT: float = 0.50  # +50% velocidad en caminos
 

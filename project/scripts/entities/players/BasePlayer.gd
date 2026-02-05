@@ -245,7 +245,7 @@ func _find_global_managers() -> void:
 	# Buscar GameManager
 	game_manager = _gt.root.get_node_or_null("GameManager")
 	if not game_manager:
-		game_manager = _gt.root.get_node_or_null("SpellloopGame/GameManager")
+		game_manager = _gt.root.get_node_or_null("LoopiaLikeGame/GameManager")
 	
 	# Buscar o crear AttackManager
 	attack_manager = _gt.root.get_node_or_null("AttackManager")
@@ -343,12 +343,12 @@ func _process(delta: float) -> void:
 	
 	# Procesar movimiento (input)
 	if not _is_dying:
-		# IMPORTANTE: El movimiento real se maneja en SpellloopPlayer.gd (wrapper)
+		# IMPORTANTE: El movimiento real se maneja en LoopiaLikePlayer.gd (wrapper)
 		# para evitar conflictos de posición física vs visual.
 		# BasePlayer solo actualiza su estado interno si es necesario.
 		pass
 			
-		# NO LLAMAR move_and_slide() AQUÍ si usamos SpellloopPlayer wrapper
+		# NO LLAMAR move_and_slide() AQUÍ si usamos LoopiaLikePlayer wrapper
 		
 		# -----------------------------------------------------------
 		
@@ -424,7 +424,7 @@ func _process(delta: float) -> void:
 	if _invulnerability_timer > 0:
 		_invulnerability_timer -= delta
 		
-	# El movimiento se maneja en SpellloopPlayer para evitar duplicación
+	# El movimiento se maneja en LoopiaLikePlayer para evitar duplicación
 	_process_debuffs(delta)
 	_update_status_visuals(delta)
 	_update_revive_immunity(delta)

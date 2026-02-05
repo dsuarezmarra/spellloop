@@ -1,8 +1,8 @@
 extends CharacterBody2D
-class_name SpellloopMagicProjectile
+class_name LoopiaLikeMagicProjectile
 
 """
-🔮 PROYECTIL MÁGICO - SPELLLOOP STYLE
+🔮 PROYECTIL MÁGICO - LOOPIALIKE STYLE
 ===================================
 
 Proyectil mágico mejorado para sistema auto-ataque:

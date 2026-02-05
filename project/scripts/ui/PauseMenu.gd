@@ -2607,7 +2607,7 @@ func _save_game_state_for_resume() -> void:
 		# HP del jugador - buscar en varias ubicaciones posibles
 		var health_component = null
 		
-		# 1. Propiedad directa en player_ref (SpellloopPlayer guarda referencia)
+		# 1. Propiedad directa en player_ref (LoopiaLikePlayer guarda referencia)
 		if "health_component" in player_ref and player_ref.health_component:
 			health_component = player_ref.health_component
 		

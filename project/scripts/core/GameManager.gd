@@ -146,11 +146,11 @@ func start_new_run() -> void:
 		var player = null
 		if _gt and _gt.root:
 			# Intentar varias rutas donde podría estar el player
-			player = _gt.root.get_node_or_null("SpellloopGame/SpellloopPlayer")
+			player = _gt.root.get_node_or_null("LoopiaLikeGame/LoopiaLikePlayer")
 			if not player:
-				player = _gt.root.get_node_or_null("SpellloopGame/WorldRoot/Player")
+				player = _gt.root.get_node_or_null("LoopiaLikeGame/WorldRoot/Player")
 			if not player:
-				player = _gt.root.get_node_or_null("SpellloopGame/Player")
+				player = _gt.root.get_node_or_null("LoopiaLikeGame/Player")
 
 		if player:
 			attack_manager.initialize(player)

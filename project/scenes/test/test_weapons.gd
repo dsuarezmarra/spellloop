@@ -105,9 +105,9 @@ func _wait_for_attack_manager() -> void:
 				print("🧪 [WeaponTest] ✓ AttackManager obtenido del GameManager (frame %d)" % attempt)
 				return
 
-		# Opción 2: Buscar en el player (SpellloopPlayer -> WizardPlayer)
+		# Opción 2: Buscar en el player (LoopiaLikePlayer -> WizardPlayer)
 		if player:
-			# SpellloopPlayer tiene wizard_player como hijo
+			# LoopiaLikePlayer tiene wizard_player como hijo
 			var wizard = player.get("wizard_player")
 			if wizard and "attack_manager" in wizard and wizard.attack_manager != null:
 				attack_manager = wizard.attack_manager
@@ -159,7 +159,7 @@ func _draw_arena(arena: Node2D) -> void:
 
 func _create_player() -> void:
 	# Cargar escena del player
-	var player_scene = load("res://scenes/player/SpellloopPlayer.tscn")
+	var player_scene = load("res://scenes/player/LoopiaLikePlayer.tscn")
 	if player_scene:
 		player = player_scene.instantiate()
 		add_child(player)
@@ -172,7 +172,7 @@ func _create_player() -> void:
 		# TESTING: HP máximo para que no muera
 		call_deferred("_set_player_max_hp")
 	else:
-		push_error("[WeaponTest] No se pudo cargar SpellloopPlayer.tscn")
+		push_error("[WeaponTest] No se pudo cargar LoopiaLikePlayer.tscn")
 		_create_fallback_player()
 
 func _set_player_max_hp() -> void:
@@ -189,7 +189,7 @@ func _set_player_max_hp() -> void:
 			wizard.health_component.initialize(99999)
 		print("🧪 [WeaponTest] ✓ Player HP configurado a 99999 (invencible)")
 	
-	# También en SpellloopPlayer
+	# También en LoopiaLikePlayer
 	if "max_hp" in player:
 		player.max_hp = 99999
 	if "hp" in player:
@@ -808,7 +808,7 @@ func _cleanup_player_orbitals() -> void:
 			child.queue_free()
 			print("🧪 [WeaponTest] OrbitalManager eliminado: %s" % child.name)
 
-	# Buscar en el WizardPlayer (SpellloopPlayer tiene wizard_player como hijo)
+	# Buscar en el WizardPlayer (LoopiaLikePlayer tiene wizard_player como hijo)
 	var wizard = player.get("wizard_player") if "wizard_player" in player else null
 	if wizard:
 		for child in wizard.get_children():

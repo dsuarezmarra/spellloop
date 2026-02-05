@@ -1,7 +1,7 @@
 {
 	"version": "1.0.0",
 	"build_number": 1,
-	"release_name": "Spellloop",
+	"release_name": "Loopialike",
 	"release_codename": "Arcane Ascension",
 	"platforms": ["windows", "linux", "steam_deck"],
 	"distribution": "steam",
@@ -57,9 +57,9 @@
 		"public_release": "2025-10-15"
 	},
 	"contact": {
-		"developer": "Spellloop Dev Team",
+		"developer": "Loopialike Dev Team",
 		"publisher": "Independent",
-		"support_email": "support@spellloop.game",
-		"website": "https://spellloop.game"
+		"support_email": "support@loopialike.game",
+		"website": "https://loopialike.game"
 	}
 }

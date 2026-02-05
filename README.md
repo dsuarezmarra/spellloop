@@ -1,4 +1,4 @@
-# Spellloop - Sistema de Biomas con Dithering Orgánico
+# Loopialike - Sistema de Biomas con Dithering Orgánico
 
 ## 📁 Estructura del Proyecto
 

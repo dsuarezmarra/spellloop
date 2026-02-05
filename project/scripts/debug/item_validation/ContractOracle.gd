@@ -1,5 +1,5 @@
 # ContractOracle.gd
-# Sistema de validación por contrato para items de Spellloop
+# Sistema de validación por contrato para items de Loopialike
 #
 # Un CONTRATO es la especificación exacta de lo que un item DEBE hacer:
 # - Qué stats modifica

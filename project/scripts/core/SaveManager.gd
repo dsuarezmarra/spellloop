@@ -445,7 +445,7 @@ func save_dungeon_completion(dungeon_seed: int, rewards: Dictionary, duration: f
 		var val = Time.call("get_unix_time_from_system")
 		if typeof(val) in [TYPE_INT, TYPE_FLOAT]:
 			ts = float(val)
-	# Fallback to GameManager/SpellloopGame helper if available
+	# Fallback to GameManager/LoopiaLikeGame helper if available
 	if ts == null and get_tree() and get_tree().root and get_tree().root.get_node_or_null("GameManager"):
 		var gm = get_tree().root.get_node("GameManager")
 		if gm and gm.has_method("get_unix_time_safe"):

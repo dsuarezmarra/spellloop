@@ -1,7 +1,7 @@
 extends CharacterBody2D
-class_name SpellloopPlayer
+class_name LoopiaLikePlayer
 
-# SpellloopPlayer.gd - Wrapper que carga WizardPlayer dinámicamente
+# LoopiaLikePlayer.gd - Wrapper que carga WizardPlayer dinámicamente
 # Mantiene compatibilidad con la escena y otros scripts
 
 var wizard_player = null
@@ -29,7 +29,7 @@ var _footstep_timer: float = 0.0
 const FOOTSTEP_INTERVAL: float = 0.35
 
 func _ready() -> void:
-	# print("\n[SpellloopPlayer] ===== INICIANDO SPELLLOOP PLAYER =====")
+	# print("\n[LoopiaLikePlayer] ===== INICIANDO LOOPIALIKE PLAYER =====")
 
 	# CRÍTICO: Respetar la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -37,7 +37,7 @@ func _ready() -> void:
 	# Añadir al grupo "player" para que otros sistemas puedan encontrarnos
 	add_to_group("player")
 
-	# Configurar capas de colisión para SpellloopPlayer (quien hace move_and_slide)
+	# Configurar capas de colisión para LoopiaLikePlayer (quien hace move_and_slide)
 	collision_layer = 0
 	set_collision_layer_value(1, true)   # Capa player
 	collision_mask = 0
@@ -48,20 +48,20 @@ func _ready() -> void:
 
 	var wizard_script = load("res://scripts/entities/players/WizardPlayer.gd")
 	if not wizard_script:
-		push_warning("[SpellloopPlayer] ERROR: No se pudo cargar WizardPlayer.gd")
+		push_warning("[LoopiaLikePlayer] ERROR: No se pudo cargar WizardPlayer.gd")
 		return
 
-	# print("[SpellloopPlayer] OK: WizardPlayer.gd cargado")
+	# print("[LoopiaLikePlayer] OK: WizardPlayer.gd cargado")
 
 	wizard_player = wizard_script.new()
 	if not wizard_player:
-		push_warning("[SpellloopPlayer] ERROR: No se pudo instanciar WizardPlayer")
+		push_warning("[LoopiaLikePlayer] ERROR: No se pudo instanciar WizardPlayer")
 		return
 
 	# Pasar referencia al AnimatedSprite2D ANTES de add_child() para que _ready() la tenga disponible
 	wizard_player.animated_sprite = get_node_or_null("AnimatedSprite2D")
 	if not wizard_player.animated_sprite:
-		push_warning("[SpellloopPlayer] ERROR: No se pudo encontrar AnimatedSprite2D")
+		push_warning("[LoopiaLikePlayer] ERROR: No se pudo encontrar AnimatedSprite2D")
 		return
 
 	# CRÍTICO: Anexar WizardPlayer como nodo hijo
@@ -93,7 +93,7 @@ func _ready() -> void:
 	# Forzar actualización inicial de la barra de vida
 	update_health_bar()
 
-	# print("[SpellloopPlayer] ===== OK: SPELLLOOP PLAYER LISTO =====\n")
+	# print("[LoopiaLikePlayer] ===== OK: LOOPIALIKE PLAYER LISTO =====\n")
 	
 	# === P0.1: ORBITAL OVERHEAT SYSTEM ===
 	_init_orbital_overheat()
@@ -293,7 +293,7 @@ func _play_footstep_sound() -> void:
 	# "si tampoco existe, fallback final a sfx_footstep_stone_ground"
 	
 	# We rely on AudioManager.manifest check to see if we need fallback
-	# But SpellloopPlayer doesn't have direct access to manifest dict usually (it's in Singleton).
+	# But LoopiaLikePlayer doesn't have direct access to manifest dict usually (it's in Singleton).
 	# We can use AudioManager.has_method("has_id") or just access manifest properties if exposed.
 	# For now, we trust the generation. But let's add a safe simple fallback if we were to crash.
 	# Actually AudioManager.play checks existence.
@@ -390,7 +390,7 @@ func set_character_sprites(sprite_folder: String) -> void:
 	"""Proxy method to set character sprites on the actual WizardPlayer"""
 	if wizard_player and wizard_player.has_method("set_character_sprites"):
 		wizard_player.set_character_sprites(sprite_folder)
-		print("[SpellloopPlayer] Sprites changed to: %s" % sprite_folder)
+		print("[LoopiaLikePlayer] Sprites changed to: %s" % sprite_folder)
 
 func _play_damage_animation() -> void:
 	# Ya no es necesario aquí, el WizardPlayer maneja los efectos visuales

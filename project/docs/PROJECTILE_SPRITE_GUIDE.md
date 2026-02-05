@@ -150,7 +150,7 @@ Effects:
 Si los sprites generados no tienen las dimensiones correctas, usar el script de procesamiento:
 
 ```powershell
-cd C:\git\spellloop\utils
+cd C:\git\loopialike\utils
 python process_sprites_universal.py --input "ruta/sprites_raw" --output "project/assets/sprites/projectiles/{weapon_id}" --weapon "{weapon_id}"
 ```
 

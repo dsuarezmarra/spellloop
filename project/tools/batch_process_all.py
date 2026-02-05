@@ -8,9 +8,9 @@ import os
 from pathlib import Path
 
 # Configuración base
-BACKUP_DIR = r"C:\git\spellloop\project\assets\vfx\abilities\_originals_backup"
-OUTPUT_DIR = r"C:\git\spellloop\project\assets\vfx\abilities"
-SCRIPT = r"C:\git\spellloop\project\tools\process_spritesheet_smart.py"
+BACKUP_DIR = r"C:\git\loopialike\project\assets\vfx\abilities\_originals_backup"
+OUTPUT_DIR = r"C:\git\loopialike\project\assets\vfx\abilities"
+SCRIPT = r"C:\git\loopialike\project\tools\process_spritesheet_smart.py"
 
 # Configuración de cada tipo de asset
 # Formato: (cols, rows, frame_w, frame_h)
