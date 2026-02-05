@@ -325,13 +325,21 @@ static func _weighted_random(items: Array) -> Dictionary:
 	return items[0].data
 
 static func _generate_weapon_loot(chest_type: int, luck: float, context: Object = null) -> Dictionary:
-	# NUEVO: Verificar si hay slots disponibles antes de ofrecer armas
-	if context and context.has_method("get_weapons"):
-		var equipped = context.get_weapons()
-		var max_slots = 6 # Constante de slots máximos
-		if equipped.size() >= max_slots:
-			# No hay espacio para más armas - dar upgrade o monedas
-			return _generate_upgrade_loot(chest_type, luck)
+	# VERIFICACIÓN: No ofrecer armas si no hay slots disponibles
+	if context:
+		# Método preferido: usar has_available_slot directamente
+		if "has_available_slot" in context:
+			if not context.has_available_slot:
+				# No hay espacio para más armas - dar upgrade o monedas
+				return _generate_upgrade_loot(chest_type, luck, 1, context)
+		# Fallback: calcular manualmente
+		elif context.has_method("get_weapons"):
+			var equipped = context.get_weapons()
+			var max_slots = 6
+			if "max_weapon_slots" in context:
+				max_slots = context.max_weapon_slots
+			if equipped.size() >= max_slots:
+				return _generate_upgrade_loot(chest_type, luck, 1, context)
 	
 	# Seleccionar arma aleatoria
 	var possible_weapons = []
@@ -462,6 +470,14 @@ static func _generate_shop_item(chest_type: int, base_tier: int, luck: float, co
 	
 	var item = {}
 	
+	# Verificar si hay slots disponibles para armas
+	var can_add_weapons = true
+	if context:
+		if "has_available_slot" in context:
+			can_add_weapons = context.has_available_slot
+		elif context.has_method("get_weapons") and "max_weapon_slots" in context:
+			can_add_weapons = context.get_weapons().size() < context.max_weapon_slots
+	
 	# Lógica especial para BOSS
 	if chest_type == ChestType.BOSS:
 		# 50% Boss Item, 30% Weapon, 20% High Tier Upgrade
@@ -469,13 +485,13 @@ static func _generate_shop_item(chest_type: int, base_tier: int, luck: float, co
 		if roll < 0.5:
 			# Intentar sacar item de BossDatabase (si implementado) o fallback a upgrade alto
 			item = _generate_shop_boss_item(luck, context)
-		elif roll < 0.8:
+		elif roll < 0.8 and can_add_weapons:
 			item = _generate_shop_weapon(base_tier, luck)
 		else:
 			item = _generate_shop_upgrade(base_tier, 0, luck, context)
 	else:
 		# Lógica estándar
-		var is_weapon = randf() < 0.2  # 20% armas
+		var is_weapon = randf() < 0.2 and can_add_weapons  # 20% armas solo si hay slots
 		if is_weapon:
 			item = _generate_shop_weapon(base_tier, luck)
 		else:
@@ -626,17 +642,29 @@ static func _generate_shop_boss_item(luck: float, context: Object = null) -> Dic
 	
 	if pool.is_empty():
 		return _generate_shop_upgrade(4, 0, luck, context)
+	
+	# Verificar si hay slots disponibles para armas
+	var can_add_weapons = true
+	if context:
+		if "has_available_slot" in context:
+			can_add_weapons = context.has_available_slot
+		elif context.has_method("get_weapons") and "max_weapon_slots" in context:
+			can_add_weapons = context.get_weapons().size() < context.max_weapon_slots
 		
 	var pick = pool[randi() % pool.size()]
 	
 	match pick:
 		"weapon_upgrade":
-			return _generate_shop_weapon(4, luck) # Tier 4 weapon
+			# Solo dar arma si hay slots disponibles
+			if can_add_weapons:
+				return _generate_shop_weapon(4, luck)
+			else:
+				return _generate_shop_upgrade(4, 0, luck, context)
 		"stat_upgrade_tier_3":
 			return _generate_shop_upgrade(3, 0, luck, context)
 		"stat_upgrade_tier_4":
 			return _generate_shop_upgrade(4, 0, luck, context)
 		"unique_upgrade":
-			return _generate_shop_upgrade(5, 0, luck * 1.5, context) # Try for unique
+			return _generate_shop_upgrade(5, 0, luck * 1.5, context)
 			
 	return _generate_shop_upgrade(3, 0, luck, context)

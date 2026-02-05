@@ -93,6 +93,10 @@ var AURA_CONFIG = {
 		"path": VFX_BASE_PATH + "auras/aura_elite_floor_spritesheet.png",
 		"hframes": 6, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 1.0
 	},
+	"elite_rare": {
+		"path": VFX_BASE_PATH + "auras/aura_elite_rare_spritesheet.png",
+		"hframes": 6, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.8
+	},
 	"enrage": {
 		"path": VFX_BASE_PATH + "auras/aura_enrage_spritesheet.png",
 		"hframes": 6, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.6
