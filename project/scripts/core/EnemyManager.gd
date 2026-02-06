@@ -469,6 +469,13 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2, force: bool = false
 	# Emitir señal de boss si aplica
 	if enemy_data.get("is_boss", false) or type_id.find("boss") != -1:
 		boss_spawned.emit(enemy)
+		# Balance Debug: Log boss spawn for TTK tracking
+		if BalanceDebugger and BalanceDebugger.enabled:
+			BalanceDebugger.log_elite_spawn(enemy.get_instance_id(), true)
+	elif enemy_data.get("is_elite", false):
+		# Balance Debug: Log elite spawn for TTK tracking
+		if BalanceDebugger and BalanceDebugger.enabled:
+			BalanceDebugger.log_elite_spawn(enemy.get_instance_id(), false)
 	
 	# Efecto visual de spawn (humo/puff)
 	_spawn_puff_effect(world_pos, _get_spawn_puff_color(enemy_data))
@@ -490,6 +497,13 @@ var chest_scene: PackedScene = preload("res://scenes/interactables/TreasureChest
 func _on_enemy_died(enemy: Node, type_id: String = "", exp_value: int = 0, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
 	if enemy in active_enemies:
 		active_enemies.erase(enemy)
+
+	# Balance Debug: Log elite/boss death for TTK tracking
+	if BalanceDebugger and BalanceDebugger.enabled:
+		if is_boss:
+			BalanceDebugger.log_elite_death(enemy.get_instance_id(), true)
+		elif is_elite:
+			BalanceDebugger.log_elite_death(enemy.get_instance_id(), false)
 
 	var pos = Vector2.ZERO
 	if is_instance_valid(enemy) and enemy is Node2D:

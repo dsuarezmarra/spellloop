@@ -676,6 +676,9 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 			# ¡Esquivó el daño!
 			# Debug desactivado: print("[%s] ✨ ¡ESQUIVADO! (%.0f%% chance)" % [character_class, dodge_chance * 100])
 			FloatingText.spawn_text(global_position + Vector2(0, -35), "DODGE!", Color(0.3, 0.9, 1.0))
+			# Balance Debug: Log dodge
+			if BalanceDebugger and BalanceDebugger.enabled:
+				BalanceDebugger.log_damage_taken(amount, 0, true)
 			return
 	
 	# I-Frames ahora se aplican en _process_frame_damage (Dinámicos)
@@ -770,6 +773,13 @@ func _process_frame_damage() -> void:
 	# 3. Aplicar al componente de salud
 	if health_component:
 		health_component.take_damage(final_applied_damage)
+		
+		# Balance Debug: Log damage taken (raw = queue total, final = applied)
+		if BalanceDebugger and BalanceDebugger.enabled:
+			var raw_total = 0
+			for hit in _damage_queue:
+				raw_total += hit.amount
+			BalanceDebugger.log_damage_taken(raw_total, final_applied_damage, false)
 		
 		# Notificar estadísticas
 		var player_stats = get_tree().get_first_node_in_group("player_stats")
