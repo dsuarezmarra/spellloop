@@ -471,6 +471,10 @@ func _reinitialize_health_component() -> void:
 func _determine_element_from_id(id: String) -> String:
 	"""Determinar elemento del enemigo basado en su ID"""
 	var lower_id = id.to_lower()
+	
+	# Casos especiales primero
+	if "hechicero" in lower_id:
+		return "fire"  # Hechicero Desgastado es mago de fuego corrupto
 
 	if "fuego" in lower_id or "fire" in lower_id or "minotauro" in lower_id:
 		return "fire"

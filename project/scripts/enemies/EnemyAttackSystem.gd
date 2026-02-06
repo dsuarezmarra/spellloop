@@ -3094,18 +3094,26 @@ func _get_enemy_element() -> String:
 	var enemy_id = enemy.get("enemy_id") if "enemy_id" in enemy else ""
 	var name_lower = enemy_id.to_lower()
 	
-	# Casos especiales primero (antes de la detecciÃ³n genÃ©rica)
+	# Casos especiales primero (antes de la detección genérica)
 	# Hechicero Desgastado es un mago de fuego corrupto
 	if "hechicero_desgastado" in name_lower or "hechicero" in name_lower:
 		return "fire"
+	
+	# Bosses específicos
+	if "guardian" in name_lower and "runas" in name_lower:
+		return "arcane"  # Guardián de Runas usa magia arcana
+	if "conjurador" in name_lower:
+		return "arcane"  # El Conjurador es mago arcano
+	if "minotauro" in name_lower:
+		return "fire"    # Minotauro de Fuego
 	
 	if "fuego" in name_lower or "llamas" in name_lower or "fire" in name_lower:
 		return "fire"
 	if "hielo" in name_lower or "ice" in name_lower or "frost" in name_lower or "cristal" in name_lower:
 		return "ice"
-	if "void" in name_lower or "vacio" in name_lower or "shadow" in name_lower or "sombra" in name_lower:
+	if "void" in name_lower or "vacio" in name_lower or "shadow" in name_lower or "sombra" in name_lower or "corazon" in name_lower:
 		return "dark"
-	if "arcano" in name_lower or "arcane" in name_lower or "mago" in name_lower:
+	if "arcano" in name_lower or "arcane" in name_lower or "mago" in name_lower or "runas" in name_lower:
 		return "arcane"
 	if "veneno" in name_lower or "poison" in name_lower:
 		return "poison"

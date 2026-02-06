@@ -279,6 +279,7 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	delete_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	delete_btn.visible = false  # Solo visible si hay datos
 	delete_btn.focus_mode = Control.FOCUS_ALL
+	delete_btn.size_flags_vertical = Control.SIZE_SHRINK_END  # Alinear al fondo
 	
 	# Estilo COMPLETAMENTE TRANSPARENTE - solo glow en letras rojas
 	var del_style_empty = StyleBoxEmpty.new()
@@ -292,8 +293,8 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 		delete_btn.add_theme_font_override("font", font_btn)
 	delete_btn.add_theme_font_size_override("font_size", 14)
 	# Ajustar posición del texto para centrado perfecto
-	delete_btn.add_theme_constant_override("content_margin_left", 4)  # Moved left
-	delete_btn.add_theme_constant_override("content_margin_top", 8)   # +4px down
+	delete_btn.add_theme_constant_override("content_margin_left", 0)  # Más a la izquierda
+	delete_btn.add_theme_constant_override("content_margin_top", 20)   # Más abajo
 	delete_btn.add_theme_color_override("font_color", Color(0.2, 0.1, 0.1))  # Normal: negro/marrón oscuro
 	delete_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.4, 0.3))  # Hover: rojo brillante
 	delete_btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.5, 0.4))  # Pressed: rojo intenso
@@ -308,7 +309,7 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	# Espaciador para mover BORRAR hacia la derecha
 	var delete_spacer = Control.new()
 	delete_spacer.name = "DeleteSpacer"
-	delete_spacer.custom_minimum_size = Vector2(20, 0)  # Empuja BORRAR a la derecha
+	delete_spacer.custom_minimum_size = Vector2(10, 0)  # Reducido para centrar mejor
 	delete_spacer.visible = false  # Se oculta junto con el botón
 	buttons_container.add_child(delete_spacer)
 	buttons_container.add_child(delete_btn)
