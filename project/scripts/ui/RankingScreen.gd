@@ -1908,9 +1908,15 @@ func _create_detail_weapon_card(weapon_name: String, weapon_data: Dictionary) ->
 	
 	# Obtener datos
 	var element = weapon_data.get("element", "physical")
-	if element is int:
-		var element_names = ["ice", "fire", "lightning", "arcane", "shadow", "nature", "wind", "earth", "light", "void", "physical"]
-		element = element_names[element] if element < element_names.size() else "physical"
+	var element_names = ["ice", "fire", "lightning", "arcane", "shadow", "nature", "wind", "earth", "light", "void", "physical"]
+	
+	# Handle numeric elements (int, float, or numeric string from JSON)
+	if element is int or element is float:
+		var idx = int(element)
+		element = element_names[idx] if idx >= 0 and idx < element_names.size() else "physical"
+	elif element is String and element.is_valid_float():
+		var idx = int(element.to_float())
+		element = element_names[idx] if idx >= 0 and idx < element_names.size() else "physical"
 	element = str(element).to_lower()
 	
 	var weapon_id = str(weapon_data.get("id", ""))
@@ -1963,6 +1969,7 @@ func _create_detail_weapon_card(weapon_name: String, weapon_data: Dictionary) ->
 	# Intentar cargar icono gráfico
 	var icon_loaded = false
 	if weapon_id != "":
+		# Try direct path first
 		var asset_path = "res://assets/icons/%s.png" % weapon_id
 		if ResourceLoader.exists(asset_path):
 			var tex = load(asset_path)
@@ -1974,6 +1981,20 @@ func _create_detail_weapon_card(weapon_name: String, weapon_data: Dictionary) ->
 				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 				icon_container.add_child(icon_rect)
 				icon_loaded = true
+		
+		# Try with weapon_ prefix
+		if not icon_loaded:
+			var prefixed_path = "res://assets/icons/weapon_%s.png" % weapon_id
+			if ResourceLoader.exists(prefixed_path):
+				var tex = load(prefixed_path)
+				if tex:
+					var icon_rect = TextureRect.new()
+					icon_rect.texture = tex
+					icon_rect.custom_minimum_size = Vector2(48, 48)
+					icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+					icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+					icon_container.add_child(icon_rect)
+					icon_loaded = true
 	
 	# Fallback: intentar desde icon path
 	if not icon_loaded:

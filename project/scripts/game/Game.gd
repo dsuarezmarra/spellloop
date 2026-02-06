@@ -1491,6 +1491,13 @@ func _get_character_display_name(character_id: String) -> String:
 	}
 	return names.get(character_id, character_id.capitalize())
 
+func _element_int_to_string(element_val: int) -> String:
+	"""Convert element enum int to string for JSON serialization"""
+	var element_names = ["ice", "fire", "lightning", "arcane", "shadow", "nature", "wind", "earth", "light", "void"]
+	if element_val >= 0 and element_val < element_names.size():
+		return element_names[element_val]
+	return "physical"
+
 func _collect_weapons_data() -> Array:
 	"""Recopilar datos de armas equipadas con stats completos"""
 	var weapons_data: Array = []
@@ -1501,6 +1508,8 @@ func _collect_weapons_data() -> Array:
 		for weapon in weapons_list:
 			var weapon_info: Dictionary = {}
 			if weapon is BaseWeapon:
+				# Convert element int to string for JSON serialization
+				var element_str := _element_int_to_string(weapon.element if "element" in weapon else 0)
 				weapon_info = {
 					"id": weapon.id,
 					"name": weapon.weapon_name,
@@ -1508,7 +1517,7 @@ func _collect_weapons_data() -> Array:
 					"level": weapon.level,
 					"max_level": weapon.max_level if "max_level" in weapon else 8,
 					"is_fused": weapon.is_fused if "is_fused" in weapon else false,
-					"element": weapon.element if "element" in weapon else "",
+					"element": element_str,
 					"icon": weapon.icon_path if "icon_path" in weapon else "",
 					# Stats del arma
 					"damage": weapon.damage if "damage" in weapon else 0,
@@ -1523,6 +1532,11 @@ func _collect_weapons_data() -> Array:
 					"description": weapon.description if "description" in weapon else ""
 				}
 			elif weapon is Dictionary:
+				# Convert element int/float to string for JSON serialization
+				var raw_element = weapon.get("element", "")
+				var element_str_dict := str(raw_element)
+				if raw_element is int or raw_element is float:
+					element_str_dict = _element_int_to_string(int(raw_element))
 				weapon_info = {
 					"id": weapon.get("id", weapon.get("weapon_id", "unknown")),
 					"name": weapon.get("weapon_name", "Unknown"),
@@ -1530,7 +1544,7 @@ func _collect_weapons_data() -> Array:
 					"level": weapon.get("level", 1),
 					"max_level": weapon.get("max_level", 8),
 					"is_fused": weapon.get("is_fused", false),
-					"element": weapon.get("element", ""),
+					"element": element_str_dict,
 					"icon": weapon.get("icon_path", ""),
 					# Stats del arma
 					"damage": weapon.get("damage", 0),

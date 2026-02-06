@@ -267,7 +267,16 @@ func spawn_aoe(aoe_type: String, position: Vector2, radius: float = 100.0, durat
 	if not tex:
 		return _spawn_fallback_aoe(position, radius)
 	
-	return _create_animated_vfx(tex, config, position, radius, duration_override)
+	# FIX: Calculate proper scale factor from radius
+	# radius is in pixels, we need to convert to scale factor
+	# The sprite should have diameter = radius * 2
+	var frame_size = config["frame_size"]
+	var diameter = radius * 2.0
+	var actual_scale_factor = diameter / frame_size.x
+	# Clamp to reasonable values to prevent screen-covering effects
+	actual_scale_factor = clampf(actual_scale_factor, 0.1, 10.0)
+	
+	return _create_animated_vfx(tex, config, position, actual_scale_factor, duration_override)
 
 func spawn_aoe_by_ability(ability_name: String, position: Vector2, radius: float = 100.0) -> Node2D:
 	"""Spawn AOE basado en nombre de habilidad (mapeo automático)"""
@@ -574,12 +583,10 @@ func _create_animated_vfx(tex: Texture2D, config: Dictionary, position: Vector2,
 	sprite.vframes = config["vframes"]
 	sprite.centered = true
 	
-	# Aplicar escala
-	if scale_factor != 1.0:
-		var base_size = config["frame_size"]
-		var target_size = base_size.x * scale_factor
-		var sprite_scale = target_size / base_size.x
-		sprite.scale = Vector2(sprite_scale, sprite_scale)
+	# Aplicar escala (clamped to prevent screen-covering effects)
+	var clamped_scale = clampf(scale_factor, 0.1, 10.0)
+	if clamped_scale != 1.0:
+		sprite.scale = Vector2(clamped_scale, clamped_scale)
 	
 	effect.add_child(sprite)
 	
