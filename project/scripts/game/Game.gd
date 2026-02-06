@@ -53,8 +53,15 @@ var run_stats: Dictionary = {
 	"kills": 0,
 	"xp_total": 0,
 	"gold": 0,
-	"damage_dealt": 0
+	"damage_dealt": 0,
+	"damage_taken": 0,
+	"bosses_killed": 0,
+	"elites_killed": 0,
+	"healing_done": 0
 }
+
+# Versión del juego para compatibilidad de datos
+const GAME_VERSION = "0.1.0-alpha"
 
 # Flag para saber si estamos reanudando una partida
 var _is_resuming: bool = false
@@ -442,6 +449,9 @@ func _get_base_player() -> Node:
 
 func _on_player_took_damage(damage: int, element: String) -> void:
 	"""Callback cuando el player recibe daño - activa feedback visual"""
+	# Trackear daño recibido para estadísticas
+	run_stats["damage_taken"] += damage
+	
 	# Screen shake
 	if camera and camera.has_method("damage_shake"):
 		camera.damage_shake(damage)
@@ -915,6 +925,13 @@ func _update_hud() -> void:
 
 func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
 	run_stats["kills"] += 1
+	
+	# Trackear elites y bosses por separado
+	if is_elite:
+		run_stats["elites_killed"] += 1
+	if is_boss:
+		run_stats["bosses_killed"] += 1
+	
 	if hud and hud.has_method("update_kills"):
 		hud.update_kills(run_stats["kills"])
 
@@ -1310,21 +1327,203 @@ func player_died() -> void:
 		game_over_screen.show_game_over(run_stats)
 
 func _save_run_stats() -> void:
-	"""Guardar estadísticas de la run para persistencia"""
+	"""Guardar estadísticas completas de la run para persistencia y ranking"""
 	var save_manager = get_tree().root.get_node_or_null("SaveManager")
 	if save_manager and save_manager.has_method("save_run_data"):
-		# Convertir run_stats al formato esperado por SaveManager
-		var run_data = {
-			"time_survived": run_stats.get("time", 0.0),
-			"duration": run_stats.get("time", 0.0), # Fix: SaveManager expects "duration"
-			"level_reached": run_stats.get("level", 1),
-			"enemies_defeated": run_stats.get("kills", 0),
-			"gold_collected": run_stats.get("gold", 0),
-			"damage_dealt": run_stats.get("damage_dealt", 0),
-			"xp_total": run_stats.get("xp_total", 0),
-			"score": _calculate_run_score()
-		}
+		# Recopilar TODOS los datos de la partida para el ranking
+		var run_data = _collect_complete_run_data()
 		save_manager.save_run_data(run_data)
+
+func _collect_complete_run_data() -> Dictionary:
+	"""Recopilar datos completos de la partida para ranking y estadísticas"""
+	var run_data: Dictionary = {}
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 1. METADATOS Y VERSIÓN
+	# ═══════════════════════════════════════════════════════════════════════════
+	run_data["game_version"] = GAME_VERSION
+	run_data["timestamp"] = Time.get_unix_time_from_system()
+	
+	# Fecha formateada para filtros (año, mes, día)
+	var datetime = Time.get_datetime_dict_from_system()
+	run_data["date"] = {
+		"year": datetime.get("year", 2026),
+		"month": datetime.get("month", 1),
+		"day": datetime.get("day", 1),
+		"hour": datetime.get("hour", 0),
+		"minute": datetime.get("minute", 0)
+	}
+	
+	# Razón de fin de partida (muerte por defecto, puede sobrescribirse)
+	run_data["end_reason"] = "death"
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 2. DATOS BÁSICOS DE LA PARTIDA
+	# ═══════════════════════════════════════════════════════════════════════════
+	run_data["time_survived"] = run_stats.get("time", 0.0)
+	run_data["duration"] = run_stats.get("time", 0.0)
+	run_data["level_reached"] = run_stats.get("level", 1)
+	run_data["enemies_defeated"] = run_stats.get("kills", 0)
+	run_data["bosses_killed"] = run_stats.get("bosses_killed", 0)
+	run_data["elites_killed"] = run_stats.get("elites_killed", 0)
+	run_data["gold_collected"] = run_stats.get("gold", 0)
+	run_data["damage_dealt"] = run_stats.get("damage_dealt", 0)
+	run_data["damage_taken"] = run_stats.get("damage_taken", 0)
+	run_data["healing_done"] = run_stats.get("healing_done", 0)
+	run_data["xp_total"] = run_stats.get("xp_total", 0)
+	run_data["score"] = _calculate_run_score()
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 2. PERSONAJE
+	# ═══════════════════════════════════════════════════════════════════════════
+	run_data["character_id"] = _get_character_id()
+	run_data["character_name"] = _get_character_display_name(run_data["character_id"])
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 3. ARMAS EQUIPADAS (con niveles y estado de fusión)
+	# ═══════════════════════════════════════════════════════════════════════════
+	run_data["weapons"] = _collect_weapons_data()
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 4. ITEMS/UPGRADES OBTENIDOS
+	# ═══════════════════════════════════════════════════════════════════════════
+	run_data["upgrades"] = _collect_upgrades_data()
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 5. STATS FINALES DEL JUGADOR
+	# ═══════════════════════════════════════════════════════════════════════════
+	run_data["final_stats"] = _collect_final_stats()
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 6. DATOS DEL WAVE MANAGER (fase, tiempo de juego)
+	# ═══════════════════════════════════════════════════════════════════════════
+	if wave_manager:
+		run_data["phase"] = wave_manager.get("current_phase") if "current_phase" in wave_manager else 1
+		run_data["game_time_minutes"] = wave_manager.get("game_time_minutes") if "game_time_minutes" in wave_manager else 0.0
+		run_data["game_time_seconds"] = wave_manager.get("game_time_seconds") if "game_time_seconds" in wave_manager else 0.0
+	else:
+		run_data["phase"] = 1
+		run_data["game_time_minutes"] = 0.0
+		run_data["game_time_seconds"] = 0.0
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 7. MECÁNICAS DE JUEGO (rerolls, banishes usados)
+	# ═══════════════════════════════════════════════════════════════════════════
+	run_data["rerolls_used"] = 3 - remaining_rerolls
+	run_data["banishes_used"] = 2 - remaining_banishes
+	
+	return run_data
+
+func _get_character_id() -> String:
+	"""Obtener ID del personaje actual"""
+	if SessionState and SessionState.has_method("get_character"):
+		return SessionState.get_character()
+	elif player and "character_id" in player:
+		return player.character_id
+	return "frost_mage"  # Default
+
+func _get_character_display_name(character_id: String) -> String:
+	"""Obtener nombre legible del personaje"""
+	var names = {
+		"frost_mage": "Mago de Hielo",
+		"pyromancer": "Piromante",
+		"arcanist": "Arcanista",
+		"storm_caller": "Invocador de Tormentas",
+		"shadow_blade": "Hoja Sombría",
+		"wind_runner": "Corredor del Viento",
+		"geomancer": "Geomante",
+		"druid": "Druida",
+		"void_walker": "Caminante del Vacío",
+		"paladin": "Paladín"
+	}
+	return names.get(character_id, character_id.capitalize())
+
+func _collect_weapons_data() -> Array:
+	"""Recopilar datos de armas equipadas"""
+	var weapons_data: Array = []
+	var attack_manager = get_tree().get_first_node_in_group("attack_manager")
+	
+	if attack_manager and attack_manager.has_method("get_weapons"):
+		var weapons_list = attack_manager.get_weapons()
+		for weapon in weapons_list:
+			var weapon_info: Dictionary = {}
+			if weapon is BaseWeapon:
+				weapon_info = {
+					"id": weapon.id,
+					"name": weapon.weapon_name,
+					"name_es": weapon.weapon_name_es if "weapon_name_es" in weapon else weapon.weapon_name,
+					"level": weapon.level,
+					"max_level": weapon.max_level if "max_level" in weapon else 8,
+					"is_fused": weapon.is_fused if "is_fused" in weapon else false,
+					"element": weapon.element if "element" in weapon else "",
+					"icon": weapon.icon_path if "icon_path" in weapon else ""
+				}
+			elif weapon is Dictionary:
+				weapon_info = {
+					"id": weapon.get("id", weapon.get("weapon_id", "unknown")),
+					"name": weapon.get("weapon_name", "Unknown"),
+					"name_es": weapon.get("weapon_name_es", weapon.get("weapon_name", "Unknown")),
+					"level": weapon.get("level", 1),
+					"max_level": weapon.get("max_level", 8),
+					"is_fused": weapon.get("is_fused", false),
+					"element": weapon.get("element", ""),
+					"icon": weapon.get("icon_path", "")
+				}
+			if not weapon_info.is_empty():
+				weapons_data.append(weapon_info)
+	
+	return weapons_data
+
+func _collect_upgrades_data() -> Array:
+	"""Recopilar datos de upgrades/items obtenidos"""
+	var upgrades_data: Array = []
+	
+	if player_stats and player_stats.has_method("get_collected_upgrades"):
+		var upgrades = player_stats.get_collected_upgrades()
+		for upgrade in upgrades:
+			var upgrade_info: Dictionary = {
+				"id": upgrade.get("id", "unknown"),
+				"name": upgrade.get("name", "Unknown"),
+				"name_es": upgrade.get("name_es", upgrade.get("name", "Unknown")),
+				"icon": upgrade.get("icon", ""),
+				"tier": upgrade.get("tier", 1),
+				"is_unique": upgrade.get("is_unique", false),
+				"is_cursed": upgrade.get("is_cursed", false),
+				"stacks": upgrade.get("stacks", 1)
+			}
+			upgrades_data.append(upgrade_info)
+	
+	return upgrades_data
+
+func _collect_final_stats() -> Dictionary:
+	"""Recopilar stats finales del jugador"""
+	var final_stats: Dictionary = {}
+	
+	if player_stats:
+		# Stats principales
+		if "max_health" in player_stats:
+			final_stats["max_health"] = player_stats.max_health
+		if "current_health" in player_stats:
+			final_stats["current_health"] = player_stats.current_health
+		if "level" in player_stats:
+			final_stats["level"] = player_stats.level
+		if "armor" in player_stats:
+			final_stats["armor"] = player_stats.armor
+		
+		# Stats mediante get_stat()
+		if player_stats.has_method("get_stat"):
+			var stat_names = [
+				"damage_mult", "attack_speed_mult", "move_speed",
+				"crit_chance", "crit_damage", "life_steal",
+				"pickup_range", "xp_mult", "cooldown_reduction",
+				"projectile_speed", "projectile_count", "area_size"
+			]
+			for stat_name in stat_names:
+				var value = player_stats.get_stat(stat_name)
+				if value != null:
+					final_stats[stat_name] = value
+	
+	return final_stats
 
 func _calculate_run_score() -> int:
 	"""Calcular puntuación de la run basada en estadísticas"""
@@ -1350,6 +1549,10 @@ func add_damage_stat(amount: int) -> void:
 
 func add_gold_stat(amount: int) -> void:
 	run_stats["gold"] += amount
+
+func add_healing_stat(amount: int) -> void:
+	"""Trackear curación para estadísticas"""
+	run_stats["healing_done"] += amount
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CALLBACKS DE WAVEMANAGER

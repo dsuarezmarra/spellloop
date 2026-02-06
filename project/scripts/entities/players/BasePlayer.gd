@@ -989,6 +989,10 @@ func heal(amount: int) -> int:
 		if healed > 0:
 			FloatingText.spawn_heal(global_position + Vector2(0, -30), healed)
 			_spawn_heal_particles()
+			# Trackear curación para estadísticas
+			var game_node = get_tree().root.get_node_or_null("LoopiaLikeGame")
+			if game_node and game_node.has_method("add_healing_stat"):
+				game_node.add_healing_stat(healed)
 		
 		# Debug desactivado: print("[%s] Curación: +%d (HP: %d/%d)%s" % [character_class, healed, health_component.current_health, max_hp, " [CURSED]" if _is_cursed else ""])
 		
