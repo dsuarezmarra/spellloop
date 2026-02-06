@@ -57,7 +57,6 @@ enum FocusArea { TABS, ENTRIES, FOOTER, MONTH_POPUP }
 var current_tab: Tab = Tab.TOP_100
 var current_entries: Array = []
 var is_loading: bool = false
-var build_popup_scene: PackedScene = null
 
 # Navegación
 var focus_area: FocusArea = FocusArea.TABS
@@ -95,11 +94,6 @@ func _ready() -> void:
 	_update_month_button_text()
 	_update_title()
 	_update_visual_focus()
-	
-	# Cargar popup de build
-	var popup_path = "res://scenes/ui/BuildPopup.tscn"
-	if ResourceLoader.exists(popup_path):
-		build_popup_scene = load(popup_path)
 	
 	# Conectar con SteamManager
 	var steam = _get_steam_manager()
@@ -719,74 +713,202 @@ func _show_offline_message() -> void:
 	offline_label.visible = false
 	scroll_container.visible = true
 	
-	# Mostrar placeholders de ejemplo
-	current_entries = _get_placeholder_entries()
+	# Cargar datos del historial local
+	current_entries = _load_local_run_history()
 	_populate_entries()
 
-func _get_placeholder_entries() -> Array:
-	"""Generar 5 registros de ejemplo con builds completas"""
-	return [
-		{
-			"rank": 1, 
-			"steam_name": "DragonSlayer_X", 
-			"score": 158420,
-			"character": "Pyromancer",
-			"level": 45,
-			"time": "32:15",
-			"wave": 28,
-			"stats": {"hp": 850, "damage": 145, "speed": 1.2, "crit": 35, "armor": 42},
-			"weapons": ["Inferno Staff", "Phoenix Wand", "Blazing Orb"],
-			"items": ["Fire Ring", "Dragon Scale", "Ember Amulet", "Flame Boots", "Magma Shield"]
-		},
-		{
-			"rank": 2, 
-			"steam_name": "ShadowMage99", 
-			"score": 142850,
-			"character": "Shadow Blade",
-			"level": 42,
-			"time": "28:45",
-			"wave": 25,
-			"stats": {"hp": 620, "damage": 210, "speed": 1.8, "crit": 55, "armor": 25},
-			"weapons": ["Shadow Dagger", "Void Blade", "Dark Scythe"],
-			"items": ["Shadow Cloak", "Night Pendant", "Stealth Boots", "Phantom Ring"]
-		},
-		{
-			"rank": 3, 
-			"steam_name": "FrostQueen", 
-			"score": 128390,
-			"character": "Frost Mage",
-			"level": 40,
-			"time": "30:20",
-			"wave": 24,
-			"stats": {"hp": 580, "damage": 165, "speed": 1.1, "crit": 28, "armor": 35},
-			"weapons": ["Ice Scepter", "Frozen Wand", "Blizzard Staff"],
-			"items": ["Frost Crown", "Ice Heart", "Frozen Gauntlets", "Glacier Ring", "Snow Boots"]
-		},
-		{
-			"rank": 4, 
-			"steam_name": "ArcaneMaster", 
-			"score": 115720,
-			"character": "Arcanist",
-			"level": 38,
-			"time": "25:30",
-			"wave": 22,
-			"stats": {"hp": 520, "damage": 195, "speed": 1.3, "crit": 42, "armor": 28},
-			"weapons": ["Arcane Tome", "Mystic Orb"],
-			"items": ["Mana Crystal", "Arcane Robe", "Spell Focus"]
-		},
-		{
-			"rank": 5, 
-			"steam_name": "VoidWalker_Pro", 
-			"score": 98540,
-			"character": "Void Walker",
-			"level": 35,
-			"time": "22:10",
-			"wave": 20,
-			"stats": {"hp": 480, "damage": 175, "speed": 1.5, "crit": 38, "armor": 22},
-			"weapons": ["Void Staff", "Cosmic Blade"],
-			"items": ["Void Essence", "Dark Matter Ring", "Cosmic Boots", "Nebula Cloak"]
-		},
-	]
+func _load_local_run_history() -> Array:
+	"""Cargar historial de partidas desde el archivo local, filtrado por mes"""
+	const RUN_HISTORY_FILE = "user://saves/run_history.json"
+	
+	if not FileAccess.file_exists(RUN_HISTORY_FILE):
+		return []
+	
+	var file = FileAccess.open(RUN_HISTORY_FILE, FileAccess.READ)
+	if file == null:
+		return []
+	
+	var json = JSON.new()
+	var parse_result = json.parse(file.get_as_text())
+	file.close()
+	
+	if parse_result != OK or not (json.data is Array):
+		return []
+	
+	var history: Array = json.data
+	
+	# Obtener mes seleccionado
+	var target_year: int = 0
+	var target_month: int = 0
+	if selected_month_index < month_data.size():
+		target_year = month_data[selected_month_index].year
+		target_month = month_data[selected_month_index].month
+	else:
+		# Mes actual por defecto
+		var now = Time.get_datetime_dict_from_system()
+		target_year = now.year
+		target_month = now.month
+	
+	# Filtrar partidas del mes seleccionado
+	var filtered_runs: Array = []
+	var now = Time.get_datetime_dict_from_system()
+	var is_current_month = (target_year == now.year and target_month == now.month)
+	
+	for run in history:
+		var timestamp = run.get("timestamp", 0)
+		var run_year: int = 0
+		var run_month: int = 0
+		
+		if timestamp > 0:
+			var run_date = Time.get_datetime_dict_from_unix_time(int(timestamp))
+			run_year = run_date.year
+			run_month = run_date.month
+		else:
+			# Si no hay timestamp, usar end_time o start_time
+			var end_time = run.get("end_time", run.get("start_time", 0))
+			if end_time > 0:
+				var run_date = Time.get_datetime_dict_from_unix_time(int(end_time))
+				run_year = run_date.year
+				run_month = run_date.month
+			elif is_current_month:
+				# Partidas sin fecha van al mes actual
+				run_year = target_year
+				run_month = target_month
+		
+		if run_year == target_year and run_month == target_month:
+			filtered_runs.append(run)
+	
+	# Ordenar por puntuación (mayor primero)
+	filtered_runs.sort_custom(_compare_runs_by_score)
+	
+	# Convertir al formato esperado por el ranking
+	var entries: Array = []
+	for i in range(filtered_runs.size()):
+		var run = filtered_runs[i]
+		var entry = _convert_run_to_entry(run, i + 1)  # Rank basado en posición ordenada
+		entries.append(entry)
+	
+	return entries
+
+func _compare_runs_by_score(a: Dictionary, b: Dictionary) -> bool:
+	"""Comparador para ordenar runs por score (mayor primero)"""
+	var score_a = _calculate_run_score(a)
+	var score_b = _calculate_run_score(b)
+	return score_a > score_b
+
+func _calculate_run_score(run: Dictionary) -> int:
+	"""Calcular puntuación de una partida"""
+	# Si ya tiene score calculado, usarlo
+	var score = run.get("score", 0)
+	if score > 0:
+		return score
+	
+	# Calcular score basado en datos disponibles (formatos antiguo y nuevo)
+	var enemies = run.get("enemies_defeated", 0)
+	var final_stats = run.get("final_stats", {})
+	var level = final_stats.get("level", run.get("player_level", run.get("level_reached", 1)))
+	var duration = run.get("duration", run.get("time_survived", 0.0))
+	var phase = run.get("phase", 1)
+	
+	# Sistema de puntuación:
+	# - Enemigos derrotados: 10 pts cada uno
+	# - Nivel alcanzado: 100 pts por nivel
+	# - Tiempo sobrevivido: 1 pt por segundo
+	# - Fase alcanzada: 500 pts por fase
+	score = (enemies * 10) + (level * 100) + int(duration) + (phase * 500)
+	
+	return score
+
+func _convert_run_to_entry(run: Dictionary, rank: int) -> Dictionary:
+	"""Convertir datos de una partida al formato de entrada del ranking"""
+	# Soportar formato antiguo y nuevo
+	
+	# Obtener nombre del personaje legible
+	var character_id = run.get("character_id", "unknown")
+	var character_name = _get_character_display_name(character_id)
+	
+	# Calcular tiempo formateado (soportar ambos formatos)
+	var duration = run.get("duration", run.get("time_survived", 0.0))
+	var game_minutes = run.get("game_time_minutes", 0.0)
+	var game_seconds = run.get("game_time_seconds", 0.0)
+	var time_str = ""
+	if game_minutes > 0 or game_seconds > 0:
+		time_str = "%02d:%02d" % [int(game_minutes), int(game_seconds) % 60]
+	elif duration > 0:
+		time_str = "%02d:%02d" % [int(duration) / 60, int(duration) % 60]
+	else:
+		time_str = "00:00"
+	
+	# Obtener stats finales (formato nuevo o calcular desde formato antiguo)
+	var final_stats = run.get("final_stats", {})
+	var level = 1
+	if final_stats.has("level"):
+		level = final_stats.get("level", 1)
+	elif run.has("player_level"):
+		level = run.get("player_level", 1)
+	elif run.has("level_reached"):
+		level = run.get("level_reached", 1)
+	
+	var stats_dict = {
+		"hp": int(final_stats.get("max_health", 100)),
+		"damage": final_stats.get("damage_mult", 1.0),
+		"speed": final_stats.get("move_speed", 100),
+		"crit": int(final_stats.get("crit_chance", 0.05) * 100),
+		"armor": int(final_stats.get("armor", 0))
+	}
+	
+	# Obtener armas (nombres en español si disponible)
+	var weapons_raw = run.get("weapons", [])
+	var weapons: Array = []
+	for w in weapons_raw:
+		if w is Dictionary:
+			weapons.append(w.get("name_es", w.get("name", "Unknown")))
+		elif w is String:
+			weapons.append(w)
+	
+	# Obtener mejoras/objetos
+	var upgrades_raw = run.get("upgrades", [])
+	var items: Array = []
+	for u in upgrades_raw:
+		if u is Dictionary:
+			items.append(u.get("name", "Unknown"))
+		elif u is String:
+			items.append(u)
+	
+	# Calcular score usando la función centralizada
+	var score = _calculate_run_score(run)
+	
+	return {
+		"rank": rank,
+		"steam_name": "Tu Partida",  # Sin Steam, usar texto genérico
+		"score": score,
+		"character": character_name,
+		"level": final_stats.get("level", run.get("player_level", 1)),
+		"time": time_str,
+		"wave": run.get("phase", 1),  # Usamos phase como "oleada" visual
+		"stats": stats_dict,
+		"weapons": weapons,
+		"items": items,
+		"timestamp": run.get("timestamp", 0),
+		"end_reason": run.get("end_reason", "unknown")
+	}
+
+func _get_character_display_name(character_id: String) -> String:
+	"""Obtener nombre legible del personaje desde su ID"""
+	var names = {
+		"frost_mage": "Mago de Hielo",
+		"fire_mage": "Piromante",
+		"pyromancer": "Piromante",
+		"shadow_blade": "Sombra",
+		"arcanist": "Arcanista",
+		"void_walker": "Caminante del Vacío",
+		"storm_caller": "Invocador de Tormentas",
+		"geomancer": "Geomante",
+		"paladin": "Paladín",
+		"druid": "Druida",
+		"wind_runner": "Corredor del Viento"
+	}
+	return names.get(character_id, character_id.capitalize().replace("_", " "))
 
 func _update_loading_state() -> void:
 	loading_label.visible = is_loading
@@ -811,11 +933,23 @@ func _populate_entries() -> void:
 	entry_index = 0
 	
 	if current_entries.is_empty():
+		var empty_container = VBoxContainer.new()
+		empty_container.add_theme_constant_override("separation", 15)
+		entries_container.add_child(empty_container)
+		
 		var empty_label = Label.new()
-		empty_label.text = "No hay entradas en el ranking de este mes"
+		empty_label.text = "No hay partidas registradas"
 		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty_label.add_theme_font_size_override("font_size", 24)
 		empty_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
-		entries_container.add_child(empty_label)
+		empty_container.add_child(empty_label)
+		
+		var hint_label = Label.new()
+		hint_label.text = "¡Juega para registrar tus mejores partidas aquí!"
+		hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		hint_label.add_theme_font_size_override("font_size", 16)
+		hint_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
+		empty_container.add_child(hint_label)
 		return
 	
 	for i in range(current_entries.size()):
@@ -1001,50 +1135,67 @@ func _create_detail_panel(entry: Dictionary) -> Control:
 	
 	var stats = entry.get("stats", {})
 	_add_stat_item(stats_row, "HP", str(stats.get("hp", 0)), Color(0.3, 0.9, 0.3), font_entry)
-	_add_stat_item(stats_row, "DAÑO", str(stats.get("damage", 0)), Color(0.9, 0.3, 0.3), font_entry)
-	_add_stat_item(stats_row, "VELOCIDAD", "x%.1f" % stats.get("speed", 1.0), Color(0.3, 0.7, 0.9), font_entry)
-	_add_stat_item(stats_row, "CRITICO", "%d%%" % stats.get("crit", 0), Color(0.9, 0.6, 0.2), font_entry)
-	_add_stat_item(stats_row, "ARMADURA", str(stats.get("armor", 0)), Color(0.6, 0.6, 0.8), font_entry)
+	
+	# Daño: mostrar como multiplicador (x1.0) o porcentaje bonus (+50%)
+	var damage_val = stats.get("damage", 1.0)
+	var damage_str = ""
+	if damage_val is float:
+		if damage_val >= 1.0:
+			damage_str = "x%.1f" % damage_val
+		else:
+			damage_str = "x%.2f" % damage_val
+	else:
+		damage_str = str(damage_val)
+	_add_stat_item(stats_row, "DAÑO", damage_str, Color(0.9, 0.3, 0.3), font_entry)
+	
+	# Velocidad: valor absoluto (px/s)
+	var speed_val = stats.get("speed", 100)
+	_add_stat_item(stats_row, "VEL", str(int(speed_val)), Color(0.3, 0.7, 0.9), font_entry)
+	
+	_add_stat_item(stats_row, "CRIT", "%d%%" % stats.get("crit", 0), Color(0.9, 0.6, 0.2), font_entry)
+	_add_stat_item(stats_row, "ARM", str(stats.get("armor", 0)), Color(0.6, 0.6, 0.8), font_entry)
 	
 	# ═══════════════════════════════════════════════════════════════════════
-	# FILA 3: Armas
+	# FILA 3: Armas (solo si hay)
 	# ═══════════════════════════════════════════════════════════════════════
-	var weapons_title = Label.new()
-	weapons_title.text = "ARMAS"
-	if font_bold:
-		weapons_title.add_theme_font_override("font", font_bold)
-	weapons_title.add_theme_font_size_override("font_size", 16)
-	weapons_title.add_theme_color_override("font_color", Color(0.8, 0.5, 0.9))
-	main_vbox.add_child(weapons_title)
-	
-	var weapons_row = HBoxContainer.new()
-	weapons_row.add_theme_constant_override("separation", 15)
-	main_vbox.add_child(weapons_row)
-	
 	var weapons = entry.get("weapons", [])
-	for weapon_name in weapons:
-		var weapon_box = _create_item_box(weapon_name, Color(0.6, 0.3, 0.8), font_entry)
-		weapons_row.add_child(weapon_box)
+	if weapons.size() > 0:
+		var weapons_title = Label.new()
+		weapons_title.text = "ARMAS"
+		if font_bold:
+			weapons_title.add_theme_font_override("font", font_bold)
+		weapons_title.add_theme_font_size_override("font_size", 16)
+		weapons_title.add_theme_color_override("font_color", Color(0.8, 0.5, 0.9))
+		main_vbox.add_child(weapons_title)
+		
+		var weapons_row = HBoxContainer.new()
+		weapons_row.add_theme_constant_override("separation", 15)
+		main_vbox.add_child(weapons_row)
+		
+		for weapon_name in weapons:
+			var weapon_box = _create_item_box(weapon_name, Color(0.6, 0.3, 0.8), font_entry)
+			weapons_row.add_child(weapon_box)
 	
 	# ═══════════════════════════════════════════════════════════════════════
-	# FILA 4: Objetos
+	# FILA 4: Objetos/Mejoras (solo si hay)
 	# ═══════════════════════════════════════════════════════════════════════
-	var items_title = Label.new()
-	items_title.text = "OBJETOS"
-	if font_bold:
-		items_title.add_theme_font_override("font", font_bold)
-	items_title.add_theme_font_size_override("font_size", 16)
-	items_title.add_theme_color_override("font_color", Color(0.3, 0.8, 0.6))
-	main_vbox.add_child(items_title)
-	
-	var items_row = HBoxContainer.new()
-	items_row.add_theme_constant_override("separation", 10)
-	main_vbox.add_child(items_row)
-	
 	var items = entry.get("items", [])
-	for item_name in items:
-		var item_box = _create_item_box(item_name, Color(0.2, 0.5, 0.4), font_entry)
-		items_row.add_child(item_box)
+	if items.size() > 0:
+		var items_title = Label.new()
+		items_title.text = "MEJORAS"
+		if font_bold:
+			items_title.add_theme_font_override("font", font_bold)
+		items_title.add_theme_font_size_override("font_size", 16)
+		items_title.add_theme_color_override("font_color", Color(0.3, 0.8, 0.6))
+		main_vbox.add_child(items_title)
+		
+		var items_row = HBoxContainer.new()
+		items_row.add_theme_constant_override("separation", 10)
+		main_vbox.add_child(items_row)
+		
+		for item_name in items:
+			var item_box = _create_item_box(item_name, Color(0.2, 0.5, 0.4), font_entry)
+			items_row.add_child(item_box)
 	
 	return panel
 

@@ -190,6 +190,9 @@ func end_current_run(reason: String) -> void:
 	current_run_data["end_time"] = end_time
 	current_run_data["duration"] = end_time - run_start_time
 	current_run_data["end_reason"] = reason
+	
+	# Recopilar datos completos de la partida para el historial/ranking
+	_collect_full_run_data()
 
 	game_state_changed.emit(old_state, current_state)
 	run_ended.emit(reason, current_run_data)
@@ -200,6 +203,84 @@ func end_current_run(reason: String) -> void:
 	sm = _gt2.root.get_node_or_null("SaveManager") if _gt2 and _gt2.root else null
 	if sm and sm.has_method("save_run_data"):
 		sm.save_run_data(current_run_data)
+
+func _collect_full_run_data() -> void:
+	"""Recopilar datos completos de la partida para historial y rankings"""
+	var _gt = get_tree()
+	
+	# 1. Personaje seleccionado
+	var session_state = _gt.root.get_node_or_null("SessionState") if _gt and _gt.root else null
+	if session_state and session_state.has_method("get_character"):
+		current_run_data["character_id"] = session_state.get_character()
+	
+	# 2. Armas equipadas (serializadas)
+	if attack_manager and attack_manager.has_method("get_weapons"):
+		var weapons_data: Array = []
+		var weapons_list = attack_manager.get_weapons()
+		for weapon in weapons_list:
+			var weapon_info: Dictionary = {}
+			if weapon is BaseWeapon:
+				weapon_info = {
+					"id": weapon.id,
+					"name": weapon.weapon_name,
+					"name_es": weapon.weapon_name_es,
+					"level": weapon.level,
+					"is_fused": weapon.is_fused
+				}
+			elif "weapon_id" in weapon or "id" in weapon:
+				weapon_info = {
+					"id": weapon.get("id", weapon.get("weapon_id", "unknown")),
+					"name": weapon.get("weapon_name", "Unknown"),
+					"name_es": weapon.get("weapon_name", "Unknown"),
+					"level": weapon.get("level", 1),
+					"is_fused": weapon.get("is_fused", false)
+				}
+			if not weapon_info.is_empty():
+				weapons_data.append(weapon_info)
+		current_run_data["weapons"] = weapons_data
+	
+	# 3. Mejoras/objetos recogidos
+	if player_stats and player_stats.has_method("get_collected_upgrades"):
+		var upgrades = player_stats.get_collected_upgrades()
+		# Simplificar los datos para serialización
+		var upgrades_data: Array = []
+		for upgrade in upgrades:
+			upgrades_data.append({
+				"id": upgrade.get("id", "unknown"),
+				"name": upgrade.get("name", "Unknown"),
+				"icon": upgrade.get("icon", "")
+			})
+		current_run_data["upgrades"] = upgrades_data
+	
+	# 4. Stats finales del jugador
+	if player_stats:
+		var final_stats: Dictionary = {}
+		# Stats principales para mostrar en el ranking
+		if "max_health" in player_stats:
+			final_stats["max_health"] = player_stats.max_health
+		if "current_health" in player_stats:
+			final_stats["current_health"] = player_stats.current_health
+		if player_stats.has_method("get_stat"):
+			final_stats["damage_mult"] = player_stats.get_stat("damage_mult")
+			final_stats["move_speed"] = player_stats.get_stat("move_speed")
+			final_stats["crit_chance"] = player_stats.get_stat("crit_chance")
+			final_stats["armor"] = player_stats.get_stat("armor")
+		if "level" in player_stats:
+			final_stats["level"] = player_stats.level
+			current_run_data["player_level"] = player_stats.level
+		current_run_data["final_stats"] = final_stats
+	
+	# 5. Datos del WaveManager (fase, tiempo de juego)
+	var game_node = _gt.root.get_node_or_null("LoopiaLikeGame") if _gt and _gt.root else null
+	if game_node and game_node.has_node("WaveManager"):
+		var wave_mgr = game_node.get_node("WaveManager")
+		if wave_mgr:
+			current_run_data["phase"] = wave_mgr.get("current_phase") if "current_phase" in wave_mgr else 1
+			current_run_data["game_time_minutes"] = wave_mgr.get("game_time_minutes") if "game_time_minutes" in wave_mgr else 0.0
+			current_run_data["game_time_seconds"] = wave_mgr.get("game_time_seconds") if "game_time_seconds" in wave_mgr else 0.0
+	
+	# 6. Timestamp de la partida (para ordenar)
+	current_run_data["timestamp"] = Time.get_unix_time_from_system()
 
 func pause_game() -> void:
 	"""Pause the current game"""

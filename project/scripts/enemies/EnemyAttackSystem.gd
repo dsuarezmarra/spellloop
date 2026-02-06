@@ -1071,9 +1071,6 @@ func _perform_melee_attack() -> void:
 	
 	# Emitir seÃ±al
 	attacked_player.emit(attack_damage, true)
-	
-	# Efecto visual removido - el feedback ahora es vÃ­a DamageVignette
-	# _emit_melee_effect()
 
 func _apply_melee_effects() -> void:
 	"""Aplicar efectos de estado segÃºn arquetipo y elemento"""
