@@ -52,7 +52,7 @@ var month_popup_index: int = 0
 # ═══════════════════════════════════════════════════════════════════════════════
 
 enum Tab { TOP_100, MY_POSITION, FRIENDS }
-enum FocusArea { TABS, FOOTER, MONTH_POPUP }
+enum FocusArea { TABS, ENTRIES, FOOTER, MONTH_POPUP }
 
 var current_tab: Tab = Tab.TOP_100
 var current_entries: Array = []
@@ -63,6 +63,12 @@ var build_popup_scene: PackedScene = null
 var focus_area: FocusArea = FocusArea.TABS
 var tab_index: int = 0
 var footer_index: int = 0  # 0=mes, 1=actualizar, 2=volver
+var entry_index: int = 0   # Índice de entry seleccionada
+var expanded_entry_index: int = -1  # -1 = ninguna expandida
+
+# Paneles de entries (para actualizar visual)
+var entry_panels: Array[Control] = []
+var detail_panels: Array[Control] = []
 
 # Datos de meses
 var month_data: Array = []  # Array de {year, month, display}
@@ -385,11 +391,16 @@ func _update_visual_focus() -> void:
 	refresh_button.modulate = Color.WHITE
 	back_button.modulate = Color.WHITE
 	
+	# Reset visual de entries
+	_update_entries_visual()
+	
 	# Aplicar estilo de foco según área
 	match focus_area:
 		FocusArea.TABS:
 			if tab_index < tab_buttons.size():
 				tab_buttons[tab_index].modulate = Color(1.2, 1.2, 1.5)
+		FocusArea.ENTRIES:
+			_highlight_entry(entry_index)
 		FocusArea.FOOTER:
 			match footer_index:
 				0: month_button.modulate = Color(1.2, 1.2, 1.5)
@@ -398,6 +409,20 @@ func _update_visual_focus() -> void:
 	
 	# Actualizar estilos de tabs (activo vs inactivo)
 	_update_tab_styles()
+
+func _update_entries_visual() -> void:
+	"""Resetear visual de todas las entries"""
+	for i in range(entry_panels.size()):
+		var panel = entry_panels[i]
+		if panel and is_instance_valid(panel):
+			panel.modulate = Color.WHITE
+
+func _highlight_entry(index: int) -> void:
+	"""Destacar la entry seleccionada"""
+	if index >= 0 and index < entry_panels.size():
+		var panel = entry_panels[index]
+		if panel and is_instance_valid(panel):
+			panel.modulate = Color(1.1, 1.1, 1.3)
 
 func _update_tab_styles() -> void:
 	var tab_values = [Tab.TOP_100, Tab.MY_POSITION, Tab.FRIENDS]
@@ -509,18 +534,63 @@ func _is_space_pressed(event: InputEvent) -> bool:
 	return event is InputEventKey and event.pressed and event.keycode == KEY_SPACE
 
 func _navigate_up() -> void:
-	"""Navegar hacia arriba entre áreas"""
-	if focus_area == FocusArea.FOOTER:
-		focus_area = FocusArea.TABS
-		_update_visual_focus()
-		_play_hover_sound()
+	"""Navegar hacia arriba entre áreas o dentro de entries"""
+	match focus_area:
+		FocusArea.FOOTER:
+			# De footer a entries (si hay) o a tabs
+			if current_entries.size() > 0:
+				focus_area = FocusArea.ENTRIES
+				entry_index = current_entries.size() - 1  # Última entry
+			else:
+				focus_area = FocusArea.TABS
+		FocusArea.ENTRIES:
+			if entry_index > 0:
+				entry_index -= 1
+				_scroll_to_entry(entry_index)
+			else:
+				focus_area = FocusArea.TABS
+		FocusArea.TABS:
+			pass  # Ya está arriba
+	_update_visual_focus()
+	_play_hover_sound()
 
 func _navigate_down() -> void:
-	"""Navegar hacia abajo entre áreas"""
-	if focus_area == FocusArea.TABS:
-		focus_area = FocusArea.FOOTER
-		_update_visual_focus()
-		_play_hover_sound()
+	"""Navegar hacia abajo entre áreas o dentro de entries"""
+	match focus_area:
+		FocusArea.TABS:
+			# De tabs a entries (si hay) o a footer
+			if current_entries.size() > 0:
+				focus_area = FocusArea.ENTRIES
+				entry_index = 0
+			else:
+				focus_area = FocusArea.FOOTER
+		FocusArea.ENTRIES:
+			if entry_index < current_entries.size() - 1:
+				entry_index += 1
+				_scroll_to_entry(entry_index)
+			else:
+				focus_area = FocusArea.FOOTER
+		FocusArea.FOOTER:
+			pass  # Ya está abajo
+	_update_visual_focus()
+	_play_hover_sound()
+
+func _scroll_to_entry(index: int) -> void:
+	"""Hacer scroll para que la entry sea visible"""
+	if index < entry_panels.size() and scroll_container:
+		var panel = entry_panels[index]
+		if panel:
+			var panel_pos = panel.position.y
+			var panel_height = panel.size.y
+			var scroll_pos = scroll_container.scroll_vertical
+			var visible_height = scroll_container.size.y
+			
+			# Si está arriba del viewport
+			if panel_pos < scroll_pos:
+				scroll_container.scroll_vertical = int(panel_pos)
+			# Si está abajo del viewport
+			elif panel_pos + panel_height > scroll_pos + visible_height:
+				scroll_container.scroll_vertical = int(panel_pos + panel_height - visible_height + 20)
 
 func _navigate_left() -> void:
 	"""Navegar hacia la izquierda dentro del área actual"""
@@ -529,6 +599,8 @@ func _navigate_left() -> void:
 			tab_index = maxi(0, tab_index - 1)
 		FocusArea.FOOTER:
 			footer_index = maxi(0, footer_index - 1)
+		FocusArea.ENTRIES:
+			pass  # No hay navegación horizontal en entries
 	_update_visual_focus()
 	_play_hover_sound()
 
@@ -539,6 +611,8 @@ func _navigate_right() -> void:
 			tab_index = mini(2, tab_index + 1)
 		FocusArea.FOOTER:
 			footer_index = mini(2, footer_index + 1)
+		FocusArea.ENTRIES:
+			pass  # No hay navegación horizontal en entries
 	_update_visual_focus()
 	_play_hover_sound()
 
@@ -549,6 +623,8 @@ func _activate_current() -> void:
 	match focus_area:
 		FocusArea.TABS:
 			_select_tab(tab_index)
+		FocusArea.ENTRIES:
+			_toggle_entry_details(entry_index)
 		FocusArea.FOOTER:
 			match footer_index:
 				0: _show_month_popup()
@@ -648,13 +724,68 @@ func _show_offline_message() -> void:
 	_populate_entries()
 
 func _get_placeholder_entries() -> Array:
-	"""Generar 5 registros de ejemplo para preview"""
+	"""Generar 5 registros de ejemplo con builds completas"""
 	return [
-		{"rank": 1, "steam_name": "DragonSlayer_X", "score": 158420},
-		{"rank": 2, "steam_name": "ShadowMage99", "score": 142850},
-		{"rank": 3, "steam_name": "FrostQueen", "score": 128390},
-		{"rank": 4, "steam_name": "ArcaneMaster", "score": 115720},
-		{"rank": 5, "steam_name": "VoidWalker_Pro", "score": 98540},
+		{
+			"rank": 1, 
+			"steam_name": "DragonSlayer_X", 
+			"score": 158420,
+			"character": "Pyromancer",
+			"level": 45,
+			"time": "32:15",
+			"wave": 28,
+			"stats": {"hp": 850, "damage": 145, "speed": 1.2, "crit": 35, "armor": 42},
+			"weapons": ["Inferno Staff", "Phoenix Wand", "Blazing Orb"],
+			"items": ["Fire Ring", "Dragon Scale", "Ember Amulet", "Flame Boots", "Magma Shield"]
+		},
+		{
+			"rank": 2, 
+			"steam_name": "ShadowMage99", 
+			"score": 142850,
+			"character": "Shadow Blade",
+			"level": 42,
+			"time": "28:45",
+			"wave": 25,
+			"stats": {"hp": 620, "damage": 210, "speed": 1.8, "crit": 55, "armor": 25},
+			"weapons": ["Shadow Dagger", "Void Blade", "Dark Scythe"],
+			"items": ["Shadow Cloak", "Night Pendant", "Stealth Boots", "Phantom Ring"]
+		},
+		{
+			"rank": 3, 
+			"steam_name": "FrostQueen", 
+			"score": 128390,
+			"character": "Frost Mage",
+			"level": 40,
+			"time": "30:20",
+			"wave": 24,
+			"stats": {"hp": 580, "damage": 165, "speed": 1.1, "crit": 28, "armor": 35},
+			"weapons": ["Ice Scepter", "Frozen Wand", "Blizzard Staff"],
+			"items": ["Frost Crown", "Ice Heart", "Frozen Gauntlets", "Glacier Ring", "Snow Boots"]
+		},
+		{
+			"rank": 4, 
+			"steam_name": "ArcaneMaster", 
+			"score": 115720,
+			"character": "Arcanist",
+			"level": 38,
+			"time": "25:30",
+			"wave": 22,
+			"stats": {"hp": 520, "damage": 195, "speed": 1.3, "crit": 42, "armor": 28},
+			"weapons": ["Arcane Tome", "Mystic Orb"],
+			"items": ["Mana Crystal", "Arcane Robe", "Spell Focus"]
+		},
+		{
+			"rank": 5, 
+			"steam_name": "VoidWalker_Pro", 
+			"score": 98540,
+			"character": "Void Walker",
+			"level": 35,
+			"time": "22:10",
+			"wave": 20,
+			"stats": {"hp": 480, "damage": 175, "speed": 1.5, "crit": 38, "armor": 22},
+			"weapons": ["Void Staff", "Cosmic Blade"],
+			"items": ["Void Essence", "Dark Matter Ring", "Cosmic Boots", "Nebula Cloak"]
+		},
 	]
 
 func _update_loading_state() -> void:
@@ -673,6 +804,12 @@ func _populate_entries() -> void:
 	for child in entries_container.get_children():
 		child.queue_free()
 	
+	# Limpiar arrays
+	entry_panels.clear()
+	detail_panels.clear()
+	expanded_entry_index = -1
+	entry_index = 0
+	
 	if current_entries.is_empty():
 		var empty_label = Label.new()
 		empty_label.text = "No hay entradas en el ranking de este mes"
@@ -681,18 +818,51 @@ func _populate_entries() -> void:
 		entries_container.add_child(empty_label)
 		return
 	
-	for entry in current_entries:
-		var entry_panel = _create_entry_panel(entry)
-		entries_container.add_child(entry_panel)
+	for i in range(current_entries.size()):
+		var entry = current_entries[i]
+		
+		# Contenedor para entry + detalles
+		var container = VBoxContainer.new()
+		container.add_theme_constant_override("separation", 0)
+		entries_container.add_child(container)
+		
+		# Panel de la entry
+		var entry_panel = _create_entry_panel(entry, i)
+		container.add_child(entry_panel)
+		entry_panels.append(entry_panel)
+		
+		# Panel de detalles (inicialmente oculto)
+		var detail_panel = _create_detail_panel(entry)
+		detail_panel.visible = false
+		container.add_child(detail_panel)
+		detail_panels.append(detail_panel)
 
-func _create_entry_panel(entry: Dictionary) -> Control:
+func _toggle_entry_details(index: int) -> void:
+	"""Expandir o colapsar los detalles de una entry"""
+	if index < 0 or index >= detail_panels.size():
+		return
+	
+	# Si ya está expandida esta, colapsar
+	if expanded_entry_index == index:
+		detail_panels[index].visible = false
+		expanded_entry_index = -1
+	else:
+		# Colapsar la anterior si había una
+		if expanded_entry_index >= 0 and expanded_entry_index < detail_panels.size():
+			detail_panels[expanded_entry_index].visible = false
+		
+		# Expandir la nueva
+		detail_panels[index].visible = true
+		expanded_entry_index = index
+
+func _create_entry_panel(entry: Dictionary, index: int) -> Control:
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(0, 55)
+	panel.custom_minimum_size = Vector2(0, 60)
 	
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.12, 0.12, 0.18, 0.9)
 	style.set_corner_radius_all(6)
-	style.set_content_margin_all(8)
+	style.set_content_margin_all(10)
 	
 	var rank = entry.get("rank", 0)
 	if rank == 1:
@@ -737,25 +907,207 @@ func _create_entry_panel(entry: Dictionary) -> Control:
 	
 	hbox.add_child(rank_label)
 	
-	# Nombre
+	# Nombre + Personaje
+	var name_container = VBoxContainer.new()
+	name_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(name_container)
+	
 	var name_label = Label.new()
-	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.text = entry.get("steam_name", "Unknown")
 	if font_entry:
 		name_label.add_theme_font_override("font", font_entry)
 	name_label.add_theme_font_size_override("font_size", 18)
 	name_label.add_theme_color_override("font_color", NORMAL_COLOR)
-	hbox.add_child(name_label)
+	name_container.add_child(name_label)
+	
+	var char_label = Label.new()
+	char_label.text = entry.get("character", "Unknown") + " - Nivel " + str(entry.get("level", 1))
+	if font_entry:
+		char_label.add_theme_font_override("font", font_entry)
+	char_label.add_theme_font_size_override("font_size", 12)
+	char_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+	name_container.add_child(char_label)
+	
+	# Indicador de expandible
+	var expand_label = Label.new()
+	expand_label.text = "[ESPACIO]"
+	if font_entry:
+		expand_label.add_theme_font_override("font", font_entry)
+	expand_label.add_theme_font_size_override("font_size", 12)
+	expand_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+	hbox.add_child(expand_label)
 	
 	# Puntuación
 	var score_label = Label.new()
-	score_label.custom_minimum_size = Vector2(120, 0)
-	score_label.text = "%d pts" % entry.get("score", 0)
+	score_label.custom_minimum_size = Vector2(130, 0)
+	score_label.text = "%d PTS" % entry.get("score", 0)
 	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	if font_bold:
 		score_label.add_theme_font_override("font", font_bold)
 	score_label.add_theme_font_size_override("font_size", 18)
 	score_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5))
 	hbox.add_child(score_label)
+	
+	return panel
+
+func _create_detail_panel(entry: Dictionary) -> Control:
+	"""Crear panel de detalles de la build"""
+	var panel = PanelContainer.new()
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.08, 0.12, 0.95)
+	style.set_corner_radius_all(0)
+	style.corner_radius_bottom_left = 6
+	style.corner_radius_bottom_right = 6
+	style.set_content_margin_all(15)
+	style.border_color = Color(0.3, 0.3, 0.4)
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	panel.add_theme_stylebox_override("panel", style)
+	
+	var main_vbox = VBoxContainer.new()
+	main_vbox.add_theme_constant_override("separation", 15)
+	panel.add_child(main_vbox)
+	
+	var font_entry = load("res://assets/ui/fonts/Quicksand-Variable.ttf")
+	var font_bold = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	
+	# ═══════════════════════════════════════════════════════════════════════
+	# FILA 1: Info de run
+	# ═══════════════════════════════════════════════════════════════════════
+	var run_info = HBoxContainer.new()
+	run_info.add_theme_constant_override("separation", 40)
+	main_vbox.add_child(run_info)
+	
+	_add_info_item(run_info, "OLEADA", str(entry.get("wave", 0)), font_bold, font_entry)
+	_add_info_item(run_info, "TIEMPO", entry.get("time", "00:00"), font_bold, font_entry)
+	_add_info_item(run_info, "NIVEL", str(entry.get("level", 1)), font_bold, font_entry)
+	
+	# ═══════════════════════════════════════════════════════════════════════
+	# FILA 2: Stats
+	# ═══════════════════════════════════════════════════════════════════════
+	var stats_title = Label.new()
+	stats_title.text = "ESTADISTICAS"
+	if font_bold:
+		stats_title.add_theme_font_override("font", font_bold)
+	stats_title.add_theme_font_size_override("font_size", 16)
+	stats_title.add_theme_color_override("font_color", GOLD_COLOR)
+	main_vbox.add_child(stats_title)
+	
+	var stats_row = HBoxContainer.new()
+	stats_row.add_theme_constant_override("separation", 30)
+	main_vbox.add_child(stats_row)
+	
+	var stats = entry.get("stats", {})
+	_add_stat_item(stats_row, "HP", str(stats.get("hp", 0)), Color(0.3, 0.9, 0.3), font_entry)
+	_add_stat_item(stats_row, "DAÑO", str(stats.get("damage", 0)), Color(0.9, 0.3, 0.3), font_entry)
+	_add_stat_item(stats_row, "VELOCIDAD", "x%.1f" % stats.get("speed", 1.0), Color(0.3, 0.7, 0.9), font_entry)
+	_add_stat_item(stats_row, "CRITICO", "%d%%" % stats.get("crit", 0), Color(0.9, 0.6, 0.2), font_entry)
+	_add_stat_item(stats_row, "ARMADURA", str(stats.get("armor", 0)), Color(0.6, 0.6, 0.8), font_entry)
+	
+	# ═══════════════════════════════════════════════════════════════════════
+	# FILA 3: Armas
+	# ═══════════════════════════════════════════════════════════════════════
+	var weapons_title = Label.new()
+	weapons_title.text = "ARMAS"
+	if font_bold:
+		weapons_title.add_theme_font_override("font", font_bold)
+	weapons_title.add_theme_font_size_override("font_size", 16)
+	weapons_title.add_theme_color_override("font_color", Color(0.8, 0.5, 0.9))
+	main_vbox.add_child(weapons_title)
+	
+	var weapons_row = HBoxContainer.new()
+	weapons_row.add_theme_constant_override("separation", 15)
+	main_vbox.add_child(weapons_row)
+	
+	var weapons = entry.get("weapons", [])
+	for weapon_name in weapons:
+		var weapon_box = _create_item_box(weapon_name, Color(0.6, 0.3, 0.8), font_entry)
+		weapons_row.add_child(weapon_box)
+	
+	# ═══════════════════════════════════════════════════════════════════════
+	# FILA 4: Objetos
+	# ═══════════════════════════════════════════════════════════════════════
+	var items_title = Label.new()
+	items_title.text = "OBJETOS"
+	if font_bold:
+		items_title.add_theme_font_override("font", font_bold)
+	items_title.add_theme_font_size_override("font_size", 16)
+	items_title.add_theme_color_override("font_color", Color(0.3, 0.8, 0.6))
+	main_vbox.add_child(items_title)
+	
+	var items_row = HBoxContainer.new()
+	items_row.add_theme_constant_override("separation", 10)
+	main_vbox.add_child(items_row)
+	
+	var items = entry.get("items", [])
+	for item_name in items:
+		var item_box = _create_item_box(item_name, Color(0.2, 0.5, 0.4), font_entry)
+		items_row.add_child(item_box)
+	
+	return panel
+
+func _add_info_item(parent: Control, label_text: String, value_text: String, font_bold: Font, font_entry: Font) -> void:
+	var container = VBoxContainer.new()
+	container.add_theme_constant_override("separation", 2)
+	parent.add_child(container)
+	
+	var label = Label.new()
+	label.text = label_text
+	if font_bold:
+		label.add_theme_font_override("font", font_bold)
+	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+	container.add_child(label)
+	
+	var value = Label.new()
+	value.text = value_text
+	if font_entry:
+		value.add_theme_font_override("font", font_entry)
+	value.add_theme_font_size_override("font_size", 20)
+	value.add_theme_color_override("font_color", Color.WHITE)
+	container.add_child(value)
+
+func _add_stat_item(parent: Control, label_text: String, value_text: String, color: Color, font: Font) -> void:
+	var container = VBoxContainer.new()
+	container.add_theme_constant_override("separation", 2)
+	parent.add_child(container)
+	
+	var label = Label.new()
+	label.text = label_text
+	if font:
+		label.add_theme_font_override("font", font)
+	label.add_theme_font_size_override("font_size", 11)
+	label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+	container.add_child(label)
+	
+	var value = Label.new()
+	value.text = value_text
+	if font:
+		value.add_theme_font_override("font", font)
+	value.add_theme_font_size_override("font_size", 18)
+	value.add_theme_color_override("font_color", color)
+	container.add_child(value)
+
+func _create_item_box(item_name: String, bg_color: Color, font: Font) -> Control:
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(0, 35)
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = bg_color.darkened(0.5)
+	style.set_corner_radius_all(4)
+	style.set_content_margin_all(8)
+	style.border_color = bg_color
+	style.set_border_width_all(1)
+	panel.add_theme_stylebox_override("panel", style)
+	
+	var label = Label.new()
+	label.text = item_name
+	if font:
+		label.add_theme_font_override("font", font)
+	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_color_override("font_color", Color.WHITE)
+	panel.add_child(label)
 	
 	return panel
