@@ -671,11 +671,14 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	
 	# 1. Verificar esquiva (dodge) primero
 	if player_stats and player_stats.has_method("get_stat"):
-		var dodge_chance = player_stats.get_stat("dodge_chance")
-		if dodge_chance > 0 and randf() < minf(dodge_chance, 0.6):  # Máximo 60% de esquiva
+		var dodge_chance = player_stats.get_stat("dodge_chance")  # Already capped in STAT_LIMITS
+		if dodge_chance > 0 and randf() < dodge_chance:  # BALANCE: Removed redundant minf() - cap is in STAT_LIMITS
 			# ¡Esquivó el daño!
 			# Debug desactivado: print("[%s] ✨ ¡ESQUIVADO! (%.0f%% chance)" % [character_class, dodge_chance * 100])
 			FloatingText.spawn_text(global_position + Vector2(0, -35), "DODGE!", Color(0.3, 0.9, 1.0))
+			# Balance Debug: Log dodge
+			if BalanceDebugger and BalanceDebugger.enabled:
+				BalanceDebugger.log_damage_taken(amount, 0, true)
 			return
 	
 	# I-Frames ahora se aplican en _process_frame_damage (Dinámicos)
@@ -771,6 +774,13 @@ func _process_frame_damage() -> void:
 	if health_component:
 		health_component.take_damage(final_applied_damage)
 		
+		# Balance Debug: Log damage taken (raw = queue total, final = applied)
+		if BalanceDebugger and BalanceDebugger.enabled:
+			var raw_total = 0
+			for hit in _damage_queue:
+				raw_total += hit.amount
+			BalanceDebugger.log_damage_taken(raw_total, final_applied_damage, false)
+		
 		# Notificar estadísticas
 		var player_stats = get_tree().get_first_node_in_group("player_stats")
 		if player_stats and player_stats.has_method("on_damage_taken"):
@@ -811,12 +821,12 @@ func _get_enemy_density() -> int:
 	return count
 
 func _apply_dynamic_iframes() -> void:
-	# Base: 0.5s
-	var base_iframe = 0.5
+	# Base: 0.4s (NERFED from 0.5s for balance)
+	var base_iframe = 0.4
 	
-	# Bonus por densidad (Fairness en hordas)
+	# Bonus por densidad (Fairness en hordas) - NERFED max from 0.15 to 0.10
 	var density = _get_enemy_density()
-	var density_bonus = minf(float(density) * 0.02, 0.15) # Max +0.15s (con ~8 enemigos)
+	var density_bonus = minf(float(density) * 0.02, 0.10)  # Max +0.10s (with ~5 enemies)
 	
 	_invulnerability_timer = base_iframe + density_bonus
 

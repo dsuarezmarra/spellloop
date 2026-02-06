@@ -56,8 +56,8 @@ const EXPONENTIAL_SCALING_BASE = 1.6  # 60% más fuerte cada 5 min (was 1.5)
 
 # Configuración de élites/legendarios - EXTREMADAMENTE BUFFADOS
 const ELITE_CONFIG = {
-	"hp_multiplier": 15.0,          # 15x HP base (was 10x) - Tankier
-	"damage_multiplier": 4.0,       # 4x daño (was 3.5x) - Deadlier
+	"hp_multiplier": 18.0,          # BUFFED: 15x -> 18x HP base - Tankier for balance
+	"damage_multiplier": 4.5,       # BUFFED: 4x -> 4.5x daño - Deadlier
 	"size_multiplier": 1.9,         # 90% más grandes
 	"xp_multiplier": 12.0,          # 12x XP (was 8x) - Better reward for harder fight
 	"speed_multiplier": 1.7,        # 1.7x Speed (was 1.5x) - Very fast

@@ -69,7 +69,7 @@ const GLOBAL_STAT_LIMITS: Dictionary = {
 	"crit_chance": {"min": 0.0, "max": 1.0},  # Máximo 100%
 	
 	# Efectos
-	"life_steal": {"min": 0.0, "max": 0.3},   # Máximo 30%
+	"life_steal": {"min": 0.0, "max": 0.2},   # NERFED: 30% -> 20% max
 }
 
 # Metadatos para UI

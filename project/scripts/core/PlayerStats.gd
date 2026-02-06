@@ -572,7 +572,7 @@ const XP_SCALING: float = 1.15  # Cada nivel requiere 15% más XP
 # Límites de stats
 const STAT_LIMITS: Dictionary = {
 	# Multiplicadores
-	# damage_mult: SIN CAP - el daño puede crecer infinitamente
+	# damage_mult: SOFT CAP 3.0x, HARD CAP 5.0x (50% efficiency above soft cap)
 	# gold_mult: Cap at 3.0x
 	# xp_mult: Cap at 3.0x
 	
@@ -589,16 +589,18 @@ const STAT_LIMITS: Dictionary = {
 	"xp_mult": {"min": 0.1, "max": 3.0},          # Cap at 3.0x
 	"gold_mult": {"min": 0.1, "max": 3.0},        # Cap at 3.0x
 	"cooldown_mult": {"min": 0.25, "max": 2.0},   # NEW: Cap min cooldown at 25% (75% reduction)
+	"health_regen": {"min": 0.0, "max": 15.0},    # BALANCE: Cap at 15 HP/s
+	"shield_regen_delay": {"min": 1.0, "max": 10.0}, # BALANCE: Minimum 1s delay always
 
 	# Probabilidades (0-100%)
 	"crit_chance": {"min": 0.0, "max": 1.0},
-	"dodge_chance": {"min": 0.0, "max": 0.75},      # Máximo 75%
+	"dodge_chance": {"min": 0.0, "max": 0.60},      # NERFED: 75% -> 60% (unified cap)
 	# NOTA: life_steal límite está en GlobalWeaponStats
 	"burn_chance": {"min": 0.0, "max": 0.5},         # Máximo 50%
 	"freeze_chance": {"min": 0.0, "max": 0.5},       # Máximo 50%
 	"bleed_chance": {"min": 0.0, "max": 0.5},        # Máximo 50%
 	"explosion_chance": {"min": 0.0, "max": 0.5},    # Máximo 50%
-	"execute_threshold": {"min": 0.0, "max": 0.70},  # Máximo 70% HP
+	"execute_threshold": {"min": 0.0, "max": 0.40},  # NERFED: 70% -> 40% HP
 	"overkill_damage": {"min": 0.0, "max": 1.0},     # Máximo 100%
 	"thorns_percent": {"min": 0.0, "max": 2.0},      # Máximo 200%
 	"thorns_slow": {"min": 0.0, "max": 0.5},         # Máximo 50% slow
@@ -609,9 +611,9 @@ const STAT_LIMITS: Dictionary = {
 	
 	# Daño condicional / sinergias
 	"elite_damage_mult": {"min": 0.0, "max": 3.0},   # Máximo +300% vs elites
-	"damage_vs_slowed": {"min": 0.0, "max": 2.0},    # Máximo +200%
-	"damage_vs_burning": {"min": 0.0, "max": 2.0},   # Máximo +200%
-	"damage_vs_frozen": {"min": 0.0, "max": 3.0},    # Máximo +300%
+	"damage_vs_slowed": {"min": 0.0, "max": 1.0},    # NERFED: +200% -> +100%
+	"damage_vs_burning": {"min": 0.0, "max": 1.0},   # NERFED: +200% -> +100%
+	"damage_vs_frozen": {"min": 0.0, "max": 1.0},    # NERFED: +300% -> +100%
 	"low_hp_damage_bonus": {"min": 0.0, "max": 10.0}, # Máximo +1000% (Unlocked for Executioner item)
 	"full_hp_damage_bonus": {"min": 0.0, "max": 1.0}, # Máximo +100%
 
@@ -1061,6 +1063,16 @@ func get_stat(stat_name: String) -> float:
 		elif stat_name == "damage_taken_mult":
 			final_value -= 0.2 # -20% Daño Recibido
 
+	# BALANCE: Soft-cap para damage_mult (diminishing returns past 3.0x)
+	if stat_name == "damage_mult":
+		const DAMAGE_SOFT_CAP: float = 3.0
+		const DAMAGE_HARD_CAP: float = 5.0
+		const DIMINISHING_RATE: float = 0.5  # 50% efficiency over soft cap
+		
+		if final_value > DAMAGE_SOFT_CAP:
+			var excess = final_value - DAMAGE_SOFT_CAP
+			final_value = DAMAGE_SOFT_CAP + (excess * DIMINISHING_RATE)
+			final_value = minf(final_value, DAMAGE_HARD_CAP)
 
 	# Aplicar límites si existen
 	if STAT_LIMITS.has(stat_name):
@@ -1345,11 +1357,17 @@ func _update_health_regen(delta: float) -> void:
 		var max_hp = get_stat("max_health")
 		if player_hp < max_hp and player_hp > 0:
 			player_ref.heal(heal_int)
+			# Balance Debug: Log regen heal
+			if BalanceDebugger and BalanceDebugger.enabled:
+				BalanceDebugger.log_heal(heal_int, "regen")
 	else:
 		pass  # Bloque else
 		# Fallback: curar el current_health local (para compatibilidad)
 		if current_health < get_stat("max_health") and current_health > 0:
 			heal(float(heal_int))
+			# Balance Debug: Log regen heal (fallback)
+			if BalanceDebugger and BalanceDebugger.enabled:
+				BalanceDebugger.log_heal(heal_int, "regen")
 
 func _get_player_current_health() -> float:
 	"""Obtener HP actual del player real"""

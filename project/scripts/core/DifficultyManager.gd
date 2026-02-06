@@ -26,8 +26,8 @@ var enemy_health_multiplier: float = 1.0
 # Configuración de escalado
 var speed_increase_per_minute: float = 0.05  # 5% por minuto
 var spawn_rate_increase_per_minute: float = 0.08  # 8% por minuto
-var damage_increase_per_minute: float = 0.03  # 3% por minuto
-var health_increase_per_minute: float = 0.04  # 4% por minuto
+var damage_increase_per_minute: float = 0.04  # BUFFED: 3% -> 4% por minuto
+var health_increase_per_minute: float = 0.05  # BUFFED: 4% -> 5% por minuto
 
 var boss_events_triggered: int = 0
 

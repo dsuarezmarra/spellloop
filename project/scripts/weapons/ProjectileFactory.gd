@@ -166,11 +166,17 @@ static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
 		# Intentar curar al jugador
 		if player.has_method("heal"):
 			player.heal(heal_int)
+			# Balance Debug: Log lifesteal heal
+			if BalanceDebugger and BalanceDebugger.enabled:
+				BalanceDebugger.log_heal(heal_int, "lifesteal")
 			# Debug desactivado: print("[LifeSteal] Curado +%d HP" % heal_int)
 		elif player.has_node("PlayerStats"):
 			var stats = player.get_node("PlayerStats")
 			if stats.has_method("heal"):
 				stats.heal(heal_int)
+				# Balance Debug: Log lifesteal heal
+				if BalanceDebugger and BalanceDebugger.enabled:
+					BalanceDebugger.log_heal(heal_int, "lifesteal")
 				# Debug desactivado: print("[LifeSteal] Curado +%d HP" % heal_int)
 
 # ═══════════════════════════════════════════════════════════════════════════════

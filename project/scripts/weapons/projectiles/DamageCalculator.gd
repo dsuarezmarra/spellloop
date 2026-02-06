@@ -166,6 +166,9 @@ static func apply_damage_with_effects(
 	# Aplicar daño
 	if target.has_method("take_damage"):
 		target.take_damage(final_damage)
+		# Balance Debug: Log damage dealt
+		if BalanceDebugger and BalanceDebugger.enabled:
+			BalanceDebugger.log_damage_dealt(final_damage)
 	
 	# Life steal
 	ProjectileFactory.apply_life_steal(tree, damage_result.final_damage)
