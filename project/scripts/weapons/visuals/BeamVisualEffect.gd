@@ -46,6 +46,13 @@ var _direction: Vector2 = Vector2.RIGHT
 var _width: float = 12.0
 var _segment_length: float = 20.0  # Para efecto zigzag
 
+# === OPTIMIZACIÓN ===
+var _has_body_texture: bool = false  # Si tiene textura, skip zigzag animation
+var _frame_skip_counter: int = 0     # Throttle para animación zigzag
+const ZIGZAG_UPDATE_INTERVAL: int = 3  # Actualizar zigzag cada N frames
+var _points_dirty: bool = true       # Solo recalcular puntos si es necesario
+var _cached_points: Array[Vector2] = []  # Cache de puntos calculados
+
 # Colores
 var _primary_color: Color = Color(1.0, 0.9, 0.3)
 var _secondary_color: Color = Color(1.0, 0.6, 0.2)
@@ -149,6 +156,8 @@ func _setup_from_sprites() -> void:
 		body_line.gradient = null
 		# OCULTAR el glow completamente cuando hay textura de body
 		glow_line.visible = false
+		# OPTIMIZACIÓN: Marcar que tiene textura para skip zigzag
+		_has_body_texture = true
 		# print("  ✓ Body texture configurada: " + str(visual_data.beam_body_spritesheet.get_width()) + "x" + str(visual_data.beam_body_spritesheet.get_height()))
 	else:
 		# Sin body sprite, hacer el Line2D más sutil para no tapar los otros sprites
@@ -335,6 +344,7 @@ func play_charge(charge_time: float = 0.3) -> void:
 func fire(duration: float = 0.5) -> void:
 	"""Disparar el rayo"""
 	current_state = State.FIRING
+	_points_dirty = true  # Marcar puntos como sucios para recalcular
 	
 	# Activar sprites
 	if start_sprite.sprite_frames and start_sprite.sprite_frames.has_animation("active"):
@@ -345,16 +355,23 @@ func fire(duration: float = 0.5) -> void:
 	# Mostrar todos los elementos
 	body_line.visible = true
 	# Solo mostrar glow si NO hay textura de body personalizada
-	if visual_data and visual_data.beam_body_spritesheet:
+	if _has_body_texture:
 		glow_line.visible = false
 	else:
 		glow_line.visible = true
 	tip_sprite.visible = true
 	
-	# Animar extensión del rayo
-	_update_beam_points(0)
-	var tween = create_tween()
-	tween.tween_method(_update_beam_points, 0.0, _length, 0.1).set_ease(Tween.EASE_OUT)
+	# Animar extensión del rayo - optimizado según tipo
+	if _has_body_texture:
+		# Versión rápida para beams con textura
+		_update_beam_points_fast(0)
+		var tween = create_tween()
+		tween.tween_method(_update_beam_points_fast, 0.0, _length, 0.1).set_ease(Tween.EASE_OUT)
+	else:
+		# Versión con zigzag para beams procedurales
+		_update_beam_points(0)
+		var tween = create_tween()
+		tween.tween_method(_update_beam_points, 0.0, _length, 0.1).set_ease(Tween.EASE_OUT)
 	
 	# Mantener por duración
 	await get_tree().create_timer(duration).timeout
@@ -415,7 +432,10 @@ func set_target(target_position: Vector2) -> void:
 	start_sprite.rotation = _direction.angle()
 	
 	if current_state == State.FIRING:
-		_update_beam_points(_length)
+		if _has_body_texture:
+			_update_beam_points_fast(_length)
+		else:
+			_update_beam_points(_length)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PROCESO
@@ -424,16 +444,37 @@ func set_target(target_position: Vector2) -> void:
 func _process(delta: float) -> void:
 	_time += delta
 	
-	if current_state == State.FIRING:
-		# Actualizar zigzag
+	if current_state != State.FIRING:
+		return
+	
+	# OPTIMIZACIÓN: Si tiene textura de body, no necesita animación de zigzag
+	if _has_body_texture:
+		# Solo actualizar puntos UNA VEZ si es necesario
+		if _points_dirty:
+			_update_beam_points_fast(_length)
+			_points_dirty = false
+		return
+	
+	# Throttle para beams procedurales con zigzag
+	_frame_skip_counter += 1
+	if _frame_skip_counter >= ZIGZAG_UPDATE_INTERVAL:
+		_frame_skip_counter = 0
 		_update_beam_points(_length)
 		
-		# Solo aplicar efectos de pulso si NO hay textura de body
-		if not (visual_data and visual_data.beam_body_spritesheet):
-			# Pulso de glow (solo para rayos procedurales)
-			var glow_pulse = sin(_time * 10) * 0.2 + 1.0
-			glow_line.width = _width * 4 * glow_pulse
-			
-			# Vibración del ancho
-			var width_pulse = sin(_time * 20) * 0.1 + 1.0
-			body_line.width = _width * width_pulse
+		# Pulso de glow (solo para rayos procedurales)
+		var glow_pulse = sin(_time * 10) * 0.2 + 1.0
+		glow_line.width = _width * 4 * glow_pulse
+		
+		# Vibración del ancho
+		var width_pulse = sin(_time * 20) * 0.1 + 1.0
+		body_line.width = _width * width_pulse
+
+func _update_beam_points_fast(current_length: float) -> void:
+	"""Versión rápida para beams con textura - línea recta sin zigzag"""
+	body_line.clear_points()
+	body_line.add_point(Vector2.ZERO)
+	body_line.add_point(_direction * current_length)
+	
+	# Posicionar punta
+	tip_sprite.position = _direction * current_length
+	tip_sprite.rotation = _direction.angle()

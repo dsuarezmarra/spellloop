@@ -528,6 +528,10 @@ func _connect_hud_to_player() -> void:
 		if attack_manager_ref.has_signal("weapon_removed"):
 			if not attack_manager_ref.weapon_removed.is_connected(_on_weapon_changed_update_hud):
 				attack_manager_ref.weapon_removed.connect(_on_weapon_changed_update_hud)
+		# Conectar weapon_leveled_up para sincronizar nivel en HUD
+		if attack_manager_ref.has_signal("weapon_leveled_up"):
+			if not attack_manager_ref.weapon_leveled_up.is_connected(_on_weapon_leveled_up_update_hud):
+				attack_manager_ref.weapon_leveled_up.connect(_on_weapon_leveled_up_update_hud)
 		# Force initial update
 		_update_hud_weapons_from_attack_manager(attack_manager_ref)
 
@@ -914,9 +918,10 @@ func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy
 	if hud and hud.has_method("update_kills"):
 		hud.update_kills(run_stats["kills"])
 
-	# XP AUTOMÁTICO - Se da directamente al matar
-	if experience_manager:
-		experience_manager.grant_exp_from_kill(exp_value)
+	# XP AUTOMÁTICO - Se da con un pequeño delay para mejor feedback visual
+	# El delay permite ver la muerte del enemigo antes de subir de nivel
+	if experience_manager and exp_value > 0:
+		_grant_exp_delayed(exp_value)
 
 	# MONEDAS - Caen al suelo para que el player las recoja
 	if experience_manager:
@@ -970,6 +975,19 @@ func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy
 		if explosion_chance > 0.0 and randf() < explosion_chance:
 			var explosion_damage = player_stats.get_stat("explosion_damage") if player_stats.has_method("get_stat") else 50.0
 			_trigger_kill_explosion(position, explosion_damage)
+
+func _grant_exp_delayed(exp_value: int) -> void:
+	"""Otorgar experiencia con un pequeño delay para mejor feedback visual.
+	   Permite ver la muerte del enemigo antes de que aparezca el panel de level up."""
+	const EXP_DELAY := 0.5  # Segundos de delay antes de dar XP
+	
+	# Usar SceneTreeTimer: process_always=false para respetar la pausa del juego
+	var timer = get_tree().create_timer(EXP_DELAY, false)
+	timer.timeout.connect(
+		func(): 
+			if experience_manager and is_instance_valid(experience_manager):
+				experience_manager.grant_exp_from_kill(exp_value)
+	)
 
 func _spawn_reward_chest(pos: Vector2, rewards_config: Dictionary) -> void:
 	"""Spawnear un cofre de recompensa"""
@@ -1433,6 +1451,12 @@ func _deferred_weapon_hud_update() -> void:
 
 func _on_weapon_changed_update_hud(_weapon, _slot_index: int) -> void:
 	"""Callback cuando se añade/remueve un arma - actualizar HUD"""
+	var attack_manager_ref = get_tree().get_first_node_in_group("attack_manager")
+	if attack_manager_ref:
+		_update_hud_weapons_from_attack_manager(attack_manager_ref)
+
+func _on_weapon_leveled_up_update_hud(_weapon, _new_level: int) -> void:
+	"""Callback cuando un arma sube de nivel - actualizar HUD"""
 	var attack_manager_ref = get_tree().get_first_node_in_group("attack_manager")
 	if attack_manager_ref:
 		_update_hud_weapons_from_attack_manager(attack_manager_ref)

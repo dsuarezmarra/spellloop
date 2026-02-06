@@ -291,6 +291,9 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	if font_btn:
 		delete_btn.add_theme_font_override("font", font_btn)
 	delete_btn.add_theme_font_size_override("font_size", 14)
+	# Ajustar posición del texto para centrado perfecto
+	delete_btn.add_theme_constant_override("content_margin_left", 8)
+	delete_btn.add_theme_constant_override("content_margin_top", 4)
 	delete_btn.add_theme_color_override("font_color", Color(0.2, 0.1, 0.1))  # Normal: negro/marrón oscuro
 	delete_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.4, 0.3))  # Hover: rojo brillante
 	delete_btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.5, 0.4))  # Pressed: rojo intenso

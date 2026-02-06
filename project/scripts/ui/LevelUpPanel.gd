@@ -39,6 +39,8 @@ const OPTION_TYPES = {
 const UNIQUE_COLOR = Color(1.0, 0.3, 0.3)     # Rojo para mejoras únicas
 const CURSED_COLOR = Color(0.7, 0.2, 0.8)     # Púrpura para mejoras cursed
 const WEAPON_COLOR = Color(1.0, 0.5, 0.1)     # Naranja para armas
+const FUSION_COLOR = Color(1.0, 0.4, 0.0)     # Naranja intenso base para fusiones
+const FUSION_GLOW_COLOR = Color(1.0, 0.85, 0.3)  # Dorado brillante para el glow de fusiones
 
 # Colores legacy por rarity (compatibilidad)
 const RARITY_COLORS = {
@@ -1017,9 +1019,16 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 	# ═══════════════════════════════════════════════════════════════════════════
 	_update_panel_style(panel, option)
 
-	# Tipo
+	# Tipo - con color especial para fusiones
+	var option_type = option.get("type", "")
 	if type_label:
-		type_label.text = _get_type_text(option.get("type", ""))
+		type_label.text = _get_type_text(option_type)
+		# Fusiones: Ocultar el label de tipo porque ya tenemos el badge épico
+		if option_type == OPTION_TYPES.FUSION:
+			type_label.visible = false
+		else:
+			type_label.visible = true
+			type_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 
 	# Icono
 	var icon_value = option.get("icon", "✨")
@@ -1043,6 +1052,37 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 			icon_label.visible = true
 			icon_texture.visible = false
 			icon_label.text = icon_str
+	
+	# Actualizar estilo del fondo del icono
+	var icon_container = panel.find_child("IconContainer", true, false)
+	if icon_container:
+		var icon_bg = icon_container.get_node_or_null("Panel")
+		if not icon_bg:
+			# Buscar el primer Panel hijo
+			for child in icon_container.get_children():
+				if child is Panel:
+					icon_bg = child
+					break
+		
+		if icon_bg:
+			var bg_style = StyleBoxFlat.new()
+			bg_style.set_corner_radius_all(36)  # Circular
+			
+			if option_type == OPTION_TYPES.FUSION:
+				# Estilo épico para fusiones
+				bg_style.bg_color = Color(0.2, 0.1, 0.0, 0.8)
+				bg_style.border_color = Color(1.0, 0.7, 0.2)  # Dorado
+				bg_style.set_border_width_all(3)
+				bg_style.shadow_color = Color(1.0, 0.5, 0.1, 0.6)
+				bg_style.shadow_size = 6
+			else:
+				# Estilo normal
+				bg_style.bg_color = Color(0, 0, 0, 0.3)
+				var tier_color = _get_option_color(option)
+				bg_style.border_color = tier_color
+				bg_style.set_border_width_all(2)
+			
+			icon_bg.add_theme_stylebox_override("panel", bg_style)
 
 	# Nombre con color basado en TIER y tipo especial
 	if name_label:
@@ -1056,29 +1096,25 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 
 func _update_panel_style(panel: Control, option: Dictionary) -> void:
 	"""Actualiza el estilo visual del panel basándose en tier y tipo."""
-
-func _set_fallback_icon(label: Label, texture: TextureRect) -> void:
-	"""Muestra un icono de fallback cuando falla la carga de imagen"""
-	label.visible = true
-	texture.visible = false
-	label.text = "❓" # Placeholder
-	label.add_theme_color_override("font_color", Color(1, 0, 1))
-
-func _update_style_implementation(panel: Control, option: Dictionary) -> void:
-	pass # Helper dummy if needed, but we keep original logic separated
-
-# Original style logic start
-
 	var option_type = option.get("type", "")
+	var is_fusion = (option_type == OPTION_TYPES.FUSION)
 	var is_weapon = (option_type == OPTION_TYPES.NEW_WEAPON or 
-					 option_type == OPTION_TYPES.LEVEL_UP_WEAPON or 
-					 option_type == OPTION_TYPES.FUSION)
+					 option_type == OPTION_TYPES.LEVEL_UP_WEAPON)
 	
 	# Determinar el color a usar
 	var panel_color: Color
+	var glow_color: Color = Color.TRANSPARENT
 	
-	if is_weapon:
-		# Armas, mejoras de arma y fusiones: Color naranja especial
+	if is_fusion:
+		# ═══════════════════════════════════════════════════════════════════════
+		# 🔥 FUSIÓN: ESTILO ÉPICO ESPECTACULAR 🔥
+		# ═══════════════════════════════════════════════════════════════════════
+		panel_color = FUSION_COLOR
+		glow_color = FUSION_GLOW_COLOR
+		_apply_fusion_epic_style(panel, option)
+		return  # El estilo épico se maneja completamente en la función dedicada
+	elif is_weapon:
+		# Armas normales: Color naranja
 		panel_color = WEAPON_COLOR
 	elif option.get("is_cursed", false):
 		# Mejoras cursed: Púrpura
@@ -1110,10 +1146,224 @@ func _update_style_implementation(panel: Control, option: Dictionary) -> void:
 		style.set_border_width_all(2)
 	
 	panel.add_theme_stylebox_override("panel", style)
+	
+	# Limpiar efectos de fusión si existían
+	_cleanup_fusion_effects(panel)
+
+func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
+	"""Aplicar estilo épico espectacular para tarjetas de FUSIÓN."""
+	# Limpiar efectos anteriores
+	_cleanup_fusion_effects(panel)
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# COLORES ÉPICOS DE FUSIÓN - Gradiente de fuego dorado a naranja intenso
+	# ═══════════════════════════════════════════════════════════════════════════
+	var primary_color = Color(1.0, 0.6, 0.1)      # Naranja dorado intenso
+	var secondary_color = Color(1.0, 0.35, 0.0)   # Naranja fuego
+	var glow_color = Color(1.0, 0.85, 0.3)        # Dorado brillante
+	var inner_glow = Color(1.0, 0.95, 0.6)        # Amarillo casi blanco
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# ESTILO PRINCIPAL DEL PANEL
+	# ═══════════════════════════════════════════════════════════════════════════
+	var style = StyleBoxFlat.new()
+	
+	# Fondo: Gradiente simulado con color intenso
+	style.bg_color = Color(0.15, 0.08, 0.02, 0.95)  # Fondo oscuro cálido
+	
+	# Borde grueso dorado brillante
+	style.border_color = glow_color
+	style.set_border_width_all(5)
+	style.set_corner_radius_all(12)
+	
+	# Shadow/Glow exterior
+	style.shadow_color = Color(primary_color.r, primary_color.g, primary_color.b, 0.8)
+	style.shadow_size = 12
+	style.shadow_offset = Vector2(0, 0)  # Glow centrado (no sombra direccional)
+	
+	panel.add_theme_stylebox_override("panel", style)
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# CAPA DE GLOW INTERIOR (Panel superpuesto)
+	# ═══════════════════════════════════════════════════════════════════════════
+	var glow_panel = Panel.new()
+	glow_panel.name = "FusionGlowPanel"
+	glow_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	glow_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	glow_panel.offset_left = 3
+	glow_panel.offset_top = 3
+	glow_panel.offset_right = -3
+	glow_panel.offset_bottom = -3
+	
+	var inner_style = StyleBoxFlat.new()
+	inner_style.bg_color = Color(0, 0, 0, 0)  # Transparente
+	inner_style.border_color = inner_glow
+	inner_style.set_border_width_all(2)
+	inner_style.set_corner_radius_all(10)
+	glow_panel.add_theme_stylebox_override("panel", inner_style)
+	panel.add_child(glow_panel)
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# PARTÍCULAS/ESTRELLAS DECORATIVAS (Esquinas)
+	# ═══════════════════════════════════════════════════════════════════════════
+	var corners_container = Control.new()
+	corners_container.name = "FusionCornersContainer"
+	corners_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	corners_container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	panel.add_child(corners_container)
+	
+	# Agregar iconos de fuego/estrella en las esquinas
+	var corner_icons = ["🔥", "✨", "🔥", "✨"]
+	var corner_positions = [
+		Vector2(8, 8),      # Top-left
+		Vector2(-24, 8),    # Top-right (offset negativo para ancla derecha)
+		Vector2(8, -24),    # Bottom-left
+		Vector2(-24, -24)   # Bottom-right
+	]
+	var corner_anchors = [
+		[0.0, 0.0],  # Top-left
+		[1.0, 0.0],  # Top-right
+		[0.0, 1.0],  # Bottom-left
+		[1.0, 1.0]   # Bottom-right
+	]
+	
+	for i in range(4):
+		var star = Label.new()
+		star.text = corner_icons[i]
+		star.add_theme_font_size_override("font_size", 16)
+		star.anchor_left = corner_anchors[i][0]
+		star.anchor_top = corner_anchors[i][1]
+		star.anchor_right = corner_anchors[i][0]
+		star.anchor_bottom = corner_anchors[i][1]
+		star.offset_left = corner_positions[i].x
+		star.offset_top = corner_positions[i].y
+		star.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		corners_container.add_child(star)
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# BADGE "FUSIÓN" ÉPICO EN LA PARTE SUPERIOR
+	# ═══════════════════════════════════════════════════════════════════════════
+	var badge = PanelContainer.new()
+	badge.name = "FusionBadge"
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	badge.anchor_left = 0.5
+	badge.anchor_right = 0.5
+	badge.anchor_top = 0.0
+	badge.anchor_bottom = 0.0
+	badge.offset_left = -50
+	badge.offset_right = 50
+	badge.offset_top = -12
+	badge.offset_bottom = 8
+	
+	var badge_style = StyleBoxFlat.new()
+	badge_style.bg_color = Color(0.9, 0.4, 0.0, 1.0)  # Naranja sólido
+	badge_style.border_color = glow_color
+	badge_style.set_border_width_all(2)
+	badge_style.set_corner_radius_all(4)
+	badge_style.shadow_color = Color(0, 0, 0, 0.5)
+	badge_style.shadow_size = 4
+	badge.add_theme_stylebox_override("panel", badge_style)
+	
+	var badge_label = Label.new()
+	badge_label.text = "🔥 FUSIÓN 🔥"
+	badge_label.add_theme_font_size_override("font_size", 11)
+	badge_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+	badge_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	badge_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	badge.add_child(badge_label)
+	panel.add_child(badge)
+	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# ANIMACIÓN DE PULSO BRILLANTE
+	# ═══════════════════════════════════════════════════════════════════════════
+	_start_fusion_pulse_animation(panel, glow_panel, style, inner_style)
+
+func _start_fusion_pulse_animation(panel: Control, glow_panel: Panel, main_style: StyleBoxFlat, inner_style: StyleBoxFlat) -> void:
+	"""Iniciar animación de pulso brillante para la tarjeta de fusión."""
+	# Crear un tween de pulso que se repite
+	var tween = create_tween()
+	tween.set_loops()  # Loop infinito
+	
+	# Guardar referencia al tween para poder cancelarlo
+	panel.set_meta("fusion_tween", tween)
+	
+	# Colores para el pulso
+	var bright_border = Color(1.0, 0.95, 0.6)  # Dorado brillante
+	var normal_border = Color(1.0, 0.7, 0.2)   # Dorado normal
+	var bright_shadow = Color(1.0, 0.6, 0.1, 1.0)
+	var dim_shadow = Color(1.0, 0.6, 0.1, 0.5)
+	
+	# Secuencia de pulso
+	tween.tween_method(
+		func(t: float):
+			if not is_instance_valid(panel) or not is_instance_valid(glow_panel):
+				return
+			# Interpolar colores
+			var border_color = bright_border.lerp(normal_border, t)
+			var shadow_alpha = lerpf(1.0, 0.4, t)
+			var shadow_size = lerpf(16, 8, t)
+			
+			main_style.border_color = border_color
+			main_style.shadow_color.a = shadow_alpha
+			main_style.shadow_size = int(shadow_size)
+			
+			# También pulsar el borde interior
+			inner_style.border_color = bright_border.lerp(Color(1.0, 0.85, 0.4), t)
+	, 0.0, 1.0, 0.8  # De 0 a 1 en 0.8 segundos
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	
+	tween.tween_method(
+		func(t: float):
+			if not is_instance_valid(panel) or not is_instance_valid(glow_panel):
+				return
+			var border_color = normal_border.lerp(bright_border, t)
+			var shadow_alpha = lerpf(0.4, 1.0, t)
+			var shadow_size = lerpf(8, 16, t)
+			
+			main_style.border_color = border_color
+			main_style.shadow_color.a = shadow_alpha
+			main_style.shadow_size = int(shadow_size)
+			
+			inner_style.border_color = Color(1.0, 0.85, 0.4).lerp(bright_border, t)
+	, 0.0, 1.0, 0.8
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+func _cleanup_fusion_effects(panel: Control) -> void:
+	"""Limpiar todos los efectos visuales de fusión de un panel."""
+	# Cancelar tween de animación si existe
+	if panel.has_meta("fusion_tween"):
+		var tween = panel.get_meta("fusion_tween")
+		if tween and tween is Tween and tween.is_valid():
+			tween.kill()
+		panel.remove_meta("fusion_tween")
+	
+	# Eliminar nodos de efectos
+	var glow_panel = panel.get_node_or_null("FusionGlowPanel")
+	if glow_panel:
+		glow_panel.queue_free()
+	
+	var corners = panel.get_node_or_null("FusionCornersContainer")
+	if corners:
+		corners.queue_free()
+	
+	var badge = panel.get_node_or_null("FusionBadge")
+	if badge:
+		badge.queue_free()
+
+func _set_fallback_icon(label: Label, texture: TextureRect) -> void:
+	"""Muestra un icono de fallback cuando falla la carga de imagen"""
+	label.visible = true
+	texture.visible = false
+	label.text = "❓" # Placeholder
+	label.add_theme_color_override("font_color", Color(1, 0, 1))
 
 func _get_option_color(option: Dictionary) -> Color:
 	"""Determina el color del nombre basado en tier, tipo especial, etc."""
 	var option_type = option.get("type", "")
+	
+	# Fusiones: Color dorado brillante épico
+	if option_type == OPTION_TYPES.FUSION:
+		return Color(1.0, 0.85, 0.3)  # Dorado brillante para fusiones
 	
 	# Armas nuevas y mejoras de arma tienen color naranja
 	if option_type == OPTION_TYPES.NEW_WEAPON or option_type == OPTION_TYPES.LEVEL_UP_WEAPON:

@@ -373,6 +373,8 @@ func _update_resume_button() -> void:
 			var resume_label = resume_button.get_node_or_null("ResumeLabel")
 			if resume_label:
 				resume_label.text = resume_text
+				# Tamaño reducido para textos largos
+				resume_label.add_theme_font_size_override("font_size", 18)
 			elif resume_button is Button:
 				(resume_button as Button).text = resume_text
 
@@ -383,6 +385,9 @@ func _update_resume_button() -> void:
 		var play_label = play_button.get_node_or_null("PlayLabel")
 		if play_label:
 			play_label.text = new_text
+			# Ajustar tamaño según longitud del texto
+			var font_size = 20 if can_resume_game else 28
+			play_label.add_theme_font_size_override("font_size", font_size)
 		elif play_button is Button:
 			(play_button as Button).text = new_text
 
@@ -419,7 +424,7 @@ func _create_resume_button() -> void:
 		var font_title = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
 		if font_title:
 			resume_label.add_theme_font_override("font", font_title)
-		resume_label.add_theme_font_size_override("font_size", 24)
+		resume_label.add_theme_font_size_override("font_size", 18)
 		resume_label.add_theme_color_override("font_color", Color(0.15, 0.1, 0.05, 1))
 		resume_label.add_theme_color_override("font_shadow_color", Color(1.0, 0.9, 0.5, 0.5))
 		resume_label.add_theme_constant_override("shadow_offset_y", 1)
