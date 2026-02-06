@@ -47,6 +47,12 @@ var _current_direction: Vector2 = Vector2.RIGHT
 var _rotation_offset: float = 0.0  # Offset de rotación en radianes para corregir sprites desalineados
 var _lock_rotation: bool = false  # Si true, el sprite no rota con la dirección (ej: tornados)
 
+# === OPTIMIZACIÓN ===
+var _frame_counter: int = 0         # Contador para throttle de efectos visuales
+const VISUAL_UPDATE_INTERVAL: int = 3  # Actualizar efectos visuales cada N frames
+var _cached_glow_scale: Vector2 = Vector2.ONE * 1.35  # Cache de escala de glow
+var _has_glow: bool = false         # Cache para evitar verificación repetida
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -443,15 +449,33 @@ func set_lock_rotation(locked: bool) -> void:
 func _process(delta: float) -> void:
 	_time += delta
 	
-	# Efecto de pulso en el glow
-	if glow_sprite and glow_sprite.visible:
-		var pulse = sin(_time * 4.0) * 0.1 + 0.9
-		glow_sprite.scale = Vector2.ONE * pulse * 1.5
+	# OPTIMIZACIÓN: Throttle para efectos visuales secundarios
+	# Solo actualizar glow y squash cada N frames para reducir carga
+	_frame_counter += 1
+	if _frame_counter < VISUAL_UPDATE_INTERVAL:
+		return
+	_frame_counter = 0
 	
-	# Squash & stretch durante el vuelo
+	# Efecto de pulso en el glow (solo si existe y está visible)
+	if _has_glow:
+		# Usar tabla de sin precalculada aproximada para mayor velocidad
+		# sin(x) ≈ valor interpolado simple
+		var pulse_phase = fmod(_time * 4.0, TAU)
+		var pulse = 0.9 + 0.1 * (1.0 - abs(pulse_phase - PI) / PI * 2.0)
+		_cached_glow_scale = Vector2.ONE * pulse * 1.5
+		glow_sprite.scale = _cached_glow_scale
+	
+	# Squash & stretch durante el vuelo (optimizado)
 	if current_state == State.IN_FLIGHT and _squash_stretch_enabled:
-		var squash = 1.0 + sin(_time * 8.0) * 0.05
+		# Aproximación rápida de sin() usando interpolación triangular
+		var squash_phase = fmod(_time * 8.0, TAU)
+		var squash_factor = 1.0 - abs(squash_phase - PI) / PI * 2.0  # Triángulo -1 a 1
+		var squash = 1.0 + squash_factor * 0.05
 		sprite.scale = Vector2(1.0 / squash, squash)
+
+func enable_glow_optimization() -> void:
+	"""Llamar después de setup para cachear estado de glow"""
+	_has_glow = glow_sprite != null and glow_sprite.visible
 
 func _on_animation_finished() -> void:
 	"""Manejar fin de animaciones"""

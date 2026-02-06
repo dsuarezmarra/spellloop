@@ -1156,6 +1156,14 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	_cleanup_fusion_effects(panel)
 	
 	# ═══════════════════════════════════════════════════════════════════════════
+	# ASEGURAR QUE EL CONTENIDO (VBoxContainer) ESTÉ VISIBLE POR ENCIMA
+	# ═══════════════════════════════════════════════════════════════════════════
+	for child in panel.get_children():
+		if child is VBoxContainer:
+			child.z_index = 5  # Por encima del glow_panel (-1), debajo de decoraciones (10)
+			break
+	
+	# ═══════════════════════════════════════════════════════════════════════════
 	# COLORES ÉPICOS DE FUSIÓN - Gradiente de fuego dorado a naranja intenso
 	# ═══════════════════════════════════════════════════════════════════════════
 	var primary_color = Color(1.0, 0.6, 0.1)      # Naranja dorado intenso
@@ -1184,11 +1192,13 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	panel.add_theme_stylebox_override("panel", style)
 	
 	# ═══════════════════════════════════════════════════════════════════════════
-	# CAPA DE GLOW INTERIOR (Panel superpuesto)
+	# CAPA DE GLOW INTERIOR (Panel superpuesto) - z_index bajo para no cubrir contenido
 	# ═══════════════════════════════════════════════════════════════════════════
 	var glow_panel = Panel.new()
 	glow_panel.name = "FusionGlowPanel"
 	glow_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	glow_panel.z_index = -1  # DETRÁS del contenido
+	glow_panel.show_behind_parent = true
 	glow_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
 	glow_panel.offset_left = 3
 	glow_panel.offset_top = 3
@@ -1202,13 +1212,15 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	inner_style.set_corner_radius_all(10)
 	glow_panel.add_theme_stylebox_override("panel", inner_style)
 	panel.add_child(glow_panel)
+	panel.move_child(glow_panel, 0)  # Mover al fondo para que esté DETRÁS del VBoxContainer
 	
 	# ═══════════════════════════════════════════════════════════════════════════
-	# PARTÍCULAS/ESTRELLAS DECORATIVAS (Esquinas)
+	# PARTÍCULAS/ESTRELLAS DECORATIVAS (Esquinas) - z_index alto para estar encima del borde
 	# ═══════════════════════════════════════════════════════════════════════════
 	var corners_container = Control.new()
 	corners_container.name = "FusionCornersContainer"
 	corners_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	corners_container.z_index = 10  # Encima del contenido (solo decoración pequeña)
 	corners_container.set_anchors_preset(Control.PRESET_FULL_RECT)
 	panel.add_child(corners_container)
 	
@@ -1246,6 +1258,7 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	var badge = PanelContainer.new()
 	badge.name = "FusionBadge"
 	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	badge.z_index = 10  # Encima del contenido
 	badge.anchor_left = 0.5
 	badge.anchor_right = 0.5
 	badge.anchor_top = 0.0
