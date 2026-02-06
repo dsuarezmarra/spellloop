@@ -224,17 +224,17 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	# Margen para posicionar los botones en el área dorada del frame
 	var buttons_margin = MarginContainer.new()
 	buttons_margin.name = "ButtonsMargin"
-	buttons_margin.add_theme_constant_override("margin_left", 12)  # Hacia la derecha
-	buttons_margin.add_theme_constant_override("margin_right", 8)
-	buttons_margin.add_theme_constant_override("margin_top", 0)   # Hacia arriba
-	buttons_margin.add_theme_constant_override("margin_bottom", 12)
+	buttons_margin.add_theme_constant_override("margin_left", -8)   # Hacia la IZQUIERDA
+	buttons_margin.add_theme_constant_override("margin_right", 0)
+	buttons_margin.add_theme_constant_override("margin_top", 0)
+	buttons_margin.add_theme_constant_override("margin_bottom", 18)  # Hacia arriba
 	vbox.add_child(buttons_margin)
 	
-	# Contenedor para los botones - NO centrado, usa todo el espacio
+	# Contenedor para los botones
 	var buttons_container = HBoxContainer.new()
 	buttons_container.name = "ButtonsContainer"
-	buttons_container.alignment = BoxContainer.ALIGNMENT_BEGIN  # Alineado a la izquierda
-	buttons_container.add_theme_constant_override("separation", 12)
+	buttons_container.alignment = BoxContainer.ALIGNMENT_BEGIN
+	buttons_container.add_theme_constant_override("separation", 8)  # Menos separación
 	buttons_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	buttons_margin.add_child(buttons_container)
 	
@@ -242,7 +242,7 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	var select_btn = Button.new()
 	select_btn.name = "SelectButton"
 	select_btn.text = Localization.L("common.new")
-	select_btn.custom_minimum_size = Vector2(140, 38)
+	select_btn.custom_minimum_size = Vector2(150, 35)  # Un poco más ancho
 	select_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	select_btn.focus_mode = Control.FOCUS_ALL
 	
@@ -254,18 +254,18 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	select_btn.add_theme_stylebox_override("pressed", btn_style_empty)
 	select_btn.add_theme_stylebox_override("focus", btn_style_empty)
 	
-	# Fuente dorada para el texto - GLOW dorado intenso en hover/focus
+	# Fuente para el texto - NEGRO normal, DORADO brillante en hover/focus
 	var font_btn = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
 	if font_btn:
 		select_btn.add_theme_font_override("font", font_btn)
 	select_btn.add_theme_font_size_override("font_size", 15)
-	select_btn.add_theme_color_override("font_color", Color(0.85, 0.75, 0.45))  # Normal: dorado suave
-	select_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.5))  # Hover: dorado brillante
-	select_btn.add_theme_color_override("font_pressed_color", Color(1.0, 1.0, 0.7))  # Pressed: dorado intenso
-	select_btn.add_theme_color_override("font_focus_color", Color(1.0, 0.95, 0.5))  # Focus: dorado brillante
-	# Sombra/outline para efecto glow
-	select_btn.add_theme_color_override("font_outline_color", Color(1.0, 0.8, 0.2, 0.0))  # Sin outline normal
-	select_btn.add_theme_constant_override("outline_size", 0)
+	select_btn.add_theme_color_override("font_color", Color(0.15, 0.1, 0.05))  # Normal: NEGRO/marrón oscuro
+	select_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.4))  # Hover: dorado MUY brillante
+	select_btn.add_theme_color_override("font_pressed_color", Color(1.0, 1.0, 0.6))  # Pressed: dorado intenso
+	select_btn.add_theme_color_override("font_focus_color", Color(1.0, 0.95, 0.4))  # Focus: dorado MUY brillante
+	# Outline para efecto glow en focus
+	select_btn.add_theme_color_override("font_outline_color", Color(1.0, 0.85, 0.3, 0.8))
+	select_btn.add_theme_constant_override("outline_size", 3)  # Outline visible para glow
 	
 	select_btn.pressed.connect(_on_slot_selected.bind(slot_index))
 	select_btn.mouse_entered.connect(_on_element_hover)
@@ -281,7 +281,7 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	var delete_btn = Button.new()
 	delete_btn.name = "DeleteButton"
 	delete_btn.text = Localization.L("common.delete")
-	delete_btn.custom_minimum_size = Vector2(140, 38)
+	delete_btn.custom_minimum_size = Vector2(135, 38)  # Ligeramente más pequeño
 	delete_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	delete_btn.visible = false  # Solo visible si hay datos
 	delete_btn.focus_mode = Control.FOCUS_ALL
@@ -293,14 +293,17 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	delete_btn.add_theme_stylebox_override("pressed", del_style_empty)
 	delete_btn.add_theme_stylebox_override("focus", del_style_empty)
 	
-	# Fuente y colores para BORRAR - glow rojo en hover/focus
+	# Fuente y colores para BORRAR - NEGRO normal, ROJO brillante en focus
 	if font_btn:
 		delete_btn.add_theme_font_override("font", font_btn)
 	delete_btn.add_theme_font_size_override("font_size", 14)
-	delete_btn.add_theme_color_override("font_color", Color(0.7, 0.5, 0.5))  # Normal: rojo apagado
-	delete_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.5, 0.4))  # Hover: rojo brillante
-	delete_btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.6, 0.5))  # Pressed: rojo intenso
-	delete_btn.add_theme_color_override("font_focus_color", Color(1.0, 0.5, 0.4))  # Focus: rojo brillante
+	delete_btn.add_theme_color_override("font_color", Color(0.2, 0.1, 0.1))  # Normal: negro/marrón oscuro
+	delete_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.4, 0.3))  # Hover: rojo brillante
+	delete_btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.5, 0.4))  # Pressed: rojo intenso
+	delete_btn.add_theme_color_override("font_focus_color", Color(1.0, 0.4, 0.3))  # Focus: rojo brillante
+	# Outline para glow rojo
+	delete_btn.add_theme_color_override("font_outline_color", Color(1.0, 0.3, 0.2, 0.7))
+	delete_btn.add_theme_constant_override("outline_size", 2)
 	
 	delete_btn.pressed.connect(_on_delete_slot.bind(slot_index))
 	delete_btn.mouse_entered.connect(_on_element_hover)
