@@ -351,9 +351,9 @@ func _on_coin_collected(value: int) -> void:
 
 	# Aplicar multiplicador de streak (5% por cada streak adicional)
 	# El flag "double_coin_streak" duplica este bonus
-	# Aplicar multiplicador de streak (5% por cada streak adicional)
+	# Aplicar multiplicador de streak (3% por cada streak adicional) - NERFED from 5%
 	# El flag "double_coin_streak" duplica este bonus (Legacy logic handled via global stat now)
-	var streak_bonus_per = 0.05
+	var streak_bonus_per = 0.03  # NERFED: 0.05 -> 0.03
 	
 	# Usar multiplicador de bonus de racha desde PlayerStats (New Item Support)
 	var streak_mult_stat = 1.0
@@ -373,11 +373,11 @@ func _on_coin_collected(value: int) -> void:
 		streak_mult_stat *= 2.0
 		
 	# Fórmula EXPONENCIAL: cada moneda multiplica el bonus
-	# Streak 5: 1.05^4 ≈ 1.22 (+22%), Streak 10: 1.05^9 ≈ 1.55 (+55%), Streak 20: 1.05^19 ≈ 2.53 (+153%)
+	# Streak 5: 1.03^4 ≈ 1.13 (+13%), Streak 10: 1.03^9 ≈ 1.30 (+30%), Streak 20: 1.03^19 ≈ 1.75 (+75%)
 	var streak_multiplier = pow(1.0 + (streak_bonus_per * streak_mult_stat), max(0, streak_count - 1))
 	
-	# Cap streak multiplier at x10.0 as requested
-	streak_multiplier = minf(streak_multiplier, 10.0)
+	# Cap streak multiplier at x3.0 (NERFED from x10.0) - prevents early snowball
+	streak_multiplier = minf(streak_multiplier, 3.0)
 	
 	# Actualizar máximo multiplicador de la racha actual
 	if streak_multiplier > _last_max_multiplier:

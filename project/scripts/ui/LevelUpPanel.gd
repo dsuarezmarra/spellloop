@@ -76,6 +76,11 @@ var button_panels: Array = []
 var reroll_count: int = 3
 var banish_count: int = 2
 var locked: bool = false
+var rerolls_used_this_level: int = 0  # BALANCE: Track rerolls used to calculate cost
+
+# Reroll cost constants (BALANCE)
+const REROLL_BASE_COST: int = 0      # First reroll free
+const REROLL_COST_STEP: int = 15     # Each subsequent reroll costs 15 more coins
 
 # Modal de confirmación para cerrar sin elegir
 var _confirm_modal: Control = null
@@ -602,7 +607,26 @@ func _select_option() -> void:
 func _on_reroll() -> void:
 	if locked or reroll_count <= 0:
 		return
+	
+	# BALANCE: Calculate reroll cost (progressive)
+	var reroll_cost = REROLL_BASE_COST + (rerolls_used_this_level * REROLL_COST_STEP)
+	
+	# Check if player has enough coins (if cost > 0)
+	if reroll_cost > 0:
+		var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
+		if exp_mgr and "total_coins" in exp_mgr:
+			if exp_mgr.total_coins < reroll_cost:
+				# Not enough coins - show feedback
+				FloatingText.spawn_text(get_viewport().get_visible_rect().size / 2, "Need %d coins!" % reroll_cost, Color.RED)
+				return
+			# Spend the coins
+			exp_mgr.total_coins -= reroll_cost
+			# Emit signal to update UI
+			if exp_mgr.has_signal("coin_collected"):
+				exp_mgr.coin_collected.emit(-reroll_cost, exp_mgr.total_coins)
+	
 	AudioManager.play_fixed("sfx_ui_click")
+	rerolls_used_this_level += 1  # Track for next cost calculation
 
 	# Consumir reroll en PlayerStats si es posible
 	if player_stats and player_stats.has_method("consume_reroll"):
@@ -990,10 +1014,14 @@ func _is_button_disabled(index: int) -> bool:
 		_: return false  # Saltar siempre disponible
 
 func _update_button_counts() -> void:
-	# Actualizar contador de Reroll
+	# Actualizar contador de Reroll (with cost if applicable)
 	var reroll_count_label = button_panels[0].find_child("Count", true, false) as Label
 	if reroll_count_label:
-		reroll_count_label.text = "(%d)" % reroll_count
+		var next_cost = REROLL_BASE_COST + (rerolls_used_this_level * REROLL_COST_STEP)
+		if next_cost > 0:
+			reroll_count_label.text = "(%d) 🪙%d" % [reroll_count, next_cost]
+		else:
+			reroll_count_label.text = "(%d)" % reroll_count
 
 	# Actualizar contador de Banish
 	var banish_count_label = button_panels[1].find_child("Count", true, false) as Label
