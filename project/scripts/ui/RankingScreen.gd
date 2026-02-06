@@ -144,6 +144,11 @@ func _create_header() -> void:
 	title_label = Label.new()
 	title_label.text = "RANKING GLOBAL"
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	
+	# Usar fuente del juego
+	var font_title = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	if font_title:
+		title_label.add_theme_font_override("font", font_title)
 	title_label.add_theme_font_size_override("font_size", 36)
 	title_label.add_theme_color_override("font_color", GOLD_COLOR)
 	main_container.add_child(title_label)
@@ -154,12 +159,15 @@ func _create_tabs() -> void:
 	tabs_container.add_theme_constant_override("separation", 20)
 	main_container.add_child(tabs_container)
 	
+	var font_btn = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
 	var tab_names = ["TOP 100", "MI POSICION", "AMIGOS"]
 	for i in range(3):
 		var btn = Button.new()
 		btn.text = tab_names[i]
 		btn.custom_minimum_size = Vector2(180, 50)
 		btn.focus_mode = Control.FOCUS_NONE  # Navegación manual
+		if font_btn:
+			btn.add_theme_font_override("font", font_btn)
 		btn.add_theme_font_size_override("font_size", 18)
 		tabs_container.add_child(btn)
 		tab_buttons.append(btn)
@@ -215,11 +223,15 @@ func _create_footer() -> void:
 	footer_container.add_theme_constant_override("separation", 30)
 	main_container.add_child(footer_container)
 	
+	var font_btn = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	
 	# Botón selector de mes
 	month_button = Button.new()
 	month_button.text = "Febrero 2026"
 	month_button.custom_minimum_size = Vector2(220, 55)
 	month_button.focus_mode = Control.FOCUS_NONE
+	if font_btn:
+		month_button.add_theme_font_override("font", font_btn)
 	month_button.add_theme_font_size_override("font_size", 18)
 	footer_container.add_child(month_button)
 	
@@ -228,6 +240,8 @@ func _create_footer() -> void:
 	refresh_button.text = "ACTUALIZAR"
 	refresh_button.custom_minimum_size = Vector2(180, 55)
 	refresh_button.focus_mode = Control.FOCUS_NONE
+	if font_btn:
+		refresh_button.add_theme_font_override("font", font_btn)
 	refresh_button.add_theme_font_size_override("font_size", 18)
 	footer_container.add_child(refresh_button)
 	
@@ -236,6 +250,8 @@ func _create_footer() -> void:
 	back_button.text = "VOLVER"
 	back_button.custom_minimum_size = Vector2(180, 55)
 	back_button.focus_mode = Control.FOCUS_NONE
+	if font_btn:
+		back_button.add_theme_font_override("font", font_btn)
 	back_button.add_theme_font_size_override("font_size", 18)
 	footer_container.add_child(back_button)
 
@@ -309,12 +325,16 @@ func _show_month_popup() -> void:
 		child.queue_free()
 	month_items.clear()
 	
+	var font_btn = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	
 	# Crear items de mes
 	for i in range(month_data.size()):
 		var btn = Button.new()
 		btn.text = month_data[i].display
 		btn.custom_minimum_size = Vector2(200, 40)
 		btn.focus_mode = Control.FOCUS_NONE
+		if font_btn:
+			btn.add_theme_font_override("font", font_btn)
 		btn.add_theme_font_size_override("font_size", 16)
 		month_popup_container.add_child(btn)
 		month_items.append(btn)
@@ -620,8 +640,22 @@ func _show_offline_message() -> void:
 	load_timeout_timer.stop()
 	is_loading = false
 	loading_label.visible = false
-	scroll_container.visible = false
-	offline_label.visible = true
+	offline_label.visible = false
+	scroll_container.visible = true
+	
+	# Mostrar placeholders de ejemplo
+	current_entries = _get_placeholder_entries()
+	_populate_entries()
+
+func _get_placeholder_entries() -> Array:
+	"""Generar 5 registros de ejemplo para preview"""
+	return [
+		{"rank": 1, "steam_name": "DragonSlayer_X", "score": 158420},
+		{"rank": 2, "steam_name": "ShadowMage99", "score": 142850},
+		{"rank": 3, "steam_name": "FrostQueen", "score": 128390},
+		{"rank": 4, "steam_name": "ArcaneMaster", "score": 115720},
+		{"rank": 5, "steam_name": "VoidWalker_Pro", "score": 98540},
+	]
 
 func _update_loading_state() -> void:
 	loading_label.visible = is_loading
@@ -677,10 +711,15 @@ func _create_entry_panel(entry: Dictionary) -> Control:
 	hbox.add_theme_constant_override("separation", 15)
 	panel.add_child(hbox)
 	
+	var font_entry = load("res://assets/ui/fonts/Quicksand-Variable.ttf")
+	var font_bold = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	
 	# Posición
 	var rank_label = Label.new()
 	rank_label.custom_minimum_size = Vector2(50, 0)
 	rank_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if font_bold:
+		rank_label.add_theme_font_override("font", font_bold)
 	rank_label.add_theme_font_size_override("font_size", 20)
 	
 	if rank == 1:
@@ -702,6 +741,8 @@ func _create_entry_panel(entry: Dictionary) -> Control:
 	var name_label = Label.new()
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.text = entry.get("steam_name", "Unknown")
+	if font_entry:
+		name_label.add_theme_font_override("font", font_entry)
 	name_label.add_theme_font_size_override("font_size", 18)
 	name_label.add_theme_color_override("font_color", NORMAL_COLOR)
 	hbox.add_child(name_label)
@@ -711,6 +752,8 @@ func _create_entry_panel(entry: Dictionary) -> Control:
 	score_label.custom_minimum_size = Vector2(120, 0)
 	score_label.text = "%d pts" % entry.get("score", 0)
 	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	if font_bold:
+		score_label.add_theme_font_override("font", font_bold)
 	score_label.add_theme_font_size_override("font_size", 18)
 	score_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5))
 	hbox.add_child(score_label)
