@@ -149,11 +149,11 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 		var style = StyleBoxTexture.new()
 		style.texture = frame_tex
 		# Ajustar márgenes para que el contenido quede DENTRO del frame
-		# El área dorada inferior es para los botones
+		# Los botones van al final del VBox, el content_margin define el área útil
 		style.content_margin_left = 35
 		style.content_margin_right = 35
 		style.content_margin_top = 55
-		style.content_margin_bottom = 60  # Espacio para área dorada de botones
+		style.content_margin_bottom = 15  # Reducido para que los botones queden más abajo en el frame
 		panel.add_theme_stylebox_override("panel", style)
 	else:
 		# Fallback: estilo programático
@@ -172,10 +172,10 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	vbox.add_theme_constant_override("separation", 0) # Control manual con spacers
 	panel.add_child(vbox)
 	
-	# --- HEADER (Número de Slot) ---
+	# --- HEADER (Número de Slot) - DENTRO del recuadro, más abajo y visible ---
 	var header_margin = MarginContainer.new()
-	header_margin.add_theme_constant_override("margin_top", 15)
-	header_margin.add_theme_constant_override("margin_bottom", 15)
+	header_margin.add_theme_constant_override("margin_top", 5)  # Más arriba en el header del frame
+	header_margin.add_theme_constant_override("margin_bottom", 8)
 	vbox.add_child(header_margin)
 	
 	var slot_title = Label.new()
@@ -185,9 +185,10 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	var font_slot = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
 	if font_slot:
 		slot_title.add_theme_font_override("font", font_slot)
-	slot_title.add_theme_font_size_override("font_size", 22)  # Más grande
-	slot_title.add_theme_color_override("font_color", Color(0.7, 0.65, 0.8))  # Púrpura suave
-	slot_title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5))
+	slot_title.add_theme_font_size_override("font_size", 24)  # Más grande y legible
+	slot_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))  # DORADO brillante visible
+	slot_title.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.9))  # Sombra fuerte
+	slot_title.add_theme_constant_override("shadow_offset_x", 2)
 	slot_title.add_theme_constant_override("shadow_offset_y", 2)
 	slot_title.add_theme_constant_override("letter_spacing", 4)
 	header_margin.add_child(slot_title)
@@ -203,8 +204,8 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	info_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	info_margin.add_theme_constant_override("margin_left", 20)
 	info_margin.add_theme_constant_override("margin_right", 20)
-	info_margin.add_theme_constant_override("margin_top", 30)
-	info_margin.add_theme_constant_override("margin_bottom", 30)
+	info_margin.add_theme_constant_override("margin_top", 15)
+	info_margin.add_theme_constant_override("margin_bottom", 10)  # Menos margen para dejar espacio a botones
 	vbox.add_child(info_margin)
 	
 	var inner_vbox = VBoxContainer.new()
@@ -219,62 +220,52 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	info_container.alignment = BoxContainer.ALIGNMENT_CENTER 
 	inner_vbox.add_child(info_container)
 	
-	# --- BOTONES EN EL FRAME (Superpuestos sobre los huecos dorados del asset) ---
-	# Usar un Control con posicionamiento absoluto para colocar los botones exactamente
-	var buttons_overlay = Control.new()
-	buttons_overlay.name = "ButtonsOverlay"
-	buttons_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	buttons_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Solo los botones reciben clicks
-	panel.add_child(buttons_overlay)
+	# --- BOTONES DENTRO DEL VBOX (en el área inferior del frame) ---
+	# Margen para posicionar los botones en el área dorada del frame
+	var buttons_margin = MarginContainer.new()
+	buttons_margin.name = "ButtonsMargin"
+	buttons_margin.add_theme_constant_override("margin_left", 12)  # Hacia la derecha
+	buttons_margin.add_theme_constant_override("margin_right", 8)
+	buttons_margin.add_theme_constant_override("margin_top", 0)   # Hacia arriba
+	buttons_margin.add_theme_constant_override("margin_bottom", 12)
+	vbox.add_child(buttons_margin)
 	
-	# Botón Principal (CONTINUAR/CREAR) - Hueco izquierdo del frame
+	# Contenedor para los botones - NO centrado, usa todo el espacio
+	var buttons_container = HBoxContainer.new()
+	buttons_container.name = "ButtonsContainer"
+	buttons_container.alignment = BoxContainer.ALIGNMENT_BEGIN  # Alineado a la izquierda
+	buttons_container.add_theme_constant_override("separation", 12)
+	buttons_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	buttons_margin.add_child(buttons_container)
+	
+	# Botón Principal (CONTINUAR/CREAR)
 	var select_btn = Button.new()
 	select_btn.name = "SelectButton"
 	select_btn.text = Localization.L("common.new")
-	# Posición absoluta sobre el hueco izquierdo del frame (escalado)
-	select_btn.position = Vector2(35, 472)  # Ajustado para slot más grande
-	select_btn.custom_minimum_size = Vector2(150, 45)
+	select_btn.custom_minimum_size = Vector2(140, 38)
 	select_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	select_btn.focus_mode = Control.FOCUS_ALL
 	
-	# Estilo TRANSPARENTE con brillo dorado en focus/hover
-	var btn_style_normal = StyleBoxFlat.new()
-	btn_style_normal.bg_color = Color(0, 0, 0, 0)  # Completamente transparente
-	btn_style_normal.set_border_width_all(0)
+	# Estilo COMPLETAMENTE TRANSPARENTE - solo glow en letras
+	var btn_style_empty = StyleBoxEmpty.new()
 	
-	var btn_style_hover = StyleBoxFlat.new()
-	btn_style_hover.bg_color = Color(1.0, 0.85, 0.3, 0.25)  # Destello dorado
-	btn_style_hover.set_border_width_all(2)
-	btn_style_hover.border_color = Color(1.0, 0.9, 0.4, 0.6)
-	btn_style_hover.set_corner_radius_all(6)
+	select_btn.add_theme_stylebox_override("normal", btn_style_empty)
+	select_btn.add_theme_stylebox_override("hover", btn_style_empty)
+	select_btn.add_theme_stylebox_override("pressed", btn_style_empty)
+	select_btn.add_theme_stylebox_override("focus", btn_style_empty)
 	
-	var btn_style_pressed = StyleBoxFlat.new()
-	btn_style_pressed.bg_color = Color(1.0, 0.85, 0.3, 0.4)  # Dorado más intenso
-	btn_style_pressed.set_border_width_all(2)
-	btn_style_pressed.border_color = Color(1.0, 0.95, 0.5, 0.8)
-	btn_style_pressed.set_corner_radius_all(6)
-	
-	# Focus igual que hover (brillo dorado, SIN borde gris rectangular)
-	var btn_style_focus = StyleBoxFlat.new()
-	btn_style_focus.bg_color = Color(1.0, 0.85, 0.3, 0.25)
-	btn_style_focus.set_border_width_all(2)
-	btn_style_focus.border_color = Color(1.0, 0.9, 0.4, 0.7)
-	btn_style_focus.set_corner_radius_all(6)
-	
-	select_btn.add_theme_stylebox_override("normal", btn_style_normal)
-	select_btn.add_theme_stylebox_override("hover", btn_style_hover)
-	select_btn.add_theme_stylebox_override("pressed", btn_style_pressed)
-	select_btn.add_theme_stylebox_override("focus", btn_style_focus)
-	
-	# Fuente dorada para el texto - más grande
+	# Fuente dorada para el texto - GLOW dorado intenso en hover/focus
 	var font_btn = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
 	if font_btn:
 		select_btn.add_theme_font_override("font", font_btn)
-	select_btn.add_theme_font_size_override("font_size", 16)
-	select_btn.add_theme_color_override("font_color", Color(0.95, 0.85, 0.5))
-	select_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.6))
-	select_btn.add_theme_color_override("font_pressed_color", Color(1.0, 1.0, 0.8))
-	select_btn.add_theme_color_override("font_focus_color", Color(1.0, 0.95, 0.6))
+	select_btn.add_theme_font_size_override("font_size", 15)
+	select_btn.add_theme_color_override("font_color", Color(0.85, 0.75, 0.45))  # Normal: dorado suave
+	select_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.95, 0.5))  # Hover: dorado brillante
+	select_btn.add_theme_color_override("font_pressed_color", Color(1.0, 1.0, 0.7))  # Pressed: dorado intenso
+	select_btn.add_theme_color_override("font_focus_color", Color(1.0, 0.95, 0.5))  # Focus: dorado brillante
+	# Sombra/outline para efecto glow
+	select_btn.add_theme_color_override("font_outline_color", Color(1.0, 0.8, 0.2, 0.0))  # Sin outline normal
+	select_btn.add_theme_constant_override("outline_size", 0)
 	
 	select_btn.pressed.connect(_on_slot_selected.bind(slot_index))
 	select_btn.mouse_entered.connect(_on_element_hover)
@@ -283,55 +274,43 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	select_btn.mouse_entered.connect(_highlight_panel.bind(panel, true))
 	select_btn.mouse_exited.connect(_highlight_panel.bind(panel, false))
 	
-	buttons_overlay.add_child(select_btn)
+	buttons_container.add_child(select_btn)
 	slot_buttons.append(select_btn)
 	
-	# Botón Secundario (BORRAR) - Hueco derecho del frame (solo visible si hay datos)
+	# Botón Secundario (BORRAR) - solo visible si hay datos
 	var delete_btn = Button.new()
 	delete_btn.name = "DeleteButton"
 	delete_btn.text = Localization.L("common.delete")
-	# Posición absoluta sobre el hueco derecho del frame (escalado)
-	delete_btn.position = Vector2(195, 472)  # Ajustado para slot más grande
-	delete_btn.custom_minimum_size = Vector2(150, 45)
+	delete_btn.custom_minimum_size = Vector2(140, 38)
 	delete_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	delete_btn.visible = false  # Solo visible si hay datos
 	delete_btn.focus_mode = Control.FOCUS_ALL
 	
-	# Estilo TRANSPARENTE con tinte rojo en hover (sin borde gris en focus)
-	var del_style_normal = StyleBoxFlat.new()
-	del_style_normal.bg_color = Color(0, 0, 0, 0)
-	del_style_normal.set_border_width_all(0)
+	# Estilo COMPLETAMENTE TRANSPARENTE - solo glow en letras rojas
+	var del_style_empty = StyleBoxEmpty.new()
+	delete_btn.add_theme_stylebox_override("normal", del_style_empty)
+	delete_btn.add_theme_stylebox_override("hover", del_style_empty)
+	delete_btn.add_theme_stylebox_override("pressed", del_style_empty)
+	delete_btn.add_theme_stylebox_override("focus", del_style_empty)
 	
-	var del_style_hover = StyleBoxFlat.new()
-	del_style_hover.bg_color = Color(1.0, 0.3, 0.2, 0.25)  # Rojo sutil
-	del_style_hover.set_border_width_all(2)
-	del_style_hover.border_color = Color(1.0, 0.4, 0.3, 0.6)
-	del_style_hover.set_corner_radius_all(6)
-	
-	var del_style_focus = StyleBoxFlat.new()
-	del_style_focus.bg_color = Color(1.0, 0.3, 0.2, 0.25)
-	del_style_focus.set_border_width_all(2)
-	del_style_focus.border_color = Color(1.0, 0.4, 0.3, 0.7)
-	del_style_focus.set_corner_radius_all(6)
-	
-	delete_btn.add_theme_stylebox_override("normal", del_style_normal)
-	delete_btn.add_theme_stylebox_override("hover", del_style_hover)
-	delete_btn.add_theme_stylebox_override("pressed", del_style_hover)
-	delete_btn.add_theme_stylebox_override("focus", del_style_focus)
-	
+	# Fuente y colores para BORRAR - glow rojo en hover/focus
 	if font_btn:
 		delete_btn.add_theme_font_override("font", font_btn)
 	delete_btn.add_theme_font_size_override("font_size", 14)
-	delete_btn.add_theme_color_override("font_color", Color(0.85, 0.6, 0.55))
-	delete_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.6, 0.5))
-	delete_btn.add_theme_color_override("font_focus_color", Color(1.0, 0.6, 0.5))
+	delete_btn.add_theme_color_override("font_color", Color(0.7, 0.5, 0.5))  # Normal: rojo apagado
+	delete_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.5, 0.4))  # Hover: rojo brillante
+	delete_btn.add_theme_color_override("font_pressed_color", Color(1.0, 0.6, 0.5))  # Pressed: rojo intenso
+	delete_btn.add_theme_color_override("font_focus_color", Color(1.0, 0.5, 0.4))  # Focus: rojo brillante
 	
 	delete_btn.pressed.connect(_on_delete_slot.bind(slot_index))
-	buttons_overlay.add_child(delete_btn)
+	delete_btn.mouse_entered.connect(_on_element_hover)
+	buttons_container.add_child(delete_btn)
 	
-	# --- NAVIGATION LINKS ---
-	select_btn.focus_neighbor_bottom = delete_btn.get_path()
-	delete_btn.focus_neighbor_top = select_btn.get_path()
+	# --- NAVIGATION LINKS (WASD horizontal entre select y delete) ---
+	select_btn.focus_neighbor_right = delete_btn.get_path()
+	select_btn.focus_neighbor_left = delete_btn.get_path()
+	delete_btn.focus_neighbor_left = select_btn.get_path()
+	delete_btn.focus_neighbor_right = select_btn.get_path()
 	
 	return panel
 
@@ -373,6 +352,9 @@ func _load_slot_data() -> void:
 			slot_data = save_manager.get_slot_data(i)
 		
 		_update_slot_display(i, slot_data)
+	
+	# Reconfigurar navegación después de actualizar visibilidad de botones
+	_setup_navigation()
 
 func _update_slot_display(slot_index: int, slot_data) -> void:
 	"""Actualizar la visualización de un slot con contenido dinámico"""
@@ -383,17 +365,17 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 	
 	# Buscar nodos clave en la nueva jerarquía
 	# Panel -> VBox -> Margin(Info) -> InnerVBox -> InfoContainer
-	# Panel -> ButtonsOverlay -> SelectButton, DeleteButton
+	# Panel -> VBox -> ButtonsContainer -> SelectButton, DeleteButton
 	
 	# Acceso seguro via find_child (más robusto que paths hardcodeados)
 	var info_container = panel.find_child("InfoContainer", true, false)
-	var buttons_overlay = panel.find_child("ButtonsOverlay", true, false)
+	var buttons_container = panel.find_child("ButtonsContainer", true, false)
 	
-	if not info_container or not buttons_overlay:
+	if not info_container or not buttons_container:
 		return
 		
-	var select_btn = buttons_overlay.get_node_or_null("SelectButton")
-	var delete_btn = buttons_overlay.get_node_or_null("DeleteButton")
+	var select_btn = buttons_container.get_node_or_null("SelectButton")
+	var delete_btn = buttons_container.get_node_or_null("DeleteButton")
 	
 	# Cargar fuente para textos
 	var font_info = load("res://assets/ui/fonts/Quicksand-Variable.ttf")
@@ -432,9 +414,6 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		if select_btn:
 			select_btn.text = Localization.L("ui.save_slots.create")
 			select_btn.modulate = Color(1, 1, 1)
-			# Centrar el botón cuando el slot está vacío
-			select_btn.position = Vector2(115, 472)  # Centrado (nuevo tamaño)
-			select_btn.custom_minimum_size = Vector2(150, 45)
 		if delete_btn:
 			delete_btn.visible = false
 			
@@ -463,33 +442,35 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		var stats_vbox = VBoxContainer.new()
 		stats_vbox.add_theme_constant_override("separation", 12)  # Más espacio
 		
-		# Mejor Puntuación - Estilo dorado destacado
+		# Mejor Puntuación - Estilo dorado MUY destacado y visible
 		var score_val = player_data.get("best_score", 0)
 		var score_lbl = Label.new()
 		score_lbl.text = "🏆 %d" % score_val
 		score_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		if font_title:
 			score_lbl.add_theme_font_override("font", font_title)
-		score_lbl.add_theme_font_size_override("font_size", 26)  # Más grande
-		score_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
-		score_lbl.add_theme_color_override("font_shadow_color", Color(0.3, 0.2, 0.0, 0.8))
+		score_lbl.add_theme_font_size_override("font_size", 28)  # MÁS grande
+		score_lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.35))  # Dorado brillante
+		score_lbl.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.95))  # Sombra MUY fuerte
+		score_lbl.add_theme_constant_override("shadow_offset_x", 2)
 		score_lbl.add_theme_constant_override("shadow_offset_y", 2)
 		stats_vbox.add_child(score_lbl)
 		
-		# Partidas jugadas
+		# Partidas jugadas - ALTA VISIBILIDAD
 		var runs_val = player_data.get("total_runs", 0)
 		var runs_lbl = Label.new()
 		runs_lbl.text = Localization.L("ui.save_slots.runs", [runs_val])
 		runs_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		if font_info:
 			runs_lbl.add_theme_font_override("font", font_info)
-		runs_lbl.add_theme_font_size_override("font_size", 16)  # Más grande
-		runs_lbl.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
-		runs_lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
-		runs_lbl.add_theme_constant_override("shadow_offset_y", 1)
+		runs_lbl.add_theme_font_size_override("font_size", 18)  # Más grande
+		runs_lbl.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))  # BLANCO puro
+		runs_lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))  # Sombra fuerte
+		runs_lbl.add_theme_constant_override("shadow_offset_x", 1)
+		runs_lbl.add_theme_constant_override("shadow_offset_y", 2)
 		stats_vbox.add_child(runs_lbl)
 		
-		# Tiempo jugado
+		# Tiempo jugado - ALTA VISIBILIDAD
 		var playtime = player_data.get("total_playtime", 0.0)
 		var hours = int(playtime) / 3600
 		var mins = (int(playtime) % 3600) / 60
@@ -501,10 +482,11 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		time_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		if font_info:
 			time_lbl.add_theme_font_override("font", font_info)
-		time_lbl.add_theme_font_size_override("font_size", 14)  # Más grande
-		time_lbl.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
-		time_lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5))
-		time_lbl.add_theme_constant_override("shadow_offset_y", 1)
+		time_lbl.add_theme_font_size_override("font_size", 16)  # Más grande
+		time_lbl.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))  # Casi blanco
+		time_lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.85))  # Sombra fuerte
+		time_lbl.add_theme_constant_override("shadow_offset_x", 1)
+		time_lbl.add_theme_constant_override("shadow_offset_y", 2)
 		stats_vbox.add_child(time_lbl)
 		
 		info_container.add_child(stats_vbox)
@@ -512,17 +494,11 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 		if select_btn:
 			select_btn.text = Localization.L("ui.save_slots.continue")
 			select_btn.modulate = Color(1.0, 1.0, 1.0)
-			# Posición izquierda cuando hay 2 botones (nuevo tamaño)
-			select_btn.position = Vector2(35, 472)
-			select_btn.custom_minimum_size = Vector2(150, 45)
 		if delete_btn:
 			delete_btn.visible = true
 			delete_btn.disabled = false
 			delete_btn.text = Localization.L("common.delete")
 			delete_btn.modulate = Color(1, 1, 1)
-			# Posición derecha (nuevo tamaño)
-			delete_btn.position = Vector2(195, 472)
-			delete_btn.custom_minimum_size = Vector2(150, 45)
 
 func _setup_navigation() -> void:
 	"""Configurar navegación WASD"""
@@ -539,28 +515,38 @@ func _setup_navigation() -> void:
 		var prev_idx = (i - 1 + num_active) % num_active
 		var next_idx = (i + 1) % num_active
 		
-		# Select Button Horizontal Links
+		# Select Button Horizontal Links (A/D entre slots)
 		select_btn.focus_neighbor_left = slot_buttons[prev_idx].get_path()
 		select_btn.focus_neighbor_right = slot_buttons[next_idx].get_path()
 		
-		# Delete Button Horizontal Links (if visible)
+		# --- NAVEGACIÓN VERTICAL (S/W entre CONTINUAR y BORRAR) ---
 		if delete_btn:
+			# Conectar select ↔ delete verticalmente SOLO si delete es visible
+			if delete_btn.visible:
+				select_btn.focus_neighbor_bottom = delete_btn.get_path()
+				select_btn.focus_neighbor_top = delete_btn.get_path()  # Ciclado
+				delete_btn.focus_neighbor_top = select_btn.get_path()
+				delete_btn.focus_neighbor_bottom = select_btn.get_path()  # Ciclado
+			else:
+				# Si delete no existe/visible, quedarse en select
+				select_btn.focus_neighbor_bottom = select_btn.get_path()
+				select_btn.focus_neighbor_top = select_btn.get_path()
+		
+		# Delete Button Horizontal Links (if visible)
+		if delete_btn and delete_btn.visible:
 			var prev_del = slot_panels[prev_idx].find_child("DeleteButton", true, false)
 			var next_del = slot_panels[next_idx].find_child("DeleteButton", true, false)
 			
-			# Si el vecino no tiene delete button (vacio), ir al select del vecino
+			# Si el vecino tiene delete visible, navegar a él; sino, ir al select del vecino
 			if prev_del and prev_del.visible:
 				delete_btn.focus_neighbor_left = prev_del.get_path()
 			else:
-				delete_btn.focus_neighbor_left = slot_buttons[prev_idx].get_path() # Fallback to select
+				delete_btn.focus_neighbor_left = slot_buttons[prev_idx].get_path()
 				
 			if next_del and next_del.visible:
 				delete_btn.focus_neighbor_right = next_del.get_path()
 			else:
-				delete_btn.focus_neighbor_right = slot_buttons[next_idx].get_path() # Fallback to select
-				
-			# Vertical down (ciclado o nada)
-			delete_btn.focus_neighbor_bottom = delete_btn.get_path() # Stay on delete
+				delete_btn.focus_neighbor_right = slot_buttons[next_idx].get_path()
 
 	# (Back Button logic removed)
 
