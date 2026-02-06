@@ -8,7 +8,7 @@
 # - Sustain/s (regen, lifesteal, heal-on-kill acumulado)
 # - TTK de elite/boss (tiempo desde spawn hasta muerte)
 extends Node
-class_name BalanceDebugger
+# class_name removed to avoid conflict with autoload singleton
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SEÑALES

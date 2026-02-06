@@ -142,9 +142,14 @@ static func _get_player_stats(context: Object, tree: SceneTree = null) -> Node:
 	# 1. Intentar desde contexto (AttackManager)
 	if context and context.has_method("get_player_stats"):
 		# Si AttackManager tiene getter
-		return context.get_player_stats()
+		var result = context.get_player_stats()
+		if result is Node:
+			return result
 	if context and "player_stats" in context:
-		return context.player_stats
+		var stats = context.player_stats
+		# Only return if it's a Node (not a Dictionary)
+		if stats is Node:
+			return stats
 		
 	# 2. Intentar buscar globalmente (si tenemos tree)
 	if tree:
@@ -253,14 +258,14 @@ static func _generate_gold_loot(chest_type: int, luck: float) -> Dictionary:
 
 static func _generate_healing_loot(chest_type: int) -> Dictionary:
 	var heal_type = "potion"
-	var name = Localization.L("items.potions.health_potion.name")
+	var item_name = Localization.L("items.potions.health_potion.name")
 	var amount = 30 # % de cura
 	var icon = "❤️"
 	var desc = Localization.L("items.potions.health_potion.description")
 	
 	if chest_type >= ChestType.ELITE:
 		heal_type = "full_potion"
-		name = Localization.L("items.potions.full_elixir.name")
+		item_name = Localization.L("items.potions.full_elixir.name")
 		amount = 100
 		icon = "💚"
 		desc = Localization.L("items.potions.full_elixir.description")
@@ -269,7 +274,7 @@ static func _generate_healing_loot(chest_type: int) -> Dictionary:
 		"id": heal_type,
 		"type": "consumable",
 		"effect": "heal",
-		"name": name,
+		"name": item_name,
 		"description": desc,
 		"amount": amount,
 		"rarity": 1,
@@ -527,17 +532,17 @@ static func get_random_shop_loot(chest_type: int, count: int, luck: float = 1.0,
 	
 	# Tier base según tipo de cofre
 	var base_tier = 1
-	var min_rarity = 0
+	var _min_rarity = 0  # Reserved for future filtering
 	
 	match chest_type:
 		ChestType.NORMAL:
 			base_tier = 1 # Común/Uncommon
 		ChestType.ELITE:
 			base_tier = 2 # Rare+
-			min_rarity = 1
+			_min_rarity = 1
 		ChestType.BOSS:
 			base_tier = 3 # Epic/Legendary
-			min_rarity = 3
+			_min_rarity = 3
 			
 	# Generar items
 	for i in range(count):
@@ -612,7 +617,7 @@ static func _generate_shop_item(chest_type: int, base_tier: int, luck: float, co
 	
 	return item
 
-static func _generate_shop_weapon(base_tier: int, luck: float) -> Dictionary:
+static func _generate_shop_weapon(base_tier: int, _luck: float) -> Dictionary:
 	"""Generar arma para tienda"""
 	# Obtener todas las armas base del diccionario
 	var all_weapon_ids = WeaponDatabase.WEAPONS.keys()
