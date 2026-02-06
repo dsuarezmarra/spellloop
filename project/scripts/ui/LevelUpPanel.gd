@@ -1158,9 +1158,16 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	# ═══════════════════════════════════════════════════════════════════════════
 	# ASEGURAR QUE EL CONTENIDO (VBoxContainer) ESTÉ VISIBLE POR ENCIMA
 	# ═══════════════════════════════════════════════════════════════════════════
+	var content_vbox: VBoxContainer = null
 	for child in panel.get_children():
 		if child is VBoxContainer:
+			content_vbox = child
 			child.z_index = 5  # Por encima del glow_panel (-1), debajo de decoraciones (10)
+			# IMPORTANTE: Asegurar que todos los hijos del VBoxContainer sean visibles
+			for vbox_child in child.get_children():
+				if vbox_child is Control:
+					vbox_child.z_index = 5
+					vbox_child.show_behind_parent = false
 			break
 	
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1213,6 +1220,10 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	glow_panel.add_theme_stylebox_override("panel", inner_style)
 	panel.add_child(glow_panel)
 	panel.move_child(glow_panel, 0)  # Mover al fondo para que esté DETRÁS del VBoxContainer
+	
+	# IMPORTANTE: Mover el VBoxContainer al final para asegurar que se dibuje encima
+	if content_vbox:
+		panel.move_child(content_vbox, -1)
 	
 	# ═══════════════════════════════════════════════════════════════════════════
 	# PARTÍCULAS/ESTRELLAS DECORATIVAS (Esquinas) - z_index alto para estar encima del borde

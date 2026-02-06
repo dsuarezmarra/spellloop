@@ -58,6 +58,10 @@ var _fade_timer: float = 0.0
 var _max_duration: float = 0.5
 var _expected_chains: int = 2
 
+# === OPTIMIZACIÓN ===
+var _frame_counter: int = 0
+const VISUAL_UPDATE_INTERVAL: int = 2  # Actualizar visuales cada N frames
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -255,10 +259,20 @@ func _process(delta: float) -> void:
 	_time += delta
 	_fade_timer += delta
 
+	# OPTIMIZACIÓN: Throttle para actualización de visuales
+	_frame_counter += 1
+	if _frame_counter < VISUAL_UPDATE_INTERVAL:
+		# Solo verificar terminación y fade, skip actualizaciones visuales costosas
+		if _fade_timer >= _max_duration:
+			_cleanup()
+			all_chains_finished.emit()
+			queue_free()
+		return
+	_frame_counter = 0
+
 	if not _use_custom_sprites:
-		# Actualizar puntos del rayo (distorsión continua del vacío)
-		if randf() < 0.4:  # Actualizar frecuentemente para efecto caótico
-			_update_bolt_points()
+		# Actualizar puntos del rayo (distorsión continua del vacío) - con throttle
+		_update_bolt_points()
 
 	# Fade out
 	if _fade_timer > _max_duration * 0.6:

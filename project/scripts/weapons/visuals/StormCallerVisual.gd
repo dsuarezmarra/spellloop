@@ -58,6 +58,10 @@ var _fade_timer: float = 0.0
 var _max_duration: float = 0.5
 var _expected_chains: int = 3  # Storm caller típicamente tiene 3 saltos
 
+# === OPTIMIZACIÓN ===
+var _frame_counter: int = 0
+const VISUAL_UPDATE_INTERVAL: int = 2  # Actualizar visuales cada N frames
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -259,7 +263,16 @@ func _process(delta: float) -> void:
 	_time += delta
 	_fade_timer += delta
 
-	# Actualizar rayo (solo en modo procedural)
+	# OPTIMIZACIÓN: Throttle para actualización de visuales
+	_frame_counter += 1
+	if _frame_counter < VISUAL_UPDATE_INTERVAL:
+		# Solo verificar terminación, skip actualizaciones visuales
+		if _fade_timer >= _max_duration:
+			_cleanup()
+		return
+	_frame_counter = 0
+
+	# Actualizar rayo (solo en modo procedural y primeros 0.1s)
 	if not _use_custom_sprites and _time < 0.1:
 		# Regenerar ligeramente los puntos para efecto de "chispa"
 		_update_bolt_path()

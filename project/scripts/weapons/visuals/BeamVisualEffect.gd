@@ -53,6 +53,17 @@ const ZIGZAG_UPDATE_INTERVAL: int = 3  # Actualizar zigzag cada N frames
 var _points_dirty: bool = true       # Solo recalcular puntos si es necesario
 var _cached_points: Array[Vector2] = []  # Cache de puntos calculados
 
+# Aproximación rápida de sin() usando onda triangular - evita llamadas a sin() costosas
+static func _fast_sin(x: float) -> float:
+	var period = fmod(x, TAU)
+	if period < 0:
+		period += TAU
+	if period < PI:
+		return 1.0 - (2.0 * period / PI - 1.0) * (2.0 * period / PI - 1.0) * 2.0 + 1.0
+	else:
+		var t = (period - PI) / PI
+		return -1.0 + (2.0 * t - 1.0) * (2.0 * t - 1.0) * 2.0 - 1.0
+
 # Colores
 var _primary_color: Color = Color(1.0, 0.9, 0.3)
 var _secondary_color: Color = Color(1.0, 0.6, 0.2)
@@ -461,12 +472,12 @@ func _process(delta: float) -> void:
 		_frame_skip_counter = 0
 		_update_beam_points(_length)
 		
-		# Pulso de glow (solo para rayos procedurales)
-		var glow_pulse = sin(_time * 10) * 0.2 + 1.0
+		# Pulso de glow (solo para rayos procedurales) - usando fast_sin para rendimiento
+		var glow_pulse = _fast_sin(_time * 10) * 0.2 + 1.0
 		glow_line.width = _width * 4 * glow_pulse
 		
 		# Vibración del ancho
-		var width_pulse = sin(_time * 20) * 0.1 + 1.0
+		var width_pulse = _fast_sin(_time * 20) * 0.1 + 1.0
 		body_line.width = _width * width_pulse
 
 func _update_beam_points_fast(current_length: float) -> void:
