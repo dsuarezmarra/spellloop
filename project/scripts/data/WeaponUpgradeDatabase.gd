@@ -951,22 +951,41 @@ static func _L(key: String, args: Array = []) -> String:
 		return loc.L(key, args)
 	return key
 
+# Categorías de upgrades en los JSON de localización
+const UPGRADE_CATEGORIES = ["defensive", "utility", "offensive", "global"]
+
+static func _find_localized_upgrade_key(upgrade_id: String, field: String) -> String:
+	"""Buscar la clave correcta de un upgrade en los JSON, probando diferentes subcategorías"""
+	# Primero intentar sin categoría (para upgrades globales)
+	var direct_key = "upgrades." + upgrade_id + "." + field
+	var result = _L(direct_key)
+	if result != direct_key:
+		return result
+	
+	# Buscar en las subcategorías
+	for category in UPGRADE_CATEGORIES:
+		var key = "upgrades." + category + "." + upgrade_id + "." + field
+		result = _L(key)
+		if result != key:
+			return result
+	
+	# No encontrado, retornar clave original para fallback
+	return direct_key
+
 static func get_upgrade_name(upgrade_id: String) -> String:
 	"""Obtener nombre localizado de un upgrade"""
-	var key = "upgrades." + upgrade_id + ".name"
-	var result = _L(key)
-	# Si no hay traducción, usar el nombre hardcodeado como fallback
-	if result == key:
+	var result = _find_localized_upgrade_key(upgrade_id, "name")
+	# Si no tiene traducción (resultado = clave), usar fallback hardcodeado
+	if result.begins_with("upgrades."):
 		var upgrade = get_upgrade(upgrade_id)
 		return upgrade.get("name", upgrade_id)
 	return result
 
 static func get_upgrade_description(upgrade_id: String) -> String:
 	"""Obtener descripción localizada de un upgrade"""
-	var key = "upgrades." + upgrade_id + ".description"
-	var result = _L(key)
-	# Si no hay traducción, usar la descripción hardcodeada como fallback
-	if result == key:
+	var result = _find_localized_upgrade_key(upgrade_id, "desc")
+	# Si no tiene traducción (resultado = clave), usar fallback hardcodeado
+	if result.begins_with("upgrades."):
 		var upgrade = get_upgrade(upgrade_id)
 		return upgrade.get("description", "")
 	return result

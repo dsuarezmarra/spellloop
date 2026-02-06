@@ -598,6 +598,34 @@
 			"unique_guardian_angel": {"name": "守護天使", "desc": "+100シールド、+50HP、+1復活。"},
 			"unique_frost_nova": {"name": "フロストノヴァ", "desc": "+30%凍結、+75%持続、+25%範囲。"},
 			"unique_glass_cannon": {"name": "クリスタルパクト", "desc": "ダメージx2.0、最大HP=1。"}
+		},
+		"global": {
+			"global_damage_1": {"name": "小力", "desc": "全武器が+10%ダメージ。"},
+			"global_damage_2": {"name": "力", "desc": "全武器が+20%ダメージ。"},
+			"global_damage_3": {"name": "大力", "desc": "全武器が+35%ダメージ。"},
+			"global_damage_flat_1": {"name": "鋭利な刃", "desc": "全武器が+3ダメージ。"},
+			"global_damage_flat_2": {"name": "致死の刃", "desc": "全武器が+8ダメージ。"},
+			"global_attack_speed_1": {"name": "反射神経", "desc": "全武器が+15%速く攻撃。"},
+			"global_attack_speed_2": {"name": "敏捷性", "desc": "全武器が+25%速く攻撃。"},
+			"global_attack_speed_3": {"name": "光速", "desc": "全武器が+40%速く攻撃。"},
+			"global_area_1": {"name": "小爆発", "desc": "全範囲が+15%大きく。"},
+			"global_area_2": {"name": "爆発", "desc": "全範囲が+30%大きく。"},
+			"global_projectile_1": {"name": "追加弾", "desc": "全武器が+1弾発射。"},
+			"global_projectile_2": {"name": "弾雨", "desc": "全武器が+2弾発射。"},
+			"global_projectile_speed_1": {"name": "弾速", "desc": "全弾が+30%速く。"},
+			"global_projectile_speed_2": {"name": "超音速", "desc": "全弾が+50%速く。"},
+			"global_crit_chance_1": {"name": "クリティカルアイ", "desc": "+8%クリ率。"},
+			"global_crit_chance_2": {"name": "精密", "desc": "+15%クリ率。"},
+			"global_crit_damage_1": {"name": "壊滅打撃", "desc": "+30%クリダメ。"},
+			"global_crit_damage_2": {"name": "滅殺", "desc": "+60%クリダメ。"},
+			"global_duration_1": {"name": "持続力", "desc": "効果が+25%長く。"},
+			"global_duration_2": {"name": "永遠", "desc": "効果が+50%長く。"},
+			"global_knockback_1": {"name": "衝撃", "desc": "全武器が+30%弾く。"},
+			"global_knockback_2": {"name": "強烈な押し", "desc": "全武器が+60%弾く。"},
+			"global_pierce_1": {"name": "貫通", "desc": "+1体貫通。"},
+			"global_pierce_2": {"name": "穿孔", "desc": "+2体貫通。"},
+			"global_range_1": {"name": "射程増大", "desc": "+20%射程。"},
+			"global_range_2": {"name": "極限射程", "desc": "+40%射程。"}
 		}
 	},
 	"messages": {
@@ -647,5 +675,67 @@
 		"epic": "エピック",
 		"legendary": "レジェンダリー",
 		"unknown": "不明"
-	}
+	},
+	"option_types": {
+		"new_weapon": "新武器",
+		"level_up": "強化",
+		"synergy": "シナジー",
+		"fusion": "融合",
+		"upgrade": "強化"
+	},
+	"pause_categories": {
+		"defensive": "防御",
+		"offensive": "攻撃",
+		"critical": "クリティカル",
+		"utility": "ユーティリティ",
+		"effects_bonus": "効果 & ボーナス"
+	},
+	"weapon_stats_labels": {
+		"damage": "ダメージ",
+		"damage_mult": "ダメージ",
+		"attack_speed": "攻撃速度",
+		"attack_speed_mult": "攻撃速度",
+		"cooldown": "クールダウン",
+		"projectiles": "弾数",
+		"projectile_speed": "弾速",
+		"projectile_speed_mult": "弾速",
+		"area": "範囲",
+		"area_mult": "範囲",
+		"range": "射程",
+		"range_mult": "射程",
+		"knockback": "ノックバック",
+		"knockback_mult": "ノックバック",
+		"duration": "持続",
+		"duration_mult": "持続",
+		"pierce": "貫通",
+		"chains": "チェイン",
+		"crit_chance": "クリ率",
+		"crit_damage": "クリダメ",
+		"extra_projectiles": "弾数+",
+		"extra_pierce": "貫通+",
+		"damage_flat": "固定ダメージ"
+	},
+	"element_effects": {
+		"ice": "敵を%.0f%%減速",
+		"fire": "燃焼を与える（継続ダメージ）",
+		"lightning": "%d体の近くの敵に飛ぶ",
+		"arcane": "プレイヤーの周りを回る",
+		"shadow": "%d体の敵を貫通",
+		"nature": "敵を追跡、撃破で回復",
+		"wind": "扇形に発射",
+		"earth": "地面から出現",
+		"light": "連続光線",
+		"void": "範囲パルス"
+	},
+	"fallback_upgrades": {
+		"damage_boost": {"name": "魔法ダメージ+", "desc": "全武器のダメージが10%増加"},
+		"attack_speed_boost": {"name": "攻撃速度+", "desc": "攻撃速度が10%増加"},
+		"speed_boost": {"name": "移動速度+", "desc": "移動速度が10%増加"},
+		"health_boost": {"name": "最大HP+", "desc": "最大HPが20増加"}
+	},
+	"fusion_format": {
+		"name": "🔥 %s",
+		"description": "融合: %s + %s"
+	},
+	"weapon_level_format": "%s Lv.%d → %d"
 }

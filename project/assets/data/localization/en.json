@@ -51,7 +51,8 @@
 			"stats": "Stats",
 			"passive": "Passive",
 			"weapon": "Starting Weapon",
-			"unlock_requirement": "Unlock Requirement"
+			"unlock_requirement": "Unlock Requirement",
+			"instructions": "← → Navigate  |  ENTER Select  |  ESC Back"
 		},
 		"options": {
 			"title": "OPTIONS",
@@ -628,6 +629,34 @@
 			"unique_guardian_angel": {"name": "Guardian Angel", "desc": "+100 Shield, +50 HP, +1 revive, shield regenerates 2s faster."},
 			"unique_frost_nova": {"name": "Frost Nova", "desc": "+30% freeze chance, +75% freeze duration, +25% area."},
 			"unique_glass_cannon": {"name": "Crystal Pact", "desc": "Damage x2.0 (multiplicative), but your Max HP is set to 1."}
+		},
+		"global": {
+			"global_damage_1": {"name": "Minor Power", "desc": "All weapons deal +10% damage."},
+			"global_damage_2": {"name": "Power", "desc": "All weapons deal +20% damage."},
+			"global_damage_3": {"name": "Major Power", "desc": "All weapons deal +35% damage."},
+			"global_damage_flat_1": {"name": "Sharp Edge", "desc": "All weapons deal +3 damage."},
+			"global_damage_flat_2": {"name": "Deadly Edge", "desc": "All weapons deal +8 damage."},
+			"global_attack_speed_1": {"name": "Reflexes", "desc": "All weapons attack +15% faster."},
+			"global_attack_speed_2": {"name": "Swiftness", "desc": "All weapons attack +25% faster."},
+			"global_attack_speed_3": {"name": "Light Speed", "desc": "All weapons attack +40% faster."},
+			"global_area_1": {"name": "Minor Explosion", "desc": "All area effects +15% larger."},
+			"global_area_2": {"name": "Explosion", "desc": "All area effects +30% larger."},
+			"global_projectile_1": {"name": "Extra Projectile", "desc": "All weapons fire +1 projectile."},
+			"global_projectile_2": {"name": "Projectile Rain", "desc": "All weapons fire +2 projectiles."},
+			"global_projectile_speed_1": {"name": "Projectile Speed", "desc": "All projectiles +30% faster."},
+			"global_projectile_speed_2": {"name": "Supersonic Speed", "desc": "All projectiles +50% faster."},
+			"global_crit_chance_1": {"name": "Critical Eye", "desc": "+8% critical chance."},
+			"global_crit_chance_2": {"name": "Precision", "desc": "+15% critical chance."},
+			"global_crit_damage_1": {"name": "Devastating Blow", "desc": "+30% critical damage."},
+			"global_crit_damage_2": {"name": "Annihilation", "desc": "+60% critical damage."},
+			"global_duration_1": {"name": "Persistence", "desc": "Effects last +25% longer."},
+			"global_duration_2": {"name": "Eternity", "desc": "Effects last +50% longer."},
+			"global_knockback_1": {"name": "Impact", "desc": "All weapons push +30%."},
+			"global_knockback_2": {"name": "Brutal Push", "desc": "All weapons push +60%."},
+			"global_pierce_1": {"name": "Pierce", "desc": "+1 enemy pierced."},
+			"global_pierce_2": {"name": "Perforation", "desc": "+2 enemies pierced."},
+			"global_range_1": {"name": "Extended Range", "desc": "+20% range."},
+			"global_range_2": {"name": "Extreme Range", "desc": "+40% range."}
 		}
 	},
 	"messages": {
@@ -677,5 +706,67 @@
 		"epic": "Epic",
 		"legendary": "Legendary",
 		"unknown": "Unknown"
-	}
+	},
+	"option_types": {
+		"new_weapon": "New Weapon",
+		"level_up": "Upgrade",
+		"synergy": "Synergy",
+		"fusion": "Fusion",
+		"upgrade": "Upgrade"
+	},
+	"pause_categories": {
+		"defensive": "Defensive",
+		"offensive": "Offensive",
+		"critical": "Critical",
+		"utility": "Utility",
+		"effects_bonus": "EFFECTS & BONUS"
+	},
+	"weapon_stats_labels": {
+		"damage": "Damage",
+		"damage_mult": "Damage",
+		"attack_speed": "Attack Speed",
+		"attack_speed_mult": "Attack Speed",
+		"cooldown": "Cooldown",
+		"projectiles": "Projectiles",
+		"projectile_speed": "Projectile Speed",
+		"projectile_speed_mult": "Projectile Speed",
+		"area": "Area",
+		"area_mult": "Area",
+		"range": "Range",
+		"range_mult": "Range",
+		"knockback": "Knockback",
+		"knockback_mult": "Knockback",
+		"duration": "Duration",
+		"duration_mult": "Duration",
+		"pierce": "Pierce",
+		"chains": "Chains",
+		"crit_chance": "Crit Chance",
+		"crit_damage": "Crit Damage",
+		"extra_projectiles": "Extra Projectiles",
+		"extra_pierce": "Extra Pierce",
+		"damage_flat": "Flat Damage"
+	},
+	"element_effects": {
+		"ice": "Slows enemies by %.0f%%",
+		"fire": "Inflicts burn (damage over time)",
+		"lightning": "Jumps to %d nearby enemies",
+		"arcane": "Orbits around the player",
+		"shadow": "Pierces through %d enemies",
+		"nature": "Chases enemies, heals on kill",
+		"wind": "Fires in a fan pattern",
+		"earth": "Emerges from the ground",
+		"light": "Continuous beam of light",
+		"void": "Area pulse"
+	},
+	"fallback_upgrades": {
+		"damage_boost": {"name": "Magic Damage +", "desc": "Increases all weapon damage by 10%"},
+		"attack_speed_boost": {"name": "Attack Speed +", "desc": "Increases attack speed by 10%"},
+		"speed_boost": {"name": "Speed +", "desc": "Increases movement speed by 10%"},
+		"health_boost": {"name": "Max Health +", "desc": "Increases max health by 20"}
+	},
+	"fusion_format": {
+		"name": "🔥 %s",
+		"description": "Fusion: %s + %s"
+	},
+	"weapon_level_format": "%s Lv.%d → %d"
 }

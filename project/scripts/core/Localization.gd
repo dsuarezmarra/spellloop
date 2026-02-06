@@ -22,9 +22,9 @@ signal translation_loaded(language: String)
 # Supported languages with display names and native names
 const SUPPORTED_LANGUAGES = {
 	"en": {"name": "English", "native": "English", "flag": "GB"},
-	"es": {"name": "Spanish", "native": "Espanol", "flag": "ES"},
-	"fr": {"name": "French", "native": "Francais", "flag": "FR"},
-	"pt": {"name": "Portuguese", "native": "Portugues", "flag": "BR"},
+	"es": {"name": "Spanish", "native": "Español", "flag": "ES"},
+	"fr": {"name": "French", "native": "Français", "flag": "FR"},
+	"pt": {"name": "Portuguese", "native": "Português", "flag": "BR"},
 	"ru": {"name": "Russian", "native": "Russian", "flag": "RU"},
 	"de": {"name": "German", "native": "Deutsch", "flag": "DE"},
 	"it": {"name": "Italian", "native": "Italiano", "flag": "IT"},
@@ -281,12 +281,24 @@ func _get_text_recursive(key: String, dict: Dictionary) -> String:
 		return key  # Return key if final value is not string
 
 func _format_string(text: String, args: Array) -> String:
-	"""Format string with arguments using {0}, {1}, etc. placeholders"""
+	"""Format string with arguments using {0}, {1}, etc. OR %d, %s, etc. placeholders"""
 	var formatted = text
 
+	# First try {0}, {1} style placeholders
 	for i in range(args.size()):
 		var placeholder = "{" + str(i) + "}"
 		formatted = formatted.replace(placeholder, str(args[i]))
+	
+	# Also support sprintf-style placeholders (%d, %s, %02d, etc.)
+	if formatted.contains("%") and args.size() > 0:
+		# Convert args to the correct types for sprintf
+		var safe_args = []
+		for arg in args:
+			safe_args.append(arg)
+		# Try to use sprintf formatting, catch errors
+		var sprintf_result = formatted % safe_args
+		if typeof(sprintf_result) == TYPE_STRING:
+			formatted = sprintf_result
 
 	return formatted
 

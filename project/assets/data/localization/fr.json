@@ -598,6 +598,34 @@
 			"unique_guardian_angel": {"name": "Ange Gardien", "desc": "+100 Bouclier, +50 PV, +1 Résurrection."},
 			"unique_frost_nova": {"name": "Nova de Givre", "desc": "+30% Gel, +75% Durée, +25% Zone."},
 			"unique_glass_cannon": {"name": "Pacte de Cristal", "desc": "Dégâts x2.0, PV Max = 1."}
+		},
+		"global": {
+			"global_damage_1": {"name": "Pouvoir Mineur", "desc": "Toutes les armes font +10% de dégâts."},
+			"global_damage_2": {"name": "Pouvoir", "desc": "Toutes les armes font +20% de dégâts."},
+			"global_damage_3": {"name": "Pouvoir Majeur", "desc": "Toutes les armes font +35% de dégâts."},
+			"global_damage_flat_1": {"name": "Lame Affûtée", "desc": "Toutes les armes font +3 dégâts."},
+			"global_damage_flat_2": {"name": "Lame Mortelle", "desc": "Toutes les armes font +8 dégâts."},
+			"global_attack_speed_1": {"name": "Réflexes", "desc": "Toutes les armes attaquent +15% plus vite."},
+			"global_attack_speed_2": {"name": "Célérité", "desc": "Toutes les armes attaquent +25% plus vite."},
+			"global_attack_speed_3": {"name": "Vitesse Lumière", "desc": "Toutes les armes attaquent +40% plus vite."},
+			"global_area_1": {"name": "Explosion Mineure", "desc": "Toutes les zones +15% plus grandes."},
+			"global_area_2": {"name": "Explosion", "desc": "Toutes les zones +30% plus grandes."},
+			"global_projectile_1": {"name": "Projectile Extra", "desc": "Toutes les armes tirent +1 projectile."},
+			"global_projectile_2": {"name": "Pluie de Projectiles", "desc": "Toutes les armes tirent +2 projectiles."},
+			"global_projectile_speed_1": {"name": "Vitesse Projectile", "desc": "Tous les projectiles +30% plus rapides."},
+			"global_projectile_speed_2": {"name": "Vitesse Supersonique", "desc": "Tous les projectiles +50% plus rapides."},
+			"global_crit_chance_1": {"name": "Œil Critique", "desc": "+8% chance de critique."},
+			"global_crit_chance_2": {"name": "Précision", "desc": "+15% chance de critique."},
+			"global_crit_damage_1": {"name": "Coup Dévastateur", "desc": "+30% dégâts critiques."},
+			"global_crit_damage_2": {"name": "Annihilation", "desc": "+60% dégâts critiques."},
+			"global_duration_1": {"name": "Persistance", "desc": "Les effets durent +25% plus longtemps."},
+			"global_duration_2": {"name": "Éternité", "desc": "Les effets durent +50% plus longtemps."},
+			"global_knockback_1": {"name": "Impact", "desc": "Toutes les armes poussent +30%."},
+			"global_knockback_2": {"name": "Poussée Brutale", "desc": "Toutes les armes poussent +60%."},
+			"global_pierce_1": {"name": "Pénétration", "desc": "+1 ennemi traversé."},
+			"global_pierce_2": {"name": "Perforation", "desc": "+2 ennemis traversés."},
+			"global_range_1": {"name": "Portée Majeure", "desc": "+20% portée."},
+			"global_range_2": {"name": "Portée Extrême", "desc": "+40% portée."}
 		}
 	},
 	"messages": {
@@ -647,5 +675,67 @@
 		"epic": "Épique",
 		"legendary": "Légendaire",
 		"unknown": "Inconnu"
-	}
+	},
+	"option_types": {
+		"new_weapon": "Nouvelle Arme",
+		"level_up": "Amélioration",
+		"synergy": "Synergie",
+		"fusion": "Fusion",
+		"upgrade": "Amélioration"
+	},
+	"pause_categories": {
+		"defensive": "Défensif",
+		"offensive": "Offensif",
+		"critical": "Critiques",
+		"utility": "Utilitaire",
+		"effects_bonus": "EFFETS & BONUS"
+	},
+	"weapon_stats_labels": {
+		"damage": "Dégâts",
+		"damage_mult": "Dégâts",
+		"attack_speed": "Vit. Attaque",
+		"attack_speed_mult": "Vit. Attaque",
+		"cooldown": "Cooldown",
+		"projectiles": "Projectiles",
+		"projectile_speed": "Vit. Projectile",
+		"projectile_speed_mult": "Vit. Projectile",
+		"area": "Zone",
+		"area_mult": "Zone",
+		"range": "Portée",
+		"range_mult": "Portée",
+		"knockback": "Recul",
+		"knockback_mult": "Recul",
+		"duration": "Durée",
+		"duration_mult": "Durée",
+		"pierce": "Perçage",
+		"chains": "Chaînes",
+		"crit_chance": "Prob. Critique",
+		"crit_damage": "Dégâts Critiques",
+		"extra_projectiles": "Projectiles+",
+		"extra_pierce": "Perçage+",
+		"damage_flat": "Dégâts Fixes"
+	},
+	"element_effects": {
+		"ice": "Ralentit les ennemis de %.0f%%",
+		"fire": "Inflige brûlure (dégâts continus)",
+		"lightning": "Saute à %d ennemis proches",
+		"arcane": "Orbite autour du joueur",
+		"shadow": "Traverse %d ennemis",
+		"nature": "Poursuit les ennemis, soigne en tuant",
+		"wind": "Tire en éventail",
+		"earth": "Émerge du sol",
+		"light": "Rayon de lumière continu",
+		"void": "Impulsion de zone"
+	},
+	"fallback_upgrades": {
+		"damage_boost": {"name": "Dégâts Magiques +", "desc": "Augmente les dégâts de toutes les armes de 10%"},
+		"attack_speed_boost": {"name": "Vitesse d'Attaque +", "desc": "Augmente la vitesse d'attaque de 10%"},
+		"speed_boost": {"name": "Vitesse +", "desc": "Augmente la vitesse de déplacement de 10%"},
+		"health_boost": {"name": "Vie Max +", "desc": "Augmente la vie maximale de 20"}
+	},
+	"fusion_format": {
+		"name": "🔥 %s",
+		"description": "Fusion: %s + %s"
+	},
+	"weapon_level_format": "%s Nv.%d → %d"
 }

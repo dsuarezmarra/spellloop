@@ -602,7 +602,7 @@ func _update_stats_display() -> void:
 
 	var weapon_data = WeaponDatabase.WEAPONS.get(char_data.starting_weapon, {})
 	var weapon_name = L("weapons.%s.name" % char_data.starting_weapon)
-	var weapon_label_text = L("ui.character_select.starting_weapon")
+	var weapon_label_text = L("ui.character_select.weapon")
 
 	var weapon_label = Label.new()
 	weapon_label.text = weapon_label_text + ": " + weapon_name

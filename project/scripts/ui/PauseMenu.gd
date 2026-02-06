@@ -452,16 +452,16 @@ func _show_stats_tab() -> void:
 	columns_hbox.add_child(right_column)
 
 	# Columna izquierda - Stats defensivos del jugador
-	_create_stats_section(left_column, "defensive", "Defensivo")
+	_create_stats_section(left_column, "defensive", Localization.L("pause_categories.defensive"))
 
 	# Columna derecha - Utilidad del jugador
-	_create_stats_section(right_column, "utility", "Utilidad")
+	_create_stats_section(right_column, "utility", Localization.L("pause_categories.utility"))
 	
 	# === STATS OFENSIVOS GLOBALES (afectan a todas las armas) ===
 	_create_global_weapon_stats_section(main_vbox)
 
 	# === EFECTOS DE ESTADO Y BONUS (Ofensivo) ===
-	_create_stats_section(main_vbox, "offensive", "🛡️ EFECTOS Y BONUS")
+	_create_stats_section(main_vbox, "offensive", Localization.L("pause_categories.effects_bonus"))
 
 
 	# === BUFFS ACTIVOS (si los hay) ===
@@ -968,18 +968,18 @@ func _create_global_weapon_stats_section(parent: VBoxContainer) -> void:
 	
 	# Lista de stats a mostrar con sus valores base
 	var stats_to_show = [
-		{"stat": "damage_mult", "name": "Daño", "icon": "⚔️", "base": 1.0, "format": "mult"},
-		{"stat": "attack_speed_mult", "name": "Vel. Ataque", "icon": "⚡", "base": 1.0, "format": "mult"},
-		{"stat": "crit_chance", "name": "Prob. Crítico", "icon": "🎯", "base": 0.05, "format": "percent"},
-		{"stat": "crit_damage", "name": "Daño Crítico", "icon": "💢", "base": 2.0, "format": "mult_x"},
-		{"stat": "area_mult", "name": "Área", "icon": "🌀", "base": 1.0, "format": "mult"},
-		{"stat": "duration_mult", "name": "Duración", "icon": "⏳", "base": 1.0, "format": "mult"},
-		{"stat": "projectile_speed_mult", "name": "Vel. Proyectil", "icon": "➡️", "base": 1.0, "format": "mult"},
-		{"stat": "knockback_mult", "name": "Empuje", "icon": "💥", "base": 1.0, "format": "mult"},
-		{"stat": "range_mult", "name": "Alcance", "icon": "📏", "base": 1.0, "format": "mult"},
-		{"stat": "extra_projectiles", "name": "Proyectiles+", "icon": "🎯", "base": 0, "format": "int"},
-		{"stat": "extra_pierce", "name": "Penetración+", "icon": "🗡️", "base": 0, "format": "int"},
-		{"stat": "damage_flat", "name": "Daño Plano", "icon": "➕", "base": 0, "format": "int"},
+		{"stat": "damage_mult", "icon": "⚔️", "base": 1.0, "format": "mult"},
+		{"stat": "attack_speed_mult", "icon": "⚡", "base": 1.0, "format": "mult"},
+		{"stat": "crit_chance", "icon": "🎯", "base": 0.05, "format": "percent"},
+		{"stat": "crit_damage", "icon": "💢", "base": 2.0, "format": "mult_x"},
+		{"stat": "area_mult", "icon": "🌀", "base": 1.0, "format": "mult"},
+		{"stat": "duration_mult", "icon": "⏳", "base": 1.0, "format": "mult"},
+		{"stat": "projectile_speed_mult", "icon": "➡️", "base": 1.0, "format": "mult"},
+		{"stat": "knockback_mult", "icon": "💥", "base": 1.0, "format": "mult"},
+		{"stat": "range_mult", "icon": "📏", "base": 1.0, "format": "mult"},
+		{"stat": "extra_projectiles", "icon": "🎯", "base": 0, "format": "int"},
+		{"stat": "extra_pierce", "icon": "🗡️", "base": 0, "format": "int"},
+		{"stat": "damage_flat", "icon": "➕", "base": 0, "format": "int"},
 	]
 	
 	for stat_info in stats_to_show:
@@ -997,7 +997,8 @@ func _create_global_weapon_stats_section(parent: VBoxContainer) -> void:
 		
 		# Icono + Nombre
 		var name_label = Label.new()
-		name_label.text = "%s %s" % [stat_info.icon, stat_info.name]
+		var stat_label = Localization.L("weapon_stats_labels." + stat_info.stat)
+		name_label.text = "%s %s" % [stat_info.icon, stat_label]
 		name_label.add_theme_font_size_override("font_size", 11)
 		if is_capped:
 			name_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2)) # Dorado
@@ -1537,105 +1538,105 @@ func _create_weapon_card(weapon) -> Control:
 		var dmg_base = full_stats.get("damage_base", 0)
 		var dmg_final = full_stats.get("damage_final", 0)
 		if dmg_final != dmg_base:
-			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%s→%s" % [_format_large_number(dmg_base), _format_large_number(dmg_final)], Color(0.3, 1.0, 0.4))
+			_add_weapon_stat(stats_grid, "⚔️", Localization.L("weapon_stats_labels.damage"), "%s→%s" % [_format_large_number(dmg_base), _format_large_number(dmg_final)], Color(0.3, 1.0, 0.4))
 		else:
-			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%s" % _format_large_number(dmg_final))
+			_add_weapon_stat(stats_grid, "⚔️", Localization.L("weapon_stats_labels.damage"), "%s" % _format_large_number(dmg_final))
 		
 		# ═══ VELOCIDAD DE ATAQUE ═══
 		var as_base = full_stats.get("attack_speed_base", 1.0)
 		var as_final = full_stats.get("attack_speed_final", 1.0)
 		if abs(as_final - as_base) > 0.01:
-			_add_weapon_stat(stats_grid, "⚡", "Vel. Ataque", "%.2f→%.2f/s" % [as_base, as_final], Color(0.3, 1.0, 0.4))
+			_add_weapon_stat(stats_grid, "⚡", Localization.L("weapon_stats_labels.attack_speed"), "%.2f→%.2f/s" % [as_base, as_final], Color(0.3, 1.0, 0.4))
 		else:
-			_add_weapon_stat(stats_grid, "⚡", "Vel. Ataque", "%.2f/s" % as_final)
+			_add_weapon_stat(stats_grid, "⚡", Localization.L("weapon_stats_labels.attack_speed"), "%.2f/s" % as_final)
 		
 		# ═══ COOLDOWN ═══
 		var cd_base = full_stats.get("cooldown_base", 1.0)
 		var cd_final = full_stats.get("cooldown_final", 1.0)
 		if abs(cd_final - cd_base) > 0.01:
-			_add_weapon_stat(stats_grid, "⏱", "Cooldown", "%.2f→%.2fs" % [cd_base, cd_final], Color(0.3, 1.0, 0.4))
+			_add_weapon_stat(stats_grid, "⏱", Localization.L("weapon_stats_labels.cooldown"), "%.2f→%.2fs" % [cd_base, cd_final], Color(0.3, 1.0, 0.4))
 		else:
-			_add_weapon_stat(stats_grid, "⏱", "Cooldown", "%.2fs" % cd_final)
+			_add_weapon_stat(stats_grid, "⏱", Localization.L("weapon_stats_labels.cooldown"), "%.2fs" % cd_final)
 		
 		# ═══ PROYECTILES ═══
 		var proj_base = full_stats.get("projectile_count_base", 1)
 		var proj_final = full_stats.get("projectile_count_final", 1)
 		if proj_final != proj_base:
-			_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "%d→%d" % [proj_base, proj_final], Color(0.3, 1.0, 0.4))
+			_add_weapon_stat(stats_grid, "🎯", Localization.L("weapon_stats_labels.projectiles"), "%d→%d" % [proj_base, proj_final], Color(0.3, 1.0, 0.4))
 		else:
-			_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "%d" % proj_final)
+			_add_weapon_stat(stats_grid, "🎯", Localization.L("weapon_stats_labels.projectiles"), "%d" % proj_final)
 		
 		# ═══ VELOCIDAD DE PROYECTIL ═══
 		var ps_base = full_stats.get("projectile_speed_base", 300.0)
 		var ps_final = full_stats.get("projectile_speed_final", 300.0)
 		if abs(ps_final - ps_base) > 1:
-			_add_weapon_stat(stats_grid, "➡️", "Vel. Proyectil", "%.0f→%.0f" % [ps_base, ps_final], Color(0.3, 1.0, 0.4))
+			_add_weapon_stat(stats_grid, "➡️", Localization.L("weapon_stats_labels.projectile_speed"), "%.0f→%.0f" % [ps_base, ps_final], Color(0.3, 1.0, 0.4))
 		else:
-			_add_weapon_stat(stats_grid, "➡️", "Vel. Proyectil", "%.0f" % ps_final)
+			_add_weapon_stat(stats_grid, "➡️", Localization.L("weapon_stats_labels.projectile_speed"), "%.0f" % ps_final)
 		
 		# ═══ ÁREA ═══
 		var area_base = full_stats.get("area_base", 1.0)
 		var area_final = full_stats.get("area_final", 1.0)
 		if abs(area_final - area_base) > 0.01:
-			_add_weapon_stat(stats_grid, "🌀", "Área", "%.0f%%→%.0f%%" % [area_base * 100, area_final * 100], Color(0.3, 1.0, 0.4))
+			_add_weapon_stat(stats_grid, "🌀", Localization.L("weapon_stats_labels.area"), "%.0f%%→%.0f%%" % [area_base * 100, area_final * 100], Color(0.3, 1.0, 0.4))
 		else:
-			_add_weapon_stat(stats_grid, "🌀", "Área", "%.0f%%" % (area_final * 100))
+			_add_weapon_stat(stats_grid, "🌀", Localization.L("weapon_stats_labels.area"), "%.0f%%" % (area_final * 100))
 		
 		# ═══ ALCANCE ═══
 		var range_base = full_stats.get("range_base", 300.0)
 		var range_final = full_stats.get("range_final", 300.0)
 		if abs(range_final - range_base) > 1:
-			_add_weapon_stat(stats_grid, "📏", "Alcance", "%.0f→%.0f" % [range_base, range_final], Color(0.3, 1.0, 0.4))
+			_add_weapon_stat(stats_grid, "📏", Localization.L("weapon_stats_labels.range"), "%.0f→%.0f" % [range_base, range_final], Color(0.3, 1.0, 0.4))
 		else:
-			_add_weapon_stat(stats_grid, "📏", "Alcance", "%.0f" % range_final)
+			_add_weapon_stat(stats_grid, "📏", Localization.L("weapon_stats_labels.range"), "%.0f" % range_final)
 		
 		# ═══ EMPUJE ═══
 		var kb_base = full_stats.get("knockback_base", 50.0)
 		var kb_final = full_stats.get("knockback_final", 50.0)
 		if abs(kb_final - kb_base) > 1:
-			_add_weapon_stat(stats_grid, "💥", "Empuje", "%.0f→%.0f" % [kb_base, kb_final], Color(0.3, 1.0, 0.4))
+			_add_weapon_stat(stats_grid, "💥", Localization.L("weapon_stats_labels.knockback"), "%.0f→%.0f" % [kb_base, kb_final], Color(0.3, 1.0, 0.4))
 		else:
-			_add_weapon_stat(stats_grid, "💥", "Empuje", "%.0f" % kb_final)
+			_add_weapon_stat(stats_grid, "💥", Localization.L("weapon_stats_labels.knockback"), "%.0f" % kb_final)
 		
 		# ═══ DURACIÓN ═══
 		var dur_base = full_stats.get("duration_base", 0.0)
 		var dur_final = full_stats.get("duration_final", 0.0)
 		if dur_final > 0 or dur_base > 0:
 			if abs(dur_final - dur_base) > 0.01:
-				_add_weapon_stat(stats_grid, "⏳", "Duración", "%.1f→%.1fs" % [dur_base, dur_final], Color(0.3, 1.0, 0.4))
+				_add_weapon_stat(stats_grid, "⏳", Localization.L("weapon_stats_labels.duration"), "%.1f→%.1fs" % [dur_base, dur_final], Color(0.3, 1.0, 0.4))
 			else:
-				_add_weapon_stat(stats_grid, "⏳", "Duración", "%.1fs" % dur_final)
+				_add_weapon_stat(stats_grid, "⏳", Localization.L("weapon_stats_labels.duration"), "%.1fs" % dur_final)
 		
 		# ═══ PENETRACIÓN ═══
 		var pierce_base = full_stats.get("pierce_base", 0)
 		var pierce_final = full_stats.get("pierce_final", 0)
 		if pierce_final > 0 or pierce_base > 0:
 			if pierce_final != pierce_base:
-				_add_weapon_stat(stats_grid, "🗡️", "Atravesar", "%d→%d" % [pierce_base, pierce_final], Color(0.3, 1.0, 0.4))
+				_add_weapon_stat(stats_grid, "🗡️", Localization.L("weapon_stats_labels.pierce"), "%d→%d" % [pierce_base, pierce_final], Color(0.3, 1.0, 0.4))
 			else:
-				_add_weapon_stat(stats_grid, "🗡️", "Atravesar", "%d" % pierce_final)
+				_add_weapon_stat(stats_grid, "🗡️", Localization.L("weapon_stats_labels.pierce"), "%d" % pierce_final)
 	else:
 		# Fallback: usar datos del weapon directamente (sin full_stats)
 		if "damage" in weapon:
-			_add_weapon_stat(stats_grid, "⚔️", "Daño", "%s" % _format_large_number(weapon.damage))
+			_add_weapon_stat(stats_grid, "⚔️", Localization.L("weapon_stats_labels.damage"), "%s" % _format_large_number(weapon.damage))
 		if "cooldown" in weapon:
 			var attack_speed = 1.0 / weapon.cooldown if weapon.cooldown > 0 else 1.0
-			_add_weapon_stat(stats_grid, "⚡", "Vel. Ataque", "%.2f/s" % attack_speed)
-			_add_weapon_stat(stats_grid, "⏱", "Cooldown", "%.2fs" % weapon.cooldown)
+			_add_weapon_stat(stats_grid, "⚡", Localization.L("weapon_stats_labels.attack_speed"), "%.2f/s" % attack_speed)
+			_add_weapon_stat(stats_grid, "⏱", Localization.L("weapon_stats_labels.cooldown"), "%.2fs" % weapon.cooldown)
 		if "projectile_count" in weapon:
-			_add_weapon_stat(stats_grid, "🎯", "Proyectiles", "%d" % weapon.projectile_count)
+			_add_weapon_stat(stats_grid, "🎯", Localization.L("weapon_stats_labels.projectiles"), "%d" % weapon.projectile_count)
 		if "projectile_speed" in weapon:
-			_add_weapon_stat(stats_grid, "➡️", "Vel. Proyectil", "%.0f" % weapon.projectile_speed)
+			_add_weapon_stat(stats_grid, "➡️", Localization.L("weapon_stats_labels.projectile_speed"), "%.0f" % weapon.projectile_speed)
 		if "area" in weapon:
-			_add_weapon_stat(stats_grid, "🌀", "Área", "%.0f%%" % (weapon.area * 100))
+			_add_weapon_stat(stats_grid, "🌀", Localization.L("weapon_stats_labels.area"), "%.0f%%" % (weapon.area * 100))
 		if "weapon_range" in weapon:
-			_add_weapon_stat(stats_grid, "📏", "Alcance", "%.0f" % weapon.weapon_range)
+			_add_weapon_stat(stats_grid, "📏", Localization.L("weapon_stats_labels.range"), "%.0f" % weapon.weapon_range)
 		if "knockback" in weapon:
-			_add_weapon_stat(stats_grid, "💥", "Empuje", "%.0f" % weapon.knockback)
+			_add_weapon_stat(stats_grid, "💥", Localization.L("weapon_stats_labels.knockback"), "%.0f" % weapon.knockback)
 		if "duration" in weapon and weapon.duration > 0:
-			_add_weapon_stat(stats_grid, "⏳", "Duración", "%.1fs" % weapon.duration)
+			_add_weapon_stat(stats_grid, "⏳", Localization.L("weapon_stats_labels.duration"), "%.1fs" % weapon.duration)
 		if "pierce" in weapon and weapon.pierce > 0:
-			_add_weapon_stat(stats_grid, "🗡️", "Atravesar", "%d" % weapon.pierce)
+			_add_weapon_stat(stats_grid, "🗡️", Localization.L("weapon_stats_labels.pierce"), "%d" % weapon.pierce)
 
 	# === EFECTO ESPECIAL ===
 	var special_effect = _get_weapon_special_effect(weapon)

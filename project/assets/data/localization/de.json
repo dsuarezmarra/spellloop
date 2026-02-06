@@ -598,6 +598,34 @@
 			"unique_guardian_angel": {"name": "Schutzengel", "desc": "+100 Schild, +50 LP, +1 Revival."},
 			"unique_frost_nova": {"name": "Frostnova", "desc": "+30% Einfrieren, +75% Dauer, +25% Fläche."},
 			"unique_glass_cannon": {"name": "Kristallpakt", "desc": "Schaden x2.0, Max LP = 1."}
+		},
+		"global": {
+			"global_damage_1": {"name": "Geringe Macht", "desc": "Alle Waffen machen +10% Schaden."},
+			"global_damage_2": {"name": "Macht", "desc": "Alle Waffen machen +20% Schaden."},
+			"global_damage_3": {"name": "Große Macht", "desc": "Alle Waffen machen +35% Schaden."},
+			"global_damage_flat_1": {"name": "Scharfe Klinge", "desc": "Alle Waffen machen +3 Schaden."},
+			"global_damage_flat_2": {"name": "Tödliche Klinge", "desc": "Alle Waffen machen +8 Schaden."},
+			"global_attack_speed_1": {"name": "Reflexe", "desc": "Alle Waffen greifen +15% schneller an."},
+			"global_attack_speed_2": {"name": "Schnelligkeit", "desc": "Alle Waffen greifen +25% schneller an."},
+			"global_attack_speed_3": {"name": "Lichtgeschwindigkeit", "desc": "Alle Waffen greifen +40% schneller an."},
+			"global_area_1": {"name": "Geringe Explosion", "desc": "Alle Flächen +15% größer."},
+			"global_area_2": {"name": "Explosion", "desc": "Alle Flächen +30% größer."},
+			"global_projectile_1": {"name": "Extra Projektil", "desc": "Alle Waffen feuern +1 Projektil."},
+			"global_projectile_2": {"name": "Projektilregen", "desc": "Alle Waffen feuern +2 Projektile."},
+			"global_projectile_speed_1": {"name": "Projektilgeschwindigkeit", "desc": "Alle Projektile +30% schneller."},
+			"global_projectile_speed_2": {"name": "Überschallgeschwindigkeit", "desc": "Alle Projektile +50% schneller."},
+			"global_crit_chance_1": {"name": "Kritisches Auge", "desc": "+8% Krit-Chance."},
+			"global_crit_chance_2": {"name": "Präzision", "desc": "+15% Krit-Chance."},
+			"global_crit_damage_1": {"name": "Verheerender Schlag", "desc": "+30% Krit-Schaden."},
+			"global_crit_damage_2": {"name": "Vernichtung", "desc": "+60% Krit-Schaden."},
+			"global_duration_1": {"name": "Beharrlichkeit", "desc": "Effekte dauern +25% länger."},
+			"global_duration_2": {"name": "Ewigkeit", "desc": "Effekte dauern +50% länger."},
+			"global_knockback_1": {"name": "Aufprall", "desc": "Alle Waffen stoßen +30%."},
+			"global_knockback_2": {"name": "Brutaler Stoß", "desc": "Alle Waffen stoßen +60%."},
+			"global_pierce_1": {"name": "Durchschlag", "desc": "+1 Feind durchbohrt."},
+			"global_pierce_2": {"name": "Perforation", "desc": "+2 Feinde durchbohrt."},
+			"global_range_1": {"name": "Große Reichweite", "desc": "+20% Reichweite."},
+			"global_range_2": {"name": "Extreme Reichweite", "desc": "+40% Reichweite."}
 		}
 	},
 	"messages": {
@@ -647,5 +675,67 @@
 		"epic": "Episch",
 		"legendary": "Legendär",
 		"unknown": "Unbekannt"
-	}
+	},
+	"option_types": {
+		"new_weapon": "Neue Waffe",
+		"level_up": "Verbesserung",
+		"synergy": "Synergie",
+		"fusion": "Fusion",
+		"upgrade": "Verbesserung"
+	},
+	"pause_categories": {
+		"defensive": "Defensiv",
+		"offensive": "Offensiv",
+		"critical": "Kritisch",
+		"utility": "Utility",
+		"effects_bonus": "EFFEKTE & BONUS"
+	},
+	"weapon_stats_labels": {
+		"damage": "Schaden",
+		"damage_mult": "Schaden",
+		"attack_speed": "Angriffsges.",
+		"attack_speed_mult": "Angriffsges.",
+		"cooldown": "Abklingzeit",
+		"projectiles": "Projektile",
+		"projectile_speed": "Projektilges.",
+		"projectile_speed_mult": "Projektilges.",
+		"area": "Fläche",
+		"area_mult": "Fläche",
+		"range": "Reichweite",
+		"range_mult": "Reichweite",
+		"knockback": "Rückstoß",
+		"knockback_mult": "Rückstoß",
+		"duration": "Dauer",
+		"duration_mult": "Dauer",
+		"pierce": "Durchschlag",
+		"chains": "Ketten",
+		"crit_chance": "Krit-Chance",
+		"crit_damage": "Krit-Schaden",
+		"extra_projectiles": "Projektile+",
+		"extra_pierce": "Durchschlag+",
+		"damage_flat": "Flacher Schaden"
+	},
+	"element_effects": {
+		"ice": "Verlangsamt Feinde um %.0f%%",
+		"fire": "Verursacht Verbrennung (Schaden über Zeit)",
+		"lightning": "Springt zu %d nahen Feinden",
+		"arcane": "Umkreist den Spieler",
+		"shadow": "Durchbohrt %d Feinde",
+		"nature": "Verfolgt Feinde, heilt beim Töten",
+		"wind": "Feuert fächerförmig",
+		"earth": "Entsteht aus dem Boden",
+		"light": "Kontinuierlicher Lichtstrahl",
+		"void": "Flächenpuls"
+	},
+	"fallback_upgrades": {
+		"damage_boost": {"name": "Magischer Schaden +", "desc": "Erhöht den Schaden aller Waffen um 10%"},
+		"attack_speed_boost": {"name": "Angriffstempo +", "desc": "Erhöht das Angriffstempo um 10%"},
+		"speed_boost": {"name": "Tempo +", "desc": "Erhöht das Bewegungstempo um 10%"},
+		"health_boost": {"name": "Max LP +", "desc": "Erhöht die maximalen LP um 20"}
+	},
+	"fusion_format": {
+		"name": "🔥 %s",
+		"description": "Fusion: %s + %s"
+	},
+	"weapon_level_format": "%s Lv.%d → %d"
 }

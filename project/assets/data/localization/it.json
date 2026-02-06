@@ -598,6 +598,34 @@
 			"unique_guardian_angel": {"name": "Angelo Custode", "desc": "+100 Scudo, +50 PV, +1 Resurrezione."},
 			"unique_frost_nova": {"name": "Nova di Gelo", "desc": "+30% Congelamento, +75% Durata, +25% Area."},
 			"unique_glass_cannon": {"name": "Patto di Cristallo", "desc": "Danni x2.0, PV Max = 1."}
+		},
+		"global": {
+			"global_damage_1": {"name": "Potenza Minore", "desc": "Tutte le armi fanno +10% danni."},
+			"global_damage_2": {"name": "Potenza", "desc": "Tutte le armi fanno +20% danni."},
+			"global_damage_3": {"name": "Potenza Maggiore", "desc": "Tutte le armi fanno +35% danni."},
+			"global_damage_flat_1": {"name": "Lama Affilata", "desc": "Tutte le armi fanno +3 danni."},
+			"global_damage_flat_2": {"name": "Lama Mortale", "desc": "Tutte le armi fanno +8 danni."},
+			"global_attack_speed_1": {"name": "Riflessi", "desc": "Tutte le armi attaccano +15% più veloce."},
+			"global_attack_speed_2": {"name": "Celerità", "desc": "Tutte le armi attaccano +25% più veloce."},
+			"global_attack_speed_3": {"name": "Velocità Luce", "desc": "Tutte le armi attaccano +40% più veloce."},
+			"global_area_1": {"name": "Esplosione Minore", "desc": "Tutte le aree +15% più grandi."},
+			"global_area_2": {"name": "Esplosione", "desc": "Tutte le aree +30% più grandi."},
+			"global_projectile_1": {"name": "Proiettile Extra", "desc": "Tutte le armi sparano +1 proiettile."},
+			"global_projectile_2": {"name": "Pioggia di Proiettili", "desc": "Tutte le armi sparano +2 proiettili."},
+			"global_projectile_speed_1": {"name": "Velocità Proiettile", "desc": "Tutti i proiettili +30% più veloci."},
+			"global_projectile_speed_2": {"name": "Velocità Supersonica", "desc": "Tutti i proiettili +50% più veloci."},
+			"global_crit_chance_1": {"name": "Occhio Critico", "desc": "+8% probabilità critico."},
+			"global_crit_chance_2": {"name": "Precisione", "desc": "+15% probabilità critico."},
+			"global_crit_damage_1": {"name": "Colpo Devastante", "desc": "+30% danno critico."},
+			"global_crit_damage_2": {"name": "Annientamento", "desc": "+60% danno critico."},
+			"global_duration_1": {"name": "Persistenza", "desc": "Gli effetti durano +25% di più."},
+			"global_duration_2": {"name": "Eternità", "desc": "Gli effetti durano +50% di più."},
+			"global_knockback_1": {"name": "Impatto", "desc": "Tutte le armi spingono +30%."},
+			"global_knockback_2": {"name": "Spinta Brutale", "desc": "Tutte le armi spingono +60%."},
+			"global_pierce_1": {"name": "Perforazione", "desc": "+1 nemico attraversato."},
+			"global_pierce_2": {"name": "Perforazione Totale", "desc": "+2 nemici attraversati."},
+			"global_range_1": {"name": "Gittata Maggiore", "desc": "+20% gittata."},
+			"global_range_2": {"name": "Gittata Estrema", "desc": "+40% gittata."}
 		}
 	},
 	"messages": {
@@ -647,5 +675,67 @@
 		"epic": "Epico",
 		"legendary": "Leggendario",
 		"unknown": "Sconosciuto"
-	}
+	},
+	"option_types": {
+		"new_weapon": "Nuova Arma",
+		"level_up": "Potenziamento",
+		"synergy": "Sinergia",
+		"fusion": "Fusione",
+		"upgrade": "Potenziamento"
+	},
+	"pause_categories": {
+		"defensive": "Difensivo",
+		"offensive": "Offensivo",
+		"critical": "Critici",
+		"utility": "Utilità",
+		"effects_bonus": "EFFETTI & BONUS"
+	},
+	"weapon_stats_labels": {
+		"damage": "Danno",
+		"damage_mult": "Danno",
+		"attack_speed": "Vel. Attacco",
+		"attack_speed_mult": "Vel. Attacco",
+		"cooldown": "Ricarica",
+		"projectiles": "Proiettili",
+		"projectile_speed": "Vel. Proiettile",
+		"projectile_speed_mult": "Vel. Proiettile",
+		"area": "Area",
+		"area_mult": "Area",
+		"range": "Gittata",
+		"range_mult": "Gittata",
+		"knockback": "Rinculo",
+		"knockback_mult": "Rinculo",
+		"duration": "Durata",
+		"duration_mult": "Durata",
+		"pierce": "Perforazione",
+		"chains": "Catene",
+		"crit_chance": "Prob. Critico",
+		"crit_damage": "Danno Critico",
+		"extra_projectiles": "Proiettili+",
+		"extra_pierce": "Perforazione+",
+		"damage_flat": "Danno Fisso"
+	},
+	"element_effects": {
+		"ice": "Rallenta i nemici del %.0f%%",
+		"fire": "Infligge bruciatura (danno continuo)",
+		"lightning": "Salta a %d nemici vicini",
+		"arcane": "Orbita attorno al giocatore",
+		"shadow": "Attraversa %d nemici",
+		"nature": "Insegue i nemici, cura uccidendo",
+		"wind": "Spara a ventaglio",
+		"earth": "Emerge dal suolo",
+		"light": "Raggio di luce continuo",
+		"void": "Impulso d'area"
+	},
+	"fallback_upgrades": {
+		"damage_boost": {"name": "Danno Magico +", "desc": "Aumenta i danni di tutte le armi del 10%"},
+		"attack_speed_boost": {"name": "Velocità Attacco +", "desc": "Aumenta la velocità d'attacco del 10%"},
+		"speed_boost": {"name": "Velocità +", "desc": "Aumenta la velocità di movimento del 10%"},
+		"health_boost": {"name": "PV Max +", "desc": "Aumenta i PV massimi di 20"}
+	},
+	"fusion_format": {
+		"name": "🔥 %s",
+		"description": "Fusione: %s + %s"
+	},
+	"weapon_level_format": "%s Lv.%d → %d"
 }

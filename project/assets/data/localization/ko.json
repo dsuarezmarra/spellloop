@@ -598,6 +598,34 @@
 			"unique_guardian_angel": {"name": "수호천사", "desc": "+100 보호막, +50 체력, +1 부활."},
 			"unique_frost_nova": {"name": "서리 폭발", "desc": "+30% 동결, +75% 지속, +25% 범위."},
 			"unique_glass_cannon": {"name": "크리스탈 계약", "desc": "피해 x2.0, 최대 체력 = 1."}
+		},
+		"global": {
+			"global_damage_1": {"name": "소력", "desc": "모든 무기가 +10% 피해."},
+			"global_damage_2": {"name": "힘", "desc": "모든 무기가 +20% 피해."},
+			"global_damage_3": {"name": "대력", "desc": "모든 무기가 +35% 피해."},
+			"global_damage_flat_1": {"name": "날카로운 검", "desc": "모든 무기가 +3 피해."},
+			"global_damage_flat_2": {"name": "치명적인 검", "desc": "모든 무기가 +8 피해."},
+			"global_attack_speed_1": {"name": "반사신경", "desc": "모든 무기가 +15% 빠르게 공격."},
+			"global_attack_speed_2": {"name": "민첩성", "desc": "모든 무기가 +25% 빠르게 공격."},
+			"global_attack_speed_3": {"name": "광속", "desc": "모든 무기가 +40% 빠르게 공격."},
+			"global_area_1": {"name": "소폭발", "desc": "모든 범위가 +15% 커짐."},
+			"global_area_2": {"name": "폭발", "desc": "모든 범위가 +30% 커짐."},
+			"global_projectile_1": {"name": "추가 투사체", "desc": "모든 무기가 +1 투사체 발사."},
+			"global_projectile_2": {"name": "투사체 소나기", "desc": "모든 무기가 +2 투사체 발사."},
+			"global_projectile_speed_1": {"name": "투사체 속도", "desc": "모든 투사체가 +30% 빠름."},
+			"global_projectile_speed_2": {"name": "초음속", "desc": "모든 투사체가 +50% 빠름."},
+			"global_crit_chance_1": {"name": "크리티컬 아이", "desc": "+8% 치명타 확률."},
+			"global_crit_chance_2": {"name": "정밀도", "desc": "+15% 치명타 확률."},
+			"global_crit_damage_1": {"name": "파괴적 타격", "desc": "+30% 치명타 피해."},
+			"global_crit_damage_2": {"name": "소멸", "desc": "+60% 치명타 피해."},
+			"global_duration_1": {"name": "지속력", "desc": "효과가 +25% 오래 지속."},
+			"global_duration_2": {"name": "영원", "desc": "효과가 +50% 오래 지속."},
+			"global_knockback_1": {"name": "충격", "desc": "모든 무기가 +30% 밀침."},
+			"global_knockback_2": {"name": "강력한 밀침", "desc": "모든 무기가 +60% 밀침."},
+			"global_pierce_1": {"name": "관통", "desc": "+1 적 관통."},
+			"global_pierce_2": {"name": "천공", "desc": "+2 적 관통."},
+			"global_range_1": {"name": "사거리 증가", "desc": "+20% 사거리."},
+			"global_range_2": {"name": "극한 사거리", "desc": "+40% 사거리."}
 		}
 	},
 	"messages": {
@@ -647,5 +675,67 @@
 		"epic": "에픽",
 		"legendary": "전설",
 		"unknown": "알 수 없음"
-	}
+	},
+	"option_types": {
+		"new_weapon": "새 무기",
+		"level_up": "강화",
+		"synergy": "시너지",
+		"fusion": "융합",
+		"upgrade": "강화"
+	},
+	"pause_categories": {
+		"defensive": "방어",
+		"offensive": "공격",
+		"critical": "치명타",
+		"utility": "유틸리티",
+		"effects_bonus": "효과 & 보너스"
+	},
+	"weapon_stats_labels": {
+		"damage": "피해",
+		"damage_mult": "피해",
+		"attack_speed": "공격속도",
+		"attack_speed_mult": "공격속도",
+		"cooldown": "쿨다운",
+		"projectiles": "투사체",
+		"projectile_speed": "투사체 속도",
+		"projectile_speed_mult": "투사체 속도",
+		"area": "범위",
+		"area_mult": "범위",
+		"range": "사거리",
+		"range_mult": "사거리",
+		"knockback": "넥백",
+		"knockback_mult": "넥백",
+		"duration": "지속시간",
+		"duration_mult": "지속시간",
+		"pierce": "관통",
+		"chains": "체인",
+		"crit_chance": "치명타 확률",
+		"crit_damage": "치명타 피해",
+		"extra_projectiles": "투사체+",
+		"extra_pierce": "관통+",
+		"damage_flat": "고정 피해"
+	},
+	"element_effects": {
+		"ice": "적을 %.0f%% 감속",
+		"fire": "화상을 입힘 (지속 피해)",
+		"lightning": "%d 명의 근처 적에게 튀",
+		"arcane": "플레이어 주위를 돌아",
+		"shadow": "%d 명의 적을 관통",
+		"nature": "적을 추적, 처치 시 회복",
+		"wind": "부채꼴로 발사",
+		"earth": "땅에서 출현",
+		"light": "지속 광선",
+		"void": "범위 파동"
+	},
+	"fallback_upgrades": {
+		"damage_boost": {"name": "마법 피해 +", "desc": "모든 무기 피해 10% 증가"},
+		"attack_speed_boost": {"name": "공격 속도 +", "desc": "공격 속도 10% 증가"},
+		"speed_boost": {"name": "이동 속도 +", "desc": "이동 속도 10% 증가"},
+		"health_boost": {"name": "최대 체력 +", "desc": "최대 체력 20 증가"}
+	},
+	"fusion_format": {
+		"name": "🔥 %s",
+		"description": "융합: %s + %s"
+	},
+	"weapon_level_format": "%s Lv.%d → %d"
 }

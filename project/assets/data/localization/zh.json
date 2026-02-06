@@ -598,6 +598,34 @@
 			"unique_guardian_angel": {"name": "守护天使", "desc": "+100护盾，+50生命，+1复活。"},
 			"unique_frost_nova": {"name": "冰霜新星", "desc": "+30%冻结，+75%持续，+25%范围。"},
 			"unique_glass_cannon": {"name": "水晶契约", "desc": "伤害x2.0，最大生命=1。"}
+		},
+		"global": {
+			"global_damage_1": {"name": "力量（小）", "desc": "所有武器+10%伤害。"},
+			"global_damage_2": {"name": "力量", "desc": "所有武器+20%伤害。"},
+			"global_damage_3": {"name": "力量（大）", "desc": "所有武器+35%伤害。"},
+			"global_damage_flat_1": {"name": "锐利之刃", "desc": "所有武器+3伤害。"},
+			"global_damage_flat_2": {"name": "死亡之刃", "desc": "所有武器+8伤害。"},
+			"global_attack_speed_1": {"name": "反应", "desc": "所有武器+15%攻击速度。"},
+			"global_attack_speed_2": {"name": "敏捷", "desc": "所有武器+25%攻击速度。"},
+			"global_attack_speed_3": {"name": "光速", "desc": "所有武器+40%攻击速度。"},
+			"global_area_1": {"name": "爆炸（小）", "desc": "所有范围效果+15%。"},
+			"global_area_2": {"name": "爆炸", "desc": "所有范围效果+30%。"},
+			"global_projectile_1": {"name": "额外弹道", "desc": "所有武器+1弹道。"},
+			"global_projectile_2": {"name": "弹幕", "desc": "所有武器+2弹道。"},
+			"global_projectile_speed_1": {"name": "弹道速度", "desc": "所有弹道+30%速度。"},
+			"global_projectile_speed_2": {"name": "超音速", "desc": "所有弹道+50%速度。"},
+			"global_crit_chance_1": {"name": "暴击眼", "desc": "+8%暴击率。"},
+			"global_crit_chance_2": {"name": "精准", "desc": "+15%暴击率。"},
+			"global_crit_damage_1": {"name": "暴击强化", "desc": "+30%暴击伤害。"},
+			"global_crit_damage_2": {"name": "毁灭", "desc": "+60%暴击伤害。"},
+			"global_duration_1": {"name": "持续", "desc": "效果+25%持续时间。"},
+			"global_duration_2": {"name": "永恒", "desc": "效果+50%持续时间。"},
+			"global_knockback_1": {"name": "冲击", "desc": "所有武器+30%击退。"},
+			"global_knockback_2": {"name": "蛮力", "desc": "所有武器+60%击退。"},
+			"global_pierce_1": {"name": "穿透", "desc": "+1穿透。"},
+			"global_pierce_2": {"name": "贯穿", "desc": "+2穿透。"},
+			"global_range_1": {"name": "射程", "desc": "+20%射程。"},
+			"global_range_2": {"name": "远程", "desc": "+40%射程。"}
 		}
 	},
 	"messages": {
@@ -647,5 +675,66 @@
 		"epic": "史诗",
 		"legendary": "传说",
 		"unknown": "未知"
-	}
+	},
+	"option_types": {
+		"new_weapon": "🆕 新武器",
+		"level_up_weapon": "⬆️ 升级",
+		"fusion": "🔥 融合",
+		"player_upgrade": "✨ 强化"
+	},
+	"pause_categories": {
+		"defensive": "防御",
+		"offensive": "攻击",
+		"critical": "暴击",
+		"utility": "实用",
+		"effects_bonus": "效果与加成"
+	},
+	"weapon_stats_labels": {
+		"damage": "伤害",
+		"damage_mult": "伤害",
+		"attack_speed": "攻速",
+		"attack_speed_mult": "攻速",
+		"cooldown": "冷却",
+		"projectiles": "弹道",
+		"projectile_speed": "弹速",
+		"projectile_speed_mult": "弹速",
+		"area": "范围",
+		"area_mult": "范围",
+		"range": "射程",
+		"range_mult": "射程",
+		"knockback": "击退",
+		"knockback_mult": "击退",
+		"duration": "持续",
+		"duration_mult": "持续",
+		"pierce": "穿透",
+		"chains": "连锁",
+		"crit_chance": "暴击率",
+		"crit_damage": "暴击伤害",
+		"extra_projectiles": "额外弹道",
+		"extra_pierce": "额外穿透",
+		"damage_flat": "固定伤害"
+	},
+	"element_effects": {
+		"ice": "减速敌人 %.0f%%",
+		"fire": "造成灼伤（持续伤害）",
+		"lightning": "跳跃到 %d 个敌人",
+		"arcane": "环绕玩家",
+		"shadow": "穿透 %d 个敌人",
+		"nature": "追踪敌人，击杀回血",
+		"wind": "扇形攻击",
+		"earth": "从地面升起",
+		"light": "持续光束",
+		"void": "范围脉冲"
+	},
+	"fallback_upgrades": {
+		"damage_boost": {"name": "魔法伤害+", "desc": "所有武器伤害+10%"},
+		"attack_speed_boost": {"name": "攻击速度+", "desc": "攻击速度+10%"},
+		"speed_boost": {"name": "移动速度+", "desc": "移动速度+10%"},
+		"health_boost": {"name": "最大生命+", "desc": "最大生命+20"}
+	},
+	"fusion_format": {
+		"name": "🔥 %s",
+		"description": "融合: %s + %s"
+	},
+	"weapon_level_format": "%s 等级%d → %d"
 }

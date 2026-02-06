@@ -51,7 +51,8 @@
 			"stats": "Estadísticas",
 			"passive": "Pasiva",
 			"weapon": "Arma inicial",
-			"unlock_requirement": "Requisito de desbloqueo"
+			"unlock_requirement": "Requisito de desbloqueo",
+			"instructions": "← → Navegar  |  ENTER Seleccionar  |  ESC Volver"
 		},
 		"options": {
 			"title": "OPCIONES",
@@ -216,7 +217,7 @@
 			"upgrade_max": "Mejora al máximo"
 		},
 		"hud": {
-			"level": "NIV %d",
+			"level": "Nv. %d",
 			"hype_complete": "¡HYPE COMPLETO!",
 			"hype_results": "Total: %d 🪙\nMáx Combo: x%.2f",
 			"boss_label": "JEFE: %s"
@@ -628,6 +629,34 @@
 			"unique_guardian_angel": {"name": "Ángel Guardián", "desc": "+100 Escudo, +50 PV, +1 revive, regenera escudo 2s más rápido."},
 			"unique_frost_nova": {"name": "Nova de Escarcha", "desc": "+30% prob. congelar, +75% duración congelación, +25% área."},
 			"unique_glass_cannon": {"name": "Pacto de Cristal", "desc": "Daño x2.0 (multiplicativo), pero tu PV Máximo se fija en 1."}
+		},
+		"global": {
+			"global_damage_1": {"name": "Poder Menor", "desc": "Todas las armas hacen +10% de daño."},
+			"global_damage_2": {"name": "Poder", "desc": "Todas las armas hacen +20% de daño."},
+			"global_damage_3": {"name": "Poder Mayor", "desc": "Todas las armas hacen +35% de daño."},
+			"global_damage_flat_1": {"name": "Filo Afilado", "desc": "Todas las armas hacen +3 de daño."},
+			"global_damage_flat_2": {"name": "Filo Mortal", "desc": "Todas las armas hacen +8 de daño."},
+			"global_attack_speed_1": {"name": "Reflejos", "desc": "Todas las armas atacan +15% más rápido."},
+			"global_attack_speed_2": {"name": "Celeridad", "desc": "Todas las armas atacan +25% más rápido."},
+			"global_attack_speed_3": {"name": "Velocidad de la Luz", "desc": "Todas las armas atacan +40% más rápido."},
+			"global_area_1": {"name": "Explosión Menor", "desc": "Todas las áreas de efecto +15% más grandes."},
+			"global_area_2": {"name": "Explosión", "desc": "Todas las áreas de efecto +30% más grandes."},
+			"global_projectile_1": {"name": "Proyectil Extra", "desc": "Todas las armas disparan +1 proyectil."},
+			"global_projectile_2": {"name": "Lluvia de Proyectiles", "desc": "Todas las armas disparan +2 proyectiles."},
+			"global_projectile_speed_1": {"name": "Velocidad Proyectil", "desc": "Todos los proyectiles +30% más rápidos."},
+			"global_projectile_speed_2": {"name": "Velocidad Supersónica", "desc": "Todos los proyectiles +50% más rápidos."},
+			"global_crit_chance_1": {"name": "Ojo Crítico", "desc": "+8% probabilidad de crítico."},
+			"global_crit_chance_2": {"name": "Precisión", "desc": "+15% probabilidad de crítico."},
+			"global_crit_damage_1": {"name": "Golpe Devastador", "desc": "+30% daño crítico."},
+			"global_crit_damage_2": {"name": "Aniquilación", "desc": "+60% daño crítico."},
+			"global_duration_1": {"name": "Persistencia", "desc": "Los efectos duran +25% más."},
+			"global_duration_2": {"name": "Eternidad", "desc": "Los efectos duran +50% más."},
+			"global_knockback_1": {"name": "Impacto", "desc": "Todas las armas empujan +30%."},
+			"global_knockback_2": {"name": "Empuje Brutal", "desc": "Todas las armas empujan +60%."},
+			"global_pierce_1": {"name": "Penetración", "desc": "+1 enemigo atravesado."},
+			"global_pierce_2": {"name": "Perforación", "desc": "+2 enemigos atravesados."},
+			"global_range_1": {"name": "Alcance Mayor", "desc": "+20% alcance."},
+			"global_range_2": {"name": "Alcance Extremo", "desc": "+40% alcance."}
 		}
 	},
 	"messages": {
@@ -677,5 +706,66 @@
 		"epic": "Épico",
 		"legendary": "Legendario",
 		"unknown": "Desconocido"
-	}
+	},
+	"option_types": {
+		"new_weapon": "🆕 Nueva Arma",
+		"level_up_weapon": "⬆️ Mejorar",
+		"fusion": "🔥 Fusión",
+		"player_upgrade": "✨ Mejora"
+	},
+	"pause_categories": {
+		"defensive": "Defensivo",
+		"offensive": "Ofensivo",
+		"critical": "Críticos",
+		"utility": "Utilidad",
+		"effects_bonus": "EFECTOS Y BONUS"
+	},
+	"weapon_stats_labels": {
+		"damage": "Daño",
+		"damage_mult": "Daño",
+		"attack_speed": "Vel. Ataque",
+		"attack_speed_mult": "Vel. Ataque",
+		"cooldown": "Cooldown",
+		"projectiles": "Proyectiles",
+		"projectile_speed": "Vel. Proyectil",
+		"projectile_speed_mult": "Vel. Proyectil",
+		"area": "Área",
+		"area_mult": "Área",
+		"range": "Alcance",
+		"range_mult": "Alcance",
+		"knockback": "Empuje",
+		"knockback_mult": "Empuje",
+		"duration": "Duración",
+		"duration_mult": "Duración",
+		"pierce": "Atravesar",
+		"chains": "Cadenas",
+		"crit_chance": "Prob. Crítico",
+		"crit_damage": "Daño Crítico",
+		"extra_projectiles": "Proyectiles+",
+		"extra_pierce": "Penetración+",
+		"damage_flat": "Daño Plano"
+	},
+	"element_effects": {
+		"ice": "Ralentiza enemigos un %.0f%%",
+		"fire": "Inflige quemadura (daño continuo)",
+		"lightning": "Salta a %d enemigos cercanos",
+		"arcane": "Orbita alrededor del jugador",
+		"shadow": "Atraviesa %d enemigos",
+		"nature": "Persigue enemigos, cura al matar",
+		"wind": "Dispara en abanico",
+		"earth": "Emerge del suelo",
+		"light": "Rayo continuo de luz",
+		"void": "Pulso en área"
+	},
+	"fallback_upgrades": {
+		"damage_boost": {"name": "Daño Mágico +", "desc": "Aumenta el daño de todas las armas en un 10%"},
+		"attack_speed_boost": {"name": "Velocidad de Ataque +", "desc": "Aumenta la velocidad de ataque en un 10%"},
+		"speed_boost": {"name": "Velocidad +", "desc": "Aumenta tu velocidad de movimiento en un 10%"},
+		"health_boost": {"name": "Vida Máxima +", "desc": "Aumenta tu vida máxima en 20"}
+	},
+	"fusion_format": {
+		"name": "🔥 %s",
+		"description": "Fusión: %s + %s"
+	},
+	"weapon_level_format": "%s Nv.%d → %d"
 }

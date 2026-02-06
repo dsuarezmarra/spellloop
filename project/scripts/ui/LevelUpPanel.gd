@@ -217,9 +217,9 @@ func _create_ui() -> void:
 	vbox.add_child(buttons_container)
 
 	# Crear los 3 botones de acción
-	var btn_reroll = _create_action_button(0, "🎲", "Reroll", "(%d)")
-	var btn_banish = _create_action_button(1, "❌", "Eliminar", "(%d)")
-	var btn_skip = _create_action_button(2, "⏭️", "Saltar", "")
+	var btn_reroll = _create_action_button(0, "🎲", Localization.L("ui.level_up.reroll"), "(%d)")
+	var btn_banish = _create_action_button(1, "❌", Localization.L("ui.level_up.banish"), "(%d)")
+	var btn_skip = _create_action_button(2, "⏭️", Localization.L("ui.level_up.skip"), "")
 
 	buttons_container.add_child(btn_reroll)
 	buttons_container.add_child(btn_banish)
@@ -935,14 +935,9 @@ func _update_all_visuals() -> void:
 			style.set_border_width_all(2)
 		panel.add_theme_stylebox_override("panel", style)
 
+		var indicator = panel.get_node_or_null("SelectionIndicator")
 		if indicator:
 			indicator.visible = is_selected
-			if banish_mode:
-				indicator.text = "❌ " + Localization.L("ui.level_up.delete") + " ❌"
-				indicator.add_theme_color_override("font_color", BANISH_COLOR)
-			else:
-				indicator.text = Localization.L("ui.level_up.confirm_indicator")
-				indicator.add_theme_color_override("font_color", SELECTED_COLOR)
 
 	# Actualizar botones (ocultos en modo eliminar)
 	for i in range(button_panels.size()):
@@ -1148,11 +1143,11 @@ func _get_option_color(option: Dictionary) -> Color:
 
 func _get_type_text(option_type: String) -> String:
 	match option_type:
-		OPTION_TYPES.NEW_WEAPON: return "🆕 Nueva Arma"
-		OPTION_TYPES.LEVEL_UP_WEAPON: return "⬆️ Mejorar"
-		OPTION_TYPES.FUSION: return "🔥 Fusión"
-		OPTION_TYPES.PLAYER_UPGRADE: return "✨ Mejora"
-		_: return "✨ Mejora"
+		OPTION_TYPES.NEW_WEAPON: return Localization.L("option_types.new_weapon")
+		OPTION_TYPES.LEVEL_UP_WEAPON: return Localization.L("option_types.level_up_weapon")
+		OPTION_TYPES.FUSION: return Localization.L("option_types.fusion")
+		OPTION_TYPES.PLAYER_UPGRADE: return Localization.L("option_types.player_upgrade")
+		_: return Localization.L("option_types.player_upgrade")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ANIMACIÓN DE SLOT REEL
@@ -1591,8 +1586,8 @@ func _get_fallback_options() -> Array:
 		{
 			"type": OPTION_TYPES.PLAYER_UPGRADE,
 			"upgrade_id": "damage_boost",
-			"name": "Daño Mágico +",
-			"description": "Aumenta el daño de todas las armas en un 10%",
+			"name": Localization.L("fallback_upgrades.damage_boost.name"),
+			"description": Localization.L("fallback_upgrades.damage_boost.desc"),
 			"icon": "⚡",
 			"rarity": "common",
 			"category": "weapon_global",  # Va a GlobalWeaponStats
@@ -1602,8 +1597,8 @@ func _get_fallback_options() -> Array:
 		{
 			"type": OPTION_TYPES.PLAYER_UPGRADE,
 			"upgrade_id": "attack_speed_boost",
-			"name": "Velocidad de Ataque +",
-			"description": "Aumenta la velocidad de ataque en un 10%",
+			"name": Localization.L("fallback_upgrades.attack_speed_boost.name"),
+			"description": Localization.L("fallback_upgrades.attack_speed_boost.desc"),
 			"icon": "⚡",
 			"rarity": "common",
 			"category": "weapon_global",  # Va a GlobalWeaponStats
@@ -1613,8 +1608,8 @@ func _get_fallback_options() -> Array:
 		{
 			"type": OPTION_TYPES.PLAYER_UPGRADE,
 			"upgrade_id": "speed_boost",
-			"name": "Velocidad +",
-			"description": "Aumenta tu velocidad de movimiento en un 10%",
+			"name": Localization.L("fallback_upgrades.speed_boost.name"),
+			"description": Localization.L("fallback_upgrades.speed_boost.desc"),
 			"icon": "💨",
 			"rarity": "common",
 			"category": "player",  # Va a PlayerStats
@@ -1624,8 +1619,8 @@ func _get_fallback_options() -> Array:
 		{
 			"type": OPTION_TYPES.PLAYER_UPGRADE,
 			"upgrade_id": "health_boost",
-			"name": "Vida Máxima +",
-			"description": "Aumenta tu vida máxima en 20",
+			"name": Localization.L("fallback_upgrades.health_boost.name"),
+			"description": Localization.L("fallback_upgrades.health_boost.desc"),
 			"icon": "❤️",
 			"rarity": "common",
 			"category": "player",  # Va a PlayerStats
@@ -1681,7 +1676,9 @@ func _get_weapon_level_up_options() -> Array:
 		if not weapon.can_level_up():
 			continue
 
-		var weapon_name = weapon.weapon_name_es if "weapon_name_es" in weapon else weapon.get("name", "???")
+		# Try to get weapon name in current language first
+		var lang = Localization.get_current_language()
+		var weapon_name = weapon.get("weapon_name_" + lang) if weapon.has("weapon_name_" + lang) else (weapon.weapon_name_es if "weapon_name_es" in weapon else weapon.get("name", "???"))
 		var weapon_level = weapon.level if "level" in weapon else 1
 		var weapon_icon = weapon.icon if "icon" in weapon else "⚔️"
 		var next_desc = ""
@@ -1692,7 +1689,7 @@ func _get_weapon_level_up_options() -> Array:
 			"type": OPTION_TYPES.LEVEL_UP_WEAPON,
 			"weapon_id": weapon.id if "id" in weapon else "",
 			"weapon": weapon,
-			"name": "%s Nv.%d → %d" % [weapon_name, weapon_level, weapon_level + 1],
+			"name": Localization.L("weapon_level_format", [weapon_name, weapon_level, weapon_level + 1]),
 			"description": next_desc,
 			"icon": weapon_icon,
 			"rarity": "uncommon" if weapon_level < 5 else "rare",
@@ -1707,16 +1704,17 @@ func _get_fusion_options() -> Array:
 
 	for fusion in available:
 		var preview = attack_manager.get_fusion_preview(fusion.weapon_a, fusion.weapon_b)
+		var fusion_name = preview.get("name_" + Localization.get_current_language(), preview.get("name_es", preview.get("name", "???")))
+		var weapon_a_name = fusion.weapon_a.get("weapon_name_" + Localization.get_current_language()) if fusion.weapon_a.has("weapon_name_" + Localization.get_current_language()) else fusion.weapon_a.weapon_name_es
+		var weapon_b_name = fusion.weapon_b.get("weapon_name_" + Localization.get_current_language()) if fusion.weapon_b.has("weapon_name_" + Localization.get_current_language()) else fusion.weapon_b.weapon_name_es
 
 		fusion_options.append({
 			"type": OPTION_TYPES.FUSION,
 			"weapon_a": fusion.weapon_a,
 			"weapon_b": fusion.weapon_b,
 			"result": fusion.result,
-			"name": "🔥 %s" % preview.get("name_es", preview.get("name", "???")),
-			"description": "Fusión: %s + %s" % [
-				fusion.weapon_a.weapon_name_es, fusion.weapon_b.weapon_name_es
-			],
+			"name": "🔥 %s" % fusion_name,
+			"description": Localization.L("fusion_format.description", [weapon_a_name, weapon_b_name]),
 			"icon": preview.get("icon", "⚡"),
 			"rarity": "epic",
 			"priority": 2.0

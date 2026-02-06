@@ -74,7 +74,7 @@ func _setup_language_selector() -> void:
 	if not loc:
 		# Fallback to basic options
 		language_option.add_item("English", 0)
-		language_option.add_item("Espanol", 1)
+		language_option.add_item("Español", 1)
 		language_codes = ["en", "es"]
 		return
 
@@ -152,10 +152,10 @@ func _update_volume_label(type: String, value: float) -> void:
 	
 	if type == "music":
 		label_node = find_child("MusicLabel", true, false)
-		prefix = "🎵 " + (loc.L("ui.options.music") if loc else "Music")
+		prefix = "🎵 " + (loc.L("ui.options.music_volume") if loc else "Music")
 	elif type == "sfx":
 		label_node = find_child("SFXLabel", true, false)
-		prefix = "🔊 " + (loc.L("ui.options.sfx") if loc else "SFX")
+		prefix = "🔊 " + (loc.L("ui.options.sfx_volume") if loc else "SFX")
 		
 	if label_node:
 		label_node.text = "%s: %d%%" % [prefix, int(value * 100)]
