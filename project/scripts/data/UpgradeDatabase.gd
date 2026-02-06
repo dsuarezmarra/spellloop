@@ -695,12 +695,12 @@ const UTILITY_UPGRADES: Dictionary = {
 	"double_or_nothing": {
 		"id": "double_or_nothing",
 		"name": "Doble o Nada",
-		"description": "20% probabilidad de disparar dos veces.",
+		"description": "17% probabilidad de disparar dos veces.",
 		"icon": "res://assets/icons/icon_multicast.png",
 		"category": "utility",
 		"tier": 5,
-		"max_stacks": 3,
-		"effects": [{"stat": "multicast_chance", "value": 0.20, "operation": "add"}]
+		"max_stacks": 2,  # NERFED Pass 3: 3 → 2
+		"effects": [{"stat": "multicast_chance", "value": 0.17, "operation": "add"}]  # NERFED: 0.20 → 0.17
 	},
 }
 
@@ -1112,12 +1112,12 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 	"cooldown_3": {
 		"id": "cooldown_3",
 		"name": "Flujo Arcano",
-		"description": "+45% velocidad de ataque.",
+		"description": "+40% velocidad de ataque.",
 		"icon": "res://assets/icons/icon_lightning_bolt.png",
 		"category": "offensive",
 		"tier": 4,
-		"max_stacks": 2,
-		"effects": [{"stat": "attack_speed_mult", "value": 1.45, "operation": "multiply"}]
+		"max_stacks": 1,  # NERFED Pass 3: 2 → 1
+		"effects": [{"stat": "attack_speed_mult", "value": 1.40, "operation": "multiply"}]  # NERFED: 1.45 → 1.40
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1126,12 +1126,12 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 	"knockback_1": {
 		"id": "knockback_1",
 		"name": "Impacto",
-		"description": "+30% retroceso a enemigos.",
+		"description": "+40% retroceso a enemigos.",
 		"icon": "res://assets/icons/icon_knockback.png",
 		"category": "offensive",
 		"tier": 1,
 		"max_stacks": 4,
-		"effects": [{"stat": "knockback_mult", "value": 1.30, "operation": "multiply"}]
+		"effects": [{"stat": "knockback_mult", "value": 1.40, "operation": "multiply"}]  # BUFFED Pass 3: 1.30 → 1.40
 	},
 	"knockback_2": {
 		"id": "knockback_2",
@@ -1395,12 +1395,12 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 	"growth_2": {
 		"id": "growth_2",
 		"name": "Evolución",
-		"description": "+2% a TODOS los stats por minuto sobrevivido.",
+		"description": "+1.5% a TODOS los stats por minuto sobrevivido.",
 		"icon": "res://assets/icons/icon_coin_gold.png",
 		"category": "utility",
 		"tier": 4,
 		"max_stacks": 2,
-		"effects": [{"stat": "growth", "value": 0.02, "operation": "add"}]
+		"effects": [{"stat": "growth", "value": 0.015, "operation": "add"}]  # NERFED Pass 3: 0.02 → 0.015
 	},
 	
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1534,11 +1534,11 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 		"id": "overkill_3",
 		"icon": "res://assets/icons/icon_bomb_blast.png",
 		"name": "Devastación",
-		"description": "100% del daño excedente se transfiere a enemigos cercanos.",
+		"description": "75% del daño excedente se transfiere a enemigos cercanos.",
 		"category": "utility",
 		"tier": 4,
 		"max_stacks": 1,
-		"effects": [{"stat": "overkill_damage", "value": 1.0, "operation": "add"}]
+		"effects": [{"stat": "overkill_damage", "value": 0.75, "operation": "add"}]  # NERFED Pass 3: 1.0 → 0.75
 	},
 	# ─────────────────────────────────────────────────────────────────────────────
 	# DURACIÓN DE EFECTOS DE ESTADO (quemadura, ralentización, congelación, etc.)

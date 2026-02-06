@@ -136,7 +136,7 @@ const WEAPONS: Dictionary = {
 		"element": Element.LIGHTNING,
 		"rarity": "uncommon",
 		
-		"damage": 15,
+		"damage": 13,  # NERFED Pass 3: 15 → 13 (-13%)
 		"cooldown": 1.8,
 		"range": 400.0,
 		"projectile_speed": 600.0,  # Muy rápido (casi instantáneo)
@@ -224,7 +224,7 @@ const WEAPONS: Dictionary = {
 		"projectile_type": ProjectileType.SINGLE,
 		
 		"effect": "curse",
-		"effect_value": 1.5,  # Multiplicador de daño recibido
+		"effect_value": 1.30,  # NERFED Pass 3: 1.5 → 1.30 (-13%)
 		"effect_duration": 3.0,
 		
 		# Tags de Mecanicas
@@ -383,8 +383,8 @@ const WEAPONS: Dictionary = {
 		"element": Element.VOID,
 		"rarity": "rare",
 		
-		"damage": 18,
-		"cooldown": 2.5,
+		"damage": 22,  # BUFFED Pass 3: 18 → 22 (+22%)
+		"cooldown": 2.3,  # BUFFED Pass 3: 2.5 → 2.3 (-8%)
 		"range": 200.0,
 		"projectile_speed": 0.0,
 		"projectile_count": 1,

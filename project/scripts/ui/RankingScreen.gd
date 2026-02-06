@@ -848,27 +848,43 @@ func _compare_runs_by_score(a: Dictionary, b: Dictionary) -> bool:
 	return score_a > score_b
 
 func _calculate_run_score(run: Dictionary) -> int:
-	"""Calcular puntuación de una partida"""
+	"""Calcular puntuación de una partida (fallback para datos antiguos)"""
 	# Si ya tiene score calculado, usarlo
 	var score = run.get("score", 0)
 	if score > 0:
 		return score
 	
-	# Calcular score basado en datos disponibles (formatos antiguo y nuevo)
-	var enemies = run.get("enemies_defeated", 0)
+	# BALANCE PASS 3: Fórmula actualizada consistente con Game.gd
+	var enemies = run.get("enemies_defeated", run.get("kills", 0))
+	var elites = run.get("elites_killed", 0)
+	var bosses = run.get("bosses_killed", 0)
 	var final_stats = run.get("final_stats", {})
 	var level = final_stats.get("level", run.get("player_level", run.get("level_reached", 1)))
 	var duration = run.get("duration", run.get("time_survived", 0.0))
-	var phase = run.get("phase", 1)
+	var damage_taken = run.get("damage_taken", 0)
 	
-	# Sistema de puntuación:
-	# - Enemigos derrotados: 10 pts cada uno
-	# - Nivel alcanzado: 100 pts por nivel
-	# - Tiempo sobrevivido: 1 pt por segundo
-	# - Fase alcanzada: 500 pts por fase
-	score = (enemies * 10) + (level * 100) + int(duration) + (phase * 500)
+	# Tiempo con diminishing después de 60 min
+	var time_score: float = 0.0
+	if duration <= 3600:
+		time_score = duration * 8.0
+	else:
+		time_score = 3600.0 * 8.0 + (duration - 3600.0) * 4.0
 	
-	return score
+	# Kills con sqrt diminishing
+	var kills_score = sqrt(float(enemies)) * 100.0
+	
+	# Elites y bosses
+	var elite_score = float(elites) * 750.0
+	var boss_score = float(bosses) * 3000.0
+	
+	# Level
+	var level_score = float(level) * 400.0
+	
+	# Penalización daño
+	var damage_penalty = float(damage_taken) / 20.0
+	
+	var final_score = time_score + kills_score + elite_score + boss_score + level_score - damage_penalty
+	return int(maxf(0.0, final_score))
 
 func _convert_run_to_entry(run: Dictionary, rank: int) -> Dictionary:
 	"""Convertir datos de una partida al formato de entrada del ranking"""

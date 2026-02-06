@@ -969,41 +969,65 @@ static func create_elite_version(enemy_data: Dictionary) -> Dictionary:
 	var attack_cd = elite.get("attack_cooldown", 1.5)
 	elite["attack_cooldown"] = attack_cd * ELITE_CONFIG.get("attack_speed_multiplier", 0.7)
 	
-	# AÑADIR HABILIDADES ESPECIALES DE ÉLITE - SISTEMA MEJORADO
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# BALANCE PASS 3: ELITE FAIRNESS - Máximo 4 habilidades, exclusiones mutuas
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# Combos prohibidos para evitar situaciones injustas:
+	# - nova + summon: demasiado overwhelm (oleada de proyectiles + minions)
+	# - Si tiene dash + rage, el dash se debilita (no doble spike de damage)
+	# ═══════════════════════════════════════════════════════════════════════════════
+	
 	var existing_abilities = elite.get("special_abilities", []).duplicate()
 	var tier = elite.get("tier", 1)
+	const MAX_ELITE_ABILITIES: int = 4
 	
-	# Todos los élites tienen slam de área y dash
-	if not "elite_slam" in existing_abilities:
-		existing_abilities.append("elite_slam")
-	if not "elite_dash" in existing_abilities:
-		existing_abilities.append("elite_dash")
+	# Pool de habilidades por tier (se eligen aleatoriamente hasta MAX)
+	var ability_pool: Array = []
 	
-	# Élites de tier 2+ tienen rage y nova
+	# Tier 1+: slam y dash son core
+	ability_pool.append("elite_slam")
+	ability_pool.append("elite_dash")
+	
+	# Tier 2+: añade rage y nova al pool
 	if tier >= 2:
-		if not "elite_rage" in existing_abilities:
-			existing_abilities.append("elite_rage")
-		if not "elite_nova" in existing_abilities:
-			existing_abilities.append("elite_nova")
+		ability_pool.append("elite_rage")
+		ability_pool.append("elite_nova")
 	
-	# Élites de tier 3+ tienen escudo y summon
+	# Tier 3+: añade shield y summon al pool
 	if tier >= 3:
-		if not "elite_shield" in existing_abilities:
-			existing_abilities.append("elite_shield")
-		if not "elite_summon" in existing_abilities:
-			existing_abilities.append("elite_summon")
+		ability_pool.append("elite_shield")
+		ability_pool.append("elite_summon")
 	
-	# Tier 4 tiene TODAS las habilidades + stats mejorados
-	if tier >= 4:
-		for ability in ELITE_CONFIG.extra_abilities:
-			if not ability in existing_abilities:
-				existing_abilities.append(ability)
+	# Elegir habilidades aleatorias respetando el máximo
+	ability_pool.shuffle()
+	var selected_abilities: Array = []
 	
-	elite["special_abilities"] = existing_abilities
+	for ability in ability_pool:
+		if selected_abilities.size() >= MAX_ELITE_ABILITIES:
+			break
+		
+		# REGLA DE EXCLUSIÓN: nova y summon no coexisten
+		if ability == "elite_nova" and "elite_summon" in selected_abilities:
+			continue
+		if ability == "elite_summon" and "elite_nova" in selected_abilities:
+			continue
+		
+		selected_abilities.append(ability)
+	
+	# Añadir existentes que no estén ya
+	for ability in existing_abilities:
+		if ability not in selected_abilities and selected_abilities.size() < MAX_ELITE_ABILITIES:
+			selected_abilities.append(ability)
+	
+	elite["special_abilities"] = selected_abilities
 	
 	# Añadir modifiers para TODAS las habilidades élite (escaladas por tier)
 	var mods = elite.get("modifiers", {}).duplicate()
 	var tier_bonus = 1.0 + (tier - 1) * 0.2  # +20% por tier
+	
+	# REGLA DE DEBILITACIÓN: Si tiene dash + rage, el dash hace menos daño
+	var has_dash_rage_combo = "elite_dash" in selected_abilities and "elite_rage" in selected_abilities
+	var dash_penalty = 0.7 if has_dash_rage_combo else 1.0  # -30% si tiene combo
 	
 	# Slam - escala con tier
 	mods["elite_slam_cooldown"] = ELITE_CONFIG.get("slam_cooldown", 4.0) / tier_bonus
@@ -1019,10 +1043,10 @@ static func create_elite_version(enemy_data: Dictionary) -> Dictionary:
 	mods["elite_shield_charges"] = ELITE_CONFIG.get("shield_charges", 5) + (tier - 1) * 2
 	mods["elite_shield_cooldown"] = ELITE_CONFIG.get("shield_cooldown", 12.0) / tier_bonus
 	
-	# Dash - nuevo
+	# Dash - con penalización si tiene combo dash+rage
 	mods["elite_dash_cooldown"] = ELITE_CONFIG.get("dash_cooldown", 3.0) / tier_bonus
 	mods["elite_dash_speed"] = ELITE_CONFIG.get("dash_speed", 600.0) * tier_bonus
-	mods["elite_dash_damage_mult"] = ELITE_CONFIG.get("dash_damage_mult", 1.8) * tier_bonus
+	mods["elite_dash_damage_mult"] = ELITE_CONFIG.get("dash_damage_mult", 1.8) * tier_bonus * dash_penalty
 	
 	# Nova - nuevo
 	mods["elite_nova_cooldown"] = ELITE_CONFIG.get("nova_cooldown", 6.0) / tier_bonus

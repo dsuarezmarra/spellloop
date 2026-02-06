@@ -968,9 +968,21 @@ func _on_enemy_died(death_position: Vector2, enemy_type: String, exp_value: int,
 		hud.update_kills(run_stats["kills"])
 
 	# XP AUTOMÁTICO - Se da con un pequeño delay para mejor feedback visual
-	# El delay permite ver la muerte del enemigo antes de subir de nivel
-	if experience_manager and exp_value > 0:
-		_grant_exp_delayed(exp_value)
+	# BALANCE PASS 3: Bonus XP para elites/bosses en Phase 3 (+25%)
+	var final_exp = exp_value
+	if (is_elite or is_boss) and exp_value > 0:
+		var difficulty_manager = get_node_or_null("/root/DifficultyManager")
+		if not difficulty_manager:
+			var managers = get_tree().get_nodes_in_group("difficulty_manager")
+			if managers.size() > 0:
+				difficulty_manager = managers[0]
+		if difficulty_manager and difficulty_manager.has_method("get_current_phase"):
+			var current_phase = difficulty_manager.get_current_phase()
+			if current_phase >= 3:
+				final_exp = int(exp_value * 1.25)  # +25% XP en Phase 3
+	
+	if experience_manager and final_exp > 0:
+		_grant_exp_delayed(final_exp)
 
 	# MONEDAS - Caen al suelo para que el player las recoja
 	if experience_manager:
@@ -1582,13 +1594,70 @@ func _collect_final_stats() -> Dictionary:
 	return final_stats
 
 func _calculate_run_score() -> int:
-	"""Calcular puntuación de la run basada en estadísticas"""
-	var score = 0
-	score += int(run_stats.get("time", 0.0)) * 10  # 10 puntos por segundo
-	score += run_stats.get("level", 1) * 500  # 500 puntos por nivel
-	score += run_stats.get("kills", 0) * 25  # 25 puntos por kill
-	score += run_stats.get("gold", 0)  # 1 punto por oro
-	return score
+	"""
+	BALANCE PASS 3: Scoring competitivo para ranking
+	
+	Fórmula diseñada para:
+	- Premiar acción y riesgo, no solo supervivencia
+	- Evitar estrategias AFK/tank que sobreviven sin matar
+	- Escalar con tiempo pero con diminishing returns
+	- Penalizar daño excesivo recibido
+	
+	Componentes:
+	- Tiempo: 8 pts/seg (base, diminishing en ultra-late)
+	- Kills: sqrt(kills) * 100 (evita farm infinito)
+	- Elites: 750 pts cada uno
+	- Bosses: 3000 pts cada uno
+	- Level: 400 pts por nivel
+	- Daño recibido: -1 pt por cada 20 HP
+	- Kill rate bonus: si kills/min > 30, bonus +10%
+	"""
+	var time_seconds = run_stats.get("time", 0.0)
+	var kills = run_stats.get("kills", 0)
+	var elites = run_stats.get("elites_killed", 0)
+	var bosses = run_stats.get("bosses_killed", 0)
+	var level = run_stats.get("level", 1)
+	var damage_taken = run_stats.get("damage_taken", 0)
+	var gold = run_stats.get("gold", 0)
+	
+	var score: float = 0.0
+	
+	# Tiempo con soft diminishing después de 1 hora
+	var time_minutes = time_seconds / 60.0
+	if time_minutes <= 60:
+		score += time_seconds * 8.0  # 8 pts/seg normal
+	else:
+		# Primeros 60 min a rate normal, después 50% rate
+		score += 60.0 * 60.0 * 8.0  # 60 min a 8 pts/seg
+		score += (time_seconds - 3600.0) * 4.0  # resto a 4 pts/seg
+	
+	# Kills con diminishing returns (sqrt) - premia matar pero no farm infinito
+	score += sqrt(float(kills)) * 100.0
+	
+	# Bonus por elites (objetivo de alto valor)
+	score += float(elites) * 750.0
+	
+	# Bonus por bosses (logro principal)
+	score += float(bosses) * 3000.0
+	
+	# Nivel alcanzado
+	score += float(level) * 400.0
+	
+	# Gold como bonus menor
+	score += float(gold) * 0.5
+	
+	# Penalización por daño recibido (evita tank AFK)
+	# -1 punto por cada 20 HP de daño recibido
+	var damage_penalty = float(damage_taken) / 20.0
+	score -= damage_penalty
+	
+	# Bonus por kill rate (incentiva acción constante)
+	if time_minutes > 1.0:
+		var kills_per_min = float(kills) / time_minutes
+		if kills_per_min > 30.0:
+			score *= 1.10  # +10% bonus por alta actividad
+	
+	return int(maxf(0.0, score))
 
 func _on_game_over_retry() -> void:
 	"""Reintentar partida desde el game over"""
