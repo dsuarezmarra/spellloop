@@ -589,10 +589,12 @@ const STAT_LIMITS: Dictionary = {
 	"xp_mult": {"min": 0.1, "max": 3.0},          # Cap at 3.0x
 	"gold_mult": {"min": 0.1, "max": 3.0},        # Cap at 3.0x
 	"cooldown_mult": {"min": 0.25, "max": 2.0},   # NEW: Cap min cooldown at 25% (75% reduction)
+	"health_regen": {"min": 0.0, "max": 15.0},    # BALANCE: Cap at 15 HP/s
+	"shield_regen_delay": {"min": 1.0, "max": 10.0}, # BALANCE: Minimum 1s delay always
 
 	# Probabilidades (0-100%)
 	"crit_chance": {"min": 0.0, "max": 1.0},
-	"dodge_chance": {"min": 0.0, "max": 0.75},      # Máximo 75%
+	"dodge_chance": {"min": 0.0, "max": 0.60},      # NERFED: 75% -> 60% (unified cap)
 	# NOTA: life_steal límite está en GlobalWeaponStats
 	"burn_chance": {"min": 0.0, "max": 0.5},         # Máximo 50%
 	"freeze_chance": {"min": 0.0, "max": 0.5},       # Máximo 50%

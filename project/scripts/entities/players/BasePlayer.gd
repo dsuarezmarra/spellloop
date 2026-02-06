@@ -671,8 +671,8 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	
 	# 1. Verificar esquiva (dodge) primero
 	if player_stats and player_stats.has_method("get_stat"):
-		var dodge_chance = player_stats.get_stat("dodge_chance")
-		if dodge_chance > 0 and randf() < minf(dodge_chance, 0.6):  # Máximo 60% de esquiva
+		var dodge_chance = player_stats.get_stat("dodge_chance")  # Already capped in STAT_LIMITS
+		if dodge_chance > 0 and randf() < dodge_chance:  # BALANCE: Removed redundant minf() - cap is in STAT_LIMITS
 			# ¡Esquivó el daño!
 			# Debug desactivado: print("[%s] ✨ ¡ESQUIVADO! (%.0f%% chance)" % [character_class, dodge_chance * 100])
 			FloatingText.spawn_text(global_position + Vector2(0, -35), "DODGE!", Color(0.3, 0.9, 1.0))
@@ -821,12 +821,12 @@ func _get_enemy_density() -> int:
 	return count
 
 func _apply_dynamic_iframes() -> void:
-	# Base: 0.5s
-	var base_iframe = 0.5
+	# Base: 0.4s (NERFED from 0.5s for balance)
+	var base_iframe = 0.4
 	
-	# Bonus por densidad (Fairness en hordas)
+	# Bonus por densidad (Fairness en hordas) - NERFED max from 0.15 to 0.10
 	var density = _get_enemy_density()
-	var density_bonus = minf(float(density) * 0.02, 0.15) # Max +0.15s (con ~8 enemigos)
+	var density_bonus = minf(float(density) * 0.02, 0.10)  # Max +0.10s (with ~5 enemies)
 	
 	_invulnerability_timer = base_iframe + density_bonus
 
