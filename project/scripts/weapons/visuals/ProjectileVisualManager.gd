@@ -1362,7 +1362,7 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 	# SPRITES DE PROYECTIL NORMAL (flight + impact)
 	# ═══════════════════════════════════════════════════════════════════════════
 	var flight_path = base_path + "flight_spritesheet_" + weapon_id + ".png"
-	print("[DEBUG] Trying to load flight sprite: " + flight_path)
+	# Debug desactivado: print("[DEBUG] Trying to load flight sprite: " + flight_path)
 	
 	if not ResourceLoader.exists(flight_path):
 		push_warning("[ProjectileVisualManager] ❌ File not found: " + flight_path)
@@ -1376,7 +1376,7 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 		push_error("[ProjectileVisualManager] ❌ Load failed (returned null): " + flight_path)
 		return
 		
-	print("[DEBUG] ✅ Loaded flight sprite: " + flight_path + " (" + str(flight_tex.get_width()) + "x" + str(flight_tex.get_height()) + ")")
+	# Debug desactivado: print("[DEBUG] ✅ Loaded flight sprite: " + flight_path + " (" + str(flight_tex.get_width()) + "x" + str(flight_tex.get_height()) + ")")
 
 	# NOTA: launch.png ya no se usa - los proyectiles empiezan directamente en flight
 
@@ -1410,13 +1410,13 @@ func _try_load_custom_sprites(data: ProjectileVisualData, weapon_id: String) -> 
 
 func get_visual_data(weapon_id: String, weapon_data: Dictionary = {}) -> ProjectileVisualData:
 	"""Obtener o crear datos visuales para un arma específica"""
-	print_rich("[color=yellow][PVM] Requesting visual data for: %s[/color]" % weapon_id)
+	# Debug desactivado: print_rich("[color=yellow][PVM] Requesting visual data for: %s[/color]" % weapon_id)
 	
 	if _visual_data_cache.has(weapon_id):
 		# print("[DEBUG] Using cached visual data for: " + weapon_id)
 		return _visual_data_cache[weapon_id]
 	
-	print_rich("[color=cyan][PVM] ⚠️ Data not in cache, creating new for: %s[/color]" % weapon_id)
+	# Debug desactivado: print_rich("[color=cyan][PVM] ⚠️ Data not in cache, creating new for: %s[/color]" % weapon_id)
 	var data = _create_weapon_visual_data(weapon_id, weapon_data)
 	_visual_data_cache[weapon_id] = data
 	return data

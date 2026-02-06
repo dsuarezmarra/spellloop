@@ -390,7 +390,7 @@ func set_character_sprites(sprite_folder: String) -> void:
 	"""Proxy method to set character sprites on the actual WizardPlayer"""
 	if wizard_player and wizard_player.has_method("set_character_sprites"):
 		wizard_player.set_character_sprites(sprite_folder)
-		print("[LoopiaLikePlayer] Sprites changed to: %s" % sprite_folder)
+		# Debug desactivado: print("[LoopiaLikePlayer] Sprites changed to: %s" % sprite_folder)
 
 func _play_damage_animation() -> void:
 	# Ya no es necesario aquí, el WizardPlayer maneja los efectos visuales

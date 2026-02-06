@@ -209,14 +209,14 @@ func _configure_player_character() -> void:
 	var character_id = "frost_mage"  # Default
 	if SessionState:
 		character_id = SessionState.get_character()
-		print("[Game] SessionState.get_character() returned: '%s'" % character_id)
+		# Debug desactivado: print("[Game] SessionState.get_character() returned: '%s'" % character_id)
 
 	# Si esta vacio, usar default
 	if character_id.is_empty():
 		character_id = "frost_mage"
-		print("[Game] Character ID was empty, using default: frost_mage")
+		# Debug desactivado: print("[Game] Character ID was empty, using default: frost_mage")
 
-	print("[Game] Configuring player with character: %s" % character_id)
+	# Debug desactivado: print("[Game] Configuring player with character: %s" % character_id)
 
 	# Obtener datos del personaje
 	var char_data = CharacterDatabase.get_character(character_id)
@@ -225,11 +225,11 @@ func _configure_player_character() -> void:
 		return
 
 	var sprite_folder = char_data.get("sprite_folder", "frost_mage")
-	print("[Game] Sprite folder for %s: %s" % [character_id, sprite_folder])
+	# Debug desactivado: print("[Game] Sprite folder for %s: %s" % [character_id, sprite_folder])
 
 	# Configurar la carpeta de sprites si el player tiene el metodo
 	if player.has_method("set_character_sprites"):
-		print("[Game] Calling player.set_character_sprites('%s')" % sprite_folder)
+		# Debug desactivado: print("[Game] Calling player.set_character_sprites('%s')" % sprite_folder)
 		player.set_character_sprites(sprite_folder)
 	else:
 		push_warning("[Game] Player does not have set_character_sprites method!")
@@ -609,7 +609,11 @@ func _start_game() -> void:
 		"kills": 0,
 		"xp_total": 0,
 		"gold": 0,
-		"damage_dealt": 0
+		"damage_dealt": 0,
+		"damage_taken": 0,
+		"bosses_killed": 0,
+		"elites_killed": 0,
+		"healing_done": 0
 	}
 
 	# Debug desactivado: print("🚀 [Game] ¡Partida iniciada!")
@@ -642,6 +646,10 @@ func _resume_saved_game() -> void:
 		run_stats["xp_total"] = saved_run_stats.get("xp_total", 0)
 		run_stats["gold"] = saved_run_stats.get("gold", 0)
 		run_stats["damage_dealt"] = saved_run_stats.get("damage_dealt", 0)
+		run_stats["damage_taken"] = saved_run_stats.get("damage_taken", 0)
+		run_stats["bosses_killed"] = saved_run_stats.get("bosses_killed", 0)
+		run_stats["elites_killed"] = saved_run_stats.get("elites_killed", 0)
+		run_stats["healing_done"] = saved_run_stats.get("healing_done", 0)
 
 	# IMPORTANTE: Esperar un frame para que HealthComponent._ready() ya haya ejecutado
 	# antes de restaurar el HP (evita que _ready() sobrescriba nuestro valor)
@@ -947,7 +955,7 @@ func _update_hud() -> void:
 		var health_data = player.get_health()
 		hud.update_health(health_data.current, health_data.max)
 
-func _on_enemy_died(position: Vector2, enemy_type: String, exp_value: int, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
+func _on_enemy_died(_position: Vector2, enemy_type: String, exp_value: int, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
 	run_stats["kills"] += 1
 	
 	# Trackear elites y bosses por separado
@@ -1137,7 +1145,7 @@ func _trigger_kill_explosion(pos: Vector2, damage: float) -> void:
 	tween.parallel().tween_property(explosion, "modulate", Color(1.0, 0.3, 0.0, 0.0), 0.3)
 	tween.tween_callback(explosion.queue_free)
 
-func _on_exp_gained(amount: int, total: int) -> void:
+func _on_exp_gained(_amount: int, total: int) -> void:
 	run_stats["xp_total"] = total
 
 func _on_level_up(new_level: int, _upgrades: Array) -> void:
@@ -1164,7 +1172,7 @@ func _process_next_level_up() -> void:
 	level_up_panel_active = true
 	_show_level_up_panel(level)
 
-func _show_level_up_panel(level: int) -> void:
+func _show_level_up_panel(_level: int) -> void:
 	"""Mostrar el panel de selección de mejoras al subir nivel"""
 	var panel_scene = load("res://scenes/ui/LevelUpPanel.tscn")
 	if not panel_scene:
@@ -1216,7 +1224,7 @@ func _show_level_up_panel(level: int) -> void:
 
 	# Debug desactivado: print("🆙 [Game] Panel de level up mostrado (nivel %d)" % level)
 
-func _on_level_up_option_selected(option: Dictionary) -> void:
+func _on_level_up_option_selected(_option: Dictionary) -> void:
 	"""Callback cuando se selecciona una mejora en el level up"""
 	# Debug desactivado: print("🆙 [Game] Mejora seleccionada: %s" % option.get("name", "???"))
 	# Nota: La mejora ya se aplica en LevelUpPanel._apply_option()
@@ -1299,7 +1307,7 @@ func _on_coin_collected(value: int, total: int) -> void:
 	if hud and hud.has_method("update_coins"):
 		hud.update_coins(value, total)
 
-func _on_player_zone_changed(zone_id: int, zone_name: String) -> void:
+func _on_player_zone_changed(_zone_id: int, zone_name: String) -> void:
 	## Callback cuando el player cambia de zona
 	# Debug desactivado: print("🏟️ [Game] Player cambió a zona: %s (id=%d)" % [zone_name, zone_id])
 
@@ -1584,7 +1592,7 @@ func add_healing_stat(amount: int) -> void:
 
 func _on_phase_changed(phase_num: int, phase_config: Dictionary) -> void:
 	"""Callback cuando cambia la fase del juego"""
-	var phase_name = phase_config.get("name", "Fase %d" % phase_num)
+	var _phase_name = phase_config.get("name", "Fase %d" % phase_num)
 	# Debug desactivado: print("🌊 [Game] Fase cambiada: %s" % phase_name)
 
 	# DESACTIVADO: Ya no mostramos mensajes de fase, solo eventos importantes
@@ -1593,13 +1601,13 @@ func _on_phase_changed(phase_num: int, phase_config: Dictionary) -> void:
 	# 	hud.show_wave_message(msg, 5.0)
 	pass
 
-func _on_wave_started(wave_type: String, wave_config: Dictionary) -> void:
+func _on_wave_started(_wave_type: String, wave_config: Dictionary) -> void:
 	"""Callback cuando inicia una oleada"""
 	var announcement = wave_config.get("announcement", "")
 	if announcement != "" and hud and hud.has_method("show_wave_message"):
 		hud.show_wave_message(announcement, 3.0)
 
-func _on_boss_incoming(boss_id: String, seconds_until: float) -> void:
+func _on_boss_incoming(boss_id: String, _seconds_until: float) -> void:
 	"""Callback de advertencia de boss"""
 	# Debug desactivado: print("⚠️ [Game] ¡Boss %s llegando en %.1f segundos!" % [boss_id, seconds_until])
 
@@ -1634,14 +1642,14 @@ func _on_boss_defeated(boss_id: String) -> void:
 	if hud and hud.has_method("hide_boss_bar"):
 		hud.hide_boss_bar()
 
-func _on_elite_spawned(enemy_id: String) -> void:
+func _on_elite_spawned(_enemy_id: String) -> void:
 	"""Callback cuando aparece un élite"""
 	# Debug desactivado: print("⭐ [Game] ¡ÉLITE SPAWNEADO: %s!" % enemy_id)
 
 	if hud and hud.has_method("show_wave_message"):
 		hud.show_wave_message("⭐ ¡ENEMIGO LEGENDARIO!", 3.0)
 
-func _on_special_event_started(event_name: String, event_config: Dictionary) -> void:
+func _on_special_event_started(_event_name: String, event_config: Dictionary) -> void:
 	"""Callback cuando inicia un evento especial"""
 	# Debug desactivado: print("🎪 [Game] Evento especial: %s" % event_name)
 
@@ -1649,7 +1657,7 @@ func _on_special_event_started(event_name: String, event_config: Dictionary) -> 
 	if announcement != "" and hud and hud.has_method("show_wave_message"):
 		hud.show_wave_message(announcement, 4.0)
 
-func _on_special_event_ended(event_name: String) -> void:
+func _on_special_event_ended(_event_name: String) -> void:
 	"""Callback cuando termina un evento especial"""
 	# Debug desactivado: print("🎪 [Game] Evento terminado: %s" % event_name)
 

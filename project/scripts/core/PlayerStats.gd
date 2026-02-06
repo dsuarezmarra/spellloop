@@ -714,7 +714,7 @@ func _apply_character_passive(character_id: String) -> void:
 		return
 
 	var passive_id = passive.get("id", "")
-	print("[PlayerStats] Applying passive: %s (%s)" % [passive.get("name", "Unknown"), passive_id])
+	# Debug desactivado: print("[PlayerStats] Applying passive: %s (%s)" % [passive.get("name", "Unknown"), passive_id])
 
 	# Obtener GlobalWeaponStats para los WEAPON_STATS
 	var gws = _get_global_weapon_stats()
@@ -725,13 +725,12 @@ func _apply_character_passive(character_id: String) -> void:
 		"frozen_aura":
 			# Esta pasiva se aplica en el sistema de combate, no en stats
 			# Se implementará como aura en el player
-			print("  -> Frozen Aura: Enemies nearby slowed 10%")
+			pass
 
 		# === PYROMANCER - Burning Soul ===
 		# Fire damage burns 20% longer
 		"burning_soul":
 			stats.status_duration_mult = stats.get("status_duration_mult", 1.0) * 1.2
-			print("  -> Burning Soul: +20%% burn duration (%.2f)" % stats.status_duration_mult)
 
 		# === STORM CALLER - Static Charge ===
 		# Lightning chains to 1 additional enemy
@@ -739,9 +738,8 @@ func _apply_character_passive(character_id: String) -> void:
 			# chain_count es un WEAPON_STAT → va a GlobalWeaponStats
 			if gws:
 				gws.add_stat("chain_count", 1)
-				print("  -> Static Charge: +1 chain (%d total)" % gws.get_stat("chain_count"))
 			else:
-				push_warning("  -> Static Charge: GlobalWeaponStats not found!")
+				push_warning("[PlayerStats] Static Charge: GlobalWeaponStats not found!")
 
 		# === ARCANIST - Arcane Shield ===
 		# Start with +1 orbital projectile
@@ -749,9 +747,8 @@ func _apply_character_passive(character_id: String) -> void:
 			# extra_projectiles es un WEAPON_STAT → va a GlobalWeaponStats
 			if gws:
 				gws.add_stat("extra_projectiles", 1)
-				print("  -> Arcane Shield: +1 orbital projectile")
 			else:
-				push_warning("  -> Arcane Shield: GlobalWeaponStats not found!")
+				push_warning("[PlayerStats] Arcane Shield: GlobalWeaponStats not found!")
 
 		# === SHADOW BLADE - Shadow Step ===
 		# +1 pierce on all projectiles
@@ -759,27 +756,25 @@ func _apply_character_passive(character_id: String) -> void:
 			# extra_pierce es un WEAPON_STAT → va a GlobalWeaponStats
 			if gws:
 				gws.add_stat("extra_pierce", 1)
-				print("  -> Shadow Step: +1 pierce")
 			else:
-				push_warning("  -> Shadow Step: GlobalWeaponStats not found!")
+				push_warning("[PlayerStats] Shadow Step: GlobalWeaponStats not found!")
 
 		# === DRUID - Nature's Blessing ===
 		# Heal 1 HP when collecting experience
 		"natures_blessing":
 			stats.kill_heal = stats.get("kill_heal", 0) + 1
-			print("  -> Nature's Blessing: +1 HP on XP pickup")
 
 		# === WIND RUNNER - Tailwind ===
 		# Move 15% faster when below 50% HP
 		"tailwind":
 			# Esta pasiva es condicional, se implementa en _process
-			print("  -> Tailwind: +15%% speed when below 50%% HP")
+			pass
 
 		# === GEOMANCER - Stone Skin ===
 		# Take 20% less damage when standing still
 		"stone_skin":
 			# Esta pasiva es condicional, se implementa en take_damage
-			print("  -> Stone Skin: -20%% damage when stationary")
+			pass
 
 		# === PALADIN - Divine Judgment ===
 		# Critical hits deal 50% more damage
@@ -787,19 +782,17 @@ func _apply_character_passive(character_id: String) -> void:
 			# crit_damage es un WEAPON_STAT → va a GlobalWeaponStats
 			if gws:
 				gws.add_stat("crit_damage", 0.5)
-				print("  -> Divine Judgment: +50%% crit damage (%.2fx)" % gws.get_stat("crit_damage"))
 			else:
-				push_warning("  -> Divine Judgment: GlobalWeaponStats not found!")
+				push_warning("[PlayerStats] Divine Judgment: GlobalWeaponStats not found!")
 
 		# === VOID WALKER - Void Hunger ===
 		# Killing enemies heals 2 HP, but lose 0.5 HP/sec
 		"void_hunger":
 			stats.kill_heal = stats.get("kill_heal", 0) + 2
 			stats.health_regen = stats.get("health_regen", 0.0) - 0.5
-			print("  -> Void Hunger: +2 HP on kill, -0.5 HP/sec")
 
 		_:
-			print("  -> Unknown passive: %s" % passive_id)
+			push_warning("[PlayerStats] Unknown passive: %s" % passive_id)
 
 func _get_global_weapon_stats() -> Node:
 	"""Obtener referencia a GlobalWeaponStats"""
@@ -885,10 +878,11 @@ func initialize_from_character(character_id: String) -> void:
 	# Aplicar pasiva del personaje
 	_apply_character_passive(character_id)
 
-	print("[PlayerStats] Initialized from character: %s" % character_id)
-	print("  - Max HP: %d" % stats.max_health)
-	print("  - Move Speed: %.0f" % stats.move_speed)
-	print("  - Passive: %s" % _current_character_id)
+	# Debug desactivado:
+	# print("[PlayerStats] Initialized from character: %s" % character_id)
+	# print("  - Max HP: %d" % stats.max_health)
+	# print("  - Move Speed: %.0f" % stats.move_speed)
+	# print("  - Passive: %s" % _current_character_id)
 
 func _ready() -> void:
 	# Asegurar que PlayerStats respete la pausa del juego

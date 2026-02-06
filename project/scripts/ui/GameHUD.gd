@@ -359,12 +359,12 @@ func update_kills(kill_count: int):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func update_weapons(weapons: Array):
-	# DEBUG: Ver qué datos llegan
-	if weapons.size() > 0:
-		print("[GameHUD] 🗡️ update_weapons llamado con %d armas:" % weapons.size())
-		for i in range(min(weapons.size(), 3)):
-			var w = weapons[i]
-			print("   - Arma %d: %s" % [i, w])
+	# DEBUG desactivado: Ver qué datos llegan
+	# if weapons.size() > 0:
+	#	print("[GameHUD] 🗡️ update_weapons llamado con %d armas:" % weapons.size())
+	#	for i in range(min(weapons.size(), 3)):
+	#		var w = weapons[i]
+	#		print("   - Arma %d: %s" % [i, w])
 	
 	# Reconstruir slots
 	if not weapon_container: return

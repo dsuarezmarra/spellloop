@@ -291,7 +291,7 @@ func add_weapon(weapon) -> bool:
 
 	# Verificar si hay slots disponibles
 	if not has_available_slot:
-		print("[AttackManager] ❌ No hay slots disponibles (%d/%d)" % [current_weapon_count, max_weapon_slots])
+		# Debug desactivado: print("[AttackManager] ❌ No hay slots disponibles (%d/%d)" % [current_weapon_count, max_weapon_slots])
 		return false
 
 	# Obtener ID del arma (compatible con ambos sistemas)
@@ -301,9 +301,9 @@ func add_weapon(weapon) -> bool:
 	# Verificar si ya tenemos esta arma
 	for existing in weapons:
 		if _get_weapon_id(existing) == weapon_id:
-			print("[AttackManager] ℹ️ Ya tienes %s, subiendo de nivel..." % weapon_display_name)
+			# Debug desactivado: print("[AttackManager] ℹ️ Ya tienes %s, subiendo de nivel..." % weapon_display_name)
 			var lvl_result = level_up_weapon_by_id(weapon_id)
-			print("[AttackManager] ⬆️ Level up result for %s: %s" % [weapon_id, lvl_result])
+			# Debug desactivado: print("[AttackManager] ⬆️ Level up result for %s: %s" % [weapon_id, lvl_result])
 			return lvl_result
 
 	# Añadir a la lista
@@ -394,7 +394,7 @@ func remove_weapon(weapon) -> bool:
 			var orbital_mgr = player.get_node_or_null("OrbitalManager_" + wid)
 			if orbital_mgr:
 				orbital_mgr.queue_free()
-				print("[AttackManager] 🧹 Limpiado OrbitalManager para: ", wid)
+				# Debug desactivado: print("[AttackManager] 🧹 Limpiado OrbitalManager para: ", wid)
 			
 			# 2. Borrar proyectiles sueltos en el grupo especifico (proyectiles de vuelo libre)
 			# Usamos call_deferred para asegurar limpieza segura physics-safe
@@ -714,7 +714,7 @@ func reset_for_new_game() -> void:
 	Debe llamarse al iniciar una nueva partida para evitar que el estado
 	de la partida anterior persista.
 	"""
-	print("[AttackManager] 🔄 Reseteando estado para nueva partida...")
+	# Debug desactivado: print("[AttackManager] 🔄 Reseteando estado para nueva partida...")
 	
 	# 1. Limpiar todas las armas
 	clear_weapons()
@@ -753,7 +753,7 @@ func reset_for_new_game() -> void:
 	# 8. Desactivar temporalmente hasta que se reinicialice
 	is_active = false
 	
-	print("[AttackManager] ✓ Estado reseteado completamente")
+	# Debug desactivado: print("[AttackManager] ✓ Estado reseteado completamente")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STATS GLOBALES DE ARMAS (Nuevo sistema)
@@ -987,7 +987,7 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	if original_data.is_empty() and weapon is BaseWeapon and weapon.base_stats:
 		# Fallback solo si no existe en DB (armas custom/fusiones)
 		original_data = weapon.base_stats.duplicate()  # Copiar para seguridad
-		print("[DEBUG] get_weapon_full_stats: Usando base_stats como fallback para %s" % weapon_id)
+		# Debug desactivado: print("[DEBUG] get_weapon_full_stats: Usando base_stats como fallback para %s" % weapon_id)
 	
 	var original_damage = original_data.get("damage", 10)
 	var original_cooldown = original_data.get("cooldown", 1.0)

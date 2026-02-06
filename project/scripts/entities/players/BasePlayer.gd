@@ -164,7 +164,7 @@ func _initialize_health_component() -> void:
 			if stats_max > 0 and stats_max != max_hp:
 				max_hp = maxi(1, int(stats_max))
 				health_component.set_max_health(max_hp)
-				print("[%s] Sincronizado Max HP con PlayerStats: %d" % [character_class, max_hp])
+				# Debug desactivado: print("[%s] Sincronizado Max HP con PlayerStats: %d" % [character_class, max_hp])
 
 		# Debug desactivado: print("[%s] ✓ Health component inicializado (HP: %d/%d)" % [character_class, hp, max_hp])
 	else:

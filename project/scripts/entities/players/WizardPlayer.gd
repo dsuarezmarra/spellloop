@@ -136,14 +136,12 @@ func _equip_starting_weapons() -> void:
 	if SessionState:
 		var character_id = SessionState.get_character()
 		weapon_id = CharacterDatabase.get_starting_weapon(character_id)
-		print("[WizardPlayer] Character: %s, Starting weapon: %s" % [character_id, weapon_id])
+		# Debug desactivado: print("[WizardPlayer] Character: %s, Starting weapon: %s" % [character_id, weapon_id])
 
 	# Usar el sistema de BaseWeapon + WeaponDatabase (igual que test_weapons)
 	if attack_manager.has_method("add_weapon_by_id"):
 		var result = attack_manager.add_weapon_by_id(weapon_id)
-		if result:
-			print("[WizardPlayer] ✓ Arma equipada: %s" % weapon_id)
-		else:
+		if not result:
 			push_warning("[WizardPlayer] ⚠️ Error al equipar arma: %s" % weapon_id)
 	else:
 		# Fallback: crear BaseWeapon manualmente
@@ -152,9 +150,7 @@ func _equip_starting_weapons() -> void:
 			push_warning("[WizardPlayer] ✗ Error: Arma no encontrada en WeaponDatabase: %s" % weapon_id)
 			return
 		var result = equip_weapon(weapon)
-		if result:
-			print("[WizardPlayer] ✓ Arma equipada (fallback): %s" % weapon_id)
-		else:
+		if not result:
 			push_warning("[WizardPlayer] ⚠️ Error al equipar arma: %s" % weapon_id)
 
 # ========== HABILIDADES DEL WIZARD ==========

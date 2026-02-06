@@ -156,7 +156,7 @@ func initialize(player: Node2D, root: Node2D, resume_seed: int = -1) -> void:
 	
 	# Seleccionar biomas aleatorios para cada zona
 	_select_random_biomes()
-	print("DEBUG: BIOMES_BY_ZONE keys: ", BIOMES_BY_ZONE.keys())
+	# Debug desactivado: print("DEBUG: BIOMES_BY_ZONE keys: ", BIOMES_BY_ZONE.keys())
 	
 	# Cargar texturas de biomas
 	_load_biome_textures()
