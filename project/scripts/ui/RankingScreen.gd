@@ -52,13 +52,15 @@ var month_popup_index: int = 0
 # ═══════════════════════════════════════════════════════════════════════════════
 
 enum Tab { TOP_100, MY_POSITION, FRIENDS }
-enum FocusArea { TABS, ENTRIES, FOOTER, MONTH_POPUP }
+enum FocusArea { TABS, ENTRIES, FOOTER, MONTH_POPUP, DETAIL_VIEW }
+enum DetailNavRow { TABS, CONTENT }
+enum DetailTab { STATS, WEAPONS, ITEMS }
 
 var current_tab: Tab = Tab.TOP_100
 var current_entries: Array = []
 var is_loading: bool = false
 
-# Navegación
+# Navegación principal
 var focus_area: FocusArea = FocusArea.TABS
 var tab_index: int = 0
 var footer_index: int = 0  # 0=mes, 1=actualizar, 2=volver
@@ -68,6 +70,52 @@ var expanded_entry_index: int = -1  # -1 = ninguna expandida
 # Paneles de entries (para actualizar visual)
 var entry_panels: Array[Control] = []
 var detail_panels: Array[Control] = []
+
+# ═══ ESTADO DEL POPUP DE DETALLE (clon del menú pausa) ═══
+var detail_popup: Control = null
+var detail_popup_visible: bool = false
+var detail_current_tab: DetailTab = DetailTab.STATS
+var detail_nav_row: DetailNavRow = DetailNavRow.TABS
+var detail_tab_buttons: Array[Button] = []
+var detail_content_container: Control = null
+var detail_content_scroll: ScrollContainer = null
+var detail_current_entry: Dictionary = {}
+
+# Colores (mismos que PauseMenu)
+const DETAIL_SELECTED_TAB = Color(1.0, 0.85, 0.3)
+const DETAIL_UNSELECTED_TAB = Color(0.5, 0.5, 0.6)
+const DETAIL_PANEL_BG = Color(0.1, 0.1, 0.15, 0.98)
+const DETAIL_VALUE_COLOR = Color(0.3, 0.9, 0.4)
+const DETAIL_STAT_COLOR = Color(0.8, 0.8, 0.9)
+
+# Colores por categoría (igual que PauseMenu)
+const CATEGORY_COLORS = {
+	"defensive": Color(0.2, 0.7, 0.3),
+	"offensive": Color(1.0, 0.4, 0.2),
+	"critical": Color(1.0, 0.85, 0.2),
+	"utility": Color(0.4, 0.7, 1.0)
+}
+
+# Colores por elemento
+const ELEMENT_COLORS = {
+	"ice": Color(0.4, 0.8, 1.0),
+	"fire": Color(1.0, 0.5, 0.2),
+	"lightning": Color(1.0, 1.0, 0.3),
+	"arcane": Color(0.7, 0.4, 1.0),
+	"shadow": Color(0.5, 0.3, 0.7),
+	"nature": Color(0.3, 0.9, 0.4),
+	"wind": Color(0.6, 0.9, 0.8),
+	"earth": Color(0.7, 0.5, 0.3),
+	"light": Color(1.0, 1.0, 0.9),
+	"void": Color(0.3, 0.2, 0.5),
+	"physical": Color(0.7, 0.7, 0.7)
+}
+
+const ELEMENT_ICONS = {
+	"ice": "❄️", "fire": "🔥", "lightning": "⚡", "arcane": "💜",
+	"shadow": "🗡️", "nature": "🌿", "wind": "🌪️", "earth": "🪨",
+	"light": "✨", "void": "🕳️", "physical": "⚔️"
+}
 
 # Datos de meses
 var month_data: Array = []  # Array de {year, month, display}
@@ -439,8 +487,11 @@ func _input(event: InputEvent) -> void:
 	# IMPORTANTE: Consumir TODOS los eventos de navegación para que no lleguen al MainMenu
 	var consumed = false
 	
+	# Si el popup de detalle está abierto, manejar su input
+	if detail_popup_visible:
+		consumed = _handle_detail_popup_input(event)
 	# Si el popup de mes está abierto
-	if month_popup_visible:
+	elif month_popup_visible:
 		consumed = _handle_month_popup_input(event)
 	else:
 		consumed = _handle_main_input(event)
@@ -839,7 +890,7 @@ func _convert_run_to_entry(run: Dictionary, rank: int) -> Dictionary:
 	else:
 		time_str = "00:00"
 	
-	# Obtener stats finales (formato nuevo o calcular desde formato antiguo)
+	# Obtener stats finales completos (formato nuevo o calcular desde formato antiguo)
 	var final_stats = run.get("final_stats", {})
 	var level = 1
 	if final_stats.has("level"):
@@ -849,6 +900,7 @@ func _convert_run_to_entry(run: Dictionary, rank: int) -> Dictionary:
 	elif run.has("level_reached"):
 		level = run.get("level_reached", 1)
 	
+	# Stats básicos para display en la lista
 	var stats_dict = {
 		"hp": int(final_stats.get("max_health", 100)),
 		"damage": final_stats.get("damage_mult", 1.0),
@@ -860,20 +912,36 @@ func _convert_run_to_entry(run: Dictionary, rank: int) -> Dictionary:
 	# Obtener armas (nombres en español si disponible)
 	var weapons_raw = run.get("weapons", [])
 	var weapons: Array = []
+	var weapons_data: Array = []  # Datos completos de armas
 	for w in weapons_raw:
 		if w is Dictionary:
 			weapons.append(w.get("name_es", w.get("name", "Unknown")))
+			weapons_data.append({
+				"element": w.get("element", w.get("element_type", "physical")),
+				"level": w.get("level", 1),
+				"damage": w.get("damage", 0),
+				"rarity": w.get("rarity", "common")
+			})
 		elif w is String:
 			weapons.append(w)
+			weapons_data.append({})
 	
-	# Obtener mejoras/objetos
+	# Obtener mejoras/objetos con datos completos
 	var upgrades_raw = run.get("upgrades", [])
 	var items: Array = []
+	var items_data: Array = []
 	for u in upgrades_raw:
 		if u is Dictionary:
 			items.append(u.get("name", "Unknown"))
+			items_data.append({
+				"icon": u.get("icon", "✨"),
+				"tier": u.get("tier", u.get("rarity", 1)),
+				"description": u.get("description", ""),
+				"category": u.get("category", "")
+			})
 		elif u is String:
 			items.append(u)
+			items_data.append({"icon": "✨"})
 	
 	# Calcular score usando la función centralizada
 	var score = _calculate_run_score(run)
@@ -887,8 +955,11 @@ func _convert_run_to_entry(run: Dictionary, rank: int) -> Dictionary:
 		"time": time_str,
 		"wave": run.get("phase", 1),  # Usamos phase como "oleada" visual
 		"stats": stats_dict,
+		"final_stats": final_stats,  # Stats completos para el popup de detalle
 		"weapons": weapons,
+		"weapons_data": weapons_data,  # Datos completos de armas
 		"items": items,
+		"items_data": items_data,  # Datos completos de items
 		"timestamp": run.get("timestamp", 0),
 		"end_reason": run.get("end_reason", "unknown")
 	}
@@ -972,22 +1043,12 @@ func _populate_entries() -> void:
 		detail_panels.append(detail_panel)
 
 func _toggle_entry_details(index: int) -> void:
-	"""Expandir o colapsar los detalles de una entry"""
-	if index < 0 or index >= detail_panels.size():
+	"""Abrir popup de detalle con 3 pestañas (clon del menú pausa)"""
+	if index < 0 or index >= current_entries.size():
 		return
 	
-	# Si ya está expandida esta, colapsar
-	if expanded_entry_index == index:
-		detail_panels[index].visible = false
-		expanded_entry_index = -1
-	else:
-		# Colapsar la anterior si había una
-		if expanded_entry_index >= 0 and expanded_entry_index < detail_panels.size():
-			detail_panels[expanded_entry_index].visible = false
-		
-		# Expandir la nueva
-		detail_panels[index].visible = true
-		expanded_entry_index = index
+	# Mostrar el popup de detalle completo
+	_show_detail_popup(current_entries[index])
 
 func _create_entry_panel(entry: Dictionary, index: int) -> Control:
 	var panel = PanelContainer.new()
@@ -1260,5 +1321,624 @@ func _create_item_box(item_name: String, bg_color: Color, font: Font) -> Control
 	label.add_theme_font_size_override("font_size", 14)
 	label.add_theme_color_override("font_color", Color.WHITE)
 	panel.add_child(label)
+	
+	return panel
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# POPUP DE DETALLE (CLON DEL MENÚ DE PAUSA)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _show_detail_popup(entry: Dictionary) -> void:
+	"""Mostrar popup de detalle con 3 pestañas igual que el menú de pausa"""
+	detail_current_entry = entry
+	detail_popup_visible = true
+	detail_current_tab = DetailTab.STATS
+	detail_nav_row = DetailNavRow.TABS
+	focus_area = FocusArea.DETAIL_VIEW
+	
+	# Cerrar popup anterior si existe
+	if detail_popup and is_instance_valid(detail_popup):
+		detail_popup.queue_free()
+	
+	# Crear popup
+	detail_popup = Control.new()
+	detail_popup.name = "DetailPopup"
+	detail_popup.set_anchors_preset(Control.PRESET_FULL_RECT)
+	detail_popup.z_index = 200
+	add_child(detail_popup)
+	
+	# Fondo oscuro
+	var bg = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0, 0, 0, 0.85)
+	detail_popup.add_child(bg)
+	
+	# Centro
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	detail_popup.add_child(center)
+	
+	# Panel principal
+	var main_panel = PanelContainer.new()
+	main_panel.custom_minimum_size = Vector2(900, 600)
+	var style = StyleBoxFlat.new()
+	style.bg_color = DETAIL_PANEL_BG
+	style.border_color = Color(0.3, 0.3, 0.4)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(12)
+	style.set_content_margin_all(20)
+	main_panel.add_theme_stylebox_override("panel", style)
+	center.add_child(main_panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 15)
+	main_panel.add_child(vbox)
+	
+	# === HEADER ===
+	var header = HBoxContainer.new()
+	header.alignment = BoxContainer.ALIGNMENT_CENTER
+	header.add_theme_constant_override("separation", 20)
+	vbox.add_child(header)
+	
+	var title = Label.new()
+	title.text = entry.get("steam_name", "Partida") + " - " + entry.get("character", "")
+	title.add_theme_font_size_override("font_size", 24)
+	title.add_theme_color_override("font_color", DETAIL_SELECTED_TAB)
+	header.add_child(title)
+	
+	var score_label = Label.new()
+	score_label.text = "%d PTS" % entry.get("score", 0)
+	score_label.add_theme_font_size_override("font_size", 18)
+	score_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.5))
+	header.add_child(score_label)
+	
+	# === TABS ===
+	var tabs_container = HBoxContainer.new()
+	tabs_container.add_theme_constant_override("separation", 10)
+	tabs_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(tabs_container)
+	
+	detail_tab_buttons.clear()
+	var tab_names = ["ESTADÍSTICAS", "ARMAS", "OBJETOS"]
+	for i in range(3):
+		var btn = Button.new()
+		btn.text = tab_names[i]
+		btn.custom_minimum_size = Vector2(150, 40)
+		btn.add_theme_font_size_override("font_size", 16)
+		btn.focus_mode = Control.FOCUS_NONE
+		tabs_container.add_child(btn)
+		detail_tab_buttons.append(btn)
+	
+	# Separador
+	var sep = HSeparator.new()
+	vbox.add_child(sep)
+	
+	# === CONTENIDO ===
+	detail_content_container = Control.new()
+	detail_content_container.custom_minimum_size = Vector2(860, 400)
+	detail_content_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(detail_content_container)
+	
+	# === FOOTER ===
+	var sep2 = HSeparator.new()
+	vbox.add_child(sep2)
+	
+	var help = Label.new()
+	help.text = "W/S: Scroll | A/D: Cambiar pestaña | ESC/ESPACIO: Cerrar"
+	help.add_theme_font_size_override("font_size", 12)
+	help.add_theme_color_override("font_color", Color(0.4, 0.4, 0.5))
+	help.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(help)
+	
+	# Mostrar pestaña inicial
+	_update_detail_tabs_visual()
+	_show_detail_tab_content()
+
+func _close_detail_popup() -> void:
+	"""Cerrar el popup de detalle"""
+	detail_popup_visible = false
+	focus_area = FocusArea.ENTRIES
+	
+	if detail_popup and is_instance_valid(detail_popup):
+		detail_popup.queue_free()
+		detail_popup = null
+	
+	detail_tab_buttons.clear()
+	detail_content_container = null
+	detail_content_scroll = null
+	
+	_update_visual_focus()
+
+func _handle_detail_popup_input(event: InputEvent) -> bool:
+	"""Manejar input en el popup de detalle"""
+	
+	# ESC o ESPACIO - Cerrar
+	if event.is_action_pressed("ui_cancel") or _is_space_pressed(event):
+		_close_detail_popup()
+		_play_click_sound()
+		return true
+	
+	# A/D - Cambiar pestaña
+	if event.is_action_pressed("move_left") or event.is_action_pressed("ui_left"):
+		_detail_navigate_tab(-1)
+		return true
+	
+	if event.is_action_pressed("move_right") or event.is_action_pressed("ui_right"):
+		_detail_navigate_tab(1)
+		return true
+	
+	# W/S - Scroll en contenido
+	if event.is_action_pressed("move_up") or event.is_action_pressed("ui_up"):
+		_detail_scroll(-60)
+		return true
+	
+	if event.is_action_pressed("move_down") or event.is_action_pressed("ui_down"):
+		_detail_scroll(60)
+		return true
+	
+	# Consumir eventos de teclado relevantes
+	if event is InputEventKey and event.pressed:
+		var key = event.keycode
+		if key in [KEY_W, KEY_A, KEY_S, KEY_D, KEY_SPACE, KEY_ESCAPE, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT]:
+			return true
+	
+	return false
+
+func _detail_navigate_tab(direction: int) -> void:
+	"""Navegar entre pestañas del popup de detalle"""
+	var new_tab = (int(detail_current_tab) + direction) % 3
+	if new_tab < 0:
+		new_tab = 2
+	detail_current_tab = new_tab as DetailTab
+	_update_detail_tabs_visual()
+	_show_detail_tab_content()
+	_play_hover_sound()
+
+func _detail_scroll(amount: int) -> void:
+	"""Hacer scroll en el contenido del popup"""
+	if detail_content_scroll and is_instance_valid(detail_content_scroll):
+		detail_content_scroll.scroll_vertical += amount
+		_play_hover_sound()
+
+func _update_detail_tabs_visual() -> void:
+	"""Actualizar visual de las pestañas del popup"""
+	for i in range(detail_tab_buttons.size()):
+		var btn = detail_tab_buttons[i]
+		var is_selected = (i == int(detail_current_tab))
+		
+		if is_selected:
+			btn.add_theme_color_override("font_color", DETAIL_SELECTED_TAB)
+			var style = StyleBoxFlat.new()
+			style.bg_color = Color(0.2, 0.3, 0.4)
+			style.border_color = DETAIL_SELECTED_TAB
+			style.set_border_width_all(2)
+			style.set_corner_radius_all(6)
+			btn.add_theme_stylebox_override("normal", style)
+			btn.add_theme_stylebox_override("hover", style)
+		else:
+			btn.add_theme_color_override("font_color", DETAIL_UNSELECTED_TAB)
+			btn.remove_theme_stylebox_override("normal")
+			btn.remove_theme_stylebox_override("hover")
+
+func _show_detail_tab_content() -> void:
+	"""Mostrar contenido de la pestaña seleccionada"""
+	if not detail_content_container:
+		return
+	
+	# Limpiar contenido anterior
+	for child in detail_content_container.get_children():
+		child.queue_free()
+	
+	match detail_current_tab:
+		DetailTab.STATS:
+			_show_detail_stats_tab()
+		DetailTab.WEAPONS:
+			_show_detail_weapons_tab()
+		DetailTab.ITEMS:
+			_show_detail_items_tab()
+
+func _show_detail_stats_tab() -> void:
+	"""Mostrar pestaña de estadísticas (igual que PauseMenu)"""
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	detail_content_container.add_child(scroll)
+	detail_content_scroll = scroll
+	
+	var main_vbox = VBoxContainer.new()
+	main_vbox.add_theme_constant_override("separation", 12)
+	scroll.add_child(main_vbox)
+	
+	var entry = detail_current_entry
+	var stats = entry.get("stats", {})
+	var final_stats = entry.get("final_stats", stats)
+	
+	# === HEADER COMPACTO ===
+	var header_hbox = HBoxContainer.new()
+	header_hbox.add_theme_constant_override("separation", 40)
+	header_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	main_vbox.add_child(header_hbox)
+	
+	# HP
+	var hp = final_stats.get("max_health", stats.get("hp", 100))
+	var hp_label = Label.new()
+	hp_label.text = "❤️ %d" % int(hp)
+	hp_label.add_theme_font_size_override("font_size", 18)
+	hp_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+	header_hbox.add_child(hp_label)
+	
+	# Nivel
+	var level = entry.get("level", 1)
+	var level_label = Label.new()
+	level_label.text = "📈 Nivel %d" % level
+	level_label.add_theme_font_size_override("font_size", 18)
+	level_label.add_theme_color_override("font_color", DETAIL_SELECTED_TAB)
+	header_hbox.add_child(level_label)
+	
+	# Tiempo
+	var time_str = entry.get("time", "00:00")
+	var time_label = Label.new()
+	time_label.text = "⏱️ %s" % time_str
+	time_label.add_theme_font_size_override("font_size", 18)
+	time_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+	header_hbox.add_child(time_label)
+	
+	# Separador
+	var sep = HSeparator.new()
+	main_vbox.add_child(sep)
+	
+	# === STATS EN DOS COLUMNAS ===
+	var columns_hbox = HBoxContainer.new()
+	columns_hbox.add_theme_constant_override("separation", 40)
+	main_vbox.add_child(columns_hbox)
+	
+	# Columna izquierda (Defensivo)
+	var left_column = VBoxContainer.new()
+	left_column.add_theme_constant_override("separation", 8)
+	left_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	columns_hbox.add_child(left_column)
+	
+	# Columna derecha (Ofensivo)
+	var right_column = VBoxContainer.new()
+	right_column.add_theme_constant_override("separation", 8)
+	right_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	columns_hbox.add_child(right_column)
+	
+	# === DEFENSIVO ===
+	var def_title = Label.new()
+	def_title.text = "🛡️ DEFENSIVO"
+	def_title.add_theme_font_size_override("font_size", 14)
+	def_title.add_theme_color_override("font_color", CATEGORY_COLORS["defensive"])
+	left_column.add_child(def_title)
+	
+	_add_detail_stat_row(left_column, "❤️", "Vida Máxima", str(int(final_stats.get("max_health", stats.get("hp", 100)))))
+	_add_detail_stat_row(left_column, "🛡️", "Armadura", str(int(final_stats.get("armor", stats.get("armor", 0)))))
+	_add_detail_stat_row(left_column, "~", "Esquivar", "%.0f%%" % (final_stats.get("dodge_chance", 0) * 100))
+	_add_detail_stat_row(left_column, "+", "Regeneración", "%.1f/s" % final_stats.get("health_regen", 0))
+	_add_detail_stat_row(left_column, "🩸", "Robo Vida", "%.0f%%" % (final_stats.get("life_steal", 0) * 100))
+	
+	# === OFENSIVO ===
+	var off_title = Label.new()
+	off_title.text = "⚔️ OFENSIVO"
+	off_title.add_theme_font_size_override("font_size", 14)
+	off_title.add_theme_color_override("font_color", CATEGORY_COLORS["offensive"])
+	right_column.add_child(off_title)
+	
+	var damage_mult = final_stats.get("damage_mult", stats.get("damage", 1.0))
+	_add_detail_stat_row(right_column, "⚔️", "Daño", _format_multiplier(damage_mult))
+	
+	var attack_speed = final_stats.get("attack_speed_mult", 1.0)
+	_add_detail_stat_row(right_column, "⚡", "Vel. Ataque", _format_multiplier(attack_speed))
+	
+	var crit_chance = final_stats.get("crit_chance", stats.get("crit", 5) / 100.0)
+	_add_detail_stat_row(right_column, "🎯", "Crítico", "%.0f%%" % (crit_chance * 100))
+	
+	var crit_damage = final_stats.get("crit_damage", 2.0)
+	_add_detail_stat_row(right_column, "💢", "Daño Crítico", "x%.1f" % crit_damage)
+	
+	var area_mult = final_stats.get("area_mult", 1.0)
+	_add_detail_stat_row(right_column, "🌀", "Área", _format_multiplier(area_mult))
+	
+	# === UTILIDAD ===
+	var sep2 = HSeparator.new()
+	main_vbox.add_child(sep2)
+	
+	var util_title = Label.new()
+	util_title.text = "🔧 UTILIDAD"
+	util_title.add_theme_font_size_override("font_size", 14)
+	util_title.add_theme_color_override("font_color", CATEGORY_COLORS["utility"])
+	main_vbox.add_child(util_title)
+	
+	var util_grid = GridContainer.new()
+	util_grid.columns = 4
+	util_grid.add_theme_constant_override("h_separation", 20)
+	util_grid.add_theme_constant_override("v_separation", 6)
+	main_vbox.add_child(util_grid)
+	
+	var move_speed = final_stats.get("move_speed", stats.get("speed", 100))
+	_add_detail_stat_to_grid(util_grid, "🏃", "Velocidad", str(int(move_speed)))
+	
+	var pickup = final_stats.get("pickup_range", 100)
+	_add_detail_stat_to_grid(util_grid, "🧲", "Recogida", str(int(pickup)))
+	
+	var xp_mult = final_stats.get("xp_mult", 1.0)
+	_add_detail_stat_to_grid(util_grid, "⭐", "XP", _format_multiplier(xp_mult))
+	
+	var luck = final_stats.get("luck", 0)
+	_add_detail_stat_to_grid(util_grid, "🍀", "Suerte", "%.0f%%" % (luck * 100))
+	
+	var cooldown = final_stats.get("cooldown_mult", 1.0)
+	_add_detail_stat_to_grid(util_grid, "⏰", "Cooldown", _format_multiplier(cooldown))
+	
+	var proj_count = final_stats.get("extra_projectiles", 0)
+	_add_detail_stat_to_grid(util_grid, "🎯", "Proyectiles+", "+%d" % int(proj_count))
+
+func _show_detail_weapons_tab() -> void:
+	"""Mostrar pestaña de armas (igual que PauseMenu)"""
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	detail_content_container.add_child(scroll)
+	detail_content_scroll = scroll
+	
+	var main_vbox = VBoxContainer.new()
+	main_vbox.add_theme_constant_override("separation", 12)
+	scroll.add_child(main_vbox)
+	
+	var weapons = detail_current_entry.get("weapons", [])
+	var weapons_data = detail_current_entry.get("weapons_data", [])
+	
+	# Header
+	var header = HBoxContainer.new()
+	header.add_theme_constant_override("separation", 10)
+	main_vbox.add_child(header)
+	
+	var title = Label.new()
+	title.text = "⚔️ ARSENAL (%d armas)" % weapons.size()
+	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_color_override("font_color", DETAIL_SELECTED_TAB)
+	header.add_child(title)
+	
+	if weapons.is_empty():
+		var empty = Label.new()
+		empty.text = "🎮 No hay armas registradas en esta partida"
+		empty.add_theme_font_size_override("font_size", 16)
+		empty.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+		main_vbox.add_child(empty)
+		return
+	
+	# Grid de armas
+	var weapons_grid = VBoxContainer.new()
+	weapons_grid.add_theme_constant_override("separation", 12)
+	main_vbox.add_child(weapons_grid)
+	
+	for i in range(weapons.size()):
+		var weapon_name = weapons[i]
+		var weapon_data = weapons_data[i] if i < weapons_data.size() else {}
+		var weapon_card = _create_detail_weapon_card(weapon_name, weapon_data)
+		weapons_grid.add_child(weapon_card)
+
+func _show_detail_items_tab() -> void:
+	"""Mostrar pestaña de objetos (igual que PauseMenu)"""
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	detail_content_container.add_child(scroll)
+	detail_content_scroll = scroll
+	
+	var grid = GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 15)
+	grid.add_theme_constant_override("v_separation", 15)
+	scroll.add_child(grid)
+	
+	var items = detail_current_entry.get("items", [])
+	var items_data = detail_current_entry.get("items_data", [])
+	
+	if items.is_empty():
+		var empty = Label.new()
+		empty.text = "📦 No hay objetos registrados en esta partida"
+		empty.add_theme_font_size_override("font_size", 16)
+		empty.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+		grid.add_child(empty)
+		return
+	
+	# Agrupar items duplicados
+	var grouped_items: Dictionary = {}
+	var item_order: Array = []
+	
+	for i in range(items.size()):
+		var item_name = items[i]
+		var item_data = items_data[i] if i < items_data.size() else {}
+		if not grouped_items.has(item_name):
+			grouped_items[item_name] = {"data": item_data, "count": 0}
+			item_order.append(item_name)
+		grouped_items[item_name].count += 1
+	
+	for item_name in item_order:
+		var info = grouped_items[item_name]
+		var item_panel = _create_detail_item_panel(item_name, info.data, info.count)
+		grid.add_child(item_panel)
+
+func _add_detail_stat_row(parent: VBoxContainer, icon: String, stat_name: String, value: String) -> void:
+	"""Añadir fila de stat al panel de detalle"""
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 6)
+	parent.add_child(hbox)
+	
+	var icon_label = Label.new()
+	icon_label.text = icon
+	icon_label.add_theme_font_size_override("font_size", 12)
+	icon_label.custom_minimum_size = Vector2(18, 0)
+	hbox.add_child(icon_label)
+	
+	var name_label = Label.new()
+	name_label.text = stat_name
+	name_label.add_theme_font_size_override("font_size", 12)
+	name_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.85))
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(name_label)
+	
+	var value_label = Label.new()
+	value_label.text = value
+	value_label.add_theme_font_size_override("font_size", 12)
+	value_label.add_theme_color_override("font_color", DETAIL_VALUE_COLOR)
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	value_label.custom_minimum_size = Vector2(70, 0)
+	hbox.add_child(value_label)
+
+func _add_detail_stat_to_grid(grid: GridContainer, icon: String, stat_name: String, value: String) -> void:
+	"""Añadir stat al grid de utilidad"""
+	var name_label = Label.new()
+	name_label.text = "%s %s" % [icon, stat_name]
+	name_label.add_theme_font_size_override("font_size", 11)
+	name_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
+	grid.add_child(name_label)
+	
+	var value_label = Label.new()
+	value_label.text = value
+	value_label.add_theme_font_size_override("font_size", 11)
+	value_label.add_theme_color_override("font_color", DETAIL_VALUE_COLOR)
+	grid.add_child(value_label)
+
+func _format_multiplier(value: float) -> String:
+	"""Formatear valor multiplicador como porcentaje"""
+	var percent = (value - 1.0) * 100
+	if percent >= 0:
+		return "+%.0f%%" % percent
+	return "%.0f%%" % percent
+
+func _create_detail_weapon_card(weapon_name: String, weapon_data: Dictionary) -> Control:
+	"""Crear tarjeta de arma para el popup de detalle"""
+	var card = PanelContainer.new()
+	card.custom_minimum_size = Vector2(0, 0)
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	var element = weapon_data.get("element", "physical")
+	if element is int:
+		var element_names = ["ice", "fire", "lightning", "arcane", "shadow", "nature", "wind", "earth", "light", "void", "physical"]
+		element = element_names[element] if element < element_names.size() else "physical"
+	element = str(element).to_lower()
+	
+	var element_color = ELEMENT_COLORS.get(element, Color.GRAY)
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.12, 0.12, 0.18)
+	style.border_color = element_color.darkened(0.3)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(12)
+	card.add_theme_stylebox_override("panel", style)
+	
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 12)
+	card.add_child(hbox)
+	
+	# Icono
+	var icon_container = PanelContainer.new()
+	var icon_style = StyleBoxFlat.new()
+	icon_style.bg_color = element_color.darkened(0.6)
+	icon_style.set_corner_radius_all(6)
+	icon_style.set_content_margin_all(6)
+	icon_container.add_theme_stylebox_override("panel", icon_style)
+	hbox.add_child(icon_container)
+	
+	var icon = Label.new()
+	icon.text = ELEMENT_ICONS.get(element, "🔮")
+	icon.add_theme_font_size_override("font_size", 24)
+	icon_container.add_child(icon)
+	
+	# Info
+	var info_vbox = VBoxContainer.new()
+	info_vbox.add_theme_constant_override("separation", 2)
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(info_vbox)
+	
+	var name_label = Label.new()
+	name_label.text = weapon_name
+	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.add_theme_color_override("font_color", element_color)
+	info_vbox.add_child(name_label)
+	
+	var element_label = Label.new()
+	element_label.text = ELEMENT_ICONS.get(element, "") + " " + element.capitalize()
+	element_label.add_theme_font_size_override("font_size", 11)
+	element_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+	info_vbox.add_child(element_label)
+	
+	# Nivel si disponible
+	var level = weapon_data.get("level", 0)
+	if level > 0:
+		var level_label = Label.new()
+		level_label.text = "Nv.%d" % level
+		level_label.add_theme_font_size_override("font_size", 16)
+		level_label.add_theme_color_override("font_color", DETAIL_SELECTED_TAB)
+		hbox.add_child(level_label)
+	
+	return card
+
+func _create_detail_item_panel(item_name: String, item_data: Dictionary, count: int) -> Control:
+	"""Crear panel de item para el popup de detalle"""
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(260, 80)
+	
+	var tier = item_data.get("tier", 1)
+	if tier is String:
+		var tier_map = {"common": 1, "uncommon": 2, "rare": 3, "epic": 4, "legendary": 5}
+		tier = tier_map.get(tier.to_lower(), 1)
+	
+	# Colores por tier
+	var tier_colors = [
+		Color(0.5, 0.5, 0.5),    # 0 - fallback
+		Color(0.6, 0.6, 0.6),    # 1 - common
+		Color(0.2, 0.8, 0.2),    # 2 - uncommon
+		Color(0.2, 0.4, 1.0),    # 3 - rare
+		Color(0.6, 0.2, 0.8),    # 4 - epic
+		Color(1.0, 0.6, 0.1)     # 5 - legendary
+	]
+	var tier_color = tier_colors[clampi(tier, 0, 5)]
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.15, 0.15, 0.2)
+	style.border_color = tier_color.darkened(0.3)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(10)
+	panel.add_theme_stylebox_override("panel", style)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 5)
+	panel.add_child(vbox)
+	
+	# Header
+	var header = HBoxContainer.new()
+	header.add_theme_constant_override("separation", 8)
+	vbox.add_child(header)
+	
+	var icon = Label.new()
+	icon.text = item_data.get("icon", "✨")
+	icon.add_theme_font_size_override("font_size", 20)
+	header.add_child(icon)
+	
+	var name_label = Label.new()
+	name_label.text = item_name
+	name_label.add_theme_font_size_override("font_size", 13)
+	name_label.add_theme_color_override("font_color", tier_color)
+	header.add_child(name_label)
+	
+	if count > 1:
+		var count_label = Label.new()
+		count_label.text = "x%d" % count
+		count_label.add_theme_font_size_override("font_size", 13)
+		count_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.4))
+		header.add_child(count_label)
+	
+	# Descripción
+	var desc = Label.new()
+	desc.text = item_data.get("description", "")
+	desc.add_theme_font_size_override("font_size", 10)
+	desc.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(desc)
 	
 	return panel

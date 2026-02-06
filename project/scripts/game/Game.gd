@@ -955,7 +955,7 @@ func _update_hud() -> void:
 		var health_data = player.get_health()
 		hud.update_health(health_data.current, health_data.max)
 
-func _on_enemy_died(_position: Vector2, enemy_type: String, exp_value: int, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
+func _on_enemy_died(death_position: Vector2, enemy_type: String, exp_value: int, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
 	run_stats["kills"] += 1
 	
 	# Trackear elites y bosses por separado
@@ -974,7 +974,7 @@ func _on_enemy_died(_position: Vector2, enemy_type: String, exp_value: int, enem
 
 	# MONEDAS - Caen al suelo para que el player las recoja
 	if experience_manager:
-		experience_manager.spawn_coins_from_enemy(position, enemy_tier, is_elite, is_boss)
+		experience_manager.spawn_coins_from_enemy(death_position, enemy_tier, is_elite, is_boss)
 
 	# ═══════════════════════════════════════════════════════════════════════════
 	# SISTEMA DE RECOMPENSAS (Nuevo)
