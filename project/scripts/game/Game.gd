@@ -620,6 +620,9 @@ func _start_game() -> void:
 	
 	# Forzar actualización del HUD de armas después de que todo esté inicializado
 	call_deferred("_deferred_weapon_hud_update")
+	
+	# BALANCE TELEMETRY: Start run logging
+	_start_balance_telemetry()
 
 func _resume_saved_game() -> void:
 	"""Restaurar el estado de una partida guardada"""
@@ -906,6 +909,9 @@ func _process(delta: float) -> void:
 
 	# Actualizar HUD
 	_update_hud()
+	
+	# BALANCE TELEMETRY: Check for minute snapshot
+	_check_telemetry_minute_snapshot()
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
@@ -1348,6 +1354,9 @@ func player_died() -> void:
 	save_session_playtime()
 
 	game_running = false
+	
+	# BALANCE TELEMETRY: End run logging
+	_end_balance_telemetry("death")
 
 	# Guardar estadísticas finales de la run
 	_save_run_stats()
@@ -1678,6 +1687,73 @@ func add_gold_stat(amount: int) -> void:
 func add_healing_stat(amount: int) -> void:
 	"""Trackear curación para estadísticas"""
 	run_stats["healing_done"] += amount
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BALANCE TELEMETRY HELPERS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _start_balance_telemetry() -> void:
+	"""Initialize balance telemetry for this run"""
+	if not BalanceTelemetry:
+		return
+	
+	var starting_weapons: Array = []
+	var attack_manager = get_tree().get_first_node_in_group("attack_manager")
+	if attack_manager and attack_manager.has_method("get_weapons"):
+		for w in attack_manager.get_weapons():
+			starting_weapons.append({"id": w.id if "id" in w else "unknown", "lvl": w.level if "level" in w else 1})
+	
+	var seed_val = 0
+	if arena_manager and "current_seed" in arena_manager:
+		seed_val = arena_manager.current_seed
+	
+	BalanceTelemetry.start_run({
+		"character_id": _get_character_id(),
+		"starting_weapons": starting_weapons,
+		"game_version": GAME_VERSION,
+		"seed": seed_val
+	})
+
+func _check_telemetry_minute_snapshot() -> void:
+	"""Check if we should log a minute snapshot"""
+	if not BalanceTelemetry or not BalanceTelemetry.check_minute_snapshot(game_time):
+		return
+	
+	BalanceTelemetry.log_minute_snapshot({
+		"xp_total": run_stats.get("xp_total", 0),
+		"xp_to_next": experience_manager.exp_to_next_level if experience_manager else 0,
+		"level": run_stats.get("level", 1),
+		"t_min": game_time / 60.0,
+		"gold": run_stats.get("gold", 0),
+		"difficulty": BalanceTelemetry.get_difficulty_snapshot(),
+		"weapons": BalanceTelemetry.get_current_weapons_snapshot(),
+		"top_upgrades": BalanceTelemetry.get_top_upgrades_snapshot(),
+		"player_stats": BalanceTelemetry.get_player_stats_snapshot()
+	})
+
+func _end_balance_telemetry(reason: String = "death") -> void:
+	"""Finalize balance telemetry for this run"""
+	if not BalanceTelemetry:
+		return
+	
+	BalanceTelemetry.end_run({
+		"time_survived": game_time,
+		"score_final": _calculate_run_score(),
+		"end_reason": reason,
+		"killed_by": "unknown",  # TODO: track last damage source
+		"level": run_stats.get("level", 1),
+		"kills": run_stats.get("kills", 0),
+		"elites_killed": run_stats.get("elites_killed", 0),
+		"bosses_killed": run_stats.get("bosses_killed", 0),
+		"gold": run_stats.get("gold", 0),
+		"damage_dealt": run_stats.get("damage_dealt", 0),
+		"damage_taken": run_stats.get("damage_taken", 0),
+		"healing_done": run_stats.get("healing_done", 0),
+		"xp_total": run_stats.get("xp_total", 0),
+		"weapons": BalanceTelemetry.get_current_weapons_snapshot(),
+		"upgrades": BalanceTelemetry.get_top_upgrades_snapshot(20),
+		"player_stats": BalanceTelemetry.get_player_stats_snapshot()
+	})
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CALLBACKS DE WAVEMANAGER

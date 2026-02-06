@@ -376,6 +376,19 @@ func _spawn_elite() -> void:
 		elites_spawned_this_run += 1
 		elite_spawned.emit(elite)
 		# print("⭐ [EnemyManager] ¡ÉLITE SPAWNEADO: %s!" % elite_data.name)
+		
+		# BALANCE TELEMETRY: Log elite spawn
+		if BalanceTelemetry:
+			var abilities: Array = []
+			if elite_data.has("elite_abilities"):
+				abilities = elite_data.elite_abilities
+			elif elite_data.has("abilities"):
+				abilities = elite_data.abilities
+			BalanceTelemetry.log_elite_spawned({
+				"enemy_id": elite_data.get("id", elite_data.get("name", "unknown")),
+				"tier": tier,
+				"abilities": abilities
+			})
 
 # Cola de spawns pendientes cuando se excede el budget
 var _spawn_queue: Array = []
@@ -717,6 +730,20 @@ func spawn_elite(enemy_id: String, world_pos: Vector2, multipliers: Dictionary =
 		elites_spawned_this_run += 1
 		elite_spawned.emit(elite)
 		# Debug desactivado: print("[EnemyManager] ÉLITE SPAWNEADO")
+		
+		# BALANCE TELEMETRY: Log elite spawn (WaveManager path)
+		if BalanceTelemetry:
+			var abilities: Array = []
+			if elite_data.has("elite_abilities"):
+				abilities = elite_data.elite_abilities
+			elif elite_data.has("abilities"):
+				abilities = elite_data.abilities
+			var tier: int = elite_data.get("tier", base_enemy.get("tier", 1))
+			BalanceTelemetry.log_elite_spawned({
+				"enemy_id": enemy_id,
+				"tier": tier,
+				"abilities": abilities
+			})
 
 	return elite
 

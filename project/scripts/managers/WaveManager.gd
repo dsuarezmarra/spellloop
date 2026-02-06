@@ -550,6 +550,13 @@ func _spawn_boss(boss_id: String) -> void:
 		boss_spawned.emit(boss_id)
 		_show_boss_spawn_announcement(boss_id)
 		
+		# BALANCE TELEMETRY: Log boss spawn
+		if BalanceTelemetry:
+			BalanceTelemetry.log_boss_spawned({
+				"boss_id": boss_id,
+				"phase": current_phase
+			})
+		
 		# Cambiar a música de jefe
 		AudioManager.play_music("music_boss_theme")
 

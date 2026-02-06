@@ -600,6 +600,28 @@ func _select_option() -> void:
 	locked = true
 	var selected = options[option_index]
 	AudioManager.play_fixed("sfx_ui_confirm")
+	
+	# BALANCE TELEMETRY: Log upgrade pick
+	if BalanceTelemetry:
+		var option_ids: Array = []
+		for opt in options:
+			option_ids.append(opt.get("id", opt.get("name", "unknown")))
+		
+		var picked_type = "upgrade"
+		if selected.get("type", -1) == OPTION_TYPES.NEW_WEAPON or selected.get("type", -1) == OPTION_TYPES.LEVEL_UP_WEAPON:
+			picked_type = "weapon"
+		elif selected.get("type", -1) == OPTION_TYPES.FUSION:
+			picked_type = "fusion"
+		
+		BalanceTelemetry.log_upgrade_pick({
+			"source": "levelup",
+			"options_shown": option_ids,
+			"picked_id": selected.get("id", selected.get("name", "unknown")),
+			"picked_type": picked_type,
+			"reroll_count": rerolls_used_this_level
+		})
+		BalanceTelemetry.add_level_up()
+	
 	_apply_option(selected)
 	option_selected.emit(selected)
 	_close_panel()
@@ -627,6 +649,10 @@ func _on_reroll() -> void:
 	
 	AudioManager.play_fixed("sfx_ui_click")
 	rerolls_used_this_level += 1  # Track for next cost calculation
+	
+	# BALANCE TELEMETRY: Track reroll
+	if BalanceTelemetry:
+		BalanceTelemetry.add_reroll()
 
 	# Consumir reroll en PlayerStats si es posible
 	if player_stats and player_stats.has_method("consume_reroll"):

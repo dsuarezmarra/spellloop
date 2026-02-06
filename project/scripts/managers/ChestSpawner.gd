@@ -189,6 +189,34 @@ func _get_zone_tier_at_position(pos: Vector2) -> int:
 func _on_chest_opened(chest: Node2D, items: Array) -> void:
 	"""Cofre fue abierto"""
 	chest_opened.emit(chest, items[0] if items.size() > 0 else {})
+	
+	# BALANCE TELEMETRY: Log chest opening
+	if BalanceTelemetry:
+		var chest_type_name := "unknown"
+		if chest.has_method("get") and "chest_type" in chest:
+			var type_val: int = chest.chest_type
+			match type_val:
+				0: chest_type_name = "normal"
+				1: chest_type_name = "elite"
+				2: chest_type_name = "boss"
+				3: chest_type_name = "weapon"
+				4: chest_type_name = "shop"
+		
+		var loot_ids: Array = []
+		var fusion_obtained := ""
+		for item in items:
+			if item is Dictionary:
+				var item_id: String = item.get("id", item.get("name", "unknown"))
+				loot_ids.append(item_id)
+				# Check if it's a fusion
+				if item.get("is_fusion", false) or item.get("type", "") == "fusion":
+					fusion_obtained = item_id
+		
+		BalanceTelemetry.log_chest_opened({
+			"chest_type": chest_type_name,
+			"loot_ids": loot_ids,
+			"fusion_obtained": fusion_obtained
+		})
 
 func _on_chest_removed(chest: Node2D) -> void:
 	"""Cofre fue removido del árbol"""

@@ -268,8 +268,33 @@ TELEMETRY_CONFIG = {
 
 ## Próximos Pasos
 
-1. Crear `TelemetryLogger.gd` como autoload (o extender `BalanceDebugger.gd`)
-2. Implementar los 8 eventos MVP
-3. Hook en los archivos listados arriba
+1. ~~Crear `TelemetryLogger.gd` como autoload (o extender `BalanceDebugger.gd`)~~ ✅ Creado `BalanceTelemetry.gd`
+2. ~~Implementar los 8 eventos MVP~~ ✅ Implementado
+3. ~~Hook en los archivos listados arriba~~ ✅ Hooks completados
 4. Testear con 2-3 runs manuales
 5. Analizar JSONL con script Python o herramienta de visualización
+
+---
+
+## Ejemplos de Salida JSONL
+
+Cada archivo `user://balance_logs/run_{run_id}_{timestamp}.jsonl` contiene 1 evento JSON por línea:
+
+```jsonl
+{"schema_ver":1,"session_id":"abc123","run_id":"run_001","event":"run_start","timestamp_ms":1704067200000,"t_min":0.0,"seed":12345678,"difficulty_phase":1,"player_level":1,"score_current":0,"character":"mage","starting_weapons":["magic_wand"]}
+{"schema_ver":1,"session_id":"abc123","run_id":"run_001","event":"upgrade_pick","timestamp_ms":1704067260000,"t_min":1.0,"seed":12345678,"difficulty_phase":1,"player_level":2,"score_current":50,"source":"levelup","options_shown":["damage_1","regen_1","armor_1"],"picked_id":"damage_1","picked_type":"upgrade","reroll_count":0}
+{"schema_ver":1,"session_id":"abc123","run_id":"run_001","event":"minute_snapshot","timestamp_ms":1704067320000,"t_min":2.0,"seed":12345678,"difficulty_phase":1,"player_level":3,"score_current":150,"rolling":{"damage_dealt_last_60s":1250,"damage_taken_last_60s":45,"healing_last_60s":20,"kills_last_60s":28,"gold_earned_last_60s":15,"rerolls_used_last_60s":0,"chests_opened_last_60s":1},"cumulative":{"kills":28,"damage_dealt":1250,"damage_taken":45,"healing":20,"gold":15,"xp_total":350,"chests_opened":1,"fusions_obtained":0},"difficulty":{"enemy_hp_mult":1.0,"enemy_dmg_mult":1.0,"spawn_mult":1.0,"elite_mult":1.0,"speed_mult":1.0},"weapons":[{"id":"magic_wand","lvl":2}],"top_upgrades":[{"id":"damage_1","stacks":1}],"player_stats":{"hp_max":100,"hp_current":75,"regen":1.0,"lifesteal":0.0,"armor":0,"dodge":0.0,"attack_speed":1.0,"damage_mult":1.1,"crit_chance":0.05,"crit_mult":1.5,"move_speed":1.0},"est_dps":625}
+{"schema_ver":1,"session_id":"abc123","run_id":"run_001","event":"elite_spawned","timestamp_ms":1704067380000,"t_min":3.0,"seed":12345678,"difficulty_phase":1,"player_level":4,"score_current":280,"enemy_id":"skeleton_warrior","tier":1,"abilities":["rage","shield"]}
+{"schema_ver":1,"session_id":"abc123","run_id":"run_001","event":"chest_opened","timestamp_ms":1704067440000,"t_min":4.0,"seed":12345678,"difficulty_phase":1,"player_level":5,"score_current":420,"chest_type":"normal","loot_ids":["damage_2"],"fusion_obtained":""}
+{"schema_ver":1,"session_id":"abc123","run_id":"run_001","event":"boss_spawned","timestamp_ms":1704067500000,"t_min":5.0,"seed":12345678,"difficulty_phase":1,"player_level":6,"score_current":600,"boss_id":"giant_slime","phase":1}
+{"schema_ver":1,"session_id":"abc123","run_id":"run_001","event":"weapon_level_up","timestamp_ms":1704067560000,"t_min":6.0,"seed":12345678,"difficulty_phase":2,"player_level":7,"score_current":780,"weapon_id":"magic_wand","new_level":3,"source":"levelup"}
+{"schema_ver":1,"session_id":"abc123","run_id":"run_001","event":"run_end","timestamp_ms":1704067620000,"t_min":7.0,"seed":12345678,"difficulty_phase":2,"player_level":8,"score_current":950,"reason":"player_died","final_stats":{"kills":85,"damage_dealt":4200,"damage_taken":150,"healing":80,"gold":45,"xp_total":950,"chests_opened":2,"fusions_obtained":0},"final_build":{"weapons":[{"id":"magic_wand","lvl":3}],"top_upgrades":[{"id":"damage_1","stacks":2},{"id":"regen_1","stacks":1}]}}
+```
+
+### Notas sobre los Ejemplos:
+- Cada línea es un objeto JSON completo (formato JSONL)
+- `t_min` indica minutos transcurridos en la run
+- `difficulty_phase` cambia según progresión (1=early, 2=mid, 3=late, 4=infinite)
+- `rolling` contiene contadores de últimos 60 segundos
+- `cumulative` contiene totales acumulados
+- `est_dps` es estimación de DPS basada en daño/60s
