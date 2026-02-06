@@ -181,16 +181,16 @@ func fuse_weapons(weapon_a: BaseWeapon, weapon_b: BaseWeapon) -> BaseWeapon:
 func _calculate_dynamic_stats(a: BaseWeapon, b: BaseWeapon) -> Dictionary:
 	"""
 	Calcula los stats base de la fusión combinando los componentes.
-	Lógica: (Stat A + Stat B) * 2.0 (Massive Power Spike)
+	Lógica: BALANCE UPDATE - Reducido spike de 4x a ~2.2x DPS
 	"""
 	var stats = {}
 	
-	# Daño
-	stats["damage"] = (a.damage + b.damage) * 2.0
+	# Daño: NERFED 2.0 -> 1.5
+	stats["damage"] = (a.damage + b.damage) * 1.5
 	
-	# Cooldown: Promedio de velocidad, duplicado (mitad de tiempo)
+	# Cooldown: NERFED 0.5 -> 0.7 (menos rápido)
 	var avg_cd = (a.cooldown + b.cooldown) / 2.0
-	stats["cooldown"] = avg_cd * 0.5
+	stats["cooldown"] = avg_cd * 0.7
 	
 	# Rango: Promedio + 50%
 	var avg_range = (a.weapon_range + b.weapon_range) / 2.0
@@ -200,14 +200,15 @@ func _calculate_dynamic_stats(a: BaseWeapon, b: BaseWeapon) -> Dictionary:
 	stats["projectile_speed"] = (a.projectile_speed + b.projectile_speed) * 0.75 # No queremos que sea demasiado rápido (glitchy)
 	if stats["projectile_speed"] < 400.0: stats["projectile_speed"] = 400.0
 	
-	# Cantidad
-	stats["projectile_count"] = (a.projectile_count + b.projectile_count) * 2
+	# Cantidad: NERFED 2.0 -> 1.5, capped at 8 max to prevent visual spam
+	var raw_proj = int((a.projectile_count + b.projectile_count) * 1.5)
+	stats["projectile_count"] = mini(raw_proj, 8)
 	
 	# Pierce (Cap en 10 para evitar números absurdos si no es infinito)
 	if a.pierce >= 99 or b.pierce >= 99:
 		stats["pierce"] = 999 
 	else:
-		stats["pierce"] = min((a.pierce + b.pierce) * 2, 20)
+		stats["pierce"] = min((a.pierce + b.pierce) * 2, 15)  # NERFED cap 20 -> 15
 	
 	# Área
 	stats["area"] = (a.area + b.area) * 2.0
