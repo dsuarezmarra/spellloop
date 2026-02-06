@@ -89,6 +89,11 @@ var PROJECTILE_CONFIG = {
 		"path": VFX_BASE_PATH + "projectiles/poison/projectile_poison_spritesheet.png",
 		"hframes": 4, "vframes": 2, "frame_size": Vector2(64, 64), "duration": 0.4
 	},
+	# TODO: Pendiente generar asset - descomentar cuando exista
+	#"lightning": {
+	#	"path": VFX_BASE_PATH + "projectiles/lightning/projectile_lightning_spritesheet.png",
+	#	"hframes": 4, "vframes": 2, "frame_size": Vector2(64, 64), "duration": 0.4
+	#},
 	"homing_orb": {
 		"path": VFX_BASE_PATH + "projectiles/void/projectile_homing_orb_spritesheet.png",
 		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.5
@@ -126,6 +131,50 @@ var AURA_CONFIG = {
 		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.8
 	}
 }
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PLAYER VFX CONFIG (Pendiente de assets - ver docs/VFX_PROMPTS.md)
+# ══════════════════════════════════════════════════════════════════════════════
+# TODO: Descomentar cada sección cuando se generen los assets correspondientes
+
+# var PLAYER_VFX_CONFIG = {
+# 	"thorns": {
+# 		"path": VFX_BASE_PATH + "player/thorns/player_thorns_spritesheet.png",
+# 		"hframes": 8, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.5
+# 	},
+# 	"heal": {
+# 		"path": VFX_BASE_PATH + "player/heal/player_heal_spritesheet.png",
+# 		"hframes": 8, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.5
+# 	},
+# 	"shield_appear": {
+# 		"path": VFX_BASE_PATH + "player/shield/shield_appear_spritesheet.png",
+# 		"hframes": 4, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.3
+# 	},
+# 	"shield_loop": {
+# 		"path": VFX_BASE_PATH + "player/shield/shield_loop_spritesheet.png",
+# 		"hframes": 4, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.6
+# 	},
+# 	"shield_break": {
+# 		"path": VFX_BASE_PATH + "player/shield/shield_break_spritesheet.png",
+# 		"hframes": 4, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.3
+# 	},
+# 	"revive": {
+# 		"path": VFX_BASE_PATH + "player/revive/player_revive_spritesheet.png",
+# 		"hframes": 8, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.8
+# 	},
+# 	"soul_link": {
+# 		"path": VFX_BASE_PATH + "player/soul_link/soul_link_beam_spritesheet.png",
+# 		"hframes": 8, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.6
+# 	},
+# 	"buff_aura": {
+# 		"path": VFX_BASE_PATH + "player/buffs/buff_aura_spritesheet.png",
+# 		"hframes": 6, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.8
+# 	},
+# 	"debuff_aura": {
+# 		"path": VFX_BASE_PATH + "player/debuffs/debuff_aura_spritesheet.png",
+# 		"hframes": 6, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.8
+# 	}
+# }
 
 # Configuración de Beam spritesheets
 var BEAM_CONFIG = {
@@ -211,7 +260,14 @@ var ABILITY_TO_AOE = {
 	"freeze_zone": "freeze_zone",
 	"void_explosion": "void_explosion",
 	"ground_slam": "ground_slam",
-	"rune_blast": "rune_blast"
+	"rune_blast": "rune_blast",
+	# Mapeos adicionales para evitar fallbacks
+	"elite_slam": "elite_slam",
+	"damage_zone_fire": "damage_zone_fire",
+	"damage_zone_void": "damage_zone_void",
+	"elite_nova": "arcane_nova",  # Usar arcane_nova como base
+	"poison_nova": "arcane_nova",  # TODO: crear poison_nova
+	"lightning_strike": "arcane_nova"  # TODO: crear lightning_strike
 }
 
 # Cache de texturas cargadas

@@ -2863,6 +2863,11 @@ func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 
 func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 	"""Visual de explosiÃ³n de runas Ã‰PICA - sÃ­mbolos brillantes"""
+	# Intentar usar VFXManager primero
+	if _try_spawn_via_vfxmanager("rune_blast", "aoe", center, radius, 0.5):
+		return  # VFXManager manejó el efecto
+	
+	# Fallback procedural si no hay spritesheet
 	var effect = Node2D.new()
 	effect.top_level = true  # Independiente del enemigo
 	effect.z_index = 60  # MUY alto para boss
