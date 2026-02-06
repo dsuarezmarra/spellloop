@@ -45,6 +45,10 @@ var _radius: float = 100.0
 var _duration: float = 0.5
 var _active_time: float = 0.0
 
+# === OPTIMIZACIÓN ===
+var _frame_counter: int = 0
+const VISUAL_UPDATE_INTERVAL: int = 2  # Actualizar glow cada N frames
+
 # Límite máximo de escala visual para evitar overdraw masivo
 # (aprox 4.0 con sprites de 64px = 256px radio visual, suficiente para pantalla)
 const MAX_VISUAL_SCALE: float = 4.0
@@ -459,12 +463,21 @@ func _on_animation_finished() -> void:
 func _process(delta: float) -> void:
 	_time += delta
 	
-	# Pulso del glow
-	if glow_sprite:
-		var pulse = sin(_time * 3.0) * 0.15 + 1.0
-		glow_sprite.scale = Vector2.ONE * pulse
-		glow_sprite.modulate.a = 0.4 + sin(_time * 5.0) * 0.1
-	
-	# Rotación del ring
+	# Rotación del ring (siempre necesaria para movimiento suave)
 	if ring_sprite:
 		ring_sprite.rotation += delta * 0.5
+	
+	# OPTIMIZACIÓN: Throttle para efectos de glow
+	_frame_counter += 1
+	if _frame_counter < VISUAL_UPDATE_INTERVAL:
+		return
+	_frame_counter = 0
+	
+	# Pulso del glow - aproximación rápida sin sin()
+	if glow_sprite:
+		var pulse_phase = fmod(_time * 3.0, TAU)
+		var pulse = 1.0 - abs(pulse_phase - PI) / PI * 0.3 + 0.85  # 0.85 a 1.15
+		glow_sprite.scale = Vector2.ONE * pulse
+		
+		var alpha_phase = fmod(_time * 5.0, TAU)
+		glow_sprite.modulate.a = 0.4 + (1.0 - abs(alpha_phase - PI) / PI * 2.0) * 0.1

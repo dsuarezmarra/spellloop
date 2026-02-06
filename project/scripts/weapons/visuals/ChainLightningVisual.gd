@@ -61,6 +61,10 @@ var _max_duration: float = 0.3
 var _auto_fade_enabled: bool = true  # Permitir desactivar auto-fade para cadenas largas
 var _expected_chains: int = 2        # Número esperado de saltos para calcular duración
 
+# === OPTIMIZACIÓN ===
+var _frame_counter: int = 0
+const VISUAL_UPDATE_INTERVAL: int = 2  # Actualizar cada N frames
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -445,21 +449,32 @@ func _process(delta: float) -> void:
 	_time += delta
 	_fade_timer += delta
 
+	# OPTIMIZACIÓN: Throttle para efectos visuales
+	_frame_counter += 1
+	if _frame_counter < VISUAL_UPDATE_INTERVAL:
+		# Solo verificar timeout
+		if _auto_fade_enabled and _fade_timer > _max_duration:
+			_is_active = false
+			fade_out()
+		return
+	_frame_counter = 0
+
 	if _use_custom_sprites:
-		# Efecto de pulso en sprites de bolt
-		var pulse = sin(_time * 25) * 0.15 + 1.0
+		# Efecto de pulso en sprites de bolt - aproximación rápida
+		var phase = fmod(_time * 25, TAU)
+		var pulse = 1.0 - abs(phase - PI) / PI * 0.3 + 0.85  # 0.85 a 1.15
 		for bolt in _bolt_sprites:
 			if is_instance_valid(bolt):
 				bolt.scale.y = pulse
 	else:
-		pass  # Bloque else
 		# Modo procedural: efecto de "chisporroteo"
 		if int(_time * 20) != int((_time - delta) * 20):
 			_generate_bolt_points()
 
-		# Pulso del glow
+		# Pulso del glow - aproximación rápida
 		if _glow_bolt:
-			var pulse = sin(_time * 25) * 0.3 + 1.0
+			var phase = fmod(_time * 25, TAU)
+			var pulse = 1.0 - abs(phase - PI) / PI * 0.6 + 0.7  # 0.7 a 1.3
 			_glow_bolt.width = _glow_width * pulse
 
 	# Auto-fade después de duración máxima (si está habilitado)

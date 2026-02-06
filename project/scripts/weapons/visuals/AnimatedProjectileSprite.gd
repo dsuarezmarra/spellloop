@@ -80,6 +80,9 @@ func setup(data: ProjectileVisualData) -> void:
 	
 	# Aplicar escala base
 	scale = Vector2.ONE * visual_data.base_scale
+	
+	# OPTIMIZACIÓN: Cachear estado de glow
+	_has_glow = glow_sprite != null and glow_sprite.visible
 
 func _create_sprite_nodes() -> void:
 	"""Crear la estructura de nodos"""

@@ -58,6 +58,10 @@ var _fade_timer: float = 0.0
 var _max_duration: float = 0.5
 var _expected_chains: int = 2
 
+# === OPTIMIZACIÓN ===
+var _frame_counter: int = 0
+const VISUAL_UPDATE_INTERVAL: int = 2  # Actualizar cada N frames
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -365,20 +369,31 @@ func _process(delta: float) -> void:
 	_time += delta
 	_fade_timer += delta
 
+	# OPTIMIZACIÓN: Throttle para efectos visuales
+	_frame_counter += 1
+	if _frame_counter < VISUAL_UPDATE_INTERVAL:
+		# Solo verificar timeout
+		if _fade_timer > _max_duration:
+			_is_active = false
+			fade_out()
+		return
+	_frame_counter = 0
+
 	if _use_custom_sprites:
-		# Efecto de brillo pulsante (más sutil para hielo)
-		var pulse = sin(_time * 15) * 0.1 + 1.0
+		# Efecto de brillo pulsante (más sutil para hielo) - aproximación rápida
+		var phase = fmod(_time * 15, TAU)
+		var pulse = 1.0 - abs(phase - PI) / PI * 0.2 + 0.9  # 0.9 a 1.1
 		for bolt in _bolt_sprites:
 			if is_instance_valid(bolt):
 				bolt.scale.y = pulse
 	else:
-		pass  # Bloque else
 		# Modo procedural: menos "chisporroteo" para efecto helado
 		if int(_time * 10) != int((_time - delta) * 10):
 			_generate_bolt_points()
 
 		if _glow_bolt:
-			var pulse = sin(_time * 15) * 0.2 + 1.0
+			var phase = fmod(_time * 15, TAU)
+			var pulse = 1.0 - abs(phase - PI) / PI * 0.4 + 0.8  # 0.8 a 1.2
 			_glow_bolt.width = _glow_width * pulse
 
 	if _fade_timer > _max_duration:

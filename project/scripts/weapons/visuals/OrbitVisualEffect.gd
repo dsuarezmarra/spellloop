@@ -53,6 +53,10 @@ var _is_destroying: bool = false
 var _squash_amount: float = 0.15
 var _squash_frequency: float = 3.0
 
+# === OPTIMIZACIÓN ===
+var _frame_counter: int = 0
+const VISUAL_UPDATE_INTERVAL: int = 2  # Actualizar efectos cada N frames
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -386,14 +390,23 @@ func _process(delta: float) -> void:
 	if _is_destroying:
 		return
 	
-	# Actualizar ángulo
+	# Actualizar ángulo (siempre necesario para posición)
 	_angle += _rotation_speed * delta
 	_update_position()
+	
+	# OPTIMIZACIÓN: Throttle para efectos visuales innecesarios a 60fps
+	_frame_counter += 1
+	if _frame_counter < VISUAL_UPDATE_INTERVAL:
+		return
+	_frame_counter = 0
 	
 	# Squash & Stretch basado en la dirección del movimiento
 	if not _is_spawning:
 		var velocity_angle = _angle + PI / 2  # Perpendicular a la órbita
-		var squash = sin(_time * _squash_frequency * _rotation_speed) * _squash_amount
+		# Aproximación rápida de sin usando triángulo
+		var phase = fmod(_time * _squash_frequency * _rotation_speed, TAU)
+		var squash_factor = 1.0 - abs(phase - PI) / PI * 2.0
+		var squash = squash_factor * _squash_amount
 		
 		# Aplicar squash en la dirección del movimiento
 		var stretch_x = 1.0 + squash
@@ -402,8 +415,9 @@ func _process(delta: float) -> void:
 		sprite.scale = Vector2(stretch_x, stretch_y)
 		sprite.rotation = velocity_angle
 	
-	# Pulso del glow
+	# Pulso del glow (optimizado)
 	if glow_sprite:
-		var glow_pulse = sin(_time * 4.0) * 0.2 + 1.0
-		glow_sprite.modulate.a = 0.5 + sin(_time * 3.0) * 0.15
-		glow_sprite.scale = Vector2.ONE * glow_pulse
+		var glow_phase = fmod(_time * 4.0, TAU)
+		var glow_pulse = 1.0 - abs(glow_phase - PI) / PI * 0.4  # 0.8 a 1.2
+		glow_sprite.modulate.a = 0.5 + glow_pulse * 0.075  # 0.425 a 0.575
+		glow_sprite.scale = Vector2.ONE * (0.8 + glow_pulse * 0.2)
