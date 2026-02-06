@@ -1691,9 +1691,9 @@ func generate_options() -> void:
 		if randf() < weapon_upgrade_chance:
 			possible_options.append_array(_get_weapon_level_up_options())
 
-	# 3. Fusiones (siempre aparecen si están disponibles - son valiosas)
-	if attack_manager and attack_manager.has_method("get_available_fusions"):
-		possible_options.append_array(_get_fusion_options())
+	# 3. BALANCE PASS 2: Fusiones ELIMINADAS del LevelUpPanel
+	# Las fusiones ahora solo aparecen en cofres de elites (baja prob) y bosses (alta prob)
+	# Ver LootManager._generate_boss_loot() y _generate_elite_loot()
 
 	# 4. Upgrades del jugador
 	possible_options.append_array(_get_player_upgrade_options(luck))

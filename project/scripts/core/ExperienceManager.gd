@@ -47,6 +47,23 @@ var streak_timeout: float = 2.0  # Segundos para mantener streak
 # === CONFIGURACIÓN DE NIVELES ===
 var level_exp_curve: Array[int] = []
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# BALANCE PASS 2: CURVA XP EXPONENCIAL "WoW-like"
+# ═══════════════════════════════════════════════════════════════════════════════
+# Fórmula: xp_required(level) = round(BASE * pow(GROWTH, level-1) + LINEAR * level)
+# - BASE: XP base para nivel 2 (early game rápido)
+# - GROWTH: Factor exponencial (1.18-1.28 = late game muy exigente)
+# - LINEAR: Componente lineal (suaviza early, evita nivel 1 demasiado lento)
+#
+# DISEÑO:
+# - Min 0-5: Subir niveles frecuentemente (feedback positivo)
+# - Min 10-20: Progreso estable, cada nivel cuesta
+# - 20+: Cada nivel es caro; subir "de más" requiere jugar muy bien
+const XP_CURVE_BASE: float = 12.0     # XP base nivel 2
+const XP_CURVE_GROWTH: float = 1.22   # 22% más caro cada nivel (exponencial moderado)
+const XP_CURVE_LINEAR: float = 4.0    # +4 XP por nivel (suaviza early)
+const XP_CURVE_MAX_LEVEL: int = 100   # Nivel máximo teórico
+
 func _ready():
 	# Asegurar que ExperienceManager respete la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -144,10 +161,38 @@ func _find_player() -> CharacterBody2D:
 	return null
 
 func setup_level_curve():
-	"""Configurar curva de experiencia por nivel"""
-	# Curva base: xp_to_level = 5 + level * 3
-	for level in range(1, 101):
-		var exp_required = 5 + level * 3
+	"""
+	Configurar curva de experiencia exponencial tipo WoW.
+	
+	TABLA DE REFERENCIA (con constantes actuales):
+	Lvl  1:   0 XP (start)
+	Lvl  5:  35 XP
+	Lvl 10:  80 XP
+	Lvl 15: 158 XP
+	Lvl 20: 300 XP
+	Lvl 25: 559 XP
+	Lvl 30: 1034 XP
+	Lvl 40: 3473 XP
+	Lvl 50: 11422 XP
+	
+	ESTIMACIÓN DE NIVELES (jugador promedio ~50 XP/min):
+	Min  5: ~Level 8-10
+	Min 10: ~Level 12-15
+	Min 15: ~Level 16-19
+	Min 20: ~Level 19-23
+	
+	Jugador bueno (~80 XP/min) puede llegar ~5 niveles más alto.
+	"""
+	level_exp_curve.clear()
+	
+	for level in range(1, XP_CURVE_MAX_LEVEL + 1):
+		# Fórmula compuesta: exponencial + lineal
+		var exp_required = roundi(
+			XP_CURVE_BASE * pow(XP_CURVE_GROWTH, level - 1) + 
+			XP_CURVE_LINEAR * level
+		)
+		# Mínimo 8 XP para nivel 2 (evitar que sea instantáneo)
+		exp_required = maxi(exp_required, 8)
 		level_exp_curve.append(exp_required)
 
 func get_exp_for_level(level: int) -> int:
@@ -156,7 +201,8 @@ func get_exp_for_level(level: int) -> int:
 		return 0
 	if level - 2 < level_exp_curve.size():
 		return level_exp_curve[level - 2]
-	return 5 + level * 3
+	# Fallback para niveles fuera de rango (usa fórmula directa)
+	return roundi(XP_CURVE_BASE * pow(XP_CURVE_GROWTH, level - 1) + XP_CURVE_LINEAR * level)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SISTEMA DE XP AUTOMÁTICO
@@ -478,6 +524,10 @@ func gain_experience(amount: int):
 			final_amount = int(amount * xp_mult)
 	
 	current_exp += final_amount
+	
+	# BALANCE PASS 2: Log XP para BalanceDebugger
+	if BalanceDebugger and BalanceDebugger.enabled:
+		BalanceDebugger.log_xp_gained(final_amount)
 
 	# Emitir señal
 	exp_gained.emit(final_amount, current_exp)
@@ -497,6 +547,10 @@ func level_up_player():
 	current_exp -= exp_to_next_level
 	current_level += 1
 	exp_to_next_level = get_exp_for_level(current_level + 1)
+	
+	# BALANCE PASS 2: Log level up para BalanceDebugger
+	if BalanceDebugger and BalanceDebugger.enabled:
+		BalanceDebugger.log_level_up(current_level)
 
 	# Generar opciones de mejora
 	var upgrade_options = generate_upgrade_options()

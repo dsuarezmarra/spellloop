@@ -970,21 +970,38 @@ func _show_wave_announcement(text: String) -> void:
 			floating_text.spawn_text(text, player_pos + Vector2(0, -100), Color.GOLD)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ESCALADO INFINITO
+# ESCALADO MAESTRO (BALANCE PASS 2)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _update_infinite_scaling() -> void:
-	infinite_scaling_multipliers = SpawnConfig.get_infinite_scaling_multiplier(game_time_minutes)
+	"""
+	BALANCE PASS 2: Usar DifficultyManager para escalado exponencial desde min 0
+	El escalado es CONTINUO, no solo después del minuto 20.
+	"""
+	# Obtener DifficultyManager
+	var difficulty_mgr = get_tree().get_first_node_in_group("difficulty_manager")
+	if not difficulty_mgr:
+		difficulty_mgr = get_node_or_null("/root/DifficultyManager")
 	
-	# Actualizar max_enemies en fase infinita
-	if current_phase == 5:
-		var intervals = int((game_time_minutes - 20) / SpawnConfig.INFINITE_SCALING.scaling_interval_minutes)
-		var additional_enemies = intervals * SpawnConfig.INFINITE_SCALING.max_enemies_increase_per_interval
-		var new_max = phase_config.max_enemies + additional_enemies
-		new_max = min(new_max, SpawnConfig.INFINITE_SCALING.max_enemies_cap)
-		
-		if enemy_manager:
-			enemy_manager.max_enemies = new_max
+	if difficulty_mgr:
+		# Usar multiplicadores exponenciales de DifficultyManager
+		infinite_scaling_multipliers = {
+			"hp": difficulty_mgr.enemy_health_multiplier,
+			"damage": difficulty_mgr.enemy_damage_multiplier,
+			"spawn_rate": difficulty_mgr.enemy_count_multiplier,
+			"speed": difficulty_mgr.enemy_speed_multiplier,
+			"xp": 1.0  # XP no escala con dificultad (jugador ya tiene curva exponencial)
+		}
+	else:
+		# Fallback: usar SpawnConfig (legacy)
+		infinite_scaling_multipliers = SpawnConfig.get_infinite_scaling_multiplier(game_time_minutes)
+	
+	# Actualizar max_enemies basado en spawn_rate multiplier
+	if enemy_manager:
+		var base_max = phase_config.max_enemies if phase_config else 50
+		var scaled_max = int(base_max * infinite_scaling_multipliers.get("spawn_rate", 1.0))
+		# Cap máximo para evitar problemas de rendimiento
+		enemy_manager.max_enemies = mini(scaled_max, 250)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # API PÚBLICA

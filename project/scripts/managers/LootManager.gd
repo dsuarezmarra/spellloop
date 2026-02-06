@@ -16,6 +16,16 @@ enum ChestType {
 	WEAPON = 3
 }
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# BALANCE PASS 2: CONFIGURACIÓN DE FUSIÓN EN CHESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+# Las fusiones ahora SOLO aparecen en chests, NO en LevelUpPanel.
+# - ELITE: Baja probabilidad (8%)
+# - BOSS: Garantizada (100% si hay fusión disponible)
+# Condición: 2+ armas al nivel máximo (lvl 8) - verificada por get_available_fusions()
+const ELITE_FUSION_CHANCE: float = 0.08   # 8% chance de fusión en elite chest
+const BOSS_FUSION_GUARANTEED: bool = true  # Boss siempre da fusión si disponible
+
 # Probabilidades base por tipo de cofre
 const CHEST_WEIGHTS = {
 	ChestType.NORMAL: {
@@ -53,12 +63,25 @@ static func get_chest_loot(chest_type: int, luck_modifier: float = 1.0, context:
 	Generar contenido para un cofre.
 	Retorna array de diccionarios: [{id, type, rarity, amount, ...}]
 	Context: Objeto opcional (usualmente AttackManager) para lógica de fusiones
+	
+	BALANCE PASS 2: Fusiones solo en chests (no LevelUp)
+	- BOSS: Garantizada si disponible
+	- ELITE: 8% chance si disponible
 	"""
 	var items = []
 	
 	# Lógica especial para BOSS (Cofre Legendario)
 	if chest_type == ChestType.BOSS:
 		return _generate_boss_loot(luck_modifier, context)
+	
+	# BALANCE PASS 2: Check fusión en ELITE chests
+	if chest_type == ChestType.ELITE:
+		var fusion_item = _try_generate_fusion_loot(context, ELITE_FUSION_CHANCE)
+		if fusion_item:
+			items.append(fusion_item)
+			# Si hay fusión, añadir bonus de oro y retornar
+			items.append(_generate_gold_loot(ChestType.ELITE, luck_modifier))
+			return items
 	
 	# Lógica estándar para otros cofres
 	var weights = CHEST_WEIGHTS.get(chest_type, CHEST_WEIGHTS[ChestType.NORMAL])
@@ -81,6 +104,38 @@ static func get_chest_loot(chest_type: int, luck_modifier: float = 1.0, context:
 		items.append(item)
 		
 	return items
+
+static func _try_generate_fusion_loot(context: Object, chance: float) -> Dictionary:
+	"""
+	BALANCE PASS 2: Intentar generar loot de fusión.
+	Retorna diccionario con datos de fusión, o {} si no aplica.
+	Condición: 2+ armas lvl 8 Y roll de probabilidad
+	"""
+	if not context or not context.has_method("get_available_fusions"):
+		return {}
+	
+	# Verificar si hay fusiones disponibles (ya verifica 2+ armas lvl 8)
+	var fusions = context.get_available_fusions()
+	if fusions.is_empty():
+		return {}
+	
+	# Roll de probabilidad
+	if randf() > chance:
+		return {}
+	
+	# ¡Fusión disponible! Devolver la primera
+	var fusing = fusions[0]
+	var result = fusing.result
+	
+	return {
+		"id": result.id,
+		"type": "fusion",
+		"name": result.name,
+		"description": result.description,
+		"rarity": 4,  # Legendario/Evolución
+		"icon": result.get("icon", "🌟"),
+		"fusion_data": fusing
+	}
 
 static func _get_player_stats(context: Object, tree: SceneTree = null) -> Node:
 	"""Helper para obtener PlayerStats desde contexto o grupo global"""

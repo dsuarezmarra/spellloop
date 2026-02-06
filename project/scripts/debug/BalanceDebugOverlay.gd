@@ -9,6 +9,8 @@ var _label_damage: Label
 var _label_mitigation: Label
 var _label_sustain: Label
 var _label_ttk: Label
+var _label_progression: Label  # BALANCE PASS 2
+var _label_difficulty: Label   # BALANCE PASS 2
 
 var visible_mode: bool = false
 var _debugger: BalanceDebugger = null
@@ -96,6 +98,20 @@ func _setup_ui() -> void:
 	_label_ttk.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
 	_label_ttk.add_theme_font_size_override("font_size", 12)
 	vbox.add_child(_label_ttk)
+	
+	# BALANCE PASS 2: Progression
+	_label_progression = Label.new()
+	_label_progression.text = "LVL: --"
+	_label_progression.add_theme_color_override("font_color", Color(0.8, 0.6, 1.0))
+	_label_progression.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(_label_progression)
+	
+	# BALANCE PASS 2: Difficulty
+	_label_difficulty = Label.new()
+	_label_difficulty.text = "DIF: --"
+	_label_difficulty.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+	_label_difficulty.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(_label_difficulty)
 
 func _update_visibility() -> void:
 	_control.visible = visible_mode
@@ -134,3 +150,19 @@ func _on_metrics_updated(m: Dictionary) -> void:
 		m.ttk.boss_avg,
 		m.ttk.boss_samples
 	]
+	
+	# BALANCE PASS 2: Progression
+	if m.has("progression"):
+		_label_progression.text = "📈 LVL %d | XP/min %.0f | Lvl/min %.2f" % [
+			m.progression.current_level,
+			m.progression.xp_per_min,
+			m.progression.levels_per_min
+		]
+	
+	# BALANCE PASS 2: Difficulty
+	if m.has("difficulty") and not m.difficulty.is_empty():
+		_label_difficulty.text = "🎯 HP:%.1fx DMG:%.1fx SPD:%.1fx" % [
+			m.difficulty.get("hp_mult", 1.0),
+			m.difficulty.get("dmg_mult", 1.0),
+			m.difficulty.get("speed_mult", 1.0)
+		]

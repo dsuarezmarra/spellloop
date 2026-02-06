@@ -46,6 +46,12 @@ var _elite_ttk_samples: Array[float] = []
 var _boss_spawn_times: Dictionary = {}
 var _boss_ttk_samples: Array[float] = []
 
+# --- BALANCE PASS 2: XP / Level / Difficulty Tracking ---
+var _xp_gained_total: int = 0
+var _levels_gained: int = 0
+var _last_level: int = 1
+var _last_difficulty_snapshot: Dictionary = {}
+
 # --- Timing ---
 var _session_start_time: int = 0
 var _update_timer: float = 0.0
@@ -138,6 +144,38 @@ func log_elite_death(enemy_id: int, is_boss: bool = false) -> void:
 			if _elite_ttk_samples.size() % 5 == 0:
 				print("[BALANCE DEBUG] ⭐ Elite avg TTK (last 5): %.2fs" % _get_avg(_elite_ttk_samples.slice(-5)))
 
+## BALANCE PASS 2: Registrar XP ganada
+func log_xp_gained(amount: int) -> void:
+	if not enabled:
+		return
+	_xp_gained_total += amount
+
+## BALANCE PASS 2: Registrar level up
+func log_level_up(new_level: int) -> void:
+	if not enabled:
+		return
+	if new_level > _last_level:
+		_levels_gained += 1
+		_last_level = new_level
+		var elapsed_min = (Time.get_ticks_msec() - _session_start_time) / 60000.0
+		print("[BALANCE DEBUG] 📈 Level %d reached at %.1f min" % [new_level, elapsed_min])
+
+## BALANCE PASS 2: Registrar snapshot de difficulty scaling
+func log_difficulty_scaling(snapshot: Dictionary) -> void:
+	if not enabled:
+		return
+	_last_difficulty_snapshot = snapshot
+	# Log cada minuto entero
+	var min_elapsed = int(snapshot.get("minute", 0))
+	if min_elapsed > 0 and min_elapsed % 5 == 0:  # Log cada 5 minutos
+		print("[BALANCE DEBUG] 🎯 Difficulty @ min %d: HP=%.2fx DMG=%.2fx SPAWN=%.2fx SPD=%.2fx" % [
+			min_elapsed,
+			snapshot.get("hp_mult", 1.0),
+			snapshot.get("dmg_mult", 1.0),
+			snapshot.get("spawn_mult", 1.0),
+			snapshot.get("speed_mult", 1.0)
+		])
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # MÉTRICAS
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -146,6 +184,7 @@ func get_current_metrics() -> Dictionary:
 	var elapsed_sec = (Time.get_ticks_msec() - _session_start_time) / 1000.0
 	if elapsed_sec < 0.1:
 		elapsed_sec = 0.1  # Evitar división por cero
+	var elapsed_min = elapsed_sec / 60.0
 	
 	# Calcular mitigación efectiva
 	var mitigation_pct = 0.0
@@ -154,6 +193,10 @@ func get_current_metrics() -> Dictionary:
 	
 	# Sustain por segundo
 	var sustain_per_sec = _heal_total / elapsed_sec
+	
+	# XP per minute
+	var xp_per_min = _xp_gained_total / elapsed_min if elapsed_min > 0 else 0.0
+	var levels_per_min = _levels_gained / elapsed_min if elapsed_min > 0 else 0.0
 	
 	return {
 		# Daño infligido
@@ -188,8 +231,19 @@ func get_current_metrics() -> Dictionary:
 			"boss_avg": _get_avg(_boss_ttk_samples),
 			"boss_samples": _boss_ttk_samples.size()
 		},
+		# BALANCE PASS 2: XP/Level
+		"progression": {
+			"xp_total": _xp_gained_total,
+			"xp_per_min": xp_per_min,
+			"current_level": _last_level,
+			"levels_gained": _levels_gained,
+			"levels_per_min": levels_per_min
+		},
+		# BALANCE PASS 2: Difficulty Scaling
+		"difficulty": _last_difficulty_snapshot.duplicate() if _last_difficulty_snapshot else {},
 		# Meta
-		"elapsed_sec": elapsed_sec
+		"elapsed_sec": elapsed_sec,
+		"elapsed_min": elapsed_min
 	}
 
 func _get_avg(arr: Array) -> float:
@@ -218,6 +272,11 @@ func reset_metrics() -> void:
 	_elite_ttk_samples.clear()
 	_boss_spawn_times.clear()
 	_boss_ttk_samples.clear()
+	# BALANCE PASS 2
+	_xp_gained_total = 0
+	_levels_gained = 0
+	_last_level = 1
+	_last_difficulty_snapshot.clear()
 	_session_start_time = Time.get_ticks_msec()
 
 func toggle() -> void:
@@ -232,7 +291,7 @@ func toggle() -> void:
 func _print_session_summary() -> void:
 	var m = get_current_metrics()
 	print("═══════════════════════════════════════════════════════════════════")
-	print("BALANCE DEBUG - SESSION SUMMARY (%.0fs)" % m.elapsed_sec)
+	print("BALANCE DEBUG - SESSION SUMMARY (%.1f min)" % m.elapsed_min)
 	print("═══════════════════════════════════════════════════════════════════")
 	print("DAMAGE DEALT:")
 	print("  Min/Avg/Max: %d / %.0f / %d" % [m.damage_dealt.min, m.damage_dealt.avg, m.damage_dealt.max])
@@ -246,4 +305,15 @@ func _print_session_summary() -> void:
 	print("TTK:")
 	print("  Elite: %.2fs avg (%d samples)" % [m.ttk.elite_avg, m.ttk.elite_samples])
 	print("  Boss: %.2fs avg (%d samples)" % [m.ttk.boss_avg, m.ttk.boss_samples])
+	print("PROGRESSION (PASS 2):")
+	print("  Level: %d | XP Total: %d | XP/min: %.0f" % [m.progression.current_level, m.progression.xp_total, m.progression.xp_per_min])
+	print("  Levels gained: %d | Levels/min: %.2f" % [m.progression.levels_gained, m.progression.levels_per_min])
+	if not m.difficulty.is_empty():
+		print("DIFFICULTY SCALING (PASS 2):")
+		print("  HP: %.2fx | DMG: %.2fx | Spawn: %.2fx | Speed: %.2fx" % [
+			m.difficulty.get("hp_mult", 1.0),
+			m.difficulty.get("dmg_mult", 1.0),
+			m.difficulty.get("spawn_mult", 1.0),
+			m.difficulty.get("speed_mult", 1.0)
+		])
 	print("═══════════════════════════════════════════════════════════════════")
