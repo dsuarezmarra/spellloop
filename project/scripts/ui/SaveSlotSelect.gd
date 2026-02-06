@@ -307,6 +307,13 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	
 	delete_btn.pressed.connect(_on_delete_slot.bind(slot_index))
 	delete_btn.mouse_entered.connect(_on_element_hover)
+	
+	# Espaciador para mover BORRAR hacia la derecha
+	var delete_spacer = Control.new()
+	delete_spacer.name = "DeleteSpacer"
+	delete_spacer.custom_minimum_size = Vector2(20, 0)  # Empuja BORRAR a la derecha
+	delete_spacer.visible = false  # Se oculta junto con el botón
+	buttons_container.add_child(delete_spacer)
 	buttons_container.add_child(delete_btn)
 	
 	# --- NAVIGATION LINKS (WASD horizontal entre select y delete) ---
@@ -419,6 +426,10 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 			select_btn.modulate = Color(1, 1, 1)
 		if delete_btn:
 			delete_btn.visible = false
+			# Ocultar también el espaciador
+			var spacer = buttons_container.get_node_or_null("DeleteSpacer")
+			if spacer:
+				spacer.visible = false
 			
 	else:
 		# --- SLOT CON DATOS ---
@@ -502,6 +513,10 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 			delete_btn.disabled = false
 			delete_btn.text = Localization.L("common.delete")
 			delete_btn.modulate = Color(1, 1, 1)
+			# Mostrar también el espaciador
+			var spacer = buttons_container.get_node_or_null("DeleteSpacer")
+			if spacer:
+				spacer.visible = true
 
 func _setup_navigation() -> void:
 	"""Configurar navegación WASD"""
