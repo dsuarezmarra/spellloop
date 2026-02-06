@@ -174,7 +174,7 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	
 	# --- HEADER (Número de Slot) - DENTRO del recuadro, más abajo y visible ---
 	var header_margin = MarginContainer.new()
-	header_margin.add_theme_constant_override("margin_top", 5)  # Más arriba en el header del frame
+	header_margin.add_theme_constant_override("margin_top", 25)  # Más arriba en el header del frame
 	header_margin.add_theme_constant_override("margin_bottom", 8)
 	vbox.add_child(header_margin)
 	
