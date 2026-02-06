@@ -984,7 +984,7 @@ func _convert_run_to_entry(run: Dictionary, rank: int) -> Dictionary:
 		"steam_name": "Tu Partida",  # Sin Steam, usar texto genérico
 		"score": score,
 		"character": character_name,
-		"level": final_stats.get("level", run.get("player_level", 1)),
+		"level": int(final_stats.get("level", run.get("player_level", run.get("level_reached", 1)))),
 		"time": time_str,
 		"wave": run.get("phase", 1),  # Usamos phase como "oleada" visual
 		"stats": stats_dict,
@@ -1149,7 +1149,7 @@ func _create_entry_panel(entry: Dictionary, index: int) -> Control:
 	name_container.add_child(name_label)
 	
 	var char_label = Label.new()
-	char_label.text = entry.get("character", "Unknown") + " - Nivel " + str(entry.get("level", 1))
+	char_label.text = entry.get("character", "Unknown") + " - Nivel " + str(int(entry.get("level", 1)))
 	if font_entry:
 		char_label.add_theme_font_override("font", font_entry)
 	char_label.add_theme_font_size_override("font_size", 12)
@@ -1601,7 +1601,7 @@ func _show_detail_stats_tab() -> void:
 	header_hbox.add_child(hp_label)
 	
 	# Nivel
-	var level = entry.get("level", 1)
+	var level = int(entry.get("level", 1))
 	var level_label = Label.new()
 	level_label.text = "📈 Nivel %d" % level
 	level_label.add_theme_font_size_override("font_size", 18)

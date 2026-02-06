@@ -57,6 +57,21 @@ var _level_at_start: int = 1
 var _levels_gained_this_run: int = 0
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# POLLING STATE (for delta calculations from run_stats)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+var _poll_timer: float = 0.0
+const POLL_INTERVAL: float = 1.0  # Poll every 1 second
+
+# Previous values for delta calculation
+var _prev_kills: int = 0
+var _prev_damage_dealt: int = 0
+var _prev_damage_taken: int = 0
+var _prev_healing_done: int = 0
+var _prev_gold: int = 0
+var _prev_xp_total: int = 0
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # LIFECYCLE
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -80,6 +95,80 @@ func _ready() -> void:
 		print("[BalanceTelemetry] Initialized. Logs at: %s" % ProjectSettings.globalize_path(LOG_DIR))
 	else:
 		print("[BalanceTelemetry] Disabled")
+
+func _process(delta: float) -> void:
+	"""Poll game state for telemetry data"""
+	if not enabled or not _run_active:
+		return
+	
+	_poll_timer += delta
+	if _poll_timer < POLL_INTERVAL:
+		return
+	_poll_timer = 0.0
+	
+	# Get current game state
+	var game = _get_game_node()
+	if not game or not "run_stats" in game:
+		return
+	
+	var run_stats = game.run_stats
+	var t_min = game.game_time / 60.0
+	
+	# === KILLS DELTA ===
+	var current_kills = run_stats.get("kills", 0)
+	var kills_delta = current_kills - _prev_kills
+	if kills_delta > 0:
+		_kills_last_60s += kills_delta
+		# Track elites/bosses
+		var current_elites = run_stats.get("elites_killed", 0)
+		var elites_delta = current_elites - run_stats.get("_prev_elites", 0)
+		_elites_killed_last_60s += maxi(0, elites_delta)
+		
+		var current_bosses = run_stats.get("bosses_killed", 0)
+		var bosses_delta = current_bosses - run_stats.get("_prev_bosses", 0)
+		_bosses_killed_last_60s += maxi(0, bosses_delta)
+	_prev_kills = current_kills
+	
+	# === DAMAGE DEALT DELTA (for DPS) ===
+	var current_damage_dealt = run_stats.get("damage_dealt", 0)
+	var damage_delta = current_damage_dealt - _prev_damage_dealt
+	if damage_delta > 0:
+		_damage_dealt_last_60s += damage_delta
+		# Add to DPS samples (damage per second)
+		if _dps_samples.size() >= DPS_SAMPLES_COUNT:
+			_dps_samples.pop_front()
+		_dps_samples.append(damage_delta)
+	_prev_damage_dealt = current_damage_dealt
+	
+	# === DAMAGE TAKEN DELTA ===
+	var current_damage_taken = run_stats.get("damage_taken", 0)
+	var damage_taken_delta = current_damage_taken - _prev_damage_taken
+	if damage_taken_delta > 0:
+		_damage_taken_last_60s += damage_taken_delta
+	_prev_damage_taken = current_damage_taken
+	
+	# === HEALING DELTA ===
+	var current_healing = run_stats.get("healing_done", 0)
+	var healing_delta = current_healing - _prev_healing_done
+	if healing_delta > 0:
+		_healing_done_last_60s += healing_delta
+	_prev_healing_done = current_healing
+	
+	# === GOLD DELTA ===
+	var current_gold = run_stats.get("gold", 0)
+	var gold_delta = current_gold - _prev_gold
+	if gold_delta > 0:
+		_gold_gained_last_60s += gold_delta
+	_prev_gold = current_gold
+	
+	# === XP SAMPLE (for xp_per_min rolling average) ===
+	var current_xp = run_stats.get("xp_total", 0)
+	if current_xp != _prev_xp_total:
+		_xp_samples.append({"time_min": t_min, "xp": current_xp})
+		# Prune old samples (keep last N minutes)
+		while _xp_samples.size() > 0 and _xp_samples[0]["time_min"] < t_min - XP_ROLLING_MINUTES:
+			_xp_samples.pop_front()
+		_prev_xp_total = current_xp
 
 func _init_log_dir() -> void:
 	if not DirAccess.dir_exists_absolute(LOG_DIR):
@@ -392,12 +481,6 @@ func _log_event(event: Dictionary) -> void:
 		file.store_line(JSON.stringify(event))
 		file.close()
 
-func _get_game_node() -> Node:
-	var games = get_tree().get_nodes_in_group("game")
-	if games.size() > 0:
-		return games[0]
-	return get_tree().current_scene if get_tree().current_scene and get_tree().current_scene.name == "Game" else null
-
 func _get_next_run_id() -> int:
 	# Read from meta file or increment
 	var meta_path = LOG_DIR.path_join("_meta.json")
@@ -420,6 +503,10 @@ func _get_next_run_id() -> int:
 	
 	return run_id
 
+func _get_game_node() -> Node:
+	"""Get the Game node for polling run_stats"""
+	return get_tree().root.get_node_or_null("Game")
+
 func _reset_counters() -> void:
 	_damage_dealt_last_60s = 0
 	_damage_taken_last_60s = 0
@@ -437,6 +524,15 @@ func _reset_counters() -> void:
 	_xp_samples.clear()
 	_levels_gained_this_run = 0
 	_level_at_start = 1
+	
+	# Reset polling state
+	_poll_timer = 0.0
+	_prev_kills = 0
+	_prev_damage_dealt = 0
+	_prev_damage_taken = 0
+	_prev_healing_done = 0
+	_prev_gold = 0
+	_prev_xp_total = 0
 
 func _reset_60s_counters() -> void:
 	_damage_dealt_last_60s = 0
@@ -527,16 +623,28 @@ func get_player_stats_snapshot() -> Dictionary:
 
 func get_difficulty_snapshot() -> Dictionary:
 	"""Get current difficulty multipliers"""
-	var result: Dictionary = {}
+	var result: Dictionary = {
+		"enemy_hp_mult": 1.0,
+		"enemy_dmg_mult": 1.0,
+		"spawn_mult": 1.0,
+		"elite_mult": 1.0,
+		"speed_mult": 1.0
+	}
+	
 	var difficulty_manager = get_tree().get_first_node_in_group("difficulty_manager")
 	if difficulty_manager:
-		result = {
-			"enemy_hp_mult": difficulty_manager.get("enemy_health_multiplier") if "enemy_health_multiplier" in difficulty_manager else 1.0,
-			"enemy_dmg_mult": difficulty_manager.get("enemy_damage_multiplier") if "enemy_damage_multiplier" in difficulty_manager else 1.0,
-			"spawn_mult": difficulty_manager.get("spawn_rate_multiplier") if "spawn_rate_multiplier" in difficulty_manager else 1.0,
-			"elite_mult": difficulty_manager.get("elite_frequency_multiplier") if "elite_frequency_multiplier" in difficulty_manager else 1.0,
-			"speed_mult": difficulty_manager.get("enemy_speed_multiplier") if "enemy_speed_multiplier" in difficulty_manager else 1.0
-		}
+		# Use correct variable names from DifficultyManager.gd
+		if "enemy_health_multiplier" in difficulty_manager:
+			result["enemy_hp_mult"] = snappedf(difficulty_manager.enemy_health_multiplier, 0.01)
+		if "enemy_damage_multiplier" in difficulty_manager:
+			result["enemy_dmg_mult"] = snappedf(difficulty_manager.enemy_damage_multiplier, 0.01)
+		if "enemy_count_multiplier" in difficulty_manager:
+			result["spawn_mult"] = snappedf(difficulty_manager.enemy_count_multiplier, 0.01)
+		if "elite_frequency_multiplier" in difficulty_manager:
+			result["elite_mult"] = snappedf(difficulty_manager.elite_frequency_multiplier, 0.01)
+		if "enemy_speed_multiplier" in difficulty_manager:
+			result["speed_mult"] = snappedf(difficulty_manager.enemy_speed_multiplier, 0.01)
+	
 	return result
 
 # ═══════════════════════════════════════════════════════════════════════════════
