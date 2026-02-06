@@ -508,8 +508,16 @@ func _setup_ranking_button() -> void:
 	if ranking_button != null:
 		return
 	
+	# Buscar VBoxContainer - puede haber sido reparentado dentro de MenuBackground
 	var vbox = $UILayer/UIContainer/VBoxContainer
+	if not vbox:
+		# Buscar dentro de MenuBackground (después del reparenting)
+		var bg_panel = $UILayer/UIContainer.get_node_or_null("MenuBackground")
+		if bg_panel:
+			vbox = bg_panel.get_node_or_null("VBoxContainer")
+	
 	if not vbox or not options_button:
+		print("[MainMenu] ⚠️ No se pudo crear botón de ranking - VBox o options_button no encontrado")
 		return
 	
 	# Crear TextureButton igual que los otros

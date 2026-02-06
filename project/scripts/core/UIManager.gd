@@ -26,8 +26,8 @@ const MAIN_MENU_SCENE = "res://scenes/ui/MainMenu.tscn"
 const GAME_HUD_SCENE = "res://scenes/ui/GameHUD.tscn"
 var game_hud = null
 const PAUSE_MENU_SCENE = "res://scenes/ui/PauseMenu.tscn"
-const SETTINGS_MENU_SCENE = "res://scenes/ui/SettingsMenu.tscn"
-const GAME_OVER_SCENE = "res://scenes/ui/GameOverMenu.tscn"
+const SETTINGS_MENU_SCENE = "res://scenes/ui/OptionsMenu.tscn"
+const GAME_OVER_SCENE = "res://scenes/ui/GameOverScreen.tscn"
 
 # Current UI state
 var current_scene_name: String = ""
