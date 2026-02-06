@@ -333,12 +333,12 @@ static func _generate_weapon_loot(chest_type: int, luck: float, context: Object 
 		var has_slot = true
 		
 		# Método 1: Propiedad directa has_available_slot
-		if context.get("has_available_slot") != null:
+		if "has_available_slot" in context:
 			has_slot = context.has_available_slot
 		# Método 2: Calcular manualmente desde weapons y max_slots
 		elif context.has_method("get_weapons"):
 			var equipped = context.get_weapons()
-			var max_slots = context.get("max_weapon_slots") if context.get("max_weapon_slots") != null else 6
+			var max_slots = context.max_weapon_slots if "max_weapon_slots" in context else 6
 			has_slot = equipped.size() < max_slots
 		
 		if not has_slot:
@@ -412,11 +412,11 @@ static func _roll_category(weights: Dictionary, luck: float, context: Object = n
 		var has_slot = true
 		
 		# Verificar slots disponibles
-		if context.get("has_available_slot") != null:
+		if "has_available_slot" in context:
 			has_slot = context.has_available_slot
 		elif context.has_method("get_weapons"):
 			var equipped = context.get_weapons()
-			var max_slots = context.get("max_weapon_slots") if context.get("max_weapon_slots") != null else 6
+			var max_slots = context.max_weapon_slots if "max_weapon_slots" in context else 6
 			has_slot = equipped.size() < max_slots
 		
 		if not has_slot:
@@ -500,10 +500,13 @@ static func _generate_shop_item(chest_type: int, base_tier: int, luck: float, co
 	# Verificar si hay slots disponibles para armas
 	var can_add_weapons = true
 	if context:
-		if context.get("has_available_slot") != null:
+		# Verificar propiedad has_available_slot directamente
+		if "has_available_slot" in context:
 			can_add_weapons = context.has_available_slot
 		elif context.has_method("get_weapons"):
-			var max_slots = context.get("max_weapon_slots") if context.get("max_weapon_slots") != null else 6
+			var max_slots = 6
+			if "max_weapon_slots" in context:
+				max_slots = context.max_weapon_slots
 			can_add_weapons = context.get_weapons().size() < max_slots
 	
 	# Lógica especial para BOSS
@@ -674,10 +677,10 @@ static func _generate_shop_boss_item(luck: float, context: Object = null) -> Dic
 	# Verificar si hay slots disponibles para armas
 	var can_add_weapons = true
 	if context:
-		if context.get("has_available_slot") != null:
+		if "has_available_slot" in context:
 			can_add_weapons = context.has_available_slot
 		elif context.has_method("get_weapons"):
-			var max_slots = context.get("max_weapon_slots") if context.get("max_weapon_slots") != null else 6
+			var max_slots = context.max_weapon_slots if "max_weapon_slots" in context else 6
 			can_add_weapons = context.get_weapons().size() < max_slots
 		
 	var pick = pool[randi() % pool.size()]

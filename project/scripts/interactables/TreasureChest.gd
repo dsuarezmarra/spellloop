@@ -76,6 +76,28 @@ func initialize_as_shop(chest_position: Vector2, player: CharacterBody2D, tier: 
 	setup_visual()
 	# No llamar generate_contents - se genera al abrir con ShopChestPopup
 
+func _get_attack_manager_context() -> Object:
+	"""Obtener referencia al AttackManager buscando en múltiples ubicaciones"""
+	var context = null
+	# 1. Propiedad del player
+	if player_ref and player_ref.get("attack_manager") != null:
+		context = player_ref.attack_manager
+	# 2. Nodo hijo del player
+	if context == null and player_ref and player_ref.has_node("AttackManager"):
+		context = player_ref.get_node("AttackManager")
+	# 3. Buscar en Game/AttackManager
+	if context == null:
+		context = get_tree().root.get_node_or_null("Game/AttackManager")
+	# 4. Buscar en root directamente
+	if context == null:
+		context = get_tree().root.get_node_or_null("AttackManager")
+	# 5. Buscar por grupo
+	if context == null:
+		var attack_mgr_node = get_tree().get_first_node_in_group("attack_manager")
+		if attack_mgr_node:
+			context = attack_mgr_node
+	return context
+
 func setup_visual():
 	"""Configurar apariencia del cofre usando spritesheets"""
 	sprite = Sprite2D.new()
@@ -201,14 +223,8 @@ func generate_contents():
 				var luck_points = int(meta.get("luck_points", 0))
 				luck_modifier = 1.0 + (luck_points * 0.02)
 			
-			# Contexto para fusiones (AttackManager)
-			var context = null
-			if player_ref:
-				# Intentar obtener attack_manager
-				if player_ref.get("attack_manager") != null:
-					context = player_ref.attack_manager
-				elif player_ref.has_node("AttackManager"):
-					context = player_ref.get_node("AttackManager")
+			# Contexto para fusiones (AttackManager) - buscar en múltiples ubicaciones
+			var context = _get_attack_manager_context()
 				
 			items_inside = loot_class.get_chest_loot(chest_type, luck_modifier, context)
 			
@@ -438,12 +454,7 @@ func _create_shop_popup():
 	var count = clampi(2 + int(game_time_minutes / 5.0), 2, 5)
 	
 	# Contexto para filtrado (AttackManager)
-	var context = null
-	if player_ref:
-		if player_ref.get("attack_manager") != null:
-			context = player_ref.attack_manager
-		elif player_ref.has_node("AttackManager"):
-			context = player_ref.get_node("AttackManager")
+	var context = _get_attack_manager_context()
 
 	items_inside = LootManager.get_random_shop_loot(loot_chest_type, count, luck, context)
 	

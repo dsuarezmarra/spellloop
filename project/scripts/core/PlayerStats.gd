@@ -1193,6 +1193,8 @@ func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> 
 			# Ajustar salud actual proporcionalmente
 			var ratio = current_health / old_value if old_value > 0 else 1.0
 			current_health = new_value * ratio
+			# IMPORTANTE: Asegurar que nunca sea menor a 1 si estamos vivos
+			current_health = maxf(current_health, 1.0)
 			health_changed.emit(current_health, new_value)
 		
 		# NOTA: Todos los WEAPON_STATS (damage_mult, attack_speed_mult, crit_chance, 

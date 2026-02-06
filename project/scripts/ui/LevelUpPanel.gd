@@ -643,6 +643,10 @@ func _on_reroll() -> void:
 	# Actualizar contador de rerolls antes de generar opciones
 	_update_button_counts()
 	
+	# Forzar fin de animación anterior si estaba en curso
+	if _is_animating:
+		skip_slot_animation()
+	
 	# Generar nuevas opciones (esto incluye la animación de tragaperras)
 	generate_options()
 
@@ -1086,9 +1090,14 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 
 	# Nombre con color basado en TIER y tipo especial
 	if name_label:
-		name_label.text = option.get("name", "???")
-		var name_color = _get_option_color(option)
-		name_label.add_theme_color_override("font_color", name_color)
+		# Para fusiones, ocultar el name_label porque el badge épico ya muestra el nombre
+		if option_type == OPTION_TYPES.FUSION:
+			name_label.visible = false
+		else:
+			name_label.visible = true
+			name_label.text = option.get("name", "???")
+			var name_color = _get_option_color(option)
+			name_label.add_theme_color_override("font_color", name_color)
 
 	# Descripción
 	if desc_label:
@@ -1264,8 +1273,13 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 		corners_container.add_child(star)
 	
 	# ═══════════════════════════════════════════════════════════════════════════
-	# BADGE "FUSIÓN" ÉPICO EN LA PARTE SUPERIOR
+	# BADGE CON NOMBRE DE LA FUSIÓN EN LA PARTE SUPERIOR
 	# ═══════════════════════════════════════════════════════════════════════════
+	var fusion_name = option.get("name", "FUSIÓN")
+	# Limpiar el emoji de fuego si ya está en el nombre para evitar duplicación
+	if fusion_name.begins_with("🔥 "):
+		fusion_name = fusion_name.substr(3)
+	
 	var badge = PanelContainer.new()
 	badge.name = "FusionBadge"
 	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1274,10 +1288,10 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	badge.anchor_right = 0.5
 	badge.anchor_top = 0.0
 	badge.anchor_bottom = 0.0
-	badge.offset_left = -50
-	badge.offset_right = 50
-	badge.offset_top = -12
-	badge.offset_bottom = 8
+	badge.offset_left = -90  # Más ancho para nombres largos
+	badge.offset_right = 90
+	badge.offset_top = -14
+	badge.offset_bottom = 10
 	
 	var badge_style = StyleBoxFlat.new()
 	badge_style.bg_color = Color(0.9, 0.4, 0.0, 1.0)  # Naranja sólido
@@ -1289,8 +1303,8 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	badge.add_theme_stylebox_override("panel", badge_style)
 	
 	var badge_label = Label.new()
-	badge_label.text = "🔥 FUSIÓN 🔥"
-	badge_label.add_theme_font_size_override("font_size", 11)
+	badge_label.text = "🔥 " + fusion_name + " 🔥"
+	badge_label.add_theme_font_size_override("font_size", 12)
 	badge_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	badge_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	badge_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -1446,6 +1460,10 @@ func _play_slot_reel_animation() -> void:
 	
 	var max_opts = _get_max_options()
 	var visible_count = mini(options.size(), max_opts)
+	
+	# Resetear escala de todos los paneles (por si hay tweens de bounce residuales)
+	for panel in option_panels:
+		panel.scale = Vector2.ONE
 	
 	# Mostrar todos los paneles con icono spinning
 	for i in range(option_panels.size()):
@@ -1988,8 +2006,8 @@ func _get_fusion_options() -> Array:
 			"weapon_a": fusion.weapon_a,
 			"weapon_b": fusion.weapon_b,
 			"result": fusion.result,
-			"name": "🔥 %s" % fusion_name,
-			"description": Localization.L("fusion_format.description", [weapon_a_name, weapon_b_name]),
+			"name": fusion_name,  # Nombre limpio para el badge
+			"description": "%s + %s → ⚠️ -1 slot" % [weapon_a_name, weapon_b_name],
 			"icon": preview.get("icon", "⚡"),
 			"rarity": "epic",
 			"priority": 2.0

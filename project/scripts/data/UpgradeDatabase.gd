@@ -474,39 +474,7 @@ const DEFENSIVE_UPGRADES: Dictionary = {
 		"max_stacks": 2,
 		"effects": [{"stat": "shield_regen_delay", "value": -1.0, "operation": "add"}]
 	},
-	# [NUEVO] Valor (Grit)
-	"grit": {
-		"id": "grit",
-		"name": "Valor",
-		"description": "Si recibes un golpe > 10% HP, te vuelves invulnerable 1s.",
-		"icon": "res://assets/icons/upgrade_defensive_grit.png",
-		"category": "defensive",
-		"tier": 4,
-		"max_stacks": 1,
-		"effects": [{"stat": "grit_active", "value": 1, "operation": "add"}]
-	},
-	# [NUEVO] Nova de Escarcha (Frost Nova)
-	"frost_nova": {
-		"id": "frost_nova",
-		"name": "Nova de Escarcha",
-		"description": "Congelas enemigos cercanos al recibir daño.",
-		"icon": "res://assets/icons/special_ice_frost_nova.png",
-		"category": "defensive",
-		"tier": 3,
-		"max_stacks": 1,
-		"effects": [{"stat": "frost_nova_on_hit", "value": 1, "operation": "add"}]
-	},
-	# [NUEVO] Torreta (Tower)
-	"tower": {
-		"id": "tower",
-		"name": "Torreta",
-		"description": "Activa modo Torreta tras 2s quieto.",
-		"icon": "res://assets/icons/icon_shield_wood.png",
-		"category": "unique",
-		"tier": 3,
-		"max_stacks": 1,
-		"effects": [{"stat": "turret_mode_enabled", "value": 1, "operation": "add"}]
-	},
+	# NOTA: grit, frost_nova y tower movidos a UNIQUE_UPGRADES
 	# [NUEVO] Vínculo de Alma (Soul Link)
 	"soul_link": {
 		"id": "soul_link",
@@ -721,17 +689,8 @@ const UTILITY_UPGRADES: Dictionary = {
 		"max_stacks": 1,
 		"effects": [{"stat": "momentum_factor", "value": 0.20, "operation": "add"}]
 	},
-	# [NUEVO] Maestro de Racha (Streak Master)
-	"streak_master": {
-		"id": "streak_master",
-		"name": "Maestro de Racha",
-		"description": "El bonus de racha de monedas se duplica (+100%).",
-		"icon": "res://assets/icons/icon_flame_burn.png",
-		"category": "utility",
-		"tier": 4,
-		"max_stacks": 1,
-		"effects": [{"stat": "streak_bonus_mult", "value": 1.0, "operation": "add"}]
-	},
+	# NOTA: streak_master eliminado (duplicado de unique_streak_master)
+	# NOTA: plague_bearer y chrono_jump movidos a UNIQUE_UPGRADES
 	# [NUEVO] Doble o Nada (Multicast)
 	"double_or_nothing": {
 		"id": "double_or_nothing",
@@ -742,28 +701,6 @@ const UTILITY_UPGRADES: Dictionary = {
 		"tier": 5,
 		"max_stacks": 3,
 		"effects": [{"stat": "multicast_chance", "value": 0.20, "operation": "add"}]
-	},
-	# [NUEVO] Portador de Plaga (Plague Bearer)
-	"plague_bearer": {
-		"id": "plague_bearer",
-		"icon": "res://assets/icons/icon_poison_bottle.png",
-		"name": "Portador de Plaga",
-		"description": "Al morir, los enemigos contagian sus estados.",
-		"category": "utility",
-		"tier": 4,
-		"max_stacks": 1,
-		"effects": [{"stat": "plague_bearer_active", "value": 1, "operation": "add"}]
-	},
-	# [NUEVO] Crono-Salto (Chrono Jump)
-	"chrono_jump": {
-		"id": "chrono_jump",
-		"name": "Crono-Salto",
-		"description": "Enemigos se mueven 50% más lento.",
-		"icon": "res://assets/icons/icon_duration.png",
-		"category": "utility",
-		"tier": 5,
-		"max_stacks": 1,
-		"effects": [{"stat": "chrono_jump_active", "value": 1, "operation": "add"}]
 	},
 }
 
@@ -861,28 +798,7 @@ const OFFENSIVE_UPGRADES: Dictionary = {
 		"max_stacks": 3,
 		"effects": [{"stat": "elite_damage_mult", "value": 1.20, "operation": "multiply"}]
 	},
-	# [NUEVO] Combustión (Combustion)
-	"combustion": {
-		"id": "combustion",
-		"name": "Combustión",
-		"description": "La quemadura hace su daño total instantáneamente.",
-		"icon": "res://assets/icons/upgrade_combustion.png",
-		"category": "offensive",
-		"tier": 4,
-		"max_stacks": 1,
-		"effects": [{"stat": "combustion_active", "value": 1, "operation": "add"}]
-	},
-	# [NUEVO] Ruleta Rusa (Russian Roulette)
-	"russian_roulette": {
-		"id": "russian_roulette",
-		"name": "Ruleta Rusa",
-		"description": "1% probabilidad de causar daño masivo (10x).",
-		"icon": "res://assets/icons/icon_dice_reroll.png",
-		"category": "offensive",
-		"tier": 4,
-		"max_stacks": 1,
-		"effects": [{"stat": "russian_roulette", "value": 1, "operation": "add"}]
-	},
+	# NOTA: combustion y russian_roulette movidos a UNIQUE_UPGRADES
 	# [NUEVO] Hemorragia (Hemorrhage)
 	"hemorrhage": {
 		"id": "hemorrhage",
@@ -2072,6 +1988,95 @@ const CURSED_UPGRADES: Dictionary = {
 # ═══════════════════════════════════════════════════════════════════════════════
 
 const UNIQUE_UPGRADES: Dictionary = {
+	# ─────────────────────────────────────────────────────────────────────────────
+	# CAPACIDADES ESPECIALES DEFENSIVAS
+	# ─────────────────────────────────────────────────────────────────────────────
+	"unique_grit": {
+		"id": "unique_grit",
+		"name": "Valor",
+		"description": "Si recibes un golpe > 10% HP, te vuelves invulnerable 1s.",
+		"icon": "res://assets/icons/upgrade_defensive_grit.png",
+		"category": "unique",
+		"tier": 4,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [{"stat": "grit_active", "value": 1, "operation": "add"}]
+	},
+	"unique_frost_nova_passive": {
+		"id": "unique_frost_nova_passive",
+		"name": "Nova de Escarcha",
+		"description": "Congelas enemigos cercanos al recibir daño.",
+		"icon": "res://assets/icons/special_ice_frost_nova.png",
+		"category": "unique",
+		"tier": 3,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [{"stat": "frost_nova_on_hit", "value": 1, "operation": "add"}]
+	},
+	"unique_tower": {
+		"id": "unique_tower",
+		"name": "Torreta",
+		"description": "Activa modo Torreta tras 2s quieto (+50% daño, +25% área).",
+		"icon": "res://assets/icons/icon_shield_wood.png",
+		"category": "unique",
+		"tier": 4,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [{"stat": "turret_mode_enabled", "value": 1, "operation": "add"}]
+	},
+	# ─────────────────────────────────────────────────────────────────────────────
+	# CAPACIDADES ESPECIALES OFENSIVAS
+	# ─────────────────────────────────────────────────────────────────────────────
+	"unique_combustion": {
+		"id": "unique_combustion",
+		"name": "Combustión",
+		"description": "La quemadura hace su daño total instantáneamente.",
+		"icon": "res://assets/icons/upgrade_combustion.png",
+		"category": "unique",
+		"tier": 4,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [{"stat": "combustion_active", "value": 1, "operation": "add"}]
+	},
+	"unique_russian_roulette": {
+		"id": "unique_russian_roulette",
+		"name": "Ruleta Rusa",
+		"description": "1% probabilidad de causar daño masivo (10x).",
+		"icon": "res://assets/icons/icon_dice_reroll.png",
+		"category": "unique",
+		"tier": 4,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [{"stat": "russian_roulette", "value": 1, "operation": "add"}]
+	},
+	# ─────────────────────────────────────────────────────────────────────────────
+	# CAPACIDADES ESPECIALES DE UTILIDAD
+	# ─────────────────────────────────────────────────────────────────────────────
+	"unique_plague_bearer": {
+		"id": "unique_plague_bearer",
+		"icon": "res://assets/icons/icon_poison_bottle.png",
+		"name": "Portador de Plaga",
+		"description": "Al morir, los enemigos contagian sus estados.",
+		"category": "unique",
+		"tier": 4,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [{"stat": "plague_bearer_active", "value": 1, "operation": "add"}]
+	},
+	"unique_chrono_jump": {
+		"id": "unique_chrono_jump",
+		"name": "Crono-Salto",
+		"description": "Enemigos se mueven 50% más lento permanentemente.",
+		"icon": "res://assets/icons/icon_duration.png",
+		"category": "unique",
+		"tier": 5,
+		"is_unique": true,
+		"max_stacks": 1,
+		"effects": [{"stat": "chrono_jump_active", "value": 1, "operation": "add"}]
+	},
+	# ─────────────────────────────────────────────────────────────────────────────
+	# REVIVES Y SUPERVIVENCIA
+	# ─────────────────────────────────────────────────────────────────────────────
 	"unique_phoenix_heart": {
 		"id": "unique_phoenix_heart",
 		"icon": "res://assets/icons/icon_star_revive.png",
