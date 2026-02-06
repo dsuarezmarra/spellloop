@@ -64,7 +64,7 @@ func _prewarm_pool(count: int) -> void:
 
 func _create_new_projectile():
 	"""Crear un nuevo proyectil (solo cuando el pool está vacío)"""
-	var ProjectileScript = preload("res://scripts/entities/weapons/projectiles/SimpleProjectile.gd")
+	var ProjectileScript = preload("res://scripts/weapons/projectiles/SimpleProjectile.gd")
 	var projectile = ProjectileScript.new()
 	
 	# Configurar para pooling

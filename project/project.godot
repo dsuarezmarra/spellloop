@@ -20,7 +20,7 @@ config/icon="res://icon.svg"
 GameManager="*res://scripts/core/GameManager.gd"
 SaveManager="*res://scripts/core/SaveManager.gd"
 AudioManager="*res://scripts/core/AudioManager.gd"
-SteamManager="*res://scripts/autoloads/SteamManager.gd"
+SteamManager="*res://scripts/core/SteamManager.gd"
 InputManager="*res://scripts/core/InputManager.gd"
 UIManager="*res://scripts/core/UIManager.gd"
 Localization="*res://scripts/core/Localization.gd"
@@ -32,7 +32,7 @@ ProjectilePool="*res://scripts/weapons/projectiles/ProjectilePool.gd"
 DamageLogger="*res://scripts/core/DamageLogger.gd"
 DecorCollisionManager="*res://scripts/core/DecorCollisionManager.gd"
 PerfTracker="*res://scripts/debug/PerfTracker.gd"
-VFXManager="*res://scripts/autoloads/VFXManager.gd"
+VFXManager="*res://scripts/core/VFXManager.gd"
 
 [display]
 
