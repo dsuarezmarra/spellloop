@@ -1,6 +1,0 @@
-[gd_scene load_steps=1 format=3 uid="uid://simple_chest_popup_tscn"]
-
-[ext_resource type="Script" path="res://scripts/ui/SimpleChestPopup.gd" id="1"]
-
-[node name="SimpleChestPopup" type="CanvasLayer"]
-script = ExtResource( 1 )
