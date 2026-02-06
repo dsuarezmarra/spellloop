@@ -102,11 +102,28 @@ func _process(delta: float) -> void:
 
 	game_time_seconds += delta
 
+	# Procesar cola de spawns pendientes (del frame anterior)
+	_process_spawn_queue()
+	
 	_update_spawn_timer(delta)
 	_check_boss_spawn()
 	_check_elite_spawn(delta)
 	_cleanup_dead_enemies()
 	_process_enemy_despawn(delta)  # Sistema de despawn para rendimiento
+
+func _process_spawn_queue() -> void:
+	"""Procesar spawns que fueron demorados por el budget del frame anterior"""
+	if _spawn_queue.is_empty():
+		return
+	
+	# Procesar hasta que se agote el budget o la cola
+	while not _spawn_queue.is_empty():
+		# Usar consume() que verifica Y consume en una sola llamada
+		if not SpawnBudgetManager.consume("enemy"):
+			break  # Budget agotado, esperar al siguiente frame
+		
+		var queued = _spawn_queue.pop_front()
+		spawn_enemy(queued["data"], queued["pos"], true)  # force=true para no re-encolar
 
 func _update_spawn_timer(delta: float) -> void:
 	spawn_timer += delta
@@ -355,14 +372,25 @@ func _spawn_elite() -> void:
 		elite_spawned.emit(elite)
 		# print("⭐ [EnemyManager] ¡ÉLITE SPAWNEADO: %s!" % elite_data.name)
 
+# Cola de spawns pendientes cuando se excede el budget
+var _spawn_queue: Array = []
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # FUNCIÓN PRINCIPAL DE SPAWN
 # ═══════════════════════════════════════════════════════════════════════════════
 
-func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2) -> Node:
+func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2, force: bool = false) -> Node:
 	if not EnemyBaseScript:
 		push_warning("⚠️ [EnemyManager] EnemyBaseScript no cargado")
 		return null
+	
+	# SPAWN BUDGET CHECK (skip para bosses/élites que son críticos)
+	var is_critical = enemy_data.get("is_boss", false) or enemy_data.get("is_elite", false)
+	if not force and not is_critical:
+		if not SpawnBudgetManager.consume("enemy"):
+			# Encolar para siguiente frame
+			_spawn_queue.append({"data": enemy_data, "pos": world_pos})
+			return null
 
 	var type_id = str(enemy_data.get("id", "unknown"))
 

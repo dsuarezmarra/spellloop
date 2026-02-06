@@ -245,6 +245,10 @@ func _start_next_wave() -> void:
 	wave_spawn_timer = 0.0
 	time_since_last_wave = 0.0
 	
+	# INSTRUMENTACIÓN: Tracking de inicio de oleada
+	if PerfTracker and PerfTracker.enabled:
+		PerfTracker.track_wave_start(wave_type, enemies_to_spawn_in_wave)
+	
 	# Anuncio de oleada si lo tiene
 	if current_wave_config.announcement != "":
 		_show_wave_announcement(current_wave_config.announcement)
@@ -383,6 +387,11 @@ func _calculate_wave_spawn_position() -> Vector2:
 func _complete_wave() -> void:
 	wave_in_progress = false
 	var wave_type = wave_sequence[(current_wave_index - 1 + wave_sequence.size()) % wave_sequence.size()]
+	
+	# INSTRUMENTACIÓN: Tracking de fin de oleada
+	if PerfTracker and PerfTracker.enabled:
+		PerfTracker.track_wave_end(wave_type)
+	
 	wave_completed.emit(wave_type)
 
 # ═══════════════════════════════════════════════════════════════════════════════

@@ -66,9 +66,13 @@ func _init_logs() -> void:
 	
 	_log_system_info()
 
+# Schema version for log format compatibility
+const LOG_SCHEMA_VERSION: int = 2
+
 func _log_system_info() -> void:
 	var info = {
 		"event": "session_start",
+		"schema_version": LOG_SCHEMA_VERSION,
 		"os": OS.get_name(),
 		"cpu": OS.get_processor_name(),
 		"gpu": RenderingServer.get_video_adapter_name(),
@@ -136,6 +140,27 @@ func track_pickup_spawned() -> void:
 func track_pickup_collected() -> void:
 	counters["pickups_alive"] = maxi(0, counters["pickups_alive"] - 1)
 
+func track_vfx_spawned() -> void:
+	log_event("vfx_spawn", {})
+
+func track_vfx_returned() -> void:
+	log_event("vfx_return", {})
+
+func track_wave_start(wave_type: String, enemy_count: int) -> void:
+	log_event("wave_start", {"type": wave_type, "count": enemy_count})
+
+func track_wave_end(wave_type: String) -> void:
+	log_event("wave_end", {"type": wave_type})
+
+func track_boss_spawn(boss_id: String) -> void:
+	log_event("boss_spawn", {"id": boss_id})
+
+func track_chunk_load(chunk_id: String) -> void:
+	log_event("chunk_load", {"id": chunk_id})
+
+func track_chunk_unload(chunk_id: String) -> void:
+	log_event("chunk_unload", {"id": chunk_id})
+
 func log_event(event_name: String, data: Dictionary = {}) -> void:
 	if not enabled: return
 	var timestamp = Time.get_ticks_msec()
@@ -163,21 +188,51 @@ func log_event(event_name: String, data: Dictionary = {}) -> void:
 # --- INTERNAL ---
 
 func _capture_spike_snapshot(frame_time: float) -> void:
+	# Calculate REAL instant FPS from frame time (not smoothed Engine.get_frames_per_second())
+	var instant_fps: float = 1000.0 / maxf(frame_time, 0.001)
+	
+	# Infer spike cause based on counters
+	var spike_cause: String = _infer_spike_cause()
+	
+	# Get current scene name
+	var scene_name: String = "unknown"
+	if get_tree() and get_tree().current_scene:
+		scene_name = get_tree().current_scene.name
+	
 	var snapshot = {
 		"event": "perf_spike",
+		"schema_version": LOG_SCHEMA_VERSION,
 		"timestamp": Time.get_ticks_msec(),
 		"frame_time_ms": frame_time,
-		"fps": Engine.get_frames_per_second(),
+		"instant_fps": instant_fps,
+		"fps_smoothed": Engine.get_frames_per_second(),
+		"scene_name": scene_name,
+		"spike_cause": spike_cause,
 		"counters": counters.duplicate(),
 		"memory_mb": counters.get("memory_static_mb", 0),
-		"recent_events": _event_buffer.duplicate() # Include context
+		"recent_events": _event_buffer.duplicate()
 	}
 	
+	# Group counts for context
+	snapshot["group_counts"] = _get_group_counts()
+	
+	# Pool stats
 	var pool_stats = {}
 	if ProjectilePool and ProjectilePool.instance:
 		pool_stats = ProjectilePool.instance.get_stats()
+	snapshot["projectile_pool"] = pool_stats
+	
+	# VFX Pool stats
+	var vfx_pool = get_tree().get_first_node_in_group("vfx_pool")
+	if vfx_pool and vfx_pool.has_method("get_stats"):
+		snapshot["vfx_pool"] = vfx_pool.get_stats()
+	
+	# Spawn budget stats
+	var spawn_budget = get_tree().get_first_node_in_group("spawn_budget")
+	if spawn_budget and spawn_budget.has_method("get_stats"):
+		snapshot["spawn_budget"] = spawn_budget.get_stats()
 
-	print_rich("[color=orange][PerfTracker] ⚠️ LAG SPIKE DETECTED: %.2f ms (FPS: %d)[/color]" % [frame_time, snapshot.fps])
+	print_rich("[color=orange][PerfTracker] ⚠️ LAG SPIKE: %.1f ms (instant: %.1f FPS) - %s[/color]" % [frame_time, instant_fps, spike_cause])
 	print("   Analysis: Nodes +%d | DrawCalls: %d | PhysTime: %.2f ms" % [
 		counters.get("nodes_created_delta", 0), 
 		counters.get("draw_calls",0),
@@ -190,8 +245,54 @@ func _capture_spike_snapshot(frame_time: float) -> void:
 			pool_stats.get("degradation_level", -1)
 		])
 	
-	snapshot["projectile_pool"] = pool_stats
 	_append_to_log(snapshot)
+
+func _infer_spike_cause() -> String:
+	"""Inferir causa probable del spike basándose en counters y eventos recientes"""
+	var nodes_delta = counters.get("nodes_created_delta", 0)
+	var physics_time = counters.get("physics_time_ms", 0)
+	
+	# Verificar eventos recientes
+	var recent_wave_start = false
+	var recent_boss = false
+	var enemy_spawn_burst = 0
+	for ev in _event_buffer:
+		var ev_name = ev.get("event", "")
+		if ev_name == "wave_start":
+			recent_wave_start = true
+		elif ev_name == "boss_spawn":
+			recent_boss = true
+		elif ev_name == "enemy_spawn":
+			enemy_spawn_burst += 1
+	
+	if nodes_delta > 100:
+		return "massive_instantiation"
+	elif nodes_delta > 50:
+		if recent_wave_start:
+			return "wave_spawn"
+		elif enemy_spawn_burst > 5:
+			return "enemy_burst"
+		return "high_instantiation"
+	elif physics_time > 10:
+		return "physics_overload"
+	elif recent_boss:
+		return "boss_spawn"
+	elif recent_wave_start:
+		return "wave_start"
+	else:
+		return "unknown"
+
+func _get_group_counts() -> Dictionary:
+	"""Obtener conteos de nodos por grupo para contexto"""
+	var counts = {}
+	if not get_tree():
+		return counts
+	
+	counts["enemies"] = get_tree().get_nodes_in_group("enemies").size()
+	counts["projectiles"] = get_tree().get_nodes_in_group("projectiles").size()
+	counts["pickups"] = get_tree().get_nodes_in_group("pickups").size()
+	
+	return counts
 
 
 func _append_to_log(data: Dictionary) -> void:
@@ -237,8 +338,17 @@ func _aggregate_minute_metrics() -> void:
 		enemy_values.append(c.get("enemies_alive", 0))
 		draw_call_values.append(c.get("draw_calls", 0))
 	
+	# Collect memory values for tracking
+	var memory_values = []
+	var node_count_values = []
+	for sample in _minute_samples:
+		var c = sample.get("counters", {})
+		memory_values.append(c.get("memory_static_mb", 0))
+		node_count_values.append(c.get("node_count", 0))
+	
 	var report = {
 		"event": "minute_report",
+		"schema_version": LOG_SCHEMA_VERSION,
 		"timestamp": Time.get_unix_time_from_system(),
 		"samples": _minute_samples.size(),
 		"fps": {
@@ -265,6 +375,17 @@ func _aggregate_minute_metrics() -> void:
 			"min": draw_call_values.min() if draw_call_values.size() > 0 else 0,
 			"max": draw_call_values.max() if draw_call_values.size() > 0 else 0,
 			"avg": _array_avg(draw_call_values)
+		},
+		"memory_mb": {
+			"min": memory_values.min() if memory_values.size() > 0 else 0,
+			"max": memory_values.max() if memory_values.size() > 0 else 0,
+			"avg": _array_avg(memory_values),
+			"growth": (memory_values.back() - memory_values.front()) if memory_values.size() > 1 else 0
+		},
+		"node_count": {
+			"min": node_count_values.min() if node_count_values.size() > 0 else 0,
+			"max": node_count_values.max() if node_count_values.size() > 0 else 0,
+			"avg": _array_avg(node_count_values)
 		}
 	}
 	

@@ -846,13 +846,28 @@ func _get_player() -> Node:
 		_destroy()
 
 func _spawn_hit_effect() -> void:
-	"""Crear efecto visual simple al impactar (optimizado para armas con muchos proyectiles)"""
-	# OPTIMIZACIÓN: Menos partículas para armas con muchos impactos
+	"""Crear efecto visual simple al impactar (OPTIMIZADO con VFXPool)"""
+	# OPTIMIZACIÓN: Usar VFXPool en lugar de crear CPUParticles2D directamente
 	var is_low_particle = _weapon_id in LOW_PARTICLE_WEAPONS
+	
+	# Intentar usar VFXPool primero
+	if VFXPool.instance:
+		VFXPool.instance.get_hit_particles(global_position, projectile_color, -direction, 5, is_low_particle)
+	else:
+		# Fallback legacy (sin pool)
+		_spawn_hit_effect_legacy(is_low_particle)
+	
+	# Instanciar efecto visual extra si existe (skip para low particle weapons)
+	if hit_vfx_scene and not is_low_particle:
+		var effect = hit_vfx_scene.instantiate()
+		effect.global_position = global_position
+		get_tree().root.add_child(effect)
+
+func _spawn_hit_effect_legacy(is_low_particle: bool) -> void:
+	"""Fallback para hit effect sin pool (compatibilidad)"""
 	var particle_amount = 4 if is_low_particle else 6
 	var particle_lifetime = 0.2 if is_low_particle else 0.25
 	
-	# Partículas simples de impacto
 	var particles = CPUParticles2D.new()
 	particles.emitting = true
 	particles.one_shot = true
@@ -871,13 +886,6 @@ func _spawn_hit_effect() -> void:
 	particles.global_position = global_position
 	get_tree().current_scene.add_child(particles)
 	
-	# Instanciar efecto visual extra si existe (skip para low particle weapons)
-	if hit_vfx_scene and not is_low_particle:
-		var effect = hit_vfx_scene.instantiate()
-		effect.global_position = global_position
-		get_tree().root.add_child(effect)
-	
-	# Auto-destruir partículas (más rápido para armas optimizadas)
 	var cleanup_time = 0.3 if is_low_particle else 0.4
 	var timer = get_tree().create_timer(cleanup_time)
 	timer.timeout.connect(func(): 
@@ -886,14 +894,25 @@ func _spawn_hit_effect() -> void:
 	)
 
 func _spawn_lifesteal_effect(player: Node) -> void:
-	"""Crear efecto visual de lifesteal - partículas verdes volando hacia el jugador"""
+	"""Crear efecto visual de lifesteal (OPTIMIZADO con VFXPool)"""
 	if not is_instance_valid(player):
 		return
 	
 	var start_pos = global_position
 	var end_pos = player.global_position
 	
-	# Crear partículas verdes que van hacia el jugador
+	# OPTIMIZACIÓN: Usar VFXPool en lugar de crear CPUParticles2D directamente
+	if VFXPool.instance:
+		VFXPool.instance.get_lifesteal_particles(start_pos, end_pos)
+	else:
+		# Fallback legacy
+		_spawn_lifesteal_effect_legacy(start_pos, end_pos)
+	
+	# Crear también un flash verde en el jugador
+	_spawn_heal_flash(player)
+
+func _spawn_lifesteal_effect_legacy(start_pos: Vector2, end_pos: Vector2) -> void:
+	"""Fallback para lifesteal effect sin pool (compatibilidad)"""
 	var particles = CPUParticles2D.new()
 	particles.emitting = true
 	particles.one_shot = true
@@ -901,7 +920,6 @@ func _spawn_lifesteal_effect(player: Node) -> void:
 	particles.amount = 12
 	particles.lifetime = 0.5
 	
-	# Dirección hacia el jugador
 	var dir_to_player = (end_pos - start_pos).normalized()
 	particles.direction = dir_to_player
 	particles.spread = 25.0
@@ -910,11 +928,8 @@ func _spawn_lifesteal_effect(player: Node) -> void:
 	particles.gravity = Vector2.ZERO
 	particles.scale_amount_min = 3.0
 	particles.scale_amount_max = 5.0
-	
-	# Color verde brillante para lifesteal
 	particles.color = Color(0.3, 1.0, 0.4, 1.0)
 	
-	# Gradiente para fade out
 	var gradient = Gradient.new()
 	gradient.set_color(0, Color(0.3, 1.0, 0.4, 1.0))
 	gradient.set_color(1, Color(0.2, 0.8, 0.3, 0.0))
@@ -923,10 +938,6 @@ func _spawn_lifesteal_effect(player: Node) -> void:
 	particles.global_position = start_pos
 	get_tree().current_scene.add_child(particles)
 	
-	# Crear también un flash verde en el jugador
-	_spawn_heal_flash(player)
-	
-	# Auto-destruir partículas
 	var timer = get_tree().create_timer(0.8)
 	timer.timeout.connect(func(): 
 		if is_instance_valid(particles):

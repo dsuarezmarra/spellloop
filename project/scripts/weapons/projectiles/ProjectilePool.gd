@@ -45,6 +45,11 @@ var stats_denied: int = 0  # Proyectiles denegados por límite
 # Track if pool has been initialized (lazy init to avoid headless deadlock)
 var _pool_initialized: bool = false
 
+# Prewarm progresivo
+var _prewarm_target: int = 0
+var _prewarm_per_frame: int = 10  # Crear 10 proyectiles por frame durante prewarm
+var _is_prewarming: bool = false
+
 func _ready() -> void:
 	# Establecer singleton
 	ProjectilePool.instance = self
@@ -52,11 +57,32 @@ func _ready() -> void:
 	# Añadir al grupo para fácil acceso
 	add_to_group("projectile_pool")
 	
-	# NOTE: Pool prewarming is now LAZY - happens on first get_projectile() call
-	# This avoids headless deadlock where SimpleProjectile.new() is called before engine is ready
+	# NOTE: Pool prewarming is now PROGRESSIVE - creates projectiles gradually
+	# to avoid a 200-node spike in a single frame
+
+func _process(_delta: float) -> void:
+	# Prewarm progresivo: crear algunos proyectiles por frame hasta alcanzar el objetivo
+	if _is_prewarming and _available_pool.size() < _prewarm_target:
+		var to_create = mini(_prewarm_per_frame, _prewarm_target - _available_pool.size())
+		for i in range(to_create):
+			var projectile = _create_new_projectile()
+			_available_pool.append(projectile)
+		stats_created += to_create
+		
+		if _available_pool.size() >= _prewarm_target:
+			_is_prewarming = false
+			print("[ProjectilePool] Prewarm completado: %d proyectiles" % _available_pool.size())
+
+func start_progressive_prewarm(target: int = INITIAL_POOL_SIZE, per_frame: int = 10) -> void:
+	"""Iniciar prewarm progresivo (llamar desde Game.gd después de inicializar)"""
+	_prewarm_target = target
+	_prewarm_per_frame = per_frame
+	_is_prewarming = true
+	_pool_initialized = true
+	print("[ProjectilePool] Iniciando prewarm progresivo: objetivo=%d, por_frame=%d" % [target, per_frame])
 
 func _prewarm_pool(count: int) -> void:
-	"""Pre-crear proyectiles para el pool"""
+	"""Pre-crear proyectiles para el pool (versión síncrona - usa start_progressive_prewarm si posible)"""
 	for i in range(count):
 		var projectile = _create_new_projectile()
 		_available_pool.append(projectile)
@@ -85,10 +111,9 @@ func get_projectile():
 	NOTA: Este método NUNCA devuelve null. Si necesitas prioridad,
 	usa get_projectile_prioritized() que sí puede denegar.
 	"""
-	# Lazy init pool on first call
+	# Lazy init pool on first call - ahora usa prewarm progresivo
 	if not _pool_initialized:
-		_prewarm_pool(INITIAL_POOL_SIZE)
-		_pool_initialized = true
+		start_progressive_prewarm(INITIAL_POOL_SIZE, 15)
 	
 	var projectile
 	

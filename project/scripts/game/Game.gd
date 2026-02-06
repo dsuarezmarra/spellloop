@@ -133,6 +133,10 @@ func _setup_game() -> void:
 	# Crear arena (debe ser antes de otros sistemas para que tengan contexto)
 	_create_arena_manager()
 
+	# Crear gestores de rendimiento (deben existir antes de otros sistemas)
+	_create_spawn_budget_manager()  # Limita spawns por frame
+	_create_vfx_pool()              # Pool de partículas
+
 	# Crear otros sistemas
 	_create_enemy_manager()
 	_create_wave_manager()  # Pasa _is_resuming para skip_auto_init
@@ -372,6 +376,26 @@ func _create_resource_manager() -> void:
 		add_child(resource_manager)
 	else:
 		push_error("[Game] No se pudo cargar ResourceManager.gd")
+
+func _create_vfx_pool() -> void:
+	"""Crear pool de VFX para evitar stutters por partículas"""
+	var vfx_script = load("res://scripts/managers/VFXPool.gd")
+	if vfx_script:
+		var vfx_pool = vfx_script.new()
+		vfx_pool.name = "VFXPool"
+		add_child(vfx_pool)
+	else:
+		push_warning("[Game] No se pudo cargar VFXPool.gd - VFX usarán fallback")
+
+func _create_spawn_budget_manager() -> void:
+	"""Crear gestor de budget de spawn para limitar instanciación por frame"""
+	var sbm_script = load("res://scripts/managers/SpawnBudgetManager.gd")
+	if sbm_script:
+		var spawn_budget = sbm_script.new()
+		spawn_budget.name = "SpawnBudgetManager"
+		add_child(spawn_budget)
+	else:
+		push_warning("[Game] No se pudo cargar SpawnBudgetManager.gd - sin límite de spawn")
 
 func _create_ui() -> void:
 	# HUD
