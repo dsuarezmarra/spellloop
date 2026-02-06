@@ -893,6 +893,10 @@ func _on_character_selected(character_id: String) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	# Si el input ya fue consumido por otro overlay (ej: RankingScreen), ignorar
+	if get_viewport().is_input_handled():
+		return
+	
 	# Si hay subscreens visibles, ignorar input del menu principal
 	if slot_select_screen and slot_select_screen.visible: return
 	if character_select_screen and character_select_screen.visible: return
@@ -900,6 +904,11 @@ func _input(event: InputEvent) -> void:
 	# Si hay un submenu de opciones abierto, no procesar
 	var options_menu = get_node_or_null("OptionsMenu")
 	if options_menu and options_menu.visible:
+		return
+	
+	# Si hay un RankingScreen abierto, no procesar
+	var ranking = get_tree().get_first_node_in_group("ranking_screen")
+	if ranking:
 		return
 
 	# Navegacion con teclado WASD
