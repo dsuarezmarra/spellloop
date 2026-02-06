@@ -24,6 +24,10 @@ signal quit_pressed
 
 # Se crea dinámicamente si hay partida activa
 var resume_button: BaseButton = null
+var ranking_button: BaseButton = null
+
+# Escenas UI
+var ranking_screen_scene: PackedScene = null
 
 # Sistema de navegacion WASD - ahora usa BaseButton para soportar TextureButton
 var menu_buttons: Array[BaseButton] = []
@@ -37,11 +41,17 @@ func _ready() -> void:
 	_connect_signals()
 	_play_menu_music()
 	_update_resume_button()
+	_setup_ranking_button()
 	_setup_wasd_navigation()
 	_setup_debug_button()
 	_set_icons()
 	_setup_ambient_particles()
 	# Logo ya está en la escena como LogoImage (no necesita setup dinámico)
+	
+	# Precargar escena de ranking
+	var ranking_path = "res://scenes/ui/RankingScreen.tscn"
+	if ResourceLoader.exists(ranking_path):
+		ranking_screen_scene = load(ranking_path)
 
 func _set_icons() -> void:
 	# TextureButton no tiene icono - los iconos se manejan en la textura misma
@@ -493,6 +503,80 @@ func _create_resume_button() -> void:
 			l.visible = false
 			break
 
+func _setup_ranking_button() -> void:
+	"""Crear botón de ranking dinámicamente"""
+	if ranking_button != null:
+		return
+	
+	var vbox = $UILayer/UIContainer/VBoxContainer
+	if not vbox or not options_button:
+		return
+	
+	# Crear TextureButton igual que los otros
+	var tex_btn = TextureButton.new()
+	tex_btn.name = "RankingButton"
+	tex_btn.custom_minimum_size = Vector2(300, 80)
+	tex_btn.ignore_texture_size = true
+	tex_btn.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
+	
+	# Cargar texturas
+	var tex_normal = load("res://assets/ui/buttons/btn_play_normal.png")
+	var tex_hover = load("res://assets/ui/buttons/btn_play_hover.png")
+	if tex_normal:
+		tex_btn.texture_normal = tex_normal
+	if tex_hover:
+		tex_btn.texture_hover = tex_hover
+		tex_btn.texture_pressed = tex_hover
+		tex_btn.texture_focused = tex_hover
+	
+	# Label con texto
+	var ranking_label = Label.new()
+	ranking_label.name = "RankingLabel"
+	ranking_label.text = "🏆 RANKING"
+	ranking_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ranking_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	ranking_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	
+	var font_title = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	if font_title:
+		ranking_label.add_theme_font_override("font", font_title)
+	ranking_label.add_theme_font_size_override("font_size", 20)
+	ranking_label.add_theme_color_override("font_color", Color(0.15, 0.1, 0.05, 1))
+	ranking_label.add_theme_color_override("font_shadow_color", Color(1.0, 0.9, 0.5, 0.5))
+	ranking_label.add_theme_constant_override("shadow_offset_y", 1)
+	
+	tex_btn.add_child(ranking_label)
+	
+	# Insertar después de options_button
+	var options_idx = options_button.get_index()
+	vbox.add_child(tex_btn)
+	vbox.move_child(tex_btn, options_idx + 1)
+	
+	ranking_button = tex_btn
+	ranking_button.pressed.connect(_on_ranking_pressed)
+	
+	# Hover sound
+	if not ranking_button.mouse_entered.is_connected(_on_button_hover):
+		ranking_button.mouse_entered.connect(_on_button_hover)
+
+func _on_ranking_pressed() -> void:
+	"""Abrir pantalla de ranking"""
+	AudioManager.play_fixed("sfx_ui_click")
+	
+	if ranking_screen_scene == null:
+		print("[MainMenu] ⚠️ RankingScreen.tscn no encontrado")
+		return
+	
+	var ranking_screen = ranking_screen_scene.instantiate()
+	add_child(ranking_screen)
+	ranking_screen.closed.connect(_on_ranking_closed)
+
+func _on_ranking_closed() -> void:
+	"""Callback cuando se cierra el ranking"""
+	# Restaurar foco
+	_update_button_list()
+	_highlight_current_button()
+
 func _set_initial_focus() -> void:
 	"""Establecer foco en el boton apropiado"""
 	if not is_inside_tree():
@@ -529,6 +613,8 @@ func _update_button_list() -> void:
 		menu_buttons.append(play_button)
 	if options_button and is_instance_valid(options_button):
 		menu_buttons.append(options_button)
+	if ranking_button and is_instance_valid(ranking_button):
+		menu_buttons.append(ranking_button)
 	if quit_button and is_instance_valid(quit_button):
 		menu_buttons.append(quit_button)
 	if debug_button and is_instance_valid(debug_button) and debug_button.visible:

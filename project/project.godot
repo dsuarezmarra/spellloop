@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 GameManager="*res://scripts/core/GameManager.gd"
 SaveManager="*res://scripts/core/SaveManager.gd"
 AudioManager="*res://scripts/core/AudioManager.gd"
+SteamManager="*res://scripts/autoloads/SteamManager.gd"
 InputManager="*res://scripts/core/InputManager.gd"
 UIManager="*res://scripts/core/UIManager.gd"
 Localization="*res://scripts/core/Localization.gd"
@@ -139,3 +140,10 @@ spell_lightning={
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(0, 0, 0, 1)
+
+[steam]
+
+initialization/app_id=0
+initialization/initialize_on_startup=false
+initialization/embed_callbacks=false
+multiplayer_peer/max_channels=4
