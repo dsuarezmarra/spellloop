@@ -1807,10 +1807,46 @@ func _create_weapon_details_popup(weapon) -> Control:
 	icon_container.add_theme_stylebox_override("panel", icon_style)
 	header.add_child(icon_container)
 	
-	var icon = Label.new()
-	icon.text = stats.get("icon", weapon.icon if "icon" in weapon else ELEMENT_ICONS.get(element, "🔮"))
-	icon.add_theme_font_size_override("font_size", 48)
-	icon_container.add_child(icon)
+	# Cargar icono - puede ser ruta res:// o emoji
+	var icon_str = stats.get("icon", weapon.icon if "icon" in weapon else "")
+	var icon_loaded = false
+	
+	# Intentar cargar por ID primero
+	if "id" in weapon:
+		var asset_path = "res://assets/icons/%s.png" % weapon.id
+		if ResourceLoader.exists(asset_path):
+			var tex = load(asset_path)
+			if tex:
+				var icon_rect = TextureRect.new()
+				icon_rect.texture = tex
+				icon_rect.custom_minimum_size = Vector2(48, 48)
+				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon_container.add_child(icon_rect)
+				icon_loaded = true
+	
+	# Intentar cargar desde ruta directa si no se cargó por ID
+	if not icon_loaded and icon_str.begins_with("res://"):
+		if ResourceLoader.exists(icon_str):
+			var tex = load(icon_str)
+			if tex:
+				var icon_rect = TextureRect.new()
+				icon_rect.texture = tex
+				icon_rect.custom_minimum_size = Vector2(48, 48)
+				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon_container.add_child(icon_rect)
+				icon_loaded = true
+	
+	# Fallback a emoji de elemento
+	if not icon_loaded:
+		var icon = Label.new()
+		if icon_str != "" and not icon_str.begins_with("res://"):
+			icon.text = icon_str
+		else:
+			icon.text = ELEMENT_ICONS.get(element, "🔮")
+		icon.add_theme_font_size_override("font_size", 48)
+		icon_container.add_child(icon)
 	
 	# Info del nombre
 	var info_vbox = VBoxContainer.new()

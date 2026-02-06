@@ -1471,7 +1471,7 @@ func _get_character_display_name(character_id: String) -> String:
 	return names.get(character_id, character_id.capitalize())
 
 func _collect_weapons_data() -> Array:
-	"""Recopilar datos de armas equipadas"""
+	"""Recopilar datos de armas equipadas con stats completos"""
 	var weapons_data: Array = []
 	var attack_manager = get_tree().get_first_node_in_group("attack_manager")
 	
@@ -1488,7 +1488,18 @@ func _collect_weapons_data() -> Array:
 					"max_level": weapon.max_level if "max_level" in weapon else 8,
 					"is_fused": weapon.is_fused if "is_fused" in weapon else false,
 					"element": weapon.element if "element" in weapon else "",
-					"icon": weapon.icon_path if "icon_path" in weapon else ""
+					"icon": weapon.icon_path if "icon_path" in weapon else "",
+					# Stats del arma
+					"damage": weapon.damage if "damage" in weapon else 0,
+					"cooldown": weapon.cooldown if "cooldown" in weapon else 1.0,
+					"projectile_count": weapon.projectile_count if "projectile_count" in weapon else 1,
+					"projectile_speed": weapon.projectile_speed if "projectile_speed" in weapon else 200,
+					"area": weapon.area if "area" in weapon else 1.0,
+					"weapon_range": weapon.weapon_range if "weapon_range" in weapon else 100,
+					"knockback": weapon.knockback if "knockback" in weapon else 0,
+					"duration": weapon.duration if "duration" in weapon else 0,
+					"pierce": weapon.pierce if "pierce" in weapon else 0,
+					"description": weapon.description if "description" in weapon else ""
 				}
 			elif weapon is Dictionary:
 				weapon_info = {
@@ -1499,7 +1510,18 @@ func _collect_weapons_data() -> Array:
 					"max_level": weapon.get("max_level", 8),
 					"is_fused": weapon.get("is_fused", false),
 					"element": weapon.get("element", ""),
-					"icon": weapon.get("icon_path", "")
+					"icon": weapon.get("icon_path", ""),
+					# Stats del arma
+					"damage": weapon.get("damage", 0),
+					"cooldown": weapon.get("cooldown", 1.0),
+					"projectile_count": weapon.get("projectile_count", 1),
+					"projectile_speed": weapon.get("projectile_speed", 200),
+					"area": weapon.get("area", 1.0),
+					"weapon_range": weapon.get("weapon_range", 100),
+					"knockback": weapon.get("knockback", 0),
+					"duration": weapon.get("duration", 0),
+					"pierce": weapon.get("pierce", 0),
+					"description": weapon.get("description", "")
 				}
 			if not weapon_info.is_empty():
 				weapons_data.append(weapon_info)
@@ -1521,7 +1543,9 @@ func _collect_upgrades_data() -> Array:
 				"tier": upgrade.get("tier", 1),
 				"is_unique": upgrade.get("is_unique", false),
 				"is_cursed": upgrade.get("is_cursed", false),
-				"stacks": upgrade.get("stacks", 1)
+				"stacks": upgrade.get("stacks", 1),
+				"description": upgrade.get("description", ""),
+				"description_es": upgrade.get("description_es", upgrade.get("description", ""))
 			}
 			upgrades_data.append(upgrade_info)
 	

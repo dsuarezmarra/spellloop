@@ -909,7 +909,7 @@ func _convert_run_to_entry(run: Dictionary, rank: int) -> Dictionary:
 		"armor": int(final_stats.get("armor", 0))
 	}
 	
-	# Obtener armas (nombres en español si disponible)
+	# Obtener armas (nombres en español si disponible) con datos completos
 	var weapons_raw = run.get("weapons", [])
 	var weapons: Array = []
 	var weapons_data: Array = []  # Datos completos de armas
@@ -917,14 +917,30 @@ func _convert_run_to_entry(run: Dictionary, rank: int) -> Dictionary:
 		if w is Dictionary:
 			weapons.append(w.get("name_es", w.get("name", "Unknown")))
 			weapons_data.append({
+				"id": w.get("id", w.get("weapon_id", "")),
+				"name": w.get("name", "Unknown"),
+				"name_es": w.get("name_es", w.get("name", "Unknown")),
 				"element": w.get("element", w.get("element_type", "physical")),
 				"level": w.get("level", 1),
+				"max_level": w.get("max_level", 8),
+				"is_fused": w.get("is_fused", false),
+				"icon": w.get("icon", w.get("icon_path", "")),
+				"rarity": w.get("rarity", "common"),
+				# Stats del arma
 				"damage": w.get("damage", 0),
-				"rarity": w.get("rarity", "common")
+				"cooldown": w.get("cooldown", 1.0),
+				"projectile_count": w.get("projectile_count", 1),
+				"projectile_speed": w.get("projectile_speed", 200),
+				"area": w.get("area", 1.0),
+				"weapon_range": w.get("weapon_range", 100),
+				"knockback": w.get("knockback", 0),
+				"duration": w.get("duration", 0),
+				"pierce": w.get("pierce", 0),
+				"description": w.get("description", "")
 			})
 		elif w is String:
 			weapons.append(w)
-			weapons_data.append({})
+			weapons_data.append({"name": w})
 	
 	# Obtener mejoras/objetos con datos completos
 	var upgrades_raw = run.get("upgrades", [])
@@ -932,11 +948,12 @@ func _convert_run_to_entry(run: Dictionary, rank: int) -> Dictionary:
 	var items_data: Array = []
 	for u in upgrades_raw:
 		if u is Dictionary:
-			items.append(u.get("name", "Unknown"))
+			items.append(u.get("name_es", u.get("name", "Unknown")))
 			items_data.append({
+				"id": u.get("id", ""),
 				"icon": u.get("icon", "✨"),
 				"tier": u.get("tier", u.get("rarity", 1)),
-				"description": u.get("description", ""),
+				"description": u.get("description_es", u.get("description", "")),
 				"category": u.get("category", "")
 			})
 		elif u is String:
@@ -1538,7 +1555,7 @@ func _show_detail_tab_content() -> void:
 			_show_detail_items_tab()
 
 func _show_detail_stats_tab() -> void:
-	"""Mostrar pestaña de estadísticas (igual que PauseMenu)"""
+	"""Mostrar pestaña de estadísticas (CLON EXACTO del PauseMenu)"""
 	var scroll = ScrollContainer.new()
 	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -1553,7 +1570,7 @@ func _show_detail_stats_tab() -> void:
 	var stats = entry.get("stats", {})
 	var final_stats = entry.get("final_stats", stats)
 	
-	# === HEADER COMPACTO ===
+	# === HEADER COMPACTO (igual que PauseMenu) ===
 	var header_hbox = HBoxContainer.new()
 	header_hbox.add_theme_constant_override("separation", 40)
 	header_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -1562,7 +1579,7 @@ func _show_detail_stats_tab() -> void:
 	# HP
 	var hp = final_stats.get("max_health", stats.get("hp", 100))
 	var hp_label = Label.new()
-	hp_label.text = "❤️ %d" % int(hp)
+	hp_label.text = "❤️ %d/%d" % [int(hp), int(hp)]
 	hp_label.add_theme_font_size_override("font_size", 18)
 	hp_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
 	header_hbox.add_child(hp_label)
@@ -1575,21 +1592,22 @@ func _show_detail_stats_tab() -> void:
 	level_label.add_theme_color_override("font_color", DETAIL_SELECTED_TAB)
 	header_hbox.add_child(level_label)
 	
-	# Tiempo
+	# XP (o tiempo si no hay XP)
+	var xp_label = Label.new()
 	var time_str = entry.get("time", "00:00")
-	var time_label = Label.new()
-	time_label.text = "⏱️ %s" % time_str
-	time_label.add_theme_font_size_override("font_size", 18)
-	time_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
-	header_hbox.add_child(time_label)
+	xp_label.text = "⏱️ %s" % time_str
+	xp_label.add_theme_font_size_override("font_size", 18)
+	xp_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
+	header_hbox.add_child(xp_label)
 	
 	# Separador
 	var sep = HSeparator.new()
+	sep.add_theme_constant_override("separation", 8)
 	main_vbox.add_child(sep)
 	
-	# === STATS EN DOS COLUMNAS ===
+	# === STATS EN DOS COLUMNAS (Defensivo y Utilidad) ===
 	var columns_hbox = HBoxContainer.new()
-	columns_hbox.add_theme_constant_override("separation", 40)
+	columns_hbox.add_theme_constant_override("separation", 20)
 	main_vbox.add_child(columns_hbox)
 	
 	# Columna izquierda (Defensivo)
@@ -1598,7 +1616,7 @@ func _show_detail_stats_tab() -> void:
 	left_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	columns_hbox.add_child(left_column)
 	
-	# Columna derecha (Ofensivo)
+	# Columna derecha (Utilidad)
 	var right_column = VBoxContainer.new()
 	right_column.add_theme_constant_override("separation", 8)
 	right_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1606,72 +1624,106 @@ func _show_detail_stats_tab() -> void:
 	
 	# === DEFENSIVO ===
 	var def_title = Label.new()
-	def_title.text = "🛡️ DEFENSIVO"
+	def_title.text = "Defensivo"
 	def_title.add_theme_font_size_override("font_size", 14)
 	def_title.add_theme_color_override("font_color", CATEGORY_COLORS["defensive"])
 	left_column.add_child(def_title)
 	
 	_add_detail_stat_row(left_column, "❤️", "Vida Máxima", str(int(final_stats.get("max_health", stats.get("hp", 100)))))
+	_add_detail_stat_row(left_column, "💚", "Regeneración", "%.1f/s" % final_stats.get("health_regen", 0))
 	_add_detail_stat_row(left_column, "🛡️", "Armadura", str(int(final_stats.get("armor", stats.get("armor", 0)))))
 	_add_detail_stat_row(left_column, "~", "Esquivar", "%.0f%%" % (final_stats.get("dodge_chance", 0) * 100))
-	_add_detail_stat_row(left_column, "+", "Regeneración", "%.1f/s" % final_stats.get("health_regen", 0))
-	_add_detail_stat_row(left_column, "🩸", "Robo Vida", "%.0f%%" % (final_stats.get("life_steal", 0) * 100))
-	
-	# === OFENSIVO ===
-	var off_title = Label.new()
-	off_title.text = "⚔️ OFENSIVO"
-	off_title.add_theme_font_size_override("font_size", 14)
-	off_title.add_theme_color_override("font_color", CATEGORY_COLORS["offensive"])
-	right_column.add_child(off_title)
-	
-	var damage_mult = final_stats.get("damage_mult", stats.get("damage", 1.0))
-	_add_detail_stat_row(right_column, "⚔️", "Daño", _format_multiplier(damage_mult))
-	
-	var attack_speed = final_stats.get("attack_speed_mult", 1.0)
-	_add_detail_stat_row(right_column, "⚡", "Vel. Ataque", _format_multiplier(attack_speed))
-	
-	var crit_chance = final_stats.get("crit_chance", stats.get("crit", 5) / 100.0)
-	_add_detail_stat_row(right_column, "🎯", "Crítico", "%.0f%%" % (crit_chance * 100))
-	
-	var crit_damage = final_stats.get("crit_damage", 2.0)
-	_add_detail_stat_row(right_column, "💢", "Daño Crítico", "x%.1f" % crit_damage)
-	
-	var area_mult = final_stats.get("area_mult", 1.0)
-	_add_detail_stat_row(right_column, "🌀", "Área", _format_multiplier(area_mult))
+	_add_detail_stat_row(left_column, "🩸", "Robo de Vida", "%.0f%%" % (final_stats.get("life_steal", 0) * 100))
+	_add_detail_stat_row(left_column, "💀", "Daño Recibido", _format_damage_taken(final_stats.get("damage_taken_mult", 1.0)))
+	_add_detail_stat_row(left_column, "🌵", "Espinas", str(int(final_stats.get("thorns", 0))))
+	_add_detail_stat_row(left_column, "🌵", "Espinas %", "%.0f%%" % (final_stats.get("thorns_percent", 0) * 100))
+	_add_detail_stat_row(left_column, "🛡️", "Escudo", str(int(final_stats.get("shield_amount", 0))))
+	_add_detail_stat_row(left_column, "🛡️", "Escudo Máximo", str(int(final_stats.get("max_shield", 0))))
+	_add_detail_stat_row(left_column, "🔄", "Regen. Escudo", "%.1f/s" % final_stats.get("shield_regen", 0))
+	_add_detail_stat_row(left_column, "🆙", "Revivir", str(int(final_stats.get("revives", 0))))
 	
 	# === UTILIDAD ===
+	var util_title = Label.new()
+	util_title.text = "Utilidad"
+	util_title.add_theme_font_size_override("font_size", 14)
+	util_title.add_theme_color_override("font_color", CATEGORY_COLORS["utility"])
+	right_column.add_child(util_title)
+	
+	_add_detail_stat_row(right_column, "🏃", "Velocidad", str(int(final_stats.get("move_speed", stats.get("speed", 100)))))
+	_add_detail_stat_row(right_column, "🧲", "Rango Recogida", str(int(final_stats.get("pickup_range", 100))))
+	_add_detail_stat_row(right_column, "⭐", "Experiencia", _format_multiplier(final_stats.get("xp_mult", 1.0)))
+	_add_detail_stat_row(right_column, "🪙", "Valor Monedas", _format_multiplier(final_stats.get("coin_value_mult", 1.0)))
+	_add_detail_stat_row(right_column, "🍀", "Suerte", str(int(final_stats.get("luck", 0))))
+	_add_detail_stat_row(right_column, "🪙", "Oro", _format_multiplier(final_stats.get("gold_mult", 1.0)))
+	_add_detail_stat_row(right_column, "🎲", "Rerolls Extra", str(int(final_stats.get("reroll_count", 0))))
+	_add_detail_stat_row(right_column, "❌", "Banish Extra", str(int(final_stats.get("banish_count", 0))))
+	_add_detail_stat_row(right_column, "☠️", "Maldición", "%.0f%%" % (final_stats.get("curse", 0) * 100))
+	_add_detail_stat_row(right_column, "📈", "Crecimiento", "%.0f%%" % (final_stats.get("growth", 0) * 100))
+	_add_detail_stat_row(right_column, "🧲", "Fuerza Imán", _format_multiplier(final_stats.get("magnet_strength", 1.0)))
+	_add_detail_stat_row(right_column, "📚", "Opciones Extra", str(int(final_stats.get("levelup_options", 0))))
+	
+	# === STATS DE ARMAS (GLOBAL) ===
 	var sep2 = HSeparator.new()
 	main_vbox.add_child(sep2)
 	
-	var util_title = Label.new()
-	util_title.text = "🔧 UTILIDAD"
-	util_title.add_theme_font_size_override("font_size", 14)
-	util_title.add_theme_color_override("font_color", CATEGORY_COLORS["utility"])
-	main_vbox.add_child(util_title)
+	var global_title = Label.new()
+	global_title.text = "⚔️ Stats de Armas (Global)"
+	global_title.add_theme_font_size_override("font_size", 14)
+	global_title.add_theme_color_override("font_color", Color(1.0, 0.8, 0.3))
+	main_vbox.add_child(global_title)
 	
-	var util_grid = GridContainer.new()
-	util_grid.columns = 4
-	util_grid.add_theme_constant_override("h_separation", 20)
-	util_grid.add_theme_constant_override("v_separation", 6)
-	main_vbox.add_child(util_grid)
+	var global_grid = GridContainer.new()
+	global_grid.columns = 4
+	global_grid.add_theme_constant_override("h_separation", 10)
+	global_grid.add_theme_constant_override("v_separation", 4)
+	main_vbox.add_child(global_grid)
 	
-	var move_speed = final_stats.get("move_speed", stats.get("speed", 100))
-	_add_detail_stat_to_grid(util_grid, "🏃", "Velocidad", str(int(move_speed)))
+	_add_detail_stat_to_grid(global_grid, "⚔️", "Daño", _format_multiplier(final_stats.get("damage_mult", stats.get("damage", 1.0))))
+	_add_detail_stat_to_grid(global_grid, "⚡", "Vel. Ataque", _format_multiplier(final_stats.get("attack_speed_mult", 1.0)))
+	_add_detail_stat_to_grid(global_grid, "🎯", "Prob. Crítico", "%.0f%%" % (final_stats.get("crit_chance", stats.get("crit", 5) / 100.0) * 100))
+	_add_detail_stat_to_grid(global_grid, "💢", "Daño Crítico", "x%.1f" % final_stats.get("crit_damage", 2.0))
+	_add_detail_stat_to_grid(global_grid, "🌀", "Área", _format_multiplier(final_stats.get("area_mult", 1.0)))
+	_add_detail_stat_to_grid(global_grid, "⏳", "Duración", _format_multiplier(final_stats.get("duration_mult", 1.0)))
+	_add_detail_stat_to_grid(global_grid, "➡️", "Vel. Proyectil", _format_multiplier(final_stats.get("projectile_speed_mult", 1.0)))
+	_add_detail_stat_to_grid(global_grid, "💥", "Empuje", _format_multiplier(final_stats.get("knockback_mult", 1.0)))
+	_add_detail_stat_to_grid(global_grid, "📏", "Alcance", _format_multiplier(final_stats.get("range_mult", 1.0)))
+	_add_detail_stat_to_grid(global_grid, "🎯", "Proyectiles+", str(int(final_stats.get("extra_projectiles", 0))))
+	_add_detail_stat_to_grid(global_grid, "🗡️", "Penetración+", str(int(final_stats.get("extra_pierce", 0))))
+	_add_detail_stat_to_grid(global_grid, "➕", "Daño Plano", str(int(final_stats.get("damage_flat", 0))))
 	
-	var pickup = final_stats.get("pickup_range", 100)
-	_add_detail_stat_to_grid(util_grid, "🧲", "Recogida", str(int(pickup)))
+	# === EFECTOS Y BONUS ===
+	var sep3 = HSeparator.new()
+	main_vbox.add_child(sep3)
 	
-	var xp_mult = final_stats.get("xp_mult", 1.0)
-	_add_detail_stat_to_grid(util_grid, "⭐", "XP", _format_multiplier(xp_mult))
+	var effects_title = Label.new()
+	effects_title.text = "EFECTOS Y BONUS"
+	effects_title.add_theme_font_size_override("font_size", 14)
+	effects_title.add_theme_color_override("font_color", CATEGORY_COLORS["offensive"])
+	main_vbox.add_child(effects_title)
 	
-	var luck = final_stats.get("luck", 0)
-	_add_detail_stat_to_grid(util_grid, "🍀", "Suerte", "%.0f%%" % (luck * 100))
+	var effects_grid = GridContainer.new()
+	effects_grid.columns = 4
+	effects_grid.add_theme_constant_override("h_separation", 10)
+	effects_grid.add_theme_constant_override("v_separation", 4)
+	main_vbox.add_child(effects_grid)
 	
-	var cooldown = final_stats.get("cooldown_mult", 1.0)
-	_add_detail_stat_to_grid(util_grid, "⏰", "Cooldown", _format_multiplier(cooldown))
-	
-	var proj_count = final_stats.get("extra_projectiles", 0)
-	_add_detail_stat_to_grid(util_grid, "🎯", "Proyectiles+", "+%d" % int(proj_count))
+	_add_detail_stat_to_grid(effects_grid, "⏳", "Duración Efectos", _format_multiplier(final_stats.get("status_duration_mult", 1.0)))
+	_add_detail_stat_to_grid(effects_grid, "💀", "Daño a Elites", _format_multiplier(final_stats.get("elite_damage_mult", 1.0)))
+	_add_detail_stat_to_grid(effects_grid, "🔥", "Prob. Quemar", "%.0f%%" % (final_stats.get("burn_chance", 0) * 100))
+	_add_detail_stat_to_grid(effects_grid, "💗", "Curar al Matar", str(int(final_stats.get("kill_heal", 0))))
+	_add_detail_stat_to_grid(effects_grid, "🔥", "Daño Fuego", str(int(final_stats.get("burn_damage", 0))))
+	_add_detail_stat_to_grid(effects_grid, "❄️", "Prob. Congelar", "%.0f%%" % (final_stats.get("freeze_chance", 0) * 100))
+	_add_detail_stat_to_grid(effects_grid, "🩸", "Prob. Sangrado", "%.0f%%" % (final_stats.get("bleed_chance", 0) * 100))
+	_add_detail_stat_to_grid(effects_grid, "⚰️", "Umbral Ejecución", "%.0f%%" % (final_stats.get("execute_threshold", 0) * 100))
+
+func _format_damage_taken(value: float) -> String:
+	"""Formatear multiplicador de daño recibido"""
+	if value == 1.0:
+		return "x1.0"
+	elif value < 1.0:
+		return "-%.0f%%" % ((1.0 - value) * 100)
+	else:
+		return "+%.0f%%" % ((value - 1.0) * 100)
 
 func _show_detail_weapons_tab() -> void:
 	"""Mostrar pestaña de armas (igual que PauseMenu)"""
@@ -1801,6 +1853,30 @@ func _add_detail_stat_to_grid(grid: GridContainer, icon: String, stat_name: Stri
 	value_label.add_theme_color_override("font_color", DETAIL_VALUE_COLOR)
 	grid.add_child(value_label)
 
+func _add_weapon_stat_to_grid(grid: GridContainer, icon: String, stat_name: String, value: String, value_color: Color = Color(0.9, 0.9, 1.0)) -> void:
+	"""Añadir stat de arma al grid (igual que PauseMenu)"""
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 4)
+	
+	var icon_label = Label.new()
+	icon_label.text = icon
+	icon_label.add_theme_font_size_override("font_size", 11)
+	hbox.add_child(icon_label)
+	
+	var name_label = Label.new()
+	name_label.text = stat_name
+	name_label.add_theme_font_size_override("font_size", 10)
+	name_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+	hbox.add_child(name_label)
+	
+	var value_label = Label.new()
+	value_label.text = value
+	value_label.add_theme_font_size_override("font_size", 10)
+	value_label.add_theme_color_override("font_color", value_color)
+	hbox.add_child(value_label)
+	
+	grid.add_child(hbox)
+
 func _format_multiplier(value: float) -> String:
 	"""Formatear valor multiplicador como porcentaje"""
 	var percent = (value - 1.0) * 100
@@ -1809,71 +1885,220 @@ func _format_multiplier(value: float) -> String:
 	return "%.0f%%" % percent
 
 func _create_detail_weapon_card(weapon_name: String, weapon_data: Dictionary) -> Control:
-	"""Crear tarjeta de arma para el popup de detalle"""
+	"""Crear tarjeta de arma para el popup de detalle (estilo PauseMenu)"""
 	var card = PanelContainer.new()
-	card.custom_minimum_size = Vector2(0, 0)
+	card.custom_minimum_size = Vector2(340, 0)
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	
+	# Obtener datos
 	var element = weapon_data.get("element", "physical")
 	if element is int:
 		var element_names = ["ice", "fire", "lightning", "arcane", "shadow", "nature", "wind", "earth", "light", "void", "physical"]
 		element = element_names[element] if element < element_names.size() else "physical"
 	element = str(element).to_lower()
 	
-	var element_color = ELEMENT_COLORS.get(element, Color.GRAY)
+	var weapon_id = str(weapon_data.get("id", ""))
+	var level = weapon_data.get("level", 1)
+	var max_level = weapon_data.get("max_level", 8)
+	var is_fused = weapon_data.get("is_fused", false)
+	var rarity = str(weapon_data.get("rarity", "common")).to_lower()
 	
+	# Detectar fusión por id si no está marcado
+	if not is_fused and weapon_id != "" and weapon_id.begins_with("fusion_"):
+		is_fused = true
+	
+	var element_color = ELEMENT_COLORS.get(element, Color.GRAY)
+	var rarity_colors = {
+		"common": Color(0.6, 0.6, 0.6),
+		"uncommon": Color(0.2, 0.8, 0.2),
+		"rare": Color(0.2, 0.4, 1.0),
+		"epic": Color(0.6, 0.2, 0.8),
+		"legendary": Color(1.0, 0.6, 0.1)
+	}
+	var rarity_color = rarity_colors.get(rarity, Color(0.6, 0.6, 0.6))
+	
+	# Estilo de tarjeta
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.12, 0.12, 0.18)
-	style.border_color = element_color.darkened(0.3)
+	style.border_color = element_color.darkened(0.3) if not is_fused else Color(1.0, 0.5, 0.1)
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(8)
 	style.set_content_margin_all(12)
 	card.add_theme_stylebox_override("panel", style)
 	
-	var hbox = HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 12)
-	card.add_child(hbox)
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	card.add_child(vbox)
 	
-	# Icono
+	# === HEADER: Icono + Nombre + Nivel ===
+	var header_hbox = HBoxContainer.new()
+	header_hbox.add_theme_constant_override("separation", 10)
+	vbox.add_child(header_hbox)
+	
+	# Icono container
 	var icon_container = PanelContainer.new()
 	var icon_style = StyleBoxFlat.new()
-	icon_style.bg_color = element_color.darkened(0.6)
-	icon_style.set_corner_radius_all(6)
-	icon_style.set_content_margin_all(6)
+	icon_style.bg_color = element_color.darkened(0.6) if not is_fused else Color(0.4, 0.2, 0.1)
+	icon_style.set_corner_radius_all(8)
+	icon_style.set_content_margin_all(8)
 	icon_container.add_theme_stylebox_override("panel", icon_style)
-	hbox.add_child(icon_container)
+	header_hbox.add_child(icon_container)
 	
-	var icon = Label.new()
-	icon.text = ELEMENT_ICONS.get(element, "🔮")
-	icon.add_theme_font_size_override("font_size", 24)
-	icon_container.add_child(icon)
+	# Intentar cargar icono gráfico
+	var icon_loaded = false
+	if weapon_id != "":
+		var asset_path = "res://assets/icons/%s.png" % weapon_id
+		if ResourceLoader.exists(asset_path):
+			var tex = load(asset_path)
+			if tex:
+				var icon_rect = TextureRect.new()
+				icon_rect.texture = tex
+				icon_rect.custom_minimum_size = Vector2(48, 48)
+				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon_container.add_child(icon_rect)
+				icon_loaded = true
 	
-	# Info
+	# Fallback: intentar desde icon path
+	if not icon_loaded:
+		var icon_path = str(weapon_data.get("icon", ""))
+		if icon_path.begins_with("res://") and ResourceLoader.exists(icon_path):
+			var tex = load(icon_path)
+			if tex:
+				var icon_rect = TextureRect.new()
+				icon_rect.texture = tex
+				icon_rect.custom_minimum_size = Vector2(48, 48)
+				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon_container.add_child(icon_rect)
+				icon_loaded = true
+	
+	# Fallback final: emoji
+	if not icon_loaded:
+		var icon_label = Label.new()
+		icon_label.text = ELEMENT_ICONS.get(element, "🔮")
+		icon_label.add_theme_font_size_override("font_size", 32)
+		icon_container.add_child(icon_label)
+	
+	# Info del arma
 	var info_vbox = VBoxContainer.new()
 	info_vbox.add_theme_constant_override("separation", 2)
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hbox.add_child(info_vbox)
+	header_hbox.add_child(info_vbox)
 	
+	# Nombre con badge de fusión
 	var name_label = Label.new()
-	name_label.text = weapon_name
-	name_label.add_theme_font_size_override("font_size", 14)
-	name_label.add_theme_color_override("font_color", element_color)
+	if is_fused:
+		name_label.text = "🔥 " + weapon_name
+		name_label.add_theme_color_override("font_color", Color(1.0, 0.7, 0.3))
+	else:
+		name_label.text = weapon_name
+		name_label.add_theme_color_override("font_color", rarity_color)
+	name_label.add_theme_font_size_override("font_size", 16)
 	info_vbox.add_child(name_label)
 	
-	var element_label = Label.new()
-	element_label.text = ELEMENT_ICONS.get(element, "") + " " + element.capitalize()
-	element_label.add_theme_font_size_override("font_size", 11)
-	element_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
-	info_vbox.add_child(element_label)
+	# Elemento y tipo
+	var type_label = Label.new()
+	var element_display = ELEMENT_ICONS.get(element, "❓") + " " + element.capitalize()
+	if is_fused:
+		element_display = "🔥 FUSIÓN • " + element_display
+	type_label.text = element_display
+	type_label.add_theme_font_size_override("font_size", 12)
+	type_label.add_theme_color_override("font_color", Color(1.0, 0.7, 0.3) if is_fused else element_color)
+	info_vbox.add_child(type_label)
 	
-	# Nivel si disponible
-	var level = weapon_data.get("level", 0)
-	if level > 0:
-		var level_label = Label.new()
-		level_label.text = "Nv.%d" % level
-		level_label.add_theme_font_size_override("font_size", 16)
-		level_label.add_theme_color_override("font_color", DETAIL_SELECTED_TAB)
-		hbox.add_child(level_label)
+	# === NIVEL Y ESTRELLAS ===
+	var level_vbox = VBoxContainer.new()
+	level_vbox.add_theme_constant_override("separation", 2)
+	header_hbox.add_child(level_vbox)
+	
+	var level_label = Label.new()
+	level_label.text = "Nv.%d" % level
+	level_label.add_theme_font_size_override("font_size", 18)
+	level_label.add_theme_color_override("font_color", DETAIL_SELECTED_TAB if level >= max_level else Color.WHITE)
+	level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	level_vbox.add_child(level_label)
+	
+	# Estrellas de nivel
+	var stars = ""
+	for i in range(mini(max_level, 8)):
+		if i < level:
+			stars += "★"
+		else:
+			stars += "☆"
+	
+	var stars_label = Label.new()
+	stars_label.text = stars
+	stars_label.add_theme_font_size_override("font_size", 8)
+	stars_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2) if level > 0 else Color(0.4, 0.4, 0.4))
+	level_vbox.add_child(stars_label)
+	
+	# === STATS DEL ARMA ===
+	var stats_grid = GridContainer.new()
+	stats_grid.columns = 3
+	stats_grid.add_theme_constant_override("h_separation", 15)
+	stats_grid.add_theme_constant_override("v_separation", 4)
+	vbox.add_child(stats_grid)
+	
+	# Daño
+	var damage = weapon_data.get("damage", 0)
+	if damage > 0:
+		_add_weapon_stat_to_grid(stats_grid, "⚔️", "Daño", str(damage))
+	
+	# Vel. Ataque (cooldown inverso)
+	var cooldown = weapon_data.get("cooldown", 1.0)
+	if cooldown > 0:
+		var attack_speed = 1.0 / cooldown
+		_add_weapon_stat_to_grid(stats_grid, "⚡", "Vel. Ataque", "%.2f/s" % attack_speed)
+		_add_weapon_stat_to_grid(stats_grid, "⏱", "Cooldown", "%.2fs" % cooldown)
+	
+	# Proyectiles
+	var projectile_count = weapon_data.get("projectile_count", 1)
+	if projectile_count > 1:
+		_add_weapon_stat_to_grid(stats_grid, "🎯", "Proyectiles", str(projectile_count))
+	
+	# Velocidad proyectil
+	var projectile_speed = weapon_data.get("projectile_speed", 0)
+	if projectile_speed > 0:
+		_add_weapon_stat_to_grid(stats_grid, "➡️", "Vel. Proyectil", str(int(projectile_speed)))
+	
+	# Área
+	var area = weapon_data.get("area", 1.0)
+	if area != 1.0:
+		_add_weapon_stat_to_grid(stats_grid, "🌀", "Área", "%.0f%%" % (area * 100))
+	
+	# Alcance
+	var weapon_range = weapon_data.get("weapon_range", 0)
+	if weapon_range > 0:
+		_add_weapon_stat_to_grid(stats_grid, "📏", "Alcance", str(int(weapon_range)))
+	
+	# Empuje
+	var knockback = weapon_data.get("knockback", 0)
+	if knockback > 0:
+		_add_weapon_stat_to_grid(stats_grid, "💥", "Empuje", str(int(knockback)))
+	
+	# Duración
+	var duration = weapon_data.get("duration", 0)
+	if duration > 0:
+		_add_weapon_stat_to_grid(stats_grid, "⏳", "Duración", "%.1fs" % duration)
+	
+	# Penetración
+	var pierce = weapon_data.get("pierce", 0)
+	if pierce > 0:
+		_add_weapon_stat_to_grid(stats_grid, "🗡️", "Atravesar", str(pierce))
+	
+	# === EFECTO ESPECIAL ===
+	var description = str(weapon_data.get("description", ""))
+	if description != "":
+		var sep = HSeparator.new()
+		vbox.add_child(sep)
+		
+		var effect_label = Label.new()
+		effect_label.text = "✨ " + description
+		effect_label.add_theme_font_size_override("font_size", 11)
+		effect_label.add_theme_color_override("font_color", element_color)
+		effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		vbox.add_child(effect_label)
 	
 	return card
 
@@ -1915,10 +2140,27 @@ func _create_detail_item_panel(item_name: String, item_data: Dictionary, count: 
 	header.add_theme_constant_override("separation", 8)
 	vbox.add_child(header)
 	
-	var icon = Label.new()
-	icon.text = item_data.get("icon", "✨")
-	icon.add_theme_font_size_override("font_size", 20)
-	header.add_child(icon)
+	# Cargar icono - puede ser ruta res:// o emoji
+	var icon_str = str(item_data.get("icon", "✨"))
+	var icon_loaded = false
+	
+	if icon_str.begins_with("res://"):
+		if ResourceLoader.exists(icon_str):
+			var tex = load(icon_str)
+			if tex:
+				var icon_rect = TextureRect.new()
+				icon_rect.texture = tex
+				icon_rect.custom_minimum_size = Vector2(24, 24)
+				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				header.add_child(icon_rect)
+				icon_loaded = true
+	
+	if not icon_loaded:
+		var icon = Label.new()
+		icon.text = icon_str if not icon_str.begins_with("res://") else "✨"
+		icon.add_theme_font_size_override("font_size", 20)
+		header.add_child(icon)
 	
 	var name_label = Label.new()
 	name_label.text = item_name
@@ -1933,9 +2175,19 @@ func _create_detail_item_panel(item_name: String, item_data: Dictionary, count: 
 		count_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.4))
 		header.add_child(count_label)
 	
-	# Descripción
+	# Descripción - buscar en datos guardados o en UpgradeDatabase
+	var description = str(item_data.get("description", ""))
+	
+	# Si no hay descripción guardada, buscar en la base de datos por ID
+	if description == "":
+		var item_id = str(item_data.get("id", ""))
+		if item_id != "":
+			var upgrade_info = UpgradeDatabase.get_upgrade_by_id(item_id)
+			if not upgrade_info.is_empty():
+				description = upgrade_info.get("description_es", upgrade_info.get("description", ""))
+	
 	var desc = Label.new()
-	desc.text = item_data.get("description", "")
+	desc.text = description
 	desc.add_theme_font_size_override("font_size", 10)
 	desc.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
