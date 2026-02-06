@@ -1040,16 +1040,17 @@ static func create_elite_version(enemy_data: Dictionary) -> Dictionary:
 	
 	return elite
 
-static func should_spawn_elite(minute: float, elites_spawned: int) -> bool:
+static func should_spawn_elite(minute: float, elites_spawned: int, elite_freq_mult: float = 1.0) -> bool:
 	"""Determinar si debería aparecer un élite"""
 	if minute < ELITE_CONFIG.min_spawn_minute:
 		return false
 	if elites_spawned >= ELITE_CONFIG.max_per_run:
 		return false
 	
-	# Chance aumenta con el tiempo
-	var chance = ELITE_CONFIG.spawn_chance_per_minute * minute
-	return randf() < chance
+	# Chance aumenta con el tiempo × multiplicador de frecuencia de fase
+	var base_chance = ELITE_CONFIG.spawn_chance_per_minute * minute
+	var final_chance = base_chance * elite_freq_mult
+	return randf() < final_chance
 
 static func get_enemies_by_tier(tier: int) -> Array:
 	"""Obtener array con los IDs de enemigos de un tier específico"""

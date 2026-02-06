@@ -336,8 +336,13 @@ func _check_elite_spawn(delta: float) -> void:
 			return  # Ya hay un élite, no spawneamos otro
 
 	var minute = game_time_seconds / 60.0
+	
+	# BALANCE PASS 2.5: Obtener multiplicador de frecuencia de elites
+	var elite_freq_mult = 1.0
+	if difficulty_manager and difficulty_manager.has_method("get_elite_frequency_multiplier"):
+		elite_freq_mult = difficulty_manager.get_elite_frequency_multiplier()
 
-	if EnemyDatabase.should_spawn_elite(minute, elites_spawned_this_run):
+	if EnemyDatabase.should_spawn_elite(minute, elites_spawned_this_run, elite_freq_mult):
 		_spawn_elite()
 
 func _spawn_elite() -> void:

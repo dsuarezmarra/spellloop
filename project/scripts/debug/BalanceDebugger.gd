@@ -160,7 +160,7 @@ func log_level_up(new_level: int) -> void:
 		var elapsed_min = (Time.get_ticks_msec() - _session_start_time) / 60000.0
 		print("[BALANCE DEBUG] 📈 Level %d reached at %.1f min" % [new_level, elapsed_min])
 
-## BALANCE PASS 2: Registrar snapshot de difficulty scaling
+## BALANCE PASS 2.5: Registrar snapshot de difficulty scaling (ahora incluye fase)
 func log_difficulty_scaling(snapshot: Dictionary) -> void:
 	if not enabled:
 		return
@@ -168,12 +168,14 @@ func log_difficulty_scaling(snapshot: Dictionary) -> void:
 	# Log cada minuto entero
 	var min_elapsed = int(snapshot.get("minute", 0))
 	if min_elapsed > 0 and min_elapsed % 5 == 0:  # Log cada 5 minutos
-		print("[BALANCE DEBUG] 🎯 Difficulty @ min %d: HP=%.2fx DMG=%.2fx SPAWN=%.2fx SPD=%.2fx" % [
+		var phase_name = snapshot.get("phase_name", "?")
+		print("[BALANCE DEBUG] 🎯 [%s] @ min %d: HP=%.2fx DMG=%.2fx SPAWN=%.2fx ELITE=%.2fx" % [
+			phase_name,
 			min_elapsed,
 			snapshot.get("hp_mult", 1.0),
 			snapshot.get("dmg_mult", 1.0),
 			snapshot.get("spawn_mult", 1.0),
-			snapshot.get("speed_mult", 1.0)
+			snapshot.get("elite_freq_mult", 1.0)
 		])
 
 # ═══════════════════════════════════════════════════════════════════════════════
