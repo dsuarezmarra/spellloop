@@ -1678,7 +1678,7 @@ func _get_weapon_level_up_options() -> Array:
 
 		# Try to get weapon name in current language first
 		var lang = Localization.get_current_language()
-		var weapon_name = weapon.get("weapon_name_" + lang) if weapon.has("weapon_name_" + lang) else (weapon.weapon_name_es if "weapon_name_es" in weapon else weapon.get("name", "???"))
+		var weapon_name = weapon.get("weapon_name_" + lang) if ("weapon_name_" + lang) in weapon else (weapon.weapon_name_es if "weapon_name_es" in weapon else weapon.get("name", "???"))
 		var weapon_level = weapon.level if "level" in weapon else 1
 		var weapon_icon = weapon.icon if "icon" in weapon else "⚔️"
 		var next_desc = ""
@@ -1705,8 +1705,9 @@ func _get_fusion_options() -> Array:
 	for fusion in available:
 		var preview = attack_manager.get_fusion_preview(fusion.weapon_a, fusion.weapon_b)
 		var fusion_name = preview.get("name_" + Localization.get_current_language(), preview.get("name_es", preview.get("name", "???")))
-		var weapon_a_name = fusion.weapon_a.get("weapon_name_" + Localization.get_current_language()) if fusion.weapon_a.has("weapon_name_" + Localization.get_current_language()) else fusion.weapon_a.weapon_name_es
-		var weapon_b_name = fusion.weapon_b.get("weapon_name_" + Localization.get_current_language()) if fusion.weapon_b.has("weapon_name_" + Localization.get_current_language()) else fusion.weapon_b.weapon_name_es
+		var lang_key = "weapon_name_" + Localization.get_current_language()
+		var weapon_a_name = fusion.weapon_a.get(lang_key) if lang_key in fusion.weapon_a else fusion.weapon_a.weapon_name_es
+		var weapon_b_name = fusion.weapon_b.get(lang_key) if lang_key in fusion.weapon_b else fusion.weapon_b.weapon_name_es
 
 		fusion_options.append({
 			"type": OPTION_TYPES.FUSION,

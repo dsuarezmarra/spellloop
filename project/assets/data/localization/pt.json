@@ -151,6 +151,7 @@
 			"epic_title": "✨ Épico! ✨",
 			"rare_title": "Baú Raro!",
 			"common_title": "Baú",
+			"exit": "SAIR",
 			"gold_reward": "+%d Ouro",
 			"health_reward": "+%d Vida",
 			"take_all": "Pegar Tudo",

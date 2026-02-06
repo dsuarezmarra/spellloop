@@ -204,7 +204,8 @@ func generate_contents():
 			# Contexto para fusiones (AttackManager)
 			var context = null
 			if player_ref:
-				if "attack_manager" in player_ref:
+				# Intentar obtener attack_manager
+				if player_ref.get("attack_manager") != null:
 					context = player_ref.attack_manager
 				elif player_ref.has_node("AttackManager"):
 					context = player_ref.get_node("AttackManager")
@@ -439,7 +440,7 @@ func _create_shop_popup():
 	# Contexto para filtrado (AttackManager)
 	var context = null
 	if player_ref:
-		if "attack_manager" in player_ref:
+		if player_ref.get("attack_manager") != null:
 			context = player_ref.attack_manager
 		elif player_ref.has_node("AttackManager"):
 			context = player_ref.get_node("AttackManager")

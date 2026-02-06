@@ -158,9 +158,19 @@ func _input(event: InputEvent) -> void:
 		if _modal_btn_cancel and _modal_btn_confirm and event.is_pressed():
 			if event.is_action("ui_left") or (event is InputEventKey and (event.keycode == KEY_A or event.keycode == KEY_LEFT)):
 				_modal_btn_cancel.grab_focus()
+				AudioManager.play("sfx_ui_navigation")
 				get_tree().root.set_input_as_handled()
 			elif event.is_action("ui_right") or (event is InputEventKey and (event.keycode == KEY_D or event.keycode == KEY_RIGHT)):
 				_modal_btn_confirm.grab_focus()
+				AudioManager.play("sfx_ui_navigation")
+				get_tree().root.set_input_as_handled()
+			elif event.is_action("ui_accept") or (event is InputEventKey and (event.keycode == KEY_SPACE or event.keycode == KEY_ENTER)):
+				# Activar el botón con focus
+				var focused = get_viewport().gui_get_focus_owner()
+				if focused == _modal_btn_cancel:
+					_modal_btn_cancel.emit_signal("pressed")
+				elif focused == _modal_btn_confirm:
+					_modal_btn_confirm.emit_signal("pressed")
 				get_tree().root.set_input_as_handled()
 		return
 
@@ -474,7 +484,7 @@ func show_as_jackpot(items: Array):
 	exit_button.text = "✕ " + exit_text.to_upper()
 	exit_button.custom_minimum_size = Vector2(150, 50)
 	exit_button.add_theme_font_size_override("font_size", 16)
-	exit_button.focus_mode = Control.FOCUS_NONE # Desactivar foco automático
+	exit_button.focus_mode = Control.FOCUS_ALL  # Permitir focus
 	
 	var style_exit = StyleBoxFlat.new()
 	style_exit.bg_color = Color(0.3, 0.15, 0.15)
@@ -484,10 +494,14 @@ func show_as_jackpot(items: Array):
 	exit_button.add_theme_stylebox_override("normal", style_exit)
 	
 	var style_exit_hover = style_exit.duplicate()
-	style_exit_hover.bg_color = Color(0.4, 0.2, 0.2)
+	style_exit_hover.bg_color = Color(0.5, 0.25, 0.25)
+	style_exit_hover.border_color = Color(1.0, 0.5, 0.3)
+	style_exit_hover.set_border_width_all(3)
 	exit_button.add_theme_stylebox_override("hover", style_exit_hover)
+	exit_button.add_theme_stylebox_override("focus", style_exit_hover)
 	
 	exit_button.pressed.connect(_on_jackpot_exit_pressed)
+	exit_button.mouse_entered.connect(func(): AudioManager.play("sfx_ui_navigation"))
 	buttons_hbox.add_child(exit_button)
 	
 	# Recentrar popup
@@ -811,35 +825,71 @@ func _show_jackpot_exit_confirm_modal():
 	var btn_cancel = Button.new()
 	btn_cancel.text = Localization.L("common.back")
 	btn_cancel.custom_minimum_size = Vector2(120, 45)
+	btn_cancel.focus_mode = Control.FOCUS_ALL
 	var cancel_style = StyleBoxFlat.new()
 	cancel_style.bg_color = Color(0.25, 0.25, 0.25)
+	cancel_style.border_color = Color(0.5, 0.5, 0.5)
+	cancel_style.set_border_width_all(2)
 	cancel_style.set_corner_radius_all(6)
 	btn_cancel.add_theme_stylebox_override("normal", cancel_style)
+	
+	var cancel_style_focus = cancel_style.duplicate()
+	cancel_style_focus.bg_color = Color(0.35, 0.35, 0.35)
+	cancel_style_focus.border_color = Color(1.0, 0.8, 0.3)
+	cancel_style_focus.set_border_width_all(3)
+	btn_cancel.add_theme_stylebox_override("hover", cancel_style_focus)
+	btn_cancel.add_theme_stylebox_override("focus", cancel_style_focus)
+	
 	btn_cancel.pressed.connect(func(): 
 		AudioManager.play("sfx_ui_cancel")
 		_is_skip_modal_active = false
+		_modal_btn_cancel = null
+		_modal_btn_confirm = null
 		confirm_modal.queue_free()
 	)
 	btn_cancel.mouse_entered.connect(func(): AudioManager.play("sfx_ui_navigation"))
 	hbox.add_child(btn_cancel)
+	_modal_btn_cancel = btn_cancel
 	
 	var btn_confirm = Button.new()
 	btn_confirm.text = Localization.L("ui.chest.confirm_exit")
 	btn_confirm.custom_minimum_size = Vector2(150, 45)
+	btn_confirm.focus_mode = Control.FOCUS_ALL
 	var style_confirm = StyleBoxFlat.new()
 	style_confirm.bg_color = Color(0.5, 0.25, 0.15)
+	style_confirm.border_color = Color(0.7, 0.4, 0.3)
+	style_confirm.set_border_width_all(2)
 	style_confirm.set_corner_radius_all(6)
 	btn_confirm.add_theme_stylebox_override("normal", style_confirm)
+	
+	var confirm_style_focus = style_confirm.duplicate()
+	confirm_style_focus.bg_color = Color(0.6, 0.3, 0.2)
+	confirm_style_focus.border_color = Color(1.0, 0.6, 0.3)
+	confirm_style_focus.set_border_width_all(3)
+	btn_confirm.add_theme_stylebox_override("hover", confirm_style_focus)
+	btn_confirm.add_theme_stylebox_override("focus", confirm_style_focus)
+	
 	btn_confirm.pressed.connect(func(): 
 		AudioManager.play("sfx_ui_confirm")
 		_is_skip_modal_active = false
+		_modal_btn_cancel = null
+		_modal_btn_confirm = null
 		_on_jackpot_close_pressed()
 	)
 	btn_confirm.mouse_entered.connect(func(): AudioManager.play("sfx_ui_navigation"))
 	hbox.add_child(btn_confirm)
+	_modal_btn_confirm = btn_confirm
+	
+	# Navegación entre botones
+	btn_cancel.focus_neighbor_right = btn_confirm.get_path()
+	btn_cancel.focus_neighbor_left = btn_confirm.get_path()
+	btn_confirm.focus_neighbor_left = btn_cancel.get_path()
+	btn_confirm.focus_neighbor_right = btn_cancel.get_path()
 	
 	# Foco inicial en "Volver"
-	btn_cancel.grab_focus()
+	await get_tree().process_frame
+	if is_instance_valid(btn_cancel):
+		btn_cancel.grab_focus()
 
 func _recenter_popup() -> void:
 	"""Recentrar el popup después de cambios de contenido"""
@@ -1218,6 +1268,22 @@ func _show_confirm_skip_modal():
 	var btn_cancel = Button.new()
 	btn_cancel.text = Localization.L("common.back")
 	btn_cancel.custom_minimum_size = Vector2(100, 40)
+	btn_cancel.focus_mode = Control.FOCUS_ALL
+	
+	var cancel_style = StyleBoxFlat.new()
+	cancel_style.bg_color = Color(0.25, 0.25, 0.25)
+	cancel_style.border_color = Color(0.5, 0.5, 0.5)
+	cancel_style.set_border_width_all(2)
+	cancel_style.set_corner_radius_all(6)
+	btn_cancel.add_theme_stylebox_override("normal", cancel_style)
+	
+	var cancel_style_focus = cancel_style.duplicate()
+	cancel_style_focus.bg_color = Color(0.35, 0.35, 0.35)
+	cancel_style_focus.border_color = Color(1.0, 0.8, 0.3)
+	cancel_style_focus.set_border_width_all(3)
+	btn_cancel.add_theme_stylebox_override("hover", cancel_style_focus)
+	btn_cancel.add_theme_stylebox_override("focus", cancel_style_focus)
+	
 	btn_cancel.pressed.connect(func(): 
 		AudioManager.play("sfx_ui_cancel")
 		_is_skip_modal_active = false
@@ -1232,10 +1298,22 @@ func _show_confirm_skip_modal():
 	var btn_confirm = Button.new()
 	btn_confirm.text = Localization.L("ui.chest.skip")
 	btn_confirm.custom_minimum_size = Vector2(100, 40)
+	btn_confirm.focus_mode = Control.FOCUS_ALL
+	
 	var style_confirm = StyleBoxFlat.new()
 	style_confirm.bg_color = Color(0.6, 0.2, 0.2)
+	style_confirm.border_color = Color(0.7, 0.4, 0.4)
+	style_confirm.set_border_width_all(2)
 	style_confirm.set_corner_radius_all(6)
 	btn_confirm.add_theme_stylebox_override("normal", style_confirm)
+	
+	var confirm_style_focus = style_confirm.duplicate()
+	confirm_style_focus.bg_color = Color(0.7, 0.3, 0.3)
+	confirm_style_focus.border_color = Color(1.0, 0.6, 0.3)
+	confirm_style_focus.set_border_width_all(3)
+	btn_confirm.add_theme_stylebox_override("hover", confirm_style_focus)
+	btn_confirm.add_theme_stylebox_override("focus", confirm_style_focus)
+	
 	btn_confirm.pressed.connect(func(): 
 		AudioManager.play("sfx_ui_confirm")
 		_is_skip_modal_active = false
@@ -1245,6 +1323,12 @@ func _show_confirm_skip_modal():
 	btn_confirm.mouse_entered.connect(func(): AudioManager.play("sfx_ui_navigation"))
 	hbox.add_child(btn_confirm)
 	_modal_btn_confirm = btn_confirm
+	
+	# Navegación entre botones
+	btn_cancel.focus_neighbor_right = btn_confirm.get_path()
+	btn_cancel.focus_neighbor_left = btn_confirm.get_path()
+	btn_confirm.focus_neighbor_left = btn_cancel.get_path()
+	btn_confirm.focus_neighbor_right = btn_cancel.get_path()
 	
 	# Foco inicial
 	await get_tree().process_frame

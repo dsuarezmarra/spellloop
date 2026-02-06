@@ -174,7 +174,7 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	
 	# --- HEADER (Número de Slot) - DENTRO del recuadro, más abajo y visible ---
 	var header_margin = MarginContainer.new()
-	header_margin.add_theme_constant_override("margin_top", 25)  # Más arriba en el header del frame
+	header_margin.add_theme_constant_override("margin_top", 65)  # Más arriba en el header del frame
 	header_margin.add_theme_constant_override("margin_bottom", 8)
 	vbox.add_child(header_margin)
 	
@@ -192,12 +192,6 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	slot_title.add_theme_constant_override("shadow_offset_y", 2)
 	slot_title.add_theme_constant_override("letter_spacing", 4)
 	header_margin.add_child(slot_title)
-	
-	# Separator visual
-	var sep_line = ColorRect.new()
-	sep_line.custom_minimum_size = Vector2(0, 2)
-	sep_line.color = Color(0.2, 0.2, 0.3)
-	vbox.add_child(sep_line)
 	
 	# --- BODY (Info del save) ---
 	var info_margin = MarginContainer.new()
@@ -316,11 +310,7 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	buttons_container.add_child(delete_spacer)
 	buttons_container.add_child(delete_btn)
 	
-	# --- NAVIGATION LINKS (WASD horizontal entre select y delete) ---
-	select_btn.focus_neighbor_right = delete_btn.get_path()
-	select_btn.focus_neighbor_left = delete_btn.get_path()
-	delete_btn.focus_neighbor_left = select_btn.get_path()
-	delete_btn.focus_neighbor_right = select_btn.get_path()
+	# Navegación se configura en _setup_navigation() después de cargar datos
 	
 	return panel
 
@@ -519,54 +509,31 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 				spacer.visible = true
 
 func _setup_navigation() -> void:
-	"""Configurar navegación WASD"""
-	# Desactivar navegación por flechas y configurar vecinos manualmente
-	var num_active = slot_buttons.size()
+	"""Configurar navegación A/D horizontal secuencial entre todos los botones"""
+	# Crear lista ordenada de todos los botones navegables (Select1, Delete1?, Select2, Delete2?, ...)
+	var all_buttons: Array[Button] = []
 	
-	for i in range(num_active):
-		var btn = slot_buttons[i]
-		# Get panels to find inner buttons
+	for i in range(slot_buttons.size()):
 		var panel = slot_panels[i]
-		var select_btn = btn # This is the select button from slot_buttons array
-		var delete_btn = panel.find_child("DeleteButton", true, false)
+		var select_btn = slot_buttons[i]
+		var delete_btn = panel.find_child("DeleteButton", true, false) as Button
 		
-		var prev_idx = (i - 1 + num_active) % num_active
-		var next_idx = (i + 1) % num_active
-		
-		# Select Button Horizontal Links (A/D entre slots)
-		select_btn.focus_neighbor_left = slot_buttons[prev_idx].get_path()
-		select_btn.focus_neighbor_right = slot_buttons[next_idx].get_path()
-		
-		# --- NAVEGACIÓN VERTICAL (S/W entre CONTINUAR y BORRAR) ---
-		if delete_btn:
-			# Conectar select ↔ delete verticalmente SOLO si delete es visible
-			if delete_btn.visible:
-				select_btn.focus_neighbor_bottom = delete_btn.get_path()
-				select_btn.focus_neighbor_top = delete_btn.get_path()  # Ciclado
-				delete_btn.focus_neighbor_top = select_btn.get_path()
-				delete_btn.focus_neighbor_bottom = select_btn.get_path()  # Ciclado
-			else:
-				# Si delete no existe/visible, quedarse en select
-				select_btn.focus_neighbor_bottom = select_btn.get_path()
-				select_btn.focus_neighbor_top = select_btn.get_path()
-		
-		# Delete Button Horizontal Links (if visible)
+		all_buttons.append(select_btn)
 		if delete_btn and delete_btn.visible:
-			var prev_del = slot_panels[prev_idx].find_child("DeleteButton", true, false)
-			var next_del = slot_panels[next_idx].find_child("DeleteButton", true, false)
-			
-			# Si el vecino tiene delete visible, navegar a él; sino, ir al select del vecino
-			if prev_del and prev_del.visible:
-				delete_btn.focus_neighbor_left = prev_del.get_path()
-			else:
-				delete_btn.focus_neighbor_left = slot_buttons[prev_idx].get_path()
-				
-			if next_del and next_del.visible:
-				delete_btn.focus_neighbor_right = next_del.get_path()
-			else:
-				delete_btn.focus_neighbor_right = slot_buttons[next_idx].get_path()
-
-	# (Back Button logic removed)
+			all_buttons.append(delete_btn)
+	
+	# Configurar navegación horizontal secuencial (A/D)
+	var num_buttons = all_buttons.size()
+	for i in range(num_buttons):
+		var btn = all_buttons[i]
+		var prev_btn = all_buttons[(i - 1 + num_buttons) % num_buttons]
+		var next_btn = all_buttons[(i + 1) % num_buttons]
+		
+		btn.focus_neighbor_left = prev_btn.get_path()
+		btn.focus_neighbor_right = next_btn.get_path()
+		# Desactivar navegación vertical (no hay nada arriba/abajo)
+		btn.focus_neighbor_top = btn.get_path()
+		btn.focus_neighbor_bottom = btn.get_path()
 
 func _connect_signals() -> void:
 	if back_button:

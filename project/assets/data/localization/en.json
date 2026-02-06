@@ -152,6 +152,7 @@
 			"epic_title": "✨ EPIC! ✨",
 			"rare_title": "Rare Chest!",
 			"common_title": "Chest",
+			"exit": "EXIT",
 			"gold_reward": "+%d Gold",
 			"health_reward": "+%d HP",
 			"take_all": "TAKE ALL",

@@ -63,6 +63,7 @@ func _ready() -> void:
 	_create_carousel()
 	_update_carousel_positions(false)
 	_update_stats_display()
+	_setup_ambient_particles()
 
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -753,6 +754,80 @@ func _play_button_sound() -> void:
 
 func _play_navigate_sound() -> void:
 	AudioManager.play_fixed("sfx_ui_hover")
+
+# =============================================================================
+# AMBIENT PARTICLES
+# =============================================================================
+
+func _setup_ambient_particles() -> void:
+	"""Crea partículas de ambiente (sparkles mágicos) - más densas que en MainMenu"""
+	var sparkle_tex = load("res://assets/ui/particles/particle_magic_sparkle.png")
+	if not sparkle_tex:
+		return
+	
+	# La textura tiene 4 sparkles en horizontal (1216x222, cada uno ~304px)
+	var atlas_textures: Array[AtlasTexture] = []
+	var sparkle_width = 304
+	var sparkle_height = 222
+	for i in range(4):
+		var atlas = AtlasTexture.new()
+		atlas.atlas = sparkle_tex
+		atlas.region = Rect2(i * sparkle_width, 0, sparkle_width, sparkle_height)
+		atlas_textures.append(atlas)
+	
+	# Crear múltiples sistemas de partículas para mayor densidad
+	# 8 sistemas en lugar de 4, cada uno con más partículas
+	for i in range(8):
+		var particles = GPUParticles2D.new()
+		particles.name = "AmbientSparkle_%d" % i
+		particles.amount = 60  # 60 partículas x 8 tipos = 480 total (mucho más que MainMenu)
+		particles.lifetime = 6.0
+		particles.randomness = 1.0
+		particles.texture = atlas_textures[i % 4]  # Ciclar entre los 4 sprites
+		
+		# Crear material de partículas
+		var mat = ParticleProcessMaterial.new()
+		mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+		mat.emission_box_extents = Vector3(960, 540, 0)  # Cubrir toda la pantalla
+		
+		# Movimiento suave en múltiples direcciones
+		mat.direction = Vector3(0, -0.5, 0)
+		mat.spread = 180.0  # Esférico para flotar en todas direcciones
+		mat.initial_velocity_min = 8.0
+		mat.initial_velocity_max = 30.0
+		mat.gravity = Vector3(0, -5, 0)  # Flotar suavemente hacia arriba
+		
+		# Escala PEQUEÑA para que sean puntos individuales
+		mat.scale_min = 0.02
+		mat.scale_max = 0.10
+		
+		# Colores variados: dorado, púrpura, cyan para efecto mágico
+		var hue_options = [0.12, 0.75, 0.55, 0.08]  # Dorado, púrpura, cyan, naranja
+		var base_hue = hue_options[i % 4] + randf() * 0.05
+		mat.color = Color.from_hsv(base_hue, 0.4, 1.0, 0.6)
+		
+		# Rotación lenta
+		mat.angular_velocity_min = -30.0
+		mat.angular_velocity_max = 30.0
+		
+		# Fade: Aparecer y desaparecer suavemente
+		var color_curve = Curve.new()
+		color_curve.add_point(Vector2(0.0, 0.0))
+		color_curve.add_point(Vector2(0.15, 1.0))
+		color_curve.add_point(Vector2(0.85, 1.0))
+		color_curve.add_point(Vector2(1.0, 0.0))
+		var alpha_curve = CurveTexture.new()
+		alpha_curve.curve = color_curve
+		mat.alpha_curve = alpha_curve
+		
+		particles.process_material = mat
+		particles.position = Vector2(960, 540)  # Centro de la pantalla 1920x1080
+		particles.z_index = 5  # Encima del fondo pero debajo de UI
+		
+		# Delay inicial diferente para cada sistema
+		particles.preprocess = i * 0.75
+		
+		add_child(particles)
 
 # =============================================================================
 # PUBLIC API

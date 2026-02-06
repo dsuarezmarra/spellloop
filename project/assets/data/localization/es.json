@@ -152,6 +152,7 @@
 			"epic_title": "✨ ¡ÉPICO! ✨",
 			"rare_title": "¡Cofre Raro!",
 			"common_title": "Cofre",
+			"exit": "SALIR",
 			"gold_reward": "+%d Oro",
 			"health_reward": "+%d PV",
 			"take_all": "TOMAR TODO",
