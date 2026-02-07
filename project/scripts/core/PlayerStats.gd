@@ -1572,6 +1572,9 @@ func heal(amount: float) -> float:
 
 	if healed > 0:
 		health_changed.emit(current_health, max_hp)
+		# TELEMETRY: Log all healing (source of truth)
+		if BalanceDebugger:
+			BalanceDebugger.log_heal(healed, "heal")
 
 	return healed
 

@@ -1404,6 +1404,10 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 	# Calcular HP actual antes del daño para overkill
 	var hp_before = health_component.current_health if health_component else hp
 
+	# TELEMETRY: Log damage dealt to enemies (source of truth)
+	if final_damage > 0 and BalanceDebugger:
+		BalanceDebugger.log_damage_dealt(final_damage)
+
 	# Aplicar daño a través del HealthComponent
 	if health_component:
 		health_component.take_damage(final_damage, _element)

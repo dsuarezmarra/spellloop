@@ -36,6 +36,7 @@ VFXManager="*res://scripts/core/VFXManager.gd"
 BalanceDebugger="*res://scripts/debug/BalanceDebugger.gd"
 BalanceDebugOverlay="*res://scripts/debug/BalanceDebugOverlay.gd"
 BalanceTelemetry="*res://scripts/debug/BalanceTelemetry.gd"
+DifficultyManager="*res://scripts/core/DifficultyManager.gd"
 
 [display]
 

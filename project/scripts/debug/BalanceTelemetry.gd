@@ -57,19 +57,19 @@ var _level_at_start: int = 1
 var _levels_gained_this_run: int = 0
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# POLLING STATE (for delta calculations from run_stats)
+# SNAPSHOT STATE (for minute-to-minute delta calculations)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-var _poll_timer: float = 0.0
-const POLL_INTERVAL: float = 1.0  # Poll every 1 second
-
-# Previous values for delta calculation
-var _prev_kills: int = 0
-var _prev_damage_dealt: int = 0
-var _prev_damage_taken: int = 0
-var _prev_healing_done: int = 0
-var _prev_gold: int = 0
-var _prev_xp_total: int = 0
+# Values at the START of each minute interval (from previous snapshot)
+var _snapshot_prev_kills: int = 0
+var _snapshot_prev_elites: int = 0
+var _snapshot_prev_bosses: int = 0
+var _snapshot_prev_damage_dealt: int = 0
+var _snapshot_prev_damage_taken: int = 0
+var _snapshot_prev_healing: int = 0
+var _snapshot_prev_gold: int = 0
+var _snapshot_prev_xp: int = 0
+var _snapshot_prev_level: int = 1
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LIFECYCLE
@@ -96,79 +96,8 @@ func _ready() -> void:
 	else:
 		print("[BalanceTelemetry] Disabled")
 
-func _process(delta: float) -> void:
-	"""Poll game state for telemetry data"""
-	if not enabled or not _run_active:
-		return
-	
-	_poll_timer += delta
-	if _poll_timer < POLL_INTERVAL:
-		return
-	_poll_timer = 0.0
-	
-	# Get current game state
-	var game = _get_game_node()
-	if not game or not "run_stats" in game:
-		return
-	
-	var run_stats = game.run_stats
-	var t_min = game.game_time / 60.0
-	
-	# === KILLS DELTA ===
-	var current_kills = run_stats.get("kills", 0)
-	var kills_delta = current_kills - _prev_kills
-	if kills_delta > 0:
-		_kills_last_60s += kills_delta
-		# Track elites/bosses
-		var current_elites = run_stats.get("elites_killed", 0)
-		var elites_delta = current_elites - run_stats.get("_prev_elites", 0)
-		_elites_killed_last_60s += maxi(0, elites_delta)
-		
-		var current_bosses = run_stats.get("bosses_killed", 0)
-		var bosses_delta = current_bosses - run_stats.get("_prev_bosses", 0)
-		_bosses_killed_last_60s += maxi(0, bosses_delta)
-	_prev_kills = current_kills
-	
-	# === DAMAGE DEALT DELTA (for DPS) ===
-	var current_damage_dealt = run_stats.get("damage_dealt", 0)
-	var damage_delta = current_damage_dealt - _prev_damage_dealt
-	if damage_delta > 0:
-		_damage_dealt_last_60s += damage_delta
-		# Add to DPS samples (damage per second)
-		if _dps_samples.size() >= DPS_SAMPLES_COUNT:
-			_dps_samples.pop_front()
-		_dps_samples.append(damage_delta)
-	_prev_damage_dealt = current_damage_dealt
-	
-	# === DAMAGE TAKEN DELTA ===
-	var current_damage_taken = run_stats.get("damage_taken", 0)
-	var damage_taken_delta = current_damage_taken - _prev_damage_taken
-	if damage_taken_delta > 0:
-		_damage_taken_last_60s += damage_taken_delta
-	_prev_damage_taken = current_damage_taken
-	
-	# === HEALING DELTA ===
-	var current_healing = run_stats.get("healing_done", 0)
-	var healing_delta = current_healing - _prev_healing_done
-	if healing_delta > 0:
-		_healing_done_last_60s += healing_delta
-	_prev_healing_done = current_healing
-	
-	# === GOLD DELTA ===
-	var current_gold = run_stats.get("gold", 0)
-	var gold_delta = current_gold - _prev_gold
-	if gold_delta > 0:
-		_gold_gained_last_60s += gold_delta
-	_prev_gold = current_gold
-	
-	# === XP SAMPLE (for xp_per_min rolling average) ===
-	var current_xp = run_stats.get("xp_total", 0)
-	if current_xp != _prev_xp_total:
-		_xp_samples.append({"time_min": t_min, "xp": current_xp})
-		# Prune old samples (keep last N minutes)
-		while _xp_samples.size() > 0 and _xp_samples[0]["time_min"] < t_min - XP_ROLLING_MINUTES:
-			_xp_samples.pop_front()
-		_prev_xp_total = current_xp
+# NOTE: _process() removed - delta calculation now happens in log_minute_snapshot()
+# using snapshot-to-snapshot comparison from authoritative sources
 
 func _init_log_dir() -> void:
 	if not DirAccess.dir_exists_absolute(LOG_DIR):
@@ -218,6 +147,29 @@ func end_run(context: Dictionary = {}) -> void:
 	if not enabled or not _run_active:
 		return
 	
+	# ════════════════════════════════════════════════════════════════════════════
+	# GATHER FINAL TOTALS FROM AUTHORITATIVE SOURCES
+	# ════════════════════════════════════════════════════════════════════════════
+	
+	# From Game.run_stats
+	var game = _get_game_node()
+	var run_stats = game.run_stats if game and "run_stats" in game else {}
+	var kills_total = run_stats.get("kills", 0)
+	var elites_total = run_stats.get("elites_killed", 0)
+	var bosses_total = run_stats.get("bosses_killed", 0)
+	var level = run_stats.get("level", context.get("level", 1))
+	
+	# From BalanceDebugger
+	var debugger_metrics = BalanceDebugger.get_current_metrics() if BalanceDebugger else {}
+	var damage_dealt_total = debugger_metrics.get("damage_dealt", {}).get("total", 0)
+	var damage_taken_total = debugger_metrics.get("mitigation", {}).get("damage_final", 0)
+	var healing_total = int(debugger_metrics.get("sustain", {}).get("total", 0.0))
+	var xp_earned_total = debugger_metrics.get("progression", {}).get("xp_total", 0)
+	
+	# From ExperienceManager
+	var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
+	var gold_total = exp_mgr.total_coins if exp_mgr and "total_coins" in exp_mgr else 0
+	
 	var event = {
 		"event": "run_end",
 		"time_survived": context.get("time_survived", 0.0),
@@ -226,15 +178,15 @@ func end_run(context: Dictionary = {}) -> void:
 		"killed_by": context.get("killed_by", "unknown"),
 		
 		"final_stats": {
-			"level": context.get("level", 1),
-			"kills": context.get("kills", 0),
-			"elites_killed": context.get("elites_killed", 0),
-			"bosses_killed": context.get("bosses_killed", 0),
-			"gold": context.get("gold", 0),
-			"damage_dealt": context.get("damage_dealt", 0),
-			"damage_taken": context.get("damage_taken", 0),
-			"healing_done": context.get("healing_done", 0),
-			"xp_total": context.get("xp_total", 0)
+			"level": level,
+			"kills": kills_total,
+			"elites_killed": elites_total,
+			"bosses_killed": bosses_total,
+			"gold": gold_total,
+			"damage_dealt": damage_dealt_total,
+			"damage_taken": damage_taken_total,
+			"healing_done": healing_total,
+			"xp_earned_total": xp_earned_total
 		},
 		
 		"build_final": {
@@ -247,7 +199,9 @@ func end_run(context: Dictionary = {}) -> void:
 			"rerolls_used": _rerolls_used_total,
 			"chests_opened": _chests_opened_total,
 			"fusions_obtained": _fusions_obtained_total
-		}
+		},
+		
+		"difficulty_final": get_difficulty_snapshot()
 	}
 	_log_event(event)
 	
@@ -259,37 +213,109 @@ func log_minute_snapshot(context: Dictionary) -> void:
 	if not enabled or not _run_active:
 		return
 	
+	# ════════════════════════════════════════════════════════════════════════════
+	# GATHER CURRENT TOTALS FROM AUTHORITATIVE SOURCES
+	# ════════════════════════════════════════════════════════════════════════════
+	# 
+	# SOURCE OF TRUTH DOCUMENTATION:
+	# - kills_total:        Game.run_stats["kills"]        (incremented in Game._on_enemy_died)
+	# - elites_killed:      Game.run_stats["elites_killed"](incremented in Game._on_enemy_died)
+	# - bosses_killed:      Game.run_stats["bosses_killed"](incremented in Game._on_enemy_died)
+	# - damage_dealt_total: BalanceDebugger._damage_dealt_total (incremented in EnemyBase.take_damage)
+	# - damage_taken_total: BalanceDebugger._damage_taken_final (incremented in BasePlayer.take_damage)
+	# - healing_total:      BalanceDebugger._heal_total    (incremented in PlayerStats.heal)
+	# - xp_earned_total:    BalanceDebugger._xp_gained_total (incremented in ExperienceManager.gain_experience)
+	# - gold_total:         ExperienceManager.total_coins  (incremented in add_coins / collect_coin)
+	# - difficulty mults:   DifficultyManager.* (updated every frame in _process via _calculate_phase_multipliers)
+	#
+	
+	# From Game.run_stats (kills, elites, bosses)
+	var game = _get_game_node()
+	var run_stats = game.run_stats if game and "run_stats" in game else {}
+	var kills_total = run_stats.get("kills", 0)
+	var elites_total = run_stats.get("elites_killed", 0)
+	var bosses_total = run_stats.get("bosses_killed", 0)
+	
+	# From BalanceDebugger (damage, healing, xp_earned)
+	var debugger_metrics = BalanceDebugger.get_current_metrics() if BalanceDebugger else {}
+	var damage_dealt_total = debugger_metrics.get("damage_dealt", {}).get("total", 0)
+	var damage_taken_total = debugger_metrics.get("mitigation", {}).get("damage_final", 0)
+	var healing_total = int(debugger_metrics.get("sustain", {}).get("total", 0.0))
+	var xp_earned_total = debugger_metrics.get("progression", {}).get("xp_total", 0)
+	
+	# From ExperienceManager (gold/coins)
+	var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
+	var gold_total = exp_mgr.total_coins if exp_mgr and "total_coins" in exp_mgr else 0
+	
+	# Current level
+	var current_level = context.get("level", 1)
+	var t_min = context.get("t_min", 1.0)
+	
+	# ════════════════════════════════════════════════════════════════════════════
+	# CALCULATE DELTAS (current - previous snapshot)
+	# ════════════════════════════════════════════════════════════════════════════
+	
+	var kills_delta = maxi(0, kills_total - _snapshot_prev_kills)
+	var elites_delta = maxi(0, elites_total - _snapshot_prev_elites)
+	var bosses_delta = maxi(0, bosses_total - _snapshot_prev_bosses)
+	var damage_dealt_delta = maxi(0, damage_dealt_total - _snapshot_prev_damage_dealt)
+	var damage_taken_delta = maxi(0, damage_taken_total - _snapshot_prev_damage_taken)
+	var healing_delta = maxi(0, healing_total - _snapshot_prev_healing)
+	var gold_delta = maxi(0, gold_total - _snapshot_prev_gold)
+	var xp_delta = maxi(0, xp_earned_total - _snapshot_prev_xp)
+	var levels_delta = maxi(0, current_level - _snapshot_prev_level)
+	
+	# DPS estimate (damage dealt last 60s / 60)
+	var dps_est = damage_dealt_delta / 60.0
+	
+	# XP per min (xp earned last 60s = xp per minute)
+	var xp_per_min = float(xp_delta)  # Already per minute since we sample every 60s
+	
+	# Levels per min (levels gained last 60s)
+	var levels_per_min = float(levels_delta)
+	
+	# ════════════════════════════════════════════════════════════════════════════
+	# BUILD EVENT
+	# ════════════════════════════════════════════════════════════════════════════
+	
 	var event = {
 		"event": "minute_snapshot",
 		
 		"progression": {
-			"xp_total": context.get("xp_total", 0),
-			"xp_to_next": context.get("xp_to_next", 0),
-			"xp_per_min": _calculate_xp_per_min(),
-			"level": context.get("level", 1),
-			"levels_per_min": _calculate_levels_per_min(context.get("t_min", 1.0))
+			"xp_earned_total": xp_earned_total,
+			"xp_gained_last_60s": xp_delta,
+			"xp_per_min": xp_per_min,
+			"level": current_level,
+			"levels_gained_last_60s": levels_delta,
+			"levels_per_min": levels_per_min
 		},
 		
 		"combat": {
-			"dps_est": _calculate_dps(),
-			"damage_done_last_60s": _damage_dealt_last_60s,
-			"damage_taken_last_60s": _damage_taken_last_60s,
-			"healing_done_last_60s": _healing_done_last_60s,
-			"kills_last_60s": _kills_last_60s,
-			"elites_killed_last_60s": _elites_killed_last_60s,
-			"bosses_killed_last_60s": _bosses_killed_last_60s
+			"dps_est": dps_est,
+			"damage_dealt_total": damage_dealt_total,
+			"damage_done_last_60s": damage_dealt_delta,
+			"damage_taken_total": damage_taken_total,
+			"damage_taken_last_60s": damage_taken_delta,
+			"healing_total": healing_total,
+			"healing_done_last_60s": healing_delta,
+			"kills_total": kills_total,
+			"kills_last_60s": kills_delta,
+			"elites_killed_total": elites_total,
+			"elites_killed_last_60s": elites_delta,
+			"bosses_killed_total": bosses_total,
+			"bosses_killed_last_60s": bosses_delta
 		},
 		
 		"economy": {
-			"gold_total": context.get("gold", 0),
-			"gold_gained_last_60s": _gold_gained_last_60s,
+			"gold_total": gold_total,
+			"gold_gained_last_60s": gold_delta,
 			"rerolls_used_last_60s": _rerolls_used_last_60s,
 			"rerolls_total": _rerolls_used_total,
 			"chests_opened_last_60s": _chests_opened_last_60s,
 			"fusions_obtained_total": _fusions_obtained_total
 		},
 		
-		"difficulty": context.get("difficulty", {}),
+		"difficulty": get_difficulty_snapshot(),
 		
 		"build": {
 			"weapons": context.get("weapons", []),
@@ -299,8 +325,23 @@ func log_minute_snapshot(context: Dictionary) -> void:
 	}
 	_log_event(event)
 	
-	# Reset 60s counters
-	_reset_60s_counters()
+	# ════════════════════════════════════════════════════════════════════════════
+	# UPDATE SNAPSHOT PREV VALUES FOR NEXT INTERVAL
+	# ════════════════════════════════════════════════════════════════════════════
+	
+	_snapshot_prev_kills = kills_total
+	_snapshot_prev_elites = elites_total
+	_snapshot_prev_bosses = bosses_total
+	_snapshot_prev_damage_dealt = damage_dealt_total
+	_snapshot_prev_damage_taken = damage_taken_total
+	_snapshot_prev_healing = healing_total
+	_snapshot_prev_gold = gold_total
+	_snapshot_prev_xp = xp_earned_total
+	_snapshot_prev_level = current_level
+	
+	# Reset manual counters (rerolls, chests)
+	_rerolls_used_last_60s = 0
+	_chests_opened_last_60s = 0
 
 func log_upgrade_pick(context: Dictionary) -> void:
 	"""Log when player picks an upgrade. Call from LevelUpPanel._apply_option()"""
@@ -525,14 +566,16 @@ func _reset_counters() -> void:
 	_levels_gained_this_run = 0
 	_level_at_start = 1
 	
-	# Reset polling state
-	_poll_timer = 0.0
-	_prev_kills = 0
-	_prev_damage_dealt = 0
-	_prev_damage_taken = 0
-	_prev_healing_done = 0
-	_prev_gold = 0
-	_prev_xp_total = 0
+	# Reset snapshot state
+	_snapshot_prev_kills = 0
+	_snapshot_prev_elites = 0
+	_snapshot_prev_bosses = 0
+	_snapshot_prev_damage_dealt = 0
+	_snapshot_prev_damage_taken = 0
+	_snapshot_prev_healing = 0
+	_snapshot_prev_gold = 0
+	_snapshot_prev_xp = 0
+	_snapshot_prev_level = 1
 
 func _reset_60s_counters() -> void:
 	_damage_dealt_last_60s = 0
