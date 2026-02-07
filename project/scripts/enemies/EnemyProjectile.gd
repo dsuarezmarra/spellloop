@@ -100,8 +100,9 @@ func _setup_sprite_visual() -> void:
 		sprite.vframes = config["vframes"]
 		sprite.centered = true
 		
-		# Escala para ser visible (64x64 frames)
-		sprite.scale = Vector2(1.0, 1.0)
+		# FIX: Los frames reales son ~153x204, escalar para tamaño apropiado (~48x64)
+		# Esto corrige el tamaño visual de los proyectiles de enemigos
+		sprite.scale = Vector2(0.3, 0.3)
 		
 		# Iniciar animación de frames
 		_start_projectile_animation(sprite, config["hframes"] * config["vframes"])

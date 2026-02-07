@@ -936,8 +936,8 @@ func _spawn_elite_nova_projectile(from: Vector2, direction: Vector2, damage: int
 				var elem = _get_enemy_element()
 				projectile.initialize(direction, 280.0, damage, 3.0, elem)
 			
-			# Visual dorado especial
-			var sprite = projectile.get_node_or_null("Sprite2D")
+			# Visual dorado especial - FIX: usar "Sprite" (nombre real en EnemyProjectile)
+			var sprite = projectile.get_node_or_null("Sprite")
 			if sprite:
 				sprite.modulate = Color(1.0, 0.85, 0.1)
 

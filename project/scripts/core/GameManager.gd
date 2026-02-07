@@ -121,8 +121,9 @@ func start_new_run() -> void:
 	game_start_time = get_unix_time_safe()  # Inicializar tiempo de juego
 
 	# Resetear DifficultyManager para nueva partida
-	if DifficultyManager:
-		DifficultyManager.reset()
+	var diff_mgr = get_tree().root.get_node_or_null("DifficultyManager")
+	if diff_mgr and diff_mgr.has_method("reset"):
+		diff_mgr.reset()
 
 	# Resetear tracking de bosses para nueva partida
 	SpawnConfig.reset_boss_tracking()

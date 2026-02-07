@@ -525,6 +525,9 @@ func _apply_item(item: Dictionary):
 	var item_type = item.get("type", "")
 	var item_id = item.get("id", "")
 	
+	# DEBUG: Log completo del item recibido
+	print("[TreasureChest] _apply_item DEBUG: type='%s', id='%s', fusion_data=%s" % [item_type, item_id, item.get("fusion_data", "NO_DATA")])
+	
 	# Buscar PlayerStats una sola vez
 	var player_stats = null
 	if is_inside_tree():
@@ -633,13 +636,43 @@ func _apply_item(item: Dictionary):
 				print("[TreasureChest] 💰 Añadido %d ORO a player.coins" % amount)
 				
 		"fusion":
-			# Aplicar fusión
+			# Aplicar fusión - CORREGIDO: usar fuse_weapons con las armas del fusion_data
+			print("[TreasureChest] 🔧 FUSION CASE ENTERED - Processing fusion...")
 			var fusion_data = item.get("fusion_data", {})
-			if player_ref and "attack_manager" in player_ref:
-				if player_ref.attack_manager.has_method("apply_fusion_result"):
-					player_ref.attack_manager.apply_fusion_result(fusion_data)
-				elif player_ref.attack_manager.has_method("perform_fusion"):
-					player_ref.attack_manager.perform_fusion(fusion_data)
+			print("[TreasureChest] 🔧 fusion_data = %s (type: %s)" % [fusion_data, typeof(fusion_data)])
+			if fusion_data.is_empty():
+				push_error("[TreasureChest] ❌ Fusión sin datos válidos!")
+				return
+			
+			var weapon_a = fusion_data.get("weapon_a")
+			var weapon_b = fusion_data.get("weapon_b")
+			print("[TreasureChest] 🔧 weapon_a = %s, weapon_b = %s" % [weapon_a, weapon_b])
+			
+			if not weapon_a or not weapon_b:
+				push_error("[TreasureChest] ❌ Fusión sin armas válidas! weapon_a=%s, weapon_b=%s" % [weapon_a, weapon_b])
+				return
+			
+			# Buscar AttackManager por grupo (más robusto)
+			var attack_mgr = get_tree().get_first_node_in_group("attack_manager")
+			if not attack_mgr:
+				push_error("[TreasureChest] ❌ No se encontró AttackManager para fusión")
+				return
+			
+			# Ejecutar la fusión usando el método correcto
+			if attack_mgr.has_method("fuse_weapons"):
+				var fused_weapon = attack_mgr.fuse_weapons(weapon_a, weapon_b)
+				if fused_weapon:
+					print("[TreasureChest] ⚡ FUSIÓN COMPLETADA: %s + %s → %s" % [weapon_a.weapon_name_es, weapon_b.weapon_name_es, fused_weapon.weapon_name_es])
+					# Mostrar texto flotante celebratorio
+					FloatingText.spawn_text(global_position + Vector2(0, -80), "⚡ FUSIÓN: %s" % fused_weapon.weapon_name_es, Color(1.0, 0.8, 0.0))
+				else:
+					push_error("[TreasureChest] ❌ Fusión falló en AttackManager")
+					# Fallback: dar oro como compensación
+					var gold_amount = 100
+					_apply_item({"type": "gold", "amount": gold_amount})
+					FloatingText.spawn_text(global_position + Vector2(0, -60), "+%d 💰 (REFUND)" % gold_amount, Color(1, 0.9, 0.2))
+			else:
+				push_error("[TreasureChest] ❌ AttackManager no tiene método fuse_weapons")
 		
 		"healing", "health_boost":
 			# Curación instantánea

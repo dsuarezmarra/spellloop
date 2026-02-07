@@ -1,10 +1,9 @@
 # DifficultyManager.gd
 # Gestor de dificultad dinámica
 # BALANCE PASS 2.5: Escalado ASINTÓTICO para endurance runs (4-8h posibles)
+# NOTE: No usar class_name - este script es un autoload singleton
 
 extends Node
-
-class_name DifficultyManager
 
 signal difficulty_changed(new_level: int)
 signal boss_event_triggered(time_minutes: int)
