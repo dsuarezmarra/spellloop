@@ -621,6 +621,14 @@ func _select_option() -> void:
 			"reroll_count": rerolls_used_this_level
 		})
 		BalanceTelemetry.add_level_up()
+		
+		# AUDIT: Report upgrade pick
+		if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
+			RunAuditTracker.report_upgrade_pick(
+				selected.get("id", selected.get("name", "unknown")),
+				picked_type,
+				option_ids
+			)
 	
 	_apply_option(selected)
 	option_selected.emit(selected)

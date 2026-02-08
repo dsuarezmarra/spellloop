@@ -781,6 +781,21 @@ func _process_frame_damage() -> void:
 				raw_total += hit.amount
 			BalanceDebugger.log_damage_taken(raw_total, final_applied_damage, false)
 		
+		# AUDIT: Report damage to player
+		if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
+			var enemy_id := "unknown"
+			var attack_name := "unknown"
+			if is_instance_valid(primary_hit.attacker):
+				if primary_hit.attacker.has_method("get_enemy_id"):
+					enemy_id = primary_hit.attacker.get_enemy_id()
+				elif primary_hit.attacker.has_meta("enemy_id"):
+					enemy_id = primary_hit.attacker.get_meta("enemy_id")
+				else:
+					enemy_id = primary_hit.attacker.name.get_slice("_", 0)
+				if primary_hit.attacker.has_meta("attack_name"):
+					attack_name = primary_hit.attacker.get_meta("attack_name")
+			RunAuditTracker.report_damage_to_player(enemy_id, attack_name, final_applied_damage)
+		
 		# Notificar estadísticas
 		var player_stats = get_tree().get_first_node_in_group("player_stats")
 		if player_stats and player_stats.has_method("on_damage_taken"):

@@ -551,6 +551,10 @@ func level_up_player():
 	# BALANCE PASS 2: Log level up para BalanceDebugger
 	if BalanceDebugger and BalanceDebugger.enabled:
 		BalanceDebugger.log_level_up(current_level)
+	
+	# AUDIT: Report level up
+	if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
+		RunAuditTracker.report_level_up(current_level)
 
 	# Generar opciones de mejora
 	var upgrade_options = generate_upgrade_options()

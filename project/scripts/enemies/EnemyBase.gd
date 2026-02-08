@@ -1407,6 +1407,14 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 	# TELEMETRY: Log damage dealt to enemies (source of truth)
 	if final_damage > 0 and BalanceDebugger:
 		BalanceDebugger.log_damage_dealt(final_damage)
+	
+	# AUDIT: Report damage to RunAuditTracker
+	if final_damage > 0 and RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
+		var weapon_id := "unknown"
+		var is_crit := final_damage >= amount * 1.5
+		if _attacker and _attacker.has_meta("weapon_id"):
+			weapon_id = _attacker.get_meta("weapon_id")
+		RunAuditTracker.report_damage_dealt(weapon_id, final_damage, is_crit, _element)
 
 	# Aplicar daño a través del HealthComponent
 	if health_component:
