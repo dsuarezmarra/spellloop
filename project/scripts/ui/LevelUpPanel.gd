@@ -624,11 +624,12 @@ func _select_option() -> void:
 		
 		# AUDIT: Report upgrade pick
 		if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
-			RunAuditTracker.report_upgrade_pick(
-				selected.get("id", selected.get("name", "unknown")),
-				picked_type,
-				option_ids
-			)
+			RunAuditTracker.report_upgrade_pick({
+				"picked_id": selected.get("id", selected.get("name", "unknown")),
+				"picked_type": picked_type,
+				"options_shown": option_ids,
+				"reroll_count": rerolls_used_this_level
+			})
 	
 	_apply_option(selected)
 	option_selected.emit(selected)

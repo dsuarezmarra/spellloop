@@ -554,7 +554,11 @@ func level_up_player():
 	
 	# AUDIT: Report level up
 	if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
-		RunAuditTracker.report_level_up(current_level)
+		var t_min: float = 0.0
+		var game_node = get_tree().get_first_node_in_group("game")
+		if game_node and "run_time" in game_node:
+			t_min = game_node.run_time / 60.0
+		RunAuditTracker.report_level_up(current_level, t_min)
 
 	# Generar opciones de mejora
 	var upgrade_options = generate_upgrade_options()

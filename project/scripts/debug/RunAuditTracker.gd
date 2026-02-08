@@ -44,10 +44,10 @@ var _current_minute: int = 0
 # WEAPON TRACKING
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# weapon_id -> WeaponStats
+# weapon_id -> AuditWeaponStats
 var _weapon_stats: Dictionary = {}
 
-class WeaponStats:
+class AuditWeaponStats:
 	var weapon_id: String = ""
 	var weapon_name: String = ""
 	var damage_total: int = 0
@@ -322,12 +322,12 @@ func report_damage_dealt(weapon_id: String, weapon_name: String, amount: int, is
 	
 	# Ensure weapon exists
 	if not _weapon_stats.has(weapon_id):
-		var stats = WeaponStats.new()
+		var stats = AuditWeaponStats.new()
 		stats.weapon_id = weapon_id
 		stats.weapon_name = weapon_name
 		_weapon_stats[weapon_id] = stats
 	
-	var stats: WeaponStats = _weapon_stats[weapon_id]
+	var stats: AuditWeaponStats = _weapon_stats[weapon_id]
 	
 	# ALWAYS update totals (exact)
 	stats.damage_total += amount
