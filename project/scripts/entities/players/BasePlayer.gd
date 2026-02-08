@@ -629,27 +629,8 @@ func _apply_status_flash() -> void:
 
 func _draw_status_effects() -> void:
 	"""Dibujar auras y efectos visuales de estado"""
-	# NOTA: Visuales de debug/placeholders (círculos, líneas) eliminados por solicitud.
-	# Se mantiene únicamente el feedback de color en el sprite (_apply_status_flash).
+	# Visuales de status se manejan ahora via VFXManager (stun, slow, shield aura).
 	pass
-
-func _draw_star(pos: Vector2, size: float, col: Color) -> void:
-	"""Dibujar una estrella de 4 puntas"""
-	var points = PackedVector2Array()
-	for i in range(8):
-		var angle = i * TAU / 8.0 - TAU / 16.0
-		var r = size if i % 2 == 0 else size * 0.4
-		points.append(pos + Vector2(cos(angle), sin(angle)) * r)
-	_status_visual_node.draw_colored_polygon(points, col)
-
-func _draw_down_arrow(pos: Vector2, col: Color) -> void:
-	"""Dibujar una flecha hacia abajo (weakness)"""
-	var points = PackedVector2Array([
-		pos + Vector2(-4, -4),
-		pos + Vector2(4, -4),
-		pos + Vector2(0, 4)
-	])
-	_status_visual_node.draw_colored_polygon(points, col)
 
 # ========== SALUD Y DAÑO ==========
 
@@ -1045,48 +1026,47 @@ func heal(amount: int) -> int:
 	return 0
 
 func _spawn_heal_particles() -> void:
-	"""Crear partículas de curación verde"""
+	"""Crear partículas de curación verde ascendentes"""
 	var particles = CPUParticles2D.new()
-	particles.emitting = true
-	particles.emitting = true
 	particles.one_shot = true
-
-func _spawn_nova_effect() -> void:
-	"""Efecto visual para Frost Nova"""
-	var particles = CPUParticles2D.new()
-	particles.emitting = true
-	particles.one_shot = true
-	particles.amount = 32
-	particles.explosiveness = 1.0
-	particles.spread = 180
-	particles.gravity = Vector2.ZERO
-	particles.initial_velocity_min = 100
-	particles.initial_velocity_max = 200
+	particles.amount = 12
+	particles.lifetime = 0.6
+	particles.explosiveness = 0.8
+	particles.direction = Vector2(0, -1)
+	particles.spread = 60.0
+	particles.gravity = Vector2(0, -30)
+	particles.initial_velocity_min = 40.0
+	particles.initial_velocity_max = 80.0
 	particles.scale_amount_min = 2.0
 	particles.scale_amount_max = 4.0
-	particles.color = Color(0.4, 0.8, 1.0, 0.8)
-	add_child(particles)
-	particles.finished.connect(particles.queue_free)
-	particles.explosiveness = 0.8
-	particles.amount = 8
-	particles.lifetime = 0.6
-	particles.direction = Vector2(0, -1)
-	particles.spread = 45.0
-	particles.gravity = Vector2(0, -20)
-	particles.initial_velocity_min = 30.0
-	particles.initial_velocity_max = 60.0
-	particles.scale_amount_min = 3.0
-	particles.scale_amount_max = 5.0
 	particles.color = Color(0.3, 1.0, 0.4, 0.9)
-	
+	particles.color_ramp = Gradient.new()
+	particles.color_ramp.add_point(0.0, Color(0.4, 1.0, 0.5, 1.0))
+	particles.color_ramp.add_point(1.0, Color(0.2, 0.8, 0.3, 0.0))
 	add_child(particles)
-	
-	# Auto-destruir después de que terminen las partículas
-	var timer = get_tree().create_timer(1.0)
-	timer.timeout.connect(func(): 
-		if is_instance_valid(particles):
-			particles.queue_free()
-	)
+	particles.emitting = true
+	particles.finished.connect(particles.queue_free)
+
+func _spawn_nova_effect() -> void:
+	"""Efecto visual para Frost Nova — explosión circular de hielo azul"""
+	var nova = CPUParticles2D.new()
+	nova.one_shot = true
+	nova.amount = 32
+	nova.lifetime = 0.5
+	nova.explosiveness = 1.0
+	nova.spread = 180.0
+	nova.gravity = Vector2.ZERO
+	nova.initial_velocity_min = 120.0
+	nova.initial_velocity_max = 220.0
+	nova.scale_amount_min = 2.0
+	nova.scale_amount_max = 4.0
+	nova.color = Color(0.4, 0.8, 1.0, 0.8)
+	nova.color_ramp = Gradient.new()
+	nova.color_ramp.add_point(0.0, Color(0.6, 0.9, 1.0, 1.0))
+	nova.color_ramp.add_point(1.0, Color(0.3, 0.6, 1.0, 0.0))
+	add_child(nova)
+	nova.emitting = true
+	nova.finished.connect(nova.queue_free)
 
 func _on_health_changed(current: int, max_val: int) -> void:
 	"""Callback cuando la salud cambia"""

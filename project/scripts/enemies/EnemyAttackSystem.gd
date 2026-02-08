@@ -1490,19 +1490,27 @@ func _create_homing_projectile(spawn_pos: Vector2) -> void:
 	shape.shape = circle
 	projectile.add_child(shape)
 	
-	# Visual
-	var visual = Node2D.new()
-	projectile.add_child(visual)
+	# Visual — intentar spritesheet via VFXManager, fallback procedural
+	var _used_vfx := false
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	if vfx_mgr and vfx_mgr.has_method("spawn_projectile_attached"):
+		var vfx_sprite = vfx_mgr.spawn_projectile_attached("void_homing", projectile)
+		if vfx_sprite:
+			_used_vfx = true
 	
-	var elem = _get_enemy_element()
-	var color = _get_element_color(elem)
-	
-	visual.draw.connect(func():
-		visual.draw_circle(Vector2.ZERO, 15, Color(color.r, color.g, color.b, 0.3))
-		visual.draw_circle(Vector2.ZERO, 10, color)
-		visual.draw_circle(Vector2.ZERO, 5, Color(1, 1, 1, 0.9))
-	)
-	visual.queue_redraw()
+	if not _used_vfx:
+		var visual = Node2D.new()
+		projectile.add_child(visual)
+		
+		var elem = _get_enemy_element()
+		var color = _get_element_color(elem)
+		
+		visual.draw.connect(func():
+			visual.draw_circle(Vector2.ZERO, 15, Color(color.r, color.g, color.b, 0.3))
+			visual.draw_circle(Vector2.ZERO, 10, color)
+			visual.draw_circle(Vector2.ZERO, 5, Color(1, 1, 1, 0.9))
+		)
+		visual.queue_redraw()
 	
 	var parent = enemy.get_parent()
 	if parent:
@@ -2039,6 +2047,8 @@ func _on_boss_phase_change(_old_phase: int, new_phase: int) -> void:
 	# CorazÃƒÂ³n del VacÃƒÂ­o activa aura de daÃƒÂ±o permanente en fase 2+
 	if "corazon" in enemy_id.to_lower() and new_phase >= 2:
 		boss_damage_aura_timer = 999.0  # Aura permanente
+		# Spawn visual de aura de daÃ±o void via VFXManager
+		_try_spawn_via_vfxmanager("damage_void", "aura", enemy.global_position, 0, 0)
 	
 	# Minotauro activa fire trail en fase 3
 	if "minotauro" in enemy_id.to_lower() and new_phase == 3:
@@ -3754,7 +3764,14 @@ func _spawn_damage_zone(pos: Vector2, radius: float, dps: int, duration: float, 
 		return
 	
 	# Determinar tipo de zona segÃºn elemento
-	var zone_type = "damage_zone_fire" if element in ["fire", "lava"] else "damage_zone_void"
+	var zone_type: String
+	match element:
+		"fire":
+			zone_type = "fire_zone"       # Zona de fuego pura (aoe_fire_zone)
+		"lava":
+			zone_type = "damage_zone_fire" # Zona de daÃ±o de lava
+		_:
+			zone_type = "damage_zone_void"
 	
 	# Intentar spawn visual via VFXManager (solo para el efecto visual)
 	_try_spawn_via_vfxmanager(zone_type, "aoe", pos, radius, duration)

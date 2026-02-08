@@ -51,15 +51,15 @@ var AOE_CONFIG = {
 	},
 	"damage_zone_fire": {
 		"path": VFX_BASE_PATH + "aoe/fire/aoe_damage_zone_fire_spritesheet.png",
-		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.8
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(256, 256), "duration": 0.8
 	},
 	"damage_zone_void": {
 		"path": VFX_BASE_PATH + "aoe/void/aoe_damage_zone_void_spritesheet.png",
-		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.8
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(256, 256), "duration": 0.8
 	},
 	"elite_slam": {
 		"path": VFX_BASE_PATH + "aoe/earth/aoe_elite_slam_spritesheet.png",
-		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.5
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.5
 	},
 	"elite_dash_trail": {
 		"path": VFX_BASE_PATH + "aoe/elite/vfx_elite_dash_trail_spritesheet.png",
@@ -111,7 +111,7 @@ var PROJECTILE_CONFIG = {
 	},
 	"homing_orb": {
 		"path": VFX_BASE_PATH + "projectiles/void/projectile_homing_orb_spritesheet.png",
-		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.5
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.5
 	}
 }
 
@@ -139,11 +139,11 @@ var AURA_CONFIG = {
 	},
 	"elite_rage": {
 		"path": VFX_BASE_PATH + "auras/aura_elite_rage_spritesheet.png",
-		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.7
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.7
 	},
 	"elite_shield": {
 		"path": VFX_BASE_PATH + "auras/aura_elite_shield_spritesheet.png",
-		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.8
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.8
 	}
 }
 
@@ -230,11 +230,11 @@ var BOSS_CONFIG = {
 	},
 	"orbital": {
 		"path": VFX_BASE_PATH + "boss_specific/minotauro/boss_orbital_spritesheet.png",
-		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.6
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(192, 192), "duration": 0.6
 	},
 	"phase_change": {
 		"path": VFX_BASE_PATH + "boss_specific/minotauro/boss_phase_change_spritesheet.png",
-		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 1.0
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(192, 192), "duration": 1.0
 	}
 }
 
