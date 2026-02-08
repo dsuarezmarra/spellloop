@@ -2,7 +2,7 @@ extends Control
 class_name GameOverScreen
 
 ## Pantalla de Game Over
-## Muestra estadisticas de la partida y opciones
+## Muestra estadísticas de la partida y opciones
 ## NAVEGACION: Solo WASD y gamepad (NO flechas de direccion)
 
 signal retry_pressed
@@ -12,6 +12,21 @@ signal menu_pressed
 @onready var retry_button: Button = $Panel/VBoxContainer/ButtonsContainer/RetryButton
 @onready var menu_button: Button = $Panel/VBoxContainer/ButtonsContainer/MenuButton
 @onready var title_label: Label = $Panel/VBoxContainer/TitleLabel
+
+# Colores de UI
+const HEADER_COLOR = Color(1.0, 0.85, 0.3)
+const VALUE_COLOR = Color(1, 0.9, 0.5)
+const WEAPON_NAME_COLOR = Color(0.85, 0.85, 0.95)
+const WEAPON_VALUE_COLOR = Color(0.3, 0.9, 0.4)
+const SEPARATOR_COLOR = Color(0.3, 0.3, 0.4, 0.6)
+const ELEMENT_COLORS = {
+	"ice": Color(0.4, 0.8, 1.0), "fire": Color(1.0, 0.5, 0.2),
+	"lightning": Color(1.0, 1.0, 0.3), "arcane": Color(0.7, 0.4, 1.0),
+	"shadow": Color(0.5, 0.3, 0.7), "nature": Color(0.3, 0.9, 0.4),
+	"wind": Color(0.6, 0.9, 0.8), "earth": Color(0.7, 0.5, 0.3),
+	"light": Color(1.0, 1.0, 0.9), "void": Color(0.3, 0.2, 0.5),
+	"physical": Color(0.7, 0.7, 0.7)
+}
 
 # Stats de la partida
 var final_stats: Dictionary = {}
@@ -140,6 +155,10 @@ func _display_stats() -> void:
 	for child in stats_container.get_children():
 		child.queue_free()
 
+	# ═══════════════════════════════════════════════════════════════════════════
+	# SECCIÓN 1: ESTADÍSTICAS BÁSICAS DE LA PARTIDA
+	# ═══════════════════════════════════════════════════════════════════════════
+
 	# Tiempo sobrevivido
 	var time_survived = final_stats.get("time", 0.0)
 	var minutes = int(time_survived) / 60
@@ -152,21 +171,219 @@ func _display_stats() -> void:
 
 	# Enemigos eliminados
 	var kills = final_stats.get("kills", 0)
-	_add_stat_line(Localization.L("ui.game_over.enemies"), str(kills))
+	_add_stat_line(Localization.L("ui.game_over.enemies"), _format_number(kills))
 
 	# XP total obtenida
 	var xp = final_stats.get("xp_total", 0)
-	_add_stat_line(Localization.L("ui.game_over.xp_total"), str(xp))
+	_add_stat_line(Localization.L("ui.game_over.xp_total"), _format_number(xp))
 
 	# Oro recogido
 	var gold = final_stats.get("gold", 0)
 	if gold > 0:
-		_add_stat_line(Localization.L("ui.game_over.gold"), str(gold))
+		_add_stat_line(Localization.L("ui.game_over.gold"), _format_number(gold))
 
-	# Daño total
-	var damage = final_stats.get("damage_dealt", 0)
-	if damage > 0:
-		_add_stat_line(Localization.L("ui.game_over.damage_total"), str(damage))
+	# ═══════════════════════════════════════════════════════════════════════════
+	# SECCIÓN 2: ESTADÍSTICAS DE COMBATE
+	# ═══════════════════════════════════════════════════════════════════════════
+	_add_section_separator()
+
+	# Daño total infligido (desde RunAuditTracker si disponible, sino de run_stats)
+	var total_damage_dealt = _get_total_damage_dealt()
+	if total_damage_dealt > 0:
+		_add_stat_line(Localization.L("ui.game_over.damage_total"), _format_number(total_damage_dealt))
+
+	# Daño recibido
+	var damage_taken = final_stats.get("damage_taken", 0)
+	if damage_taken > 0:
+		_add_stat_line(Localization.L("ui.game_over.damage_taken"), _format_number(damage_taken))
+
+	# DPS medio (si hay tiempo y daño)
+	if total_damage_dealt > 0 and time_survived > 0:
+		var avg_dps = total_damage_dealt / time_survived
+		_add_stat_line(Localization.L("ui.game_over.avg_dps"), _format_number(int(avg_dps)))
+
+	# Curación realizada
+	var healing = final_stats.get("healing_done", 0)
+	if healing > 0:
+		_add_stat_line(Localization.L("ui.game_over.healing"), _format_number(healing))
+
+	# Bosses y Elites
+	var bosses = final_stats.get("bosses_killed", 0)
+	if bosses > 0:
+		_add_stat_line(Localization.L("ui.game_over.bosses"), str(bosses))
+
+	var elites = final_stats.get("elites_killed", 0)
+	if elites > 0:
+		_add_stat_line(Localization.L("ui.game_over.elites"), str(elites))
+
+	# ═══════════════════════════════════════════════════════════════════════════
+	# SECCIÓN 3: DESGLOSE DE ARMAS (datos de RunAuditTracker)
+	# ═══════════════════════════════════════════════════════════════════════════
+	var weapon_stats = _get_weapon_audit_stats()
+	if weapon_stats.size() > 0:
+		_add_section_separator()
+		_add_section_header(Localization.L("ui.game_over.weapon_breakdown"))
+		_display_weapon_breakdown(weapon_stats, total_damage_dealt)
+
+func _get_total_damage_dealt() -> int:
+	"""Obtener daño total: prefiere datos de RunAuditTracker (más precisos)"""
+	if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT and RunAuditTracker._run_active:
+		var total: int = 0
+		for weapon_id in RunAuditTracker._weapon_stats:
+			total += RunAuditTracker._weapon_stats[weapon_id].damage_total
+		if total > 0:
+			return total
+	return final_stats.get("damage_dealt", 0)
+
+func _get_weapon_audit_stats() -> Array:
+	"""Obtener stats de armas ordenados por daño (desde RunAuditTracker)"""
+	if not RunAuditTracker or not RunAuditTracker.ENABLE_AUDIT:
+		return []
+
+	var weapons: Array = []
+	for weapon_id in RunAuditTracker._weapon_stats:
+		var ws = RunAuditTracker._weapon_stats[weapon_id]
+		weapons.append({
+			"weapon_id": ws.weapon_id,
+			"weapon_name": ws.weapon_name,
+			"damage_total": ws.damage_total,
+			"hits_total": ws.hits_total,
+			"crits_total": ws.crits_total,
+			"crit_rate": ws.get_crit_rate(),
+			"kills": ws.kills,
+		})
+
+	# Ordenar por daño descendente
+	weapons.sort_custom(func(a, b): return a.damage_total > b.damage_total)
+	return weapons
+
+func _display_weapon_breakdown(weapon_stats: Array, total_damage: int) -> void:
+	"""Mostrar desglose de daño por arma con barra visual"""
+	var max_weapons = mini(weapon_stats.size(), 6)  # Máximo 6 armas
+
+	for i in range(max_weapons):
+		var ws = weapon_stats[i]
+		if ws.damage_total <= 0:
+			continue
+
+		var weapon_row = VBoxContainer.new()
+		weapon_row.add_theme_constant_override("separation", 2)
+		stats_container.add_child(weapon_row)
+
+		# Fila superior: nombre + daño
+		var hbox = HBoxContainer.new()
+		hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		weapon_row.add_child(hbox)
+
+		# Nombre del arma
+		var name_label = Label.new()
+		var display_name = _format_weapon_name(ws.weapon_name)
+		name_label.text = display_name
+		name_label.add_theme_font_size_override("font_size", 15)
+		name_label.add_theme_color_override("font_color", WEAPON_NAME_COLOR)
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		hbox.add_child(name_label)
+
+		# Daño + porcentaje
+		var pct = (float(ws.damage_total) / float(total_damage) * 100.0) if total_damage > 0 else 0.0
+		var value_label = Label.new()
+		value_label.text = "%s (%d%%)" % [_format_number(ws.damage_total), int(pct)]
+		value_label.add_theme_font_size_override("font_size", 15)
+		value_label.add_theme_color_override("font_color", WEAPON_VALUE_COLOR)
+		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		hbox.add_child(value_label)
+
+		# Barra de progreso visual
+		var bar_container = HBoxContainer.new()
+		bar_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		weapon_row.add_child(bar_container)
+
+		var progress = ProgressBar.new()
+		progress.custom_minimum_size = Vector2(0, 6)
+		progress.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		progress.max_value = 100.0
+		progress.value = pct
+		progress.show_percentage = false
+
+		# Estilo de la barra
+		var bar_style = StyleBoxFlat.new()
+		bar_style.bg_color = Color(0.2, 0.6, 0.3, 0.8)
+		bar_style.set_corner_radius_all(3)
+		progress.add_theme_stylebox_override("fill", bar_style)
+
+		var bar_bg = StyleBoxFlat.new()
+		bar_bg.bg_color = Color(0.15, 0.15, 0.2, 0.5)
+		bar_bg.set_corner_radius_all(3)
+		progress.add_theme_stylebox_override("background", bar_bg)
+
+		bar_container.add_child(progress)
+
+		# Sub-stats: kills + crit rate
+		if ws.kills > 0 or ws.crit_rate > 0:
+			var sub_hbox = HBoxContainer.new()
+			sub_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			weapon_row.add_child(sub_hbox)
+
+			var sub_text = ""
+			if ws.kills > 0:
+				sub_text += "💀 %d kills" % ws.kills
+			if ws.crit_rate > 0:
+				if sub_text != "":
+					sub_text += "  •  "
+				sub_text += "🎯 %d%% crit" % int(ws.crit_rate * 100)
+
+			var sub_label = Label.new()
+			sub_label.text = sub_text
+			sub_label.add_theme_font_size_override("font_size", 12)
+			sub_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+			sub_hbox.add_child(sub_label)
+
+func _format_weapon_name(raw_name: String) -> String:
+	"""Intentar obtener nombre legible del arma"""
+	# Si el nombre es un ID técnico, formatearlo
+	if "_" in raw_name and raw_name == raw_name.to_lower():
+		return raw_name.replace("_", " ").capitalize()
+	return raw_name
+
+func _format_number(value: int) -> String:
+	"""Formatear número grande con separadores de miles"""
+	if value < 1000:
+		return str(value)
+	elif value < 1000000:
+		if value % 1000 == 0:
+			return "%dk" % (value / 1000)
+		return "%s" % _add_thousands_separator(value)
+	else:
+		return "%.1fM" % (float(value) / 1000000.0)
+
+func _add_thousands_separator(value: int) -> String:
+	"""Añadir separador de miles a un número"""
+	var s = str(value)
+	var result = ""
+	var count = 0
+	for i in range(s.length() - 1, -1, -1):
+		if count > 0 and count % 3 == 0:
+			result = "." + result
+		result = s[i] + result
+		count += 1
+	return result
+
+func _add_section_separator() -> void:
+	"""Añadir separador visual entre secciones"""
+	var sep = HSeparator.new()
+	sep.add_theme_constant_override("separation", 6)
+	sep.add_theme_color_override("separator", SEPARATOR_COLOR)
+	stats_container.add_child(sep)
+
+func _add_section_header(text: String) -> void:
+	"""Añadir cabecera de sección"""
+	var label = Label.new()
+	label.text = text
+	label.add_theme_font_size_override("font_size", 16)
+	label.add_theme_color_override("font_color", HEADER_COLOR)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stats_container.add_child(label)
 
 func _add_stat_line(label_text: String, value_text: String) -> void:
 	var hbox = HBoxContainer.new()

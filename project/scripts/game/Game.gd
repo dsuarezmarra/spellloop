@@ -1465,7 +1465,54 @@ func _collect_complete_run_data() -> Dictionary:
 	run_data["rerolls_used"] = 3 - remaining_rerolls
 	run_data["banishes_used"] = 2 - remaining_banishes
 	
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 8. DATOS DE AUDITORÍA DE COMBATE (RunAuditTracker)
+	# ═══════════════════════════════════════════════════════════════════════════
+	run_data["weapon_audit"] = _collect_weapon_audit_data()
+	run_data["enemy_audit"] = _collect_enemy_audit_data()
+	run_data["economy_audit"] = _collect_economy_audit_data()
+	
 	return run_data
+
+func _collect_weapon_audit_data() -> Array:
+	"""Recopilar datos de auditoría de armas desde RunAuditTracker"""
+	var weapon_audit: Array = []
+	if not RunAuditTracker or not RunAuditTracker.ENABLE_AUDIT:
+		return weapon_audit
+	
+	for weapon_id in RunAuditTracker._weapon_stats:
+		var ws = RunAuditTracker._weapon_stats[weapon_id]
+		weapon_audit.append(ws.to_dict())
+	
+	# Ordenar por daño total descendente
+	weapon_audit.sort_custom(func(a, b): return a.get("damage_total", 0) > b.get("damage_total", 0))
+	return weapon_audit
+
+func _collect_enemy_audit_data() -> Array:
+	"""Recopilar datos de auditoría de enemigos desde RunAuditTracker"""
+	var enemy_audit: Array = []
+	if not RunAuditTracker or not RunAuditTracker.ENABLE_AUDIT:
+		return enemy_audit
+	
+	for enemy_id in RunAuditTracker._enemy_damage_stats:
+		var es = RunAuditTracker._enemy_damage_stats[enemy_id]
+		enemy_audit.append(es.to_dict())
+	
+	# Ordenar por daño al jugador descendente
+	enemy_audit.sort_custom(func(a, b): return a.get("damage_to_player", 0) > b.get("damage_to_player", 0))
+	return enemy_audit
+
+func _collect_economy_audit_data() -> Dictionary:
+	"""Recopilar datos de economía desde RunAuditTracker"""
+	if not RunAuditTracker or not RunAuditTracker.ENABLE_AUDIT:
+		return {}
+	
+	return {
+		"chests_opened": RunAuditTracker._chests_opened.duplicate(),
+		"fusions_obtained": RunAuditTracker._fusions_obtained.size(),
+		"rerolls_used": RunAuditTracker._rerolls_used,
+		"gold_spent": RunAuditTracker._gold_spent,
+	}
 
 func _get_character_id() -> String:
 	"""Obtener ID del personaje actual"""

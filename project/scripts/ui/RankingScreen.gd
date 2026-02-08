@@ -54,7 +54,7 @@ var month_popup_index: int = 0
 enum Tab { TOP_100, MY_POSITION, FRIENDS }
 enum FocusArea { TABS, ENTRIES, FOOTER, MONTH_POPUP, DETAIL_VIEW }
 enum DetailNavRow { TABS, CONTENT }
-enum DetailTab { STATS, WEAPONS, ITEMS }
+enum DetailTab { STATS, WEAPONS, ITEMS, COMBAT }
 
 var current_tab: Tab = Tab.TOP_100
 var current_entries: Array = []
@@ -994,7 +994,21 @@ func _convert_run_to_entry(run: Dictionary, rank: int) -> Dictionary:
 		"items": items,
 		"items_data": items_data,  # Datos completos de items
 		"timestamp": run.get("timestamp", 0),
-		"end_reason": run.get("end_reason", "unknown")
+		"end_reason": run.get("end_reason", "unknown"),
+		# Datos de auditoría de combate
+		"weapon_audit": run.get("weapon_audit", []),
+		"enemy_audit": run.get("enemy_audit", []),
+		"economy_audit": run.get("economy_audit", {}),
+		# Stats de combat extras
+		"damage_dealt": run.get("damage_dealt", 0),
+		"damage_taken": run.get("damage_taken", 0),
+		"healing_done": run.get("healing_done", 0),
+		"bosses_killed": run.get("bosses_killed", 0),
+		"elites_killed": run.get("elites_killed", 0),
+		"enemies_defeated": run.get("enemies_defeated", run.get("kills", 0)),
+		"duration": duration,
+		"rerolls_used": run.get("rerolls_used", 0),
+		"banishes_used": run.get("banishes_used", 0),
 	}
 
 func _get_character_display_name(character_id: String) -> String:
@@ -1432,11 +1446,11 @@ func _show_detail_popup(entry: Dictionary) -> void:
 	vbox.add_child(tabs_container)
 	
 	detail_tab_buttons.clear()
-	var tab_names = ["ESTADÍSTICAS", "ARMAS", "OBJETOS"]
-	for i in range(3):
+	var tab_names = ["ESTADÍSTICAS", "ARMAS", "OBJETOS", "COMBATE"]
+	for i in range(4):
 		var btn = Button.new()
 		btn.text = tab_names[i]
-		btn.custom_minimum_size = Vector2(150, 40)
+		btn.custom_minimum_size = Vector2(130, 40)
 		btn.add_theme_font_size_override("font_size", 16)
 		btn.focus_mode = Control.FOCUS_NONE
 		tabs_container.add_child(btn)
@@ -1519,9 +1533,10 @@ func _handle_detail_popup_input(event: InputEvent) -> bool:
 
 func _detail_navigate_tab(direction: int) -> void:
 	"""Navegar entre pestañas del popup de detalle"""
-	var new_tab = (int(detail_current_tab) + direction) % 3
+	var tab_count = detail_tab_buttons.size()
+	var new_tab = (int(detail_current_tab) + direction) % tab_count
 	if new_tab < 0:
-		new_tab = 2
+		new_tab = tab_count - 1
 	detail_current_tab = new_tab as DetailTab
 	_update_detail_tabs_visual()
 	_show_detail_tab_content()
@@ -1569,6 +1584,8 @@ func _show_detail_tab_content() -> void:
 			_show_detail_weapons_tab()
 		DetailTab.ITEMS:
 			_show_detail_items_tab()
+		DetailTab.COMBAT:
+			_show_detail_combat_tab()
 
 func _show_detail_stats_tab() -> void:
 	"""Mostrar pestaña de estadísticas (CLON EXACTO del PauseMenu)"""
@@ -1827,6 +1844,276 @@ func _show_detail_items_tab() -> void:
 		var info = grouped_items[item_name]
 		var item_panel = _create_detail_item_panel(item_name, info.data, info.count)
 		grid.add_child(item_panel)
+
+func _show_detail_combat_tab() -> void:
+	"""Mostrar pestaña de combate: desglose de daño por arma, enemigos peligrosos, economía"""
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	detail_content_container.add_child(scroll)
+	detail_content_scroll = scroll
+
+	var main_vbox = VBoxContainer.new()
+	main_vbox.add_theme_constant_override("separation", 10)
+	scroll.add_child(main_vbox)
+
+	var entry = detail_current_entry
+
+	# ═══════════════════════════════════════════════════════════════════════════
+	# RESUMEN DE COMBATE
+	# ═══════════════════════════════════════════════════════════════════════════
+	var summary_title = Label.new()
+	summary_title.text = "📊 RESUMEN DE COMBATE"
+	summary_title.add_theme_font_size_override("font_size", 16)
+	summary_title.add_theme_color_override("font_color", DETAIL_SELECTED_TAB)
+	main_vbox.add_child(summary_title)
+
+	var summary_grid = GridContainer.new()
+	summary_grid.columns = 4
+	summary_grid.add_theme_constant_override("h_separation", 12)
+	summary_grid.add_theme_constant_override("v_separation", 4)
+	main_vbox.add_child(summary_grid)
+
+	var damage_dealt = entry.get("damage_dealt", 0)
+	var damage_taken = entry.get("damage_taken", 0)
+	var healing_done = entry.get("healing_done", 0)
+	var kills = entry.get("enemies_defeated", 0)
+	var bosses = entry.get("bosses_killed", 0)
+	var elites = entry.get("elites_killed", 0)
+	var duration = entry.get("duration", 0.0)
+
+	# Calcular daño total de weapon_audit si disponible
+	var weapon_audit: Array = entry.get("weapon_audit", [])
+	var total_weapon_damage: int = 0
+	for wa in weapon_audit:
+		total_weapon_damage += wa.get("damage_total", 0)
+	if total_weapon_damage > 0:
+		damage_dealt = total_weapon_damage
+
+	_add_detail_stat_to_grid(summary_grid, "⚔️", "Daño Infligido", _format_combat_number(damage_dealt))
+	_add_detail_stat_to_grid(summary_grid, "🛡️", "Daño Recibido", _format_combat_number(damage_taken))
+	_add_detail_stat_to_grid(summary_grid, "💚", "Curación", _format_combat_number(healing_done))
+	_add_detail_stat_to_grid(summary_grid, "💀", "Enemigos", _format_combat_number(kills))
+	_add_detail_stat_to_grid(summary_grid, "👹", "Bosses", str(bosses))
+	_add_detail_stat_to_grid(summary_grid, "⭐", "Elites", str(elites))
+
+	# DPS medio
+	if damage_dealt > 0 and duration > 0:
+		var avg_dps = int(float(damage_dealt) / duration)
+		_add_detail_stat_to_grid(summary_grid, "📊", "DPS Medio", _format_combat_number(avg_dps))
+
+	# Ratio daño dado/recibido
+	if damage_taken > 0 and damage_dealt > 0:
+		var ratio = float(damage_dealt) / float(damage_taken)
+		_add_detail_stat_to_grid(summary_grid, "⚖️", "Ratio D/R", "%.1f:1" % ratio)
+
+	# ═══════════════════════════════════════════════════════════════════════════
+	# DESGLOSE DE DAÑO POR ARMA
+	# ═══════════════════════════════════════════════════════════════════════════
+	if weapon_audit.size() > 0:
+		var sep1 = HSeparator.new()
+		main_vbox.add_child(sep1)
+
+		var weapons_title = Label.new()
+		weapons_title.text = "⚔️ DAÑO POR ARMA"
+		weapons_title.add_theme_font_size_override("font_size", 16)
+		weapons_title.add_theme_color_override("font_color", DETAIL_SELECTED_TAB)
+		main_vbox.add_child(weapons_title)
+
+		# Tabla de armas
+		for wa in weapon_audit:
+			var w_damage = wa.get("damage_total", 0)
+			if w_damage <= 0:
+				continue
+
+			var weapon_row = VBoxContainer.new()
+			weapon_row.add_theme_constant_override("separation", 2)
+			main_vbox.add_child(weapon_row)
+
+			# Fila principal: nombre + daño + porcentaje
+			var hbox = HBoxContainer.new()
+			hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			weapon_row.add_child(hbox)
+
+			var w_name = wa.get("weapon_name", "???")
+			if "_" in w_name and w_name == w_name.to_lower():
+				w_name = w_name.replace("_", " ").capitalize()
+
+			var name_label = Label.new()
+			name_label.text = w_name
+			name_label.add_theme_font_size_override("font_size", 13)
+			name_label.add_theme_color_override("font_color", Color(0.9, 0.9, 1.0))
+			name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+			hbox.add_child(name_label)
+
+			var pct = (float(w_damage) / float(damage_dealt) * 100.0) if damage_dealt > 0 else 0.0
+			var value_label = Label.new()
+			value_label.text = "%s (%d%%)" % [_format_combat_number(w_damage), int(pct)]
+			value_label.add_theme_font_size_override("font_size", 13)
+			value_label.add_theme_color_override("font_color", DETAIL_VALUE_COLOR)
+			value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			hbox.add_child(value_label)
+
+			# Barra de progreso
+			var progress = ProgressBar.new()
+			progress.custom_minimum_size = Vector2(0, 5)
+			progress.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			progress.max_value = 100.0
+			progress.value = pct
+			progress.show_percentage = false
+			var bar_fill = StyleBoxFlat.new()
+			bar_fill.bg_color = DETAIL_VALUE_COLOR.lerp(DETAIL_SELECTED_TAB, 0.3)
+			bar_fill.set_corner_radius_all(2)
+			progress.add_theme_stylebox_override("fill", bar_fill)
+			var bar_bg = StyleBoxFlat.new()
+			bar_bg.bg_color = Color(0.15, 0.15, 0.2, 0.5)
+			bar_bg.set_corner_radius_all(2)
+			progress.add_theme_stylebox_override("background", bar_bg)
+			weapon_row.add_child(progress)
+
+			# Sub-stats: hits, crits, kills
+			var sub_parts: Array[String] = []
+			var w_hits = wa.get("hits_total", 0)
+			var w_crits = wa.get("crits_total", 0)
+			var w_kills = wa.get("kills", 0)
+			var w_crit_rate = wa.get("crit_rate", 0.0)
+
+			if w_hits > 0:
+				sub_parts.append("🎯 %s hits" % _format_combat_number(w_hits))
+			if w_crit_rate > 0:
+				sub_parts.append("💥 %d%% crit" % int(w_crit_rate * 100))
+			if w_kills > 0:
+				sub_parts.append("💀 %s kills" % _format_combat_number(w_kills))
+
+			if sub_parts.size() > 0:
+				var sub_label = Label.new()
+				sub_label.text = "  •  ".join(sub_parts)
+				sub_label.add_theme_font_size_override("font_size", 10)
+				sub_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+				weapon_row.add_child(sub_label)
+
+	# ═══════════════════════════════════════════════════════════════════════════
+	# ENEMIGOS MÁS PELIGROSOS (daño al jugador)
+	# ═══════════════════════════════════════════════════════════════════════════
+	var enemy_audit: Array = entry.get("enemy_audit", [])
+	if enemy_audit.size() > 0:
+		var sep2 = HSeparator.new()
+		main_vbox.add_child(sep2)
+
+		var enemies_title = Label.new()
+		enemies_title.text = "☠️ AMENAZAS PRINCIPALES"
+		enemies_title.add_theme_font_size_override("font_size", 16)
+		enemies_title.add_theme_color_override("font_color", Color(1.0, 0.4, 0.3))
+		main_vbox.add_child(enemies_title)
+
+		var max_enemies = mini(enemy_audit.size(), 8)
+		for i in range(max_enemies):
+			var ea = enemy_audit[i]
+			var e_damage = ea.get("damage_to_player", 0)
+			if e_damage <= 0:
+				continue
+
+			var hbox = HBoxContainer.new()
+			hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			main_vbox.add_child(hbox)
+
+			var e_name = ea.get("enemy_name", "???")
+			if "_" in e_name and e_name == e_name.to_lower():
+				e_name = e_name.replace("_", " ").capitalize()
+
+			var name_label = Label.new()
+			name_label.text = e_name
+			name_label.add_theme_font_size_override("font_size", 12)
+			name_label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.9))
+			name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+			hbox.add_child(name_label)
+
+			var e_hits = ea.get("hits_to_player", 0)
+			var detail_text = "%s daño" % _format_combat_number(e_damage)
+			if e_hits > 0:
+				detail_text += " (%d hits)" % e_hits
+
+			var val_label = Label.new()
+			val_label.text = detail_text
+			val_label.add_theme_font_size_override("font_size", 12)
+			val_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.4))
+			val_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			hbox.add_child(val_label)
+
+	# ═══════════════════════════════════════════════════════════════════════════
+	# ECONOMÍA Y MECÁNICAS
+	# ═══════════════════════════════════════════════════════════════════════════
+	var economy_audit: Dictionary = entry.get("economy_audit", {})
+	var rerolls = entry.get("rerolls_used", economy_audit.get("rerolls_used", 0))
+	var banishes = entry.get("banishes_used", 0)
+	var chests = economy_audit.get("chests_opened", {})
+	var fusions = economy_audit.get("fusions_obtained", 0)
+	var gold_spent = economy_audit.get("gold_spent", 0)
+
+	var has_economy = rerolls > 0 or banishes > 0 or not chests.is_empty() or fusions > 0 or gold_spent > 0
+	if has_economy:
+		var sep3 = HSeparator.new()
+		main_vbox.add_child(sep3)
+
+		var econ_title = Label.new()
+		econ_title.text = "🪙 ECONOMÍA Y MECÁNICAS"
+		econ_title.add_theme_font_size_override("font_size", 16)
+		econ_title.add_theme_color_override("font_color", Color(0.9, 0.8, 0.3))
+		main_vbox.add_child(econ_title)
+
+		var econ_grid = GridContainer.new()
+		econ_grid.columns = 4
+		econ_grid.add_theme_constant_override("h_separation", 12)
+		econ_grid.add_theme_constant_override("v_separation", 4)
+		main_vbox.add_child(econ_grid)
+
+		# Cofres abiertos
+		var total_chests = 0
+		for chest_type in chests:
+			total_chests += chests[chest_type]
+		if total_chests > 0:
+			_add_detail_stat_to_grid(econ_grid, "📦", "Cofres", str(total_chests))
+		if fusions > 0:
+			_add_detail_stat_to_grid(econ_grid, "🔮", "Fusiones", str(fusions))
+		if rerolls > 0:
+			_add_detail_stat_to_grid(econ_grid, "🎲", "Rerolls", str(rerolls))
+		if banishes > 0:
+			_add_detail_stat_to_grid(econ_grid, "❌", "Banishes", str(banishes))
+		if gold_spent > 0:
+			_add_detail_stat_to_grid(econ_grid, "💰", "Oro Gastado", _format_combat_number(gold_spent))
+
+	# Si no hay datos de auditoría, mostrar mensaje
+	if weapon_audit.is_empty() and enemy_audit.is_empty() and not has_economy:
+		var no_data = Label.new()
+		no_data.text = "📊 No hay datos detallados de combate para esta partida.\nLas partidas futuras incluirán desglose completo."
+		no_data.add_theme_font_size_override("font_size", 14)
+		no_data.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
+		no_data.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		no_data.autowrap_mode = TextServer.AUTOWRAP_WORD
+		main_vbox.add_child(no_data)
+
+func _format_combat_number(value: int) -> String:
+	"""Formatear número grande para la pestaña de combate"""
+	if value < 1000:
+		return str(value)
+	elif value < 1000000:
+		return _add_thousands_sep(value)
+	else:
+		return "%.1fM" % (float(value) / 1000000.0)
+
+func _add_thousands_sep(value: int) -> String:
+	"""Añadir separador de miles"""
+	var s = str(value)
+	var result = ""
+	var count = 0
+	for i in range(s.length() - 1, -1, -1):
+		if count > 0 and count % 3 == 0:
+			result = "." + result
+		result = s[i] + result
+		count += 1
+	return result
 
 func _add_detail_stat_row(parent: VBoxContainer, icon: String, stat_name: String, value: String) -> void:
 	"""Añadir fila de stat al panel de detalle"""
