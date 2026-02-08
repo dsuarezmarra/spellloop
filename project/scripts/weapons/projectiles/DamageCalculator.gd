@@ -156,7 +156,8 @@ static func apply_damage_with_effects(
 	target: Node2D,
 	damage_result: DamageResult,
 	knockback_dir: Vector2 = Vector2.ZERO,
-	knockback_force: float = 0.0
+	knockback_force: float = 0.0,
+	attacker: Node = null
 ) -> void:
 	if not is_instance_valid(target):
 		return
@@ -165,7 +166,7 @@ static func apply_damage_with_effects(
 	
 	# Aplicar daño
 	if target.has_method("take_damage"):
-		target.take_damage(final_damage)
+		target.take_damage(final_damage, "physical", attacker)
 		# Balance Debug: Log damage dealt
 		if BalanceDebugger and BalanceDebugger.enabled:
 			BalanceDebugger.log_damage_dealt(final_damage)

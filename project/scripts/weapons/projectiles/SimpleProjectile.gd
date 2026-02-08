@@ -598,7 +598,7 @@ func _handle_hit(target: Node) -> void:
 			# Simplificación: +50% daño extra como "explosión" si el proyectil tiene elemento fuego
 			if get_meta("element", "") == "fire" or burn_chance > 0:
 				var burn_dmg = final_damage * 0.5
-				target.take_damage(int(burn_dmg))
+				target.take_damage(int(burn_dmg), "fire", self)
 				FloatingText.spawn_custom(target.global_position + Vector2(10, -40), "COMB!", Color.ORANGE_RED)
 
 		# 5. Ruleta Rusa (Russian Roulette): 1% chance de 4x daño, o 0 daño?
@@ -625,7 +625,7 @@ func _handle_hit(target: Node) -> void:
 	
 	# Aplicar daño
 	if target.has_method("take_damage"):
-		target.take_damage(final_damage)
+		target.take_damage(final_damage, get_meta("element", "physical"), self)
 		
 		# LOG: Registrar daño aplicado
 		var weapon_id = get_meta("weapon_id", "unknown_projectile")
@@ -748,7 +748,7 @@ func _apply_effect(target: Node) -> void:
 				var hp_percent = float(hp) / float(max_hp)
 				if hp_percent <= effect_value:
 					if target.has_method("take_damage"):
-						target.take_damage(hp)  # Matar instantáneamente
+						target.take_damage(hp, "physical", self)  # Matar instantáneamente
 		"knockback_bonus", "crit_chance":
 			pass  # Ya manejados en otro lugar
 		"chain":
@@ -782,7 +782,7 @@ func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
 		
 		# Aplicar daño al siguiente objetivo
 		if next_target.has_method("take_damage"):
-			next_target.take_damage(int(chain_damage))
+			next_target.take_damage(int(chain_damage), "physical", self)
 			# Aplicar life steal y execute para chains
 			ProjectileFactory.apply_life_steal(get_tree(), chain_damage)
 			ProjectileFactory.check_execute(get_tree(), next_target)

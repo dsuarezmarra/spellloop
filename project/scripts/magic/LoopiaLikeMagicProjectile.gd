@@ -37,6 +37,7 @@ var hits_made: int = 0
 var glow_tween
 
 func _ready():
+	set_meta("weapon_id", "magic_projectile")
 	setup_projectile()
 	setup_visuals()
 	setup_collision()
@@ -185,7 +186,7 @@ func hit_target(target: Node2D):
 	"""Impactar objetivo"""
 	# Aplicar daño
 	if target.has_method("take_damage"):
-		target.take_damage(damage)
+		target.take_damage(damage, "physical", self)
 	
 	# Emitir señal
 	projectile_hit.emit(target, damage)

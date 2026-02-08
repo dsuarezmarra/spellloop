@@ -68,6 +68,7 @@ func update_orbitals(data: Dictionary) -> void:
 
 	# Nueva arma orbital
 	orbital_weapon_id = new_weapon_id
+	set_meta("weapon_id", orbital_weapon_id)
 	orbital_count = new_count
 	orbital_radius = data.get("orbital_radius", 120.0)
 	orbital_damage = data.get("damage", 8.0)
@@ -250,7 +251,7 @@ func _damage_enemy(enemy: Node) -> void:
 	)
 
 	if enemy.has_method("take_damage"):
-		enemy.take_damage(damage_result.get_int_damage())
+		enemy.take_damage(damage_result.get_int_damage(), "physical", self)
 		ProjectileFactory.apply_life_steal(get_tree(), damage_result.final_damage)
 		ProjectileFactory.check_execute(get_tree(), enemy)
 		ProjectileFactory.apply_status_effects_chance(get_tree(), enemy)
@@ -342,7 +343,7 @@ func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
 			break
 		
 		if next_target.has_method("take_damage"):
-			next_target.take_damage(int(chain_damage))
+			next_target.take_damage(int(chain_damage), "physical", self)
 			ProjectileFactory.apply_life_steal(get_tree(), chain_damage)
 			ProjectileFactory.check_execute(get_tree(), next_target)
 		
@@ -555,7 +556,7 @@ func _fire_active_shot() -> void:
 				var player = _get_orbital_player()
 				var damage_res = DamageCalculator.calculate_final_damage(orbital_damage, target, player, crit_chance, crit_damage)
 				
-				target.take_damage(damage_res.get_int_damage())
+				target.take_damage(damage_res.get_int_damage(), "physical", self)
 				ProjectileFactory.apply_life_steal(get_tree(), damage_res.final_damage)
 				
 				# Chain a otros

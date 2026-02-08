@@ -784,12 +784,10 @@ func _process_frame_damage() -> void:
 		# AUDIT: Report damage to player
 		if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
 			var enemy_id := "unknown"
-			var attack_name := "unknown"
+			var attack_name := primary_hit.element if primary_hit.element != "" else "physical"
 			if is_instance_valid(primary_hit.attacker):
-				if primary_hit.attacker.has_method("get_enemy_id"):
-					enemy_id = primary_hit.attacker.get_enemy_id()
-				elif primary_hit.attacker.has_meta("enemy_id"):
-					enemy_id = primary_hit.attacker.get_meta("enemy_id")
+				if "enemy_id" in primary_hit.attacker:
+					enemy_id = primary_hit.attacker.enemy_id
 				else:
 					enemy_id = primary_hit.attacker.name.get_slice("_", 0)
 				if primary_hit.attacker.has_meta("attack_name"):

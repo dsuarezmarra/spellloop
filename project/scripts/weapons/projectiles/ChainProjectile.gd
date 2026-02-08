@@ -46,6 +46,7 @@ func setup(data: Dictionary) -> void:
 	effect_value = data.get("effect_value", 2)
 	effect_duration = data.get("effect_duration", 2.0)
 	weapon_id = data.get("weapon_id", "")
+	set_meta("weapon_id", weapon_id)
 
 func start_chain() -> void:
 	if first_target == null or not is_instance_valid(first_target):
@@ -127,7 +128,7 @@ func _apply_damage_to_target(target: Node2D) -> void:
 	)
 
 	if target.has_method("take_damage"):
-		target.take_damage(damage_result.get_int_damage())
+		target.take_damage(damage_result.get_int_damage(), "physical", self)
 		
 		# LOG: Registrar daño de cadena con hop actual
 		var hop_number = enemies_hit.size() + 1

@@ -123,7 +123,7 @@ static func check_execute(tree: SceneTree, enemy: Node) -> bool:
 	if hp_percent <= execute_threshold and hp_percent > 0:
 		# Matar instantáneamente
 		if enemy.has_method("take_damage"):
-			enemy.take_damage(current_hp)  # Hacer daño igual al HP restante
+			enemy.take_damage(current_hp, "physical")  # Hacer daño igual al HP restante
 			# Mostrar texto de ejecución (usar class_name FloatingText)
 			FloatingText.spawn_damage(enemy.global_position + Vector2(0, -30), current_hp, true)
 			# Debug desactivado: print("[Execute] ☠️ Enemigo ejecutado")
@@ -439,6 +439,7 @@ class BeamEffect extends Node2D:
 		crit_chance = data.get("crit_chance", 0.0)
 		crit_damage = data.get("crit_damage", 2.0)
 		weapon_id = data.get("weapon_id", "")
+		set_meta("weapon_id", weapon_id)
 
 	func fire(owner: Node2D) -> void:
 		if _has_fired:
@@ -493,7 +494,8 @@ class BeamEffect extends Node2D:
 			enemy,
 			damage_result,
 			(enemy.global_position - global_position).normalized(), # Knockback direction
-			knockback
+			knockback,
+			self
 		)
 		
 		# LOG: Registrar daño de beam (usando el valor final calculado)
@@ -543,7 +545,7 @@ class BeamEffect extends Node2D:
 					var hp_percent = float(hp) / float(max_hp)
 					if hp_percent <= effect_value:
 						if enemy.has_method("take_damage"):
-							enemy.take_damage(hp)
+							enemy.take_damage(hp, "physical", self)
 			"lifesteal":
 				var player = _get_player()
 				if player and player.has_method("heal"):
@@ -676,6 +678,7 @@ class AOEEffect extends Node2D:
 		crit_chance = data.get("crit_chance", 0.0)
 		crit_damage = data.get("crit_damage", 2.0)
 		weapon_id = data.get("weapon_id", "")
+		set_meta("weapon_id", weapon_id)
 		
 		# Configurar tics según el arma
 		_setup_tick_damage()
@@ -830,7 +833,7 @@ class AOEEffect extends Node2D:
 
 		# Aplicar daño
 		if enemy.has_method("take_damage"):
-			enemy.take_damage(final_damage)
+			enemy.take_damage(final_damage, "physical", self)
 			
 			# LOG: Registrar daño AOE con info de ticks
 			DamageLogger.log_aoe_damage(weapon_id, enemy.name, final_damage, "tick %d/%d" % [_ticks_applied, total_ticks])
@@ -894,7 +897,7 @@ class AOEEffect extends Node2D:
 						# Assuming effect_value is damage per second? 
 						# In UpgradeDatabase: "3 daño/s por 3s" -> effect_value likely 3.
 						var total_dmg = effect_value * modified_duration
-						enemy.take_damage(total_dmg)
+						enemy.take_damage(total_dmg, "fire", self)
 						# VFX for instant burn
 						_spawn_instant_effect_visual(enemy.global_position, Color.ORANGE_RED)
 				elif enemy.has_method("apply_burn"):
@@ -941,7 +944,7 @@ class AOEEffect extends Node2D:
 					var hp_percent = float(hp) / float(max_hp)
 					if hp_percent <= effect_value:  # effect_value es el umbral (ej: 0.2 = 20%)
 						if enemy.has_method("take_damage"):
-							enemy.take_damage(hp)  # Matar instantáneamente
+							enemy.take_damage(hp, "physical", self)  # Matar instantáneamente
 							# Debug desactivado: print("[AOE] EXECUTE!")
 			"knockback_bonus":
 				# Ya se maneja el knockback en otro lugar, esto solo incrementa
@@ -954,7 +957,7 @@ class AOEEffect extends Node2D:
 				if instant > 0:
 					if enemy.has_method("take_damage"):
 						var total_dmg = effect_value * modified_duration
-						enemy.take_damage(total_dmg)
+						enemy.take_damage(total_dmg, "physical", self)
 						_spawn_instant_effect_visual(enemy.global_position, Color.DARK_RED)
 				elif enemy.has_method("apply_bleed"):
 					enemy.apply_bleed(effect_value, modified_duration)
