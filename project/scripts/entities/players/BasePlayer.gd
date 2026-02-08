@@ -84,6 +84,11 @@ var _status_flash_timer: float = 0.0
 const STATUS_FLASH_INTERVAL: float = 0.15
 const STATUS_AURA_PULSE_SPEED: float = 4.0
 
+# ========== VFX PERSISTENTES (VFXManager) ==========
+var _stun_vfx: Node = null
+var _slow_vfx: Node = null
+var _shield_vfx: Node = null
+
 # ========== SISTEMA DE ICONOS DE ESTADO ==========
 var status_icon_display: StatusIconDisplay = null
 
@@ -919,6 +924,11 @@ func _apply_thorns_damage(attacker: Node, damage_received: int, player_stats: No
 		if "global_position" in attacker:
 			FloatingText.spawn_damage(attacker.global_position + Vector2(0, -20), thorns_damage, false)
 		
+		# VFX de thorns en la posición del jugador
+		var vfx_mgr = get_node_or_null("/root/VFXManager")
+		if vfx_mgr and vfx_mgr.has_method("spawn_thorns_vfx"):
+			vfx_mgr.spawn_thorns_vfx(global_position)
+		
 		# Aplicar ralentización si hay thorns_slow
 		if thorns_slow > 0 and attacker.has_method("apply_slow"):
 			attacker.apply_slow(thorns_slow, 1.5)  # 1.5s de duración
@@ -984,6 +994,18 @@ func _play_shield_absorb_effect() -> void:
 	var tween = create_tween()
 	tween.tween_property(animated_sprite, "modulate", Color(0.5, 0.8, 2.0, 1.0), 0.1)
 	tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.2)
+
+func _update_shield_vfx(shield_amount: float) -> void:
+	"""Spawn/cleanup aura de escudo según shield_amount"""
+	if shield_amount > 0 and not (_shield_vfx and is_instance_valid(_shield_vfx)):
+		# Spawn aura de escudo
+		var vfx_mgr = get_node_or_null("/root/VFXManager")
+		if vfx_mgr and vfx_mgr.has_method("spawn_shield_aura"):
+			_shield_vfx = vfx_mgr.spawn_shield_aura(self)
+	elif shield_amount <= 0 and _shield_vfx and is_instance_valid(_shield_vfx):
+		# Escudo agotado — limpiar aura
+		_shield_vfx.queue_free()
+		_shield_vfx = null
 
 func heal(amount: int) -> int:
 	"""Curar al personaje (aplica curse si está activo)"""
@@ -1578,6 +1600,12 @@ func apply_slow(amount: float, duration: float) -> void:
 	# Mostrar notificación solo si es nuevo
 	if not was_slowed:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "slow")
+		# VFX de slow (hielo en los pies)
+		var vfx_mgr = get_node_or_null("/root/VFXManager")
+		if vfx_mgr and vfx_mgr.has_method("spawn_slow_vfx"):
+			if _slow_vfx and is_instance_valid(_slow_vfx):
+				_slow_vfx.queue_free()
+			_slow_vfx = vfx_mgr.spawn_slow_vfx(self)
 	
 	# Debug desactivado: print("[%s] ❄️ Ralentizado %.0f%% por %.1fs" % [character_class, _slow_amount * 100, duration])
 
@@ -1585,6 +1613,10 @@ func _clear_slow() -> void:
 	_is_slowed = false
 	_slow_amount = 0.0
 	move_speed = base_move_speed
+	# Limpiar VFX de slow
+	if _slow_vfx and is_instance_valid(_slow_vfx):
+		_slow_vfx.queue_free()
+		_slow_vfx = null
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE
 	# Eliminar icono
@@ -1714,11 +1746,21 @@ func apply_stun(duration: float) -> void:
 	# Mostrar notificación solo si es nuevo
 	if not was_stunned:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "stun")
+		# VFX de stun (estrellas orbitando)
+		var vfx_mgr = get_node_or_null("/root/VFXManager")
+		if vfx_mgr and vfx_mgr.has_method("spawn_stun_vfx"):
+			if _stun_vfx and is_instance_valid(_stun_vfx):
+				_stun_vfx.queue_free()
+			_stun_vfx = vfx_mgr.spawn_stun_vfx(self)
 	
 	# Debug desactivado: print("[%s] ⚡ Aturdido por %.1fs" % [character_class, duration])
 
 func _clear_stun() -> void:
 	_is_stunned = false
+	# Limpiar VFX de stun
+	if _stun_vfx and is_instance_valid(_stun_vfx):
+		_stun_vfx.queue_free()
+		_stun_vfx = null
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE
 	# Eliminar icono
@@ -1795,6 +1837,8 @@ func _on_stat_changed(stat_name: String, _old_value: float, _new_value: float) -
 	"""Callback cuando cambian los stats globales"""
 	if stat_name == 'shield_amount' or stat_name == 'max_shield':
 		update_health_bar()
+		# VFX de aura de escudo persistente
+		_update_shield_vfx(_new_value if stat_name == 'shield_amount' else _old_value)
 	elif stat_name == 'pickup_range':
 		pickup_radius = _new_value
 		_update_pickup_area_size()

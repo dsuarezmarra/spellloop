@@ -758,6 +758,11 @@ func _spawn_elite_dash_visual_start() -> void:
 	if not is_instance_valid(enemy):
 		return
 	
+	# VFXManager hook - elite dash trail AOE
+	if _try_spawn_via_vfxmanager("elite_dash_trail", "aoe", enemy.global_position, 40.0, 0.3):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 60
@@ -882,6 +887,11 @@ func _perform_elite_nova() -> void:
 
 func _spawn_elite_nova_visual(center: Vector2) -> void:
 	"""Visual de carga de nova"""
+	# VFXManager hook - arcane nova AOE
+	if _try_spawn_via_vfxmanager("arcane_nova", "aoe", center, 80.0, 0.4):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 65
@@ -985,6 +995,11 @@ func _perform_elite_summon() -> void:
 
 func _spawn_elite_summon_visual(center: Vector2) -> void:
 	"""Visual de invocaciÃƒÂ³n ÃƒÂ©lite"""
+	# VFXManager hook - summon circle boss VFX
+	if _try_spawn_via_vfxmanager("summon_circle", "boss", center, 70.0, 0.5):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 60
@@ -1726,6 +1741,15 @@ func _update_boss_orbitals(delta: float) -> void:
 
 func _spawn_aoe_warning(pos: Vector2, radius: float, duration: float) -> void:
 	"""Mostrar warning de AOE antes del impacto"""
+	# VFXManager hook - circle warning telegraph
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	if vfx_mgr and vfx_mgr.has_method("spawn_circle_warning"):
+		var vfx_node = vfx_mgr.spawn_circle_warning(pos, radius, duration)
+		if vfx_node:
+			_track_boss_effect(vfx_node)
+			return
+	
+	# Fallback procedural
 	var warning = Node2D.new()
 	warning.name = "AOEWarning"
 	warning.top_level = true
@@ -1751,10 +1775,10 @@ func _spawn_aoe_warning(pos: Vector2, radius: float, duration: float) -> void:
 	visual.draw.connect(func():
 		# CÃƒÂ­rculo pulsante
 		var pulse = 0.5 + sin(anim * PI * 4) * 0.2
-		warning.draw_arc(Vector2.ZERO, radius * pulse, 0, TAU, 32, Color(color.r, color.g, color.b, 0.5), 3.0)
-		warning.draw_arc(Vector2.ZERO, radius * 0.7 * pulse, 0, TAU, 24, Color(1, 0.3, 0.3, 0.6), 2.0)
+		visual.draw_arc(Vector2.ZERO, radius * pulse, 0, TAU, 32, Color(color.r, color.g, color.b, 0.5), 3.0)
+		visual.draw_arc(Vector2.ZERO, radius * 0.7 * pulse, 0, TAU, 24, Color(1, 0.3, 0.3, 0.6), 2.0)
 		# SÃƒÂ­mbolo de peligro
-		warning.draw_circle(Vector2.ZERO, 10, Color(1, 0.2, 0.2, 0.8 * (1.0 - anim)))
+		visual.draw_circle(Vector2.ZERO, 10, Color(1, 0.2, 0.2, 0.8 * (1.0 - anim)))
 	)
 	
 	var tween = warning.create_tween()
@@ -2365,6 +2389,9 @@ func _boss_reality_tear() -> void:
 	var damage = modifiers.get("tear_damage", 15)
 	var duration = modifiers.get("tear_duration", 6.0)
 	
+	# VFXManager hook - reality tear boss VFX
+	_try_spawn_via_vfxmanager("reality_tear", "boss", player.global_position, radius, duration)
+	
 	# Crear en la posiciÃƒÂ³n del jugador
 	_spawn_damage_zone(player.global_position, radius, damage, duration, "dark")
 	# print("[EnemyAttackSystem] Ã°Å¸Å’Å’ Reality Tear creado")
@@ -2718,6 +2745,11 @@ func _spawn_boss_impact_effect() -> void:
 	if not enemy or not player:
 		return
 	
+	# VFXManager hook - boss melee impact AOE
+	if _try_spawn_via_vfxmanager("boss_melee_impact", "aoe", player.global_position, 50.0, 0.3):
+		return
+	
+	# Fallback procedural
 	var impact_pos = player.global_position
 	var effect = Node2D.new()
 	effect.global_position = impact_pos
@@ -3242,6 +3274,14 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 
 func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float) -> void:
 	"""Crear efecto visual de breath attack Ãƒâ€°PICO con animaciÃƒÂ³n de expansiÃƒÂ³n"""
+	# VFXManager hook - flame breath beam
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	if vfx_mgr and vfx_mgr.has_method("spawn_beam"):
+		var beam = vfx_mgr.spawn_beam("flame_breath", origin, direction, range_dist)
+		if beam:
+			return
+	
+	# Fallback procedural
 	var container = Node2D.new()
 	container.name = "Breath_Visual"
 	container.top_level = true  # No se mueve con el padre
@@ -3377,7 +3417,11 @@ func _emit_melee_effect() -> void:
 	var direction = (player.global_position - enemy.global_position).normalized()
 	var slash_pos = enemy.global_position + direction * 25
 	
-	# Crear visual de slash - INDEPENDIENTE del enemigo
+	# VFXManager hook - melee slash AOE
+	if _try_spawn_via_vfxmanager("melee_slash", "aoe", slash_pos, 30.0, 0.25):
+		return
+	
+	# Fallback procedural - Crear visual de slash - INDEPENDIENTE del enemigo
 	var slash = Node2D.new()
 	slash.name = "MeleeSlash"
 	slash.top_level = true  # No se mueve con el padre
@@ -3647,6 +3691,11 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 
 func _spawn_orb_impact_effect(pos: Vector2, color: Color) -> void:
 	"""Crear efecto visual de impacto de orbe Ãƒâ€°PICO"""
+	# VFXManager hook - orb impact AOE
+	if _try_spawn_via_vfxmanager("orb_impact", "aoe", pos, 45.0, 0.3):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.global_position = pos
 	effect.top_level = true
@@ -3891,6 +3940,11 @@ func _spawn_summon_visual() -> void:
 
 func _spawn_teleport_effect(pos: Vector2, is_arrival: bool) -> void:
 	"""Efecto de teleport"""
+	# VFXManager hook - boss teleport VFX
+	if _try_spawn_via_vfxmanager("teleport", "boss", pos, 50.0, 0.5):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 50
@@ -3976,6 +4030,11 @@ func _spawn_arcane_nova_visual(center: Vector2, radius: float) -> void:
 
 func _spawn_curse_aura_visual(center: Vector2, radius: float) -> void:
 	"""Visual de aura de maldiciÃƒÂ³n"""
+	# VFXManager hook - corruption aura
+	if is_instance_valid(enemy) and _try_spawn_via_vfxmanager("buff_corruption", "aura", center, radius, 1.5):
+		return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 50
@@ -4068,6 +4127,14 @@ func _spawn_void_pull_visual(center: Vector2, radius: float) -> void:
 
 func _spawn_void_beam_visual(origin: Vector2, direction: Vector2, length: float, duration: float) -> void:
 	"""Visual de void beam"""
+	# VFXManager hook - void beam
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	if vfx_mgr and vfx_mgr.has_method("spawn_beam"):
+		var beam = vfx_mgr.spawn_beam("void_beam", origin, direction, length, duration)
+		if beam:
+			return
+	
+	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 50
@@ -4206,6 +4273,11 @@ func _spawn_counter_stance_visual() -> void:
 	if not is_instance_valid(enemy):
 		return
 	
+	# VFXManager hook - counter stance boss VFX
+	if _try_spawn_via_vfxmanager("counter_stance", "boss", enemy.global_position, 35.0, 2.0):
+		return
+	
+	# Fallback procedural
 	var visual = Node2D.new()
 	visual.name = "CounterStanceVisual"
 	enemy.add_child(visual)
@@ -4445,7 +4517,11 @@ func _spawn_meteor_impact(pos: Vector2, radius: float, damage: int) -> void:
 		if player.has_method("apply_burn"):
 			player.apply_burn(damage * 0.3, 3.0)
 	
-	# Visual de impacto
+	# VFXManager hook - meteor impact AOE
+	if _try_spawn_via_vfxmanager("meteor_impact", "aoe", pos, radius, 0.4):
+		return
+	
+	# Fallback procedural - Visual de impacto
 	var effect = Node2D.new()
 	effect.global_position = pos
 	

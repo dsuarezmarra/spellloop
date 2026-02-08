@@ -60,6 +60,22 @@ var AOE_CONFIG = {
 	"elite_slam": {
 		"path": VFX_BASE_PATH + "aoe/earth/aoe_elite_slam_spritesheet.png",
 		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.5
+	},
+	"elite_dash_trail": {
+		"path": VFX_BASE_PATH + "aoe/elite/vfx_elite_dash_trail_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 64), "duration": 0.3
+	},
+	"boss_melee_impact": {
+		"path": VFX_BASE_PATH + "aoe/boss/vfx_boss_melee_impact_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.3
+	},
+	"orb_impact": {
+		"path": VFX_BASE_PATH + "aoe/void/vfx_orb_impact_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.3
+	},
+	"melee_slash": {
+		"path": VFX_BASE_PATH + "aoe/elite/vfx_melee_slash_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.25
 	}
 }
 
@@ -89,11 +105,10 @@ var PROJECTILE_CONFIG = {
 		"path": VFX_BASE_PATH + "projectiles/poison/projectile_poison_spritesheet.png",
 		"hframes": 4, "vframes": 2, "frame_size": Vector2(64, 64), "duration": 0.4
 	},
-	# TODO: Pendiente generar asset - descomentar cuando exista
-	#"lightning": {
-	#	"path": VFX_BASE_PATH + "projectiles/lightning/projectile_lightning_spritesheet.png",
-	#	"hframes": 4, "vframes": 2, "frame_size": Vector2(64, 64), "duration": 0.4
-	#},
+	"lightning": {
+		"path": VFX_BASE_PATH + "projectiles/lightning/projectile_lightning_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(64, 64), "duration": 0.4
+	},
 	"homing_orb": {
 		"path": VFX_BASE_PATH + "projectiles/void/projectile_homing_orb_spritesheet.png",
 		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.5
@@ -133,48 +148,27 @@ var AURA_CONFIG = {
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PLAYER VFX CONFIG (Pendiente de assets - ver docs/VFX_PROMPTS.md)
+# PLAYER VFX CONFIG
 # ══════════════════════════════════════════════════════════════════════════════
-# TODO: Descomentar cada sección cuando se generen los assets correspondientes
 
-# var PLAYER_VFX_CONFIG = {
-# 	"thorns": {
-# 		"path": VFX_BASE_PATH + "player/thorns/player_thorns_spritesheet.png",
-# 		"hframes": 8, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.5
-# 	},
-# 	"heal": {
-# 		"path": VFX_BASE_PATH + "player/heal/player_heal_spritesheet.png",
-# 		"hframes": 8, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.5
-# 	},
-# 	"shield_appear": {
-# 		"path": VFX_BASE_PATH + "player/shield/shield_appear_spritesheet.png",
-# 		"hframes": 4, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.3
-# 	},
-# 	"shield_loop": {
-# 		"path": VFX_BASE_PATH + "player/shield/shield_loop_spritesheet.png",
-# 		"hframes": 4, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.6
-# 	},
-# 	"shield_break": {
-# 		"path": VFX_BASE_PATH + "player/shield/shield_break_spritesheet.png",
-# 		"hframes": 4, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.3
-# 	},
-# 	"revive": {
-# 		"path": VFX_BASE_PATH + "player/revive/player_revive_spritesheet.png",
-# 		"hframes": 8, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.8
-# 	},
-# 	"soul_link": {
-# 		"path": VFX_BASE_PATH + "player/soul_link/soul_link_beam_spritesheet.png",
-# 		"hframes": 8, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.6
-# 	},
-# 	"buff_aura": {
-# 		"path": VFX_BASE_PATH + "player/buffs/buff_aura_spritesheet.png",
-# 		"hframes": 6, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.8
-# 	},
-# 	"debuff_aura": {
-# 		"path": VFX_BASE_PATH + "player/debuffs/debuff_aura_spritesheet.png",
-# 		"hframes": 6, "vframes": 1, "frame_size": Vector2(128, 128), "duration": 0.8
-# 	}
-# }
+var PLAYER_VFX_CONFIG = {
+	"thorns": {
+		"path": VFX_BASE_PATH + "player/thorns/vfx_player_thorns_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.3
+	},
+	"shield_aura": {
+		"path": VFX_BASE_PATH + "player/shield/vfx_player_shield_aura_spritesheet.png",
+		"hframes": 6, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.8
+	},
+	"stun": {
+		"path": VFX_BASE_PATH + "player/debuffs/vfx_player_stun_spritesheet.png",
+		"hframes": 6, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.8
+	},
+	"slow": {
+		"path": VFX_BASE_PATH + "player/debuffs/vfx_player_slow_spritesheet.png",
+		"hframes": 6, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.8
+	}
+}
 
 # Configuración de Beam spritesheets
 var BEAM_CONFIG = {
@@ -226,6 +220,14 @@ var BOSS_CONFIG = {
 		"path": VFX_BASE_PATH + "boss_specific/guardian_runas/boss_rune_shield_spritesheet.png",
 		"hframes": 4, "vframes": 2, "frame_size": Vector2(192, 192), "duration": 0.5
 	},
+	"teleport": {
+		"path": VFX_BASE_PATH + "boss_specific/conjurador/vfx_boss_teleport_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(192, 192), "duration": 0.5
+	},
+	"counter_stance": {
+		"path": VFX_BASE_PATH + "boss_specific/guardian_runas/vfx_boss_counter_stance_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(192, 192), "duration": 0.8
+	},
 	"orbital": {
 		"path": VFX_BASE_PATH + "boss_specific/minotauro/boss_orbital_spritesheet.png",
 		"hframes": 4, "vframes": 2, "frame_size": Vector2(153, 204), "duration": 0.6
@@ -246,7 +248,7 @@ var ELEMENT_TO_PROJECTILE = {
 	"shadow": "void",
 	"poison": "poison",
 	"nature": "poison",
-	"lightning": "arcane",  # Fallback
+	"lightning": "lightning",
 	"physical": "arcane"    # Fallback
 }
 
@@ -272,6 +274,37 @@ var ABILITY_TO_AOE = {
 
 # Cache de texturas cargadas
 var _texture_cache: Dictionary = {}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# VFX DEBUG MODE
+# ══════════════════════════════════════════════════════════════════════════════
+## Activar con: VFXManager.DEBUG_VFX = true  (desde consola o código)
+var DEBUG_VFX: bool = false
+var _vfx_log: Array = []  # Historial de spawns recientes
+const MAX_VFX_LOG: int = 50
+
+func _log_vfx_spawn(category: String, vfx_type: String, asset_path: String, is_fallback: bool = false) -> void:
+	if not DEBUG_VFX:
+		return
+	var entry = {
+		"time": Time.get_ticks_msec(),
+		"category": category,
+		"type": vfx_type,
+		"asset": asset_path.get_file() if asset_path else "PROCEDURAL",
+		"fallback": is_fallback
+	}
+	_vfx_log.append(entry)
+	if _vfx_log.size() > MAX_VFX_LOG:
+		_vfx_log.pop_front()
+	var tag = " (FALLBACK)" if is_fallback else ""
+	print("[VFX] %s:%s → %s%s" % [category, vfx_type, entry["asset"], tag])
+
+func get_vfx_log() -> Array:
+	"""Obtener historial de spawns VFX recientes"""
+	return _vfx_log.duplicate()
+
+func clear_vfx_log() -> void:
+	_vfx_log.clear()
 
 # ══════════════════════════════════════════════════════════════════════════════
 # INICIALIZACIÓN
@@ -317,11 +350,15 @@ func spawn_aoe(aoe_type: String, position: Vector2, radius: float = 100.0, durat
 	
 	if not config:
 		push_warning("[VFXManager] AOE type desconocido: %s" % aoe_type)
+		_log_vfx_spawn("AOE", aoe_type, "", true)
 		return _spawn_fallback_aoe(position, radius)
 	
 	var tex = _get_texture(config["path"])
 	if not tex:
+		_log_vfx_spawn("AOE", aoe_type, config["path"], true)
 		return _spawn_fallback_aoe(position, radius)
+	
+	_log_vfx_spawn("AOE", aoe_type, config["path"])
 	
 	# FIX: Calculate proper scale factor from radius
 	# radius is in pixels, we need to convert to scale factor
@@ -388,12 +425,15 @@ func spawn_projectile_impact(element: String, position: Vector2) -> Node2D:
 	"""Spawn efecto de impacto de proyectil"""
 	var config = get_projectile_config(element)
 	if config.is_empty():
+		_log_vfx_spawn("PROJECTILE", element, "", true)
 		return null
 	
 	var tex = _get_texture(config["path"])
 	if not tex:
+		_log_vfx_spawn("PROJECTILE", element, config["path"], true)
 		return null
 	
+	_log_vfx_spawn("PROJECTILE", element, config["path"])
 	return _create_animated_vfx(tex, config, position, 1.0, 0.3)
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -405,11 +445,15 @@ func spawn_aura(aura_type: String, parent: Node2D, loop: bool = true) -> Animate
 	var config = AURA_CONFIG.get(aura_type)
 	if not config:
 		push_warning("[VFXManager] Aura type desconocido: %s" % aura_type)
+		_log_vfx_spawn("AURA", aura_type, "", true)
 		return null
 	
 	var tex = _get_texture(config["path"])
 	if not tex:
+		_log_vfx_spawn("AURA", aura_type, config["path"], true)
 		return null
+	
+	_log_vfx_spawn("AURA", aura_type, config["path"])
 	
 	var sprite = AnimatedSprite2D.new()
 	sprite.sprite_frames = _create_sprite_frames_from_sheet(tex, config, "aura_" + aura_type, loop)
@@ -436,11 +480,15 @@ func spawn_beam(beam_type: String, origin: Vector2, direction: Vector2, length: 
 	var config = BEAM_CONFIG.get(beam_type)
 	if not config:
 		push_warning("[VFXManager] Beam type desconocido: %s" % beam_type)
+		_log_vfx_spawn("BEAM", beam_type, "", true)
 		return _spawn_fallback_beam(origin, direction, length, duration)
 	
 	var tex = _get_texture(config["path"])
 	if not tex:
+		_log_vfx_spawn("BEAM", beam_type, config["path"], true)
 		return _spawn_fallback_beam(origin, direction, length, duration)
+	
+	_log_vfx_spawn("BEAM", beam_type, config["path"])
 	
 	var effect = Node2D.new()
 	effect.global_position = origin
@@ -511,11 +559,15 @@ func spawn_telegraph(telegraph_type: String, position: Vector2, radius: float, d
 	var config = TELEGRAPH_CONFIG.get(telegraph_type)
 	if not config:
 		push_warning("[VFXManager] Telegraph type desconocido: %s" % telegraph_type)
+		_log_vfx_spawn("TELEGRAPH", telegraph_type, "", true)
 		return _spawn_fallback_telegraph(position, radius, duration)
 	
 	var tex = _get_texture(config["path"])
 	if not tex:
+		_log_vfx_spawn("TELEGRAPH", telegraph_type, config["path"], true)
 		return _spawn_fallback_telegraph(position, radius, duration)
+	
+	_log_vfx_spawn("TELEGRAPH", telegraph_type, config["path"])
 	
 	var effect = Node2D.new()
 	effect.global_position = position
@@ -602,12 +654,15 @@ func spawn_boss_vfx(boss_vfx_type: String, position: Vector2, scale: float = 1.0
 	var config = BOSS_CONFIG.get(boss_vfx_type)
 	if not config:
 		push_warning("[VFXManager] Boss VFX type desconocido: %s" % boss_vfx_type)
+		_log_vfx_spawn("BOSS", boss_vfx_type, "", true)
 		return null
 	
 	var tex = _get_texture(config["path"])
 	if not tex:
+		_log_vfx_spawn("BOSS", boss_vfx_type, config["path"], true)
 		return null
 	
+	_log_vfx_spawn("BOSS", boss_vfx_type, config["path"])
 	return _create_animated_vfx(tex, config, position, scale, config["duration"])
 
 func spawn_summon_circle(position: Vector2, scale: float = 1.0) -> Node2D:
@@ -622,6 +677,70 @@ func spawn_void_pull_effect(position: Vector2, radius: float) -> Node2D:
 
 func spawn_rune_shield(position: Vector2, scale: float = 1.0) -> Node2D:
 	return spawn_boss_vfx("rune_shield", position, scale)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SPAWN DE VFX - PLAYER
+# ══════════════════════════════════════════════════════════════════════════════
+
+func spawn_player_vfx(vfx_type: String, position: Vector2, scale_factor: float = 1.0, duration_override: float = -1.0) -> Node2D:
+	"""Spawn VFX de jugador (one-shot)"""
+	var config = PLAYER_VFX_CONFIG.get(vfx_type)
+	if not config:
+		push_warning("[VFXManager] Player VFX type desconocido: %s" % vfx_type)
+		_log_vfx_spawn("PLAYER", vfx_type, "", true)
+		return null
+	
+	var tex = _get_texture(config["path"])
+	if not tex:
+		_log_vfx_spawn("PLAYER", vfx_type, config["path"], true)
+		return null
+	
+	_log_vfx_spawn("PLAYER", vfx_type, config["path"])
+	return _create_animated_vfx(tex, config, position, scale_factor, duration_override)
+
+func spawn_player_aura(vfx_type: String, parent: Node2D, loop: bool = true) -> AnimatedSprite2D:
+	"""Spawn aura de jugador que sigue al nodo padre (loop)"""
+	var config = PLAYER_VFX_CONFIG.get(vfx_type)
+	if not config:
+		push_warning("[VFXManager] Player aura type desconocido: %s" % vfx_type)
+		_log_vfx_spawn("PLAYER_AURA", vfx_type, "", true)
+		return null
+	
+	var tex = _get_texture(config["path"])
+	if not tex:
+		_log_vfx_spawn("PLAYER_AURA", vfx_type, config["path"], true)
+		return null
+	
+	_log_vfx_spawn("PLAYER_AURA", vfx_type, config["path"])
+	var sprite = AnimatedSprite2D.new()
+	sprite.sprite_frames = _create_sprite_frames_from_sheet(tex, config, "player_" + vfx_type, loop)
+	sprite.z_index = 60
+	sprite.play("default")
+	parent.add_child(sprite)
+	return sprite
+
+func spawn_thorns_vfx(position: Vector2) -> Node2D:
+	"""Spawn efecto de thorns (one-shot en posición del jugador)"""
+	return spawn_player_vfx("thorns", position, 1.0, 0.3)
+
+func spawn_shield_aura(parent: Node2D) -> AnimatedSprite2D:
+	"""Spawn aura de escudo persistente"""
+	return spawn_player_aura("shield_aura", parent, true)
+
+func spawn_stun_vfx(parent: Node2D) -> AnimatedSprite2D:
+	"""Spawn estrellas de stun orbitando (loop)"""
+	var sprite = spawn_player_aura("stun", parent, true)
+	if sprite:
+		sprite.z_index = 70  # Encima del personaje
+		sprite.position = Vector2(0, -16)  # Sobre la cabeza
+	return sprite
+
+func spawn_slow_vfx(parent: Node2D) -> AnimatedSprite2D:
+	"""Spawn hielo de slow en los pies (loop)"""
+	var sprite = spawn_player_aura("slow", parent, true)
+	if sprite:
+		sprite.z_index = -1  # Debajo del personaje
+	return sprite
 
 # ══════════════════════════════════════════════════════════════════════════════
 # UTILIDADES INTERNAS

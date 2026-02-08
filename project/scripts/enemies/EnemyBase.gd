@@ -545,7 +545,16 @@ func _create_elite_aura() -> void:
 	if aura_sprite:
 		return
 
-	# Crear sprite para el aura - imagen estática única
+	# VFXManager hook - animated spritesheet elite aura
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	if vfx_mgr and vfx_mgr.has_method("spawn_elite_aura"):
+		var aura_node = vfx_mgr.spawn_elite_aura(self)
+		if aura_node:
+			aura_sprite = aura_node  # Track for cleanup
+			_apply_elite_glow_shader()
+			return
+
+	# Fallback: Crear sprite para el aura - imagen estática única
 	aura_sprite = Sprite2D.new()
 	aura_sprite.name = "EliteAura"
 	
