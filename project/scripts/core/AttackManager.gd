@@ -521,6 +521,11 @@ func fuse_weapons(weapon_a: BaseWeapon, weapon_b: BaseWeapon) -> BaseWeapon:
 	if fused == null:
 		return null
 
+	# FIX-10: notificar a RunAuditTracker antes de remover
+	var audit_tracker = get_node_or_null("/root/RunAuditTracker")
+	if audit_tracker and audit_tracker.has_method("report_fusion_completed"):
+		audit_tracker.report_fusion_completed([weapon_a.id, weapon_b.id], fused.id)
+
 	# Remover las armas originales
 	remove_weapon(weapon_a)
 	remove_weapon(weapon_b)

@@ -683,3 +683,77 @@ Top upgrades (por stacks):
 ---
 
 *Informe generado el 2026-02-09 por análisis automatizado de telemetría y código fuente de Loopialike v0.1.0-alpha.*
+
+---
+
+## 12. Fixes Aplicados (Post-Análisis)
+
+Tras el análisis se implementaron los siguientes cambios directamente en el código fuente:
+
+### P0 — Críticos (Aplicados)
+
+| Fix | Archivo | Cambio |
+|-----|---------|--------|
+| **FIX-01** | `PlayerStats.gd` L579 | Añadido `"armor": {"min": 0.0, "max": 999.0}` a `STAT_LIMITS` — impide armor negativo |
+| **FIX-02** | `UpgradeDatabase.gd` ~L2470 | `unique_glass_mage` armor cambiado de `{"value": -999, "operation": "add"}` a `{"value": 0, "operation": "set"}` |
+| **FIX-05** | `PlayerStats.gd` L579 | Añadido `"crit_damage": {"min": 1.0, "max": 8.0}` a `STAT_LIMITS` — cap de 800% crit |
+
+### P1 — Telemetría y Auditoría (Aplicados)
+
+| Fix | Archivo | Cambio |
+|-----|---------|--------|
+| **FIX-03** | `DamageCalculator.gd` L19-22, L125 | Añadido parámetro `attacker: Node = null` para extraer `weapon_id` correctamente |
+| **FIX-04** | `OrbitalManager.gd`, `ChainProjectile.gd`, `ProjectileFactory.gd` | 4 callers actualizados para pasar `self` como `attacker` |
+| **FIX-06** | `UpgradeAuditor.gd` L332-365 | `audit_global_weapon_upgrade()` ahora: (a) salta stats que no son `WEAPON_STATS`, (b) detecta caps con lógica `was_capped` |
+| **FIX-11** | `Game.gd` L420, L972-981 | Conectada señal `quit_to_menu_pressed` + handler `_on_quit_to_menu()` + safety net `_exit_tree()` para registrar `run_end` |
+
+### P2 — Calidad de Datos (Aplicados)
+
+| Fix | Archivo | Cambio |
+|-----|---------|--------|
+| **FIX-ENEMY-NAME** | `BasePlayer.gd` L785 | `enemy_name` en `report_damage_to_player()` ahora usa `enemy_data.name` en vez del `enemy_id` técnico |
+
+### Descartados (No son bugs reales)
+
+| Issue | Resultado |
+|-------|-----------|
+| **FIX-07 (UTF-8 mojibake)** | Los archivos originales son UTF-8 válidos. La corrupción fue causada por la copia con PowerShell (doble-encoding). Sin cambio necesario. |
+| **FIX-08 (doble :: en JSON)** | No existe en ningún archivo. Fue un artefacto visual del terminal. Sin cambio necesario. |
+
+### Pendientes (Propuestos, no implementados)
+
+| Fix | Prioridad | Descripción |
+|-----|-----------|-------------|
+| BAL-01 | P3 | Rebalanceo de fusiones vs armas base (requiere playtesting) |
+| BAL-02 | P3 | Revisión de eficacia de ataque enemigo (requiere diseño) |
+
+### Fase 3 — Aplicados (2ª ronda)
+
+| Fix | Archivo(s) | Cambio |
+|-----|------------|--------|
+| **FIX-09** | `DifficultyManager.gd` | (1) Lazy retry para `game_manager` en `_process()` — corrige causa raíz de multiplicadores en 1.0. (2) Sistema adaptativo: `performance_factor` (0.7–1.3) basado en DPS/daño recibido, alimentado por BalanceTelemetry cada minuto. (3) Expuesto en `get_scaling_snapshot()`. |
+| **FIX-10** | `RunAuditTracker.gd`, `AttackManager.gd` | `AuditWeaponStats` + campos `consumed_by_fusion`/`fused_into`. Nuevo método `report_fusion_completed()`. `_get_top_weapons()` filtra componentes fusionados. `AttackManager.fuse_weapons()` notifica al tracker antes de eliminar. |
+| **FIX-12** | `BalanceDebugger.gd` | Eliminados guards `if not enabled: return` de TODOS los métodos de colección de datos (`log_damage_dealt`, `log_damage_taken`, `log_heal`, `log_elite_spawn/death`, `log_xp_gained`, `log_level_up`, `log_difficulty_scaling`). `enabled` ahora solo controla el overlay UI y prints de debug. Los contadores siempre se acumulan. |
+| **SOSP-02** | `PlayerStats.gd` L1198-1207 | `_on_stat_changed()` ahora maneja `is_glass_cannon` y `blood_pact`: al activarse, clampa `current_health` a `get_stat("max_health")` (= 1.0) y emite `health_changed`. |
+| **FIX-09b** | `BalanceTelemetry.gd` | Nuevo bridge `_update_adaptive_difficulty()` que alimenta `DifficultyManager.update_performance_factor()` con DPS estimado, daño recibido y kills tras cada snapshot de minuto. |
+
+### Resumen de archivos modificados
+
+| Archivo | Líneas afectadas |
+|---------|------------------|
+| `project/scripts/core/PlayerStats.gd` | +2 entries en STAT_LIMITS, +handler glass_cannon/blood_pact en `_on_stat_changed()` |
+| `project/scripts/data/UpgradeDatabase.gd` | 1 efecto reescrito (glass_mage) |
+| `project/scripts/weapons/projectiles/DamageCalculator.gd` | Signatura + audit hook refactorizado |
+| `project/scripts/weapons/projectiles/OrbitalManager.gd` | 2 callsites actualizados |
+| `project/scripts/weapons/projectiles/ChainProjectile.gd` | 1 callsite actualizado |
+| `project/scripts/weapons/ProjectileFactory.gd` | 2 callsites actualizados (BeamEffect, AOEEffect) |
+| `project/scripts/debug/UpgradeAuditor.gd` | audit_global_weapon_upgrade reescrito con cap-awareness |
+| `project/scripts/game/Game.gd` | +signal connect, +_on_quit_to_menu(), +_exit_tree() |
+| `project/scripts/entities/players/BasePlayer.gd` | enemy_name resolve con display name |
+| `project/scripts/core/DifficultyManager.gd` | Lazy retry game_manager, performance_factor adaptativo, reset+snapshot actualizado |
+| `project/scripts/debug/BalanceTelemetry.gd` | Bridge `_update_adaptive_difficulty()` tras snapshot de minuto |
+| `project/scripts/debug/BalanceDebugger.gd` | Eliminados guards `if not enabled` de log functions (siempre coleccionan datos) |
+| `project/scripts/debug/RunAuditTracker.gd` | +`consumed_by_fusion`/`fused_into` en AuditWeaponStats, +`report_fusion_completed()`, filtro en `_get_top_weapons()` |
+| `project/scripts/core/AttackManager.gd` | Notificación a RunAuditTracker al fusionar armas |
+
+*Fixes aplicados el 2026-02-09 como parte del plan de acción del informe.*

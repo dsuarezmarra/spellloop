@@ -354,6 +354,9 @@ func log_minute_snapshot(context: Dictionary) -> void:
 	# Reset manual counters (rerolls, chests)
 	_rerolls_used_last_60s = 0
 	_chests_opened_last_60s = 0
+	
+	# Feed performance data to DifficultyManager for adaptive scaling
+	_update_adaptive_difficulty(dps_est, damage_taken_delta, kills_delta)
 
 func log_upgrade_pick(context: Dictionary) -> void:
 	"""Log when player picks an upgrade. Call from LevelUpPanel._apply_option()"""
@@ -718,3 +721,17 @@ func check_minute_snapshot(game_time: float) -> bool:
 		_last_minute_logged = current_minute
 		return true
 	return false
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ADAPTIVE DIFFICULTY BRIDGE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _update_adaptive_difficulty(player_dps: float, damage_taken_last_60s: float, kills_last_60s: int) -> void:
+	"""Feed performance metrics to DifficultyManager for adaptive scaling."""
+	var dm = get_node_or_null("/root/DifficultyManager")
+	if dm == null:
+		var tree = get_tree()
+		if tree:
+			dm = tree.get_first_node_in_group("difficulty_manager")
+	if dm and dm.has_method("update_performance_factor"):
+		dm.update_performance_factor(player_dps, damage_taken_last_60s, float(kills_last_60s))

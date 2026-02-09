@@ -1205,6 +1205,15 @@ func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> 
 			current_health = maxf(current_health, 1.0)
 			health_changed.emit(current_health, new_value)
 		
+		"is_glass_cannon", "blood_pact":
+			# SOSP-02: Al activar glass_cannon o blood_pact, max_health efectivo = 1.0
+			# Debemos clampar current_health inmediatamente
+			if new_value > 0:
+				var effective_max = get_stat("max_health")  # Retornará 1.0
+				if current_health > effective_max:
+					current_health = effective_max
+					health_changed.emit(current_health, effective_max)
+		
 		# NOTA: Todos los WEAPON_STATS (damage_mult, attack_speed_mult, crit_chance, 
 		# area_mult, life_steal, chain_count, etc.) van EXCLUSIVAMENTE a GlobalWeaponStats.
 		# NO necesitan sincronización aquí porque nunca se almacenan en PlayerStats.

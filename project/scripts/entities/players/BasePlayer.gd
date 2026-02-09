@@ -782,7 +782,10 @@ func _process_frame_damage() -> void:
 					enemy_id = primary_hit.attacker.name.get_slice("_", 0)
 				if primary_hit.attacker.has_meta("attack_name"):
 					attack_name = primary_hit.attacker.get_meta("attack_name")
-			RunAuditTracker.report_damage_to_player(enemy_id, enemy_id, attack_name, final_applied_damage)
+			var enemy_display_name := enemy_id
+			if is_instance_valid(primary_hit.attacker) and "enemy_data" in primary_hit.attacker:
+				enemy_display_name = primary_hit.attacker.enemy_data.get("name", enemy_id)
+			RunAuditTracker.report_damage_to_player(enemy_id, enemy_display_name, attack_name, final_applied_damage)
 		
 		# Notificar estadísticas
 		var player_stats = get_tree().get_first_node_in_group("player_stats")

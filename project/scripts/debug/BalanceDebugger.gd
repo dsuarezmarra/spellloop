@@ -79,9 +79,8 @@ func _process(delta: float) -> void:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 ## Registrar daño infligido por el jugador
+## FIX-12: Siempre coleccionar datos, 'enabled' solo controla UI overlay
 func log_damage_dealt(amount: int) -> void:
-	if not enabled:
-		return
 	_damage_dealt_samples.append(amount)
 	_damage_dealt_total += amount
 	_damage_dealt_count += 1
@@ -90,9 +89,8 @@ func log_damage_dealt(amount: int) -> void:
 		_damage_dealt_samples.pop_front()
 
 ## Registrar daño recibido (antes y después de mitigación)
+## FIX-12: Siempre coleccionar datos
 func log_damage_taken(raw: int, final: int, dodged: bool, shield_absorbed: int = 0, armor_reduced: int = 0) -> void:
-	if not enabled:
-		return
 	if dodged:
 		_dodges_count += 1
 		return
@@ -102,9 +100,8 @@ func log_damage_taken(raw: int, final: int, dodged: bool, shield_absorbed: int =
 	_armor_reduced += armor_reduced
 
 ## Registrar curación
+## FIX-12: Siempre coleccionar datos
 func log_heal(amount: float, source: String) -> void:
-	if not enabled:
-		return
 	_heal_total += amount
 	match source:
 		"regen":
@@ -115,9 +112,8 @@ func log_heal(amount: float, source: String) -> void:
 			_heal_from_kill += amount
 
 ## Registrar spawn de elite/boss para TTK
+## FIX-12: Siempre coleccionar datos
 func log_elite_spawn(enemy_id: int, is_boss: bool = false) -> void:
-	if not enabled:
-		return
 	var now = Time.get_ticks_msec()
 	if is_boss:
 		_boss_spawn_times[enemy_id] = now
@@ -125,9 +121,8 @@ func log_elite_spawn(enemy_id: int, is_boss: bool = false) -> void:
 		_elite_spawn_times[enemy_id] = now
 
 ## Registrar muerte de elite/boss para TTK
+## FIX-12: Siempre coleccionar datos
 func log_elite_death(enemy_id: int, is_boss: bool = false) -> void:
-	if not enabled:
-		return
 	var now = Time.get_ticks_msec()
 	if is_boss:
 		if _boss_spawn_times.has(enemy_id):
@@ -141,31 +136,31 @@ func log_elite_death(enemy_id: int, is_boss: bool = false) -> void:
 			_elite_ttk_samples.append(ttk)
 			_elite_spawn_times.erase(enemy_id)
 			# Solo imprimir cada 5 elites para no spamear
-			if _elite_ttk_samples.size() % 5 == 0:
+			if enabled and _elite_ttk_samples.size() % 5 == 0:
 				print("[BALANCE DEBUG] ⭐ Elite avg TTK (last 5): %.2fs" % _get_avg(_elite_ttk_samples.slice(-5)))
 
 ## BALANCE PASS 2: Registrar XP ganada
+## FIX-12: Siempre coleccionar datos
 func log_xp_gained(amount: int) -> void:
-	if not enabled:
-		return
 	_xp_gained_total += amount
 
 ## BALANCE PASS 2: Registrar level up
+## FIX-12: Siempre coleccionar datos
 func log_level_up(new_level: int) -> void:
-	if not enabled:
-		return
 	if new_level > _last_level:
 		_levels_gained += 1
 		_last_level = new_level
-		var elapsed_min = (Time.get_ticks_msec() - _session_start_time) / 60000.0
-		print("[BALANCE DEBUG] 📈 Level %d reached at %.1f min" % [new_level, elapsed_min])
+		if enabled:
+			var elapsed_min = (Time.get_ticks_msec() - _session_start_time) / 60000.0
+			print("[BALANCE DEBUG] \U0001f4c8 Level %d reached at %.1f min" % [new_level, elapsed_min])
 
 ## BALANCE PASS 2.5: Registrar snapshot de difficulty scaling (ahora incluye fase)
+## FIX-12: Siempre coleccionar datos
 func log_difficulty_scaling(snapshot: Dictionary) -> void:
+	_last_difficulty_snapshot = snapshot
+	# Log cada minuto entero (solo si overlay activo)
 	if not enabled:
 		return
-	_last_difficulty_snapshot = snapshot
-	# Log cada minuto entero
 	var min_elapsed = int(snapshot.get("minute", 0))
 	if min_elapsed > 0 and min_elapsed % 5 == 0:  # Log cada 5 minutos
 		var phase_name = snapshot.get("phase_name", "?")

@@ -417,6 +417,7 @@ func _create_ui() -> void:
 		pause_menu = pause_scene.instantiate()
 		ui_layer.add_child(pause_menu)
 		pause_menu.resume_pressed.connect(_on_resume_game)
+		pause_menu.quit_to_menu_pressed.connect(_on_quit_to_menu)
 		# Las referencias se inicializarán después en _initialize_systems()
 
 	# Pantalla de Game Over
@@ -967,6 +968,18 @@ func _on_resume_game() -> void:
 	get_tree().paused = false  # Reanudar el árbol del juego
 	AudioManager.pause_music(false)
 	# Debug desactivado: print("▶️ [Game] Juego reanudado - is_paused=%s, tree.paused=%s" % [is_paused, get_tree().paused])
+
+func _on_quit_to_menu() -> void:
+	"""Finalizar telemetría cuando el jugador sale al menú desde pausa."""
+	if game_running:
+		_end_balance_telemetry("quit_to_menu")
+		game_running = false
+
+func _exit_tree() -> void:
+	"""Safety net: finalizar telemetría si la escena se destruye con run activa."""
+	if game_running:
+		_end_balance_telemetry("exit_tree")
+		game_running = false
 
 func _update_hud() -> void:
 	if not hud:

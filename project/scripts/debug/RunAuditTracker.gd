@@ -55,6 +55,8 @@ class AuditWeaponStats:
 	var crits_total: int = 0
 	var kills: int = 0
 	var status_procs: Dictionary = {}  # status_type -> count
+	var consumed_by_fusion: bool = false  # FIX-10: marcado al fusionarse
+	var fused_into: String = ""           # FIX-10: ID del arma resultante
 	
 	# Per-minute rolling (reset each minute)
 	var damage_last_60s: int = 0
@@ -73,7 +75,7 @@ class AuditWeaponStats:
 		hits_last_60s = 0
 	
 	func to_dict() -> Dictionary:
-		return {
+		var d := {
 			"weapon_id": weapon_id,
 			"weapon_name": weapon_name,
 			"damage_total": damage_total,
@@ -84,6 +86,10 @@ class AuditWeaponStats:
 			"status_procs": status_procs.duplicate(),
 			"dps_last_60s": get_dps_last_60s()
 		}
+		if consumed_by_fusion:
+			d["status"] = "fused"
+			d["fused_into"] = fused_into
+		return d
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ENEMY TRACKING (damage TO player)
@@ -555,11 +561,21 @@ func _collect_minute_data(context: Dictionary) -> Dictionary:
 		}
 	}
 
+func report_fusion_completed(component_ids: Array, result_id: String) -> void:
+	"""FIX-10: Marca las armas componentes como consumidas por fusión."""
+	for comp_id in component_ids:
+		if _weapon_stats.has(comp_id):
+			_weapon_stats[comp_id].consumed_by_fusion = true
+			_weapon_stats[comp_id].fused_into = result_id
+
 func _get_top_weapons(n: int) -> Array:
-	"""Obtener top N armas por daño total."""
+	"""Obtener top N armas por daño total (excluye componentes fusionados)."""
 	var weapons: Array = []
 	for weapon_id in _weapon_stats:
-		weapons.append(_weapon_stats[weapon_id].to_dict())
+		var stats = _weapon_stats[weapon_id]
+		if stats.consumed_by_fusion:
+			continue  # FIX-10: excluir componentes fusionados
+		weapons.append(stats.to_dict())
 	
 	weapons.sort_custom(func(a, b): return a.damage_total > b.damage_total)
 	

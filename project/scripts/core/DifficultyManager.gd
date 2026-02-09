@@ -94,6 +94,13 @@ const DAMAGE_SOFT_CAP: float = 40.0      # Soft cap ~40x DMG
 
 var boss_events_triggered: int = 0
 
+# === ADAPTIVE DIFFICULTY (Performance-based) ===
+# Factor adaptativo: 0.7 = jugador struggle, 1.0 = normal, 1.3 = dominando
+var performance_factor: float = 1.0
+const PERF_FACTOR_MIN: float = 0.7
+const PERF_FACTOR_MAX: float = 1.3
+const PERF_LERP_SPEED: float = 0.02  # Suavizado lento para evitar oscilaciones
+
 # Cache de valores base para transiciones
 var _p1_end_hp: float = 0.0
 var _p1_end_dmg: float = 0.0
@@ -128,7 +135,11 @@ func _find_managers() -> void:
 		enemy_manager = _gt.root.get_node_or_null("EnemyManager")
 
 func _process(delta: float) -> void:
-	if not game_manager or not game_manager.is_run_active:
+	if not game_manager:
+		_find_managers()
+		if not game_manager:
+			return
+	if not game_manager.is_run_active:
 		return
 	elapsed_time += delta
 	_update_difficulty()
@@ -153,6 +164,10 @@ func _update_difficulty() -> void:
 	enemy_health_multiplier = minf(enemy_health_multiplier, HP_SOFT_CAP)
 	enemy_damage_multiplier = minf(enemy_damage_multiplier, DAMAGE_SOFT_CAP)
 	elite_frequency_multiplier = minf(elite_frequency_multiplier, ELITE_FREQ_CAP)
+	
+	# Aplicar factor adaptativo (performance-based)
+	enemy_health_multiplier *= performance_factor
+	enemy_damage_multiplier *= performance_factor
 	
 	# Eventos de nivel
 	if new_difficulty_level > current_difficulty_level:
@@ -282,7 +297,8 @@ func get_scaling_snapshot() -> Dictionary:
 		"spawn_mult": enemy_count_multiplier,
 		"speed_mult": enemy_speed_multiplier,
 		"atk_speed_mult": enemy_attack_speed_multiplier,
-		"elite_freq_mult": elite_frequency_multiplier
+		"elite_freq_mult": elite_frequency_multiplier,
+		"performance_factor": performance_factor
 	}
 
 func reset() -> void:
@@ -296,4 +312,40 @@ func reset() -> void:
 	enemy_attack_speed_multiplier = 1.0
 	elite_frequency_multiplier = 1.0
 	boss_events_triggered = 0
+	performance_factor = 1.0
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ADAPTIVE DIFFICULTY — Factor de rendimiento
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func update_performance_factor(player_dps: float, damage_taken_rate: float, _kill_rate: float) -> void:
+	"""Ajusta la dificultad según el rendimiento del jugador.
+	- Si el jugador domina (alto DPS, poco daño recibido) → sube dificultad.
+	- Si el jugador está en problemas (bajo DPS, mucho daño) → baja dificultad.
+	Se debe llamar periódicamente (ej: cada snapshot de minuto)."""
+	if damage_taken_rate <= 0.0 and player_dps <= 0.0:
+		return  # Sin datos suficientes
+
+	# Ratio: cuánto daño hace vs cuánto recibe
+	# Alto ratio = dominando, bajo ratio = muriendo
+	var effectiveness: float
+	if damage_taken_rate > 0.0:
+		effectiveness = clampf(player_dps / maxf(damage_taken_rate, 1.0), 0.0, 100.0)
+	else:
+		effectiveness = 10.0  # No recibe daño = dominando
+
+	# Mapear effectiveness a target factor
+	# effectiveness ~1-3 → factor 0.7-0.8 (struggling)
+	# effectiveness ~5-10 → factor 1.0 (balanced)
+	# effectiveness ~15+ → factor 1.2-1.3 (dominating)
+	var target: float
+	if effectiveness < 5.0:
+		target = lerpf(PERF_FACTOR_MIN, 1.0, effectiveness / 5.0)
+	elif effectiveness < 15.0:
+		target = lerpf(1.0, PERF_FACTOR_MAX, (effectiveness - 5.0) / 10.0)
+	else:
+		target = PERF_FACTOR_MAX
+
+	# Suavizado lento para evitar oscilaciones bruscas
+	performance_factor = lerpf(performance_factor, target, PERF_LERP_SPEED)
 
