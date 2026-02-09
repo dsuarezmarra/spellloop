@@ -208,7 +208,13 @@
 			"enemies": "💀 Nemici",
 			"xp_total": "✨ XP Totali",
 			"gold": "🪙 Oro",
-			"damage_total": "⚔️ Danno Totale"
+			"damage_total": "⚔️ Danno Totale",
+			"damage_taken": "🛡️ Danni Subiti",
+			"avg_dps": "📊 DPS Medio",
+			"healing": "💚 Guarigione",
+			"bosses": "👹 Boss",
+			"elites": "⭐ Elite",
+			"weapon_breakdown": "⚔️ Dettaglio Armi"
 		},
 		"tooltips": {
 			"reroll_hint": "Genera nuove opzioni",

@@ -1417,6 +1417,14 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 	if final_damage > 0 and BalanceDebugger:
 		BalanceDebugger.log_damage_dealt(final_damage)
 	
+	# STATS: Incrementar damage_dealt en run_stats de Game
+	if final_damage > 0:
+		var game_node = get_tree().root.get_node_or_null("Game")
+		if not game_node:
+			game_node = get_tree().root.get_node_or_null("LoopiaLikeGame")
+		if game_node and game_node.has_method("add_damage_stat"):
+			game_node.add_damage_stat(final_damage)
+	
 	# AUDIT: Report damage to RunAuditTracker
 	if final_damage > 0 and RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
 		var weapon_id := "unknown"

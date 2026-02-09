@@ -208,7 +208,13 @@
 			"enemies": "💀 敌人",
 			"xp_total": "✨ 总经验",
 			"gold": "🪙 金币",
-			"damage_total": "⚔️ 总伤害"
+			"damage_total": "⚔️ 总伤害",
+			"damage_taken": "🛡️ 受到伤害",
+			"avg_dps": "📊 平均DPS",
+			"healing": "💚 治疗量",
+			"bosses": "👹 Boss击杀",
+			"elites": "⭐ 精英击杀",
+			"weapon_breakdown": "⚔️ 武器明细"
 		},
 		"tooltips": {
 			"reroll_hint": "生成新选项",

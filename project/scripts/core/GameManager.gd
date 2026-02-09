@@ -151,9 +151,15 @@ func start_new_run() -> void:
 		var player = null
 		if _gt and _gt.root:
 			# Intentar varias rutas donde podría estar el player
-			player = _gt.root.get_node_or_null("LoopiaLikeGame/LoopiaLikePlayer")
+			player = _gt.root.get_node_or_null("Game/LoopiaLikePlayer")
+			if not player:
+				player = _gt.root.get_node_or_null("LoopiaLikeGame/LoopiaLikePlayer")
+			if not player:
+				player = _gt.root.get_node_or_null("Game/WorldRoot/Player")
 			if not player:
 				player = _gt.root.get_node_or_null("LoopiaLikeGame/WorldRoot/Player")
+			if not player:
+				player = _gt.root.get_node_or_null("Game/Player")
 			if not player:
 				player = _gt.root.get_node_or_null("LoopiaLikeGame/Player")
 
@@ -276,7 +282,11 @@ func _collect_full_run_data() -> void:
 		current_run_data["final_stats"] = final_stats
 	
 	# 5. Datos del WaveManager (fase, tiempo de juego)
-	var game_node = _gt.root.get_node_or_null("LoopiaLikeGame") if _gt and _gt.root else null
+	var game_node = null
+	if _gt and _gt.root:
+		game_node = _gt.root.get_node_or_null("Game")
+		if not game_node:
+			game_node = _gt.root.get_node_or_null("LoopiaLikeGame")
 	if game_node and game_node.has_node("WaveManager"):
 		var wave_mgr = game_node.get_node("WaveManager")
 		if wave_mgr:

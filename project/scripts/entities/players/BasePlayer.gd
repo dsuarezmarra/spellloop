@@ -1016,7 +1016,9 @@ func heal(amount: int) -> int:
 			FloatingText.spawn_heal(global_position + Vector2(0, -30), healed)
 			_spawn_heal_particles()
 			# Trackear curación para estadísticas
-			var game_node = get_tree().root.get_node_or_null("LoopiaLikeGame")
+			var game_node = get_tree().root.get_node_or_null("Game")
+			if not game_node:
+				game_node = get_tree().root.get_node_or_null("LoopiaLikeGame")
 			if game_node and game_node.has_method("add_healing_stat"):
 				game_node.add_healing_stat(healed)
 		
