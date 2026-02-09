@@ -132,9 +132,20 @@ func start_run(context: Dictionary = {}) -> void:
 	var timestamp = Time.get_datetime_string_from_system().replace(":", "-").replace("T", "_")
 	_current_log_file = LOG_DIR.path_join("run_%04d_%s.jsonl" % [_run_id, timestamp])
 	
+	# RunBundle: si hay bundle activo, escribir directamente al bundle
+	var bundle_mgr = get_node_or_null("/root/RunBundleManager")
+	if bundle_mgr and bundle_mgr.has_method("get_log_path_for"):
+		var bundle_path = bundle_mgr.get_log_path_for("balance")
+		if bundle_path != "":
+			_current_log_file = bundle_path
+	
 	# Log run_start event
+	var run_ctx = get_node_or_null("/root/RunContext")
+	var unified_run_id = run_ctx.run_id if run_ctx and run_ctx.run_active else str(_run_id)
 	var event = {
 		"event": "run_start",
+		"run_id": unified_run_id,
+		"balance_run_id": _run_id,
 		"character_id": context.get("character_id", "unknown"),
 		"starting_weapons": context.get("starting_weapons", []),
 		"game_version": context.get("game_version", "0.1.0"),

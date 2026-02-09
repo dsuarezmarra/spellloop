@@ -235,6 +235,12 @@ func start_run(context: Dictionary = {}) -> void:
 	_run_start_time_ms = Time.get_ticks_msec()
 	_current_minute = 0
 	
+	# RunBundle: usar run_id unificado de RunContext si está disponible
+	var run_ctx = get_node_or_null("/root/RunContext")
+	if run_ctx and run_ctx.run_active and run_ctx.run_id != "":
+		_run_id = run_ctx.run_id
+		_run_seed = run_ctx.run_seed
+	
 	# Reset all tracking
 	_reset_all()
 	
@@ -244,6 +250,13 @@ func start_run(context: Dictionary = {}) -> void:
 	# Create log file
 	var timestamp = Time.get_datetime_string_from_system().replace(":", "-").replace("T", "_")
 	_current_log_file = LOG_DIR.path_join("audit_%s_%s.jsonl" % [_run_id, timestamp])
+	
+	# RunBundle: si hay bundle activo, escribir directamente al bundle
+	var bundle_mgr = get_node_or_null("/root/RunBundleManager")
+	if bundle_mgr and bundle_mgr.has_method("get_log_path_for"):
+		var bundle_path = bundle_mgr.get_log_path_for("audit")
+		if bundle_path != "":
+			_current_log_file = bundle_path
 	
 	# Log run_start event
 	_log_event({
