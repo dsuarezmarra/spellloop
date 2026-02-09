@@ -292,6 +292,8 @@ func end_run(context: Dictionary = {}) -> void:
 			"run_id": _run_id,
 			"killer": death_context.get("killer", "unknown"),
 			"killer_attack": death_context.get("killer_attack", "unknown"),
+			"killer_damage_type": death_context.get("killer_damage_type", "physical"),
+			"killer_source_kind": death_context.get("killer_source_kind", "melee"),
 			"killing_blow_damage": death_context.get("killing_blow_damage", 0),
 			"killing_blow_element": death_context.get("killing_blow_element", "physical"),
 			"window_duration_s": death_context.get("window_duration_s", 0.0),

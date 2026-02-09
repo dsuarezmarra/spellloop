@@ -682,33 +682,28 @@ func get_player_stats_snapshot() -> Dictionary:
 	return result
 
 func get_difficulty_snapshot() -> Dictionary:
-	"""Get current difficulty multipliers"""
-	var result: Dictionary = {
+	"""Get current difficulty multipliers via RunContext (single entry point)."""
+	var run_ctx = get_node_or_null("/root/RunContext")
+	if run_ctx and run_ctx.has_method("get_difficulty_snapshot"):
+		var snap = run_ctx.get_difficulty_snapshot()
+		if snap.get("status", "") != "not_available":
+			# Normalize key names to our schema
+			return {
+				"enemy_hp_mult": snappedf(snap.get("hp_mult", snap.get("enemy_hp_mult", 1.0)), 0.01),
+				"enemy_dmg_mult": snappedf(snap.get("dmg_mult", snap.get("enemy_dmg_mult", 1.0)), 0.01),
+				"spawn_mult": snappedf(snap.get("spawn_mult", 1.0), 0.01),
+				"elite_mult": snappedf(snap.get("elite_freq_mult", snap.get("elite_mult", 1.0)), 0.01),
+				"speed_mult": snappedf(snap.get("speed_mult", 1.0), 0.01),
+			}
+	# Fallback: defaults
+	return {
 		"enemy_hp_mult": 1.0,
 		"enemy_dmg_mult": 1.0,
 		"spawn_mult": 1.0,
 		"elite_mult": 1.0,
-		"speed_mult": 1.0
+		"speed_mult": 1.0,
+		"_warning": "difficulty_not_available"
 	}
-
-	# Use autoload path directly (group lookup can fail during initialization)
-	var difficulty_manager = get_node_or_null("/root/DifficultyManager")
-	if not difficulty_manager:
-		difficulty_manager = get_tree().get_first_node_in_group("difficulty_manager")
-	if difficulty_manager:
-		# Use correct variable names from DifficultyManager.gd
-		if "enemy_health_multiplier" in difficulty_manager:
-			result["enemy_hp_mult"] = snappedf(difficulty_manager.enemy_health_multiplier, 0.01)
-		if "enemy_damage_multiplier" in difficulty_manager:
-			result["enemy_dmg_mult"] = snappedf(difficulty_manager.enemy_damage_multiplier, 0.01)
-		if "enemy_count_multiplier" in difficulty_manager:
-			result["spawn_mult"] = snappedf(difficulty_manager.enemy_count_multiplier, 0.01)
-		if "elite_frequency_multiplier" in difficulty_manager:
-			result["elite_mult"] = snappedf(difficulty_manager.elite_frequency_multiplier, 0.01)
-		if "enemy_speed_multiplier" in difficulty_manager:
-			result["speed_mult"] = snappedf(difficulty_manager.enemy_speed_multiplier, 0.01)
-	
-	return result
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MINUTE CHECK (call from Game._process)

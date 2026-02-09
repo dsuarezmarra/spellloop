@@ -101,7 +101,7 @@ func begin_bundle(context: Dictionary = {}) -> void:
 		iso = Time.get_datetime_string_from_system().replace(":", "-").replace("T", "_")
 
 	_meta = {
-		"schema_version": 1,
+		"schema_version": 2,
 		"run_id": _run_id,
 		"session_id": ctx.session_id if ctx else "",
 		"seed": ctx.run_seed if ctx else context.get("seed", 0),
@@ -117,7 +117,8 @@ func begin_bundle(context: Dictionary = {}) -> void:
 			"balance_log": "balance.jsonl",
 			"perf_log": "perf.jsonl",
 			"audit_report": "audit_report.md",
-			"summary": "summary.json"
+			"summary": "summary.json",
+			"event_index": "event_index.json"
 		}
 	}
 	_write_json(_bundle_meta_path, _meta)
@@ -147,6 +148,9 @@ func finalize_bundle(context: Dictionary = {}) -> void:
 
 	# Generar integrity.json
 	_generate_integrity()
+
+	# Generar event_index.json (índice por tipo de evento para navegación rápida)
+	_generate_event_index()
 
 	# Limpieza de bundles antiguos
 	_cleanup_old_bundles()
@@ -280,14 +284,12 @@ func _copy_audit_report() -> void:
 
 func _generate_summary(context: Dictionary) -> void:
 	"""Generar summary.json con estadísticas finales de la run."""
-	# Duration: prioritize context, fallback to RunContext
+	# Duration: single canonical source = context.duration_s (set by Game from RunContext)
 	var duration_s: float = context.get("duration_s", 0.0)
+	var duration_warning: String = ""
 	if duration_s <= 0.0:
-		var run_ctx = get_node_or_null("/root/RunContext")
-		if run_ctx:
-			duration_s = run_ctx.get_elapsed_seconds()
-	if duration_s <= 0.0:
-		duration_s = context.get("time_survived", 0.0)
+		duration_warning = "duration_s not provided in context — set to 0"
+		push_warning("[RunBundleManager] %s" % duration_warning)
 
 	var summary: Dictionary = {
 		"schema_version": 2,
@@ -321,6 +323,9 @@ func _generate_summary(context: Dictionary) -> void:
 
 		"death_context": {
 			"killer": context.get("killed_by", "unknown"),
+			"killer_attack": context.get("death_context", {}).get("killer_attack", "unknown"),
+			"killer_damage_type": context.get("death_context", {}).get("killer_damage_type", "physical"),
+			"killer_source_kind": context.get("death_context", {}).get("killer_source_kind", "melee"),
 			"window_duration_s": context.get("death_context", {}).get("window_duration_s", 0.0),
 			"hits_in_window": context.get("death_context", {}).get("hits_in_window", 0),
 			"total_damage_in_window": context.get("death_context", {}).get("total_damage_in_window", 0),
@@ -335,10 +340,22 @@ func _generate_summary(context: Dictionary) -> void:
 			"upgrade_audit_log": "upgrade_audit.jsonl",
 			"upgrade_audit_report": "upgrade_audit_report.md",
 			"integrity": "integrity.json",
+			"event_index": "event_index.json",
 		},
 
 		"file_sizes": _get_bundle_file_sizes(),
 	}
+
+	# Add upgrade audit summary if available
+	var upgrade_auditor = get_node_or_null("/root/UpgradeAuditor")
+	if upgrade_auditor and upgrade_auditor.has_method("get_run_summary"):
+		var ua_summary = upgrade_auditor.get_run_summary()
+		summary["upgrade_audit"] = ua_summary
+		summary["stats"]["rerolls_total"] = context.get("death_context", {}).get("rerolls", ua_summary.get("counts", {}).get("rerolls", 0))
+
+	# Add duration warning if applicable
+	if duration_warning != "":
+		summary["_warnings"] = [duration_warning]
 
 	# Actualizar meta con end info
 	_meta["end_timestamp"] = summary["end_timestamp"]
@@ -354,7 +371,7 @@ func _generate_summary(context: Dictionary) -> void:
 func _get_bundle_file_sizes() -> Dictionary:
 	"""Obtener tamaños de archivos del bundle."""
 	var sizes: Dictionary = {}
-	for fname in ["audit.jsonl", "balance.jsonl", "perf.jsonl", "audit_report.md", "meta.json", "upgrade_audit.jsonl", "upgrade_audit_report.md"]:
+	for fname in ["audit.jsonl", "balance.jsonl", "perf.jsonl", "audit_report.md", "meta.json", "upgrade_audit.jsonl", "upgrade_audit_report.md", "event_index.json"]:
 		var path = _current_bundle_dir.path_join(fname)
 		sizes[fname] = _get_file_size(path)
 	return sizes
@@ -454,7 +471,7 @@ func _generate_integrity() -> void:
 	"""Generate integrity.json — verifies all artifacts belong to this run_id."""
 	var ctx = get_node_or_null("/root/RunContext")
 	var integrity: Dictionary = {
-		"schema_version": 1,
+		"schema_version": 2,
 		"run_id": _run_id,
 		"session_id": ctx.session_id if ctx else _meta.get("session_id", ""),
 		"generated_at": Time.get_datetime_string_from_system(),
@@ -465,7 +482,7 @@ func _generate_integrity() -> void:
 	var artifacts_to_check: Array = [
 		"meta.json", "summary.json", "audit.jsonl", "balance.jsonl",
 		"perf.jsonl", "audit_report.md", "upgrade_audit.jsonl",
-		"upgrade_audit_report.md"
+		"upgrade_audit_report.md", "event_index.json"
 	]
 
 	for fname in artifacts_to_check:
@@ -540,6 +557,64 @@ func _verify_json_run_id(path: String) -> String:
 		else:
 			return "run_id_mismatch"
 	return "invalid_format"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVENT INDEX GENERATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _generate_event_index() -> void:
+	"""Generate event_index.json — maps event_type to [{timestamp_ms, line}] for fast JSONL navigation."""
+	var index: Dictionary = {
+		"schema_version": 2,
+		"run_id": _run_id,
+		"generated_at": Time.get_datetime_string_from_system(),
+		"sources": {}
+	}
+
+	# Index each JSONL file in the bundle
+	for tracker_name in ["audit", "balance"]:
+		var path = _bundle_paths.get(tracker_name, "")
+		if path == "" or not FileAccess.file_exists(path):
+			continue
+
+		var source_index: Dictionary = {}  # event_type -> Array of {timestamp_ms, line}
+		var file = FileAccess.open(path, FileAccess.READ)
+		if not file:
+			continue
+
+		var line_num: int = 0
+		while not file.eof_reached():
+			var line = file.get_line().strip_edges()
+			line_num += 1
+			if line.is_empty():
+				continue
+
+			var json = JSON.new()
+			if json.parse(line) != OK:
+				continue
+			var data = json.data
+			if data is Dictionary:
+				var event_type = str(data.get("event", "unknown"))
+				if not source_index.has(event_type):
+					source_index[event_type] = []
+				source_index[event_type].append({
+					"timestamp_ms": data.get("timestamp_ms", 0),
+					"line": line_num
+				})
+
+		file.close()
+
+		# Store summary per event type (count + first/last line)
+		var source_summary: Dictionary = {}
+		for event_type in source_index:
+			var entries = source_index[event_type]
+			source_summary[event_type] = {
+				"count": entries.size(),
+				"lines": entries,
+			}
+		index["sources"][tracker_name] = source_summary
+
+	_write_json(_current_bundle_dir.path_join("event_index.json"), index)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PUBLIC API

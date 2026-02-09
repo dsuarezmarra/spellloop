@@ -110,6 +110,27 @@ func end_run() -> void:
 		_pickup_counter, _counts.ok, _counts.fail, _counts.warn, _counts.dead_stat
 	])
 
+func get_run_summary() -> Dictionary:
+	"""Resumen ligero para integrar en summary.json y audit_report.md."""
+	var top_picked: Dictionary = {}  # upgrade_id -> count
+	for entry in _audit_log:
+		var uid = entry.get("id", "unknown")
+		top_picked[uid] = top_picked.get(uid, 0) + 1
+
+	# Sort by count descending
+	var sorted_list: Array = []
+	for uid in top_picked:
+		sorted_list.append({"id": uid, "count": top_picked[uid]})
+	sorted_list.sort_custom(func(a, b): return a.count > b.count)
+	if sorted_list.size() > 10:
+		sorted_list.resize(10)
+
+	return {
+		"total_pickups": _pickup_counter,
+		"counts": _counts.duplicate(),
+		"top_upgrades_picked": sorted_list,
+	}
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # CORE — Audit de una mejora de jugador
 # ═══════════════════════════════════════════════════════════════════════════════

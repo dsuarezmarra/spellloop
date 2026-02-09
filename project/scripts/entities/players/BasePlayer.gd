@@ -791,7 +791,9 @@ func _process_frame_damage() -> void:
 			
 	# 4. Registrar contexto para Death Audit
 	var _hit_enemy_id := "unknown"
-	var _hit_attack_id: String = primary_hit.element if primary_hit.element != "" else "physical"
+	var _hit_attack_id := "unknown"
+	var _hit_damage_type: String = primary_hit.element if primary_hit.element != "" else "physical"
+	var _hit_source_kind := "melee"  # melee, projectile, aoe, dot
 	if is_instance_valid(primary_hit.attacker):
 		if "enemy_id" in primary_hit.attacker:
 			_hit_enemy_id = primary_hit.attacker.enemy_id
@@ -799,6 +801,12 @@ func _process_frame_damage() -> void:
 			_hit_enemy_id = primary_hit.attacker.name
 		if primary_hit.attacker.has_meta("attack_name"):
 			_hit_attack_id = primary_hit.attacker.get_meta("attack_name")
+		if primary_hit.attacker.has_meta("source_kind"):
+			_hit_source_kind = primary_hit.attacker.get_meta("source_kind")
+		elif primary_hit.attacker is CharacterBody2D or primary_hit.attacker is Node2D:
+			# Heuristic: projectiles are usually Area2D children
+			if primary_hit.attacker.get_parent() and "projectile" in primary_hit.attacker.get_parent().name.to_lower():
+				_hit_source_kind = "projectile"
 
 	_last_hit_context = {
 		"source": primary_hit.attacker.name if is_instance_valid(primary_hit.attacker) else "Environment",
@@ -817,6 +825,8 @@ func _process_frame_damage() -> void:
 		"timestamp_ms": _now_ms,
 		"enemy_id": _hit_enemy_id,
 		"attack_id": _hit_attack_id,
+		"damage_type": _hit_damage_type,
+		"source_kind": _hit_source_kind,
 		"damage": final_applied_damage,
 		"element": primary_hit.element,
 		"hp_before": _hp_before,
@@ -1207,6 +1217,8 @@ func get_death_context() -> Dictionary:
 	return {
 		"killer": last_hit.enemy_id,
 		"killer_attack": last_hit.attack_id,
+		"killer_damage_type": last_hit.get("damage_type", last_hit.get("element", "physical")),
+		"killer_source_kind": last_hit.get("source_kind", "melee"),
 		"killing_blow_damage": last_hit.damage,
 		"killing_blow_element": last_hit.element,
 		"last_damage_window": _damage_ring_buffer.duplicate(),

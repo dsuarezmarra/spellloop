@@ -121,6 +121,22 @@ func get_elapsed_seconds() -> float:
 		return 0.0
 	return (Time.get_ticks_msec() - run_start_ticks_ms) / 1000.0
 
+func get_difficulty_snapshot() -> Dictionary:
+	"""Obtener snapshot de dificultad actual desde DifficultyManager.
+	Centraliza el acceso para que ningún otro módulo haga /root/ lookups."""
+	var dm = get_node_or_null("/root/DifficultyManager")
+	if dm and dm.has_method("get_scaling_snapshot"):
+		return dm.get_scaling_snapshot()
+	# Fallback: group lookup
+	if dm == null:
+		var tree = get_tree()
+		if tree:
+			dm = tree.get_first_node_in_group("difficulty_manager")
+			if dm and dm.has_method("get_scaling_snapshot"):
+				return dm.get_scaling_snapshot()
+	# DifficultyManager not available
+	return {"status": "not_available", "_warning": "DifficultyManager not found"}
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # INTERNAL
 # ═══════════════════════════════════════════════════════════════════════════════

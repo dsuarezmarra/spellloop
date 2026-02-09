@@ -31,6 +31,9 @@ static func generate(summary: Dictionary, context: Dictionary, run_id: String, r
 
 	# 2. Build Final
 	md.append(_section_build_final(summary, context))
+
+	# 2b. Upgrade Audit Summary (si hay datos)
+	md.append(_section_upgrade_audit_summary(summary))
 	
 	# 3. Damage by Weapon (Top 10)
 	md.append(_section_damage_by_weapon(summary))
@@ -111,6 +114,8 @@ static func _section_death_summary(context: Dictionary) -> String:
 	var attack = death_ctx.get("killer_attack", "unknown")
 	var damage = death_ctx.get("killing_blow_damage", 0)
 	var element = death_ctx.get("killing_blow_element", "physical")
+	var damage_type = death_ctx.get("killer_damage_type", element)
+	var source_kind = death_ctx.get("killer_source_kind", "melee")
 	var window_s = death_ctx.get("window_duration_s", 0.0)
 	var total_dmg = death_ctx.get("total_damage_in_window", 0)
 	var hits = death_ctx.get("hits_in_window", 0)
@@ -123,7 +128,10 @@ static func _section_death_summary(context: Dictionary) -> String:
 		md.append("| Dato | Valor |")
 		md.append("|------|-------|")
 		md.append("| \uD83D\uDD2A Killer | `%s` |" % killer)
-		md.append("| \u2694\uFE0F Ataque | `%s` (%s) |" % [attack, element])
+		var attack_label = attack if attack != "unknown" else damage_type
+		md.append("| \u2694\uFE0F Ataque | `%s` |" % attack_label)
+		md.append("| \uD83C\uDF0A Tipo de Da\u00f1o | `%s` |" % damage_type)
+		md.append("| \uD83C\uDFAF Fuente | `%s` |" % source_kind)
 		md.append("| \uD83D\uDCA5 Golpe Final | %d da\u00f1o |" % damage)
 		md.append("| \u23F1\uFE0F Ventana | %.1fs (%d hits, %s da\u00f1o total) |" % [window_s, hits, _format_number(total_dmg)])
 		md.append("| \uD83D\uDC7E Densidad | %d enemigos cerca |" % density)
@@ -137,17 +145,21 @@ static func _section_death_summary(context: Dictionary) -> String:
 	if window.size() > 0:
 		md.append("### Ventana de Da\u00f1o (\u00faltimos %.1fs)" % window_s)
 		md.append("")
-		md.append("| # | Enemigo | Ataque | Da\u00f1o | HP Antes \u2192 Despu\u00e9s |")
-		md.append("|---|---------|--------|------|---------------------|")
+		md.append("| # | Enemigo | Ataque | Tipo | Da\u00f1o | HP Antes \u2192 Despu\u00e9s |")
+		md.append("|---|---------|--------|------|------|---------------------|")
 		var idx = 0
 		for entry in window:
 			idx += 1
 			var is_killing_blow = (idx == window.size())
 			var prefix = "\u2620\uFE0F" if is_killing_blow else str(idx)
-			md.append("| %s | %s | %s | %d | %d \u2192 %d |" % [
+			var entry_attack = entry.get("attack_id", "?")
+			if entry_attack == "unknown":
+				entry_attack = entry.get("damage_type", entry.get("element", "?"))
+			md.append("| %s | %s | %s | %s | %d | %d \u2192 %d |" % [
 				prefix,
 				entry.get("enemy_id", "?"),
-				entry.get("attack_id", "?"),
+				entry_attack,
+				entry.get("damage_type", entry.get("element", "?")),
 				entry.get("damage", 0),
 				entry.get("hp_before", 0),
 				entry.get("hp_after", 0)
@@ -174,6 +186,47 @@ static func _section_death_summary(context: Dictionary) -> String:
 		md.append("")
 		for s in status_effects:
 			md.append("- \u26A0\uFE0F `%s`" % s)
+		md.append("")
+
+	return "\n".join(md)
+
+static func _section_upgrade_audit_summary(summary: Dictionary) -> String:
+	"""Sección resumen de la auditoría de upgrades (datos de UpgradeAuditor)."""
+	var md: PackedStringArray = PackedStringArray()
+
+	# Get UpgradeAuditor data from the autoload
+	var ua: Dictionary = {}
+	var tree = Engine.get_main_loop() as SceneTree
+	if tree:
+		var auditor = tree.root.get_node_or_null("UpgradeAuditor")
+		if auditor and auditor.has_method("get_run_summary"):
+			ua = auditor.get_run_summary()
+
+	if ua.is_empty():
+		return ""
+
+	md.append("## \uD83D\uDD0D Auditor\u00eda de Upgrades")
+	md.append("")
+
+	var counts = ua.get("counts", {})
+	var total = ua.get("total_pickups", 0)
+	md.append("| Resultado | Cantidad |")
+	md.append("|-----------|----------|")
+	md.append("| \u2705 OK | %d |" % counts.get("ok", 0))
+	md.append("| \u274C FAIL | %d |" % counts.get("fail", 0))
+	md.append("| \u26A0\uFE0F WARN | %d |" % counts.get("warn", 0))
+	md.append("| \uD83D\uDC80 DEAD_STAT | %d |" % counts.get("dead_stat", 0))
+	md.append("| **Total** | **%d** |" % total)
+	md.append("")
+
+	var top = ua.get("top_upgrades_picked", [])
+	if top.size() > 0:
+		md.append("### Top Upgrades Recogidos")
+		md.append("")
+		md.append("| Upgrade | Veces |")
+		md.append("|---------|-------|")
+		for entry in top:
+			md.append("| `%s` | %d |" % [entry.get("id", "?"), entry.get("count", 0)])
 		md.append("")
 
 	return "\n".join(md)

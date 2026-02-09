@@ -1830,19 +1830,13 @@ func _check_telemetry_minute_snapshot() -> void:
 		context["weapons"] = BalanceTelemetry.get_current_weapons_snapshot()
 		context["top_upgrades"] = BalanceTelemetry.get_top_upgrades_snapshot()
 		context["player_stats"] = BalanceTelemetry.get_player_stats_snapshot()
-	# Fallback: read difficulty directly from DifficultyManager autoload
-	if context["difficulty"].is_empty():
-		var dm = get_node_or_null("/root/DifficultyManager")
-		if dm and dm.has_method("get_scaling_snapshot"):
-			context["difficulty"] = dm.get_scaling_snapshot()
-		elif dm:
-			context["difficulty"] = {
-				"enemy_hp_mult": dm.enemy_health_multiplier if "enemy_health_multiplier" in dm else 1.0,
-				"enemy_dmg_mult": dm.enemy_damage_multiplier if "enemy_damage_multiplier" in dm else 1.0,
-				"spawn_mult": dm.enemy_count_multiplier if "enemy_count_multiplier" in dm else 1.0,
-				"elite_mult": dm.elite_frequency_multiplier if "elite_frequency_multiplier" in dm else 1.0,
-				"speed_mult": dm.enemy_speed_multiplier if "enemy_speed_multiplier" in dm else 1.0,
-			}
+	# Fallback: read difficulty via RunContext (single entry point)
+	if context["difficulty"].is_empty() or context["difficulty"].get("_warning", "") != "":
+		var run_ctx = get_node_or_null("/root/RunContext")
+		if run_ctx and run_ctx.has_method("get_difficulty_snapshot"):
+			var snap = run_ctx.get_difficulty_snapshot()
+			if snap.get("status", "") != "not_available":
+				context["difficulty"] = snap
 	
 	# BalanceTelemetry minute snapshot
 	if BalanceTelemetry and BalanceTelemetry.check_minute_snapshot(game_time):
@@ -1894,12 +1888,13 @@ func _end_balance_telemetry(reason: String = "death") -> void:
 	else:
 		gold = run_stats.get("gold", 0)
 
-	# Difficulty snapshot
+	# Difficulty snapshot via RunContext (single entry point)
 	var difficulty_final := {}
-	var difficulty_mgr = get_node_or_null("/root/DifficultyManager")
-	if difficulty_mgr and difficulty_mgr.has_method("get_scaling_snapshot"):
-		difficulty_final = difficulty_mgr.get_scaling_snapshot()
-	elif BalanceTelemetry:
+	if run_ctx and run_ctx.has_method("get_difficulty_snapshot"):
+		difficulty_final = run_ctx.get_difficulty_snapshot()
+		if difficulty_final.get("status", "") == "not_available":
+			difficulty_final = {}
+	if difficulty_final.is_empty() and BalanceTelemetry:
 		difficulty_final = BalanceTelemetry.get_difficulty_snapshot()
 
 	# ═══════════════════════════════════════════════════════════════════════════
