@@ -205,11 +205,74 @@ func _setup_modular_abilities() -> void:
 				pass
 
 				
-			"stomp_attack", "elite_slam":
+			"stomp_attack", "elite_slam", "aoe_slam":
 				extra_ability = EnemyAbility_Aoe.new()
 				var cd = modifiers.get("stomp_cooldown", modifiers.get("slam_cooldown", modifiers.get("elite_slam_cooldown", 5.0)))
 				extra_ability.cooldown = cd
 				extra_ability.radius = modifiers.get("stomp_radius", modifiers.get("slam_radius", modifiers.get("elite_slam_radius", 100.0)))
+
+			# FIX FASE 2: Habilidades fantasma implementadas minimalmente
+			"split_on_death":
+				# Marcador en enemy para que EnemyBase.die() haga spawn de 2 hijos
+				if enemy and "split_on_death" not in enemy:
+					enemy.set_meta("split_on_death", true)
+
+			"evasion":
+				# Marcador en enemy para que EnemyBase.take_damage() haga dodge check
+				var evasion_chance = modifiers.get("evasion_chance", 0.25)
+				if enemy:
+					enemy.set_meta("evasion_chance", evasion_chance)
+
+			"counter_attack":
+				# Marcador en enemy para contraataque en take_damage
+				var counter_damage_mult = modifiers.get("counter_damage_mult", 0.5)
+				if enemy:
+					enemy.set_meta("counter_attack", true)
+					enemy.set_meta("counter_damage_mult", counter_damage_mult)
+
+			"fire_zone":
+				# Usar AoE ability con elemento fuego como zona persistente
+				extra_ability = EnemyAbility_Aoe.new()
+				extra_ability.cooldown = modifiers.get("fire_zone_cooldown", 6.0)
+				extra_ability.radius = modifiers.get("fire_zone_radius", 80.0)
+				extra_ability.element_type = "fire"
+
+			"burn_aura":
+				# Marcador para aura pasiva de fuego (daño por proximidad)
+				if enemy:
+					enemy.set_meta("burn_aura", true)
+					enemy.set_meta("burn_aura_radius", modifiers.get("burn_aura_radius", 60.0))
+					enemy.set_meta("burn_aura_dps", modifiers.get("burn_aura_dps", 5))
+
+			"freeze_zone":
+				# Usar AoE ability con elemento hielo
+				extra_ability = EnemyAbility_Aoe.new()
+				extra_ability.cooldown = modifiers.get("freeze_zone_cooldown", 7.0)
+				extra_ability.radius = modifiers.get("freeze_zone_radius", 80.0)
+				extra_ability.element_type = "ice"
+
+			"ice_armor":
+				# Marcador para reducción de daño + slow al atacante
+				if enemy:
+					enemy.set_meta("ice_armor", true)
+					enemy.set_meta("ice_armor_reduction", modifiers.get("ice_armor_reduction", 0.2))
+
+			"multi_element":
+				# Ciclar elementos en cada ataque
+				if enemy:
+					enemy.set_meta("multi_element", true)
+					enemy.set_meta("element_cycle", ["fire", "ice", "arcane", "void"])
+					enemy.set_meta("element_cycle_idx", 0)
+
+			"dive_attack":
+				# Usar Dash ability como equivalente de dive
+				extra_ability = EnemyAbility_Dash.new()
+				extra_ability.cooldown = modifiers.get("dive_cooldown", 5.0)
+
+			"keep_distance", "erratic_movement":
+				# Estos son comportamientos de movimiento, no de ataque
+				# Se manejan por el archetype en EnemyBase, no necesitan ability object
+				pass
 				
 		if extra_ability:
 			extra_ability.id = ab_name
@@ -458,17 +521,22 @@ func _perform_elite_slam() -> void:
 	var slam_damage_mult = modifiers.get("elite_slam_damage_mult", 1.5)
 	var slam_damage = int(attack_damage * slam_damage_mult)
 	
-	# Aplicar daÃƒÂ±o si el player estÃƒÂ¡ en rango
-	var dist = enemy.global_position.distance_to(player.global_position)
-	if dist <= slam_radius:
-		if player.has_method("take_damage"):
-			player.take_damage(slam_damage, "physical", enemy)
-			attacked_player.emit(slam_damage, false)
-		if player.has_method("apply_stun"):
-			player.apply_stun(0.4)
-	
-	# Visual ÃƒÂ©pico
+	# FIX P0 #8: Visual PRIMERO como telegraph, luego daño con delay
 	_spawn_elite_slam_visual(enemy.global_position, slam_radius)
+	
+	# Delay para dar tiempo de reacción al jugador
+	var slam_pos = enemy.global_position
+	get_tree().create_timer(0.4).timeout.connect(func():
+		if not is_instance_valid(player) or not is_instance_valid(enemy):
+			return
+		var dist = slam_pos.distance_to(player.global_position)
+		if dist <= slam_radius:
+			if player.has_method("take_damage"):
+				player.take_damage(slam_damage, "physical", enemy)
+				attacked_player.emit(slam_damage, false)
+			if player.has_method("apply_stun"):
+				player.apply_stun(0.4)
+	)
 	
 	# Aplicar cooldown
 	elite_slam_cooldown = modifiers.get("elite_slam_cooldown", 5.0)
@@ -477,6 +545,12 @@ func _perform_elite_slam() -> void:
 func _activate_elite_rage() -> void:
 	"""Activar modo rage de ÃƒÂ©lite"""
 	elite_rage_active = true
+	
+	# FIX P2 #17: Guardar stats originales para poder revertir
+	if not enemy.has_meta("pre_rage_damage"):
+		enemy.set_meta("pre_rage_damage", attack_damage)
+		if "base_speed" in enemy:
+			enemy.set_meta("pre_rage_speed", enemy.base_speed)
 	
 	var damage_bonus = modifiers.get("elite_rage_damage_bonus", 0.5)
 	var speed_bonus = modifiers.get("elite_rage_speed_bonus", 0.3)
@@ -692,7 +766,13 @@ func _spawn_elite_shield_visual() -> void:
 	)
 	
 	# Auto-destruir despuÃƒÂ©s de 12 segundos (duraciÃƒÂ³n del escudo)
-	get_tree().create_timer(12.0).timeout.connect(func():
+	# FIX P2 #18: Usar timer como hijo del visual para que muera con el enemigo
+	var cleanup_timer = Timer.new()
+	cleanup_timer.wait_time = 12.0
+	cleanup_timer.one_shot = true
+	cleanup_timer.autostart = true
+	visual.add_child(cleanup_timer)
+	cleanup_timer.timeout.connect(func():
 		if is_instance_valid(visual):
 			visual.queue_free()
 	)
@@ -1199,28 +1279,27 @@ func _create_dynamic_projectile() -> void:
 	attacked_player.emit(attack_damage, false)
 
 func _perform_aoe_attack() -> void:
-	"""Ataque de ÃƒÂ¡rea: daÃƒÂ±o en zona alrededor del enemigo o player"""
+	"""Ataque de área: daño en zona alrededor del enemigo"""
 	if not player:
 		return
 	
-	# PosiciÃƒÂ³n del AoE (en el player o en el enemigo)
-	var aoe_center = player.global_position
+	# FIX P0 #4: Centro del AoE debe ser el ENEMIGO, no el player
+	var aoe_center = enemy.global_position
 	var radius = modifiers.get("aoe_radius", 100.0)
 	var aoe_damage = int(attack_damage * modifiers.get("aoe_damage_mult", 1.0))
 	var elem = _get_enemy_element()
 	
-	# Verificar si player estÃƒÂ¡ en rango del AoE
+	# Efecto visual del AoE PRIMERO (telegraph)
+	_spawn_aoe_visual(aoe_center, radius)
+	
+	# Verificar si player está en rango del AoE
 	var dist_to_player = aoe_center.distance_to(player.global_position)
 	if dist_to_player <= radius:
 		if player.has_method("take_damage"):
 			player.call("take_damage", aoe_damage, elem, enemy)
-			# print("[EnemyAttackSystem] Ã°Å¸â€™Â¥ %s AoE hit player por %d daÃƒÂ±o (%s, radio=%.0f)" % [enemy.name, aoe_damage, elem, radius])
 			attacked_player.emit(aoe_damage, false)
-			# Aplicar efectos segÃƒÂºn elemento del AoE
+			# Aplicar efectos según elemento del AoE
 			_apply_aoe_effects()
-	
-	# Efecto visual del AoE
-	_spawn_aoe_visual(enemy.global_position, radius)
 
 func _apply_aoe_effects() -> void:
 	"""Aplicar efectos de estado en ataques AoE"""
@@ -1306,6 +1385,7 @@ var boss_current_phase: int = 1
 var boss_enraged: bool = false
 var boss_fire_trail_active: bool = false
 var boss_damage_aura_timer: float = 0.0
+var _boss_aura_damage_accumulator: float = 0.0  # FIX P1 #15: acumulador fraccionario
 
 # Sistema de habilidades limitadas por minuto
 var boss_scaling_config: Dictionary = {}     # ConfiguraciÃƒÂ³n de escalado del minuto
@@ -1412,12 +1492,15 @@ func _process_boss_aggressive_attacks(delta: float) -> void:
 			var spread_interval = boss_scaling_config.get("spread_interval", 8.0)
 			boss_spread_shot_timer = spread_interval * (0.6 if boss_current_phase >= 3 else 1.0)
 	
-	# 5. Trail de daÃƒÂ±o solo en fase 2+ (para todos los bosses)
+	# 5. Trail de daño solo en fase 2+ (para todos los bosses)
 	if boss_current_phase >= 2:
 		boss_trail_timer -= delta
 		if boss_trail_timer <= 0:
 			_boss_leave_damage_trail()
 			boss_trail_timer = 0.4
+	
+	# FIX P0 #3: Actualizar efectos pasivos del boss (damage_aura, fire_trail)
+	_update_boss_passive_effects()
 	
 	# 6. Habilidades especiales del boss (sistema original mejorado)
 	_process_boss_special_abilities(delta)
@@ -1831,11 +1914,11 @@ func _spawn_aoe_explosion(pos: Vector2, radius: float) -> void:
 		# Ondas de explosiÃƒÂ³n
 		for i in range(3):
 			var r = expand * (1.0 - i * 0.2)
-			explosion.draw_arc(Vector2.ZERO, r, 0, TAU, 32, Color(color.r, color.g, color.b, alpha * (1.0 - i * 0.3)), 4.0 - i)
+			visual.draw_arc(Vector2.ZERO, r, 0, TAU, 32, Color(color.r, color.g, color.b, alpha * (1.0 - i * 0.3)), 4.0 - i)
 		
 		# Relleno
-		explosion.draw_circle(Vector2.ZERO, expand * 0.5, Color(color.r, color.g, color.b, alpha * 0.4))
-		explosion.draw_circle(Vector2.ZERO, expand * 0.2, Color(1, 1, 1, alpha * 0.7))
+		visual.draw_circle(Vector2.ZERO, expand * 0.5, Color(color.r, color.g, color.b, alpha * 0.4))
+		visual.draw_circle(Vector2.ZERO, expand * 0.2, Color(1, 1, 1, alpha * 0.7))
 	)
 	
 	var tween = explosion.create_tween()
@@ -2059,7 +2142,7 @@ func _update_boss_passive_effects() -> void:
 	if not enemy or not player:
 		return
 	
-	# Damage Aura (CorazÃƒÂ³n del VacÃƒÂ­o)
+	# Damage Aura (Corazón del Vacío)
 	if boss_damage_aura_timer > 0:
 		var aura_radius = modifiers.get("aura_radius", 100.0)
 		if boss_current_phase >= 3:
@@ -2068,9 +2151,14 @@ func _update_boss_passive_effects() -> void:
 		var dist = enemy.global_position.distance_to(player.global_position)
 		if dist <= aura_radius:
 			var aura_dps = modifiers.get("aura_damage", 8)
-			var frame_damage = aura_dps * get_process_delta_time()
-			if player.has_method("take_damage") and frame_damage >= 1:
-				player.take_damage(int(frame_damage), "physical", enemy)
+			# FIX P1 #15: Acumular daño fraccionario para que aura_dps*delta < 1 no se pierda
+			_boss_aura_damage_accumulator += aura_dps * get_process_delta_time()
+			if player.has_method("take_damage") and _boss_aura_damage_accumulator >= 1.0:
+				var int_damage = int(_boss_aura_damage_accumulator)
+				player.take_damage(int_damage, "void", enemy)
+				_boss_aura_damage_accumulator -= int_damage
+		else:
+			_boss_aura_damage_accumulator = 0.0  # Reset si fuera de rango
 	
 	# Fire Trail (Minotauro fase 3)
 	if boss_fire_trail_active:
@@ -2291,47 +2379,59 @@ func _boss_summon_minions() -> void:
 		# print("[EnemyAttackSystem] Ã¢Å¡Â Ã¯Â¸Â No se encontrÃƒÂ³ spawner para summon")
 
 func _boss_teleport_strike() -> void:
-	"""Teleport hacia el jugador + ataque inmediato"""
+	"""Teleport hacia el jugador + ataque tras telegraph"""
 	var _teleport_range = modifiers.get("teleport_range", 200.0)
 	var damage_mult = modifiers.get("teleport_damage_mult", 1.5)
 	
-	# Calcular posiciÃƒÂ³n de teleport (detrÃƒÂ¡s del jugador)
+	# Calcular posición de teleport (detrás del jugador)
 	var to_player = (player.global_position - enemy.global_position).normalized()
 	var teleport_pos = player.global_position - to_player * 50  # Aparecer cerca
 	
-	# Efecto de desapariciÃƒÂ³n
+	# Efecto de desaparición
 	_spawn_teleport_effect(enemy.global_position, false)
 	
 	# Mover al enemigo
 	enemy.global_position = teleport_pos
 	
-	# Efecto de apariciÃƒÂ³n
+	# Efecto de aparición (TELEGRAPH: el jugador ve el destello)
 	_spawn_teleport_effect(teleport_pos, true)
 	
-	# Ataque inmediato con daÃƒÂ±o bonus
-	if player.has_method("take_damage"):
-		var damage = int(attack_damage * damage_mult)
-		player.take_damage(damage, "physical", enemy)
-		attacked_player.emit(damage, true)
-		# print("[EnemyAttackSystem] Ã¢Å¡Â¡ Teleport Strike por %d daÃƒÂ±o" % damage)
+	# FIX P0 #1: Delay 0.4s entre teleport y daño para dar tiempo de reacción
+	# FIX: Elemento corregido de "physical" a "arcane" (es Conjurador Arcano)
+	var strike_range = 80.0
+	get_tree().create_timer(0.4).timeout.connect(func():
+		if not is_instance_valid(player) or not is_instance_valid(enemy):
+			return
+		var dist = enemy.global_position.distance_to(player.global_position)
+		if dist <= strike_range:
+			if player.has_method("take_damage"):
+				var damage = int(attack_damage * damage_mult)
+				player.take_damage(damage, "arcane", enemy)
+				attacked_player.emit(damage, true)
+	)
 
 func _boss_arcane_nova() -> void:
-	"""Nova de daÃƒÂ±o arcano en ÃƒÂ¡rea"""
+	"""Nova de daño arcano en área con telegraph"""
 	var radius = modifiers.get("nova_radius", 120.0)
 	var damage = modifiers.get("nova_damage", 40)
 	
 	if boss_current_phase >= 3:
 		damage = modifiers.get("phase_3_nova_damage", 60)
 	
-	var dist = enemy.global_position.distance_to(player.global_position)
-	if dist <= radius:
-		if player.has_method("take_damage"):
-			player.take_damage(damage, "arcane", enemy)
-			attacked_player.emit(damage, false)
+	# FIX P0 #5: Visual PRIMERO como telegraph
+	var nova_center = enemy.global_position
+	_spawn_arcane_nova_visual(nova_center, radius)
 	
-	# Visual
-	_spawn_arcane_nova_visual(enemy.global_position, radius)
-	# print("[EnemyAttackSystem] Ã°Å¸â€™Å“ Arcane Nova por %d daÃƒÂ±o (radio %.0f)" % [damage, radius])
+	# Daño tras delay de 0.5s para que el jugador pueda reaccionar
+	get_tree().create_timer(0.5).timeout.connect(func():
+		if not is_instance_valid(player) or not is_instance_valid(enemy):
+			return
+		var dist = nova_center.distance_to(player.global_position)
+		if dist <= radius:
+			if player.has_method("take_damage"):
+				player.take_damage(damage, "arcane", enemy)
+				attacked_player.emit(damage, false)
+	)
 
 func _boss_curse_aura() -> void:
 	"""Aplicar aura de maldiciÃƒÂ³n que reduce curaciÃƒÂ³n"""
@@ -2412,18 +2512,34 @@ func _boss_void_beam() -> void:
 	var duration = modifiers.get("beam_duration", 3.0)
 	var _width = modifiers.get("beam_width", 40.0)
 	
-	# Este ataque es canalizado - simplificado para aplicar daÃƒÂ±o por tick
+	# FIX P0 #2: Verificar que el player está en el camino del beam (rectángulo)
 	var direction = (player.global_position - enemy.global_position).normalized()
+	var beam_length = 300.0
+	var beam_width = 40.0
 	
 	# Crear visual del beam
-	_spawn_void_beam_visual(enemy.global_position, direction, 300.0, duration)
+	_spawn_void_beam_visual(enemy.global_position, direction, beam_length, duration)
 	
-	# Aplicar daÃƒÂ±o inicial
-	if player.has_method("take_damage"):
-		player.take_damage(damage, "void", enemy)
-		attacked_player.emit(damage, false)
-	
-	# print("[EnemyAttackSystem] Ã°Å¸â€™Å“ Void Beam: %d DPS por %.1fs" % [damage, duration])
+	# Daño basado en ticks con comprobación de dirección del beam
+	var beam_origin = enemy.global_position
+	var ticks = int(duration / 0.5)
+	for i in range(ticks):
+		get_tree().create_timer(0.5 * i + 0.3).timeout.connect(func():
+			if not is_instance_valid(player) or not is_instance_valid(enemy):
+				return
+			# Comprobar que player está dentro del rectángulo del beam
+			var to_player = player.global_position - beam_origin
+			var proj_length = to_player.dot(direction)
+			if proj_length < 0 or proj_length > beam_length:
+				return  # Fuera del alcance del beam
+			var perp_dist = abs(to_player.cross(direction))
+			if perp_dist > beam_width:
+				return  # Fuera del ancho del beam
+			if player.has_method("take_damage"):
+				var tick_damage = int(damage / ticks)
+				player.take_damage(tick_damage, "void", enemy)
+				attacked_player.emit(tick_damage, false)
+		)
 
 # Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
 # HABILIDADES DE EL GUARDIÃƒÂN DE RUNAS
@@ -2437,18 +2553,30 @@ func _boss_rune_shield() -> void:
 	if boss_current_phase >= 2:
 		charges = modifiers.get("phase_2_shield_charges", 6)
 	
-	# Aplicar escudo al enemigo
-	if enemy.has_method("apply_shield"):
-		enemy.apply_shield(charges, duration)
-		# print("[EnemyAttackSystem] Ã°Å¸â€ºÂ¡Ã¯Â¸Â Rune Shield: %d cargas por %.1fs" % [charges, duration])
+	# FIX P1 #11: Implementar escudo via meta en lugar de método inexistente
+	if enemy:
+		enemy.set_meta("shield_charges", charges)
+		enemy.set_meta("shield_active", true)
+		# Auto-expirar
+		get_tree().create_timer(duration).timeout.connect(func():
+			if is_instance_valid(enemy):
+				enemy.set_meta("shield_active", false)
+				enemy.set_meta("shield_charges", 0)
+		)
 	
 	# Visual
 	_spawn_rune_shield_visual()
 
 func _boss_rune_prison() -> void:
-	"""Atrapar al jugador brevemente"""
+	"""Atrapar al jugador brevemente (con check de rango)"""
 	var duration = modifiers.get("prison_duration", 1.5)
 	var damage = modifiers.get("prison_damage", 20)
+	var prison_range = modifiers.get("prison_range", 200.0)
+	
+	# FIX P1 #14: Verificar distancia antes de aplicar prisión
+	var dist = enemy.global_position.distance_to(player.global_position)
+	if dist > prison_range:
+		return
 	
 	# Aplicar stun/root al jugador
 	if player.has_method("apply_root"):
@@ -2456,15 +2584,14 @@ func _boss_rune_prison() -> void:
 	elif player.has_method("apply_stun"):
 		player.apply_stun(duration)
 	
-	# DaÃƒÂ±o al escapar (al final)
+	# Daño al escapar (al final) con guards de validez
 	get_tree().create_timer(duration).timeout.connect(func():
-		if is_instance_valid(player) and player.has_method("take_damage"):
+		if is_instance_valid(player) and is_instance_valid(enemy) and player.has_method("take_damage"):
 			player.take_damage(damage, "arcane", enemy)
 	)
 	
 	# Visual
 	_spawn_rune_prison_visual(player.global_position, duration)
-	# print("[EnemyAttackSystem] Ã¢â€ºâ€œÃ¯Â¸Â Rune Prison: %.1fs" % duration)
 
 func _boss_counter_stance() -> void:
 	"""Postura de contraataque"""
@@ -2474,9 +2601,15 @@ func _boss_counter_stance() -> void:
 	if boss_current_phase >= 3:
 		damage_mult = modifiers.get("phase_3_counter_damage_mult", 3.5)
 	
-	# Activar estado de counter en el enemigo
-	if enemy.has_method("activate_counter_stance"):
-		enemy.activate_counter_stance(window, damage_mult)
+	# FIX P1 #12: Activar counter_stance via meta en vez de metodo inexistente
+	if enemy:
+		enemy.set_meta("counter_stance_active", true)
+		enemy.set_meta("counter_damage_mult", damage_mult)
+		# Desactivar tras la ventana de tiempo
+		get_tree().create_timer(window).timeout.connect(func():
+			if is_instance_valid(enemy):
+				enemy.set_meta("counter_stance_active", false)
+		)
 	
 	# Visual
 	_spawn_counter_stance_visual()
@@ -2498,7 +2631,7 @@ func _boss_rune_barrage() -> void:
 	# print("[EnemyAttackSystem] Ã¢Å“Â¨ Rune Barrage: %d proyectiles" % count)
 
 func _boss_ground_slam() -> void:
-	"""Golpe de tierra con ondas expansivas"""
+	"""Golpe de tierra con ondas expansivas y telegraph"""
 	var radius = modifiers.get("slam_radius", 150.0)
 	var damage = modifiers.get("slam_damage", 45)
 	var stun = modifiers.get("slam_stun", 0.5)
@@ -2506,24 +2639,29 @@ func _boss_ground_slam() -> void:
 	if boss_current_phase >= 3:
 		damage = modifiers.get("phase_3_slam_damage", 70)
 	
-	var dist = enemy.global_position.distance_to(player.global_position)
-	if dist <= radius:
-		if player.has_method("take_damage"):
-			player.take_damage(damage, "physical", enemy)
-			attacked_player.emit(damage, false)
-		if player.has_method("apply_stun"):
-			player.apply_stun(stun)
+	# FIX P0 #7: Visual PRIMERO como telegraph
+	var slam_center = enemy.global_position
+	_spawn_ground_slam_visual(slam_center, radius)
 	
-	# Visual
-	_spawn_ground_slam_visual(enemy.global_position, radius)
-	# print("[EnemyAttackSystem] Ã°Å¸â€™Â¥ Ground Slam por %d daÃƒÂ±o" % damage)
+	# Daño tras delay de 0.5s
+	get_tree().create_timer(0.5).timeout.connect(func():
+		if not is_instance_valid(player) or not is_instance_valid(enemy):
+			return
+		var dist = slam_center.distance_to(player.global_position)
+		if dist <= radius:
+			if player.has_method("take_damage"):
+				player.take_damage(damage, "physical", enemy)
+				attacked_player.emit(damage, false)
+			if player.has_method("apply_stun"):
+				player.apply_stun(stun)
+	)
 
 # Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
 # HABILIDADES DE MINOTAURO DE FUEGO
 # Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
 
 func _boss_charge_attack() -> void:
-	"""Carga devastadora hacia el jugador"""
+	"""Carga devastadora hacia el jugador con telegraph"""
 	var charge_speed = modifiers.get("charge_speed", 450.0)
 	var damage_mult = modifiers.get("charge_damage_mult", 2.5)
 	var stun = modifiers.get("charge_stun", 0.8)
@@ -2531,30 +2669,38 @@ func _boss_charge_attack() -> void:
 	if boss_current_phase >= 2:
 		damage_mult = modifiers.get("phase_2_charge_damage_mult", 3.0)
 	
-	# Calcular direcciÃƒÂ³n y distancia
+	# Calcular direccion y distancia
 	var direction = (player.global_position - enemy.global_position).normalized()
 	var charge_distance = enemy.global_position.distance_to(player.global_position) + 100
 	
-	# Marcar que el boss estÃƒÂ¡ cargando
-	if enemy.has_method("start_charge"):
-		enemy.start_charge(direction, charge_speed, charge_distance)
-	
-	# Visual de preparaciÃƒÂ³n
+	# Visual de preparacion (TELEGRAPH)
 	_spawn_charge_warning_visual(enemy.global_position, direction)
 	
-	# El daÃƒÂ±o se aplica cuando el boss impacta (manejado por el enemy)
-	# AquÃƒÂ­ aplicamos el efecto si estÃƒÂ¡ cerca
-	var dist = enemy.global_position.distance_to(player.global_position)
-	if dist < 80:
-		var damage = int(attack_damage * damage_mult)
-		if player.has_method("take_damage"):
-			player.take_damage(damage, "physical", enemy)
-			attacked_player.emit(damage, true)
-		if player.has_method("apply_stun"):
-			player.apply_stun(stun)
+	# FIX P1 #13: Implementar carga inline con tween en vez de start_charge() inexistente
+	var target_pos = enemy.global_position + direction * charge_distance
+	var charge_time = charge_distance / charge_speed
 	
-	# print("[EnemyAttackSystem] Ã°Å¸Ââ€š Charge Attack: velocidad %.0f" % charge_speed)
-
+	# Delay de telegraph antes de cargar
+	get_tree().create_timer(0.5).timeout.connect(func():
+		if not is_instance_valid(enemy) or not is_instance_valid(player):
+			return
+		# Mover enemigo con tween
+		var tween = enemy.create_tween()
+		tween.tween_property(enemy, "global_position", target_pos, charge_time)
+		# Al finalizar la carga, comprobar si impacto al player
+		tween.tween_callback(func():
+			if not is_instance_valid(player) or not is_instance_valid(enemy):
+				return
+			var dist = enemy.global_position.distance_to(player.global_position)
+			if dist < 80:
+				var damage = int(attack_damage * damage_mult)
+				if player.has_method("take_damage"):
+					player.take_damage(damage, "physical", enemy)
+					attacked_player.emit(damage, true)
+				if player.has_method("apply_stun"):
+					player.apply_stun(stun)
+		)
+	)
 func _boss_flame_breath() -> void:
 	"""Aliento de fuego en cono"""
 	var angle = modifiers.get("breath_angle", 50.0)
@@ -2682,73 +2828,81 @@ func _apply_boss_melee_effects() -> void:
 			player.apply_curse(0.4, 5.0)  # -40% curaciÃƒÂ³n por 5s
 
 func _perform_boss_void_explosion() -> void:
-	"""El CorazÃƒÂ³n del VacÃƒÂ­o - explosiÃƒÂ³n de vacÃƒÂ­o"""
+	"""El Corazón del Vacío - explosión de vacío con telegraph"""
 	if not player:
 		return
 	
 	var explosion_radius = modifiers.get("explosion_radius", 150.0)
 	var explosion_damage = modifiers.get("explosion_damage", 60)
 	
-	# Verificar si player estÃƒÂ¡ en rango
-	var dist = enemy.global_position.distance_to(player.global_position)
-	if dist <= explosion_radius:
-		if player.has_method("take_damage"):
-			player.take_damage(explosion_damage, "void", enemy)
-			# print("[EnemyAttackSystem] Ã°Å¸â€™Å“ %s Void Explosion por %d daÃƒÂ±o!" % [enemy.name, explosion_damage])
-			attacked_player.emit(explosion_damage, false)
-			# Aplicar Weakness fuerte
-			if player.has_method("apply_weakness"):
-				player.apply_weakness(0.4, 5.0)  # +40% daÃƒÂ±o recibido por 5s
-				# print("[EnemyAttackSystem] Ã°Å¸â€™Å“ Void Explosion aplica Weakness!")
+	# FIX P0 #6: Visual PRIMERO como telegraph
+	var explosion_center = enemy.global_position
+	_spawn_void_explosion_visual(explosion_center, explosion_radius)
 	
-	# Visual de explosiÃƒÂ³n de vacÃƒÂ­o
-	_spawn_void_explosion_visual(enemy.global_position, explosion_radius)
+	# Daño tras delay de 0.5s
+	get_tree().create_timer(0.5).timeout.connect(func():
+		if not is_instance_valid(player) or not is_instance_valid(enemy):
+			return
+		var dist = explosion_center.distance_to(player.global_position)
+		if dist <= explosion_radius:
+			if player.has_method("take_damage"):
+				player.take_damage(explosion_damage, "void", enemy)
+				attacked_player.emit(explosion_damage, false)
+				if player.has_method("apply_weakness"):
+					player.apply_weakness(0.4, 5.0)
+	)
 
 func _perform_boss_rune_blast() -> void:
-	"""El GuardiÃƒÂ¡n de Runas - explosiÃƒÂ³n de runas"""
+	"""El Guardián de Runas - explosión de runas con telegraph"""
 	if not player:
 		return
 	
 	var blast_radius = modifiers.get("blast_radius", 100.0)
 	var blast_damage = modifiers.get("blast_damage", 45)
 	
-	var dist = enemy.global_position.distance_to(player.global_position)
-	if dist <= blast_radius:
-		if player.has_method("take_damage"):
-			player.take_damage(blast_damage, "arcane", enemy)
-			# print("[EnemyAttackSystem] Ã¢Å“Â¨ %s Rune Blast por %d daÃƒÂ±o!" % [enemy.name, blast_damage])
-			attacked_player.emit(blast_damage, false)
-			# Aplicar Stun
-			if player.has_method("apply_stun"):
-				player.apply_stun(0.5)  # 0.5s stun
-				# print("[EnemyAttackSystem] Ã¢Å“Â¨ Rune Blast aplica Stun!")
+	# FIX: Visual PRIMERO como telegraph
+	var blast_center = enemy.global_position
+	_spawn_rune_blast_visual(blast_center, blast_radius)
 	
-	# Visual de runas
-	_spawn_rune_blast_visual(enemy.global_position, blast_radius)
+	# Daño tras delay de 0.5s
+	get_tree().create_timer(0.5).timeout.connect(func():
+		if not is_instance_valid(player) or not is_instance_valid(enemy):
+			return
+		var dist = blast_center.distance_to(player.global_position)
+		if dist <= blast_radius:
+			if player.has_method("take_damage"):
+				player.take_damage(blast_damage, "arcane", enemy)
+				attacked_player.emit(blast_damage, false)
+				if player.has_method("apply_stun"):
+					player.apply_stun(0.5)
+	)
 
 func _perform_boss_fire_stomp() -> void:
-	"""Minotauro de Fuego - pisotÃƒÂ³n de fuego"""
+	"""Minotauro de Fuego - pisoton de fuego con telegraph"""
 	if not player:
 		return
 	
 	var stomp_radius = modifiers.get("stomp_radius", 120.0)
 	var stomp_damage = modifiers.get("stomp_damage", 50)
 	
-	var dist = enemy.global_position.distance_to(player.global_position)
-	if dist <= stomp_radius:
-		if player.has_method("take_damage"):
-			player.take_damage(stomp_damage, "fire", enemy)
-			# print("[EnemyAttackSystem] Ã°Å¸â€Â¥ %s Fire Stomp por %d daÃƒÂ±o!" % [enemy.name, stomp_damage])
-			attacked_player.emit(stomp_damage, false)
-			# Aplicar Burn fuerte + Stun breve
-			if player.has_method("apply_burn"):
-				player.apply_burn(10.0, 4.0)  # 10 daÃƒÂ±o/tick por 4s (muy fuerte)
-				# print("[EnemyAttackSystem] Ã°Å¸â€Â¥ Fire Stomp aplica Burn!")
-			if player.has_method("apply_stun"):
-				player.apply_stun(0.3)  # 0.3s stun
+	# FIX: Visual PRIMERO como telegraph
+	var stomp_center = enemy.global_position
+	_spawn_fire_stomp_visual(stomp_center, stomp_radius)
 	
-	# Visual de pisotÃƒÂ³n de fuego
-	_spawn_fire_stomp_visual(enemy.global_position, stomp_radius)
+	# Dano tras delay de 0.5s
+	get_tree().create_timer(0.5).timeout.connect(func():
+		if not is_instance_valid(player) or not is_instance_valid(enemy):
+			return
+		var dist = stomp_center.distance_to(player.global_position)
+		if dist <= stomp_radius:
+			if player.has_method("take_damage"):
+				player.take_damage(stomp_damage, "fire", enemy)
+				attacked_player.emit(stomp_damage, false)
+				if player.has_method("apply_burn"):
+					player.apply_burn(10.0, 4.0)
+				if player.has_method("apply_stun"):
+					player.apply_stun(0.3)
+	)
 
 func _spawn_boss_impact_effect() -> void:
 	"""Efecto de impacto de ataque de boss"""
@@ -3134,6 +3288,14 @@ func _get_enemy_element() -> String:
 	"""Obtener elemento del enemigo basado en su ID o archetype"""
 	if not enemy:
 		return "physical"
+	
+	# FIX FASE 2: Multi-element cycling (Archimago)
+	if enemy.has_meta("multi_element") and enemy.get_meta("multi_element"):
+		var cycle = enemy.get_meta("element_cycle") if enemy.has_meta("element_cycle") else ["fire", "ice", "arcane"]
+		var idx = enemy.get_meta("element_cycle_idx") if enemy.has_meta("element_cycle_idx") else 0
+		var elem = cycle[idx % cycle.size()]
+		enemy.set_meta("element_cycle_idx", (idx + 1) % cycle.size())
+		return elem
 	
 	var enemy_id = enemy.get("enemy_id") if "enemy_id" in enemy else ""
 	var name_lower = enemy_id.to_lower()

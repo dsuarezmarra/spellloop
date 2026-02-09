@@ -1,87 +1,66 @@
 extends Control
+## Intro cinematográfica: reproduce un vídeo y transiciona al menú principal.
+## Saltable con Enter, Escape o Espacio. Fade-out suave al terminar/saltar.
 
 @onready var video_player: VideoStreamPlayer = $VideoStreamPlayer
+@onready var fade_rect: ColorRect = $FadeRect
+@onready var skip_label: Label = $SkipLabel
 
-# Ruta al menú principal
 const MAIN_MENU_SCENE = "res://scenes/ui/MainMenu.tscn"
+const FADE_DURATION := 0.6
 
-@onready var debug_label: Label = $DebugLabel
+var _transitioning := false
 
 func _ready() -> void:
-	debug_label.text = "Initializing Video..."
-	
-	# Intentar cargar video (prioridad MP4, fallback OGV)
-	var video_path = "res://assets/ui/videos/intro.mp4"
-	var final_path = video_path
-	
-	if not FileAccess.file_exists(video_path):
-		debug_msg("MP4 not found via res://. Checking OGV...")
-		video_path = "res://assets/ui/videos/intro.ogv"
-		final_path = video_path
-	
-	# Try global path if res fails (fix for MP4 not imported)
-	if not FileAccess.file_exists(video_path):
-		debug_msg("Res path failed. Trying global path...")
-		final_path = ProjectSettings.globalize_path("res://assets/ui/videos/intro.mp4")
+	# Fondo negro y fade rect preparados
+	fade_rect.color = Color(0, 0, 0, 1)
+	fade_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	skip_label.modulate.a = 0.0
 
-	if FileAccess.file_exists(final_path) or FileAccess.file_exists(video_path):
-		debug_msg("File found: " + final_path)
-		
-		# Try loading
-		var vid = load(video_path)
-		if not vid:
-			debug_msg("load(res) failed. This is expected for non-imported MP4.")
-			# For MP4 on windows we might need to rely on the player handling the file path if create_video_stream is available?
-			# Actually Godot VideoStreamPlayer needs a Resource.
-			# If load() fails, we are kind of stuck unless we used a detailed plugin.
-			# But let's see if it loaded.
-		
-		if vid:
-			video_player.stream = vid
-			video_player.play()
-			debug_msg("Stream Set. Playing...")
-			
-			# Check in 0.5s
-			await get_tree().create_timer(0.5).timeout
-			debug_msg("Is Playing: " + str(video_player.is_playing()))
-			
-			# Safety timeout
-			await get_tree().create_timer(2.5).timeout # Extended to 3s total
-			if not video_player.is_playing() and visible:
-				debug_msg("Timeout reached. Skipping...")
-				await get_tree().create_timer(1.0).timeout
-				_go_to_main_menu()
-		else:
-			debug_msg("ERROR: load() returned null. Godot hasn't imported this video.")
-			await get_tree().create_timer(2.0).timeout
-			_go_to_main_menu()
+	# Cargar vídeo (OGV — formato nativo de Godot)
+	var video_path := "res://assets/ui/videos/intro.ogv"
+	var vid = load(video_path)
+
+	if vid:
+		video_player.stream = vid
+		video_player.play()
+		# Fade-in desde negro
+		var fade_in := create_tween()
+		fade_in.tween_property(fade_rect, "color:a", 0.0, 0.5)
+		# Mostrar hint de skip tras 1.5s
+		fade_in.tween_property(skip_label, "modulate:a", 0.5, 0.4).set_delay(1.0)
 	else:
-		debug_msg("NO VIDEO FILE FOUND AT: " + final_path)
-		# Si no hay video, saltar directo
-		debug_msg("NO VIDEO FILE FOUND AT: " + final_path)
-		# DEBUG: No saltar automáticamente para que el usuario pueda leer el error
-		await get_tree().create_timer(4.0).timeout
-		# _go_to_main_menu() # DISABLED FOR DEBUGGING
-
-func debug_msg(text: String) -> void:
-	print(text)
-	if debug_label:
-		debug_label.text = text
+		# Sin vídeo: ir directo al menú
+		_go_to_main_menu()
 
 func _input(event: InputEvent) -> void:
-	# Permitir saltar con cualquier tecla (Manual only)
-	if event is InputEventKey and event.pressed:
-		_go_to_main_menu()
-#	elif event is InputEventMouseButton and event.pressed:
-#		_go_to_main_menu()
+	if _transitioning:
+		return
+
+	if event is InputEventKey and event.pressed and not event.echo:
+		match event.keycode:
+			KEY_ENTER, KEY_ESCAPE, KEY_SPACE, KEY_KP_ENTER:
+				_skip_video()
 
 func _on_video_stream_player_finished() -> void:
-	debug_msg("Video Finished.")
-	await get_tree().create_timer(1.0).timeout
-	# _go_to_main_menu() # DISABLED FOR DEBUGGING
+	_go_to_main_menu()
+
+func _skip_video() -> void:
+	if _transitioning:
+		return
+	video_player.stop()
+	_go_to_main_menu()
 
 func _go_to_main_menu() -> void:
-	# Evitar llamadas dobles
-	if is_processing_input():
-		set_process_input(false)
-		get_tree().change_scene_to_file(MAIN_MENU_SCENE)
+	if _transitioning:
+		return
+	_transitioning = true
+	set_process_input(false)
+
+	# Fade-out a negro
+	skip_label.modulate.a = 0.0
+	var fade_out := create_tween()
+	fade_out.tween_property(fade_rect, "color:a", 1.0, FADE_DURATION)
+	await fade_out.finished
+
+	get_tree().change_scene_to_file(MAIN_MENU_SCENE)

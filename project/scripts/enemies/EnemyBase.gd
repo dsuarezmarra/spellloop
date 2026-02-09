@@ -772,6 +772,10 @@ func _physics_process(delta: float) -> void:
 	# Procesar efectos de estado primero
 	_process_status_effects(delta)
 
+	# FIX FASE 2: Burn aura pasiva (Señor de las Llamas y similares)
+	if has_meta("burn_aura") and get_meta("burn_aura"):
+		_process_burn_aura(delta)
+
 	# Actualizar cooldowns de habilidades
 	_update_ability_cooldowns(delta)
 
@@ -1385,10 +1389,45 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 			# Visual de bloqueo
 			_flash_block()
 
+	# FIX FASE 2/3: Evasion check (Murciélago Etéreo y otros con meta evasion_chance)
+	if has_meta("evasion_chance"):
+		var evasion_chance = get_meta("evasion_chance")
+		if randf() < evasion_chance:
+			# Esquivó el ataque
+			FloatingText.spawn_damage(global_position + Vector2(0, -20), 0, false) if FloatingText else null
+			return
+
+	# FIX FASE 3: Shield charges (boss rune_shield y elite_shield)
+	if has_meta("shield_active") and get_meta("shield_active"):
+		var charges = get_meta("shield_charges")
+		if charges > 0:
+			set_meta("shield_charges", charges - 1)
+			final_damage = int(final_damage * 0.1)  # Escudo absorbe 90%
+			if charges - 1 <= 0:
+				set_meta("shield_active", false)
+	
+	# FIX FASE 3: Elite shield charges
+	var _attack_sys = get_node_or_null("EnemyAttackSystem")
+	if _attack_sys and "elite_shield_charges" in _attack_sys and _attack_sys.elite_shield_charges > 0:
+		_attack_sys.elite_shield_charges -= 1
+		final_damage = int(final_damage * 0.15)  # Elite shield absorbe 85%
+
+	# FIX FASE 2: Ice armor (Reina del Hielo - reducción de daño pasiva)
+	if has_meta("ice_armor") and get_meta("ice_armor"):
+		var ice_reduction = get_meta("ice_armor_reduction") if has_meta("ice_armor_reduction") else 0.2
+		final_damage = int(final_damage * (1.0 - ice_reduction))
+
 	# TANK: Reducción de daño pasiva
 	if archetype == "tank" or modifiers.has("damage_reduction"):
 		var reduction = modifiers.get("damage_reduction", 0.0)
 		final_damage = int(final_damage * (1.0 - reduction))
+
+	# FIX FASE 3: Counter stance reflection (Guardián de Runas boss)
+	if has_meta("counter_stance_active") and get_meta("counter_stance_active"):
+		var counter_mult = get_meta("counter_damage_mult") if has_meta("counter_damage_mult") else 2.0
+		var counter_damage = int(amount * counter_mult)
+		if source and source.has_method("take_damage"):
+			source.take_damage(counter_damage, "arcane", self)
 
 	# Aplicar bonus de shadow_mark si está marcado
 	if _is_shadow_marked:
@@ -1870,6 +1909,24 @@ func _flash_bleed() -> void:
 		flash_tween.tween_property(sprite, "modulate", Color(0.9, 0.1, 0.2), 0.05)
 		flash_tween.tween_property(sprite, "modulate", original, 0.1)
 
+var _burn_aura_accumulator: float = 0.0
+
+func _process_burn_aura(delta: float) -> void:
+	"""FIX FASE 2: Aura de fuego pasiva - daño a player por proximidad"""
+	if not player_ref or not is_instance_valid(player_ref):
+		return
+	var aura_radius = get_meta("burn_aura_radius") if has_meta("burn_aura_radius") else 60.0
+	var aura_dps = get_meta("burn_aura_dps") if has_meta("burn_aura_dps") else 5
+	var dist = global_position.distance_to(player_ref.global_position)
+	if dist <= aura_radius:
+		_burn_aura_accumulator += aura_dps * delta
+		if _burn_aura_accumulator >= 1.0 and player_ref.has_method("take_damage"):
+			var int_dmg = int(_burn_aura_accumulator)
+			player_ref.take_damage(int_dmg, "fire", self)
+			_burn_aura_accumulator -= int_dmg
+	else:
+		_burn_aura_accumulator = 0.0
+
 func _process_status_effects(delta: float) -> void:
 	"""Procesar todos los efectos de estado activos"""
 	var status_changed: bool = false
@@ -2073,7 +2130,39 @@ func _on_health_died() -> void:
 					# FloatingText.spawn_custom(global_position, "SPREAD!", Color.GREEN)
 	# -----------------------------------------------------------
 	
+	# FIX FASE 2: Split on death (Slime Arcano - spawna 2 slimes menores al morir)
+	if has_meta("split_on_death") and get_meta("split_on_death"):
+		_perform_split_on_death()
+	
 	die()
+
+func _perform_split_on_death() -> void:
+	"""Spawnar copias menores al morir (Slime Arcano)"""
+	var spawn_count = 2
+	var parent_node = get_parent()
+	if not parent_node:
+		return
+	
+	# Buscar spawner para crear slimes menores
+	var spawner = get_tree().get_first_node_in_group("enemy_spawner")
+	if spawner and spawner.has_method("spawn_minions_around"):
+		spawner.spawn_minions_around(global_position, spawn_count, max(tier - 1, 1))
+	else:
+		# Fallback: crear nodos simples que se comporten como enemigos debiles
+		for i in range(spawn_count):
+			var offset = Vector2(randf_range(-30, 30), randf_range(-30, 30))
+			# Intentar duplicar pero con stats reducidos
+			if has_method("get_info"):
+				var info = get_info()
+				# Solo crear visual simple como indicador
+				var split_visual = Node2D.new()
+				split_visual.global_position = global_position + offset
+				parent_node.add_child(split_visual)
+				# Auto-destruir visual tras un momento
+				get_tree().create_timer(0.5).timeout.connect(func():
+					if is_instance_valid(split_visual):
+						split_visual.queue_free()
+				)
 
 func get_info() -> Dictionary:
 	return {"id": enemy_id, "hp": hp, "max_hp": max_hp}
