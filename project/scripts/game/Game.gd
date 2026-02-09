@@ -579,14 +579,11 @@ func _connect_hud_to_player() -> void:
 			experience_manager.coin_collected.connect(hud.update_coins)
 
 	# Actualización inicial del HUD
-	if player.has_method("get_health") and hud.has_method("update_stats"):
+	if player.has_method("get_health") and hud.has_method("update_health"):
 		var health = player.get_health()
-		var exp_data = {"current": 0, "max": 10, "level": 1}
-		if experience_manager:
-			exp_data.current = experience_manager.current_exp
-			exp_data.max = experience_manager.exp_to_next_level
-			exp_data.level = experience_manager.current_level
-		hud.update_stats(health.current, health.max, exp_data.current, exp_data.max, exp_data.level)
+		hud.update_health(health.current, health.max)
+	if hud.has_method("update_exp") and experience_manager:
+		hud.update_exp(experience_manager.current_exp, experience_manager.exp_to_next_level)
 
 	# Debug desactivado: print("📊 [Game] HUD conectado al player")
 

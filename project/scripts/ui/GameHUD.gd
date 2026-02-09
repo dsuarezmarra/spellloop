@@ -263,31 +263,6 @@ func _update_streak_timer(time_left: float, max_time: float):
 					streak_icon.modulate = Color.WHITE
 		else:
 			streak_bar_container.visible = false
-	if hp_bar:
-		var sb_bg = StyleBoxFlat.new()
-		sb_bg.bg_color = Color(0.1, 0.0, 0.0, 0.8)
-		sb_bg.border_width_left = 2
-		sb_bg.border_width_top = 2
-		sb_bg.border_width_right = 2
-		sb_bg.border_width_bottom = 2
-		sb_bg.border_color = Color(0,0,0)
-		
-		var sb_fill = StyleBoxFlat.new()
-		sb_fill.bg_color = Color(0.8, 0.1, 0.1, 1.0) # Rojo intenso
-		sb_fill.border_width_left = 2
-		sb_fill.border_width_top = 2
-		sb_fill.border_width_right = 2
-		sb_fill.border_width_bottom = 2
-		sb_fill.border_color = Color(0,0,0,0) # Transparente para ver el bg border
-		
-		hp_bar.add_theme_stylebox_override("background", sb_bg)
-		hp_bar.add_theme_stylebox_override("fill", sb_fill)
-	
-	if xp_bar:
-		var sb_fill_xp = StyleBoxFlat.new()
-		sb_fill_xp.bg_color = Color(0.2, 0.6, 1.0, 1.0) # Azul brillante
-		xp_bar.add_theme_stylebox_override("fill", sb_fill_xp)
-
 
 func _verify_nodes():
 	# Si algun nodo vital es null (porque el tscn aun no se actualizó), buscarlos dinámicamente o ignorar
@@ -646,5 +621,29 @@ func _style_shield_bar():
 		_update_shield_bar_color(0, 0)
 
 func _style_hud_elements() -> void:
-	# Estilos adicionales si fueran necesarios (placeholder)
-	pass
+	# Estilizar barra de HP con rojo intenso
+	if hp_bar:
+		var sb_bg = StyleBoxFlat.new()
+		sb_bg.bg_color = Color(0.1, 0.0, 0.0, 0.8)
+		sb_bg.border_width_left = 2
+		sb_bg.border_width_top = 2
+		sb_bg.border_width_right = 2
+		sb_bg.border_width_bottom = 2
+		sb_bg.border_color = Color(0,0,0)
+		
+		var sb_fill = StyleBoxFlat.new()
+		sb_fill.bg_color = Color(0.8, 0.1, 0.1, 1.0) # Rojo intenso
+		sb_fill.border_width_left = 2
+		sb_fill.border_width_top = 2
+		sb_fill.border_width_right = 2
+		sb_fill.border_width_bottom = 2
+		sb_fill.border_color = Color(0,0,0,0) # Transparente para ver el bg border
+		
+		hp_bar.add_theme_stylebox_override("background", sb_bg)
+		hp_bar.add_theme_stylebox_override("fill", sb_fill)
+	
+	# Estilizar barra de XP con azul brillante
+	if xp_bar:
+		var sb_fill_xp = StyleBoxFlat.new()
+		sb_fill_xp.bg_color = Color(0.2, 0.6, 1.0, 1.0) # Azul brillante
+		xp_bar.add_theme_stylebox_override("fill", sb_fill_xp)

@@ -9,6 +9,7 @@ var wizard_player = null
 signal player_damaged(amount: int, hp: int)
 signal player_died
 signal pickup_range_changed(new_range: float)
+signal health_changed(current_hp: int, max_hp: int)
 
 var hp: int = 100
 var max_hp: int = 100
@@ -409,6 +410,7 @@ func _on_health_changed_visual(current: int, max_val: int) -> void:
 	hp = current
 	max_hp = max_val
 	update_health_bar()
+	health_changed.emit(current, max_val)
 
 func update_health_bar() -> void:
 	if not health_bar_container:
