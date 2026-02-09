@@ -78,9 +78,9 @@ var banish_count: int = 2
 var locked: bool = false
 var rerolls_used_this_level: int = 0  # BALANCE: Track rerolls used to calculate cost
 
-# Reroll cost constants (BALANCE)
-const REROLL_BASE_COST: int = 0      # First reroll free
-const REROLL_COST_STEP: int = 15     # Each subsequent reroll costs 15 more coins
+# Reroll cost constants (BALANCE — EXPONENTIAL PRICING)
+const REROLL_BASE_COST: int = 10     # First paid reroll costs 10 coins
+const REROLL_COST_MULT: float = 2.0  # Each reroll doubles in cost (10, 20, 40, 80, 160...)
 
 # Modal de confirmación para cerrar sin elegir
 var _confirm_modal: Control = null
@@ -639,36 +639,25 @@ func _on_reroll() -> void:
 	if locked:
 		return
 	
-	# BALANCE: Calculate reroll cost (progressive)
-	var reroll_cost = REROLL_BASE_COST + (rerolls_used_this_level * REROLL_COST_STEP)
+	# BALANCE: Exponential reroll cost — first free rerolls are free, then 10, 20, 40, 80...
 	var has_free_rerolls = reroll_count > 0
-	
-	# Si no quedan rerolls gratuitos, el costo mínimo es REROLL_COST_STEP
+	var paid_rerolls = maxi(0, rerolls_used_this_level - (reroll_count if has_free_rerolls else 0))
+	var reroll_cost: int = 0
+
 	if not has_free_rerolls:
-		reroll_cost = maxi(reroll_cost, REROLL_COST_STEP)
-	
-	# Si no hay rerolls gratuitos, DEBE poder pagar con monedas
-	if not has_free_rerolls:
+		# All free rerolls exhausted — exponential cost
+		reroll_cost = int(REROLL_BASE_COST * pow(REROLL_COST_MULT, paid_rerolls))
+		reroll_cost = maxi(reroll_cost, REROLL_BASE_COST)
+		
 		var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
 		if not exp_mgr or not "total_coins" in exp_mgr or exp_mgr.total_coins < reroll_cost:
 			# No tiene rerolls ni monedas suficientes
-			var needed = reroll_cost
-			FloatingText.spawn_text(get_viewport().get_visible_rect().size / 2, Localization.L("ui.level_up.need_coins").replace("{cost}", str(needed)), Color.RED)
+			FloatingText.spawn_text(get_viewport().get_visible_rect().size / 2, Localization.L("ui.level_up.need_coins").replace("{cost}", str(reroll_cost)), Color.RED)
 			return
 		# Pagar con monedas
 		exp_mgr.total_coins -= reroll_cost
 		if exp_mgr.has_signal("coin_collected"):
 			exp_mgr.coin_collected.emit(-reroll_cost, exp_mgr.total_coins)
-	elif reroll_cost > 0:
-		# Tiene rerolls gratuitos pero el costo progresivo requiere monedas
-		var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
-		if exp_mgr and "total_coins" in exp_mgr:
-			if exp_mgr.total_coins < reroll_cost:
-				FloatingText.spawn_text(get_viewport().get_visible_rect().size / 2, Localization.L("ui.level_up.need_coins").replace("{cost}", str(reroll_cost)), Color.RED)
-				return
-			exp_mgr.total_coins -= reroll_cost
-			if exp_mgr.has_signal("coin_collected"):
-				exp_mgr.coin_collected.emit(-reroll_cost, exp_mgr.total_coins)
 	
 	AudioManager.play_fixed("sfx_ui_click")
 	rerolls_used_this_level += 1  # Track for next cost calculation
@@ -1060,8 +1049,9 @@ func _is_button_disabled(index: int) -> bool:
 		0:  # Reroll: habilitado si tiene rerolls gratuitos O monedas suficientes
 			if reroll_count > 0:
 				return false
-			# Sin rerolls gratuitos: verificar si puede pagar con monedas
-			var next_cost = maxi(REROLL_BASE_COST + (rerolls_used_this_level * REROLL_COST_STEP), REROLL_COST_STEP)
+			# Sin rerolls gratuitos: verificar si puede pagar con monedas (exponencial)
+			var paid_so_far = maxi(0, rerolls_used_this_level)
+			var next_cost = int(REROLL_BASE_COST * pow(REROLL_COST_MULT, paid_so_far))
 			var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
 			if exp_mgr and "total_coins" in exp_mgr and exp_mgr.total_coins >= next_cost:
 				return false
@@ -1073,13 +1063,11 @@ func _update_button_counts() -> void:
 	# Actualizar contador de Reroll (with cost if applicable)
 	var reroll_count_label = button_panels[0].find_child("Count", true, false) as Label
 	if reroll_count_label:
-		var next_cost = REROLL_BASE_COST + (rerolls_used_this_level * REROLL_COST_STEP)
+		var paid_so_far = maxi(0, rerolls_used_this_level)
+		var next_cost = int(REROLL_BASE_COST * pow(REROLL_COST_MULT, paid_so_far))
 		if reroll_count <= 0:
-			# Sin rerolls gratuitos: mostrar solo costo en monedas
-			next_cost = maxi(next_cost, REROLL_COST_STEP)
+			# Sin rerolls gratuitos: mostrar solo costo en monedas (exponencial)
 			reroll_count_label.text = "🪙%d" % next_cost
-		elif next_cost > 0:
-			reroll_count_label.text = "(%d) 🪙%d" % [reroll_count, next_cost]
 		else:
 			reroll_count_label.text = "(%d)" % reroll_count
 

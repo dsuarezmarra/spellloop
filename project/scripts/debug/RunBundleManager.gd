@@ -50,6 +50,10 @@ var _session_perf_log: String = ""
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _ready() -> void:
+	# Auto-disable in release builds
+	if not OS.is_debug_build() and "--enable-run-bundles" not in OS.get_cmdline_args():
+		return
+
 	if not ENABLE_BUNDLES:
 		return
 

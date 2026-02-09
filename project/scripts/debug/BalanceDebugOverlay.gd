@@ -16,6 +16,13 @@ var visible_mode: bool = false
 var _debugger: BalanceDebugger = null
 
 func _ready() -> void:
+	# Auto-disable in release builds
+	if not OS.is_debug_build() and "--enable-balance-overlay" not in OS.get_cmdline_args():
+		set_process(false)
+		set_process_input(false)
+		visible = false
+		return
+
 	# Buscar el debugger
 	await get_tree().process_frame
 	var debuggers = get_tree().get_nodes_in_group("balance_debugger")

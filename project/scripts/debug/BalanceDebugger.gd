@@ -62,6 +62,11 @@ const UPDATE_INTERVAL: float = 0.5  # Actualizar métricas cada 0.5s
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _ready() -> void:
+	# Auto-disable in release builds
+	if not OS.is_debug_build() and "--enable-balance-debugger" not in OS.get_cmdline_args():
+		enabled = false
+		set_process(false)
+		return
 	_session_start_time = Time.get_ticks_msec()
 	add_to_group("balance_debugger")
 

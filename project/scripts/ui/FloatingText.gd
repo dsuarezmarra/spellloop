@@ -1,74 +1,123 @@
 # FloatingText.gd
-# Sistema de texto flotante OPTIMIZADO con POOLING para evitar Garbage Collection spikes.
+# Sistema de texto flotante REDISEÑADO — estilo Vampire Survivors / Brotato
+# Pooling integrado, fuente custom, animaciones juicy, escala por magnitud de daño.
 
 extends Node2D
 class_name FloatingText
 
-# Configuración visual
-var text: String = ""
-var color: Color = Color.WHITE
-var font_size: int = 16
-var duration: float = 1.0
-var rise_speed: float = 50.0
-var fade_start: float = 0.5
-
 # Singleton para acceso global
 static var instance: FloatingText = null
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONFIGURACIÓN VISUAL — DESIGN PASS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Colores principales
+const COLOR_DAMAGE_NORMAL := Color(1.0, 1.0, 1.0)         # Blanco puro
+const COLOR_DAMAGE_CRIT := Color(1.0, 0.85, 0.1)          # Dorado brillante
+const COLOR_HEAL := Color(0.2, 1.0, 0.4)                  # Verde vivo
+const COLOR_PLAYER_DAMAGE := Color(1.0, 0.15, 0.15)       # Rojo intenso
+const COLOR_GOLD := Color(1.0, 0.85, 0.3)                 # Dorado moneda
+const COLOR_STATUS := Color(0.9, 0.9, 1.0)                # Blanco azulado
+
+# Colores elementales
+const ELEMENT_COLORS := {
+	"physical": Color(1.0, 0.3, 0.3),
+	"fire": Color(1.0, 0.45, 0.05),
+	"ice": Color(0.3, 0.75, 1.0),
+	"poison": Color(0.5, 0.9, 0.15),
+	"dark": Color(0.6, 0.15, 0.85),
+	"void": Color(0.5, 0.1, 0.8),
+	"shadow": Color(0.55, 0.15, 0.75),
+	"arcane": Color(0.85, 0.35, 0.95),
+	"lightning": Color(1.0, 0.95, 0.3),
+	"nature": Color(0.3, 0.85, 0.3),
+	"earth": Color(0.7, 0.55, 0.25),
+	"wind": Color(0.6, 0.9, 0.8),
+	"light": Color(1.0, 0.95, 0.75),
+}
+
+# Tamaños base (escalados por magnitud)
+const SIZE_DAMAGE_NORMAL: int = 18
+const SIZE_DAMAGE_CRIT: int = 28
+const SIZE_HEAL: int = 20
+const SIZE_PLAYER_DAMAGE: int = 22
+const SIZE_DOT: int = 14
+const SIZE_STATUS: int = 15
+const SIZE_CUSTOM: int = 18
+
+# Escala por magnitud — números más grandes = texto más grande
+const MAGNITUDE_SCALE_MIN: float = 0.85
+const MAGNITUDE_SCALE_MAX: float = 1.6
+const MAGNITUDE_DAMAGE_LOW: float = 10.0
+const MAGNITUDE_DAMAGE_HIGH: float = 500.0
+
+# Outline
+const OUTLINE_SIZE_NORMAL: int = 5
+const OUTLINE_SIZE_CRIT: int = 7
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # POOLING SYSTEM
 # ═══════════════════════════════════════════════════════════════════════════════
 var _pool: Array = []
 var _active_instances: Array = []
-const MAX_ACTIVE_TEXTS: int = 150 # Límite duro para evitar degradación de FPS
+const MAX_ACTIVE_TEXTS: int = 150
 const MAX_POOL_SIZE: int = 200
 
 var _is_headless: bool = false
+var _font: Font = null
+var _font_bold: Font = null
 
 func _ready() -> void:
 	if instance == null:
 		instance = self
 	z_index = 100
-	
-	# Check headless using central helper if possible, or robust check here
+
 	if Headless.is_headless():
 		_is_headless = true
 		return
 
+	# Cargar fuentes custom
+	_font = load("res://assets/ui/fonts/Quicksand-Variable.ttf") as Font
+	_font_bold = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf") as Font
+
 	# Pre-warm pool
-	for i in range(20):
+	for i in range(25):
 		_create_new_instance_for_pool()
 
 func _create_new_instance_for_pool() -> void:
 	var inst = FloatingTextInstance.new()
 	inst.visible = false
+	if _font:
+		inst._font = _font
+	if _font_bold:
+		inst._font_bold = _font_bold
 	_pool.append(inst)
 
 func get_from_pool() -> FloatingTextInstance:
-	if _is_headless: return null
+	if _is_headless:
+		return null
 
-	# Si hay límite excedido, reciclar el más viejo activo
 	if _active_instances.size() >= MAX_ACTIVE_TEXTS:
 		var oldest = _active_instances.pop_front()
 		if is_instance_valid(oldest):
-			# Resetear y reusar inmediatamente (force finish)
 			oldest.force_return()
-			# Ahora está en el pool (o deberíamos usarlo directo?)
-			# Simplificación: return_instance lo pone en _pool.
-			# Así que continuamos abajo.
-	
+
 	var inst: FloatingTextInstance
 	if _pool.is_empty():
 		inst = FloatingTextInstance.new()
+		if _font:
+			inst._font = _font
+		if _font_bold:
+			inst._font_bold = _font_bold
 	else:
 		inst = _pool.pop_back()
-	
+
 	_active_instances.append(inst)
 	return inst
 
 func return_to_pool(inst: FloatingTextInstance) -> void:
 	_active_instances.erase(inst)
-	
 	if _pool.size() < MAX_POOL_SIZE:
 		_pool.append(inst)
 		if inst.get_parent():
@@ -77,119 +126,147 @@ func return_to_pool(inst: FloatingTextInstance) -> void:
 		inst.queue_free()
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# HELPERS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+static func _magnitude_scale(amount: int) -> float:
+	"""Escala logarítmica: daño mayor = texto más grande."""
+	if amount <= MAGNITUDE_DAMAGE_LOW:
+		return MAGNITUDE_SCALE_MIN
+	if amount >= MAGNITUDE_DAMAGE_HIGH:
+		return MAGNITUDE_SCALE_MAX
+	var t = log(float(amount) / MAGNITUDE_DAMAGE_LOW) / log(MAGNITUDE_DAMAGE_HIGH / MAGNITUDE_DAMAGE_LOW)
+	return lerpf(MAGNITUDE_SCALE_MIN, MAGNITUDE_SCALE_MAX, clampf(t, 0.0, 1.0))
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # API ESTÁTICA
 # ═══════════════════════════════════════════════════════════════════════════════
 
 static func spawn_heal(pos: Vector2, amount: int) -> void:
-	_spawn_text(pos, "+%d" % amount, Color(0.3, 1.0, 0.3), 18, 1.2)
+	var mag = _magnitude_scale(amount)
+	_spawn_text(pos, "+%d" % amount, COLOR_HEAL, int(SIZE_HEAL * mag), 1.0, {
+		"outline_color": Color(0.0, 0.3, 0.05, 0.9),
+		"outline_size": OUTLINE_SIZE_NORMAL,
+		"rise_type": "gentle",
+	})
 
 static func spawn_damage(pos: Vector2, amount: int, is_crit: bool = false) -> void:
-	var col = Color(1.0, 0.3, 0.3) if not is_crit else Color(1.0, 0.8, 0.2)
-	var size = 16 if not is_crit else 22
-	_spawn_text(pos, str(amount), col, size, 0.8)
-	
-	# === CRIT FEEDBACK ===
+	var mag = _magnitude_scale(amount)
 	if is_crit:
+		_spawn_text(pos, "%d!" % amount, COLOR_DAMAGE_CRIT, int(SIZE_DAMAGE_CRIT * mag), 0.9, {
+			"outline_color": Color(0.5, 0.2, 0.0, 0.95),
+			"outline_size": OUTLINE_SIZE_CRIT,
+			"rise_type": "crit_bounce",
+			"use_bold_font": true,
+			"rotation_deg": randf_range(-12.0, 12.0),
+		})
 		_apply_crit_feedback(pos)
+	else:
+		_spawn_text(pos, str(amount), COLOR_DAMAGE_NORMAL, int(SIZE_DAMAGE_NORMAL * mag), 0.7, {
+			"outline_color": Color(0.3, 0.0, 0.0, 0.85),
+			"outline_size": OUTLINE_SIZE_NORMAL,
+			"rise_type": "bounce",
+		})
 
 static func spawn_player_damage(pos: Vector2, amount: int, element: String = "physical") -> void:
-	var col: Color
-	var prefix: String = "-"
-	match element:
-		"fire": col = Color(1.0, 0.5, 0.1)
-		"ice": col = Color(0.4, 0.8, 1.0)
-		"poison": col = Color(0.6, 0.9, 0.2)
-		"dark", "void", "shadow": col = Color(0.6, 0.2, 0.8)
-		"arcane": col = Color(0.9, 0.4, 0.9)
-		"lightning": col = Color(1.0, 1.0, 0.4)
-		_: col = Color(1.0, 0.3, 0.3)
-	_spawn_text(pos, "%s%d" % [prefix, amount], col, 20, 1.0)
+	var col = ELEMENT_COLORS.get(element, COLOR_PLAYER_DAMAGE)
+	var mag = _magnitude_scale(amount)
+	_spawn_text(pos, "-%d" % amount, col, int(SIZE_PLAYER_DAMAGE * mag), 0.9, {
+		"outline_color": Color(0.15, 0.0, 0.0, 0.9),
+		"outline_size": OUTLINE_SIZE_NORMAL + 1,
+		"rise_type": "drop",
+	})
 
 static func spawn_dot_tick(pos: Vector2, amount: int, dot_type: String) -> void:
 	var col: Color
 	var icon: String = ""
 	match dot_type:
-		"burn": 
-			col = Color(1.0, 0.6, 0.2, 0.9)
+		"burn":
+			col = Color(1.0, 0.55, 0.15, 0.95)
 			icon = "🔥"
-		"poison": 
-			col = Color(0.5, 0.8, 0.3, 0.9)
-			icon = "☠️"
-		"bleed": 
-			col = Color(0.8, 0.2, 0.2, 0.9)
+		"poison":
+			col = Color(0.45, 0.85, 0.2, 0.95)
+			icon = "☠"
+		"bleed":
+			col = Color(0.85, 0.15, 0.15, 0.95)
 			icon = "🩸"
-		_: 
+		_:
 			col = Color(0.8, 0.3, 0.3, 0.9)
-	_spawn_text(pos, "%s-%d" % [icon, amount], col, 14, 0.8)
+	_spawn_text(pos, "%s%d" % [icon, amount], col, SIZE_DOT, 0.6, {
+		"outline_size": 3,
+		"rise_type": "drift",
+	})
 
 static func spawn_status_applied(pos: Vector2, status: String) -> void:
-	# Simplificado para brevedad, lógica igual
-	_spawn_text(pos, status.to_upper(), Color.WHITE, 14, 1.2)
+	var display = status.to_upper()
+	var col := COLOR_STATUS
+	match status:
+		"slow", "frozen", "freeze": col = Color(0.4, 0.8, 1.0)
+		"burn", "ignite": col = Color(1.0, 0.5, 0.1)
+		"poison": col = Color(0.5, 0.9, 0.2)
+		"stun": col = Color(1.0, 1.0, 0.3)
+		"weakness", "curse": col = Color(0.7, 0.2, 0.9)
+	_spawn_text(pos, display, col, SIZE_STATUS, 1.0, {
+		"outline_size": 4,
+		"rise_type": "gentle",
+	})
 
 static func spawn_text(pos: Vector2, txt: String, col: Color = Color.WHITE) -> void:
-	_spawn_text(pos, txt, col, 16, 1.0)
+	_spawn_text(pos, txt, col, SIZE_CUSTOM, 0.9, {
+		"outline_size": OUTLINE_SIZE_NORMAL,
+		"rise_type": "bounce",
+	})
 
 static func spawn_custom(pos: Vector2, txt: String, col: Color = Color.WHITE) -> void:
 	spawn_text(pos, txt, col)
 
 static func _apply_crit_feedback(_pos: Vector2) -> void:
-	"""Apply screen shake and sound on critical hit"""
+	"""Screen shake + sound on critical hit."""
 	if Headless.is_headless():
 		return
-	
 	var tree = Engine.get_main_loop() as SceneTree
 	if not tree:
 		return
-	
-	# Screen shake (micro-shake for crits)
+
 	var camera = tree.get_first_node_in_group("camera")
 	if not camera:
 		camera = tree.get_first_node_in_group("game_camera")
-	
 	if camera:
 		if camera.has_method("minor_shake"):
 			camera.minor_shake()
 		elif camera.has_method("shake"):
-			camera.shake(0.15, 0.08)  # Very subtle shake for crits
-	
-	# Crit sound effect
+			camera.shake(0.15, 0.08)
+
 	var audio_manager = tree.root.get_node_or_null("AudioManager")
 	if audio_manager:
 		audio_manager.play_fixed("sfx_crit_hit")
 
 
-
-static func _spawn_text(pos: Vector2, txt: String, col: Color, size: int, dur: float) -> void:
+static func _spawn_text(pos: Vector2, txt: String, col: Color, size: int, dur: float, opts: Dictionary = {}) -> void:
 	var tree = Engine.get_main_loop() as SceneTree
-	
-	# DIAGNOSTICS HOOK (Moved up for Headless Audit support)
+
+	# DIAGNOSTICS HOOK
 	if tree and tree.has_group("diagnostics"):
 		tree.call_group("diagnostics", "track_feedback", "text", txt)
 
-	# AUDIT HOOK (New for Phase 15)
-	var logger = tree.root.get_node_or_null("DamageDeliveryLogger")
-	if logger:
-		var is_crit = (col == Color(1.0, 0.8, 0.2)) # Heuristic based on spawn_damage color
-		# Try parse int
-		var amt = txt.to_int()
-		logger.log_feedback(amt, is_crit, pos)
+	# AUDIT HOOK
+	if tree:
+		var logger = tree.root.get_node_or_null("DamageDeliveryLogger")
+		if logger:
+			var is_crit = (col == COLOR_DAMAGE_CRIT)
+			var amt = txt.to_int()
+			logger.log_feedback(amt, is_crit, pos)
 
-	# HEADLESS GUARD: Critical - prevents ALL visual operations in headless mode
+	# HEADLESS GUARD
 	if Headless.is_headless():
 		return
-	
-	if not tree:
+	if not tree or not tree.current_scene:
 		return
-	
-	if not tree.current_scene:
-		return
-	
-	# LAZY INITIALIZATION: Si no es Autoload, crearlo manualmente
+
+	# LAZY INITIALIZATION
 	if not instance:
 		var root = tree.current_scene
 		if root:
-			# Buscar si ya existe uno en la escena (revive tras reload)
 			var existing = root.find_child("FloatingTextManager", true, false)
 			if existing:
 				instance = existing
@@ -197,18 +274,14 @@ static func _spawn_text(pos: Vector2, txt: String, col: Color, size: int, dur: f
 				instance = FloatingText.new()
 				instance.name = "FloatingTextManager"
 				root.call_deferred("add_child", instance)
-				# Esperar un frame o forzar setup? 
-				# call_deferred significa que no estará listo AHORA.
-				# Hack: si no está en el tree, no podemos usarlo este frame para pooling.
-				# Fallback: instanciar directo sin pool por este frame.
-	
+
 	if not instance or not instance.is_inside_tree():
-		# Fallback de emergencia si no está listo el singleton
+		# Fallback de emergencia
 		var temp = FloatingTextInstance.new()
 		if tree.current_scene:
 			tree.current_scene.add_child(temp)
-			temp.global_position = pos + Vector2(randf_range(-10, 10), randf_range(-5, 5))
-			temp.setup(txt, col, size, dur)
+			temp.global_position = pos + Vector2(randf_range(-15, 15), randf_range(-8, 8))
+			temp.setup(txt, col, size, dur, opts)
 			temp.visible = true
 		return
 
@@ -216,75 +289,148 @@ static func _spawn_text(pos: Vector2, txt: String, col: Color, size: int, dur: f
 	var floating = instance.get_from_pool()
 	if not floating:
 		return
-	
-	# Añadir a la escena SI NO ESTÁ YA
+
 	if floating.get_parent() != tree.current_scene:
-		if floating.get_parent(): floating.get_parent().remove_child(floating)
+		if floating.get_parent():
+			floating.get_parent().remove_child(floating)
 		tree.current_scene.add_child(floating)
-	
-	floating.global_position = pos + Vector2(randf_range(-10, 10), randf_range(-5, 5))
-	floating.setup(txt, col, size, dur)
+
+	# Spread mejorado
+	var spread_x = randf_range(-18, 18)
+	var spread_y = randf_range(-10, 6)
+	floating.global_position = pos + Vector2(spread_x, spread_y)
+	floating.setup(txt, col, size, dur, opts)
 	floating.visible = true
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# CLASE INTERNA: FloatingTextInstance (Pooled)
+# CLASE INTERNA: FloatingTextInstance (Pooled, Rediseñada)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 class FloatingTextInstance extends Node2D:
 	var _label: Label = null
 	var _timer: float = 0.0
 	var _duration: float = 1.0
-	var _rise_speed: float = 60.0
+	var _rise_speed: float = 70.0
+	var _drift_x: float = 0.0
 	var _active: bool = false
-	
+	var _rise_type: String = "bounce"
+	var _font: Font = null
+	var _font_bold: Font = null
+	var _initial_rise: float = 70.0
+	var _decel: float = 90.0
+	var _gravity: float = 0.0
+
 	func _init() -> void:
 		_label = Label.new()
 		_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		_label.position = Vector2(-50, -15)
-		_label.custom_minimum_size = Vector2(100, 30)
-		# Sombra común
-		_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
-		_label.add_theme_constant_override("outline_size", 3)
+		_label.position = Vector2(-60, -18)
+		_label.custom_minimum_size = Vector2(120, 36)
+		_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+		_label.add_theme_constant_override("outline_size", 5)
+		_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.45))
+		_label.add_theme_constant_override("shadow_offset_x", 2)
+		_label.add_theme_constant_override("shadow_offset_y", 2)
 		add_child(_label)
-		
-		# Asegurar que se ve por encima de todo
 		z_index = 100
 		z_as_relative = false
 
-	func setup(txt: String, col: Color, size: int, dur: float) -> void:
+	func setup(txt: String, col: Color, size: int, dur: float, opts: Dictionary = {}) -> void:
 		_duration = dur
 		_timer = 0.0
-		_rise_speed = 60.0
 		_active = true
 		modulate.a = 1.0
-		scale = Vector2(1.0, 1.0)
-		
+		rotation = 0.0
+
+		_rise_type = opts.get("rise_type", "bounce")
+		match _rise_type:
+			"bounce":
+				_initial_rise = 70.0; _decel = 100.0
+				_drift_x = randf_range(-8, 8); _gravity = 0.0
+			"crit_bounce":
+				_initial_rise = 100.0; _decel = 80.0
+				_drift_x = randf_range(-12, 12); _gravity = 0.0
+			"gentle":
+				_initial_rise = 40.0; _decel = 30.0
+				_drift_x = randf_range(-5, 5); _gravity = 0.0
+			"drop":
+				_initial_rise = -20.0; _decel = -60.0
+				_drift_x = randf_range(-6, 6); _gravity = 120.0
+			"drift":
+				_initial_rise = 30.0; _decel = 40.0
+				_drift_x = randf_range(-25, 25); _gravity = 0.0
+			_:
+				_initial_rise = 60.0; _decel = 80.0
+				_drift_x = 0.0; _gravity = 0.0
+		_rise_speed = _initial_rise
+
 		_label.text = txt
 		_label.add_theme_font_size_override("font_size", size)
 		_label.add_theme_color_override("font_color", col)
-		
-		# Animación "pop" manual sin Tweens (más barato)
-		scale = Vector2(0.5, 0.5)
-		
-		# Opcional: Usar Tween solo para el pop inicial si es crítico, 
-		# pero para optimización extrema, hacerlo en _process es mejor.
-		# Por ahora mantenemos Tween simple solo de escala.
+
+		# Font selection
+		var use_bold = opts.get("use_bold_font", false)
+		if use_bold and _font_bold:
+			_label.add_theme_font_override("font", _font_bold)
+		elif _font:
+			_label.add_theme_font_override("font", _font)
+
+		# Outline
+		var outline_col = opts.get("outline_color", Color(0, 0, 0, 0.9))
+		var outline_sz = opts.get("outline_size", 5)
+		_label.add_theme_color_override("font_outline_color", outline_col)
+		_label.add_theme_constant_override("outline_size", outline_sz)
+
+		# Rotation for crits
+		rotation = deg_to_rad(opts.get("rotation_deg", 0.0))
+
+		# Pop animation
+		scale = Vector2(0.3, 0.3)
 		var tween = create_tween()
-		tween.tween_property(self, "scale", Vector2(1.2, 1.2), 0.1)
-		tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.05)
-	
+		if _rise_type == "crit_bounce":
+			tween.tween_property(self, "scale", Vector2(1.5, 1.5), 0.08).set_ease(Tween.EASE_OUT)
+			tween.tween_property(self, "scale", Vector2(0.9, 0.9), 0.06)
+			tween.tween_property(self, "scale", Vector2(1.15, 1.15), 0.04)
+			tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.04)
+		elif _rise_type == "drop":
+			tween.tween_property(self, "scale", Vector2(1.3, 1.3), 0.07).set_ease(Tween.EASE_OUT)
+			tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.08)
+		else:
+			tween.tween_property(self, "scale", Vector2(1.2, 1.2), 0.08).set_ease(Tween.EASE_OUT)
+			tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.06)
+
 	func _process(delta: float) -> void:
-		if not _active: return
-		
+		if not _active:
+			return
+
 		_timer += delta
-		position.y -= _rise_speed * delta
-		_rise_speed = max(10.0, _rise_speed - 80.0 * delta)
-		
 		var progress = _timer / _duration
-		if progress > 0.5:
-			modulate.a = 1.0 - (progress - 0.5) * 2.0
-		
+
+		match _rise_type:
+			"drop":
+				_rise_speed += _gravity * delta
+				position.y += _rise_speed * delta
+				position.x += _drift_x * delta
+			"drift":
+				position.y -= _rise_speed * delta
+				_rise_speed = maxf(5.0, _rise_speed - _decel * delta)
+				position.x += _drift_x * delta
+				_drift_x *= 0.97
+			_:
+				position.y -= _rise_speed * delta
+				_rise_speed = maxf(8.0, _rise_speed - _decel * delta)
+				position.x += _drift_x * delta * (1.0 - progress)
+
+		# Fade out
+		if progress > 0.55:
+			var fade_progress = (progress - 0.55) / 0.45
+			modulate.a = 1.0 - fade_progress * fade_progress
+
+		# Shrink al final
+		if progress > 0.7:
+			var shrink = 1.0 - (progress - 0.7) * 0.5
+			scale = Vector2(shrink, shrink)
+
 		if _timer >= _duration:
 			_finish()
 
@@ -296,7 +442,7 @@ class FloatingTextInstance extends Node2D:
 	func _finish() -> void:
 		visible = false
 		_active = false
-		# Devolver al pool singleton
+		rotation = 0.0
 		if FloatingText.instance:
 			FloatingText.instance.return_to_pool(self)
 		else:

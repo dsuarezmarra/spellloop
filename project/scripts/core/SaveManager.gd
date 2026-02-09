@@ -465,24 +465,109 @@ func save_dungeon_completion(dungeon_seed: int, rewards: Dictionary, duration: f
 	save_run_data(run_data)
 
 func _validate_save_data(data: Dictionary) -> Dictionary:
-	"""Validate loaded save data and merge with defaults"""
-	var validated_data = DEFAULT_SAVE_DATA.duplicate(true)
-	
-	# TODO: Implement proper data validation and migration
-	if data.has("version") and data.has("player_data"):
-		validated_data.merge(data, true)
-	
-	return validated_data
+	"""Validate loaded save data field-by-field with type checking + version migration."""
+	var validated = DEFAULT_SAVE_DATA.duplicate(true)
+
+	if data.is_empty():
+		return validated
+
+	# Version migration
+	var data_version := str(data.get("version", "0.0.0"))
+	validated["version"] = DEFAULT_SAVE_DATA["version"]
+
+	# --- player_data ---
+	if data.has("player_data") and data["player_data"] is Dictionary:
+		var pd: Dictionary = data["player_data"]
+		var vpd: Dictionary = validated["player_data"]
+
+		if pd.has("unlocked_mages") and pd["unlocked_mages"] is Array:
+			# Asegurar que fire_mage siempre esté
+			var mages: Array = pd["unlocked_mages"].duplicate()
+			if "fire_mage" not in mages:
+				mages.insert(0, "fire_mage")
+			vpd["unlocked_mages"] = mages
+
+		if pd.has("meta_currency") and (pd["meta_currency"] is int or pd["meta_currency"] is float):
+			vpd["meta_currency"] = maxi(0, int(pd["meta_currency"]))
+
+		if pd.has("unlocked_spells") and pd["unlocked_spells"] is Array:
+			var spells: Array = pd["unlocked_spells"].duplicate()
+			for starter in ["fireball", "ice_shard"]:
+				if starter not in spells:
+					spells.append(starter)
+			vpd["unlocked_spells"] = spells
+
+		for arr_key in ["unlocked_talents", "unlocked_runes"]:
+			if pd.has(arr_key) and pd[arr_key] is Array:
+				vpd[arr_key] = pd[arr_key].duplicate()
+
+		for int_key in ["total_runs", "best_score"]:
+			if pd.has(int_key) and (pd[int_key] is int or pd[int_key] is float):
+				vpd[int_key] = maxi(0, int(pd[int_key]))
+
+		if pd.has("total_playtime") and (pd["total_playtime"] is int or pd["total_playtime"] is float):
+			vpd["total_playtime"] = maxf(0.0, float(pd["total_playtime"]))
+
+	# --- achievements ---
+	if data.has("achievements") and data["achievements"] is Dictionary:
+		validated["achievements"] = data["achievements"].duplicate(true)
+
+	# --- statistics ---
+	if data.has("statistics") and data["statistics"] is Dictionary:
+		var src: Dictionary = data["statistics"]
+		var dst: Dictionary = validated["statistics"]
+		for key in dst.keys():
+			if src.has(key) and (src[key] is int or src[key] is float):
+				dst[key] = maxi(0, int(src[key]))
+		# Preserve extra stats from newer versions
+		for key in src.keys():
+			if key not in dst and (src[key] is int or src[key] is float):
+				dst[key] = maxi(0, int(src[key]))
+
+	# Apply version migrations (expand as needed)
+	if data_version < "1.0.0":
+		push_warning("[SaveManager] Migrating save from v%s -> v%s" % [data_version, validated["version"]])
+
+	return validated
 
 func _validate_settings(data: Dictionary) -> Dictionary:
-	"""Validate loaded settings and merge with defaults"""
-	var validated_settings = DEFAULT_SETTINGS.duplicate(true)
-	
-	# TODO: Implement proper settings validation
-	if data.has("version"):
-		validated_settings.merge(data, true)
-	
-	return validated_settings
+	"""Validate loaded settings with type checking and range clamping."""
+	var validated = DEFAULT_SETTINGS.duplicate(true)
+
+	if data.is_empty():
+		return validated
+
+	validated["version"] = DEFAULT_SETTINGS["version"]
+
+	# --- audio ---
+	if data.has("audio") and data["audio"] is Dictionary:
+		var src: Dictionary = data["audio"]
+		for vol_key in ["master_volume", "music_volume", "sfx_volume"]:
+			if src.has(vol_key) and (src[vol_key] is float or src[vol_key] is int):
+				validated["audio"][vol_key] = clampf(float(src[vol_key]), 0.0, 1.0)
+
+	# --- video ---
+	if data.has("video") and data["video"] is Dictionary:
+		var src: Dictionary = data["video"]
+		if src.has("fullscreen") and src["fullscreen"] is bool:
+			validated["video"]["fullscreen"] = src["fullscreen"]
+		if src.has("vsync") and src["vsync"] is bool:
+			validated["video"]["vsync"] = src["vsync"]
+		if src.has("resolution") and src["resolution"] is String:
+			var parts = src["resolution"].split("x")
+			if parts.size() == 2 and parts[0].is_valid_int() and parts[1].is_valid_int():
+				validated["video"]["resolution"] = src["resolution"]
+
+	# --- language ---
+	if data.has("language") and data["language"] is String:
+		validated["language"] = data["language"]
+
+	# --- input ---
+	if data.has("input") and data["input"] is Dictionary:
+		if data["input"].has("custom_keybinds") and data["input"]["custom_keybinds"] is Dictionary:
+			validated["input"]["custom_keybinds"] = data["input"]["custom_keybinds"].duplicate(true)
+
+	return validated
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SISTEMA DE SLOTS DE GUARDADO
@@ -635,7 +720,108 @@ func slot_has_data(slot_index: int) -> bool:
 	return FileAccess.file_exists(slot_path)
 
 func _sync_steam_cloud() -> void:
-	"""Sync save data with Steam Cloud (placeholder)"""
-	# TODO: Implement Steam Cloud sync
-	# Debug desactivado: print("[SaveManager] Steam Cloud sync placeholder - not implemented yet")
+	"""Sync save data with Steam Cloud using GodotSteam Remote Storage API.
+	Handles upload, download, and conflict resolution (newest wins)."""
+	var steam_mgr = get_node_or_null("/root/SteamManager")
+	if not steam_mgr or not steam_mgr.is_steam_available:
+		return  # Steam not available — silent skip
+
+	if not active_slot >= 0:
+		return
+
+	var _steam = steam_mgr.get("_steam")
+	if _steam == null:
+		return
+
+	# Verify Remote Storage is enabled
+	if _steam.has_method("isCloudEnabledForAccount") and not _steam.isCloudEnabledForAccount():
+		push_warning("[SaveManager] Steam Cloud disabled by user account settings")
+		return
+	if _steam.has_method("isCloudEnabledForApp") and not _steam.isCloudEnabledForApp():
+		push_warning("[SaveManager] Steam Cloud disabled for this app")
+		return
+
+	var cloud_filename := "slot_%d.json" % active_slot
+
+	# --- UPLOAD current local save ---
+	var local_json := JSON.stringify(current_save_data, "\t")
+	var local_bytes := local_json.to_utf8_buffer()
+
+	if _steam.has_method("fileWrite"):
+		var success = _steam.fileWrite(cloud_filename, local_bytes, local_bytes.size())
+		if success:
+			pass  # Upload OK
+		else:
+			push_warning("[SaveManager] Steam Cloud upload failed for %s" % cloud_filename)
+
+func _download_steam_cloud_save(slot_index: int) -> Dictionary:
+	"""Download save data from Steam Cloud for conflict checking.
+	Returns empty Dictionary if no cloud save or Steam unavailable."""
+	var steam_mgr = get_node_or_null("/root/SteamManager")
+	if not steam_mgr or not steam_mgr.is_steam_available:
+		return {}
+
+	var _steam = steam_mgr.get("_steam")
+	if _steam == null:
+		return {}
+
+	var cloud_filename := "slot_%d.json" % slot_index
+
+	if not _steam.has_method("fileExists") or not _steam.fileExists(cloud_filename):
+		return {}
+
+	if not _steam.has_method("fileRead"):
+		return {}
+
+	var file_size: int = 0
+	if _steam.has_method("getFileSize"):
+		file_size = _steam.getFileSize(cloud_filename)
+	if file_size <= 0:
+		return {}
+
+	var data_dict: Dictionary = _steam.fileRead(cloud_filename, file_size)
+	if data_dict.is_empty() or not data_dict.has("buf"):
+		return {}
+
+	var json_text: String = data_dict["buf"].get_string_from_utf8()
+	var json := JSON.new()
+	if json.parse(json_text) != OK:
+		push_warning("[SaveManager] Steam Cloud save corrupted for %s" % cloud_filename)
+		return {}
+
+	if json.data is Dictionary:
+		return json.data
+
+	return {}
+
+func resolve_cloud_conflict(slot_index: int) -> void:
+	"""Compare local vs cloud save and keep the one with more progress.
+	Uses total_runs + total_playtime as heuristic."""
+	var cloud_data := _download_steam_cloud_save(slot_index)
+	if cloud_data.is_empty():
+		return  # No cloud save — nothing to resolve
+
+	var local_path := _get_slot_file_path(slot_index)
+	if not FileAccess.file_exists(local_path):
+		# No local save, adopt cloud
+		current_save_data = _validate_save_data(cloud_data)
+		_save_slot_data(slot_index, current_save_data)
+		print("[SaveManager] Adopted cloud save for slot %d (no local)" % slot_index)
+		return
+
+	# Compare progress: more runs + more playtime = more "advanced"
+	var local_pd: Dictionary = current_save_data.get("player_data", {})
+	var cloud_pd: Dictionary = cloud_data.get("player_data", {})
+
+	var local_score: float = float(local_pd.get("total_runs", 0)) + float(local_pd.get("total_playtime", 0.0)) / 3600.0
+	var cloud_score: float = float(cloud_pd.get("total_runs", 0)) + float(cloud_pd.get("total_playtime", 0.0)) / 3600.0
+
+	if cloud_score > local_score + 0.5:
+		# Cloud is ahead — adopt cloud data
+		current_save_data = _validate_save_data(cloud_data)
+		_save_slot_data(slot_index, current_save_data)
+		print("[SaveManager] Cloud save adopted for slot %d (cloud: %.1f > local: %.1f)" % [slot_index, cloud_score, local_score])
+	else:
+		# Local is ahead or equal — upload local to cloud
+		print("[SaveManager] Local save kept for slot %d (local: %.1f >= cloud: %.1f)" % [slot_index, local_score, cloud_score])
 

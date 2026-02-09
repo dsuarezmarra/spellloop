@@ -15,7 +15,7 @@ extends Node
 # CONFIG
 # ═══════════════════════════════════════════════════════════════════════════════
 
-const ENABLE_AUDIT: bool = true
+var ENABLE_AUDIT: bool = true
 
 ## Tolerancia para comparación de floats (0.001 = 0.1%)
 const FLOAT_TOLERANCE: float = 0.001
@@ -67,6 +67,16 @@ var _pickup_counter: int = 0
 
 # Contadores de resumen
 var _counts := {"ok": 0, "fail": 0, "warn": 0, "dead_stat": 0, "unknown": 0}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LIFECYCLE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _ready() -> void:
+	# Auto-disable in release builds
+	if not OS.is_debug_build() and "--enable-upgrade-auditor" not in OS.get_cmdline_args():
+		ENABLE_AUDIT = false
+		return
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PUBLIC API

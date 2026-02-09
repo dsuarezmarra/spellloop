@@ -25,7 +25,7 @@ var precache_stats: Dictionary = {
 # Recursos a pre-cargar 
 const PRELOAD_PATHS = [
 	"res://scenes/pickups/CoinPickup.tscn",
-	"res://scenes/ui/FloatingText.tscn",
+	# FloatingText uses class_name + lazy singleton, no .tscn needed
 	"res://scripts/enemies/EnemyBase.gd",
 	"res://scripts/components/HealthComponent.gd",
 	"res://scripts/components/AnimatedEnemySprite.gd"
