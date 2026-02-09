@@ -22,6 +22,13 @@ var _last_spike_time: int = 0
 var _frame_count: int = 0
 var _last_metrics_pack: Dictionary = {}
 
+# --- RUN CONTEXT (injected by Game.gd) ---
+var _run_id: String = ""
+var _run_session_id: String = ""
+var _run_start_ticks_ms: int = 0
+var _run_active: bool = false
+var _gameplay_started: bool = false  # True after first run starts (excludes startup spikes)
+
 # --- COUNTERS ---
 var counters: Dictionary = {
 	"enemies_alive": 0,
@@ -296,16 +303,42 @@ func _get_group_counts() -> Dictionary:
 
 
 func _append_to_log(data: Dictionary) -> void:
+	# Inject run identity if active
+	if _run_active:
+		data["run_id"] = _run_id
+		data["session_id"] = _run_session_id
+		# Add run-relative timestamp
+		if data.has("timestamp"):
+			data["timestamp_abs_ms"] = data["timestamp"]
+			data["timestamp_ms"] = data["timestamp"] - _run_start_ticks_ms
+		# Mark pre-gameplay spikes
+		if not _gameplay_started and data.get("event", "") == "perf_spike":
+			data["startup_spike"] = true
+
 	var json_string = JSON.stringify(data)
 	var file = FileAccess.open(_current_log_file, FileAccess.READ_WRITE)
 	if not file:
-		# Try write mode if file doesn't exist equivalent (READ_WRITE requires existing?)
 		file = FileAccess.open(_current_log_file, FileAccess.WRITE)
 	
 	if file:
 		file.seek_end()
 		file.store_line(json_string)
 		file.close()
+
+func start_run() -> void:
+	"""Called by Game._start_balance_telemetry() to inject run context."""
+	var ctx = get_node_or_null("/root/RunContext")
+	if ctx:
+		_run_id = ctx.run_id
+		_run_session_id = ctx.session_id
+		_run_start_ticks_ms = ctx.run_start_ticks_ms
+	_run_active = true
+	_gameplay_started = true
+
+func end_run() -> void:
+	"""Called by Game._end_balance_telemetry() to clear run context."""
+	_run_active = false
+	_run_id = ""
 
 # --- UTILS ---
 func get_current_metrics() -> Dictionary:

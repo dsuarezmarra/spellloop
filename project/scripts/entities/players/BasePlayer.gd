@@ -76,6 +76,10 @@ var _damage_queue: Array = []
 var _frame_damage_scheduled: bool = false
 var _last_hit_context: Dictionary = {}
 
+# Death Tracking: Ring buffer of recent damage events (last 5 seconds)
+const DAMAGE_BUFFER_DURATION_S: float = 5.0
+var _damage_ring_buffer: Array = []
+
 
 # ========== SISTEMA VISUAL DE DEBUFFS ==========
 var _status_visual_node: Node2D = null
@@ -786,6 +790,16 @@ func _process_frame_damage() -> void:
 			player_stats.on_damage_taken()
 			
 	# 4. Registrar contexto para Death Audit
+	var _hit_enemy_id := "unknown"
+	var _hit_attack_id: String = primary_hit.element if primary_hit.element != "" else "physical"
+	if is_instance_valid(primary_hit.attacker):
+		if "enemy_id" in primary_hit.attacker:
+			_hit_enemy_id = primary_hit.attacker.enemy_id
+		else:
+			_hit_enemy_id = primary_hit.attacker.name
+		if primary_hit.attacker.has_meta("attack_name"):
+			_hit_attack_id = primary_hit.attacker.get_meta("attack_name")
+
 	_last_hit_context = {
 		"source": primary_hit.attacker.name if is_instance_valid(primary_hit.attacker) else "Environment",
 		"damage": final_applied_damage,
@@ -794,7 +808,26 @@ func _process_frame_damage() -> void:
 		"density": _get_enemy_density(),
 		"queue_size": _damage_queue.size()
 	}
-	
+
+	# 4b. Ring buffer para death tracking (últimos 5s de daño)
+	var _hp_after = health_component.current_health if health_component else 0
+	var _hp_before = _hp_after + final_applied_damage
+	var _now_ms = Time.get_ticks_msec()
+	_damage_ring_buffer.append({
+		"timestamp_ms": _now_ms,
+		"enemy_id": _hit_enemy_id,
+		"attack_id": _hit_attack_id,
+		"damage": final_applied_damage,
+		"element": primary_hit.element,
+		"hp_before": _hp_before,
+		"hp_after": _hp_after,
+		"queue_size": _damage_queue.size()
+	})
+	# Prune old entries
+	var _cutoff_ms = _now_ms - int(DAMAGE_BUFFER_DURATION_S * 1000)
+	while _damage_ring_buffer.size() > 0 and _damage_ring_buffer[0].timestamp_ms < _cutoff_ms:
+		_damage_ring_buffer.pop_front()
+
 	# 5. Feedback Visual (Solo uno por frame)
 	DamageLogger.log_player_damage(_last_hit_context.source, final_applied_damage, primary_hit.element)
 	player_took_damage.emit(final_applied_damage, primary_hit.element)
@@ -1150,6 +1183,40 @@ func _on_death_animation_finished() -> void:
 		print("💀 DEATH AUDIT: Source=Unknown (Instant Kill or Logic Error?)")
 		
 	player_died.emit()
+
+func get_death_context() -> Dictionary:
+	"""Returns structured death context for telemetry (ring buffer of last 5s of damage)."""
+	if _damage_ring_buffer.is_empty():
+		return {"killer": "unknown", "killer_attack": "unknown", "last_damage_window": [], "window_duration_s": 0.0}
+
+	var last_hit = _damage_ring_buffer[-1]
+	var first_hit = _damage_ring_buffer[0]
+	var window_ms = last_hit.timestamp_ms - first_hit.timestamp_ms
+
+	# Gather active status effects
+	var status_effects: Array = []
+	if _is_weakened:
+		status_effects.append("weakened (%.0f%%)" % (_weakness_amount * 100))
+	if _is_slowed:
+		status_effects.append("slowed")
+	if _is_stunned:
+		status_effects.append("stunned")
+	if _is_cursed:
+		status_effects.append("cursed")
+
+	return {
+		"killer": last_hit.enemy_id,
+		"killer_attack": last_hit.attack_id,
+		"killing_blow_damage": last_hit.damage,
+		"killing_blow_element": last_hit.element,
+		"last_damage_window": _damage_ring_buffer.duplicate(),
+		"window_duration_s": window_ms / 1000.0,
+		"total_damage_in_window": _damage_ring_buffer.reduce(func(acc, e): return acc + e.damage, 0),
+		"hits_in_window": _damage_ring_buffer.size(),
+		"active_status_effects": status_effects,
+		"player_position": global_position if is_inside_tree() else Vector2.ZERO,
+		"enemy_density": _get_enemy_density()
+	}
 
 func _trigger_revive(player_stats: Node, current_revives: int) -> void:
 	"""Activar revive: consumir una vida extra y restaurar HP"""

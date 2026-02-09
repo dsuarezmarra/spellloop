@@ -284,6 +284,25 @@ func end_run(context: Dictionary = {}) -> void:
 	# Build final summary
 	var summary = _build_final_summary(context)
 	
+	# Emit player_death event with full death context (if death)
+	var death_context = context.get("death_context", {})
+	if end_reason == "death" and not death_context.is_empty():
+		_log_event({
+			"event": "player_death",
+			"run_id": _run_id,
+			"killer": death_context.get("killer", "unknown"),
+			"killer_attack": death_context.get("killer_attack", "unknown"),
+			"killing_blow_damage": death_context.get("killing_blow_damage", 0),
+			"killing_blow_element": death_context.get("killing_blow_element", "physical"),
+			"window_duration_s": death_context.get("window_duration_s", 0.0),
+			"total_damage_in_window": death_context.get("total_damage_in_window", 0),
+			"hits_in_window": death_context.get("hits_in_window", 0),
+			"active_status_effects": death_context.get("active_status_effects", []),
+			"player_position": var_to_str(death_context.get("player_position", Vector2.ZERO)),
+			"enemy_density": death_context.get("enemy_density", 0),
+			"last_damage_window": death_context.get("last_damage_window", [])
+		})
+	
 	# Log run_end event
 	_log_event({
 		"event": "run_end",
@@ -291,6 +310,7 @@ func end_run(context: Dictionary = {}) -> void:
 		"time_survived": time_survived,
 		"end_reason": end_reason,
 		"killed_by": context.get("killed_by", "unknown"),
+		"duration_s": context.get("duration_s", 0.0),
 		"summary": summary
 	})
 	

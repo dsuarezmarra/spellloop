@@ -484,6 +484,16 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2, force: bool = false
 	active_enemies.append(enemy)
 	enemy_spawned.emit(enemy)
 
+	# Audit: Report enemy spawn for per-type spawn tracking
+	var _audit = get_node_or_null("/root/RunAuditTracker")
+	if _audit and _audit.ENABLE_AUDIT:
+		_audit.report_enemy_spawn(
+			type_id,
+			enemy_data.get("name", type_id),
+			enemy_data.get("is_elite", false),
+			enemy_data.get("special_abilities", [])
+		)
+
 	# Emitir señal de boss si aplica
 	if enemy_data.get("is_boss", false) or type_id.find("boss") != -1:
 		boss_spawned.emit(enemy)

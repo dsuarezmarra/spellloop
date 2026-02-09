@@ -24,7 +24,11 @@ static func generate(summary: Dictionary, context: Dictionary, run_id: String, r
 	
 	# 1. Executive Summary
 	md.append(_section_executive_summary(summary, context))
-	
+
+	# 1b. Death Summary (solo si murió)
+	if context.get("end_reason", "") == "death":
+		md.append(_section_death_summary(context))
+
 	# 2. Build Final
 	md.append(_section_build_final(summary, context))
 	
@@ -90,6 +94,90 @@ static func _section_executive_summary(summary: Dictionary, context: Dictionary)
 	
 	return "\n".join(md)
 
+static func _section_death_summary(context: Dictionary) -> String:
+	"""Sección Death Summary: qué mató al jugador, ventana de daño, contributors."""
+	var md: PackedStringArray = PackedStringArray()
+
+	md.append("## \uD83D\uDC80 Death Summary")
+	md.append("")
+
+	var death_ctx = context.get("death_context", {})
+	if death_ctx.is_empty():
+		md.append("_No death context available (killed_by = `%s`)._ " % context.get("killed_by", "unknown"))
+		md.append("")
+		return "\n".join(md)
+
+	var killer = death_ctx.get("killer", "unknown")
+	var attack = death_ctx.get("killer_attack", "unknown")
+	var damage = death_ctx.get("killing_blow_damage", 0)
+	var element = death_ctx.get("killing_blow_element", "physical")
+	var window_s = death_ctx.get("window_duration_s", 0.0)
+	var total_dmg = death_ctx.get("total_damage_in_window", 0)
+	var hits = death_ctx.get("hits_in_window", 0)
+	var status_effects = death_ctx.get("active_status_effects", [])
+	var density = death_ctx.get("enemy_density", 0)
+
+	md.append("### Causa Principal")
+	md.append("")
+	if killer != "unknown":
+		md.append("| Dato | Valor |")
+		md.append("|------|-------|")
+		md.append("| \uD83D\uDD2A Killer | `%s` |" % killer)
+		md.append("| \u2694\uFE0F Ataque | `%s` (%s) |" % [attack, element])
+		md.append("| \uD83D\uDCA5 Golpe Final | %d da\u00f1o |" % damage)
+		md.append("| \u23F1\uFE0F Ventana | %.1fs (%d hits, %s da\u00f1o total) |" % [window_s, hits, _format_number(total_dmg)])
+		md.append("| \uD83D\uDC7E Densidad | %d enemigos cerca |" % density)
+		md.append("")
+	else:
+		md.append("- **Causa:** Da\u00f1o acumulado (no se pudo identificar origen)")
+		md.append("")
+
+	# Damage window table
+	var window = death_ctx.get("last_damage_window", [])
+	if window.size() > 0:
+		md.append("### Ventana de Da\u00f1o (\u00faltimos %.1fs)" % window_s)
+		md.append("")
+		md.append("| # | Enemigo | Ataque | Da\u00f1o | HP Antes \u2192 Despu\u00e9s |")
+		md.append("|---|---------|--------|------|---------------------|")
+		var idx = 0
+		for entry in window:
+			idx += 1
+			var is_killing_blow = (idx == window.size())
+			var prefix = "\u2620\uFE0F" if is_killing_blow else str(idx)
+			md.append("| %s | %s | %s | %d | %d \u2192 %d |" % [
+				prefix,
+				entry.get("enemy_id", "?"),
+				entry.get("attack_id", "?"),
+				entry.get("damage", 0),
+				entry.get("hp_before", 0),
+				entry.get("hp_after", 0)
+			])
+		md.append("")
+
+		# Contributor analysis
+		var contributors: Dictionary = {}  # enemy_id -> total_damage
+		for entry in window:
+			var eid = entry.get("enemy_id", "unknown")
+			contributors[eid] = contributors.get(eid, 0) + entry.get("damage", 0)
+		if contributors.size() > 1:
+			md.append("### Contribuidores")
+			md.append("")
+			var sorted_contribs = contributors.keys()
+			for eid in sorted_contribs:
+				var pct = (float(contributors[eid]) / float(maxi(total_dmg, 1))) * 100.0
+				md.append("- `%s`: %d da\u00f1o (%.0f%%)" % [eid, contributors[eid], pct])
+			md.append("")
+
+	# Status effects
+	if status_effects.size() > 0:
+		md.append("### Estados Activos al Morir")
+		md.append("")
+		for s in status_effects:
+			md.append("- \u26A0\uFE0F `%s`" % s)
+		md.append("")
+
+	return "\n".join(md)
+
 static func _section_build_final(summary: Dictionary, context: Dictionary) -> String:
 	var md: PackedStringArray = PackedStringArray()
 	
@@ -103,7 +191,8 @@ static func _section_build_final(summary: Dictionary, context: Dictionary) -> St
 		md.append("")
 		for weapon in weapons:
 			var name = weapon.get("name", weapon.get("id", "unknown"))
-			var level = weapon.get("level", 1)
+			# Support both "level" and "lvl" keys (BalanceTelemetry uses "lvl")
+			var level = weapon.get("level", weapon.get("lvl", 1))
 			md.append("- **%s** (Nivel %d)" % [name, level])
 		md.append("")
 	

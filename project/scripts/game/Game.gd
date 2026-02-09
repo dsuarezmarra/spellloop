@@ -1804,6 +1804,11 @@ func _start_balance_telemetry() -> void:
 	if upgrade_auditor and upgrade_auditor.has_method("start_run"):
 		upgrade_auditor.start_run()
 
+	# PerfTracker: iniciar contexto de run
+	var perf_tracker = get_node_or_null("/root/PerfTracker")
+	if perf_tracker and perf_tracker.has_method("start_run"):
+		perf_tracker.start_run()
+
 func _check_telemetry_minute_snapshot() -> void:
 	"""Check if we should log a minute snapshot"""
 	# Build context for snapshots
@@ -1825,6 +1830,19 @@ func _check_telemetry_minute_snapshot() -> void:
 		context["weapons"] = BalanceTelemetry.get_current_weapons_snapshot()
 		context["top_upgrades"] = BalanceTelemetry.get_top_upgrades_snapshot()
 		context["player_stats"] = BalanceTelemetry.get_player_stats_snapshot()
+	# Fallback: read difficulty directly from DifficultyManager autoload
+	if context["difficulty"].is_empty():
+		var dm = get_node_or_null("/root/DifficultyManager")
+		if dm and dm.has_method("get_scaling_snapshot"):
+			context["difficulty"] = dm.get_scaling_snapshot()
+		elif dm:
+			context["difficulty"] = {
+				"enemy_hp_mult": dm.enemy_health_multiplier if "enemy_health_multiplier" in dm else 1.0,
+				"enemy_dmg_mult": dm.enemy_damage_multiplier if "enemy_damage_multiplier" in dm else 1.0,
+				"spawn_mult": dm.enemy_count_multiplier if "enemy_count_multiplier" in dm else 1.0,
+				"elite_mult": dm.elite_frequency_multiplier if "elite_frequency_multiplier" in dm else 1.0,
+				"speed_mult": dm.enemy_speed_multiplier if "enemy_speed_multiplier" in dm else 1.0,
+			}
 	
 	# BalanceTelemetry minute snapshot
 	if BalanceTelemetry and BalanceTelemetry.check_minute_snapshot(game_time):
@@ -1840,26 +1858,76 @@ func _check_telemetry_minute_snapshot() -> void:
 
 func _end_balance_telemetry(reason: String = "death") -> void:
 	"""Finalize balance telemetry for this run"""
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 1. DEATH CONTEXT — ¿Qué mató al jugador?
+	# ═══════════════════════════════════════════════════════════════════════════
+	var killed_by := "unknown"
+	var death_context := {}
+	if player and player.has_method("get_death_context"):
+		death_context = player.get_death_context()
+		killed_by = death_context.get("killer", "unknown")
+
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 2. DURATION — Del RunContext (ticks-precise)
+	# ═══════════════════════════════════════════════════════════════════════════
+	var run_ctx = get_node_or_null("/root/RunContext")
+	var duration_s: float = 0.0
+	if run_ctx:
+		duration_s = run_ctx.get_elapsed_seconds()
+	if duration_s <= 0.0:
+		duration_s = game_time  # Fallback a game_time
+
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 3. AUTHORITATIVE STATS — Fuentes correctas, no run_stats
+	# ═══════════════════════════════════════════════════════════════════════════
+	var debugger_metrics = BalanceDebugger.get_current_metrics() if BalanceDebugger else {}
+	var damage_dealt = debugger_metrics.get("damage_dealt", {}).get("total", run_stats.get("damage_dealt", 0))
+	var damage_taken = debugger_metrics.get("mitigation", {}).get("damage_final", run_stats.get("damage_taken", 0))
+	var healing_done = int(debugger_metrics.get("sustain", {}).get("total", float(run_stats.get("healing_done", 0))))
+	var xp_total = debugger_metrics.get("progression", {}).get("xp_total", run_stats.get("xp_total", 0))
+
+	# Gold from ExperienceManager (authoritative)
+	var gold: int = 0
+	var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
+	if exp_mgr and "total_coins" in exp_mgr:
+		gold = exp_mgr.total_coins
+	else:
+		gold = run_stats.get("gold", 0)
+
+	# Difficulty snapshot
+	var difficulty_final := {}
+	var difficulty_mgr = get_node_or_null("/root/DifficultyManager")
+	if difficulty_mgr and difficulty_mgr.has_method("get_scaling_snapshot"):
+		difficulty_final = difficulty_mgr.get_scaling_snapshot()
+	elif BalanceTelemetry:
+		difficulty_final = BalanceTelemetry.get_difficulty_snapshot()
+
+	# ═══════════════════════════════════════════════════════════════════════════
+	# 4. BUILD CONTEXT
+	# ═══════════════════════════════════════════════════════════════════════════
 	var context = {
 		"time_survived": game_time,
+		"duration_s": duration_s,
 		"score_total": _calculate_run_score(),
 		"end_reason": reason,
-		"killed_by": "unknown",  # TODO: track last damage source
+		"killed_by": killed_by,
+		"death_context": death_context,
 		"level": run_stats.get("level", 1),
 		"phase": _get_current_phase(),
 		"kills": run_stats.get("kills", 0),
 		"elites_killed": run_stats.get("elites_killed", 0),
 		"bosses_killed": run_stats.get("bosses_killed", 0),
-		"gold": run_stats.get("gold", 0),
-		"damage_dealt": run_stats.get("damage_dealt", 0),
-		"damage_taken": run_stats.get("damage_taken", 0),
-		"healing_done": run_stats.get("healing_done", 0),
-		"xp_total": run_stats.get("xp_total", 0),
+		"gold": gold,
+		"damage_dealt": damage_dealt,
+		"damage_taken": damage_taken,
+		"healing_done": healing_done,
+		"xp_total": xp_total,
+		"difficulty_final": difficulty_final,
 		"weapons": [],
 		"upgrades": [],
 		"player_stats": {}
 	}
-	
+
 	# Get weapon/upgrade/stats snapshots
 	if BalanceTelemetry:
 		context["weapons"] = BalanceTelemetry.get_current_weapons_snapshot()
@@ -1867,24 +1935,28 @@ func _end_balance_telemetry(reason: String = "death") -> void:
 		context["player_stats"] = BalanceTelemetry.get_player_stats_snapshot()
 		# Also log to BalanceTelemetry
 		BalanceTelemetry.end_run(context)
-	
+
 	# RunAuditTracker end run (generates report)
 	var audit_tracker = get_node_or_null("/root/RunAuditTracker")
 	if audit_tracker:
 		audit_tracker.end_run(context)
-	
+
 	# UpgradeAuditor: finalizar auditoría y generar reporte
 	var upgrade_auditor = get_node_or_null("/root/UpgradeAuditor")
 	if upgrade_auditor and upgrade_auditor.has_method("end_run"):
 		upgrade_auditor.end_run()
-	
+
+	# PerfTracker: end run context
+	var perf_tracker = get_node_or_null("/root/PerfTracker")
+	if perf_tracker and perf_tracker.has_method("end_run"):
+		perf_tracker.end_run()
+
 	# RunBundleManager: finalizar bundle (DESPUÉS de trackers)
 	var bundle_mgr = get_node_or_null("/root/RunBundleManager")
 	if bundle_mgr and bundle_mgr.has_method("finalize_bundle"):
 		bundle_mgr.finalize_bundle(context)
-	
+
 	# RunContext: cerrar run unificada (último)
-	var run_ctx = get_node_or_null("/root/RunContext")
 	if run_ctx:
 		run_ctx.end_run(context)
 

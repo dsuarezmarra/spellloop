@@ -184,6 +184,7 @@ func end_run(context: Dictionary = {}) -> void:
 	var event = {
 		"event": "run_end",
 		"time_survived": context.get("time_survived", 0.0),
+		"duration_s": context.get("duration_s", 0.0),
 		"score_final": context.get("score_final", 0),
 		"end_reason": context.get("end_reason", "death"),
 		"killed_by": context.get("killed_by", "unknown"),
@@ -516,8 +517,13 @@ func _log_event(event: Dictionary) -> void:
 	
 	event["schema_version"] = SCHEMA_VERSION
 	event["session_id"] = _session_id
-	event["run_id"] = _run_id
-	event["timestamp_ms"] = Time.get_ticks_msec()
+	# Use unified run_id from RunContext
+	var run_ctx = get_node_or_null("/root/RunContext")
+	if run_ctx and run_ctx.run_active:
+		event["run_id"] = run_ctx.run_id
+	else:
+		event["run_id"] = _run_id
+	event["timestamp_ms"] = Time.get_ticks_msec() - _run_start_time_ms  # Relative to run start
 	event["t_min"] = snappedf(t_min, 0.01)
 	event["seed"] = _run_seed
 	event["difficulty_phase"] = difficulty_phase
@@ -684,8 +690,11 @@ func get_difficulty_snapshot() -> Dictionary:
 		"elite_mult": 1.0,
 		"speed_mult": 1.0
 	}
-	
-	var difficulty_manager = get_tree().get_first_node_in_group("difficulty_manager")
+
+	# Use autoload path directly (group lookup can fail during initialization)
+	var difficulty_manager = get_node_or_null("/root/DifficultyManager")
+	if not difficulty_manager:
+		difficulty_manager = get_tree().get_first_node_in_group("difficulty_manager")
 	if difficulty_manager:
 		# Use correct variable names from DifficultyManager.gd
 		if "enemy_health_multiplier" in difficulty_manager:

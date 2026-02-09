@@ -145,6 +145,9 @@ func finalize_bundle(context: Dictionary = {}) -> void:
 	# Generar summary.json
 	_generate_summary(context)
 
+	# Generar integrity.json
+	_generate_integrity()
+
 	# Limpieza de bundles antiguos
 	_cleanup_old_bundles()
 
@@ -277,12 +280,22 @@ func _copy_audit_report() -> void:
 
 func _generate_summary(context: Dictionary) -> void:
 	"""Generar summary.json con estadísticas finales de la run."""
+	# Duration: prioritize context, fallback to RunContext
+	var duration_s: float = context.get("duration_s", 0.0)
+	if duration_s <= 0.0:
+		var run_ctx = get_node_or_null("/root/RunContext")
+		if run_ctx:
+			duration_s = run_ctx.get_elapsed_seconds()
+	if duration_s <= 0.0:
+		duration_s = context.get("time_survived", 0.0)
+
 	var summary: Dictionary = {
-		"schema_version": 1,
+		"schema_version": 2,
 		"run_id": _run_id,
 		"end_reason": context.get("end_reason", "death"),
-		"duration_s": context.get("duration_s", 0.0),
-		"time_survived": context.get("time_survived", context.get("duration_s", 0.0)),
+		"killed_by": context.get("killed_by", "unknown"),
+		"duration_s": duration_s,
+		"time_survived": context.get("time_survived", duration_s),
 		"end_timestamp": Time.get_unix_time_from_system(),
 		"end_iso": Time.get_datetime_string_from_system().replace(":", "-").replace("T", "_"),
 
@@ -304,12 +317,24 @@ func _generate_summary(context: Dictionary) -> void:
 			"player_stats": context.get("player_stats", {}),
 		},
 
+		"difficulty_final": context.get("difficulty_final", {}),
+
+		"death_context": {
+			"killer": context.get("killed_by", "unknown"),
+			"window_duration_s": context.get("death_context", {}).get("window_duration_s", 0.0),
+			"hits_in_window": context.get("death_context", {}).get("hits_in_window", 0),
+			"total_damage_in_window": context.get("death_context", {}).get("total_damage_in_window", 0),
+		},
+
 		"bundle_files": {
 			"meta": "meta.json",
 			"audit_log": "audit.jsonl",
 			"balance_log": "balance.jsonl",
 			"perf_log": "perf.jsonl",
 			"audit_report": "audit_report.md",
+			"upgrade_audit_log": "upgrade_audit.jsonl",
+			"upgrade_audit_report": "upgrade_audit_report.md",
+			"integrity": "integrity.json",
 		},
 
 		"file_sizes": _get_bundle_file_sizes(),
@@ -319,7 +344,8 @@ func _generate_summary(context: Dictionary) -> void:
 	_meta["end_timestamp"] = summary["end_timestamp"]
 	_meta["end_iso"] = summary["end_iso"]
 	_meta["end_reason"] = summary["end_reason"]
-	_meta["duration_s"] = summary["duration_s"]
+	_meta["duration_s"] = duration_s
+	_meta["killed_by"] = summary["killed_by"]
 	_write_json(_bundle_meta_path, _meta)
 
 	# Escribir summary
@@ -328,15 +354,9 @@ func _generate_summary(context: Dictionary) -> void:
 func _get_bundle_file_sizes() -> Dictionary:
 	"""Obtener tamaños de archivos del bundle."""
 	var sizes: Dictionary = {}
-	for fname in ["audit.jsonl", "balance.jsonl", "perf.jsonl", "audit_report.md", "meta.json"]:
+	for fname in ["audit.jsonl", "balance.jsonl", "perf.jsonl", "audit_report.md", "meta.json", "upgrade_audit.jsonl", "upgrade_audit_report.md"]:
 		var path = _current_bundle_dir.path_join(fname)
-		if FileAccess.file_exists(path):
-			var f = FileAccess.open(path, FileAccess.READ)
-			if f:
-				sizes[fname] = f.get_length()
-				f.close()
-		else:
-			sizes[fname] = 0
+		sizes[fname] = _get_file_size(path)
 	return sizes
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -414,6 +434,112 @@ func _copy_file(source_path: String, dest_path: String) -> void:
 	if dest:
 		dest.store_string(content)
 		dest.close()
+
+func _get_file_size(path: String) -> int:
+	"""Obtener tamaño de un archivo en bytes."""
+	if not FileAccess.file_exists(path):
+		return 0
+	var f = FileAccess.open(path, FileAccess.READ)
+	if f:
+		var size = f.get_length()
+		f.close()
+		return size
+	return 0
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INTEGRITY VERIFICATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func _generate_integrity() -> void:
+	"""Generate integrity.json — verifies all artifacts belong to this run_id."""
+	var ctx = get_node_or_null("/root/RunContext")
+	var integrity: Dictionary = {
+		"schema_version": 1,
+		"run_id": _run_id,
+		"session_id": ctx.session_id if ctx else _meta.get("session_id", ""),
+		"generated_at": Time.get_datetime_string_from_system(),
+		"artifacts": {},
+		"warnings": []
+	}
+
+	var artifacts_to_check: Array = [
+		"meta.json", "summary.json", "audit.jsonl", "balance.jsonl",
+		"perf.jsonl", "audit_report.md", "upgrade_audit.jsonl",
+		"upgrade_audit_report.md"
+	]
+
+	for fname in artifacts_to_check:
+		var path = _current_bundle_dir.path_join(fname)
+		if FileAccess.file_exists(path):
+			var status = "present"
+			# For JSONL files, verify first line has matching run_id
+			if fname.ends_with(".jsonl"):
+				status = _verify_jsonl_run_id(path)
+				if status == "run_id_mismatch":
+					integrity["warnings"].append("⚠️ %s contains events from a different run_id" % fname)
+			# For JSON files, verify run_id key
+			elif fname.ends_with(".json") and fname != "integrity.json":
+				status = _verify_json_run_id(path)
+				if status == "run_id_mismatch":
+					integrity["warnings"].append("⚠️ %s has mismatched run_id" % fname)
+			integrity["artifacts"][fname] = {
+				"exists": true,
+				"size_bytes": _get_file_size(path),
+				"status": status
+			}
+		else:
+			integrity["artifacts"][fname] = {
+				"exists": false,
+				"size_bytes": 0,
+				"status": "missing"
+			}
+
+	integrity["is_consistent"] = integrity["warnings"].is_empty()
+	_write_json(_current_bundle_dir.path_join("integrity.json"), integrity)
+
+func _verify_jsonl_run_id(path: String) -> String:
+	"""Verify that JSONL file's first event has matching run_id."""
+	var file = FileAccess.open(path, FileAccess.READ)
+	if not file:
+		return "unreadable"
+	var first_line = file.get_line().strip_edges()
+	file.close()
+	if first_line.is_empty():
+		return "empty"
+	var json = JSON.new()
+	if json.parse(first_line) != OK:
+		return "parse_error"
+	var data = json.data
+	if data is Dictionary:
+		var file_run_id = str(data.get("run_id", ""))
+		if file_run_id == _run_id:
+			return "ok"
+		elif file_run_id == "":
+			return "no_run_id"
+		else:
+			return "run_id_mismatch"
+	return "invalid_format"
+
+func _verify_json_run_id(path: String) -> String:
+	"""Verify that JSON file has matching run_id."""
+	var file = FileAccess.open(path, FileAccess.READ)
+	if not file:
+		return "unreadable"
+	var content = file.get_as_text()
+	file.close()
+	var json = JSON.new()
+	if json.parse(content) != OK:
+		return "parse_error"
+	var data = json.data
+	if data is Dictionary:
+		var file_run_id = str(data.get("run_id", ""))
+		if file_run_id == _run_id:
+			return "ok"
+		elif file_run_id == "":
+			return "no_run_id"
+		else:
+			return "run_id_mismatch"
+	return "invalid_format"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PUBLIC API
