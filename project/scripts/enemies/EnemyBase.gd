@@ -1426,8 +1426,8 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 	if has_meta("counter_stance_active") and get_meta("counter_stance_active"):
 		var counter_mult = get_meta("counter_damage_mult") if has_meta("counter_damage_mult") else 2.0
 		var counter_damage = int(amount * counter_mult)
-		if source and source.has_method("take_damage"):
-			source.take_damage(counter_damage, "arcane", self)
+		if _attacker and _attacker.has_method("take_damage"):
+			_attacker.take_damage(counter_damage, "arcane", self)
 
 	# Aplicar bonus de shadow_mark si está marcado
 	if _is_shadow_marked:
@@ -2146,7 +2146,7 @@ func _perform_split_on_death() -> void:
 	# Buscar spawner para crear slimes menores
 	var spawner = get_tree().get_first_node_in_group("enemy_spawner")
 	if spawner and spawner.has_method("spawn_minions_around"):
-		spawner.spawn_minions_around(global_position, spawn_count, max(tier - 1, 1))
+		spawner.spawn_minions_around(global_position, spawn_count, max(enemy_tier - 1, 1))
 	else:
 		# Fallback: crear nodos simples que se comporten como enemigos debiles
 		for i in range(spawn_count):

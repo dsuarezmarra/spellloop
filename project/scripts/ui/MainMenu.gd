@@ -36,6 +36,11 @@ var current_button_index: int = 0
 const GAME_VERSION = "0.1.0-alpha"
 
 func _ready() -> void:
+	# Si la intro cinematográfica no se ha visto aún, redirigir a ella primero
+	if not CinematicIntro.intro_shown:
+		get_tree().change_scene_to_file("res://scenes/ui/CinematicIntro.tscn")
+		return
+
 	_setup_ui()
 	_apply_premium_style()
 	_connect_signals()

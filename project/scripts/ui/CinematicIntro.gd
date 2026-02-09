@@ -1,4 +1,5 @@
 extends Control
+class_name CinematicIntro
 ## Intro cinematográfica: reproduce un vídeo y transiciona al menú principal.
 ## Saltable con Enter, Escape o Espacio. Fade-out suave al terminar/saltar.
 
@@ -8,6 +9,9 @@ extends Control
 
 const MAIN_MENU_SCENE = "res://scenes/ui/MainMenu.tscn"
 const FADE_DURATION := 0.6
+
+## Flag global: true cuando la intro ya se reprodujo en esta sesión
+static var intro_shown := false
 
 var _transitioning := false
 
@@ -55,6 +59,7 @@ func _go_to_main_menu() -> void:
 	if _transitioning:
 		return
 	_transitioning = true
+	intro_shown = true
 	set_process_input(false)
 
 	# Fade-out a negro
