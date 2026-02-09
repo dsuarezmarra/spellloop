@@ -39,6 +39,7 @@ RunContext="*res://scripts/debug/RunContext.gd"
 RunBundleManager="*res://scripts/debug/RunBundleManager.gd"
 BalanceTelemetry="*res://scripts/debug/BalanceTelemetry.gd"
 RunAuditTracker="*res://scripts/debug/RunAuditTracker.gd"
+UpgradeAuditor="*res://scripts/debug/UpgradeAuditor.gd"
 DifficultyManager="*res://scripts/core/DifficultyManager.gd"
 
 [display]

@@ -1709,6 +1709,12 @@ func apply_upgrade(upgrade_data) -> bool:
 		var effects = upgrade_dict.get("effects", [])
 		var weapon_effects: Array = []  # Efectos que van SOLO a GlobalWeaponStats
 
+		# UpgradeAuditor: snapshot ANTES de aplicar
+		var _audit_before := {}
+		var _auditor = get_node_or_null("/root/UpgradeAuditor")
+		if _auditor and _auditor.has_method("get_stats_snapshot"):
+			_audit_before = _auditor.get_stats_snapshot()
+
 		for effect in effects:
 			var stat = effect.get("stat", "")
 			var value = effect.get("value", 0)
@@ -1732,6 +1738,11 @@ func apply_upgrade(upgrade_data) -> bool:
 		# Enviar stats de armas SOLO a GlobalWeaponStats
 		if weapon_effects.size() > 0:
 			_apply_weapon_effects_to_global(weapon_effects, upgrade_dict)
+
+		# UpgradeAuditor: snapshot DESPUÉS y auditar
+		if _auditor and _auditor.has_method("audit_player_upgrade"):
+			var _audit_after = _auditor.get_stats_snapshot()
+			_auditor.audit_player_upgrade(upgrade_dict, _audit_before, _audit_after)
 
 		add_upgrade(upgrade_dict)
 		return true

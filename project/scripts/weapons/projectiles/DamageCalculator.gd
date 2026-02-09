@@ -68,6 +68,14 @@ static func calculate_final_damage(
 			if hp_pct < 0.30:
 				result.final_damage *= (1.0 + executioner_val)
 				result.bonus_applied.append("executioner")
+		
+		# Confianza Plena: +daño si el JUGADOR tiene HP máximo
+		var full_hp_val = ps.get_stat("full_hp_damage_bonus")
+		if full_hp_val > 0:
+			var player_hp_pct = ps.get_health_percent() if ps.has_method("get_health_percent") else 0.0
+			if player_hp_pct >= 1.0:
+				result.final_damage *= (1.0 + full_hp_val)
+				result.bonus_applied.append("full_hp")
 	
 	# 2. Bonus vs élites
 	result.final_damage = _apply_elite_bonus(result.final_damage, target, ps)

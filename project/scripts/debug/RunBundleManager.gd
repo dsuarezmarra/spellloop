@@ -83,6 +83,7 @@ func begin_bundle(context: Dictionary = {}) -> void:
 		"balance": _current_bundle_dir.path_join("balance.jsonl"),
 		"perf": _current_bundle_dir.path_join("perf.jsonl"),
 		"audit_report": _current_bundle_dir.path_join("audit_report.md"),
+		"upgrade_audit": _current_bundle_dir.path_join("upgrade_audit.jsonl"),
 	}
 	_bundle_meta_path = _current_bundle_dir.path_join("meta.json")
 	_bundle_summary_path = _current_bundle_dir.path_join("summary.json")

@@ -589,6 +589,13 @@ func _handle_hit(target: Node) -> void:
 			if hp_pct < 0.30: # 30% HP threshold
 				final_damage = int(final_damage * (1.0 + executioner_val))
 		
+		# 3b. Confianza Plena: +damage si el JUGADOR tiene HP máximo
+		var full_hp_val = ps.get_stat("full_hp_damage_bonus") if ps.has_method("get_stat") else 0.0
+		if full_hp_val > 0:
+			var player_hp_pct = ps.get_health_percent() if ps.has_method("get_health_percent") else 0.0
+			if player_hp_pct >= 1.0:
+				final_damage = int(final_damage * (1.0 + full_hp_val))
+		
 		# 4. Combustión Instantánea (Combustion - Rework): Burn aplica daño instantáneo
 		var combustion_active = ps.get_stat("combustion_active") if ps.has_method("get_stat") else 0.0
 		if combustion_active > 0:

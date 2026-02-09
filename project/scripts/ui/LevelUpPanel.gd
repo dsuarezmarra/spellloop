@@ -2113,18 +2113,33 @@ func _balance_options(all_options: Array) -> Array:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _apply_option(option: Dictionary) -> void:
+	var _auditor = get_node_or_null("/root/UpgradeAuditor")
 	match option.type:
 		OPTION_TYPES.NEW_WEAPON:
 			if attack_manager and attack_manager.has_method("add_weapon_by_id"):
 				attack_manager.add_weapon_by_id(option.weapon_id)
+				# Audit: verificar que el arma se registró
+				if _auditor and _auditor.has_method("audit_weapon_pickup"):
+					_auditor.call_deferred("audit_weapon_pickup", {"id": option.weapon_id, "name": option.get("name", option.weapon_id)}, "new_weapon")
 
 		OPTION_TYPES.LEVEL_UP_WEAPON:
 			if attack_manager and attack_manager.has_method("level_up_weapon_by_id"):
 				attack_manager.level_up_weapon_by_id(option.weapon_id)
+				# Audit: verificar level up
+				if _auditor and _auditor.has_method("audit_weapon_pickup"):
+					_auditor.call_deferred("audit_weapon_pickup", {"id": option.weapon_id, "name": option.get("name", option.weapon_id)}, "level_up")
 
 		OPTION_TYPES.FUSION:
 			if attack_manager and attack_manager.has_method("fuse_weapons"):
 				attack_manager.fuse_weapons(option.weapon_a, option.weapon_b)
+				# Audit: verificar fusión
+				if _auditor and _auditor.has_method("audit_weapon_pickup"):
+					_auditor.call_deferred("audit_weapon_pickup", {
+						"id": option.get("fusion_id", option.get("weapon_id", "unknown")),
+						"name": option.get("name", "fusion"),
+						"source_a": option.get("weapon_a", ""),
+						"source_b": option.get("weapon_b", "")
+					}, "fusion")
 
 		OPTION_TYPES.PLAYER_UPGRADE:
 			_apply_player_upgrade(option)
@@ -2181,10 +2196,20 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 	# Aplicar efectos de ARMAS a GlobalWeaponStats
 	if not weapon_effects.is_empty():
 		if attack_manager and attack_manager.has_method("apply_global_upgrade"):
+			# UpgradeAuditor: snapshot GWS ANTES
+			var _auditor = get_node_or_null("/root/UpgradeAuditor")
+			var _gws_before := {}
+			if _auditor and _auditor.has_method("get_gws_snapshot"):
+				_gws_before = _auditor.get_gws_snapshot()
+			
 			var weapon_option = option.duplicate()
 			weapon_option["effects"] = weapon_effects
 			attack_manager.apply_global_upgrade(weapon_option)
-			# print("[LevelUpPanel] ⚔️ Efectos de armas aplicados (%d): %s" % [weapon_effects.size(), upgrade_name])
+			
+			# UpgradeAuditor: snapshot GWS DESPUÉS y auditar
+			if _auditor and _auditor.has_method("audit_global_weapon_upgrade"):
+				var _gws_after = _auditor.get_gws_snapshot()
+				_auditor.audit_global_weapon_upgrade(option, _gws_before, _gws_after)
 	
 	# Aplicar efectos de JUGADOR a PlayerStats
 	if not player_effects.is_empty():

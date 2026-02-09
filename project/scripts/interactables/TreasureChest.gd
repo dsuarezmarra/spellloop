@@ -665,6 +665,15 @@ func _apply_item(item: Dictionary):
 					print("[TreasureChest] ⚡ FUSIÓN COMPLETADA: %s + %s → %s" % [weapon_a.weapon_name_es, weapon_b.weapon_name_es, fused_weapon.weapon_name_es])
 					# Mostrar texto flotante celebratorio
 					FloatingText.spawn_text(global_position + Vector2(0, -80), "⚡ FUSIÓN: %s" % fused_weapon.weapon_name_es, Color(1.0, 0.8, 0.0))
+					# UpgradeAuditor: verificar fusión
+					var _auditor = get_node_or_null("/root/UpgradeAuditor")
+					if _auditor and _auditor.has_method("audit_weapon_pickup"):
+						_auditor.call_deferred("audit_weapon_pickup", {
+							"id": fused_weapon.id if "id" in fused_weapon else "unknown",
+							"name": fused_weapon.weapon_name_es if "weapon_name_es" in fused_weapon else "fusion",
+							"source_a": weapon_a.id if "id" in weapon_a else "",
+							"source_b": weapon_b.id if "id" in weapon_b else ""
+						}, "fusion")
 				else:
 					push_error("[TreasureChest] ❌ Fusión falló en AttackManager")
 					# Fallback: dar oro como compensación

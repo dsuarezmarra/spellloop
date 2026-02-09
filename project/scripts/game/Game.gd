@@ -1379,60 +1379,6 @@ func player_died() -> void:
 	if game_over_screen:
 		game_over_screen.show_game_over(run_stats)
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# TELEMETRY / RUN BUNDLE LIFECYCLE
-# ═══════════════════════════════════════════════════════════════════════════════
-
-func _start_balance_telemetry() -> void:
-	"""Orquestar inicio de RunContext → RunBundleManager → Trackers."""
-	var context := {
-		"character_id": _get_character_id(),
-		"game_version": GAME_VERSION,
-		"seed": randi(),
-	}
-
-	# 1. RunContext — generar run_id unificado (ANTES de todo)
-	var run_ctx = get_node_or_null("/root/RunContext")
-	if run_ctx and run_ctx.has_method("start_run"):
-		run_ctx.start_run(context)
-		context["run_id"] = run_ctx.run_id
-
-	# 2. RunBundleManager — crear carpeta de bundle (ANTES de trackers)
-	var bundle_mgr = get_node_or_null("/root/RunBundleManager")
-	if bundle_mgr and bundle_mgr.has_method("begin_bundle"):
-		bundle_mgr.begin_bundle(context)
-
-	# 3. Trackers — inician sus logs (consultan bundle path internamente)
-	if BalanceTelemetry and BalanceTelemetry.has_method("start_run"):
-		BalanceTelemetry.start_run(context)
-	if RunAuditTracker and RunAuditTracker.has_method("start_run"):
-		RunAuditTracker.start_run(context)
-
-func _end_balance_telemetry(end_reason: String = "death") -> void:
-	"""Orquestar fin de Trackers → RunBundleManager → RunContext."""
-	var context := {
-		"end_reason": end_reason,
-		"time_survived": run_stats.get("time", 0.0),
-		"score_final": 0,  # Se calcula en _collect_complete_run_data()
-		"level": run_stats.get("level", 1),
-	}
-
-	# 1. Trackers finalizan primero (escriben run_end a sus logs)
-	if BalanceTelemetry and BalanceTelemetry.has_method("end_run"):
-		BalanceTelemetry.end_run(context)
-	if RunAuditTracker and RunAuditTracker.has_method("end_run"):
-		RunAuditTracker.end_run(context)
-
-	# 2. RunBundleManager — copiar perf segment, generar summary (DESPUÉS de trackers)
-	var bundle_mgr = get_node_or_null("/root/RunBundleManager")
-	if bundle_mgr and bundle_mgr.has_method("finalize_bundle"):
-		bundle_mgr.finalize_bundle(context)
-
-	# 3. RunContext — marcar run como finalizada (ÚLTIMO)
-	var run_ctx = get_node_or_null("/root/RunContext")
-	if run_ctx and run_ctx.has_method("end_run"):
-		run_ctx.end_run(context)
-
 func _save_run_stats() -> void:
 	"""Guardar estadísticas completas de la run para persistencia y ranking"""
 	var save_manager = get_tree().root.get_node_or_null("SaveManager")
@@ -1852,6 +1798,11 @@ func _start_balance_telemetry() -> void:
 	var audit_tracker = get_node_or_null("/root/RunAuditTracker")
 	if audit_tracker:
 		audit_tracker.start_run(context)
+	
+	# UpgradeAuditor: iniciar auditoría de pickups
+	var upgrade_auditor = get_node_or_null("/root/UpgradeAuditor")
+	if upgrade_auditor and upgrade_auditor.has_method("start_run"):
+		upgrade_auditor.start_run()
 
 func _check_telemetry_minute_snapshot() -> void:
 	"""Check if we should log a minute snapshot"""
@@ -1921,6 +1872,11 @@ func _end_balance_telemetry(reason: String = "death") -> void:
 	var audit_tracker = get_node_or_null("/root/RunAuditTracker")
 	if audit_tracker:
 		audit_tracker.end_run(context)
+	
+	# UpgradeAuditor: finalizar auditoría y generar reporte
+	var upgrade_auditor = get_node_or_null("/root/UpgradeAuditor")
+	if upgrade_auditor and upgrade_auditor.has_method("end_run"):
+		upgrade_auditor.end_run()
 	
 	# RunBundleManager: finalizar bundle (DESPUÉS de trackers)
 	var bundle_mgr = get_node_or_null("/root/RunBundleManager")
