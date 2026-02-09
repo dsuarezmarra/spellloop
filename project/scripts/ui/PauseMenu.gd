@@ -2652,6 +2652,9 @@ func _save_game_state_for_resume() -> void:
 	
 	var game_state: Dictionary = {}
 	
+	# Personaje seleccionado (CRÍTICO para restaurar sprites y stats base correctos)
+	game_state["character_id"] = SessionState.get_character()
+	
 	# Tiempo de juego
 	game_state["game_time"] = game_time
 	
@@ -2741,12 +2744,19 @@ func _save_game_state_for_resume() -> void:
 			if "collected_upgrades" in player_stats:
 				game_state["player_stats"]["collected_upgrades"] = player_stats.collected_upgrades.duplicate(true)
 	
-	# Mejoras globales de armas (GlobalWeaponStats)
+	# Mejoras globales de armas (GlobalWeaponStats) — guardado legacy para compatibilidad
 	if attack_manager and "global_weapon_stats" in attack_manager and attack_manager.global_weapon_stats:
 		if attack_manager.global_weapon_stats.has_method("to_dict"):
 			game_state["global_weapon_stats"] = attack_manager.global_weapon_stats.to_dict()
 	
-	# Armas equipadas
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# Estado COMPLETO del AttackManager (armas, fusiones, weapon stats, globals)
+	# Esto es la fuente de verdad para restaurar armas al reanudar
+	# ═══════════════════════════════════════════════════════════════════════════════
+	if attack_manager and attack_manager.has_method("to_dict"):
+		game_state["attack_manager_state"] = attack_manager.to_dict()
+	
+	# Armas equipadas — guardado simplificado (legacy/fallback)
 	if attack_manager and attack_manager.has_method("get_weapons"):
 		var weapons_data: Array = []
 		for weapon in attack_manager.get_weapons():

@@ -1580,7 +1580,7 @@ func _create_homing_projectile(spawn_pos: Vector2) -> void:
 		# Usar tipo de proyectil basado en elemento del enemigo
 		var elem = _get_enemy_element()
 		var proj_type = "void_homing"
-		if vfx_mgr.has("ELEMENT_TO_PROJECTILE"):
+		if "ELEMENT_TO_PROJECTILE" in vfx_mgr:
 			proj_type = vfx_mgr.ELEMENT_TO_PROJECTILE.get(elem, "void_homing")
 		var vfx_sprite = vfx_mgr.spawn_projectile_attached(proj_type, projectile)
 		if not vfx_sprite:
@@ -3767,10 +3767,10 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	if vfx_mgr and vfx_mgr.has_method("spawn_projectile_attached"):
 		# Primero intentar homing_orb, luego el tipo de elemento
 		var proj_type = "homing_orb"
-		if vfx_mgr.has("ELEMENT_TO_PROJECTILE"):
+		if "ELEMENT_TO_PROJECTILE" in vfx_mgr:
 			var elem_type = vfx_mgr.ELEMENT_TO_PROJECTILE.get(element, element)
 			# Usar el tipo de elemento si existe en PROJECTILE_CONFIG
-			if vfx_mgr.has("PROJECTILE_CONFIG") and vfx_mgr.PROJECTILE_CONFIG.has(elem_type):
+			if "PROJECTILE_CONFIG" in vfx_mgr and vfx_mgr.PROJECTILE_CONFIG.has(elem_type):
 				proj_type = elem_type
 		var sprite = vfx_mgr.spawn_projectile_attached(proj_type, orb)
 		if sprite:

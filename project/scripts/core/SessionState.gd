@@ -60,6 +60,11 @@ func _load_from_disk() -> void:
 	saved_game_state = data.get("saved_game_state", {})
 	saved_player_data = data.get("saved_player_data", {})
 
+	# Restaurar personaje seleccionado (CRÍTICO para resume correcto)
+	var saved_char = data.get("selected_character_id", "")
+	if not saved_char.is_empty():
+		selected_character_id = saved_char
+
 	if has_active_game:
 		# Debug desactivado: print("[SessionState] ✅ Partida guardada encontrada en disco:")
 		# Debug desactivado: print("  - Tiempo: %.1f segundos" % paused_game_time)
@@ -73,7 +78,8 @@ func _save_to_disk() -> void:
 		"has_active_game": has_active_game,
 		"paused_game_time": paused_game_time,
 		"saved_game_state": saved_game_state,
-		"saved_player_data": saved_player_data
+		"saved_player_data": saved_player_data,
+		"selected_character_id": selected_character_id
 	}
 
 	var file = FileAccess.open(SAVE_FILE, FileAccess.WRITE)

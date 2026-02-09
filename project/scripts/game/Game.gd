@@ -84,6 +84,10 @@ func _ready() -> void:
 	if SessionState and SessionState.can_resume():
 		_is_resuming = true
 		_saved_state = SessionState.get_saved_state()
+		# CRÍTICO: Restaurar personaje ANTES de _setup_game() para que
+		# _create_player_stats() y _configure_player_character() usen el correcto
+		if _saved_state.has("character_id") and not _saved_state["character_id"].is_empty():
+			SessionState.set_character(_saved_state["character_id"])
 
 	_setup_game()
 
@@ -705,13 +709,36 @@ func _resume_saved_game() -> void:
 			experience_manager.total_coins = saved_coins
 			# Debug desactivado: print("🪙 [Game] Monedas restauradas: %d" % saved_coins)
 
-	# Restaurar mejoras globales de armas (GlobalWeaponStats)
+	# ═══════════════════════════════════════════════════════════════════════════════
+	# Restaurar armas y mejoras globales — AttackManager completo
+	# ═══════════════════════════════════════════════════════════════════════════════
 	var attack_manager = get_tree().get_first_node_in_group("attack_manager")
-	if attack_manager and _saved_state.has("global_weapon_stats"):
-		if "global_weapon_stats" in attack_manager and attack_manager.global_weapon_stats:
-			if attack_manager.global_weapon_stats.has_method("from_dict"):
-				attack_manager.global_weapon_stats.from_dict(_saved_state.get("global_weapon_stats", {}))
-				# Debug desactivado: print("⚔️ [Game] Mejoras globales restauradas")
+	if attack_manager:
+		if _saved_state.has("attack_manager_state") and attack_manager.has_method("from_dict"):
+			# Restauración completa: armas, fusiones, weapon stats y global stats
+			attack_manager.from_dict(_saved_state["attack_manager_state"])
+		else:
+			# Fallback legacy: restaurar global_weapon_stats + armas por ID
+			if _saved_state.has("global_weapon_stats"):
+				if "global_weapon_stats" in attack_manager and attack_manager.global_weapon_stats:
+					if attack_manager.global_weapon_stats.has_method("from_dict"):
+						attack_manager.global_weapon_stats.from_dict(_saved_state.get("global_weapon_stats", {}))
+			
+			# Restaurar armas desde formato simplificado
+			if _saved_state.has("weapons"):
+				# Limpiar arma inicial que _create_player() ya añadió
+				if attack_manager.has_method("reset_for_new_game"):
+					attack_manager.reset_for_new_game()
+				
+				for weapon_data in _saved_state["weapons"]:
+					var weapon_id = weapon_data.get("weapon_id", "")
+					if weapon_id.is_empty():
+						continue
+					attack_manager.add_weapon_by_id(weapon_id)
+					# Subir de nivel al arma según lo guardado
+					var target_level = weapon_data.get("level", 1)
+					for i in range(target_level - 1):
+						attack_manager.level_up_weapon_by_id(weapon_id)
 
 	# ═══════════════════════════════════════════════════════════════════════════════
 	# NUEVO: Restaurar estado del EnemyManager PRIMERO (todos los enemigos activos)
@@ -753,8 +780,6 @@ func _resume_saved_game() -> void:
 	if _saved_state.has("remaining_banishes"):
 		remaining_banishes = _saved_state.get("remaining_banishes", 2)
 	# Debug desactivado: print("🎲 [Game] Rerolls/Banishes restaurados: %d/%d" % [remaining_rerolls, remaining_banishes])
-
-	# TODO: Si queremos restaurar armas adicionales más allá de la inicial, se haría aquí
 
 	# Actualizar HUD con los valores restaurados
 	call_deferred("_update_hud_after_restore")
