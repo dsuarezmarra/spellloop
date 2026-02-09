@@ -247,7 +247,7 @@ func _damage_enemy(enemy: Node) -> void:
 	# Usar DamageCalculator centralizado
 	var player = _get_orbital_player()
 	var damage_result = DamageCalculator.calculate_final_damage(
-		orbital_damage, enemy, player, crit_chance, crit_damage
+		orbital_damage, enemy, player, crit_chance, crit_damage, self
 	)
 
 	if enemy.has_method("take_damage"):
@@ -554,7 +554,7 @@ func _fire_active_shot() -> void:
 			if target.has_method("take_damage"):
 				# Calcular daño completo
 				var player = _get_orbital_player()
-				var damage_res = DamageCalculator.calculate_final_damage(orbital_damage, target, player, crit_chance, crit_damage)
+				var damage_res = DamageCalculator.calculate_final_damage(orbital_damage, target, player, crit_chance, crit_damage, self)
 				
 				target.take_damage(damage_res.get_int_damage(), "physical", self)
 				ProjectileFactory.apply_life_steal(get_tree(), damage_res.final_damage)

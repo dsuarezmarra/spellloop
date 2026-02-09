@@ -16,12 +16,14 @@ class DamageResult:
 
 ## Calcular daño final aplicando todos los modificadores
 ## Debe llamarse desde cualquier sistema que aplique daño (proyectiles, orbitales, cadenas, etc.)
+## attacker: Nodo que causa el daño (proyectil, beam, etc.) — opcional, usado para weapon_id en audit
 static func calculate_final_damage(
 	base_damage: float,
 	target: Node2D,
 	player: Node2D,
 	crit_chance: float = 0.0,
-	crit_damage: float = 2.0
+	crit_damage: float = 2.0,
+	attacker: Node = null
 ) -> DamageResult:
 	var result = DamageResult.new()
 	result.base_damage = base_damage
@@ -121,8 +123,11 @@ static func calculate_final_damage(
 	# Runner will add it to root.
 	var logger = target.get_tree().root.get_node_or_null("DamageDeliveryLogger")
 	if logger and logger.has_method("log_calculation"):
-		# Hack: Store event_id on result for transport
-		var weapon_id = "unknown" 
+		var weapon_id = "unknown"
+		if is_instance_valid(attacker) and attacker.has_meta("weapon_id"):
+			weapon_id = attacker.get_meta("weapon_id")
+		elif is_instance_valid(player) and player.has_meta("weapon_id"):
+			weapon_id = player.get_meta("weapon_id")
 		var id = logger.log_calculation("calc_event", target, int(result.final_damage), result.is_crit)
 		target.set_meta("last_damage_event_id", id)
 

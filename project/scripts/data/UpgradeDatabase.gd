@@ -2469,7 +2469,7 @@ const UNIQUE_UPGRADES: Dictionary = {
 		"effects": [
 			{"stat": "damage_mult", "value": 2.0, "operation": "multiply"},
 			{"stat": "attack_speed_mult", "value": 2.0, "operation": "multiply"},
-			{"stat": "armor", "value": -999, "operation": "add"}
+			{"stat": "armor", "value": 0, "operation": "set"}
 		]
 	},
 	"unique_juggernaut": {

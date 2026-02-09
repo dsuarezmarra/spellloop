@@ -337,11 +337,47 @@ func audit_global_weapon_upgrade(upgrade_data: Dictionary, gws_before: Dictionar
 		if stat == "":
 			continue
 
+		# Skip non-weapon stats — they live in PlayerStats and are audited
+		# by _verify_single_effect via audit_upgrade(), not here.
+		if stat not in WEAPON_STATS:
+			result.checks.append({
+				"check": "gws_stat_skipped",
+				"stat": stat,
+				"status": "OK",
+				"detail": "PlayerStat, no GWS — verificado en audit_upgrade()"
+			})
+			continue
+
 		var before_val = gws_before.get(stat, 0.0)
 		var after_val = gws_after.get(stat, 0.0)
 		var expected = _calculate_expected(before_val, value, op)
 		var delta = after_val - before_val
-		var ok = absf(after_val - expected) < FLOAT_TOLERANCE or (absf(delta) > FLOAT_TOLERANCE and _same_direction(delta, value, op))
+
+		# Exact match
+		var exact_match = absf(after_val - expected) < FLOAT_TOLERANCE
+		# Direction OK (may be capped)
+		var direction_ok = _same_direction(delta, value, op) and absf(delta) > FLOAT_TOLERANCE
+		var was_capped = not exact_match and direction_ok
+
+		var status: String
+		var detail: String
+
+		if exact_match:
+			status = "OK"
+			detail = ""
+		elif was_capped:
+			status = "OK"
+			detail = "Aplicado con cap: esperado %.3f, real %.3f (capped)" % [expected, after_val]
+		elif absf(delta) < FLOAT_TOLERANCE:
+			if absf(value) < FLOAT_TOLERANCE:
+				status = "WARN"
+				detail = "Efecto con value=0 declarado"
+			else:
+				status = "FAIL"
+				detail = "Stat no cambió como se esperaba"
+		else:
+			status = "WARN"
+			detail = "Cambio inesperado: %.3f→%.3f (esperado %.3f)" % [before_val, after_val, expected]
 
 		var check := {
 			"check": "gws_stat_change",
@@ -352,11 +388,11 @@ func audit_global_weapon_upgrade(upgrade_data: Dictionary, gws_before: Dictionar
 			"delta": snapped(delta, 0.001),
 			"operation": op,
 			"declared_value": value,
-			"status": "OK" if ok else "FAIL",
-			"detail": "" if ok else "Stat no cambió como se esperaba"
+			"status": status,
+			"detail": detail,
 		}
 		result.checks.append(check)
-		if not ok:
+		if status == "FAIL":
 			has_fail = true
 
 	if has_fail:

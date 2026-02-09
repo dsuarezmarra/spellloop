@@ -124,7 +124,7 @@ func _apply_damage_to_target(target: Node2D) -> void:
 
 	var player = _get_player()
 	var damage_result = DamageCalculator.calculate_final_damage(
-		damage, target, player, crit_chance, crit_damage
+		damage, target, player, crit_chance, crit_damage, self
 	)
 
 	if target.has_method("take_damage"):

@@ -576,6 +576,8 @@ const STAT_LIMITS: Dictionary = {
 	# gold_mult: Cap at 3.0x
 	# xp_mult: Cap at 3.0x
 	
+	"armor": {"min": 0.0, "max": 999.0},           # FIX: Armor no puede ser negativa (glass_mage usaba add -999)
+	"crit_damage": {"min": 1.0, "max": 8.0},       # FIX: Cap crit_damage para evitar escalado infinito
 	"damage_taken_mult": {"min": 0.1, "max": 3.0},
 	"move_speed": {"min": 30.0, "max": 500.0},
 	"area_mult": {"min": 0.5, "max": 2.0},       # NERFED: 3.0 -> 2.0

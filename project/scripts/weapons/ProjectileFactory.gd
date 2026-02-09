@@ -485,7 +485,7 @@ class BeamEffect extends Node2D:
 		
 		# Calcular daño final usando el sistema centralizado
 		var damage_result = DamageCalculator.calculate_final_damage(
-			damage, enemy, player, crit_chance, crit_damage
+			damage, enemy, player, crit_chance, crit_damage, self
 		)
 		
 		# Aplicar daño y todos los efectos asociados
@@ -826,7 +826,7 @@ class AOEEffect extends Node2D:
 		# Nota: damage_per_tick ya debería incluir modificadores del arma, 
 		# pero NO modificadores situacionales del jugador (brawler, etc.)
 		var damage_result = DamageCalculator.calculate_final_damage(
-			damage_per_tick, enemy, player, crit_chance, crit_damage
+			damage_per_tick, enemy, player, crit_chance, crit_damage, self
 		)
 
 		var final_damage = damage_result.get_int_damage()
