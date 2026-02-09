@@ -95,6 +95,7 @@ func _calculate_spawn_position_in_player_zone() -> Vector2:
 		return Vector2.INF
 	
 	var player_pos = player_ref.global_position
+	var max_radius = _get_max_allowed_radius()
 	
 	# Intentar encontrar posición válida sin stackear
 	for _attempt in range(20):
@@ -102,6 +103,13 @@ func _calculate_spawn_position_in_player_zone() -> Vector2:
 		var angle = randf() * TAU
 		var distance = randf_range(min_distance_from_player, max_distance_from_player)
 		var candidate_pos = player_pos + Vector2.from_angle(angle) * distance
+		
+		# Clampar a los límites del mapa (zonas desbloqueadas)
+		candidate_pos = _clamp_to_map_bounds(candidate_pos, max_radius)
+		
+		# Verificar que no esté demasiado cerca del player después del clamp
+		if candidate_pos.distance_to(player_pos) < min_distance_from_player * 0.5:
+			continue
 		
 		# Verificar distancia solo con cofres CERCANOS (ignorar los lejanos)
 		var too_close = false
@@ -115,9 +123,26 @@ func _calculate_spawn_position_in_player_zone() -> Vector2:
 		if not too_close:
 			return candidate_pos
 	
-	# Fallback: Si está muy lleno, spawnear igual (Prioridad al User Request: "Que aparezca")
+	# Fallback: Si está muy lleno, spawnear igual pero clampeado
 	var fallback_angle = randf() * TAU
-	return player_pos + Vector2.from_angle(fallback_angle) * min_distance_from_player
+	var fallback_pos = player_pos + Vector2.from_angle(fallback_angle) * min_distance_from_player
+	return _clamp_to_map_bounds(fallback_pos, max_radius)
+
+func _clamp_to_map_bounds(pos: Vector2, max_radius: float) -> Vector2:
+	"""Clampar posición a los límites del mapa desbloqueado"""
+	var dist_from_center = pos.length()
+	if dist_from_center <= max_radius:
+		return pos
+	# Mover hacia el borde con margen de seguridad
+	var clamped_radius = max_radius - 50.0
+	return pos.normalized() * clamped_radius
+
+func _get_max_allowed_radius() -> float:
+	"""Obtener radio máximo permitido del ArenaManager"""
+	if arena_manager and arena_manager.has_method("get_max_allowed_radius"):
+		return arena_manager.get_max_allowed_radius()
+	# Fallback conservador si no hay ArenaManager
+	return 2450.0
 
 func _spawn_shop_chest(pos: Vector2) -> void:
 	"""Crear cofre tipo tienda en la posición"""

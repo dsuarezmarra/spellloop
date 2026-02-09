@@ -1794,6 +1794,46 @@ func _spawn_poison_particle() -> void:
 		if is_instance_valid(particle): particle.queue_free()
 	)
 
+func _spawn_weakness_particle() -> void:
+	"""Partícula de weakness (púrpura oscuro descendente)"""
+	var particle = CPUParticles2D.new()
+	particle.emitting = true
+	particle.one_shot = true
+	particle.amount = 8
+	particle.lifetime = 0.7
+	particle.direction = Vector2(0, 1)
+	particle.spread = 60.0
+	particle.gravity = Vector2(0, 40)
+	particle.initial_velocity_min = 15.0
+	particle.initial_velocity_max = 30.0
+	particle.scale_amount_min = 2.0
+	particle.scale_amount_max = 4.0
+	particle.color = Color(0.6, 0.15, 0.9, 0.85)  # Púrpura oscuro
+	add_child(particle)
+	get_tree().create_timer(0.9).timeout.connect(func():
+		if is_instance_valid(particle): particle.queue_free()
+	)
+
+func _spawn_curse_particle() -> void:
+	"""Partícula de curse (púrpura oscuro con espiral)"""
+	var particle = CPUParticles2D.new()
+	particle.emitting = true
+	particle.one_shot = true
+	particle.amount = 6
+	particle.lifetime = 0.8
+	particle.direction = Vector2(0, -1)
+	particle.spread = 45.0
+	particle.gravity = Vector2(0, -20)
+	particle.initial_velocity_min = 10.0
+	particle.initial_velocity_max = 25.0
+	particle.scale_amount_min = 2.0
+	particle.scale_amount_max = 3.5
+	particle.color = Color(0.4, 0.1, 0.5, 0.85)  # Púrpura muy oscuro
+	add_child(particle)
+	get_tree().create_timer(1.0).timeout.connect(func():
+		if is_instance_valid(particle): particle.queue_free()
+	)
+
 func apply_stun(duration: float) -> void:
 	"""Aplicar stun al jugador (paralizado)"""
 	var was_stunned = _is_stunned
@@ -1843,6 +1883,7 @@ func apply_weakness(amount: float, duration: float) -> void:
 	# Mostrar notificación solo si es nuevo
 	if not was_weakened:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "weakness")
+		_spawn_weakness_particle()
 	
 	# Debug desactivado: print("[%s] 💀 Debilitado +%.0f%% daño recibido por %.1fs" % [character_class, _weakness_amount * 100, duration])
 
@@ -1870,6 +1911,7 @@ func apply_curse(amount: float, duration: float) -> void:
 	# Mostrar notificación solo si es nuevo
 	if not was_cursed:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "curse")
+		_spawn_curse_particle()
 	
 	# Debug desactivado: print("[%s] 👻 Maldito -%.0f%% curación por %.1fs" % [character_class, _curse_amount * 100, duration])
 

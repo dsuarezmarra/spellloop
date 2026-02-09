@@ -142,6 +142,7 @@
 			"banish_mode_hint": "MODO ELIMINAR: Selecciona qué mejora eliminar (ESC para cancelar)",
 			"choose_upgrade": "Elige una mejora para continuar",
 			"delete": "ELIMINAR",
+			"need_coins": "¡Necesitas {cost} monedas!",
 			"spinning": "Girando...",
 			"confirm_indicator": "▲ ENTER ▲"
 		},

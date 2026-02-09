@@ -1577,7 +1577,15 @@ func _create_homing_projectile(spawn_pos: Vector2) -> void:
 	var _used_vfx := false
 	var vfx_mgr = get_node_or_null("/root/VFXManager")
 	if vfx_mgr and vfx_mgr.has_method("spawn_projectile_attached"):
-		var vfx_sprite = vfx_mgr.spawn_projectile_attached("void_homing", projectile)
+		# Usar tipo de proyectil basado en elemento del enemigo
+		var elem = _get_enemy_element()
+		var proj_type = "void_homing"
+		if vfx_mgr.has("ELEMENT_TO_PROJECTILE"):
+			proj_type = vfx_mgr.ELEMENT_TO_PROJECTILE.get(elem, "void_homing")
+		var vfx_sprite = vfx_mgr.spawn_projectile_attached(proj_type, projectile)
+		if not vfx_sprite:
+			# Intentar con el tipo de elemento directo
+			vfx_sprite = vfx_mgr.spawn_projectile_attached(elem, projectile)
 		if vfx_sprite:
 			_used_vfx = true
 	
@@ -3757,7 +3765,14 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	var vfx_mgr = get_node_or_null("/root/VFXManager")
 	var using_vfx = false
 	if vfx_mgr and vfx_mgr.has_method("spawn_projectile_attached"):
-		var sprite = vfx_mgr.spawn_projectile_attached("homing_orb", orb)
+		# Primero intentar homing_orb, luego el tipo de elemento
+		var proj_type = "homing_orb"
+		if vfx_mgr.has("ELEMENT_TO_PROJECTILE"):
+			var elem_type = vfx_mgr.ELEMENT_TO_PROJECTILE.get(element, element)
+			# Usar el tipo de elemento si existe en PROJECTILE_CONFIG
+			if vfx_mgr.has("PROJECTILE_CONFIG") and vfx_mgr.PROJECTILE_CONFIG.has(elem_type):
+				proj_type = elem_type
+		var sprite = vfx_mgr.spawn_projectile_attached(proj_type, orb)
 		if sprite:
 			using_vfx = true
 	
@@ -4330,12 +4345,17 @@ func _spawn_void_beam_visual(origin: Vector2, direction: Vector2, length: float,
 	var visual = Node2D.new()
 	effect.add_child(visual)
 	
+	# Usar color del elemento del enemigo en vez de púrpura fijo
+	var elem = _get_enemy_element()
+	var beam_color = _get_element_color(elem)
+	var core_color = Color(min(beam_color.r + 0.3, 1.0), min(beam_color.g + 0.3, 1.0), min(beam_color.b + 0.3, 1.0), 0.9)
+	
 	visual.draw.connect(func():
 		var width = 30 * (0.8 + sin(anim * PI * 8) * 0.2)
 		# Beam principal
-		visual.draw_rect(Rect2(0, -width/2, length, width), Color(0.5, 0, 0.8, 0.7))
-		# NÃƒÂºcleo brillante
-		visual.draw_rect(Rect2(0, -width/4, length, width/2), Color(0.8, 0.5, 1, 0.9))
+		visual.draw_rect(Rect2(0, -width/2, length, width), Color(beam_color.r, beam_color.g, beam_color.b, 0.7))
+		# Núcleo brillante
+		visual.draw_rect(Rect2(0, -width/4, length, width/2), core_color)
 	)
 	
 	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo

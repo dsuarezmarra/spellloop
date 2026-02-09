@@ -650,13 +650,19 @@ static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float,
 	
 	var all_upgrades = []
 	
-	# Recolectar de todas las categorías
+	# Recolectar de todas las categorías (incluido CURSED en late-game)
 	if UpgradeDB.get("DEFENSIVE_UPGRADES"):
 		_append_dict_values(all_upgrades, UpgradeDB.DEFENSIVE_UPGRADES)
 	if UpgradeDB.get("UTILITY_UPGRADES"):
 		_append_dict_values(all_upgrades, UpgradeDB.UTILITY_UPGRADES)
 	if UpgradeDB.get("OFFENSIVE_UPGRADES"):
 		_append_dict_values(all_upgrades, UpgradeDB.OFFENSIVE_UPGRADES)
+	# Late-game: incluir cursed upgrades en shops tier 3+
+	if base_tier >= 3 and UpgradeDB.get("CURSED_UPGRADES"):
+		_append_dict_values(all_upgrades, UpgradeDB.CURSED_UPGRADES)
+	# Late-game: incluir unique upgrades en shops tier 4+
+	if base_tier >= 4 and UpgradeDB.get("UNIQUE_UPGRADES"):
+		_append_dict_values(all_upgrades, UpgradeDB.UNIQUE_UPGRADES)
 	
 	if all_upgrades.is_empty():
 		return {}
@@ -673,13 +679,13 @@ static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float,
 		return t >= base_tier and t <= target_tier + 1
 	)
 	
-	# FILTRO DE UPGRADES SHOP (Nuevo)
+	# FILTRO DE UPGRADES SHOP
 	var player_stats = _get_player_stats(context, Engine.get_main_loop().current_scene.get_tree() if Engine.get_main_loop() else null)
 	if player_stats:
 		var filtered = []
 		for up in eligible:
 			var up_id = up.get("id", "")
-			# 1. Filtrar únicos
+			# 1. Filtrar únicos ya obtenidos
 			if up.get("is_unique", false) and player_stats.has_unique_upgrade(up_id):
 				continue
 			# 2. Filtrar max stacks
@@ -692,20 +698,37 @@ static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float,
 			filtered.append(up)
 		eligible = filtered
 	
+	# FALLBACK PROGRESIVO: Si no hay upgrades elegibles en el tier actual
+	if eligible.is_empty() and base_tier > 1:
+		# Intentar con tier más bajo — buscar en TODO el pool sin restricción de tier
+		var fallback_filtered = []
+		if player_stats:
+			for up in all_upgrades:
+				var up_id = up.get("id", "")
+				if up.get("is_unique", false) and player_stats.has_unique_upgrade(up_id):
+					continue
+				var max_stacks = up.get("max_stacks", 0)
+				if max_stacks > 0 and player_stats.get_upgrade_stacks(up_id) >= max_stacks:
+					continue
+				if not player_stats.would_upgrade_be_useful(up):
+					continue
+				fallback_filtered.append(up)
+		else:
+			fallback_filtered = all_upgrades
+		eligible = fallback_filtered
+	
 	if eligible.is_empty():
-		# Si filtramos todo (muy avanzado el juego), dar oro o cura
+		# Todo está maxeado — dar recompensa de oro escalada al tier
+		var gold_amount = 50 + (base_tier * 75)  # T1=125, T2=200, T3=275, T4=350, T5=425
 		return {
 			"type": "gold",
 			"id": "gold_bag_shop",
-			"name": "Reembolso",
-			"amount": 100,
-			"rarity": 1,
+			"name": "Bolsa de Oro",
+			"amount": gold_amount,
+			"rarity": base_tier,
 			"icon": "💰",
-			"tier": 1
+			"tier": base_tier
 		}
-	
-	if eligible.is_empty():
-		eligible = all_upgrades
 	
 	var upgrade = eligible[randi() % eligible.size()]
 	

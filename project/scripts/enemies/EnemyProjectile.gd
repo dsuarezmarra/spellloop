@@ -84,6 +84,10 @@ func _setup_sprite_visual() -> void:
 		"poison": {
 			"path": "res://assets/vfx/abilities/projectiles/poison/projectile_poison_spritesheet.png",
 			"hframes": 4, "vframes": 2
+		},
+		"lightning": {
+			"path": "res://assets/vfx/abilities/projectiles/lightning/projectile_lightning_spritesheet.png",
+			"hframes": 4, "vframes": 2
 		}
 	}
 	
@@ -92,7 +96,6 @@ func _setup_sprite_visual() -> void:
 	match element_type:
 		"dark", "shadow": sheet_type = "void"
 		"nature": sheet_type = "poison"
-		"lightning": sheet_type = "arcane"
 		"physical": sheet_type = "arcane"
 	
 	var config = PROJECTILE_SHEETS.get(sheet_type, PROJECTILE_SHEETS["arcane"])
@@ -260,10 +263,15 @@ func _apply_element_effect(target: Node) -> void:
 			if randf() < 0.3 and target.has_method("apply_curse"):
 				target.apply_curse(0.25, 4.0)  # 30% chance, -25% curación por 4s
 				# print("[EnemyProjectile] ✨ Aplica Curse!")
-		"poison":
+		"poison", "nature":
 			if target.has_method("apply_poison"):
 				target.apply_poison(2.0, 4.0)  # 2 daño/tick por 4s
 				# print("[EnemyProjectile] ☠️ Aplica Poison!")
+		"lightning":
+			# Lightning tiene chance de aplicar stun breve
+			if randf() < 0.2 and target.has_method("apply_stun"):
+				target.apply_stun(0.8)  # 20% chance, 0.8s stun
+				# print("[EnemyProjectile] ⚡ Aplica Stun!")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # VISUAL UTILITIES
@@ -280,7 +288,7 @@ func _get_element_color() -> Color:
 			return Color(0.6, 0.15, 0.9)
 		"arcane":
 			return Color(0.9, 0.3, 1.0)
-		"poison":
+		"poison", "nature":
 			return Color(0.25, 0.9, 0.2)
 		"lightning":
 			return Color(1.0, 1.0, 0.25)
@@ -307,8 +315,12 @@ func _spawn_hit_effect() -> void:
 		"ice": "res://assets/vfx/abilities/aoe/ice/aoe_freeze_zone_spritesheet.png",
 		"arcane": "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png",
 		"void": "res://assets/vfx/abilities/aoe/void/aoe_void_explosion_spritesheet.png",
+		"dark": "res://assets/vfx/abilities/aoe/void/aoe_void_explosion_spritesheet.png",
+		"shadow": "res://assets/vfx/abilities/aoe/void/aoe_void_explosion_spritesheet.png",
 		"poison": "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png",
-		"lightning": "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png"
+		"nature": "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png",
+		"lightning": "res://assets/vfx/abilities/aoe/rune/aoe_rune_blast_spritesheet.png",
+		"physical": "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png"
 	}
 	
 	var sheet_path = impact_sheets.get(element_type, "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png")

@@ -636,23 +636,37 @@ func _select_option() -> void:
 	_close_panel()
 
 func _on_reroll() -> void:
-	if locked or reroll_count <= 0:
+	if locked:
 		return
 	
 	# BALANCE: Calculate reroll cost (progressive)
 	var reroll_cost = REROLL_BASE_COST + (rerolls_used_this_level * REROLL_COST_STEP)
+	var has_free_rerolls = reroll_count > 0
 	
-	# Check if player has enough coins (if cost > 0)
-	if reroll_cost > 0:
+	# Si no quedan rerolls gratuitos, el costo mínimo es REROLL_COST_STEP
+	if not has_free_rerolls:
+		reroll_cost = maxi(reroll_cost, REROLL_COST_STEP)
+	
+	# Si no hay rerolls gratuitos, DEBE poder pagar con monedas
+	if not has_free_rerolls:
+		var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
+		if not exp_mgr or not "total_coins" in exp_mgr or exp_mgr.total_coins < reroll_cost:
+			# No tiene rerolls ni monedas suficientes
+			var needed = reroll_cost
+			FloatingText.spawn_text(get_viewport().get_visible_rect().size / 2, Localization.L("ui.level_up.need_coins").replace("{cost}", str(needed)), Color.RED)
+			return
+		# Pagar con monedas
+		exp_mgr.total_coins -= reroll_cost
+		if exp_mgr.has_signal("coin_collected"):
+			exp_mgr.coin_collected.emit(-reroll_cost, exp_mgr.total_coins)
+	elif reroll_cost > 0:
+		# Tiene rerolls gratuitos pero el costo progresivo requiere monedas
 		var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
 		if exp_mgr and "total_coins" in exp_mgr:
 			if exp_mgr.total_coins < reroll_cost:
-				# Not enough coins - show feedback
-				FloatingText.spawn_text(get_viewport().get_visible_rect().size / 2, "Need %d coins!" % reroll_cost, Color.RED)
+				FloatingText.spawn_text(get_viewport().get_visible_rect().size / 2, Localization.L("ui.level_up.need_coins").replace("{cost}", str(reroll_cost)), Color.RED)
 				return
-			# Spend the coins
 			exp_mgr.total_coins -= reroll_cost
-			# Emit signal to update UI
 			if exp_mgr.has_signal("coin_collected"):
 				exp_mgr.coin_collected.emit(-reroll_cost, exp_mgr.total_coins)
 	
@@ -663,14 +677,13 @@ func _on_reroll() -> void:
 	if BalanceTelemetry:
 		BalanceTelemetry.add_reroll()
 
-	# Consumir reroll en PlayerStats si es posible
-	if player_stats and player_stats.has_method("consume_reroll"):
-		if not player_stats.consume_reroll():
-			return # No pudo consumir
-		# Actualizar localmente
-		reroll_count = player_stats.current_rerolls
-	else:
-		reroll_count -= 1
+	# Consumir reroll gratuito en PlayerStats solo si tenía disponibles
+	if has_free_rerolls:
+		if player_stats and player_stats.has_method("consume_reroll"):
+			player_stats.consume_reroll()
+			reroll_count = player_stats.current_rerolls
+		else:
+			reroll_count -= 1
 	
 	# -----------------------------------------------------------
 	# LÓGICA DE NUEVOS OBJETOS (Phase 3)
@@ -1044,7 +1057,15 @@ func _update_all_visuals() -> void:
 
 func _is_button_disabled(index: int) -> bool:
 	match index:
-		0: return reroll_count <= 0  # Reroll
+		0:  # Reroll: habilitado si tiene rerolls gratuitos O monedas suficientes
+			if reroll_count > 0:
+				return false
+			# Sin rerolls gratuitos: verificar si puede pagar con monedas
+			var next_cost = maxi(REROLL_BASE_COST + (rerolls_used_this_level * REROLL_COST_STEP), REROLL_COST_STEP)
+			var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
+			if exp_mgr and "total_coins" in exp_mgr and exp_mgr.total_coins >= next_cost:
+				return false
+			return true
 		1: return banish_count <= 0 or options.size() == 0  # Eliminar
 		_: return false  # Saltar siempre disponible
 
@@ -1053,7 +1074,11 @@ func _update_button_counts() -> void:
 	var reroll_count_label = button_panels[0].find_child("Count", true, false) as Label
 	if reroll_count_label:
 		var next_cost = REROLL_BASE_COST + (rerolls_used_this_level * REROLL_COST_STEP)
-		if next_cost > 0:
+		if reroll_count <= 0:
+			# Sin rerolls gratuitos: mostrar solo costo en monedas
+			next_cost = maxi(next_cost, REROLL_COST_STEP)
+			reroll_count_label.text = "🪙%d" % next_cost
+		elif next_cost > 0:
 			reroll_count_label.text = "(%d) 🪙%d" % [reroll_count, next_cost]
 		else:
 			reroll_count_label.text = "(%d)" % reroll_count
