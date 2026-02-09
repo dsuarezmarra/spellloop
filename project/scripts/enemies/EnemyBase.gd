@@ -546,7 +546,7 @@ func _create_elite_aura() -> void:
 	_apply_elite_glow_shader()
 
 func _apply_elite_glow_shader() -> void:
-	"""Aplica un shader de glow intenso y grande al sprite del enemigo élite"""
+	"""Aplica un shader de glow RGB cycling al sprite del enemigo élite"""
 	# Buscar el sprite principal del enemigo
 	var target_sprite: Node = null
 	if animated_sprite:
@@ -557,46 +557,55 @@ func _apply_elite_glow_shader() -> void:
 	if not target_sprite:
 		return
 	
-	# Shader de glow multi-anillo: 3 anillos de muestreo para un aura gruesa y graduada
+	# Shader con glow reducido + transición RGB gaming keyboard "breath"
 	var shader_code = """
 shader_type canvas_item;
 
-uniform vec4 glow_color : source_color = vec4(1.0, 0.6, 0.1, 1.0);
-uniform float glow_intensity : hint_range(0.0, 5.0) = 2.8;
+uniform float glow_intensity : hint_range(0.0, 5.0) = 2.5;
 uniform float pulse_speed : hint_range(0.0, 10.0) = 2.5;
-uniform float glow_size : hint_range(0.0, 50.0) = 16.0;
-uniform float tint_strength : hint_range(0.0, 0.6) = 0.3;
+uniform float glow_size : hint_range(0.0, 50.0) = 8.0;
+uniform float tint_strength : hint_range(0.0, 0.6) = 0.25;
+uniform float color_cycle_speed : hint_range(0.0, 3.0) = 0.4;
+uniform float hue_offset : hint_range(0.0, 1.0) = 0.0;
+uniform float saturation : hint_range(0.0, 1.0) = 0.85;
+
+// HSV → RGB conversion
+vec3 hsv2rgb(float h, float s, float v) {
+	vec3 c = vec3(h, s, v);
+	vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+	return c.z * mix(vec3(1.0), rgb, c.y);
+}
 
 void fragment() {
 	vec4 original = texture(TEXTURE, UV);
 	vec2 ps = vec2(1.0) / vec2(textureSize(TEXTURE, 0));
 	
-	float pulse = 0.65 + 0.35 * sin(TIME * pulse_speed);
+	// Hue cycling — smooth rainbow transition
+	float hue = fract(TIME * color_cycle_speed + hue_offset);
+	vec3 glow_rgb = hsv2rgb(hue, saturation, 1.0);
+	
+	// Pulse breathing
+	float pulse = 0.7 + 0.3 * sin(TIME * pulse_speed);
 	float gs = glow_size * pulse;
 	
-	// Tres anillos de muestreo (12 muestras cada uno) para glow grueso y graduado
+	// Dos anillos de muestreo (8 muestras cada uno) — más eficiente y compacto
 	float ring_outer = 0.0;
-	float ring_mid = 0.0;
 	float ring_inner = 0.0;
 	
-	for (float a = 0.0; a < 6.28; a += 0.524) {
+	for (float a = 0.0; a < 6.28; a += 0.785) {
 		vec2 dir = vec2(cos(a), sin(a));
 		ring_outer = max(ring_outer, texture(TEXTURE, UV + dir * ps * gs).a);
-		ring_mid = max(ring_mid, texture(TEXTURE, UV + dir * ps * gs * 0.6).a);
-		ring_inner = max(ring_inner, texture(TEXTURE, UV + dir * ps * gs * 0.3).a);
+		ring_inner = max(ring_inner, texture(TEXTURE, UV + dir * ps * gs * 0.4).a);
 	}
 	
-	// Ponderar: anillo interno mas fuerte, externo mas suave → degradado natural
-	float glow = ring_inner * 1.0 + ring_mid * 0.75 + ring_outer * 0.45;
+	float glow = ring_inner * 1.0 + ring_outer * 0.6;
 	glow = clamp(glow, 0.0, 1.0);
 	
 	if (original.a < 0.1 && glow > 0.05) {
-		// Pixel vacio cerca del borde → dibujar aura
-		float ga = glow * glow_intensity * pulse * 0.75;
-		COLOR = vec4(glow_color.rgb, clamp(ga, 0.0, 1.0));
+		float ga = glow * glow_intensity * pulse * 0.65;
+		COLOR = vec4(glow_rgb, clamp(ga, 0.0, 0.9));
 	} else if (original.a >= 0.1) {
-		// Pixel del sprite → tinte de color del aura
-		vec3 tinted = mix(original.rgb, glow_color.rgb, tint_strength * pulse);
+		vec3 tinted = mix(original.rgb, glow_rgb, tint_strength * pulse);
 		COLOR = vec4(tinted, original.a);
 	} else {
 		COLOR = original;
@@ -610,18 +619,22 @@ void fragment() {
 	var material = ShaderMaterial.new()
 	material.shader = shader
 	
-	# Colores según tier: amarillo dorado → naranja → rojo intenso
-	var elite_colors = [
-		Color(1.0, 0.85, 0.1, 1.0),   # Amarillo dorado brillante
-		Color(1.0, 0.45, 0.05, 1.0),  # Naranja intenso
-		Color(1.0, 0.15, 0.05, 1.0),  # Rojo fuego
+	# Cada tier tiene un offset de hue diferente + velocidad de ciclo, pero TODOS hacen rainbow
+	var tier_configs = [
+		{"hue_offset": 0.0, "cycle_speed": 0.35, "saturation": 0.80, "glow_size": 7.0},   # Tier 1: RGB suave
+		{"hue_offset": 0.33, "cycle_speed": 0.50, "saturation": 0.85, "glow_size": 8.0},  # Tier 2: RGB medio
+		{"hue_offset": 0.66, "cycle_speed": 0.70, "saturation": 0.90, "glow_size": 9.0},  # Tier 3: RGB intenso + rápido
 	]
-	var color_index = (enemy_tier - 1) % elite_colors.size()
-	material.set_shader_parameter("glow_color", elite_colors[color_index])
-	material.set_shader_parameter("glow_intensity", 2.8)
+	var config_index = (enemy_tier - 1) % tier_configs.size()
+	var cfg = tier_configs[config_index]
+	
+	material.set_shader_parameter("glow_intensity", 2.5)
 	material.set_shader_parameter("pulse_speed", 2.5)
-	material.set_shader_parameter("glow_size", 16.0)
-	material.set_shader_parameter("tint_strength", 0.3)
+	material.set_shader_parameter("glow_size", cfg["glow_size"])
+	material.set_shader_parameter("tint_strength", 0.25)
+	material.set_shader_parameter("color_cycle_speed", cfg["cycle_speed"])
+	material.set_shader_parameter("hue_offset", cfg["hue_offset"])
+	material.set_shader_parameter("saturation", cfg["saturation"])
 	
 	target_sprite.material = material
 
@@ -1221,12 +1234,18 @@ func apply_speed_buff(amount: float, duration: float) -> void:
 
 	speed = _base_speed * (1.0 + amount)
 
+	# Mostrar icono de estado
+	if status_icon_display:
+		status_icon_display.add_effect("speed_buff", duration)
+
 	# Timer para quitar el buff (con verificación de validez)
 	get_tree().create_timer(duration).timeout.connect(func():
 		if not is_instance_valid(self):
 			return
 		if _base_speed > 0:
 			speed = _base_speed * (1.0 - _slow_amount if _is_slowed else 1.0)
+		if status_icon_display:
+			status_icon_display.remove_effect("speed_buff")
 	)
 
 func _count_nearby_pack_members() -> int:

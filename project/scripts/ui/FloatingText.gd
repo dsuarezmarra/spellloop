@@ -37,24 +37,24 @@ const ELEMENT_COLORS := {
 	"light": Color(1.0, 0.95, 0.75),
 }
 
-# Tamaños base (escalados por magnitud)
-const SIZE_DAMAGE_NORMAL: int = 18
-const SIZE_DAMAGE_CRIT: int = 28
-const SIZE_HEAL: int = 20
-const SIZE_PLAYER_DAMAGE: int = 22
-const SIZE_DOT: int = 14
-const SIZE_STATUS: int = 15
-const SIZE_CUSTOM: int = 18
+# Tamaños base (escalados por magnitud) — CARTOON: más grandes y gordos
+const SIZE_DAMAGE_NORMAL: int = 24
+const SIZE_DAMAGE_CRIT: int = 38
+const SIZE_HEAL: int = 26
+const SIZE_PLAYER_DAMAGE: int = 28
+const SIZE_DOT: int = 18
+const SIZE_STATUS: int = 20
+const SIZE_CUSTOM: int = 24
 
 # Escala por magnitud — números más grandes = texto más grande
 const MAGNITUDE_SCALE_MIN: float = 0.85
-const MAGNITUDE_SCALE_MAX: float = 1.6
+const MAGNITUDE_SCALE_MAX: float = 1.7
 const MAGNITUDE_DAMAGE_LOW: float = 10.0
 const MAGNITUDE_DAMAGE_HIGH: float = 500.0
 
-# Outline
-const OUTLINE_SIZE_NORMAL: int = 5
-const OUTLINE_SIZE_CRIT: int = 7
+# Outline — más grueso para estilo cartoon
+const OUTLINE_SIZE_NORMAL: int = 6
+const OUTLINE_SIZE_CRIT: int = 9
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # POOLING SYSTEM
@@ -77,8 +77,14 @@ func _ready() -> void:
 		_is_headless = true
 		return
 
-	# Cargar fuentes custom
-	_font = load("res://assets/ui/fonts/Quicksand-Variable.ttf") as Font
+	# Cargar fuentes custom — Quicksand Bold (cartoon, rounded) como fuente principal
+	var quicksand_base = load("res://assets/ui/fonts/Quicksand-Variable.ttf") as Font
+	if quicksand_base:
+		# Crear variación en Bold (weight 700) para look más cartoon/grueso
+		var bold_variation = FontVariation.new()
+		bold_variation.base_font = quicksand_base
+		bold_variation.variation_opentype = {"wght": 700}
+		_font = bold_variation
 	_font_bold = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf") as Font
 
 	# Pre-warm pool
