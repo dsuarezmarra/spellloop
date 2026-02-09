@@ -72,6 +72,41 @@ func set_phase(phase: int) -> void:
 		_current_phase = clampi(phase, 1, 5)
 		_update_particle_colors()
 
+func set_biome(zone_id: int, _zone_name: String = "") -> void:
+	"""Adapta ligeramente las partículas según la zona (SAFE=0, MEDIUM=1, DANGER=2, DEATH=3).
+	El grueso visual lo controla set_phase(); esto solo ajusta densidad/velocidad por zona."""
+	# Mapear zona a una intensidad extra
+	var density_mult := 1.0
+	var velocity_mult := 1.0
+	match zone_id:
+		0:  # SAFE
+			density_mult = 1.0
+			velocity_mult = 1.0
+		1:  # MEDIUM
+			density_mult = 1.15
+			velocity_mult = 1.1
+		2:  # DANGER
+			density_mult = 1.3
+			velocity_mult = 1.25
+		3:  # DEATH
+			density_mult = 1.5
+			velocity_mult = 1.4
+	for p in _particle_systems:
+		if not is_instance_valid(p):
+			continue
+		# Ajustar cantidad visible (amount no se puede cambiar en runtime en GPUParticles2D,
+		# así que modulamos la escala y velocidad como proxy visual)
+		var mat = p.process_material as ParticleProcessMaterial
+		if mat:
+			var base_vel = PHASE_VELOCITY.get(_current_phase, [5.0, 18.0])
+			mat.initial_velocity_min = base_vel[0] * velocity_mult
+			mat.initial_velocity_max = base_vel[1] * velocity_mult
+			# Escalado sutil extra en zonas peligrosas
+			var base_sc_min = PHASE_SCALE_MIN.get(_current_phase, 0.03)
+			var base_sc_max = PHASE_SCALE_MAX.get(_current_phase, 0.07)
+			mat.scale_min = base_sc_min * density_mult
+			mat.scale_max = base_sc_max * density_mult
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # LIFECYCLE
 # ═══════════════════════════════════════════════════════════════════════════════

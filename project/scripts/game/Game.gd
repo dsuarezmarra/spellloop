@@ -1374,6 +1374,11 @@ func _on_player_zone_changed(_zone_id: int, zone_name: String) -> void:
 			biome_name = arena_manager.get_biome_at_position(player.global_position)
 		hud.update_zone(zone_name, biome_name)
 
+func _update_atmosphere_biome(zone_id: int, zone_name: String) -> void:
+	"""Callback para actualizar partículas ambientales al cambiar de zona."""
+	if ambient_atmosphere and ambient_atmosphere.has_method("set_biome"):
+		ambient_atmosphere.set_biome(zone_id, zone_name)
+
 func _on_player_hit_boundary(damage: float) -> void:
 	## Callback cuando el player toca el borde de la arena
 	if player and player.has_method("take_damage"):
@@ -2131,16 +2136,6 @@ func _update_hud_weapons_from_attack_manager(attack_mgr) -> void:
 				weapons_info.append(info)
 	
 	hud.update_weapons(weapons_info)
-
-func _update_atmosphere_biome(zone_id: int, _zone_name: String) -> void:
-	"""Actualizar partículas ambientales cuando cambia la zona"""
-	if not ambient_atmosphere or not arena_manager:
-		return
-		
-	# Obtener nombre del bioma desde ArenaManager
-	if "selected_biomes" in arena_manager:
-		var biome = arena_manager.selected_biomes.get(zone_id, "Grassland")
-		ambient_atmosphere.set_biome(biome)
 
 func save_session_playtime() -> void:
 	"""Guardar el tiempo jugado en esta sesión específica"""
