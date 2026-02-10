@@ -4,10 +4,10 @@
 [ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_play_normal.png" id="2_btn_play_normal"]
 [ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_play_hover.png" id="3_btn_play_hover"]
 [ext_resource type="Texture2D" path="res://assets/ui/logo/logo_loopialike.png" id="4_logo"]
-[ext_resource type="FontFile" path="res://assets/ui/fonts/CinzelDecorative-Bold.ttf" id="5_font_title"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/LilitaOne-Regular.ttf" id="5_font_title"]
 [ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_secondary_normal.png" id="6_btn_sec_normal"]
 [ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_secondary_hover.png" id="7_btn_sec_hover"]
-[ext_resource type="FontFile" path="res://assets/ui/fonts/Quicksand-Variable.ttf" id="8_font_body"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/Fredoka-Variable.ttf" id="8_font_body"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3

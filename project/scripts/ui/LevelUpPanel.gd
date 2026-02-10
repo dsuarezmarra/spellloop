@@ -1625,17 +1625,31 @@ func _stop_panel_spin_fast(index: int, option: Dictionary) -> void:
 func _start_panel_spin(panel: Control, _index: int) -> void:
 	"""Iniciar efecto de spin en un panel"""
 	var icon_label = panel.find_child("IconLabel", true, false) as Label
+	var icon_texture = panel.find_child("IconTexture", true, false) as TextureRect
 	var name_label = panel.find_child("NameLabel", true, false) as Label
 	var desc_label = panel.find_child("DescLabel", true, false) as Label
 	var type_label = panel.find_child("TypeLabel", true, false) as Label
 	
+	# CRÍTICO: Restaurar visibilidad de los labels para la animación de spin.
+	# Después de la animación anterior, _update_option_panel puede haber:
+	#  - Ocultado IconLabel y mostrado IconTexture (para iconos de imagen)
+	#  - Ocultado NameLabel (para fusiones)
+	# Sin esta restauración, los emojis de spin giran en un label invisible
+	# y la imagen del icono anterior permanece estática.
+	if icon_label:
+		icon_label.visible = true
+	if icon_texture:
+		icon_texture.visible = false
+		icon_texture.texture = null
 	if name_label:
+		name_label.visible = true
 		name_label.text = "???"
 		name_label.modulate.a = 0.5
 	if desc_label:
 		desc_label.text = Localization.L("ui.level_up.spinning")
 		desc_label.modulate.a = 0.3
 	if type_label:
+		type_label.visible = true
 		type_label.text = "🎰"
 	
 	# Crear tween para ciclar iconos

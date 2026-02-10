@@ -541,19 +541,8 @@ func _setup_enemy_visual() -> void:
 		animated_sprite.sprite_scale = enemy_scale
 
 func _create_elite_aura() -> void:
-	"""Crear efecto visual para enemigos élite: shader de glow + aura de suelo animada"""
-	# Siempre aplicar el shader glow (es lo principal)
+	"""Crear efecto visual para enemigos élite: shader de glow"""
 	_apply_elite_glow_shader()
-
-	# Spawn aura de suelo animada (spritesheet) via VFXManager
-	var vfx_mgr = get_node_or_null("/root/VFXManager")
-	if vfx_mgr:
-		# Determinar qué tipo de aura usar según tier
-		var aura_type := "elite_floor"       # Aura base para elites normales
-		if enemy_tier >= 3:
-			aura_type = "elite_rare"         # Aura especial para elites tier 3+
-		if vfx_mgr.has_method("spawn_aura"):
-			vfx_mgr.spawn_aura(aura_type, self, true)
 
 func _apply_elite_glow_shader() -> void:
 	"""Aplica un shader de glow RGB cycling al sprite del enemigo élite"""

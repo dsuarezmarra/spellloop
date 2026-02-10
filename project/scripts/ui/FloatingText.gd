@@ -86,21 +86,21 @@ func _ready() -> void:
 		bold_variation.variation_opentype = {"wght": 700}
 		_font = bold_variation
 	else:
-		# Fallback a Quicksand si Fredoka no existe
-		var quicksand_base = load("res://assets/ui/fonts/Quicksand-Variable.ttf") as Font
-		if quicksand_base:
-			var bold_variation = FontVariation.new()
-			bold_variation.base_font = quicksand_base
-			bold_variation.variation_opentype = {"wght": 700}
-			_font = bold_variation
-	# Fuente para crits/títulos — Fredoka SemiBold más grande, o CinzelDecorative como fallback
+		# Fallback a Fredoka Medium si la variación bold falla
+		var fredoka_fallback = load("res://assets/ui/fonts/Fredoka-Variable.ttf") as Font
+		if fredoka_fallback:
+			var medium_variation = FontVariation.new()
+			medium_variation.base_font = fredoka_fallback
+			medium_variation.variation_opentype = {"wght": 500}
+			_font = medium_variation
+	# Fuente para crits/títulos — Fredoka SemiBold más grande, o LilitaOne como fallback
 	if fredoka_base:
 		var semi_bold_var = FontVariation.new()
 		semi_bold_var.base_font = fredoka_base
 		semi_bold_var.variation_opentype = {"wght": 600}
 		_font_bold = semi_bold_var
 	else:
-		_font_bold = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf") as Font
+		_font_bold = load("res://assets/ui/fonts/LilitaOne-Regular.ttf") as Font
 
 	# Pre-warm pool
 	for i in range(25):

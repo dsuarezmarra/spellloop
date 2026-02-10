@@ -210,8 +210,8 @@ func _build_ui() -> void:
 	title_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	title_label.offset_top = 30
 	title_label.offset_bottom = 90
-	# Cargar fuente Cinzel
-	var font_title = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	# Cargar fuente de título
+	var font_title = load("res://assets/ui/fonts/LilitaOne-Regular.ttf")
 	if font_title:
 		title_label.add_theme_font_override("font", font_title)
 	title_label.add_theme_font_size_override("font_size", 42)
@@ -241,7 +241,7 @@ func _build_ui() -> void:
 	character_name_label.offset_left = -400
 	character_name_label.offset_right = 400
 	# Fuente personalizada para nombre
-	var font_name = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	var font_name = load("res://assets/ui/fonts/LilitaOne-Regular.ttf")
 	if font_name:
 		character_name_label.add_theme_font_override("font", font_name)
 	character_name_label.add_theme_font_size_override("font_size", 32)
@@ -261,8 +261,8 @@ func _build_ui() -> void:
 	character_title_label.offset_bottom = 30
 	character_title_label.offset_left = -400
 	character_title_label.offset_right = 400
-	# Fuente Quicksand para subtítulo
-	var font_body = load("res://assets/ui/fonts/Quicksand-Variable.ttf")
+	# Fuente Fredoka para subtítulo
+	var font_body = load("res://assets/ui/fonts/Fredoka-Variable.ttf")
 	if font_body:
 		character_title_label.add_theme_font_override("font", font_body)
 	character_title_label.add_theme_font_size_override("font_size", 22)

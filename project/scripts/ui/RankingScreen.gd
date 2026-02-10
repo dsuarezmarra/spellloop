@@ -194,7 +194,7 @@ func _create_header() -> void:
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	
 	# Usar fuente del juego
-	var font_title = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	var font_title = load("res://assets/ui/fonts/LilitaOne-Regular.ttf")
 	if font_title:
 		title_label.add_theme_font_override("font", font_title)
 	title_label.add_theme_font_size_override("font_size", 36)
@@ -207,7 +207,7 @@ func _create_tabs() -> void:
 	tabs_container.add_theme_constant_override("separation", 20)
 	main_container.add_child(tabs_container)
 	
-	var font_btn = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	var font_btn = load("res://assets/ui/fonts/LilitaOne-Regular.ttf")
 	var tab_names = ["TOP 100", "MI POSICION", "AMIGOS"]
 	for i in range(3):
 		var btn = Button.new()
@@ -271,7 +271,7 @@ func _create_footer() -> void:
 	footer_container.add_theme_constant_override("separation", 30)
 	main_container.add_child(footer_container)
 	
-	var font_btn = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	var font_btn = load("res://assets/ui/fonts/LilitaOne-Regular.ttf")
 	
 	# Botón selector de mes
 	month_button = Button.new()
@@ -373,7 +373,7 @@ func _show_month_popup() -> void:
 		child.queue_free()
 	month_items.clear()
 	
-	var font_btn = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	var font_btn = load("res://assets/ui/fonts/LilitaOne-Regular.ttf")
 	
 	# Crear items de mes
 	for i in range(month_data.size()):
@@ -1123,8 +1123,8 @@ func _create_entry_panel(entry: Dictionary, index: int) -> Control:
 	hbox.add_theme_constant_override("separation", 15)
 	panel.add_child(hbox)
 	
-	var font_entry = load("res://assets/ui/fonts/Quicksand-Variable.ttf")
-	var font_bold = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	var font_entry = load("res://assets/ui/fonts/Fredoka-Variable.ttf")
+	var font_bold = load("res://assets/ui/fonts/LilitaOne-Regular.ttf")
 	
 	# Posición
 	var rank_label = Label.new()
@@ -1212,8 +1212,8 @@ func _create_detail_panel(entry: Dictionary) -> Control:
 	main_vbox.add_theme_constant_override("separation", 15)
 	panel.add_child(main_vbox)
 	
-	var font_entry = load("res://assets/ui/fonts/Quicksand-Variable.ttf")
-	var font_bold = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
+	var font_entry = load("res://assets/ui/fonts/Fredoka-Variable.ttf")
+	var font_bold = load("res://assets/ui/fonts/LilitaOne-Regular.ttf")
 	
 	# ═══════════════════════════════════════════════════════════════════════
 	# FILA 1: Info de run
