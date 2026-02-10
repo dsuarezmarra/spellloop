@@ -94,6 +94,14 @@ func _ready() -> void:
 func _notification(what: int) -> void:
 	# Pausar automáticamente cuando el juego pierde el foco
 	match what:
+		NOTIFICATION_WM_CLOSE_REQUEST:
+			# Finalizar telemetría al cerrar la ventana
+			if game_running:
+				_end_balance_telemetry("window_closed")
+				game_running = false
+				var game_manager = get_tree().root.get_node_or_null("GameManager")
+				if game_manager and game_manager.has_method("end_current_run"):
+					game_manager.end_current_run("window_closed")
 		NOTIFICATION_APPLICATION_FOCUS_OUT:
 			if game_running and not is_paused and not level_up_panel_active:
 				# Solo auto-pausar si NO estaba ya pausado por otro motivo
@@ -598,6 +606,11 @@ func _start_game() -> void:
 	session_start_time = 0.0
 	is_paused = false
 	
+	# CRÍTICO: Activar GameManager para que DifficultyManager funcione
+	var game_manager = get_tree().root.get_node_or_null("GameManager")
+	if game_manager and game_manager.has_method("start_new_run"):
+		game_manager.start_new_run()
+	
 	# Iniciar música de gameplay
 	AudioManager.play_music("music_gameplay_loop")
 
@@ -633,6 +646,11 @@ func _resume_saved_game() -> void:
 	"""Restaurar el estado de una partida guardada"""
 	game_running = true
 	is_paused = false
+
+	# CRÍTICO: Activar GameManager para que DifficultyManager funcione
+	var game_manager = get_tree().root.get_node_or_null("GameManager")
+	if game_manager and game_manager.has_method("start_new_run"):
+		game_manager.start_new_run()
 
 	# Restaurar tiempo de juego
 	game_time = _saved_state.get("game_time", 0.0)
@@ -974,12 +992,18 @@ func _on_quit_to_menu() -> void:
 	if game_running:
 		_end_balance_telemetry("quit_to_menu")
 		game_running = false
+		var game_manager = get_tree().root.get_node_or_null("GameManager")
+		if game_manager and game_manager.has_method("end_current_run"):
+			game_manager.end_current_run("quit_to_menu")
 
 func _exit_tree() -> void:
 	"""Safety net: finalizar telemetría si la escena se destruye con run activa."""
 	if game_running:
 		_end_balance_telemetry("exit_tree")
 		game_running = false
+		var game_manager = get_tree().root.get_node_or_null("GameManager")
+		if game_manager and game_manager.has_method("end_current_run"):
+			game_manager.end_current_run("exit_tree")
 
 func _update_hud() -> void:
 	if not hud:
@@ -1799,6 +1823,11 @@ func add_gold_stat(amount: int) -> void:
 func add_healing_stat(amount: int) -> void:
 	"""Trackear curación para estadísticas"""
 	run_stats["healing_done"] += amount
+	# Reportar a sistemas de telemetría
+	if BalanceTelemetry:
+		BalanceTelemetry.add_healing(amount)
+	if BalanceDebugger:
+		BalanceDebugger.log_heal(float(amount), "heal")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # BALANCE TELEMETRY HELPERS
@@ -1900,8 +1929,9 @@ func _end_balance_telemetry(reason: String = "death") -> void:
 	# ═══════════════════════════════════════════════════════════════════════════
 	var killed_by := "unknown"
 	var death_context := {}
-	if player and player.has_method("get_death_context"):
-		death_context = player.get_death_context()
+	var base_player = _get_base_player()
+	if base_player and base_player.has_method("get_death_context"):
+		death_context = base_player.get_death_context()
 		killed_by = death_context.get("killer", "unknown")
 
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1915,12 +1945,18 @@ func _end_balance_telemetry(reason: String = "death") -> void:
 		duration_s = game_time  # Fallback a game_time
 
 	# ═══════════════════════════════════════════════════════════════════════════
-	# 3. AUTHORITATIVE STATS — Fuentes correctas, no run_stats
+	# 3. AUTHORITATIVE STATS — run_stats como fuente primaria, BalanceDebugger como fallback
 	# ═══════════════════════════════════════════════════════════════════════════
 	var debugger_metrics = BalanceDebugger.get_current_metrics() if BalanceDebugger else {}
-	var damage_dealt = debugger_metrics.get("damage_dealt", {}).get("total", run_stats.get("damage_dealt", 0))
-	var damage_taken = debugger_metrics.get("mitigation", {}).get("damage_final", run_stats.get("damage_taken", 0))
-	var healing_done = int(debugger_metrics.get("sustain", {}).get("total", float(run_stats.get("healing_done", 0))))
+	var damage_dealt = run_stats.get("damage_dealt", 0)
+	if damage_dealt <= 0:
+		damage_dealt = debugger_metrics.get("damage_dealt", {}).get("total", 0)
+	var damage_taken = run_stats.get("damage_taken", 0)
+	if damage_taken <= 0:
+		damage_taken = int(debugger_metrics.get("mitigation", {}).get("damage_final", 0))
+	var healing_done = run_stats.get("healing_done", 0)
+	if healing_done <= 0:
+		healing_done = int(debugger_metrics.get("sustain", {}).get("total", 0.0))
 	var xp_total = debugger_metrics.get("progression", {}).get("xp_total", run_stats.get("xp_total", 0))
 
 	# Gold from ExperienceManager (authoritative)

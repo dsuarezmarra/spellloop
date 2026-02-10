@@ -57,6 +57,10 @@ var zigzag_direction: float = 1.0
 # Dirección actual del enemigo (para animación)
 var current_direction: Vector2 = Vector2.DOWN
 
+# Cache de referencias para evitar lookups de grupo cada frame
+var _cached_player_stats: Node = null
+var _cached_decor_manager: Node = null
+
 func _enter_tree() -> void:
 	var perf_tracker = get_node_or_null("/root/PerfTracker")
 	if perf_tracker:
@@ -794,12 +798,11 @@ func _physics_process(delta: float) -> void:
 	# -----------------------------------------------------------
 	# LÓGICA DE NUEVOS OBJETOS (Phase 4)
 	# 8. Crono-Salto (Chrono Jump): Enemigos 50% más lentos
-	# Consultar PlayerStats (cachear si es posible, pero por ahora directo para simplicidad)
-	if player_ref and is_instance_valid(player_ref) and player_ref.has_method("get_player_stats"):
-		# Try to access global player stats via group to be safe
-		var ps = get_tree().get_first_node_in_group("player_stats")
-		if ps and ps.has_method("get_stat") and ps.get_stat("chrono_jump_active") > 0:
-			movement *= 0.5
+	# Cachear referencia a PlayerStats
+	if not is_instance_valid(_cached_player_stats):
+		_cached_player_stats = get_tree().get_first_node_in_group("player_stats")
+	if _cached_player_stats and _cached_player_stats.has_method("get_stat") and _cached_player_stats.get_stat("chrono_jump_active") > 0:
+		movement *= 0.5
 	# -----------------------------------------------------------
 
 	# Calcular separación de otros enemigos
@@ -814,11 +817,12 @@ func _physics_process(delta: float) -> void:
 		
 		# Aplicar colisión con decorados
 		# Usar offset hacia los pies del enemigo (similar a player pero más pequeño)
-		var decor_manager = get_tree().get_first_node_in_group("decor_collision_manager")
-		if decor_manager and decor_manager.has_method("check_collision_fast"):
+		if not is_instance_valid(_cached_decor_manager):
+			_cached_decor_manager = get_tree().get_first_node_in_group("decor_collision_manager")
+		if _cached_decor_manager and _cached_decor_manager.has_method("check_collision_fast"):
 			var feet_offset = 25.0  # Enemigos son más pequeños que el player
 			var collision_pos = global_position + Vector2(0, feet_offset)
-			var push = decor_manager.check_collision_fast(collision_pos, 12.0)
+			var push = _cached_decor_manager.check_collision_fast(collision_pos, 12.0)
 			if push.length_squared() > 0.1:
 				global_position += push
 
@@ -1163,9 +1167,9 @@ func _spawn_fire_trail() -> void:
 	)
 	visual.queue_redraw()
 
-	# Timer para actualizar animación
+	# Timer para actualizar animación (150ms = 6.7 FPS, suficiente para fuego ambiental)
 	var anim_timer = Timer.new()
-	anim_timer.wait_time = 0.05
+	anim_timer.wait_time = 0.15
 	anim_timer.autostart = true
 	trail.add_child(anim_timer)
 	anim_timer.timeout.connect(func():
@@ -1185,18 +1189,19 @@ func _spawn_fire_trail() -> void:
 	damage_timer.autostart = true
 	trail.add_child(damage_timer)
 
+	# Cachear referencia al player para evitar lookup cada 0.5s
+	var _trail_player_ref = get_tree().get_first_node_in_group("player")
 	damage_timer.timeout.connect(func():
 		if not is_instance_valid(trail):
 			return
-		# Buscar player en el área
-		var players = get_tree().get_nodes_in_group("player")
-		for p in players:
-			if is_instance_valid(p):
-				var dist = p.global_position.distance_to(trail.global_position)
-				if dist <= trail_radius:
-					if p.has_method("take_damage"):
-						p.call("take_damage", trail_damage, "fire")
-						# print("[EnemyBase] 🔥 Fire trail daña a player: %d" % trail_damage)
+		# Verificar player cacheado
+		if not is_instance_valid(_trail_player_ref):
+			_trail_player_ref = get_tree().get_first_node_in_group("player")
+		if _trail_player_ref:
+			var dist = _trail_player_ref.global_position.distance_to(trail.global_position)
+			if dist <= trail_radius:
+				if _trail_player_ref.has_method("take_damage"):
+					_trail_player_ref.call("take_damage", trail_damage, "fire")
 	)
 
 	# Auto-destruir después de duration
@@ -1214,15 +1219,12 @@ func _buff_nearby_allies() -> void:
 	"""Buffear aliados cercanos"""
 	var buff_radius = modifiers.get("buff_radius", 150.0)
 
-	for enemy in get_tree().get_nodes_in_group("enemies"):
-		if enemy == self or not is_instance_valid(enemy):
-			continue
-
-		if enemy.global_position.distance_to(global_position) <= buff_radius:
-			# Aplicar buff de velocidad temporal
-			var speed_bonus = modifiers.get("buff_speed_bonus", 0.15)
-			if enemy.has_method("apply_speed_buff"):
-				enemy.apply_speed_buff(speed_bonus, modifiers.get("buff_duration", 5.0))
+	var nearby = SpatialGrid.get_nearby_excluding(global_position, buff_radius, self)
+	for enemy in nearby:
+		# Aplicar buff de velocidad temporal
+		var speed_bonus = modifiers.get("buff_speed_bonus", 0.15)
+		if enemy.has_method("apply_speed_buff"):
+			enemy.apply_speed_buff(speed_bonus, modifiers.get("buff_duration", 5.0))
 
 	# print("[EnemyBase] 💪 %s buffea aliados cercanos!" % enemy_id)
 
@@ -1253,12 +1255,10 @@ func _count_nearby_pack_members() -> int:
 	var pack_radius = modifiers.get("pack_radius", 200.0)
 	var max_pack = modifiers.get("max_pack_bonus", 3)
 
-	for enemy in get_tree().get_nodes_in_group("enemies"):
-		if enemy == self or not is_instance_valid(enemy):
-			continue
-
+	var nearby = SpatialGrid.get_nearby_excluding(global_position, pack_radius, self)
+	for enemy in nearby:
 		# Solo contar si es del mismo tipo
-		if enemy.get("archetype") == "pack" and enemy.global_position.distance_to(global_position) <= pack_radius:
+		if enemy.get("archetype") == "pack":
 			count += 1
 			if count >= max_pack:
 				break
@@ -1271,13 +1271,10 @@ func _get_nearby_allies_center() -> Vector2:
 	var count = 0
 	var buff_radius = modifiers.get("buff_radius", 150.0)
 
-	for enemy in get_tree().get_nodes_in_group("enemies"):
-		if enemy == self or not is_instance_valid(enemy):
-			continue
-
-		if enemy.global_position.distance_to(global_position) <= buff_radius:
-			center += enemy.global_position
-			count += 1
+	var nearby = SpatialGrid.get_nearby_excluding(global_position, buff_radius, self)
+	for enemy in nearby:
+		center += enemy.global_position
+		count += 1
 
 	if count > 0:
 		center /= count
@@ -1292,12 +1289,10 @@ func _calculate_separation() -> Vector2:
 	if not get_tree():
 		return separation
 
-	for other in get_tree().get_nodes_in_group("enemies"):
-		if other == self or not is_instance_valid(other):
-			continue
-
+	var nearby = SpatialGrid.get_nearby_excluding(global_position, separation_radius, self)
+	for other in nearby:
 		var dist = global_position.distance_to(other.global_position)
-		if dist < separation_radius and dist > 0:
+		if dist > 0:
 			# Empujar lejos del otro enemigo
 			var push_direction = (global_position - other.global_position).normalized()
 			var push_strength = (separation_radius - dist) / separation_radius
@@ -1437,13 +1432,13 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 		if game_node and game_node.has_method("add_damage_stat"):
 			game_node.add_damage_stat(final_damage)
 	
-	# AUDIT: Report damage to RunAuditTracker
+	# AUDIT: Preparar tracking para RunAuditTracker
+	var _audit_weapon_id := "unknown"
+	var _audit_is_crit: bool = false
 	if final_damage > 0 and RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
-		var weapon_id := "unknown"
-		var is_crit: bool = final_damage >= int(amount * 1.5)
-		if _attacker and _attacker.has_meta("weapon_id"):
-			weapon_id = _attacker.get_meta("weapon_id")
-		RunAuditTracker.report_damage_dealt(weapon_id, weapon_id, final_damage, is_crit)
+		_audit_is_crit = final_damage >= int(amount * 1.5)
+		if _attacker and is_instance_valid(_attacker) and _attacker.has_meta("weapon_id"):
+			_audit_weapon_id = _attacker.get_meta("weapon_id")
 
 	# Aplicar daño a través del HealthComponent
 	if health_component:
@@ -1455,6 +1450,12 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 		if hp <= 0:
 			die()
 	
+	# AUDIT: Report damage + kill DESPUÉS de aplicar daño (para saber si murió)
+	if final_damage > 0 and RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
+		var hp_now = health_component.current_health if health_component else hp
+		var was_killed = hp_now <= 0
+		RunAuditTracker.report_damage_dealt(_audit_weapon_id, _audit_weapon_id, final_damage, _audit_is_crit, [], was_killed)
+
 	# Sistema de OVERKILL: Transferir daño excedente a enemigos cercanos
 	# PERO NO si este daño vino de otro overkill (prevenir recursión infinita)
 	var hp_after = health_component.current_health if health_component else hp
@@ -1478,18 +1479,12 @@ func _apply_overkill_damage(excess_damage: int) -> void:
 	if transfer_damage <= 0:
 		return
 	
-	# Buscar enemigos cercanos (excluyéndonos)
+	# Buscar enemigos cercanos (excluyéndonos) usando SpatialGrid
 	const OVERKILL_RANGE: float = 150.0
-	var enemies = get_tree().get_nodes_in_group("enemies")
 	var nearby_enemies: Array = []
 	
-	for enemy in enemies:
-		if enemy == self or not is_instance_valid(enemy):
-			continue
-		if not enemy.has_method("take_damage"):
-			continue
-		var dist = global_position.distance_to(enemy.global_position)
-		if dist <= OVERKILL_RANGE:
+	for enemy in SpatialGrid.get_nearby_excluding(global_position, OVERKILL_RANGE, self):
+		if enemy.has_method("take_damage"):
 			nearby_enemies.append(enemy)
 	
 	if nearby_enemies.is_empty():

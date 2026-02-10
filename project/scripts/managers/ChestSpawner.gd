@@ -242,6 +242,14 @@ func _on_chest_opened(chest: Node2D, items: Array) -> void:
 			"loot_ids": loot_ids,
 			"fusion_obtained": fusion_obtained
 		})
+		
+		# AUDIT: Reportar apertura de cofre a RunAuditTracker
+		if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
+			var has_fusion = fusion_obtained != ""
+			var fusion_data = {}
+			if has_fusion:
+				fusion_data = {"id": fusion_obtained}
+			RunAuditTracker.report_chest_opened(chest_type_name, loot_ids, has_fusion, fusion_data)
 
 func _on_chest_removed(chest: Node2D) -> void:
 	"""Cofre fue removido del árbol"""

@@ -24,6 +24,9 @@ var max_trail_length: int = 18  # Estela más larga para efecto más dramático
 var _lifetime_timer: float = 0.0
 var _time: float = 0.0
 
+# Cache de referencias
+var _cached_decor_manager: Node = null
+
 func _ready() -> void:
 	# CRÍTICO: Respetar la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -45,11 +48,10 @@ func _ready() -> void:
 	collision.shape = shape
 	add_child(collision)
 	
-	# Crear visual (Sprite)
-	_setup_sprite_visual()
-	
-	# Crear trail Line2D
-	_setup_trail()
+	# NOTA: El visual (sprite + trail) se crea en initialize() para que use
+	# el element_type correcto. _ready() se ejecuta al hacer add_child() ANTES
+	# de que initialize() asigne el elemento, lo que causaba que todos los
+	# proyectiles usaran el visual de "physical" (mapeado a arcane/púrpura).
 	
 	# Conectar señal de colisión
 	body_entered.connect(_on_body_entered)
@@ -173,6 +175,18 @@ func initialize(p_direction: Vector2, p_speed: float, p_damage: int, p_lifetime:
 	# Limpiar trail al reinicializar
 	trail_positions.clear()
 	
+	# Crear visual con el elemento correcto (movido de _ready)
+	# Eliminar visual anterior si existe (reuso de proyectiles)
+	if visual_node and is_instance_valid(visual_node):
+		visual_node.queue_free()
+		visual_node = null
+	if _trail_line and is_instance_valid(_trail_line):
+		_trail_line.queue_free()
+		_trail_line = null
+	
+	_setup_sprite_visual()
+	_setup_trail()
+	
 	if direction != Vector2.ZERO:
 		rotation = direction.angle()
 
@@ -188,10 +202,11 @@ func _physics_process(delta: float) -> void:
 	# Mover
 	global_position += direction * speed * delta
 	
-	# Verificar colisión con decorados
-	var decor_manager = get_tree().get_first_node_in_group("decor_collision_manager")
-	if decor_manager and decor_manager.has_method("check_collision_fast"):
-		var push = decor_manager.check_collision_fast(global_position, 8.0)
+	# Verificar colisión con decorados (referencia cacheada)
+	if not is_instance_valid(_cached_decor_manager):
+		_cached_decor_manager = get_tree().get_first_node_in_group("decor_collision_manager")
+	if _cached_decor_manager and _cached_decor_manager.has_method("check_collision_fast"):
+		var push = _cached_decor_manager.check_collision_fast(global_position, 8.0)
 		if push.length_squared() > 1.0:
 			queue_free()
 			return
@@ -201,9 +216,6 @@ func _physics_process(delta: float) -> void:
 		_trail_line.clear_points()
 		for pos in trail_positions:
 			_trail_line.add_point(pos)
-	
-	# CHECK MANUAL de colisión con player (más fiable que body_entered)
-	_check_player_collision_distance()
 	
 	# Lifetime
 	_lifetime_timer -= delta

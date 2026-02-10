@@ -1227,15 +1227,21 @@ func _perform_ranged_attack() -> void:
 	# Posicionar en enemigo
 	projectile.global_position = enemy.global_position
 	
-	# Calcular direcciÃƒÂ³n hacia jugador
+	# Calcular dirección hacia jugador
 	var direction = (player.global_position - enemy.global_position).normalized()
 	
-	# Configurar proyectil
+	# PRIMERO añadir al árbol (necesario para que initialize() funcione correctamente)
+	var parent = enemy.get_parent()
+	if parent:
+		parent.add_child(projectile)
+	else:
+		get_tree().root.add_child(projectile)
+	
+	# DESPUÉS configurar proyectil (initialize crea visual que necesita estar en el árbol)
 	if projectile.has_method("initialize"):
 		projectile.initialize(direction, projectile_speed, attack_damage, 5.0, element_type)
 	else:
 		pass  # Bloque else
-		# AsignaciÃƒÂ³n directa
 		if "direction" in projectile:
 			projectile.direction = direction
 		if "speed" in projectile:
@@ -1243,14 +1249,6 @@ func _perform_ranged_attack() -> void:
 		if "damage" in projectile:
 			projectile.damage = attack_damage
 	
-	# AÃƒÂ±adir al ÃƒÂ¡rbol
-	var parent = enemy.get_parent()
-	if parent:
-		parent.add_child(projectile)
-	else:
-		get_tree().root.add_child(projectile)
-	
-	# print("[EnemyAttackSystem] Ã°Å¸Å½Â¯ %s disparÃƒÂ³ proyectil hacia player" % enemy.name)
 	attacked_player.emit(attack_damage, false)
 
 func _create_dynamic_projectile() -> void:
