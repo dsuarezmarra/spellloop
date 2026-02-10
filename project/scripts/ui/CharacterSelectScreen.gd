@@ -647,12 +647,12 @@ func _update_stats_display() -> void:
 		{"key": "armor", "name": "ARM", "base": 0, "format": "%.0f", "invert": false},
 		# Row 2: Combat stats
 		{"key": "damage_mult", "name": "DMG", "base": 1.0, "format": "x%.2f", "invert": false},
-		{"key": "attack_speed_mult", "name": "SPD", "base": 1.0, "format": "x%.2f", "invert": false},
+		{"key": "cooldown_mult", "name": "SPD", "base": 1.0, "format": "x%.2f", "invert": true},
 		{"key": "area_mult", "name": "AREA", "base": 1.0, "format": "x%.2f", "invert": false},
 		# Row 3: Utility stats
 		{"key": "pickup_range", "name": "RNG", "base": 100, "format": "%.0f", "invert": false},
 		{"key": "health_regen", "name": "REGEN", "base": 0.0, "format": "%.1f", "invert": false},
-		{"key": "luck", "name": "LUCK", "base": 0.0, "format": "%.0f%%", "invert": false},
+		{"key": "luck", "name": "LUCK", "base": 0.0, "format": "%.0f%%", "invert": false, "display_mult": 100.0},
 	]
 
 	for stat_info in stat_display:
@@ -660,8 +660,11 @@ func _update_stats_display() -> void:
 		var is_better = value > stat_info.base if not stat_info.invert else value < stat_info.base
 		var is_worse = value < stat_info.base if not stat_info.invert else value > stat_info.base
 
+		# Multiplicar para display (ej: luck 0.15 → 15%)
+		var display_value = value * stat_info.get("display_mult", 1.0)
+
 		var stat_label = Label.new()
-		stat_label.text = stat_info.name + ": " + (stat_info.format % value)
+		stat_label.text = stat_info.name + ": " + (stat_info.format % display_value)
 		stat_label.add_theme_font_size_override("font_size", 13)
 		stat_label.custom_minimum_size = Vector2(100, 0)  # Ancho mínimo para columnas uniformes
 		stat_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
