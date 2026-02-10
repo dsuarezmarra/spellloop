@@ -185,7 +185,7 @@ func end_run(context: Dictionary = {}) -> void:
 		"event": "run_end",
 		"time_survived": context.get("time_survived", 0.0),
 		"duration_s": context.get("duration_s", 0.0),
-		"score_final": context.get("score_final", 0),
+		"score_final": context.get("score_total", 0),
 		"end_reason": context.get("end_reason", "death"),
 		"killed_by": context.get("killed_by", "unknown"),
 		

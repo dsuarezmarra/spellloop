@@ -124,7 +124,7 @@ func get_run_summary() -> Dictionary:
 	"""Resumen ligero para integrar en summary.json y audit_report.md."""
 	var top_picked: Dictionary = {}  # upgrade_id -> count
 	for entry in _audit_log:
-		var uid = entry.get("id", "unknown")
+		var uid = entry.get("id", entry.get("name", "unknown"))
 		top_picked[uid] = top_picked.get(uid, 0) + 1
 
 	# Sort by count descending
@@ -152,7 +152,7 @@ func audit_player_upgrade(upgrade_data: Dictionary, stats_before: Dictionary, st
 		return {}
 
 	_pickup_counter += 1
-	var upgrade_id = upgrade_data.get("id", "unknown")
+	var upgrade_id = upgrade_data.get("id", upgrade_data.get("name", "unknown"))
 	var effects = upgrade_data.get("effects", [])
 
 	var result := {
@@ -323,7 +323,7 @@ func audit_global_weapon_upgrade(upgrade_data: Dictionary, gws_before: Dictionar
 		return {}
 
 	_pickup_counter += 1
-	var upgrade_id = upgrade_data.get("id", "unknown")
+	var upgrade_id = upgrade_data.get("id", upgrade_data.get("name", "unknown"))
 	var effects = upgrade_data.get("effects", [])
 
 	var result := {

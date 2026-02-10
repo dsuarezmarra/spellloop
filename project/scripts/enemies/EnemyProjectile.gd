@@ -290,16 +290,16 @@ func _apply_element_effect(target: Node) -> void:
 # ══════════════════════════════════════════════════════════════════════════════
 
 func _get_element_color() -> Color:
-	"""Obtener color según elemento - más vibrantes"""
+	"""Obtener color según elemento - suavizados para no tapar la pantalla"""
 	match element_type:
 		"fire":
 			return Color(1.0, 0.35, 0.1)
 		"ice":
 			return Color(0.2, 0.75, 1.0)
 		"dark", "shadow", "void":
-			return Color(0.6, 0.15, 0.9)
+			return Color(0.5, 0.3, 0.7)  # Púrpura suave
 		"arcane":
-			return Color(0.9, 0.3, 1.0)
+			return Color(0.7, 0.4, 0.9)  # Magenta suave
 		"poison", "nature":
 			return Color(0.25, 0.9, 0.2)
 		"lightning":
@@ -345,8 +345,9 @@ func _spawn_hit_effect() -> void:
 		sprite.hframes = 4  # Todos los AOE sheets son 4x2
 		sprite.vframes = 2
 		sprite.frame = 0
-		sprite.scale = Vector2(0.5, 0.5)  # Más pequeño para impacto de proyectil
-		sprite.modulate = _get_element_color()
+		sprite.scale = Vector2(0.35, 0.35)  # Pequeño para impacto de proyectil
+		var elem_color = _get_element_color()
+		sprite.modulate = Color(elem_color.r, elem_color.g, elem_color.b, 0.7)  # Semi-transparente
 		
 		effect.add_child(sprite)
 		
@@ -377,8 +378,8 @@ func _spawn_hit_effect() -> void:
 		var progress = 0.0
 		
 		fallback.draw.connect(func():
-			var r = 15.0 * (1.0 + progress)
-			fallback.draw_circle(Vector2.ZERO, r, Color(color.r, color.g, color.b, 0.5 * (1.0 - progress)))
+			var r = 12.0 * (1.0 + progress)
+			fallback.draw_circle(Vector2.ZERO, r, Color(color.r, color.g, color.b, 0.3 * (1.0 - progress)))
 		)
 		
 		var tween = effect.create_tween()

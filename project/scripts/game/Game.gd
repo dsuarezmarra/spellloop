@@ -643,7 +643,7 @@ func _start_game() -> void:
 	call_deferred("_deferred_weapon_hud_update")
 	
 	# BALANCE TELEMETRY: Start run logging
-	_start_balance_telemetry()
+	call_deferred("_start_balance_telemetry")
 
 func _resume_saved_game() -> void:
 	"""Restaurar el estado de una partida guardada"""
@@ -1154,6 +1154,31 @@ func _spawn_reward_chest(pos: Vector2, rewards_config: Dictionary) -> void:
 		rarity_min = 1 
 		
 	chest.initialize(pos, type_enum, player, rarity_min)
+	
+	# Conectar señal para telemetría de cofres de recompensa
+	if chest.has_signal("chest_opened"):
+		chest.chest_opened.connect(func(c, items):
+			var chest_type_name := "normal"
+			if "chest_type" in c:
+				match c.chest_type:
+					TreasureChest.ChestType.ELITE: chest_type_name = "elite"
+					TreasureChest.ChestType.BOSS: chest_type_name = "boss"
+					TreasureChest.ChestType.WEAPON: chest_type_name = "weapon"
+			var loot_ids: Array = []
+			var fusion_obtained := ""
+			for item in items:
+				if item is Dictionary:
+					var item_id: String = item.get("id", item.get("name", "unknown"))
+					loot_ids.append(item_id)
+					if item.get("is_fusion", false) or item.get("type", "") == "fusion":
+						fusion_obtained = item_id
+			if BalanceTelemetry:
+				BalanceTelemetry.log_chest_opened({"chest_type": chest_type_name, "loot_ids": loot_ids, "fusion_obtained": fusion_obtained})
+			if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
+				var has_fusion = fusion_obtained != ""
+				var fusion_data = {"id": fusion_obtained} if has_fusion else {}
+				RunAuditTracker.report_chest_opened(chest_type_name, loot_ids, has_fusion, fusion_data)
+		)
 
 
 func _trigger_kill_explosion(pos: Vector2, damage: float) -> void:

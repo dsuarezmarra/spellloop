@@ -616,16 +616,16 @@ func _apply_status_flash() -> void:
 		flash_color = Color(0.6, 0.8, 1.0, 1.0)  # Azul hielo
 		should_flash = true
 	elif _weakness_timer > 0:
-		flash_color = Color(0.8, 0.5, 0.9, 1.0)  # Morado weakness
+		flash_color = Color(0.85, 0.7, 0.9, 1.0)  # Lavanda suave weakness
 		should_flash = true
 	elif _curse_timer > 0:
-		flash_color = Color(0.6, 0.4, 0.7, 1.0)  # Morado oscuro curse
+		flash_color = Color(0.75, 0.65, 0.8, 1.0)  # Lavanda oscuro curse
 		should_flash = true
 	
 	if should_flash:
-		# Alternar entre color de estado y blanco
-		var pulse = sin(_status_aura_timer * 3.0)
-		if pulse > 0:
+		# Alternar entre color de estado y blanco - flash MÁS corto
+		var pulse = sin(_status_aura_timer * 4.0)
+		if pulse > 0.3:
 			animated_sprite.modulate = flash_color
 		else:
 			animated_sprite.modulate = Color.WHITE
@@ -825,9 +825,20 @@ func _process_frame_damage() -> void:
 	var _hp_after = health_component.current_health if health_component else 0
 	var _hp_before = _hp_after + final_applied_damage
 	var _now_ms = Time.get_ticks_msec()
+	# Capturar si el atacante es elite/boss para death tracking
+	var _hit_is_elite := false
+	var _hit_is_boss := false
+	if is_instance_valid(primary_hit.attacker):
+		if "is_elite" in primary_hit.attacker:
+			_hit_is_elite = primary_hit.attacker.is_elite
+		if "is_boss" in primary_hit.attacker:
+			_hit_is_boss = primary_hit.attacker.is_boss
+	
 	_damage_ring_buffer.append({
 		"timestamp_ms": _now_ms,
 		"enemy_id": _hit_enemy_id,
+		"is_elite": _hit_is_elite,
+		"is_boss": _hit_is_boss,
 		"attack_id": _hit_attack_id,
 		"damage_type": _hit_damage_type,
 		"source_kind": _hit_source_kind,
@@ -966,24 +977,25 @@ func _apply_thorns_damage(attacker: Node, damage_received: int, player_stats: No
 			attacker.apply_stun(thorns_stun)
 
 func _play_damage_flash(element: String) -> void:
-	"""Flash de daño según el elemento"""
+	"""Flash de daño según el elemento - colores suaves para no tapar la pantalla"""
 	if not animated_sprite:
 		return
 	
+	# Colores con valores moderados (sin HDR >1.0) para evitar cubrir la pantalla
 	var flash_color: Color
 	match element:
 		"fire":
-			flash_color = Color(2.0, 0.6, 0.2, 1.0)
+			flash_color = Color(1.0, 0.5, 0.3, 1.0)
 		"ice":
-			flash_color = Color(0.6, 0.9, 2.0, 1.0)
+			flash_color = Color(0.5, 0.7, 1.0, 1.0)
 		"poison":
-			flash_color = Color(0.6, 2.0, 0.4, 1.0)
+			flash_color = Color(0.5, 1.0, 0.4, 1.0)
 		"dark", "void", "shadow":
-			flash_color = Color(1.0, 0.5, 1.0, 1.0)
+			flash_color = Color(0.8, 0.6, 0.8, 1.0)  # Lavanda suave, NO magenta
 		"lightning":
-			flash_color = Color(2.0, 2.0, 0.5, 1.0)
+			flash_color = Color(1.0, 1.0, 0.5, 1.0)
 		_:
-			flash_color = Color(2.0, 0.3, 0.3, 1.0)  # Rojo por defecto
+			flash_color = Color(1.0, 0.4, 0.4, 1.0)  # Rojo suave por defecto
 	
 	# Cancelar tween anterior para evitar acumulación de color
 	if _damage_flash_tween and _damage_flash_tween.is_valid():
@@ -991,7 +1003,7 @@ func _play_damage_flash(element: String) -> void:
 	
 	animated_sprite.modulate = flash_color
 	_damage_flash_tween = create_tween()
-	_damage_flash_tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.2)
+	_damage_flash_tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.15)
 	
 	# Reproducir animación de hit si está disponible
 	_play_hit_animation()
@@ -1222,8 +1234,15 @@ func get_death_context() -> Dictionary:
 	if _is_cursed:
 		status_effects.append("cursed")
 
+	# Construir killer ID con prefijo elite/boss si aplica
+	var killer_prefix = ""
+	if last_hit.get("is_boss", false):
+		killer_prefix = "boss_"
+	elif last_hit.get("is_elite", false):
+		killer_prefix = "elite_"
+	
 	return {
-		"killer": last_hit.enemy_id,
+		"killer": killer_prefix + last_hit.enemy_id,
 		"killer_attack": last_hit.attack_id,
 		"killer_damage_type": last_hit.get("damage_type", last_hit.get("element", "physical")),
 		"killer_source_kind": last_hit.get("source_kind", "melee"),

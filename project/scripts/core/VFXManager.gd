@@ -279,10 +279,10 @@ func _get_beam_color(beam_type: String) -> Color:
 	"""Obtener color apropiado para beam fallback según su tipo"""
 	match beam_type:
 		"flame_breath", "fire": return Color(1.0, 0.35, 0.1)
-		"void_beam", "void", "dark": return Color(0.6, 0.15, 0.9)
+		"void_beam", "void", "dark": return Color(0.5, 0.25, 0.7)  # Púrpura suave
 		"ice", "frost": return Color(0.2, 0.75, 1.0)
 		"lightning": return Color(1.0, 1.0, 0.25)
-		"arcane": return Color(0.9, 0.3, 1.0)
+		"arcane": return Color(0.7, 0.35, 0.9)  # Magenta suave
 		"poison", "nature": return Color(0.25, 0.9, 0.2)
 		_: return Color(0.85, 0.85, 0.9)
 
@@ -534,11 +534,11 @@ func spawn_beam(beam_type: String, origin: Vector2, direction: Vector2, length: 
 	
 	return effect
 
-func _spawn_fallback_beam(origin: Vector2, direction: Vector2, length: float, duration: float, beam_color: Color = Color(0.8, 0.2, 1)) -> Node2D:
+func _spawn_fallback_beam(origin: Vector2, direction: Vector2, length: float, duration: float, beam_color: Color = Color(1.0, 0.6, 0.2)) -> Node2D:
 	"""Fallback: dibujar beam procedural con color de elemento"""
 	var effect = Node2D.new()
 	effect.global_position = origin
-	effect.z_index = 8
+	effect.z_index = 5
 	
 	var visual = Node2D.new()
 	effect.add_child(visual)
@@ -549,9 +549,9 @@ func _spawn_fallback_beam(origin: Vector2, direction: Vector2, length: float, du
 	var glow_color = Color(min(beam_color.r + 0.3, 1.0), min(beam_color.g + 0.3, 1.0), min(beam_color.b + 0.3, 1.0), 1.0)
 	
 	visual.draw.connect(func():
-		var alpha = 1.0 - anim * 0.5
-		visual.draw_line(Vector2.ZERO, end_pos * anim, Color(core_color.r, core_color.g, core_color.b, alpha), 8.0)
-		visual.draw_line(Vector2.ZERO, end_pos * anim, Color(glow_color.r, glow_color.g, glow_color.b, alpha * 0.5), 16.0)
+		var alpha = (1.0 - anim * 0.5) * 0.6
+		visual.draw_line(Vector2.ZERO, end_pos * anim, Color(core_color.r, core_color.g, core_color.b, alpha), 6.0)
+		visual.draw_line(Vector2.ZERO, end_pos * anim, Color(glow_color.r, glow_color.g, glow_color.b, alpha * 0.4), 12.0)
 	)
 	
 	var tree = Engine.get_main_loop()

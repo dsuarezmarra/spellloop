@@ -91,19 +91,22 @@ func _setup_visual() -> void:
 	tween.tween_callback(queue_free)
 
 func _draw_fallback() -> void:
-	"""Fallback visual si no hay spritesheet"""
+	"""Fallback visual si no hay spritesheet - color neutro, NO púrpura"""
 	var visual = Node2D.new()
 	add_child(visual)
 	
+	# Clamp radius to prevent screen-covering effects
+	var clamped_r = minf(radius, 150.0)
+	
 	var anim = 0.0
 	visual.draw.connect(func():
-		var r = radius * anim
-		# Círculos concéntricos
-		for i in range(3):
-			var layer_r = r * (1.0 - i * 0.2)
-			var alpha = (1.0 - anim) * (0.6 - i * 0.15)
-			visual.draw_circle(Vector2.ZERO, layer_r, Color(0.8, 0.3, 1, alpha * 0.2))
-			visual.draw_arc(Vector2.ZERO, layer_r, 0, TAU, 32, Color(0.9, 0.5, 1, alpha * 0.5), 1.5)
+		var r = clamped_r * anim
+		# Círculos concéntricos - color naranja/blanco neutro en vez de púrpura
+		for i in range(2):
+			var layer_r = r * (1.0 - i * 0.25)
+			var alpha = (1.0 - anim) * (0.4 - i * 0.15)
+			visual.draw_circle(Vector2.ZERO, layer_r, Color(1.0, 0.6, 0.3, alpha * 0.15))
+			visual.draw_arc(Vector2.ZERO, layer_r, 0, TAU, 32, Color(1.0, 0.8, 0.5, alpha * 0.3), 1.5)
 	)
 	
 	var tween = create_tween()

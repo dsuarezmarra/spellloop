@@ -2936,17 +2936,17 @@ func _spawn_boss_impact_effect() -> void:
 		# Impacto masivo
 		var radius = 50 * anim_progress
 		
-		# Ondas de choque
+		# Ondas de choque - alpha reducido
 		for i in range(3):
 			var wave_radius = radius * (1.0 + i * 0.3)
-			var wave_alpha = (1.0 - anim_progress) * (0.6 - i * 0.15)
-			visual.draw_arc(Vector2.ZERO, wave_radius, 0, TAU, 32, Color(color.r, color.g, color.b, wave_alpha), 4.0 - i)
+			var wave_alpha = (1.0 - anim_progress) * (0.25 - i * 0.06)
+			visual.draw_arc(Vector2.ZERO, wave_radius, 0, TAU, 32, Color(color.r, color.g, color.b, wave_alpha), 2.5 - i * 0.5)
 		
-		# Cruz de impacto
-		var cross_size = radius * 1.5
-		var cross_alpha = (1.0 - anim_progress) * 0.7
-		visual.draw_line(Vector2(-cross_size, 0), Vector2(cross_size, 0), Color(1, 1, 1, cross_alpha), 3.0)
-		visual.draw_line(Vector2(0, -cross_size), Vector2(0, cross_size), Color(1, 1, 1, cross_alpha), 3.0)
+		# Cruz de impacto - alpha reducido
+		var cross_size = radius * 1.2
+		var cross_alpha = (1.0 - anim_progress) * 0.3
+		visual.draw_line(Vector2(-cross_size, 0), Vector2(cross_size, 0), Color(1, 1, 1, cross_alpha), 2.0)
+		visual.draw_line(Vector2(0, -cross_size), Vector2(0, cross_size), Color(1, 1, 1, cross_alpha), 2.0)
 	)
 	
 	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
@@ -2967,6 +2967,9 @@ func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 	if _try_spawn_via_vfxmanager("void_explosion", "aoe", center, radius, 0.6):
 		return
 	
+	# Clamp radius to prevent screen-covering effects
+	var clamped_radius = minf(radius, 120.0)
+	
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
@@ -2986,42 +2989,41 @@ func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 		
 		if phase < 0.35:
 			var absorb_phase = phase / 0.35
-			var absorb_radius = radius * (1.2 - absorb_phase * 0.8)
+			var absorb_radius = clamped_radius * (1.0 - absorb_phase * 0.6)
 			
-			for i in range(2):
-				var layer_r = absorb_radius * (1.0 + i * 0.15)
-				var layer_alpha = 0.06 * absorb_phase * (1.0 - i * 0.3)
-				visual.draw_circle(Vector2.ZERO, layer_r, Color(0.4, 0.05, 0.7, layer_alpha))
+			# Single absorb ring instead of 2
+			var layer_alpha = 0.04 * absorb_phase
+			visual.draw_circle(Vector2.ZERO, absorb_radius, Color(0.4, 0.05, 0.7, layer_alpha))
 			
-			var particle_count = 6
+			var particle_count = 4
 			for i in range(particle_count):
 				var angle = (TAU / particle_count) * i + phase * PI * 2
-				var dist = absorb_radius * (1.4 - absorb_phase * 0.7)
+				var dist = absorb_radius * (1.2 - absorb_phase * 0.5)
 				var pos = Vector2(cos(angle), sin(angle)) * dist
-				visual.draw_circle(pos, 3, Color(0.85, 0.4, 1.0, 0.3))
+				visual.draw_circle(pos, 2, Color(0.85, 0.4, 1.0, 0.15))
 		else:
 			var explode_phase = (phase - 0.35) / 0.65
-			var explode_radius = radius * 1.3 * explode_phase
+			var explode_radius = clamped_radius * explode_phase
 			
-			for i in range(2):
-				var wave_r = explode_radius * (0.3 + i * 0.3)
-				var wave_alpha = (1.0 - explode_phase) * (0.2 - i * 0.05)
-				visual.draw_arc(Vector2.ZERO, wave_r, 0, TAU, 48, Color(0.6, 0.1, 0.95, wave_alpha), 1.5)
+			# Single wave arc
+			var wave_alpha = (1.0 - explode_phase) * 0.12
+			visual.draw_arc(Vector2.ZERO, explode_radius, 0, TAU, 48, Color(0.6, 0.1, 0.95, wave_alpha), 1.5)
 			
-			# Single subtle fill instead of multiple opaque fills
-			var fill_r = explode_radius * 0.8
-			var fill_alpha = (1.0 - explode_phase) * 0.06
+			# Subtle fill
+			var fill_r = explode_radius * 0.6
+			var fill_alpha = (1.0 - explode_phase) * 0.03
 			visual.draw_circle(Vector2.ZERO, fill_r, Color(0.5, 0.1, 0.8, fill_alpha))
 			
-			var ray_count = 4
+			# Fewer rays with lower alpha
+			var ray_count = 3
 			for i in range(ray_count):
 				var ray_angle = (TAU / ray_count) * i + explode_phase * PI * 0.5
-				var ray_length = explode_radius * (0.8 + sin(explode_phase * PI * 3 + i) * 0.3)
+				var ray_length = explode_radius * 0.7
 				var ray_end = Vector2(cos(ray_angle), sin(ray_angle)) * ray_length
-				visual.draw_line(Vector2.ZERO, ray_end, Color(0.9, 0.5, 1.0, (1.0 - explode_phase) * 0.2), 1.5)
+				visual.draw_line(Vector2.ZERO, ray_end, Color(0.9, 0.5, 1.0, (1.0 - explode_phase) * 0.1), 1.0)
 			
-			var core_size = 15 * (1.0 - explode_phase * 0.7)
-			visual.draw_circle(Vector2.ZERO, core_size, Color(0.15, 0, 0.25, 0.3 * (1.0 - explode_phase)))
+			var core_size = 10 * (1.0 - explode_phase * 0.7)
+			visual.draw_circle(Vector2.ZERO, core_size, Color(0.15, 0, 0.25, 0.15 * (1.0 - explode_phase)))
 	)
 	
 	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
@@ -3342,7 +3344,7 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 	# Determinar si es ÃƒÂ©lite para efectos mÃƒÂ¡s grandes
 	var is_elite = enemy.get("is_elite") if "is_elite" in enemy else false
 	var size_mult = 1.3 if is_elite else 1.0
-	var actual_radius = radius * size_mult
+	var actual_radius = minf(radius * size_mult, 150.0)  # Clamp to prevent screen-covering
 	
 	# Variables de animaciÃƒÂ³n
 	var anim_progress = 0.0
@@ -3533,15 +3535,15 @@ func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float
 	)
 
 func _get_element_color(elem: String) -> Color:
-	"""Obtener color segÃƒÂºn elemento - Colores mÃƒÂ¡s vibrantes y atractivos"""
+	"""Obtener color segÃƒÂºn elemento - Colores visibles pero no invasivos"""
 	match elem:
-		"fire": return Color(1.0, 0.3, 0.05, 0.4)      # Rojo fuego brillante
-		"ice": return Color(0.2, 0.7, 1.0, 0.4)        # Azul hielo claro
-		"dark": return Color(0.6, 0.1, 0.9, 0.4)       # PÃƒÂºrpura oscuro
-		"arcane": return Color(0.9, 0.3, 1.0, 0.4)     # Magenta arcano
-		"poison": return Color(0.2, 0.9, 0.2, 0.4)     # Verde venenoso
-		"lightning": return Color(1.0, 1.0, 0.2, 0.4)  # Amarillo elÃƒÂ©ctrico
-		_: return Color(0.9, 0.9, 0.9, 0.4)            # Blanco fÃƒÂ­sico
+		"fire": return Color(1.0, 0.3, 0.05, 0.3)      # Rojo fuego brillante
+		"ice": return Color(0.2, 0.7, 1.0, 0.3)        # Azul hielo claro
+		"dark": return Color(0.5, 0.2, 0.7, 0.25)      # PÃƒÂºrpura oscuro - alpha bajo
+		"arcane": return Color(0.7, 0.3, 0.9, 0.25)    # Magenta arcano - alpha bajo
+		"poison": return Color(0.2, 0.9, 0.2, 0.3)     # Verde venenoso
+		"lightning": return Color(1.0, 1.0, 0.2, 0.3)  # Amarillo elÃƒÂ©ctrico
+		_: return Color(0.9, 0.9, 0.9, 0.3)            # Blanco fÃƒÂ­sico
 
 func _emit_melee_effect() -> void:
 	"""Emitir efecto visual de ataque melee Ãƒâ€°PICO con slash animado"""

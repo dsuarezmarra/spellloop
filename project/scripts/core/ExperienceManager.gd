@@ -526,7 +526,7 @@ func gain_experience(amount: int):
 	current_exp += final_amount
 	
 	# BALANCE PASS 2: Log XP para BalanceDebugger
-	if BalanceDebugger and BalanceDebugger.enabled:
+	if BalanceDebugger:
 		BalanceDebugger.log_xp_gained(final_amount)
 
 	# Emitir señal
@@ -555,9 +555,9 @@ func level_up_player():
 	# AUDIT: Report level up
 	if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
 		var t_min: float = 0.0
-		var game_node = get_tree().get_first_node_in_group("game")
-		if game_node and "run_time" in game_node:
-			t_min = game_node.run_time / 60.0
+		var game_node = get_tree().current_scene
+		if game_node and "game_time" in game_node:
+			t_min = game_node.game_time / 60.0
 		RunAuditTracker.report_level_up(current_level, t_min)
 
 	# Generar opciones de mejora
