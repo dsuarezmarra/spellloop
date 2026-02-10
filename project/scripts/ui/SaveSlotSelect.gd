@@ -109,7 +109,7 @@ func _ready() -> void:
 	# Aplicar fuente personalizada y estilo al título
 	if title_label:
 		title_label.text = Localization.L("ui.save_slots.title")
-		var font_title = load("res://assets/ui/fonts/LilitaOne-Regular.ttf")
+		var font_title = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
 		if font_title:
 			title_label.add_theme_font_override("font", font_title)
 		title_label.add_theme_font_size_override("font_size", 38)
@@ -182,7 +182,7 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	slot_title.name = "SlotTitle"
 	slot_title.text = Localization.L("ui.save_slots.slot", [slot_index + 1])
 	slot_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var font_slot = load("res://assets/ui/fonts/LilitaOne-Regular.ttf")
+	var font_slot = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
 	if font_slot:
 		slot_title.add_theme_font_override("font", font_slot)
 	slot_title.add_theme_font_size_override("font_size", 24)  # Más grande y legible
@@ -249,7 +249,7 @@ func _create_slot_panel(slot_index: int) -> PanelContainer:
 	select_btn.add_theme_stylebox_override("focus", btn_style_empty)
 	
 	# Fuente para el texto - NEGRO normal, DORADO brillante en hover/focus
-	var font_btn = load("res://assets/ui/fonts/LilitaOne-Regular.ttf")
+	var font_btn = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
 	if font_btn:
 		select_btn.add_theme_font_override("font", font_btn)
 	select_btn.add_theme_font_size_override("font_size", 15)
@@ -382,8 +382,8 @@ func _update_slot_display(slot_index: int, slot_data) -> void:
 	var delete_btn = buttons_container.get_node_or_null("DeleteButton")
 	
 	# Cargar fuente para textos
-	var font_info = load("res://assets/ui/fonts/Fredoka-Variable.ttf")
-	var font_title = load("res://assets/ui/fonts/LilitaOne-Regular.ttf")
+	var font_info = load("res://assets/ui/fonts/Quicksand-Variable.ttf")
+	var font_title = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
 	
 	# Limpiar info anterior
 	for child in info_container.get_children():

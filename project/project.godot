@@ -47,13 +47,13 @@ SpatialGrid="*res://scripts/core/SpatialGrid.gd"
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
+window/size/mode=2
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 
 [gui]
 
 theme/custom="res://assets/ui/game_theme.tres"
-window/size/mode=2
-window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
 
 [input]
 

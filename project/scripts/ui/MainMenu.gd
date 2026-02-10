@@ -436,7 +436,7 @@ func _create_resume_button() -> void:
 		resume_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 		
 		# Estilo del texto igual que PlayLabel
-		var font_title = load("res://assets/ui/fonts/LilitaOne-Regular.ttf")
+		var font_title = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
 		if font_title:
 			resume_label.add_theme_font_override("font", font_title)
 		resume_label.add_theme_font_size_override("font_size", 18)
@@ -550,7 +550,7 @@ func _setup_ranking_button() -> void:
 	ranking_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	ranking_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	
-	var font_title = load("res://assets/ui/fonts/LilitaOne-Regular.ttf")
+	var font_title = load("res://assets/ui/fonts/CinzelDecorative-Bold.ttf")
 	if font_title:
 		ranking_label.add_theme_font_override("font", font_title)
 	ranking_label.add_theme_font_size_override("font_size", 20)
