@@ -361,7 +361,8 @@ func _on_game_state_changed(_old_state, new_state) -> void:
 			show_main_menu()
 		1: # IN_RUN
 			close_all_modals()
-			show_game_hud()
+			# Game.gd already creates GameHUD — don't duplicate it here
+			# Game.gd registers its HUD reference via UIManager.game_hud
 		3: # GAME_OVER
 			# Game over modal will be shown by the game scene
 			pass

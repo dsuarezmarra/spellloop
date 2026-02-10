@@ -50,7 +50,7 @@ const AOE_SHEETS = {
 }
 
 func _ready() -> void:
-	z_index = 50
+	z_index = 5
 	_setup_visual()
 
 func setup(p_aoe_type: String, p_radius: float = 100.0, p_duration: float = 0.5) -> void:
@@ -102,8 +102,8 @@ func _draw_fallback() -> void:
 		for i in range(3):
 			var layer_r = r * (1.0 - i * 0.2)
 			var alpha = (1.0 - anim) * (0.6 - i * 0.15)
-			visual.draw_circle(Vector2.ZERO, layer_r, Color(0.8, 0.3, 1, alpha * 0.5))
-			visual.draw_arc(Vector2.ZERO, layer_r, 0, TAU, 32, Color(0.9, 0.5, 1, alpha), 2.0)
+			visual.draw_circle(Vector2.ZERO, layer_r, Color(0.8, 0.3, 1, alpha * 0.2))
+			visual.draw_arc(Vector2.ZERO, layer_r, 0, TAU, 32, Color(0.9, 0.5, 1, alpha * 0.5), 1.5)
 	)
 	
 	var tween = create_tween()

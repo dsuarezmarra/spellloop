@@ -979,7 +979,7 @@ func _play_damage_flash(element: String) -> void:
 		"poison":
 			flash_color = Color(0.6, 2.0, 0.4, 1.0)
 		"dark", "void", "shadow":
-			flash_color = Color(1.2, 0.4, 1.5, 1.0)
+			flash_color = Color(1.0, 0.5, 1.0, 1.0)
 		"lightning":
 			flash_color = Color(2.0, 2.0, 0.5, 1.0)
 		_:

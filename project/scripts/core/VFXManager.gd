@@ -378,7 +378,7 @@ func spawn_aoe(aoe_type: String, position: Vector2, radius: float = 100.0, durat
 	var diameter = radius * 2.0
 	var actual_scale_factor = diameter / frame_size.x
 	# Clamp to reasonable values to prevent screen-covering effects
-	actual_scale_factor = clampf(actual_scale_factor, 0.1, 10.0)
+	actual_scale_factor = clampf(actual_scale_factor, 0.1, 3.0)
 	
 	return _create_animated_vfx(tex, config, position, actual_scale_factor, duration_override)
 
@@ -391,7 +391,7 @@ func _spawn_fallback_aoe(position: Vector2, radius: float) -> Node2D:
 	"""Fallback: dibujar círculo procedural si no hay spritesheet"""
 	var effect = Node2D.new()
 	effect.global_position = position
-	effect.z_index = 50
+	effect.z_index = 5
 	
 	var visual = Node2D.new()
 	effect.add_child(visual)
@@ -507,7 +507,7 @@ func spawn_beam(beam_type: String, origin: Vector2, direction: Vector2, length: 
 	var effect = Node2D.new()
 	effect.global_position = origin
 	effect.rotation = direction.angle()
-	effect.z_index = 55
+	effect.z_index = 8
 	
 	var sprite = Sprite2D.new()
 	sprite.texture = tex
@@ -538,7 +538,7 @@ func _spawn_fallback_beam(origin: Vector2, direction: Vector2, length: float, du
 	"""Fallback: dibujar beam procedural con color de elemento"""
 	var effect = Node2D.new()
 	effect.global_position = origin
-	effect.z_index = 55
+	effect.z_index = 8
 	
 	var visual = Node2D.new()
 	effect.add_child(visual)
@@ -730,7 +730,7 @@ func spawn_player_aura(vfx_type: String, parent: Node2D, loop: bool = true) -> A
 	_log_vfx_spawn("PLAYER_AURA", vfx_type, config["path"])
 	var sprite = AnimatedSprite2D.new()
 	sprite.sprite_frames = _create_sprite_frames_from_sheet(tex, config, "player_" + vfx_type, loop)
-	sprite.z_index = 60
+	sprite.z_index = 5
 	sprite.play("default")
 	parent.add_child(sprite)
 	return sprite
@@ -747,7 +747,7 @@ func spawn_stun_vfx(parent: Node2D) -> AnimatedSprite2D:
 	"""Spawn estrellas de stun orbitando (loop)"""
 	var sprite = spawn_player_aura("stun", parent, true)
 	if sprite:
-		sprite.z_index = 70  # Encima del personaje
+		sprite.z_index = 10  # Encima del personaje
 		sprite.position = Vector2(0, -16)  # Sobre la cabeza
 	return sprite
 
@@ -766,7 +766,7 @@ func _create_animated_vfx(tex: Texture2D, config: Dictionary, position: Vector2,
 	"""Crear un VFX animado genérico"""
 	var effect = Node2D.new()
 	effect.global_position = position
-	effect.z_index = 50
+	effect.z_index = 5
 	
 	var sprite = Sprite2D.new()
 	sprite.texture = tex
@@ -775,7 +775,7 @@ func _create_animated_vfx(tex: Texture2D, config: Dictionary, position: Vector2,
 	sprite.centered = true
 	
 	# Aplicar escala (clamped to prevent screen-covering effects)
-	var clamped_scale = clampf(scale_factor, 0.1, 10.0)
+	var clamped_scale = clampf(scale_factor, 0.1, 3.0)
 	if clamped_scale != 1.0:
 		sprite.scale = Vector2(clamped_scale, clamped_scale)
 	

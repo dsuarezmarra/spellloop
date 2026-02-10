@@ -312,7 +312,7 @@ func _spawn_hit_effect() -> void:
 	var effect = Node2D.new()
 	effect.global_position = global_position
 	effect.top_level = true
-	effect.z_index = 60
+	effect.z_index = 5
 	
 	var parent = get_parent()
 	if parent:

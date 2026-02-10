@@ -418,6 +418,9 @@ func _create_ui() -> void:
 	if hud_scene:
 		hud = hud_scene.instantiate()
 		ui_layer.add_child(hud)
+		# Register HUD reference in UIManager so its API methods work
+		if UIManager:
+			UIManager.game_hud = hud
 
 	# Menú de pausa
 	var pause_scene = load("res://scenes/ui/PauseMenu.tscn")
@@ -1718,8 +1721,9 @@ func _collect_final_stats() -> Dictionary:
 			final_stats["max_health"] = player_stats.max_health
 		if "current_health" in player_stats:
 			final_stats["current_health"] = player_stats.current_health
-		if "level" in player_stats:
-			final_stats["level"] = player_stats.level
+		# Nivel: usar run_stats como fuente autoritativa (actualizado por ExperienceManager)
+		# PlayerStats.level puede estar desincronizado
+		final_stats["level"] = run_stats.get("level", 1)
 		if "armor" in player_stats:
 			final_stats["armor"] = player_stats.armor
 		

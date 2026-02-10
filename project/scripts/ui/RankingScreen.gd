@@ -625,8 +625,11 @@ func _scroll_to_entry(index: int) -> void:
 	if index < entry_panels.size() and scroll_container:
 		var panel = entry_panels[index]
 		if panel:
-			var panel_pos = panel.position.y
-			var panel_height = panel.size.y
+			# entry_panel está dentro de un VBoxContainer wrapper,
+			# usar la posición del wrapper (hijo directo de entries_container)
+			var wrapper = panel.get_parent()
+			var panel_pos = wrapper.position.y if wrapper else panel.position.y
+			var panel_height = wrapper.size.y if wrapper else panel.size.y
 			var scroll_pos = scroll_container.scroll_vertical
 			var visible_height = scroll_container.size.y
 			
@@ -908,13 +911,15 @@ func _convert_run_to_entry(run: Dictionary, rank: int) -> Dictionary:
 	
 	# Obtener stats finales completos (formato nuevo o calcular desde formato antiguo)
 	var final_stats = run.get("final_stats", {})
-	var level = 1
-	if final_stats.has("level"):
-		level = final_stats.get("level", 1)
-	elif run.has("player_level"):
-		level = run.get("player_level", 1)
-	elif run.has("level_reached"):
-		level = run.get("level_reached", 1)
+	# Determinar nivel: usar level_reached como fuente primaria (siempre correcto),
+	# final_stats.level como fallback (puede ser 1 por bug histórico)
+	var level = run.get("level_reached", 1)
+	if level <= 1:
+		# Fallback a otras fuentes
+		if final_stats.has("level") and int(final_stats.get("level", 1)) > 1:
+			level = int(final_stats.get("level", 1))
+		elif run.has("player_level") and int(run.get("player_level", 1)) > 1:
+			level = int(run.get("player_level", 1))
 	
 	# Stats básicos para display en la lista
 	var stats_dict = {
@@ -984,7 +989,7 @@ func _convert_run_to_entry(run: Dictionary, rank: int) -> Dictionary:
 		"steam_name": "Tu Partida",  # Sin Steam, usar texto genérico
 		"score": score,
 		"character": character_name,
-		"level": int(final_stats.get("level", run.get("player_level", run.get("level_reached", 1)))),
+		"level": int(level),
 		"time": time_str,
 		"wave": run.get("phase", 1),  # Usamos phase como "oleada" visual
 		"stats": stats_dict,
