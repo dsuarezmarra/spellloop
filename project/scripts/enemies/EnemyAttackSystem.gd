@@ -582,7 +582,7 @@ func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
 	# Fallback: Visual procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 65
+	effect.z_index = 12
 	effect.global_position = center
 	
 	var parent = enemy.get_parent()
@@ -656,7 +656,7 @@ func _spawn_elite_rage_visual() -> void:
 	# Fallback: Visual procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 65
+	effect.z_index = 12
 	effect.global_position = enemy.global_position
 	
 	var parent = enemy.get_parent()
@@ -845,7 +845,7 @@ func _spawn_elite_dash_visual_start() -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 60
+	effect.z_index = 10
 	effect.global_position = enemy.global_position
 	
 	var parent = enemy.get_parent()
@@ -891,7 +891,7 @@ func _spawn_elite_dash_trail(from: Vector2, to: Vector2) -> void:
 	"""Estela visual del dash"""
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 55
+	effect.z_index = 8
 	effect.global_position = from
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -974,7 +974,7 @@ func _spawn_elite_nova_visual(center: Vector2) -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 65
+	effect.z_index = 12
 	effect.global_position = center
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -1082,7 +1082,7 @@ func _spawn_elite_summon_visual(center: Vector2) -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 60
+	effect.z_index = 10
 	effect.global_position = center
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -1850,7 +1850,7 @@ func _spawn_aoe_warning(pos: Vector2, radius: float, duration: float) -> void:
 	var warning = Node2D.new()
 	warning.name = "AOEWarning"
 	warning.top_level = true
-	warning.z_index = 50
+	warning.z_index = 5
 	warning.global_position = pos
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -1894,7 +1894,7 @@ func _spawn_aoe_explosion(pos: Vector2, radius: float) -> void:
 	var explosion = Node2D.new()
 	explosion.name = "AOEExplosion"
 	explosion.top_level = true
-	explosion.z_index = 55
+	explosion.z_index = 8
 	explosion.global_position = pos
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -2505,10 +2505,7 @@ func _boss_reality_tear() -> void:
 	var damage = modifiers.get("tear_damage", 15)
 	var duration = modifiers.get("tear_duration", 6.0)
 	
-	# VFXManager hook - reality tear boss VFX
-	_try_spawn_via_vfxmanager("reality_tear", "boss", player.global_position, radius, duration)
-	
-	# Crear en la posiciÃƒÂ³n del jugador
+	# _spawn_damage_zone ya invoca VFXManager internamente, no duplicar
 	_spawn_damage_zone(player.global_position, radius, damage, duration, "dark")
 	# print("[EnemyAttackSystem] Ã°Å¸Å’Å’ Reality Tear creado")
 
@@ -2973,7 +2970,7 @@ func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 60
+	effect.z_index = 10
 	effect.global_position = center
 	
 	var parent = enemy.get_parent()
@@ -2985,70 +2982,46 @@ func _spawn_void_explosion_visual(center: Vector2, radius: float) -> void:
 	effect.add_child(visual)
 	
 	visual.draw.connect(func():
-		# ExplosiÃƒÂ³n inversa (desde fuera hacia dentro, luego explota)
 		var phase = anim_progress
 		
 		if phase < 0.35:
-			# Fase de absorciÃƒÂ³n - MÃƒÂS DRAMÃƒÂTICA
 			var absorb_phase = phase / 0.35
 			var absorb_radius = radius * (1.2 - absorb_phase * 0.8)
 			
-			# MÃƒÂºltiples capas de absorciÃƒÂ³n
-			for i in range(5):
+			for i in range(3):
 				var layer_r = absorb_radius * (1.0 + i * 0.15)
-				var layer_alpha = 0.3 * absorb_phase * (1.0 - i * 0.15)
+				var layer_alpha = 0.15 * absorb_phase * (1.0 - i * 0.2)
 				visual.draw_circle(Vector2.ZERO, layer_r, Color(0.4, 0.05, 0.7, layer_alpha))
 			
-			# Espirales siendo absorbidas
-			var spiral_count = 6
-			for s in range(spiral_count):
-				var spiral_points = PackedVector2Array()
-				for i in range(20):
-					var t = float(i) / 20.0
-					var r = absorb_radius * (1.3 - t) * (1.0 - absorb_phase * 0.6)
-					var angle = t * PI * 3 + (TAU / spiral_count) * s + phase * PI * 4
-					spiral_points.append(Vector2(cos(angle), sin(angle)) * r)
-				if spiral_points.size() > 1:
-					visual.draw_polyline(spiral_points, Color(0.7, 0.2, 1.0, 0.7 * absorb_phase), 3.0)
-			
-			# PartÃƒÂ­culas siendo absorbidas - MÃƒÂS
-			var particle_count = 16
+			var particle_count = 8
 			for i in range(particle_count):
 				var angle = (TAU / particle_count) * i + phase * PI * 2
 				var dist = absorb_radius * (1.4 - absorb_phase * 0.7)
 				var pos = Vector2(cos(angle), sin(angle)) * dist
-				visual.draw_circle(pos, 6, Color(0.85, 0.4, 1.0, 0.9))
-				visual.draw_circle(pos, 9, Color(0.85, 0.4, 1.0, 0.3))
+				visual.draw_circle(pos, 4, Color(0.85, 0.4, 1.0, 0.5))
 		else:
-			pass  # Bloque else
-			# Fase de explosiÃƒÂ³n - MUCHO MÃƒÂS Ãƒâ€°PICA
 			var explode_phase = (phase - 0.35) / 0.65
 			var explode_radius = radius * 1.3 * explode_phase
 			
-			# Ondas de vacÃƒÂ­o mÃƒÂºltiples
-			for i in range(5):
-				var wave_r = explode_radius * (0.25 + i * 0.2)
-				var wave_alpha = (1.0 - explode_phase) * (0.7 - i * 0.12)
-				visual.draw_arc(Vector2.ZERO, wave_r, 0, TAU, 48, Color(0.6, 0.1, 0.95, wave_alpha), 5.0 - i)
+			for i in range(3):
+				var wave_r = explode_radius * (0.3 + i * 0.25)
+				var wave_alpha = (1.0 - explode_phase) * (0.4 - i * 0.1)
+				visual.draw_arc(Vector2.ZERO, wave_r, 0, TAU, 48, Color(0.6, 0.1, 0.95, wave_alpha), 2.0)
 			
-			# Relleno de explosiÃƒÂ³n
-			for i in range(4):
-				var fill_r = explode_radius * (1.0 - i * 0.2)
-				var fill_alpha = (1.0 - explode_phase) * (0.4 - i * 0.08)
+			for i in range(2):
+				var fill_r = explode_radius * (1.0 - i * 0.3)
+				var fill_alpha = (1.0 - explode_phase) * (0.2 - i * 0.06)
 				visual.draw_circle(Vector2.ZERO, fill_r, Color(0.5, 0.1, 0.8, fill_alpha))
 			
-			# Rayos de energÃƒÂ­a oscura
-			var ray_count = 12
+			var ray_count = 6
 			for i in range(ray_count):
 				var ray_angle = (TAU / ray_count) * i + explode_phase * PI * 0.5
 				var ray_length = explode_radius * (0.8 + sin(explode_phase * PI * 3 + i) * 0.3)
 				var ray_end = Vector2(cos(ray_angle), sin(ray_angle)) * ray_length
-				visual.draw_line(Vector2.ZERO, ray_end, Color(0.9, 0.5, 1.0, (1.0 - explode_phase) * 0.8), 3.0)
+				visual.draw_line(Vector2.ZERO, ray_end, Color(0.9, 0.5, 1.0, (1.0 - explode_phase) * 0.4), 2.0)
 			
-			# Centro oscuro pulsante
-			var core_size = 30 * (1.0 - explode_phase * 0.7)
-			visual.draw_circle(Vector2.ZERO, core_size, Color(0.15, 0, 0.25, 0.95 * (1.0 - explode_phase)))
-			visual.draw_circle(Vector2.ZERO, core_size * 0.5, Color(0.3, 0, 0.5, 0.8))
+			var core_size = 20 * (1.0 - explode_phase * 0.7)
+			visual.draw_circle(Vector2.ZERO, core_size, Color(0.15, 0, 0.25, 0.5 * (1.0 - explode_phase)))
 	)
 	
 	# IMPORTANTE: Usar effect.create_tween() para que el tween se limpie con el nodo
@@ -3072,7 +3045,7 @@ func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 	# Fallback procedural si no hay spritesheet
 	var effect = Node2D.new()
 	effect.top_level = true  # Independiente del enemigo
-	effect.z_index = 60  # MUY alto para boss
+	effect.z_index = 10  # MUY alto para boss
 	effect.global_position = center
 	
 	var parent = enemy.get_parent()
@@ -3174,7 +3147,7 @@ func _spawn_fire_stomp_visual(center: Vector2, radius: float) -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 60
+	effect.z_index = 10
 	effect.global_position = center
 	
 	var parent = enemy.get_parent()
@@ -3359,7 +3332,7 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 	var container = Node2D.new()
 	container.name = "AoE_Visual"
 	container.top_level = true  # No se mueve con el padre
-	container.z_index = 55  # MUY visible encima de otros elementos
+	container.z_index = 10  # Visible pero no encima de todo
 	container.global_position = center
 	
 	var parent = enemy.get_parent()
@@ -3380,58 +3353,55 @@ func _spawn_aoe_visual(center: Vector2, radius: float) -> void:
 	container.add_child(visual)
 	
 	visual.draw.connect(func():
-		# CÃƒÂ­rculo de impacto central que se expande
 		var expand_radius = actual_radius * anim_progress
 		
-		# GLOW EXTERIOR GRANDE (nuevo)
-		for g in range(4):
+		# Glow exterior (reducido)
+		for g in range(2):
 			var glow_r = expand_radius * (1.0 + g * 0.1)
-			var glow_alpha = 0.15 * (1.0 - anim_progress) * (1.0 - g * 0.2)
+			var glow_alpha = 0.08 * (1.0 - anim_progress) * (1.0 - g * 0.3)
 			if glow_r > 0:
 				visual.draw_circle(Vector2.ZERO, glow_r, Color(base_color.r, base_color.g, base_color.b, glow_alpha))
 		
-		# CÃƒÂ­rculo exterior con gradiente simulado (mÃƒÂºltiples capas)
-		for i in range(6):
-			var layer_radius = expand_radius * (1.0 - i * 0.12)
-			var layer_alpha = (0.5 - i * 0.07) * (1.0 - anim_progress * 0.4)
+		# Gradiente (reducido)
+		for i in range(3):
+			var layer_radius = expand_radius * (1.0 - i * 0.15)
+			var layer_alpha = (0.25 - i * 0.06) * (1.0 - anim_progress * 0.4)
 			if layer_radius > 0:
 				visual.draw_circle(Vector2.ZERO, layer_radius, Color(base_color.r, base_color.g, base_color.b, layer_alpha))
 		
-		# Anillos de onda expansiva - MÃƒÂS GRUESOS
+		# Anillos de onda expansiva
 		for i in range(ring_count):
 			var ring_phase = fmod(anim_progress * 2.5 + i * 0.25, 1.0)
 			var ring_radius = actual_radius * ring_phase
-			var ring_alpha = (1.0 - ring_phase) * 0.9
+			var ring_alpha = (1.0 - ring_phase) * 0.5
 			if ring_radius > 0:
-				visual.draw_arc(Vector2.ZERO, ring_radius, 0, TAU, 48, Color(bright_color.r, bright_color.g, bright_color.b, ring_alpha), 4.0)
+				visual.draw_arc(Vector2.ZERO, ring_radius, 0, TAU, 48, Color(bright_color.r, bright_color.g, bright_color.b, ring_alpha), 2.0)
 		
-		# PartÃƒÂ­culas decorativas alrededor - MÃƒÂS Y MÃƒÂS GRANDES
-		var particle_count = 12
+		# Particulas decorativas (reducidas)
+		var particle_count = 6
 		for i in range(particle_count):
 			var angle = (TAU / particle_count) * i + anim_progress * PI * 1.5
 			var dist = expand_radius * (0.7 + sin(anim_progress * PI * 3 + i) * 0.2)
 			var particle_pos = Vector2(cos(angle), sin(angle)) * dist
-			var particle_size = (5.0 + sin(anim_progress * PI * 5 + i) * 3.0) * size_mult
-			visual.draw_circle(particle_pos, particle_size, bright_color)
-			# Glow de partÃƒÂ­cula
-			visual.draw_circle(particle_pos, particle_size * 1.5, Color(bright_color.r, bright_color.g, bright_color.b, 0.3))
+			var particle_size = (3.0 + sin(anim_progress * PI * 5 + i) * 2.0) * size_mult
+			visual.draw_circle(particle_pos, particle_size, Color(bright_color.r, bright_color.g, bright_color.b, 0.6))
 		
-		# Rayos desde el centro (nuevo)
-		var ray_count = 8
+		# Rayos desde el centro (reducidos)
+		var ray_count = 4
 		for i in range(ray_count):
 			var ray_angle = (TAU / ray_count) * i + anim_progress * PI * 0.5
 			var ray_length = expand_radius * (0.3 + anim_progress * 0.7)
 			var ray_end = Vector2(cos(ray_angle), sin(ray_angle)) * ray_length
-			visual.draw_line(Vector2.ZERO, ray_end, Color(1, 1, 1, 0.5 * (1.0 - anim_progress)), 2.0)
+			visual.draw_line(Vector2.ZERO, ray_end, Color(1, 1, 1, 0.3 * (1.0 - anim_progress)), 1.5)
 		
-		# Borde exterior final - MÃƒÂS BRILLANTE
+		# Borde exterior
 		if expand_radius > 0:
-			visual.draw_arc(Vector2.ZERO, expand_radius, 0, TAU, 64, Color(1, 1, 1, 0.8 * (1.0 - anim_progress)), 4.0)
+			visual.draw_arc(Vector2.ZERO, expand_radius, 0, TAU, 64, Color(1, 1, 1, 0.5 * (1.0 - anim_progress)), 2.0)
 		
 		# Centro de impacto
 		var core_size = expand_radius * 0.15 * (1.0 - anim_progress * 0.5)
 		if core_size > 0:
-			visual.draw_circle(Vector2.ZERO, core_size, Color(1, 1, 1, 0.9 * (1.0 - anim_progress)))
+			visual.draw_circle(Vector2.ZERO, core_size, Color(1, 1, 1, 0.6 * (1.0 - anim_progress)))
 	)
 	
 	# AnimaciÃƒÂ³n de expansiÃƒÂ³n - MÃƒÂS LARGA para ser muy visible
@@ -3463,7 +3433,7 @@ func _spawn_breath_visual(origin: Vector2, direction: Vector2, range_dist: float
 	var container = Node2D.new()
 	container.name = "Breath_Visual"
 	container.top_level = true  # No se mueve con el padre
-	container.z_index = 55  # MUY visible encima de otros elementos
+	container.z_index = 8  # MUY visible encima de otros elementos
 	container.global_position = origin
 	container.rotation = direction.angle()
 	
@@ -3603,7 +3573,7 @@ func _emit_melee_effect() -> void:
 	var slash = Node2D.new()
 	slash.name = "MeleeSlash"
 	slash.top_level = true  # No se mueve con el padre
-	slash.z_index = 55  # MUY visible encima de otros elementos
+	slash.z_index = 8  # MUY visible encima de otros elementos
 	slash.global_position = slash_pos
 	slash.rotation = direction.angle()
 	
@@ -3749,7 +3719,7 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	orb.name = "HomingOrb"
 	orb.top_level = true
 	orb.global_position = pos
-	orb.z_index = 65
+	orb.z_index = 12
 	
 	# Variables de visual (declaradas a nivel de funciÃ³n para acceso en lambdas)
 	var color = _get_element_color(element)
@@ -3884,7 +3854,7 @@ func _spawn_orb_impact_effect(pos: Vector2, color: Color) -> void:
 	var effect = Node2D.new()
 	effect.global_position = pos
 	effect.top_level = true
-	effect.z_index = 65
+	effect.z_index = 12
 	
 	if is_instance_valid(enemy):
 		var parent = enemy.get_parent()
@@ -3949,25 +3919,26 @@ func _spawn_damage_zone(pos: Vector2, radius: float, dps: int, duration: float, 
 			zone_type = "damage_zone_void"
 	
 	# Intentar spawn visual via VFXManager (solo para el efecto visual)
-	_try_spawn_via_vfxmanager(zone_type, "aoe", pos, radius, duration)
+	var vfx_handled = _try_spawn_via_vfxmanager(zone_type, "aoe", pos, radius, duration)
 	
-	# Crear zona de daÃ±o (lÃ³gica de daÃ±o siempre se ejecuta)
+	# Crear zona de daño (lógica de daño siempre se ejecuta)
 	var zone = Node2D.new()
 	zone.name = "DamageZone"
 	zone.global_position = pos
 	
-	# Visual fallback si VFXManager no estÃ¡ disponible
-	var visual = Node2D.new()
-	zone.add_child(visual)
-	var color = _get_element_color(element)
-	var anim_time = 0.0
-	
-	visual.draw.connect(func():
-		var pulse = 0.8 + sin(anim_time * 4) * 0.2
-		visual.draw_circle(Vector2.ZERO, radius * pulse, Color(color.r, color.g, color.b, 0.3))
-		visual.draw_arc(Vector2.ZERO, radius, 0, TAU, 32, Color(color.r, color.g, color.b, 0.6), 2.0)
-	)
-	visual.queue_redraw()
+	# Visual fallback SOLO si VFXManager no lo manejó
+	if not vfx_handled:
+		var visual = Node2D.new()
+		zone.add_child(visual)
+		var color = _get_element_color(element)
+		var anim_time_ref = [0.0]
+		
+		visual.draw.connect(func():
+			var pulse = 0.8 + sin(anim_time_ref[0] * 4) * 0.2
+			visual.draw_circle(Vector2.ZERO, radius * pulse, Color(color.r, color.g, color.b, 0.15))
+			visual.draw_arc(Vector2.ZERO, radius, 0, TAU, 32, Color(color.r, color.g, color.b, 0.3), 2.0)
+		)
+		visual.queue_redraw()
 	
 	var parent = enemy.get_parent()
 	if parent:
@@ -3990,8 +3961,6 @@ func _spawn_damage_zone(pos: Vector2, radius: float, dps: int, duration: float, 
 			return
 		
 		time_alive += 0.1
-		anim_time += 0.1
-		visual.queue_redraw()
 		
 		if time_alive >= duration:
 			zone.queue_free()
@@ -4021,7 +3990,7 @@ func _spawn_phase_change_effect() -> void:
 	# Fallback: Visual procedural Ã©pico
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 70  # Encima de todo
+	effect.z_index = 15  # Encima de todo
 	effect.global_position = enemy.global_position
 	
 	var parent = enemy.get_parent()
@@ -4094,7 +4063,7 @@ func _spawn_summon_visual() -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 50
+	effect.z_index = 5
 	effect.global_position = enemy.global_position
 	
 	var parent = enemy.get_parent()
@@ -4139,7 +4108,7 @@ func _spawn_teleport_effect(pos: Vector2, is_arrival: bool) -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 50
+	effect.z_index = 5
 	effect.global_position = pos
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -4186,7 +4155,7 @@ func _spawn_arcane_nova_visual(center: Vector2, radius: float) -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 50
+	effect.z_index = 5
 	effect.global_position = center
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -4229,7 +4198,7 @@ func _spawn_curse_aura_visual(center: Vector2, radius: float) -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 50
+	effect.z_index = 5
 	effect.global_position = center
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -4275,7 +4244,7 @@ func _spawn_void_pull_visual(center: Vector2, radius: float) -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 50
+	effect.z_index = 5
 	effect.global_position = center
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -4329,7 +4298,7 @@ func _spawn_void_beam_visual(origin: Vector2, direction: Vector2, length: float,
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 50
+	effect.z_index = 5
 	effect.global_position = origin
 	effect.rotation = direction.angle()
 	
@@ -4426,7 +4395,7 @@ func _spawn_rune_prison_visual(pos: Vector2, duration: float) -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 55
+	effect.z_index = 8
 	effect.global_position = pos
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -4516,7 +4485,7 @@ func _spawn_ground_slam_visual(center: Vector2, radius: float) -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 60
+	effect.z_index = 10
 	effect.global_position = center
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -4615,7 +4584,7 @@ func _spawn_charge_warning_visual(pos: Vector2, direction: Vector2) -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 55
+	effect.z_index = 8
 	effect.global_position = pos
 	effect.rotation = direction.angle()
 	
@@ -4669,7 +4638,7 @@ func _spawn_meteor_warning(pos: Vector2, radius: float, delay: float) -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 55
+	effect.z_index = 8
 	effect.global_position = pos
 	
 	var parent = enemy.get_parent() if is_instance_valid(enemy) else null
@@ -4769,7 +4738,7 @@ func _spawn_enrage_visual() -> void:
 	# Fallback procedural
 	var effect = Node2D.new()
 	effect.top_level = true
-	effect.z_index = 55
+	effect.z_index = 8
 	effect.global_position = enemy.global_position
 	
 	var parent = enemy.get_parent()

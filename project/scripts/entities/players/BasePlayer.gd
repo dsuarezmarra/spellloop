@@ -21,6 +21,7 @@ var animated_sprite: AnimatedSprite2D = null
 var health_bar_container: Node2D = null
 var attack_manager = null
 var game_manager = null
+var _damage_flash_tween: Tween = null
 
 # ========== ESTADÍSTICAS BASE ==========
 @export var move_speed: float = 100.0
@@ -984,9 +985,13 @@ func _play_damage_flash(element: String) -> void:
 		_:
 			flash_color = Color(2.0, 0.3, 0.3, 1.0)  # Rojo por defecto
 	
+	# Cancelar tween anterior para evitar acumulación de color
+	if _damage_flash_tween and _damage_flash_tween.is_valid():
+		_damage_flash_tween.kill()
+	
 	animated_sprite.modulate = flash_color
-	var tween = create_tween()
-	tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.2)
+	_damage_flash_tween = create_tween()
+	_damage_flash_tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.2)
 	
 	# Reproducir animación de hit si está disponible
 	_play_hit_animation()
