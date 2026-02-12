@@ -265,7 +265,8 @@ func _smoothstep(t: float, edge0: float, edge1: float) -> float:
 	return x * x * (3.0 - 2.0 * x)
 
 func _on_difficulty_level_up() -> void:
-	if BalanceDebugger and BalanceDebugger.enabled:
+	# FIX-BT2b: Siempre recopilar datos
+	if BalanceDebugger:
 		BalanceDebugger.log_difficulty_scaling(get_scaling_snapshot())
 
 func _trigger_boss_event() -> void:

@@ -668,7 +668,8 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 			# Debug desactivado: print("[%s] ✨ ¡ESQUIVADO! (%.0f%% chance)" % [character_class, dodge_chance * 100])
 			FloatingText.spawn_text(global_position + Vector2(0, -35), "DODGE!", Color(0.3, 0.9, 1.0))
 			# Balance Debug: Log dodge
-			if BalanceDebugger and BalanceDebugger.enabled:
+			# FIX-BT2b: Siempre recopilar datos
+			if BalanceDebugger:
 				BalanceDebugger.log_damage_taken(amount, 0, true)
 			return
 	
@@ -766,7 +767,9 @@ func _process_frame_damage() -> void:
 		health_component.take_damage(final_applied_damage)
 		
 		# Balance Debug: Log damage taken (raw = queue total, final = applied)
-		if BalanceDebugger and BalanceDebugger.enabled:
+		# FIX-BT2: Eliminar guard 'enabled' — los datos se recopilan SIEMPRE,
+		# 'enabled' solo controla el overlay de UI, no el tracking de datos.
+		if BalanceDebugger:
 			var raw_total = 0
 			for hit in _damage_queue:
 				raw_total += hit.amount
@@ -795,7 +798,9 @@ func _process_frame_damage() -> void:
 			
 	# 4. Registrar contexto para Death Audit
 	var _hit_enemy_id := "unknown"
-	var _hit_attack_id := "unknown"
+	# FIX-BT4: Usar el elemento como default para attack_id en vez de "unknown"
+	# ya que los enemigos no suelen setear meta("attack_name")
+	var _hit_attack_id: String = primary_hit.element if primary_hit.element != "" else "physical"
 	var _hit_damage_type: String = primary_hit.element if primary_hit.element != "" else "physical"
 	var _hit_source_kind := "melee"  # melee, projectile, aoe, dot
 	if is_instance_valid(primary_hit.attacker):

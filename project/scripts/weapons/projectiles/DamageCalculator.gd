@@ -181,7 +181,8 @@ static func apply_damage_with_effects(
 	if target.has_method("take_damage"):
 		target.take_damage(final_damage, "physical", attacker)
 		# Balance Debug: Log damage dealt
-		if BalanceDebugger and BalanceDebugger.enabled:
+		# FIX-BT2b: Siempre recopilar datos
+		if BalanceDebugger:
 			BalanceDebugger.log_damage_dealt(final_damage)
 	
 	# Life steal

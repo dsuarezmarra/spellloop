@@ -495,6 +495,25 @@ func _on_player_took_damage(damage: int, element: String) -> void:
 	# Trackear daño recibido para estadísticas
 	run_stats["damage_taken"] += damage
 	
+	# TELEMETRY: Log hits significativos (>15% HP) para análisis de muertes
+	var base_player = _get_base_player()
+	if damage >= 10 and BalanceTelemetry and BalanceTelemetry._run_active:
+		var hp_current := 0
+		var hp_max := 85
+		if base_player and "health_component" in base_player and base_player.health_component:
+			hp_current = base_player.health_component.current_health
+			hp_max = base_player.health_component.max_health
+		if damage >= hp_max * 0.15:  # Solo loggear hits >15% max HP
+			BalanceTelemetry._log_event({
+				"event": "significant_hit",
+				"damage": damage,
+				"element": element,
+				"hp_after": hp_current,
+				"hp_max": hp_max,
+				"hp_pct": float(hp_current) / float(hp_max) if hp_max > 0 else 0.0,
+				"t_min": game_time / 60.0,
+			})
+	
 	# Screen shake
 	if camera and camera.has_method("damage_shake"):
 		camera.damage_shake(damage)
@@ -643,7 +662,10 @@ func _start_game() -> void:
 	call_deferred("_deferred_weapon_hud_update")
 	
 	# BALANCE TELEMETRY: Start run logging
-	call_deferred("_start_balance_telemetry")
+	# FIX-BT1: call_deferred no es suficiente — las armas se equipan DESPUÉS del
+	# frame donde reset_for_new_game() las limpia. Usar timer corto para dar
+	# tiempo a que el personaje equipe sus armas iniciales.
+	get_tree().create_timer(0.2).timeout.connect(_start_balance_telemetry)
 
 func _resume_saved_game() -> void:
 	"""Restaurar el estado de una partida guardada"""
@@ -1034,6 +1056,18 @@ func _on_enemy_died(death_position: Vector2, enemy_type: String, exp_value: int,
 		run_stats["elites_killed"] += 1
 	if is_boss:
 		run_stats["bosses_killed"] += 1
+	
+	# TELEMETRY: Log elite/boss kill to BalanceTelemetry for detailed tracking
+	if (is_elite or is_boss) and BalanceTelemetry and BalanceTelemetry._run_active:
+		var kill_event = {
+			"event": "elite_killed" if not is_boss else "boss_killed",
+			"enemy_id": enemy_type,
+			"tier": enemy_tier,
+			"t_min": game_time / 60.0,
+			"player_level": run_stats.get("level", 1),
+			"kills_total": run_stats["kills"],
+		}
+		BalanceTelemetry._log_event(kill_event)
 	
 	if hud and hud.has_method("update_kills"):
 		hud.update_kills(run_stats["kills"])
@@ -1864,6 +1898,11 @@ func add_healing_stat(amount: int) -> void:
 
 func _start_balance_telemetry() -> void:
 	"""Initialize balance telemetry for this run"""
+	# FIX-BT3: Resetear BalanceDebugger al inicio de cada run para evitar que
+	# las métricas de la run anterior se arrastren (damage_dealt_total, etc.)
+	if BalanceDebugger:
+		BalanceDebugger.reset_metrics()
+	
 	var starting_weapons: Array = []
 	var attack_manager = get_tree().get_first_node_in_group("attack_manager")
 	if attack_manager and attack_manager.has_method("get_weapons"):
@@ -1920,10 +1959,34 @@ func _check_telemetry_minute_snapshot() -> void:
 		"t_min": game_time / 60.0,
 		"gold": run_stats.get("gold", 0),
 		"kills": run_stats.get("kills", 0),
+		# FIX-BT7: Añadir score_total al contexto para que _capture_score_snapshot lo lea
+		"score_total": _calculate_run_score(),
+		"damage_dealt": run_stats.get("damage_dealt", 0),
+		"damage_taken": run_stats.get("damage_taken", 0),
+		"elites_killed": run_stats.get("elites_killed", 0),
+		"bosses_killed": run_stats.get("bosses_killed", 0),
+		"healing_done": run_stats.get("healing_done", 0),
 		"difficulty": {},
 		"weapons": [],
 		"player_stats": {}
 	}
+	
+	# TELEMETRY: Añadir HP actual del jugador al snapshot
+	var base_player = _get_base_player()
+	if base_player:
+		var health_comp = base_player.health_component if "health_component" in base_player else null
+		if health_comp:
+			context["hp_current"] = health_comp.current_health
+			context["hp_max"] = health_comp.max_health
+	
+	# TELEMETRY: Dodges total from BalanceDebugger
+	if BalanceDebugger:
+		var metrics = BalanceDebugger.get_current_metrics()
+		context["dodges_total"] = metrics.get("mitigation", {}).get("dodges", 0)
+	
+	# TELEMETRY: Active enemies count
+	if enemy_manager:
+		context["active_enemies"] = enemy_manager.active_enemies.size() if "active_enemies" in enemy_manager else 0
 	
 	# Get difficulty snapshot
 	if BalanceTelemetry:

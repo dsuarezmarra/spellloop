@@ -315,7 +315,9 @@ func log_minute_snapshot(context: Dictionary) -> void:
 			"elites_killed_total": elites_total,
 			"elites_killed_last_60s": elites_delta,
 			"bosses_killed_total": bosses_total,
-			"bosses_killed_last_60s": bosses_delta
+			"bosses_killed_last_60s": bosses_delta,
+			"dodges_total": context.get("dodges_total", 0),
+			"active_enemies": context.get("active_enemies", 0)
 		},
 		
 		"economy": {
@@ -335,6 +337,12 @@ func log_minute_snapshot(context: Dictionary) -> void:
 			"stats": context.get("player_stats", {})
 		}
 	}
+	
+	# TELEMETRY: Añadir HP del jugador si está disponible en el contexto
+	if context.has("hp_current"):
+		event["hp_current"] = context["hp_current"]
+		event["hp_max"] = context.get("hp_max", 0)
+	
 	_log_event(event)
 	
 	# ════════════════════════════════════════════════════════════════════════════

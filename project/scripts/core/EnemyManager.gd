@@ -315,7 +315,14 @@ func _spawn_boss(minute: int) -> void:
 
 	if boss:
 		boss_spawned.emit(boss)
-		# Debug desactivado: print("[EnemyManager] BOSS SPAWNEADO")
+		# BALANCE TELEMETRY: Log boss spawn
+		if BalanceTelemetry:
+			BalanceTelemetry.log_boss_spawned({
+				"boss_id": boss_data.get("id", boss_data.get("name", "unknown")),
+				"phase": minute,
+				"hp": boss_data.get("hp", 0),
+				"tier": boss_data.get("tier", "boss")
+			})
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SPAWN DE ÉLITES
@@ -498,11 +505,13 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2, force: bool = false
 	if enemy_data.get("is_boss", false) or type_id.find("boss") != -1:
 		boss_spawned.emit(enemy)
 		# Balance Debug: Log boss spawn for TTK tracking
-		if BalanceDebugger and BalanceDebugger.enabled:
+		# FIX-BT2b: Siempre recopilar datos
+		if BalanceDebugger:
 			BalanceDebugger.log_elite_spawn(enemy.get_instance_id(), true)
 	elif enemy_data.get("is_elite", false):
 		# Balance Debug: Log elite spawn for TTK tracking
-		if BalanceDebugger and BalanceDebugger.enabled:
+		# FIX-BT2b: Siempre recopilar datos
+		if BalanceDebugger:
 			BalanceDebugger.log_elite_spawn(enemy.get_instance_id(), false)
 	
 	# Efecto visual de spawn (humo/puff)
@@ -527,7 +536,8 @@ func _on_enemy_died(enemy: Node, type_id: String = "", exp_value: int = 0, enemy
 		active_enemies.erase(enemy)
 
 	# Balance Debug: Log elite/boss death for TTK tracking
-	if BalanceDebugger and BalanceDebugger.enabled:
+	# FIX-BT2b: Siempre recopilar datos
+	if BalanceDebugger:
 		if is_boss:
 			BalanceDebugger.log_elite_death(enemy.get_instance_id(), true)
 		elif is_elite:

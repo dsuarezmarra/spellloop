@@ -212,10 +212,21 @@ func _capture_spike_snapshot(frame_time: float) -> void:
 	if get_tree() and get_tree().current_scene:
 		scene_name = get_tree().current_scene.name
 	
+	# Game context for correlation with balance.jsonl
+	var game_time_min := 0.0
+	var player_lvl := 0
+	var game_node = get_tree().root.get_node_or_null("Game") if get_tree() else null
+	if game_node and "game_time" in game_node:
+		game_time_min = game_node.game_time / 60.0
+	if game_node and "run_stats" in game_node:
+		player_lvl = game_node.run_stats.get("level", 0)
+	
 	var snapshot = {
 		"event": "perf_spike",
 		"schema_version": LOG_SCHEMA_VERSION,
 		"timestamp": Time.get_ticks_msec(),
+		"t_min": snapped(game_time_min, 0.01),
+		"player_level": player_lvl,
 		"frame_time_ms": frame_time,
 		"instant_fps": instant_fps,
 		"fps_smoothed": Engine.get_frames_per_second(),
@@ -385,10 +396,21 @@ func _aggregate_minute_metrics() -> void:
 		memory_values.append(c.get("memory_static_mb", 0))
 		node_count_values.append(c.get("node_count", 0))
 	
+	# Game context for correlation
+	var game_time_min := 0.0
+	var player_lvl := 0
+	var game_node2 = get_tree().root.get_node_or_null("Game") if get_tree() else null
+	if game_node2 and "game_time" in game_node2:
+		game_time_min = game_node2.game_time / 60.0
+	if game_node2 and "run_stats" in game_node2:
+		player_lvl = game_node2.run_stats.get("level", 0)
+	
 	var report = {
 		"event": "minute_report",
 		"schema_version": LOG_SCHEMA_VERSION,
 		"timestamp": Time.get_unix_time_from_system(),
+		"t_min": snapped(game_time_min, 0.01),
+		"player_level": player_lvl,
 		"samples": _minute_samples.size(),
 		"fps": {
 			"min": fps_values.min() if fps_values.size() > 0 else 0,

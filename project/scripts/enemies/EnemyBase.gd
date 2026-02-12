@@ -1433,12 +1433,21 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 			game_node.add_damage_stat(final_damage)
 	
 	# AUDIT: Preparar tracking para RunAuditTracker
+	# FIX-BT6: Cadena de fallback para weapon_id en vez de solo "unknown"
 	var _audit_weapon_id := "unknown"
 	var _audit_is_crit: bool = false
 	if final_damage > 0 and RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
 		_audit_is_crit = final_damage >= int(amount * 1.5)
 		if _attacker and is_instance_valid(_attacker) and _attacker.has_meta("weapon_id"):
-			_audit_weapon_id = _attacker.get_meta("weapon_id")
+			var wid = _attacker.get_meta("weapon_id")
+			if wid != "" and wid != null:
+				_audit_weapon_id = wid
+		# Fallback: usar elemento del daño para categorizar fuentes sin weapon_id
+		if _audit_weapon_id == "unknown":
+			if _element != "" and _element != "physical":
+				_audit_weapon_id = "effect_" + _element  # e.g. "effect_fire", "effect_explosion"
+			elif _attacker == null:
+				_audit_weapon_id = "passive_effect"  # DOTs, overkill, etc.
 
 	# Aplicar daño a través del HealthComponent
 	if health_component:

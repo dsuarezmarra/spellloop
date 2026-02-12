@@ -549,7 +549,8 @@ func level_up_player():
 	exp_to_next_level = get_exp_for_level(current_level + 1)
 	
 	# BALANCE PASS 2: Log level up para BalanceDebugger
-	if BalanceDebugger and BalanceDebugger.enabled:
+	# FIX-BT2b: Siempre recopilar datos (enabled solo controla UI overlay)
+	if BalanceDebugger:
 		BalanceDebugger.log_level_up(current_level)
 	
 	# AUDIT: Report level up

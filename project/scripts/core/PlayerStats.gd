@@ -1369,7 +1369,8 @@ func _update_health_regen(delta: float) -> void:
 		if player_hp < max_hp and player_hp > 0:
 			player_ref.heal(heal_int)
 			# Balance Debug: Log regen heal
-			if BalanceDebugger and BalanceDebugger.enabled:
+			# FIX-BT2b: Siempre recopilar datos
+			if BalanceDebugger:
 				BalanceDebugger.log_heal(heal_int, "regen")
 	else:
 		pass  # Bloque else
@@ -1377,7 +1378,8 @@ func _update_health_regen(delta: float) -> void:
 		if current_health < get_stat("max_health") and current_health > 0:
 			heal(float(heal_int))
 			# Balance Debug: Log regen heal (fallback)
-			if BalanceDebugger and BalanceDebugger.enabled:
+			# FIX-BT2b: Siempre recopilar datos
+			if BalanceDebugger:
 				BalanceDebugger.log_heal(heal_int, "regen")
 
 func _get_player_current_health() -> float:

@@ -167,7 +167,8 @@ static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
 		if player.has_method("heal"):
 			player.heal(heal_int)
 			# Balance Debug: Log lifesteal heal
-			if BalanceDebugger and BalanceDebugger.enabled:
+			# FIX-BT2b: Siempre recopilar datos
+			if BalanceDebugger:
 				BalanceDebugger.log_heal(heal_int, "lifesteal")
 			# Debug desactivado: print("[LifeSteal] Curado +%d HP" % heal_int)
 		elif player.has_node("PlayerStats"):
@@ -175,7 +176,8 @@ static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
 			if stats.has_method("heal"):
 				stats.heal(heal_int)
 				# Balance Debug: Log lifesteal heal
-				if BalanceDebugger and BalanceDebugger.enabled:
+				# FIX-BT2b: Siempre recopilar datos
+				if BalanceDebugger:
 					BalanceDebugger.log_heal(heal_int, "lifesteal")
 				# Debug desactivado: print("[LifeSteal] Curado +%d HP" % heal_int)
 
