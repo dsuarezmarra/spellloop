@@ -656,6 +656,10 @@ func _start_game() -> void:
 		"healing_done": 0
 	}
 
+	# STEAM ACHIEVEMENTS: Notificar inicio de run
+	if SteamAchievements:
+		SteamAchievements.on_run_started()
+
 	# Debug desactivado: print("🚀 [Game] ¡Partida iniciada!")
 	
 	# Forzar actualización del HUD de armas después de que todo esté inicializado
@@ -1016,6 +1020,9 @@ func _on_quit_to_menu() -> void:
 	"""Finalizar telemetría cuando el jugador sale al menú desde pausa."""
 	if game_running:
 		_end_balance_telemetry("quit_to_menu")
+		# STEAM ACHIEVEMENTS: Notificar fin de run (quit)
+		if SteamAchievements:
+			SteamAchievements.on_run_ended(run_stats)
 		game_running = false
 		var game_manager = get_tree().root.get_node_or_null("GameManager")
 		if game_manager and game_manager.has_method("end_current_run"):
@@ -1056,6 +1063,10 @@ func _on_enemy_died(death_position: Vector2, enemy_type: String, exp_value: int,
 		run_stats["elites_killed"] += 1
 	if is_boss:
 		run_stats["bosses_killed"] += 1
+	
+	# STEAM ACHIEVEMENTS: Notificar kill
+	if SteamAchievements:
+		SteamAchievements.on_enemy_killed(enemy_type, enemy_tier, is_boss, enemy_type if is_boss else "")
 	
 	# TELEMETRY: Log elite/boss kill to BalanceTelemetry for detailed tracking
 	if (is_elite or is_boss) and BalanceTelemetry and BalanceTelemetry._run_active:
@@ -1293,6 +1304,10 @@ func _on_exp_gained(_amount: int, total: int) -> void:
 func _on_level_up(new_level: int, _upgrades: Array) -> void:
 	run_stats["level"] = new_level
 
+	# STEAM ACHIEVEMENTS: Notificar level up
+	if SteamAchievements:
+		SteamAchievements.on_level_up(new_level)
+
 	# Añadir a la cola de level ups pendientes
 	pending_level_ups.append(new_level)
 
@@ -1481,6 +1496,13 @@ func player_died() -> void:
 
 	# Guardar tiempo jugado en esta sesión
 	save_session_playtime()
+
+	# STEAM ACHIEVEMENTS: Notificar fin de run (muerte)
+	if SteamAchievements:
+		var ach_run_data = run_stats.duplicate()
+		ach_run_data["duration"] = game_time
+		ach_run_data["enemies_defeated"] = run_stats.get("kills", 0)
+		SteamAchievements.on_run_ended(ach_run_data)
 
 	game_running = false
 	
@@ -2165,6 +2187,10 @@ func _on_boss_spawned(boss_id: String) -> void:
 	"""Callback cuando aparece un boss"""
 	# Debug desactivado: print("👹 [Game] ¡BOSS SPAWNEADO: %s!" % boss_id)
 
+	# STEAM ACHIEVEMENTS: Notificar spawn de boss (inicia timer para fast kill / no-hit)
+	if SteamAchievements:
+		SteamAchievements.on_boss_spawned()
+
 	var boss_name = _get_boss_display_name(boss_id)
 
 	if hud and hud.has_method("show_wave_message"):
@@ -2235,6 +2261,9 @@ func _on_weapon_changed_update_hud(_weapon, _slot_index: int) -> void:
 	var attack_manager_ref = get_tree().get_first_node_in_group("attack_manager")
 	if attack_manager_ref:
 		_update_hud_weapons_from_attack_manager(attack_manager_ref)
+		# STEAM ACHIEVEMENTS: Verificar logro de máximo de armas
+		if SteamAchievements and attack_manager_ref.has_method("get_weapon_count"):
+			SteamAchievements.on_weapons_equipped(attack_manager_ref.get_weapon_count())
 
 func _on_weapon_leveled_up_update_hud(_weapon, _new_level: int) -> void:
 	"""Callback cuando un arma sube de nivel - actualizar HUD"""

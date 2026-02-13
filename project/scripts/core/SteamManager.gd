@@ -91,6 +91,9 @@ func _initialize_steam() -> void:
 		# Conectar señales de Steam
 		_connect_steam_signals()
 		
+		# Solicitar stats del usuario
+		_steam.requestCurrentStats()
+		
 		print("[SteamManager] ✅ Steam inicializado - Usuario: %s (ID: %d)" % [steam_name, steam_id])
 		steam_initialized.emit(true)
 	else:
@@ -107,6 +110,10 @@ func _connect_steam_signals() -> void:
 	_steam.leaderboard_find_result.connect(_on_leaderboard_find_result)
 	_steam.leaderboard_score_uploaded.connect(_on_leaderboard_score_uploaded)
 	_steam.leaderboard_scores_downloaded.connect(_on_leaderboard_scores_downloaded)
+	
+	# Conectar callback de stats del usuario
+	if _steam.has_signal("current_stats_received"):
+		_steam.current_stats_received.connect(_on_current_stats_received)
 
 func _process(_delta: float) -> void:
 	"""Procesar callbacks de Steam"""
@@ -177,15 +184,55 @@ func upload_score(score: int, build_data: Dictionary = {}, leaderboard_name: Str
 		request_leaderboard(leaderboard_name)
 
 func _serialize_build_data(build_data: Dictionary) -> PackedInt32Array:
-	"""Serializar build data a int32 array para Steam (máx 64 ints = 256 bytes)"""
-	# Por ahora, retornar array vacío
-	# TODO: Implementar serialización comprimida de la build
-	return PackedInt32Array()
+	"""Serializar build data a int32 array para Steam (máx 64 ints = 256 bytes)
+	Formato: [version, character_hash, level, score, duration_secs, enemies_killed, bosses_killed, weapons_mask]"""
+	var data = PackedInt32Array()
+	
+	# Versión del formato (para compatibilidad futura)
+	data.append(1)
+	
+	# Hash del character ID (para identificarlo en 32 bits)
+	var char_id = build_data.get("character_id", "unknown")
+	data.append(char_id.hash())
+	
+	# Stats principales
+	data.append(build_data.get("level", 0))
+	data.append(build_data.get("score", 0))
+	data.append(int(build_data.get("duration", 0.0)))
+	data.append(build_data.get("enemies_killed", 0))
+	data.append(build_data.get("bosses_killed", 0))
+	
+	# Bitmask de armas equipadas (hasta 32 armas, cada bit = 1 arma)
+	var weapons = build_data.get("weapons", [])
+	var weapons_mask: int = 0
+	for i in range(mini(weapons.size(), 32)):
+		weapons_mask |= (1 << i)
+	data.append(weapons_mask)
+	
+	return data
 
-func _deserialize_build_data(_details: PackedInt32Array) -> Dictionary:
+func _deserialize_build_data(details: PackedInt32Array) -> Dictionary:
 	"""Deserializar build data desde int32 array"""
-	# TODO: Implementar deserialización
-	return {}
+	if details.is_empty():
+		return {}
+	
+	var result: Dictionary = {}
+	
+	# Verificar versión
+	var version = details[0] if details.size() > 0 else 0
+	if version != 1:
+		return result
+	
+	if details.size() >= 8:
+		result["character_hash"] = details[1]
+		result["level"] = details[2]
+		result["score"] = details[3]
+		result["duration"] = details[4]
+		result["enemies_killed"] = details[5]
+		result["bosses_killed"] = details[6]
+		result["weapons_mask"] = details[7]
+	
+	return result
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CALLBACKS DE STEAM
@@ -248,6 +295,80 @@ func get_cached_entries(leaderboard_name: String = "") -> Array:
 		leaderboard_name = get_current_month_leaderboard_name()
 	
 	return _cached_entries.get(leaderboard_name, [])
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ACHIEVEMENTS Y STATS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+func request_user_stats() -> void:
+	"""Solicitar stats del usuario desde Steam"""
+	if is_steam_available and _steam != null:
+		_steam.requestCurrentStats()
+
+func set_achievement(achievement_id: String) -> void:
+	"""Establecer un achievement en Steam"""
+	if not is_steam_available or _steam == null:
+		return
+	
+	_steam.setAchievement(achievement_id)
+	_steam.storeStats()
+	print("[SteamManager] 🏆 Achievement set: %s" % achievement_id)
+
+func get_achievement(achievement_id: String) -> bool:
+	"""Verificar si un achievement está desbloqueado en Steam"""
+	if not is_steam_available or _steam == null:
+		return false
+	
+	var result = _steam.getAchievement(achievement_id)
+	if result is Dictionary:
+		return result.get("achieved", false)
+	return false
+
+func clear_achievement(achievement_id: String) -> void:
+	"""Limpiar un achievement en Steam (debug only)"""
+	if not is_steam_available or _steam == null:
+		return
+	
+	_steam.clearAchievement(achievement_id)
+	_steam.storeStats()
+	print("[SteamManager] ⚠️ Achievement cleared: %s" % achievement_id)
+
+func clear_all_achievements() -> void:
+	"""Limpiar todos los achievements (debug only)"""
+	if not OS.is_debug_build():
+		return
+	
+	if not is_steam_available or _steam == null:
+		return
+	
+	# Obtener lista de achievements desde SteamAchievements si disponible
+	var ach_mgr = get_node_or_null("/root/SteamAchievements")
+	if ach_mgr:
+		for ach_id in ach_mgr.ACHIEVEMENTS:
+			_steam.clearAchievement(ach_id)
+	_steam.storeStats()
+	print("[SteamManager] ⚠️ All achievements cleared")
+
+func set_stat(stat_name: String, value: int) -> void:
+	"""Establecer un stat en Steam"""
+	if not is_steam_available or _steam == null:
+		return
+	
+	_steam.setStatInt(stat_name, value)
+	_steam.storeStats()
+
+func get_stat(stat_name: String) -> int:
+	"""Obtener un stat desde Steam"""
+	if not is_steam_available or _steam == null:
+		return 0
+	
+	return _steam.getStatInt(stat_name)
+
+func _on_current_stats_received(game_id: int, result: int) -> void:
+	"""Callback cuando se reciben stats del usuario"""
+	var success = result == 1  # k_EResultOK
+	print("[SteamManager] User stats received: %s (game: %d)" % [success, game_id])
+	user_stats_received.emit(success)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # UTILIDADES

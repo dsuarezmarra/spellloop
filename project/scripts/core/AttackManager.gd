@@ -533,6 +533,11 @@ func fuse_weapons(weapon_a: BaseWeapon, weapon_b: BaseWeapon) -> BaseWeapon:
 	# Añadir arma fusionada
 	add_weapon(fused)
 
+	# STEAM ACHIEVEMENTS: Notificar fusión creada
+	var steam_ach = get_node_or_null("/root/SteamAchievements")
+	if steam_ach:
+		steam_ach.on_fusion_created()
+
 	# Actualizar slots (ya se redujo en el fusion_manager)
 	slots_updated.emit(current_weapon_count, max_weapon_slots)
 
