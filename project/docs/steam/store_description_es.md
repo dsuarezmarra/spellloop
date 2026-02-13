@@ -1,4 +1,4 @@
-# SpellLoop — Página de Steam (Español)
+# LoopiaLike — Página de Steam (Español)
 
 ## Descripción Corta (Máx 300 caracteres)
 
@@ -6,7 +6,7 @@ Sobrevive a oleadas de criaturas mágicas en este RPG de acción rogue-lite fren
 
 ## Acerca de este juego
 
-**SpellLoop** es un RPG de acción rogue-lite inspirado en el género de supervivencia con ataque automático. Entra en un mundo de caos arcano donde tus hechizos se lanzan automáticamente — tu trabajo es moverte, sobrevivir y hacerte más fuerte.
+**LoopiaLike** es un RPG de acción rogue-lite inspirado en el género de supervivencia con ataque automático. Entra en un mundo de caos arcano donde tus hechizos se lanzan automáticamente — tu trabajo es moverte, sobrevivir y hacerte más fuerte.
 
 ### ⚡ Características Principales
 
@@ -65,7 +65,7 @@ Sobrevive a oleadas de criaturas mágicas en este RPG de acción rogue-lite fren
 
 ### ¿Por qué Acceso Anticipado?
 
-SpellLoop tiene un gameplay loop sólido con 10 magos, 6 biomas y sistemas de combate extensos. Entramos en Acceso Anticipado para recibir feedback de los jugadores sobre el balance, recopilar datos de wishlists para nuevas características e iterar rápidamente.
+LoopiaLike tiene un gameplay loop sólido con 10 magos, 6 biomas y sistemas de combate extensos. Entramos en Acceso Anticipado para recibir feedback de los jugadores sobre el balance, recopilar datos de wishlists para nuevas características e iterar rápidamente.
 
 ### ¿Cuánto tiempo estará en Acceso Anticipado?
 

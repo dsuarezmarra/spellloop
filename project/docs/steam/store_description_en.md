@@ -1,4 +1,4 @@
-# SpellLoop — Steam Store Page (English)
+# LoopiaLike — Steam Store Page (English)
 
 ## Short Description (Max 300 characters)
 
@@ -6,7 +6,7 @@ Survive waves of magical creatures in this fast-paced rogue-lite action RPG. Cho
 
 ## About This Game
 
-**SpellLoop** is a rogue-lite action RPG inspired by the auto-attack survivor genre. Step into a world of arcane chaos where your spells fire automatically — your job is to move, survive, and grow stronger.
+**LoopiaLike** is a rogue-lite action RPG inspired by the auto-attack survivor genre. Step into a world of arcane chaos where your spells fire automatically — your job is to move, survive, and grow stronger.
 
 ### ⚡ Core Features
 
@@ -65,7 +65,7 @@ Survive waves of magical creatures in this fast-paced rogue-lite action RPG. Cho
 
 ### Why Early Access?
 
-SpellLoop has a solid core gameplay loop with 10 mages, 6 biomes, and extensive combat systems. We're entering Early Access to get player feedback on balance, gather wishlist data for new features, and iterate quickly.
+LoopiaLike has a solid core gameplay loop with 10 mages, 6 biomes, and extensive combat systems. We're entering Early Access to get player feedback on balance, gather wishlist data for new features, and iterate quickly.
 
 ### How long will it be in Early Access?
 

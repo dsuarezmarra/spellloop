@@ -416,6 +416,9 @@ func unlock_mage(mage_id: String) -> void:
 	if mage_id not in player_data["unlocked_mages"]:
 		player_data["unlocked_mages"].append(mage_id)
 		save_game_data()
+		# STEAM ACHIEVEMENTS: Notificar desbloqueo de mago
+		if SteamAchievements:
+			SteamAchievements.on_mage_unlocked(player_data["unlocked_mages"].size())
 		# Debug desactivado: print("[SaveManager] Unlocked mage: ", mage_id)
 
 func unlock_spell(spell_id: String) -> void:
