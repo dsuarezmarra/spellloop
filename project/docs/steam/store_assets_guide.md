@@ -4,15 +4,34 @@
 
 | Asset | Size (px) | Format | Status | Usage |
 |-------|-----------|--------|--------|-------|
-| **Header Capsule** | 460×215 | PNG/JPG | ❌ Pending | Search results, store browse |
+| **Header Capsule** | 460×215 | PNG/JPG | ✅ User Provided | Search results, store browse |
 | **Small Capsule** | 231×87 | PNG/JPG | ❌ Pending | Wishlists, top sellers |
-| **Main Capsule** | 616×353 | PNG/JPG | ❌ Pending | Store featured section |
+| **Main Capsule** | 616×353 | PNG/JPG | ✅ User Provided | Store featured section |
 | **Hero Image** | 3840×1240 | PNG/JPG | ❌ Pending | Store page top banner |
 | **Library Capsule** | 600×900 | PNG/JPG | ❌ Pending | Player library (vertical) |
 | **Library Hero** | 3840×1240 | PNG/JPG | ❌ Pending | Library background |
 | **Logo** | variable | PNG (transparent) | ❌ Pending | Over Hero Image |
 | **Client Icon** | 16×16, 32×32 | ICO | ✅ Use icon.svg | Taskbar/systray |
 | **Community Icon** | 184×184 | JPG | ❌ Pending | Community hub |
+
+## Generation Prompts (For External Tools)
+
+If generating these assets externally (e.g., ChatGPT, Midjourney), use these prompts and then resize/crop to the exact dimensions above.
+
+### 1. Library Capsule (Vertical Poster)
+**Target Size:** 600×900
+**Prompt:**
+> Vertical movie-poster style art for a roguelike game called "LoopiaLike". Three cute chibi 2D mages (Red Pyromancer styling with fire, Blue Frost Mage with ice shards, Purple Storm Mage with lightning) arranged vertically or in a pyramid composition against a dark magical vortex background. The title "LoopiaLike" is displayed at the top or bottom in a glowing gold/blue fantasy font. Vibrant colors, sharp details, high contrast. Aspect ratio 2:3.
+
+### 2. Small Capsule (Tiny Banner)
+**Target Size:** 231×87
+**Prompt:**
+> Small horizontal game banner for "LoopiaLike". Dark blue/purple magical background. The text "LoopiaLike" in a bold, glowing fantasy font takes up 80% of the space. On the left, a small fireball or lightning bolt icon. High contrast, very legible at small sizes. No complex details. Aspect ratio 8:3.
+
+### 3. Hero Image (Store Page Header)
+**Target Size:** 3840×1240 (or 1920×620)
+**Prompt:**
+> Epic wide cinematic landscape for a fantasy game "LoopiaLike". A massive magical battlefield with hundreds of cute shadow creature enemies swarming. In the center, the three chibi mages (Fire, Ice, Storm) stand back-to-back casting huge colorful spells (tornadoes of fire, blizzards, lightning storms). Detailed background with ancient ruins. The title "LoopiaLike" is overlayed in the center with a magical glow. High resolution 4k key art. Aspect ratio 3:1.
 
 ## Screenshots (minimum 5, recommended 10)
 
