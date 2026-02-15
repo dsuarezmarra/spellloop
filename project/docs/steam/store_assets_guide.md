@@ -4,9 +4,9 @@
 
 | Asset | Size (px) | Format | Status | Usage |
 |-------|-----------|--------|--------|-------|
-| **Header Capsule** | 460×215 | PNG/JPG | ✅ User Provided | Search results, store browse |
+| **Header Capsule** | 460×215 | PNG/JPG | ✅ Ready (`header_capsule_1771007901502.png`) | Search results, store browse |
 | **Small Capsule** | 231×87 | PNG/JPG | ❌ Pending | Wishlists, top sellers |
-| **Main Capsule** | 616×353 | PNG/JPG | ✅ User Provided | Store featured section |
+| **Main Capsule** | 616×353 | PNG/JPG | ❌ Pending | Store featured section |
 | **Hero Image** | 3840×1240 | PNG/JPG | ❌ Pending | Store page top banner |
 | **Library Capsule** | 600×900 | PNG/JPG | ❌ Pending | Player library (vertical) |
 | **Library Hero** | 3840×1240 | PNG/JPG | ❌ Pending | Library background |
