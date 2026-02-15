@@ -5,11 +5,11 @@
 | Asset | Size (px) | Format | Status | Usage |
 |-------|-----------|--------|--------|-------|
 | **Header Capsule** | 460×215 | PNG/JPG | ✅ Ready (`header_capsule_1771007901502.png`) | Search results, store browse |
-| **Small Capsule** | 231×87 | PNG/JPG | ❌ Pending | Wishlists, top sellers |
+| **Small Capsule** | 231×87 | PNG/JPG | ⚠️ Candidate (`small_capsule_source.png`) | Wishlists, top sellers |
 | **Main Capsule** | 616×353 | PNG/JPG | ❌ Pending | Store featured section |
-| **Hero Image** | 3840×1240 | PNG/JPG | ❌ Pending | Store page top banner |
-| **Library Capsule** | 600×900 | PNG/JPG | ❌ Pending | Player library (vertical) |
-| **Library Hero** | 3840×1240 | PNG/JPG | ❌ Pending | Library background |
+| **Hero Image** | 3840×1240 | PNG/JPG | ⚠️ Candidate (`hero_image_source.png`) | Store page top banner |
+| **Library Capsule** | 600×900 | PNG/JPG | ⚠️ Candidate (`library_capsule_source.png`) | Player library (vertical) |
+| **Library Hero** | 3840×1240 | PNG/JPG | ⚠️ Candidate (`hero_image_source.png`) | Library background |
 | **Logo** | variable | PNG (transparent) | ❌ Pending | Over Hero Image |
 | **Client Icon** | 16×16, 32×32 | ICO | ✅ Use icon.svg | Taskbar/systray |
 | **Community Icon** | 184×184 | JPG | ❌ Pending | Community hub |

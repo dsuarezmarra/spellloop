@@ -2,12 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dui3vnbqkwerl"
-valid=false
+uid="uid://bhhgu2ps5ic1r"
+path="res://.godot/imported/hero_image_candidate.png-7ac28aceeb690ff13986c144589ddb2f.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
-source_file="res://docs/steam/assets/steam_header_capsule_1771008607347.png"
+source_file="res://docs/steam/assets/hero_image_candidate.png"
+dest_files=["res://.godot/imported/hero_image_candidate.png-7ac28aceeb690ff13986c144589ddb2f.ctex"]
 
 [params]
 
