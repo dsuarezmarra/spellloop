@@ -2797,6 +2797,11 @@ func _perform_boss_melee_attack() -> void:
 	if not player or not player.has_method("take_damage"):
 		return
 	
+	# Verificar que el player está en rango melee del boss (radio generoso para bosses)
+	var dist_to_player = enemy.global_position.distance_to(player.global_position)
+	if dist_to_player > 80.0:  # Rango melee amplio para bosses
+		return
+	
 	var boss_damage = int(attack_damage * 1.2)  # Bosses hacen mÃƒÂ¡s daÃƒÂ±o
 	player.take_damage(boss_damage, "physical", enemy)
 	# print("[EnemyAttackSystem] Ã°Å¸â€˜Â¹ %s (Boss) melee devastador por %d daÃƒÂ±o" % [enemy.name, boss_damage])

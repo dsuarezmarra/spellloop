@@ -37,6 +37,10 @@ func execute(attacker: Node2D, target: Node2D, context: Dictionary = {}) -> bool
 				}
 				timer.timeout.connect(_on_telegraph_finished.bind(ctx))
 			return true  # Ataque iniciado exitosamente (la ejecución continúa en callback)
+		else:
+			# Fallback: si el warning no se pudo crear, ejecutar daño directamente
+			push_warning("[EnemyAbility_Aoe] Warning indicator failed to load, executing damage directly")
+			_execute_damage_phase(attacker, target, final_radius, final_damage)
 	else:
 		# Sin telegraph, ejecutar daño directamente
 		_execute_damage_phase(attacker, target, final_radius, final_damage)

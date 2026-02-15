@@ -217,6 +217,9 @@ func _physics_process(delta: float) -> void:
 		for pos in trail_positions:
 			_trail_line.add_point(pos)
 	
+	# Verificar colisión manual por distancia (backup fiable para body_entered)
+	_check_player_collision_distance()
+	
 	# Lifetime
 	_lifetime_timer -= delta
 	if _lifetime_timer <= 0:
