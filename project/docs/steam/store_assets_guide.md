@@ -2,17 +2,20 @@
 
 ## Required Graphical Assets
 
-| Asset | Size (px) | Format | Status | Usage |
-|-------|-----------|--------|--------|-------|
-| **Header Capsule** | 460×215 | PNG/JPG | ✅ Ready (`header_capsule.png`) | Search results, store browse |
-| **Small Capsule** | 231×87 | PNG/JPG | ✅ Ready (`small_capsule.png`) | Wishlists, top sellers |
-| **Main Capsule** | 616×353 | PNG/JPG | ✅ Ready (`main_capsule.png`) | Store featured section |
-| **Hero Image** | 3840×1240 | PNG/JPG | ✅ Ready (`hero_image.png`) | Store page top banner |
-| **Library Capsule** | 600×900 | PNG/JPG | ✅ Ready (`library_capsule.png`) | Player library (vertical) |
-| **Library Hero** | 3840×1240 | PNG/JPG | ✅ Ready (`hero_image.png`) | Library background |
-| **Logo** | variable | PNG (transparent) | ✅ Ready (`logo.png`) | Over Hero Image |
-| **Client Icon** | 16×16, 32×32 | ICO | ✅ Ready (`client_icon.ico`) | Taskbar/systray |
-| **Community Icon** | 184×184 | JPG | ✅ Ready (`community_icon.jpg`) | Community hub |
+### ✅ Final Assets Location
+**All ready-to-upload files are in:** `docs/steam/assets/READY_TO_UPLOAD/`
+
+| Asset | Size (px) | Format | Status | Filename |
+|---|---|---|---|---|
+| **Header Capsule** | 460×215 | PNG | ✅ Ready | `header_capsule.png` |
+| **Small Capsule** | 231×87 | PNG | ✅ Ready | `small_capsule.png` |
+| **Main Capsule** | 616×353 | PNG | ✅ Ready | `main_capsule.png` |
+| **Hero Image** | 3840×1240 | PNG | ✅ Ready | `hero_image.png` |
+| **Library Capsule** | 600×900 | PNG | ✅ Ready | `library_capsule.png` |
+| **Library Hero** | 3840×1240 | PNG | ✅ Ready | `library_hero.png` |
+| **Logo** | variable | PNG | ✅ Ready | `logo.png` |
+| **Client Icon** | 32×32 | ICO | ✅ Ready | `client_icon.ico` |
+| **Community Icon** | 184×184 | JPG | ✅ Ready | `community_icon.jpg` |
 
 ## Generation Prompts (For External Tools)
 
