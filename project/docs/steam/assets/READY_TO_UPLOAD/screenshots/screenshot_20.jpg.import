@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://t6t7a3espi7h"
-path="res://.godot/imported/library_hero.png-6bf6e85159e307c762dcbd0a29d11267.ctex"
+uid="uid://c8lmj0kkedgcl"
+path="res://.godot/imported/screenshot_20.jpg-c49c7a2161d5cf6432e5c45fb624bea7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/steam/assets/READY_TO_UPLOAD/library_hero.png"
-dest_files=["res://.godot/imported/library_hero.png-6bf6e85159e307c762dcbd0a29d11267.ctex"]
+source_file="res://docs/steam/assets/READY_TO_UPLOAD/screenshots/screenshot_20.jpg"
+dest_files=["res://.godot/imported/screenshot_20.jpg-c49c7a2161d5cf6432e5c45fb624bea7.ctex"]
 
 [params]
 

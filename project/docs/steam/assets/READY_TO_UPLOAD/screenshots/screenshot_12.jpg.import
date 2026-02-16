@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c8tciq1qjafon"
-path="res://.godot/imported/small_capsule.png-cc0938e81b94453ec1f1ac5a4f54e940.ctex"
+uid="uid://cdf8hdduuleum"
+path="res://.godot/imported/screenshot_12.jpg-da2614cd1ca6ebf7bb02d10811986589.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/steam/assets/READY_TO_UPLOAD/small_capsule.png"
-dest_files=["res://.godot/imported/small_capsule.png-cc0938e81b94453ec1f1ac5a4f54e940.ctex"]
+source_file="res://docs/steam/assets/READY_TO_UPLOAD/screenshots/screenshot_12.jpg"
+dest_files=["res://.godot/imported/screenshot_12.jpg-da2614cd1ca6ebf7bb02d10811986589.ctex"]
 
 [params]
 
