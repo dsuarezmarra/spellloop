@@ -4,15 +4,15 @@
 
 | Asset | Size (px) | Format | Status | Usage |
 |-------|-----------|--------|--------|-------|
-| **Header Capsule** | 460×215 | PNG/JPG | ✅ Ready (`header_capsule_1771007901502.png`) | Search results, store browse |
+| **Header Capsule** | 460×215 | PNG/JPG | ✅ Ready (`header_capsule.png`) | Search results, store browse |
 | **Small Capsule** | 231×87 | PNG/JPG | ✅ Ready (`small_capsule.png`) | Wishlists, top sellers |
-| **Main Capsule** | 616×353 | PNG/JPG | ❌ Pending | Store featured section |
-| **Hero Image** | 3840×1240 | PNG/JPG | ⚠️ Candidate (`hero_image_source.png`) | Store page top banner |
-| **Library Capsule** | 600×900 | PNG/JPG | ❌ Pending | Player library (vertical) |
-| **Library Hero** | 3840×1240 | PNG/JPG | ⚠️ Candidate (`hero_image_source.png`) | Library background |
-| **Logo** | variable | PNG (transparent) | ❌ Pending | Over Hero Image |
-| **Client Icon** | 16×16, 32×32 | ICO | ✅ Use icon.svg | Taskbar/systray |
-| **Community Icon** | 184×184 | JPG | ❌ Pending | Community hub |
+| **Main Capsule** | 616×353 | PNG/JPG | ✅ Ready (`main_capsule.png`) | Store featured section |
+| **Hero Image** | 3840×1240 | PNG/JPG | ✅ Ready (`hero_image.png`) | Store page top banner |
+| **Library Capsule** | 600×900 | PNG/JPG | ✅ Ready (`library_capsule.png`) | Player library (vertical) |
+| **Library Hero** | 3840×1240 | PNG/JPG | ✅ Ready (`hero_image.png`) | Library background |
+| **Logo** | variable | PNG (transparent) | ✅ Ready (`logo.png`) | Over Hero Image |
+| **Client Icon** | 16×16, 32×32 | ICO | ✅ Ready (`client_icon.ico`) | Taskbar/systray |
+| **Community Icon** | 184×184 | JPG | ✅ Ready (`community_icon.jpg`) | Community hub |
 
 ## Generation Prompts (For External Tools)
 
