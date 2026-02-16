@@ -5,10 +5,10 @@
 | Asset | Size (px) | Format | Status | Usage |
 |-------|-----------|--------|--------|-------|
 | **Header Capsule** | 460×215 | PNG/JPG | ✅ Ready (`header_capsule_1771007901502.png`) | Search results, store browse |
-| **Small Capsule** | 231×87 | PNG/JPG | ⚠️ Candidate (`small_capsule_source.png`) | Wishlists, top sellers |
+| **Small Capsule** | 231×87 | PNG/JPG | ✅ Ready (`small_capsule.png`) | Wishlists, top sellers |
 | **Main Capsule** | 616×353 | PNG/JPG | ❌ Pending | Store featured section |
 | **Hero Image** | 3840×1240 | PNG/JPG | ⚠️ Candidate (`hero_image_source.png`) | Store page top banner |
-| **Library Capsule** | 600×900 | PNG/JPG | ⚠️ Candidate (`library_capsule_source.png`) | Player library (vertical) |
+| **Library Capsule** | 600×900 | PNG/JPG | ❌ Pending | Player library (vertical) |
 | **Library Hero** | 3840×1240 | PNG/JPG | ⚠️ Candidate (`hero_image_source.png`) | Library background |
 | **Logo** | variable | PNG (transparent) | ❌ Pending | Over Hero Image |
 | **Client Icon** | 16×16, 32×32 | ICO | ✅ Use icon.svg | Taskbar/systray |
@@ -18,20 +18,40 @@
 
 If generating these assets externally (e.g., ChatGPT, Midjourney), use these prompts and then resize/crop to the exact dimensions above.
 
-### 1. Library Capsule (Vertical Poster)
+### 1. Main Capsule (Featured Store)
+**Target Size:** 616×353
+**Prompt:**
+> Horizontal game capsule for "LoopiaLike". Three cute chibi mages (Fire, Ice, Lightning) in a dynamic action pose in the center. Dark fantasy background with magical effects. Title "LoopiaLike" clearly visible at the top or bottom left. High contrast, vibrant colors. Aspect ratio 3.1:1 (approx 616x353).
+
+### 2. Library Capsule (Vertical Poster)
 **Target Size:** 600×900
 **Prompt:**
 > Vertical movie-poster style art for a roguelike game called "LoopiaLike". Three cute chibi 2D mages (Red Pyromancer styling with fire, Blue Frost Mage with ice shards, Purple Storm Mage with lightning) arranged vertically or in a pyramid composition against a dark magical vortex background. The title "LoopiaLike" is displayed at the top or bottom in a glowing gold/blue fantasy font. Vibrant colors, sharp details, high contrast. Aspect ratio 2:3.
 
-### 2. Small Capsule (Tiny Banner)
+### 3. Small Capsule (Tiny Banner)
 **Target Size:** 231×87
 **Prompt:**
 > Small horizontal game banner for "LoopiaLike". Dark blue/purple magical background. The text "LoopiaLike" in a bold, glowing fantasy font takes up 80% of the space. On the left, a small fireball or lightning bolt icon. High contrast, very legible at small sizes. No complex details. Aspect ratio 8:3.
 
-### 3. Hero Image (Store Page Header)
+### 4. Hero Image (Store Page Header)
 **Target Size:** 3840×1240 (or 1920×620)
 **Prompt:**
-> Epic wide cinematic landscape for a fantasy game "LoopiaLike". A massive magical battlefield with hundreds of cute shadow creature enemies swarming. In the center, the three chibi mages (Fire, Ice, Storm) stand back-to-back casting huge colorful spells (tornadoes of fire, blizzards, lightning storms). Detailed background with ancient ruins. The title "LoopiaLike" is overlayed in the center with a magical glow. High resolution 4k key art. Aspect ratio 3:1.
+> Epic wide cinematic landscape for a fantasy game "LoopiaLike". A massive magical battlefield with hundreds of cute shadow creature enemies swarming from the sides. In the center, the three chibi mages (Fire, Ice, Storm) stand back-to-back casting huge colorful spells (tornadoes of fire, blizzards, lightning storms). Detailed background with ancient ruins. The title "LoopiaLike" is overlayed in the center with a magical glow. High resolution 4k key art. Aspect ratio 3:1.
+
+### 5. Logo (Transparent)
+**Target Size:** 600×200 (approx)
+**Prompt:**
+> Text-based game logo for "LoopiaLike". Fantasy style typography with glowing effects. First word "Loopia" in gold/arcane blue, "Like" in silver/white. Minimal magical embellishments allowed (sparkles, runes). Transparent background. High legibility.
+
+### 6. Community Icon (Avatar)
+**Target Size:** 184×184
+**Prompt:**
+> Square icon for "LoopiaLike". A close-up face of a cute chibi fire mage or just the letter "L" in a magical fantasy font on a dark circle background. Simple, recognizable at small size.
+
+### 7. Client Icon (Taskbar)
+**Target Size:** 32×32 (ICO)
+**Prompt:**
+> Pixel art wizard hat or fireball. Simple 16x16 or 32x32 pixel art style. Dark outline for visibility. (Or use existing `icon.svg`).
 
 ## Screenshots (minimum 5, recommended 10)
 
