@@ -1019,35 +1019,38 @@ class AOEEffect extends Node2D:
 			if not ProjectileVisualManager.instance:
 				push_warning("[AOEEffect] ProjectileVisualManager.instance es null")
 
-		# Fallback: visual simple (skip in headless mode)
+		# Fallback: VFX genérico via VFXManager
 		if Headless.is_headless():
-			# En modo headless, NO destruir aquí. Dejar que _process maneje la duración.
 			return
 			
-		scale = Vector2(0.1, 0.1)
-		modulate.a = 1.0
+		# Intentar usar VFXManager para un efecto genérico mejor que un círculo dibujado
+		var vfx_mgr = get_node_or_null("/root/VFXManager")
+		if vfx_mgr and vfx_mgr.has_method("spawn_aoe"):
+			# Determinar tipo basado en color/elemento si es posible, o usar default
+			var fallback_type = "fire_stomp" # Default generico
+			
+			# Mapeo simple basado en color (aproximación)
+			if color.g > 0.8 and color.r < 0.5: fallback_type = "poison_nova" # Verde -> Poison
+			elif color.b > 0.8 and color.r < 0.5: fallback_type = "freeze_zone" # Azul -> Ice
+			elif color.r > 0.8 and color.g < 0.5: fallback_type = "fire_stomp" # Rojo -> Fire
+			elif color.r > 0.6 and color.b > 0.6: fallback_type = "arcane_nova" # Violeta -> Arcane
+			elif color.r > 0.8 and color.g > 0.8: fallback_type = "ground_slam" # Amarillo/Marron -> Earth
+			
+			# Spawnear el efecto
+			var vfx = vfx_mgr.spawn_aoe(fallback_type, global_position, aoe_radius)
+			if vfx:
+				# El VFXManager gestiona la vida del nodo visual
+				# Nosotros gestionamos la lógica de daño en _process
+				_use_enhanced = true # Para evitar que se intente dibujar algo más
+				return
 
-		var tween = create_tween()
-		# Expandir rápidamente
-		tween.tween_property(self, "scale", Vector2(1.0, 1.0), duration * 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-		# Mantener y luego desvanecer
-		tween.tween_interval(duration * 0.3)
-		tween.tween_property(self, "modulate:a", 0.0, duration * 0.4)
-		tween.tween_callback(queue_free)
+		# Si falla todo, usar círculo debug muy simple (solo editor/debug)
+		# Dejamos que _process maneje la duración lógica
+
 
 	func _draw() -> void:
-		# Solo dibujar si no usamos visual mejorado
-		if _use_enhanced:
-			return
-		# Dibujar círculo del AOE con múltiples capas para más visibilidad
-		# Capa exterior (borde grueso)
-		draw_arc(Vector2.ZERO, aoe_radius, 0, TAU, 48, color, 4.0)
-		# Capa media (relleno semi-transparente)
-		draw_circle(Vector2.ZERO, aoe_radius * 0.9, Color(color.r, color.g, color.b, 0.3))
-		# Núcleo más brillante
-		draw_circle(Vector2.ZERO, aoe_radius * 0.4, Color(color.r, color.g, color.b, 0.5))
-		# Centro muy brillante
-		draw_circle(Vector2.ZERO, aoe_radius * 0.15, Color(1.0, 1.0, 1.0, 0.7))
+		# Ya no dibujamos nada proceduralmente, confiamos en VFXManager o ProjectileVisualManager
+		pass
 
 	func _process(delta: float) -> void:
 		_timer += delta

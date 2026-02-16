@@ -143,171 +143,102 @@ func _setup_animations() -> void:
 	# Aplicar transparencia del 30% a todos los AOE
 	sprite.modulate.a = 0.7
 
-# Cache estático para animaciones procedurales
-static var _procedural_cache: Dictionary = {}
+# Cache estático retirado ya que usamos assets
+static var _fallback_texture_cache: Dictionary = {}
 
 func _setup_procedural() -> void:
-	"""Crear animaciones procedurales estilo cartoon (OPTIMIZADO: Cache estático)"""
-	# Generar clave única basada en el ID del arma o colores
-	var cache_key = "default"
-	if visual_data and visual_data.id:
-		cache_key = visual_data.id
-	elif visual_data:
-		cache_key = str(visual_data.primary_color) + str(visual_data.secondary_color)
-	
-	var target_scale = 1.0
-	var base_size = 64
-	if _radius > 0:
-		target_scale = _radius * 2.0 / float(base_size)
-	
-	# Usar cache si existe
-	if _procedural_cache.has(cache_key):
-		sprite.sprite_frames = _procedural_cache[cache_key]
+	"""Fallback: Usar spritesheet genérico (fire_stomp) de VFXManager"""
+	# Intentar obtener configuración de fire_stomp del VFXManager
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	if not vfx_mgr:
+		return
+
+	var config = vfx_mgr.AOE_CONFIG.get("fire_stomp")
+	if not config:
+		return
+		
+	var path = config.get("path", "")
+	if path.is_empty():
+		return
+
+	var tex: Texture2D
+	if _fallback_texture_cache.has(path):
+		tex = _fallback_texture_cache[path]
+	elif ResourceLoader.exists(path):
+		tex = load(path)
+		_fallback_texture_cache[path] = tex
 	else:
-		# GENERAR NUEVO (Solo una vez)
-		var frames = SpriteFrames.new()
-		var primary = visual_data.primary_color if visual_data else Color(0.4, 0.8, 1.0)
-		var secondary = visual_data.secondary_color if visual_data else Color(0.2, 0.5, 0.9)
-		var accent = visual_data.accent_color if visual_data else Color.WHITE
-		var outline = visual_data.outline_color if visual_data else Color(0.1, 0.2, 0.4)
+		return
+
+	# Configurar frames desde el spritesheet
+	var frames = SpriteFrames.new()
+	var hframes = config.get("hframes", 4)
+	var vframes = config.get("vframes", 2)
+	var frame_size = config.get("frame_size", Vector2(128, 128))
+	var fps = 12.0
+	
+	# Mapear animación: Usar todo el spritesheet como "active" y "appear"
+	# Appear: frames 0-3
+	frames.add_animation("appear")
+	frames.set_animation_loop("appear", false)
+	frames.set_animation_speed("appear", fps)
+	
+	for i in range(min(4, hframes * vframes)):
+		var atlas = AtlasTexture.new()
+		atlas.atlas = tex
+		# Suponiendo grid regular izquierda-derecha, arriba-abajo
+		# Fila 0
+		atlas.region = Rect2(i * frame_size.x, 0, frame_size.x, frame_size.y)
+		frames.add_frame("appear", atlas)
+
+	# Active: frames 4-7 (loop)
+	frames.add_animation("active")
+	frames.set_animation_loop("active", true)
+	frames.set_animation_speed("active", fps)
+	
+	# Usar segunda fila si existe, sino repetir primera
+	var row = 1 if vframes > 1 else 0
+	for i in range(hframes):
+		var atlas = AtlasTexture.new()
+		atlas.atlas = tex
+		atlas.region = Rect2(i * frame_size.x, row * frame_size.y, frame_size.x, frame_size.y)
+		frames.add_frame("active", atlas)
+
+	# Fade: invertir appear o usar últimos frames
+	frames.add_animation("fade")
+	frames.set_animation_loop("fade", false)
+	frames.set_animation_speed("fade", fps)
+	
+	# Reusar frames de appear pero reverse o alpha fade en tween
+	for i in range(min(4, hframes * vframes)):
+		var atlas = AtlasTexture.new()
+		atlas.atlas = tex
+		atlas.region = Rect2(i * frame_size.x, 0, frame_size.x, frame_size.y)
+		frames.add_frame("fade", atlas)
+
+	sprite.sprite_frames = frames
+	
+	# Escalar al tamaño deseado
+	var target_scale = 1.0
+	if _radius > 0:
+		target_scale = _radius * 2.0 / frame_size.x
 		
-		# Appear animation (4 frames)
-		frames.add_animation("appear")
-		frames.set_animation_speed("appear", 12)
-		frames.set_animation_loop("appear", false)
-		for i in range(4):
-			var tex = _generate_aoe_frame("appear", i, 4, base_size, primary, secondary, accent, outline)
-			frames.add_frame("appear", tex)
-		
-		# Active animation (6 frames, loop)
-		frames.add_animation("active")
-		frames.set_animation_speed("active", 10)
-		frames.set_animation_loop("active", true)
-		for i in range(6):
-			var tex = _generate_aoe_frame("active", i, 6, base_size, primary, secondary, accent, outline)
-			frames.add_frame("active", tex)
-		
-		# Fade animation (4 frames)
-		frames.add_animation("fade")
-		frames.set_animation_speed("fade", 12)
-		frames.set_animation_loop("fade", false)
-		for i in range(4):
-			var tex = _generate_aoe_frame("fade", i, 4, base_size, primary, secondary, accent, outline)
-			frames.add_frame("fade", tex)
-			
-		# Guardar en cache
-		_procedural_cache[cache_key] = frames
-		sprite.sprite_frames = frames
+	# Clamp scale
+	target_scale = minf(target_scale, MAX_VISUAL_SCALE)
+	sprite.scale = Vector2.ONE * target_scale
+	sprite.modulate.a = 0.8
+	
+	# Ajustar glow también
+	if glow_sprite:
+		_create_glow_texture(int(frame_size.x), visual_data.primary_color if visual_data else Color(1, 0.5, 0.2))
+		glow_sprite.scale = Vector2.ONE * target_scale * 1.5
+	
+	if ring_sprite:
+		var outline = visual_data.outline_color if visual_data else Color(0.5, 0.2, 0)
+		var accent = visual_data.accent_color if visual_data else Color(1, 0.8, 0.4)
+		_create_ring_texture(int(frame_size.x), outline, accent)
+		ring_sprite.scale = Vector2.ONE * target_scale * 1.2
 
-	sprite.scale = Vector2.ONE * target_scale  # Escalar para alcanzar el tamaño correcto
-	
-	# Aplicar transparencia del 30% a todos los AOE
-	sprite.modulate.a = 0.7
-	
-	# Crear glow y ring (Procedural simple, bajo costo, no cachear textura por ahora pero si sprite)
-	# Nota: _create_glow_texture y _create_ring_texture generan Textura, no sprite frames.
-	# Podríamos cachear también las texturas estáticas.
-	
-	var primary = visual_data.primary_color if visual_data else Color(0.4, 0.8, 1.0)
-	var accent = visual_data.accent_color if visual_data else Color.WHITE
-	var outline = visual_data.outline_color if visual_data else Color(0.1, 0.2, 0.4)
-	
-	_create_glow_texture(base_size, primary)
-	glow_sprite.scale = Vector2.ONE * target_scale * 1.5
-	
-	_create_ring_texture(base_size, outline, accent)
-	ring_sprite.scale = Vector2.ONE * target_scale * 1.2
-
-func _generate_aoe_frame(anim: String, frame_idx: int, total: int, size: int,
-		primary: Color, secondary: Color, accent: Color, outline: Color) -> ImageTexture:
-	"""Generar un frame de AOE estilo cartoon"""
-	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
-	var center = Vector2(size / 2.0, size / 2.0)
-	var radius = size * 0.4
-	var progress = float(frame_idx) / float(total - 1) if total > 1 else 1.0
-	
-	match anim:
-		"appear":
-			# Círculo que crece con efecto "pop"
-			var scale_factor: float
-			if progress < 0.7:
-				scale_factor = ease(progress / 0.7, 0.2) * 1.15  # Overshoot
-			else:
-				scale_factor = 1.15 - (progress - 0.7) / 0.3 * 0.15  # Settle
-			_draw_aoe_circle(image, center, radius * scale_factor, primary, secondary, accent, outline, 1.0)
-			
-		"active":
-			# Pulso y rotación de patrones
-			var pulse = sin(progress * TAU) * 0.08 + 1.0
-			var rotation_offset = progress * TAU * 0.5
-			_draw_aoe_circle_animated(image, center, radius * pulse, primary, secondary, accent, outline, rotation_offset)
-			
-		"fade":
-			# Desvanecimiento con contracción
-			var fade_scale = 1.0 - ease(progress, 2.0) * 0.3
-			var alpha = 1.0 - ease(progress, 1.5)
-			var faded_primary = Color(primary.r, primary.g, primary.b, primary.a * alpha)
-			var faded_secondary = Color(secondary.r, secondary.g, secondary.b, secondary.a * alpha)
-			var faded_accent = Color(accent.r, accent.g, accent.b, accent.a * alpha)
-			var faded_outline = Color(outline.r, outline.g, outline.b, outline.a * alpha)
-			_draw_aoe_circle(image, center, radius * fade_scale, faded_primary, faded_secondary, faded_accent, faded_outline, alpha)
-	
-	return ImageTexture.create_from_image(image)
-
-func _draw_aoe_circle(image: Image, center: Vector2, radius: float, 
-		primary: Color, secondary: Color, accent: Color, outline: Color, alpha_mult: float) -> void:
-	"""Dibujar círculo AOE estilo cartoon"""
-	var outline_width = max(3.0, radius * 0.08)
-	
-	for y in range(image.get_height()):
-		for x in range(image.get_width()):
-			var pos = Vector2(x, y)
-			var dist = pos.distance_to(center)
-			
-			# Outline exterior
-			if dist <= radius + outline_width and dist > radius:
-				image.set_pixel(x, y, Color(outline.r, outline.g, outline.b, outline.a * alpha_mult))
-			# Interior con gradiente radial
-			elif dist <= radius:
-				var t = dist / radius
-				# Gradiente del centro hacia afuera
-				var base_color = accent.lerp(primary, t * 0.7)
-				base_color = base_color.lerp(secondary, t * t)
-				# Añadir transparencia hacia el centro para efecto de "energía"
-				var center_alpha = 0.3 + t * 0.7
-				base_color.a *= center_alpha * alpha_mult
-				image.set_pixel(x, y, base_color)
-
-func _draw_aoe_circle_animated(image: Image, center: Vector2, radius: float, 
-		primary: Color, secondary: Color, accent: Color, outline: Color, rotation: float) -> void:
-	"""Dibujar círculo AOE con patrón rotativo"""
-	var outline_width = max(3.0, radius * 0.08)
-	var num_segments = 8
-	
-	for y in range(image.get_height()):
-		for x in range(image.get_width()):
-			var pos = Vector2(x, y)
-			var dist = pos.distance_to(center)
-			var angle = (pos - center).angle() + rotation
-			
-			# Outline exterior
-			if dist <= radius + outline_width and dist > radius:
-				image.set_pixel(x, y, outline)
-			# Interior
-			elif dist <= radius:
-				var t = dist / radius
-				
-				# Patrón de segmentos
-				var segment_angle = fmod(angle + TAU, TAU)
-				var segment_t = fmod(segment_angle, TAU / num_segments) / (TAU / num_segments)
-				var segment_intensity = abs(segment_t - 0.5) * 2.0
-				
-				var base_color = accent.lerp(primary, t * 0.7)
-				base_color = base_color.lerp(secondary, segment_intensity * 0.3)
-				
-				var center_alpha = 0.3 + t * 0.7
-				base_color.a *= center_alpha
-				image.set_pixel(x, y, base_color)
 
 func _create_glow_texture(size: int, color: Color) -> void:
 	"""Crear textura de resplandor"""

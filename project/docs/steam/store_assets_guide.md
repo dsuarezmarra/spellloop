@@ -16,6 +16,7 @@
 | **Logo** | variable | PNG | ✅ Ready | `logo.png` |
 | **Client Icon** | 32×32 | ICO | ✅ Ready | `client_icon.ico` |
 | **Community Icon** | 184×184 | JPG | ✅ Ready | `community_icon.jpg` |
+| **Trailer** | 1920×1080 | MP4 | ✅ Ready | `trailer_loopialike.mp4` |
 
 ## Generation Prompts (For External Tools)
 
@@ -56,45 +57,29 @@ If generating these assets externally (e.g., ChatGPT, Midjourney), use these pro
 **Prompt:**
 > Pixel art wizard hat or fireball. Simple 16x16 or 32x32 pixel art style. Dark outline for visibility. (Or use existing `icon.svg`).
 
-## Screenshots (24/5 Ready - FINAL)
+## Screenshots (15/5 — ✅ FINAL)
 
 **Location:** `docs/steam/assets/READY_TO_UPLOAD/screenshots/`
 
-- ✅ **24 screenshots collected** (labeled `screenshot_01.jpg` to `screenshot_24.jpg`).
-- **Includes:**
-    - Main Menu & Character Select
-    - Ranking Screens
-    - **Gameplay Action** (Combat in multiple biomes, Level Up, Game Over, Rewards)
-- **Status:** **COMPLETE**. You have an excellent variety (24 images) to choose the best 5-10 for your store page.
+| # | Filename | Content |
+|---|---|---|
+| 1 | `screenshot_01.jpg` | Gameplay |
+| 2 | `screenshot_02.jpg` | Gameplay |
+| 3 | `screenshot_03.jpg` | Gameplay |
+| 4 | `screenshot_04.jpg` | Gameplay |
+| 5 | `screenshot_05.jpg` | Gameplay |
+| 6 | `screenshot_06.jpg` | Gameplay |
+| 7 | `screenshot_07.jpg` | Gameplay |
+| 8 | `screenshot_08.jpg` | Gameplay |
+| 9 | `screenshot_09.jpg` | Gameplay |
+| 10 | `screenshot_10.jpg` | Gameplay |
+| 11 | `screenshot_11.jpg` | Gameplay |
+| 12 | `screenshot_12.jpg` | Gameplay |
+| 13 | `screenshot_13.jpg` | Gameplay |
+| 14 | `screenshot_14.jpg` | Gameplay |
+| 15 | `screenshot_15.jpg` | Gameplay |
 
-**Selection Advice:**
-1.  **Prioritize Action:** Screenshots #15-#24 (the latest ones) show great gameplay density. Use them first.
-2.  **Avoid Text:** If any screenshot has too much debug text or UI clutter, skip it.
-3.  **Order Matters:** Put the most exciting combat shot as #1.
-
-**Recommended selection strategy:**
-1.  Start with a high-action combat shot.
-2.  Follow with a biome showcase (Ice/Desert).
-3.  Show a "Level Up" or "Upgrade" screen to show depth.
-4.  Show a Boss fight or massive horde.
-5.  End with the Main Menu or Character Select to show polish.
-
-**Recommended additions:**
-1.  Combat with pyromancer vs enemy horde
-2.  Frost mage in Ice Cave biome
-3.  Boss fight (Primal Conjurer)
-4.  Level-up panel with weapon choices
-5.  Weapon fusion in action
-  1. Combat with pyromancer vs enemy horde
-  2. Frost mage in Ice Cave biome
-  3. Boss fight (Primal Conjurer)
-  4. Level-up panel with weapon choices
-  5. Weapon fusion in action
-  6. Multiple spells firing simultaneously
-  7. Storm Caller in Volcanic Plains
-  8. Character selection screen (10 mages)
-  9. Shadow Blade in Dark Forest biome
-  10. Late-game chaos with enemies everywhere
+All screenshots are **1920×1080 JPG** (quality 95%). Ready to upload directly to Steamworks.
 
 ## Steam Tags (Recommended)
 

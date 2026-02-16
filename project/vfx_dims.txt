@@ -1,0 +1,5 @@
+vfx_player_frost_nova_spritesheet.png: (711, 351)
+vfx_player_heal_spritesheet.png: (711, 351)
+vfx_player_revive_spritesheet.png: (711, 351)
+vfx_player_shield_absorb_spritesheet.png: (711, 351)
+vfx_player_soul_link_spritesheet.png: (711, 351)

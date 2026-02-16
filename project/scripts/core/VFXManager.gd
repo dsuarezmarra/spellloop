@@ -167,6 +167,26 @@ var PLAYER_VFX_CONFIG = {
 	"slow": {
 		"path": VFX_BASE_PATH + "player/debuffs/vfx_player_slow_spritesheet.png",
 		"hframes": 6, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.8
+	},
+	"frost_nova": {
+		"path": VFX_BASE_PATH + "player/buffs/vfx_player_frost_nova_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.5
+	},
+	"heal": {
+		"path": VFX_BASE_PATH + "player/heal/vfx_player_heal_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.5
+	},
+	"revive": {
+		"path": VFX_BASE_PATH + "player/revive/vfx_player_revive_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(192, 192), "duration": 0.8
+	},
+	"soul_link": {
+		"path": VFX_BASE_PATH + "player/soul_link/vfx_player_soul_link_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.4
+	},
+	"shield_absorb": {
+		"path": VFX_BASE_PATH + "player/shield/vfx_player_shield_absorb_spritesheet.png",
+		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.3
 	}
 }
 
@@ -388,32 +408,20 @@ func spawn_aoe_by_ability(ability_name: String, position: Vector2, radius: float
 	return spawn_aoe(aoe_type, position, radius)
 
 func _spawn_fallback_aoe(position: Vector2, radius: float) -> Node2D:
-	"""Fallback: dibujar círculo procedural si no hay spritesheet"""
-	var effect = Node2D.new()
-	effect.global_position = position
-	effect.z_index = 5
-	
-	var visual = Node2D.new()
-	effect.add_child(visual)
-	
-	var anim = 0.0
-	visual.draw.connect(func():
-		var r = radius * anim
-		visual.draw_arc(Vector2.ZERO, r, 0, TAU, 32, Color(1, 0.5, 0.2, 0.6 * (1.0 - anim)), 3.0)
-		visual.draw_circle(Vector2.ZERO, r * 0.8, Color(1, 0.3, 0.1, 0.3 * (1.0 - anim)))
-	)
-	
-	var tree = Engine.get_main_loop()
-	if tree:
-		tree.root.add_child(effect)
-		var tween = effect.create_tween()
-		tween.tween_method(func(v): 
-			anim = v
-			if is_instance_valid(visual): visual.queue_redraw()
-		, 0.0, 1.0, 0.5)
-		tween.tween_callback(effect.queue_free)
-	
-	return effect
+	"""Fallback: usar AOE genérico (fire_stomp) en lugar de dibujo procedural"""
+	# Evitar recursividad si fire_stomp también falla
+	var config = AOE_CONFIG.get("fire_stomp")
+	if config:
+		# Si tenemos el asset genérico, lo usamos
+		var tex = _get_texture(config["path"])
+		if tex:
+			var frame_size = config["frame_size"]
+			var diameter = radius * 2.0
+			var scale_factor = clampf(diameter / frame_size.x, 0.1, 3.0)
+			return _create_animated_vfx(tex, config, position, scale_factor, -1.0)
+
+	# Si incluso el genérico falla, no dibujamos nada (mejor que círculo debug feo en release)
+	return null
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SPAWN DE VFX - PROJECTILES
@@ -535,36 +543,41 @@ func spawn_beam(beam_type: String, origin: Vector2, direction: Vector2, length: 
 	return effect
 
 func _spawn_fallback_beam(origin: Vector2, direction: Vector2, length: float, duration: float, beam_color: Color = Color(1.0, 0.6, 0.2)) -> Node2D:
-	"""Fallback: dibujar beam procedural con color de elemento"""
-	var effect = Node2D.new()
-	effect.global_position = origin
-	effect.z_index = 5
-	
-	var visual = Node2D.new()
-	effect.add_child(visual)
-	
-	var end_pos = direction.normalized() * length
-	var anim = 0.0
-	var core_color = beam_color
-	var glow_color = Color(min(beam_color.r + 0.3, 1.0), min(beam_color.g + 0.3, 1.0), min(beam_color.b + 0.3, 1.0), 1.0)
-	
-	visual.draw.connect(func():
-		var alpha = (1.0 - anim * 0.5) * 0.6
-		visual.draw_line(Vector2.ZERO, end_pos * anim, Color(core_color.r, core_color.g, core_color.b, alpha), 6.0)
-		visual.draw_line(Vector2.ZERO, end_pos * anim, Color(glow_color.r, glow_color.g, glow_color.b, alpha * 0.4), 12.0)
-	)
-	
-	var tree = Engine.get_main_loop()
-	if tree:
-		tree.root.add_child(effect)
-		var tween = effect.create_tween()
-		tween.tween_method(func(v): 
-			anim = v
-			if is_instance_valid(visual): visual.queue_redraw()
-		, 0.0, 1.0, duration)
-		tween.tween_callback(effect.queue_free)
-	
-	return effect
+	"""Fallback: usar Beam genérico (flame_breath) si no hay específico"""
+	# Intentar usar flame_breath como genérico
+	var config = BEAM_CONFIG.get("flame_breath")
+	if config:
+		var tex = _get_texture(config["path"])
+		if tex:
+			var effect = Node2D.new()
+			effect.global_position = origin
+			effect.rotation = direction.angle()
+			effect.z_index = 8
+			
+			var sprite = Sprite2D.new()
+			sprite.texture = tex
+			sprite.hframes = config["hframes"]
+			sprite.vframes = config["vframes"]
+			sprite.centered = false
+			sprite.offset = Vector2(0, -config["frame_size"].y / 2)
+			
+			# Escalar y Colorear
+			var scale_x = length / config["frame_size"].x
+			sprite.scale = Vector2(scale_x, 1.0)
+			sprite.modulate = beam_color # Teñir con el color deseado
+			
+			effect.add_child(sprite)
+			
+			var tree = Engine.get_main_loop()
+			if tree:
+				tree.root.add_child(effect)
+				var total_frames = config["hframes"] * config["vframes"]
+				var tween = effect.create_tween()
+				tween.tween_property(sprite, "frame", total_frames - 1, duration).from(0)
+				tween.tween_callback(effect.queue_free)
+			return effect
+
+	return null
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SPAWN DE VFX - TELEGRAPHS (Warnings)
@@ -757,6 +770,26 @@ func spawn_slow_vfx(parent: Node2D) -> AnimatedSprite2D:
 	if sprite:
 		sprite.z_index = -1  # Debajo del personaje
 	return sprite
+
+func spawn_frost_nova_vfx(position: Vector2, scale_factor: float = 1.5) -> Node2D:
+	"""Spawn efecto de frost nova (one-shot, explosión de hielo)"""
+	return spawn_player_vfx("frost_nova", position, scale_factor, 0.5)
+
+func spawn_heal_vfx(position: Vector2) -> Node2D:
+	"""Spawn efecto de curación (one-shot, partículas verdes)"""
+	return spawn_player_vfx("heal", position, 1.0, 0.5)
+
+func spawn_revive_vfx(position: Vector2) -> Node2D:
+	"""Spawn efecto de revive (one-shot, explosión dorada)"""
+	return spawn_player_vfx("revive", position, 1.5, 0.8)
+
+func spawn_soul_link_vfx(position: Vector2) -> Node2D:
+	"""Spawn efecto de soul link (one-shot, cadenas púrpura)"""
+	return spawn_player_vfx("soul_link", position, 1.2, 0.4)
+
+func spawn_shield_absorb_vfx(position: Vector2) -> Node2D:
+	"""Spawn efecto de absorción de escudo (one-shot, flash azul)"""
+	return spawn_player_vfx("shield_absorb", position, 1.0, 0.3)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # UTILIDADES INTERNAS

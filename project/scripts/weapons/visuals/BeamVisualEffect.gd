@@ -195,100 +195,51 @@ func _setup_from_sprites() -> void:
 		_setup_body_gradient()
 
 func _setup_procedural() -> void:
-	"""Crear animaciones procedurales"""
-	# Animación de inicio
-	var start_frames = SpriteFrames.new()
-	start_frames.add_animation("charging")
-	start_frames.set_animation_speed("charging", 10)
-	start_frames.set_animation_loop("charging", true)
-	start_frames.add_animation("active")
-	start_frames.set_animation_speed("active", 12)
-	start_frames.set_animation_loop("active", true)
-	
-	var orb_size = int(_width * 4)
-	for i in range(4):
-		var tex = _generate_start_frame(i, 4, orb_size, "charging")
-		start_frames.add_frame("charging", tex)
-	for i in range(6):
-		var tex = _generate_start_frame(i, 6, orb_size, "active")
-		start_frames.add_frame("active", tex)
-	
-	start_sprite.sprite_frames = start_frames
-	
-	# Animación de punta
-	var tip_frames = SpriteFrames.new()
-	tip_frames.add_animation("active")
-	tip_frames.set_animation_speed("active", 12)
-	tip_frames.set_animation_loop("active", true)
-	
-	for i in range(6):
-		var tex = _generate_tip_frame(i, 6, orb_size)
-		tip_frames.add_frame("active", tex)
-	
-	tip_sprite.sprite_frames = tip_frames
-	
-	_setup_body_gradient()
+	"""Fallback: Usar spritesheet genérico (flame_breath) de VFXManager"""
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	if not vfx_mgr:
+		_setup_body_gradient() # Fallback último recurso
+		return
 
-func _generate_start_frame(frame_idx: int, total: int, size: int, anim: String) -> ImageTexture:
-	"""Generar frame del orbe de inicio"""
-	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
-	var center = Vector2(size / 2.0, size / 2.0)
-	var progress = float(frame_idx) / float(total - 1) if total > 1 else 0.0
+	var config = vfx_mgr.BEAM_CONFIG.get("flame_breath")
+	if not config:
+		_setup_body_gradient()
+		return
+		
+	var path = config.get("path", "")
+	if path.is_empty() or not ResourceLoader.exists(path):
+		_setup_body_gradient()
+		return
 	
-	var base_radius = size * 0.35
-	var pulse: float
+	var tex = load(path)
 	
-	if anim == "charging":
-		pulse = 0.5 + progress * 0.5
-	else:
-		pulse = sin(progress * TAU) * 0.1 + 1.0
+	# Configurar sprites
+	var frame_size = config.get("frame_size", Vector2(192, 64))
+	var hframes = config.get("hframes", 6)
+	var vframes = config.get("vframes", 2)
+	var fps = 12.0
 	
-	var radius = base_radius * pulse
-	var outline_width = max(2.0, size * 0.08)
+	# Start sprite: usar primera columna?
+	# Beam spritesheets suelen ser horizontales para el cuerpo
+	# Para start/tip podríamos intentar usar partes del mismo o dejarlos invisibles si no hay específicos
+	# flame_breath es principalmente cuerpo.
+	# Para fallback, ocultaremos start/tip y solo usaremos body line con textura
 	
-	for y in range(size):
-		for x in range(size):
-			var pos = Vector2(x, y)
-			var dist = pos.distance_to(center)
-			
-			# Outline
-			if dist <= radius + outline_width and dist > radius:
-				image.set_pixel(x, y, _outline_color)
-			# Interior
-			elif dist <= radius:
-				var t = dist / radius
-				# Gradiente radial brillante
-				var color = _core_color.lerp(_primary_color, t)
-				color = color.lerp(_secondary_color, t * t)
-				image.set_pixel(x, y, color)
+	start_sprite.visible = false
+	tip_sprite.visible = false
 	
-	return ImageTexture.create_from_image(image)
+	# Configurar Body Line con textura
+	body_line.texture = tex
+	body_line.texture_mode = Line2D.LINE_TEXTURE_TILE
+	body_line.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+	body_line.width = frame_size.y * 0.5 # Ajustar ancho
+	body_line.gradient = null
+	glow_line.visible = false
+	_has_body_texture = true
+	
+	# Configurar animación UV si es posible? Line2D no soporta spritesheet animation nativa fácilmente
+	# pero texture_mode TILE hace que se repita.
 
-func _generate_tip_frame(frame_idx: int, total: int, size: int) -> ImageTexture:
-	"""Generar frame de la punta del rayo"""
-	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
-	var center = Vector2(size / 2.0, size / 2.0)
-	var progress = float(frame_idx) / float(total - 1) if total > 1 else 0.0
-	
-	var pulse = sin(progress * TAU) * 0.15 + 1.0
-	var base_radius = size * 0.3 * pulse
-	
-	# Punta más puntiaguda (elipse)
-	for y in range(size):
-		for x in range(size):
-			var pos = Vector2(x, y)
-			var offset = pos - center
-			# Elipse horizontal
-			var ellipse_dist = sqrt((offset.x * 0.6) ** 2 + (offset.y * 1.3) ** 2)
-			
-			if ellipse_dist <= base_radius:
-				var t = ellipse_dist / base_radius
-				var color = _core_color.lerp(_primary_color, t * 0.5)
-				# Más brillante en el centro
-				color.a = 1.0 - t * 0.3
-				image.set_pixel(x, y, color)
-	
-	return ImageTexture.create_from_image(image)
 
 func _setup_body_gradient() -> void:
 	"""Configurar gradiente del cuerpo del rayo"""

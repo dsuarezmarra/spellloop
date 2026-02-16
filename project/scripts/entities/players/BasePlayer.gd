@@ -934,6 +934,11 @@ func _trigger_soul_link(amount: int, stats: Node) -> void:
 	var damage_to_share = int(amount * soul_link_pct)
 	if damage_to_share <= 0: return
 	
+	# VFX de soul link via spritesheet
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	if vfx_mgr and vfx_mgr.has_method("spawn_soul_link_vfx"):
+		vfx_mgr.spawn_soul_link_vfx(global_position)
+	
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	for enemy in enemies:
 		if global_position.distance_to(enemy.global_position) < link_radius:
@@ -1035,11 +1040,15 @@ func _on_hit_animation_finished(previous_anim: String) -> void:
 			animated_sprite.play(idle_anim)
 
 func _play_shield_absorb_effect() -> void:
-	"""Efecto visual cuando el escudo absorbe todo el daño"""
+	"""Efecto visual cuando el escudo absorbe todo el daño — spritesheet + flash"""
+	# VFX de absorción de escudo via spritesheet
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	if vfx_mgr and vfx_mgr.has_method("spawn_shield_absorb_vfx"):
+		vfx_mgr.spawn_shield_absorb_vfx(global_position)
+	
+	# Mantener flash azul sutil como complemento
 	if not animated_sprite:
 		return
-	
-	# Flash azul de escudo
 	var tween = create_tween()
 	tween.tween_property(animated_sprite, "modulate", Color(0.5, 0.8, 2.0, 1.0), 0.1)
 	tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.2)
@@ -1096,47 +1105,16 @@ func heal(amount: int) -> int:
 	return 0
 
 func _spawn_heal_particles() -> void:
-	"""Crear partículas de curación verde ascendentes"""
-	var particles = CPUParticles2D.new()
-	particles.one_shot = true
-	particles.amount = 12
-	particles.lifetime = 0.6
-	particles.explosiveness = 0.8
-	particles.direction = Vector2(0, -1)
-	particles.spread = 60.0
-	particles.gravity = Vector2(0, -30)
-	particles.initial_velocity_min = 40.0
-	particles.initial_velocity_max = 80.0
-	particles.scale_amount_min = 2.0
-	particles.scale_amount_max = 4.0
-	particles.color = Color(0.3, 1.0, 0.4, 0.9)
-	particles.color_ramp = Gradient.new()
-	particles.color_ramp.add_point(0.0, Color(0.4, 1.0, 0.5, 1.0))
-	particles.color_ramp.add_point(1.0, Color(0.2, 0.8, 0.3, 0.0))
-	add_child(particles)
-	particles.emitting = true
-	particles.finished.connect(particles.queue_free)
+	"""Efecto visual de curación verde — usa spritesheet via VFXManager"""
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	if vfx_mgr and vfx_mgr.has_method("spawn_heal_vfx"):
+		vfx_mgr.spawn_heal_vfx(global_position)
 
 func _spawn_nova_effect() -> void:
-	"""Efecto visual para Frost Nova — explosión circular de hielo azul"""
-	var nova = CPUParticles2D.new()
-	nova.one_shot = true
-	nova.amount = 32
-	nova.lifetime = 0.5
-	nova.explosiveness = 1.0
-	nova.spread = 180.0
-	nova.gravity = Vector2.ZERO
-	nova.initial_velocity_min = 120.0
-	nova.initial_velocity_max = 220.0
-	nova.scale_amount_min = 2.0
-	nova.scale_amount_max = 4.0
-	nova.color = Color(0.4, 0.8, 1.0, 0.8)
-	nova.color_ramp = Gradient.new()
-	nova.color_ramp.add_point(0.0, Color(0.6, 0.9, 1.0, 1.0))
-	nova.color_ramp.add_point(1.0, Color(0.3, 0.6, 1.0, 0.0))
-	add_child(nova)
-	nova.emitting = true
-	nova.finished.connect(nova.queue_free)
+	"""Efecto visual para Frost Nova — usa spritesheet via VFXManager"""
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	if vfx_mgr and vfx_mgr.has_method("spawn_frost_nova_vfx"):
+		vfx_mgr.spawn_frost_nova_vfx(global_position)
 
 func _on_health_changed(current: int, max_val: int) -> void:
 	"""Callback cuando la salud cambia"""
@@ -1316,37 +1294,17 @@ func _trigger_revive(player_stats: Node, current_revives: int) -> void:
 	])
 
 func _play_revive_effects() -> void:
-	"""Efectos visuales de revive"""
-	if not animated_sprite:
-		return
+	"""Efectos visuales de revive — spritesheet dorado + flash + audio"""
+	# VFX de revive via spritesheet
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	if vfx_mgr and vfx_mgr.has_method("spawn_revive_vfx"):
+		vfx_mgr.spawn_revive_vfx(global_position)
 	
-	# Flash dorado brillante
-	var tween = create_tween()
-	tween.tween_property(animated_sprite, "modulate", Color(2.0, 1.8, 0.5, 1.0), 0.1)
-	tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.5)
-	
-	# Partículas de resurrección
-	var particles = CPUParticles2D.new()
-	particles.emitting = true
-	particles.one_shot = true
-	particles.explosiveness = 0.9
-	particles.amount = 20
-	particles.lifetime = 1.0
-	particles.direction = Vector2(0, -1)
-	particles.spread = 180.0
-	particles.gravity = Vector2(0, -50)
-	particles.initial_velocity_min = 50.0
-	particles.initial_velocity_max = 100.0
-	particles.scale_amount_min = 4.0
-	particles.scale_amount_max = 8.0
-	particles.color = Color(1.0, 0.9, 0.3, 1.0)
-	add_child(particles)
-	
-	# Auto-destruir partículas
-	get_tree().create_timer(1.5).timeout.connect(func():
-		if is_instance_valid(particles):
-			particles.queue_free()
-	)
+	# Mantener flash dorado brillante como complemento
+	if animated_sprite:
+		var tween = create_tween()
+		tween.tween_property(animated_sprite, "modulate", Color(2.0, 1.8, 0.5, 1.0), 0.1)
+		tween.tween_property(animated_sprite, "modulate", Color.WHITE, 0.5)
 	
 	# Sonido de revive
 	var audio_manager = get_tree().get_first_node_in_group("audio_manager")

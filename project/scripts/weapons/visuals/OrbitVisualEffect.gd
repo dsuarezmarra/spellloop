@@ -125,121 +125,65 @@ func _setup_from_sprites() -> void:
 	sprite.sprite_frames = frames
 
 func _setup_procedural() -> void:
-	"""Crear animaciones procedurales"""
+	"""Fallback: Usar spritesheet genérico (projectile_arcane) de VFXManager"""
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	if not vfx_mgr:
+		return
+
+	var config = vfx_mgr.PROJECTILE_CONFIG.get("arcane")
+	if not config:
+		return
+		
+	var path = config.get("path", "")
+	if path.is_empty() or not ResourceLoader.exists(path):
+		return
+		
+	var tex = load(path)
+	
 	var frames = SpriteFrames.new()
-	var size = int(_orb_size * 2)
+	var hframes = config.get("hframes", 4)
+	var vframes = config.get("vframes", 2)
+	var frame_size = config.get("frame_size", Vector2(64, 64))
+	var fps = 12.0
 	
-	# Spawn animation (orbe que aparece con pop)
+	# Spawn: frames 0-3 (appear)
 	frames.add_animation("spawn")
-	frames.set_animation_speed("spawn", 12)
 	frames.set_animation_loop("spawn", false)
-	for i in range(6):
-		var tex = _generate_spawn_frame(i, 6, size)
-		frames.add_frame("spawn", tex)
-	
-	# Orbit animation (orbe con brillo pulsante)
+	frames.set_animation_speed("spawn", fps)
+	for i in range(min(4, hframes * vframes)):
+		var atlas = AtlasTexture.new()
+		atlas.atlas = tex
+		atlas.region = Rect2(i * frame_size.x, 0, frame_size.x, frame_size.y)
+		frames.add_frame("spawn", atlas)
+		
+	# Orbit: frames 4-7 (loop)
 	frames.add_animation("orbit")
-	frames.set_animation_speed("orbit", 10)
 	frames.set_animation_loop("orbit", true)
-	for i in range(8):
-		var tex = _generate_orbit_frame(i, 8, size)
-		frames.add_frame("orbit", tex)
-	
-	# Destroy animation (desvanecimiento)
+	frames.set_animation_speed("orbit", fps)
+	var row = 1 if vframes > 1 else 0
+	for i in range(hframes):
+		var atlas = AtlasTexture.new()
+		atlas.atlas = tex
+		atlas.region = Rect2(i * frame_size.x, row * frame_size.y, frame_size.x, frame_size.y)
+		frames.add_frame("orbit", atlas)
+		
+	# Destroy: frames 0-3 pero reverse o fade
 	frames.add_animation("destroy")
-	frames.set_animation_speed("destroy", 15)
 	frames.set_animation_loop("destroy", false)
-	for i in range(5):
-		var tex = _generate_destroy_frame(i, 5, size)
-		frames.add_frame("destroy", tex)
+	frames.set_animation_speed("destroy", fps)
+	for i in range(min(4, hframes * vframes)):
+		var atlas = AtlasTexture.new()
+		atlas.atlas = tex
+		atlas.region = Rect2(i * frame_size.x, 0, frame_size.x, frame_size.y)
+		frames.add_frame("destroy", atlas)
 	
 	sprite.sprite_frames = frames
-
-func _generate_spawn_frame(frame_idx: int, total: int, size: int) -> ImageTexture:
-	"""Generar frame de spawn con efecto pop"""
-	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
-	var center = Vector2(size / 2.0, size / 2.0)
-	var progress = float(frame_idx) / float(total - 1) if total > 1 else 1.0
 	
-	# Efecto de overshoot
-	var scale_factor: float
-	if progress < 0.6:
-		scale_factor = ease(progress / 0.6, 0.3) * 1.25
-	else:
-		scale_factor = 1.25 - (progress - 0.6) / 0.4 * 0.25
-	
-	var radius = size * 0.35 * scale_factor
-	var outline_width = max(2.0, size * 0.06)
-	
-	_draw_cartoon_orb(image, center, radius, outline_width, 1.0)
-	
-	return ImageTexture.create_from_image(image)
-
-func _generate_orbit_frame(frame_idx: int, total: int, size: int) -> ImageTexture:
-	"""Generar frame de orbit con brillo animado"""
-	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
-	var center = Vector2(size / 2.0, size / 2.0)
-	var progress = float(frame_idx) / float(total - 1) if total > 1 else 0.0
-	
-	var radius = size * 0.35
-	var outline_width = max(2.0, size * 0.06)
-	
-	# Variación de brillo
-	var brightness = sin(progress * TAU) * 0.15 + 1.0
-	
-	_draw_cartoon_orb(image, center, radius, outline_width, brightness)
-	
-	return ImageTexture.create_from_image(image)
-
-func _generate_destroy_frame(frame_idx: int, total: int, size: int) -> ImageTexture:
-	"""Generar frame de destrucción"""
-	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
-	var center = Vector2(size / 2.0, size / 2.0)
-	var progress = float(frame_idx) / float(total - 1) if total > 1 else 1.0
-	
-	var radius = size * 0.35 * (1.0 + progress * 0.5)  # Expandirse
-	var outline_width = max(2.0, size * 0.06) * (1.0 - progress)
-	var alpha = 1.0 - ease(progress, 2.0)
-	
-	_draw_cartoon_orb(image, center, radius, outline_width, 1.0, alpha)
-	
-	return ImageTexture.create_from_image(image)
-
-func _draw_cartoon_orb(image: Image, center: Vector2, radius: float, 
-		outline_width: float, brightness: float = 1.0, alpha_mult: float = 1.0) -> void:
-	"""Dibujar orbe estilo cartoon"""
-	var size = image.get_height()
-	
-	for y in range(size):
-		for x in range(size):
-			var pos = Vector2(x, y)
-			var dist = pos.distance_to(center)
-			
-			# Outline
-			if dist <= radius + outline_width and dist > radius:
-				var outline_color = Color(_outline_color.r, _outline_color.g, _outline_color.b, alpha_mult)
-				image.set_pixel(x, y, outline_color)
-			# Interior
-			elif dist <= radius:
-				var t = dist / radius
-				
-				# Gradiente radial con highlight
-				var base_color = _core_color.lerp(_primary_color, t * 0.5)
-				base_color = base_color.lerp(_secondary_color, t * t)
-				
-				# Highlight en la esquina superior izquierda
-				var highlight_pos = center - Vector2(radius * 0.35, radius * 0.35)
-				var highlight_dist = pos.distance_to(highlight_pos)
-				var highlight_t = clamp(1.0 - highlight_dist / (radius * 0.5), 0.0, 1.0)
-				base_color = base_color.lerp(_core_color, highlight_t * highlight_t * 0.7)
-				
-				# Aplicar brillo
-				base_color.r = clamp(base_color.r * brightness, 0.0, 1.0)
-				base_color.g = clamp(base_color.g * brightness, 0.0, 1.0)
-				base_color.b = clamp(base_color.b * brightness, 0.0, 1.0)
-				base_color.a *= alpha_mult
-				
-				image.set_pixel(x, y, base_color)
+	# Ajustar escala
+	var target_scale = 1.0
+	if _orb_size > 0:
+		target_scale = _orb_size * 2.0 / frame_size.x
+	sprite.scale = Vector2.ONE * target_scale
 
 func _setup_glow() -> void:
 	"""Crear textura de glow"""
