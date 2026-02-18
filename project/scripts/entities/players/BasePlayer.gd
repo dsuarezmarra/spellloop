@@ -428,9 +428,8 @@ func _process(delta: float) -> void:
 	# Debug LOGS
 	# print("DEBUG: _revive_immunity_timer=", _revive_immunity_timer, " type=", typeof(_revive_immunity_timer))
 
-	# Procesar timers de inmunidad
-	if _revive_immunity_timer > 0:
-		_revive_immunity_timer -= delta
+	# Procesar timers de inmunidad (solo _invulnerability_timer aquí,
+	# _revive_immunity_timer se gestiona en _update_revive_immunity)
 	if _invulnerability_timer > 0:
 		_invulnerability_timer -= delta
 
@@ -1082,8 +1081,8 @@ func heal(amount: int) -> int:
 		health_component.heal(final_heal)
 		var healed = health_component.current_health - old_hp
 
-		# Emitir señal de cambio de vida
-		health_component.health_changed.emit(health_component.current_health, max_hp)
+		# health_component.heal() ya emite health_changed internamente
+		# No re-emitir para evitar doble actualización de UI
 
 		# Debug explícito desactivado por spam:
 		# print("[%s] HEAL() llamado. Amount: %.1f -> Healed: %.1f. HP Now: %d/%d" % [character_class, float(amount), float(healed), health_component.current_health, max_hp])

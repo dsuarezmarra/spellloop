@@ -517,12 +517,13 @@ func on_enemy_killed(_enemy_id: String, _enemy_tier: int, is_boss: bool, boss_id
 			var fight_duration = (Time.get_ticks_msec() / 1000.0) - _boss_fight_start_time
 			if fight_duration < 30.0:
 				check_and_unlock("ACH_BOSS_FAST_KILL")
-			_boss_fight_start_time = 0.0
 
-		# Trackear no-hit boss (usando contador de daño en vez de comparación de HP)
-		# Esto evita falsos positivos con builds de regeneración
-		if _boss_fight_damage_taken == 0:
-			check_and_unlock("ACH_NO_HIT_BOSS")
+			# Trackear no-hit boss (usando contador de daño en vez de comparación de HP)
+			# Esto evita falsos positivos con builds de regeneración
+			if _boss_fight_damage_taken == 0:
+				check_and_unlock("ACH_NO_HIT_BOSS")
+
+			_boss_fight_start_time = 0.0
 
 		# Track unique bosses
 		if not boss_id.is_empty():

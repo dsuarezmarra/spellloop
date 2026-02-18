@@ -229,7 +229,9 @@ func _enforce_zone_barriers() -> void:
 			# Pequeño efecto de rebote
 			velocity = direction_to_center * 100.0
 			# Reset cooldown después de 0.5s
-			get_tree().create_timer(0.5).timeout.connect(func(): _barrier_hit_cooldown = false)
+			get_tree().create_timer(0.5).timeout.connect(func():
+				if is_instance_valid(self): _barrier_hit_cooldown = false
+			)
 
 var _barrier_hit_cooldown: bool = false
 
@@ -319,30 +321,8 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 		# Play hurt sound
 		AudioManager.play("sfx_player_hurt")
 
-		# === THORNS LOGIC ===
-		if attacker and is_instance_valid(attacker) and attacker.has_method("take_damage"):
-			var ps = get_tree().get_first_node_in_group("player_stats")
-			if ps and ps.has_method("get_stat"):
-				var thorns = ps.get_stat("thorns")
-				var thorns_pct = ps.get_stat("thorns_percent")
-				
-				if thorns > 0 or thorns_pct > 0:
-					# Calcular daño de reflexión (Daño base + % del daño recibido)
-					var reflect_damage = int(thorns + (amount * thorns_pct))
-					
-					if reflect_damage > 0:
-						# Aplicar daño al atacante
-						attacker.take_damage(reflect_damage, "thorns", self)
-						
-						# Aplicar efectos de estado de thorns (Rare/Legendary upgrades)
-						var t_slow = ps.get_stat("thorns_slow")
-						var t_stun = ps.get_stat("thorns_stun")
-						
-						if t_slow > 0 and attacker.has_method("apply_slow"):
-							attacker.apply_slow(0.5, 2.0) # 50% slow por 2s
-						
-						if t_stun > 0 and attacker.has_method("apply_stun"):
-							attacker.apply_stun(t_stun)
+		# THORNS se maneja en BasePlayer._process_post_damage_effects → _apply_thorns_damage
+		# para evitar aplicación doble
 
 	hp = wizard_player.hp if wizard_player else hp
 
@@ -642,7 +622,7 @@ func _apply_orbital_chip_damage() -> void:
 	if not health_component:
 		return
 	
-	var current_hp = health_component.current_health if health_component.has_method("get_current_health") else hp
+	var current_hp = health_component.current_health if "current_health" in health_component else hp
 	if current_hp <= ORBITAL_HP_THRESHOLD:
 		return  # Safety: don't kill player or apply when low HP
 	

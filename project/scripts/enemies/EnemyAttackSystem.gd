@@ -2513,12 +2513,11 @@ func _boss_void_beam() -> void:
 	"""Rayo canalizado de alto daÃƒÂ±o"""
 	var damage = modifiers.get("beam_damage", 30)
 	var duration = modifiers.get("beam_duration", 3.0)
-	var _width = modifiers.get("beam_width", 40.0)
 
 	# FIX P0 #2: Verificar que el player está en el camino del beam (rectángulo)
 	var direction = (player.global_position - enemy.global_position).normalized()
 	var beam_length = 300.0
-	var beam_width = 40.0
+	var beam_width = modifiers.get("beam_width", 40.0)
 
 	# Crear visual del beam
 	_spawn_void_beam_visual(enemy.global_position, direction, beam_length, duration)
@@ -3809,8 +3808,9 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 		if trail_positions.size() > max_trail:
 			trail_positions.pop_back()
 
-		# Check duraciÃ³n
+		# Check duración
 		if time_alive_ref.value >= duration:
+			has_hit_ref.value = true  # Prevent re-entry on subsequent ticks
 			var tween = orb.create_tween()
 			tween.tween_property(orb, "modulate:a", 0.0, 0.4)
 			tween.tween_callback(orb.queue_free)
@@ -3963,7 +3963,7 @@ func _spawn_damage_zone(pos: Vector2, radius: float, dps: int, duration: float, 
 		if dist <= radius:
 			damage_accumulator += dps * 0.1
 			if damage_accumulator >= 1 and player_ref.has_method("take_damage"):
-				player_ref.take_damage(int(damage_accumulator), "fire", enemy)
+				player_ref.take_damage(int(damage_accumulator), element, enemy)
 				damage_accumulator = fmod(damage_accumulator, 1.0)
 	)
 

@@ -8,7 +8,9 @@ class_name DamageCalculator
 class DamageResult:
 	var base_damage: float = 0.0
 	var final_damage: float = 0.0
+	var pre_roulette_damage: float = 0.0  ## Daño antes de Russian Roulette (para Combustión)
 	var is_crit: bool = false
+	var russian_roulette_triggered: bool = false
 	var bonus_applied: Array[String] = []
 	
 	func get_int_damage() -> int:
@@ -111,6 +113,16 @@ static func calculate_final_damage(
 		if cond_mult > 1.0:
 			result.final_damage *= cond_mult
 	
+	# 2.7 Russian Roulette: 1% chance de 10x daño
+	result.pre_roulette_damage = result.final_damage
+	if ps and ps.has_method("get_stat"):
+		var russian_roulette = ps.get_stat("russian_roulette")
+		if russian_roulette > 0:
+			if randf() < 0.01:
+				result.final_damage *= 10.0
+				result.russian_roulette_triggered = true
+				result.bonus_applied.append("russian_roulette")
+	
 	# 3. Crítico (al final para que aplique sobre todos los bonuses)
 	if randf() < crit_chance:
 		result.final_damage *= crit_damage
@@ -170,18 +182,42 @@ static func apply_damage_with_effects(
 	damage_result: DamageResult,
 	knockback_dir: Vector2 = Vector2.ZERO,
 	knockback_force: float = 0.0,
-	attacker: Node = null
+	attacker: Node = null,
+	element: String = "physical"
 ) -> void:
 	if not is_instance_valid(target):
 		return
 	
 	var final_damage = damage_result.get_int_damage()
+	var ps = tree.get_first_node_in_group("player_stats")
 	
-	# Aplicar daño
+	# Combustión Instantánea: daño extra de fuego antes del golpe principal
+	if ps and ps.has_method("get_stat"):
+		var combustion_active = ps.get_stat("combustion_active")
+		if combustion_active > 0 and is_instance_valid(attacker):
+			var is_fire = (element == "fire")
+			if not is_fire and attacker.has_meta("burn_chance"):
+				is_fire = attacker.get_meta("burn_chance") > 0
+			if is_fire:
+				var combustion_base = damage_result.pre_roulette_damage if damage_result.pre_roulette_damage > 0 else damage_result.final_damage
+				var burn_dmg = int(combustion_base * 0.5)
+				if burn_dmg > 0 and target.has_method("take_damage"):
+					target.take_damage(burn_dmg, "fire", attacker)
+				FloatingText.spawn_custom(target.global_position + Vector2(10, -40), "COMB!", Color.ORANGE_RED)
+	
+	# Aplicar daño principal
+	var damage_applied = false
 	if target.has_method("take_damage"):
-		target.take_damage(final_damage, "physical", attacker)
+		target.take_damage(final_damage, element, attacker)
+		damage_applied = true
+	elif target.has_node("HealthComponent"):
+		var hc = target.get_node("HealthComponent")
+		if hc.has_method("take_damage"):
+			hc.take_damage(final_damage, element)
+			damage_applied = true
+	
+	if damage_applied:
 		# Balance Debug: Log damage dealt
-		# FIX-BT2b: Siempre recopilar datos
 		if BalanceDebugger:
 			BalanceDebugger.log_damage_dealt(final_damage)
 	
@@ -194,6 +230,18 @@ static func apply_damage_with_effects(
 	# Efectos de estado por probabilidad
 	ProjectileFactory.apply_status_effects_chance(tree, target)
 	
+	# Hemorragia (Bleed on Hit): chance de aplicar sangrado
+	if ps and ps.has_method("get_stat"):
+		var bleed_chance = ps.get_stat("bleed_on_hit_chance")
+		if bleed_chance > 0 and randf() < bleed_chance:
+			if is_instance_valid(target) and target.has_method("apply_bleed"):
+				var bleed_dmg = max(1, damage_result.base_damage * 0.2)
+				target.apply_bleed(bleed_dmg, 3.0)
+				FloatingText.spawn_custom(target.global_position + Vector2(-10, -30), "BLEED", Color.RED)
+	
 	# Knockback
-	if knockback_force != 0 and knockback_dir != Vector2.ZERO and target.has_method("apply_knockback"):
-		target.apply_knockback(knockback_dir * knockback_force)
+	if knockback_force != 0 and knockback_dir != Vector2.ZERO:
+		if is_instance_valid(target) and target.has_method("apply_knockback"):
+			target.apply_knockback(knockback_dir * knockback_force)
+		elif is_instance_valid(target) and target is CharacterBody2D:
+			target.velocity += knockback_dir * knockback_force

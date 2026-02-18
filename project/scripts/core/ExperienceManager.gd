@@ -269,7 +269,7 @@ func create_coin(position: Vector2, base_value: int = 1) -> Node2D:
 	var pool = get_tree().get_first_node_in_group("pickup_pool")
 	if pool and pool.has_method("get_pickup"):
 		# Inferred type
-		var coin = pool.get_pickup(position, final_value, null)
+		var coin = pool.get_pickup(position, final_value, 0)  # 0 = BRONZE default
 		
 		if coin.has_signal("coin_collected"):
 			if not coin.coin_collected.is_connected(_on_coin_collected):

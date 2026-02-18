@@ -1155,7 +1155,7 @@ func _on_enemy_died(death_position: Vector2, enemy_type: String, exp_value: int,
 		var explosion_chance = player_stats.get_stat("explosion_chance") if player_stats.has_method("get_stat") else 0.0
 		if explosion_chance > 0.0 and randf() < explosion_chance:
 			var explosion_damage = player_stats.get_stat("explosion_damage") if player_stats.has_method("get_stat") else 50.0
-			_trigger_kill_explosion(position, explosion_damage)
+			_trigger_kill_explosion(death_position, explosion_damage)
 
 func _grant_exp_delayed(exp_value: int) -> void:
 	"""Otorgar experiencia con un pequeño delay para mejor feedback visual.

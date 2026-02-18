@@ -1207,7 +1207,7 @@ func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> 
 			current_health = new_value * ratio
 			# IMPORTANTE: Asegurar que nunca sea menor a 1 si estamos vivos
 			current_health = maxf(current_health, 1.0)
-			health_changed.emit(current_health, new_value)
+			health_changed.emit(current_health, get_stat("max_health"))
 
 		"is_glass_cannon", "blood_pact":
 			# SOSP-02: Al activar glass_cannon o blood_pact, max_health efectivo = 1.0

@@ -179,6 +179,10 @@ func _load_meta() -> void:
 	if parse_result != OK:
 		meta_data = DEFAULT_META.duplicate(true)
 		return
+	if not json.data is Dictionary:
+		push_warning("[SaveManager] meta.json no contiene un Dictionary válido, reseteando")
+		meta_data = DEFAULT_META.duplicate(true)
+		return
 	meta_data = json.data
 
 func _save_meta() -> bool:

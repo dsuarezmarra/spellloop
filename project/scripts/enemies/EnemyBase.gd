@@ -1384,7 +1384,7 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 				set_meta("shield_active", false)
 
 	# FIX FASE 3: Elite shield charges
-	var _attack_sys = get_node_or_null("EnemyAttackSystem")
+	var _attack_sys = get_node_or_null("AttackSystem")
 	if _attack_sys and "elite_shield_charges" in _attack_sys and _attack_sys.elite_shield_charges > 0:
 		_attack_sys.elite_shield_charges -= 1
 		final_damage = int(final_damage * 0.15)  # Elite shield absorbe 85%

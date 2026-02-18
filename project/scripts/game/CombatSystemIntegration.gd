@@ -1,10 +1,11 @@
 # CombatSystemIntegration.gd
-# Script auxiliar para integrar el nuevo sistema de combate en Game.gd
+# ⚠️ DEPRECATED — Este script es código legacy y NO está en uso.
+# Toda la lógica de combate está integrada directamente en Game.gd.
+# Este archivo crea instancias duplicadas de PlayerStats y AttackManager,
+# lo cual causaría estado dividido si se usara junto con Game.gd.
+# Conservado temporalmente como referencia. NO instanciar.
 #
-# USO:
-# 1. En Game.gd, crear una instancia de este script
-# 2. Llamar a setup() con referencias al player y otros sistemas
-# 3. El sistema manejará automáticamente armas, fusiones, y level ups
+# (Antes: Script auxiliar para integrar el sistema de combate en Game.gd)
 
 extends Node
 class_name CombatSystemIntegration

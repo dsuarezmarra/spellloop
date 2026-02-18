@@ -310,7 +310,14 @@ func get_cooldown_progress() -> float:
 		return 1.0
 	if cooldown <= 0:
 		return 1.0
-	return 1.0 - (current_cooldown / cooldown)
+	# Usar el cooldown real aplicado (con attack_speed_mult) como denominador
+	var actual_cd = cooldown
+	var global_stats = _get_global_weapon_stats_node()
+	if global_stats and global_stats.has_method("get_stat"):
+		var asm = global_stats.get_stat("attack_speed_mult")
+		if asm > 0.01:
+			actual_cd = cooldown / asm
+	return 1.0 - clampf(current_cooldown / actual_cd, 0.0, 1.0)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SISTEMA DE ATAQUE
@@ -925,7 +932,7 @@ func _apply_execute(target: Node2D) -> void:
 	# effect_value es el umbral (ej: 0.2 = 20% HP)
 	if hp_percent <= effect_value:
 		if target.has_method("take_damage"):
-			target.take_damage(hp)  # Daño letal
+			target.take_damage(hp, "physical", self)  # Daño letal
 			# print("[BaseWeapon] ⚔️ EXECUTE! Enemigo eliminado (%.0f%% HP)" % [hp_percent * 100])
 
 func _apply_bleed(target: Node2D) -> void:
