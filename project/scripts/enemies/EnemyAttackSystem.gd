@@ -1320,30 +1320,36 @@ func _apply_aoe_effects() -> void:
 			# print("[EnemyAttackSystem] Ã¢Å¡Â¡ AoE aplica Stun!")
 
 func _perform_breath_attack() -> void:
-	"""Ataque de aliento: daÃƒÂ±o en cono hacia el player"""
+	"""Ataque de aliento: cono de fuego en la direccion de encaramiento del enemigo.
+	Usa current_direction (facing) para que el jugador pueda esquivar lateralmente."""
 	if not player:
 		return
 
-	var direction = (player.global_position - enemy.global_position).normalized()
+	# Usar la direccion de encaramiento del enemigo (hacia donde caminaba).
+	# Si el enemigo no se ha movido, fallback a direccion al player.
+	var facing_dir: Vector2 = Vector2.ZERO
+	if "current_direction" in enemy and enemy.current_direction.length() > 0.1:
+		facing_dir = enemy.current_direction.normalized()
+	else:
+		facing_dir = (player.global_position - enemy.global_position).normalized()
+
 	var cone_angle = deg_to_rad(modifiers.get("breath_angle", 45.0))
 	var cone_range = modifiers.get("breath_range", 150.0)
 	var breath_damage = int(attack_damage * modifiers.get("breath_damage_mult", 1.2))
 
-	# Verificar si player estÃƒÂ¡ en el cono
+	# Verificar si player esta dentro del cono de aliento
 	var to_player = player.global_position - enemy.global_position
 	var dist = to_player.length()
-	var angle_to_player = direction.angle_to(to_player.normalized())
+	var angle_to_player = facing_dir.angle_to(to_player.normalized())
 
 	if dist <= cone_range and abs(angle_to_player) <= cone_angle / 2:
 		if player.has_method("take_damage"):
 			player.take_damage(breath_damage, "fire", enemy)
-			# print("[EnemyAttackSystem] Ã°Å¸Ââ€° %s Breath hit player por %d daÃƒÂ±o" % [enemy.name, breath_damage])
 			attacked_player.emit(breath_damage, false)
-			# Aplicar efectos de breath
 			_apply_breath_effects()
 
-	# Efecto visual del breath
-	_spawn_breath_visual(enemy.global_position, direction, cone_range)
+	# Efecto visual del breath (siempre en la direccion de encaramiento)
+	_spawn_breath_visual(enemy.global_position, facing_dir, cone_range)
 
 func _apply_breath_effects() -> void:
 	"""Aplicar efectos del ataque breath"""

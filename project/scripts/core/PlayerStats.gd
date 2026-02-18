@@ -1377,14 +1377,11 @@ func _update_health_regen(delta: float) -> void:
 			if BalanceDebugger:
 				BalanceDebugger.log_heal(heal_int, "regen")
 	else:
-		pass  # Bloque else
 		# Fallback: curar el current_health local (para compatibilidad)
 		if current_health < get_stat("max_health") and current_health > 0:
-			heal(float(heal_int))
-			# Balance Debug: Log regen heal (fallback)
-			# FIX-BT2b: Siempre recopilar datos
-			if BalanceDebugger:
-				BalanceDebugger.log_heal(heal_int, "regen")
+			var healed = heal(float(heal_int))
+			# heal() ya loguea internamente en BalanceDebugger como "heal".
+			# NO volver a loguear aquí para evitar doble conteo de curación.
 
 func _get_player_current_health() -> float:
 	"""Obtener HP actual del player real"""

@@ -367,32 +367,7 @@ func _process(delta: float) -> void:
 
 		# -----------------------------------------------------------
 
-		# -----------------------------------------------------------
-		# LÓGICA DE NUEVOS OBJETOS (Phase 4)
-		# 19. Torreta (Tower): Buffs si quieto > 2s
-		var player_stats = _get_player_stats()
-		if player_stats and player_stats.has_method("get_stat") and player_stats.get_stat("turret_mode_enabled") > 0:
-			if velocity.length() < 10.0:
-				_turret_timer += delta
-				if _turret_timer >= 2.0 and not _turret_active:
-					_turret_active = true
-					# Activar buffs (simulado con modificadores temporales o stats directos)
-					# Por ahora solo feedback visual y asumimos que PlayerStats checkea _turret_active
-					# O aplicamos buff aquí
-					FloatingText.spawn_text(global_position + Vector2(0, -70), "TURRET MODE!", Color.GREEN)
-					# Modificar stats dinámicamente si es posible, o usar flag en PlayerStats
-					if player_stats.has_method("add_temporary_modifier"):
-						# ID, Stat, ValueMs, Duration (0=infinite until removed)
-						# Pero temp modifiers suelen tener duración.
-						# Mejor: PlayerStats lee una variable nuestra o nosotros seteamos un flag en PlayerStats
-						if "is_turret_mode" in player_stats:
-							player_stats.is_turret_mode = true
-			else:
-				_turret_timer = 0.0
-				if _turret_active:
-					_turret_active = false
-					if player_stats and "is_turret_mode" in player_stats:
-						player_stats.is_turret_mode = false
+		# Torreta (Tower) — Lógica unificada en _update_turret_logic()
 		# -----------------------------------------------------------
 	var movement_input_vec = input_manager.get_movement_vector()
 	var is_moving_now = movement_input_vec.length() > 0.1
@@ -1961,35 +1936,36 @@ func _on_health_damaged(amount: int, _element: String) -> void:
 	pass
 
 func _update_turret_logic(delta: float, is_moving: bool) -> void:
+	"""Sistema unificado de Torreta: comprueba turret_mode_enabled (del upgrade unique_tower)
+	y activa is_turret_mode en PlayerStats que aplica bonuses vía get_stat()."""
+	var player_stats = get_tree().get_first_node_in_group("player_stats")
+	if not player_stats or not player_stats.has_method("get_stat"):
+		return
+	if player_stats.get_stat("turret_mode_enabled") <= 0:
+		return
+
 	if is_moving:
 		_stationary_timer = 0.0
 		if _turret_buff_active:
-			_remove_turret_buff()
+			_remove_turret_buff(player_stats)
 	else:
 		_stationary_timer += delta
 		if not _turret_buff_active and _stationary_timer >= 2.0:
-			var player_stats = get_tree().get_first_node_in_group("player_stats")
-			if player_stats and player_stats.has_method("get_stat") and player_stats.get_stat("turret_bonus") > 0:
-				_apply_turret_buff()
+			_apply_turret_buff(player_stats)
 
-func _apply_turret_buff() -> void:
+func _apply_turret_buff(player_stats: Node) -> void:
 	_turret_buff_active = true
-	var player_stats = get_tree().get_first_node_in_group("player_stats")
-	if player_stats:
-		# +50% Daño, +25% Ataque, +10 HP regen/s
-		player_stats.add_temp_modifier("damage_mult", 0.5, 9999.0, "turret_bonus")
-		player_stats.add_temp_modifier("attack_speed_mult", 0.25, 9999.0, "turret_bonus")
-		player_stats.add_temp_modifier("health_regen", 10.0, 9999.0, "turret_bonus")
-
+	# Los bonuses reales se aplican en PlayerStats.get_stat() cuando is_turret_mode == true:
+	# +50% attack_speed_mult, +25% damage_mult, -20% damage_taken_mult
+	if "is_turret_mode" in player_stats:
+		player_stats.is_turret_mode = true
 	FloatingText.spawn_text(global_position + Vector2(0, -80), "TURRET MODE!", Color.YELLOW)
+	modulate = Color(1.5, 1.2, 0.8)  # Brillo dorado
 
-	# Visual effect (Escudo visual o algo)
-	modulate = Color(1.5, 1.2, 0.8) # Brillo dorado
-
-func _remove_turret_buff() -> void:
+func _remove_turret_buff(player_stats: Node = null) -> void:
 	_turret_buff_active = false
-	var player_stats = get_tree().get_first_node_in_group("player_stats")
-	if player_stats:
-		player_stats.remove_temp_modifiers_by_source("turret_bonus")
-
+	if not player_stats:
+		player_stats = get_tree().get_first_node_in_group("player_stats")
+	if player_stats and "is_turret_mode" in player_stats:
+		player_stats.is_turret_mode = false
 	modulate = Color.WHITE

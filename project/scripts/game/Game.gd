@@ -530,20 +530,20 @@ func _on_player_took_damage(damage: int, element: String) -> void:
 		damage_vignette.show_damage_effect(damage, element)
 
 func _manual_camera_shake(damage: int) -> void:
-	"""Screen shake manual para Camera2D estándar"""
+	"""Screen shake fallback para Camera2D sin GameCamera.
+	Siempre restaura a Vector2.ZERO para evitar drift de offset."""
 	var intensity = clampf(float(damage) / 30.0, 0.15, 0.6)
 	var shake_offset = Vector2(
 		randf_range(-12, 12) * intensity,
 		randf_range(-12, 12) * intensity
 	)
 
-	var original_offset = camera.offset
 	camera.offset = shake_offset
 
-	# Crear tween para restaurar
+	# Restaurar siempre a ZERO (no capturar offset actual que podría estar desplazado)
 	var tween = create_tween()
 	tween.set_ease(Tween.EASE_OUT)
-	tween.tween_property(camera, "offset", original_offset, 0.2)
+	tween.tween_property(camera, "offset", Vector2.ZERO, 0.2)
 
 func _physics_process(_delta: float) -> void:
 	# La cámara sigue al player

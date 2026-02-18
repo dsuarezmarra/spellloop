@@ -17,8 +17,6 @@
 
 extends Node
 
-signal action_pressed(action: String)
-signal action_released(action: String)
 signal pause_requested()
 signal input_device_changed(device_type: String)
 
@@ -114,9 +112,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	"""Handle unprocessed input events"""
 	# Detect input device changes
 	_detect_device_change(event)
-	
-	# Handle action presses/releases
-	_handle_action_events(event)
 
 func _detect_device_change(event: InputEvent) -> void:
 	"""Detect if input device has changed"""
@@ -133,21 +128,18 @@ func _detect_device_change(event: InputEvent) -> void:
 		input_device_changed.emit(new_device)
 		# Debug desactivado: print("[InputManager] Input device changed to: ", new_device)
 
-func _handle_action_events(_event: InputEvent) -> void:
-	"""Handle action press/release events"""
-	for action in MOVEMENT_ACTIONS + GAME_ACTIONS:
-		if Input.is_action_just_pressed(action):
-			action_pressed.emit(action)
-			
-			# Handle special actions
-			if action == "pause":
-				pause_requested.emit()
-		
-		elif Input.is_action_just_released(action):
-			action_released.emit(action)
+# Dedup de pause: evitar emitir pause_requested múltiples veces en el mismo frame
+var _pause_emitted_this_frame: bool = false
 
 func _process(_delta: float) -> void:
-	"""Update movement vector continuously"""
+	"""Update movement vector and per-frame actions"""
+	# Emitir pause una sola vez por frame (is_action_just_pressed es per-frame safe en _process)
+	if Input.is_action_just_pressed("pause"):
+		if not _pause_emitted_this_frame:
+			_pause_emitted_this_frame = true
+			pause_requested.emit()
+	else:
+		_pause_emitted_this_frame = false
 	# Prefer Input.get_vector for concise movement handling
 	movement_vector = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	# Note: Input.get_vector returns a Vector2 with Y positive for down; normalize if needed
