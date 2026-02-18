@@ -281,6 +281,11 @@ func _on_stats_changed_signal(stat_name, _old, new_val):
 		pickup_radius = new_val
 		_update_pickup_area_size()
 
+	elif stat_name == "shield_amount" or stat_name == "max_shield":
+		# Actualizar barra de vida y VFX de escudo
+		update_health_bar()
+		_update_shield_vfx(new_val if stat_name == "shield_amount" else _old)
+
 func _setup_weapons_deferred() -> void:
 	"""Configurar armas después de que todo esté listo"""
 	# Verificación de seguridad: el nodo debe estar en el árbol
@@ -1925,15 +1930,16 @@ func get_current_speed() -> float:
 	return move_speed
 
 
-func _on_stat_changed(stat_name: String, _old_value: float, _new_value: float) -> void:
-	"""Callback cuando cambian los stats globales"""
-	if stat_name == 'shield_amount' or stat_name == 'max_shield':
-		update_health_bar()
-		# VFX de aura de escudo persistente
-		_update_shield_vfx(_new_value if stat_name == 'shield_amount' else _old_value)
-	elif stat_name == 'pickup_range':
-		pickup_radius = _new_value
-		_update_pickup_area_size()
+## DEPRECATED: Lógica migrada a _on_stats_changed_signal() que SÍ está conectada
+## a PlayerStats.stat_changed. Esta función NO se conecta a ninguna señal.
+## Se conserva como referencia pero nunca se invoca.
+#func _on_stat_changed(stat_name: String, _old_value: float, _new_value: float) -> void:
+#	if stat_name == 'shield_amount' or stat_name == 'max_shield':
+#		update_health_bar()
+#		_update_shield_vfx(_new_value if stat_name == 'shield_amount' else _old_value)
+#	elif stat_name == 'pickup_range':
+#		pickup_radius = _new_value
+#		_update_pickup_area_size()
 
 func _update_pickup_area_size() -> void:
 	"""Actualizar el tamaño del área de recolección"""

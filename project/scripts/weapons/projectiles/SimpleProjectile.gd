@@ -440,6 +440,9 @@ func configure_and_launch(data: Dictionary, start_pos: Vector2, target_vec: Vect
 	Método UNIFICADO para inicializar, configurar y lanzar un proyectil.
 	Reemplaza la lógica fragmentada anterior para garantizar consistencia total (Zero-Ghosting Policy).
 	"""
+	# 0. Resetear guard de destrucción (CRÍTICO para pooling — evita proyectiles zombie)
+	_is_destroyed = false
+
 	# 1. Aplicar Stats Base (Sobrescribir siempre)
 	damage = int(data.get("damage", 10))
 	speed = data.get("speed", 400.0)

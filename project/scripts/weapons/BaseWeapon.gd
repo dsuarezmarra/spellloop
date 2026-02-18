@@ -359,9 +359,10 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> bool:
 		if dmg_mult < 0.01:
 			print("🔴 [BaseWeapon] %s: dmg_mult=%.2f, base=%d, final=%.1f" % [weapon_name, dmg_mult, damage, modified_damage])
 
-		# Agregar crit del efecto del arma
-		if effect == "crit_chance":
-			modified_crit += effect_value
+	# Agregar crit del efecto del arma (fuera del bloque player_stats
+	# para que el bonus intrínseco del arma siempre se aplique)
+	if effect == "crit_chance":
+		modified_crit += effect_value
 
 	# Log de disparo
 	# Log de disparo

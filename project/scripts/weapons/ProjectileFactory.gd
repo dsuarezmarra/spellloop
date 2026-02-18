@@ -461,6 +461,7 @@ class BeamEffect extends Node2D:
 
 		# Encontrar todos los enemigos en el camino
 		var enemies_hit = []
+		var excluded_rids: Array[RID] = []  # Acumular exclusiones para evitar golpear al mismo collider
 		var current_pos = global_position
 
 		for i in range(50):  # Límite de iteraciones
@@ -473,11 +474,14 @@ class BeamEffect extends Node2D:
 				enemies_hit.append(collider)
 				_apply_damage(collider)
 
+			# Acumular RID del collider para no impactarlo de nuevo
+			excluded_rids.append(collider.get_rid())
+
 			# Mover el punto de inicio más allá
 			current_pos = result.position + direction * 5.0
 			query = PhysicsRayQueryParameters2D.create(current_pos, end_pos)
 			query.collision_mask = 2 | 4 | 8 | 16 # Layers 2, 3, 4, 5 to be safe
-			query.exclude = [collider.get_rid()]
+			query.exclude = excluded_rids
 
 		# Crear visual del rayo (mejorado si está disponible)
 		_create_beam_visual(end_pos)
@@ -744,6 +748,7 @@ class AOEEffect extends Node2D:
 		# Conectar señales para tracking eficiente
 		area.body_entered.connect(_on_body_entered)
 		area.body_exited.connect(_on_body_exited)
+		area.area_entered.connect(_on_area_entered)  # Fallback para enemigos Area2D
 
 		# Crear visual (mejorado si está disponible)
 		_create_aoe_visual()
