@@ -63,17 +63,17 @@ static func get_chest_loot(chest_type: int, luck_modifier: float = 1.0, context:
 	Generar contenido para un cofre.
 	Retorna array de diccionarios: [{id, type, rarity, amount, ...}]
 	Context: Objeto opcional (usualmente AttackManager) para lógica de fusiones
-	
+
 	BALANCE PASS 2: Fusiones solo en chests (no LevelUp)
 	- BOSS: Garantizada si disponible
 	- ELITE: 8% chance si disponible
 	"""
 	var items = []
-	
+
 	# Lógica especial para BOSS (Cofre Legendario)
 	if chest_type == ChestType.BOSS:
 		return _generate_boss_loot(luck_modifier, context)
-	
+
 	# BALANCE PASS 2: Check fusión en ELITE chests
 	if chest_type == ChestType.ELITE:
 		var fusion_item = _try_generate_fusion_loot(context, ELITE_FUSION_CHANCE)
@@ -82,11 +82,11 @@ static func get_chest_loot(chest_type: int, luck_modifier: float = 1.0, context:
 			# Si hay fusión, añadir bonus de oro y retornar
 			items.append(_generate_gold_loot(ChestType.ELITE, luck_modifier))
 			return items
-	
+
 	# Lógica estándar para otros cofres
 	var weights = CHEST_WEIGHTS.get(chest_type, CHEST_WEIGHTS[ChestType.NORMAL])
 	var category = _roll_category(weights, luck_modifier, context)
-	
+
 	var item = null
 	match category:
 		"gold":
@@ -99,10 +99,10 @@ static func get_chest_loot(chest_type: int, luck_modifier: float = 1.0, context:
 			item = _generate_upgrade_loot(chest_type, luck_modifier, min_tier, context)
 		"weapon":
 			item = _generate_weapon_loot(chest_type, luck_modifier, context)
-			
+
 	if item:
 		items.append(item)
-		
+
 	return items
 
 static func _try_generate_fusion_loot(context: Object, chance: float) -> Dictionary:
@@ -113,20 +113,20 @@ static func _try_generate_fusion_loot(context: Object, chance: float) -> Diction
 	"""
 	if not context or not context.has_method("get_available_fusions"):
 		return {}
-	
+
 	# Verificar si hay fusiones disponibles (ya verifica 2+ armas lvl 8)
 	var fusions = context.get_available_fusions()
 	if fusions.is_empty():
 		return {}
-	
+
 	# Roll de probabilidad
 	if randf() > chance:
 		return {}
-	
+
 	# ¡Fusión disponible! Devolver la primera
 	var fusing = fusions[0]
 	var result = fusing.result
-	
+
 	return {
 		"id": result.id,
 		"type": "fusion",
@@ -150,13 +150,13 @@ static func _get_player_stats(context: Object, tree: SceneTree = null) -> Node:
 		# Only return if it's a Node (not a Dictionary)
 		if stats is Node:
 			return stats
-		
+
 	# 2. Intentar buscar globalmente (si tenemos tree)
 	if tree:
 		var nodes = tree.get_nodes_in_group("player_stats")
 		if not nodes.is_empty():
 			return nodes[0]
-			
+
 	return null
 
 static func _generate_boss_loot(luck: float, context: Object) -> Array:
@@ -166,7 +166,7 @@ static func _generate_boss_loot(luck: float, context: Object) -> Array:
 	Prioridad 2: Jackpot (3-5 items)
 	"""
 	var items = []
-	
+
 	# 1. Intentar FUSIÓN (Garantizada si está disponible)
 	# context debe ser el AttackManager
 	if context and context.has_method("get_available_fusions"):
@@ -175,7 +175,7 @@ static func _generate_boss_loot(luck: float, context: Object) -> Array:
 			# ¡Fusión disponible! Devolver el resultado de la primera fusión
 			var fusing = fusions[0]
 			var result = fusing.result
-			
+
 			items.append({
 				"id": result.id,
 				"type": "fusion", # Tipo especial para UI
@@ -185,7 +185,7 @@ static func _generate_boss_loot(luck: float, context: Object) -> Array:
 				"icon": result.get("icon", "🌟"),
 				"fusion_data": fusing # Datos necesarios para realizar la fusión
 			})
-			
+
 			# Bonus de oro siempre
 			items.append(_generate_gold_loot(ChestType.BOSS, luck))
 			return items
@@ -194,12 +194,12 @@ static func _generate_boss_loot(luck: float, context: Object) -> Array:
 	# Usar tabla de loot definida en BossDatabase
 	var BossDB = load("res://scripts/data/BossDatabase.gd")
 	var loot_config = BossDB.get_boss_loot("default") # Por defecto o pasar ID si estuviera disponible
-	
+
 	# Recompensas garantizadas
 	for guaranteed_item in loot_config.get("guaranteed", []):
 		var item = _resolve_loot_string(guaranteed_item, luck, context)
 		if item: items.append(item)
-		
+
 	# Chance de extra
 	if randf() < loot_config.get("chance_for_extra", 0.0):
 		var pool = loot_config.get("pool", [])
@@ -207,13 +207,13 @@ static func _generate_boss_loot(luck: float, context: Object) -> Array:
 			var pick = pool[randi() % pool.size()]
 			var item = _resolve_loot_string(pick, luck, context)
 			if item: items.append(item)
-			
+
 	# Garantizar al menos un item de pool si solo hay oro garantizado?
 	# La config actual da "gold_large" y "stat_upgrade_tier_3" garantizados en default.
 	# Si la lista de items sigue vacía (por error), fallback
 	if items.is_empty():
 		items.append(_generate_upgrade_loot(ChestType.BOSS, luck, 3, context))
-	
+
 	return items
 
 static func _resolve_loot_string(key: String, luck: float, context: Object) -> Dictionary:
@@ -242,10 +242,10 @@ static func _generate_gold_loot(chest_type: int, luck: float) -> Dictionary:
 	match chest_type:
 		ChestType.ELITE: base_amount = 150
 		ChestType.BOSS: base_amount = 500
-		
+
 	# Variación y suerte
 	var amount = int(base_amount * randf_range(0.8, 1.2) * luck)
-	
+
 	return {
 		"id": "gold_bag",
 		"type": "gold",
@@ -262,14 +262,14 @@ static func _generate_healing_loot(chest_type: int) -> Dictionary:
 	var amount = 30 # % de cura
 	var icon = "❤️"
 	var desc = Localization.L("items.potions.health_potion.description")
-	
+
 	if chest_type >= ChestType.ELITE:
 		heal_type = "full_potion"
 		item_name = Localization.L("items.potions.full_elixir.name")
 		amount = 100
 		icon = "💚"
 		desc = Localization.L("items.potions.full_elixir.description")
-		
+
 	return {
 		"id": heal_type,
 		"type": "consumable",
@@ -288,31 +288,31 @@ static func _generate_upgrade_loot(chest_type: int, luck: float, min_tier_overri
 	"""
 	# Obtener referencia a la base de datos de mejoras
 	var all_upgrades = []
-	
+
 	# Cargar script dinámicamente
 	if not ClassDB.class_exists("UpgradeDatabase") and not ResourceLoader.exists("res://scripts/data/UpgradeDatabase.gd"):
 		printerr("❌ LootManager: UpgradeDatabase no encontrado.")
 		return {}
-		
+
 	var UpgradeDB = load("res://scripts/data/UpgradeDatabase.gd")
 	if UpgradeDB:
 		_append_dict_values(all_upgrades, UpgradeDB.DEFENSIVE_UPGRADES)
 		_append_dict_values(all_upgrades, UpgradeDB.UTILITY_UPGRADES)
 		_append_dict_values(all_upgrades, UpgradeDB.OFFENSIVE_UPGRADES)
-		
+
 		# Incluir CURSED con 15% de probabilidad (trade-offs interesantes)
 		if randf() < 0.15:
 			_append_dict_values(all_upgrades, UpgradeDB.CURSED_UPGRADES)
-		
+
 		# Incluir UNIQUE solo para cofres BOSS (objetos especiales)
 		if chest_type == ChestType.BOSS:
 			_append_dict_values(all_upgrades, UpgradeDB.UNIQUE_UPGRADES)
-		
+
 		# Determinar tier mínimo
 		var min_tier = min_tier_override
 		if chest_type == ChestType.ELITE and min_tier < 2: min_tier = 2
 		if chest_type == ChestType.BOSS and min_tier < 3: min_tier = 3
-		
+
 		# Obtener PlayerStats para filtrado inteligente
 		var player_stats = _get_player_stats(context, Engine.get_main_loop().current_scene.get_tree() if Engine.get_main_loop() else null)
 
@@ -321,24 +321,24 @@ static func _generate_upgrade_loot(chest_type: int, luck: float, min_tier_overri
 			# Validar si cumple requisitos base
 			if up.get("tier", 1) < min_tier:
 				continue
-				
+
 			# -----------------------------------------------------------
 			# FILTRO INTELIGENTE (Fix Upgrade Duplicates)
 			# -----------------------------------------------------------
 			if player_stats:
 				var up_id = up.get("id", "")
-				
+
 				# 1. Filtrar únicos ya obtenidos
 				if up.get("is_unique", false) and player_stats.has_method("has_unique_upgrade"):
 					if player_stats.has_unique_upgrade(up_id):
 						continue
-						
+
 				# 2. Filtrar mejoras maxeadas por stacks
 				var max_stacks = up.get("max_stacks", 0)
 				if max_stacks > 0 and player_stats.has_method("get_upgrade_stacks"):
 					if player_stats.get_upgrade_stacks(up_id) >= max_stacks:
 						continue
-						
+
 				# 3. Filtrar mejoras inútiles (stats capeados)
 				if player_stats.has_method("would_upgrade_be_useful"):
 					if not player_stats.would_upgrade_be_useful(up):
@@ -348,13 +348,13 @@ static func _generate_upgrade_loot(chest_type: int, luck: float, min_tier_overri
 			# Aplicar suerte
 			var tier = up.get("tier", 1)
 			var weight = 1.0
-			
+
 			# Preferir altos tiers para cofres buenos
 			if tier > min_tier:
 				weight = 1.0 + (luck - 1.0) * 0.5
-			
+
 			valid_upgrades.append({"data": up, "weight": weight})
-		
+
 		if valid_upgrades.size() > 0:
 			var picked = _weighted_random(valid_upgrades)
 			return {
@@ -366,7 +366,7 @@ static func _generate_upgrade_loot(chest_type: int, luck: float, min_tier_overri
 				"icon": picked.icon,
 				"data": picked
 			}
-			
+
 	return _generate_gold_loot(chest_type, luck)
 
 static func _append_dict_values(target_array: Array, source_dict: Dictionary) -> void:
@@ -377,7 +377,7 @@ static func _weighted_random(items: Array) -> Dictionary:
 	var total_weight = 0.0
 	for item in items:
 		total_weight += item.weight
-	
+
 	var roll = randf() * total_weight
 	var current = 0.0
 	for item in items:
@@ -391,7 +391,7 @@ static func _generate_weapon_loot(chest_type: int, luck: float, context: Object 
 	if context:
 		# Verificar si hay slot disponible usando la propiedad directamente
 		var has_slot = true
-		
+
 		# Método 1: Propiedad directa has_available_slot
 		if "has_available_slot" in context:
 			has_slot = context.has_available_slot
@@ -400,22 +400,22 @@ static func _generate_weapon_loot(chest_type: int, luck: float, context: Object 
 			var equipped = context.get_weapons()
 			var max_slots = context.max_weapon_slots if "max_weapon_slots" in context else 6
 			has_slot = equipped.size() < max_slots
-		
+
 		if not has_slot:
 			# No hay espacio para más armas - dar upgrade o monedas en su lugar
 			print("[LootManager] No hay slots de arma disponibles - dando upgrade en lugar de arma")
 			return _generate_upgrade_loot(chest_type, luck, 1, context)
-	
+
 	# Seleccionar arma aleatoria
 	var possible_weapons = []
-	
+
 	# Obtener armas reales de la base de datos
 	var WeaponDB = null
 	if ClassDB.class_exists("WeaponDatabase") or ResourceLoader.exists("res://scripts/data/WeaponDatabase.gd"):
 		WeaponDB = load("res://scripts/data/WeaponDatabase.gd")
 		if WeaponDB:
 			possible_weapons = WeaponDB.get_all_base_weapons()
-	
+
 	# Fallback
 	if possible_weapons.is_empty():
 		possible_weapons = ["ice_wand", "fire_wand", "lightning_wand"]
@@ -424,28 +424,28 @@ static func _generate_weapon_loot(chest_type: int, luck: float, context: Object 
 	if context and context.has_method("get_weapons"):
 		var equipped_weapons = context.get_weapons()
 		var maxed_weapons = []
-		
+
 		for w in equipped_weapons:
 			if w.level >= 8: # MAX LEVEL CONSTANT
 				maxed_weapons.append(w.id)
-		
+
 		# Remover armas maxeadas de la lista posible
 		var filtered = []
 		for w_id in possible_weapons:
 			if not w_id in maxed_weapons:
 				filtered.append(w_id)
 		possible_weapons = filtered
-	
+
 	# Si no quedan armas disponibles (todas maxeadas o error), dar Oro o Curación
 	if possible_weapons.is_empty():
 		return _generate_gold_loot(chest_type, luck)
 
 	var selected_id = possible_weapons[randi() % possible_weapons.size()]
-	
+
 	# Obtener nombre bonito y descripción si es posible
 	var w_name = selected_id.capitalize().replace("_", " ")
 	var w_desc = Localization.L("items.weapons.new_weapon_fallback")
-	
+
 	if WeaponDB and WeaponDB.WEAPONS.has(selected_id):
 		w_name = WeaponDB.WEAPONS[selected_id].get("name", w_name)
 		w_desc = WeaponDB.WEAPONS[selected_id].get("description", w_desc)
@@ -458,7 +458,7 @@ static func _generate_weapon_loot(chest_type: int, luck: float, context: Object 
 		"rarity": 3 if chest_type == ChestType.BOSS else 2,
 		"icon": "⚔️"
 	}
-	
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # UTILS
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -466,11 +466,11 @@ static func _generate_weapon_loot(chest_type: int, luck: float, context: Object 
 static func _roll_category(weights: Dictionary, luck: float, context: Object = null) -> String:
 	var total_weight = 0.0
 	var modified_weights = weights.duplicate()
-	
+
 	# FILTRAR ARMAS SI NO HAY ESPACIO DISPONIBLE
 	if context and modified_weights.has("weapon") and modified_weights["weapon"] > 0:
 		var has_slot = true
-		
+
 		# Verificar slots disponibles
 		if "has_available_slot" in context:
 			has_slot = context.has_available_slot
@@ -478,7 +478,7 @@ static func _roll_category(weights: Dictionary, luck: float, context: Object = n
 			var equipped = context.get_weapons()
 			var max_slots = context.max_weapon_slots if "max_weapon_slots" in context else 6
 			has_slot = equipped.size() < max_slots
-		
+
 		if not has_slot:
 			# Redistribuir el peso de armas a upgrades
 			var weapon_weight = modified_weights["weapon"]
@@ -488,23 +488,23 @@ static func _roll_category(weights: Dictionary, luck: float, context: Object = n
 			else:
 				modified_weights["gold"] = modified_weights.get("gold", 0.0) + weapon_weight
 			print("[LootManager] Sin slots de arma - redistribuyendo peso a upgrades")
-	
+
 	# La suerte aumenta probabilidad de cosas buenas (weapon/upgrade)
 	if luck > 1.0:
 		if modified_weights.has("weapon"): modified_weights["weapon"] *= luck
 		if modified_weights.has("upgrade"): modified_weights["upgrade"] *= luck
-		
+
 	for w in modified_weights.values():
 		total_weight += w
-		
+
 	var roll = randf() * total_weight
 	var current = 0.0
-	
+
 	for category in modified_weights:
 		current += modified_weights[category]
 		if roll <= current:
 			return category
-			
+
 	return "gold"
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -529,11 +529,11 @@ static func get_random_shop_loot(chest_type: int, count: int, luck: float = 1.0,
 	Retorna array de items con precios y descuentos.
 	"""
 	var items = []
-	
+
 	# Tier base según tipo de cofre
 	var base_tier = 1
 	var _min_rarity = 0  # Reserved for future filtering
-	
+
 	match chest_type:
 		ChestType.NORMAL:
 			base_tier = 1 # Común/Uncommon
@@ -543,20 +543,20 @@ static func get_random_shop_loot(chest_type: int, count: int, luck: float = 1.0,
 		ChestType.BOSS:
 			base_tier = 3 # Epic/Legendary
 			_min_rarity = 3
-			
+
 	# Generar items
 	for i in range(count):
 		var item = _generate_shop_item(chest_type, base_tier, luck, context)
 		if item:
 			items.append(item)
-	
+
 	return items
 
 static func _generate_shop_item(chest_type: int, base_tier: int, luck: float, context: Object = null) -> Dictionary:
 	"""Generar un item para tienda con precio"""
-	
+
 	var item = {}
-	
+
 	# Verificar si hay slots disponibles para armas
 	var can_add_weapons = true
 	if context:
@@ -568,7 +568,7 @@ static func _generate_shop_item(chest_type: int, base_tier: int, luck: float, co
 			if "max_weapon_slots" in context:
 				max_slots = context.max_weapon_slots
 			can_add_weapons = context.get_weapons().size() < max_slots
-	
+
 	# Lógica especial para BOSS
 	if chest_type == ChestType.BOSS:
 		# 50% Boss Item, 30% Weapon, 20% High Tier Upgrade
@@ -587,51 +587,51 @@ static func _generate_shop_item(chest_type: int, base_tier: int, luck: float, co
 			item = _generate_shop_weapon(base_tier, luck)
 		else:
 			item = _generate_shop_upgrade(base_tier, 0, luck, context)
-	
+
 	if item.is_empty():
 		return {}
-	
+
 	# Calcular tier efectivo (clamping)
 	var tier = item.get("tier", base_tier)
 	tier = clampi(tier, 1, 5)
-	
+
 	# Calcular precio
 	var price_data = PRICE_BY_TIER.get(tier, PRICE_BY_TIER[1])
 	var base_price = price_data.base
 	var variance = price_data.variance
 	var price = base_price + randi_range(-variance, variance)
 	price = maxi(price, 10)
-	
+
 	var original_price = price
 	var discount = 0
-	
+
 	# Aplicar descuento aleatorio
 	if randf() < DISCOUNT_CHANCE:
 		discount = randi_range(DISCOUNT_MIN, DISCOUNT_MAX)
 		price = int(price * (100 - discount) / 100.0)
 		price = maxi(price, 5)
-	
+
 	item["price"] = price
 	item["original_price"] = original_price
 	item["discount_percent"] = discount
-	
+
 	return item
 
 static func _generate_shop_weapon(base_tier: int, _luck: float) -> Dictionary:
-	"""Generar arma para tienda"""
-	# Obtener todas las armas base del diccionario
-	var all_weapon_ids = WeaponDatabase.WEAPONS.keys()
-	
+	"""Generar arma para tienda (filtrada por EA)"""
+	# Obtener armas habilitadas (ya filtradas por EA via get_all_base_weapons)
+	var all_weapon_ids = WeaponDatabase.get_all_base_weapons()
+
 	if all_weapon_ids.is_empty():
 		return {}
-	
+
 	# Seleccionar arma aleatoria
 	var weapon_id = all_weapon_ids[randi() % all_weapon_ids.size()]
 	var weapon_data = WeaponDatabase.get_weapon_data(weapon_id)
-	
+
 	if weapon_data.is_empty():
 		return {}
-	
+
 	return {
 		"type": "weapon",
 		"id": weapon_id,
@@ -647,9 +647,9 @@ static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float,
 	var UpgradeDB = load("res://scripts/data/UpgradeDatabase.gd")
 	if not UpgradeDB:
 		return {}
-	
+
 	var all_upgrades = []
-	
+
 	# Recolectar de todas las categorías (incluido CURSED en late-game)
 	if UpgradeDB.get("DEFENSIVE_UPGRADES"):
 		_append_dict_values(all_upgrades, UpgradeDB.DEFENSIVE_UPGRADES)
@@ -663,22 +663,22 @@ static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float,
 	# Late-game: incluir unique upgrades en shops tier 4+
 	if base_tier >= 4 and UpgradeDB.get("UNIQUE_UPGRADES"):
 		_append_dict_values(all_upgrades, UpgradeDB.UNIQUE_UPGRADES)
-	
+
 	if all_upgrades.is_empty():
 		return {}
-	
+
 	# Filtrar por tier (con bonus de tiempo y suerte)
 	var target_tier = base_tier
 	if randf() < luck * 0.2:  # Suerte puede subir tier
 		target_tier = mini(target_tier + 1, 5)
 	if time_bonus > 0 and randf() < 0.3:
 		target_tier = mini(target_tier + 1, 5)
-	
-	var eligible = all_upgrades.filter(func(u): 
+
+	var eligible = all_upgrades.filter(func(u):
 		var t = u.get("tier", 1)
 		return t >= base_tier and t <= target_tier + 1
 	)
-	
+
 	# FILTRO DE UPGRADES SHOP
 	var player_stats = _get_player_stats(context, Engine.get_main_loop().current_scene.get_tree() if Engine.get_main_loop() else null)
 	if player_stats:
@@ -697,7 +697,7 @@ static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float,
 				continue
 			filtered.append(up)
 		eligible = filtered
-	
+
 	# FALLBACK PROGRESIVO: Si no hay upgrades elegibles en el tier actual
 	if eligible.is_empty() and base_tier > 1:
 		# Intentar con tier más bajo — buscar en TODO el pool sin restricción de tier
@@ -716,7 +716,7 @@ static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float,
 		else:
 			fallback_filtered = all_upgrades
 		eligible = fallback_filtered
-	
+
 	if eligible.is_empty():
 		# Todo está maxeado — dar recompensa de oro escalada al tier
 		var gold_amount = 50 + (base_tier * 75)  # T1=125, T2=200, T3=275, T4=350, T5=425
@@ -729,9 +729,9 @@ static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float,
 			"icon": "💰",
 			"tier": base_tier
 		}
-	
+
 	var upgrade = eligible[randi() % eligible.size()]
-	
+
 	return {
 		"type": "upgrade",
 		"id": upgrade.get("id", "unknown"),
@@ -747,16 +747,16 @@ static func _generate_shop_boss_item(luck: float, context: Object = null) -> Dic
 	"""Generar item de jefe (Legendario/Único)"""
 	if not ClassDB.class_exists("BossDatabase") and not ResourceLoader.exists("res://scripts/data/BossDatabase.gd"):
 		return _generate_shop_upgrade(4, 0, luck, context)
-		
+
 	var BossDB = load("res://scripts/data/BossDatabase.gd")
 	if not BossDB: return _generate_shop_upgrade(4, 0, luck, context)
-	
+
 	var loot_table = BossDB.get_boss_loot("default")
 	var pool = loot_table.get("pool", [])
-	
+
 	if pool.is_empty():
 		return _generate_shop_upgrade(4, 0, luck, context)
-	
+
 	# Verificar si hay slots disponibles para armas
 	var can_add_weapons = true
 	if context:
@@ -765,9 +765,9 @@ static func _generate_shop_boss_item(luck: float, context: Object = null) -> Dic
 		elif context.has_method("get_weapons"):
 			var max_slots = context.max_weapon_slots if "max_weapon_slots" in context else 6
 			can_add_weapons = context.get_weapons().size() < max_slots
-		
+
 	var pick = pool[randi() % pool.size()]
-	
+
 	match pick:
 		"weapon_upgrade":
 			# Solo dar arma si hay slots disponibles
@@ -781,5 +781,5 @@ static func _generate_shop_boss_item(luck: float, context: Object = null) -> Dic
 			return _generate_shop_upgrade(4, 0, luck, context)
 		"unique_upgrade":
 			return _generate_shop_upgrade(5, 0, luck * 1.5, context)
-			
+
 	return _generate_shop_upgrade(3, 0, luck, context)

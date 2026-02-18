@@ -95,10 +95,16 @@ func _get_localized_field(data: Dictionary, field_base: String, fallback: String
 	return fallback
 
 func _load_characters() -> void:
-	"""Load all characters from database"""
-	all_characters = CharacterDatabase.get_all_characters()
+	"""Load all characters from database, filtered by EA content"""
+	var all_db_characters = CharacterDatabase.get_all_characters()
 
-	# For now, unlock all for testing
+	# Filter by EA content availability
+	all_characters = []
+	for char_data in all_db_characters:
+		if EAContentManager.is_character_enabled(char_data.id):
+			all_characters.append(char_data)
+
+	# Unlock all EA-enabled characters for now
 	unlocked_character_ids = []
 	for char_data in all_characters:
 		unlocked_character_ids.append(char_data.id)
@@ -109,7 +115,7 @@ func _load_characters() -> void:
 
 func _build_ui() -> void:
 	"""Build the UI programmatically"""
-	
+
 	# Background (Wallpaper)
 	# Buscar si ya existe un fondo en la escena y eliminarlo
 	var existing_bg = get_node_or_null("Background")
@@ -118,18 +124,18 @@ func _build_ui() -> void:
 
 	var bg = TextureRect.new()
 	bg.name = "Background"
-	
+
 	# Intentar cargar la textura
 	# Usar el nuevo fondo procesado
 	var bg_path = "res://assets/ui/backgrounds/character_select_bg_new.png"
 	if not FileAccess.file_exists(bg_path):
 		bg_path = "res://assets/ui/backgrounds/character_select_bg.png"
-		
+
 	var bg_tex = null
-	
+
 	var global_path = ProjectSettings.globalize_path(bg_path)
 	var img = Image.load_from_file(global_path)
-	
+
 	# Fallback bytes si load_from_file falla (para formatos raros)
 	if not img and FileAccess.file_exists(global_path):
 		var bytes = FileAccess.get_file_as_bytes(global_path)
@@ -138,7 +144,7 @@ func _build_ui() -> void:
 			# Format Detective
 			var h = bytes.slice(0, 4)
 			var err = ERR_FILE_UNRECOGNIZED
-			
+
 			if h[0] == 0xFF and h[1] == 0xD8: # JPG
 				err = img.load_jpg_from_buffer(bytes)
 			elif h[0] == 0x89 and h[1] == 0x50: # PNG
@@ -150,9 +156,9 @@ func _build_ui() -> void:
 				err = img.load_png_from_buffer(bytes)
 				if err != OK: err = img.load_jpg_from_buffer(bytes)
 				if err != OK: err = img.load_webp_from_buffer(bytes)
-			
+
 			if err != OK: img = null
-			
+
 	if img:
 		bg_tex = ImageTexture.create_from_image(img)
 	else:
@@ -171,7 +177,7 @@ func _build_ui() -> void:
 		placeholder.gradient.add_point(0.0, Color(0.2, 0.0, 0.0)) # ROJO para indicar error
 		placeholder.gradient.add_point(1.0, Color(0.1, 0.0, 0.0))
 		bg.texture = placeholder
-		
+
 	# Contenedor con clip para permitir desplazamiento
 	var bg_container = Control.new()
 	bg_container.name = "BackgroundContainer"
@@ -181,7 +187,7 @@ func _build_ui() -> void:
 	bg_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bg_container)
 	move_child(bg_container, 0)
-	
+
 	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	# Tamaño ligeramente mayor para permitir desplazar sin bordes negros
@@ -383,29 +389,29 @@ func _create_character_frames(char_data: Dictionary) -> SpriteFrames:
 	# Load the walk_down strip
 	var strip_path = "%s/walk/walk_down_strip.png" % base_path
 	var strip_tex = load(strip_path) as Texture2D
-	
+
 	if not strip_tex:
 		# Fallback to frost_mage
 		strip_path = "res://assets/sprites/players/frost_mage/walk/walk_down_strip.png"
 		strip_tex = load(strip_path) as Texture2D
-	
+
 	if strip_tex:
 		var strip_image = strip_tex.get_image()
-		
+
 		# IDLE animation (first frame from strip)
 		frames.add_animation("idle")
 		frames.set_animation_speed("idle", 1.0)
 		frames.set_animation_loop("idle", true)
-		
+
 		var idle_region = Rect2i(0, 0, FRAME_SIZE, FRAME_SIZE)
 		var idle_image = strip_image.get_region(idle_region)
 		frames.add_frame("idle", ImageTexture.create_from_image(idle_image))
-		
+
 		# WALK animation (3 frames from strip)
 		frames.add_animation("walk")
 		frames.set_animation_speed("walk", 6.0)
 		frames.set_animation_loop("walk", true)
-		
+
 		for i in range(3):
 			var frame_region = Rect2i(i * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE)
 			var frame_image = strip_image.get_region(frame_region)
@@ -630,7 +636,7 @@ func _update_stats_display() -> void:
 	stats_center.alignment = BoxContainer.ALIGNMENT_CENTER
 	stats_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vbox.add_child(stats_center)
-	
+
 	var stats_grid = GridContainer.new()
 	stats_grid.columns = 3
 	stats_grid.add_theme_constant_override("h_separation", 40)  # Más separación horizontal
@@ -767,7 +773,7 @@ func _setup_ambient_particles() -> void:
 	var sparkle_tex = load("res://assets/ui/particles/particle_magic_sparkle.png")
 	if not sparkle_tex:
 		return
-	
+
 	# La textura tiene 4 sparkles en horizontal (1216x222, cada uno ~304px)
 	var atlas_textures: Array[AtlasTexture] = []
 	var sparkle_width = 304
@@ -777,7 +783,7 @@ func _setup_ambient_particles() -> void:
 		atlas.atlas = sparkle_tex
 		atlas.region = Rect2(i * sparkle_width, 0, sparkle_width, sparkle_height)
 		atlas_textures.append(atlas)
-	
+
 	# Crear múltiples sistemas de partículas para mayor densidad
 	# 8 sistemas en lugar de 4, cada uno con más partículas
 	for i in range(8):
@@ -787,32 +793,32 @@ func _setup_ambient_particles() -> void:
 		particles.lifetime = 6.0
 		particles.randomness = 1.0
 		particles.texture = atlas_textures[i % 4]  # Ciclar entre los 4 sprites
-		
+
 		# Crear material de partículas
 		var mat = ParticleProcessMaterial.new()
 		mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
 		mat.emission_box_extents = Vector3(960, 540, 0)  # Cubrir toda la pantalla
-		
+
 		# Movimiento suave en múltiples direcciones
 		mat.direction = Vector3(0, -0.5, 0)
 		mat.spread = 180.0  # Esférico para flotar en todas direcciones
 		mat.initial_velocity_min = 8.0
 		mat.initial_velocity_max = 30.0
 		mat.gravity = Vector3(0, -5, 0)  # Flotar suavemente hacia arriba
-		
+
 		# Escala PEQUEÑA para que sean puntos individuales
 		mat.scale_min = 0.02
 		mat.scale_max = 0.10
-		
+
 		# Colores variados: dorado, púrpura, cyan para efecto mágico
 		var hue_options = [0.12, 0.75, 0.55, 0.08]  # Dorado, púrpura, cyan, naranja
 		var base_hue = hue_options[i % 4] + randf() * 0.05
 		mat.color = Color.from_hsv(base_hue, 0.4, 1.0, 0.6)
-		
+
 		# Rotación lenta
 		mat.angular_velocity_min = -30.0
 		mat.angular_velocity_max = 30.0
-		
+
 		# Fade: Aparecer y desaparecer suavemente
 		var color_curve = Curve.new()
 		color_curve.add_point(Vector2(0.0, 0.0))
@@ -822,14 +828,14 @@ func _setup_ambient_particles() -> void:
 		var alpha_curve = CurveTexture.new()
 		alpha_curve.curve = color_curve
 		mat.alpha_curve = alpha_curve
-		
+
 		particles.process_material = mat
 		particles.position = Vector2(960, 540)  # Centro de la pantalla 1920x1080
 		particles.z_index = 5  # Encima del fondo pero debajo de UI
-		
+
 		# Delay inicial diferente para cada sistema
 		particles.preprocess = i * 0.75
-		
+
 		add_child(particles)
 
 # =============================================================================
@@ -864,8 +870,8 @@ func take_focus() -> void:
 	# Give the engine a frame to process visibility before grabbing focus
 	if is_inside_tree():
 		await get_tree().process_frame
-	
-	# Since this screen handles input via _input(event), 
+
+	# Since this screen handles input via _input(event),
 	# we just need to make sure we are the focus owner to receive GUI events if needed,
 	# or simply ensure no other control is stealing focus.
 	grab_focus()

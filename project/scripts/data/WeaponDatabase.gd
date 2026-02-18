@@ -61,7 +61,7 @@ const WEAPONS: Dictionary = {
 		"description": "Dispara fragmentos de hielo que ralentizan enemigos",
 		"element": Element.ICE,
 		"rarity": "common",
-		
+
 		# Stats base
 		"damage": 14,  # BUFFED from 10
 		"cooldown": 1.4,
@@ -72,25 +72,25 @@ const WEAPONS: Dictionary = {
 		"area": 1.0,
 		"duration": 0.0,
 		"knockback": 80.0,
-		
+
 		# Comportamiento
 		"target_type": TargetType.NEAREST,
 		"projectile_type": ProjectileType.SINGLE,
-		
+
 		# Efecto especial
 		"effect": "slow",
 		"effect_value": 0.40,  # BUFFED from 0.30 (40% slow)
 		"effect_duration": 2.0,
-		
+
 		# Visual
 		"color": Color(0.4, 0.8, 1.0),
 		"icon": "res://assets/icons/weapon_ice_wand.png",
 		"texture_path": "res://assets/icons/weapon_ice_wand.png",
-		
+
 		# Tags de Mecanicas
 		"tags": ["projectile", "single_target"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# FIRE WAND - Quema enemigos (DoT)
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -101,7 +101,7 @@ const WEAPONS: Dictionary = {
 		"description": "Lanza bolas de fuego que queman a los enemigos",
 		"element": Element.FIRE,
 		"rarity": "common",
-		
+
 		"damage": 12,
 		"cooldown": 1.6,
 		"range": 300.0,
@@ -111,20 +111,20 @@ const WEAPONS: Dictionary = {
 		"area": 1.2,
 		"duration": 0.0,
 		"knockback": 60.0,
-		
+
 		"target_type": TargetType.RANDOM,
 		"projectile_type": ProjectileType.SINGLE,
-		
+
 		"effect": "burn",
 		"effect_value": 3.0,  # 3 daño por tick
 		"effect_duration": 4.0,
-		
+
 		"color": Color(1.0, 0.4, 0.1),
 		"icon": "res://assets/icons/weapon_fire_wand.png",
 		"texture_path": "res://assets/icons/weapon_fire_wand.png",
 		"tags": ["projectile", "area_splash", "dot"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# LIGHTNING WAND - Encadena rayos entre enemigos
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -135,7 +135,7 @@ const WEAPONS: Dictionary = {
 		"description": "Dispara rayos que saltan entre enemigos cercanos",
 		"element": Element.LIGHTNING,
 		"rarity": "uncommon",
-		
+
 		"damage": 13,  # NERFED Pass 3: 15 → 13 (-13%)
 		"cooldown": 1.8,
 		"range": 400.0,
@@ -145,22 +145,22 @@ const WEAPONS: Dictionary = {
 		"area": 1.0,
 		"duration": 0.0,
 		"knockback": 40.0,
-		
+
 		"target_type": TargetType.NEAREST,
 		"projectile_type": ProjectileType.CHAIN,
-		
+
 		"effect": "chain",
 		"effect_value": 2,  # Salta a 2 enemigos adicionales
 		"effect_duration": 0.0,
-		
+
 		# Tags de Mecanicas
 		"tags": ["chain", "no_pierce", "projectile"],
-		
+
 		"color": Color(1.0, 1.0, 0.3),
 		"icon": "res://assets/icons/weapon_lightning_wand.png",
 		"texture_path": "res://assets/icons/weapon_lightning_wand.png"
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# ARCANE ORB - Orbes que orbitan al jugador
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -171,7 +171,7 @@ const WEAPONS: Dictionary = {
 		"description": "Invoca orbes mágicos que orbitan a tu alrededor",
 		"element": Element.ARCANE,
 		"rarity": "uncommon",
-		
+
 		"damage": 8,
 		"cooldown": 0.0,  # Daño continuo
 		"range": 120.0,   # Radio de órbita
@@ -181,24 +181,24 @@ const WEAPONS: Dictionary = {
 		"area": 1.0,
 		"duration": 999.0,  # Permanente
 		"knockback": 20.0,
-		
+
 		"target_type": TargetType.ORBIT,
 		"projectile_type": ProjectileType.ORBIT,
-		
+
 		"effect": "none",
 		"effect_value": 0,
 		"effect_duration": 0.0,
-		
+
 		# Tags de Mecanicas
 		# Tags de Mecanicas
 		"tags": ["orbital", "no_pierce", "area"],
 		"hit_sound": "sfx_weapon_arcane_orb",
-		
+
 		"color": Color(0.7, 0.3, 1.0),
 		"icon": "res://assets/icons/weapon_arcane_orb.png",
 		"texture_path": "res://assets/icons/weapon_arcane_orb.png"
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# SHADOW DAGGER - Dagas rápidas con pierce
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -209,7 +209,7 @@ const WEAPONS: Dictionary = {
 		"description": "Lanza dagas oscuras que atraviesan enemigos",
 		"element": Element.SHADOW,
 		"rarity": "rare",
-		
+
 		"damage": 18,
 		"cooldown": 1.2,
 		"range": 450.0,
@@ -219,21 +219,21 @@ const WEAPONS: Dictionary = {
 		"area": 0.9,
 		"duration": 0.0,
 		"knockback": 30.0,
-		
+
 		"target_type": TargetType.DIRECTION,  # Sigue dirección de movimiento
 		"projectile_type": ProjectileType.SINGLE,
-		
+
 		"effect": "curse",
 		"effect_value": 1.30,  # NERFED Pass 3: 1.5 → 1.30 (-13%)
 		"effect_duration": 3.0,
-		
+
 		# Tags de Mecanicas
 		"tags": ["projectile", "pierce", "skill_shot"],
-		
+
 		"color": Color(0.3, 0.1, 0.4),
 		"icon": "res://assets/icons/weapon_shadow_dagger.png"
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# WIND BLADE - Fan of wind projectiles (Wind Runner starting weapon)
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -244,7 +244,7 @@ const WEAPONS: Dictionary = {
 		"description": "Lanza cuchillas de viento en abanico",
 		"element": Element.WIND,
 		"rarity": "common",
-		
+
 		# Stats base
 		"damage": 8,
 		"cooldown": 1.2,
@@ -255,24 +255,24 @@ const WEAPONS: Dictionary = {
 		"area": 1.0,
 		"duration": 0.0,
 		"knockback": 50.0,
-		
+
 		# Comportamiento
 		"target_type": TargetType.DIRECTION,  # Follows movement direction
 		"projectile_type": ProjectileType.MULTI,  # Multiple projectiles in fan
-		
+
 		# Efecto especial
 		"effect": "none",
 		"effect_value": 0,
 		"effect_duration": 0.0,
-		
+
 		# Visual
 		"color": Color(0.7, 1.0, 0.9),  # Light cyan/wind color
 		"icon": "res://assets/icons/weapon_wind_blade.png",
-		
+
 		# Tags
 		"tags": ["projectile", "multi_shot", "direction"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# NATURE STAFF - Proyectiles homing que curan
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -283,7 +283,7 @@ const WEAPONS: Dictionary = {
 		"description": "Dispara hojas mágicas que persiguen enemigos y te curan al matar",
 		"element": Element.NATURE,
 		"rarity": "uncommon",
-		
+
 		"damage": 9,
 		"cooldown": 1.0,
 		"range": 500.0,
@@ -293,19 +293,19 @@ const WEAPONS: Dictionary = {
 		"area": 1.0,
 		"duration": 3.0,  # Tiempo de vida del proyectil homing
 		"knockback": 50.0,
-		
+
 		"target_type": TargetType.HOMING,
 		"projectile_type": ProjectileType.MULTI,
-		
+
 		"effect": "lifesteal",
 		"effect_value": 1,  # 1 HP por kill
 		"effect_duration": 0.0,
-		
+
 		"color": Color(0.3, 0.8, 0.2),
 		"icon": "res://assets/icons/weapon_nature_staff.png",
 		"tags": ["projectile", "homing"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# EARTH SPIKE - Área de efecto en el suelo
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -316,7 +316,7 @@ const WEAPONS: Dictionary = {
 		"description": "Invoca picos de tierra que emergen bajo los enemigos",
 		"element": Element.EARTH,
 		"rarity": "uncommon",
-		
+
 		"damage": 20,
 		"cooldown": 1.8,
 		"range": 250.0,
@@ -326,19 +326,19 @@ const WEAPONS: Dictionary = {
 		"area": 1.5,
 		"duration": 0.5,
 		"knockback": 150.0,
-		
+
 		"target_type": TargetType.RANDOM,
 		"projectile_type": ProjectileType.AOE,
-		
+
 		"effect": "stun",
 		"effect_value": 0.5,  # 0.5 segundos de stun
 		"effect_duration": 0.5,
-		
+
 		"color": Color(0.6, 0.4, 0.2),
 		"icon": "res://assets/icons/weapon_earth_spike.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# LIGHT BEAM - Rayo de luz instantáneo
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -349,7 +349,7 @@ const WEAPONS: Dictionary = {
 		"description": "Dispara un rayo de luz pura que atraviesa todo",
 		"element": Element.LIGHT,
 		"rarity": "rare",
-		
+
 		"damage": 20,  # NERFED from 25
 		"cooldown": 2.3,  # NERFED from 2.0
 		"range": 600.0,
@@ -359,19 +359,19 @@ const WEAPONS: Dictionary = {
 		"area": 0.5,  # Delgado
 		"duration": 0.3,
 		"knockback": 0.0,
-		
+
 		"target_type": TargetType.NEAREST,
 		"projectile_type": ProjectileType.BEAM,
-		
+
 		"effect": "crit_chance",
 		"effect_value": 0.2,  # 20% probabilidad de crítico
 		"effect_duration": 0.0,
-		
+
 		"color": Color(1.0, 1.0, 0.9),
 		"icon": "res://assets/icons/weapon_light_beam.png",
 		"tags": ["beam", "no_pierce", "no_projectile_speed", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# VOID PULSE - Explosión de vacío que atrae enemigos
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -382,7 +382,7 @@ const WEAPONS: Dictionary = {
 		"description": "Crea un pulso de vacío que atrae y daña enemigos cercanos",
 		"element": Element.VOID,
 		"rarity": "rare",
-		
+
 		"damage": 22,  # BUFFED Pass 3: 18 → 22 (+22%)
 		"cooldown": 2.3,  # BUFFED Pass 3: 2.5 → 2.3 (-8%)
 		"range": 200.0,
@@ -392,14 +392,14 @@ const WEAPONS: Dictionary = {
 		"area": 2.0,
 		"duration": 1.0,
 		"knockback": -200.0,  # Negativo = atrae
-		
+
 		"target_type": TargetType.AREA,
 		"projectile_type": ProjectileType.AOE,
-		
+
 		"effect": "pull",
 		"effect_value": 150.0,  # Fuerza de atracción
 		"effect_duration": 1.0,
-		
+
 		"color": Color(0.2, 0.0, 0.3),
 		"icon": "res://assets/icons/weapon_void_pulse.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
@@ -521,7 +521,7 @@ const WEAPON_SPECIFIC_UPGRADES: Dictionary = {
 		7: {"effect_mult": 1.5, "description": "+50% Probabilidad Crítica", "icon": "res://assets/icons/upgrade_light_crit.png"},
 		8: {"attack_speed_mult": 1.4, "description": "¡LUZ DIVINA! +40% Velocidad de Ataque", "icon": "res://assets/icons/upgrade_light_speed.png"}
 	},
-	
+
 	# 🕳️ VOID PULSE: Área y Pull (Effect)
 	"void_pulse": {
 		2: {"area_mult": 1.2, "description": "+20% Área", "icon": "res://assets/icons/upgrade_void_area.png"},
@@ -550,7 +550,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Cañón de Vapor",
 		"description": "La fusión de hielo y fuego crea explosiones de vapor devastadoras",
 		"components": ["ice_wand", "fire_wand"],
-		
+
 		# Stats combinados y mejorados
 		"damage": 25,  # Mayor que ambos
 		"cooldown": 0.8,
@@ -561,20 +561,20 @@ const FUSIONS: Dictionary = {
 		"area": 2.0,  # Explosión grande
 		"duration": 0.0,
 		"knockback": 120.0,
-		
+
 		"target_type": TargetType.NEAREST,
 		"projectile_type": ProjectileType.AOE,
-		
+
 		# Combina efectos: slow + burn
 		"effect": "steam",  # Slow + DoT
 		"effect_value": 5.0,
 		"effect_duration": 3.0,
-		
+
 		"color": Color(0.8, 0.8, 0.9),
 		"icon": "res://assets/icons/fusion_steam_cannon.png",
 		"tags": ["aoe", "projectile", "no_pierce"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# STORM CALLER (Lightning + Wind) - Tormenta eléctrica
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -584,7 +584,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Invocador de Tormentas",
 		"description": "Invoca una tormenta que lanza rayos en todas direcciones",
 		"components": ["lightning_wand", "wind_blade"],
-		
+
 		"damage": 18,
 		"cooldown": 1.0,
 		"range": 400.0,
@@ -594,19 +594,19 @@ const FUSIONS: Dictionary = {
 		"area": 1.2,
 		"duration": 0.0,
 		"knockback": 80.0,
-		
+
 		"target_type": TargetType.AREA,
 		"projectile_type": ProjectileType.CHAIN,
-		
+
 		"effect": "chain",
 		"effect_value": 2,  # 2 saltos (nerfed from 3)
 		"effect_duration": 0.0,
-		
+
 		"color": Color(0.9, 1.0, 0.5),
 		"icon": "res://assets/icons/fusion_storm_caller.png",
 		"tags": ["chain", "no_pierce", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# SOUL REAPER (Shadow + Nature) - Drena vida masivamente
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -636,7 +636,7 @@ const FUSIONS: Dictionary = {
 		"projectile_size": 18.0,
 		"tags": ["projectile", "homing", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# COSMIC BARRIER (Arcane + Light) - Escudo orbital brillante
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -646,7 +646,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Barrera Cósmica",
 		"description": "Orbes de luz pura que protegen y dañan",
 		"components": ["arcane_orb", "light_beam"],
-		
+
 		"damage": 12,  # NERFED from 20
 		"cooldown": 0.0,
 		"range": 150.0,
@@ -656,20 +656,20 @@ const FUSIONS: Dictionary = {
 		"area": 1.5,
 		"duration": 999.0,
 		"knockback": 60.0,
-		
+
 		"target_type": TargetType.ORBIT,
 		"projectile_type": ProjectileType.ORBIT,
-		
+
 		"effect": "crit_chance",
 		"effect_value": 0.15,  # NERFED from 0.25
 		"effect_duration": 0.0,
-		
+
 		"color": Color(0.9, 0.8, 1.0),
 		"icon": "res://assets/icons/fusion_cosmic_barrier.png",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_cosmic_barrier"
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# RIFT QUAKE (Earth + Void) - Grietas sísmicas del vacío
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -679,7 +679,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Grieta Sísmica",
 		"description": "Abre grietas en la tierra que absorben enemigos al vacío",
 		"components": ["earth_spike", "void_pulse"],
-		
+
 		"damage": 40,
 		"cooldown": 2.5,  # Buffed from 3.0
 		"range": 300.0,
@@ -689,19 +689,19 @@ const FUSIONS: Dictionary = {
 		"area": 3.0,
 		"duration": 1.5,
 		"knockback": 200.0,
-		
+
 		"target_type": TargetType.AREA,
 		"projectile_type": ProjectileType.AOE,
-		
+
 		"effect": "stun",
 		"effect_value": 1.0,
 		"effect_duration": 1.0,
-		
+
 		"color": Color(0.4, 0.2, 0.1),
 		"icon": "res://assets/icons/fusion_rift_quake.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# FROSTVINE (Ice + Nature) - Enredaderas de hielo viviente
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -711,7 +711,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Enredadera de Hielo",
 		"description": "Proyectiles de hielo vivo que congelan y persiguen como enredaderas",
 		"components": ["ice_wand", "nature_staff"],
-		
+
 		"damage": 14,
 		"cooldown": 0.8,
 		"range": 450.0,
@@ -721,19 +721,19 @@ const FUSIONS: Dictionary = {
 		"area": 1.2,
 		"duration": 3.0,
 		"knockback": 70.0,
-		
+
 		"target_type": TargetType.HOMING,
 		"projectile_type": ProjectileType.MULTI,
-		
+
 		"effect": "freeze",  # Congelación temporal
 		"effect_value": 0.8,  # 80% slow (casi congelado)
 		"effect_duration": 2.5,
-		
+
 		"color": Color(0.5, 0.9, 0.7),
 		"icon": "res://assets/icons/fusion_frostvine.png",
 		"tags": ["projectile", "homing"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# HELLFIRE (Fire + Shadow) - Fuego oscuro devastador
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -743,7 +743,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Fuego Infernal",
 		"description": "Llamas oscuras que queman el alma de los enemigos",
 		"components": ["fire_wand", "shadow_dagger"],
-		
+
 		"damage": 15,
 		"cooldown": 0.6,
 		"range": 400.0,
@@ -753,19 +753,19 @@ const FUSIONS: Dictionary = {
 		"area": 1.0,
 		"duration": 0.0,
 		"knockback": 50.0,
-		
+
 		"target_type": TargetType.DIRECTION,
 		"projectile_type": ProjectileType.MULTI,
-		
+
 		"effect": "burn",
 		"effect_value": 6.0,  # Burn más potente
 		"effect_duration": 5.0,
-		
+
 		"color": Color(0.8, 0.2, 0.3),
 		"icon": "res://assets/icons/fusion_hellfire.png",
 		"tags": ["projectile", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# THUNDER SPEAR (Lightning + Light) - Lanza divina
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -775,7 +775,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Lanza del Trueno",
 		"description": "Un rayo divino que aniquila todo en su camino",
 		"components": ["lightning_wand", "light_beam"],
-		
+
 		"damage": 45,
 		"cooldown": 2.2,
 		"range": 700.0,
@@ -785,19 +785,19 @@ const FUSIONS: Dictionary = {
 		"area": 0.8,
 		"duration": 0.4,
 		"knockback": 100.0,
-		
+
 		"target_type": TargetType.NEAREST,
 		"projectile_type": ProjectileType.BEAM,
-		
+
 		"effect": "crit_chance",
 		"effect_value": 0.35,  # 35% crit
 		"effect_duration": 0.0,
-		
+
 		"color": Color(1.0, 0.95, 0.6),
 		"icon": "res://assets/icons/fusion_thunder_spear.png",
 		"tags": ["beam", "no_pierce", "no_projectile_speed", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# VOID STORM (Void + Wind) - Tornado de vacío
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -807,7 +807,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Tormenta del Vacío",
 		"description": "Un tornado de vacío que succiona y destruye enemigos",
 		"components": ["void_pulse", "wind_blade"],
-		
+
 		"damage": 28,  # BUFFED from 22
 		"cooldown": 1.5,  # BUFFED from 1.8
 		"range": 280.0,
@@ -817,19 +817,19 @@ const FUSIONS: Dictionary = {
 		"area": 2.5,
 		"duration": 2.0,
 		"knockback": -250.0,  # Atrae fuertemente
-		
+
 		"target_type": TargetType.AREA,
 		"projectile_type": ProjectileType.AOE,
-		
+
 		"effect": "pull",
 		"effect_value": 200.0,
 		"effect_duration": 2.0,
-		
+
 		"color": Color(0.3, 0.1, 0.4),
 		"icon": "res://assets/icons/fusion_void_storm.png",
 		"tags": ["aoe", "no_pierce"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# CRYSTAL GUARDIAN (Earth + Arcane) - Cristales orbitantes
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -839,7 +839,7 @@ const FUSIONS: Dictionary = {
 		"name_es": "Guardián de Cristal",
 		"description": "Cristales mágicos que orbitan y explotan al contacto",
 		"components": ["earth_spike", "arcane_orb"],
-		
+
 		"damage": 12,  # NERFED from 16
 		"cooldown": 0.0,
 		"range": 140.0,
@@ -849,24 +849,24 @@ const FUSIONS: Dictionary = {
 		"area": 1.3,
 		"duration": 999.0,
 		"knockback": 90.0,
-		
+
 		"target_type": TargetType.ORBIT,
 		"projectile_type": ProjectileType.ORBIT,
-		
+
 		"effect": "stun",
 		"effect_value": 0.3,
 		"effect_duration": 0.3,
-		
+
 		"color": Color(0.6, 0.5, 0.8),
 		"icon": "res://assets/icons/fusion_crystal_guardian.png",
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_crystal_guardian"
 	},
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# FUSIONES ADICIONALES (35 combinaciones más para completar 45 total)
 	# ═══════════════════════════════════════════════════════════════════════════
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# ICE + LIGHTNING: FROZEN THUNDER - Hielo electrificado
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -894,7 +894,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_frozen_thunder.png",
 		"tags": ["chain", "no_pierce"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# ICE + ARCANE: FROST ORB - Orbes de hielo orbitantes
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -923,7 +923,7 @@ const FUSIONS: Dictionary = {
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_frost_orb"
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# ICE + SHADOW: FROSTBITE - Dagas de hielo oscuro
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -951,7 +951,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_frostbite.png",
 		"tags": ["projectile", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# ICE + WIND: BLIZZARD - Tormenta de nieve
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -979,7 +979,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_blizzard.png",
 		"tags": ["projectile", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# ICE + EARTH: GLACIER - Picos de hielo
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1007,7 +1007,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_glacier.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# ICE + LIGHT: AURORA - Rayo de luz helada
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1035,7 +1035,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_aurora.png",
 		"tags": ["beam", "no_pierce", "no_projectile_speed", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# ICE + VOID: ABSOLUTE ZERO - Vacío congelante
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1063,7 +1063,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_absolute_zero.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# FIRE + LIGHTNING: PLASMA - Bola de plasma
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1091,7 +1091,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_plasma.png",
 		"tags": ["chain", "no_pierce", "projectile"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# FIRE + ARCANE: INFERNO ORB - Orbes de fuego mágico
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1120,7 +1120,7 @@ const FUSIONS: Dictionary = {
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_inferno_orb"
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# FIRE + NATURE: WILDFIRE - Fuego natural propagante
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1148,7 +1148,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_wildfire.png",
 		"tags": ["projectile", "homing"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# FIRE + WIND: FIRESTORM - Tornado de fuego
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1176,7 +1176,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_firestorm.png",
 		"tags": ["projectile", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# FIRE + EARTH: VOLCANO - Erupción volcánica
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1204,7 +1204,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_volcano.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# FIRE + LIGHT: SOLAR FLARE - Llamarada solar
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1232,7 +1232,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_solar_flare.png",
 		"tags": ["beam", "no_pierce", "no_projectile_speed", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# FIRE + VOID: DARK FLAME - Llama del vacío
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1260,7 +1260,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_dark_flame.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# LIGHTNING + ARCANE: ARCANE STORM - Tormenta arcana
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1289,7 +1289,7 @@ const FUSIONS: Dictionary = {
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_arcane_storm"
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# LIGHTNING + SHADOW: DARK LIGHTNING - Rayo oscuro
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1317,7 +1317,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_dark_lightning.png",
 		"tags": ["projectile", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# LIGHTNING + NATURE: THUNDER BLOOM - Rayo natural
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1348,7 +1348,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_thunder_bloom.png",
 		"tags": ["projectile", "homing"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# LIGHTNING + EARTH: SEISMIC BOLT - Rayo sísmico
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1376,7 +1376,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_seismic_bolt.png",
 		"tags": ["aoe", "projectile", "no_pierce"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# LIGHTNING + VOID: VOID BOLT - Rayo del vacío
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1404,7 +1404,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_void_bolt.png",
 		"tags": ["chain", "no_pierce"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# ARCANE + SHADOW: SHADOW ORBS - Orbes de sombra
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1433,7 +1433,7 @@ const FUSIONS: Dictionary = {
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_shadow_orbs"
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# ARCANE + NATURE: LIFE ORBS - Orbes de vida
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1462,7 +1462,7 @@ const FUSIONS: Dictionary = {
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_arcane_orb"
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# ARCANE + WIND: WIND ORBS - Orbes de viento
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1491,7 +1491,7 @@ const FUSIONS: Dictionary = {
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_wind_orbs"
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# ARCANE + VOID: COSMIC VOID - Orbes del cosmos
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1520,7 +1520,7 @@ const FUSIONS: Dictionary = {
 		"tags": ["orbital", "no_pierce"],
 		"hit_sound": "sfx_weapon_cosmic_void"
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# SHADOW + WIND: PHANTOM BLADE - Cuchillas fantasma
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1548,7 +1548,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_phantom_blade.png",
 		"tags": ["projectile", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# SHADOW + EARTH: STONE FANG - Dagas de piedra
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1578,9 +1578,9 @@ const FUSIONS: Dictionary = {
 		"hit_sound": "sfx_weapon_cosmic_void",
 		"tags": ["projectile", "no_duration"]
 	},
-	
 
-	
+
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# SHADOW + LIGHT: TWILIGHT - Crepúsculo
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1608,7 +1608,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_twilight.png",
 		"tags": ["projectile", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# SHADOW + VOID: ABYSS - El abismo
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1638,7 +1638,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_abyss.png",
 		"tags": ["projectile", "aoe"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# NATURE + WIND: POLLEN STORM - Tormenta de polen
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1666,7 +1666,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_pollen_storm.png",
 		"tags": ["projectile", "homing"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# NATURE + EARTH: GAIA - Poder de la tierra
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1694,7 +1694,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_gaia.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# NATURE + LIGHT: SOLAR BLOOM - Flor solar
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1722,7 +1722,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_solar_bloom.png",
 		"tags": ["beam", "no_pierce", "no_projectile_speed", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# NATURE + VOID: DECAY - Descomposición
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1750,7 +1750,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_decay.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# WIND + EARTH: SANDSTORM - Tormenta de arena
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1778,7 +1778,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_sandstorm.png",
 		"tags": ["projectile", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# WIND + LIGHT: PRISM WIND - Viento prismático
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1806,7 +1806,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_prism_wind.png",
 		"tags": ["projectile", "no_duration"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# EARTH + LIGHT: RADIANT STONE - Piedra radiante
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1834,7 +1834,7 @@ const FUSIONS: Dictionary = {
 		"icon": "res://assets/icons/fusion_radiant_stone.png",
 		"tags": ["aoe", "no_pierce", "no_projectile_speed"]
 	},
-	
+
 	# ─────────────────────────────────────────────────────────────────────────────
 	# LIGHT + VOID: ECLIPSE - El eclipse
 	# ─────────────────────────────────────────────────────────────────────────────
@@ -1886,12 +1886,12 @@ static func get_weapon_data(weapon_id: String) -> Dictionary:
 	"""Obtener datos de un arma por ID"""
 	if WEAPONS.has(weapon_id):
 		return WEAPONS[weapon_id].duplicate(true)
-	
+
 	# Buscar en fusiones
 	for fusion_key in FUSIONS:
 		if FUSIONS[fusion_key].id == weapon_id:
 			return FUSIONS[fusion_key].duplicate(true)
-	
+
 	push_error("[WeaponDatabase] Arma no encontrada: %s" % weapon_id)
 	return {}
 
@@ -1906,12 +1906,12 @@ static func get_fusion_result(weapon_a: String, weapon_b: String) -> Dictionary:
 	"""Obtener resultado de fusionar dos armas"""
 	var key1 = "%s+%s" % [weapon_a, weapon_b]
 	var key2 = "%s+%s" % [weapon_b, weapon_a]
-	
+
 	if FUSIONS.has(key1):
 		return FUSIONS[key1].duplicate(true)
 	elif FUSIONS.has(key2):
 		return FUSIONS[key2].duplicate(true)
-	
+
 	return {}  # No hay fusión disponible
 
 static func can_fuse(weapon_a: String, weapon_b: String) -> bool:
@@ -1920,7 +1920,19 @@ static func can_fuse(weapon_a: String, weapon_b: String) -> bool:
 	return not result.is_empty()
 
 static func get_all_base_weapons() -> Array:
-	"""Obtener lista de todas las armas base"""
+	"""Obtener lista de todas las armas base (filtradas por EA si está activo)"""
+	var all_keys = WEAPONS.keys()
+	var ea_mgr = _get_ea_manager()
+	if ea_mgr and ea_mgr.ea_mode:
+		var filtered = []
+		for weapon_id in all_keys:
+			if ea_mgr.is_weapon_enabled(weapon_id):
+				filtered.append(weapon_id)
+		return filtered
+	return all_keys
+
+static func get_all_base_weapons_unfiltered() -> Array:
+	"""Obtener lista de TODAS las armas base sin filtro EA"""
 	return WEAPONS.keys()
 
 static func get_all_fusions() -> Array:
@@ -1934,16 +1946,16 @@ static func get_level_upgrade(level: int, weapon_id: String = "") -> Dictionary:
 		var tree = WEAPON_SPECIFIC_UPGRADES[weapon_id]
 		if tree.has(level):
 			return tree[level].duplicate()
-	
+
 	# 2. Verificar si es un arma de fusión (usar Omni-Upgrade)
 	if weapon_id != "" and is_fusion_weapon(weapon_id):
 		if FUSION_LEVEL_UPGRADES.has(level):
 			return FUSION_LEVEL_UPGRADES[level].duplicate()
-	
+
 	# 3. Fallback: usar tabla genérica
 	if GENERIC_LEVEL_UPGRADES.has(level):
 		return GENERIC_LEVEL_UPGRADES[level].duplicate()
-	
+
 	return {}
 
 static func get_weapons_by_rarity(rarity: String) -> Array:
@@ -1955,21 +1967,42 @@ static func get_weapons_by_rarity(rarity: String) -> Array:
 	return result
 
 static func get_random_weapon(exclude: Array = []) -> String:
-	"""Obtener un arma aleatoria, excluyendo las especificadas"""
+	"""Obtener un arma aleatoria (filtrada por EA), excluyendo las especificadas"""
+	var ea_mgr = _get_ea_manager()
 	var available = []
 	for weapon_id in WEAPONS:
 		if weapon_id not in exclude:
-			available.append(weapon_id)
-	
+			if ea_mgr and ea_mgr.ea_mode:
+				if ea_mgr.is_weapon_enabled(weapon_id):
+					available.append(weapon_id)
+			else:
+				available.append(weapon_id)
+
 	if available.is_empty():
 		return ""
-	
+
 	return available[randi() % available.size()]
 
 static func get_possible_fusions_for_weapon(weapon_id: String) -> Array:
-	"""Obtener todas las fusiones posibles que involucran un arma específica"""
+	"""Obtener todas las fusiones posibles que involucran un arma específica (filtradas por EA)"""
+	var ea_mgr = _get_ea_manager()
 	var result = []
 	for fusion_key in FUSIONS:
 		if weapon_id in FUSIONS[fusion_key].components:
-			result.append(FUSIONS[fusion_key])
+			if ea_mgr and ea_mgr.ea_mode:
+				if ea_mgr.is_fusion_enabled(fusion_key):
+					result.append(FUSIONS[fusion_key])
+			else:
+				result.append(FUSIONS[fusion_key])
 	return result
+
+# =============================================================================
+# EA CONTENT MANAGER ACCESS
+# =============================================================================
+
+static func _get_ea_manager():
+	"""Helper para acceder a EAContentManager desde contexto estático"""
+	var tree = Engine.get_main_loop()
+	if tree and tree.root:
+		return tree.root.get_node_or_null("EAContentManager")
+	return null

@@ -43,6 +43,7 @@ RunAuditTracker="*res://scripts/debug/RunAuditTracker.gd"
 UpgradeAuditor="*res://scripts/debug/UpgradeAuditor.gd"
 DifficultyManager="*res://scripts/core/DifficultyManager.gd"
 SpatialGrid="*res://scripts/core/SpatialGrid.gd"
+EAContentManager="*res://scripts/core/EAContentManager.gd"
 
 [display]
 
