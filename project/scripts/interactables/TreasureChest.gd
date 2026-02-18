@@ -516,10 +516,6 @@ func _on_shop_popup_closed(purchased: bool):
 	await get_tree().create_timer(0.5).timeout
 	queue_free()
 
-	# Destruir cofre
-	await get_tree().create_timer(0.5).timeout
-	queue_free()
-
 func _apply_item(item: Dictionary):
 	"""Aplicar item al jugador (usado tanto para compras como para loot normal)"""
 	var item_type = item.get("type", "")

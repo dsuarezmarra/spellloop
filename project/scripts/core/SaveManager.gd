@@ -405,10 +405,10 @@ func load_settings() -> Dictionary:
 	return current_settings
 
 func get_player_progression() -> Dictionary:
-	"""Get current player progression data"""
-	if current_save_data.has("player_data"):
-		return current_save_data["player_data"]
-	return DEFAULT_SAVE_DATA["player_data"].duplicate(true)
+	"""Get current player progression data (always returns reference to current_save_data)"""
+	if not current_save_data.has("player_data"):
+		current_save_data["player_data"] = DEFAULT_SAVE_DATA["player_data"].duplicate(true)
+	return current_save_data["player_data"]
 
 func unlock_mage(mage_id: String) -> void:
 	"""Unlock a new mage"""

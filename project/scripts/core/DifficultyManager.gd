@@ -157,17 +157,17 @@ func _update_difficulty() -> void:
 	# Calcular multiplicadores según fase
 	_calculate_phase_multipliers(t)
 	
-	# Aplicar caps globales
+	# Aplicar factor adaptativo (performance-based) ANTES de caps
+	enemy_health_multiplier *= performance_factor
+	enemy_damage_multiplier *= performance_factor
+	
+	# Aplicar caps globales DESPUÉS del factor adaptativo
 	enemy_speed_multiplier = minf(enemy_speed_multiplier, SPEED_CAP)
 	enemy_attack_speed_multiplier = minf(enemy_attack_speed_multiplier, ATTACK_SPEED_CAP)
 	enemy_count_multiplier = minf(enemy_count_multiplier, SPAWN_CAP)
 	enemy_health_multiplier = minf(enemy_health_multiplier, HP_SOFT_CAP)
 	enemy_damage_multiplier = minf(enemy_damage_multiplier, DAMAGE_SOFT_CAP)
 	elite_frequency_multiplier = minf(elite_frequency_multiplier, ELITE_FREQ_CAP)
-	
-	# Aplicar factor adaptativo (performance-based)
-	enemy_health_multiplier *= performance_factor
-	enemy_damage_multiplier *= performance_factor
 	
 	# Eventos de nivel
 	if new_difficulty_level > current_difficulty_level:

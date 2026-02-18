@@ -138,7 +138,6 @@ func play(audio_id: String, volume_offset: float = 0.0) -> void:
 func play_fixed(audio_id: String, volume_offset: float = 0.0) -> void:
 	"""Play a sound effect with FIXED first variation (for deterministic feedback like UI)."""
 	if Headless.is_headless(): return
-	"""Play a sound effect with FIXED first variation (for deterministic feedback like UI)."""
 	_play_internal(audio_id, volume_offset, false)
 
 func _play_internal(audio_id: String, volume_offset: float, random_variation: bool) -> void:

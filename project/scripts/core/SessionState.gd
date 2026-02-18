@@ -22,7 +22,7 @@ var game_scene_path: String = "res://scenes/game/Game.tscn"
 var saved_player_data: Dictionary = {}
 
 # Slot y personaje seleccionados
-var selected_save_slot: int = 0  # 0, 1, 2
+var selected_save_slot: int = -1  # -1 = ninguno seleccionado (consistente con SaveManager)
 var selected_character_id: String = "frost_mage"  # ID del personaje seleccionado
 
 # Estado completo del juego para reanudar

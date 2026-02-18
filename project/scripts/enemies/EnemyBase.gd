@@ -2110,7 +2110,7 @@ func _on_health_died() -> void:
 									"slow": if enemy.has_method("apply_slow"): enemy.apply_slow(_slow_amount, duration)
 									"blind": if enemy.has_method("apply_blind"): enemy.apply_blind(duration)
 									"bleed": if enemy.has_method("apply_bleed"): enemy.apply_bleed(_bleed_damage, duration)
-									"freeze": if enemy.has_method("apply_freeze"): enemy.apply_freeze(duration)
+									"freeze": if enemy.has_method("apply_freeze"): enemy.apply_freeze(0.5, duration)
 					
 					# Visual feedback
 					# FloatingText.spawn_custom(global_position, "SPREAD!", Color.GREEN)

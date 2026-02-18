@@ -633,6 +633,10 @@ const STAT_LIMITS: Dictionary = {
 	"chain_count": {"min": 0, "max": 10},
 	"levelup_options": {"min": 0, "max": 3},
 	"infinite_pickup_range": {"min": 0, "max": 1},   # 0 o 1 (booleano)
+	
+	# Caps para stats sin límite previo
+	"coin_value_mult": {"min": 0.1, "max": 3.0},  # Same cap as gold_mult
+	"max_health": {"min": 1.0, "max": 9999.0},     # Prevent infinite HP stacking
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════

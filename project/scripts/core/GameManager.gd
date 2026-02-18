@@ -399,29 +399,20 @@ func get_elapsed_seconds() -> float:
 
 
 func get_unix_time_safe() -> float:
-	"""Return a unix timestamp (float) using Time.get_time_dict_from_system() if available,
-	otherwise fallback to available OS/Time API. Defensive: ensures a number is returned.
+	"""Return a unix timestamp (float). Uses Time.get_unix_time_from_system() (Godot 4.x API).
+	Fallback to physics frame count / ticks_per_second if unavailable.
 	"""
-	# Prefer Time.get_time_dict_from_system() if available
-	if Time and Time.has_method("get_time_dict_from_system"):
-		var tdict = Time.get_time_dict_from_system()
-		if typeof(tdict) == TYPE_DICTIONARY and tdict.has("unix"):
-			return float(tdict["unix"])
+	# Godot 4.x: Time.get_unix_time_from_system() is the correct API
+	if Time and Time.has_method("get_unix_time_from_system"):
+		return Time.get_unix_time_from_system()
 
-	# Fallback to OS.get_unix_time_from_system() if available
-	if OS and OS.has_method("get_unix_time_from_system"):
-		# Call dynamically to avoid parse-time errors on builds missing this API
-		var val = OS.call("get_unix_time_from_system")
-		if typeof(val) in [TYPE_INT, TYPE_FLOAT]:
-			return float(val)
-
-	# As last resort, use engine frame count as a monotonic fallback
-	return float(Engine.get_physics_frames())
+	# As last resort, use engine frame count as a monotonic fallback (normalized to seconds)
+	return float(Engine.get_physics_frames()) / float(Engine.physics_ticks_per_second)
 
 func get_game_time_formatted() -> String:
 	"""Obtener tiempo de juego formateado como MM:SS"""
 	var total_seconds = int(get_elapsed_seconds())
-	var minutes = total_seconds / 60.0
+	var minutes = total_seconds / 60
 	var seconds = total_seconds % 60
 
 	return "%02d:%02d" % [minutes, seconds]

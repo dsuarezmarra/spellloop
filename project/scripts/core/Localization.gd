@@ -95,6 +95,13 @@ func _create_default_translation_file(language_code: String) -> void:
 	"""Create a default translation file with base keys"""
 	var default_translations = _get_default_translations(language_code)
 
+	# In exported builds, res:// is read-only (packed in PCK)
+	# Use in-memory translations instead of writing to disk
+	if not OS.is_debug_build():
+		translations[language_code] = default_translations
+		return
+
+	# Only create file in editor/debug builds
 	# Ensure directory exists
 	DirAccess.open("res://").make_dir_recursive("assets/data/localization")
 
@@ -291,14 +298,22 @@ func _format_string(text: String, args: Array) -> String:
 	
 	# Also support sprintf-style placeholders (%d, %s, %02d, etc.)
 	if formatted.contains("%") and args.size() > 0:
-		# Convert args to the correct types for sprintf
-		var safe_args = []
-		for arg in args:
-			safe_args.append(arg)
-		# Try to use sprintf formatting, catch errors
-		var sprintf_result = formatted % safe_args
-		if typeof(sprintf_result) == TYPE_STRING:
-			formatted = sprintf_result
+		# Count placeholders (excluding %%) to verify match with args count
+		var placeholder_count = 0
+		var i = 0
+		while i < formatted.length():
+			if formatted[i] == '%':
+				if i + 1 < formatted.length() and formatted[i + 1] != '%':
+					placeholder_count += 1
+				i += 1  # Skip next char (the format specifier or second %)
+			i += 1
+		
+		# Only apply sprintf if placeholder count matches args count
+		if placeholder_count > 0 and placeholder_count == args.size():
+			var safe_args = []
+			for arg in args:
+				safe_args.append(arg)
+			formatted = formatted % safe_args
 
 	return formatted
 

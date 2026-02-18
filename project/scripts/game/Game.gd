@@ -1126,7 +1126,7 @@ func _on_enemy_died(death_position: Vector2, enemy_type: String, exp_value: int,
 		spawn_chest = true
 		
 	if spawn_chest:
-		_spawn_reward_chest(position, rewards)
+		_spawn_reward_chest(death_position, rewards)
 	
 	# 2. Orbes de Mejora (Items directos)
 	if randf() < rewards.get("upgrade_chance", 0.0):

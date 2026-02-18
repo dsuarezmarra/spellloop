@@ -287,7 +287,7 @@ const TRACKED_STATS: Dictionary = {
 	"longest_run_minutes": 0,
 	"run_enemies_killed": 0,       # Se resetea cada run
 	"max_level_reached": 0,        # Se resetea cada run
-	"mages_unlocked": 3,           # Empieza con 3 starter mages
+	"mages_unlocked": 1,           # Empieza con 1 starter mage (fire_mage)
 	"unique_bosses_defeated": 0,   # Acumulativo, se trackea en save
 }
 

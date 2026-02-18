@@ -1950,76 +1950,10 @@ func _update_pickup_area_size() -> void:
 			collision.shape.radius = final_radius
 
 func _on_health_damaged(amount: int, _element: String) -> void:
-	var player_stats = get_tree().get_first_node_in_group("player_stats")
-	if not player_stats or not player_stats.has_method("get_stat"):
-		return
-
-	# --- CORAJE (Grit) ---
-	if player_stats.get_stat("grit_active") > 0:
-		var threshold = max_hp * 0.10
-		if amount > threshold:
-			_grant_revive_immunity(2.0) # Reusamos la inmunidad de revive
-			FloatingText.spawn_text(global_position + Vector2(0, -60), "GRIT!", Color(0.8, 0.8, 0.8))
-			# Visual feedback (Grit)
-			var tween = create_tween()
-			tween.tween_property(self, "modulate", Color(0.5, 0.5, 0.5, 0.5), 0.1)
-			tween.tween_property(self, "modulate", Color.WHITE, 0.1)
-
-	# --- NOVA DE ESCARCHA (Frost Nova) ---
-	if player_stats.get_stat("frost_nova_on_hit") > 0:
-		var aoe_data = {
-			"damage": 5.0, "area": 2.5, "duration": 3.0, "effect": "freeze",
-			"effect_value": 0.5, "effect_duration": 3.0, "color": Color(0.6, 0.9, 1.0),
-			"is_aoe": true, "position": global_position
-		}
-		ProjectileFactory.create_aoe(self, aoe_data)
-		FloatingText.spawn_text(global_position + Vector2(0, -40), "FROST NOVA!", Color.CYAN)
-
-	# --- VINCULO DE ALMAS (Soul Link) ---
-	if player_stats.get_stat("soul_link_active") > 0:
-		var reflect_damage = int(amount * 0.30)
-		if reflect_damage > 0:
-			var enemies = get_tree().get_nodes_in_group("enemies")
-			var link_range = 300.0
-			var hit_count = 0
-			for enemy in enemies:
-				if not is_instance_valid(enemy): continue
-				if global_position.distance_to(enemy.global_position) <= link_range:
-					if enemy.has_method("take_damage"):
-						enemy.take_damage(reflect_damage, "magic", self)
-						# Línea visual hacia el enemigo
-						var line = Line2D.new()
-						line.width = 2
-						line.default_color = Color(0.8, 0.2, 0.8, 0.7)
-						line.points = [Vector2(0, -20), enemy.global_position - global_position]
-						add_child(line)
-						get_tree().create_timer(0.2).timeout.connect(line.queue_free)
-						hit_count += 1
-						if hit_count >= 5: break # Max 5 targets
-			
-			if hit_count > 0:
-				FloatingText.spawn_text(global_position + Vector2(0, -50), "SOUL LINK!", Color(0.8, 0.2, 0.8))
-
-	# --- ESPINAS (Thorns) ---
-	var thorns_base = player_stats.get_stat("thorns")
-	var thorns_pct = player_stats.get_stat("thorns_percent")
-	# Daño total = Base + % del daño recibido
-	var thorns_dmg = thorns_base + (thorns_pct * float(amount))
-	
-	if thorns_dmg > 0:
-		# Crear AOE de espinas alrededor del jugador
-		var thorns_data = {
-			"damage": thorns_dmg, 
-			"area": 3.0, # Radio moderado
-			"duration": 0.2, 
-			"effect": "slow", # Opcional: slow si thorns_slow > 0
-			"effect_value": player_stats.get_stat("thorns_slow"), 
-			"effect_duration": player_stats.get_stat("thorns_stun"),
-			"color": Color(0.2, 0.8, 0.2), # Verde
-			"is_aoe": true, 
-			"position": global_position
-		}
-		ProjectileFactory.create_aoe(self, thorns_data)
+	# NOTE: Post-damage effects (grit, frost_nova, soul_link, thorns) are handled
+	# exclusively in _process_post_damage_effects() via the anti-shotgun damage queue.
+	# Do NOT duplicate that logic here to avoid double-processing.
+	pass
 
 func _update_turret_logic(delta: float, is_moving: bool) -> void:
 	if is_moving:
