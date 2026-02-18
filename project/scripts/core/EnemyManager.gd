@@ -62,6 +62,7 @@ var difficulty_manager = null
 func _ready() -> void:
 	# Asegurar que EnemyManager respete la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	add_to_group("enemy_spawner")
 	
 	randomize()
 	_load_enemy_scripts()
@@ -687,6 +688,40 @@ func spawn_specific_enemy(enemy_id: String, world_pos: Vector2, multipliers: Dic
 		enemy_data["final_damage"] = int(enemy_data.get("final_damage", enemy_data.get("base_damage", 5)) * multipliers.damage_multiplier)
 
 	return spawn_enemy(enemy_data, world_pos)
+
+func spawn_minions_around(origin: Vector2, count: int, tier: int = 1) -> Array:
+	"""Spawnear minions alrededor de una posición (usado por bosses y split-on-death)"""
+	var spawned: Array = []
+	var tier_enemies = EnemyDatabase.get_enemies_by_tier(tier) if EnemyDatabase.has_method("get_enemies_by_tier") else []
+
+	for i in range(count):
+		var angle = (TAU / count) * i + randf_range(-0.3, 0.3)
+		var offset = Vector2(cos(angle), sin(angle)) * randf_range(40.0, 80.0)
+		var spawn_pos = origin + offset
+
+		var enemy_id: String = ""
+		if tier_enemies.size() > 0:
+			enemy_id = tier_enemies[randi() % tier_enemies.size()].get("id", "")
+
+		var minion: Node = null
+		if enemy_id != "":
+			minion = spawn_specific_enemy(enemy_id, spawn_pos)
+		else:
+			# Fallback: spawn genérico de tier bajo
+			var fallback_data = {
+				"id": "minion_t%d" % tier,
+				"base_hp": 10 * tier,
+				"base_damage": 3 * tier,
+				"speed": 60.0,
+				"tier": tier,
+				"xp_value": 2 * tier
+			}
+			minion = spawn_enemy(fallback_data, spawn_pos, true)
+
+		if minion:
+			spawned.append(minion)
+
+	return spawned
 
 func spawn_boss(boss_id: String, world_pos: Vector2, multipliers: Dictionary = {}) -> Node:
 	"""Spawnear un boss específico - usado por WaveManager"""

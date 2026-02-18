@@ -1287,11 +1287,7 @@ func _trigger_kill_explosion(pos: Vector2, damage: float) -> void:
 	var texture_path = "res://assets/sprites/effects/explosion_effect.png"
 	if ResourceLoader.exists(texture_path):
 		visual.texture = load(texture_path)
-	else:
-		pass  # Bloque else
-		# Crear un círculo simple si no hay textura
-		var circle = CircleShape2D.new()
-		circle.radius = explosion_radius
+	# Sin textura: el sprite queda vacío, las partículas CPUParticles2D son suficientes
 	explosion.add_child(visual)
 
 	# Animación de expansión y desvanecimiento

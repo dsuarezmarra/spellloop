@@ -200,25 +200,20 @@ func hit_target(target: Node2D):
 	# print("🎯 Proyectil impactó objetivo - Daño: ", damage)
 
 func destroy_projectile():
-	"""Destruir proyectil"""
-	# Efecto de destrucción
-	create_destruction_effect()
-	
-	# Emitir señal
+	"""Destruir proyectil con efecto visual"""
 	projectile_destroyed.emit()
-	
-	# Remover del árbol
-	queue_free()
+	# Delegar destrucción al efecto visual (tween + queue_free)
+	create_destruction_effect()
 
 func create_destruction_effect():
-	"""Crear efecto visual de destrucción"""
-	# Efecto simple de parpadeo
+	"""Crear efecto visual de destrucción y liberar al terminar"""
 	if sprite:
+		set_physics_process(false)
 		var destroy_tween = create_tween()
-		# add_child(destroy_tween)  # Ya no es necesario con create_tween()
-		
 		destroy_tween.tween_property(sprite, "modulate", Color(2.0, 2.0, 2.0, 0.0), 0.2)
 		destroy_tween.tween_callback(func(): queue_free())
+	else:
+		queue_free()
 
 func upgrade_projectile(upgrades: Dictionary):
 	"""Aplicar mejoras al proyectil"""

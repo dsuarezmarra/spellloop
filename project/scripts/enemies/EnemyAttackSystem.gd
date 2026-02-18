@@ -1961,6 +1961,8 @@ func _spawn_boss_projectile(from: Vector2, direction: Vector2, damage: int, spee
 
 func _process_boss_special_abilities(delta: float) -> void:
 	"""Procesar habilidades especiales del boss (sistema original)"""
+	_tick_boss_ability_cooldowns(delta)
+
 	if boss_global_cooldown > 0:
 		boss_global_cooldown -= delta
 		return
@@ -2176,20 +2178,18 @@ func _update_boss_passive_effects() -> void:
 	if boss_fire_trail_active:
 		_spawn_fire_trail()
 
+func _tick_boss_ability_cooldowns(delta: float) -> void:
+	"""Decrementar cooldowns de habilidades de boss (llamar una vez por frame)"""
+	for ability in boss_ability_cooldowns:
+		boss_ability_cooldowns[ability] = max(0, boss_ability_cooldowns[ability] - delta)
+
 func _get_available_boss_abilities() -> Array:
-	"""Obtener lista de habilidades disponibles (desbloqueadas y fuera de cooldown)"""
+	"""Obtener lista de habilidades disponibles (desbloqueadas y fuera de cooldown).
+	Sin side-effects: los cooldowns se decrementan en _tick_boss_ability_cooldowns."""
 	var available = []
-	var delta = get_process_delta_time()
 
-	# Solo considerar habilidades desbloqueadas
 	for ability in boss_unlocked_abilities:
-		# Decrementar cooldown
-		if ability in boss_ability_cooldowns:
-			boss_ability_cooldowns[ability] = max(0, boss_ability_cooldowns[ability] - delta)
-
-		# Verificar si estÃƒÂ¡ disponible
 		if boss_ability_cooldowns.get(ability, 0) <= 0:
-			# Algunas habilidades solo estÃƒÂ¡n disponibles en ciertas fases
 			if _is_ability_available_in_phase(ability):
 				available.append(ability)
 
@@ -3671,12 +3671,12 @@ func reset_cooldown() -> void:
 # ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 
 func _get_enemy_spawner() -> Node:
-	"""Obtener referencia al spawner de enemigos"""
+	"""Obtener referencia al spawner de enemigos (EnemyManager)"""
 	var tree = Engine.get_main_loop()
 	if tree and tree.root:
 		var game = tree.root.get_node_or_null("Game")
 		if game:
-			return game.get_node_or_null("EnemySpawner")
+			return game.get_node_or_null("EnemyManager")
 	return null
 
 func _apply_knockback_to_player(direction: Vector2, force: float) -> void:

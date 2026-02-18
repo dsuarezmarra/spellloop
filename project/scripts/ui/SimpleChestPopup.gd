@@ -42,19 +42,23 @@ const ITEM_REVEAL_DELAY: float = 0.15
 
 # GESTIÓN DE PAUSA GLOBAL PARA POPUPS APILADOS
 static var active_instances: int = 0
+var _did_increment: bool = false
 
 func _enter_tree():
 	# Pause is now handled by UIManager if used via request_popup
 	# Legacy fallback:
 	if not get_tree().root.has_node("UIManager") or not get_tree().root.get_node("UIManager").is_modal_open:
 		active_instances += 1
+		_did_increment = true
 		get_tree().paused = true
 	
 func _exit_tree():
-	# Legacy fallback logic:
-	if active_instances > 0:
+	# Solo decrementar si esta instancia incrementó el contador
+	if _did_increment:
 		active_instances -= 1
+		_did_increment = false
 		if active_instances <= 0:
+			active_instances = 0
 			get_tree().paused = false
 
 func _ready():

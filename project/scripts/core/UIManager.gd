@@ -150,10 +150,6 @@ func show_levelup_popup(upgrades: Array):
 	if game_hud:
 		game_hud.show_levelup_popup(upgrades)
 
-func hide_levelup_popup():
-	if game_hud:
-		game_hud.hide_levelup_popup()
-
 func show_pause_menu() -> void:
 	"""Show the pause menu as a modal"""
 	var pause_scene = load(PAUSE_MENU_SCENE)

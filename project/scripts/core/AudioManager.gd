@@ -103,7 +103,6 @@ func validate_manifest() -> Dictionary:
 
 func _ensure_audio_buses():
 	"""Create audio buses if they don't exist."""
-	var bus_layout = AudioServer.get_bus_count()
 
 	# Check for Music bus
 	var music_idx = AudioServer.get_bus_index("Music")

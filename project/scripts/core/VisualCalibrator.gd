@@ -22,7 +22,7 @@ func _ready() -> void:
 
 func load_calibration() -> void:
 	"""Cargar calibración guardada si existe"""
-	if ResourceLoader.exists(calibration_file_path):
+	if FileAccess.file_exists(calibration_file_path):
 		var config = ConfigFile.new()
 		var err = config.load(calibration_file_path)
 		if err == OK:

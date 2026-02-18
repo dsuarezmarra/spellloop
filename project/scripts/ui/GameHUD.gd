@@ -26,8 +26,6 @@ var _weapons_cache: Array = []
 var _passives_cache: Array = []
 var _current_boss: Node = null
 
-signal upgrade_selected(upgrade_data)
-
 func _ready():
 	# Inicializar estado
 	boss_bar.visible = false
@@ -129,10 +127,6 @@ func show_levelup_popup(upgrades: Array) -> void:
 	else:
 		ui_manager.request_popup(popup)
 
-func hide_levelup_popup() -> void:
-	# Deprecated/Unused with UIManager handling closing
-	pass
-
 func _create_streak_bar():
 	# Crear dinámicamente la barra de racha debajo de las monedas
 	var coins_container = get_node_or_null("Control/TopRight/CoinsContainer")
@@ -177,8 +171,6 @@ func _create_streak_bar():
 			streak_value_label.text = "+0"
 			streak_value_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4)) # Amarillo oro
 			streak_value_label.add_theme_font_size_override("font_size", 16)
-			streak_value_label.add_theme_constant_override("outline_size", 4)
-			streak_value_label.add_theme_color_override("font_outline_color", Color.BLACK)
 			streak_value_label.add_theme_constant_override("outline_size", 4)
 			streak_value_label.add_theme_color_override("font_outline_color", Color.BLACK)
 			streak_bar_container.add_child(streak_value_label)
