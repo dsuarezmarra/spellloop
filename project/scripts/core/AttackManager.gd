@@ -101,10 +101,10 @@ func get_weapon_tags() -> Dictionary:
 	var all_tags = []
 	var common_tags = []
 	var first_weapon = true
-	
+
 	if weapons.is_empty():
 		return {"all": [], "common": []}
-		
+
 	for weapon in weapons:
 		# Obtener tags del arma
 		var w_tags = []
@@ -112,12 +112,12 @@ func get_weapon_tags() -> Dictionary:
 			w_tags = weapon.tags
 		elif weapon.has_method("get_tags"):
 			w_tags = weapon.get_tags()
-			
+
 		# Añadir a all_tags (sin duplicados)
 		for tag in w_tags:
 			if tag not in all_tags:
 				all_tags.append(tag)
-		
+
 		# Calcular common_tags
 		if first_weapon:
 			common_tags = w_tags.duplicate()
@@ -129,7 +129,7 @@ func get_weapon_tags() -> Dictionary:
 				if tag in w_tags:
 					new_common.append(tag)
 			common_tags = new_common
-			
+
 	return {
 		"all": all_tags,
 		"common": common_tags
@@ -150,7 +150,7 @@ func _sync_legacy_to_global(legacy: Dictionary) -> void:
 func _get_combined_global_stats() -> Dictionary:
 	"""
 	Obtener stats globales de armas desde GlobalWeaponStats.
-	
+
 	ARQUITECTURA UNIFICADA (v3.0):
 	- TODOS los stats de armas (damage_mult, attack_speed_mult, crit_*, life_steal, etc.)
 	  están EXCLUSIVAMENTE en GlobalWeaponStats
@@ -188,17 +188,17 @@ func _get_weapon_name(weapon) -> String:
 func _ready() -> void:
 	# Asegurar que AttackManager respete la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
-	
+
 	# Añadir al grupo para que ProjectileFactory pueda encontrarnos
 	add_to_group("attack_manager")
-	
+
 	# Crear el manager de fusiones (como hijo para gestión automática de memoria)
 	fusion_manager = WeaponFusionManager.new()
 	fusion_manager.name = "FusionManager"
 	add_child(fusion_manager)
 	fusion_manager.fusion_completed.connect(_on_fusion_completed)
 	fusion_manager.fusion_failed.connect(_on_fusion_failed)
-	
+
 	# Crear sistema de stats globales (como hijo para gestión automática de memoria)
 	global_weapon_stats = GlobalWeaponStats.new()
 	global_weapon_stats.name = "GlobalWeaponStats"
@@ -210,16 +210,16 @@ func _ready() -> void:
 func _on_global_stats_changed(stat_name: String, _old_value: float, _new_value: float) -> void:
 	"""Callback cuando cambian los stats globales"""
 	global_stats_changed.emit()
-	
+
 	# REFRESCAR ORBITALES (Fix para bug de auditoría)
 	# Los orbitales son persistentes, así que si cambian stats clave (daño, cantidad, área),
 	# debemos destruirlos y recrearlos para que se actualicen.
 	var refresh_stats = [
-		"damage_mult", "damage_flat", "crit_chance", "crit_damage", 
-		"extra_projectiles", "area_mult", "projectile_speed_mult", 
+		"damage_mult", "damage_flat", "crit_chance", "crit_damage",
+		"extra_projectiles", "area_mult", "projectile_speed_mult",
 		"knockback_mult", "duration_mult"
 	]
-	
+
 	if stat_name in refresh_stats:
 		_refresh_active_orbital_weapons()
 
@@ -227,17 +227,17 @@ func _refresh_active_orbital_weapons() -> void:
 	"""Reiniciar armas orbitales para aplicar nuevos stats"""
 	if not player or not is_instance_valid(player) or not player.get_tree():
 		return
-		
+
 	for weapon in weapons:
 		if weapon is BaseWeapon:
 			var is_orbital = weapon.projectile_type == WeaponDatabase.ProjectileType.ORBIT or \
 							 weapon.target_type == WeaponDatabase.TargetType.ORBIT
-			
+
 			if is_orbital:
 				# 1. Destruir proyectiles del grupo
 				var group_name = "weapon_projectiles_" + weapon.id
 				player.get_tree().call_group(group_name, "queue_free")
-				
+
 				# 2. CRÍTICO: También destruir el OrbitalManager
 				# Si no lo destruimos, update_orbitals() detectará el mismo weapon_id
 				# y solo actualizará stats, NO recreará los orbitales destruidos
@@ -245,7 +245,7 @@ func _refresh_active_orbital_weapons() -> void:
 				var orbital_mgr = player.get_node_or_null(orbital_mgr_name)
 				if orbital_mgr:
 					orbital_mgr.queue_free()
-				
+
 				# 3. Forzar disparo inmediato (re-spawn completo)
 				weapon.ready_to_fire = true
 				# Usar call_deferred para dar tiempo a que se borren los viejos
@@ -271,7 +271,7 @@ func initialize(player_ref: CharacterBody2D) -> void:
 
 	# Activar el sistema de ataque
 	is_active = true
-	
+
 	# Iniciar actualización de cooldowns
 	set_process(true)
 
@@ -309,7 +309,7 @@ func add_weapon(weapon) -> bool:
 	# Añadir a la lista
 	weapons.append(weapon)
 	var slot_index = weapons.size() - 1
-	
+
 	# Crear WeaponStats para esta arma (nuevo sistema)
 	_create_weapon_stats_for(weapon)
 
@@ -348,7 +348,7 @@ func remove_weapon(weapon) -> bool:
 
 	var slot_index = weapons.find(weapon)
 	weapons.erase(weapon)
-	
+
 	# Remover WeaponStats (nuevo sistema)
 	_remove_weapon_stats_for(weapon)
 
@@ -373,7 +373,7 @@ func remove_weapon(weapon) -> bool:
 			if orbital_mgr:
 				orbital_mgr.queue_free()
 				# Debug desactivado: print("[AttackManager] 🧹 Limpiado OrbitalManager para: ", wid)
-			
+
 			# 2. Borrar proyectiles sueltos en el grupo especifico (proyectiles de vuelo libre)
 			# Usamos call_deferred para asegurar limpieza segura physics-safe
 			if player.get_tree():
@@ -449,7 +449,7 @@ func level_up_weapon(weapon) -> bool:
 				_get_weapon_name(weapon), _get_weapon_id(weapon), weapon.level, weapon.max_level
 			])
 			return false
-		
+
 		var success = weapon.level_up()
 		if success:
 			# CRÍTICO: Sincronizar WeaponStats con los nuevos valores del arma
@@ -602,7 +602,7 @@ func _process(delta: float) -> void:
 		# Comprobar si está lista para disparar
 		if weapon.is_ready_to_fire():
 			# print_rich("[color=green][AM] 💥 Attempting to fire: %s (CD: %s)[/color]" % [weapon.id, weapon.current_cooldown])
-			
+
 			# Verificar que el árbol siga válido antes de disparar
 			if not player.get_tree():
 				return
@@ -610,11 +610,11 @@ func _process(delta: float) -> void:
 			var did_fire = false
 			if weapon is BaseWeapon:
 				did_fire = weapon.perform_attack(player, player_stats)
-				
+
 				if not did_fire:
 					pass
 					# print_rich("[color=red][AM] ⚠️ Weapon %s failed to fire (perform_attack returned false)[/color]" % weapon.id)
-				
+
 				# CRÍTICO: Aplicar attack_speed_mult global al cooldown del arma
 				if did_fire and "current_cooldown" in weapon:
 					# print_rich("[color=green][AM] ✅ FIRED: %s. New Cooldown pending...[/color]" % weapon.id)
@@ -625,7 +625,7 @@ func _process(delta: float) -> void:
 					# Menor attack_speed = mayor cooldown (atacas más lento)
 					weapon.current_cooldown = weapon.cooldown / attack_speed_mult
 
-			
+
 			# Solo activar animación de cast si realmente disparó y NO es orbital
 			if did_fire and _should_play_cast_animation(weapon):
 				_trigger_cast_animation()
@@ -642,13 +642,13 @@ func _should_play_cast_animation(weapon) -> bool:
 			return false
 		if weapon.target_type == WeaponDatabase.TargetType.ORBIT:
 			return false
-	
 
-	
+
+
 	# También excluir armas de aura/pasivas si las hay
 	if weapon.has_method("is_passive_weapon") and weapon.is_passive_weapon():
 		return false
-	
+
 	return true
 
 func _trigger_cast_animation() -> void:
@@ -703,17 +703,17 @@ func reset_for_new_game() -> void:
 	de la partida anterior persista.
 	"""
 	# Debug desactivado: print("[AttackManager] 🔄 Reseteando estado para nueva partida...")
-	
+
 	# 1. Limpiar todas las armas
 	clear_weapons()
-	
+
 	# 2. Limpiar el mapa de stats por arma
 	weapon_stats_map.clear()
-	
+
 	# 3. Resetear GlobalWeaponStats a sus valores por defecto
 	if global_weapon_stats:
 		global_weapon_stats.reset()
-	
+
 	# 4. Resetear legacy player stats
 	_legacy_player_stats = {
 		"damage_mult": 1.0,
@@ -727,20 +727,20 @@ func reset_for_new_game() -> void:
 		"knockback_mult": 1.0,
 		"life_steal": 0.0
 	}
-	
+
 	# 5. Resetear FusionManager (slots perdidos, historial)
 	if fusion_manager:
 		fusion_manager.reset()
-	
+
 	# 6. Resetear estado estático de ProjectileFactory
 	ProjectileFactory.reset_for_new_game()
-	
+
 	# 7. Resetear referencia al jugador
 	player = null
-	
+
 	# 8. Desactivar temporalmente hasta que se reinicialice
 	is_active = false
-	
+
 	# Debug desactivado: print("[AttackManager] ✓ Estado reseteado completamente")
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -782,7 +782,7 @@ func apply_weapon_upgrade(weapon_id: String, upgrade_data: Dictionary) -> bool:
 	if not weapon_stats_map.has(weapon_id):
 		push_error("[AttackManager] Arma %s no tiene WeaponStats" % weapon_id)
 		return false
-	
+
 	var ws: WeaponStats = weapon_stats_map[weapon_id]
 	ws.apply_upgrade(upgrade_data)
 	# Debug desactivado: print("[AttackManager] ⬆️ Mejora específica aplicada a %s: %s" % [weapon_id, upgrade_data.get("id", "unknown")])
@@ -793,7 +793,7 @@ func _create_weapon_stats_for(weapon) -> void:
 	var weapon_id = _get_weapon_id(weapon)
 	if weapon_id.is_empty():
 		return
-	
+
 	# Crear WeaponStats desde los datos del arma
 	var ws = WeaponStats.new()
 	if weapon is BaseWeapon:
@@ -816,10 +816,10 @@ func _create_weapon_stats_for(weapon) -> void:
 			ws.base_stats["damage"] = weapon.damage
 		if "base_cooldown" in weapon:
 			ws.base_stats["attack_speed"] = 1.0 / weapon.base_cooldown if weapon.base_cooldown > 0 else 1.0
-	
+
 	# CRÍTICO: Recalcular modified_stats después de establecer base_stats
 	ws._recalculate_stats()
-	
+
 	weapon_stats_map[weapon_id] = ws
 	# Debug desactivado: print("[AttackManager] WeaponStats creado para: %s" % weapon_id)
 
@@ -834,13 +834,13 @@ func _sync_weapon_stats_after_levelup(weapon) -> void:
 	var weapon_id = _get_weapon_id(weapon)
 	if weapon_id.is_empty():
 		return
-	
+
 	var ws = weapon_stats_map.get(weapon_id, null)
 	if ws == null:
 		# Si no existe, crearlo
 		_create_weapon_stats_for(weapon)
 		return
-	
+
 	# Actualizar base_stats con los nuevos valores del arma
 	if weapon is BaseWeapon:
 		ws.weapon_level = weapon.level
@@ -854,7 +854,7 @@ func _sync_weapon_stats_after_levelup(weapon) -> void:
 		ws.base_stats["duration"] = weapon.duration
 		ws.base_stats["knockback"] = weapon.knockback
 		ws.base_stats["effect_value"] = weapon.effect_value
-	
+
 	# Recalcular modified_stats
 	ws._recalculate_stats()
 	# print("[AttackManager] WeaponStats sincronizado para %s nivel %d" % [weapon_id, weapon.level])
@@ -889,7 +889,7 @@ func set_player_stat(stat_name: String, value: float) -> void:
 	"""Establecer stat del jugador (usa GlobalWeaponStats)"""
 	# Convertir cooldown_mult a attack_speed_mult si viene del sistema legacy
 
-	
+
 	if global_weapon_stats:
 		global_weapon_stats.set_stat(stat_name, value)
 	else:
@@ -899,7 +899,7 @@ func set_player_stat(stat_name: String, value: float) -> void:
 func modify_player_stat(stat_name: String, delta: float) -> void:
 	"""Modificar stat del jugador (sumar/restar)"""
 
-	
+
 	if global_weapon_stats:
 		global_weapon_stats.add_stat(stat_name, delta)
 	else:
@@ -912,13 +912,13 @@ func get_player_stat(stat_name: String) -> float:
 	"""Obtener stat del jugador o de armas desde GlobalWeaponStats"""
 	# Convertir cooldown_mult a attack_speed_mult
 
-	
+
 	# ARQUITECTURA v3.0:
 	# - WEAPON_STATS (damage_mult, crit_*, life_steal, chain_count, etc.) -> GlobalWeaponStats
 	# - PLAYER_STATS (max_health, armor, move_speed, etc.) -> PlayerStats
 	# Primero buscar en GlobalWeaponStats (incluye life_steal y todos los weapon stats)
 	var value = get_global_stat(stat_name)
-	
+
 	# Si es 0 o no existe, buscar en PlayerStats para stats del jugador
 	# (NO para weapon stats como life_steal - esos siempre están en GlobalWeaponStats)
 	if value == 0.0:
@@ -927,7 +927,7 @@ func get_player_stat(stat_name: String) -> float:
 			var ps_value = game_stats.get_stat(stat_name)
 			if ps_value != 0.0:
 				return ps_value
-	
+
 	return value
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -954,7 +954,7 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	"""
 	Obtener TODOS los stats de un arma con valores base y finales (con globales aplicados).
 	Para uso en UI de detalles de armas.
-	
+
 	IMPORTANTE:
 	- "base" = valores ORIGINALES del arma desde WeaponDatabase (nivel 1)
 	- "current" = valores ACTUALES del arma (con mejoras de nivel aplicadas)
@@ -962,10 +962,10 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	"""
 	if weapon == null:
 		return {}
-	
+
 	var weapon_id = _get_weapon_id(weapon)
 	var gs = _get_combined_global_stats()
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# VALORES ORIGINALES (nivel 1 desde WeaponDatabase - FUENTE CANÓNICA)
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -976,7 +976,7 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 		# Fallback solo si no existe en DB (armas custom/fusiones)
 		original_data = weapon.base_stats.duplicate()  # Copiar para seguridad
 		# Debug desactivado: print("[DEBUG] get_weapon_full_stats: Usando base_stats como fallback para %s" % weapon_id)
-	
+
 	var original_damage = original_data.get("damage", 10)
 	var original_cooldown = original_data.get("cooldown", 1.0)
 	var original_attack_speed = 1.0 / original_cooldown if original_cooldown > 0 else 1.0
@@ -987,10 +987,10 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	var original_range = original_data.get("range", 300.0)
 	var original_knockback = original_data.get("knockback", 50.0)
 	var original_duration = original_data.get("duration", 0.0)
-	
+
 	# DEBUG: Verificar valores de velocidad de ataque
 	# print("[DEBUG] %s: original_cooldown=%.2f, original_attack_speed=%.4f" % [weapon_id, original_cooldown, original_attack_speed])
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# VALORES ACTUALES DEL ARMA (con mejoras de nivel ya aplicadas)
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1004,7 +1004,7 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	var current_range = weapon.weapon_range if "weapon_range" in weapon else original_range
 	var current_knockback = weapon.knockback if "knockback" in weapon else original_knockback
 	var current_duration = weapon.duration if "duration" in weapon else original_duration
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# MULTIPLICADORES GLOBALES (de PlayerStats/mejoras globales)
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1020,7 +1020,7 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	var extra_pierce = int(gs.get("extra_pierce", 0))
 	var crit_chance = gs.get("crit_chance", 0.05)
 	var crit_damage = gs.get("crit_damage", 2.0)
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# VALORES FINALES = current * multiplicadores globales
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1034,7 +1034,7 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	var final_range = current_range * range_mult
 	var final_knockback = current_knockback * knockback_mult
 	var final_duration = current_duration * duration_mult
-	
+
 	return {
 		# Identificadores
 		"weapon_id": weapon_id,
@@ -1044,14 +1044,14 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 		"icon": weapon.icon if "icon" in weapon else "🔮",
 		"level": weapon.level if "level" in weapon else 1,
 		"max_level": weapon.max_level if "max_level" in weapon else 8,
-		
+
 		# Daño: original (nivel 1) → final (con todo aplicado)
 		"damage_base": original_damage,
 		"damage_current": current_damage,
 		"damage_final": final_damage,
 		"damage_mult": damage_mult,
 		"damage_flat": damage_flat,
-		
+
 		# Velocidad de ataque
 		"attack_speed_base": original_attack_speed,
 		"attack_speed_current": current_attack_speed,
@@ -1060,60 +1060,60 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 		"cooldown_base": original_cooldown,
 		"cooldown_current": current_cooldown,
 		"cooldown_final": final_cooldown,
-		
+
 		# Proyectiles
 		"projectile_count_base": original_projectile_count,
 		"projectile_count_current": current_projectile_count,
 		"projectile_count_final": final_projectile_count,
 		"extra_projectiles": extra_projectiles,
-		
+
 		# Velocidad de proyectil
 		"projectile_speed_base": original_projectile_speed,
 		"projectile_speed_current": current_projectile_speed,
 		"projectile_speed_final": final_projectile_speed,
 		"projectile_speed_mult": projectile_speed_mult,
-		
+
 		# Penetración
 		"pierce_base": original_pierce,
 		"pierce_current": current_pierce,
 		"pierce_final": final_pierce,
 		"extra_pierce": extra_pierce,
-		
+
 		# Área
 		"area_base": original_area,
 		"area_current": current_area,
 		"area_final": final_area,
 		"area_mult": area_mult,
-		
+
 		# Alcance
 		"range_base": original_range,
 		"range_current": current_range,
 		"range_final": final_range,
 		"range_mult": range_mult,
-		
+
 		# Empuje
 		"knockback_base": original_knockback,
 		"knockback_current": current_knockback,
 		"knockback_final": final_knockback,
 		"knockback_mult": knockback_mult,
-		
+
 		# Duración
 		"duration_base": original_duration,
 		"duration_current": current_duration,
 		"duration_final": final_duration,
 		"duration_mult": duration_mult,
-		
+
 		# Críticos (globales)
 		"crit_chance": crit_chance,
 		"crit_damage": crit_damage,
-		
+
 		# Efectos de estado (para validación)
 		"effect": original_data.get("effect", "none"),
 		"effect_value": original_data.get("effect_value", 0.0),
 		"effect_duration": original_data.get("effect_duration", 0.0),
 		"burn_damage": original_data.get("effect_value", 3.0) if original_data.get("effect", "") == "burn" else 0.0,
 		"bleed_damage": original_data.get("effect_value", 2.0) if original_data.get("effect", "") == "bleed" else 0.0,
-		
+
 		# Targeting (para validación de MULTI)
 		"target_type": original_data.get("target_type", 0),
 		"projectile_type": original_data.get("projectile_type", 0)
@@ -1123,24 +1123,24 @@ func get_info() -> Dictionary:
 	"""Obtener información del atacante para UI"""
 	var weapon_infos = []
 	var global_stats = _get_combined_global_stats()
-	
+
 	for weapon in weapons:
 		var weapon_id = _get_weapon_id(weapon)
-		
+
 		if weapon is BaseWeapon:
 			# Valores actuales del arma (ya con mejoras de nivel aplicadas)
 			var current_damage = weapon.damage
 			var current_cooldown = weapon.cooldown
 			var current_attack_speed = 1.0 / current_cooldown if current_cooldown > 0 else 1.0
-			
+
 			# Valores originales (nivel 1)
 			var original_damage = weapon.base_stats.get("damage", current_damage) if weapon.base_stats else current_damage
-			
+
 			# Aplicar mejoras globales - FÓRMULA: (current + flat) * mult
 			var damage_flat = global_stats.get("damage_flat", 0)
 			var final_damage = int((current_damage + damage_flat) * global_stats.get("damage_mult", 1.0))
 			var final_attack_speed = current_attack_speed * global_stats.get("attack_speed_mult", 1.0)
-			
+
 			weapon_infos.append({
 				"id": weapon.id,
 				"name": weapon.weapon_name,
@@ -1164,7 +1164,7 @@ func get_info() -> Dictionary:
 			var base_as = 1.0 / base_cd if base_cd > 0 else 1.0
 			var legacy_damage = weapon.damage if "damage" in weapon else 0
 			var damage_flat = global_stats.get("damage_flat", 0)
-			
+
 			weapon_infos.append({
 				"id": weapon_id,
 				"name": _get_weapon_name(weapon),
@@ -1212,7 +1212,7 @@ func to_dict() -> Dictionary:
 				"name": _get_weapon_name(weapon),
 				"is_legacy": true
 			})
-	
+
 	# Serializar WeaponStats individuales
 	var weapon_stats_data = {}
 	for weapon_id in weapon_stats_map:
@@ -1235,7 +1235,7 @@ func from_dict(data: Dictionary) -> void:
 	# Restaurar fusion manager
 	if data.has("fusion_manager"):
 		fusion_manager.from_dict(data.fusion_manager)
-	
+
 	# Restaurar global weapon stats
 	if data.has("global_weapon_stats") and global_weapon_stats:
 		global_weapon_stats.from_dict(data.global_weapon_stats)
@@ -1249,7 +1249,7 @@ func from_dict(data: Dictionary) -> void:
 			var weapon = BaseWeapon.from_dict(weapon_data)
 			if weapon:
 				add_weapon(weapon)
-	
+
 	# Restaurar WeaponStats individuales
 	if data.has("weapon_stats"):
 		for weapon_id in data.weapon_stats:
@@ -1270,7 +1270,7 @@ func _notification(what: int) -> void:
 
 func get_debug_info() -> String:
 	var global_stats = _get_combined_global_stats()
-	
+
 	var lines = [
 		"=== ATTACK MANAGER (v2.0) ===",
 		"Slots: %d / %d" % [current_weapon_count, max_weapon_slots],
@@ -1297,32 +1297,32 @@ func get_debug_info() -> String:
 		var w = weapons[i]
 		var weapon_id = _get_weapon_id(w)
 		var ws = weapon_stats_map.get(weapon_id, null)
-		
+
 		# Calcular stats finales
 		var base_damage = w.damage if "damage" in w else 0
 		var base_cooldown = w.cooldown if w is BaseWeapon else (w.base_cooldown if "base_cooldown" in w else 1.0)
 		var base_attack_speed = 1.0 / base_cooldown if base_cooldown > 0 else 1.0
-		
+
 		# FÓRMULA CORRECTA: (base + flat) * mult
 		var damage_flat_val = global_stats.get("damage_flat", 0)
 		var final_damage = (base_damage + damage_flat_val) * global_stats.get("damage_mult", 1.0)
 		var final_attack_speed = base_attack_speed * global_stats.get("attack_speed_mult", 1.0)
-		
+
 		if ws:
 			final_damage = ws.get_final_stat("damage", global_stats)
 			final_attack_speed = ws.get_final_attack_speed(global_stats)
-		
+
 		var weapon_name = w.weapon_name if w is BaseWeapon else _get_weapon_name(w)
 		var weapon_icon = w.icon if w is BaseWeapon else "🔫"
 		var weapon_level = w.level if w is BaseWeapon else 1
 		var is_fused = w.is_fused if w is BaseWeapon else false
-		
+
 		lines.append("  [%d] %s %s Lv.%d" % [i, weapon_icon, weapon_name, weapon_level])
 		lines.append("      DMG: %.0f → %.0f | VEL: %.2f → %.2f ataques/s%s" % [
 			base_damage, final_damage, base_attack_speed, final_attack_speed,
 			" [FUSED]" if is_fused else ""
 		])
-		
+
 		# Mostrar mejoras específicas si existen
 		if ws and ws.get_upgrades().size() > 0:
 			var upgrades = ws.get_upgrades()

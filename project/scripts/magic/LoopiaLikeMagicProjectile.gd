@@ -49,16 +49,16 @@ func initialize(start_pos: Vector2, target_pos: Vector2, dmg: int, speed: float)
 	target_position = target_pos
 	damage = dmg
 	projectile_speed = speed
-	
+
 	# Calcular dirección inicial
 	direction = (target_position - start_pos).normalized()
-	
+
 	# print("🔮 Proyectil mágico creado - Daño: ", damage, " Velocidad: ", speed)
 
 func setup_projectile():
 	"""Configurar propiedades básicas del proyectil"""
 	z_index = 50  # Por encima de enemigos
-	
+
 	# Configurar capas de colisión
 	collision_layer = 8    # Capa de proyectiles
 	collision_mask = 16    # Colisiona con enemigos
@@ -69,10 +69,10 @@ func setup_visuals():
 		sprite = Sprite2D.new()
 		sprite.name = "Sprite2D"
 		add_child(sprite)
-	
+
 	# Crear textura de proyectil mágico
 	create_magic_projectile_texture()
-	
+
 	# Configurar escala
 	var scale_factor = 1.0
 	var sm = null
@@ -86,23 +86,23 @@ func create_magic_projectile_texture():
 	"""Crear textura procedural para el proyectil"""
 	var size = 16
 	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
-	
+
 	# Crear orbe mágico con gradiente
 	var center = Vector2(size / 2.0, size / 2.0)
 	var max_radius = size / 2.0 - 1.0
-	
+
 	for x in range(size):
 		for y in range(size):
 			var pos = Vector2(x, y)
 			var distance = pos.distance_to(center)
-			
+
 			if distance <= max_radius:
 				var intensity = 1.0 - (distance / max_radius)
 				var color = Color(0.3 + intensity * 0.7, 0.1 + intensity * 0.8, 1.0, intensity * 0.9)
 				image.set_pixel(x, y, color)
 			else:
 				image.set_pixel(x, y, Color.TRANSPARENT)
-	
+
 	var texture = ImageTexture.new()
 	texture.set_image(image)
 	sprite.texture = texture
@@ -113,7 +113,7 @@ func setup_collision():
 		collision_shape = CollisionShape2D.new()
 		collision_shape.name = "CollisionShape2D"
 		add_child(collision_shape)
-	
+
 	var circle = CircleShape2D.new()
 	circle.radius = 6.0
 	collision_shape.shape = circle
@@ -123,9 +123,9 @@ func setup_effects():
 	# Efecto de brillo pulsante
 	glow_tween = create_tween()
 	# add_child(glow_tween)  # Ya no es necesario con create_tween()
-	
+
 	start_glow_effect()
-	
+
 	# Partículas de trail (opcional)
 	#setup_trail_particles()
 
@@ -139,19 +139,19 @@ func start_glow_effect():
 func _physics_process(delta):
 	"""Actualizar proyectil"""
 	life_timer += delta
-	
+
 	# Verificar tiempo de vida
 	if life_timer >= lifetime:
 		destroy_projectile()
 		return
-	
+
 	# Actualizar movimiento
 	update_movement(delta)
-	
+
 	# Mover proyectil
 	velocity = direction * projectile_speed
 	move_and_slide()
-	
+
 	# Verificar colisiones
 	check_collisions()
 
@@ -178,7 +178,7 @@ func check_collisions():
 	for i in get_slide_collision_count():
 		var collision = get_slide_collision(i)
 		var collider = collision.get_collider()
-		
+
 		if collider and collider.has_method("take_damage"):
 			hit_target(collider)
 
@@ -187,16 +187,16 @@ func hit_target(target: Node2D):
 	# Aplicar daño
 	if target.has_method("take_damage"):
 		target.take_damage(damage, "physical", self)
-	
+
 	# Emitir señal
 	projectile_hit.emit(target, damage)
-	
+
 	hits_made += 1
-	
+
 	# Verificar si debe ser destruido
 	if pierce_count == 0 or hits_made > pierce_count:
 		destroy_projectile()
-	
+
 	# print("🎯 Proyectil impactó objetivo - Daño: ", damage)
 
 func destroy_projectile():

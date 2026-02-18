@@ -63,7 +63,7 @@ func _ready() -> void:
 	# Asegurar que EnemyManager respete la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("enemy_spawner")
-	
+
 	randomize()
 	_load_enemy_scripts()
 	_find_difficulty_manager()
@@ -105,7 +105,7 @@ func _process(delta: float) -> void:
 
 	# Procesar cola de spawns pendientes (del frame anterior)
 	_process_spawn_queue()
-	
+
 	_update_spawn_timer(delta)
 	_check_boss_spawn()
 	_check_elite_spawn(delta)
@@ -116,13 +116,13 @@ func _process_spawn_queue() -> void:
 	"""Procesar spawns que fueron demorados por el budget del frame anterior"""
 	if _spawn_queue.is_empty():
 		return
-	
+
 	# Procesar hasta que se agote el budget o la cola
 	while not _spawn_queue.is_empty():
 		# Usar consume() que verifica Y consume en una sola llamada
 		if not SpawnBudgetManager.consume("enemy"):
 			break  # Budget agotado, esperar al siguiente frame
-		
+
 		var queued = _spawn_queue.pop_front()
 		spawn_enemy(queued["data"], queued["pos"], true)  # force=true para no re-encolar
 
@@ -344,7 +344,7 @@ func _check_elite_spawn(delta: float) -> void:
 			return  # Ya hay un élite, no spawneamos otro
 
 	var minute = game_time_seconds / 60.0
-	
+
 	# BALANCE PASS 2.5: Obtener multiplicador de frecuencia de elites
 	var elite_freq_mult = 1.0
 	if difficulty_manager and difficulty_manager.has_method("get_elite_frequency_multiplier"):
@@ -356,7 +356,7 @@ func _check_elite_spawn(delta: float) -> void:
 func _spawn_elite() -> void:
 	var minute = game_time_seconds / 60.0
 	var available_tiers = EnemyDatabase.get_available_tiers_for_minute(minute)
-	
+
 	if available_tiers.is_empty():
 		return
 
@@ -384,7 +384,7 @@ func _spawn_elite() -> void:
 		elites_spawned_this_run += 1
 		elite_spawned.emit(elite)
 		# print("⭐ [EnemyManager] ¡ÉLITE SPAWNEADO: %s!" % elite_data.name)
-		
+
 		# BALANCE TELEMETRY: Log elite spawn
 		if BalanceTelemetry:
 			var abilities: Array = []
@@ -409,7 +409,7 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2, force: bool = false
 	if not EnemyBaseScript:
 		push_warning("⚠️ [EnemyManager] EnemyBaseScript no cargado")
 		return null
-	
+
 	# SPAWN BUDGET CHECK (skip para bosses/élites que son críticos)
 	var is_critical = enemy_data.get("is_boss", false) or enemy_data.get("is_elite", false)
 	if not force and not is_critical:
@@ -429,9 +429,9 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2, force: bool = false
 		# Fallback
 		enemy = CharacterBody2D.new()
 		enemy.set_script(EnemyBaseScript)
-	
+
 	enemy.name = "Enemy_%s" % type_id
-	
+
 	# Asegurar modo de procesamiento activo (por si viene del pool disabled)
 	enemy.process_mode = Node.PROCESS_MODE_PAUSABLE
 	enemy.set_physics_process(true)
@@ -514,7 +514,7 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2, force: bool = false
 		# FIX-BT2b: Siempre recopilar datos
 		if BalanceDebugger:
 			BalanceDebugger.log_elite_spawn(enemy.get_instance_id(), false)
-	
+
 	# Efecto visual de spawn (humo/puff)
 	_spawn_puff_effect(world_pos, _get_spawn_puff_color(enemy_data))
 
@@ -547,7 +547,7 @@ func _on_enemy_died(enemy: Node, type_id: String = "", exp_value: int = 0, enemy
 	var pos = Vector2.ZERO
 	if is_instance_valid(enemy) and enemy is Node2D:
 		pos = enemy.global_position
-	
+
 	# Enemy death sounds removed - user preference for minimal audio
 
 	# SPAWN COFRES PARA ÉLITES Y BOSSES
@@ -566,9 +566,9 @@ func _spawn_reward_chest_deferred(pos: Vector2, is_elite: bool, is_boss: bool) -
 	var chest_type = 1 # ELITE default (ChestType.ELITE)
 	if is_boss:
 		chest_type = 2 # BOSS (ChestType.BOSS)
-		
+
 	var chest = chest_scene.instantiate()
-	
+
 	# Añadir a la escena
 	var root = get_tree().current_scene
 	if root:
@@ -577,11 +577,11 @@ func _spawn_reward_chest_deferred(pos: Vector2, is_elite: bool, is_boss: bool) -
 			root.get_node("WorldRoot/ItemsRoot").add_child(chest)
 		else:
 			root.add_child(chest)
-			
+
 		# Inicializar
 		if chest.has_method("initialize"):
 			chest.initialize(pos, chest_type, player)
-			
+
 		# Debug
 		print("🎁 [EnemyManager] Cofre spawneado: %s en %s" % ["BOSS" if is_boss else "ELITE", pos])
 
@@ -785,7 +785,7 @@ func spawn_elite(enemy_id: String, world_pos: Vector2, multipliers: Dictionary =
 		elites_spawned_this_run += 1
 		elite_spawned.emit(elite)
 		# Debug desactivado: print("[EnemyManager] ÉLITE SPAWNEADO")
-		
+
 		# BALANCE TELEMETRY: Log elite spawn (WaveManager path)
 		if BalanceTelemetry:
 			var abilities: Array = []
@@ -817,12 +817,12 @@ func to_save_data() -> Dictionary:
 		"spawning_enabled": spawning_enabled,
 		"enemies": []
 	}
-	
+
 	# Serializar todos los enemigos activos
 	for enemy in active_enemies:
 		if not is_instance_valid(enemy):
 			continue
-		
+
 		var enemy_data: Dictionary = {
 			"enemy_id": enemy.enemy_id if "enemy_id" in enemy else "",
 			"position": {
@@ -833,7 +833,7 @@ func to_save_data() -> Dictionary:
 			"is_boss": enemy.is_boss if "is_boss" in enemy else false,
 			"tier": enemy.enemy_tier if "enemy_tier" in enemy else 1
 		}
-		
+
 		# Guardar HP si tiene HealthComponent
 		if "health_component" in enemy and enemy.health_component:
 			enemy_data["current_hp"] = enemy.health_component.current_health
@@ -841,7 +841,7 @@ func to_save_data() -> Dictionary:
 		elif enemy.has_method("get_health"):
 			enemy_data["current_hp"] = enemy.get_health()
 			enemy_data["max_hp"] = enemy.max_health if "max_health" in enemy else 100
-		
+
 		# Guardar stats escalados si existen
 		if "final_hp" in enemy:
 			enemy_data["final_hp"] = enemy.final_hp
@@ -849,9 +849,9 @@ func to_save_data() -> Dictionary:
 			enemy_data["final_damage"] = enemy.final_damage
 		if "final_speed" in enemy:
 			enemy_data["final_speed"] = enemy.final_speed
-		
+
 		data["enemies"].append(enemy_data)
-	
+
 	print("👹 [EnemyManager] Guardados %d enemigos" % data["enemies"].size())
 	return data
 
@@ -859,9 +859,9 @@ func from_save_data(data: Dictionary) -> void:
 	"""Restaurar estado del EnemyManager desde datos guardados"""
 	if data.is_empty():
 		return
-	
+
 	print("👹 [EnemyManager] Restaurando desde save data...")
-	
+
 	# Restaurar estado interno
 	game_time_seconds = data.get("game_time_seconds", 0.0)
 	last_boss_minute = data.get("last_boss_minute", -1)
@@ -869,26 +869,26 @@ func from_save_data(data: Dictionary) -> void:
 	spawn_timer = data.get("spawn_timer", 0.0)
 	elite_check_timer = data.get("elite_check_timer", 0.0)
 	spawning_enabled = data.get("spawning_enabled", true)
-	
+
 	# Limpiar enemigos existentes
 	clear_all_enemies()
-	
+
 	# Restaurar enemigos guardados
 	var enemies_data = data.get("enemies", [])
 	var restored_count = 0
 	var boss_restored = false
-	
+
 	for enemy_info in enemies_data:
 		var enemy_id = enemy_info.get("enemy_id", "")
 		if enemy_id == "":
 			continue
-		
+
 		# Obtener datos base del enemigo de la base de datos
 		var base_data = EnemyDatabase.get_enemy_by_id(enemy_id)
 		if base_data.is_empty():
 			print("⚠️ [EnemyManager] No se encontró enemigo con ID: %s" % enemy_id)
 			continue
-		
+
 		# Sobrescribir con valores guardados
 		if enemy_info.has("final_hp"):
 			base_data["final_hp"] = enemy_info.get("final_hp")
@@ -896,38 +896,38 @@ func from_save_data(data: Dictionary) -> void:
 			base_data["final_damage"] = enemy_info.get("final_damage")
 		if enemy_info.has("final_speed"):
 			base_data["final_speed"] = enemy_info.get("final_speed")
-		
+
 		base_data["is_elite"] = enemy_info.get("is_elite", false)
 		base_data["is_boss"] = enemy_info.get("is_boss", false)
-		
+
 		# Si es élite, aplicar modificadores de élite
 		if base_data["is_elite"] and not base_data["is_boss"]:
 			base_data = EnemyDatabase.create_elite_version(base_data)
-		
+
 		# Restaurar posición
 		var pos_data = enemy_info.get("position", {"x": 0, "y": 0})
 		var position = Vector2(pos_data.get("x", 0), pos_data.get("y", 0))
-		
+
 		# Crear el enemigo
 		var enemy = spawn_enemy(base_data, position)
-		
+
 		if enemy:
 			# Restaurar HP específico
 			var saved_hp = enemy_info.get("current_hp", -1)
 			var saved_max_hp = enemy_info.get("max_hp", -1)
-			
+
 			if saved_hp > 0:
 				if "health_component" in enemy and enemy.health_component:
 					if saved_max_hp > 0:
 						enemy.health_component.max_health = saved_max_hp
 					enemy.health_component.current_health = min(saved_hp, enemy.health_component.max_health)
-			
+
 			restored_count += 1
-			
+
 			if base_data["is_boss"]:
 				boss_restored = true
 				print("🔥 [EnemyManager] Boss restaurado: %s (HP: %d)" % [enemy_id, saved_hp])
-	
+
 	print("👹 [EnemyManager] Estado restaurado:")
 	print("   - Enemigos restaurados: %d / %d" % [restored_count, enemies_data.size()])
 	print("   - Élites spawneados total: %d" % elites_spawned_this_run)
@@ -953,64 +953,64 @@ func _process_enemy_despawn(delta: float) -> void:
 	"""
 	if not player:
 		return
-	
+
 	despawn_check_timer += delta
 	if despawn_check_timer < DESPAWN_CHECK_INTERVAL:
 		return
 	despawn_check_timer = 0.0
-	
+
 	var player_pos = player.global_position
 	var to_despawn: Array = []
 	var to_teleport: Array = []
-	
+
 	for enemy in active_enemies:
 		if not is_instance_valid(enemy):
 			continue
-		
+
 		# No tocar bosses ni élites
 		if enemy.get("is_boss") or enemy.get("is_elite"):
 			continue
-		
+
 		var enemy_id = enemy.get_instance_id()
 		var enemy_pos = enemy.global_position
 		var dist = enemy_pos.distance_to(player_pos)
-		
+
 		# Caso 1: Muy lejos -> despawnear
 		if dist > DESPAWN_DISTANCE:
 			to_despawn.append(enemy)
 			_enemy_last_positions.erase(enemy_id)
 			continue
-		
+
 		# Caso 2: En zona de teleport -> verificar si está atascado
 		if dist > TELEPORT_DISTANCE:
 			var is_stuck = false
-			
+
 			# Verificar si apenas se ha movido desde el último check
 			if _enemy_last_positions.has(enemy_id):
 				var last_pos = _enemy_last_positions[enemy_id]
 				var moved = enemy_pos.distance_to(last_pos)
 				var dir_to_player = (player_pos - enemy_pos).normalized()
 				var movement_dir = (enemy_pos - last_pos).normalized() if moved > 0.1 else Vector2.ZERO
-				
+
 				# Atascado si: apenas se movió O se movió alejándose del jugador
 				if moved < STUCK_VELOCITY_THRESHOLD * DESPAWN_CHECK_INTERVAL:
 					is_stuck = true
 				elif movement_dir.dot(dir_to_player) < -0.3:  # Se aleja del jugador
 					is_stuck = true
-			
+
 			_enemy_last_positions[enemy_id] = enemy_pos
-			
+
 			if is_stuck:
 				to_teleport.append(enemy)
 		else:
 			# Limpiar tracking si está en rango normal
 			_enemy_last_positions.erase(enemy_id)
-	
+
 	# Procesar teleports
 	for enemy in to_teleport:
 		if is_instance_valid(enemy):
 			_teleport_enemy_near_player(enemy, player_pos)
-	
+
 	# Procesar eliminaciones
 	for enemy in to_despawn:
 		if is_instance_valid(enemy):
@@ -1022,7 +1022,7 @@ func _process_enemy_despawn(delta: float) -> void:
 					pool.return_enemy(enemy)
 					continue
 			enemy.queue_free()
-	
+
 	if debug_spawns and (not to_despawn.is_empty() or not to_teleport.is_empty()):
 		print("[EnemyManager] Despawn: %d | Teleport: %d" % [to_despawn.size(), to_teleport.size()])
 
@@ -1032,16 +1032,16 @@ func _teleport_enemy_near_player(enemy: Node2D, player_pos: Vector2) -> void:
 	var angle = randf() * TAU
 	var distance = spawn_distance + randf_range(-50, 50)
 	var new_pos = player_pos + Vector2.from_angle(angle) * distance
-	
+
 	# Crear efecto de humo en posición antigua
 	_spawn_puff_effect(enemy.global_position, Color(0.5, 0.5, 0.5, 0.7))
-	
+
 	# Mover enemigo
 	enemy.global_position = new_pos
-	
+
 	# Crear efecto de humo en nueva posición
 	_spawn_puff_effect(new_pos, Color(0.6, 0.6, 0.6, 0.8))
-	
+
 	# Actualizar posición de tracking
 	_enemy_last_positions[enemy.get_instance_id()] = new_pos
 
@@ -1069,12 +1069,12 @@ func _spawn_puff_effect(pos: Vector2, color: Color) -> void:
 	var root = get_tree().current_scene if get_tree() else null
 	if not root:
 		return
-	
+
 	# Crear nodo para el efecto
 	var puff = Node2D.new()
 	puff.global_position = pos
 	puff.z_index = 10
-	
+
 	# Añadir script inline para la animación
 	var puff_script = GDScript.new()
 	puff_script.source_code = """
@@ -1101,18 +1101,18 @@ func _ready():
 func _process(delta):
 	elapsed += delta
 	var progress = elapsed / lifetime
-	
+
 	if progress >= 1.0:
 		queue_free()
 		return
-	
+
 	# Actualizar partículas
 	for p in particles:
 		p.offset += p.velocity * delta
 		p.velocity *= 0.92  # Fricción
 		p.alpha = 1.0 - progress
 		p.size *= 1.02  # Expandir
-	
+
 	queue_redraw()
 
 func _draw():
@@ -1127,7 +1127,7 @@ func _draw():
 	puff_script.reload()
 	puff.set_script(puff_script)
 	puff.set("puff_color", color)
-	
+
 	# Añadir al árbol
 	if root.has_node("WorldRoot"):
 		root.get_node("WorldRoot").add_child(puff)
