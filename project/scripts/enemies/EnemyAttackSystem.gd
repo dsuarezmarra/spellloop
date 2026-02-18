@@ -1,6 +1,6 @@
 # EnemyAttackSystem.gd
 # Sistema de ataque para enemigos - Soporta todos los arquetipos
-# Gestiona cooldowns, targeting y ejecuciÃ³n de ataques
+# Gestiona cooldowns, targeting y ejecución de ataques
 #
 # Nota: Este archivo usa lambdas con variables capturadas que se reasignan
 # intencionalmente para mantener estado local en animaciones y timers.
@@ -16,10 +16,10 @@ signal attacked_player(damage: int, is_melee: bool)
 # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 ## Intentar usar VFXManager para spawner efectos visuales
-## Retorna true si VFXManager manejÃ³ el efecto, false para usar fallback procedural
+## Retorna true si VFXManager manejó el efecto, false para usar fallback procedural
 func _try_spawn_via_vfxmanager(vfx_type: String, category: String, position: Vector2, radius: float = 100.0, duration: float = 0.5) -> bool:
 	if not Engine.has_singleton("VFXManager"):
-		# Intentar obtener desde el Ã¡rbol si no es singleton
+		# Intentar obtener desde el árbol si no es singleton
 		var vfx_mgr = get_node_or_null("/root/VFXManager")
 		if vfx_mgr:
 			match category:
@@ -126,14 +126,14 @@ func _setup_modular_abilities() -> void:
 
 	var ability: EnemyAbility = null
 
-	# Mapear lÃ³gica legacy a objetos Ability
+	# Mapear lógica legacy a objetos Ability
 	if is_ranged or archetype == "ranged" or archetype == "teleporter" or archetype == "boss":
 		# Bosses/Ranged/Teleporter usan proyectiles
 		var ranged = EnemyAbility_Ranged.new()
 		ranged.projectile_speed = projectile_speed
 		ranged.projectile_scene = projectile_scene
 		ranged.element_type = element_type
-		# ConfiguraciÃ³n especÃ­fica
+		# Configuración específica
 		if archetype == "multi":
 			ranged.projectile_count = multi_attack_count
 			ranged.spread_angle = 15.0
@@ -141,7 +141,7 @@ func _setup_modular_abilities() -> void:
 
 	elif archetype == "charger":
 		# Phase 1: Usar Melee para mantener compatibilidad con EnemyBase movement logic
-		# Phase 2: Migrar a EnemyAbility_Dash completo cuando deshabilitemos la lÃ³gica en EnemyBase
+		# Phase 2: Migrar a EnemyAbility_Dash completo cuando deshabilitemos la lógica en EnemyBase
 		var melee = EnemyAbility_Melee.new()
 		ability = melee
 
@@ -149,7 +149,7 @@ func _setup_modular_abilities() -> void:
 		var melee = EnemyAbility_Melee.new()
 		ability = melee
 
-	# Si se creÃ³ una habilidad, configurarla y aÃ±adirla
+	# Si se creó una habilidad, configurarla y añadirla
 	if ability:
 		ability.id = "primary_" + archetype
 		ability.cooldown = attack_cooldown
@@ -298,7 +298,7 @@ func _process(delta: float) -> void:
 			# Solo debug una vez cada 60 frames para no saturar
 			if Engine.get_process_frames() % 60 == 0:
 				pass  # Debug
-			# print("[EnemyAttackSystem] Ã¢Å¡Â Ã¯Â¸Â No se encontrÃƒÂ³ player para %s" % enemy.name)
+			# print("[EnemyAttackSystem] âÅ¡Â ïÂ¸Â No se encontrÃƒÂ³ player para %s" % enemy.name)
 			return
 
 	# Detectar si es boss
@@ -376,17 +376,17 @@ func _perform_attack() -> void:
 		# Ejecutar todas las habilidades disponibles (por ahora solo la primaria)
 		for ability in abilities:
 			# Usar el timer global attack_timer como cooldown compartido por ahora
-			# En Phase 2, cada habilidad tendrÃ¡ su propio timer
+			# En Phase 2, cada habilidad tendrá su propio timer
 			if ability.execute(enemy, player, context):
-				# SeÃ±al de ataque exitoso
+				# Señal de ataque exitoso
 				if ability is EnemyAbility_Melee:
 					attacked_player.emit(attack_damage, true)
 				elif ability is EnemyAbility_Dash:
 					pass # Dash maneja su collision
 				elif ability is EnemyAbility_Ranged:
-					attacked_player.emit(0, false) # SeÃ±al genÃ©rica para animaciones
+					attacked_player.emit(0, false) # Señal genérica para animaciones
 
-		return # ðŸ”¥ Salir para no ejecutar lÃ³gica legacy
+		return # ðŸ”¥ Salir para no ejecutar lógica legacy
 
 
 	# Obtener arquetipo del enemigo padre si existe
@@ -427,9 +427,9 @@ func _perform_attack() -> void:
 			else:
 				_perform_melee_attack()
 
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 # SISTEMA DE HABILIDADES Ãƒâ€°LITE - EXTREMADAMENTE MEJORADO
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 
 var elite_slam_cooldown: float = 0.0
 var elite_rage_active: bool = false
@@ -540,7 +540,7 @@ func _perform_elite_slam() -> void:
 
 	# Aplicar cooldown
 	elite_slam_cooldown = modifiers.get("elite_slam_cooldown", 5.0)
-	# print("[Elite] Ã°Å¸â€˜â€˜Ã°Å¸â€™Â¥ %s usÃƒÂ³ Elite Slam! (daÃƒÂ±o: %d, radio: %.0f)" % [enemy.name, slam_damage, slam_radius])
+	# print("[Elite] ðÅ¸â€˜â€˜ðÅ¸â€™Â¥ %s usÃƒÂ³ Elite Slam! (daÃƒÂ±o: %d, radio: %.0f)" % [enemy.name, slam_damage, slam_radius])
 
 func _activate_elite_rage() -> void:
 	"""Activar modo rage de ÃƒÂ©lite"""
@@ -562,7 +562,7 @@ func _activate_elite_rage() -> void:
 
 	# Visual ÃƒÂ©pico
 	_spawn_elite_rage_visual()
-	# print("[Elite] Ã°Å¸â€˜â€˜Ã°Å¸â€Â¥ %s entrÃƒÂ³ en RAGE! (+%.0f%% daÃƒÂ±o, +%.0f%% velocidad)" % [enemy.name, damage_bonus * 100, speed_bonus * 100])
+	# print("[Elite] ðÅ¸â€˜â€˜ðÅ¸â€Â¥ %s entrÃƒÂ³ en RAGE! (+%.0f%% daÃƒÂ±o, +%.0f%% velocidad)" % [enemy.name, damage_bonus * 100, speed_bonus * 100])
 
 func _activate_elite_shield() -> void:
 	"""Activar escudo ÃƒÂ©lite"""
@@ -571,10 +571,10 @@ func _activate_elite_shield() -> void:
 
 	# Visual de escudo
 	_spawn_elite_shield_visual()
-	# print("[Elite] Ã°Å¸â€˜â€˜Ã°Å¸â€ºÂ¡Ã¯Â¸Â %s activÃƒÂ³ Elite Shield! (%d cargas)" % [enemy.name, elite_shield_charges])
+	# print("[Elite] ðÅ¸â€˜â€˜ðÅ¸â€ºÂ¡ïÂ¸Â %s activÃƒÂ³ Elite Shield! (%d cargas)" % [enemy.name, elite_shield_charges])
 
 func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
-	"""Visual Ã‰PICO de slam Ã©lite - Usa VFXManager si disponible"""
+	"""Visual Ã‰PICO de slam élite - Usa VFXManager si disponible"""
 	# Intentar VFXManager primero
 	if _try_spawn_via_vfxmanager("elite_slam", "aoe", center, radius, 0.5):
 		return
@@ -593,7 +593,7 @@ func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
 	var visual = Node2D.new()
 	effect.add_child(visual)
 
-	# Colores mÃ¡s intensos
+	# Colores más intensos
 	var gold = Color(1.0, 0.8, 0.0)
 	var red = Color(1.0, 0.2, 0.1)
 	var bright = Color(1.0, 0.95, 0.6)
@@ -601,7 +601,7 @@ func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
 	visual.draw.connect(func():
 		var expand = radius * 1.35 * anim
 
-		# Ondas de choque mÃºltiples
+		# Ondas de choque múltiples
 		for i in range(4):
 			var r = expand * (0.4 + i * 0.2)
 			var a = (1.0 - anim) * (1.0 - i * 0.2)
@@ -638,14 +638,14 @@ func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
 		anim = v
 		if is_instance_valid(visual):
 			visual.queue_redraw()
-	, 0.0, 1.0, 0.5) # MÃ¡s rÃ¡pido: 0.5s
+	, 0.0, 1.0, 0.5) # Más rápido: 0.5s
 	tween.tween_callback(func():
 		if is_instance_valid(effect):
 			effect.queue_free()
 	)
 
 func _spawn_elite_rage_visual() -> void:
-	"""Visual Ã‰PICO de rage Ã©lite - Usa VFXManager si disponible"""
+	"""Visual Ã‰PICO de rage élite - Usa VFXManager si disponible"""
 	if not is_instance_valid(enemy):
 		return
 
@@ -676,7 +676,7 @@ func _spawn_elite_rage_visual() -> void:
 			visual.draw_arc(Vector2.ZERO, r, 0, TAU, 48, aura_color, 5.0)
 			visual.draw_arc(Vector2.ZERO, r * 0.95, 0, TAU, 48, Color(1.0, 0.5, 0.0, a*0.5), 2.0)
 
-		# SÃ­mbolo de calavera/rage simplificado
+		# Símbolo de calavera/rage simplificado
 		var rage_scale = 1.2 + sin(anim * PI * 10) * 0.2
 		var s = 20 * rage_scale * (1.0 - anim * 0.5)
 
@@ -714,7 +714,7 @@ func _spawn_elite_rage_visual() -> void:
 	)
 
 func _spawn_elite_shield_visual() -> void:
-	"""Visual de escudo Ã©lite - Usa VFXManager si disponible"""
+	"""Visual de escudo élite - Usa VFXManager si disponible"""
 	if not is_instance_valid(enemy):
 		return
 
@@ -777,9 +777,9 @@ func _spawn_elite_shield_visual() -> void:
 			visual.queue_free()
 	)
 
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 # NUEVAS HABILIDADES Ãƒâ€°LITE - DASH, NOVA, SUMMON
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 
 func _perform_elite_dash() -> void:
 	"""Habilidad ÃƒÂ©lite: Dash/embestida hacia el jugador"""
@@ -824,14 +824,14 @@ func _perform_elite_dash() -> void:
 						var elem = _get_enemy_element()
 						player.call("take_damage", dash_damage, elem, enemy)
 						attacked_player.emit(dash_damage, true)
-						# print("[Elite] Ã°Å¸â€˜â€˜Ã°Å¸â€™Â¨ %s DASH IMPACTO! %d daÃƒÂ±o" % [enemy.name, dash_damage])
+						# print("[Elite] ðÅ¸â€˜â€˜ðÅ¸â€™Â¨ %s DASH IMPACTO! %d daÃƒÂ±o" % [enemy.name, dash_damage])
 					if player.has_method("apply_knockback"):
 						player.apply_knockback(direction * 200)
 		)
 	)
 
 	elite_dash_cooldown = modifiers.get("elite_dash_cooldown", 3.0)
-	# print("[Elite] Ã°Å¸â€˜â€˜Ã°Å¸â€™Â¨ %s prepara DASH hacia el jugador!" % enemy.name)
+	# print("[Elite] ðÅ¸â€˜â€˜ðÅ¸â€™Â¨ %s prepara DASH hacia el jugador!" % enemy.name)
 
 func _spawn_elite_dash_visual_start() -> void:
 	"""Visual de preparaciÃƒÂ³n de dash"""
@@ -960,7 +960,7 @@ func _perform_elite_nova() -> void:
 			var direction = Vector2(cos(angle), sin(angle))
 			_spawn_elite_nova_projectile(enemy.global_position, direction, nova_damage)
 
-		# print("[Elite] Ã°Å¸â€˜â€˜Ã°Å¸â€™Â« %s dispara NOVA! %d proyectiles" % [enemy.name, projectile_count])
+		# print("[Elite] ðÅ¸â€˜â€˜ðÅ¸â€™Â« %s dispara NOVA! %d proyectiles" % [enemy.name, projectile_count])
 	)
 
 	elite_nova_cooldown = modifiers.get("elite_nova_cooldown", 6.0)
@@ -1049,7 +1049,7 @@ func _perform_elite_summon() -> void:
 		# Buscar el EnemyManager
 		var enemy_manager = _find_enemy_manager()
 		if not enemy_manager:
-			# print("[Elite] Ã¢Å¡Â Ã¯Â¸Â No se encontrÃƒÂ³ EnemyManager para summon")
+			# print("[Elite] âÅ¡Â ïÂ¸Â No se encontrÃƒÂ³ EnemyManager para summon")
 			return
 
 		for i in range(summon_count):
@@ -1068,7 +1068,7 @@ func _perform_elite_summon() -> void:
 							minion.queue_free()
 					)
 
-		# print("[Elite] Ã°Å¸â€˜â€˜Ã°Å¸â€˜Â¥ %s invocÃƒÂ³ %d minions!" % [enemy.name, summon_count])
+		# print("[Elite] ðÅ¸â€˜â€˜ðÅ¸â€˜Â¥ %s invocÃƒÂ³ %d minions!" % [enemy.name, summon_count])
 	)
 
 	elite_summon_cooldown = modifiers.get("elite_summon_cooldown", 10.0)
@@ -1159,7 +1159,7 @@ func _perform_melee_attack() -> void:
 	var elem = _get_enemy_element()
 	# Pasar referencia del enemigo para sistema de thorns
 	player.call("take_damage", attack_damage, elem, enemy)
-	# print("[EnemyAttackSystem] Ã¢Å¡â€Ã¯Â¸Â %s atacÃƒÂ³ melee a player por %d daÃƒÂ±o (%s)" % [enemy.name, attack_damage, elem])
+	# print("[EnemyAttackSystem] âÅ¡â€ïÂ¸Â %s atacÃƒÂ³ melee a player por %d daÃƒÂ±o (%s)" % [enemy.name, attack_damage, elem])
 
 	# Aplicar efectos segÃƒÂºn arquetipo y elemento
 	_apply_melee_effects()
@@ -1273,7 +1273,7 @@ func _create_dynamic_projectile() -> void:
 	if projectile.has_method("initialize"):
 		projectile.initialize(direction, projectile_speed, attack_damage, 5.0, elem)
 
-	# print("[EnemyAttackSystem] Ã°Å¸Å½Â¯ %s disparÃƒÂ³ proyectil dinÃƒÂ¡mico (%s)" % [enemy.name, elem])
+	# print("[EnemyAttackSystem] ðÅ¸Å½Â¯ %s disparÃƒÂ³ proyectil dinÃƒÂ¡mico (%s)" % [enemy.name, elem])
 	attacked_player.emit(attack_damage, false)
 
 func _perform_aoe_attack() -> void:
@@ -1307,17 +1307,17 @@ func _apply_aoe_effects() -> void:
 	if elem == "fire":
 		if player.has_method("apply_burn"):
 			player.apply_burn(5.0, 3.0)  # 5 daÃƒÂ±o/tick por 3s
-			# print("[EnemyAttackSystem] Ã°Å¸â€Â¥ AoE aplica Burn!")
+			# print("[EnemyAttackSystem] ðÅ¸â€Â¥ AoE aplica Burn!")
 	# Reina del Hielo - Slow/Freeze
 	elif elem == "ice":
 		if player.has_method("apply_slow"):
 			player.apply_slow(0.4, 3.0)  # 40% slow por 3s
-			# print("[EnemyAttackSystem] Ã¢Ââ€žÃ¯Â¸Â AoE aplica Slow!")
+			# print("[EnemyAttackSystem] âÂâ€žïÂ¸Â AoE aplica Slow!")
 	# TitÃƒÂ¡n Arcano - Stun
 	elif "arcane" in enemy.name.to_lower() or "titan" in enemy.name.to_lower():
 		if player.has_method("apply_stun"):
 			player.apply_stun(0.5)  # 0.5s stun
-			# print("[EnemyAttackSystem] Ã¢Å¡Â¡ AoE aplica Stun!")
+			# print("[EnemyAttackSystem] âÅ¡Â¡ AoE aplica Stun!")
 
 func _perform_breath_attack() -> void:
 	"""Ataque de aliento: cono de fuego en la direccion de encaramiento del enemigo.
@@ -1359,7 +1359,7 @@ func _apply_breath_effects() -> void:
 	# Aplicar burn siempre en breath de dragÃƒÂ³n
 	if player.has_method("apply_burn"):
 		player.apply_burn(6.0, 2.5)  # 6 daÃƒÂ±o/tick por 2.5s
-		# print("[EnemyAttackSystem] Ã°Å¸â€Â¥ Breath aplica Burn!")
+		# print("[EnemyAttackSystem] ðÅ¸â€Â¥ Breath aplica Burn!")
 
 func _perform_multi_attack() -> void:
 	"""Ataque mÃƒÂºltiple: varios proyectiles o ataques en secuencia"""
@@ -1375,13 +1375,13 @@ func _perform_multi_attack() -> void:
 		# Crear proyectil con delay visual
 		_spawn_multi_projectile(direction, i * 0.1)
 
-	# print("[EnemyAttackSystem] Ã°Å¸â€Â¥ %s Multi-attack: %d proyectiles" % [enemy.name, count])
+	# print("[EnemyAttackSystem] ðÅ¸â€Â¥ %s Multi-attack: %d proyectiles" % [enemy.name, count])
 	attacked_player.emit(attack_damage, false)
 
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 # SISTEMA DE BOSS COMPLETO - ESTILO BINDING OF ISAAC
 # Ataques constantes, AOE aleatorios, proyectiles perseguidores, orbitales
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 
 # Tracking de cooldowns de habilidades de boss (por enemigo)
 var boss_ability_cooldowns: Dictionary = {}  # {ability_name: tiempo_restante}
@@ -1407,7 +1407,7 @@ var boss_active_effects: Array = []  # Track de TODOS los efectos del boss (AOE,
 
 func cleanup_boss() -> void:
 	"""Limpiar todos los nodos del boss (orbitales, trails, AOE warnings, etc.)"""
-	# print("[Boss] Ã°Å¸Â§Â¹ Limpiando orbitales y efectos del boss...")
+	# print("[Boss] ðÅ¸Â§Â¹ Limpiando orbitales y efectos del boss...")
 
 	# Limpiar orbitales
 	for orbital in boss_orbitals:
@@ -1429,7 +1429,7 @@ func cleanup_boss() -> void:
 				node.queue_free()
 
 	is_boss_enemy = false
-	# print("[Boss] Ã°Å¸Â§Â¹ Limpieza completada")
+	# print("[Boss] ðÅ¸Â§Â¹ Limpieza completada")
 
 func _track_boss_effect(effect: Node) -> void:
 	"""AÃƒÂ±adir un efecto a la lista de tracking para limpieza posterior"""
@@ -1445,7 +1445,7 @@ func _init_boss_aggressive_mode() -> void:
 	var orbital_count = boss_scaling_config.get("orbital_count", 2)
 	_spawn_boss_orbitals(orbital_count)
 
-	# print("[Boss] Ã°Å¸â€˜Â¹Ã°Å¸â€Â¥ MODO AGRESIVO ACTIVADO - Orbitales: %d" % orbital_count)
+	# print("[Boss] ðÅ¸â€˜Â¹ðÅ¸â€Â¥ MODO AGRESIVO ACTIVADO - Orbitales: %d" % orbital_count)
 
 func _process_boss_aggressive_attacks(delta: float) -> void:
 	"""Procesar ataques constantes del boss - NO depende del rango"""
@@ -1528,7 +1528,7 @@ func _boss_spawn_random_aoe() -> void:
 	var offset = Vector2(randf_range(-200, 200), randf_range(-200, 200))
 	var target_pos = player.global_position + offset
 
-	# Warning visual antes del impacto - AUMENTADO para dar tiempo de reacciÃ³n
+	# Warning visual antes del impacto - AUMENTADO para dar tiempo de reacción
 	_spawn_aoe_warning(target_pos, 80.0, 1.8)  # Aumentado de 1.0 a 1.8s
 
 	# DespuÃƒÂ©s del warning, hacer daÃƒÂ±o
@@ -1540,7 +1540,7 @@ func _boss_spawn_random_aoe() -> void:
 				if player.has_method("take_damage"):
 					var elem = _get_enemy_element()
 					player.call("take_damage", damage, elem, enemy)
-					# print("[Boss] Ã°Å¸â€™Â¥ AOE RANDOM impactÃƒÂ³! %d daÃƒÂ±o" % damage)
+					# print("[Boss] ðÅ¸â€™Â¥ AOE RANDOM impactÃƒÂ³! %d daÃƒÂ±o" % damage)
 		# Visual de explosiÃƒÂ³n
 		_spawn_aoe_explosion(target_pos, 80.0)
 	)
@@ -1559,7 +1559,7 @@ func _boss_spawn_homing_projectile() -> void:
 
 		_create_homing_projectile(spawn_pos)
 
-	# print("[Boss] Ã°Å¸Å½Â¯ %d proyectiles HOMING lanzados!" % count)
+	# print("[Boss] ðÅ¸Å½Â¯ %d proyectiles HOMING lanzados!" % count)
 
 func _create_homing_projectile(spawn_pos: Vector2) -> void:
 	"""Crear un proyectil que persigue al jugador"""
@@ -1617,7 +1617,7 @@ func _create_homing_projectile(spawn_pos: Vector2) -> void:
 	# Comportamiento homing
 	var lifetime = 6.0
 	var speed = 120.0  # Reducido de 180 a 120 (jugador va a 100)
-	var homing_strength = 1.8  # Reducido de 2.5 a 1.8 (mÃ¡s esquivable)
+	var homing_strength = 1.8  # Reducido de 2.5 a 1.8 (más esquivable)
 	var damage = int(attack_damage * 0.4)
 	var hit = false
 
@@ -1678,7 +1678,7 @@ func _boss_spread_shot() -> void:
 		var direction = base_direction.rotated(angle_offset)
 		_spawn_boss_projectile(enemy.global_position, direction, damage, 280.0)
 
-	# print("[Boss] Ã°Å¸â€Â¥ SPREAD SHOT: %d proyectiles!" % count)
+	# print("[Boss] ðÅ¸â€Â¥ SPREAD SHOT: %d proyectiles!" % count)
 
 func _boss_leave_damage_trail() -> void:
 	"""Dejar trail de daÃƒÂ±o donde pasa el boss"""
@@ -2013,7 +2013,7 @@ func _init_boss_system() -> void:
 		boss_ability_cooldowns[ability] = 0.0
 
 	# print("[Boss] debug")
-	# print("[Boss] Ã°Å¸â€˜Â¹ Habilidades: %s" % str(boss_unlocked_abilities))
+	# print("[Boss] ðÅ¸â€˜Â¹ Habilidades: %s" % str(boss_unlocked_abilities))
 
 func _get_prioritized_abilities(max_count: int) -> Array:
 	"""Obtener las habilidades priorizadas para desbloquear"""
@@ -2127,7 +2127,7 @@ func _update_boss_phase() -> void:
 
 func _on_boss_phase_change(_old_phase: int, new_phase: int) -> void:
 	"""Evento cuando el boss cambia de fase"""
-	# print("[EnemyAttackSystem] Ã°Å¸â€˜Â¹Ã°Å¸â€™â‚¬ %s CAMBIÃƒâ€œ A FASE %d!" % [enemy.name, new_phase])
+	# print("[EnemyAttackSystem] ðÅ¸â€˜Â¹ðÅ¸â€™â‚¬ %s CAMBIÃƒâ€œ A FASE %d!" % [enemy.name, new_phase])
 
 	# Efecto visual de cambio de fase
 	_spawn_phase_change_effect()
@@ -2142,7 +2142,7 @@ func _on_boss_phase_change(_old_phase: int, new_phase: int) -> void:
 	# CorazÃƒÂ³n del VacÃƒÂ­o activa aura de daÃƒÂ±o permanente en fase 2+
 	if "corazon" in enemy_id.to_lower() and new_phase >= 2:
 		boss_damage_aura_timer = 999.0  # Aura permanente
-		# Spawn visual de aura de daÃ±o void via VFXManager
+		# Spawn visual de aura de daño void via VFXManager
 		_try_spawn_via_vfxmanager("damage_void", "aura", enemy.global_position, 0, 0)
 
 	# Minotauro activa fire trail en fase 3
@@ -2345,9 +2345,9 @@ func _get_boss_data() -> Dictionary:
 
 	return {}
 
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 # HABILIDADES DE EL CONJURADOR PRIMIGENIO
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 
 func _boss_arcane_barrage() -> void:
 	"""RÃƒÂ¡faga de mÃƒÂºltiples proyectiles arcanos"""
@@ -2366,7 +2366,7 @@ func _boss_arcane_barrage() -> void:
 		var proj_dir = direction.rotated(angle_offset)
 		_spawn_boss_projectile_delayed(proj_dir, damage, "arcane", 0.05 * i)
 
-	# print("[EnemyAttackSystem] Ã¢Å“Â¨ Arcane Barrage: %d proyectiles" % count)
+	# print("[EnemyAttackSystem] âÅ“Â¨ Arcane Barrage: %d proyectiles" % count)
 
 func _boss_summon_minions() -> void:
 	"""Invocar enemigos menores"""
@@ -2385,10 +2385,10 @@ func _boss_summon_minions() -> void:
 	var spawner = _get_enemy_spawner()
 	if spawner and spawner.has_method("spawn_minions_around"):
 		spawner.spawn_minions_around(enemy.global_position, count, tier)
-		# print("[EnemyAttackSystem] Ã°Å¸â€˜Â¹ Summon: %d minions tier %d" % [count, tier])
+		# print("[EnemyAttackSystem] ðÅ¸â€˜Â¹ Summon: %d minions tier %d" % [count, tier])
 	else:
 		pass
-		# print("[EnemyAttackSystem] Ã¢Å¡Â Ã¯Â¸Â No se encontrÃƒÂ³ spawner para summon")
+		# print("[EnemyAttackSystem] âÅ¡Â ïÂ¸Â No se encontrÃƒÂ³ spawner para summon")
 
 func _boss_teleport_strike() -> void:
 	"""Teleport hacia el jugador + ataque tras telegraph"""
@@ -2455,14 +2455,14 @@ func _boss_curse_aura() -> void:
 	if dist <= radius:
 		if player.has_method("apply_curse"):
 			player.apply_curse(reduction, duration)
-			# print("[EnemyAttackSystem] Ã¢ËœÂ Ã¯Â¸Â Curse Aura: -%.0f%% curaciÃƒÂ³n por %.1fs" % [reduction * 100, duration])
+			# print("[EnemyAttackSystem] âËœÂ ïÂ¸Â Curse Aura: -%.0f%% curaciÃƒÂ³n por %.1fs" % [reduction * 100, duration])
 
 	# Visual
 	_spawn_curse_aura_visual(enemy.global_position, radius)
 
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 # HABILIDADES DE EL CORAZÃƒâ€œN DEL VACÃƒÂO
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 
 func _boss_void_pull() -> void:
 	"""Atraer al jugador hacia el boss"""
@@ -2478,7 +2478,7 @@ func _boss_void_pull() -> void:
 		# Aplicar efecto de pull al jugador
 		if player.has_method("apply_pull"):
 			player.apply_pull(enemy.global_position, pull_force, pull_duration)
-			# print("[EnemyAttackSystem] Ã°Å¸Å’â‚¬ Void Pull activado")
+			# print("[EnemyAttackSystem] ðÅ¸Å’â‚¬ Void Pull activado")
 		else:
 			pass  # Bloque else
 			# Fallback: mover directamente al jugador
@@ -2503,7 +2503,7 @@ func _boss_void_orbs() -> void:
 		var spawn_offset = Vector2(cos(angle), sin(angle)) * 30
 		_spawn_homing_orb(enemy.global_position + spawn_offset, damage, speed, duration, "dark")
 
-	# print("[EnemyAttackSystem] Ã°Å¸â€™Å“ Void Orbs: %d orbes perseguidores" % count)
+	# print("[EnemyAttackSystem] ðÅ¸â€™Å“ Void Orbs: %d orbes perseguidores" % count)
 
 func _boss_reality_tear() -> void:
 	"""Crear zona de daÃƒÂ±o persistente"""
@@ -2513,7 +2513,7 @@ func _boss_reality_tear() -> void:
 
 	# _spawn_damage_zone ya invoca VFXManager internamente, no duplicar
 	_spawn_damage_zone(player.global_position, radius, damage, duration, "dark")
-	# print("[EnemyAttackSystem] Ã°Å¸Å’Å’ Reality Tear creado")
+	# print("[EnemyAttackSystem] ðÅ¸Å’Å’ Reality Tear creado")
 
 func _boss_void_beam() -> void:
 	"""Rayo canalizado de alto daÃƒÂ±o"""
@@ -2549,9 +2549,9 @@ func _boss_void_beam() -> void:
 				attacked_player.emit(tick_damage, false)
 		)
 
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 # HABILIDADES DE EL GUARDIÃƒÂN DE RUNAS
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 
 func _boss_rune_shield() -> void:
 	"""Activar escudo que absorbe hits"""
@@ -2621,7 +2621,7 @@ func _boss_counter_stance() -> void:
 
 	# Visual
 	_spawn_counter_stance_visual()
-	# print("[EnemyAttackSystem] Ã¢Å¡â€Ã¯Â¸Â Counter Stance: %.1fs window, x%.1f daÃƒÂ±o" % [window, damage_mult])
+	# print("[EnemyAttackSystem] âÅ¡â€ïÂ¸Â Counter Stance: %.1fs window, x%.1f daÃƒÂ±o" % [window, damage_mult])
 
 func _boss_rune_barrage() -> void:
 	"""MÃƒÂºltiples runas disparadas"""
@@ -2636,7 +2636,7 @@ func _boss_rune_barrage() -> void:
 		var proj_dir = direction.rotated(angle_offset)
 		_spawn_boss_projectile_delayed(proj_dir, damage, "arcane", 0.08 * i)
 
-	# print("[EnemyAttackSystem] Ã¢Å“Â¨ Rune Barrage: %d proyectiles" % count)
+	# print("[EnemyAttackSystem] âÅ“Â¨ Rune Barrage: %d proyectiles" % count)
 
 func _boss_ground_slam() -> void:
 	"""Golpe de tierra con ondas expansivas y telegraph"""
@@ -2664,9 +2664,9 @@ func _boss_ground_slam() -> void:
 				player.apply_stun(stun)
 	)
 
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 # HABILIDADES DE MINOTAURO DE FUEGO
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 
 func _boss_charge_attack() -> void:
 	"""Carga devastadora hacia el jugador con telegraph"""
@@ -2735,7 +2735,7 @@ func _boss_flame_breath() -> void:
 
 	# Visual
 	_spawn_flame_breath_visual(enemy.global_position, direction, range_dist)
-	# print("[EnemyAttackSystem] Ã°Å¸â€Â¥ Flame Breath: %d daÃƒÂ±o en cono" % damage)
+	# print("[EnemyAttackSystem] ðÅ¸â€Â¥ Flame Breath: %d daÃƒÂ±o en cono" % damage)
 
 func _boss_meteor_call() -> void:
 	"""Invocar meteoros del cielo"""
@@ -2760,7 +2760,7 @@ func _boss_meteor_call() -> void:
 			_spawn_meteor_impact(target_pos, radius, damage)
 		)
 
-	# print("[EnemyAttackSystem] Ã¢Ëœâ€žÃ¯Â¸Â Meteor Call: %d meteoros" % count)
+	# print("[EnemyAttackSystem] âËœâ€žïÂ¸Â Meteor Call: %d meteoros" % count)
 
 func _activate_boss_enrage() -> void:
 	"""Activar estado de furia del boss"""
@@ -2784,7 +2784,7 @@ func _activate_boss_enrage() -> void:
 
 	# Visual
 	_spawn_enrage_visual()
-	# print("[EnemyAttackSystem] Ã°Å¸â€Â¥Ã°Å¸â€™Â¢ BOSS ENRAGED! +%.0f%% daÃƒÂ±o, +%.0f%% velocidad" % [damage_bonus * 100, speed_bonus * 100])
+	# print("[EnemyAttackSystem] ðÅ¸â€Â¥ðÅ¸â€™Â¢ BOSS ENRAGED! +%.0f%% daÃƒÂ±o, +%.0f%% velocidad" % [damage_bonus * 100, speed_bonus * 100])
 
 func _spawn_fire_trail() -> void:
 	"""Dejar rastro de fuego al caminar"""
@@ -2809,7 +2809,7 @@ func _perform_boss_melee_attack() -> void:
 
 	var boss_damage = int(attack_damage * 1.2)  # Bosses hacen mÃƒÂ¡s daÃƒÂ±o
 	player.take_damage(boss_damage, "physical", enemy)
-	# print("[EnemyAttackSystem] Ã°Å¸â€˜Â¹ %s (Boss) melee devastador por %d daÃƒÂ±o" % [enemy.name, boss_damage])
+	# print("[EnemyAttackSystem] ðÅ¸â€˜Â¹ %s (Boss) melee devastador por %d daÃƒÂ±o" % [enemy.name, boss_damage])
 
 	# Aplicar efecto segÃƒÂºn el boss
 	_apply_boss_melee_effects()
@@ -3052,7 +3052,7 @@ func _spawn_rune_blast_visual(center: Vector2, radius: float) -> void:
 	"""Visual de explosiÃƒÂ³n de runas Ãƒâ€°PICA - sÃƒÂ­mbolos brillantes"""
 	# Intentar usar VFXManager primero
 	if _try_spawn_via_vfxmanager("rune_blast", "aoe", center, radius, 0.5):
-		return  # VFXManager manejÃ³ el efecto
+		return  # VFXManager manejó el efecto
 
 	# Fallback procedural si no hay spritesheet
 	var effect = Node2D.new()
@@ -3291,14 +3291,14 @@ func _get_enemy_element() -> String:
 	var enemy_id = enemy.get("enemy_id") if "enemy_id" in enemy else ""
 	var name_lower = enemy_id.to_lower()
 
-	# Casos especiales primero (antes de la detecciÃ³n genÃ©rica)
+	# Casos especiales primero (antes de la detección genérica)
 	# Hechicero Desgastado es un mago de fuego corrupto
 	if "hechicero_desgastado" in name_lower or "hechicero" in name_lower:
 		return "fire"
 
-	# Bosses especÃ­ficos
+	# Bosses específicos
 	if "guardian" in name_lower and "runas" in name_lower:
-		return "arcane"  # GuardiÃ¡n de Runas usa magia arcana
+		return "arcane"  # Guardián de Runas usa magia arcana
 	if "conjurador" in name_lower:
 		return "arcane"  # El Conjurador es mago arcano
 	if "minotauro" in name_lower:
@@ -3666,9 +3666,9 @@ func reset_cooldown() -> void:
 	"""Resetear el cooldown de ataque"""
 	attack_timer = attack_cooldown
 
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 # FUNCIONES AUXILIARES PARA BOSSES
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 
 func _get_enemy_spawner() -> Node:
 	"""Obtener referencia al spawner de enemigos"""
@@ -3719,7 +3719,7 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 	orb.global_position = pos
 	orb.z_index = 5
 
-	# Variables de visual (declaradas a nivel de funciÃ³n para acceso en lambdas)
+	# Variables de visual (declaradas a nivel de función para acceso en lambdas)
 	var color = _get_element_color(element)
 	var bright_color = Color(min(color.r + 0.4, 1.0), min(color.g + 0.4, 1.0), min(color.b + 0.4, 1.0), 1.0)
 	var orb_visual: Node2D = null
@@ -3765,15 +3765,15 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 			# Cuerpo principal
 			orb_visual.draw_circle(Vector2.ZERO, 18 * pulse, color)
 
-			# Anillo de energÃ­a
+			# Anillo de energía
 			var ring_angle = orb_time_ref.value * 5
 			orb_visual.draw_arc(Vector2.ZERO, 22 * pulse, ring_angle, ring_angle + PI * 1.5, 16, bright_color, 2.0)
 
-			# NÃºcleo brillante
+			# Núcleo brillante
 			orb_visual.draw_circle(Vector2.ZERO, 12 * pulse, bright_color)
 			orb_visual.draw_circle(Vector2.ZERO, 6, Color(1, 1, 1, 0.98))
 
-			# PartÃ­culas orbitando
+			# Partículas orbitando
 			for i in range(4):
 				var orbit_angle = orb_time_ref.value * 6 + (TAU / 4) * i
 				var orbit_pos = Vector2(cos(orbit_angle), sin(orbit_angle)) * 25 * pulse
@@ -3831,7 +3831,7 @@ func _spawn_homing_orb(pos: Vector2, damage: int, speed: float, duration: float,
 		if orb_visual and is_instance_valid(orb_visual):
 			orb_visual.queue_redraw()
 
-		# Check colisiÃ³n
+		# Check colisión
 		var dist = orb.global_position.distance_to(player_ref.global_position)
 		if dist < hit_radius:
 			has_hit_ref.value = true
@@ -3903,17 +3903,17 @@ func _spawn_orb_impact_effect(pos: Vector2, color: Color) -> void:
 	)
 
 func _spawn_damage_zone(pos: Vector2, radius: float, dps: int, duration: float, element: String) -> void:
-	"""Crear zona de daÃ±o persistente - Usa VFXManager para visual"""
+	"""Crear zona de daño persistente - Usa VFXManager para visual"""
 	if not is_instance_valid(enemy) or not is_instance_valid(player):
 		return
 
-	# Determinar tipo de zona segÃºn elemento
+	# Determinar tipo de zona según elemento
 	var zone_type: String
 	match element:
 		"fire":
 			zone_type = "fire_zone"       # Zona de fuego pura (aoe_fire_zone)
 		"lava":
-			zone_type = "damage_zone_fire" # Zona de daÃ±o de lava
+			zone_type = "damage_zone_fire" # Zona de daño de lava
 		_:
 			zone_type = "damage_zone_void"
 
@@ -3973,9 +3973,9 @@ func _spawn_damage_zone(pos: Vector2, radius: float, dps: int, duration: float, 
 				damage_accumulator = fmod(damage_accumulator, 1.0)
 	)
 
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 # EFECTOS VISUALES DE BOSS
-# Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+# ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 
 func _spawn_phase_change_effect() -> void:
 	"""Efecto visual de cambio de fase - Usa VFXManager si disponible"""
@@ -3986,7 +3986,7 @@ func _spawn_phase_change_effect() -> void:
 	if _try_spawn_via_vfxmanager("phase_change", "boss", enemy.global_position, 150.0, 1.0):
 		return
 
-	# Fallback: Visual procedural Ã©pico
+	# Fallback: Visual procedural épico
 	var effect = Node2D.new()
 	effect.top_level = true
 	effect.z_index = 5

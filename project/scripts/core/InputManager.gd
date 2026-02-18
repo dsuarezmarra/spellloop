@@ -128,7 +128,7 @@ func _detect_device_change(event: InputEvent) -> void:
 		input_device_changed.emit(new_device)
 		# Debug desactivado: print("[InputManager] Input device changed to: ", new_device)
 
-# Dedup de pause: evitar emitir pause_requested múltiples veces en el mismo frame
+# Dedup de pause: evitar emitir pause_requested mÃºltiples veces en el mismo frame
 var _pause_emitted_this_frame: bool = false
 
 func _process(_delta: float) -> void:
