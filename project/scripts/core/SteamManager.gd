@@ -62,7 +62,7 @@ func _initialize_steam() -> void:
 	# En GDExtension, Steam es una clase global, no un singleton
 	# Usamos call para llamar métodos estáticamente
 	var init_result = null
-	
+
 	# Intentar usar GDExtension (clase Steam directa)
 	if ClassDB.class_exists("Steam"):
 		# Crear instancia temporal para acceder a métodos
@@ -73,28 +73,28 @@ func _initialize_steam() -> void:
 	# Fallback a singleton si existe
 	elif _steam != null:
 		init_result = _steam.steamInitEx(false, APP_ID)
-	
+
 	if init_result == null:
 		print("[SteamManager] ❌ No se pudo inicializar Steam")
 		is_steam_available = false
 		is_initialized = true
 		steam_initialized.emit(false)
 		return
-	
+
 	if init_result.status == 0:  # k_ESteamAPIInitResult_OK
 		is_steam_available = true
 		is_initialized = true
-		
+
 		# Obtener información del usuario
 		steam_id = _steam.getSteamID()
 		steam_name = _steam.getPersonaName()
-		
+
 		# Conectar señales de Steam
 		_connect_steam_signals()
-		
+
 		# Solicitar stats del usuario
 		_steam.requestCurrentStats()
-		
+
 		print("[SteamManager] ✅ Steam inicializado - Usuario: %s (ID: %d)" % [steam_name, steam_id])
 		steam_initialized.emit(true)
 	else:
@@ -107,11 +107,11 @@ func _connect_steam_signals() -> void:
 	"""Conectar señales de Steam para callbacks"""
 	if _steam == null:
 		return
-	
+
 	_steam.leaderboard_find_result.connect(_on_leaderboard_find_result)
 	_steam.leaderboard_score_uploaded.connect(_on_leaderboard_score_uploaded)
 	_steam.leaderboard_scores_downloaded.connect(_on_leaderboard_scores_downloaded)
-	
+
 	# Conectar callback de stats del usuario
 	if _steam.has_signal("current_stats_received"):
 		_steam.current_stats_received.connect(_on_current_stats_received)
@@ -134,12 +134,12 @@ func request_leaderboard(leaderboard_name: String = "") -> void:
 	"""Solicitar un leaderboard de Steam"""
 	if leaderboard_name.is_empty():
 		leaderboard_name = get_current_month_leaderboard_name()
-	
+
 	if not is_steam_available:
 		# Modo offline: Devolver datos de ejemplo
 		_emit_offline_leaderboard(leaderboard_name)
 		return
-	
+
 	if _steam != null:
 		_pending_leaderboard_name = leaderboard_name
 		_steam.findOrCreateLeaderboard(leaderboard_name, 2, 1)  # Descending, Numeric
@@ -148,11 +148,11 @@ func request_top_entries(count: int = 100, leaderboard_name: String = "") -> voi
 	"""Solicitar las mejores N entradas del leaderboard"""
 	if leaderboard_name.is_empty():
 		leaderboard_name = get_current_month_leaderboard_name()
-	
+
 	if not is_steam_available:
 		_emit_offline_leaderboard(leaderboard_name)
 		return
-	
+
 	if _leaderboard_handles.has(leaderboard_name):
 		var handle = _leaderboard_handles[leaderboard_name]
 		if _steam != null:
@@ -165,18 +165,18 @@ func upload_score(score: int, build_data: Dictionary = {}, leaderboard_name: Str
 	"""Subir puntuación al leaderboard de Steam"""
 	if leaderboard_name.is_empty():
 		leaderboard_name = get_current_month_leaderboard_name()
-	
+
 	if not is_steam_available:
 		print("[SteamManager] ⚠️ Modo offline - Score no subido: %d" % score)
 		leaderboard_score_uploaded.emit(false, score)
 		return
-	
+
 	if _leaderboard_handles.has(leaderboard_name):
 		var handle = _leaderboard_handles[leaderboard_name]
-		
+
 		# Serializar build data para los detalles (máximo 64 int32)
 		var details = _serialize_build_data(build_data)
-		
+
 		if _steam != null:
 			_steam.uploadLeaderboardScore(score, true, details, handle)
 	else:
@@ -189,42 +189,42 @@ func _serialize_build_data(build_data: Dictionary) -> PackedInt32Array:
 	"""Serializar build data a int32 array para Steam (máx 64 ints = 256 bytes)
 	Formato: [version, character_hash, level, score, duration_secs, enemies_killed, bosses_killed, weapons_mask]"""
 	var data = PackedInt32Array()
-	
+
 	# Versión del formato (para compatibilidad futura)
 	data.append(1)
-	
+
 	# Hash del character ID (para identificarlo en 32 bits)
 	var char_id = build_data.get("character_id", "unknown")
 	data.append(char_id.hash())
-	
+
 	# Stats principales
 	data.append(build_data.get("level", 0))
 	data.append(build_data.get("score", 0))
 	data.append(int(build_data.get("duration", 0.0)))
 	data.append(build_data.get("enemies_killed", 0))
 	data.append(build_data.get("bosses_killed", 0))
-	
+
 	# Bitmask de armas equipadas (hasta 32 armas, cada bit = 1 arma)
 	var weapons = build_data.get("weapons", [])
 	var weapons_mask: int = 0
 	for i in range(mini(weapons.size(), 32)):
 		weapons_mask |= (1 << i)
 	data.append(weapons_mask)
-	
+
 	return data
 
 func _deserialize_build_data(details: PackedInt32Array) -> Dictionary:
 	"""Deserializar build data desde int32 array"""
 	if details.is_empty():
 		return {}
-	
+
 	var result: Dictionary = {}
-	
+
 	# Verificar versión
 	var version = details[0] if details.size() > 0 else 0
 	if version != 1:
 		return result
-	
+
 	if details.size() >= 8:
 		result["character_hash"] = details[1]
 		result["level"] = details[2]
@@ -233,7 +233,7 @@ func _deserialize_build_data(details: PackedInt32Array) -> Dictionary:
 		result["enemies_killed"] = details[5]
 		result["bosses_killed"] = details[6]
 		result["weapons_mask"] = details[7]
-	
+
 	return result
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -258,7 +258,7 @@ func _on_leaderboard_score_uploaded(success: int, _score: int, score_changed: in
 func _on_leaderboard_scores_downloaded(message: String, entries: Array) -> void:
 	"""Callback cuando se descargan entries del leaderboard"""
 	var leaderboard_name = get_current_month_leaderboard_name()
-	
+
 	var parsed_entries: Array = []
 	for entry in entries:
 		parsed_entries.append({
@@ -268,7 +268,7 @@ func _on_leaderboard_scores_downloaded(message: String, entries: Array) -> void:
 			"score": entry.get("score", 0),
 			"build_data": _deserialize_build_data(entry.get("details", PackedInt32Array()))
 		})
-	
+
 	_cached_entries[leaderboard_name] = parsed_entries
 	print("[SteamManager] ✅ Descargadas %d entradas del leaderboard" % parsed_entries.size())
 	leaderboard_loaded.emit(leaderboard_name, parsed_entries)
@@ -286,10 +286,10 @@ func _get_player_name(player_steam_id: int) -> String:
 func _emit_offline_leaderboard(leaderboard_name: String) -> void:
 	"""Emitir leaderboard vacío para modo offline"""
 	var offline_entries: Array = []
-	
+
 	# Nota: No generamos datos falsos - solo mostramos que está offline
 	# Cuando Steam esté conectado, se cargarán los datos reales
-	
+
 	_cached_entries[leaderboard_name] = offline_entries
 	leaderboard_loaded.emit(leaderboard_name, offline_entries)
 
@@ -297,7 +297,7 @@ func get_cached_entries(leaderboard_name: String = "") -> Array:
 	"""Obtener entries cacheadas de un leaderboard"""
 	if leaderboard_name.is_empty():
 		leaderboard_name = get_current_month_leaderboard_name()
-	
+
 	return _cached_entries.get(leaderboard_name, [])
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -313,7 +313,7 @@ func set_achievement(achievement_id: String) -> void:
 	"""Establecer un achievement en Steam"""
 	if not is_steam_available or _steam == null:
 		return
-	
+
 	_steam.setAchievement(achievement_id)
 	_steam.storeStats()
 	print("[SteamManager] 🏆 Achievement set: %s" % achievement_id)
@@ -322,7 +322,7 @@ func get_achievement(achievement_id: String) -> bool:
 	"""Verificar si un achievement está desbloqueado en Steam"""
 	if not is_steam_available or _steam == null:
 		return false
-	
+
 	var result = _steam.getAchievement(achievement_id)
 	if result is Dictionary:
 		return result.get("achieved", false)
@@ -332,7 +332,7 @@ func clear_achievement(achievement_id: String) -> void:
 	"""Limpiar un achievement en Steam (debug only)"""
 	if not is_steam_available or _steam == null:
 		return
-	
+
 	_steam.clearAchievement(achievement_id)
 	_steam.storeStats()
 	print("[SteamManager] ⚠️ Achievement cleared: %s" % achievement_id)
@@ -341,10 +341,10 @@ func clear_all_achievements() -> void:
 	"""Limpiar todos los achievements (debug only)"""
 	if not OS.is_debug_build():
 		return
-	
+
 	if not is_steam_available or _steam == null:
 		return
-	
+
 	# Obtener lista de achievements desde SteamAchievements si disponible
 	var ach_mgr = get_node_or_null("/root/SteamAchievements")
 	if ach_mgr:
@@ -357,7 +357,7 @@ func set_stat(stat_name: String, value: int) -> void:
 	"""Establecer un stat en Steam"""
 	if not is_steam_available or _steam == null:
 		return
-	
+
 	_steam.setStatInt(stat_name, value)
 	_steam.storeStats()
 
@@ -365,7 +365,7 @@ func get_stat(stat_name: String) -> int:
 	"""Obtener un stat desde Steam"""
 	if not is_steam_available or _steam == null:
 		return 0
-	
+
 	return _steam.getStatInt(stat_name)
 
 func _on_current_stats_received(game_id: int, result: int) -> void:
@@ -391,11 +391,11 @@ func format_score(score: int) -> String:
 	var score_str = str(score)
 	var formatted = ""
 	var count = 0
-	
+
 	for i in range(score_str.length() - 1, -1, -1):
 		if count > 0 and count % 3 == 0:
 			formatted = "," + formatted
 		formatted = score_str[i] + formatted
 		count += 1
-	
+
 	return formatted

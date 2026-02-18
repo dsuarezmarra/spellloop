@@ -27,7 +27,7 @@ var _chain_delay: float = 0.08
 func setup(data: Dictionary) -> void:
 	damage = data.get("damage", 15.0)
 	chain_count = data.get("chain_count", 2)
-	
+
 	# Agregar bonus global de chain_count de PlayerStats
 	var tree = Engine.get_main_loop() as SceneTree
 	if tree:
@@ -36,7 +36,7 @@ func setup(data: Dictionary) -> void:
 			var bonus_chains = attack_manager.get_player_stat("chain_count")
 			if bonus_chains != null and bonus_chains > 0:
 				chain_count += int(bonus_chains)
-	
+
 	chain_range = data.get("range", 150.0) * 0.5
 	color = data.get("color", Color(1.0, 1.0, 0.3))
 	knockback = data.get("knockback", 40.0)
@@ -104,7 +104,7 @@ func _execute_chain_sequence() -> void:
 		# Wait for visual to finish, but with a timeout
 		var visual_finished = false
 		_enhanced_visual.all_chains_finished.connect(func(): visual_finished = true)
-		
+
 		var wait_time = 0.0
 		while not visual_finished and wait_time < 2.0:
 			var tree = get_tree()
@@ -115,7 +115,7 @@ func _execute_chain_sequence() -> void:
 	else:
 		if get_tree():
 			await get_tree().create_timer(1.0).timeout
-		
+
 	if is_instance_valid(self):
 		queue_free()
 
@@ -131,11 +131,11 @@ func _apply_damage_to_target(target: Node2D) -> void:
 
 	if target.has_method("take_damage"):
 		target.take_damage(damage_result.get_int_damage(), "physical", self)
-		
+
 		# LOG: Registrar daño de cadena con hop actual
 		var hop_number = enemies_hit.size() + 1
 		DamageLogger.log_chain_damage(weapon_id, target.name, damage_result.get_int_damage(), hop_number, chain_count)
-		
+
 		ProjectileFactory.apply_life_steal(get_tree(), damage_result.final_damage)
 		# Aplicar efectos de estado por probabilidad (bleed, burn, freeze de items)
 		ProjectileFactory.apply_status_effects_chance(get_tree(), target)
@@ -144,14 +144,14 @@ func _apply_damage_to_target(target: Node2D) -> void:
 	if knockback != 0 and target.has_method("apply_knockback"):
 		var kb_dir = (target.global_position - global_position).normalized()
 		target.apply_knockback(kb_dir * knockback)
-	
+
 	_apply_chain_effect(target)
 
 func _apply_chain_effect(target: Node2D) -> void:
 	"""Aplicar efectos especiales de proyectiles encadenados"""
 	if effect == "none" or effect == "chain":
 		return
-	
+
 	match effect:
 		"freeze_chain":
 			if target.has_method("apply_freeze"):
