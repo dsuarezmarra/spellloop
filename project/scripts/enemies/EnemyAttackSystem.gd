@@ -1152,8 +1152,8 @@ func _find_enemy_manager() -> Node:
 	return null
 
 func _perform_melee_attack() -> void:
-	"""Ataque melee: daÃƒÂ±o directo al jugador"""
-	if not player.has_method("take_damage"):
+	"""Ataque melee: daño directo al jugador"""
+	if not is_instance_valid(player) or not player.has_method("take_damage"):
 		return
 	
 	var elem = _get_enemy_element()

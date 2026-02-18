@@ -495,6 +495,10 @@ func _on_player_took_damage(damage: int, element: String) -> void:
 	# Trackear daño recibido para estadísticas
 	run_stats["damage_taken"] += damage
 
+	# Notificar a SteamAchievements para tracking de no-hit boss
+	if SteamAchievements and SteamAchievements.has_method("on_player_damaged_during_boss"):
+		SteamAchievements.on_player_damaged_during_boss(damage)
+
 	# TELEMETRY: Log hits significativos (>15% HP) para análisis de muertes
 	var base_player = _get_base_player()
 	if damage >= 10 and BalanceTelemetry and BalanceTelemetry._run_active:
@@ -1621,8 +1625,15 @@ func _collect_complete_run_data() -> Dictionary:
 	# ═══════════════════════════════════════════════════════════════════════════
 	# 7. MECÁNICAS DE JUEGO (rerolls, banishes usados)
 	# ═══════════════════════════════════════════════════════════════════════════
-	run_data["rerolls_used"] = 3 - remaining_rerolls
-	run_data["banishes_used"] = 2 - remaining_banishes
+	# Usar PlayerStats como fuente de verdad (remaining_rerolls/remaining_banishes son legacy)
+	if player_stats and player_stats.has_method("get_stat"):
+		var total_rerolls = int(player_stats.get_stat("reroll_count")) + 3  # base 3 + extras
+		var total_banishes = int(player_stats.get_stat("banish_count")) + 2  # base 2 + extras
+		run_data["rerolls_used"] = maxi(0, total_rerolls - int(player_stats.get("current_rerolls") if "current_rerolls" in player_stats else total_rerolls))
+		run_data["banishes_used"] = maxi(0, total_banishes - int(player_stats.get("current_banishes") if "current_banishes" in player_stats else total_banishes))
+	else:
+		run_data["rerolls_used"] = 3 - remaining_rerolls
+		run_data["banishes_used"] = 2 - remaining_banishes
 
 	# ═══════════════════════════════════════════════════════════════════════════
 	# 8. DATOS DE AUDITORÍA DE COMBATE (RunAuditTracker)

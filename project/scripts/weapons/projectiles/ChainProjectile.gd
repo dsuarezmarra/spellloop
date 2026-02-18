@@ -93,6 +93,8 @@ func _execute_chain_sequence() -> void:
 
 		if chains_done < chain_count - 1:
 			await get_tree().create_timer(_chain_delay).timeout
+			if not is_instance_valid(self):
+				return
 
 		current_pos = target_pos
 		current_target = _find_next_target(current_pos)

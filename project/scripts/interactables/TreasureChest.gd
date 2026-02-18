@@ -601,18 +601,6 @@ func _apply_item(item: Dictionary):
 			else:
 				push_error("[TreasureChest] No se encontró PlayerStats para aplicar upgrade")
 
-		"healing":
-			var amount = item.get("amount", 20)
-			# Curar usando player_ref o búsqueda segura
-			if player_ref and player_ref.has_method("heal"):
-				player_ref.heal(amount)
-				print("[TreasureChest] ❤️ Curado %d HP via player_ref" % amount)
-			else:
-				var p = get_tree().get_first_node_in_group("player")
-				if p and p.has_method("heal"):
-					p.heal(amount)
-					print("[TreasureChest] ❤️ Curado %d HP via group" % amount)
-
 		"gold":
 			# Añadir oro
 			var amount = item.get("amount", 50)
@@ -681,7 +669,7 @@ func _apply_item(item: Dictionary):
 
 		"healing", "health_boost":
 			# Curación instantánea
-			var amount = item.get("amount", 0)
+			var amount = item.get("amount", 20)
 			# Si es health_boost, puede ser max_hp o curación, depende de la implementación.
 			# Asumimos que healing es curar.
 			if player_ref and player_ref.has_method("heal"):

@@ -301,6 +301,7 @@ var _pending_sync: Array = []         # IDs pendientes de sincronizar con Steam
 var _boss_kill_tracker: Dictionary = {} # boss_id -> bool (para ACH_ALL_BOSSES)
 var _boss_fight_start_time: float = 0.0
 var _boss_fight_hp_at_start: int = 0   # HP del jugador al iniciar boss fight
+var _boss_fight_damage_taken: int = 0  # Daño recibido durante boss fight (para no-hit tracking)
 var _is_ready: bool = false
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -518,17 +519,10 @@ func on_enemy_killed(_enemy_id: String, _enemy_tier: int, is_boss: bool, boss_id
 				check_and_unlock("ACH_BOSS_FAST_KILL")
 			_boss_fight_start_time = 0.0
 
-		# Trackear no-hit boss
-		var player_node = get_tree().get_first_node_in_group("player")
-		if player_node and _boss_fight_hp_at_start > 0:
-			var current_hp = 0
-			if player_node.has_method("get_current_health"):
-				current_hp = player_node.get_current_health()
-			elif player_node.get("health_component"):
-				current_hp = player_node.health_component.current_health
-
-			if current_hp >= _boss_fight_hp_at_start:
-				check_and_unlock("ACH_NO_HIT_BOSS")
+		# Trackear no-hit boss (usando contador de daño en vez de comparación de HP)
+		# Esto evita falsos positivos con builds de regeneración
+		if _boss_fight_damage_taken == 0:
+			check_and_unlock("ACH_NO_HIT_BOSS")
 
 		# Track unique bosses
 		if not boss_id.is_empty():
@@ -539,6 +533,7 @@ func on_enemy_killed(_enemy_id: String, _enemy_tier: int, is_boss: bool, boss_id
 func on_boss_spawned() -> void:
 	"""Llamar cuando aparece un boss"""
 	_boss_fight_start_time = Time.get_ticks_msec() / 1000.0
+	_boss_fight_damage_taken = 0  # Reset damage counter for no-hit tracking
 
 	# Capturar HP del jugador al iniciar boss fight
 	var player_node = get_tree().get_first_node_in_group("player")
@@ -547,6 +542,12 @@ func on_boss_spawned() -> void:
 			_boss_fight_hp_at_start = player_node.get_current_health()
 		elif player_node.get("health_component"):
 			_boss_fight_hp_at_start = player_node.health_component.current_health
+
+func on_player_damaged_during_boss(damage_amount: int) -> void:
+	"""Llamar cuando el jugador recibe daño durante un boss fight.
+	Permite tracking preciso de no-hit boss sin depender de comparación de HP."""
+	if _boss_fight_start_time > 0.0:
+		_boss_fight_damage_taken += damage_amount
 
 func on_level_up(new_level: int) -> void:
 	"""Llamar cuando el jugador sube de nivel"""

@@ -2151,4 +2151,7 @@ func _perform_split_on_death() -> void:
 				)
 
 func get_info() -> Dictionary:
-	return {"id": enemy_id, "hp": hp, "max_hp": max_hp}
+	var current_hp = hp
+	if health_component:
+		current_hp = health_component.current_health
+	return {"id": enemy_id, "hp": current_hp, "max_hp": max_hp}

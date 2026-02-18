@@ -1646,9 +1646,11 @@ func get_health_percent() -> float:
 
 func gain_xp(amount: float) -> int:
 	"""
-	Ganar experiencia
+	DEPRECATED: Usar ExperienceManager.gain_experience() en su lugar.
+	Este método es legacy y puede desincronizar el nivel con ExperienceManager.
 	Retorna: número de niveles subidos
 	"""
+	push_warning("[PlayerStats] gain_xp() is DEPRECATED - use ExperienceManager.gain_experience() instead")
 	var xp_bonus = get_stat("xp_mult")
 	var effective_xp = amount * xp_bonus
 

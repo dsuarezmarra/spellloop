@@ -396,6 +396,7 @@ static func _create_base_projectile(_data: Dictionary) -> Node2D:
 	# FIX: Use get_projectile() method (acquire() doesn't exist)
 	if ProjectilePool.instance:
 		return ProjectilePool.instance.get_projectile()
+	push_warning("[ProjectileFactory] ProjectilePool.instance es null — no se puede crear proyectil")
 	return null
 
 

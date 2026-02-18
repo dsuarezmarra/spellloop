@@ -32,6 +32,7 @@ var _steam: Object = null  # Referencia a GodotSteam singleton
 
 # Cache de leaderboards
 var _leaderboard_handles: Dictionary = {}  # name -> handle
+var _pending_leaderboard_name: String = ""  # Nombre del leaderboard que se está buscando
 var _cached_entries: Dictionary = {}  # name -> Array[RankingEntry]
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -140,6 +141,7 @@ func request_leaderboard(leaderboard_name: String = "") -> void:
 		return
 	
 	if _steam != null:
+		_pending_leaderboard_name = leaderboard_name
 		_steam.findOrCreateLeaderboard(leaderboard_name, 2, 1)  # Descending, Numeric
 
 func request_top_entries(count: int = 100, leaderboard_name: String = "") -> void:
@@ -241,9 +243,11 @@ func _deserialize_build_data(details: PackedInt32Array) -> Dictionary:
 func _on_leaderboard_find_result(handle: int, found: int) -> void:
 	"""Callback cuando se encuentra/crea un leaderboard"""
 	if found == 1 and handle != 0:
-		var leaderboard_name = get_current_month_leaderboard_name()
+		# Usar el nombre del leaderboard pendiente en vez de asumir mes actual
+		var leaderboard_name = _pending_leaderboard_name if not _pending_leaderboard_name.is_empty() else get_current_month_leaderboard_name()
 		_leaderboard_handles[leaderboard_name] = handle
 		print("[SteamManager] ✅ Leaderboard encontrado: %s (handle: %d)" % [leaderboard_name, handle])
+		_pending_leaderboard_name = ""
 
 func _on_leaderboard_score_uploaded(success: int, _score: int, score_changed: int, _rank: int, _rank_prev: int) -> void:
 	"""Callback cuando se sube un score"""
