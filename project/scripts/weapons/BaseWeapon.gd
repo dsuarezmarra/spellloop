@@ -75,15 +75,15 @@ var _cached_player_stats: Node = null
 func _init(weapon_id: String = "", from_fusion: bool = false) -> void:
 	if weapon_id.is_empty():
 		return
-	
+
 	var data = WeaponDatabase.get_weapon_data(weapon_id)
 	if data.is_empty():
 		push_error("[BaseWeapon] No se encontraron datos para: %s" % weapon_id)
 		return
-	
+
 	_initialize_from_data(data)
 	is_fused = from_fusion
-	
+
 	if is_fused and data.has("components"):
 		fusion_components = data.components.duplicate()
 
@@ -95,7 +95,7 @@ func _initialize_from_data(data: Dictionary) -> void:
 	description = data.get("description", "")
 	icon = data.get("icon", "🔮")
 	tags = data.get("tags", [])
-	
+
 	# Guardar stats base
 	base_stats = {
 		"damage": data.get("damage", 10),
@@ -110,19 +110,19 @@ func _initialize_from_data(data: Dictionary) -> void:
 		"effect_value": data.get("effect_value", 0.0),
 		"effect_duration": data.get("effect_duration", 0.0),
 	}
-	
+
 	# Aplicar stats base
 	_apply_base_stats()
-	
+
 	# Elemento y tipo
 	element = data.get("element", WeaponDatabase.Element.ARCANE)
 	target_type = data.get("target_type", WeaponDatabase.TargetType.NEAREST)
 	projectile_type = data.get("projectile_type", WeaponDatabase.ProjectileType.SINGLE)
 	color = data.get("color", Color.WHITE)
-	
+
 	# Efecto (el tipo, no el valor - el valor ya se aplica en _apply_base_stats)
 	effect = data.get("effect", "none")
-	
+
 	# Audio
 	hit_sound = data.get("hit_sound", "")
 
@@ -149,7 +149,7 @@ func override_stats(new_stats: Dictionary) -> void:
 	var merged = base_stats.duplicate()
 	for k in new_stats:
 		merged[k] = new_stats[k]
-	
+
 	base_stats = merged
 	level = 1  # Reiniciar nivel siempre
 	_apply_base_stats()
@@ -167,11 +167,11 @@ func level_up() -> bool:
 	"""Subir de nivel el arma"""
 	if not can_level_up():
 		return false
-	
+
 	level += 1
 	_recalculate_stats()
 	weapon_leveled_up.emit(id, level)
-	
+
 	# print("[BaseWeapon] %s subió a nivel %d" % [weapon_name, level])
 	return true
 
@@ -179,16 +179,16 @@ func _recalculate_stats() -> void:
 	"""Recalcular todos los stats basados en el nivel actual"""
 	# Empezar desde base
 	_apply_base_stats()
-	
+
 	# Aplicar mejoras de nivel acumulativas
 	for lvl in range(2, level + 1):
 		var upgrade = WeaponDatabase.get_level_upgrade(lvl, id)
 		if upgrade.is_empty():
 			continue
-		
+
 		if upgrade.has("damage_mult"):
 			damage *= upgrade.damage_mult
-		
+
 		if upgrade.has("attack_speed_mult"):
 			# Aumentar velocidad de ataque = reducir cooldown proporcionalmente
 			# attack_speed_mult 1.18 significa +18% velocidad -> cooldown / 1.18
@@ -197,10 +197,10 @@ func _recalculate_stats() -> void:
 			elif upgrade.has("no_cooldown_damage_mult"):
 				# Armas sin cooldown (como Arcane Orb) reciben daño extra
 				damage *= upgrade.no_cooldown_damage_mult
-		
+
 		if upgrade.has("projectile_count_add"):
 			projectile_count += upgrade.projectile_count_add
-		
+
 		if upgrade.has("pierce_add"):
 			# Solo aplicar si el arma no tiene pierce infinito (< 100)
 			if base_stats.pierce < 100:
@@ -211,7 +211,7 @@ func _recalculate_stats() -> void:
 
 		if upgrade.has("effect_value_add"):
 			effect_value += upgrade.effect_value_add
-		
+
 		if upgrade.has("effect_mult"):
 			# Solo multiplicar si el arma tiene un efecto real en base (effect_value > 0)
 			if base_stats.effect_value > 0:
@@ -222,7 +222,7 @@ func _recalculate_stats() -> void:
 
 		if upgrade.has("area_mult"):
 			area *= upgrade.area_mult
-		
+
 		if upgrade.has("projectile_speed_mult"):
 			projectile_speed *= upgrade.projectile_speed_mult
 
@@ -231,7 +231,7 @@ func _recalculate_stats() -> void:
 
 		if upgrade.has("knockback_mult"):
 			knockback *= upgrade.knockback_mult
-		
+
 		if upgrade.has("all_mult"):
 			damage *= upgrade.all_mult
 			knockback *= upgrade.all_mult
@@ -263,7 +263,7 @@ func get_next_upgrade_description() -> String:
 	"""Obtener descripción de la siguiente mejora"""
 	if not can_level_up():
 		return "¡NIVEL MÁXIMO!"
-	
+
 	var upgrade = WeaponDatabase.get_level_upgrade(level + 1, id)
 	return upgrade.get("description", "Mejora desconocida")
 
@@ -275,7 +275,7 @@ func tick_cooldown(delta: float) -> void:
 	"""Actualizar cooldown cada frame"""
 	if ready_to_fire:
 		return
-	
+
 	current_cooldown -= delta
 	if current_cooldown <= 0.0:
 		current_cooldown = 0.0
@@ -290,17 +290,17 @@ func start_cooldown() -> void:
 	# APLICAR MEJORAS GLOBALES DE VELOCIDAD DE ATAQUE
 	# APLICAR MEJORAS GLOBALES DE VELOCIDAD DE ATAQUE
 	# Formula: cooldown_real = cooldown_base / attack_speed_mult
-	
+
 	var attack_speed_mult = 1.0
 	var global_stats = _get_global_weapon_stats_node()
-	
+
 	if global_stats and global_stats.has_method("get_stat"):
 		attack_speed_mult = global_stats.get_stat("attack_speed_mult")
-	
+
 	# Asegurar que no sea 0 para evitar división por cero
 	if attack_speed_mult <= 0.01:
 		attack_speed_mult = 0.01
-		
+
 	current_cooldown = cooldown / attack_speed_mult
 	ready_to_fire = false
 
@@ -324,9 +324,9 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> bool:
 	"""
 	if not is_ready_to_fire():
 		return false
-	
+
 	var targets = _find_targets(player)
-	
+
 	# Verificar si necesita targets
 	# AOE y ORBIT no necesitan targets para disparar
 	var needs_target = target_type != WeaponDatabase.TargetType.AREA \
@@ -334,33 +334,33 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> bool:
 		and target_type != WeaponDatabase.TargetType.DIRECTION \
 		and projectile_type != WeaponDatabase.ProjectileType.AOE \
 		and projectile_type != WeaponDatabase.ProjectileType.ORBIT
-	
+
 	if targets.is_empty() and needs_target:
 		return false  # No hay objetivos y el arma necesita uno
-	
+
 	# Aplicar modificadores del jugador
 	var modified_damage = damage
 	var modified_crit = 0.0
-	
+
 	if not player_stats.is_empty():
 		var dmg_mult = player_stats.get("damage_mult", 1.0)
 		modified_damage *= dmg_mult
 		modified_damage += player_stats.get("damage_flat", 0.0)  # Sumar daño plano
 		modified_crit = player_stats.get("crit_chance", 0.0)
-		
+
 		# DEBUG: Log para Pacifista
 		if dmg_mult < 0.01:
 			print("🔴 [BaseWeapon] %s: dmg_mult=%.2f, base=%d, final=%.1f" % [weapon_name, dmg_mult, damage, modified_damage])
-		
+
 		# Agregar crit del efecto del arma
 		if effect == "crit_chance":
 			modified_crit += effect_value
-	
+
 	# Log de disparo
 	# Log de disparo
 	# var target_info = "posición player" if targets.is_empty() else str(targets[0].global_position)
 	# print("[%s] ⚡ Disparando (%s) → %s" % [weapon_name, WeaponDatabase.ProjectileType.keys()[projectile_type], target_info])
-	
+
 	# --------------------------------------------------------------------------
 	# LÓGICA MULTICAST (Item Idea: "Doble o Nada", "Echo")
 	# --------------------------------------------------------------------------
@@ -370,7 +370,7 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> bool:
 	if multicast_chance <= 0:
 		var gstats = _get_global_weapon_stats()
 		multicast_chance = gstats.get("multicast_chance", 0.0)
-		
+
 	if multicast_chance > 0 and randf() < multicast_chance:
 		executions = 2
 		# Visual feedback
@@ -379,12 +379,12 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> bool:
 	for i in range(executions):
 		# Crear proyectil(es) según el tipo
 		_spawn_projectiles(player, targets, modified_damage, modified_crit)
-		
+
 		# NOTA: Se eliminó el await para evitar convertir perform_attack en corrutina
 		# esto causaba que AttackManager recibiera un objeto GDScriptFunctionState (truthy)
 		# en lugar de false cuando no había targets válido.
 	# --------------------------------------------------------------------------
-	
+
 	start_cooldown()
 	weapon_fired.emit(id, player.global_position, targets[0] if not targets.is_empty() else null)
 	return true
@@ -395,12 +395,12 @@ func _find_targets(player: Node2D) -> Array:
 	Override si se necesita lógica especial
 	"""
 	var enemies = _get_enemies_in_range(player)
-	
+
 	# Calcular cuántos objetivos necesitamos (para múltiples proyectiles)
 	var global_stats = _get_global_weapon_stats()
 	var extra = int(global_stats.get("extra_projectiles", 0))
 	var needed_targets = projectile_count + extra
-	
+
 	match target_type:
 		WeaponDatabase.TargetType.NEAREST:
 			if enemies.is_empty():
@@ -408,38 +408,38 @@ func _find_targets(player: Node2D) -> Array:
 			enemies.sort_custom(_sort_by_distance.bind(player))
 			# Devolver suficientes objetivos para projectile_count
 			return enemies.slice(0, mini(needed_targets, enemies.size()))
-		
+
 		WeaponDatabase.TargetType.RANDOM:
 			if enemies.is_empty():
 				return []
 			enemies.shuffle()
 			# Devolver suficientes objetivos para projectile_count
 			return enemies.slice(0, mini(needed_targets, enemies.size()))
-		
+
 		WeaponDatabase.TargetType.AREA:
 			return enemies  # Todos en área
-		
+
 		WeaponDatabase.TargetType.ORBIT:
 			return []  # No necesita target
-		
+
 		WeaponDatabase.TargetType.DIRECTION:
 			# Dirección del movimiento del player
 			return enemies if not enemies.is_empty() else []
-		
+
 		WeaponDatabase.TargetType.HOMING:
 			return enemies  # Todos como potenciales
-		
+
 		_:
 			return enemies
 
 func _get_enemies_in_range(player: Node2D) -> Array:
 	"""Obtener enemigos dentro del rango del arma"""
 	var enemies = []
-	
+
 	# Verificar que el árbol de escena existe
 	if not player or not player.get_tree():
 		return enemies
-	
+
 	# Obtener range_mult de GlobalWeaponStats (buscar por grupo)
 	var range_mult = 1.0
 	var gws_nodes = player.get_tree().get_nodes_in_group("global_weapon_stats")
@@ -447,17 +447,17 @@ func _get_enemies_in_range(player: Node2D) -> Array:
 	if gws and gws.has_method("get_stat"):
 		range_mult = gws.get_stat("range_mult")
 	var effective_range = weapon_range * range_mult
-	
+
 	var enemy_group = player.get_tree().get_nodes_in_group("enemies")
-	
+
 	for enemy in enemy_group:
 		if not is_instance_valid(enemy):
 			continue
-		
+
 		var dist = player.global_position.distance_to(enemy.global_position)
 		if dist <= effective_range:
 			enemies.append(enemy)
-	
+
 	return enemies
 
 func _sort_by_distance(a: Node2D, b: Node2D, player: Node2D) -> bool:
@@ -477,30 +477,30 @@ func _spawn_projectiles(player: Node2D, targets: Array, final_damage: float, cri
 	if projectile_type != WeaponDatabase.ProjectileType.ORBIT:
 		var weapon_sfx = "sfx_weapon_%s" % id
 		AudioManager.play_fixed(weapon_sfx)
-	
+
 	match projectile_type:
 		WeaponDatabase.ProjectileType.SINGLE:
 			_spawn_single_projectile(player, targets, final_damage, crit_chance)
-		
+
 		WeaponDatabase.ProjectileType.MULTI:
 			_spawn_multi_projectiles(player, targets, final_damage, crit_chance)
-		
+
 		WeaponDatabase.ProjectileType.BEAM:
 			_spawn_beam(player, targets, final_damage, crit_chance)
-		
+
 		WeaponDatabase.ProjectileType.AOE:
 			_spawn_aoe(player, targets, final_damage, crit_chance)
-		
+
 		WeaponDatabase.ProjectileType.ORBIT:
 			_spawn_orbit(player, final_damage, crit_chance)
-		
+
 		WeaponDatabase.ProjectileType.CHAIN:
 			_spawn_chain(player, targets, final_damage, crit_chance)
 
 func _spawn_single_projectile(player: Node2D, targets: Array, dmg: float, crit: float) -> void:
 	"""Crear proyectil(es) - respeta projectile_count incluso para armas SINGLE"""
 	var base_direction: Vector2
-	
+
 	# FIX: DIRECTION type weapons should still fire even without targets
 	if targets.is_empty():
 		# For DIRECTION weapons, use movement direction; otherwise skip
@@ -516,21 +516,21 @@ func _spawn_single_projectile(player: Node2D, targets: Array, dmg: float, crit: 
 	else:
 		var target = targets[0]
 		base_direction = (target.global_position - player.global_position).normalized()
-	
+
 	# Aplicar extra_projectiles global
 	var global_stats = _get_global_weapon_stats()
 	var extra = int(global_stats.get("extra_projectiles", 0))
 	var count = projectile_count + extra
-	
+
 	# Si solo hay 1 proyectil, disparar directo
 	if count <= 1:
 		_create_projectile(player, base_direction, dmg, crit)
 		return
-	
+
 	# Múltiples proyectiles: disparar en abanico
 	var spread_angle = deg_to_rad(12.0)  # 12 grados entre cada proyectil
 	var start_angle = -spread_angle * (count - 1) / 2.0
-	
+
 	for i in range(count):
 		var angle = start_angle + spread_angle * i
 		var direction = base_direction.rotated(angle)
@@ -543,20 +543,20 @@ func _spawn_multi_projectiles(player: Node2D, targets: Array, dmg: float, crit: 
 	var global_stats = _get_global_weapon_stats()
 	var extra = int(global_stats.get("extra_projectiles", 0))
 	var count = projectile_count + extra
-	
+
 	# Si hay menos objetivos que proyectiles, disparar en abanico
 	if targets.size() < count:
 		var base_direction: Vector2
-		
+
 		if targets.is_empty():
 			# Usar dirección del movimiento del player
 			base_direction = player.velocity.normalized() if player.velocity.length() > 0 else Vector2.RIGHT
 		else:
 			base_direction = (targets[0].global_position - player.global_position).normalized()
-		
+
 		var spread_angle = deg_to_rad(15.0)  # 15 grados entre cada proyectil
 		var start_angle = -spread_angle * (count - 1) / 2.0
-		
+
 		for i in range(count):
 			var angle = start_angle + spread_angle * i
 			var direction = base_direction.rotated(angle)
@@ -572,12 +572,12 @@ func _spawn_beam(player: Node2D, targets: Array, dmg: float, crit: float) -> voi
 	"""Crear rayo(s) instantáneo(s) - respeta projectile_count"""
 	if targets.is_empty():
 		return
-	
+
 	# Aplicar extra_projectiles global
 	var global_stats = _get_global_weapon_stats()
 	var extra = int(global_stats.get("extra_projectiles", 0))
 	var count = projectile_count + extra
-	
+
 	if count <= 1:
 		# Un solo rayo
 		var direction = (targets[0].global_position - player.global_position).normalized()
@@ -587,7 +587,7 @@ func _spawn_beam(player: Node2D, targets: Array, dmg: float, crit: float) -> voi
 		var base_direction = (targets[0].global_position - player.global_position).normalized()
 		var spread_angle = deg_to_rad(15.0)
 		var start_angle = -spread_angle * (count - 1) / 2.0
-		
+
 		for i in range(count):
 			var angle = start_angle + spread_angle * i
 			var direction = base_direction.rotated(angle)
@@ -599,7 +599,7 @@ func _spawn_aoe(player: Node2D, targets: Array, dmg: float, crit: float) -> void
 	var global_stats = _get_global_weapon_stats()
 	var extra = int(global_stats.get("extra_projectiles", 0))
 	var count = projectile_count + extra
-	
+
 	if count <= 1:
 		# Una sola AOE
 		var spawn_position = player.global_position
@@ -609,7 +609,7 @@ func _spawn_aoe(player: Node2D, targets: Array, dmg: float, crit: float) -> void
 	else:
 		# Múltiples AOEs
 		var positions: Array = []
-		
+
 		if targets.is_empty():
 			# Sin targets: crear AOEs alrededor del player
 			for i in range(count):
@@ -626,7 +626,7 @@ func _spawn_aoe(player: Node2D, targets: Array, dmg: float, crit: float) -> void
 				var angle = randf() * TAU
 				var offset = Vector2.from_angle(angle) * weapon_range * randf_range(0.2, 0.5)
 				positions.append(player.global_position + offset)
-		
+
 		for pos in positions:
 			_create_aoe(player, pos, dmg, crit)
 
@@ -639,12 +639,12 @@ func _spawn_chain(player: Node2D, targets: Array, dmg: float, crit: float) -> vo
 	"""Crear proyectil(es) que encadenan entre enemigos - respeta projectile_count"""
 	if targets.is_empty():
 		return
-	
+
 	# Aplicar extra_projectiles global
 	var global_stats = _get_global_weapon_stats()
 	var extra = int(global_stats.get("extra_projectiles", 0))
 	var count = projectile_count + extra
-	
+
 	# Crear múltiples cadenas - si hay menos enemigos que proyectiles,
 	# disparar múltiples cadenas al mismo objetivo
 	targets.shuffle()
@@ -662,13 +662,13 @@ func _create_projectile(player: Node2D, direction: Vector2, dmg: float, crit: fl
 	var projectile_data = _build_projectile_data(dmg, crit)
 	projectile_data["direction"] = direction
 	projectile_data["start_position"] = player.global_position
-	
+
 	# DEBUG: Verificar que los datos de efecto se pasan
 	# if projectile_data.get("effect", "none") != "none":
 	# 	print("[BaseWeapon] 📤 Creando proyectil para %s - effect: %s, val: %.2f, dur: %.2f" % [
 	# 		id, projectile_data.effect, projectile_data.effect_value, projectile_data.effect_duration
 	# 	])
-	
+
 	# Emitir para que el AttackManager maneje la creación
 	ProjectileFactory.create_projectile(player, projectile_data)
 
@@ -678,7 +678,7 @@ func _create_beam(player: Node2D, direction: Vector2, dmg: float, crit: float) -
 	beam_data["direction"] = direction
 	beam_data["start_position"] = player.global_position
 	beam_data["is_beam"] = true
-	
+
 	ProjectileFactory.create_beam(player, beam_data)
 
 func _create_aoe(player: Node2D, position: Vector2, dmg: float, crit: float) -> void:
@@ -686,41 +686,41 @@ func _create_aoe(player: Node2D, position: Vector2, dmg: float, crit: float) -> 
 	var aoe_data = _build_projectile_data(dmg, crit)
 	aoe_data["position"] = position
 	aoe_data["is_aoe"] = true
-	
+
 	ProjectileFactory.create_aoe(player, aoe_data)
 
 func _create_orbitals(player: Node2D, dmg: float, crit: float) -> void:
 	"""Crear orbitales - usar ProjectileFactory"""
 	var orbital_data = _build_projectile_data(dmg, crit)
-	
+
 	# Aplicar extra_projectiles global al orbital_count
 	var global_stats = _get_global_weapon_stats()
 	var extra = int(global_stats.get("extra_projectiles", 0))
 	orbital_data["orbital_count"] = projectile_count + extra
 	orbital_data["orbital_radius"] = weapon_range
 	orbital_data["is_orbital"] = true
-	
+
 	ProjectileFactory.create_orbitals(player, orbital_data)
 
 func _create_chain_projectile(player: Node2D, first_target: Node2D, dmg: float, crit: float) -> void:
 	"""Crear proyectil encadenante - usar ProjectileFactory"""
 	var chain_data = _build_projectile_data(dmg, crit)
 	chain_data["first_target"] = first_target
-	
+
 	# Convertir Penetración (Pierce) a rebotes extra para armas de cadena
 	var total_pierce = chain_data.get("pierce", 0)
 	var base_chains = roundi(effect_value) if effect == "chain" else 2
 	chain_data["chain_count"] = base_chains + total_pierce + 1 # +1 para incluir el target inicial
-	
+
 	chain_data["is_chain"] = true
-	
+
 	ProjectileFactory.create_chain_projectile(player, chain_data)
 
 func _build_projectile_data(dmg: float, crit: float) -> Dictionary:
 	"""Construir datos base para proyectiles aplicando multiplicadores globales"""
 	# Obtener GlobalWeaponStats para aplicar multiplicadores
 	var global_stats = _get_global_weapon_stats()
-	
+
 	# Obtener multiplicadores globales (default 1.0 si no existe)
 	var area_mult = global_stats.get("area_mult", 1.0)
 	var speed_mult = global_stats.get("projectile_speed_mult", 1.0)
@@ -728,7 +728,7 @@ func _build_projectile_data(dmg: float, crit: float) -> Dictionary:
 	var knockback_mult = global_stats.get("knockback_mult", 1.0)
 	var crit_dmg = global_stats.get("crit_damage", 2.0)
 	var extra_pierce = int(global_stats.get("extra_pierce", 0))
-	
+
 	return {
 		"weapon_id": id,
 		"damage": dmg,
@@ -756,27 +756,27 @@ func _get_global_weapon_stats() -> Dictionary:
 	var am = _get_attack_manager_node()
 	if am:
 		return am._get_combined_global_stats()
-	
+
 	var gws = _get_global_weapon_stats_node()
 	if gws:
 		return gws.get_all_stats()
-	
+
 	return {}
 
 func _get_global_weapon_stats_node() -> Node:
 	"""Obtener nodo GlobalWeaponStats con caching"""
 	if is_instance_valid(_cached_global_stats):
 		return _cached_global_stats
-		
+
 	var tree = Engine.get_main_loop() as SceneTree
 	if not tree:
 		return null
-		
+
 	var nodes = tree.get_nodes_in_group("global_weapon_stats")
 	if nodes.size() > 0:
 		_cached_global_stats = nodes[0]
 		return _cached_global_stats
-		
+
 	return null
 
 func _get_attack_manager_node() -> Node:
@@ -784,7 +784,7 @@ func _get_attack_manager_node() -> Node:
 	var tree = Engine.get_main_loop() as SceneTree
 	if not tree:
 		return null
-	var nodes = tree.get_nodes_in_group("attack_manager") 
+	var nodes = tree.get_nodes_in_group("attack_manager")
 	return nodes[0] if nodes.size() > 0 else null
 
 func _get_modified_effect_duration(base_duration: float) -> float:
@@ -797,12 +797,12 @@ func _get_modified_effect_duration(base_duration: float) -> float:
 			var nodes = tree.get_nodes_in_group("player_stats")
 			if nodes.size() > 0:
 				_cached_player_stats = nodes[0]
-	
+
 	if _cached_player_stats and _cached_player_stats.has_method("get_stat"):
 		var duration_mult = _cached_player_stats.get_stat("status_duration_mult")
 		if duration_mult > 0:
 			return base_duration * duration_mult
-			
+
 	return base_duration
 
 
@@ -815,7 +815,7 @@ func apply_effect_to_target(target: Node2D) -> void:
 	"""Aplicar efecto especial del arma al objetivo"""
 	if effect == "none" or not is_instance_valid(target):
 		return
-	
+
 	match effect:
 		"slow":
 			_apply_slow(target)
@@ -853,7 +853,7 @@ func apply_effect_to_target(target: Node2D) -> void:
 			_apply_bleed(target)
 		"shadow_mark":
 			_apply_shadow_mark(target)
-	
+
 	effect_applied.emit(target, effect, effect_value)
 
 func _apply_slow(target: Node2D) -> void:
@@ -916,12 +916,12 @@ func _apply_execute(target: Node2D) -> void:
 	"""Ejecutar al objetivo si tiene poca vida"""
 	if not target.has_method("get_info"):
 		return
-	
+
 	var info = target.get_info()
 	var hp = info.get("hp", 100)
 	var max_hp = info.get("max_hp", 100)
 	var hp_percent = float(hp) / float(max_hp)
-	
+
 	# effect_value es el umbral (ej: 0.2 = 20% HP)
 	if hp_percent <= effect_value:
 		if target.has_method("take_damage"):
@@ -963,12 +963,12 @@ func to_dict() -> Dictionary:
 static func from_dict(data: Dictionary) -> BaseWeapon:
 	"""Deserializar arma desde datos guardados"""
 	var weapon = BaseWeapon.new(data.get("id", ""), data.get("is_fused", false))
-	
+
 	# Aplicar nivel
 	var target_level = data.get("level", 1)
 	for i in range(target_level - 1):
 		weapon.level_up()
-	
+
 	return weapon
 
 # ═══════════════════════════════════════════════════════════════════════════════

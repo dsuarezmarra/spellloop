@@ -65,7 +65,7 @@ func _enter_tree() -> void:
 	var perf_tracker = get_node_or_null("/root/PerfTracker")
 	if perf_tracker:
 		perf_tracker.track_enemy_spawned()
-	
+
 	# Asegurar que está en el grupo para detección de proyectiles
 	if not is_in_group("enemies"):
 		add_to_group("enemies")
@@ -74,7 +74,7 @@ func _ready() -> void:
 	"""Inicializar al cargar la escena. Ejecutado ANTES de las subclases."""
 	# CRÍTICO: Respetar la pausa del juego (Game.gd tiene ALWAYS, pero enemigos deben pausarse)
 	process_mode = Node.PROCESS_MODE_PAUSABLE
-	
+
 	# Capas/máscaras: layer=2 (Enemy), mask=3 (PlayerProjectiles) y 1 (Player)
 	set_collision_layer_value(2, true)
 	set_collision_mask_value(3, true)
@@ -112,13 +112,13 @@ func _ready() -> void:
 	# Si no hay spritesheet, usar sprite estático como fallback
 	if not spritesheet_loaded:
 		_load_static_sprite()
-	
+
 	# FIX: Eliminado VisibleOnScreenEnabler2D porque congelaba a los enemigos fuera de pantalla
 	# impidiendo que se acercaran al jugador. En este género, los enemigos deben moverse siempre.
 
 	# Configurar z_index
 	self.z_index = 0
-	
+
 	# 124: Inicializar sistema de iconos de estado
 	_initialize_status_icon_display()
 
@@ -142,7 +142,7 @@ func _load_static_sprite() -> void:
 		sprite.name = "Sprite2D"
 		add_child(sprite)
 	_load_enemy_sprite(sprite)
-	
+
 	# Aplicar escala al sprite estático
 	var enemy_scale = _get_scale_for_tier()
 	if sprite:
@@ -162,7 +162,7 @@ func _initialize_status_icon_display() -> void:
 	status_icon_display.is_player = false
 	status_icon_display.set_entity_type(false, is_boss)
 	add_child(status_icon_display)
-	
+
 	# Calcular posición Y basándose en el tamaño real del sprite
 	# Lo hacemos deferred para asegurar que el sprite está cargado
 	call_deferred("_position_status_icons")
@@ -171,15 +171,15 @@ func _position_status_icons() -> void:
 	"""Posicionar los iconos de estado encima del sprite del enemigo"""
 	if not status_icon_display:
 		return
-	
+
 	# Constantes de tamaño de iconos
 	const ENEMY_ICON_SIZE: float = 14.0
 	const BOSS_ICON_SIZE: float = 18.0
-	
+
 	# Calcular el alto visual del sprite en coordenadas locales
 	var sprite_visual_top: float = -32.0  # Fallback: 32px encima del centro
 	var icon_size: float = ENEMY_ICON_SIZE if not is_boss else BOSS_ICON_SIZE
-	
+
 	# Intentar obtener el bounding box real del sprite
 	if animated_sprite and is_instance_valid(animated_sprite):
 		# AnimatedEnemySprite: usar frame_height y escala
@@ -190,7 +190,7 @@ func _position_status_icons() -> void:
 			base_height = animated_sprite.frame_height
 		elif animated_sprite.texture:
 			base_height = animated_sprite.texture.get_height()
-		
+
 		if base_height > 0:
 			var visual_height = base_height * animated_sprite.scale.y
 			# El sprite está centrado, la parte superior es -altura/2
@@ -208,7 +208,7 @@ func _position_status_icons() -> void:
 			# Fallback basado en tier
 			var scale_factor = _get_scale_for_tier()
 			sprite_visual_top = -40.0 * scale_factor
-	
+
 	# Posicionar iconos encima del sprite con margen
 	# Margen adicional: espacio para barra de vida (10px) + separación (6px)
 	status_icon_display.position.y = sprite_visual_top - 16.0 - (icon_size / 2.0)
@@ -325,7 +325,7 @@ func initialize(data: Dictionary, player):
 	damage = int(data.get("damage", damage))
 	exp_value = int(data.get("exp_value", exp_value))
 	player_ref = player
-	
+
 	# Pasar player al attack_system
 	if attack_system:
 		attack_system.player = player_ref
@@ -387,14 +387,14 @@ func initialize_from_database(data: Dictionary, player) -> void:
 	# Colisión
 	var collision_radius = float(data.get("collision_radius", 16.0))
 	var collision_shape = _find_collision_shape_node(self)
-	
+
 	# FALLBACK: Si no existe collision shape (Headless/Race condition), crearlo ahora.
 	if not collision_shape:
 		collision_shape = CollisionShape2D.new()
 		collision_shape.name = "CollisionShape2D"
 		collision_shape.shape = CircleShape2D.new()
 		add_child(collision_shape)
-		
+
 	if collision_shape and collision_shape.shape is CircleShape2D:
 		collision_shape.shape.radius = collision_radius
 
@@ -439,7 +439,7 @@ func initialize_from_database(data: Dictionary, player) -> void:
 			"special_abilities": special_abilities,
 			"modifiers": modifiers
 		})
-		
+
 		# Pasar referencia al player para ataques
 		attack_system.player = player_ref
 
@@ -475,7 +475,7 @@ func _reinitialize_health_component() -> void:
 func _determine_element_from_id(id: String) -> String:
 	"""Determinar elemento del enemigo basado en su ID"""
 	var lower_id = id.to_lower()
-	
+
 	# Casos especiales primero
 	if "hechicero" in lower_id:
 		return "fire"  # Hechicero Desgastado es mago de fuego corrupto
@@ -556,10 +556,10 @@ func _apply_elite_glow_shader() -> void:
 		target_sprite = animated_sprite
 	else:
 		target_sprite = _find_sprite_node(self)
-	
+
 	if not target_sprite:
 		return
-	
+
 	# Shader con glow reducido + transición RGB gaming keyboard "breath"
 	var shader_code = """
 shader_type canvas_item;
@@ -582,28 +582,28 @@ vec3 hsv2rgb(float h, float s, float v) {
 void fragment() {
 	vec4 original = texture(TEXTURE, UV);
 	vec2 ps = vec2(1.0) / vec2(textureSize(TEXTURE, 0));
-	
+
 	// Hue cycling — smooth rainbow transition
 	float hue = fract(TIME * color_cycle_speed + hue_offset);
 	vec3 glow_rgb = hsv2rgb(hue, saturation, 1.0);
-	
+
 	// Pulse breathing
 	float pulse = 0.7 + 0.3 * sin(TIME * pulse_speed);
 	float gs = glow_size * pulse;
-	
+
 	// Dos anillos de muestreo (8 muestras cada uno) — más eficiente y compacto
 	float ring_outer = 0.0;
 	float ring_inner = 0.0;
-	
+
 	for (float a = 0.0; a < 6.28; a += 0.785) {
 		vec2 dir = vec2(cos(a), sin(a));
 		ring_outer = max(ring_outer, texture(TEXTURE, UV + dir * ps * gs).a);
 		ring_inner = max(ring_inner, texture(TEXTURE, UV + dir * ps * gs * 0.4).a);
 	}
-	
+
 	float glow = ring_inner * 1.0 + ring_outer * 0.6;
 	glow = clamp(glow, 0.0, 1.0);
-	
+
 	if (original.a < 0.1 && glow > 0.05) {
 		float ga = glow * glow_intensity * pulse * 0.65;
 		COLOR = vec4(glow_rgb, clamp(ga, 0.0, 0.9));
@@ -615,13 +615,13 @@ void fragment() {
 	}
 }
 """
-	
+
 	var shader = Shader.new()
 	shader.code = shader_code
-	
+
 	var material = ShaderMaterial.new()
 	material.shader = shader
-	
+
 	# Cada tier tiene un offset de hue diferente + velocidad de ciclo, pero TODOS hacen rainbow
 	var tier_configs = [
 		{"hue_offset": 0.0, "cycle_speed": 0.35, "saturation": 0.80, "glow_size": 7.0},   # Tier 1: RGB suave
@@ -630,7 +630,7 @@ void fragment() {
 	]
 	var config_index = (enemy_tier - 1) % tier_configs.size()
 	var cfg = tier_configs[config_index]
-	
+
 	material.set_shader_parameter("glow_intensity", 2.5)
 	material.set_shader_parameter("pulse_speed", 2.5)
 	material.set_shader_parameter("glow_size", cfg["glow_size"])
@@ -638,7 +638,7 @@ void fragment() {
 	material.set_shader_parameter("color_cycle_speed", cfg["cycle_speed"])
 	material.set_shader_parameter("hue_offset", cfg["hue_offset"])
 	material.set_shader_parameter("saturation", cfg["saturation"])
-	
+
 	target_sprite.material = material
 
 func _find_sprite_node(node: Node) -> Sprite2D:
@@ -814,7 +814,7 @@ func _physics_process(delta: float) -> void:
 	# Si hay movimiento, aplicar
 	if movement.length() > 0.1:
 		global_position += movement * delta
-		
+
 		# Aplicar colisión con decorados
 		# Usar offset hacia los pies del enemigo (similar a player pero más pequeño)
 		if not is_instance_valid(_cached_decor_manager):
@@ -1313,7 +1313,7 @@ func _attempt_attack() -> void:
 	# Verificar que tenemos referencia al jugador
 	if not player_ref or not is_instance_valid(player_ref):
 		return
-	
+
 	# Verificar precisión (afectada por ceguera)
 	var accuracy = get_attack_accuracy()
 	if accuracy < 1.0 and randf() > accuracy:
@@ -1382,7 +1382,7 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 			final_damage = int(final_damage * 0.1)  # Escudo absorbe 90%
 			if charges - 1 <= 0:
 				set_meta("shield_active", false)
-	
+
 	# FIX FASE 3: Elite shield charges
 	var _attack_sys = get_node_or_null("EnemyAttackSystem")
 	if _attack_sys and "elite_shield_charges" in _attack_sys and _attack_sys.elite_shield_charges > 0:
@@ -1423,7 +1423,7 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 	# TELEMETRY: Log damage dealt to enemies (source of truth)
 	if final_damage > 0 and BalanceDebugger:
 		BalanceDebugger.log_damage_dealt(final_damage)
-	
+
 	# STATS: Incrementar damage_dealt en run_stats de Game
 	if final_damage > 0:
 		var game_node = get_tree().root.get_node_or_null("Game")
@@ -1431,7 +1431,7 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 			game_node = get_tree().root.get_node_or_null("LoopiaLikeGame")
 		if game_node and game_node.has_method("add_damage_stat"):
 			game_node.add_damage_stat(final_damage)
-	
+
 	# AUDIT: Preparar tracking para RunAuditTracker
 	# FIX-BT6: Cadena de fallback para weapon_id en vez de solo "unknown"
 	var _audit_weapon_id := "unknown"
@@ -1458,7 +1458,7 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 		hp -= final_damage
 		if hp <= 0:
 			die()
-	
+
 	# AUDIT: Report damage + kill DESPUÉS de aplicar daño (para saber si murió)
 	if final_damage > 0 and RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
 		var hp_now = health_component.current_health if health_component else hp
@@ -1478,27 +1478,27 @@ func _apply_overkill_damage(excess_damage: int) -> void:
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	if not player_stats or not player_stats.has_method("get_stat"):
 		return
-	
+
 	var overkill_percent = player_stats.get_stat("overkill_damage")
 	if overkill_percent <= 0:
 		return
-	
+
 	# Calcular daño a transferir (% del exceso)
 	var transfer_damage = int(excess_damage * overkill_percent)
 	if transfer_damage <= 0:
 		return
-	
+
 	# Buscar enemigos cercanos (excluyéndonos) usando SpatialGrid
 	const OVERKILL_RANGE: float = 150.0
 	var nearby_enemies: Array = []
-	
+
 	for enemy in SpatialGrid.get_nearby_excluding(global_position, OVERKILL_RANGE, self):
 		if enemy.has_method("take_damage"):
 			nearby_enemies.append(enemy)
-	
+
 	if nearby_enemies.is_empty():
 		return
-	
+
 	# Aplicar daño a todos los enemigos cercanos
 	# Marcar que el daño es de overkill para prevenir recursión
 	for enemy in nearby_enemies:
@@ -1573,7 +1573,7 @@ func apply_knockback(knockback_force: Vector2) -> void:
 		# OPTIMIZACIÓN: Matar tween anterior para evitar conflicto y overhead
 		if _knockback_tween and _knockback_tween.is_valid():
 			_knockback_tween.kill()
-			
+
 		_knockback_tween = create_tween()
 		_knockback_tween.set_trans(Tween.TRANS_QUAD)
 		_knockback_tween.set_ease(Tween.EASE_OUT)
@@ -2061,9 +2061,9 @@ func die() -> void:
 		# Solo limpiar efectos de boss si ES un boss
 		if attack_system and attack_system.has_method("cleanup_boss"):
 			attack_system.cleanup_boss()
-	
+
 	enemy_died.emit(self, enemy_id, exp_value, enemy_tier, is_elite, is_boss)
-	
+
 	if has_meta("pooled"):
 		var pool = get_tree().get_first_node_in_group("enemy_pool")
 		if pool and pool.has_method("return_enemy"):
@@ -2074,7 +2074,7 @@ func die() -> void:
 
 func _on_health_died() -> void:
 	"""Manejar muerte desde HealthComponent"""
-	
+
 	# -----------------------------------------------------------
 	# LÓGICA DE NUEVOS OBJETOS (Phase 4)
 	# 10. Portadores de Plaga (Plague Bearer): Spread debuffs on death
@@ -2087,13 +2087,13 @@ func _on_health_died() -> void:
 				# Check active debuffs
 				var debuffs_to_spread = []
 				var spread_timers = []
-				
+
 				if _is_burning: debuffs_to_spread.append("burn"); spread_timers.append(_burn_timer)
 				if _is_slowed: debuffs_to_spread.append("slow"); spread_timers.append(_slow_timer)
 				if _is_blinded: debuffs_to_spread.append("blind"); spread_timers.append(_blind_timer)
 				if _is_bleeding: debuffs_to_spread.append("bleed"); spread_timers.append(_bleed_timer)
 				if _is_frozen: debuffs_to_spread.append("freeze"); spread_timers.append(_freeze_timer)
-				
+
 				if not debuffs_to_spread.is_empty():
 					# Find nearby enemies
 					var enemies = get_tree().get_nodes_in_group("enemies")
@@ -2104,22 +2104,22 @@ func _on_health_died() -> void:
 							for i in range(debuffs_to_spread.size()):
 								var debuff = debuffs_to_spread[i]
 								var duration = spread_timers[i]
-								
+
 								match debuff:
 									"burn": if enemy.has_method("apply_burn"): enemy.apply_burn(_burn_damage, duration)
 									"slow": if enemy.has_method("apply_slow"): enemy.apply_slow(_slow_amount, duration)
 									"blind": if enemy.has_method("apply_blind"): enemy.apply_blind(duration)
 									"bleed": if enemy.has_method("apply_bleed"): enemy.apply_bleed(_bleed_damage, duration)
 									"freeze": if enemy.has_method("apply_freeze"): enemy.apply_freeze(0.5, duration)
-					
+
 					# Visual feedback
 					# FloatingText.spawn_custom(global_position, "SPREAD!", Color.GREEN)
 	# -----------------------------------------------------------
-	
+
 	# FIX FASE 2: Split on death (Slime Arcano - spawna 2 slimes menores al morir)
 	if has_meta("split_on_death") and get_meta("split_on_death"):
 		_perform_split_on_death()
-	
+
 	die()
 
 func _perform_split_on_death() -> void:
@@ -2128,7 +2128,7 @@ func _perform_split_on_death() -> void:
 	var parent_node = get_parent()
 	if not parent_node:
 		return
-	
+
 	# Buscar spawner para crear slimes menores
 	var spawner = get_tree().get_first_node_in_group("enemy_spawner")
 	if spawner and spawner.has_method("spawn_minions_around"):

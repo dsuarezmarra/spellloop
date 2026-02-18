@@ -500,17 +500,17 @@ const BASE_STATS: Dictionary = {
 	"explosion_damage": 0.0,       # Daño de explosiones
 	"execute_threshold": 0.0,      # Umbral de ejecución (%)
 	"overkill_damage": 0.0,        # % de daño excedente transferido
-	
+
 	# Daño contra elites/jefes
 	"elite_damage_mult": 0.0,      # % extra vs elites/jefes
-	
+
 	# Sinergias - Daño condicional
 	"damage_vs_slowed": 0.0,       # % extra vs ralentizados
 	"damage_vs_burning": 0.0,      # % extra vs en llamas
 	"damage_vs_frozen": 0.0,       # % extra vs congelados
 	"low_hp_damage_bonus": 0.0,    # % extra por HP perdido
 	"full_hp_damage_bonus": 0.0,   # % extra con HP máximo
-	
+
 	# Mejoras de builds específicos
 	"orbital_damage_mult": 0.0,    # % extra daño orbital
 	"orbital_count_bonus": 0,      # Orbes adicionales
@@ -521,7 +521,7 @@ const BASE_STATS: Dictionary = {
 	"enemy_slow_aura": 0.0,        # Ralentización pasiva a enemigos
 	"hp_cost_per_attack": 0.0,     # HP que cuesta cada ataque
 	"infinite_pickup_range": 0,    # Si > 0, atrae todos los pickups del mapa
-	
+
 	# Nuevos stats únicos
 	"is_glass_cannon": 0,          # 1 si es glass cannon (HP=1)
 
@@ -546,18 +546,18 @@ const BASE_STATS: Dictionary = {
 	"reroll_count": 0,             # Rerolls extra
 	"banish_count": 0,             # Banishes extra
 	"levelup_options": 0,          # Opciones extra en levelup
-	
+
 	# Nuevos Stats (New Items Phase)
 	"damage_per_gold": 0.0,        # +% daño por 100 oro
 	"heal_on_pickup": 0,           # HP curado al recoger items
 	"xp_on_reroll": 0.0,           # % XP ganado al hacer reroll
 	"momentum_factor": 0.0,        # % de velocidad convertido a daño
-	
+
 	# Phase 4: Unique Logic Stats
 	"instant_combustion": 0,       # 1 = True
 	"instant_bleed": 0,            # 1 = True
 	"multicast_chance": 0.0,       # Chance to double cast
-	
+
 	# Phase 5: Defensive Logic Stats
 	"frost_nova_on_hit": 0,        # 1 = True
 	"grit_active": 0,              # 1 = True
@@ -575,7 +575,7 @@ const STAT_LIMITS: Dictionary = {
 	# damage_mult: SOFT CAP 3.0x, HARD CAP 5.0x (50% efficiency above soft cap)
 	# gold_mult: Cap at 3.0x
 	# xp_mult: Cap at 3.0x
-	
+
 	"armor": {"min": 0.0, "max": 999.0},           # FIX: Armor no puede ser negativa (glass_mage usaba add -999)
 	"crit_damage": {"min": 1.0, "max": 8.0},       # FIX: Cap crit_damage para evitar escalado infinito
 	"damage_taken_mult": {"min": 0.1, "max": 3.0},
@@ -610,7 +610,7 @@ const STAT_LIMITS: Dictionary = {
 	"revive_invuln": {"min": 0.0, "max": 5.0},       # Máximo 5s invulnerabilidad
 	"curse": {"min": 0.0, "max": 2.0},               # Máximo 200%
 	"growth": {"min": 0.0, "max": 1.0},              # Máximo 100%
-	
+
 	# Daño condicional / sinergias
 	"elite_damage_mult": {"min": 0.0, "max": 3.0},   # Máximo +300% vs elites
 	"damage_vs_slowed": {"min": 0.0, "max": 1.0},    # NERFED: +200% -> +100%
@@ -622,7 +622,7 @@ const STAT_LIMITS: Dictionary = {
 	# Valores planos con límite
 	"extra_projectiles": {"min": 0, "max": 10},
 	"extra_pierce": {"min": 0, "max": 20},
-	
+
 	# Nuevos Stats de Utilidad / Condicionales
 	"damage_per_gold": {"min": 0.0, "max": 0.10}, # Max 10% por 100 gold
 	"heal_on_pickup": {"min": 0, "max": 5},       # Max 5 HP
@@ -633,7 +633,7 @@ const STAT_LIMITS: Dictionary = {
 	"chain_count": {"min": 0, "max": 10},
 	"levelup_options": {"min": 0, "max": 3},
 	"infinite_pickup_range": {"min": 0, "max": 1},   # 0 o 1 (booleano)
-	
+
 	# Caps para stats sin límite previo
 	"coin_value_mult": {"min": 0.1, "max": 3.0},  # Same cap as gold_mult
 	"max_health": {"min": 1.0, "max": 9999.0},     # Prevent infinite HP stacking
@@ -807,17 +807,17 @@ func _get_global_weapon_stats() -> Node:
 	# 1. Usar referencia cacheada
 	if global_weapon_stats != null:
 		return global_weapon_stats
-	
+
 	# 2. A través de attack_manager
 	if attack_manager and attack_manager.has_method("get_global_weapon_stats"):
 		return attack_manager.get_global_weapon_stats()
-	
+
 	# 3. Buscar en grupos
 	if is_inside_tree():
 		var nodes = get_tree().get_nodes_in_group("global_weapon_stats")
 		if nodes.size() > 0:
 			return nodes[0]
-	
+
 	return null
 
 func get_current_character_id() -> String:
@@ -854,7 +854,7 @@ func _reset_stats() -> void:
 	_time_since_damage = 999.0  # Permitir regeneración de escudo inmediata al inicio
 	_game_time_minutes = 0.0
 	_last_growth_minute = 0
-	
+
 	# Resetear contadores a base (2)
 	current_rerolls = 2
 	current_banishes = 2
@@ -878,7 +878,7 @@ func initialize_from_character(character_id: String) -> void:
 
 	# Actualizar vida actual a la máxima
 	current_health = stats.max_health
-	
+
 	# Añadir bonus de reroll/banish del personaje a los contadores actuales
 	current_rerolls += int(stats.get("reroll_count", 0))
 	current_banishes += int(stats.get("banish_count", 0))
@@ -942,7 +942,7 @@ func _sync_with_attack_manager() -> void:
 
 	IMPORTANTE (v3.0): Los stats de armas (damage_mult, attack_speed_mult, etc.)
 	SOLO viven en GlobalWeaponStats. NO se sincronizan desde PlayerStats.
-	
+
 	Esto evita duplicación cuando se aplican mejoras de objetos.
 	Las mejoras de armas van directamente a GlobalWeaponStats via apply_upgrade().
 
@@ -1019,14 +1019,14 @@ func get_stat(stat_name: String) -> float:
 		var is_pact = stats.get("blood_pact", 0) + _get_temp_modifier_total("blood_pact")
 		if is_glass > 0 or is_pact > 0:
 			return 1.0
-			
+
 	var val = stats.get(stat_name, 0.0)
 	var base_value: float = float(val) if val != null else 0.0
 	var temp_bonus = _get_temp_modifier_total(stat_name)
 	var final_value = base_value + temp_bonus
-	
 
-	
+
+
 	# Lógica especial para damage_mult (Investor / Momentum)
 	if stat_name == "damage_mult":
 		# Investor: +1% daño por cada 100 de oro
@@ -1037,7 +1037,7 @@ func get_stat(stat_name: String) -> float:
 			if exp_mgr and "total_coins" in exp_mgr:
 				var gold_bonus = floor(exp_mgr.total_coins / 100.0) * dmg_per_gold
 				final_value += gold_bonus
-		
+
 		# Momentum: +% daño basado en velocidad de movimiento (si existe el upgrade)
 		var momentum_factor = stats.get("momentum_factor", 0.0) # 0.2 para 20%
 		if momentum_factor > 0:
@@ -1047,7 +1047,7 @@ func get_stat(stat_name: String) -> float:
 				var extra_speed_pct = (speed / base_speed) - 1.0 # Ej: 360/300 = 1.2 -> 0.2 (20% extra)
 				if extra_speed_pct > 0:
 					final_value += extra_speed_pct * momentum_factor
-	
+
 	# Caso especial Blood Pact: Escudo x2
 	if stat_name == "max_shield":
 		var is_pact = stats.get("blood_pact", 0) + _get_temp_modifier_total("blood_pact")
@@ -1074,7 +1074,7 @@ func get_stat(stat_name: String) -> float:
 		const DAMAGE_SOFT_CAP: float = 3.0
 		const DAMAGE_HARD_CAP: float = 5.0
 		const DIMINISHING_RATE: float = 0.5  # 50% efficiency over soft cap
-		
+
 		if final_value > DAMAGE_SOFT_CAP:
 			var excess = final_value - DAMAGE_SOFT_CAP
 			final_value = DAMAGE_SOFT_CAP + (excess * DIMINISHING_RATE)
@@ -1084,22 +1084,22 @@ func get_stat(stat_name: String) -> float:
 	if STAT_LIMITS.has(stat_name):
 		var limits = STAT_LIMITS[stat_name]
 		final_value = clampf(final_value, limits.min, limits.max)
-	
+
 	# BONUS DE CAMINO: Se aplica DESPUÉS del cap normal
 	# +50% de la velocidad actual cuando el player está en un camino
 	if stat_name == "move_speed" and _is_on_path:
 		final_value = final_value * (1.0 + PATH_SPEED_BONUS_PERCENT)
-	
+
 	return final_value
 
 func is_stat_capped(stat_name: String) -> bool:
 	"""Verificar si un stat ha alcanzado su límite duro"""
 	if not STAT_LIMITS.has(stat_name):
 		return false
-		
+
 	var limits = STAT_LIMITS[stat_name]
 	var current_value = get_stat(stat_name)
-	
+
 	# Caso standard: Cap en el máximo
 	return current_value >= limits.max - 0.001
 
@@ -1167,7 +1167,7 @@ func add_stat(stat_name: String, amount: float) -> void:
 	if old_value != new_value:
 		stat_changed.emit(stat_name, old_value, new_value)
 		_on_stat_changed(stat_name, old_value, new_value)
-		
+
 		# Si se añade reroll/banish count (ej: Powerup), sumar al actual
 		if stat_name == "reroll_count":
 			current_rerolls += int(amount)
@@ -1208,7 +1208,7 @@ func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> 
 			# IMPORTANTE: Asegurar que nunca sea menor a 1 si estamos vivos
 			current_health = maxf(current_health, 1.0)
 			health_changed.emit(current_health, new_value)
-		
+
 		"is_glass_cannon", "blood_pact":
 			# SOSP-02: Al activar glass_cannon o blood_pact, max_health efectivo = 1.0
 			# Debemos clampar current_health inmediatamente
@@ -1217,8 +1217,8 @@ func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> 
 				if current_health > effective_max:
 					current_health = effective_max
 					health_changed.emit(current_health, effective_max)
-		
-		# NOTA: Todos los WEAPON_STATS (damage_mult, attack_speed_mult, crit_chance, 
+
+		# NOTA: Todos los WEAPON_STATS (damage_mult, attack_speed_mult, crit_chance,
 		# area_mult, life_steal, chain_count, etc.) van EXCLUSIVAMENTE a GlobalWeaponStats.
 		# NO necesitan sincronización aquí porque nunca se almacenan en PlayerStats.
 
@@ -1348,7 +1348,7 @@ func _update_health_regen(delta: float) -> void:
 
 	var heal_int = int(_regen_accumulator)
 	_regen_accumulator -= heal_int  # Guardar el residuo para el siguiente tick
-	
+
 	# Debug desactivado por spam: print("[HealthRegen] Intentando curar %d HP (regen=%.2f, player_ref=%s)" % [heal_int, regen, player_ref])
 
 	# Si tenemos referencia al player, curar directamente
@@ -1404,7 +1404,7 @@ func _get_player_current_health() -> float:
 			return hc.current_health
 
 	return current_health
-	
+
 
 
 
@@ -1557,19 +1557,19 @@ func take_damage(amount: float) -> float:
 		effective_damage -= absorbed
 		shield_current -= absorbed
 		modify_stat("shield_amount", -absorbed, "add") # Update stat
-		
+
 		# Visual/Signal for shield hit?
 		# ...
 
 	if effective_damage > 0:
 		current_health -= effective_damage
 		current_health = maxf(0.0, current_health)
-	
+
 	health_changed.emit(current_health, get_stat("max_health"))
-	
+
 	# Reset regen timers
 	_time_since_damage = 0.0
-	
+
 	return effective_damage
 
 
@@ -1708,11 +1708,11 @@ func apply_upgrade(upgrade_data) -> bool:
 	# 1. Verificar si es una mejora única ya obtenida
 	var upgrade_id = upgrade_dict.get("id", "")
 	var is_unique = upgrade_dict.get("is_unique", false)
-	
+
 	if is_unique and upgrade_id in owned_unique_ids:
 		print("[PlayerStats] ⚠️ Intento de aplicar mejora única duplicada: %s" % upgrade_id)
 		return false
-	
+
 	# 2. Verificar límite de stacks (si aplica)
 	var max_stacks = upgrade_dict.get("max_stacks", 0)
 	if max_stacks > 0:
@@ -1902,7 +1902,7 @@ func add_upgrade(upgrade_data: Dictionary) -> void:
 		"effects": upgrade_data.get("effects", [])
 	}
 	collected_upgrades.append(upgrade_entry)
-	
+
 	# Auto-registrar si es única
 	if upgrade_data.get("is_unique", false):
 		register_unique_upgrade(upgrade_entry["id"])
@@ -1922,7 +1922,7 @@ func track_collected_item(item_data: Dictionary) -> void:
 	var data = item_data.duplicate()
 	if not data.has("id"):
 		data["id"] = "tracked_item_%d" % collected_upgrades.size()
-	
+
 	add_upgrade(data)
 	# print("[PlayerStats] Mejora añadida: %s" % upgrade_data.get("name", "???"))
 
@@ -1966,10 +1966,10 @@ func is_stat_at_cap(stat_name: String) -> bool:
 	"""Verificar si un stat ha alcanzado su límite máximo"""
 	if not STAT_LIMITS.has(stat_name):
 		return false
-	
+
 	var current = get_stat(stat_name)
 	var limit = STAT_LIMITS[stat_name]
-	
+
 	# Para multiplicadores, el cap es el max
 	# Excepción: cooldown_mult y damage_taken_mult donde menor es mejor
 	if stat_name in ["cooldown_mult", "damage_taken_mult"]:
@@ -1982,7 +1982,7 @@ func is_stat_at_min_cap(stat_name: String) -> bool:
 	"""Verificar si un stat ha alcanzado su límite mínimo"""
 	if not STAT_LIMITS.has(stat_name):
 		return false
-	
+
 	var current = get_stat(stat_name)
 	var limit = STAT_LIMITS[stat_name]
 	return current <= limit.min
@@ -1990,30 +1990,30 @@ func is_stat_at_min_cap(stat_name: String) -> bool:
 func get_capped_stats() -> Array:
 	"""Obtener lista de stats que están al máximo y no se beneficiarían de upgrades"""
 	var capped = []
-	
+
 	for stat_name in STAT_LIMITS.keys():
 		if is_stat_at_cap(stat_name):
 			capped.append(stat_name)
-	
+
 	return capped
 
 func would_upgrade_be_useful(upgrade: Dictionary) -> bool:
 	"""Verificar si un upgrade tendría al menos un efecto útil (no-capped)"""
 	if not upgrade.has("effects"):
 		return true  # Sin effects = siempre disponible
-	
+
 	for effect in upgrade.effects:
 		var stat = effect.get("stat", "")
 		var operation = effect.get("operation", "add")
 		var value = effect.get("value", 0)
-		
+
 		# Si el stat no tiene límite, siempre es útil
 		if not STAT_LIMITS.has(stat):
 			return true
-		
+
 		var current = get_stat(stat)
 		var limit = STAT_LIMITS[stat]
-		
+
 		# Verificar si el efecto tendría impacto
 		match operation:
 			"multiply":
@@ -2031,7 +2031,7 @@ func would_upgrade_be_useful(upgrade: Dictionary) -> bool:
 					return true  # Puede añadir
 				elif value < 0 and current > limit.min:
 					return true  # Puede restar (si tiene sentido)
-	
+
 	return false  # Todos los efectos afectan stats al cap
 
 

@@ -6,7 +6,7 @@
 
 ## #15 ? CRITICAL: LoopiaLikePlayer tiene DOS métodos `_process()` ? el segundo anula al primero
 
-**Archivo:** `scripts/entities/LoopiaLikePlayer.gd`  
+**Archivo:** `scripts/entities/LoopiaLikePlayer.gd`
 **Líneas:** ~línea 50 (primer `_process`) y ~línea 690 (segundo `_process`)
 
 **Código problemático:**
@@ -49,7 +49,7 @@ func _process(delta: float) -> void:
 
 ## #16 ? CRITICAL: SimpleProjectile._handle_hit duplica la lógica de DamageCalculator inline
 
-**Archivo:** `scripts/weapons/SimpleProjectile.gd`  
+**Archivo:** `scripts/weapons/SimpleProjectile.gd`
 **Líneas:** ~830?920 (`_handle_hit`)
 
 **Código problemático:**
@@ -88,7 +88,7 @@ func _handle_hit(body):
 
 ## #17 ? CRITICAL: BasePlayer procesa grit/frost_nova/soul_link/thorns DOS VECES por evento de daño
 
-**Archivo:** `scripts/entities/BasePlayer.gd`  
+**Archivo:** `scripts/entities/BasePlayer.gd`
 **Líneas:** ~870?940 (`_process_post_damage_effects`) y ~1800?1900 (`_on_health_damaged`)
 
 **Código problemático:**
@@ -131,7 +131,7 @@ func _on_health_damaged(current_hp, max_hp, damage_amount):
 
 ## #18 ? HIGH: Game.gd usa `position` en vez de `death_position` para spawnear cofres
 
-**Archivo:** `scripts/game/Game.gd`  
+**Archivo:** `scripts/game/Game.gd`
 **Línea:** ~1175
 
 **Código problemático:**
@@ -155,7 +155,7 @@ _spawn_reward_chest(death_position, rewards)
 
 ## #19 ? HIGH: EnemyBase plague bearer llama `apply_freeze()` con 1 argumento en vez de 2
 
-**Archivo:** `scripts/enemies/EnemyBase.gd`  
+**Archivo:** `scripts/enemies/EnemyBase.gd`
 **Línea:** dentro de `_on_health_died`, sección plague bearer
 
 **Código problemático:**
@@ -178,7 +178,7 @@ nearby_enemy.apply_freeze(0.5, duration)  # amount=0.5 (50% slow), duration
 
 ## #20 ? HIGH: BaseWeapon._create_chain_projectile aplica `+1` duplicado al chain count
 
-**Archivo:** `scripts/weapons/BaseWeapon.gd`  
+**Archivo:** `scripts/weapons/BaseWeapon.gd`
 **Línea:** ~730 (`_create_chain_projectile`)
 
 **Código problemático:**
@@ -199,7 +199,7 @@ var chain_count = projectile_count + 1  # Solo un +1
 
 ## #21 ? HIGH: TreasureChest._on_shop_popup_closed llama `queue_free()` DOS VECES
 
-**Archivo:** `scripts/interactables/TreasureChest.gd`  
+**Archivo:** `scripts/interactables/TreasureChest.gd`
 **Líneas:** ~620?630
 
 **Código problemático:**
@@ -237,7 +237,7 @@ func _on_shop_popup_closed(purchased: bool):
 
 ## #22 ? MEDIUM: TreasureChest._apply_item tiene match arm duplicado para "healing"
 
-**Archivo:** `scripts/interactables/TreasureChest.gd`  
+**Archivo:** `scripts/interactables/TreasureChest.gd`
 **Líneas:** ~510 y ~660
 
 **Código problemático:**
@@ -274,7 +274,7 @@ func _apply_item(item: Dictionary):
 
 ## #23 ? MEDIUM: SimpleProjectile._get_player() tiene código inalcanzable después de `return null`
 
-**Archivo:** `scripts/weapons/SimpleProjectile.gd`  
+**Archivo:** `scripts/weapons/SimpleProjectile.gd`
 **Líneas:** ~815?825
 
 **Código problemático:**
@@ -299,7 +299,7 @@ func _get_player():
 
 ## #24 ? MEDIUM: BaseWeapon.get_cooldown_progress() puede dividir entre cero
 
-**Archivo:** `scripts/weapons/BaseWeapon.gd`  
+**Archivo:** `scripts/weapons/BaseWeapon.gd`
 **Línea:** ~950
 
 **Código problemático:**
@@ -324,7 +324,7 @@ func get_cooldown_progress() -> float:
 
 ## #25 ? MEDIUM: ProjectileFactory._create_base_projectile retorna null silenciosamente
 
-**Archivo:** `scripts/weapons/ProjectileFactory.gd`  
+**Archivo:** `scripts/weapons/ProjectileFactory.gd`
 **Línea:** ~dentro de `_create_base_projectile`
 
 **Código problemático:**
@@ -352,7 +352,7 @@ static func _create_base_projectile(...):
 
 ## #26 ? MEDIUM: AOEEffect._create_aoe_visual usa await que puede crashear si el nodo es liberado
 
-**Archivo:** `scripts/weapons/ProjectileFactory.gd`  
+**Archivo:** `scripts/weapons/ProjectileFactory.gd`
 **Línea:** dentro de `AOEEffect._create_aoe_visual`
 
 **Código problemático:**
@@ -360,7 +360,7 @@ static func _create_base_projectile(...):
 func _create_aoe_visual():
     ...
     await get_tree().create_timer(duration).timeout
-    # Si el nodo fue liberado durante el await, 
+    # Si el nodo fue liberado durante el await,
     # get_tree() retorna null ? crash
     queue_free()
 ```
@@ -380,7 +380,7 @@ if is_instance_valid(self):
 
 ## #27 ? MEDIUM: ChainProjectile usa await en `_execute_chain_sequence` ? crash si liberado
 
-**Archivo:** `scripts/weapons/ChainProjectile.gd`  
+**Archivo:** `scripts/weapons/ChainProjectile.gd`
 **Línea:** dentro de `_execute_chain_sequence`
 
 **Código problemático:**
@@ -411,7 +411,7 @@ for target in chain_targets:
 
 ## #28 ? MEDIUM: EnemyAttackSystem._perform_melee_attack no verifica null de player
 
-**Archivo:** `scripts/enemies/EnemyAttackSystem.gd`  
+**Archivo:** `scripts/enemies/EnemyAttackSystem.gd`
 **Línea:** ~1090
 
 **Código problemático:**
@@ -438,7 +438,7 @@ func _perform_melee_attack() -> void:
 
 ## #29 ? MEDIUM: CombatSystemIntegration.gd crea PlayerStats/AttackManager duplicados
 
-**Archivo:** `scripts/game/CombatSystemIntegration.gd`  
+**Archivo:** `scripts/game/CombatSystemIntegration.gd`
 **Líneas:** ~50?80
 
 **Código problemático:**
@@ -465,7 +465,7 @@ func _create_player_stats():
 
 ## #30 ? MEDIUM: Game.gd `_collect_complete_run_data` usa contadores legacy para rerolls/banishes
 
-**Archivo:** `scripts/game/Game.gd`  
+**Archivo:** `scripts/game/Game.gd`
 **Línea:** ~1622
 
 **Código problemático:**
@@ -491,7 +491,7 @@ if player_stats:
 
 ## #31 ? LOW: BasePlayer tiene dos métodos `create_health_bar()` con implementaciones diferentes
 
-**Archivo:** `scripts/entities/BasePlayer.gd`  
+**Archivo:** `scripts/entities/BasePlayer.gd`
 **Líneas:** ~1200 y ~1550
 
 **Código problemático:**
@@ -521,7 +521,7 @@ func create_health_bar():
 
 ## #32 ? LOW: EnemyBase.get_info() retorna variable `hp` potencialmente stale
 
-**Archivo:** `scripts/enemies/EnemyBase.gd`  
+**Archivo:** `scripts/enemies/EnemyBase.gd`
 **Línea:** dentro de `get_info()`
 
 **Código problemático:**

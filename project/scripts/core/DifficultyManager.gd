@@ -31,7 +31,7 @@ var current_scaling_phase: int = 1
 # ═══════════════════════════════════════════════════════════════════════════════
 # BALANCE PASS 2.5: ESCALADO ASINTÓTICO PARA ENDURANCE
 # ═══════════════════════════════════════════════════════════════════════════════
-# 
+#
 # FASES DE ESCALADO:
 # 1) EARLY/MID (0 - T1): Exponencial agresivo (ranking competitivo)
 # 2) LATE COMPETITIVE (T1 - T2): Exponencial suave (runs largas)
@@ -120,7 +120,7 @@ func _initialize_phase_cache() -> void:
 	_p1_end_hp = pow(1.0 + P1_RATE_HP, PHASE_1_END)
 	_p1_end_dmg = pow(1.0 + P1_RATE_DAMAGE, PHASE_1_END)
 	_p1_end_spawn = pow(1.0 + P1_RATE_SPAWN, PHASE_1_END)
-	
+
 	# Valores al final de Phase 2 (T2 = 90 min)
 	var p2_duration = PHASE_2_END - PHASE_1_END
 	_p2_end_hp = _p1_end_hp * pow(1.0 + P2_RATE_HP, p2_duration)
@@ -147,20 +147,20 @@ func _process(delta: float) -> void:
 func _update_difficulty() -> void:
 	var t = elapsed_time / 60.0
 	var new_difficulty_level = int(t) + 1
-	
+
 	# Determinar fase actual
 	var new_phase = _get_current_phase(t)
 	if new_phase != current_scaling_phase:
 		current_scaling_phase = new_phase
 		phase_changed.emit(new_phase, _get_phase_name(new_phase))
-	
+
 	# Calcular multiplicadores según fase
 	_calculate_phase_multipliers(t)
-	
+
 	# Aplicar factor adaptativo (performance-based) ANTES de caps
 	enemy_health_multiplier *= performance_factor
 	enemy_damage_multiplier *= performance_factor
-	
+
 	# Aplicar caps globales DESPUÉS del factor adaptativo
 	enemy_speed_multiplier = minf(enemy_speed_multiplier, SPEED_CAP)
 	enemy_attack_speed_multiplier = minf(enemy_attack_speed_multiplier, ATTACK_SPEED_CAP)
@@ -168,13 +168,13 @@ func _update_difficulty() -> void:
 	enemy_health_multiplier = minf(enemy_health_multiplier, HP_SOFT_CAP)
 	enemy_damage_multiplier = minf(enemy_damage_multiplier, DAMAGE_SOFT_CAP)
 	elite_frequency_multiplier = minf(elite_frequency_multiplier, ELITE_FREQ_CAP)
-	
+
 	# Eventos de nivel
 	if new_difficulty_level > current_difficulty_level:
 		current_difficulty_level = new_difficulty_level
 		difficulty_changed.emit(current_difficulty_level)
 		_on_difficulty_level_up()
-	
+
 	# Boss events
 	if int(elapsed_time) % int(boss_spawn_interval) == 0 and int(elapsed_time) > 0:
 		if int(elapsed_time / boss_spawn_interval) > boss_events_triggered:
@@ -205,54 +205,54 @@ func _calculate_phase_multipliers(t: float) -> void:
 		enemy_speed_multiplier = pow(1.0 + P1_RATE_SPEED, t)
 		enemy_attack_speed_multiplier = pow(1.0 + P1_RATE_ATTACK_SPEED, t)
 		elite_frequency_multiplier = 1.0
-		
+
 	elif t < PHASE_2_END:
 		# === PHASE 2: Exponencial suave con transición ===
 		var t_in_p2 = t - PHASE_1_END
 		var blend = _smoothstep(t, PHASE_1_END, PHASE_1_END + PHASE_TRANSITION)
-		
+
 		# HP: transición suave de P1 rate a P2 rate
 		var hp_p1_continued = pow(1.0 + P1_RATE_HP, t)
 		var hp_p2_from_base = _p1_end_hp * pow(1.0 + P2_RATE_HP, t_in_p2)
 		enemy_health_multiplier = lerpf(hp_p1_continued, hp_p2_from_base, blend)
-		
+
 		# Damage
 		var dmg_p1_continued = pow(1.0 + P1_RATE_DAMAGE, t)
 		var dmg_p2_from_base = _p1_end_dmg * pow(1.0 + P2_RATE_DAMAGE, t_in_p2)
 		enemy_damage_multiplier = lerpf(dmg_p1_continued, dmg_p2_from_base, blend)
-		
+
 		# Spawn
 		enemy_count_multiplier = _p1_end_spawn * pow(1.0 + P2_RATE_SPAWN, t_in_p2)
-		
+
 		# Speed y attack speed continúan hacia cap
 		enemy_speed_multiplier = pow(1.0 + P1_RATE_SPEED, t)
 		enemy_attack_speed_multiplier = pow(1.0 + P1_RATE_ATTACK_SPEED, t)
-		
+
 		# Elite frequency empieza a subir
 		elite_frequency_multiplier = pow(1.0 + P2_RATE_ELITE, t_in_p2)
-		
+
 	else:
 		# === PHASE 3: Logarítmico/Asintótico ===
 		var t_in_p3 = t - PHASE_2_END
 		var blend = _smoothstep(t, PHASE_2_END, PHASE_2_END + PHASE_TRANSITION)
-		
+
 		# HP: logarítmico desde base P2
 		var hp_log = _p2_end_hp * (1.0 + P3_LOG_RATE_HP * log(1.0 + t_in_p3 / P3_LOG_SCALE_HP))
 		var hp_p2_continued = _p1_end_hp * pow(1.0 + P2_RATE_HP, t - PHASE_1_END)
 		enemy_health_multiplier = lerpf(hp_p2_continued, hp_log, blend)
-		
+
 		# Damage logarítmico
 		var dmg_log = _p2_end_dmg * (1.0 + P3_LOG_RATE_DAMAGE * log(1.0 + t_in_p3 / P3_LOG_SCALE_DAMAGE))
 		var dmg_p2_continued = _p1_end_dmg * pow(1.0 + P2_RATE_DAMAGE, t - PHASE_1_END)
 		enemy_damage_multiplier = lerpf(dmg_p2_continued, dmg_log, blend)
-		
+
 		# Spawn sigue subiendo lentamente
 		enemy_count_multiplier = _p2_end_spawn * pow(1.0 + P3_SPAWN_RATE, t_in_p3)
-		
+
 		# Speed y attack speed en cap
 		enemy_speed_multiplier = SPEED_CAP
 		enemy_attack_speed_multiplier = ATTACK_SPEED_CAP
-		
+
 		# Elite frequency sigue subiendo hacia cap
 		elite_frequency_multiplier = _p2_end_elite * (1.0 + P3_ELITE_RATE * t_in_p3)
 
