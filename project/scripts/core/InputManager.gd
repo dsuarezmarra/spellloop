@@ -37,7 +37,7 @@ var default_bindings: Dictionary = {}
 
 func _ready() -> void:
 	# Debug desactivado: print("[InputManager] Initializing InputManager...")
-	
+
 	# Store default bindings
 	_store_default_bindings()
 
@@ -65,16 +65,16 @@ func _ready() -> void:
 		ev.physical_keycode = KEY_M
 		ev.pressed = false
 		InputMap.action_add_event("toggle_minimap", ev)
-	
+
 	# Load custom bindings
 	_load_custom_bindings()
-	
+
 	# Connect to input events
 	set_process_unhandled_input(true)
 	# Ensure _process is called to update movement_vector
 	set_process(true)
 	# Debug desactivado: print("[InputManager] set_process(true) called - will update movement_vector each frame")
-	
+
 	# Debug desactivado: print("[InputManager] InputManager initialized successfully")
 
 func _store_default_bindings() -> void:
@@ -101,7 +101,7 @@ func _apply_custom_bindings() -> void:
 		if InputMap.has_action(action):
 			# Clear existing events
 			InputMap.action_erase_events(action)
-			
+
 			# Add custom events
 			for event_data in custom_bindings[action]:
 				var event = _deserialize_input_event(event_data)
@@ -116,12 +116,12 @@ func _unhandled_input(event: InputEvent) -> void:
 func _detect_device_change(event: InputEvent) -> void:
 	"""Detect if input device has changed"""
 	var new_device = ""
-	
+
 	if event is InputEventKey or event is InputEventMouseButton or event is InputEventMouseMotion:
 		new_device = "keyboard"
 	elif event is InputEventJoypadButton or event is InputEventJoypadMotion:
 		new_device = "gamepad"
-	
+
 	if new_device != "" and new_device != last_used_device:
 		last_used_device = new_device
 		current_device_type = new_device
@@ -171,16 +171,16 @@ func get_gamepad_direction() -> Vector2:
 	"""Get right stick direction for gamepad aiming"""
 	if current_device_type != "gamepad":
 		return Vector2.ZERO
-	
+
 	var right_stick = Vector2(
 		Input.get_joy_axis(0, JOY_AXIS_RIGHT_X),
 		Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
 	)
-	
+
 	# Apply deadzone
 	if right_stick.length() < 0.2:
 		return Vector2.ZERO
-	
+
 	return right_stick.normalized()
 
 func remap_action(action: String, new_event: InputEvent) -> bool:
@@ -188,24 +188,24 @@ func remap_action(action: String, new_event: InputEvent) -> bool:
 	if not InputMap.has_action(action):
 		push_warning("[InputManager] Action does not exist: %s" % action)
 		return false
-	
+
 	# Clear existing events for this action
 	InputMap.action_erase_events(action)
-	
+
 	# Add new event
 	InputMap.action_add_event(action, new_event)
-	
+
 	# Store in custom bindings
 	if not custom_bindings.has(action):
 		custom_bindings[action] = []
 	else:
 		custom_bindings[action].clear()
-	
+
 	custom_bindings[action].append(_serialize_input_event(new_event))
-	
+
 	# Save to settings
 	_save_custom_bindings()
-	
+
 	# Debug desactivado: print("[InputManager] Remapped action '", action, "' to new input")
 	return true
 
@@ -214,19 +214,19 @@ func add_action_event(action: String, new_event: InputEvent) -> bool:
 	if not InputMap.has_action(action):
 		push_warning("[InputManager] Action does not exist: %s" % action)
 		return false
-	
+
 	# Add event to input map
 	InputMap.action_add_event(action, new_event)
-	
+
 	# Store in custom bindings
 	if not custom_bindings.has(action):
 		custom_bindings[action] = []
-	
+
 	custom_bindings[action].append(_serialize_input_event(new_event))
-	
+
 	# Save to settings
 	_save_custom_bindings()
-	
+
 	# Debug desactivado: print("[InputManager] Added input event to action: ", action)
 	return true
 
@@ -235,21 +235,21 @@ func reset_action_to_default(action: String) -> bool:
 	if not default_bindings.has(action):
 		push_warning("[InputManager] No default binding for action: %s" % action)
 		return false
-	
+
 	# Clear current events
 	InputMap.action_erase_events(action)
-	
+
 	# Restore default events
 	for event in default_bindings[action]:
 		InputMap.action_add_event(action, event)
-	
+
 	# Remove from custom bindings
 	if custom_bindings.has(action):
 		custom_bindings.erase(action)
-	
+
 	# Save settings
 	_save_custom_bindings()
-	
+
 	# Debug desactivado: print("[InputManager] Reset action to default: ", action)
 	return true
 
@@ -257,7 +257,7 @@ func reset_to_defaults() -> void:
 	"""Reset all actions to default bindings"""
 	for action in default_bindings:
 		reset_action_to_default(action)
-	
+
 	# Debug desactivado: print("[InputManager] All input actions reset to defaults")
 
 func get_action_events(action: String) -> Array:
@@ -271,7 +271,7 @@ func get_action_display_string(action: String) -> String:
 	var events = get_action_events(action)
 	if events.is_empty():
 		return "Unbound"
-	
+
 	var event = events[0]  # Use primary binding
 	return _input_event_to_string(event)
 
@@ -304,10 +304,10 @@ func _input_event_to_string(event: InputEvent) -> String:
 				axis_name = "Right Stick Y"
 			_:
 				axis_name = "Axis " + str(event.axis)
-		
+
 		var direction = "+" if event.axis_value > 0 else "-"
 		return axis_name + " " + direction
-	
+
 	return "Unknown"
 
 func _serialize_input_event(event: InputEvent) -> Dictionary:
@@ -315,7 +315,7 @@ func _serialize_input_event(event: InputEvent) -> Dictionary:
 	var data = {
 		"type": ""
 	}
-	
+
 	if event is InputEventKey:
 		data["type"] = "key"
 		data["keycode"] = event.keycode
@@ -336,7 +336,7 @@ func _serialize_input_event(event: InputEvent) -> Dictionary:
 		data["axis"] = event.axis
 		data["axis_value"] = event.axis_value
 		data["device"] = event.device
-	
+
 	return data
 
 func _deserialize_input_event(data: Dictionary) -> InputEvent:
@@ -366,7 +366,7 @@ func _deserialize_input_event(data: Dictionary) -> InputEvent:
 			event.axis_value = data.get("axis_value", 1.0)
 			event.device = data.get("device", -1)
 			return event
-	
+
 	return null
 
 func _save_custom_bindings() -> void:
@@ -379,7 +379,7 @@ func _save_custom_bindings() -> void:
 		var settings = save_manager.current_settings
 		if not settings.has("input"):
 			settings["input"] = {}
-		
+
 		settings["input"]["custom_keybinds"] = custom_bindings
 		save_manager.save_settings(settings)
 
