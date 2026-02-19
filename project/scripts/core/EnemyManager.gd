@@ -587,6 +587,47 @@ func _spawn_reward_chest_deferred(pos: Vector2, is_elite: bool, is_boss: bool) -
 		# Debug
 		print("🎁 [EnemyManager] Cofre spawneado: %s en %s" % ["BOSS" if is_boss else "ELITE", pos])
 
+		# FIX-FUSION: Conectar señal para reportar fusiones y items a RunAuditTracker
+		if chest.has_signal("chest_opened"):
+			if not chest.chest_opened.is_connected(_on_chest_opened):
+				chest.chest_opened.connect(_on_chest_opened)
+
+func _on_chest_opened(chest: Node2D, items: Array) -> void:
+	"""Callback cuando se abre un cofre de recompensa"""
+	var chest_type_name = "elite"
+	# Detectar tipo de cofre
+	if "chest_type" in chest:
+		var type_val = chest.chest_type
+		if type_val == 2: # ChestType.BOSS
+			chest_type_name = "boss"
+	
+	var loot_ids: Array = []
+	var fusion_obtained = ""
+	var fusion_data = {}
+	
+	for item in items:
+		if item is Dictionary:
+			var item_id = item.get("id", item.get("name", "unknown"))
+			loot_ids.append(item_id)
+			# Detectar fusión
+			if item.get("type", "") == "fusion" or item.get("is_fusion", false):
+				fusion_obtained = item_id
+				fusion_data = {"id": fusion_obtained}
+	
+	# 1. Reportar a RunAuditTracker (Audit Report)
+	var _audit = get_node_or_null("/root/RunAuditTracker")
+	if _audit and _audit.ENABLE_AUDIT:
+		var has_fusion = fusion_obtained != ""
+		_audit.report_chest_opened(chest_type_name, loot_ids, has_fusion, fusion_data)
+		
+	# 2. Reportar a BalanceTelemetry (Data logs)
+	if BalanceTelemetry:
+		BalanceTelemetry.log_chest_opened({
+			"chest_type": chest_type_name,
+			"loot_ids": loot_ids,
+			"fusion_obtained": fusion_obtained
+		})
+
 func _cleanup_dead_enemies() -> void:
 	var to_remove = []
 	for enemy in active_enemies:

@@ -28,7 +28,7 @@ func initialize(max_hp: int) -> void:
 	is_alive = true
 	# print("[HealthComponent] Inicializado: %s HP" % max_health)
 
-func take_damage(amount: int, element_type: String = "physical") -> void:
+func take_damage(amount: int, element_type: String = "physical", is_pre_mitigated: bool = false) -> void:
 	"""Recibir daño y emitir señales"""
 	if not is_alive:
 		return
@@ -37,7 +37,16 @@ func take_damage(amount: int, element_type: String = "physical") -> void:
 	if is_invulnerable():
 		return
 	
-	current_health -= amount
+	# FIX-SHIELD: Check for PlayerStats shield/mitigation
+	var final_damage = amount
+	if not is_pre_mitigated and owner_node.is_in_group("player"):
+		var player_stats = get_tree().get_first_node_in_group("player_stats")
+		if player_stats and player_stats.has_method("take_damage"):
+			# PlayerStats handles Dodge, Armor, Shield reduction internally.
+			# It returns the damage that remains to be taken by HP.
+			final_damage = int(player_stats.take_damage(float(amount)))
+
+	current_health -= final_damage
 	current_health = max(current_health, 0)
 	
 	

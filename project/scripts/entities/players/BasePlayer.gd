@@ -761,7 +761,7 @@ func _process_frame_damage() -> void:
 
 	# 3. Aplicar al componente de salud
 	if health_component and final_applied_damage > 0:
-		health_component.take_damage(final_applied_damage)
+		health_component.take_damage(final_applied_damage, primary_hit.element, true)
 
 	_last_hit_context = {
 		"source": primary_hit.attacker.name if is_instance_valid(primary_hit.attacker) else "Environment",
