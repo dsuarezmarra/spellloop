@@ -111,6 +111,7 @@ func _process(delta: float) -> void:
 	_check_elite_spawn(delta)
 	_cleanup_dead_enemies()
 	_process_enemy_despawn(delta)  # Sistema de despawn para rendimiento
+	_process_zombie_sweep(delta)   # Safety net para leaks
 
 func _process_spawn_queue() -> void:
 	"""Procesar spawns que fueron demorados por el budget del frame anterior"""
@@ -984,7 +985,9 @@ const DESPAWN_DISTANCE: float = 900.0        # Distancia máxima antes de elimin
 const TELEPORT_DISTANCE: float = 750.0       # Distancia para teleportar enemigos atascados
 const DESPAWN_CHECK_INTERVAL: float = 0.5    # Chequear cada 0.5s para respuesta rápida
 const STUCK_VELOCITY_THRESHOLD: float = 10.0 # Velocidad mínima hacia el jugador
+const ZOMBIE_SWEEP_INTERVAL: float = 5.0     # Intervalo para limpiar zombies (safety net)
 var despawn_check_timer: float = 0.0
+var zombie_sweep_timer: float = 0.0
 var _enemy_last_positions: Dictionary = {}  # Para detectar enemigos atascados
 
 func _process_enemy_despawn(delta: float) -> void:
@@ -1068,6 +1071,49 @@ func _process_enemy_despawn(delta: float) -> void:
 
 	if debug_spawns and (not to_despawn.is_empty() or not to_teleport.is_empty()):
 		print("[EnemyManager] Despawn: %d | Teleport: %d" % [to_despawn.size(), to_teleport.size()])
+
+func _process_zombie_sweep(delta: float) -> void:
+	"""
+	Safety Net: Detectar y eliminar 'Zombie Enemies' que están en el SceneTree
+	pero NO en la lista active_enemies. Estos enemigos son ignorados por el
+	despawner estándar y causan fugas de rendimiento.
+	"""
+	zombie_sweep_timer += delta
+	if zombie_sweep_timer < ZOMBIE_SWEEP_INTERVAL:
+		return
+	zombie_sweep_timer = 0.0
+
+	var root_scene = get_tree().current_scene
+	if not root_scene:
+		return
+		
+	var enemies_root = root_scene.get_node_or_null("WorldRoot/EnemiesRoot")
+	if not enemies_root:
+		return
+		
+	var zombies_found = 0
+	# Iterar sobre todos los hijos visibles en el árbol
+	var children = enemies_root.get_children()
+	for child in children:
+		# Verificar si es un enemigo (por grupo)
+		if child.is_in_group("enemies"):
+			# Verificar si está siendo trackeado
+			if not child in active_enemies:
+				# ¡Es un zombie! (No trackeado pero existe)
+				# Validar que no haya sido spawneado AHORA MISMO (en este frame)
+				# Usamos metadatos de timestamp si existieran, o simplemente asumimos
+				# que si no está en active_enemies después de un ciclo completo, es leak.
+				
+				# EXCEPCIÓN: Si el enemigo está "muriendo" (animación de muerte).
+				# Generalmente debería estar en active_enemies hasta que muere, 
+				# pero si salió de la lista antes de queue_free, es un leak igual.
+				
+				zombies_found += 1
+				child.queue_free()
+				
+	if zombies_found > 0:
+		print("[EnemyManager] 🧹 Swept %d ZOMBIE enemies!" % zombies_found)
+
 
 func _teleport_enemy_near_player(enemy: Node2D, player_pos: Vector2) -> void:
 	"""Teleporta un enemigo atascado cerca del jugador con efecto visual"""
