@@ -762,7 +762,7 @@ func _process_frame_damage() -> void:
 	# 3. Aplicar al componente de salud
 	if health_component and final_applied_damage > 0:
 		health_component.take_damage(final_applied_damage)
-// ... (omitted code)
+
 	_last_hit_context = {
 		"source": primary_hit.attacker.name if is_instance_valid(primary_hit.attacker) else "Environment",
 		"damage": final_applied_damage,
@@ -777,14 +777,37 @@ func _process_frame_damage() -> void:
 	var _hp_after = health_component.current_health if health_component else 0
 	var _hp_before = _hp_after + final_applied_damage
 	var _now_ms = Time.get_ticks_msec()
-	# Capturar si el atacante es elite/boss para death tracking
+
+	# FIX: Definir variables que faltaban y eran usadas en el append
+	var _hit_enemy_id = "unknown"
+	var _hit_attack_id = "unknown"
+	var _hit_damage_type = primary_hit.element
+	var _hit_source_kind = "unknown"
 	var _hit_is_elite := false
 	var _hit_is_boss := false
+
 	if is_instance_valid(primary_hit.attacker):
+		# Stats de elite/boss
 		if "is_elite" in primary_hit.attacker:
 			_hit_is_elite = primary_hit.attacker.is_elite
 		if "is_boss" in primary_hit.attacker:
 			_hit_is_boss = primary_hit.attacker.is_boss
+
+		# ID del enemigo
+		if "enemy_id" in primary_hit.attacker:
+			_hit_enemy_id = primary_hit.attacker.enemy_id
+		elif "id" in primary_hit.attacker:
+			_hit_enemy_id = primary_hit.attacker.id
+		else:
+			_hit_enemy_id = primary_hit.attacker.name
+
+		# Source Kind
+		if primary_hit.attacker.is_in_group("enemies"):
+			_hit_source_kind = "enemy"
+		elif primary_hit.attacker.is_in_group("projectiles"):
+			_hit_source_kind = "projectile"
+	else:
+		_hit_source_kind = "environment"
 
 	_damage_ring_buffer.append({
 		"timestamp_ms": _now_ms,
