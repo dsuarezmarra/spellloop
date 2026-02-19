@@ -235,6 +235,12 @@ func _load_biome_textures() -> void:
 		for i in range(1, 12):  # decor1 a decor11
 			var decor_path = "res://assets/textures/biomes/%s/decor/%s_decor%d_sheet_f8_256.png" % [biome_name, biome_lower, i]
 			if ResourceLoader.exists(decor_path):
+				# BLACKLIST: Excluir decoraciones sospechosas de ser "fake chests" (forest/decor5)
+				# Reportado como cofres estáticos en la misma posición
+				if "decor5" in decor_path:
+					# print("🚫 [ArenaManager] Omitiendo decoración sospechosa: ", decor_path)
+					continue
+					
 				decor_paths.append(decor_path)
 		
 		biome_textures[biome_name] = {

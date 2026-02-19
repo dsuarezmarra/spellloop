@@ -19,7 +19,7 @@ enum ChestType {
 var chest_type: int = ChestType.NORMAL
 var chest_rarity: int = 0  # ItemsDefinitions.ItemRarity.WHITE (numeric fallback)
 var is_opened: bool = false
-var interaction_range: float = 100.0 # Increased from 60.0 to fix collision issues
+var interaction_range: float = 60.0 # Increased from 60.0 to fix collision issues
 var popup_shown: bool = false  # Control para evitar múltiples popups
 var popup_shown_internal: bool = false # Internal guard for trigger execution
 
@@ -285,6 +285,11 @@ func _process(delta):
 	if distance <= interaction_range:
 		popup_shown = true
 		trigger_chest_interaction()
+	
+	# DEBUG DIAGNÓSTICO: Imprimir estado cada 60 frames si está cerca pero no abre
+	if distance < 200.0 and not is_opened and not popup_shown and Engine.get_physics_frames() % 60 == 0:
+		print("[ChestDebug] ID:%s | Dist:%.1f | Range:%.1f | Player:%s | Internal:%s | Paused:%s" % 
+			[get_instance_id(), distance, interaction_range, is_instance_valid(player_ref), popup_shown_internal, get_tree().paused])
 
 func _find_player() -> Node2D:
 	"""Buscar referencia al player por múltiples métodos"""

@@ -572,8 +572,10 @@ func _spawn_reward_chest_deferred(pos: Vector2, is_elite: bool, is_boss: bool) -
 	# Añadir a la escena
 	var root = get_tree().current_scene
 	if root:
-		# Intentar ponerlo en una capa de items si existe
-		if root.has_node("WorldRoot/ItemsRoot"):
+		# Intentar ponerlo en una capa de items si existe (PickupsRoot)
+		if root.has_node("WorldRoot/PickupsRoot"):
+			root.get_node("WorldRoot/PickupsRoot").add_child(chest)
+		elif root.has_node("WorldRoot/ItemsRoot"):
 			root.get_node("WorldRoot/ItemsRoot").add_child(chest)
 		else:
 			root.add_child(chest)
