@@ -271,6 +271,12 @@ func _capture_spike_snapshot(frame_time: float) -> void:
 	
 	_append_to_log(snapshot)
 
+	# FIX-SPIKE: Report spike to RunAuditTracker so spikes_33ms/spikes_66ms counters
+	# are incremented. Previously these counters were always 0 because report_spike()
+	# was never called from anywhere.
+	if RunAuditTracker and RunAuditTracker.has_method("report_spike"):
+		RunAuditTracker.report_spike(frame_time, counters.duplicate())
+
 func _infer_spike_cause() -> String:
 	"""Inferir causa probable del spike basándose en counters y eventos recientes"""
 	var nodes_delta = counters.get("nodes_created_delta", 0)

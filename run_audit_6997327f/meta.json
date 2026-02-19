@@ -1,0 +1,31 @@
+{
+	"character_id": "storm_caller",
+	"duration_s": 407.932,
+	"end_iso": "2026-02-19_17-02-31",
+	"end_reason": "death",
+	"end_timestamp": 1771516951.204,
+	"files": {
+		"audit_log": "audit.jsonl",
+		"audit_report": "audit_report.md",
+		"balance_log": "balance.jsonl",
+		"event_index": "event_index.json",
+		"perf_log": "perf.jsonl",
+		"summary": "summary.json"
+	},
+	"game_version": "0.1.0-alpha",
+	"godot_version": "4.5.1-stable (official)",
+	"killed_by": "unknown",
+	"os": "Windows",
+	"run_id": "6997327f-5052",
+	"schema_version": 2,
+	"seed": 0,
+	"session_id": "69973187-8642",
+	"start_iso": "2026-02-19_16-55-43",
+	"start_timestamp": 1771516543.248,
+	"starting_weapons": [
+		{
+			"id": "lightning_wand",
+			"lvl": 1
+		}
+	]
+}

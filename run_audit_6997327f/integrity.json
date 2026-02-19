@@ -1,0 +1,55 @@
+{
+	"artifacts": {
+		"audit.jsonl": {
+			"exists": true,
+			"size_bytes": 19312,
+			"status": "ok"
+		},
+		"audit_report.md": {
+			"exists": true,
+			"size_bytes": 4143,
+			"status": "present"
+		},
+		"balance.jsonl": {
+			"exists": true,
+			"size_bytes": 18741,
+			"status": "ok"
+		},
+		"event_index.json": {
+			"exists": false,
+			"size_bytes": 0,
+			"status": "missing"
+		},
+		"meta.json": {
+			"exists": true,
+			"size_bytes": 723,
+			"status": "ok"
+		},
+		"perf.jsonl": {
+			"exists": true,
+			"size_bytes": 41920,
+			"status": "no_run_id"
+		},
+		"summary.json": {
+			"exists": true,
+			"size_bytes": 3429,
+			"status": "ok"
+		},
+		"upgrade_audit.jsonl": {
+			"exists": true,
+			"size_bytes": 7233,
+			"status": "no_run_id"
+		},
+		"upgrade_audit_report.md": {
+			"exists": true,
+			"size_bytes": 1083,
+			"status": "present"
+		}
+	},
+	"generated_at": "2026-02-19T17:02:31",
+	"is_consistent": true,
+	"run_id": "6997327f-5052",
+	"schema_version": 2,
+	"session_id": "69973187-8642",
+	"warnings": []
+}

@@ -236,9 +236,10 @@ static func apply_damage_with_effects(
 			damage_applied = true
 
 	if damage_applied:
-		# Balance Debug: Log damage dealt
-		if BalanceDebugger:
-			BalanceDebugger.log_damage_dealt(final_damage)
+		# FIX-DMG: Removed BalanceDebugger.log_damage_dealt here — EnemyBase.take_damage()
+		# already logs the real post-mitigation damage. Logging here caused double-counting
+		# (balance.jsonl showed 7-20% higher damage than summary.json).
+		pass
 
 	# Life steal
 	ProjectileFactory.apply_life_steal(tree, damage_result.final_damage)

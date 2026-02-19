@@ -166,10 +166,8 @@ static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
 		# Intentar curar al jugador
 		if player.has_method("heal"):
 			player.heal(heal_int)
-			# Balance Debug: Log lifesteal heal
-			# FIX-BT2b: Siempre recopilar datos
-			if BalanceDebugger:
-				BalanceDebugger.log_heal(heal_int, "lifesteal")
+			# FIX-HEAL: Removed BalanceDebugger.log_heal here — BasePlayer.heal() already
+			# logs via add_healing_stat(). Logging here caused double-counting + overheal inflation.
 			# FIX-VFXPOOL: Spawn lifesteal VFX from pool (was missing - caused 0% reuse)
 			if VFXPool.instance:
 				var vfx_start = player.global_position + Vector2(0, 20)
@@ -178,10 +176,8 @@ static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
 			var stats = player.get_node("PlayerStats")
 			if stats.has_method("heal"):
 				stats.heal(heal_int)
-				# Balance Debug: Log lifesteal heal
-				# FIX-BT2b: Siempre recopilar datos
-				if BalanceDebugger:
-					BalanceDebugger.log_heal(heal_int, "lifesteal")
+				# FIX-HEAL: Removed BalanceDebugger.log_heal here — PlayerStats.heal()
+				# already logs internally. Logging here caused double-counting.
 				# FIX-VFXPOOL: Spawn lifesteal VFX from pool (was missing - caused 0% reuse)
 				if VFXPool.instance:
 					var vfx_start = player.global_position + Vector2(0, 20)

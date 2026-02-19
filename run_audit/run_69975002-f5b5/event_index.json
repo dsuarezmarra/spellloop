@@ -1,0 +1,267 @@
+{
+	"generated_at": "2026-02-19T19:14:21",
+	"run_id": "69975002-f5b5",
+	"schema_version": 2,
+	"sources": {
+		"audit": {
+			"minute_snapshot": {
+				"count": 6,
+				"lines": [
+					{
+						"line": 2,
+						"timestamp_ms": 68841.0
+					},
+					{
+						"line": 3,
+						"timestamp_ms": 145091.0
+					},
+					{
+						"line": 4,
+						"timestamp_ms": 419339.0
+					},
+					{
+						"line": 5,
+						"timestamp_ms": 621955.0
+					},
+					{
+						"line": 6,
+						"timestamp_ms": 719188.0
+					},
+					{
+						"line": 7,
+						"timestamp_ms": 762839.0
+					}
+				]
+			},
+			"player_death": {
+				"count": 1,
+				"lines": [
+					{
+						"line": 8,
+						"timestamp_ms": 762840.0
+					}
+				]
+			},
+			"run_end": {
+				"count": 1,
+				"lines": [
+					{
+						"line": 9,
+						"timestamp_ms": 762847.0
+					}
+				]
+			},
+			"run_start": {
+				"count": 1,
+				"lines": [
+					{
+						"line": 1,
+						"timestamp_ms": 0.0
+					}
+				]
+			}
+		},
+		"balance": {
+			"boss_spawned": {
+				"count": 1,
+				"lines": [
+					{
+						"line": 30,
+						"timestamp_ms": 719374.0
+					}
+				]
+			},
+			"elite_killed": {
+				"count": 3,
+				"lines": [
+					{
+						"line": 15,
+						"timestamp_ms": 241776.0
+					},
+					{
+						"line": 21,
+						"timestamp_ms": 448789.0
+					},
+					{
+						"line": 27,
+						"timestamp_ms": 658840.0
+					}
+				]
+			},
+			"elite_spawned": {
+				"count": 4,
+				"lines": [
+					{
+						"line": 9,
+						"timestamp_ms": 128426.0
+					},
+					{
+						"line": 20,
+						"timestamp_ms": 424082.0
+					},
+					{
+						"line": 25,
+						"timestamp_ms": 638507.0
+					},
+					{
+						"line": 33,
+						"timestamp_ms": 733808.0
+					}
+				]
+			},
+			"minute_snapshot": {
+				"count": 6,
+				"lines": [
+					{
+						"line": 2,
+						"timestamp_ms": 8.0
+					},
+					{
+						"line": 6,
+						"timestamp_ms": 68841.0
+					},
+					{
+						"line": 11,
+						"timestamp_ms": 145091.0
+					},
+					{
+						"line": 19,
+						"timestamp_ms": 419340.0
+					},
+					{
+						"line": 23,
+						"timestamp_ms": 621956.0
+					},
+					{
+						"line": 29,
+						"timestamp_ms": 719188.0
+					}
+				]
+			},
+			"run_end": {
+				"count": 1,
+				"lines": [
+					{
+						"line": 40,
+						"timestamp_ms": 762840.0
+					}
+				]
+			},
+			"run_start": {
+				"count": 1,
+				"lines": [
+					{
+						"line": 1,
+						"timestamp_ms": 0.0
+					}
+				]
+			},
+			"significant_hit": {
+				"count": 11,
+				"lines": [
+					{
+						"line": 10,
+						"timestamp_ms": 142097.0
+					},
+					{
+						"line": 13,
+						"timestamp_ms": 155277.0
+					},
+					{
+						"line": 14,
+						"timestamp_ms": 159994.0
+					},
+					{
+						"line": 26,
+						"timestamp_ms": 647124.0
+					},
+					{
+						"line": 31,
+						"timestamp_ms": 722989.0
+					},
+					{
+						"line": 32,
+						"timestamp_ms": 732740.0
+					},
+					{
+						"line": 34,
+						"timestamp_ms": 738390.0
+					},
+					{
+						"line": 35,
+						"timestamp_ms": 747491.0
+					},
+					{
+						"line": 37,
+						"timestamp_ms": 753555.0
+					},
+					{
+						"line": 38,
+						"timestamp_ms": 759723.0
+					},
+					{
+						"line": 39,
+						"timestamp_ms": 760828.0
+					}
+				]
+			},
+			"upgrade_pick": {
+				"count": 13,
+				"lines": [
+					{
+						"line": 3,
+						"timestamp_ms": 23625.0
+					},
+					{
+						"line": 4,
+						"timestamp_ms": 48757.0
+					},
+					{
+						"line": 5,
+						"timestamp_ms": 66307.0
+					},
+					{
+						"line": 7,
+						"timestamp_ms": 94807.0
+					},
+					{
+						"line": 8,
+						"timestamp_ms": 119524.0
+					},
+					{
+						"line": 12,
+						"timestamp_ms": 154457.0
+					},
+					{
+						"line": 16,
+						"timestamp_ms": 248173.0
+					},
+					{
+						"line": 17,
+						"timestamp_ms": 393689.0
+					},
+					{
+						"line": 18,
+						"timestamp_ms": 416456.0
+					},
+					{
+						"line": 22,
+						"timestamp_ms": 451823.0
+					},
+					{
+						"line": 24,
+						"timestamp_ms": 632022.0
+					},
+					{
+						"line": 28,
+						"timestamp_ms": 704538.0
+					},
+					{
+						"line": 36,
+						"timestamp_ms": 752271.0
+					}
+				]
+			}
+		}
+	}
+}

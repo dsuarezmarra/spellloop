@@ -1,0 +1,31 @@
+{
+	"character_id": "storm_caller",
+	"duration_s": 762.841,
+	"end_iso": "2026-02-19_19-14-21",
+	"end_reason": "death",
+	"end_timestamp": 1771524861.553,
+	"files": {
+		"audit_log": "audit.jsonl",
+		"audit_report": "audit_report.md",
+		"balance_log": "balance.jsonl",
+		"event_index": "event_index.json",
+		"perf_log": "perf.jsonl",
+		"summary": "summary.json"
+	},
+	"game_version": "0.1.0-alpha",
+	"godot_version": "4.5.1-stable (official)",
+	"killed_by": "elite_tier_2_guerrero_espectral",
+	"os": "Windows",
+	"run_id": "69975002-f5b5",
+	"schema_version": 2,
+	"seed": 0,
+	"session_id": "69974ffb-51c9",
+	"start_iso": "2026-02-19_19-01-38",
+	"start_timestamp": 1771524098.689,
+	"starting_weapons": [
+		{
+			"id": "lightning_wand",
+			"lvl": 1
+		}
+	]
+}

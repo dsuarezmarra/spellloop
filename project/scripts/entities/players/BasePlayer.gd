@@ -776,6 +776,10 @@ func _process_frame_damage() -> void:
 	# 4b. Ring buffer para death tracking (últimos 5s de daño)
 	var _hp_after = health_component.current_health if health_component else 0
 	var _hp_before = _hp_after + final_applied_damage
+	# FIX-HP: Clamp hp_before to max_health to avoid overkill inflation
+	# (hp_after is clamped to 0 by HealthComponent, so _hp_before = 0 + overkill = inflated)
+	if health_component:
+		_hp_before = mini(_hp_before, health_component.max_health)
 	var _now_ms = Time.get_ticks_msec()
 
 	# FIX: Definir variables que faltaban y eran usadas en el append
@@ -836,14 +840,18 @@ func _process_frame_damage() -> void:
 	FloatingText.spawn_player_damage(global_position + Vector2(0, -35), final_applied_damage, primary_hit.element)
 	_play_damage_flash(primary_hit.element)
 
-	# 5b. AUDIT: Reportar daño recibido a RunAuditTracker (FIX-AUDIT: nunca se llamaba)
+	# 5b. BALANCE: Reportar daño recibido a BalanceDebugger (FIX-BT: damage_taken siempre era 0)
+	if final_applied_damage > 0 and BalanceDebugger:
+		BalanceDebugger.log_damage_taken(int(total_damage), final_applied_damage, false, final_shield_absorbed, 0)
+
+	# 5c. AUDIT: Reportar daño recibido a RunAuditTracker (FIX-AUDIT: nunca se llamaba)
 	if final_applied_damage > 0 and RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
 		var _enemy_name := "unknown"
 		if is_instance_valid(primary_hit.attacker) and "enemy_name" in primary_hit.attacker:
 			_enemy_name = primary_hit.attacker.enemy_name
 		elif is_instance_valid(primary_hit.attacker):
 			_enemy_name = primary_hit.attacker.name
-		var _killed_player := health_component.current_health <= 0 if health_component else false
+		var _killed_player: bool = health_component.current_health <= 0 if health_component else false
 		RunAuditTracker.report_damage_to_player(_hit_enemy_id, _enemy_name, _hit_attack_id, final_applied_damage, _killed_player)
 
 	# 6. I-FRAMES DINÁMICOS

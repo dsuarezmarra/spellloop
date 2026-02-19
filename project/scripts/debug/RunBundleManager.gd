@@ -502,11 +502,15 @@ func _generate_integrity() -> void:
 				status = _verify_jsonl_run_id(path)
 				if status == "run_id_mismatch":
 					integrity["warnings"].append("⚠️ %s contains events from a different run_id" % fname)
+				elif status != "ok" and status != "present":
+					integrity["warnings"].append("⚠️ %s has status: %s" % [fname, status])
 			# For JSON files, verify run_id key
 			elif fname.ends_with(".json") and fname != "integrity.json":
 				status = _verify_json_run_id(path)
 				if status == "run_id_mismatch":
 					integrity["warnings"].append("⚠️ %s has mismatched run_id" % fname)
+				elif status != "ok" and status != "present":
+					integrity["warnings"].append("⚠️ %s has status: %s" % [fname, status])
 			integrity["artifacts"][fname] = {
 				"exists": true,
 				"size_bytes": _get_file_size(path),
@@ -518,6 +522,7 @@ func _generate_integrity() -> void:
 				"size_bytes": 0,
 				"status": "missing"
 			}
+			integrity["warnings"].append("⚠️ %s is missing" % fname)
 
 	integrity["is_consistent"] = integrity["warnings"].is_empty()
 	_write_json(_current_bundle_dir.path_join("integrity.json"), integrity)

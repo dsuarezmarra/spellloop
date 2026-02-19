@@ -1,0 +1,179 @@
+{
+	"build": {
+		"player_stats": {
+			"armor": 0.0,
+			"attack_speed_mult": 1.0,
+			"crit_chance": 0.05,
+			"crit_damage": 2.0,
+			"damage_mult": 1.0,
+			"damage_reduction": 0.0,
+			"dodge_chance": 0.0,
+			"hp_regen": 0.0,
+			"life_steal": 0.0,
+			"max_health": 85.0,
+			"move_speed": 174.0
+		},
+		"upgrades": [
+			{
+				"id": "lifesteal_tier2",
+				"stacks": 2
+			},
+			{
+				"id": "global_damage_1",
+				"stacks": 1
+			},
+			{
+				"id": "global_damage_flat_2",
+				"stacks": 1
+			},
+			{
+				"id": "global_attack_speed_1",
+				"stacks": 1
+			},
+			{
+				"id": "crit_damage_1",
+				"stacks": 1
+			},
+			{
+				"id": "attack_speed_1",
+				"stacks": 1
+			},
+			{
+				"id": "regen_2",
+				"stacks": 1
+			},
+			{
+				"id": "pickup_1",
+				"stacks": 1
+			},
+			{
+				"id": "vital_magnet",
+				"stacks": 1
+			}
+		],
+		"weapons": [
+			{
+				"id": "lightning_wand",
+				"lvl": 8
+			},
+			{
+				"id": "fire_wand",
+				"lvl": 6
+			}
+		]
+	},
+	"bundle_files": {
+		"audit_log": "audit.jsonl",
+		"audit_report": "audit_report.md",
+		"balance_log": "balance.jsonl",
+		"event_index": "event_index.json",
+		"integrity": "integrity.json",
+		"meta": "meta.json",
+		"perf_log": "perf.jsonl",
+		"upgrade_audit_log": "upgrade_audit.jsonl",
+		"upgrade_audit_report": "upgrade_audit_report.md"
+	},
+	"death_context": {
+		"hits_in_window": 3,
+		"killer": "elite_tier_2_guerrero_espectral",
+		"killer_attack": "unknown",
+		"killer_damage_type": "physical",
+		"killer_source_kind": "enemy",
+		"total_damage_in_window": 187,
+		"window_duration_s": 3.756
+	},
+	"difficulty_final": {
+		"atk_speed_mult": 1.1185320376188,
+		"dmg_mult": 1.30121506641376,
+		"elite_freq_mult": 1.0,
+		"hp_mult": 1.41046246502848,
+		"minute": 5.65668096666631,
+		"performance_factor": 1.01441188048,
+		"phase": 1,
+		"phase_name": "Early/Mid",
+		"spawn_mult": 1.21482240299986,
+		"speed_mult": 1.08786834090462
+	},
+	"duration_s": 762.841,
+	"end_iso": "2026-02-19_19-14-21",
+	"end_reason": "death",
+	"end_timestamp": 1771524861.553,
+	"file_sizes": {
+		"audit.jsonl": 20185,
+		"audit_report.md": 4800,
+		"balance.jsonl": 21248,
+		"event_index.json": 0,
+		"meta.json": 581,
+		"perf.jsonl": 47993,
+		"upgrade_audit.jsonl": 5870,
+		"upgrade_audit_report.md": 998
+	},
+	"killed_by": "elite_tier_2_guerrero_espectral",
+	"run_id": "69975002-f5b5",
+	"schema_version": 2,
+	"stats": {
+		"bosses_killed": 0,
+		"damage_dealt": 31430,
+		"damage_taken": 531,
+		"elites_killed": 3,
+		"gold": 811,
+		"healing_done": 389,
+		"kills": 713,
+		"level": 14,
+		"rerolls_total": 0,
+		"xp_total": 1075
+	},
+	"time_survived": 339.400857999979,
+	"upgrade_audit": {
+		"counts": {
+			"dead_stat": 0,
+			"fail": 0,
+			"ok": 19,
+			"unknown": 0,
+			"warn": 0
+		},
+		"top_upgrades_picked": [
+			{
+				"count": 6,
+				"id": "lightning_wand"
+			},
+			{
+				"count": 3,
+				"id": "fire_wand"
+			},
+			{
+				"count": 2,
+				"id": "lifesteal_tier2"
+			},
+			{
+				"count": 1,
+				"id": "Poder Menor"
+			},
+			{
+				"count": 1,
+				"id": "Filo Mortal"
+			},
+			{
+				"count": 1,
+				"id": "Reflejos"
+			},
+			{
+				"count": 1,
+				"id": "crit_damage_1"
+			},
+			{
+				"count": 1,
+				"id": "Agilidad de Combate"
+			},
+			{
+				"count": 1,
+				"id": "regen_2"
+			},
+			{
+				"count": 1,
+				"id": "pickup_1"
+			}
+		],
+		"total_pickups": 19
+	}
+}

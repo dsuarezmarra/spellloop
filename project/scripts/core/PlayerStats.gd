@@ -1399,10 +1399,9 @@ func _update_health_regen(delta: float) -> void:
 		var max_hp = get_stat("max_health")
 		if player_hp < max_hp and player_hp > 0:
 			player_ref.heal(heal_int)
-			# Balance Debug: Log regen heal
-			# FIX-BT2b: Siempre recopilar datos
-			if BalanceDebugger:
-				BalanceDebugger.log_heal(heal_int, "regen")
+			# FIX-HEAL: Removed BalanceDebugger.log_heal here — BasePlayer.heal()
+			# already logs via add_healing_stat(). Logging here caused double-counting
+			# (regen was counted twice: once as "regen" and once as "heal").
 	else:
 		# Fallback: curar el current_health local (para compatibilidad)
 		if current_health < get_stat("max_health") and current_health > 0:
