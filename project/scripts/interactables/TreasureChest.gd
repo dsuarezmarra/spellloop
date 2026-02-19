@@ -19,7 +19,7 @@ enum ChestType {
 var chest_type: int = ChestType.NORMAL
 var chest_rarity: int = 0  # ItemsDefinitions.ItemRarity.WHITE (numeric fallback)
 var is_opened: bool = false
-var interaction_range: float = 50.0 # Increased from 60.0 to fix collision issues
+var interaction_range: float = 100.0 # Increased from 50.0 to fix collision issues
 var popup_shown: bool = false  # Control para evitar múltiples popups
 var popup_shown_internal: bool = false # Internal guard for trigger execution
 

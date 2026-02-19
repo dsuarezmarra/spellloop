@@ -294,7 +294,7 @@ func _get_beam_color(beam_type: String) -> Color:
 		"void_beam", "void", "dark": return Color(0.5, 0.25, 0.7)  # Púrpura suave
 		"ice", "frost": return Color(0.2, 0.75, 1.0)
 		"lightning": return Color(1.0, 1.0, 0.25)
-		"arcane": return Color(0.7, 0.35, 0.9)  # Magenta suave
+		"arcane": return Color.GREEN # DIAGNOSTIC: CHANGED FROM PURPLE TO GREEN
 		"poison", "nature": return Color(0.25, 0.9, 0.2)
 		_: return Color(0.85, 0.85, 0.9)
 
@@ -302,7 +302,7 @@ func _get_beam_color(beam_type: String) -> Color:
 # VFX DEBUG MODE
 # ══════════════════════════════════════════════════════════════════════════════
 ## Activar con: VFXManager.DEBUG_VFX = true  (desde consola o código)
-var DEBUG_VFX: bool = false
+var DEBUG_VFX: bool = true # ENABLED FOR DIAGNOSTICS
 var _vfx_log: Array = []  # Historial de spawns recientes
 const MAX_VFX_LOG: int = 50
 
@@ -391,6 +391,9 @@ func spawn_aoe(aoe_type: String, position: Vector2, radius: float = 100.0, durat
 	var actual_scale_factor = diameter / frame_size.x
 	# Clamp to reasonable values to prevent screen-covering effects
 	actual_scale_factor = clampf(actual_scale_factor, 0.1, 3.0)
+	
+	if DEBUG_VFX:
+		print("[VFX_DIAGNOSTIC] spawn_aoe type=%s radius=%.1f frame_size.x=%.1f calculated_scale=%.4f" % [aoe_type, radius, frame_size.x, actual_scale_factor])
 	
 	return _create_animated_vfx(tex, config, position, actual_scale_factor, duration_override)
 

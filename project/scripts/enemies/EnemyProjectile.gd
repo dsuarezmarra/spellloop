@@ -134,9 +134,9 @@ func _setup_fallback_visual(sprite: Sprite2D) -> void:
 	"""Fallback visual si no hay spritesheet"""
 	# Crear textura placeholder
 	var img = Image.create(32, 32, false, Image.FORMAT_RGBA8)
-	# FIX DIAGNOSTIC: Usar ROJO SEMI-TRANSPARENTE para identificar si es fallback
+	# FIX DIAGNOSTIC: Usar GREEN SEMI-TRANSPARENTE para identificar si es fallback
 	# Antes era magenta (Pink Screen Bug?)
-	img.fill(Color(1.0, 0.0, 0.0, 0.5))
+	img.fill(Color(0.0, 1.0, 0.0, 0.5))
 	var tex = ImageTexture.create_from_image(img)
 	sprite.texture = tex
 	sprite.scale = Vector2(1.5, 1.5)
@@ -312,7 +312,8 @@ func _get_element_color() -> Color:
 		"dark", "shadow", "void":
 			return Color(0.5, 0.3, 0.7)  # Púrpura suave
 		"arcane":
-			return Color(0.7, 0.4, 0.9)  # Magenta suave
+			return Color.GREEN # DIAGNOSTIC: CHANGED FROM PURPLE TO GREEN
+		"poison", "nature":
 		"poison", "nature":
 			return Color(0.25, 0.9, 0.2)
 		"lightning":

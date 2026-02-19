@@ -2056,7 +2056,13 @@ func get_attack_accuracy() -> float:
 # MUERTE Y LIFECYCLE
 # ═══════════════════════════════════════════════════════════════════════════════
 
+var _is_dead: bool = false
+
 func die() -> void:
+	if _is_dead:
+		return
+	_is_dead = true
+	
 	if is_boss:
 		# Solo limpiar efectos de boss si ES un boss
 		if attack_system and attack_system.has_method("cleanup_boss"):
