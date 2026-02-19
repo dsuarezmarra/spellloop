@@ -763,6 +763,11 @@ func _process_frame_damage() -> void:
 	if health_component and final_applied_damage > 0:
 		health_component.take_damage(final_applied_damage, primary_hit.element, true)
 
+	# FIX-G6: Resetear delay de regeneración de escudo al recibir daño
+	var _ps = get_tree().get_first_node_in_group("player_stats")
+	if _ps and _ps.has_method("on_damage_taken"):
+		_ps.on_damage_taken()
+
 	_last_hit_context = {
 		"source": primary_hit.attacker.name if is_instance_valid(primary_hit.attacker) else "Environment",
 		"damage": final_applied_damage,
@@ -1277,6 +1282,10 @@ func _trigger_revive(player_stats: Node, current_revives: int) -> void:
 	var bonus_immunity = player_stats.get_stat("revive_invuln") if player_stats.has_method("get_stat") else 0.0
 	_grant_revive_immunity(base_immunity + bonus_immunity)
 
+	# FIX-G4: Limpiar DoTs activos para que no maten al jugador durante inmunidad
+	_clear_burn()
+	_clear_poison()
+
 	# Notificar cambio de salud
 	if health_component:
 		health_component.health_changed.emit(revive_hp, int(max_health))
@@ -1689,9 +1698,16 @@ func apply_burn(damage_per_tick: float, duration: float) -> void:
 	# Debug desactivado: print("[%s] 🔥 Quemándose por %.1f daño/tick durante %.1fs" % [character_class, damage_per_tick, duration])
 
 func _apply_burn_tick() -> void:
+	# FIX-G4: No aplicar DoT durante inmunidad de revive o i-frames
+	if _revive_immunity_timer > 0 or _invulnerability_timer > 0:
+		return
 	if health_component:
 		var dmg = int(_burn_damage)
 		health_component.take_damage(dmg)
+		# FIX-G6: DoT también resetea delay de regeneración de escudo
+		var _ps = get_tree().get_first_node_in_group("player_stats")
+		if _ps and _ps.has_method("on_damage_taken"):
+			_ps.on_damage_taken()
 		# Mostrar daño de tick flotante
 		FloatingText.spawn_dot_tick(global_position + Vector2(randf_range(-15, 15), -30), dmg, "burn")
 		# Efecto visual de burn
@@ -1744,9 +1760,16 @@ func apply_poison(damage_per_tick: float, duration: float) -> void:
 	# Debug desactivado: print("[%s] ☠️ Envenenado por %.1f daño/tick durante %.1fs" % [character_class, damage_per_tick, duration])
 
 func _apply_poison_tick() -> void:
+	# FIX-G4: No aplicar DoT durante inmunidad de revive o i-frames
+	if _revive_immunity_timer > 0 or _invulnerability_timer > 0:
+		return
 	if health_component:
 		var dmg = int(_poison_damage)
 		health_component.take_damage(dmg)
+		# FIX-G6: DoT también resetea delay de regeneración de escudo
+		var _ps = get_tree().get_first_node_in_group("player_stats")
+		if _ps and _ps.has_method("on_damage_taken"):
+			_ps.on_damage_taken()
 		# Mostrar daño de tick flotante
 		FloatingText.spawn_dot_tick(global_position + Vector2(randf_range(-15, 15), -30), dmg, "poison")
 		_spawn_poison_particle()

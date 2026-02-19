@@ -1968,7 +1968,14 @@ func _process_status_effects(delta: float) -> void:
 		# Aplicar daño cada tick
 		if _burn_tick_timer >= BURN_TICK_INTERVAL:
 			_burn_tick_timer = 0.0
-			take_damage(int(_burn_damage))
+			# FIX-G5: Burn debe bypasear defensas igual que Bleed (daño directo)
+			# Antes: take_damage() pasaba por blocker, evasion, shield, armor, counter
+			if health_component:
+				health_component.take_damage(int(_burn_damage), "fire")
+			else:
+				hp -= int(_burn_damage)
+				if hp <= 0:
+					die()
 			_flash_damage()  # Flash visual de daño
 
 		if _burn_timer <= 0:

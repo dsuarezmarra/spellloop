@@ -928,8 +928,11 @@ static func get_exponential_scale(minute: float) -> float:
 	var periods_past_20 = (minute - 20.0) / 5.0
 	return pow(EXPONENTIAL_SCALING_BASE, periods_past_20)
 
-static func apply_difficulty_scaling(enemy_data: Dictionary, minute: float, difficulty_mult: float = 1.0) -> Dictionary:
-	"""Aplicar escalado de dificultad a los stats del enemigo"""
+static func apply_difficulty_scaling(enemy_data: Dictionary, minute: float, difficulty_mult: float = 1.0, damage_difficulty_mult: float = -1.0) -> Dictionary:
+	"""Aplicar escalado de dificultad a los stats del enemigo.
+	FIX-G3: Acepta damage_difficulty_mult separado para que el daño escale
+	con enemy_damage_multiplier (4.5%/min) en vez de enemy_health_multiplier (6%/min).
+	Si damage_difficulty_mult < 0, usa difficulty_mult (backward compatible)."""
 	var scaled = enemy_data.duplicate(true)
 	var tier = scaled.get("tier", 1)
 	
@@ -944,8 +947,11 @@ static func apply_difficulty_scaling(enemy_data: Dictionary, minute: float, diff
 	var damage_modifier = scaled.get("modifiers", {}).get("damage", 1.0)
 	var speed_modifier = scaled.get("modifiers", {}).get("speed", 1.0)
 	
+	# FIX-G3: Usar multiplicador de daño separado si se proporcionó
+	var effective_damage_mult = damage_difficulty_mult if damage_difficulty_mult >= 0.0 else difficulty_mult
+	
 	scaled["final_hp"] = int(scaled.base_hp * tier_scale.hp * hp_modifier * exp_scale * difficulty_mult)
-	scaled["final_damage"] = int(scaled.base_damage * tier_scale.damage * damage_modifier * exp_scale * difficulty_mult)
+	scaled["final_damage"] = int(scaled.base_damage * tier_scale.damage * damage_modifier * exp_scale * effective_damage_mult)
 	scaled["final_speed"] = scaled.base_speed * tier_scale.speed * speed_modifier
 	scaled["final_xp"] = int(scaled.base_xp * tier_scale.xp * exp_scale)
 	

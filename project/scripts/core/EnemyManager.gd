@@ -195,10 +195,12 @@ func _attempt_spawn() -> void:
 	# Aplicar escalado de dificultad
 	var minute = game_time_seconds / 60.0
 	var difficulty_mult = 1.0
+	var damage_diff_mult = 1.0  # FIX-G3: Separar multiplicador de daño
 	if difficulty_manager:
 		difficulty_mult = difficulty_manager.enemy_health_multiplier
+		damage_diff_mult = difficulty_manager.enemy_damage_multiplier
 
-	enemy_data = EnemyDatabase.apply_difficulty_scaling(enemy_data, minute, difficulty_mult)
+	enemy_data = EnemyDatabase.apply_difficulty_scaling(enemy_data, minute, difficulty_mult, damage_diff_mult)
 
 	spawn_enemy(enemy_data, pos)
 
@@ -306,10 +308,12 @@ func _spawn_boss(minute: int) -> void:
 
 	# Aplicar escalado
 	var difficulty_mult = 1.0
+	var damage_diff_mult = 1.0  # FIX-G3
 	if difficulty_manager:
 		difficulty_mult = difficulty_manager.enemy_health_multiplier
+		damage_diff_mult = difficulty_manager.enemy_damage_multiplier
 
-	boss_data = EnemyDatabase.apply_difficulty_scaling(boss_data, float(minute), difficulty_mult)
+	boss_data = EnemyDatabase.apply_difficulty_scaling(boss_data, float(minute), difficulty_mult, damage_diff_mult)
 	boss_data["is_boss"] = true
 
 	var pos = _get_spawn_position()
@@ -373,10 +377,12 @@ func _spawn_elite() -> void:
 
 	# Aplicar escalado normal también
 	var difficulty_mult = 1.0
+	var damage_diff_mult = 1.0  # FIX-G3
 	if difficulty_manager:
 		difficulty_mult = difficulty_manager.enemy_health_multiplier
+		damage_diff_mult = difficulty_manager.enemy_damage_multiplier
 
-	elite_data = EnemyDatabase.apply_difficulty_scaling(elite_data, minute, difficulty_mult)
+	elite_data = EnemyDatabase.apply_difficulty_scaling(elite_data, minute, difficulty_mult, damage_diff_mult)
 
 	var pos = _get_spawn_position()
 	var elite = spawn_enemy(elite_data, pos)
@@ -722,10 +728,12 @@ func spawn_specific_enemy(enemy_id: String, world_pos: Vector2, multipliers: Dic
 	# Aplicar escalado base
 	var minute = game_time_seconds / 60.0
 	var difficulty_mult = 1.0
+	var damage_diff_mult = 1.0  # FIX-G3
 	if difficulty_manager:
 		difficulty_mult = difficulty_manager.enemy_health_multiplier
+		damage_diff_mult = difficulty_manager.enemy_damage_multiplier
 
-	enemy_data = EnemyDatabase.apply_difficulty_scaling(enemy_data, minute, difficulty_mult)
+	enemy_data = EnemyDatabase.apply_difficulty_scaling(enemy_data, minute, difficulty_mult, damage_diff_mult)
 
 	# Aplicar multiplicadores adicionales del WaveManager (escalado infinito)
 	if multipliers.has("hp_multiplier"):
@@ -780,10 +788,12 @@ func spawn_boss(boss_id: String, world_pos: Vector2, multipliers: Dictionary = {
 	# Aplicar escalado
 	var minute = game_time_seconds / 60.0
 	var difficulty_mult = 1.0
+	var damage_diff_mult = 1.0  # FIX-G3
 	if difficulty_manager:
 		difficulty_mult = difficulty_manager.enemy_health_multiplier
+		damage_diff_mult = difficulty_manager.enemy_damage_multiplier
 
-	boss_data = EnemyDatabase.apply_difficulty_scaling(boss_data, minute, difficulty_mult)
+	boss_data = EnemyDatabase.apply_difficulty_scaling(boss_data, minute, difficulty_mult, damage_diff_mult)
 	boss_data["is_boss"] = true
 
 	# Aplicar multiplicadores adicionales (escalado infinito)
@@ -814,10 +824,12 @@ func spawn_elite(enemy_id: String, world_pos: Vector2, multipliers: Dictionary =
 	# Aplicar escalado normal
 	var minute = game_time_seconds / 60.0
 	var difficulty_mult = 1.0
+	var damage_diff_mult = 1.0  # FIX-G3
 	if difficulty_manager:
 		difficulty_mult = difficulty_manager.enemy_health_multiplier
+		damage_diff_mult = difficulty_manager.enemy_damage_multiplier
 
-	elite_data = EnemyDatabase.apply_difficulty_scaling(elite_data, minute, difficulty_mult)
+	elite_data = EnemyDatabase.apply_difficulty_scaling(elite_data, minute, difficulty_mult, damage_diff_mult)
 
 	# Aplicar multiplicadores adicionales (escalado infinito)
 	if multipliers.has("hp_multiplier"):

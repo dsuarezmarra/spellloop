@@ -120,8 +120,10 @@ static func calculate_final_damage(
 			_is_aoe_attack = attacker.get_meta("is_aoe")
 		if _is_aoe_attack:
 			var aoe_mult = ps.get_stat("aoe_damage_mult")
-			if aoe_mult > 0 and absf(aoe_mult - 1.0) > 0.001:
-				result.final_damage *= aoe_mult
+			if aoe_mult > 0:
+				# FIX-G2: aoe_damage_mult base=0.0, upgrade adds +0.40
+				# Antes: damage *= 0.40 → REDUCÍA daño 60%. Ahora: damage *= 1.40 → +40% bonus
+				result.final_damage *= (1.0 + aoe_mult)
 				result.bonus_applied.append("aoe_damage_mult")
 		else:
 			var st_mult = ps.get_stat("single_target_mult")
@@ -185,9 +187,9 @@ static func _apply_elite_bonus(damage: float, target: Node, ps: Node) -> float:
 	if is_elite_target and ps and ps.has_method("get_stat"):
 		var elite_mult = ps.get_stat("elite_damage_mult")
 		if elite_mult > 0:
-			if elite_mult < 0.1:
-				elite_mult = 1.0  # Safety check
-			damage *= elite_mult
+			# FIX-G1: elite_damage_mult base=0.0, upgrades add +0.25/+0.50/+1.0
+			# Antes: damage *= 0.25 → REDUCÍA daño 75%. Ahora: damage *= 1.25 → +25% bonus
+			damage *= (1.0 + elite_mult)
 
 	return damage
 
