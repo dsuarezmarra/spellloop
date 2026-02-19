@@ -108,23 +108,23 @@ func _notification(what: int) -> void:
 				if not get_tree().paused:
 					_paused_by_focus_loss = true
 					_pause_game()
-					
+
 		NOTIFICATION_APPLICATION_FOCUS_IN:
 			# Solo despausar si fue pausado por pérdida de foco Y no hay otro bloqueante (como LevelUp)
 			if _paused_by_focus_loss and is_paused:
 				# Verificar si algo más ha pausado el juego mientras estábamos fuera (raro pero posible)
 				# o si hay menús abiertos que requieran pausa
 				var can_resume = true
-				
+
 				# Si hay popups abiertos (Cofres, LevelUp, etc), NO despausar
 				# Chequear si el árbol sigue pausado por otra razón
 				if level_up_panel_active:
 					can_resume = false
-				
+
 				# Chequear si hay cofres abiertos
 				if chest_spawner and chest_spawner.is_chest_open:
 					can_resume = false
-					
+
 				if can_resume:
 					_paused_by_focus_loss = false
 					_resume_game()
@@ -138,7 +138,7 @@ func _setup_game() -> void:
 	remaining_banishes = 2
 	pending_level_ups.clear()
 	level_up_panel_active = false
-	
+
 	# Crear sistemas CRÍTICOS (Stats) antes que nada
 	_create_player_stats()  # IMPORTANTE: Crear antes que el player
 
@@ -168,7 +168,7 @@ func _setup_game() -> void:
 
 	# 5. Inicializar sistemas
 	_initialize_systems()
-	
+
 	# 6. GUARD RAIL: Verificar integridad del runtime (Debug Check)
 	if OS.is_debug_build():
 		_verify_runtime_integrity()
@@ -273,7 +273,7 @@ func _create_arena_manager() -> void:
 			arena_manager.player_zone_changed.connect(_on_player_zone_changed)
 			# Conectar update de atmósfera
 			arena_manager.player_zone_changed.connect(_update_atmosphere_biome)
-			
+
 		if arena_manager.has_signal("player_hit_boundary"):
 			arena_manager.player_hit_boundary.connect(_on_player_hit_boundary)
 	else:
@@ -369,7 +369,7 @@ func _create_chest_spawner() -> void:
 		chest_spawner = cs_script.new()
 		chest_spawner.name = "ChestSpawner"
 		add_child(chest_spawner)
-		
+
 		# Inicializar con referencias
 		if chest_spawner.has_method("initialize"):
 			chest_spawner.initialize(player, arena_manager, pickups_root)
@@ -494,7 +494,11 @@ func _on_player_took_damage(damage: int, element: String) -> void:
 	"""Callback cuando el player recibe daño - activa feedback visual"""
 	# Trackear daño recibido para estadísticas
 	run_stats["damage_taken"] += damage
-	
+
+	# Notificar a SteamAchievements para tracking de no-hit boss
+	if SteamAchievements and SteamAchievements.has_method("on_player_damaged_during_boss"):
+		SteamAchievements.on_player_damaged_during_boss(damage)
+
 	# TELEMETRY: Log hits significativos (>15% HP) para análisis de muertes
 	var base_player = _get_base_player()
 	if damage >= 10 and BalanceTelemetry and BalanceTelemetry._run_active:
@@ -513,7 +517,7 @@ func _on_player_took_damage(damage: int, element: String) -> void:
 				"hp_pct": float(hp_current) / float(hp_max) if hp_max > 0 else 0.0,
 				"t_min": game_time / 60.0,
 			})
-	
+
 	# Screen shake
 	if camera and camera.has_method("damage_shake"):
 		camera.damage_shake(damage)
@@ -526,20 +530,20 @@ func _on_player_took_damage(damage: int, element: String) -> void:
 		damage_vignette.show_damage_effect(damage, element)
 
 func _manual_camera_shake(damage: int) -> void:
-	"""Screen shake manual para Camera2D estándar"""
+	"""Screen shake fallback para Camera2D sin GameCamera.
+	Siempre restaura a Vector2.ZERO para evitar drift de offset."""
 	var intensity = clampf(float(damage) / 30.0, 0.15, 0.6)
 	var shake_offset = Vector2(
 		randf_range(-12, 12) * intensity,
 		randf_range(-12, 12) * intensity
 	)
 
-	var original_offset = camera.offset
 	camera.offset = shake_offset
 
-	# Crear tween para restaurar
+	# Restaurar siempre a ZERO (no capturar offset actual que podría estar desplazado)
 	var tween = create_tween()
 	tween.set_ease(Tween.EASE_OUT)
-	tween.tween_property(camera, "offset", original_offset, 0.2)
+	tween.tween_property(camera, "offset", Vector2.ZERO, 0.2)
 
 func _physics_process(_delta: float) -> void:
 	# La cámara sigue al player
@@ -591,7 +595,7 @@ func _connect_hud_to_player() -> void:
 	if player.has_signal("health_changed") and hud.has_method("update_health"):
 		if not player.health_changed.is_connected(hud.update_health):
 			player.health_changed.connect(hud.update_health)
-			
+
 	# Conectar AttackManager para actualizar iconos de armas en HUD
 	var attack_manager_ref = get_tree().get_first_node_in_group("attack_manager")
 	if attack_manager_ref and attack_manager_ref.has_signal("weapon_added"):
@@ -627,12 +631,12 @@ func _start_game() -> void:
 	game_time = 0.0
 	session_start_time = 0.0
 	is_paused = false
-	
+
 	# CRÍTICO: Activar GameManager para que DifficultyManager funcione
 	var game_manager = get_tree().root.get_node_or_null("GameManager")
 	if game_manager and game_manager.has_method("start_new_run"):
 		game_manager.start_new_run()
-	
+
 	# Iniciar música de gameplay
 	AudioManager.play_music("music_gameplay_loop")
 
@@ -661,10 +665,10 @@ func _start_game() -> void:
 		SteamAchievements.on_run_started()
 
 	# Debug desactivado: print("🚀 [Game] ¡Partida iniciada!")
-	
+
 	# Forzar actualización del HUD de armas después de que todo esté inicializado
 	call_deferred("_deferred_weapon_hud_update")
-	
+
 	# BALANCE TELEMETRY: Start run logging
 	# FIX-BT1: call_deferred no es suficiente — las armas se equipan DESPUÉS del
 	# frame donde reset_for_new_game() las limpia. Usar timer corto para dar
@@ -693,7 +697,7 @@ func _resume_saved_game() -> void:
 	# Restaurar stats de la partida
 	run_stats["time"] = game_time
 	run_stats["level"] = _saved_state.get("player_level", 1)
-	
+
 	# Restaurar run_stats completo si existe (kills, damage, etc)
 	if _saved_state.has("run_stats"):
 		var saved_run_stats = _saved_state["run_stats"]
@@ -771,13 +775,13 @@ func _resume_saved_game() -> void:
 				if "global_weapon_stats" in attack_manager and attack_manager.global_weapon_stats:
 					if attack_manager.global_weapon_stats.has_method("from_dict"):
 						attack_manager.global_weapon_stats.from_dict(_saved_state.get("global_weapon_stats", {}))
-			
+
 			# Restaurar armas desde formato simplificado
 			if _saved_state.has("weapons"):
 				# Limpiar arma inicial que _create_player() ya añadió
 				if attack_manager.has_method("reset_for_new_game"):
 					attack_manager.reset_for_new_game()
-				
+
 				for weapon_data in _saved_state["weapons"]:
 					var weapon_id = weapon_data.get("weapon_id", "")
 					if weapon_id.is_empty():
@@ -982,7 +986,7 @@ func _process(delta: float) -> void:
 
 	# Actualizar HUD
 	_update_hud()
-	
+
 	# BALANCE TELEMETRY: Check for minute snapshot
 	_check_telemetry_minute_snapshot()
 
@@ -1057,17 +1061,17 @@ func _update_hud() -> void:
 
 func _on_enemy_died(death_position: Vector2, enemy_type: String, exp_value: int, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
 	run_stats["kills"] += 1
-	
+
 	# Trackear elites y bosses por separado
 	if is_elite:
 		run_stats["elites_killed"] += 1
 	if is_boss:
 		run_stats["bosses_killed"] += 1
-	
+
 	# STEAM ACHIEVEMENTS: Notificar kill
 	if SteamAchievements:
 		SteamAchievements.on_enemy_killed(enemy_type, enemy_tier, is_boss, enemy_type if is_boss else "")
-	
+
 	# TELEMETRY: Log elite/boss kill to BalanceTelemetry for detailed tracking
 	if (is_elite or is_boss) and BalanceTelemetry and BalanceTelemetry._run_active:
 		var kill_event = {
@@ -1079,7 +1083,7 @@ func _on_enemy_died(death_position: Vector2, enemy_type: String, exp_value: int,
 			"kills_total": run_stats["kills"],
 		}
 		BalanceTelemetry._log_event(kill_event)
-	
+
 	if hud and hud.has_method("update_kills"):
 		hud.update_kills(run_stats["kills"])
 
@@ -1096,7 +1100,7 @@ func _on_enemy_died(death_position: Vector2, enemy_type: String, exp_value: int,
 			var current_phase = difficulty_manager.get_current_phase()
 			if current_phase >= 3:
 				final_exp = int(exp_value * 1.25)  # +25% XP en Phase 3
-	
+
 	if experience_manager and final_exp > 0:
 		_grant_exp_delayed(final_exp)
 
@@ -1117,17 +1121,17 @@ func _on_enemy_died(death_position: Vector2, enemy_type: String, exp_value: int,
 	else:
 		# Enemigos normales/elites/raros usan RaresDatabase
 		rewards = RaresDatabase.get_rewards_for_enemy(enemy_info)
-	
+
 	# 1. Cofres
 	var spawn_chest = false
 	if rewards.get("guaranteed_chest", false):
 		spawn_chest = true
 	elif randf() < rewards.get("chest_chance", 0.0):
 		spawn_chest = true
-		
+
 	if spawn_chest:
 		_spawn_reward_chest(death_position, rewards)
-	
+
 	# 2. Orbes de Mejora (Items directos)
 	if randf() < rewards.get("upgrade_chance", 0.0):
 		# TODO: Implementar orbe visual, por ahora damos cofre extra de menor calidad o moneda especial
@@ -1151,17 +1155,17 @@ func _on_enemy_died(death_position: Vector2, enemy_type: String, exp_value: int,
 		var explosion_chance = player_stats.get_stat("explosion_chance") if player_stats.has_method("get_stat") else 0.0
 		if explosion_chance > 0.0 and randf() < explosion_chance:
 			var explosion_damage = player_stats.get_stat("explosion_damage") if player_stats.has_method("get_stat") else 50.0
-			_trigger_kill_explosion(position, explosion_damage)
+			_trigger_kill_explosion(death_position, explosion_damage)
 
 func _grant_exp_delayed(exp_value: int) -> void:
 	"""Otorgar experiencia con un pequeño delay para mejor feedback visual.
 	   Permite ver la muerte del enemigo antes de que aparezca el panel de level up."""
 	const EXP_DELAY := 0.5  # Segundos de delay antes de dar XP
-	
+
 	# Usar SceneTreeTimer: process_always=false para respetar la pausa del juego
 	var timer = get_tree().create_timer(EXP_DELAY, false)
 	timer.timeout.connect(
-		func(): 
+		func():
 			if experience_manager and is_instance_valid(experience_manager):
 				experience_manager.grant_exp_from_kill(exp_value)
 	)
@@ -1174,7 +1178,7 @@ func _spawn_reward_chest(pos: Vector2, rewards_config: Dictionary) -> void:
 		return
 
 	var chest = chest_scene.instantiate()
-	
+
 	# Determinar tipo
 	var type_str = rewards_config.get("chest_type", "normal")
 	var type_enum = TreasureChest.ChestType.NORMAL
@@ -1182,13 +1186,13 @@ func _spawn_reward_chest(pos: Vector2, rewards_config: Dictionary) -> void:
 		"elite": type_enum = TreasureChest.ChestType.ELITE
 		"boss": type_enum = TreasureChest.ChestType.BOSS
 		"weapon": type_enum = TreasureChest.ChestType.WEAPON
-	
+
 	# Añadir a la escena (PickupsRoot si existe, sino root)
 	if pickups_root:
 		pickups_root.add_child(chest)
 	else:
 		world_root.add_child(chest)
-	
+
 	# Inicializar
 	# rarity_boost: aumenta la rareza mínima
 	var rarity_min = -1
@@ -1196,10 +1200,10 @@ func _spawn_reward_chest(pos: Vector2, rewards_config: Dictionary) -> void:
 		rarity_min = rewards_config.chest_rarity_min
 	elif rewards_config.has("chest_rarity_boost"):
 		# Lógica simple: boost = rareza mínima 1 (azul)
-		rarity_min = 1 
-		
+		rarity_min = 1
+
 	chest.initialize(pos, type_enum, player, rarity_min)
-	
+
 	# Conectar señal para telemetría de cofres de recompensa
 	if chest.has_signal("chest_opened"):
 		chest.chest_opened.connect(func(c, items):
@@ -1250,12 +1254,12 @@ func _trigger_kill_explosion(pos: Vector2, damage: float) -> void:
 	particles.color_ramp.add_point(1.0, Color(0.2, 0, 0, 0)) # Fade out
 	particles.global_position = pos
 	particles.z_index = 20 # Sobre enemigos
-	
+
 	# Auto-destrucción visual
 	add_child(particles) # Add to Game node/scene
 	var timer = get_tree().create_timer(1.0)
 	timer.timeout.connect(particles.queue_free)
-	
+
 	# --- LÓGICA DE DAÑO ---
 	# Encontrar enemigos cercanos
 	if enemy_manager and enemy_manager.has_method("get_enemies_in_range"):
@@ -1283,11 +1287,7 @@ func _trigger_kill_explosion(pos: Vector2, damage: float) -> void:
 	var texture_path = "res://assets/sprites/effects/explosion_effect.png"
 	if ResourceLoader.exists(texture_path):
 		visual.texture = load(texture_path)
-	else:
-		pass  # Bloque else
-		# Crear un círculo simple si no hay textura
-		var circle = CircleShape2D.new()
-		circle.radius = explosion_radius
+	# Sin textura: el sprite queda vacío, las partículas CPUParticles2D son suficientes
 	explosion.add_child(visual)
 
 	# Animación de expansión y desvanecimiento
@@ -1505,7 +1505,7 @@ func player_died() -> void:
 		SteamAchievements.on_run_ended(ach_run_data)
 
 	game_running = false
-	
+
 	# BALANCE TELEMETRY: End run logging
 	_end_balance_telemetry("death")
 
@@ -1541,13 +1541,13 @@ func _save_run_stats() -> void:
 func _collect_complete_run_data() -> Dictionary:
 	"""Recopilar datos completos de la partida para ranking y estadísticas"""
 	var run_data: Dictionary = {}
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# 1. METADATOS Y VERSIÓN
 	# ═══════════════════════════════════════════════════════════════════════════
 	run_data["game_version"] = GAME_VERSION
 	run_data["timestamp"] = Time.get_unix_time_from_system()
-	
+
 	# Fecha formateada para filtros (año, mes, día)
 	var datetime = Time.get_datetime_dict_from_system()
 	run_data["date"] = {
@@ -1557,10 +1557,10 @@ func _collect_complete_run_data() -> Dictionary:
 		"hour": datetime.get("hour", 0),
 		"minute": datetime.get("minute", 0)
 	}
-	
+
 	# Razón de fin de partida (muerte por defecto, puede sobrescribirse)
 	run_data["end_reason"] = "death"
-	
+
 	# RunBundle: incluir run_id unificado y referencia al bundle
 	var run_ctx = get_node_or_null("/root/RunContext")
 	if run_ctx and run_ctx.run_id != "":
@@ -1568,7 +1568,7 @@ func _collect_complete_run_data() -> Dictionary:
 	var bundle_mgr = get_node_or_null("/root/RunBundleManager")
 	if bundle_mgr and bundle_mgr.has_method("get_bundle_path") and run_ctx:
 		run_data["bundle_path"] = bundle_mgr.get_bundle_path(run_ctx.run_id)
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# 2. DATOS BÁSICOS DE LA PARTIDA
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1584,28 +1584,28 @@ func _collect_complete_run_data() -> Dictionary:
 	run_data["healing_done"] = run_stats.get("healing_done", 0)
 	run_data["xp_total"] = run_stats.get("xp_total", 0)
 	run_data["score"] = _calculate_run_score()
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# 2. PERSONAJE
 	# ═══════════════════════════════════════════════════════════════════════════
 	run_data["character_id"] = _get_character_id()
 	run_data["character_name"] = _get_character_display_name(run_data["character_id"])
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# 3. ARMAS EQUIPADAS (con niveles y estado de fusión)
 	# ═══════════════════════════════════════════════════════════════════════════
 	run_data["weapons"] = _collect_weapons_data()
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# 4. ITEMS/UPGRADES OBTENIDOS
 	# ═══════════════════════════════════════════════════════════════════════════
 	run_data["upgrades"] = _collect_upgrades_data()
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# 5. STATS FINALES DEL JUGADOR
 	# ═══════════════════════════════════════════════════════════════════════════
 	run_data["final_stats"] = _collect_final_stats()
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# 6. DATOS DEL WAVE MANAGER (fase, tiempo de juego)
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1617,20 +1617,27 @@ func _collect_complete_run_data() -> Dictionary:
 		run_data["phase"] = 1
 		run_data["game_time_minutes"] = 0.0
 		run_data["game_time_seconds"] = 0.0
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# 7. MECÁNICAS DE JUEGO (rerolls, banishes usados)
 	# ═══════════════════════════════════════════════════════════════════════════
-	run_data["rerolls_used"] = 3 - remaining_rerolls
-	run_data["banishes_used"] = 2 - remaining_banishes
-	
+	# Usar PlayerStats como fuente de verdad (remaining_rerolls/remaining_banishes son legacy)
+	if player_stats and player_stats.has_method("get_stat"):
+		var total_rerolls = int(player_stats.get_stat("reroll_count")) + 3  # base 3 + extras
+		var total_banishes = int(player_stats.get_stat("banish_count")) + 2  # base 2 + extras
+		run_data["rerolls_used"] = maxi(0, total_rerolls - int(player_stats.get("current_rerolls") if "current_rerolls" in player_stats else total_rerolls))
+		run_data["banishes_used"] = maxi(0, total_banishes - int(player_stats.get("current_banishes") if "current_banishes" in player_stats else total_banishes))
+	else:
+		run_data["rerolls_used"] = 3 - remaining_rerolls
+		run_data["banishes_used"] = 2 - remaining_banishes
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# 8. DATOS DE AUDITORÍA DE COMBATE (RunAuditTracker)
 	# ═══════════════════════════════════════════════════════════════════════════
 	run_data["weapon_audit"] = _collect_weapon_audit_data()
 	run_data["enemy_audit"] = _collect_enemy_audit_data()
 	run_data["economy_audit"] = _collect_economy_audit_data()
-	
+
 	return run_data
 
 func _collect_weapon_audit_data() -> Array:
@@ -1638,11 +1645,11 @@ func _collect_weapon_audit_data() -> Array:
 	var weapon_audit: Array = []
 	if not RunAuditTracker or not RunAuditTracker.ENABLE_AUDIT:
 		return weapon_audit
-	
+
 	for weapon_id in RunAuditTracker._weapon_stats:
 		var ws = RunAuditTracker._weapon_stats[weapon_id]
 		weapon_audit.append(ws.to_dict())
-	
+
 	# Ordenar por daño total descendente
 	weapon_audit.sort_custom(func(a, b): return a.get("damage_total", 0) > b.get("damage_total", 0))
 	return weapon_audit
@@ -1652,11 +1659,11 @@ func _collect_enemy_audit_data() -> Array:
 	var enemy_audit: Array = []
 	if not RunAuditTracker or not RunAuditTracker.ENABLE_AUDIT:
 		return enemy_audit
-	
+
 	for enemy_id in RunAuditTracker._enemy_damage_stats:
 		var es = RunAuditTracker._enemy_damage_stats[enemy_id]
 		enemy_audit.append(es.to_dict())
-	
+
 	# Ordenar por daño al jugador descendente
 	enemy_audit.sort_custom(func(a, b): return a.get("damage_to_player", 0) > b.get("damage_to_player", 0))
 	return enemy_audit
@@ -1665,7 +1672,7 @@ func _collect_economy_audit_data() -> Dictionary:
 	"""Recopilar datos de economía desde RunAuditTracker"""
 	if not RunAuditTracker or not RunAuditTracker.ENABLE_AUDIT:
 		return {}
-	
+
 	return {
 		"chests_opened": RunAuditTracker._chests_opened.duplicate(),
 		"fusions_obtained": RunAuditTracker._fusions_obtained.size(),
@@ -1708,7 +1715,7 @@ func _collect_weapons_data() -> Array:
 	"""Recopilar datos de armas equipadas con stats completos"""
 	var weapons_data: Array = []
 	var attack_manager = get_tree().get_first_node_in_group("attack_manager")
-	
+
 	if attack_manager and attack_manager.has_method("get_weapons"):
 		var weapons_list = attack_manager.get_weapons()
 		for weapon in weapons_list:
@@ -1766,13 +1773,13 @@ func _collect_weapons_data() -> Array:
 				}
 			if not weapon_info.is_empty():
 				weapons_data.append(weapon_info)
-	
+
 	return weapons_data
 
 func _collect_upgrades_data() -> Array:
 	"""Recopilar datos de upgrades/items obtenidos"""
 	var upgrades_data: Array = []
-	
+
 	if player_stats and player_stats.has_method("get_collected_upgrades"):
 		var upgrades = player_stats.get_collected_upgrades()
 		for upgrade in upgrades:
@@ -1789,13 +1796,13 @@ func _collect_upgrades_data() -> Array:
 				"description_es": upgrade.get("description_es", upgrade.get("description", ""))
 			}
 			upgrades_data.append(upgrade_info)
-	
+
 	return upgrades_data
 
 func _collect_final_stats() -> Dictionary:
 	"""Recopilar stats finales del jugador"""
 	var final_stats: Dictionary = {}
-	
+
 	if player_stats:
 		# Stats principales
 		if "max_health" in player_stats:
@@ -1807,7 +1814,7 @@ func _collect_final_stats() -> Dictionary:
 		final_stats["level"] = run_stats.get("level", 1)
 		if "armor" in player_stats:
 			final_stats["armor"] = player_stats.armor
-		
+
 		# Stats mediante get_stat()
 		if player_stats.has_method("get_stat"):
 			var stat_names = [
@@ -1820,19 +1827,19 @@ func _collect_final_stats() -> Dictionary:
 				var value = player_stats.get_stat(stat_name)
 				if value != null:
 					final_stats[stat_name] = value
-	
+
 	return final_stats
 
 func _calculate_run_score() -> int:
 	"""
 	BALANCE PASS 3: Scoring competitivo para ranking
-	
+
 	Fórmula diseñada para:
 	- Premiar acción y riesgo, no solo supervivencia
 	- Evitar estrategias AFK/tank que sobreviven sin matar
 	- Escalar con tiempo pero con diminishing returns
 	- Penalizar daño excesivo recibido
-	
+
 	Componentes:
 	- Tiempo: 8 pts/seg (base, diminishing en ultra-late)
 	- Kills: sqrt(kills) * 100 (evita farm infinito)
@@ -1849,9 +1856,9 @@ func _calculate_run_score() -> int:
 	var level = run_stats.get("level", 1)
 	var damage_taken = run_stats.get("damage_taken", 0)
 	var gold = run_stats.get("gold", 0)
-	
+
 	var score: float = 0.0
-	
+
 	# Tiempo con soft diminishing después de 1 hora
 	var time_minutes = time_seconds / 60.0
 	if time_minutes <= 60:
@@ -1860,33 +1867,33 @@ func _calculate_run_score() -> int:
 		# Primeros 60 min a rate normal, después 50% rate
 		score += 60.0 * 60.0 * 8.0  # 60 min a 8 pts/seg
 		score += (time_seconds - 3600.0) * 4.0  # resto a 4 pts/seg
-	
+
 	# Kills con diminishing returns (sqrt) - premia matar pero no farm infinito
 	score += sqrt(float(kills)) * 100.0
-	
+
 	# Bonus por elites (objetivo de alto valor)
 	score += float(elites) * 750.0
-	
+
 	# Bonus por bosses (logro principal)
 	score += float(bosses) * 3000.0
-	
+
 	# Nivel alcanzado
 	score += float(level) * 400.0
-	
+
 	# Gold como bonus menor
 	score += float(gold) * 0.5
-	
+
 	# Penalización por daño recibido (evita tank AFK)
 	# -1 punto por cada 20 HP de daño recibido
 	var damage_penalty = float(damage_taken) / 20.0
 	score -= damage_penalty
-	
+
 	# Bonus por kill rate (incentiva acción constante)
 	if time_minutes > 1.0:
 		var kills_per_min = float(kills) / time_minutes
 		if kills_per_min > 30.0:
 			score *= 1.10  # +10% bonus por alta actividad
-	
+
 	return int(maxf(0.0, score))
 
 func _on_game_over_retry() -> void:
@@ -1924,43 +1931,43 @@ func _start_balance_telemetry() -> void:
 	# las métricas de la run anterior se arrastren (damage_dealt_total, etc.)
 	if BalanceDebugger:
 		BalanceDebugger.reset_metrics()
-	
+
 	var starting_weapons: Array = []
 	var attack_manager = get_tree().get_first_node_in_group("attack_manager")
 	if attack_manager and attack_manager.has_method("get_weapons"):
 		for w in attack_manager.get_weapons():
 			starting_weapons.append({"id": w.id if "id" in w else "unknown", "lvl": w.level if "level" in w else 1})
-	
+
 	var seed_val = 0
 	if arena_manager and "current_seed" in arena_manager:
 		seed_val = arena_manager.current_seed
-	
+
 	var context = {
 		"character_id": _get_character_id(),
 		"starting_weapons": starting_weapons,
 		"game_version": GAME_VERSION,
 		"seed": seed_val
 	}
-	
+
 	# RunContext: iniciar run unificada (ANTES de trackers)
 	var run_ctx = get_node_or_null("/root/RunContext")
 	if run_ctx:
 		run_ctx.start_run(context)
-	
+
 	# RunBundleManager: crear bundle (ANTES de trackers para que redirijan)
 	var bundle_mgr = get_node_or_null("/root/RunBundleManager")
 	if bundle_mgr and bundle_mgr.has_method("begin_bundle"):
 		bundle_mgr.begin_bundle(context)
-	
+
 	# BalanceTelemetry (existing)
 	if BalanceTelemetry:
 		BalanceTelemetry.start_run(context)
-	
+
 	# RunAuditTracker (new full audit system)
 	var audit_tracker = get_node_or_null("/root/RunAuditTracker")
 	if audit_tracker:
 		audit_tracker.start_run(context)
-	
+
 	# UpgradeAuditor: iniciar auditoría de pickups
 	var upgrade_auditor = get_node_or_null("/root/UpgradeAuditor")
 	if upgrade_auditor and upgrade_auditor.has_method("start_run"):
@@ -1992,7 +1999,7 @@ func _check_telemetry_minute_snapshot() -> void:
 		"weapons": [],
 		"player_stats": {}
 	}
-	
+
 	# TELEMETRY: Añadir HP actual del jugador al snapshot
 	var base_player = _get_base_player()
 	if base_player:
@@ -2000,16 +2007,16 @@ func _check_telemetry_minute_snapshot() -> void:
 		if health_comp:
 			context["hp_current"] = health_comp.current_health
 			context["hp_max"] = health_comp.max_health
-	
+
 	# TELEMETRY: Dodges total from BalanceDebugger
 	if BalanceDebugger:
 		var metrics = BalanceDebugger.get_current_metrics()
 		context["dodges_total"] = metrics.get("mitigation", {}).get("dodges", 0)
-	
+
 	# TELEMETRY: Active enemies count
 	if enemy_manager:
 		context["active_enemies"] = enemy_manager.active_enemies.size() if "active_enemies" in enemy_manager else 0
-	
+
 	# Get difficulty snapshot
 	if BalanceTelemetry:
 		context["difficulty"] = BalanceTelemetry.get_difficulty_snapshot()
@@ -2023,11 +2030,11 @@ func _check_telemetry_minute_snapshot() -> void:
 			var snap = run_ctx.get_difficulty_snapshot()
 			if snap.get("status", "") != "not_available":
 				context["difficulty"] = snap
-	
+
 	# BalanceTelemetry minute snapshot
 	if BalanceTelemetry and BalanceTelemetry.check_minute_snapshot(game_time):
 		BalanceTelemetry.log_minute_snapshot(context)
-	
+
 	# RunAuditTracker minute tick (checks internally)
 	var audit_tracker = get_node_or_null("/root/RunAuditTracker")
 	if audit_tracker and audit_tracker.ENABLE_AUDIT:
@@ -2275,7 +2282,7 @@ func _update_hud_weapons_from_attack_manager(attack_mgr) -> void:
 	"""Actualizar iconos de armas en HUD desde AttackManager"""
 	if not hud or not hud.has_method("update_weapons"):
 		return
-	
+
 	var weapons_info: Array = []
 	if attack_mgr.has_method("get_weapons"):
 		for weapon in attack_mgr.get_weapons():
@@ -2291,7 +2298,7 @@ func _update_hud_weapons_from_attack_manager(attack_mgr) -> void:
 				}
 			if not info.is_empty():
 				weapons_info.append(info)
-	
+
 	hud.update_weapons(weapons_info)
 
 func save_session_playtime() -> void:

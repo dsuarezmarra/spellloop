@@ -295,7 +295,7 @@ func _format_string(text: String, args: Array) -> String:
 	for i in range(args.size()):
 		var placeholder = "{" + str(i) + "}"
 		formatted = formatted.replace(placeholder, str(args[i]))
-	
+
 	# Also support sprintf-style placeholders (%d, %s, %02d, etc.)
 	if formatted.contains("%") and args.size() > 0:
 		# Count placeholders (excluding %%) to verify match with args count
@@ -307,7 +307,7 @@ func _format_string(text: String, args: Array) -> String:
 					placeholder_count += 1
 				i += 1  # Skip next char (the format specifier or second %)
 			i += 1
-		
+
 		# Only apply sprintf if placeholder count matches args count
 		if placeholder_count > 0 and placeholder_count == args.size():
 			var safe_args = []

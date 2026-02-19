@@ -95,10 +95,10 @@ func _ready() -> void:
 	update_health_bar()
 
 	# print("[LoopiaLikePlayer] ===== OK: LOOPIALIKE PLAYER LISTO =====\n")
-	
+
 	# === P0.1: ORBITAL OVERHEAT SYSTEM ===
 	_init_orbital_overheat()
-	
+
 	# === P0.2: I-FRAME VISUAL SYSTEM ===
 	_init_iframes_visual()
 
@@ -135,10 +135,10 @@ func _physics_process(_delta: float) -> void:
 	if wizard_player and wizard_player._is_dying:
 		velocity = Vector2.ZERO
 		return  # Salir inmediatamente, sin move_and_slide
-	
+
 	# Obtener input del jugador
 	var input_manager = get_tree().root.get_node_or_null("InputManager")
-	
+
 	# DEBUG: Verificar máscara cada 60 frames (~1s)
 	# if Engine.get_frames_drawn() % 120 == 0:
 	# 	print("DEBUG Player: Collision Mask = %d (Bin: %s)" % [collision_mask, String.num_int64(collision_mask, 2)])
@@ -158,11 +158,11 @@ func _physics_process(_delta: float) -> void:
 			var on_path = false
 			if arena_manager and arena_manager.has_method("is_on_path"):
 				on_path = arena_manager.is_on_path(global_position)
-			
+
 			# Actualizar estado de camino en PlayerStats
 			if ps.has_method("set_on_path"):
 				ps.set_on_path(on_path)
-			
+
 			# Obtener velocidad (ya incluye bonus de camino si aplica)
 			final_speed = ps.get_stat("move_speed")
 
@@ -193,11 +193,11 @@ func _physics_process(_delta: float) -> void:
 	# === SISTEMA DE BARRERAS POR DISTANCIA ===
 	# Más confiable que colisiones físicas para barreras circulares
 	_enforce_zone_barriers()
-	
+
 	# === COLISIONES CON DECORADOS ===
 	# Sistema basado en distancia (StaticBody2D dinámicos no funcionan)
 	_enforce_decor_collisions()
-	
+
 	# === P0.1: ORBITAL OVERHEAT SYSTEM ===
 	_update_orbital_overheat(_delta)
 
@@ -229,7 +229,9 @@ func _enforce_zone_barriers() -> void:
 			# Pequeño efecto de rebote
 			velocity = direction_to_center * 100.0
 			# Reset cooldown después de 0.5s
-			get_tree().create_timer(0.5).timeout.connect(func(): _barrier_hit_cooldown = false)
+			get_tree().create_timer(0.5).timeout.connect(func():
+				if is_instance_valid(self): _barrier_hit_cooldown = false
+			)
 
 var _barrier_hit_cooldown: bool = false
 
@@ -238,20 +240,20 @@ func _enforce_decor_collisions() -> void:
 	var manager = get_tree().get_first_node_in_group("decor_collision_manager")
 	if not manager or not manager.has_method("check_collision_fast"):
 		return
-	
+
 	# Player visual: ~125px de alto (500px * 0.25 scale)
 	# Hitbox del 80% del tamaño
 	var player_width = 30.0
-	
+
 	# La posición de colisión está en los PIES del player
 	# Offset hacia abajo desde global_position
 	var feet_offset = 50.0
 	var collision_pos = global_position + Vector2(0, feet_offset)
-	
+
 	# Colisión circular con radio equivalente al ancho
 	var player_radius = player_width / 2.0
 	var push = manager.check_collision_fast(collision_pos, player_radius)
-	
+
 	if push.length_squared() > 0.1:
 		global_position += push
 
@@ -259,13 +261,13 @@ func _play_footstep_sound() -> void:
 	var arena_manager = get_tree().get_first_node_in_group("arena_manager")
 	var biome = "Grassland"
 	var is_on_path = false
-	
+
 	if arena_manager:
 		if arena_manager.has_method("get_biome_at_position"):
 			biome = arena_manager.get_biome_at_position(global_position)
 		if arena_manager.has_method("is_on_path"):
 			is_on_path = arena_manager.is_on_path(global_position)
-	
+
 	# Mapping biomes to ID keys (lowercase)
 	var biome_key = "grassland" # default
 	match biome:
@@ -285,20 +287,20 @@ func _play_footstep_sound() -> void:
 			biome_key = "death"
 		_:
 			biome_key = "grassland"
-			
+
 	var surface = "path" if is_on_path else "ground"
 	var sound_id = "sfx_footstep_%s_%s" % [biome_key, surface]
-	
+
 	# Fallback logic handled by AudioManager? No, better explicit here or use play() which warns if missing.
 	# But user requested fallbacks:
 	# "si tampoco existe, fallback final a sfx_footstep_stone_ground"
-	
+
 	# We rely on AudioManager.manifest check to see if we need fallback
 	# But LoopiaLikePlayer doesn't have direct access to manifest dict usually (it's in Singleton).
 	# We can use AudioManager.has_method("has_id") or just access manifest properties if exposed.
 	# For now, we trust the generation. But let's add a safe simple fallback if we were to crash.
 	# Actually AudioManager.play checks existence.
-	
+
 	AudioManager.play(sound_id)
 
 func _on_wizard_damaged(amount: int, current_hp: int) -> void:
@@ -315,34 +317,12 @@ func _on_wizard_died() -> void:
 func take_damage(amount: int, element: String = "physical", attacker: Node = null) -> void:
 	if wizard_player:
 		wizard_player.take_damage(amount, element, attacker)
-		
+
 		# Play hurt sound
 		AudioManager.play("sfx_player_hurt")
 
-		# === THORNS LOGIC ===
-		if attacker and is_instance_valid(attacker) and attacker.has_method("take_damage"):
-			var ps = get_tree().get_first_node_in_group("player_stats")
-			if ps and ps.has_method("get_stat"):
-				var thorns = ps.get_stat("thorns")
-				var thorns_pct = ps.get_stat("thorns_percent")
-				
-				if thorns > 0 or thorns_pct > 0:
-					# Calcular daño de reflexión (Daño base + % del daño recibido)
-					var reflect_damage = int(thorns + (amount * thorns_pct))
-					
-					if reflect_damage > 0:
-						# Aplicar daño al atacante
-						attacker.take_damage(reflect_damage, "thorns", self)
-						
-						# Aplicar efectos de estado de thorns (Rare/Legendary upgrades)
-						var t_slow = ps.get_stat("thorns_slow")
-						var t_stun = ps.get_stat("thorns_stun")
-						
-						if t_slow > 0 and attacker.has_method("apply_slow"):
-							attacker.apply_slow(0.5, 2.0) # 50% slow por 2s
-						
-						if t_stun > 0 and attacker.has_method("apply_stun"):
-							attacker.apply_stun(t_stun)
+		# THORNS se maneja en BasePlayer._process_post_damage_effects → _apply_thorns_damage
+		# para evitar aplicación doble
 
 	hp = wizard_player.hp if wizard_player else hp
 
@@ -488,7 +468,7 @@ func get_pickup_range() -> float:
 		# Añadir pickup_range_flat de PlayerStats
 		var ps_flat = player_stats.get_stat("pickup_range_flat")
 		return range_value + ps_flat + pickup_range_flat
-	
+
 	# Fallback al sistema local si no hay PlayerStats
 	return (pickup_radius * magnet) + pickup_range_flat
 
@@ -592,7 +572,7 @@ func _update_orbital_overheat(delta: float) -> void:
 	if not _has_active_orbitals():
 		_orbital_overheat_active = false
 		return
-	
+
 	# Check for nearby enemies
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	var enemies_nearby = 0
@@ -601,13 +581,13 @@ func _update_orbital_overheat(delta: float) -> void:
 			enemies_nearby += 1
 			if enemies_nearby >= ORBITAL_MIN_ENEMIES:
 				break
-	
+
 	_orbital_overheat_active = (enemies_nearby >= ORBITAL_MIN_ENEMIES)
-	
+
 	if not _orbital_overheat_active:
 		_orbital_overheat_timer = 0.0  # Reset timer when safe
 		return
-	
+
 	# Apply chip damage
 	_orbital_overheat_timer += delta
 	if _orbital_overheat_timer >= ORBITAL_OVERHEAT_INTERVAL:
@@ -618,43 +598,43 @@ func _has_active_orbitals() -> bool:
 	"""Check if player has any orbital weapons equipped"""
 	if not wizard_player:
 		return false
-	
+
 	# Get WeaponManager from wizard_player
 	var weapon_mgr = wizard_player.get_node_or_null("WeaponManager")
 	if not weapon_mgr:
 		return false
-	
+
 	# Check if any equipped weapon has "orbital" tag
 	if not weapon_mgr.has_method("get_equipped_weapons"):
 		return false
-	
+
 	var equipped = weapon_mgr.get_equipped_weapons()
 	for weapon_id in equipped:
 		var weapon_data = WeaponDatabase.get_weapon_data(weapon_id)
 		if weapon_data and "tags" in weapon_data:
 			if "orbital" in weapon_data["tags"]:
 				return true
-	
+
 	return false
 
 func _apply_orbital_chip_damage() -> void:
 	"""Apply chip damage from orbital overheat"""
 	if not health_component:
 		return
-	
-	var current_hp = health_component.current_health if health_component.has_method("get_current_health") else hp
+
+	var current_hp = health_component.current_health if "current_health" in health_component else hp
 	if current_hp <= ORBITAL_HP_THRESHOLD:
 		return  # Safety: don't kill player or apply when low HP
-	
+
 	# Apply 1 HP environmental damage
 	if health_component.has_method("take_damage"):
 		health_component.take_damage(ORBITAL_CHIP_DAMAGE, "environmental")
 	elif wizard_player and wizard_player.has_method("take_damage"):
 		wizard_player.take_damage(ORBITAL_CHIP_DAMAGE, "environmental", null)
-	
+
 	# Visual feedback
 	_show_overheat_flash()
-	
+
 	# Debug log (only in debug builds, throttled)
 	if OS.is_debug_build() and Engine.get_frames_drawn() % 60 == 0:
 		print("[Orbital Overheat] -%d HP (Enemies: ≥%d within %dpx)" % [ORBITAL_CHIP_DAMAGE, ORBITAL_MIN_ENEMIES, int(ORBITAL_DANGER_RADIUS)])
@@ -663,7 +643,7 @@ func _show_overheat_flash() -> void:
 	"""Brief red flash to indicate overheat damage"""
 	if OS.has_feature("headless") or not animated_sprite:
 		return
-	
+
 	# Brief red tint
 	var tween = create_tween()
 	tween.tween_property(animated_sprite, "modulate", Color(1.5, 0.7, 0.7), 0.15)
@@ -682,12 +662,12 @@ func _update_iframes_visual() -> void:
 	"""Update I-frame visual flashing based on BasePlayer/WizardPlayer invulnerability"""
 	if OS.has_feature("headless") or not animated_sprite:
 		return
-	
+
 	# Check if wizard_player is invulnerable via BasePlayer's system
 	var is_invulnerable = false
 	if wizard_player and wizard_player.has_method("is_invulnerable"):
 		is_invulnerable = wizard_player.is_invulnerable()
-	
+
 	if is_invulnerable and not _invulnerable_visual_active:
 		_start_invulnerability_flash()
 		_invulnerable_visual_active = true
@@ -699,11 +679,11 @@ func _start_invulnerability_flash() -> void:
 	"""Start flashing effect for i-frames"""
 	if OS.has_feature("headless") or not animated_sprite:
 		return
-	
+
 	# Kill existing tween
 	if _invulnerability_tween and _invulnerability_tween.is_running():
 		_invulnerability_tween.kill()
-	
+
 	# Create looping flash
 	_invulnerability_tween = create_tween()
 	_invulnerability_tween.set_loops()
@@ -714,6 +694,6 @@ func _stop_invulnerability_flash() -> void:
 	"""Stop flashing and restore normal appearance"""
 	if _invulnerability_tween and _invulnerability_tween.is_running():
 		_invulnerability_tween.kill()
-	
+
 	if animated_sprite:
 		animated_sprite.modulate = Color.WHITE

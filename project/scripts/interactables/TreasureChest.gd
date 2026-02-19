@@ -39,7 +39,7 @@ func initialize(chest_position: Vector2, type: int, player: CharacterBody2D, rar
 	chest_type = type
 	player_ref = player
 	z_index = 35
-	
+
 	# Determinar rareza si no se especifica (-1)
 	if rarity == -1:
 		match chest_type:
@@ -58,7 +58,7 @@ func initialize(chest_position: Vector2, type: int, player: CharacterBody2D, rar
 					chest_rarity = 2 # Rare
 	else:
 		chest_rarity = rarity
-	
+
 	setup_visual()
 	generate_contents()
 
@@ -72,7 +72,7 @@ func initialize_as_shop(chest_position: Vector2, player: CharacterBody2D, tier: 
 	shop_game_time = game_time
 	z_index = 35
 	chest_rarity = tier  # Rareza visual = tier
-	
+
 	setup_visual()
 	# No llamar generate_contents - se genera al abrir con ShopChestPopup
 
@@ -102,7 +102,7 @@ func setup_visual():
 	"""Configurar apariencia del cofre usando spritesheets"""
 	sprite = Sprite2D.new()
 	add_child(sprite)
-	
+
 	# Determinar textura según rareza
 	var tex_name = "chest_common"
 	match chest_rarity:
@@ -111,13 +111,13 @@ func setup_visual():
 		2: tex_name = "chest_epic"
 		3: tex_name = "chest_legendary"
 		4: tex_name = "chest_unique"
-	
+
 	# Mapeos especiales
 	if chest_type == ChestType.BOSS: tex_name = "chest_legendary"
 	if chest_type == ChestType.WEAPON: tex_name = "chest_rare"
-	
+
 	var path = "res://assets/treasure_chests/%s.png" % tex_name
-	
+
 	# Cargar textura o fallback
 	if ResourceLoader.exists(path):
 		var tex = load(path)
@@ -126,22 +126,22 @@ func setup_visual():
 		sprite.offset = Vector2(0, -16) # Ajuste de pivote
 	else:
 		create_chest_texture()
-	
+
 	# Ajuste de tamaño (Request de usuario: reducir a la mitad porque se ven enormes)
 	var scale_factor = 0.5
-	
+
 	# Escala según tipo
 	match chest_type:
 		ChestType.BOSS: scale_factor *= 1.3
 		ChestType.ELITE: scale_factor *= 1.15
-	
+
 	var scale_manager = null
 	if get_tree() and get_tree().root and get_tree().root.get_node_or_null("ScaleManager"):
 		scale_manager = get_tree().root.get_node("ScaleManager")
 	if scale_manager and scale_manager.has_method("get_scale"):
 		scale_factor *= scale_manager.get_scale()
 	sprite.scale = Vector2(scale_factor, scale_factor)
-	
+
 	# ✨ Agregar aura dorada al cofre
 	var AuraClass = load("res://scripts/effects/AuraEffect.gd")
 	if AuraClass:
@@ -157,11 +157,11 @@ func setup_visual():
 			if AuraConfig and aura:
 				var radius = AuraConfig.gate("CHEST_AURA_RADIUS") if AuraConfig.has_method("gate") else 64.0
 				if AuraConfig.has("CHEST_AURA_RADIUS"): radius = AuraConfig.CHEST_AURA_RADIUS
-				
+
 				# Boss chest aura mas grande
 				if chest_type == ChestType.BOSS:
 					radius *= 1.5
-				
+
 				if aura.has_method("set_aura_radius"):
 					aura.set_aura_radius(radius)
 
@@ -169,48 +169,48 @@ func create_chest_texture():
 	"""Crear textura del cofre con color de rareza"""
 	var size = 32
 	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
-	
+
 	# Color base del cofre según tipo
 	var chest_color = Color(0.6, 0.3, 0.1, 1.0)  # Marrón base
 	match chest_type:
 		ChestType.ELITE: chest_color = Color(0.7, 0.6, 0.2) # Dorado osc
 		ChestType.BOSS: chest_color = Color(0.4, 0.1, 0.6) # Purpura oscuro
 		ChestType.WEAPON: chest_color = Color(0.5, 0.1, 0.1) # Rojo oscuro
-	
+
 	var rarity_color = Color(1,1,1)
 	# Usar UIVisualHelper para colores consistentes (chest_rarity 0-4 -> tier 1-5)
 	rarity_color = UIVisualHelper.get_color_for_tier(chest_rarity + 1)
 	var lock_color = rarity_color
-	
+
 	# Cuerpo del cofre
 	for x in range(4, size - 4):
 		for y in range(8, size - 4):
 			image.set_pixel(x, y, chest_color)
-	
+
 	# Borde de rareza
 	for x in range(3, size - 3):
 		for y in range(7, 9):  # Borde superior
 			image.set_pixel(x, y, rarity_color)
 		for y in range(size - 5, size - 3):  # Borde inferior
 			image.set_pixel(x, y, rarity_color)
-	
+
 	# Bordes laterales
 	for y in range(7, size - 3):
 		image.set_pixel(3, y, rarity_color)  # Izquierda
 		image.set_pixel(size - 4, y, rarity_color)  # Derecha
-	
+
 	# Detalle central (cerradura) con color de rareza
 	for x in range(int(size/2.0) - 2, int(size/2.0) + 2):
 		for y in range(int(size/2.0) - 1, int(size/2.0) + 1):
 			image.set_pixel(x, y, lock_color)
-	
+
 	var texture = ImageTexture.new()
 	texture.set_image(image)
 	sprite.texture = texture
 
 func generate_contents():
 	"""Generar contenido del cofre usando LootManager"""
-	
+
 	# Usar LootManager si está disponible
 	if ClassDB.class_exists("LootManager") or ResourceLoader.exists("res://scripts/managers/LootManager.gd"):
 		var loot_class = load("res://scripts/managers/LootManager.gd")
@@ -222,12 +222,12 @@ func generate_contents():
 				var meta = sm.get_meta_data()
 				var luck_points = int(meta.get("luck_points", 0))
 				luck_modifier = 1.0 + (luck_points * 0.02)
-			
+
 			# Contexto para fusiones (AttackManager) - buscar en múltiples ubicaciones
 			var context = _get_attack_manager_context()
-				
+
 			items_inside = loot_class.get_chest_loot(chest_type, luck_modifier, context)
-			
+
 			# Fallback si LootManager devuelve vacío
 			if items_inside.size() == 0:
 				items_inside.append(loot_class._generate_gold_loot(chest_type, 1.0))
@@ -245,7 +245,7 @@ func generate_contents():
 
 func get_random_chest_item() -> String:
 	var item_types = [
-		"weapon_damage", "weapon_speed", "health_boost", 
+		"weapon_damage", "weapon_speed", "health_boost",
 		"speed_boost", "new_weapon", "heal_full",
 		"shield_boost", "crit_chance", "mana_boost"
 	]
@@ -263,17 +263,44 @@ func _process(delta):
 			_anim_timer = 0.0
 			sprite.frame = (sprite.frame + 1) % sprite.hframes
 
-	if is_opened or not player_ref or popup_shown:
+	if is_opened or popup_shown:
 		return
-	
-	if not is_instance_valid(player_ref):
-		return
+
+	# Fallback: buscar player si no tenemos referencia
+	if not player_ref or not is_instance_valid(player_ref):
+		player_ref = _find_player()
+		if not player_ref:
+			return
+
 	var distance = global_position.distance_to(player_ref.global_position)
 	if distance <= interaction_range:
 		popup_shown = true
 		trigger_chest_interaction()
 
+func _find_player() -> Node2D:
+	"""Buscar referencia al player por múltiples métodos"""
+	var tree = get_tree()
+	if not tree:
+		return null
+	# 1. Por grupo
+	var p = tree.get_first_node_in_group("player")
+	if p:
+		return p
+	# 2. Por PlayerContainer
+	if tree.current_scene:
+		var container = tree.current_scene.get_node_or_null("PlayerContainer")
+		if container and container.get_child_count() > 0:
+			return container.get_child(0)
+	# 3. Buscar CharacterBody2D con get_hp
+	var bodies = tree.get_nodes_in_group("player")
+	if not bodies.is_empty():
+		return bodies[0]
+	return null
+
 func _ready():
+	# Asegurar que el cofre siempre procese (incluso durante pausas breves de UI)
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
 	if is_instance_valid(interaction_area) and interaction_area.has_signal("body_entered"):
 		interaction_area.body_entered.connect(func(body):
 			if body and body.has_method("get_hp"):
@@ -283,14 +310,21 @@ func _ready():
 
 func trigger_chest_interaction():
 	if is_opened: return
-	
+
 	# Guard clause to prevent double execution (fix duplicate UI)
 	if popup_shown_internal: return
+
+	# No interactuar durante pausa (otro popup activo, level up, etc.)
+	if get_tree().paused:
+		# Resetear popup_shown para reintentar cuando se despause
+		popup_shown = false
+		return
+
 	popup_shown_internal = true
-	
+
 	# Play chest opening sound
 	AudioManager.play_fixed("sfx_chest_open")
-	
+
 	# Pause handled by UIManager/Popup Queue
 	create_chest_popup()
 
@@ -299,11 +333,11 @@ func create_chest_popup():
 	if is_shop_chest:
 		_create_shop_popup()
 		return
-	
+
 	# Popup normal para otros tipos
 	ui_opened.emit()
 	var popup_instance = SimpleChestPopup.new()
-	
+
 	# Request via UIManager to handle queue and pausing
 	var ui_manager = get_tree().root.get_node_or_null("UIManager")
 	if ui_manager and ui_manager.has_method("request_popup"):
@@ -312,7 +346,7 @@ func create_chest_popup():
 		# Fallback
 		get_tree().paused = true
 		get_tree().current_scene.add_child(popup_instance)
-	
+
 	var items_with_names = []
 	for i in range(items_inside.size()):
 		var item = items_inside[i]
@@ -322,11 +356,11 @@ func create_chest_popup():
 		# Fallback name logic if internal name is not display-friendly
 		if item_name == "":
 			item_name = get_item_display_name(item_type)
-			
+
 		var rarity_name = get_rarity_name(item.get("rarity", 0))
 		item_display["name"] = "%s (%s)" % [item_name, rarity_name]
 		items_with_names.append(item_display)
-	
+
 	# Determinar modo Jackpot vs Selección
 	if items_with_names.size() > 1:
 		# Modo Jackpot / Fusión: Mostrar todos y reclamar todos
@@ -338,7 +372,7 @@ func create_chest_popup():
 		popup_instance.item_selected.connect(_on_popup_item_selected)
 		if popup_instance.has_signal("skipped"):
 			popup_instance.skipped.connect(_on_chest_skipped)
-			
+
 		# Emitir ui_closed cuando se cierre el popup
 		popup_instance.tree_exited.connect(func(): ui_closed.emit())
 
@@ -346,11 +380,11 @@ func _on_chest_skipped():
 	"""Callback cuando se salta el cofre"""
 	is_opened = true
 	create_opening_effect()
-	
+
 	# No aplicamos items
 	print("[TreasureChest] Cofre saltado (Skip usado)")
 	chest_opened.emit(self, []) # Lista vacía indica skip
-	
+
 	var timer = Timer.new()
 	add_child(timer)
 	timer.wait_time = 1.0
@@ -384,7 +418,7 @@ func _on_popup_item_selected(selected_item: Dictionary):
 	# Reconstruir el item original (quitando el nombre visual si es necesario) o pasarlo tal cual
 	# AttackManager/Game espera el formato de LootManager.
 	# SimpleChestPopup devuelve el item con 'name' modificado, pero la data importante (id, type) persiste.
-	
+
 	_finalize_opening([selected_item])
 
 func _on_jackpot_claimed(items: Array):
@@ -394,19 +428,19 @@ func _on_jackpot_claimed(items: Array):
 func _finalize_opening(items: Array):
 	is_opened = true
 	create_opening_effect()
-	
-	# Emitir señal con los items originales (hacemos match por índice si es necesario, 
+
+	# Emitir señal con los items originales (hacemos match por índice si es necesario,
 	# pero como items_inside no cambia, podemos confiar en el orden o usar items)
-	# Nota: items viene del popup, que tiene nombres modificados. 
+	# Nota: items viene del popup, que tiene nombres modificados.
 	# Mejor usar items_inside si es reclamar todo, o buscar el seleccionado.
 	# Para simplificar, pasamos los items del popup que tienen la data base.
-	
+
 	# APLICAR ITEMS AL JUGADOR (CRÍTICO: Esto faltaba para cofres normales)
 	for item in items:
 		_apply_item(item)
-	
+
 	chest_opened.emit(self, items)
-	
+
 	var timer = Timer.new()
 	add_child(timer)
 	timer.wait_time = 1.0
@@ -434,30 +468,30 @@ func _create_shop_popup():
 		player_coins = exp_mgr.total_coins
 	elif player_ref and "coins" in player_ref:
 		player_coins = player_ref.coins
-	
+
 	# Generar items con precios
 	var luck = 1.0
 	if player_ref and player_ref.has_method("get_luck"):
 		luck = player_ref.get_luck()
-	
+
 	# Restaurar declaración de game_time_minutes
 	var game_time_minutes = shop_game_time / 60.0
-	
+
 	# Mapear shop_tier a ChestType de LootManager
 	var loot_chest_type = LootManager.ChestType.NORMAL
 	if shop_tier >= 3:
 		loot_chest_type = LootManager.ChestType.BOSS
 	elif shop_tier == 2:
 		loot_chest_type = LootManager.ChestType.ELITE
-		
+
 	# Calcular cantidad de items (1-3 + bonus por tiempo)
 	var count = clampi(2 + int(game_time_minutes / 5.0), 2, 5)
-	
+
 	# Contexto para filtrado (AttackManager)
 	var context = _get_attack_manager_context()
 
 	items_inside = LootManager.get_random_shop_loot(loot_chest_type, count, luck, context)
-	
+
 	if items_inside.is_empty():
 		# Fallback: generar al menos un item
 		items_inside.append({
@@ -471,13 +505,13 @@ func _create_shop_popup():
 			"original_price": 25,
 			"discount_percent": 0
 		})
-	
+
 	# Crear popup
 	ui_opened.emit()
 	var popup = ShopChestPopup.new()
 	get_tree().current_scene.add_child(popup)
 	popup.setup_shop(items_inside, player_coins)
-	
+
 	# Conectar señales
 	popup.item_purchased.connect(_on_shop_item_purchased)
 	popup.popup_closed.connect(_on_shop_popup_closed)
@@ -491,15 +525,15 @@ func _on_shop_item_purchased(item: Dictionary, price: int):
 		exp_mgr.spend_coins(price)
 	elif exp_mgr and "total_coins" in exp_mgr:
 		exp_mgr.total_coins -= price
-	
+
 	# Aplicar item al jugador
 	_apply_item(item)
-	
+
 	# Finalizar apertura
 	is_opened = true
 	create_opening_effect()
 	chest_opened.emit(self, [item])
-	
+
 	# Destruir cofre después de un delay
 	await get_tree().create_timer(1.0).timeout
 	queue_free()
@@ -507,11 +541,11 @@ func _on_shop_item_purchased(item: Dictionary, price: int):
 func _on_shop_popup_closed(purchased: bool):
 	"""Callback cuando se cierra el popup de tienda"""
 	is_opened = true
-	
+
 	if not purchased:
 		# No compró nada, igual destruir
 		create_opening_effect()
-	
+
 	# Destruir cofre
 	await get_tree().create_timer(0.5).timeout
 	queue_free()
@@ -520,46 +554,46 @@ func _apply_item(item: Dictionary):
 	"""Aplicar item al jugador (usado tanto para compras como para loot normal)"""
 	var item_type = item.get("type", "")
 	var item_id = item.get("id", "")
-	
+
 	# DEBUG: Log completo del item recibido
 	print("[TreasureChest] _apply_item DEBUG: type='%s', id='%s', fusion_data=%s" % [item_type, item_id, item.get("fusion_data", "NO_DATA")])
-	
+
 	# Buscar PlayerStats una sola vez
 	var player_stats = null
 	if is_inside_tree():
 		var ps_nodes = get_tree().get_nodes_in_group("player_stats")
 		if ps_nodes.size() > 0:
 			player_stats = ps_nodes[0]
-	
+
 	match item_type:
 		"weapon":
 			# Añadir arma usando AttackManager (el sistema correcto de armas)
 			# AttackManager.add_weapon_by_id crea un BaseWeapon con comportamiento completo
 			print("[TreasureChest] Intentando añadir arma: %s" % item_id)
 			var result = false
-			
+
 			# Buscar AttackManager por grupo (más robusto que player_ref.attack_manager)
 			var attack_mgr = get_tree().get_first_node_in_group("attack_manager")
 			print("[TreasureChest] DEBUG: attack_mgr = %s" % attack_mgr)
-			
+
 			if attack_mgr and attack_mgr.has_method("add_weapon_by_id"):
 				result = attack_mgr.add_weapon_by_id(item_id)
 			if result:
 				print("[TreasureChest] ✅ Arma añadida via AttackManager: %s" % result)
-				
+
 				# -----------------------------------------------------------
 				# MEJORA: Nivelar arma según rareza del cofre / item
 				# -----------------------------------------------------------
 				# Si sale en un cofre de Tier X, el arma debería ser Nivel X
 				var target_tier = 1
-				
+
 				if item.has("tier"):
 					target_tier = int(item.tier)
 				elif item.has("rarity"):
 					target_tier = int(item.rarity) + 1 # Rarity 0 is Tier 1
 				else:
 					target_tier = chest_rarity + 1
-				
+
 				# Aplicar level ups si corresponde
 				if target_tier > 1:
 					print("[TreasureChest] ⚔️ Auto-nivelando arma %s a Nivel %d (Tier %d)" % [item_id, target_tier, target_tier])
@@ -570,24 +604,24 @@ func _apply_item(item: Dictionary):
 							print("[TreasureChest] ⚠️ No se pudo subir más de nivel (Max level?)")
 							break
 				# -----------------------------------------------------------
-				
+
 			else:
 				print("[TreasureChest] ❌ Falló añadir arma: %s" % item_id)
-		
+
 		"upgrade":
 			# Aplicar upgrade al PlayerStats
 			# IMPORTANTE: LootManager devuelve un wrapper con la data real en "data"
 			# Debemos pasar la data real (que contiene "effects") al PlayerStats
 			var upgrade_data = item.get("data", item)
 			print("[TreasureChest] Aplicando upgrade: %s (Raw: %s)" % [upgrade_data, item])
-			
+
 			# Buscar PlayerStats por grupo (NO por ruta directa)
 			# (Ya buscado arriba)
-			
+
 			if player_stats and player_stats.has_method("apply_upgrade"):
 				var result = player_stats.apply_upgrade(upgrade_data)
 				print("[TreasureChest] Upgrade applied: %s" % result)
-				
+
 				# FALLBACK: Si falla (ej: Única duplicada), dar oro
 				if not result:
 					print("[TreasureChest] ⚠️ Falla al aplicar upgrade (Duplicado?). Dando ORO como compensación.")
@@ -595,42 +629,30 @@ func _apply_item(item: Dictionary):
 					_apply_item({"type": "gold", "amount": gold_amount})
 					# Mostrar texto flotante
 					FloatingText.spawn_text(global_position + Vector2(0, -60), "+%d 💰 (REFUND)" % gold_amount, Color(1, 0.9, 0.2))
-					
+
 			elif player_ref and player_ref.has_method("apply_upgrade"):
 				player_ref.apply_upgrade(upgrade_data)
 			else:
 				push_error("[TreasureChest] No se encontró PlayerStats para aplicar upgrade")
-		
-		"healing":
-			var amount = item.get("amount", 20)
-			# Curar usando player_ref o búsqueda segura
-			if player_ref and player_ref.has_method("heal"):
-				player_ref.heal(amount)
-				print("[TreasureChest] ❤️ Curado %d HP via player_ref" % amount)
-			else:
-				var p = get_tree().get_first_node_in_group("player")
-				if p and p.has_method("heal"):
-					p.heal(amount)
-					print("[TreasureChest] ❤️ Curado %d HP via group" % amount)
-		
+
 		"gold":
 			# Añadir oro
 			var amount = item.get("amount", 50)
 			var exp_mgr = get_tree().current_scene.get_node_or_null("ExperienceManager")
-			
+
 			if not exp_mgr:
 				# Intentar buscar por grupo
 				var groups = get_tree().get_nodes_in_group("experience_manager")
 				if not groups.is_empty():
 					exp_mgr = groups[0]
-			
+
 			if exp_mgr and exp_mgr.has_method("add_coins"):
 				exp_mgr.add_coins(amount)
 				print("[TreasureChest] 💰 Añadido %d ORO" % amount)
 			elif player_ref and "coins" in player_ref:
 				player_ref.coins += amount
 				print("[TreasureChest] 💰 Añadido %d ORO a player.coins" % amount)
-				
+
 		"fusion":
 			# Aplicar fusión - CORREGIDO: usar fuse_weapons con las armas del fusion_data
 			print("[TreasureChest] 🔧 FUSION CASE ENTERED - Processing fusion...")
@@ -639,21 +661,21 @@ func _apply_item(item: Dictionary):
 			if fusion_data.is_empty():
 				push_error("[TreasureChest] ❌ Fusión sin datos válidos!")
 				return
-			
+
 			var weapon_a = fusion_data.get("weapon_a")
 			var weapon_b = fusion_data.get("weapon_b")
 			print("[TreasureChest] 🔧 weapon_a = %s, weapon_b = %s" % [weapon_a, weapon_b])
-			
+
 			if not weapon_a or not weapon_b:
 				push_error("[TreasureChest] ❌ Fusión sin armas válidas! weapon_a=%s, weapon_b=%s" % [weapon_a, weapon_b])
 				return
-			
+
 			# Buscar AttackManager por grupo (más robusto)
 			var attack_mgr = get_tree().get_first_node_in_group("attack_manager")
 			if not attack_mgr:
 				push_error("[TreasureChest] ❌ No se encontró AttackManager para fusión")
 				return
-			
+
 			# Ejecutar la fusión usando el método correcto
 			if attack_mgr.has_method("fuse_weapons"):
 				var fused_weapon = attack_mgr.fuse_weapons(weapon_a, weapon_b)
@@ -678,10 +700,10 @@ func _apply_item(item: Dictionary):
 					FloatingText.spawn_text(global_position + Vector2(0, -60), "+%d 💰 (REFUND)" % gold_amount, Color(1, 0.9, 0.2))
 			else:
 				push_error("[TreasureChest] ❌ AttackManager no tiene método fuse_weapons")
-		
+
 		"healing", "health_boost":
 			# Curación instantánea
-			var amount = item.get("amount", 0)
+			var amount = item.get("amount", 20)
 			# Si es health_boost, puede ser max_hp o curación, depende de la implementación.
 			# Asumimos que healing es curar.
 			if player_ref and player_ref.has_method("heal"):
@@ -689,16 +711,16 @@ func _apply_item(item: Dictionary):
 			elif player_ref and "health_component" in player_ref:
 				if player_ref.health_component.has_method("heal"):
 					player_ref.health_component.heal(amount)
-					
+
 		"consumable", "elixir", "potion":
 			# Manejar consumibles (curación, buffs temporales o permanentes)
 			var handled = false
-			
+
 			# 1. Curación directa
 			# Soportar tanto "heal_amount" como "amount" si el efecto es curar
 			var is_heal = item.get("effect") == "heal" or "potion" in item_id or "elixir" in item_id
 			var heal_val = item.get("heal_amount", item.get("amount", 0))
-			
+
 			if is_heal and heal_val > 0:
 				if player_ref and player_ref.has_method("heal"):
 					player_ref.heal(heal_val)
@@ -708,12 +730,12 @@ func _apply_item(item: Dictionary):
 					player_ref.health_component.heal(heal_val)
 					handled = true
 					print("[TreasureChest] 🧪 Consumible curó (direct HC): %s HP" % heal_val)
-			
+
 			# 2. Efectos de stats
 			var effects = item.get("effects", [])
 			if not effects.is_empty():
 				# player_stats ya está definido al inicio de la función
-				
+
 				if player_stats:
 					# Verificar si tiene duración (buff temporal)
 					var duration = item.get("duration", 0.0)
@@ -726,7 +748,7 @@ func _apply_item(item: Dictionary):
 						player_stats.apply_upgrade(item)
 						handled = true
 						print("[TreasureChest] 🧪 Consumible aplicado como upgrade permanente")
-			
+
 			if not handled:
 				print("[TreasureChest] ⚠️ Consumible sin efectos reconocidos: %s" % item)
 

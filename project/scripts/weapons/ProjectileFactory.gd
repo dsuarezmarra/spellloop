@@ -26,25 +26,25 @@ static func _get_cached_player_stats(tree: SceneTree) -> Node:
 	"""Obtener PlayerStats con caching por frame"""
 	if tree == null:
 		return null
-	
+
 	# Actualizar cache solo una vez por frame
 	var current_frame = Engine.get_process_frames()
 	if _cache_frame != current_frame or not is_instance_valid(_cached_player_stats):
 		var nodes = tree.get_nodes_in_group("player_stats")
 		_cached_player_stats = nodes[0] if not nodes.is_empty() else null
 		_cache_frame = current_frame
-	
+
 	return _cached_player_stats
 
 static func _get_cached_player(tree: SceneTree) -> Node:
 	"""Obtener Player con caching"""
 	if tree == null:
 		return null
-	
+
 	if not is_instance_valid(_cached_player):
 		var nodes = tree.get_nodes_in_group("player")
 		_cached_player = nodes[0] if not nodes.is_empty() else null
-	
+
 	return _cached_player
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -89,20 +89,20 @@ static func check_execute(tree: SceneTree, enemy: Node) -> bool:
 	"""
 	if not is_instance_valid(enemy):
 		return false
-	
+
 	# Obtener execute_threshold de AttackManager/PlayerStats
 	var attack_manager = tree.get_first_node_in_group("attack_manager")
 	if attack_manager == null:
 		return false
-	
+
 	var execute_threshold = attack_manager.get_player_stat("execute_threshold") if attack_manager.has_method("get_player_stat") else 0.0
 	if execute_threshold <= 0:
 		return false
-	
+
 	# Verificar HP del enemigo
 	var current_hp = 0
 	var max_hp = 1
-	
+
 	if enemy.has_method("get_health"):
 		var health_data = enemy.get_health()
 		current_hp = health_data.get("current", 0)
@@ -115,10 +115,10 @@ static func check_execute(tree: SceneTree, enemy: Node) -> bool:
 		max_hp = enemy.max_hp
 	else:
 		return false
-	
+
 	# Calcular porcentaje de HP
 	var hp_percent = float(current_hp) / float(max_hp) if max_hp > 0 else 0.0
-	
+
 	# Si está bajo el umbral, ejecutar
 	if hp_percent <= execute_threshold and hp_percent > 0:
 		# Matar instantáneamente
@@ -128,7 +128,7 @@ static func check_execute(tree: SceneTree, enemy: Node) -> bool:
 			FloatingText.spawn_damage(enemy.global_position + Vector2(0, -30), current_hp, true)
 			# Debug desactivado: print("[Execute] ☠️ Enemigo ejecutado")
 		return true
-	
+
 	return false
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -139,30 +139,30 @@ static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
 	"""Aplicar life steal al jugador basado en el daño causado - acumula hasta 1 HP"""
 	if tree == null:
 		return
-	
+
 	# Obtener life_steal de AttackManager
 	var attack_manager = tree.get_first_node_in_group("attack_manager")
 	if attack_manager == null:
 		return
-	
+
 	var life_steal = attack_manager.get_player_stat("life_steal") if attack_manager.has_method("get_player_stat") else 0.0
 	if life_steal <= 0:
 		return
-	
+
 	# Obtener el jugador
 	var player = tree.get_first_node_in_group("player")
 	if player == null:
 		return
-	
+
 	# Acumular el heal parcial
 	var heal_amount = damage_dealt * life_steal
 	_life_steal_accumulator += heal_amount
-	
+
 	# Solo curar cuando acumulemos al menos 1 HP completo
 	if _life_steal_accumulator >= 1.0:
 		var heal_int = int(_life_steal_accumulator)
 		_life_steal_accumulator -= heal_int  # Guardar el residuo
-		
+
 		# Intentar curar al jugador
 		if player.has_method("heal"):
 			player.heal(heal_int)
@@ -192,14 +192,14 @@ static func get_modified_effect_duration(tree: SceneTree, base_duration: float) 
 	"""
 	if tree == null:
 		return base_duration
-	
+
 	# OPTIMIZACIÓN: Usar cache en lugar de get_nodes_in_group
 	var player_stats = _get_cached_player_stats(tree)
 	if player_stats and player_stats.has_method("get_stat"):
 		var duration_mult = float(player_stats.get_stat("status_duration_mult"))
 		if duration_mult > 0:
 			return base_duration * duration_mult
-	
+
 	return base_duration
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -213,17 +213,17 @@ static func apply_status_effects_chance(tree: SceneTree, enemy: Node) -> void:
 	"""
 	if tree == null or enemy == null or not is_instance_valid(enemy):
 		return
-	
+
 	# OPTIMIZACIÓN: Usar cache en lugar de get_nodes_in_group
 	var player_stats = _get_cached_player_stats(tree)
 	if not player_stats or not player_stats.has_method("get_stat"):
 		return
-	
+
 	# Obtener multiplicador de duración
 	var status_duration_mult = float(player_stats.get_stat("status_duration_mult"))
 	if status_duration_mult <= 0:
 		status_duration_mult = 1.0
-	
+
 	# === BURN CHANCE ===
 	var burn_chance = float(player_stats.get_stat("burn_chance"))
 	if burn_chance > 0 and randf() < burn_chance:
@@ -233,7 +233,7 @@ static func apply_status_effects_chance(tree: SceneTree, enemy: Node) -> void:
 				burn_dmg = 3.0
 			enemy.apply_burn(burn_dmg, 3.0 * status_duration_mult)  # 3s base duration
 			# print("[StatusEffect] 🔥 Burn aplicado! (chance: %.0f%%)" % (burn_chance * 100))
-	
+
 	# === FREEZE CHANCE ===
 	var freeze_chance = float(player_stats.get_stat("freeze_chance"))
 	if freeze_chance > 0 and randf() < freeze_chance:
@@ -242,7 +242,7 @@ static func apply_status_effects_chance(tree: SceneTree, enemy: Node) -> void:
 			# print("[StatusEffect] ❄️ Freeze aplicado! (chance: %.0f%%)" % (freeze_chance * 100))
 		elif enemy.has_method("apply_slow"):
 			enemy.apply_slow(0.5, 2.0 * status_duration_mult)  # Fallback: 50% slow 2s
-	
+
 	# === BLEED CHANCE ===
 	var bleed_chance = float(player_stats.get_stat("bleed_chance"))
 	if bleed_chance > 0 and randf() < bleed_chance:
@@ -274,26 +274,26 @@ static func create_projectile(owner: Node2D, data: Dictionary) -> Node2D:
 	# Configurar propiedades del proyectil ANTES de añadirlo al árbol
 	var start_pos = data.get("start_position", owner.global_position)
 	var dir = data.get("direction", Vector2.RIGHT)
-	
+
 	projectile.global_position = start_pos
 	projectile.direction = dir
 	projectile.damage = data.get("damage", 10.0)
-	
+
 	# FIX: Support both speed keys (BaseWeapon uses "speed")
 	var p_speed = data.get("speed", data.get("projectile_speed", 400.0))
 	projectile.speed = p_speed
-	
+
 	projectile.pierce_count = data.get("pierce", 0)
-	
+
 	# CRITICAL FIX: Calculate lifetime from range/speed
 	# duration is usually 0.0 for projectiles (it's for status effects)
 	var p_range = data.get("range", 300.0)
 	projectile.lifetime = p_range / maxf(p_speed, 1.0)
-	
+
 	projectile.knockback_force = data.get("knockback", 100.0)
 	projectile.element_type = get_element_string(data.get("element", 0))
 	projectile.projectile_color = data.get("color", Color.WHITE)
-	
+
 	# Metadata para efectos y visuals
 	projectile.set_meta("weapon_id", data.get("weapon_id", ""))
 	projectile.set_meta("effect", data.get("effect", "none"))
@@ -396,6 +396,7 @@ static func _create_base_projectile(_data: Dictionary) -> Node2D:
 	# FIX: Use get_projectile() method (acquire() doesn't exist)
 	if ProjectilePool.instance:
 		return ProjectilePool.instance.get_projectile()
+	push_warning("[ProjectileFactory] ProjectilePool.instance es null — no se puede crear proyectil")
 	return null
 
 
@@ -460,6 +461,7 @@ class BeamEffect extends Node2D:
 
 		# Encontrar todos los enemigos en el camino
 		var enemies_hit = []
+		var excluded_rids: Array[RID] = []  # Acumular exclusiones para evitar golpear al mismo collider
 		var current_pos = global_position
 
 		for i in range(50):  # Límite de iteraciones
@@ -472,11 +474,14 @@ class BeamEffect extends Node2D:
 				enemies_hit.append(collider)
 				_apply_damage(collider)
 
+			# Acumular RID del collider para no impactarlo de nuevo
+			excluded_rids.append(collider.get_rid())
+
 			# Mover el punto de inicio más allá
 			current_pos = result.position + direction * 5.0
 			query = PhysicsRayQueryParameters2D.create(current_pos, end_pos)
 			query.collision_mask = 2 | 4 | 8 | 16 # Layers 2, 3, 4, 5 to be safe
-			query.exclude = [collider.get_rid()]
+			query.exclude = excluded_rids
 
 		# Crear visual del rayo (mejorado si está disponible)
 		_create_beam_visual(end_pos)
@@ -484,12 +489,12 @@ class BeamEffect extends Node2D:
 	func _apply_damage(enemy: Node) -> void:
 		# Use cached player for calculators
 		var player = _get_player()
-		
+
 		# Calcular daño final usando el sistema centralizado
 		var damage_result = DamageCalculator.calculate_final_damage(
 			damage, enemy, player, crit_chance, crit_damage, self
 		)
-		
+
 		# Aplicar daño y todos los efectos asociados
 		DamageCalculator.apply_damage_with_effects(
 			get_tree(),
@@ -499,7 +504,7 @@ class BeamEffect extends Node2D:
 			knockback,
 			self
 		)
-		
+
 		# LOG: Registrar daño de beam (usando el valor final calculado)
 		# Note: apply_damage_with_effects doesn't log specifically for "BEAM", so we keep explicit log here if needed
 		# or move logging inside DamageCalculator (ideal for v2)
@@ -508,16 +513,16 @@ class BeamEffect extends Node2D:
 
 		# Aplicar efectos especiales (que no maneja DamageCalculator aún)
 		_apply_effect(enemy)
-	
+
 	func _apply_effect(enemy: Node) -> void:
 		"""Aplicar efectos especiales del beam"""
 		if effect == "none":
 			return
-		
+
 		# Obtener duración modificada por status_duration_mult
 		var modified_duration = ProjectileFactory.get_modified_effect_duration(get_tree(), effect_duration)
 		var modified_value_as_duration = ProjectileFactory.get_modified_effect_duration(get_tree(), effect_value)
-		
+
 		match effect:
 			"burn":
 				if enemy.has_method("apply_burn"):
@@ -560,7 +565,7 @@ class BeamEffect extends Node2D:
 			"shadow_mark":
 				if enemy.has_method("apply_shadow_mark"):
 					enemy.apply_shadow_mark(effect_value, modified_duration)
-	
+
 	func _get_player() -> Node:
 		"""Obtener referencia al jugador"""
 		if not get_tree():
@@ -595,7 +600,7 @@ class BeamEffect extends Node2D:
 		if Headless.is_headless():
 			# En modo headless, solo ejecutar lógica sin visual
 			return
-		
+
 		var line = Line2D.new()
 		line.width = beam_width
 		line.default_color = color
@@ -631,7 +636,7 @@ class AOEEffect extends Node2D:
 	var crit_chance: float = 0.0
 	var crit_damage: float = 2.0  # Multiplicador de daño crítico
 	var weapon_id: String = ""  # Para visuales mejorados
-	
+
 	# Sistema de tics de daño
 	var tick_interval: float = 0.25  # Tiempo entre cada tic de daño
 	var damage_per_tick: float = 5.0  # Daño por cada tic
@@ -646,14 +651,14 @@ class AOEEffect extends Node2D:
 	var _damage_applied: bool = false
 	var _enhanced_visual: AOEVisualEffect = null
 	var _use_enhanced: bool = false
-	
+
 	# Configuración de tics por arma (balanceado)
 	# damage_per_tick, tick_interval, total_ticks
 	const AOE_TICK_CONFIG: Dictionary = {
 		# Armas base
 		"earth_spike": {"damage_per_tick": 7, "tick_interval": 0.25, "total_ticks": 2},  # 14 total (burst)
 		"void_pulse": {"damage_per_tick": 4, "tick_interval": 0.25, "total_ticks": 4},   # 16 total (sustained)
-		
+
 		# Fusiones AOE
 		"rift_quake": {"damage_per_tick": 8, "tick_interval": 0.3, "total_ticks": 5},     # 40 total
 		"glacier": {"damage_per_tick": 8, "tick_interval": 0.2, "total_ticks": 3},        # 24 total
@@ -681,10 +686,10 @@ class AOEEffect extends Node2D:
 		crit_damage = data.get("crit_damage", 2.0)
 		weapon_id = data.get("weapon_id", "")
 		set_meta("weapon_id", weapon_id)
-		
+
 		# Configurar tics según el arma
 		_setup_tick_damage()
-	
+
 	func _setup_tick_damage() -> void:
 		"""Configurar el daño por tics basado en el arma"""
 		if AOE_TICK_CONFIG.has(weapon_id):
@@ -700,7 +705,7 @@ class AOEEffect extends Node2D:
 			total_ticks = max(2, int(duration / 0.25))
 			tick_interval = duration / float(total_ticks)
 			damage_per_tick = damage / float(total_ticks)
-		
+
 		# Debug de tick config (desactivado en producción)
 		# print("[AOE] Tick config para %s: %d daño/tick, %.2fs intervalo, %d ticks (total: %d)" % [
 		#	weapon_id if weapon_id != "" else "default",
@@ -731,32 +736,33 @@ class AOEEffect extends Node2D:
 		area.collision_layer = 0
 		# FIX: Enemigos están en Layer 2 (EnemyBase), pero algunas configs pueden usar Layer 3 (4).
 		# Usamos máscara 6 (2 + 4) para cubrir ambos casos.
-		area.collision_mask = 6 
+		area.collision_mask = 6
 		add_child(area)
-		
+
 		var shape = CollisionShape2D.new()
 		var circle = CircleShape2D.new()
 		circle.radius = aoe_radius
 		shape.shape = circle
 		area.add_child(shape)
-		
+
 		# Conectar señales para tracking eficiente
 		area.body_entered.connect(_on_body_entered)
 		area.body_exited.connect(_on_body_exited)
-		
+		area.area_entered.connect(_on_area_entered)  # Fallback para enemigos Area2D
+
 		# Crear visual (mejorado si está disponible)
 		_create_aoe_visual()
 
 		# Aplicar primer tic de daño inmediatamente
 		# CRÍTICO: Esperar un frame físico para que el área detecte colisiones iniciales
-		# o usar query manual si se necesita instantáneo. 
+		# o usar query manual si se necesita instantáneo.
 		# Para consistencia con old logic, forzamos un update manual del physics state o aceptamos 1 frame delay.
 		# Aceptamos 1 frame delay para _enemies_in_area, pero para el primer tick usamos PhysicsDirectSpaceState
 		# para dar feedback instantáneo al spawnear (importante para armas reactivas)
-		
+
 		_initial_burst_check()
 		_ticks_applied = 1
-	
+
 	func _initial_burst_check() -> void:
 		"""Check inicial instantáneo usando RayCast/ShapeCast para no esperar al frame de física"""
 		var space = get_world_2d().direct_space_state
@@ -768,7 +774,7 @@ class AOEEffect extends Node2D:
 		query.collision_mask = 6 # Enemy layer (2 + 4)
 		query.collide_with_bodies = true
 		query.collide_with_areas = true
-		
+
 		var results = space.intersect_shape(query, 64) # Max 64 enemies burst detection
 		for res in results:
 			var collider = res.collider
@@ -797,18 +803,18 @@ class AOEEffect extends Node2D:
 		"""Aplicar un tic de daño a todos los enemigos ACTUALMENTE en el área"""
 		# OPTIMIZACIÓN: Solo iterar sobre los enemigos detectados por física
 		# Esto reduce complejidad de O(TotalEnemies) a O(EnemiesInRadius)
-		
+
 		var ids_to_remove = []
-		
+
 		for enemy_id in _enemies_in_area:
 			var enemy = _enemies_in_area[enemy_id]
-			
+
 			# Validar que siga existiendo (pudo morir)
 			if is_instance_valid(enemy):
 				_apply_damage_tick(enemy)
 			else:
 				ids_to_remove.append(enemy_id)
-		
+
 		# Limpiar referencias inválidas
 		for id in ids_to_remove:
 			_enemies_in_area.erase(id)
@@ -819,13 +825,13 @@ class AOEEffect extends Node2D:
 		var player = null
 		if not get_tree():
 			return
-		
+
 		var players = get_tree().get_nodes_in_group("player")
 		if players.size() > 0:
 			player = players[0]
-			
+
 		# Calcular daño final usando el sistema centralizado
-		# Nota: damage_per_tick ya debería incluir modificadores del arma, 
+		# Nota: damage_per_tick ya debería incluir modificadores del arma,
 		# pero NO modificadores situacionales del jugador (brawler, etc.)
 		var damage_result = DamageCalculator.calculate_final_damage(
 			damage_per_tick, enemy, player, crit_chance, crit_damage, self
@@ -836,16 +842,16 @@ class AOEEffect extends Node2D:
 		# Aplicar daño
 		if enemy.has_method("take_damage"):
 			enemy.take_damage(final_damage, "physical", self)
-			
+
 			# LOG: Registrar daño AOE con info de ticks
 			DamageLogger.log_aoe_damage(weapon_id, enemy.name, final_damage, "tick %d/%d" % [_ticks_applied, total_ticks])
-			
+
 			# Modulo de efectos secundarios centralizado
 			# No usamos apply_damage_with_effects DIRECTAMENTE porque AOE requiere lógica propia para logging y knockback
 			# pero llamamos a los helpers individuales
 			ProjectileFactory.apply_life_steal(get_tree(), damage_result.final_damage)
 			ProjectileFactory.check_execute(get_tree(), enemy)
-			
+
 			if not _enemies_damaged.has(enemy.get_instance_id()):
 				ProjectileFactory.apply_status_effects_chance(get_tree(), enemy)
 
@@ -896,7 +902,7 @@ class AOEEffect extends Node2D:
 					if enemy.has_method("take_damage"):
 						# Burn default: 3 dmg/s normally defined in WeaponDatabase or defaults
 						# We should try to access damage per tick logic or strict definition.
-						# Assuming effect_value is damage per second? 
+						# Assuming effect_value is damage per second?
 						# In UpgradeDatabase: "3 daño/s por 3s" -> effect_value likely 3.
 						var total_dmg = effect_value * modified_duration
 						enemy.take_damage(total_dmg, "fire", self)
@@ -970,7 +976,7 @@ class AOEEffect extends Node2D:
 			"chain":
 				# El chain se maneja en ChainProjectile, no aquí
 				pass
-	
+
 	func _get_player() -> Node:
 		"""Obtener referencia al jugador para lifesteal"""
 		if not get_tree():
@@ -1022,20 +1028,20 @@ class AOEEffect extends Node2D:
 		# Fallback: VFX genérico via VFXManager
 		if Headless.is_headless():
 			return
-			
+
 		# Intentar usar VFXManager para un efecto genérico mejor que un círculo dibujado
 		var vfx_mgr = get_node_or_null("/root/VFXManager")
 		if vfx_mgr and vfx_mgr.has_method("spawn_aoe"):
 			# Determinar tipo basado en color/elemento si es posible, o usar default
 			var fallback_type = "fire_stomp" # Default generico
-			
+
 			# Mapeo simple basado en color (aproximación)
 			if color.g > 0.8 and color.r < 0.5: fallback_type = "poison_nova" # Verde -> Poison
 			elif color.b > 0.8 and color.r < 0.5: fallback_type = "freeze_zone" # Azul -> Ice
 			elif color.r > 0.8 and color.g < 0.5: fallback_type = "fire_stomp" # Rojo -> Fire
 			elif color.r > 0.6 and color.b > 0.6: fallback_type = "arcane_nova" # Violeta -> Arcane
 			elif color.r > 0.8 and color.g > 0.8: fallback_type = "ground_slam" # Amarillo/Marron -> Earth
-			
+
 			# Spawnear el efecto
 			var vfx = vfx_mgr.spawn_aoe(fallback_type, global_position, aoe_radius)
 			if vfx:
@@ -1055,13 +1061,13 @@ class AOEEffect extends Node2D:
 	func _process(delta: float) -> void:
 		_timer += delta
 		_tick_timer += delta
-		
+
 		# Aplicar tics de daño mientras dure el efecto
 		if _ticks_applied < total_ticks and _tick_timer >= tick_interval:
 			_tick_timer = 0.0
 			_ticks_applied += 1
 			_apply_tick_damage()
-		
+
 		# Terminar cuando se alcance la duración (si no usamos visual mejorado)
 		if not _use_enhanced:
 			# OPTIMIZACIÓN: Removido queue_redraw() que se llamaba cada frame

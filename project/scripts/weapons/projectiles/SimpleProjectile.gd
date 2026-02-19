@@ -1,7 +1,7 @@
 # SimpleProjectile.gd
 # Sistema de proyectiles con diferentes tipos de elemento
 # ACTUALIZADO: Integra AnimatedProjectileSprite para visuales mejorados
-# 
+#
 # Tipos soportados:
 # - ice: Esquirla de hielo (rombo azul brillante)
 # - fire: Bola de fuego (círculo naranja con estela)
@@ -56,11 +56,11 @@ const ELEMENT_COLORS = {
 func _ready() -> void:
 	# CRÍTICO: Respetar la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
-	
+
 	# Configuración básica
 	z_index = 10
 	pierces_remaining = pierce_count
-	
+
 	# DEBUG: Mostrar metadatos de efectos al crear
 	var _effect = get_meta("effect", "none")
 	var _effect_value = get_meta("effect_value", 0.0)
@@ -69,19 +69,19 @@ func _ready() -> void:
 	if _effect != "none":
 		# Debug desactivado: print("[SimpleProjectile] 🆕 Creado - weapon: %s, effect: %s (val=%.2f, dur=%.2f)" % [_wid, _effect, _effect_value, _effect_dur])
 		pass
-	
+
 	# Obtener color: priorizar color del arma sobre color del elemento
 	if has_meta("weapon_color"):
 		projectile_color = get_meta("weapon_color")
 	elif ELEMENT_COLORS.has(element_type):
 		projectile_color = ELEMENT_COLORS[element_type]
-	
+
 	# Configurar colisiones
 	_setup_collision()
-	
+
 	# Inicializar visuales (llamado aquí para primera vez, y externamente para pooling)
 	initialize_visuals()
-	
+
 	# Conectar señales
 	if not body_entered.is_connected(_on_body_entered):
 		body_entered.connect(_on_body_entered)
@@ -89,9 +89,9 @@ func _ready() -> void:
 		area_entered.connect(_on_area_entered)
 
 
-		
 
-	
+
+
 func initialize_visuals() -> void:
 	"""Crear/Recrear los visuales del proyectil (Soporte para pooling)"""
 	# Limpiar visuales anteriores si existen (seguridad extra)
@@ -101,15 +101,15 @@ func initialize_visuals() -> void:
 	if is_instance_valid(sprite):
 		sprite.queue_free()
 		sprite = null
-	
+
 	# NUEVO: Intentar crear visual animado primero
 	var used_animated = _try_create_animated_visual()
-	
+
 	if not used_animated:
 		# Fallback: Usar colores simples si no hay animaciones definidas
 		# Esto mantiene compatibilidad si falta algún asset
 		pass
-	
+
 	# Siempre recrear trail (partículas)
 	if is_instance_valid(trail_particles):
 		trail_particles.queue_free()
@@ -121,50 +121,50 @@ func _try_create_animated_visual() -> bool:
 	_weapon_id = get_meta("weapon_id", "")
 	if _weapon_id.is_empty():
 		return false
-	
+
 	# AGREGAR A GRUPO PARA GESTIÓN DE ORBITALES (Seguridad para pooling)
 	var group_name = "weapon_projectiles_" + _weapon_id
 	if not is_in_group(group_name):
 		add_to_group(group_name)
-	
+
 	# 124: Buscar el ProjectileVisualManager
 	# NOTA: ClassDB.class_exists solo funciona para clases nativas, no scripts.
 	# Usamos directamente la referencia estática o verificamos si la instancia existe.
-	
+
 	if not ProjectileVisualManager.instance:
 		return false
-		
+
 	var visual_manager = ProjectileVisualManager.instance
-	
+
 	# Obtener weapon_data para el visual
 	var weapon_data = WeaponDatabase.get_weapon_data(_weapon_id)
 	if weapon_data.is_empty():
 		return false
-	
+
 	# Crear el visual animado
 	animated_sprite = visual_manager.create_projectile_visual(_weapon_id, weapon_data)
 	if animated_sprite == null:
 		return false
-	
+
 	add_child(animated_sprite)
-	
+
 	# Iniciar animación de vuelo
 	animated_sprite.play_flight()
-	
+
 	# Aplicar rotación inmediatamente basada en la dirección actual
 	animated_sprite.set_direction(direction)
-	
+
 	return true
 
 func _setup_collision() -> void:
 	# Capa 4 = proyectiles del jugador
 	collision_layer = 0
 	set_collision_layer_value(4, true)
-	
+
 	# Máscara 2 = enemigos
 	collision_mask = 0
 	set_collision_mask_value(2, true)
-	
+
 	# Crear collision shape si no existe
 	var shape = get_node_or_null("CollisionShape2D")
 	if not shape:
@@ -172,7 +172,7 @@ func _setup_collision() -> void:
 		shape.name = "CollisionShape2D"
 		shape.shape = CircleShape2D.new()
 		add_child(shape)
-		
+
 		# Debug visual (solo visible si 'Visible Collision Shapes' está activo en Debug)
 		shape.modulate = Color(1, 0, 0, 0.5)
 
@@ -181,7 +181,7 @@ func _setup_collision() -> void:
 		# AUMENTO DE HITBOX (Mejora de "Game Feel")
 		# Multiplicador base: 25% más grande que el sprite visual por defecto
 		var hitbox_mult = 1.25
-		
+
 		# Ajustes por tipo de elemento
 		match element_type:
 			"ice": hitbox_mult = 1.15    # Hielo debe ser preciso
@@ -190,10 +190,10 @@ func _setup_collision() -> void:
 			"nature": hitbox_mult = 1.2  # Naturaleza estándar
 			"dark": hitbox_mult = 1.25   # Oscuridad estándar
 			"lightning": hitbox_mult = 1.4 # Rayos deben impactar fácil
-		
+
 		# Calcular radio final
 		shape.shape.radius = (projectile_size * 0.5) * hitbox_mult
-		
+
 		# Debug visual (solo visible si 'Visible Collision Shapes' está activo en Debug)
 		shape.modulate = Color(1, 0, 0, 0.5)
 
@@ -201,11 +201,11 @@ func _create_visual() -> void:
 	"""Crear visual según tipo de elemento"""
 	sprite = Sprite2D.new()
 	sprite.name = "Sprite"
-	
+
 	var size = int(projectile_size * 2.5)
 	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
 	var center = Vector2(size / 2.0, size / 2.0)
-	
+
 	match element_type:
 		"ice":
 			_draw_ice_shard(image, size, center)
@@ -221,7 +221,7 @@ func _create_visual() -> void:
 			_draw_leaf(image, size, center)
 		_:
 			_draw_default_orb(image, size, center)
-	
+
 	var texture = ImageTexture.create_from_image(image)
 	sprite.texture = texture
 	sprite.centered = true
@@ -373,12 +373,12 @@ func _create_trail() -> void:
 	# OPTIMIZACIÓN: No crear más trails si alcanzamos el límite
 	if SimpleProjectile._active_trail_count >= MAX_ACTIVE_TRAILS:
 		return
-	
+
 	SimpleProjectile._active_trail_count += 1
-	
+
 	# Verificar si es un arma que necesita partículas reducidas
 	var is_low_particle = _weapon_id in LOW_PARTICLE_WEAPONS
-	
+
 	trail_particles = CPUParticles2D.new()
 	trail_particles.name = "Trail"
 	trail_particles.emitting = true
@@ -395,10 +395,10 @@ func _create_trail() -> void:
 	trail_particles.scale_amount_min = 0.2 if is_low_particle else 0.3
 	trail_particles.scale_amount_max = 0.4 if is_low_particle else 0.5
 	trail_particles.color = projectile_color
-	
+
 	# Conectar para decrementar contador cuando se destruya
 	trail_particles.tree_exited.connect(_on_trail_destroyed)
-	
+
 	add_child(trail_particles)
 
 func _on_trail_destroyed() -> void:
@@ -409,13 +409,13 @@ func reinitialize() -> void:
 	"""Reinicializar stats y visuales para pooling"""
 	_is_destroyed = false  # Resetear guard
 	pierces_remaining = pierce_count
-	
+
 	# Recalcular color
 	if has_meta("weapon_color"):
 		projectile_color = get_meta("weapon_color")
 	elif ELEMENT_COLORS.has(element_type):
 		projectile_color = ELEMENT_COLORS[element_type]
-		
+
 	# Actualizar colisión y visuales
 	_setup_collision()
 	initialize_visuals()
@@ -427,10 +427,10 @@ func _process(delta: float) -> void:
 		# Expiró: Destruir sin efectos de impacto overkill
 		_destroy()
 		return
-	
+
 	# Mover en línea recta (SIN rotación)
 	global_position += direction * speed * delta
-	
+
 	# Actualizar dirección del sprite animado
 	if animated_sprite and is_instance_valid(animated_sprite):
 		animated_sprite.set_direction(direction)
@@ -440,6 +440,9 @@ func configure_and_launch(data: Dictionary, start_pos: Vector2, target_vec: Vect
 	Método UNIFICADO para inicializar, configurar y lanzar un proyectil.
 	Reemplaza la lógica fragmentada anterior para garantizar consistencia total (Zero-Ghosting Policy).
 	"""
+	# 0. Resetear guard de destrucción (CRÍTICO para pooling — evita proyectiles zombie)
+	_is_destroyed = false
+
 	# 1. Aplicar Stats Base (Sobrescribir siempre)
 	damage = int(data.get("damage", 10))
 	speed = data.get("speed", 400.0)
@@ -449,19 +452,19 @@ func configure_and_launch(data: Dictionary, start_pos: Vector2, target_vec: Vect
 	knockback_force = data.get("knockback", 150.0)
 	pierce_count = data.get("pierce", 0)
 	pierces_remaining = pierce_count
-	
+
 	# 2. Configurar Elemento
 	var element_int = data.get("element", 3)
 	# Usar helper estático de ProjectileFactory directamente
 	element_type = ProjectileFactory.get_element_string(element_int)
-	
+
 	# 3. Configurar Color (Prioridad: Arma > Elemento)
 	if data.has("color"):
 		projectile_color = data.get("color")
 		set_meta("weapon_color", projectile_color)
 	else:
 		projectile_color = ELEMENT_COLORS.get(element_type, Color.WHITE)
-	
+
 	# 4. Configurar Efectos (Metadata)
 	set_meta("effect", data.get("effect", "none"))
 	set_meta("effect_value", data.get("effect_value", 0.0))
@@ -469,30 +472,30 @@ func configure_and_launch(data: Dictionary, start_pos: Vector2, target_vec: Vect
 	set_meta("crit_chance", data.get("crit_chance", 0.0))
 	set_meta("crit_damage", data.get("crit_damage", 2.0))
 	set_meta("weapon_id", data.get("weapon_id", ""))
-	
+
 	# 5. Configurar Movimiento
 	global_position = start_pos
 	if is_direction:
 		direction = target_vec
 	else:
 		direction = (target_vec - start_pos).normalized()
-	
+
 	# Resetear estado de ejecución
 	current_lifetime = 0.0
 	enemies_hit.clear()
-	
+
 	# 6. Reconstruir Visuales (Ahora que tenemos todos los datos)
 	initialize_visuals()
-	
+
 	# 7. Activar Lógica y Señales
 	set_process(true)
-	
+
 	# Reconectar señales (Pooling cleanup fix)
 	if not body_entered.is_connected(_on_body_entered):
 		body_entered.connect(_on_body_entered)
 	if not area_entered.is_connected(_on_area_entered):
 		area_entered.connect(_on_area_entered)
-	
+
 	# 8. Trigger Animación
 	if animated_sprite and is_instance_valid(animated_sprite):
 		animated_sprite.set_direction(direction)
@@ -510,7 +513,7 @@ func _on_body_entered(body: Node2D) -> void:
 func _on_area_entered(area: Area2D) -> void:
 	# DEBUG: Ver qué entra
 	# print("Proj hit area: ", area.name, " Parent: ", area.get_parent().name)
-	
+
 	# Si el área tiene un parent que es enemigo
 	if area.get_parent() and area.get_parent().is_in_group("enemies"):
 		_handle_hit(area.get_parent())
@@ -519,165 +522,55 @@ func _handle_hit(target: Node) -> void:
 	# Ignorar si ya golpeamos este enemigo
 	if target in enemies_hit:
 		return
-	
+
 	# Verificar que es un enemigo
 	if not target.is_in_group("enemies"):
 		return
-	
+
 	# Debug desactivado por spam: print("🎯 Proj Hit Target: ", target.name)
 	enemies_hit.append(target)
-	
-	# Calcular daño final (con crítico si aplica)
-	var final_damage = damage
-	var crit_chance = get_meta("crit_chance", 0.0)
-	var crit_damage_mult = get_meta("crit_damage", 2.0)  # Obtener multiplicador de crítico
-	if randf() < crit_chance:
-		final_damage *= crit_damage_mult  # Usar multiplicador variable
-	
-	# Aplicar multiplicador de daño condicional (damage_vs_slowed/burning/frozen)
-	var conditional_mult = ProjectileFactory.get_conditional_damage_multiplier(get_tree(), target)
-	if conditional_mult > 1.0:
-		final_damage = int(float(final_damage) * conditional_mult)
-	
-	# Verificar daño contra élites
-	var is_elite_target = false
-	if target.has_method("is_elite") and target.is_elite():
-		is_elite_target = true
-	elif "is_elite" in target and target.is_elite:
-		is_elite_target = true
-		
-	if is_elite_target:
-		var ps = get_tree().get_first_node_in_group("player_stats")
-		if ps and ps.has_method("get_stat"):
-			var elite_mult = ps.get_stat("elite_damage_mult")
-			if elite_mult > 0:
-				if elite_mult < 0.1: elite_mult = 1.0 # Safety check
-				final_damage = int(final_damage * elite_mult)
-				# print("⚔️ Elite Hit! Damage x%.2f" % elite_mult)
-				
-	# -----------------------------------------------------------
-	# LÓGICA DE NUEVOS OBJETOS (Phase 3)
-	# -----------------------------------------------------------
-	# Calcular distancia desde el jugador al enemigo (NO la distancia recorrida por el proyectil)
-	var player_to_enemy_distance: float = 0.0
-	var player = get_tree().get_first_node_in_group("player")
-	if player and target:
-		player_to_enemy_distance = player.global_position.distance_to(target.global_position)
-	
-	# 1. Tiro Certero (Sharpshooter): +damage si enemigo lejos (> 300 del jugador)
-	var ps = get_tree().get_first_node_in_group("player_stats")
-	if ps:
-		# Check Sharpshooter - usa distancia del jugador al enemigo
-		var sharpshooter_val = ps.get_stat("long_range_damage_bonus") if ps.has_method("get_stat") else 0.0
-		if sharpshooter_val > 0 and player_to_enemy_distance > 300:
-			final_damage = int(final_damage * (1.0 + sharpshooter_val))
-			
-		# 2. Peleador Callejero (Street Brawler): +damage si enemigo cerca (< 150 del jugador)
-		var brawler_val = ps.get_stat("close_range_damage_bonus") if ps.has_method("get_stat") else 0.0
-		if brawler_val > 0 and player_to_enemy_distance < 150:
-			final_damage = int(final_damage * (1.0 + brawler_val))
-			
-		# 3. Verdugo (Executioner): +damage si enemigo Low HP (< 30%)
-		var executioner_val = ps.get_stat("low_hp_damage_bonus") if ps.has_method("get_stat") else 0.0
-		if executioner_val > 0:
-			var hp_pct = 1.0
-			if target.has_method("get_health_percent"):
-				hp_pct = target.get_health_percent()
-			elif "health_component" in target and target.health_component:
-				hp_pct = target.health_component.get_health_percent()
-			
-			if hp_pct < 0.30: # 30% HP threshold
-				final_damage = int(final_damage * (1.0 + executioner_val))
-		
-		# 3b. Confianza Plena: +damage si el JUGADOR tiene HP máximo
-		var full_hp_val = ps.get_stat("full_hp_damage_bonus") if ps.has_method("get_stat") else 0.0
-		if full_hp_val > 0:
-			var player_hp_pct = ps.get_health_percent() if ps.has_method("get_health_percent") else 0.0
-			if player_hp_pct >= 1.0:
-				final_damage = int(final_damage * (1.0 + full_hp_val))
-		
-		# 4. Combustión Instantánea (Combustion - Rework): Burn aplica daño instantáneo
-		var combustion_active = ps.get_stat("combustion_active") if ps.has_method("get_stat") else 0.0
-		if combustion_active > 0:
-			# Si aplicamos quemadura, aplicamos su daño total instantáneamente
-			var burn_chance = get_meta("burn_chance", 0.0)
-			# Asumimos que si hay status_effect manager o similar, aplicamos daño extra
-			# Simplificación: +50% daño extra como "explosión" si el proyectil tiene elemento fuego
-			if get_meta("element", "") == "fire" or burn_chance > 0:
-				var burn_dmg = final_damage * 0.5
-				target.take_damage(int(burn_dmg), "fire", self)
-				FloatingText.spawn_custom(target.global_position + Vector2(10, -40), "COMB!", Color.ORANGE_RED)
 
-		# 5. Ruleta Rusa (Russian Roulette): 1% chance de 4x daño, o 0 daño?
-		# Descripción: "1% chance for massive damage" -> Digamos 10x daño
-		var russian_roulette = ps.get_stat("russian_roulette") if ps.has_method("get_stat") else 0.0
-		if russian_roulette > 0:
-			if randf() < 0.01: # 1%
-				final_damage *= 10.0
-				FloatingText.spawn_custom(target.global_position + Vector2(0, -60), "JACKPOT!", Color.GOLD)
-				_play_roulette_sound()
-			# Opcional: penalización en tiros normales? "Ruleta rusa" implica riesgo.
-			# Por ahora solo bonus masivo.
-			
-		# 9. Hemorragia (Hemorrhage): Chance de aplicar Sangrado
-		var bleed_chance = ps.get_stat("bleed_on_hit_chance") if ps.has_method("get_stat") else 0.0
-		if bleed_chance > 0 and randf() < bleed_chance:
-			if target.has_method("apply_bleed"):
-				# Daño de sangrado base o proporcional
-				var bleed_dmg = max(1, damage * 0.2) # 20% del daño del golpe
-				target.apply_bleed(bleed_dmg, 3.0)
-				FloatingText.spawn_custom(target.global_position + Vector2(-10, -30), "BLEED", Color.RED)
-	# -----------------------------------------------------------
-	# -----------------------------------------------------------
-	
-	# Aplicar daño
-	if target.has_method("take_damage"):
-		target.take_damage(final_damage, get_meta("element", "physical"), self)
-		
-		# LOG: Registrar daño aplicado
-		var weapon_id = get_meta("weapon_id", "unknown_projectile")
-		var is_crit = final_damage > damage  # Si hay diferencia, fue crítico
-		DamageLogger.log_weapon_damage(weapon_id, target.name, final_damage, {"crit": is_crit, "effect": get_meta("effect", "none")})
-		
-		# Aplicar life steal
-		ProjectileFactory.apply_life_steal(get_tree(), final_damage)
-		# Verificar execute threshold después del daño
-		ProjectileFactory.check_execute(get_tree(), target)
-		# Aplicar efectos de estado por probabilidad
-		ProjectileFactory.apply_status_effects_chance(get_tree(), target)
-	elif target.has_node("HealthComponent"):
-		var hc = target.get_node("HealthComponent")
-		if hc.has_method("take_damage"):
-			hc.take_damage(final_damage, "physical")
-			# Aplicar life steal
-			ProjectileFactory.apply_life_steal(get_tree(), final_damage)
-			# Verificar execute threshold después del daño
-			ProjectileFactory.check_execute(get_tree(), target)
-			# Aplicar efectos de estado por probabilidad
-			ProjectileFactory.apply_status_effects_chance(get_tree(), target)
-	
+	# Calcular daño usando DamageCalculator centralizado
+	var player = get_tree().get_first_node_in_group("player")
+	var crit_chance = get_meta("crit_chance", 0.0)
+	var crit_damage_mult = get_meta("crit_damage", 2.0)
+	var damage_result = DamageCalculator.calculate_final_damage(
+		damage, target, player, crit_chance, crit_damage_mult, self
+	)
+	var final_damage = damage_result.get_int_damage()
+
+	# Efecto visual para Russian Roulette jackpot
+	if damage_result.russian_roulette_triggered:
+		FloatingText.spawn_custom(target.global_position + Vector2(0, -60), "JACKPOT!", Color.GOLD)
+
 	# Calcular knockback real (con bonus si aplica)
 	var final_knockback = knockback_force
 	var effect = get_meta("effect", "none")
 	var effect_value = get_meta("effect_value", 0.0)
 	if effect == "knockback_bonus":
-		final_knockback *= effect_value  # effect_value es el multiplicador
-	
-	# Aplicar knockback
-	if final_knockback > 0 and target.has_method("apply_knockback"):
-		target.apply_knockback(direction * final_knockback)
-	elif final_knockback > 0 and target is CharacterBody2D:
-		target.velocity += direction * final_knockback
-	
+		final_knockback *= effect_value
+
+	# Aplicar daño, efectos secundarios (combustión, sangrado, life steal, execute) y knockback
+	var element = element_type if element_type != "" else "physical"
+	DamageCalculator.apply_damage_with_effects(
+		get_tree(), target, damage_result, direction, final_knockback, self, element
+	)
+
+	# LOG: Registrar daño aplicado (logging específico de SimpleProjectile)
+	var weapon_id = get_meta("weapon_id", "unknown_projectile")
+	DamageLogger.log_weapon_damage(weapon_id, target.name, final_damage, {
+		"crit": damage_result.is_crit, "effect": get_meta("effect", "none")
+	})
+
 	# Aplicar efectos especiales
 	_apply_effect(target)
-	
+
 	# Emitir señal
 	hit_enemy.emit(target, final_damage)
-	
+
 	# Efecto de impacto
 	_spawn_hit_effect()
-	
+
 	# Verificar pierce
 	if pierces_remaining > 0:
 		pierces_remaining -= 1
@@ -689,10 +582,10 @@ func _apply_effect(target: Node) -> void:
 	var effect = get_meta("effect", "none")
 	var effect_value = get_meta("effect_value", 0.0)
 	var effect_duration = get_meta("effect_duration", 0.0)
-	
+
 	if effect == "none":
 		return
-	
+
 	match effect:
 		"slow":
 			if target.has_method("apply_slow"):
@@ -773,7 +666,7 @@ func _play_roulette_sound() -> void:
 	# Placeholder: Si existe AudioManager usarlo, sino solo log/visual
 	# print("💰 JACKPOT SOUND!")
 	if ClassDB.class_exists("AudioManager"):
-		# AudioManager.play_sfx("jackpot") 
+		# AudioManager.play_sfx("jackpot")
 		pass
 
 func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
@@ -781,12 +674,12 @@ func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
 	var enemies_hit = [first_target]
 	var current_pos = first_target.global_position
 	var chain_damage = damage * 0.6  # Daño reducido para chains
-	
+
 	for i in range(chain_count):
 		var next_target = _find_chain_target(current_pos, enemies_hit)
 		if next_target == null:
 			break
-		
+
 		# Aplicar daño al siguiente objetivo
 		if next_target.has_method("take_damage"):
 			next_target.take_damage(int(chain_damage), "physical", self)
@@ -795,10 +688,10 @@ func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
 			ProjectileFactory.check_execute(get_tree(), next_target)
 			# Aplicar efectos de estado por probabilidad
 			ProjectileFactory.apply_status_effects_chance(get_tree(), next_target)
-		
+
 		# Crear efecto visual de rayo entre objetivos
 		_spawn_chain_lightning_visual(current_pos, next_target.global_position)
-		
+
 		enemies_hit.append(next_target)
 		current_pos = next_target.global_position
 		chain_damage *= 0.8  # Reducir daño progresivamente
@@ -808,7 +701,7 @@ func _find_chain_target(from_pos: Vector2, exclude: Array) -> Node:
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	var closest: Node = null
 	var closest_dist = 200.0  # Rango máximo de chain
-	
+
 	for enemy in enemies:
 		if enemy in exclude or not is_instance_valid(enemy):
 			continue
@@ -816,7 +709,7 @@ func _find_chain_target(from_pos: Vector2, exclude: Array) -> Node:
 		if dist < closest_dist:
 			closest = enemy
 			closest_dist = dist
-	
+
 	return closest
 
 func _spawn_chain_lightning_visual(from_pos: Vector2, to_pos: Vector2) -> void:
@@ -829,7 +722,7 @@ func _spawn_chain_lightning_visual(from_pos: Vector2, to_pos: Vector2) -> void:
 	line.add_point(to_pos)
 	line.z_index = 100
 	get_tree().current_scene.add_child(line)
-	
+
 	# Desvanecer y eliminar
 	var tween = line.create_tween()
 	tween.tween_property(line, "modulate:a", 0.0, 0.2)
@@ -842,28 +735,19 @@ func _get_player() -> Node:
 		if players.size() > 0:
 			return players[0]
 	return null
-	
-	# Efecto de impacto
-	_spawn_hit_effect()
-	
-	# Verificar pierce
-	if pierces_remaining > 0:
-		pierces_remaining -= 1
-	else:
-		_destroy()
 
 func _spawn_hit_effect() -> void:
 	"""Crear efecto visual simple al impactar (OPTIMIZADO con VFXPool)"""
 	# OPTIMIZACIÓN: Usar VFXPool en lugar de crear CPUParticles2D directamente
 	var is_low_particle = _weapon_id in LOW_PARTICLE_WEAPONS
-	
+
 	# Intentar usar VFXPool primero
 	if VFXPool.instance:
 		VFXPool.instance.get_hit_particles(global_position, projectile_color, -direction, 5, is_low_particle)
 	else:
 		# Fallback legacy (sin pool)
 		_spawn_hit_effect_legacy(is_low_particle)
-	
+
 	# Instanciar efecto visual extra si existe (skip para low particle weapons)
 	if hit_vfx_scene and not is_low_particle:
 		var effect = hit_vfx_scene.instantiate()
@@ -874,7 +758,7 @@ func _spawn_hit_effect_legacy(is_low_particle: bool) -> void:
 	"""Fallback para hit effect sin pool (compatibilidad)"""
 	var particle_amount = 4 if is_low_particle else 6
 	var particle_lifetime = 0.2 if is_low_particle else 0.25
-	
+
 	var particles = CPUParticles2D.new()
 	particles.emitting = true
 	particles.one_shot = true
@@ -889,13 +773,13 @@ func _spawn_hit_effect_legacy(is_low_particle: bool) -> void:
 	particles.scale_amount_min = 1.5
 	particles.scale_amount_max = 3.0
 	particles.color = projectile_color
-	
+
 	particles.global_position = global_position
 	get_tree().current_scene.add_child(particles)
-	
+
 	var cleanup_time = 0.3 if is_low_particle else 0.4
 	var timer = get_tree().create_timer(cleanup_time)
-	timer.timeout.connect(func(): 
+	timer.timeout.connect(func():
 		if is_instance_valid(particles):
 			particles.queue_free()
 	)
@@ -904,17 +788,17 @@ func _spawn_lifesteal_effect(player: Node) -> void:
 	"""Crear efecto visual de lifesteal (OPTIMIZADO con VFXPool)"""
 	if not is_instance_valid(player):
 		return
-	
+
 	var start_pos = global_position
 	var end_pos = player.global_position
-	
+
 	# OPTIMIZACIÓN: Usar VFXPool en lugar de crear CPUParticles2D directamente
 	if VFXPool.instance:
 		VFXPool.instance.get_lifesteal_particles(start_pos, end_pos)
 	else:
 		# Fallback legacy
 		_spawn_lifesteal_effect_legacy(start_pos, end_pos)
-	
+
 	# Crear también un flash verde en el jugador
 	_spawn_heal_flash(player)
 
@@ -926,7 +810,7 @@ func _spawn_lifesteal_effect_legacy(start_pos: Vector2, end_pos: Vector2) -> voi
 	particles.explosiveness = 0.8
 	particles.amount = 12
 	particles.lifetime = 0.5
-	
+
 	var dir_to_player = (end_pos - start_pos).normalized()
 	particles.direction = dir_to_player
 	particles.spread = 25.0
@@ -936,17 +820,17 @@ func _spawn_lifesteal_effect_legacy(start_pos: Vector2, end_pos: Vector2) -> voi
 	particles.scale_amount_min = 3.0
 	particles.scale_amount_max = 5.0
 	particles.color = Color(0.3, 1.0, 0.4, 1.0)
-	
+
 	var gradient = Gradient.new()
 	gradient.set_color(0, Color(0.3, 1.0, 0.4, 1.0))
 	gradient.set_color(1, Color(0.2, 0.8, 0.3, 0.0))
 	particles.color_ramp = gradient
-	
+
 	particles.global_position = start_pos
 	get_tree().current_scene.add_child(particles)
-	
+
 	var timer = get_tree().create_timer(0.8)
-	timer.timeout.connect(func(): 
+	timer.timeout.connect(func():
 		if is_instance_valid(particles):
 			particles.queue_free()
 	)
@@ -955,11 +839,11 @@ func _spawn_heal_flash(player: Node) -> void:
 	"""Crear flash verde en el jugador al recibir curación"""
 	if not is_instance_valid(player):
 		return
-	
+
 	# Crear un sprite temporal con efecto de curación
 	var flash = Sprite2D.new()
 	var img = Image.create(32, 32, false, Image.FORMAT_RGBA8)
-	
+
 	# Dibujar un círculo verde suave
 	var center = Vector2(16, 16)
 	for x in range(32):
@@ -968,13 +852,13 @@ func _spawn_heal_flash(player: Node) -> void:
 			if dist < 14:
 				var alpha = 1.0 - (dist / 14.0)
 				img.set_pixel(x, y, Color(0.3, 1.0, 0.4, alpha * 0.7))
-	
+
 	flash.texture = ImageTexture.create_from_image(img)
 	flash.z_index = 100
 	flash.scale = Vector2(2.0, 2.0)
-	
+
 	player.add_child(flash)
-	
+
 	# Animar el flash (crecer y desvanecerse)
 	var tween = player.create_tween()
 	tween.set_parallel(true)
@@ -986,7 +870,7 @@ func _destroy() -> void:
 	if _is_destroyed:
 		return
 	_is_destroyed = true
-	
+
 	# Si tenemos visual animado, reproducir impacto
 	if animated_sprite and is_instance_valid(animated_sprite):
 		# Detener movimiento
@@ -995,9 +879,13 @@ func _destroy() -> void:
 		animated_sprite.play_impact()
 		# Esperar a que termine
 		await animated_sprite.impact_finished
-	
+
+	# Safety: verificar que no fuimos liberados durante el await
+	if not is_instance_valid(self):
+		return
+
 	destroyed.emit()
-	
+
 	# OPTIMIZACIÓN: Devolver al pool en lugar de destruir
 	# Esto permite reutilizar el proyectil sin crear uno nuevo
 	if has_meta("_pooled") and get_meta("_pooled") == true:

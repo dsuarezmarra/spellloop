@@ -67,10 +67,10 @@ const XP_CURVE_MAX_LEVEL: int = 100   # Nivel máximo teórico
 func _ready():
 	# Asegurar que ExperienceManager respete la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
-	
+
 	# Registrar en grupo para acceso global seguro
 	add_to_group("experience_manager")
-	
+
 	# Debug desactivado: print("⭐ ExperienceManager inicializado")
 	setup_level_curve()
 	_load_coin_scene()
@@ -82,15 +82,15 @@ func _process(delta: float) -> void:
 		# Usar delta para que respete la pausa del juego
 		streak_time_elapsed += delta
 		var time_left = maxf(0.0, streak_timeout - streak_time_elapsed)
-		
+
 		# Emitir señal de actualización de timer
 		streak_timer_updated.emit(time_left, streak_timeout)
-		
+
 		# Si se acabó el tiempo, resetear streak
 		if time_left <= 0:
 			# Emitir resultado final antes de resetear
 			streak_finished.emit(current_streak_value, _last_max_multiplier)
-			
+
 			streak_count = 0
 			current_streak_value = 0
 			_last_max_multiplier = 1.0
@@ -110,7 +110,7 @@ func add_coins(base_amount: int) -> void:
 	# Aplicar multiplicador de estadísticas del jugador (Greed, etc.)
 	var coin_mult = _get_player_coin_mult()
 	var final_amount = int(base_amount * coin_mult)
-	
+
 	total_coins += final_amount
 	coin_collected.emit(final_amount, total_coins)
 	_save_coins_to_progression(final_amount)
@@ -163,7 +163,7 @@ func _find_player() -> CharacterBody2D:
 func setup_level_curve():
 	"""
 	Configurar curva de experiencia exponencial tipo WoW.
-	
+
 	TABLA DE REFERENCIA (con constantes actuales):
 	Lvl  1:   0 XP (start)
 	Lvl  5:  35 XP
@@ -174,21 +174,21 @@ func setup_level_curve():
 	Lvl 30: 1034 XP
 	Lvl 40: 3473 XP
 	Lvl 50: 11422 XP
-	
+
 	ESTIMACIÓN DE NIVELES (jugador promedio ~50 XP/min):
 	Min  5: ~Level 8-10
 	Min 10: ~Level 12-15
 	Min 15: ~Level 16-19
 	Min 20: ~Level 19-23
-	
+
 	Jugador bueno (~80 XP/min) puede llegar ~5 niveles más alto.
 	"""
 	level_exp_curve.clear()
-	
+
 	for level in range(1, XP_CURVE_MAX_LEVEL + 1):
 		# Fórmula compuesta: exponencial + lineal
 		var exp_required = roundi(
-			XP_CURVE_BASE * pow(XP_CURVE_GROWTH, level - 1) + 
+			XP_CURVE_BASE * pow(XP_CURVE_GROWTH, level - 1) +
 			XP_CURVE_LINEAR * level
 		)
 		# Mínimo 8 XP para nivel 2 (evitar que sea instantáneo)
@@ -222,15 +222,15 @@ func _create_coin_with_type(pos: Vector2, coin_type: int) -> Node2D:
 	var pool = get_tree().get_first_node_in_group("pickup_pool")
 	if pool and pool.has_method("get_pickup"):
 		var coin = pool.get_pickup(pos, 1, coin_type)
-		
+
 		# Conectar señal si es necesario (el pool ya lo maneja pero aseguramos)
 		if coin.has_signal("coin_collected"):
 			if not coin.coin_collected.is_connected(_on_coin_collected):
 				coin.coin_collected.connect(_on_coin_collected)
-				
+
 		coin_created.emit(coin)
 		return coin
-		
+
 	# Fallback si no hay pool (no debería ocurrir)
 	return _create_coin_fallback_system(pos, 1, coin_type)
 
@@ -250,7 +250,7 @@ func _create_coin_fallback_system(pos: Vector2, value: int, coin_type: int) -> N
 		else:
 			coin.global_position = pos
 			if "coin_value" in coin: coin.coin_value = value
-			
+
 		if coin.has_signal("coin_collected"):
 			if not coin.coin_collected.is_connected(_on_coin_collected):
 				coin.coin_collected.connect(_on_coin_collected)
@@ -264,27 +264,27 @@ func create_coin(position: Vector2, base_value: int = 1) -> Node2D:
 	# Aplicar variación al valor
 	var variance = randf_range(-coin_value_variance, coin_value_variance)
 	var final_value = max(1, int(base_value * (1.0 + variance)))
-	
+
 	# Usar Pool
 	var pool = get_tree().get_first_node_in_group("pickup_pool")
 	if pool and pool.has_method("get_pickup"):
 		# Inferred type
-		var coin = pool.get_pickup(position, final_value, null)
-		
+		var coin = pool.get_pickup(position, final_value, 0)  # 0 = BRONZE default
+
 		if coin.has_signal("coin_collected"):
 			if not coin.coin_collected.is_connected(_on_coin_collected):
 				coin.coin_collected.connect(_on_coin_collected)
-		
+
 		# active_coins is managed by pool internally mostly, but we keep track here for legacy
 		# Actually, ExperienceManager shouldn't need to track active_coins if Pool does.
 		# But _process loop cleans up destroyed coins.
 		# If pool recycles, the reference in active_coins might be valid but point to a recycled coin?
 		# Pool 'return_pickup' removes it from view.
 		# ExperienceManager just listens to collection.
-		
+
 		coin_created.emit(coin)
 		return coin
-		
+
 	return _create_coin_fallback_system(position, final_value, 0)
 
 func spawn_coins_from_enemy(position: Vector2, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
@@ -391,7 +391,7 @@ func _on_coin_collected(value: int) -> void:
 	else:
 		streak_count = 1
 		current_streak_value = 0 # Resetear valor acumulado en nueva racha
-	
+
 	# Resetear el timer (la moneda recién recogida reinicia el contador)
 	streak_time_elapsed = 0.0
 
@@ -400,7 +400,7 @@ func _on_coin_collected(value: int) -> void:
 	# Aplicar multiplicador de streak (3% por cada streak adicional) - NERFED from 5%
 	# El flag "double_coin_streak" duplica este bonus (Legacy logic handled via global stat now)
 	var streak_bonus_per = 0.03  # NERFED: 0.05 -> 0.03
-	
+
 	# Usar multiplicador de bonus de racha desde PlayerStats (New Item Support)
 	var streak_mult_stat = 1.0
 	var ps_node = get_tree().get_first_node_in_group("player_stats")
@@ -413,18 +413,18 @@ func _on_coin_collected(value: int) -> void:
 		# If we name it "streak_bonus_mult" in UpgradeDB as "add" 1.0 -> 2.0 total?
 		# Or if it's 0 base, we do 1.0 + check.
 		streak_mult_stat = 1.0 + bonus # Assuming bonus is 0 by default, 1.0 if Upgrade
-		
+
 	# Check legacy flag too just in case
 	if _has_flag("double_coin_streak"):
 		streak_mult_stat *= 2.0
-		
+
 	# Fórmula EXPONENCIAL: cada moneda multiplica el bonus
 	# Streak 5: 1.03^4 ≈ 1.13 (+13%), Streak 10: 1.03^9 ≈ 1.30 (+30%), Streak 20: 1.03^19 ≈ 1.75 (+75%)
 	var streak_multiplier = pow(1.0 + (streak_bonus_per * streak_mult_stat), max(0, streak_count - 1))
-	
+
 	# Cap streak multiplier at x3.0 (NERFED from x10.0) - prevents early snowball
 	streak_multiplier = minf(streak_multiplier, 3.0)
-	
+
 	# Actualizar máximo multiplicador de la racha actual
 	if streak_multiplier > _last_max_multiplier:
 		_last_max_multiplier = streak_multiplier
@@ -441,7 +441,7 @@ func _on_coin_collected(value: int) -> void:
 	# Emitir señales
 	streak_updated.emit(streak_count, current_streak_value, streak_multiplier)
 	coin_collected.emit(final_value, total_coins)
-	
+
 	# Play coin collection sound with streak-based musical notes
 	# sfx_streak_01 through sfx_streak_08 form an ascending musical scale
 	var streak_sfx_index = clampi(streak_count, 1, 8)
@@ -469,14 +469,14 @@ func _get_player_coin_mult() -> float:
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	if player_stats and player_stats.has_method("get_stat"):
 		return player_stats.get_stat("coin_value_mult")
-		
+
 	# Fallback a métodos antiguos del player
 	var player = _find_player()
 	if player and player.has_method("get_coin_value_mult"):
 		return player.get_coin_value_mult()
 	elif player and "coin_value_mult" in player:
 		return player.coin_value_mult
-		
+
 	return 1.0
 
 func _has_flag(flag_name: String) -> bool:
@@ -522,9 +522,9 @@ func gain_experience(amount: int):
 		var xp_mult = player_stats.get_stat("xp_mult")
 		if xp_mult > 0:
 			final_amount = int(amount * xp_mult)
-	
+
 	current_exp += final_amount
-	
+
 	# BALANCE PASS 2: Log XP para BalanceDebugger
 	if BalanceDebugger:
 		BalanceDebugger.log_xp_gained(final_amount)
@@ -547,12 +547,12 @@ func level_up_player():
 	current_exp -= exp_to_next_level
 	current_level += 1
 	exp_to_next_level = get_exp_for_level(current_level + 1)
-	
+
 	# BALANCE PASS 2: Log level up para BalanceDebugger
 	# FIX-BT2b: Siempre recopilar datos (enabled solo controla UI overlay)
 	if BalanceDebugger:
 		BalanceDebugger.log_level_up(current_level)
-	
+
 	# AUDIT: Report level up
 	if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
 		var t_min: float = 0.0
@@ -579,7 +579,7 @@ func generate_upgrade_options() -> Array:
 		# 1. Obtener tags de armas equipadas
 		var common_tags = []
 		var all_tags = []
-		
+
 		var attack_manager_nodes = get_tree().get_nodes_in_group("attack_manager")
 		if not attack_manager_nodes.is_empty():
 			var am = attack_manager_nodes[0]
@@ -587,14 +587,14 @@ func generate_upgrade_options() -> Array:
 				var first_weapon = true
 				for weapon in am.weapons:
 					if weapon == null: continue
-					
+
 					var w_tags = weapon.tags if "tags" in weapon else []
-					
+
 					# All Tags (Union)
 					for t in w_tags:
 						if t not in all_tags:
 							all_tags.append(t)
-					
+
 					# Common Tags (Intersection)
 					if first_weapon:
 						common_tags = w_tags.duplicate()
@@ -606,21 +606,21 @@ func generate_upgrade_options() -> Array:
 							if t in w_tags:
 								new_common.append(t)
 						common_tags = new_common
-		
+
 		# 2. Obtener Luck y Tiempo
 		var luck_bonus = 0.0
 		if player and "stats" in player and player.stats and "luck" in player.stats:
 			luck_bonus = player.stats.luck
-			
+
 		var game_time = 0.0
 		# Intentar obtener tiempo de juego (GameManager o similar)
 		var gm_nodes = get_tree().get_nodes_in_group("game_manager")
 		if not gm_nodes.is_empty() and "game_time" in gm_nodes[0]:
 			game_time = gm_nodes[0].game_time / 60.0 # Minutos
-		
+
 		# 3. Generar opciones
 		options = UpgradeDB.get_random_player_upgrades(4, [], luck_bonus, game_time, [], common_tags, all_tags)
-		
+
 		# 4. Filtrar upgrades que solo afectan stats al cap
 		var player_stats = get_tree().get_first_node_in_group("player_stats")
 		if player_stats and player_stats.has_method("would_upgrade_be_useful"):
@@ -629,12 +629,12 @@ func generate_upgrade_options() -> Array:
 				if player_stats.would_upgrade_be_useful(upgrade):
 					useful_options.append(upgrade)
 				# else: upgrade is useless because all its effects are capped
-			
+
 			# Si quedaron opciones útiles, usarlas
 			if useful_options.size() > 0:
 				options = useful_options
 			# Si no quedó ninguna, usar las originales como fallback
-		
+
 		if options.size() > 0:
 			return options
 

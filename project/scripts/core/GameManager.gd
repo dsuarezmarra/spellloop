@@ -170,7 +170,7 @@ func start_new_run() -> void:
 			player_stats = player.get_node_or_null("PlayerStats")
 			if not player_stats:
 				player_stats = get_tree().get_first_node_in_group("player_stats")
-			
+
 			# Debug desactivado: print("[GameManager] ✓ AttackManager inicializado con player")
 			# NOTA: Las armas iniciales las equipa el propio Player (_equip_starting_weapons)
 			# No duplicar aquí para evitar armas duplicadas
@@ -201,7 +201,7 @@ func end_current_run(reason: String) -> void:
 	current_run_data["end_time"] = end_time
 	current_run_data["duration"] = end_time - run_start_time
 	current_run_data["end_reason"] = reason
-	
+
 	# Recopilar datos completos de la partida para el historial/ranking
 	_collect_full_run_data()
 
@@ -218,12 +218,12 @@ func end_current_run(reason: String) -> void:
 func _collect_full_run_data() -> void:
 	"""Recopilar datos completos de la partida para historial y rankings"""
 	var _gt = get_tree()
-	
+
 	# 1. Personaje seleccionado
 	var session_state = _gt.root.get_node_or_null("SessionState") if _gt and _gt.root else null
 	if session_state and session_state.has_method("get_character"):
 		current_run_data["character_id"] = session_state.get_character()
-	
+
 	# 2. Armas equipadas (serializadas)
 	if attack_manager and attack_manager.has_method("get_weapons"):
 		var weapons_data: Array = []
@@ -249,7 +249,7 @@ func _collect_full_run_data() -> void:
 			if not weapon_info.is_empty():
 				weapons_data.append(weapon_info)
 		current_run_data["weapons"] = weapons_data
-	
+
 	# 3. Mejoras/objetos recogidos
 	if player_stats and player_stats.has_method("get_collected_upgrades"):
 		var upgrades = player_stats.get_collected_upgrades()
@@ -262,7 +262,7 @@ func _collect_full_run_data() -> void:
 				"icon": upgrade.get("icon", "")
 			})
 		current_run_data["upgrades"] = upgrades_data
-	
+
 	# 4. Stats finales del jugador
 	if player_stats:
 		var final_stats: Dictionary = {}
@@ -280,7 +280,7 @@ func _collect_full_run_data() -> void:
 			final_stats["level"] = player_stats.level
 			current_run_data["player_level"] = player_stats.level
 		current_run_data["final_stats"] = final_stats
-	
+
 	# 5. Datos del WaveManager (fase, tiempo de juego)
 	var game_node = null
 	if _gt and _gt.root:
@@ -293,7 +293,7 @@ func _collect_full_run_data() -> void:
 			current_run_data["phase"] = wave_mgr.get("current_phase") if "current_phase" in wave_mgr else 1
 			current_run_data["game_time_minutes"] = wave_mgr.get("game_time_minutes") if "game_time_minutes" in wave_mgr else 0.0
 			current_run_data["game_time_seconds"] = wave_mgr.get("game_time_seconds") if "game_time_seconds" in wave_mgr else 0.0
-	
+
 	# 6. Timestamp de la partida (para ordenar)
 	current_run_data["timestamp"] = Time.get_unix_time_from_system()
 

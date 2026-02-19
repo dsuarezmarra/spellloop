@@ -138,10 +138,10 @@ func _sync_counts_from_player_stats() -> void:
 		# Esto evita que se reseteen al subir de nivel varias veces
 		if "current_rerolls" in player_stats:
 			reroll_count = player_stats.current_rerolls
-		
+
 		if "current_banishes" in player_stats:
 			banish_count = player_stats.current_banishes
-			
+
 		# Debug
 		# print("[LevelUpPanel] Sincronizado: Rerolls=%d, Banishes=%d" % [reroll_count, banish_count])
 
@@ -268,11 +268,11 @@ func _create_option_panel(index: int) -> Control:
 	var panel = PanelContainer.new()
 	panel.custom_minimum_size = Vector2(230, 320)
 	panel.name = "Option_%d" % index
-	
+
 	# Valores default para creación inicial (se actualizan en _update_panel_style)
 	var type = "upgrade"
 	var rarity = 1
-	
+
 	# Estilo inicial default (gris oscuro)
 	# Los colores finales se aplican en _update_panel_style() cuando llegan las opciones
 	var style = StyleBoxFlat.new()
@@ -281,7 +281,7 @@ func _create_option_panel(index: int) -> Control:
 	style.border_color = default_color
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(8)
-	
+
 	panel.add_theme_stylebox_override("panel", style)
 	_option_styles.append(style)
 
@@ -307,7 +307,7 @@ func _create_option_panel(index: int) -> Control:
 	icon_container.name = "IconContainer"
 	icon_container.custom_minimum_size = Vector2(72, 72)
 	icon_center.add_child(icon_container)
-	
+
 	# Fondo del icono
 	var icon_bg = Panel.new()
 	icon_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -369,7 +369,7 @@ func _create_option_panel(index: int) -> Control:
 	indicator.add_theme_stylebox_override("panel", ind_style)
 	panel.add_child(indicator)
 	indicator.visible = false
-	
+
 	# Audio: Conectar señal de hover
 	if not panel.mouse_entered.is_connected(_on_element_hover):
 		panel.mouse_entered.connect(_on_element_hover)
@@ -417,7 +417,7 @@ func _create_action_button(index: int, icon: String, text: String, count_format:
 		count_label.add_theme_font_size_override("font_size", 12)
 		count_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 		text_vbox.add_child(count_label)
-	
+
 	# Audio: Conectar señal de hover
 	if not panel.mouse_entered.is_connected(_on_element_hover):
 		panel.mouse_entered.connect(_on_element_hover)
@@ -600,19 +600,19 @@ func _select_option() -> void:
 	locked = true
 	var selected = options[option_index]
 	AudioManager.play_fixed("sfx_ui_confirm")
-	
+
 	# BALANCE TELEMETRY: Log upgrade pick
 	if BalanceTelemetry:
 		var option_ids: Array = []
 		for opt in options:
 			option_ids.append(opt.get("id", opt.get("name", "unknown")))
-		
+
 		var picked_type = "upgrade"
 		if selected.get("type", -1) == OPTION_TYPES.NEW_WEAPON or selected.get("type", -1) == OPTION_TYPES.LEVEL_UP_WEAPON:
 			picked_type = "weapon"
 		elif selected.get("type", -1) == OPTION_TYPES.FUSION:
 			picked_type = "fusion"
-		
+
 		BalanceTelemetry.log_upgrade_pick({
 			"source": "levelup",
 			"options_shown": option_ids,
@@ -621,7 +621,7 @@ func _select_option() -> void:
 			"reroll_count": rerolls_used_this_level
 		})
 		BalanceTelemetry.add_level_up()
-		
+
 		# AUDIT: Report upgrade pick
 		if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
 			RunAuditTracker.report_upgrade_pick({
@@ -630,7 +630,7 @@ func _select_option() -> void:
 				"options_shown": option_ids,
 				"reroll_count": rerolls_used_this_level
 			})
-	
+
 	_apply_option(selected)
 	option_selected.emit(selected)
 	_close_panel()
@@ -638,7 +638,7 @@ func _select_option() -> void:
 func _on_reroll() -> void:
 	if locked:
 		return
-	
+
 	# BALANCE: Exponential reroll cost — first free rerolls are free, then 10, 20, 40, 80...
 	var has_free_rerolls = reroll_count > 0
 	var paid_rerolls = maxi(0, rerolls_used_this_level - (reroll_count if has_free_rerolls else 0))
@@ -648,7 +648,7 @@ func _on_reroll() -> void:
 		# All free rerolls exhausted — exponential cost
 		reroll_cost = int(REROLL_BASE_COST * pow(REROLL_COST_MULT, paid_rerolls))
 		reroll_cost = maxi(reroll_cost, REROLL_BASE_COST)
-		
+
 		var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
 		if not exp_mgr or not "total_coins" in exp_mgr or exp_mgr.total_coins < reroll_cost:
 			# No tiene rerolls ni monedas suficientes
@@ -658,10 +658,10 @@ func _on_reroll() -> void:
 		exp_mgr.total_coins -= reroll_cost
 		if exp_mgr.has_signal("coin_collected"):
 			exp_mgr.coin_collected.emit(-reroll_cost, exp_mgr.total_coins)
-	
+
 	AudioManager.play_fixed("sfx_ui_click")
 	rerolls_used_this_level += 1  # Track for next cost calculation
-	
+
 	# BALANCE TELEMETRY: Track reroll
 	if BalanceTelemetry:
 		BalanceTelemetry.add_reroll()
@@ -673,7 +673,7 @@ func _on_reroll() -> void:
 			reroll_count = player_stats.current_rerolls
 		else:
 			reroll_count -= 1
-	
+
 	# -----------------------------------------------------------
 	# LÓGICA DE NUEVOS OBJETOS (Phase 3)
 	# 3. Reciclaje (Recycling): XP al hacer reroll
@@ -685,7 +685,7 @@ func _on_reroll() -> void:
 			var needed_xp = 100 # Fallback
 			if "experience_required" in exp_mgr_node:
 				needed_xp = exp_mgr_node.experience_required
-			
+
 			var xp_amount = needed_xp * xp_fraction
 			# Otorgar XP a través del manager o directamente
 			# Mejor usar ExperienceManager si es posible, o player_stats.gain_xp
@@ -700,14 +700,14 @@ func _on_reroll() -> void:
 	# Volver a opciones después de reroll
 	current_row = Row.OPTIONS
 	option_index = 0
-	
+
 	# Actualizar contador de rerolls antes de generar opciones
 	_update_button_counts()
-	
+
 	# Forzar fin de animación anterior si estaba en curso
 	if _is_animating:
 		skip_slot_animation()
-	
+
 	# Generar nuevas opciones (esto incluye la animación de tragaperras)
 	generate_options()
 
@@ -727,20 +727,20 @@ func _confirm_banish() -> void:
 	if options.is_empty():
 		banish_mode = false
 		return
-	
+
 	# Ajustar índice si está fuera de rango
 	if option_index >= options.size():
 		option_index = options.size() - 1
 
 	options.remove_at(option_index)
-	
+
 	# Consumir banish
 	if player_stats and player_stats.has_method("consume_banish"):
 		player_stats.consume_banish()
 		banish_count = player_stats.current_banishes
 	else:
 		banish_count -= 1
-		
+
 	banish_used.emit(option_index)
 
 	# Salir del modo eliminar
@@ -772,28 +772,28 @@ func _on_try_close() -> void:
 	"""Intentar cerrar sin elegir - muestra modal de confirmación"""
 	if locked or _confirm_modal_visible:
 		return
-	
+
 	_show_confirm_modal()
 
 func _show_confirm_modal() -> void:
 	"""Mostrar modal de confirmación para perder la mejora"""
 	if _confirm_modal:
 		_confirm_modal.queue_free()
-	
+
 	_confirm_modal_visible = true
 	_confirm_modal_selection = 0  # Empezar en "Volver a elegir"
 	_confirm_modal_buttons.clear()
-	
+
 	# Fondo semitransparente del modal
 	_confirm_modal = Control.new()
 	_confirm_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_confirm_modal)
-	
+
 	var modal_bg = ColorRect.new()
 	modal_bg.color = Color(0, 0, 0, 0.7)
 	modal_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_confirm_modal.add_child(modal_bg)
-	
+
 	# Panel central
 	var panel = PanelContainer.new()
 	panel.custom_minimum_size = Vector2(400, 160)
@@ -803,18 +803,18 @@ func _show_confirm_modal() -> void:
 	panel_style.set_border_width_all(3)
 	panel_style.set_corner_radius_all(12)
 	panel.add_theme_stylebox_override("panel", panel_style)
-	
+
 	# Centrar panel
 	var center = CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_confirm_modal.add_child(center)
 	center.add_child(panel)
-	
+
 	# Contenido
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 20)
 	panel.add_child(vbox)
-	
+
 	# Margen interno
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 30)
@@ -822,11 +822,11 @@ func _show_confirm_modal() -> void:
 	margin.add_theme_constant_override("margin_top", 25)
 	margin.add_theme_constant_override("margin_bottom", 25)
 	vbox.add_child(margin)
-	
+
 	var inner_vbox = VBoxContainer.new()
 	inner_vbox.add_theme_constant_override("separation", 20)
 	margin.add_child(inner_vbox)
-	
+
 	# Icono y título
 	var title_label = Label.new()
 	title_label.text = "⚠️ " + Localization.L("ui.level_up.skip_confirm_title")
@@ -834,7 +834,7 @@ func _show_confirm_modal() -> void:
 	title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	inner_vbox.add_child(title_label)
-	
+
 	# Mensaje
 	var msg_label = Label.new()
 	msg_label.text = Localization.L("ui.level_up.skip_confirm_message")
@@ -842,13 +842,13 @@ func _show_confirm_modal() -> void:
 	msg_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
 	msg_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	inner_vbox.add_child(msg_label)
-	
+
 	# Botones
 	var btn_container = HBoxContainer.new()
 	btn_container.add_theme_constant_override("separation", 30)
 	btn_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	inner_vbox.add_child(btn_container)
-	
+
 	# Botón Cancelar (volver a elegir)
 	var cancel_btn = Button.new()
 	cancel_btn.name = "CancelBtn"
@@ -860,7 +860,7 @@ func _show_confirm_modal() -> void:
 	cancel_btn.mouse_entered.connect(_on_element_hover)
 	btn_container.add_child(cancel_btn)
 	_confirm_modal_buttons.append(cancel_btn)
-	
+
 	# Botón Confirmar (perder mejora)
 	var confirm_btn = Button.new()
 	confirm_btn.name = "ConfirmBtn"
@@ -872,7 +872,7 @@ func _show_confirm_modal() -> void:
 	confirm_btn.mouse_entered.connect(_on_element_hover)
 	btn_container.add_child(confirm_btn)
 	_confirm_modal_buttons.append(confirm_btn)
-	
+
 	# Actualizar visual inicial
 	_update_confirm_modal_visuals()
 
@@ -915,11 +915,11 @@ func _update_confirm_modal_visuals() -> void:
 		var btn = _confirm_modal_buttons[i] as Button
 		if not btn:
 			continue
-		
+
 		var is_selected = (i == _confirm_modal_selection)
 		var style = StyleBoxFlat.new()
 		var hover_style = StyleBoxFlat.new()
-		
+
 		if i == 0:  # Botón "Volver a elegir" (verde)
 			if is_selected:
 				style.bg_color = Color(0.25, 0.6, 0.35)
@@ -944,7 +944,7 @@ func _update_confirm_modal_visuals() -> void:
 				style.set_border_width_all(1)
 				btn.add_theme_color_override("font_color", Color(0.7, 0.6, 0.6))
 			hover_style.bg_color = Color(0.75, 0.3, 0.3)
-		
+
 		style.set_corner_radius_all(8)
 		hover_style.set_corner_radius_all(8)
 		hover_style.border_color = style.border_color
@@ -991,7 +991,7 @@ func _update_all_visuals() -> void:
 			new_style.bg_color = PANEL_BG
 			new_style.set_corner_radius_all(8)
 			_option_styles.append(new_style)
-		
+
 		var style = _option_styles[i]
 		if is_selected:
 			# En modo eliminar, borde rojo
@@ -1023,7 +1023,7 @@ func _update_all_visuals() -> void:
 			var new_style = StyleBoxFlat.new()
 			new_style.set_corner_radius_all(6)
 			_button_styles.append(new_style)
-		
+
 		var style = _button_styles[i]
 		if is_disabled:
 			style.border_color = DISABLED_COLOR
@@ -1119,7 +1119,7 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 		if is_image_path:
 			icon_label.visible = false
 			icon_texture.visible = true
-			
+
 			if ResourceLoader.exists(icon_str):
 				var texture = load(icon_str)
 				if texture:
@@ -1132,7 +1132,7 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 			icon_label.visible = true
 			icon_texture.visible = false
 			icon_label.text = icon_str
-	
+
 	# Actualizar estilo del fondo del icono
 	var icon_container = panel.find_child("IconContainer", true, false)
 	if icon_container:
@@ -1143,11 +1143,11 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 				if child is Panel:
 					icon_bg = child
 					break
-		
+
 		if icon_bg:
 			var bg_style = StyleBoxFlat.new()
 			bg_style.set_corner_radius_all(36)  # Circular
-			
+
 			if option_type == OPTION_TYPES.FUSION:
 				# Estilo épico para fusiones
 				bg_style.bg_color = Color(0.2, 0.1, 0.0, 0.8)
@@ -1161,7 +1161,7 @@ func _update_option_panel(panel: Control, option: Dictionary) -> void:
 				var tier_color = _get_option_color(option)
 				bg_style.border_color = tier_color
 				bg_style.set_border_width_all(2)
-			
+
 			icon_bg.add_theme_stylebox_override("panel", bg_style)
 
 	# Nombre con color basado en TIER y tipo especial
@@ -1183,13 +1183,13 @@ func _update_panel_style(panel: Control, option: Dictionary) -> void:
 	"""Actualiza el estilo visual del panel basándose en tier y tipo."""
 	var option_type = option.get("type", "")
 	var is_fusion = (option_type == OPTION_TYPES.FUSION)
-	var is_weapon = (option_type == OPTION_TYPES.NEW_WEAPON or 
+	var is_weapon = (option_type == OPTION_TYPES.NEW_WEAPON or
 					 option_type == OPTION_TYPES.LEVEL_UP_WEAPON)
-	
+
 	# Determinar el color a usar
 	var panel_color: Color
 	var glow_color: Color = Color.TRANSPARENT
-	
+
 	if is_fusion:
 		# ═══════════════════════════════════════════════════════════════════════
 		# 🔥 FUSIÓN: ESTILO ÉPICO ESPECTACULAR 🔥
@@ -1212,26 +1212,26 @@ func _update_panel_style(panel: Control, option: Dictionary) -> void:
 		var raw_tier = option.get("rarity", option.get("tier", 1))
 		var tier = _parse_rarity(raw_tier)
 		panel_color = UIVisualHelper.get_color_for_tier(tier)
-	
+
 	# Crear nuevo estilo
 	var style = StyleBoxFlat.new()
-	
+
 	# Fondo: Color del panel con transparencia
 	style.bg_color = Color(panel_color.r, panel_color.g, panel_color.b, 0.5)
-	
+
 	# Borde: Color sólido
 	style.border_color = panel_color
 	style.set_corner_radius_all(8)
-	
+
 	if is_weapon:
 		# Armas: Más intenso
 		style.bg_color.a = 0.6
 		style.set_border_width_all(4)
 	else:
 		style.set_border_width_all(2)
-	
+
 	panel.add_theme_stylebox_override("panel", style)
-	
+
 	# Limpiar efectos de fusión si existían
 	_cleanup_fusion_effects(panel)
 
@@ -1239,7 +1239,7 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	"""Aplicar estilo épico espectacular para tarjetas de FUSIÓN."""
 	# Limpiar efectos anteriores
 	_cleanup_fusion_effects(panel)
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# ASEGURAR QUE EL CONTENIDO (VBoxContainer) ESTÉ VISIBLE POR ENCIMA
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1254,7 +1254,7 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 					vbox_child.z_index = 5
 					vbox_child.show_behind_parent = false
 			break
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# COLORES ÉPICOS DE FUSIÓN - Gradiente de fuego dorado a naranja intenso
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1262,27 +1262,27 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	var secondary_color = Color(1.0, 0.35, 0.0)   # Naranja fuego
 	var glow_color = Color(1.0, 0.85, 0.3)        # Dorado brillante
 	var inner_glow = Color(1.0, 0.95, 0.6)        # Amarillo casi blanco
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# ESTILO PRINCIPAL DEL PANEL
 	# ═══════════════════════════════════════════════════════════════════════════
 	var style = StyleBoxFlat.new()
-	
+
 	# Fondo: Gradiente simulado con color intenso
 	style.bg_color = Color(0.15, 0.08, 0.02, 0.95)  # Fondo oscuro cálido
-	
+
 	# Borde grueso dorado brillante
 	style.border_color = glow_color
 	style.set_border_width_all(5)
 	style.set_corner_radius_all(12)
-	
+
 	# Shadow/Glow exterior
 	style.shadow_color = Color(primary_color.r, primary_color.g, primary_color.b, 0.8)
 	style.shadow_size = 12
 	style.shadow_offset = Vector2(0, 0)  # Glow centrado (no sombra direccional)
-	
+
 	panel.add_theme_stylebox_override("panel", style)
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# CAPA DE GLOW INTERIOR (Panel superpuesto) - z_index bajo para no cubrir contenido
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1296,7 +1296,7 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	glow_panel.offset_top = 3
 	glow_panel.offset_right = -3
 	glow_panel.offset_bottom = -3
-	
+
 	var inner_style = StyleBoxFlat.new()
 	inner_style.bg_color = Color(0, 0, 0, 0)  # Transparente
 	inner_style.border_color = inner_glow
@@ -1305,11 +1305,11 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	glow_panel.add_theme_stylebox_override("panel", inner_style)
 	panel.add_child(glow_panel)
 	panel.move_child(glow_panel, 0)  # Mover al fondo para que esté DETRÁS del VBoxContainer
-	
+
 	# IMPORTANTE: Mover el VBoxContainer al final para asegurar que se dibuje encima
 	if content_vbox:
 		panel.move_child(content_vbox, -1)
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# PARTÍCULAS/ESTRELLAS DECORATIVAS (Esquinas) - z_index alto para estar encima del borde
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1319,7 +1319,7 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	corners_container.z_index = 10  # Encima del contenido (solo decoración pequeña)
 	corners_container.set_anchors_preset(Control.PRESET_FULL_RECT)
 	panel.add_child(corners_container)
-	
+
 	# Agregar iconos de fuego/estrella en las esquinas
 	var corner_icons = ["🔥", "✨", "🔥", "✨"]
 	var corner_positions = [
@@ -1334,7 +1334,7 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 		[0.0, 1.0],  # Bottom-left
 		[1.0, 1.0]   # Bottom-right
 	]
-	
+
 	for i in range(4):
 		var star = Label.new()
 		star.text = corner_icons[i]
@@ -1347,7 +1347,7 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 		star.offset_top = corner_positions[i].y
 		star.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		corners_container.add_child(star)
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# BADGE CON NOMBRE DE LA FUSIÓN EN LA PARTE SUPERIOR
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1355,7 +1355,7 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	# Limpiar el emoji de fuego si ya está en el nombre para evitar duplicación
 	if fusion_name.begins_with("🔥 "):
 		fusion_name = fusion_name.substr(3)
-	
+
 	var badge = PanelContainer.new()
 	badge.name = "FusionBadge"
 	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1368,7 +1368,7 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	badge.offset_right = 90
 	badge.offset_top = -14
 	badge.offset_bottom = 10
-	
+
 	var badge_style = StyleBoxFlat.new()
 	badge_style.bg_color = Color(0.9, 0.4, 0.0, 1.0)  # Naranja sólido
 	badge_style.border_color = glow_color
@@ -1377,7 +1377,7 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	badge_style.shadow_color = Color(0, 0, 0, 0.5)
 	badge_style.shadow_size = 4
 	badge.add_theme_stylebox_override("panel", badge_style)
-	
+
 	var badge_label = Label.new()
 	badge_label.text = "🔥 " + fusion_name + " 🔥"
 	badge_label.add_theme_font_size_override("font_size", 12)
@@ -1386,7 +1386,7 @@ func _apply_fusion_epic_style(panel: Control, option: Dictionary) -> void:
 	badge_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	badge.add_child(badge_label)
 	panel.add_child(badge)
-	
+
 	# ═══════════════════════════════════════════════════════════════════════════
 	# ANIMACIÓN DE PULSO BRILLANTE
 	# ═══════════════════════════════════════════════════════════════════════════
@@ -1397,16 +1397,16 @@ func _start_fusion_pulse_animation(panel: Control, glow_panel: Panel, main_style
 	# Crear un tween de pulso que se repite
 	var tween = create_tween()
 	tween.set_loops()  # Loop infinito
-	
+
 	# Guardar referencia al tween para poder cancelarlo
 	panel.set_meta("fusion_tween", tween)
-	
+
 	# Colores para el pulso
 	var bright_border = Color(1.0, 0.95, 0.6)  # Dorado brillante
 	var normal_border = Color(1.0, 0.7, 0.2)   # Dorado normal
 	var bright_shadow = Color(1.0, 0.6, 0.1, 1.0)
 	var dim_shadow = Color(1.0, 0.6, 0.1, 0.5)
-	
+
 	# Secuencia de pulso
 	tween.tween_method(
 		func(t: float):
@@ -1416,16 +1416,16 @@ func _start_fusion_pulse_animation(panel: Control, glow_panel: Panel, main_style
 			var border_color = bright_border.lerp(normal_border, t)
 			var shadow_alpha = lerpf(1.0, 0.4, t)
 			var shadow_size = lerpf(16, 8, t)
-			
+
 			main_style.border_color = border_color
 			main_style.shadow_color.a = shadow_alpha
 			main_style.shadow_size = int(shadow_size)
-			
+
 			# También pulsar el borde interior
 			inner_style.border_color = bright_border.lerp(Color(1.0, 0.85, 0.4), t)
 	, 0.0, 1.0, 0.8  # De 0 a 1 en 0.8 segundos
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	
+
 	tween.tween_method(
 		func(t: float):
 			if not is_instance_valid(panel) or not is_instance_valid(glow_panel):
@@ -1433,11 +1433,11 @@ func _start_fusion_pulse_animation(panel: Control, glow_panel: Panel, main_style
 			var border_color = normal_border.lerp(bright_border, t)
 			var shadow_alpha = lerpf(0.4, 1.0, t)
 			var shadow_size = lerpf(8, 16, t)
-			
+
 			main_style.border_color = border_color
 			main_style.shadow_color.a = shadow_alpha
 			main_style.shadow_size = int(shadow_size)
-			
+
 			inner_style.border_color = Color(1.0, 0.85, 0.4).lerp(bright_border, t)
 	, 0.0, 1.0, 0.8
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
@@ -1450,16 +1450,16 @@ func _cleanup_fusion_effects(panel: Control) -> void:
 		if tween and tween is Tween and tween.is_valid():
 			tween.kill()
 		panel.remove_meta("fusion_tween")
-	
+
 	# Eliminar nodos de efectos
 	var glow_panel = panel.get_node_or_null("FusionGlowPanel")
 	if glow_panel:
 		glow_panel.queue_free()
-	
+
 	var corners = panel.get_node_or_null("FusionCornersContainer")
 	if corners:
 		corners.queue_free()
-	
+
 	var badge = panel.get_node_or_null("FusionBadge")
 	if badge:
 		badge.queue_free()
@@ -1474,23 +1474,23 @@ func _set_fallback_icon(label: Label, texture: TextureRect) -> void:
 func _get_option_color(option: Dictionary) -> Color:
 	"""Determina el color del nombre basado en tier, tipo especial, etc."""
 	var option_type = option.get("type", "")
-	
+
 	# Fusiones: Color dorado brillante épico
 	if option_type == OPTION_TYPES.FUSION:
 		return Color(1.0, 0.85, 0.3)  # Dorado brillante para fusiones
-	
+
 	# Armas nuevas y mejoras de arma tienen color naranja
 	if option_type == OPTION_TYPES.NEW_WEAPON or option_type == OPTION_TYPES.LEVEL_UP_WEAPON:
 		return WEAPON_COLOR
-	
+
 	# Mejoras únicas tienen color rojo
 	if option.get("is_unique", false):
 		return UNIQUE_COLOR
-	
+
 	# Mejoras cursed tienen color púrpura
 	if option.get("is_cursed", false):
 		return CURSED_COLOR
-	
+
 	# Por tier
 	var tier = option.get("tier", 1)
 	if typeof(tier) == TYPE_STRING:
@@ -1502,7 +1502,7 @@ func _get_option_color(option: Dictionary) -> Color:
 			"epic": tier = 4
 			"legendary": tier = 5
 			_: tier = 1
-	
+
 	return UIVisualHelper.get_color_for_tier(tier)
 
 func _get_type_text(option_type: String) -> String:
@@ -1524,23 +1524,23 @@ func _play_slot_reel_animation() -> void:
 		_update_all_visuals()
 		_update_button_counts()
 		return
-	
+
 	_is_animating = true
 	locked = true  # Bloquear input durante animación
-	
+
 	# Cancelar tweens anteriores
 	for tween in _spin_tweens:
 		if tween and tween.is_valid():
 			tween.kill()
 	_spin_tweens.clear()
-	
+
 	var max_opts = _get_max_options()
 	var visible_count = mini(options.size(), max_opts)
-	
+
 	# Resetear escala de todos los paneles (por si hay tweens de bounce residuales)
 	for panel in option_panels:
 		panel.scale = Vector2.ONE
-	
+
 	# Mostrar todos los paneles con icono spinning
 	for i in range(option_panels.size()):
 		var panel = option_panels[i]
@@ -1549,7 +1549,7 @@ func _play_slot_reel_animation() -> void:
 			_start_panel_spin(panel, i)
 		else:
 			panel.visible = false
-	
+
 	# INICIO SONIDO LOOP
 	if _slot_loop_player:
 		# Cargar resource directamente (o buscar en AudioManager si tuviera API para obtener path/stream)
@@ -1562,30 +1562,30 @@ func _play_slot_reel_animation() -> void:
 			_slot_loop_player.volume_db = -12.0
 			_slot_loop_player.bus = "SFX" # Ensure SFX bus
 			_slot_loop_player.play()
-	
+
 	# Esperar tiempo base de spin
 	await get_tree().create_timer(SPIN_DURATION_PER_REEL).timeout
 	if not is_instance_valid(self):
 		return
-	
+
 	# Revelar reels secuencialmente (sin await en cada uno para ser más rápido)
 	for i in range(visible_count):
 		if not is_instance_valid(self):
 			return
 		# Iniciar reveal del panel (no bloquea)
 		_stop_panel_spin_fast(i, options[i])
-		
+
 		# SONIDO STOP (Golpe seco al parar cada uno)
 		AudioManager.play_fixed("sfx_slot_stop")
-		
+
 		# Pequeño delay entre reveals
 		if i < visible_count - 1:
 			await get_tree().create_timer(SPIN_STAGGER).timeout
-	
+
 	# DETENER SONIDO LOOP
 	if _slot_loop_player:
 		_slot_loop_player.stop()
-	
+
 	# DESBLOQUEAR INMEDIATAMENTE después del último reveal
 	# Las animaciones de bounce continúan en segundo plano
 	_is_animating = false
@@ -1597,16 +1597,16 @@ func _stop_panel_spin_fast(index: int, option: Dictionary) -> void:
 	"""Detener spin y mostrar opción real (versión rápida sin await)"""
 	if index >= option_panels.size():
 		return
-	
+
 	var panel = option_panels[index]
-	
+
 	# Cancelar tween de spin si existe
 	if index < _spin_tweens.size() and _spin_tweens[index]:
 		_spin_tweens[index].kill()
-	
+
 	# Actualizar con opción real
 	_update_option_panel(panel, option)
-	
+
 	# Restaurar alpha
 	var name_label = panel.find_child("NameLabel", true, false) as Label
 	var desc_label = panel.find_child("DescLabel", true, false) as Label
@@ -1614,7 +1614,7 @@ func _stop_panel_spin_fast(index: int, option: Dictionary) -> void:
 		name_label.modulate.a = 1.0
 	if desc_label:
 		desc_label.modulate.a = 1.0
-	
+
 	# Animación de bounce (no bloqueante)
 	var tween = create_tween()
 	tween.set_ease(Tween.EASE_OUT)
@@ -1629,7 +1629,7 @@ func _start_panel_spin(panel: Control, _index: int) -> void:
 	var name_label = panel.find_child("NameLabel", true, false) as Label
 	var desc_label = panel.find_child("DescLabel", true, false) as Label
 	var type_label = panel.find_child("TypeLabel", true, false) as Label
-	
+
 	# CRÍTICO: Restaurar visibilidad de los labels para la animación de spin.
 	# Después de la animación anterior, _update_option_panel puede haber:
 	#  - Ocultado IconLabel y mostrado IconTexture (para iconos de imagen)
@@ -1651,22 +1651,22 @@ func _start_panel_spin(panel: Control, _index: int) -> void:
 	if type_label:
 		type_label.visible = true
 		type_label.text = "🎰"
-	
+
 	# Crear tween para ciclar iconos
 	if icon_label:
 		var tween = create_tween()
 		tween.set_loops()
-		
+
 		for j in range(_spin_icons.size()):
 			var icon = _spin_icons[j]
-			tween.tween_callback(func(): 
+			tween.tween_callback(func():
 				if is_instance_valid(icon_label):
 					icon_label.text = icon
 			)
 			tween.tween_interval(0.05)
-		
+
 		_spin_tweens.append(tween)
-	
+
 	# Escala inicial pequeña
 	panel.scale = Vector2(0.95, 0.95)
 
@@ -1674,16 +1674,16 @@ func _stop_panel_spin(index: int, option: Dictionary) -> void:
 	"""Detener spin y mostrar opción real con bounce"""
 	if index >= option_panels.size():
 		return
-	
+
 	var panel = option_panels[index]
-	
+
 	# Cancelar tween de spin si existe
 	if index < _spin_tweens.size() and _spin_tweens[index]:
 		_spin_tweens[index].kill()
-	
+
 	# Actualizar con opción real
 	_update_option_panel(panel, option)
-	
+
 	# Restaurar alpha
 	var name_label = panel.find_child("NameLabel", true, false) as Label
 	var desc_label = panel.find_child("DescLabel", true, false) as Label
@@ -1691,31 +1691,31 @@ func _stop_panel_spin(index: int, option: Dictionary) -> void:
 		name_label.modulate.a = 1.0
 	if desc_label:
 		desc_label.modulate.a = 1.0
-	
+
 	# Animación de bounce
 	var tween = create_tween()
 	tween.set_ease(Tween.EASE_OUT)
 	tween.set_trans(Tween.TRANS_BACK)
 	tween.tween_property(panel, "scale", Vector2(1.1, 1.1), 0.15)
 	tween.tween_property(panel, "scale", Vector2(1.0, 1.0), 0.1)
-	
+
 	await tween.finished
 
 func skip_slot_animation() -> void:
 	"""Saltar la animación y mostrar opciones inmediatamente"""
 	if not _is_animating:
 		return
-	
+
 	# Cancelar todos los tweens
 	for tween in _spin_tweens:
 		if tween and tween.is_valid():
 			tween.kill()
 	_spin_tweens.clear()
-	
+
 	# Detener sonido
 	if _slot_loop_player:
 		_slot_loop_player.stop()
-	
+
 	# Mostrar opciones finales
 	_is_animating = false
 	locked = false
@@ -1729,7 +1729,7 @@ func skip_slot_animation() -> void:
 
 func generate_options() -> void:
 	options.clear()
-	
+
 	# NOTA: NO sincronizar aquí - Game.gd gestiona los contadores
 	# y los incrementa cuando se obtienen mejoras de reroll/banish
 
@@ -1779,14 +1779,14 @@ func generate_options() -> void:
 func _get_player_upgrade_options(luck: float) -> Array:
 	"""
 	Obtiene opciones de mejora para el jugador.
-	
+
 	SISTEMA v3.0:
 	- Mejoras GLOBALES DE ARMAS → WeaponUpgradeDatabase.GLOBAL_UPGRADES (estático)
 	- Mejoras DEL JUGADOR → PlayerUpgradeDatabase (defensivas, utilidad, cursed, únicas) (estático)
 	"""
 	var upgrade_options: Array = []
 	var game_time_minutes = _get_game_time_minutes()
-	
+
 	# 1. MEJORAS GLOBALES DE ARMAS (WeaponUpgradeDatabase) - Función estática
 	var global_upgrades = WeaponUpgradeDatabase.get_random_global_upgrades(3, [], luck, game_time_minutes)
 	for upgrade in global_upgrades:
@@ -1803,19 +1803,19 @@ func _get_player_upgrade_options(luck: float) -> Array:
 			"is_unique": upgrade.get("is_unique", false),
 			"priority": 0.9
 		})
-	
+
 	# 2. MEJORAS DEL JUGADOR (PlayerUpgradeDatabase) - Función estática
 	var owned_unique_ids = _get_owned_unique_upgrade_ids()
-	
+
 	# Obtener tags de armas para filtrado
 	var common_tags = []
 	var all_tags = []
-	
+
 	if attack_manager and attack_manager.has_method("get_weapon_tags"):
 		var tags = attack_manager.get_weapon_tags()
 		common_tags = tags.get("common", [])
 		all_tags = tags.get("all", [])
-	
+
 	var player_upgrades = UpgradeDatabase.get_random_player_upgrades(4, [], luck, game_time_minutes, owned_unique_ids, common_tags, all_tags)
 	for upgrade in player_upgrades:
 		upgrade_options.append({
@@ -1832,7 +1832,7 @@ func _get_player_upgrade_options(luck: float) -> Array:
 			"is_consumable": upgrade.get("is_consumable", false),
 			"priority": 0.8
 		})
-	
+
 	# 3. FILTRADO: Eliminar attack_speed si solo usa orbitales (no se benefician)
 	if _are_all_weapons_orbital():
 		var filtered = []
@@ -1852,35 +1852,35 @@ func _get_player_upgrade_options(luck: float) -> Array:
 	for opt in upgrade_options:
 		var has_useful_effect = false
 		var effects = opt.get("effects", [])
-		
+
 		# Si no tiene efectos (raro) o es otro tipo, la dejamos
 		if effects.is_empty():
 			has_useful_effect = true
-			
+
 		for eff in effects:
 			var stat = eff.get("stat", "")
 			if stat == "":
 				continue
-			
+
 			# Verificar en PlayerStats primero
 			var is_capped = false
 			if player_stats and player_stats.has_method("is_stat_capped"):
 				is_capped = player_stats.is_stat_capped(stat)
-			
+
 			# Si no está en PlayerStats, verificar en GlobalWeaponStats
 			if not is_capped and attack_manager:
 				var gws = attack_manager.get("global_weapon_stats")
 				if gws and gws.has_method("is_stat_capped"):
 					is_capped = gws.is_stat_capped(stat)
-			
+
 			# Si encontramos al menos un stat NO capeado, la opción sirve
 			if not is_capped:
 				has_useful_effect = true
 				break
-		
+
 		if has_useful_effect:
 			unmaxed_options.append(opt)
-	
+
 	upgrade_options = unmaxed_options
 
 	return upgrade_options
@@ -1900,7 +1900,7 @@ func _is_weapon_upgrade(passive: Dictionary) -> bool:
 		"extra_pierce", "knockback_mult", "range_mult", "crit_chance", "crit_damage",
 		"chain_count", "life_steal"
 	]
-	
+
 	var effects = passive.get("effects", [])
 	if effects.is_empty() and passive.has("effect"):
 		var eff = passive.effect
@@ -1914,7 +1914,7 @@ func _is_weapon_upgrade(passive: Dictionary) -> bool:
 		for effect in effects:
 			if effect.get("stat", "") in weapon_stats:
 				return true
-	
+
 	return false
 
 func _get_game_time_minutes() -> float:
@@ -1923,42 +1923,42 @@ func _get_game_time_minutes() -> float:
 	var game_manager = get_tree().root.get_node_or_null("Game")
 	if game_manager and "game_time" in game_manager:
 		return game_manager.game_time / 60.0
-	
+
 	# Alternativa: buscar por grupo
 	var managers = get_tree().get_nodes_in_group("game_manager")
 	if not managers.is_empty():
 		var gm = managers[0]
 		if "game_time" in gm:
 			return gm.game_time / 60.0
-	
+
 	# Fallback: asumir partida temprana
 	return 3.0
 
 func _calculate_weapon_upgrade_chance(luck: float) -> float:
 	"""
 	Calcula la probabilidad de que aparezcan mejoras de nivel de arma.
-	
+
 	SISTEMA DE BALANCEO:
 	- Base: 40% de probabilidad de que aparezcan mejoras de arma
 	- Tiempo de juego: +5% por cada 5 minutos (hasta +15% en 15 min)
 	- Suerte: +10% por cada punto de suerte (máx +20%)
 	- Después de minuto 10: las armas son más valiosas, +10% adicional
 	- Máximo: 75% (siempre hay posibilidad de NO ver mejoras de arma)
-	
+
 	Esto balancea el juego para que el jugador vea más variedad de mejoras.
 	"""
 	var base_chance = 0.40  # 40% base
-	
+
 	# Bonus por tiempo de juego
 	var time_minutes = _get_game_time_minutes()
 	var time_bonus = minf(time_minutes / 5.0 * 0.05, 0.15)  # +5% por cada 5 min, máx +15%
-	
+
 	# Bonus extra después del minuto 10 (las armas de alto nivel son valiosas)
 	var late_game_bonus = 0.10 if time_minutes >= 10.0 else 0.0
-	
+
 	# Bonus por suerte (máximo +20%)
 	var luck_bonus = minf(luck * 0.10, 0.20)
-	
+
 	var total_chance = base_chance + time_bonus + late_game_bonus + luck_bonus
 	return minf(total_chance, 0.75)  # Máximo 75%
 
@@ -2010,14 +2010,14 @@ func _get_fallback_options() -> Array:
 			"priority": 0.8
 		}
 	]
-	
+
 	if _are_all_weapons_orbital():
 		var filtered = []
 		for opt in fallback:
 			if opt.upgrade_id != "attack_speed_boost":
 				filtered.append(opt)
 		return filtered
-		
+
 	return fallback
 
 func _get_new_weapon_options() -> Array:
@@ -2174,7 +2174,7 @@ func _apply_option(option: Dictionary) -> void:
 func _apply_player_upgrade(option: Dictionary) -> void:
 	"""
 	Aplicar mejora seleccionada.
-	
+
 	SISTEMA v3.0:
 	- Efectos de armas (damage_mult, attack_speed_mult, etc.) → AttackManager.apply_global_upgrade()
 	- Efectos del jugador (max_health, armor, etc.) → PlayerStats.apply_upgrade()
@@ -2186,7 +2186,7 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 	var upgrade_name = option.get("name", "???")
 	var category = option.get("category", "player")
 	var effects = option.get("effects", [])
-	
+
 	# Log especial para mejoras especiales
 	if is_unique:
 		# print("[LevelUpPanel] 🔴 MEJORA ÚNICA obtenida: %s" % upgrade_name)
@@ -2197,7 +2197,7 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 	if is_consumable:
 		# print("[LevelUpPanel] 🟡 Mejora CONSUMIBLE usada: %s" % upgrade_name)
 		pass
-	
+
 	# Stats que van a GlobalWeaponStats (armas)
 	# IMPORTANTE: Estos stats SOLO van a GlobalWeaponStats, NO a PlayerStats
 	# para evitar duplicación cuando se combinan en AttackManager
@@ -2208,18 +2208,18 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 		"extra_pierce", "knockback_mult", "range_mult", "crit_chance", "crit_damage",
 		"chain_count", "life_steal"  # chain_count y life_steal son stats de combate
 	]
-	
+
 	# Separar efectos en dos grupos
 	var weapon_effects = []
 	var player_effects = []
-	
+
 	for effect in effects:
 		var stat = effect.get("stat", "")
 		if stat in weapon_stats:
 			weapon_effects.append(effect)
 		else:
 			player_effects.append(effect)
-	
+
 	# Aplicar efectos de ARMAS a GlobalWeaponStats
 	if not weapon_effects.is_empty():
 		if attack_manager and attack_manager.has_method("apply_global_upgrade"):
@@ -2228,16 +2228,16 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 			var _gws_before := {}
 			if _auditor and _auditor.has_method("get_gws_snapshot"):
 				_gws_before = _auditor.get_gws_snapshot()
-			
+
 			var weapon_option = option.duplicate()
 			weapon_option["effects"] = weapon_effects
 			attack_manager.apply_global_upgrade(weapon_option)
-			
+
 			# UpgradeAuditor: snapshot GWS DESPUÉS y auditar
 			if _auditor and _auditor.has_method("audit_global_weapon_upgrade"):
 				var _gws_after = _auditor.get_gws_snapshot()
 				_auditor.audit_global_weapon_upgrade(option, _gws_before, _gws_after)
-	
+
 	# Aplicar efectos de JUGADOR a PlayerStats
 	if not player_effects.is_empty():
 		if player_stats and player_stats.has_method("apply_upgrade"):
@@ -2249,10 +2249,19 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 				pass
 			else:
 				push_warning("[LevelUpPanel] No se pudo aplicar mejora: %s" % upgrade_name)
-	
+
 	# Registrar mejora única para evitar duplicados
 	if is_unique and player_stats and player_stats.has_method("register_unique_upgrade"):
 		player_stats.register_unique_upgrade(option.get("upgrade_id", ""))
+
+	# Siempre registrar la mejora en el historial de collected_upgrades.
+	# Cuando la mejora tiene SOLO efectos de armas, player_stats.apply_upgrade()
+	# nunca se invoca y la mejora no se registra en collected_upgrades.
+	# Esto causa que get_upgrade_stacks() no la cuente (permitiendo stacks extra
+	# más allá de max_stacks) y que no aparezca en la pestaña Objetos.
+	if player_effects.is_empty() and not weapon_effects.is_empty():
+		if player_stats and player_stats.has_method("add_upgrade"):
+			player_stats.add_upgrade(option)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # API PÚBLICA
@@ -2265,10 +2274,10 @@ func show_panel() -> void:
 	current_row = Row.OPTIONS
 	option_index = 0
 	button_index = 0
-	
+
 	# Sincronizar contadores con PlayerStats al abrir el panel
 	_sync_counts_from_player_stats()
-	
+
 	generate_options()
 
 func setup_options(opts: Array) -> void:
@@ -2291,11 +2300,11 @@ func _are_all_weapons_orbital() -> bool:
 	"""Verifica si todas las armas equipadas son orbitales (tags: orbital)"""
 	if not attack_manager or not attack_manager.has_method("get_weapons"):
 		return false
-		
+
 	var weapons = attack_manager.get_weapons()
 	if weapons.is_empty():
 		return false
-		
+
 	for weapon in weapons:
 		# Verificar si el arma tiene el tag "orbital"
 		var tags = []
@@ -2303,8 +2312,8 @@ func _are_all_weapons_orbital() -> bool:
 			tags = weapon.tags
 		elif weapon is Dictionary:
 			tags = weapon.get("tags", [])
-			
+
 		if not "orbital" in tags:
 			return false
-			
+
 	return true

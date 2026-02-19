@@ -23,6 +23,7 @@ var max_trail_length: int = 18  # Estela más larga para efecto más dramático
 # Estado
 var _lifetime_timer: float = 0.0
 var _time: float = 0.0
+var _has_hit: bool = false  # Guard contra doble impacto en el mismo frame
 
 # Cache de referencias
 var _cached_decor_manager: Node = null
@@ -30,32 +31,32 @@ var _cached_decor_manager: Node = null
 func _ready() -> void:
 	# CRÍTICO: Respetar la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
-	
+
 	# Configurar colisión: layer 4 (EnemyProjectile), mask 1 (Player)
 	collision_layer = 0
 	set_collision_layer_value(4, true)
 	collision_mask = 0
 	set_collision_mask_value(1, true)
-	
+
 	# CRÍTICO: Habilitar monitoring para detectar colisiones
 	monitoring = true
 	monitorable = true
-	
+
 	# Crear CollisionShape
 	var collision = CollisionShape2D.new()
 	var shape = CircleShape2D.new()
 	shape.radius = 12.0  # Aumentar hitbox para mejor detección
 	collision.shape = shape
 	add_child(collision)
-	
+
 	# NOTA: El visual (sprite + trail) se crea en initialize() para que use
 	# el element_type correcto. _ready() se ejecuta al hacer add_child() ANTES
 	# de que initialize() asigne el elemento, lo que causaba que todos los
 	# proyectiles usaran el visual de "physical" (mapeado a arcane/púrpura).
-	
+
 	# Conectar señal de colisión
 	body_entered.connect(_on_body_entered)
-	
+
 	# Rotar hacia dirección de movimiento
 	if direction != Vector2.ZERO:
 		rotation = direction.angle()
@@ -64,7 +65,7 @@ func _setup_sprite_visual() -> void:
 	"""Configurar Sprite2D usando spritesheets por elemento"""
 	var sprite = Sprite2D.new()
 	sprite.name = "Sprite"
-	
+
 	# Mapeo de elementos a spritesheets individuales
 	var PROJECTILE_SHEETS = {
 		"fire": {
@@ -92,34 +93,34 @@ func _setup_sprite_visual() -> void:
 			"hframes": 4, "vframes": 2
 		}
 	}
-	
+
 	# Mapear elemento a tipo de spritesheet
 	var sheet_type = element_type
 	match element_type:
 		"dark", "shadow": sheet_type = "void"
 		"nature": sheet_type = "poison"
 		"physical": sheet_type = "arcane"
-	
+
 	var config = PROJECTILE_SHEETS.get(sheet_type, PROJECTILE_SHEETS["arcane"])
 	var tex = load(config["path"])
-	
+
 	if tex:
 		sprite.texture = tex
 		sprite.hframes = config["hframes"]
 		sprite.vframes = config["vframes"]
 		sprite.centered = true
-		
+
 		# FIX: Los frames reales son ~153x204, escalar para tamaño apropiado (~48x64)
 		# Esto corrige el tamaño visual de los proyectiles de enemigos
 		sprite.scale = Vector2(0.3, 0.3)
-		
+
 		# Iniciar animación de frames
 		_start_projectile_animation(sprite, config["hframes"] * config["vframes"])
 	else:
 		# Fallback: crear visual procedural
 		push_warning("[EnemyProjectile] Textura no encontrada: %s" % config["path"])
 		_setup_fallback_visual(sprite)
-	
+
 	visual_node = sprite
 	add_child(visual_node)
 
@@ -146,20 +147,20 @@ func _setup_trail() -> void:
 	_trail_line.width = 6.0
 	_trail_line.begin_cap_mode = Line2D.LINE_CAP_ROUND
 	_trail_line.end_cap_mode = Line2D.LINE_CAP_ROUND
-	
+
 	# Gradient de color: según elemento, de opaco a transparente
 	var color = _get_element_color()
 	var grad = Gradient.new()
 	grad.set_color(0, Color(color.r, color.g, color.b, 0.8))
 	grad.set_color(1, Color(color.r, color.g, color.b, 0.0))
 	_trail_line.gradient = grad
-	
+
 	# Ancho decreciente
 	var width_curve = Curve.new()
 	width_curve.add_point(Vector2(0.0, 1.0))
 	width_curve.add_point(Vector2(1.0, 0.1))
 	_trail_line.width_curve = width_curve
-	
+
 	add_child(_trail_line)
 
 
@@ -171,10 +172,10 @@ func initialize(p_direction: Vector2, p_speed: float, p_damage: int, p_lifetime:
 	lifetime = p_lifetime
 	element_type = p_element
 	_lifetime_timer = lifetime
-	
+
 	# Limpiar trail al reinicializar
 	trail_positions.clear()
-	
+
 	# Crear visual con el elemento correcto (movido de _ready)
 	# Eliminar visual anterior si existe (reuso de proyectiles)
 	if visual_node and is_instance_valid(visual_node):
@@ -183,25 +184,25 @@ func initialize(p_direction: Vector2, p_speed: float, p_damage: int, p_lifetime:
 	if _trail_line and is_instance_valid(_trail_line):
 		_trail_line.queue_free()
 		_trail_line = null
-	
+
 	_setup_sprite_visual()
 	_setup_trail()
-	
+
 	if direction != Vector2.ZERO:
 		rotation = direction.angle()
 
 func _physics_process(delta: float) -> void:
 	_time += delta
-	
+
 	# Guardar posición actual para trail
 	if trail_positions.size() == 0 or global_position.distance_to(trail_positions[0]) > 5:
 		trail_positions.insert(0, global_position)
 		if trail_positions.size() > max_trail_length:
 			trail_positions.pop_back()
-	
+
 	# Mover
 	global_position += direction * speed * delta
-	
+
 	# Verificar colisión con decorados (referencia cacheada)
 	if not is_instance_valid(_cached_decor_manager):
 		_cached_decor_manager = get_tree().get_first_node_in_group("decor_collision_manager")
@@ -210,16 +211,16 @@ func _physics_process(delta: float) -> void:
 		if push.length_squared() > 1.0:
 			queue_free()
 			return
-	
+
 	# Actualizar trail visual (convertir posiciones globales a locales del Line2D)
 	if _trail_line and trail_positions.size() > 1:
 		_trail_line.clear_points()
 		for pos in trail_positions:
 			_trail_line.add_point(pos)
-	
+
 	# Verificar colisión manual por distancia (backup fiable para body_entered)
 	_check_player_collision_distance()
-	
+
 	# Lifetime
 	_lifetime_timer -= delta
 	if _lifetime_timer <= 0:
@@ -238,16 +239,23 @@ func _check_player_collision_distance() -> void:
 
 func _hit_player(player_body: Node2D) -> void:
 	"""Impactar al player y destruir proyectil"""
+	# Guard contra doble impacto: _check_player_collision_distance y _on_body_entered
+	# pueden detectar al player en el mismo tick de física. queue_free() solo marca
+	# para eliminación al final del frame, permitiendo que ambas rutas ejecuten.
+	if _has_hit:
+		return
+	_has_hit = true
+
 	if player_body.has_method("take_damage"):
 		# Intentar pasar el elemento, si falla usar la versión simple
 		player_body.call("take_damage", damage, element_type)
 		# print("[EnemyProjectile] 🎯 Impacto en player: %d daño (%s)" % [damage, element_type])
-	
+
 	# Aplicar efectos según elemento
 	_apply_element_effect(player_body)
-	
+
 	hit_player.emit(damage)
-	
+
 	# Efecto de impacto
 	_spawn_hit_effect()
 	queue_free()
@@ -316,14 +324,14 @@ func _spawn_hit_effect() -> void:
 	effect.global_position = global_position
 	effect.top_level = true
 	effect.z_index = 5
-	
+
 	var parent = get_parent()
 	if parent:
 		parent.add_child(effect)
 	else:
 		effect.queue_free()
 		return
-	
+
 	# Mapear elemento a spritesheet AOE apropiado para el impacto
 	var impact_sheets = {
 		"fire": "res://assets/vfx/abilities/aoe/fire/aoe_fire_stomp_spritesheet.png",
@@ -337,12 +345,12 @@ func _spawn_hit_effect() -> void:
 		"lightning": "res://assets/vfx/abilities/aoe/rune/aoe_rune_blast_spritesheet.png",
 		"physical": "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png"
 	}
-	
+
 	var sheet_path = impact_sheets.get(element_type, "res://assets/vfx/abilities/aoe/arcane/aoe_arcane_nova_spritesheet.png")
-	
+
 	var sprite = Sprite2D.new()
 	var tex = load(sheet_path)
-	
+
 	if tex:
 		sprite.texture = tex
 		sprite.hframes = 4  # Todos los AOE sheets son 4x2
@@ -351,21 +359,21 @@ func _spawn_hit_effect() -> void:
 		sprite.scale = Vector2(0.35, 0.35)  # Pequeño para impacto de proyectil
 		var elem_color = _get_element_color()
 		sprite.modulate = Color(elem_color.r, elem_color.g, elem_color.b, 0.7)  # Semi-transparente
-		
+
 		effect.add_child(sprite)
-		
+
 		# Animar frames
 		var total_frames = 8
 		var tween = effect.create_tween()
 		tween.tween_method(func(f: int):
 			sprite.frame = f
 		, 0, total_frames - 1, 0.25)
-		
+
 		tween.tween_callback(func():
 			if is_instance_valid(effect):
 				effect.queue_free()
 		)
-		
+
 		# SAFETY TIMEOUT: Eliminar efecto después de 1 segundo si el tween falla
 		var tree = effect.get_tree()
 		if tree:
@@ -379,12 +387,12 @@ func _spawn_hit_effect() -> void:
 		effect.add_child(fallback)
 		var color = _get_element_color()
 		var progress = 0.0
-		
+
 		fallback.draw.connect(func():
 			var r = 12.0 * (1.0 + progress)
 			fallback.draw_circle(Vector2.ZERO, r, Color(color.r, color.g, color.b, 0.3 * (1.0 - progress)))
 		)
-		
+
 		var tween = effect.create_tween()
 		tween.tween_method(func(p: float):
 			progress = p
@@ -395,7 +403,7 @@ func _spawn_hit_effect() -> void:
 			if is_instance_valid(effect):
 				effect.queue_free()
 		)
-		
+
 		# SAFETY TIMEOUT: Eliminar efecto después de 1 segundo si el tween falla
 		var tree2 = effect.get_tree()
 		if tree2:

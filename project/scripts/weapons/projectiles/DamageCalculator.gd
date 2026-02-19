@@ -8,9 +8,11 @@ class_name DamageCalculator
 class DamageResult:
 	var base_damage: float = 0.0
 	var final_damage: float = 0.0
+	var pre_roulette_damage: float = 0.0  ## Daño antes de Russian Roulette (para Combustión)
 	var is_crit: bool = false
+	var russian_roulette_triggered: bool = false
 	var bonus_applied: Array[String] = []
-	
+
 	func get_int_damage() -> int:
 		return int(final_damage)
 
@@ -28,41 +30,41 @@ static func calculate_final_damage(
 	var result = DamageResult.new()
 	result.base_damage = base_damage
 	result.final_damage = base_damage
-	
+
 	if not is_instance_valid(target):
 		return result
-	
+
 	# Player puede ser null (ej: tests sintéticos), pero stats pueden venir del group "player_stats"
 	var tree = null
 	if is_instance_valid(player):
 		tree = player.get_tree()
 	elif is_instance_valid(target):
 		tree = target.get_tree()
-		
+
 	if not tree:
 		return result
-	
+
 	# Obtener PlayerStats
 	var ps = tree.get_first_node_in_group("player_stats")
-	
+
 	# 1. Bonificadores de distancia
 	var player_to_enemy_distance = 0.0
 	if is_instance_valid(player):
 		player_to_enemy_distance = player.global_position.distance_to(target.global_position)
-	
+
 	if ps and ps.has_method("get_stat"):
 		# Brawler: +daño si enemigo cerca (< 150 del jugador)
 		var brawler_val = ps.get_stat("close_range_damage_bonus")
 		if brawler_val > 0 and player_to_enemy_distance < 150:
 			result.final_damage *= (1.0 + brawler_val)
 			result.bonus_applied.append("brawler")
-		
+
 		# Sharpshooter: +daño si enemigo lejos (> 300 del jugador)
 		var sharpshooter_val = ps.get_stat("long_range_damage_bonus")
 		if sharpshooter_val > 0 and player_to_enemy_distance > 300:
 			result.final_damage *= (1.0 + sharpshooter_val)
 			result.bonus_applied.append("sharpshooter")
-		
+
 		# Executioner: +daño si enemigo Low HP (< 30%)
 		var executioner_val = ps.get_stat("low_hp_damage_bonus")
 		if executioner_val > 0:
@@ -70,7 +72,7 @@ static func calculate_final_damage(
 			if hp_pct < 0.30:
 				result.final_damage *= (1.0 + executioner_val)
 				result.bonus_applied.append("executioner")
-		
+
 		# Confianza Plena: +daño si el JUGADOR tiene HP máximo
 		var full_hp_val = ps.get_stat("full_hp_damage_bonus")
 		if full_hp_val > 0:
@@ -78,14 +80,14 @@ static func calculate_final_damage(
 			if player_hp_pct >= 1.0:
 				result.final_damage *= (1.0 + full_hp_val)
 				result.bonus_applied.append("full_hp")
-	
+
 	# 2. Bonus vs élites
 	result.final_damage = _apply_elite_bonus(result.final_damage, target, ps)
-	
+
 	# 2.5 Bonus condicionales (Status Effects) - Migrado de ProjectileFactory
 	if ps and ps.has_method("get_stat"):
 		var cond_mult = 1.0
-		
+
 		# VS SLOWED
 		var damage_vs_slowed = ps.get_stat("damage_vs_slowed")
 		if damage_vs_slowed > 0:
@@ -93,32 +95,42 @@ static func calculate_final_damage(
 			if ("_is_slowed" in target and target._is_slowed) or (target.has_method("is_slowed") and target.is_slowed()):
 				cond_mult += damage_vs_slowed
 				result.bonus_applied.append("vs_slowed")
-				
+
 		# VS BURNING
 		var damage_vs_burning = ps.get_stat("damage_vs_burning")
 		if damage_vs_burning > 0:
 			if ("_is_burning" in target and target._is_burning) or (target.has_method("is_burning") and target.is_burning()):
 				cond_mult += damage_vs_burning
 				result.bonus_applied.append("vs_burning")
-				
+
 		# VS FROZEN
 		var damage_vs_frozen = ps.get_stat("damage_vs_frozen")
 		if damage_vs_frozen > 0:
 			if ("_is_frozen" in target and target._is_frozen) or (target.has_method("is_frozen") and target.is_frozen()):
 				cond_mult += damage_vs_frozen
 				result.bonus_applied.append("vs_frozen")
-				
+
 		if cond_mult > 1.0:
 			result.final_damage *= cond_mult
-	
+
+	# 2.7 Russian Roulette: 1% chance de 10x daño
+	result.pre_roulette_damage = result.final_damage
+	if ps and ps.has_method("get_stat"):
+		var russian_roulette = ps.get_stat("russian_roulette")
+		if russian_roulette > 0:
+			if randf() < 0.01:
+				result.final_damage *= 10.0
+				result.russian_roulette_triggered = true
+				result.bonus_applied.append("russian_roulette")
+
 	# 3. Crítico (al final para que aplique sobre todos los bonuses)
 	if randf() < crit_chance:
 		result.final_damage *= crit_damage
 		result.is_crit = true
-	
+
 	# AUDIT HOOK (Static Check safe for execution)
 	# Removed load() to prevent cyclic dependency crashes
-	
+
 	# Real implementation: Check if Logger singleton exists
 	# Runner will add it to root.
 	var logger = target.get_tree().root.get_node_or_null("DamageDeliveryLogger")
@@ -148,19 +160,19 @@ static func _get_enemy_health_percent(target: Node) -> float:
 ## Aplicar bonus de daño contra élites
 static func _apply_elite_bonus(damage: float, target: Node, ps: Node) -> float:
 	var is_elite_target = false
-	
+
 	if target.has_method("is_elite") and target.is_elite():
 		is_elite_target = true
 	elif "is_elite" in target and target.is_elite:
 		is_elite_target = true
-	
+
 	if is_elite_target and ps and ps.has_method("get_stat"):
 		var elite_mult = ps.get_stat("elite_damage_mult")
 		if elite_mult > 0:
 			if elite_mult < 0.1:
 				elite_mult = 1.0  # Safety check
 			damage *= elite_mult
-	
+
 	return damage
 
 ## Aplicar daño a un objetivo con todos los efectos secundarios (life steal, execute, etc.)
@@ -170,30 +182,66 @@ static func apply_damage_with_effects(
 	damage_result: DamageResult,
 	knockback_dir: Vector2 = Vector2.ZERO,
 	knockback_force: float = 0.0,
-	attacker: Node = null
+	attacker: Node = null,
+	element: String = "physical"
 ) -> void:
 	if not is_instance_valid(target):
 		return
-	
+
 	var final_damage = damage_result.get_int_damage()
-	
-	# Aplicar daño
+	var ps = tree.get_first_node_in_group("player_stats")
+
+	# Combustión Instantánea: daño extra de fuego antes del golpe principal
+	if ps and ps.has_method("get_stat"):
+		var combustion_active = ps.get_stat("combustion_active")
+		if combustion_active > 0 and is_instance_valid(attacker):
+			var is_fire = (element == "fire")
+			if not is_fire and attacker.has_meta("burn_chance"):
+				is_fire = attacker.get_meta("burn_chance") > 0
+			if is_fire:
+				var combustion_base = damage_result.pre_roulette_damage if damage_result.pre_roulette_damage > 0 else damage_result.final_damage
+				var burn_dmg = int(combustion_base * 0.5)
+				if burn_dmg > 0 and target.has_method("take_damage"):
+					target.take_damage(burn_dmg, "fire", attacker)
+				FloatingText.spawn_custom(target.global_position + Vector2(10, -40), "COMB!", Color.ORANGE_RED)
+
+	# Aplicar daño principal
+	var damage_applied = false
 	if target.has_method("take_damage"):
-		target.take_damage(final_damage, "physical", attacker)
+		target.take_damage(final_damage, element, attacker)
+		damage_applied = true
+	elif target.has_node("HealthComponent"):
+		var hc = target.get_node("HealthComponent")
+		if hc.has_method("take_damage"):
+			hc.take_damage(final_damage, element)
+			damage_applied = true
+
+	if damage_applied:
 		# Balance Debug: Log damage dealt
-		# FIX-BT2b: Siempre recopilar datos
 		if BalanceDebugger:
 			BalanceDebugger.log_damage_dealt(final_damage)
-	
+
 	# Life steal
 	ProjectileFactory.apply_life_steal(tree, damage_result.final_damage)
-	
+
 	# Execute threshold
 	ProjectileFactory.check_execute(tree, target)
-	
+
 	# Efectos de estado por probabilidad
 	ProjectileFactory.apply_status_effects_chance(tree, target)
-	
+
+	# Hemorragia (Bleed on Hit): chance de aplicar sangrado
+	if ps and ps.has_method("get_stat"):
+		var bleed_chance = ps.get_stat("bleed_on_hit_chance")
+		if bleed_chance > 0 and randf() < bleed_chance:
+			if is_instance_valid(target) and target.has_method("apply_bleed"):
+				var bleed_dmg = max(1, damage_result.base_damage * 0.2)
+				target.apply_bleed(bleed_dmg, 3.0)
+				FloatingText.spawn_custom(target.global_position + Vector2(-10, -30), "BLEED", Color.RED)
+
 	# Knockback
-	if knockback_force != 0 and knockback_dir != Vector2.ZERO and target.has_method("apply_knockback"):
-		target.apply_knockback(knockback_dir * knockback_force)
+	if knockback_force != 0 and knockback_dir != Vector2.ZERO:
+		if is_instance_valid(target) and target.has_method("apply_knockback"):
+			target.apply_knockback(knockback_dir * knockback_force)
+		elif is_instance_valid(target) and target is CharacterBody2D:
+			target.velocity += knockback_dir * knockback_force

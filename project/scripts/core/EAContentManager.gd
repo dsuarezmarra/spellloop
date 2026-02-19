@@ -1,30 +1,30 @@
 # EAContentManager.gd
 # Gestor de contenido para Early Access
-# Controla qué personajes, armas y contenido están habilitados en cada momento.
+# Controla quÃ© personajes, armas y contenido estÃ¡n habilitados en cada momento.
 # Permite desbloquear contenido progresivamente mediante actualizaciones.
 #
 # USO:
-#   - Los personajes/armas EA_ENABLED están disponibles en el juego
-#   - Los personajes/armas NO listados están completamente ocultos
-#   - Para habilitar nuevo contenido: añadir IDs a las listas correspondientes
+#   - Los personajes/armas EA_ENABLED estÃ¡n disponibles en el juego
+#   - Los personajes/armas NO listados estÃ¡n completamente ocultos
+#   - Para habilitar nuevo contenido: aÃ±adir IDs a las listas correspondientes
 #   - Para desactivar el sistema EA (mostrar todo): poner ea_mode = false
 
 extends Node
 
 # =============================================================================
-# CONFIGURACIÓN EARLY ACCESS
+# CONFIGURACIÃ“N EARLY ACCESS
 # =============================================================================
 
-## Si es true, el sistema EA filtra contenido. Si es false, todo está disponible.
+## Si es true, el sistema EA filtra contenido. Si es false, todo estÃ¡ disponible.
 var ea_mode: bool = true
 
-## Versión del contenido EA (incrementar con cada wave de contenido)
+## VersiÃ³n del contenido EA (incrementar con cada wave de contenido)
 var ea_content_version: String = "0.1.0"
 
 # =============================================================================
 # WAVE 1 ? LANZAMIENTO EARLY ACCESS
 # Personajes iniciales: Frost Mage, Pyromancer, Storm Caller
-# Armas: Solo las de los 3 personajes iniciales + sus fusiones entre sí
+# Armas: Solo las de los 3 personajes iniciales + sus fusiones entre sÃ­
 # =============================================================================
 
 ## Personajes habilitados en EA (IDs de CharacterDatabase)
@@ -54,8 +54,8 @@ var ea_enabled_fusions: Array = [
 # PLANTILLAS PARA FUTURAS WAVES (descomentar cuando se activen)
 # =============================================================================
 
-# WAVE 2 ? Ejemplo: Añadir Arcanist y Druid
-# Descomentar y añadir a las listas cuando se lance la wave:
+# WAVE 2 ? Ejemplo: AÃ±adir Arcanist y Druid
+# Descomentar y aÃ±adir a las listas cuando se lance la wave:
 #   ea_enabled_characters += ["arcanist", "druid"]
 #   ea_enabled_weapons += ["arcane_orb", "nature_staff"]
 #   ea_enabled_fusions += [
@@ -64,32 +64,32 @@ var ea_enabled_fusions: Array = [
 #       "arcane_orb+nature_staff",
 #   ]
 
-# WAVE 3 ? Ejemplo: Añadir Shadow Blade y Wind Runner
+# WAVE 3 ? Ejemplo: AÃ±adir Shadow Blade y Wind Runner
 #   ea_enabled_characters += ["shadow_blade", "wind_runner"]
 #   ea_enabled_weapons += ["shadow_dagger", "wind_blade"]
 #   ... y sus fusiones correspondientes
 
 # WAVE FINAL ? Todos los personajes
-#   ea_mode = false  (o añadir todos los IDs restantes)
+#   ea_mode = false  (o aÃ±adir todos los IDs restantes)
 
 # =============================================================================
 # FUNCIONES DE CONSULTA
 # =============================================================================
 
 func is_character_enabled(character_id: String) -> bool:
-	"""Verifica si un personaje está habilitado en la versión actual de EA"""
+	"""Verifica si un personaje estÃ¡ habilitado en la versiÃ³n actual de EA"""
 	if not ea_mode:
 		return true
 	return character_id in ea_enabled_characters
 
 func is_weapon_enabled(weapon_id: String) -> bool:
-	"""Verifica si un arma base está habilitada en EA"""
+	"""Verifica si un arma base estÃ¡ habilitada en EA"""
 	if not ea_mode:
 		return true
 	return weapon_id in ea_enabled_weapons
 
 func is_fusion_enabled(fusion_key: String) -> bool:
-	"""Verifica si una fusión está habilitada en EA.
+	"""Verifica si una fusiÃ³n estÃ¡ habilitada en EA.
 	   Acepta tanto 'arma_a+arma_b' como 'arma_b+arma_a'."""
 	if not ea_mode:
 		return true
@@ -105,7 +105,7 @@ func is_fusion_enabled(fusion_key: String) -> bool:
 	return false
 
 func is_fusion_enabled_by_weapons(weapon_a: String, weapon_b: String) -> bool:
-	"""Verifica si la fusión entre dos armas está habilitada en EA"""
+	"""Verifica si la fusiÃ³n entre dos armas estÃ¡ habilitada en EA"""
 	if not ea_mode:
 		return true
 	var key1 = weapon_a + "+" + weapon_b
@@ -119,13 +119,13 @@ func is_fusion_enabled_by_weapons(weapon_a: String, weapon_b: String) -> bool:
 func get_enabled_character_ids() -> Array:
 	"""Retorna los IDs de personajes habilitados en EA"""
 	if not ea_mode:
-		return []  # Vacío = sin filtro, usar todos
+		return []  # VacÃ­o = sin filtro, usar todos
 	return ea_enabled_characters.duplicate()
 
 func get_enabled_weapon_ids() -> Array:
 	"""Retorna los IDs de armas base habilitadas en EA"""
 	if not ea_mode:
-		return []  # Vacío = sin filtro, usar todas
+		return []  # VacÃ­o = sin filtro, usar todas
 	return ea_enabled_weapons.duplicate()
 
 func get_enabled_fusion_keys() -> Array:
@@ -135,7 +135,7 @@ func get_enabled_fusion_keys() -> Array:
 	return ea_enabled_fusions.duplicate()
 
 # =============================================================================
-# FUNCIONES DE ADMINISTRACIÓN (para habilitar contenido en caliente)
+# FUNCIONES DE ADMINISTRACIÃ“N (para habilitar contenido en caliente)
 # =============================================================================
 
 func enable_character(character_id: String) -> void:
@@ -151,11 +151,11 @@ func enable_weapon(weapon_id: String) -> void:
 		print("[EAContentManager] Arma habilitada: %s" % weapon_id)
 
 func enable_fusion(weapon_a: String, weapon_b: String) -> void:
-	"""Habilita una fusión en EA"""
+	"""Habilita una fusiÃ³n en EA"""
 	var key = weapon_a + "+" + weapon_b
 	if key not in ea_enabled_fusions:
 		ea_enabled_fusions.append(key)
-		print("[EAContentManager] Fusión habilitada: %s" % key)
+		print("[EAContentManager] FusiÃ³n habilitada: %s" % key)
 
 func enable_wave(wave_characters: Array, wave_weapons: Array, wave_fusions: Array) -> void:
 	"""Habilita una wave completa de contenido"""

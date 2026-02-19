@@ -43,13 +43,13 @@ var modal_container: Control
 
 func _ready() -> void:
 	# Debug desactivado: print("[UIManager] Initializing UIManager...")
-	
+
 	# Create UI canvas layer
 	_setup_ui_canvas()
-	
+
 	# Connect to game state changes
 	_connect_game_signals()
-	
+
 	# Debug desactivado: print("[UIManager] UIManager initialized successfully")
 
 func _setup_ui_canvas() -> void:
@@ -58,7 +58,7 @@ func _setup_ui_canvas() -> void:
 	ui_canvas.name = "UICanvas"
 	ui_canvas.layer = 100  # High layer for UI
 	add_child(ui_canvas)
-	
+
 	# Create modal container
 	modal_container = Control.new()
 	modal_container.name = "ModalContainer"
@@ -150,10 +150,6 @@ func show_levelup_popup(upgrades: Array):
 	if game_hud:
 		game_hud.show_levelup_popup(upgrades)
 
-func hide_levelup_popup():
-	if game_hud:
-		game_hud.hide_levelup_popup()
-
 func show_pause_menu() -> void:
 	"""Show the pause menu as a modal"""
 	var pause_scene = load(PAUSE_MENU_SCENE)
@@ -174,12 +170,12 @@ func request_popup(popup_node: Node) -> void:
 	"""Request to show a popup. Adds to queue if a modal is already open."""
 	if not popup_node:
 		return
-		
+
 	if is_modal_open:
 		popup_queue.append(popup_node)
 		# Debug desactivado: print("[UIManager] Popup queued. Queue size: ", popup_queue.size())
 		return
-		
+
 	_show_popup_instance(popup_node)
 
 func _show_popup_instance(popup_node: Node) -> void:
@@ -187,14 +183,14 @@ func _show_popup_instance(popup_node: Node) -> void:
 	# Add to modal stack and container
 	modal_stack.append(popup_node)
 	modal_container.add_child(popup_node)
-	
+
 	# Connect tree_exited to detecting closing if manual queue_free is used
 	if not popup_node.tree_exited.is_connected(_on_popup_tree_exited):
 		popup_node.tree_exited.connect(_on_popup_tree_exited)
-	
+
 	is_modal_open = true
 	modal_opened.emit(popup_node.name)
-	
+
 	# Pause game if not already paused (optional, usually popups handle it but UIManager can enforce)
 	if not get_tree().paused:
 		get_tree().paused = true
@@ -206,20 +202,20 @@ func _on_popup_tree_exited():
 		# Check if the closed node was the top modal (it should be)
 		# But since it's already freed, we might need careful check or just trust logic
 		pass
-	
+
 	# Attempt to Process next in queue after a frame to allow cleanup
 	call_deferred("_process_popup_queue")
 
 func _process_popup_queue() -> void:
 	# Filter invalidated nodes
 	modal_stack = modal_stack.filter(func(x): return is_instance_valid(x))
-	
+
 	if not modal_stack.is_empty():
 		is_modal_open = true
 		return
-		
+
 	is_modal_open = false
-	
+
 	if not popup_queue.is_empty():
 		var next_popup = popup_queue.pop_front()
 		if is_instance_valid(next_popup):
@@ -228,8 +224,8 @@ func _process_popup_queue() -> void:
 			_process_popup_queue() # Recursive skip invalid
 	else:
 		# Queue empty, unpause?
-		# Only unpause if we paused it. 
-		# For now, let's assume popups handle their own pause state logic or we force unpause 
+		# Only unpause if we paused it.
+		# For now, let's assume popups handle their own pause state logic or we force unpause
 		# if we want UIManager to be the authority.
 		# But TreasureChest manually reused pause. Let's rely on _exit_tree of popup to unpause?
 		# Or better: UIManager manages pause.
@@ -240,47 +236,47 @@ func show_modal(modal_scene: PackedScene, data: Dictionary = {}) -> void:
 	if not modal_scene:
 		push_warning("[UIManager] Error: Modal scene is null")
 		return
-	
+
 	var modal_instance = modal_scene.instantiate()
 	if not modal_instance:
 		push_warning("[UIManager] Error: Failed to instantiate modal scene")
 		return
-	
+
 	# Setup modal
 	modal_instance.name = modal_scene.resource_path.get_file().get_basename()
-	
+
 	# Pass data to modal if it has a setup method
 	if modal_instance.has_method("setup_modal"):
 		modal_instance.setup_modal(data)
-	
+
 	# Connect modal signals
 	if modal_instance.has_signal("modal_closed"):
 		modal_instance.modal_closed.connect(_on_modal_closed)
-	
+
 	# Add to modal stack and container
 	modal_stack.append(modal_instance)
 	modal_container.add_child(modal_instance)
-	
+
 	is_modal_open = true
 	modal_opened.emit(modal_instance.name)
-	
+
 	# Debug desactivado: print("[UIManager] Opened modal: ", modal_instance.name)
 
 func close_current_modal() -> void:
 	"""Close the topmost modal"""
 	if modal_stack.is_empty():
 		return
-	
+
 	var modal = modal_stack.pop_back()
 	var modal_name = modal.name
-	
+
 	modal.queue_free()
-	
+
 	is_modal_open = not modal_stack.is_empty()
 	modal_closed.emit(modal_name)
-	
+
 	# Debug desactivado: print("[UIManager] Closed modal: ", modal_name)
-	
+
 	# Trigger queue check
 	_process_popup_queue()
 
@@ -295,25 +291,25 @@ func _change_scene(scene_path: String, scene_name: String) -> void:
 	if current_scene_node:
 		current_scene_node.queue_free()
 		current_scene_node = null
-	
+
 	# Load new scene
 	var new_scene = load(scene_path)
 	if not new_scene:
 		push_warning("[UIManager] Error: Failed to load scene: " + scene_path)
 		return
-	
+
 	# Instantiate and add new scene
 	current_scene_node = new_scene.instantiate()
 	if not current_scene_node:
 		push_warning("[UIManager] Error: Failed to instantiate scene: " + scene_path)
 		return
-	
+
 	ui_canvas.add_child(current_scene_node)
-	
+
 	# Update state
 	var old_scene = current_scene_name
 	current_scene_name = scene_name
-	
+
 	scene_changed.emit(old_scene, scene_name)
 	# Debug desactivado: print("[UIManager] Changed scene from '", old_scene, "' to '", scene_name, "'")
 
@@ -354,19 +350,20 @@ func _on_game_state_changed(_old_state, new_state) -> void:
 		game_manager = get_tree().root.get_node("GameManager")
 	if not game_manager:
 		return
-	
+
+	# Usar enum tipado en vez de valores mágicos para robustez ante reordenamientos
 	match new_state:
-		0: # MAIN_MENU
+		game_manager.GameState.MAIN_MENU:
 			close_all_modals()
 			show_main_menu()
-		1: # IN_RUN
+		game_manager.GameState.IN_RUN:
 			close_all_modals()
 			# Game.gd already creates GameHUD — don't duplicate it here
 			# Game.gd registers its HUD reference via UIManager.game_hud
-		3: # GAME_OVER
+		game_manager.GameState.GAME_OVER:
 			# Game over modal will be shown by the game scene
 			pass
-		5: # SETTINGS
+		game_manager.GameState.SETTINGS:
 			show_settings_menu()
 
 func _on_game_paused() -> void:

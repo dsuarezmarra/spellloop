@@ -301,6 +301,7 @@ var _pending_sync: Array = []         # IDs pendientes de sincronizar con Steam
 var _boss_kill_tracker: Dictionary = {} # boss_id -> bool (para ACH_ALL_BOSSES)
 var _boss_fight_start_time: float = 0.0
 var _boss_fight_hp_at_start: int = 0   # HP del jugador al iniciar boss fight
+var _boss_fight_damage_taken: int = 0  # Daño recibido durante boss fight (para no-hit tracking)
 var _is_ready: bool = false
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -310,10 +311,10 @@ var _is_ready: bool = false
 func _ready() -> void:
 	# Inicializar stats con valores por defecto
 	_stats = TRACKED_STATS.duplicate(true)
-	
+
 	# Cargar estado de achievements desde SaveManager
 	_load_from_save()
-	
+
 	# Conectar con SteamManager cuando esté listo
 	var steam_mgr = get_node_or_null("/root/SteamManager")
 	if steam_mgr:
@@ -321,11 +322,11 @@ func _ready() -> void:
 			_on_steam_ready(steam_mgr.is_steam_available)
 		else:
 			steam_mgr.steam_initialized.connect(_on_steam_ready)
-		
+
 		# Conectar callback de stats recibidos
 		if steam_mgr.has_signal("user_stats_received"):
 			steam_mgr.user_stats_received.connect(_on_user_stats_received)
-	
+
 	_is_ready = true
 
 func _on_steam_ready(success: bool) -> void:
@@ -335,7 +336,7 @@ func _on_steam_ready(success: bool) -> void:
 		var steam_mgr = get_node_or_null("/root/SteamManager")
 		if steam_mgr:
 			steam_mgr.request_user_stats()
-		
+
 		# Sincronizar achievements pendientes
 		_sync_pending_achievements()
 
@@ -355,37 +356,37 @@ func check_and_unlock(achievement_id: String) -> bool:
 	if not ACHIEVEMENTS.has(achievement_id):
 		push_warning("[SteamAchievements] Achievement desconocido: %s" % achievement_id)
 		return false
-	
+
 	# Ya desbloqueado
 	if _unlocked.get(achievement_id, false):
 		return false
-	
+
 	# Desbloquear
 	_unlocked[achievement_id] = true
 	var ach = ACHIEVEMENTS[achievement_id]
 	var ach_name = ach.get("name", achievement_id)
-	
+
 	print("[SteamAchievements] 🏆 Achievement desbloqueado: %s (%s)" % [ach_name, achievement_id])
 	achievement_unlocked.emit(achievement_id, ach_name)
-	
+
 	# Intentar sincronizar con Steam
 	_set_steam_achievement(achievement_id)
-	
+
 	# Guardar localmente
 	_save_to_save_manager()
-	
+
 	return true
 
 func increment_stat(stat_name: String, amount: int = 1) -> void:
 	"""Incrementar un stat y verificar si desbloquea algún achievement"""
 	if not _stats.has(stat_name):
 		_stats[stat_name] = 0
-	
+
 	_stats[stat_name] += amount
-	
+
 	# Verificar achievements que dependen de este stat
 	_check_stat_achievements(stat_name)
-	
+
 	# Sincronizar stat con Steam
 	_set_steam_stat(stat_name, _stats[stat_name])
 
@@ -393,7 +394,7 @@ func set_stat(stat_name: String, value: int) -> void:
 	"""Establecer un stat a un valor específico (usa el mayor entre actual y nuevo)"""
 	if not _stats.has(stat_name):
 		_stats[stat_name] = 0
-	
+
 	# Solo actualizar si el nuevo valor es mayor (para stats tipo "best")
 	if value > _stats[stat_name]:
 		_stats[stat_name] = value
@@ -408,10 +409,10 @@ func get_achievement_progress(achievement_id: String) -> Dictionary:
 	"""Obtener progreso de un achievement"""
 	if not ACHIEVEMENTS.has(achievement_id):
 		return {}
-	
+
 	var ach = ACHIEVEMENTS[achievement_id]
 	var is_unlocked = _unlocked.get(achievement_id, false)
-	
+
 	var result = {
 		"id": achievement_id,
 		"name": ach.get("name", ""),
@@ -422,7 +423,7 @@ func get_achievement_progress(achievement_id: String) -> Dictionary:
 		"hidden": ach.get("hidden", false),
 		"unlocked": is_unlocked
 	}
-	
+
 	# Añadir progreso si tiene stat tracking
 	if ach.has("stat_name") and ach.has("stat_target"):
 		var current = _stats.get(ach.stat_name, 0)
@@ -430,7 +431,7 @@ func get_achievement_progress(achievement_id: String) -> Dictionary:
 		result["current"] = current
 		result["target"] = target
 		result["progress"] = minf(1.0, float(current) / float(target)) if target > 0 else 0.0
-	
+
 	return result
 
 func get_all_achievements() -> Array:
@@ -461,16 +462,16 @@ func reset_all() -> void:
 	if not OS.is_debug_build():
 		push_warning("[SteamAchievements] reset_all() solo funciona en debug builds")
 		return
-	
+
 	_unlocked.clear()
 	_stats = TRACKED_STATS.duplicate(true)
 	_boss_kill_tracker.clear()
-	
+
 	# Resetear en Steam
 	var steam_mgr = get_node_or_null("/root/SteamManager")
 	if steam_mgr and steam_mgr.is_steam_available:
 		steam_mgr.clear_all_achievements()
-	
+
 	_save_to_save_manager()
 	print("[SteamAchievements] ⚠️ Todos los logros reseteados")
 
@@ -488,48 +489,42 @@ func on_run_ended(run_data: Dictionary) -> void:
 	"""Llamar al final de cada run con los datos de la partida"""
 	# ACH_FIRST_RUN
 	check_and_unlock("ACH_FIRST_RUN")
-	
+
 	# Incrementar total runs
 	increment_stat("total_runs", 1)
-	
+
 	# Actualizar mayor duración
 	var duration_minutes = run_data.get("duration", 0.0) / 60.0
 	set_stat("longest_run_minutes", int(duration_minutes))
-	
+
 	# Actualizar total de enemigos globales
 	var enemies = run_data.get("enemies_defeated", 0)
 	increment_stat("total_enemies_killed", enemies)
-	
+
 	# Guardar stats
 	_save_to_save_manager()
 
 func on_enemy_killed(_enemy_id: String, _enemy_tier: int, is_boss: bool, boss_id: String = "") -> void:
 	"""Llamar cuando un enemigo es derrotado"""
 	increment_stat("run_enemies_killed", 1)
-	
+
 	if is_boss:
 		# ACH_FIRST_BOSS
 		check_and_unlock("ACH_FIRST_BOSS")
-		
+
 		# Trackear boss fast kill
 		if _boss_fight_start_time > 0.0:
 			var fight_duration = (Time.get_ticks_msec() / 1000.0) - _boss_fight_start_time
 			if fight_duration < 30.0:
 				check_and_unlock("ACH_BOSS_FAST_KILL")
-			_boss_fight_start_time = 0.0
-		
-		# Trackear no-hit boss
-		var player_node = get_tree().get_first_node_in_group("player")
-		if player_node and _boss_fight_hp_at_start > 0:
-			var current_hp = 0
-			if player_node.has_method("get_current_health"):
-				current_hp = player_node.get_current_health()
-			elif player_node.get("health_component"):
-				current_hp = player_node.health_component.current_health
-			
-			if current_hp >= _boss_fight_hp_at_start:
+
+			# Trackear no-hit boss (usando contador de daño en vez de comparación de HP)
+			# Esto evita falsos positivos con builds de regeneración
+			if _boss_fight_damage_taken == 0:
 				check_and_unlock("ACH_NO_HIT_BOSS")
-		
+
+			_boss_fight_start_time = 0.0
+
 		# Track unique bosses
 		if not boss_id.is_empty():
 			_boss_kill_tracker[boss_id] = true
@@ -539,7 +534,8 @@ func on_enemy_killed(_enemy_id: String, _enemy_tier: int, is_boss: bool, boss_id
 func on_boss_spawned() -> void:
 	"""Llamar cuando aparece un boss"""
 	_boss_fight_start_time = Time.get_ticks_msec() / 1000.0
-	
+	_boss_fight_damage_taken = 0  # Reset damage counter for no-hit tracking
+
 	# Capturar HP del jugador al iniciar boss fight
 	var player_node = get_tree().get_first_node_in_group("player")
 	if player_node:
@@ -547,6 +543,12 @@ func on_boss_spawned() -> void:
 			_boss_fight_hp_at_start = player_node.get_current_health()
 		elif player_node.get("health_component"):
 			_boss_fight_hp_at_start = player_node.health_component.current_health
+
+func on_player_damaged_during_boss(damage_amount: int) -> void:
+	"""Llamar cuando el jugador recibe daño durante un boss fight.
+	Permite tracking preciso de no-hit boss sin depender de comparación de HP."""
+	if _boss_fight_start_time > 0.0:
+		_boss_fight_damage_taken += damage_amount
 
 func on_level_up(new_level: int) -> void:
 	"""Llamar cuando el jugador sube de nivel"""
@@ -574,25 +576,25 @@ func _load_from_save() -> void:
 	var save_mgr = get_node_or_null("/root/SaveManager")
 	if not save_mgr:
 		return
-	
+
 	var save_data = save_mgr.current_save_data
 	if save_data.is_empty():
 		return
-	
+
 	var ach_data = save_data.get("achievements", {})
-	
+
 	# Cargar unlocked
 	_unlocked = ach_data.get("unlocked", {}).duplicate(true)
-	
+
 	# Cargar stats
 	var saved_stats = ach_data.get("stats", {})
 	for stat_name in saved_stats:
 		if _stats.has(stat_name):
 			_stats[stat_name] = saved_stats[stat_name]
-	
+
 	# Cargar boss tracker
 	_boss_kill_tracker = ach_data.get("boss_tracker", {}).duplicate(true)
-	
+
 	# Cargar pendientes
 	_pending_sync = ach_data.get("pending_sync", []).duplicate()
 
@@ -601,17 +603,17 @@ func _save_to_save_manager() -> void:
 	var save_mgr = get_node_or_null("/root/SaveManager")
 	if not save_mgr:
 		return
-	
+
 	if save_mgr.current_save_data.is_empty():
 		return
-	
+
 	save_mgr.current_save_data["achievements"] = {
 		"unlocked": _unlocked.duplicate(true),
 		"stats": _stats.duplicate(true),
 		"boss_tracker": _boss_kill_tracker.duplicate(true),
 		"pending_sync": _pending_sync.duplicate()
 	}
-	
+
 	# No llamar save_game_data aquí para evitar recursión
 	# El SaveManager guardará en la próxima oportunidad
 
@@ -627,7 +629,7 @@ func _set_steam_achievement(achievement_id: String) -> void:
 		if achievement_id not in _pending_sync:
 			_pending_sync.append(achievement_id)
 		return
-	
+
 	steam_mgr.set_achievement(achievement_id)
 
 func _set_steam_stat(stat_name: String, value: int) -> void:
@@ -635,7 +637,7 @@ func _set_steam_stat(stat_name: String, value: int) -> void:
 	var steam_mgr = get_node_or_null("/root/SteamManager")
 	if not steam_mgr or not steam_mgr.is_steam_available:
 		return
-	
+
 	steam_mgr.set_stat(stat_name, value)
 
 func _pull_stats_from_steam() -> void:
@@ -643,34 +645,34 @@ func _pull_stats_from_steam() -> void:
 	var steam_mgr = get_node_or_null("/root/SteamManager")
 	if not steam_mgr or not steam_mgr.is_steam_available:
 		return
-	
+
 	for stat_name in _stats:
 		var steam_value = steam_mgr.get_stat(stat_name)
 		if steam_value > _stats[stat_name]:
 			_stats[stat_name] = steam_value
-	
+
 	# Verificar achievements desde Steam
 	for ach_id in ACHIEVEMENTS:
 		if not _unlocked.get(ach_id, false):
 			var steam_unlocked = steam_mgr.get_achievement(ach_id)
 			if steam_unlocked:
 				_unlocked[ach_id] = true
-	
+
 	_save_to_save_manager()
 
 func _sync_pending_achievements() -> void:
 	"""Sincronizar achievements pendientes cuando Steam vuelve a estar disponible"""
 	if _pending_sync.is_empty():
 		return
-	
+
 	var steam_mgr = get_node_or_null("/root/SteamManager")
 	if not steam_mgr or not steam_mgr.is_steam_available:
 		return
-	
+
 	print("[SteamAchievements] Sincronizando %d achievements pendientes..." % _pending_sync.size())
 	for ach_id in _pending_sync:
 		steam_mgr.set_achievement(ach_id)
-	
+
 	_pending_sync.clear()
 	_save_to_save_manager()
 
