@@ -322,6 +322,9 @@ func _apply_orbital_effect(enemy: Node) -> void:
 				var heal_amount = roundi(effect_value)
 				player.heal(heal_amount)
 				FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
+				# FIX-VFXPOOL: Spawn lifesteal VFX from pool (was missing)
+				if VFXPool.instance and is_instance_valid(enemy):
+					VFXPool.instance.get_lifesteal_particles(enemy.global_position, player.global_position)
 		"bleed":
 			if enemy.has_method("apply_bleed"):
 				enemy.apply_bleed(effect_value, modified_duration)

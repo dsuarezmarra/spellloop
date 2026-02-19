@@ -170,7 +170,10 @@ static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
 			# FIX-BT2b: Siempre recopilar datos
 			if BalanceDebugger:
 				BalanceDebugger.log_heal(heal_int, "lifesteal")
-			# Debug desactivado: print("[LifeSteal] Curado +%d HP" % heal_int)
+			# FIX-VFXPOOL: Spawn lifesteal VFX from pool (was missing - caused 0% reuse)
+			if VFXPool.instance:
+				var vfx_start = player.global_position + Vector2(0, 20)
+				VFXPool.instance.get_lifesteal_particles(vfx_start, player.global_position)
 		elif player.has_node("PlayerStats"):
 			var stats = player.get_node("PlayerStats")
 			if stats.has_method("heal"):
@@ -179,7 +182,10 @@ static func apply_life_steal(tree: SceneTree, damage_dealt: float) -> void:
 				# FIX-BT2b: Siempre recopilar datos
 				if BalanceDebugger:
 					BalanceDebugger.log_heal(heal_int, "lifesteal")
-				# Debug desactivado: print("[LifeSteal] Curado +%d HP" % heal_int)
+				# FIX-VFXPOOL: Spawn lifesteal VFX from pool (was missing - caused 0% reuse)
+				if VFXPool.instance:
+					var vfx_start = player.global_position + Vector2(0, 20)
+					VFXPool.instance.get_lifesteal_particles(vfx_start, player.global_position)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # HELPER: STATUS DURATION MULTIPLIER

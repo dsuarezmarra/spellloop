@@ -150,11 +150,12 @@ func finalize_bundle(context: Dictionary = {}) -> void:
 	# Generar summary.json
 	_generate_summary(context)
 
-	# Generar integrity.json
-	_generate_integrity()
-
 	# Generar event_index.json (índice por tipo de evento para navegación rápida)
+	# MUST run before integrity so integrity can verify the file exists
 	_generate_event_index()
+
+	# Generar integrity.json (last artifact step — verifies all others)
+	_generate_integrity()
 
 	# Limpieza de bundles antiguos
 	_cleanup_old_bundles()
@@ -244,7 +245,9 @@ func _copy_perf_segment() -> void:
 			# pero uses Time.get_unix_time_from_system() for session_start
 			# Incluimos todo lo que tenga frame (spike events durante la run)
 			if data.get("event", "") == "session_start":
-				dest.store_line(line)  # Siempre incluir info de sesión
+				# Inject run_id so integrity checker sees it on the first line
+				data["run_id"] = _run_id
+				dest.store_line(JSON.stringify(data))
 			elif ts >= run_start_ticks:
 				dest.store_line(line)
 
@@ -302,6 +305,7 @@ func _generate_summary(context: Dictionary) -> void:
 		"killed_by": context.get("killed_by", "unknown"),
 		"duration_s": duration_s,
 		"time_survived": context.get("time_survived", duration_s),
+		"duration_note": "duration_s=wall-clock (includes pauses), time_survived=gameplay only (excludes pauses/menus)",
 		"end_timestamp": Time.get_unix_time_from_system(),
 		"end_iso": Time.get_datetime_string_from_system().replace(":", "-").replace("T", "_"),
 

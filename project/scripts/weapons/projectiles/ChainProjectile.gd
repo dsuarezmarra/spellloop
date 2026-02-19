@@ -167,6 +167,9 @@ func _apply_chain_effect(target: Node2D) -> void:
 				var heal_amount = roundi(effect_value)
 				player.heal(heal_amount)
 				FloatingText.spawn_heal(player.global_position + Vector2(0, -30), heal_amount)
+				# FIX-VFXPOOL: Spawn lifesteal VFX from pool (was missing)
+				if VFXPool.instance and is_instance_valid(target):
+					VFXPool.instance.get_lifesteal_particles(target.global_position, player.global_position)
 		"stun":
 			if target.has_method("apply_stun"):
 				target.apply_stun(effect_value)

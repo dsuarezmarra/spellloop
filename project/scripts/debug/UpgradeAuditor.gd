@@ -676,6 +676,11 @@ func _summarize_checks(checks: Array) -> String:
 func _log_event(data: Dictionary) -> void:
 	if _current_log_file == "":
 		return
+	# Inject run_id for integrity validation and cross-referencing
+	if not data.has("run_id"):
+		var run_ctx = get_node_or_null("/root/RunContext")
+		if run_ctx and run_ctx.run_id != "":
+			data["run_id"] = run_ctx.run_id
 	var file = FileAccess.open(_current_log_file, FileAccess.READ_WRITE)
 	if not file:
 		file = FileAccess.open(_current_log_file, FileAccess.WRITE)
