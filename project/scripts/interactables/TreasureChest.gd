@@ -19,7 +19,7 @@ enum ChestType {
 var chest_type: int = ChestType.NORMAL
 var chest_rarity: int = 0  # ItemsDefinitions.ItemRarity.WHITE (numeric fallback)
 var is_opened: bool = false
-var interaction_range: float = 60.0 # Increased from 60.0 to fix collision issues
+var interaction_range: float = 50.0 # Increased from 60.0 to fix collision issues
 var popup_shown: bool = false  # Control para evitar múltiples popups
 var popup_shown_internal: bool = false # Internal guard for trigger execution
 
@@ -285,6 +285,16 @@ func _process(delta):
 	if distance <= interaction_range:
 		popup_shown = true
 		trigger_chest_interaction()
+	elif distance <= interaction_range * 1.2:
+		# BACKUP: Check overlaps manually if close but not triggered
+		if interaction_area:
+			var bodies = interaction_area.get_overlapping_bodies()
+			for b in bodies:
+				if b.is_in_group("player"):
+					player_ref = b
+					popup_shown = true
+					trigger_chest_interaction()
+					break
 	
 	# DEBUG DIAGNÓSTICO: Imprimir estado cada 60 frames si está cerca pero no abre
 	if distance < 200.0 and not is_opened and not popup_shown and Engine.get_physics_frames() % 60 == 0:
@@ -300,6 +310,11 @@ func _find_player() -> Node2D:
 	var p = tree.get_first_node_in_group("player")
 	if p:
 		return p
+	# 1b. Por variable global en Game (si existe)
+	if tree.root.has_node("Game"):
+		var game = tree.root.get_node("Game")
+		if "player" in game and is_instance_valid(game.player):
+			return game.player
 	# 2. Por PlayerContainer
 	if tree.current_scene:
 		var container = tree.current_scene.get_node_or_null("PlayerContainer")
@@ -315,6 +330,12 @@ func _ready():
 	# Asegurar que el cofre siempre procese (incluso durante pausas breves de UI)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
+
+	# Force explicit monitoring just in case
+	if interaction_area:
+		interaction_area.monitoring = true
+		interaction_area.monitorable = true
+		
 	if is_instance_valid(interaction_area) and interaction_area.has_signal("body_entered"):
 		interaction_area.body_entered.connect(func(body):
 			# FIX: Check group or method to be more robust
