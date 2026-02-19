@@ -1,0 +1,31 @@
+{
+	"character_id": "storm_caller",
+	"duration_s": 3574.125,
+	"end_iso": "2026-02-19_21-36-53",
+	"end_reason": "death",
+	"end_timestamp": 1771533413.531,
+	"files": {
+		"audit_log": "audit.jsonl",
+		"audit_report": "audit_report.md",
+		"balance_log": "balance.jsonl",
+		"event_index": "event_index.json",
+		"perf_log": "perf.jsonl",
+		"summary": "summary.json"
+	},
+	"game_version": "0.1.0-alpha",
+	"godot_version": "4.5.1-stable (official)",
+	"killed_by": "tier_4_titan_arcano",
+	"os": "Windows",
+	"run_id": "6997666e-2b6f",
+	"schema_version": 2,
+	"seed": 0,
+	"session_id": "69976666-b68a",
+	"start_iso": "2026-02-19_20-37-18",
+	"start_timestamp": 1771529838.274,
+	"starting_weapons": [
+		{
+			"id": "lightning_wand",
+			"lvl": 1
+		}
+	]
+}

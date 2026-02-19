@@ -1437,7 +1437,12 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 	var _audit_weapon_id := "unknown"
 	var _audit_is_crit: bool = false
 	if final_damage > 0 and RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
-		_audit_is_crit = final_damage >= int(amount * 1.5)
+		# FIX-CRIT: Leer is_crit real del attacker (propagado por DamageCalculator)
+		# antes se usaba heurística rota: final_damage >= int(amount * 1.5)
+		if _attacker and is_instance_valid(_attacker) and _attacker.has_meta("last_hit_was_crit"):
+			_audit_is_crit = _attacker.get_meta("last_hit_was_crit")
+		else:
+			_audit_is_crit = false
 		if _attacker and is_instance_valid(_attacker) and _attacker.has_meta("weapon_id"):
 			var wid = _attacker.get_meta("weapon_id")
 			if wid != "" and wid != null:

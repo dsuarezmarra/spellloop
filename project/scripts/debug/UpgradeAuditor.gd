@@ -26,8 +26,7 @@ const DEAD_STATS: Array[String] = [
 	"orbital_damage_mult",
 	"orbital_count_bonus",
 	"orbital_speed_mult",
-	"aoe_damage_mult",
-	"single_target_mult",
+	# FIX-DEADSTAT: aoe_damage_mult y single_target_mult ahora consumidos en DamageCalculator
 	"kill_damage_scaling",
 	"hp_cost_per_attack",
 ]
@@ -492,6 +491,10 @@ func _verify_single_effect(stat: String, value: float, op: String,
 		if absf(value) < FLOAT_TOLERANCE:
 			status = "WARN"
 			detail = "Efecto con value=0 declarado"
+		elif _is_at_stat_limit(stat, before_val, expected):
+			# FIX-AUDIT: Stat está en su límite de STAT_LIMITS y el cambio fue bloqueado por clamp
+			status = "OK"
+			detail = "Stat en límite (%.3f), cambio a %.3f bloqueado por STAT_LIMITS" % [before_val, expected]
 		else:
 			status = "FAIL"
 			detail = "Stat NO cambió. Before=%.3f, After=%.3f, Expected=%.3f" % [before_val, after_val, expected]
@@ -611,6 +614,23 @@ func _generate_report() -> void:
 # ═══════════════════════════════════════════════════════════════════════════════
 # HELPERS
 # ═══════════════════════════════════════════════════════════════════════════════
+
+func _is_at_stat_limit(stat: String, current_val: float, expected_val: float) -> bool:
+	"""Verificar si un stat no cambió porque está en un límite de STAT_LIMITS."""
+	var ps = get_tree().get_first_node_in_group("player_stats")
+	if not ps or not "STAT_LIMITS" in ps:
+		return false
+	var limits = ps.STAT_LIMITS
+	if not limits.has(stat):
+		return false
+	var lim = limits[stat]
+	# Stat está en el mínimo y el cambio lo llevaría más abajo
+	if lim.has("min") and absf(current_val - float(lim["min"])) < FLOAT_TOLERANCE and expected_val < float(lim["min"]):
+		return true
+	# Stat está en el máximo y el cambio lo llevaría más arriba
+	if lim.has("max") and absf(current_val - float(lim["max"])) < FLOAT_TOLERANCE and expected_val > float(lim["max"]):
+		return true
+	return false
 
 func _calculate_expected(before: float, value: float, op: String) -> float:
 	match op:

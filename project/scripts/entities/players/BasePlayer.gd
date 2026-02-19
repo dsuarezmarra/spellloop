@@ -836,6 +836,16 @@ func _process_frame_damage() -> void:
 	FloatingText.spawn_player_damage(global_position + Vector2(0, -35), final_applied_damage, primary_hit.element)
 	_play_damage_flash(primary_hit.element)
 
+	# 5b. AUDIT: Reportar daño recibido a RunAuditTracker (FIX-AUDIT: nunca se llamaba)
+	if final_applied_damage > 0 and RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
+		var _enemy_name := "unknown"
+		if is_instance_valid(primary_hit.attacker) and "enemy_name" in primary_hit.attacker:
+			_enemy_name = primary_hit.attacker.enemy_name
+		elif is_instance_valid(primary_hit.attacker):
+			_enemy_name = primary_hit.attacker.name
+		var _killed_player := health_component.current_health <= 0 if health_component else false
+		RunAuditTracker.report_damage_to_player(_hit_enemy_id, _enemy_name, _hit_attack_id, final_applied_damage, _killed_player)
+
 	# 6. I-FRAMES DINÁMICOS
 	_apply_dynamic_iframes()
 

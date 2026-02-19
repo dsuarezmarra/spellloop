@@ -472,6 +472,7 @@ func configure_and_launch(data: Dictionary, start_pos: Vector2, target_vec: Vect
 	set_meta("crit_chance", data.get("crit_chance", 0.0))
 	set_meta("crit_damage", data.get("crit_damage", 2.0))
 	set_meta("weapon_id", data.get("weapon_id", ""))
+	set_meta("is_aoe", data.get("is_aoe", false))
 
 	# 5. Configurar Movimiento
 	global_position = start_pos

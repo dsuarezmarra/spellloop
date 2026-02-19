@@ -686,6 +686,7 @@ class AOEEffect extends Node2D:
 		crit_damage = data.get("crit_damage", 2.0)
 		weapon_id = data.get("weapon_id", "")
 		set_meta("weapon_id", weapon_id)
+		set_meta("is_aoe", data.get("is_aoe", false))
 
 		# Configurar tics según el arma
 		_setup_tick_damage()

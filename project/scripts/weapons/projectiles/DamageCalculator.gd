@@ -113,6 +113,22 @@ static func calculate_final_damage(
 		if cond_mult > 1.0:
 			result.final_damage *= cond_mult
 
+	# 2.7 AOE / Single Target multipliers (FIX-DEADSTAT: consumir aoe_damage_mult y single_target_mult)
+	if ps and ps.has_method("get_stat"):
+		var _is_aoe_attack = false
+		if is_instance_valid(attacker) and attacker.has_meta("is_aoe"):
+			_is_aoe_attack = attacker.get_meta("is_aoe")
+		if _is_aoe_attack:
+			var aoe_mult = ps.get_stat("aoe_damage_mult")
+			if aoe_mult > 0 and absf(aoe_mult - 1.0) > 0.001:
+				result.final_damage *= aoe_mult
+				result.bonus_applied.append("aoe_damage_mult")
+		else:
+			var st_mult = ps.get_stat("single_target_mult")
+			if st_mult > 0 and absf(st_mult - 1.0) > 0.001:
+				result.final_damage *= st_mult
+				result.bonus_applied.append("single_target_mult")
+
 	# 2.7 Russian Roulette: 1% chance de 10x daño
 	result.pre_roulette_damage = result.final_damage
 	if ps and ps.has_method("get_stat"):
@@ -207,6 +223,9 @@ static func apply_damage_with_effects(
 
 	# Aplicar daño principal
 	var damage_applied = false
+	# FIX-CRIT: Propagar is_crit al attacker para que EnemyBase.take_damage lo lea
+	if is_instance_valid(attacker):
+		attacker.set_meta("last_hit_was_crit", damage_result.is_crit)
 	if target.has_method("take_damage"):
 		target.take_damage(final_damage, element, attacker)
 		damage_applied = true
