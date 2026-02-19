@@ -797,12 +797,7 @@ func _process_frame_damage() -> void:
 		"damage": final_applied_damage,
 		"shield_absorbed": final_shield_absorbed, # Nuevo campo
 		"element": primary_hit.element,
-// ...
-		"attack_id": _hit_attack_id,
-		"damage_type": _hit_damage_type,
-		"source_kind": _hit_source_kind,
-		"damage": final_applied_damage,
-		"element": primary_hit.element,
+
 		"hp_before": _hp_before,
 		"hp_after": _hp_after,
 		"queue_size": _damage_queue.size()
