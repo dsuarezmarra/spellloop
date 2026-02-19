@@ -314,7 +314,6 @@ func _get_element_color() -> Color:
 		"arcane":
 			return Color.GREEN # DIAGNOSTIC: CHANGED FROM PURPLE TO GREEN
 		"poison", "nature":
-		"poison", "nature":
 			return Color(0.25, 0.9, 0.2)
 		"lightning":
 			return Color(1.0, 1.0, 0.25)

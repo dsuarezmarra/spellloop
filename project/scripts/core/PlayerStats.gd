@@ -1011,6 +1011,33 @@ func format_stat_value(stat_name: String, value: float) -> String:
 # GETTERS DE STATS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+func get_dynamic_damage_bonus() -> float:
+	"""
+	Retorna el bonus dinámico de daño de Inversor/Momentum.
+	Este bonus se calcula en runtime (depende de coins actuales, move_speed, etc.)
+	y debe inyectarse en GlobalWeaponStats.damage_mult para que las armas lo usen.
+	"""
+	var bonus := 0.0
+
+	# Investor: +X% daño por cada 100 de oro
+	var dmg_per_gold = stats.get("damage_per_gold", 0.0) + _get_temp_modifier_total("damage_per_gold")
+	if dmg_per_gold > 0:
+		var exp_mgr = get_tree().get_first_node_in_group("experience_manager") if is_inside_tree() else null
+		if exp_mgr and "total_coins" in exp_mgr:
+			bonus += floor(exp_mgr.total_coins / 100.0) * dmg_per_gold
+
+	# Momentum: +% daño basado en velocidad de movimiento extra
+	var momentum_factor = stats.get("momentum_factor", 0.0)
+	if momentum_factor > 0:
+		var speed = get_stat("move_speed")
+		var base_speed = BASE_STATS.get("move_speed", 300.0)
+		if speed > base_speed:
+			var extra_speed_pct = (speed / base_speed) - 1.0
+			if extra_speed_pct > 0:
+				bonus += extra_speed_pct * momentum_factor
+
+	return bonus
+
 func get_stat(stat_name: String) -> float:
 	"""Obtener valor actual de un stat (base + modificadores temporales)"""
 	# Caso especial: Glass Cannon o Blood Pact fuerza max_health a 1

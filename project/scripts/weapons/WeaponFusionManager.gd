@@ -226,8 +226,8 @@ func _calculate_dynamic_stats(a: BaseWeapon, b: BaseWeapon) -> Dictionary:
 	# Duración
 	stats["duration"] = (a.duration + b.duration) * 2.0
 
-	# Knockback
-	stats["knockback"] = (a.knockback + b.knockback) * 2.0
+	# Knockback: Usar el mayor de ambos + 25% (evita empuje desorbitado)
+	stats["knockback"] = maxf(a.knockback, b.knockback) * 1.25
 
 	# Effect Value (Burn damage, slow amount, etc)
 	stats["effect_value"] = (a.effect_value + b.effect_value) * 1.5

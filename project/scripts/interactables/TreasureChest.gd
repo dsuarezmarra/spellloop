@@ -19,9 +19,10 @@ enum ChestType {
 var chest_type: int = ChestType.NORMAL
 var chest_rarity: int = 0  # ItemsDefinitions.ItemRarity.WHITE (numeric fallback)
 var is_opened: bool = false
-var interaction_range: float = 100.0 # Increased from 50.0 to fix collision issues
+var interaction_range: float = 50.0
 var popup_shown: bool = false  # Control para evitar múltiples popups
 var popup_shown_internal: bool = false # Internal guard for trigger execution
+var _popup_failsafe_timer: float = 0.0 # Failsafe: resetear si popup se perdió
 
 # Variables específicas para SHOP chests
 var is_shop_chest: bool = false
@@ -263,11 +264,21 @@ func _process(delta):
 			_anim_timer = 0.0
 			sprite.frame = (sprite.frame + 1) % sprite.hframes
 
-	if is_opened or popup_shown:
+	if is_opened:
 		return
 
-	# FIX: No intentar interacción durante pausa (evita bucle infinito de retry
-	# cuando otro cofre/popup tiene el juego pausado)
+	# FAILSAFE: Si popup_shown lleva más de 3 segundos sin abrir el cofre,
+	# algo falló (popup encolado, error de UI, etc). Resetear para reintentar.
+	if popup_shown and not get_tree().paused:
+		_popup_failsafe_timer += delta
+		if _popup_failsafe_timer > 3.0:
+			print("[TreasureChest] ⚠️ Failsafe: popup perdido tras %.1fs, reseteando flags" % _popup_failsafe_timer)
+			popup_shown = false
+			popup_shown_internal = false
+			_popup_failsafe_timer = 0.0
+		return
+
+	# No intentar interacción durante pausa
 	if get_tree().paused:
 		return
 
@@ -278,29 +289,30 @@ func _process(delta):
 			return
 
 	var distance = global_position.distance_to(player_ref.global_position)
-	
-	# RESET LOGIC: Si el jugador se aleja, resetear el flag de interacción
-	# Esto permite reintentar si la interacción falló (ej: error de UI)
-	if distance > interaction_range * 2.0 and popup_shown_internal:
-		popup_shown_internal = false
+
+	# RESET LOGIC: Si el jugador se aleja, resetear AMBOS flags de interacción.
+	# Permite reintentar si la interacción falló por cualquier motivo.
+	if distance > interaction_range * 2.5:
+		if popup_shown or popup_shown_internal:
+			popup_shown = false
+			popup_shown_internal = false
+			_popup_failsafe_timer = 0.0
 
 	if distance <= interaction_range:
-		popup_shown = true
 		trigger_chest_interaction()
-	elif distance <= interaction_range * 1.2:
+	elif distance <= interaction_range * 1.5:
 		# BACKUP: Check overlaps manually if close but not triggered
 		if interaction_area:
 			var bodies = interaction_area.get_overlapping_bodies()
 			for b in bodies:
 				if b.is_in_group("player"):
 					player_ref = b
-					popup_shown = true
 					trigger_chest_interaction()
 					break
-	
-	# DEBUG DIAGNÓSTICO: Imprimir estado cada 60 frames si está cerca pero no abre
-	if distance < 200.0 and not is_opened and not popup_shown and Engine.get_physics_frames() % 60 == 0:
-		print("[ChestDebug] ID:%s | Dist:%.1f | Range:%.1f | Player:%s | Internal:%s | Paused:%s" % 
+
+	# DEBUG DIAGNÓSTICO: Imprimir estado cada 120 frames si está cerca pero no abre
+	if distance < 200.0 and not is_opened and not popup_shown and Engine.get_physics_frames() % 120 == 0:
+		print("[ChestDebug] ID:%s | Dist:%.1f | Range:%.1f | Player:%s | Internal:%s | Paused:%s" %
 			[get_instance_id(), distance, interaction_range, is_instance_valid(player_ref), popup_shown_internal, get_tree().paused])
 
 func _find_player() -> Node2D:
@@ -362,20 +374,20 @@ func trigger_chest_interaction():
 	# Guard clause to prevent double execution (fix duplicate UI)
 	if popup_shown_internal: return
 
-	# FIX: No interactuar durante pausa (otro popup/cofre activo, level up, etc.)
-	# NO resetear popup_shown aquí - eso causaba un bucle infinito:
-	# _process detecta player → popup_shown=true → trigger → paused → reset popup_shown=false
-	# → _process vuelve a detectar → repite. Ahora simplemente esperamos.
+	# No interactuar durante pausa (otro popup/cofre activo, level up, etc.)
 	if get_tree().paused:
 		return
 
+	# FIX: Asignar AMBOS flags AQUÍ (no en _process).
+	# Así si trigger_chest_interaction falla en un guard, _process puede reintentar.
+	popup_shown = true
 	popup_shown_internal = true
+	_popup_failsafe_timer = 0.0
 	print("[TreasureChest] Triggering interaction! Type: %s" % [chest_type])
 
 	# Play chest opening sound
 	AudioManager.play_fixed("sfx_chest_open")
 
-	# Pause handled by UIManager/Popup Queue
 	create_chest_popup()
 
 func create_chest_popup():
@@ -388,14 +400,19 @@ func create_chest_popup():
 	ui_opened.emit()
 	var popup_instance = SimpleChestPopup.new()
 
-	# Request via UIManager to handle queue and pausing
-	var ui_manager = get_tree().root.get_node_or_null("UIManager")
-	if ui_manager and ui_manager.has_method("request_popup"):
-		ui_manager.request_popup(popup_instance)
+	# FIX: Añadir popup DIRECTAMENTE a la escena (como hacen los cofres SHOP).
+	# UIManager.request_popup() puede encolarlo si is_modal_open está en true
+	# (ej: por un LevelUp popup anterior), causando que el popup NUNCA se muestre
+	# y el cofre se quede como "fantasma" para siempre.
+	# SimpleChestPopup ya gestiona su propia pausa via active_instances en _enter_tree.
+	var scene_root = get_tree().current_scene
+	if scene_root:
+		scene_root.add_child(popup_instance)
 	else:
-		# Fallback
+		get_tree().root.add_child(popup_instance)
+	# Asegurar pausa (el popup debería pausar en _enter_tree, pero por seguridad)
+	if not get_tree().paused:
 		get_tree().paused = true
-		get_tree().current_scene.add_child(popup_instance)
 
 	var items_with_names = []
 	for i in range(items_inside.size()):

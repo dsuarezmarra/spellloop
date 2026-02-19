@@ -156,9 +156,22 @@ func _get_combined_global_stats() -> Dictionary:
 	  están EXCLUSIVAMENTE en GlobalWeaponStats
 	- PlayerStats solo contiene stats del jugador (max_health, armor, move_speed, etc.)
 	- Esto elimina duplicación y simplifica el sistema
+	
+	NOTA: Bonuses dinámicos como Inversor (damage_per_gold) y Momentum
+	(momentum_factor) se calculan en PlayerStats y se inyectan aquí
+	porque dependen de valores en runtime (monedas, velocidad).
 	"""
 	if global_weapon_stats:
-		return global_weapon_stats.get_all_stats()
+		var combined = global_weapon_stats.get_all_stats()
+		
+		# Inyectar bonuses dinámicos de PlayerStats (Inversor, Momentum)
+		var ps = get_tree().get_first_node_in_group("player_stats") if is_inside_tree() else null
+		if ps and ps.has_method("get_dynamic_damage_bonus"):
+			var dynamic_bonus = ps.get_dynamic_damage_bonus()
+			if dynamic_bonus > 0:
+				combined["damage_mult"] = combined.get("damage_mult", 1.0) + dynamic_bonus
+		
+		return combined
 	return _legacy_player_stats.duplicate()
 
 func _get_weapon_id(weapon) -> String:
