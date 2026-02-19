@@ -266,6 +266,11 @@ func _process(delta):
 	if is_opened or popup_shown:
 		return
 
+	# FIX: No intentar interacción durante pausa (evita bucle infinito de retry
+	# cuando otro cofre/popup tiene el juego pausado)
+	if get_tree().paused:
+		return
+
 	# Fallback: buscar player si no tenemos referencia
 	if not player_ref or not is_instance_valid(player_ref):
 		player_ref = _find_player()
@@ -275,12 +280,9 @@ func _process(delta):
 	var distance = global_position.distance_to(player_ref.global_position)
 	
 	# RESET LOGIC: Si el jugador se aleja, resetear el flag de interacción
-	# Esto permite reintentar si la interacción falló (ej: durante pausa o error de UI)
-	if distance > interaction_range * 1.5 and (popup_shown or popup_shown_internal):
-		popup_shown = false
+	# Esto permite reintentar si la interacción falló (ej: error de UI)
+	if distance > interaction_range * 2.0 and popup_shown_internal:
 		popup_shown_internal = false
-		# Opcional: print de debug si es necesario, pero spamearía
-		# print("[TreasureChest] Reset interaction flags (Player moved away)")
 
 	if distance <= interaction_range:
 		popup_shown = true
@@ -327,14 +329,24 @@ func _find_player() -> Node2D:
 	return null
 
 func _ready():
-	# Asegurar que el cofre siempre procese (incluso durante pausas breves de UI)
-	process_mode = Node.PROCESS_MODE_ALWAYS
-
+	# FIX: Cambiado de PROCESS_MODE_ALWAYS a PAUSABLE.
+	# Con ALWAYS, el cofre intentaba interactuar durante la pausa de otro cofre/popup,
+	# causando un bucle infinito de retries y conflictos de popups.
+	# La interacción por body_entered (Area2D) también respeta la pausa correctamente.
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 
 	# Force explicit monitoring just in case
 	if interaction_area:
 		interaction_area.monitoring = true
 		interaction_area.monitorable = true
+		
+	# FIX: Sincronizar el radio de colisión del Area2D con interaction_range
+	# para que la detección por overlap y por distancia sean consistentes.
+	if interaction_area:
+		var coll_shape = interaction_area.get_node_or_null("CollisionShape2D")
+		if coll_shape and coll_shape.shape is CircleShape2D:
+			coll_shape.shape = coll_shape.shape.duplicate()  # No compartir recurso
+			coll_shape.shape.radius = interaction_range
 		
 	if is_instance_valid(interaction_area) and interaction_area.has_signal("body_entered"):
 		interaction_area.body_entered.connect(func(body):
@@ -350,10 +362,11 @@ func trigger_chest_interaction():
 	# Guard clause to prevent double execution (fix duplicate UI)
 	if popup_shown_internal: return
 
-	# No interactuar durante pausa (otro popup activo, level up, etc.)
+	# FIX: No interactuar durante pausa (otro popup/cofre activo, level up, etc.)
+	# NO resetear popup_shown aquí - eso causaba un bucle infinito:
+	# _process detecta player → popup_shown=true → trigger → paused → reset popup_shown=false
+	# → _process vuelve a detectar → repite. Ahora simplemente esperamos.
 	if get_tree().paused:
-		# Resetear popup_shown para reintentar cuando se despause
-		popup_shown = false
 		return
 
 	popup_shown_internal = true

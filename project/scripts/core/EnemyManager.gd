@@ -552,8 +552,10 @@ func _on_enemy_died(enemy: Node, type_id: String = "", exp_value: int = 0, enemy
 	# Enemy death sounds removed - user preference for minimal audio
 
 	# SPAWN COFRES PARA ÉLITES Y BOSSES
-	if (is_elite or is_boss) and chest_scene:
-		_spawn_reward_chest_deferred.call_deferred(pos, is_elite, is_boss)
+	# FIX: Eliminado spawn duplicado. Game._on_enemy_died ya maneja el spawn
+	# de cofres vía RaresDatabase/BossDatabase con guaranteed_chest=true.
+	# Antes, AMBOS sistemas spawneaban cofres causando duplicados superpuestos
+	# que bloqueaban la interacción mutua ("cofres fantasma").
 
 	enemy_died.emit(pos, type_id, exp_value, enemy_tier, is_elite, is_boss)
 

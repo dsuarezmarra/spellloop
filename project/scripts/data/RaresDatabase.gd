@@ -17,7 +17,7 @@ const RARE_REWARDS = {
 
 const ELITE_REWARDS = {
 	"guaranteed_coins": {"min": 25, "max": 50, "type": "gold"},
-	"chest_chance": 0.40,          # 40% probabilidad de cofre
+	"guaranteed_chest": true,      # FIX: Siempre soltar cofre (antes era 40% + otro 100% desde EnemyManager = duplicados)
 	"chest_type": "elite",
 	"chest_rarity_boost": 1,       # +1 rareza mínima (ej: Blue garantizado)
 	"upgrade_chance": 0.20,        # 20% orbe de mejora
