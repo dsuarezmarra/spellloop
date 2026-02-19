@@ -283,7 +283,7 @@ const SPECIAL_EVENTS = {
 	"breather": {
 		"duration_seconds": 10.0,
 		"spawn_multiplier": 0.0,  # Sin spawns
-		"heal_player_percent": 0.1,  # Cura 10% HP
+		# "heal_player_percent": 0.1,  # REMOVED: User request (No free advantages)
 		"announcement": "",
 		"music_override": "calm"
 	}

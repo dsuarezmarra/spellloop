@@ -938,10 +938,8 @@ func _process_special_events(delta: float) -> void:
 			# Spawn de élites durante el evento
 			pass  # Ya manejado por el sistema de élites
 		"breather":
-			# Curar al jugador durante el respiro
-			if player and player.has_method("heal"):
-				var heal_per_second = (event_config.get("heal_player_percent", 0.1) * player.max_hp) / event_config.duration_seconds
-				player.heal(heal_per_second * delta)
+			# Curar al jugador durante el respiro - REMOVED: User request (No free advantages)
+			pass
 	
 	if event_time_remaining <= 0:
 		_end_special_event()

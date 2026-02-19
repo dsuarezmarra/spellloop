@@ -167,6 +167,23 @@ static func _generate_boss_loot(luck: float, context: Object) -> Array:
 	"""
 	var items = []
 
+	# TIER LIMITING BASED ON GAME PROGRESS (Fix for Shield +70 at Min 5)
+	# Determine current minute from context or globals
+	var current_minute = 0
+	if context and "current_time" in context:
+		current_minute = int(context.current_time / 60.0)
+	elif Engine.has_singleton("Game"):
+		var game = Engine.get_singleton("Game")
+		if "time" in game:
+			current_minute = int(game.time / 60.0)
+	
+	# Limit max tier for early bosses
+	var max_tier_allowed = 5
+	if current_minute < 10:
+		max_tier_allowed = 3 # No Tier 4/5 (Shield +70/100) before min 10
+	elif current_minute < 15:
+		max_tier_allowed = 4 # Tier 4 allowed
+	
 	# 1. Intentar FUSIÓN (Garantizada si está disponible)
 	# context debe ser el AttackManager
 	if context and context.has_method("get_available_fusions"):
@@ -197,7 +214,7 @@ static func _generate_boss_loot(luck: float, context: Object) -> Array:
 
 	# Recompensas garantizadas
 	for guaranteed_item in loot_config.get("guaranteed", []):
-		var item = _resolve_loot_string(guaranteed_item, luck, context)
+		var item = _resolve_loot_string(guaranteed_item, luck, context, max_tier_allowed)
 		if item: items.append(item)
 
 	# Chance de extra
@@ -205,30 +222,33 @@ static func _generate_boss_loot(luck: float, context: Object) -> Array:
 		var pool = loot_config.get("pool", [])
 		if not pool.is_empty():
 			var pick = pool[randi() % pool.size()]
-			var item = _resolve_loot_string(pick, luck, context)
+			var item = _resolve_loot_string(pick, luck, context, max_tier_allowed)
 			if item: items.append(item)
 
 	# Garantizar al menos un item de pool si solo hay oro garantizado?
 	# La config actual da "gold_large" y "stat_upgrade_tier_3" garantizados en default.
 	# Si la lista de items sigue vacía (por error), fallback
 	if items.is_empty():
-		items.append(_generate_upgrade_loot(ChestType.BOSS, luck, 3, context))
+		items.append(_generate_upgrade_loot(ChestType.BOSS, luck, min(3, max_tier_allowed), context, max_tier_allowed))
 
 	return items
 
-static func _resolve_loot_string(key: String, luck: float, context: Object) -> Dictionary:
+static func _resolve_loot_string(key: String, luck: float, context: Object, max_tier_limit: int = 5) -> Dictionary:
 	match key:
 		"gold_large":
 			return _generate_gold_loot(ChestType.BOSS, luck)
 		"weapon_upgrade":
 			return _generate_weapon_loot(ChestType.BOSS, luck, context)
 		"stat_upgrade_tier_3":
-			return _generate_upgrade_loot(ChestType.BOSS, luck, 3, context)
+			var tier = min(3, max_tier_limit)
+			return _generate_upgrade_loot(ChestType.BOSS, luck, tier, context, max_tier_limit)
 		"stat_upgrade_tier_4":
-			return _generate_upgrade_loot(ChestType.BOSS, luck, 4, context)
+			var tier = min(4, max_tier_limit)
+			return _generate_upgrade_loot(ChestType.BOSS, luck, tier, context, max_tier_limit)
 		"unique_upgrade":
-			# Intentar tier 5 (Legendario/Unico)
-			return _generate_upgrade_loot(ChestType.BOSS, luck, 5, context)
+			# Intentar tier 5 (Legendario/Unico) pero respetar limite
+			var tier = min(5, max_tier_limit)
+			return _generate_upgrade_loot(ChestType.BOSS, luck, tier, context, max_tier_limit)
 		_:
 			printerr("LootManager: Clave desconocida de BossDatabase: ", key)
 			return {}
@@ -281,10 +301,11 @@ static func _generate_healing_loot(chest_type: int) -> Dictionary:
 		"icon": icon
 	}
 
-static func _generate_upgrade_loot(chest_type: int, luck: float, min_tier_override: int = 1, context: Object = null) -> Dictionary:
+static func _generate_upgrade_loot(chest_type: int, luck: float, min_tier_override: int = 1, context: Object = null, max_tier_override: int = 5) -> Dictionary:
 	"""
 	Generar una mejora aleatoria desde la base de datos de mejoras.
-	min_tier_override: Fuerza un tier mínimo (para Elites/Jefes)
+	min_tier_override: Fuerza un tier mínimo
+	max_tier_override: Fuerza un tier máximo (para evitar OP loot early game)
 	"""
 	# Obtener referencia a la base de datos de mejoras
 	var all_upgrades = []

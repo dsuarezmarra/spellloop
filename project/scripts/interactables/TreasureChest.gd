@@ -19,7 +19,7 @@ enum ChestType {
 var chest_type: int = ChestType.NORMAL
 var chest_rarity: int = 0  # ItemsDefinitions.ItemRarity.WHITE (numeric fallback)
 var is_opened: bool = false
-var interaction_range: float = 60.0
+var interaction_range: float = 100.0 # Increased from 60.0 to fix collision issues
 var popup_shown: bool = false  # Control para evitar múltiples popups
 var popup_shown_internal: bool = false # Internal guard for trigger execution
 
@@ -273,6 +273,15 @@ func _process(delta):
 			return
 
 	var distance = global_position.distance_to(player_ref.global_position)
+	
+	# RESET LOGIC: Si el jugador se aleja, resetear el flag de interacción
+	# Esto permite reintentar si la interacción falló (ej: durante pausa o error de UI)
+	if distance > interaction_range * 1.5 and (popup_shown or popup_shown_internal):
+		popup_shown = false
+		popup_shown_internal = false
+		# Opcional: print de debug si es necesario, pero spamearía
+		# print("[TreasureChest] Reset interaction flags (Player moved away)")
+
 	if distance <= interaction_range:
 		popup_shown = true
 		trigger_chest_interaction()
@@ -322,6 +331,7 @@ func trigger_chest_interaction():
 		return
 
 	popup_shown_internal = true
+	print("[TreasureChest] Triggering interaction! Type: %s" % [chest_type])
 
 	# Play chest opening sound
 	AudioManager.play_fixed("sfx_chest_open")
