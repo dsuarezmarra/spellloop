@@ -1343,6 +1343,10 @@ func get_current_health() -> int:
 		return health_component.current_health
 	return hp
 
+func get_hp() -> int:
+	"""Alias de compatibilidad para get_current_health"""
+	return get_current_health()
+
 func get_max_health() -> int:
 	"""Obtener HP máximo"""
 	if health_component and "max_health" in health_component:

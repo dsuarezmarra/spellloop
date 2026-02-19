@@ -303,7 +303,8 @@ func _ready():
 
 	if is_instance_valid(interaction_area) and interaction_area.has_signal("body_entered"):
 		interaction_area.body_entered.connect(func(body):
-			if body and body.has_method("get_hp"):
+			# FIX: Check group or method to be more robust
+			if body and (body.is_in_group("player") or body.has_method("get_hp")):
 				player_ref = body
 				trigger_chest_interaction()
 		)
