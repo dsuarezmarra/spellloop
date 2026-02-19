@@ -692,7 +692,7 @@ func spawn_specific_enemy(enemy_id: String, world_pos: Vector2, multipliers: Dic
 func spawn_minions_around(origin: Vector2, count: int, tier: int = 1) -> Array:
 	"""Spawnear minions alrededor de una posición (usado por bosses y split-on-death)"""
 	var spawned: Array = []
-	var tier_enemies = EnemyDatabase.get_enemies_by_tier(tier) if EnemyDatabase.has_method("get_enemies_by_tier") else []
+	var tier_enemies = EnemyDatabase.get_enemies_for_tier(tier)
 
 	for i in range(count):
 		var angle = (TAU / count) * i + randf_range(-0.3, 0.3)
@@ -1133,5 +1133,3 @@ func _draw():
 		root.get_node("WorldRoot").add_child(puff)
 	else:
 		root.add_child(puff)
-
-

@@ -263,17 +263,44 @@ func _process(delta):
 			_anim_timer = 0.0
 			sprite.frame = (sprite.frame + 1) % sprite.hframes
 
-	if is_opened or not player_ref or popup_shown:
+	if is_opened or popup_shown:
 		return
 
-	if not is_instance_valid(player_ref):
-		return
+	# Fallback: buscar player si no tenemos referencia
+	if not player_ref or not is_instance_valid(player_ref):
+		player_ref = _find_player()
+		if not player_ref:
+			return
+
 	var distance = global_position.distance_to(player_ref.global_position)
 	if distance <= interaction_range:
 		popup_shown = true
 		trigger_chest_interaction()
 
+func _find_player() -> Node2D:
+	"""Buscar referencia al player por múltiples métodos"""
+	var tree = get_tree()
+	if not tree:
+		return null
+	# 1. Por grupo
+	var p = tree.get_first_node_in_group("player")
+	if p:
+		return p
+	# 2. Por PlayerContainer
+	if tree.current_scene:
+		var container = tree.current_scene.get_node_or_null("PlayerContainer")
+		if container and container.get_child_count() > 0:
+			return container.get_child(0)
+	# 3. Buscar CharacterBody2D con get_hp
+	var bodies = tree.get_nodes_in_group("player")
+	if not bodies.is_empty():
+		return bodies[0]
+	return null
+
 func _ready():
+	# Asegurar que el cofre siempre procese (incluso durante pausas breves de UI)
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
 	if is_instance_valid(interaction_area) and interaction_area.has_signal("body_entered"):
 		interaction_area.body_entered.connect(func(body):
 			if body and body.has_method("get_hp"):
@@ -286,6 +313,13 @@ func trigger_chest_interaction():
 
 	# Guard clause to prevent double execution (fix duplicate UI)
 	if popup_shown_internal: return
+
+	# No interactuar durante pausa (otro popup activo, level up, etc.)
+	if get_tree().paused:
+		# Resetear popup_shown para reintentar cuando se despause
+		popup_shown = false
+		return
+
 	popup_shown_internal = true
 
 	# Play chest opening sound
