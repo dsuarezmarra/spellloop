@@ -156,10 +156,6 @@ var PLAYER_VFX_CONFIG = {
 		"path": VFX_BASE_PATH + "player/thorns/vfx_player_thorns_spritesheet.png",
 		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.3
 	},
-	"shield_aura": {
-		"path": VFX_BASE_PATH + "player/shield/vfx_player_shield_aura_spritesheet.png",
-		"hframes": 6, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.8
-	},
 	"stun": {
 		"path": VFX_BASE_PATH + "player/debuffs/vfx_player_stun_spritesheet.png",
 		"hframes": 6, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.8
@@ -183,10 +179,6 @@ var PLAYER_VFX_CONFIG = {
 	"soul_link": {
 		"path": VFX_BASE_PATH + "player/soul_link/vfx_player_soul_link_spritesheet.png",
 		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.4
-	},
-	"shield_absorb": {
-		"path": VFX_BASE_PATH + "player/shield/vfx_player_shield_absorb_spritesheet.png",
-		"hframes": 4, "vframes": 2, "frame_size": Vector2(128, 128), "duration": 0.3
 	}
 }
 
@@ -753,8 +745,8 @@ func spawn_thorns_vfx(position: Vector2) -> Node2D:
 	return spawn_player_vfx("thorns", position, 1.0, 0.3)
 
 func spawn_shield_aura(parent: Node2D) -> AnimatedSprite2D:
-	"""Spawn aura de escudo persistente"""
-	return spawn_player_aura("shield_aura", parent, true)
+	"""Spawn aura de escudo persistente - DESACTIVADO POR PETICIÓN DE USUARIO"""
+	return null
 
 func spawn_stun_vfx(parent: Node2D) -> AnimatedSprite2D:
 	"""Spawn estrellas de stun orbitando (loop)"""
@@ -788,8 +780,8 @@ func spawn_soul_link_vfx(position: Vector2) -> Node2D:
 	return spawn_player_vfx("soul_link", position, 1.2, 0.4)
 
 func spawn_shield_absorb_vfx(position: Vector2) -> Node2D:
-	"""Spawn efecto de absorción de escudo (one-shot, flash azul)"""
-	return spawn_player_vfx("shield_absorb", position, 1.0, 0.3)
+	"""Spawn efecto de absorción de escudo - DESACTIVADO POR PETICIÓN DE USUARIO"""
+	return null
 
 # ══════════════════════════════════════════════════════════════════════════════
 # UTILIDADES INTERNAS
