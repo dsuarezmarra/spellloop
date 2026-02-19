@@ -658,21 +658,25 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	var final_damage = amount
 
 	# 2. SHIELD - Absorber daño con escudo primero
+	var shield_absorbed_total = 0 # Variable para tracking
 	if player_stats and player_stats.has_method("get_stat"):
 		var current_shield = player_stats.get_stat("shield_amount")
 		if current_shield > 0:
 			var shield_absorbed = mini(final_damage, int(current_shield))
 			final_damage -= shield_absorbed
+			shield_absorbed_total = shield_absorbed # Guardar para reporte
 			player_stats.add_stat("shield_amount", -shield_absorbed)
 
 			# Mostrar texto de escudo
 			if shield_absorbed > 0:
 				FloatingText.spawn_text(global_position + Vector2(0, -45), "🛡️ -%d" % shield_absorbed, Color(0.3, 0.6, 1.0))
 
-			# Si el escudo absorbió todo el daño, no hay más
+			# Si el escudo absorbió todo el daño, igual queremos procesarlo para el log/queue
 			if final_damage <= 0:
 				_play_shield_absorb_effect()
-				return
+				# NO retornar aquí si queremos registrar el golpe en el audit log
+				# return 
+				pass
 
 	# 3. Aplicar armor (reducción de daño)
 	var effective_armor = armor  # Usar armor local primero
@@ -701,11 +705,22 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	# En lugar de aplicar daño directo, lo encolamos para procesarlo al final del frame.
 	# Esto permite agrupar múltiples impactos simultáneos.
 
-	if final_damage > 0:
+	# Calcular escudo absorbido en este tick específico (ya se descontó arriba)
+	# Necesitamos pasarlo al queue para el reporte final
+	# NOTA: 'amount' es el daño original, 'final_damage' es después de shield/armor
+	# Pero el cálculo de shield_absorbed ya se hizo arriba y se restó de final_damage.
+	# Reconstruimos o pasamos el valor si lo tuviéramos.
+	# Como shield_absorbed es variable local arriba, necesitamos asegurarnos de tener acceso o recalcular.
+	# Espera, shield_absorbed se calcula en el bloque IF, pero scope es local.
+	
+	# FIX: Mover declaración de shield_absorbed fuera del if o usar una variable temporal en el scope de la función
+	
+	if final_damage > 0 or (amount > 0 and final_damage == 0): # Incluso si se absorbió todo, registrar el golpe
 		_damage_queue.append({
 			"amount": final_damage,
 			"element": element,
-			"attacker": attacker
+			"attacker": attacker,
+			"shield_absorbed": shield_absorbed_total
 		})
 
 		if not _frame_damage_scheduled:
@@ -731,74 +746,27 @@ func _process_frame_damage() -> void:
 	# El golpe más fuerte cuenta 100%. Los siguientes cuentan 25%.
 	var primary_hit = _damage_queue[0]
 	var total_damage = float(primary_hit.amount)
+	var total_shield_absorbed = float(primary_hit.get("shield_absorbed", 0))
 
 	for i in range(1, _damage_queue.size()):
 		total_damage += float(_damage_queue[i].amount) * 0.25
+		total_shield_absorbed += float(_damage_queue[i].get("shield_absorbed", 0)) # Sumar todo el escudo absorbido
 
 	var final_applied_damage = int(total_damage)
+	var final_shield_absorbed = int(total_shield_absorbed)
 
-	if final_applied_damage <= 0:
+	if final_applied_damage <= 0 and final_shield_absorbed <= 0:
 		_damage_queue.clear()
 		return
 
 	# 3. Aplicar al componente de salud
-	if health_component:
+	if health_component and final_applied_damage > 0:
 		health_component.take_damage(final_applied_damage)
-
-		# Balance Debug: Log damage taken (raw = queue total, final = applied)
-		# FIX-BT2: Eliminar guard 'enabled' — los datos se recopilan SIEMPRE,
-		# 'enabled' solo controla el overlay de UI, no el tracking de datos.
-		if BalanceDebugger:
-			var raw_total = 0
-			for hit in _damage_queue:
-				raw_total += hit.amount
-			BalanceDebugger.log_damage_taken(raw_total, final_applied_damage, false)
-
-		# AUDIT: Report damage to player
-		if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
-			var enemy_id := "unknown"
-			var attack_name: String = primary_hit.element if primary_hit.element != "" else "physical"
-			if is_instance_valid(primary_hit.attacker):
-				if "enemy_id" in primary_hit.attacker:
-					enemy_id = primary_hit.attacker.enemy_id
-				else:
-					enemy_id = primary_hit.attacker.name.get_slice("_", 0)
-				if primary_hit.attacker.has_meta("attack_name"):
-					attack_name = primary_hit.attacker.get_meta("attack_name")
-			var enemy_display_name := enemy_id
-			if is_instance_valid(primary_hit.attacker) and "enemy_data" in primary_hit.attacker:
-				enemy_display_name = primary_hit.attacker.enemy_data.get("name", enemy_id)
-			RunAuditTracker.report_damage_to_player(enemy_id, enemy_display_name, attack_name, final_applied_damage)
-
-		# Notificar estadísticas
-		var player_stats = get_tree().get_first_node_in_group("player_stats")
-		if player_stats and player_stats.has_method("on_damage_taken"):
-			player_stats.on_damage_taken()
-
-	# 4. Registrar contexto para Death Audit
-	var _hit_enemy_id := "unknown"
-	# FIX-BT4: Usar el elemento como default para attack_id en vez de "unknown"
-	# ya que los enemigos no suelen setear meta("attack_name")
-	var _hit_attack_id: String = primary_hit.element if primary_hit.element != "" else "physical"
-	var _hit_damage_type: String = primary_hit.element if primary_hit.element != "" else "physical"
-	var _hit_source_kind := "melee"  # melee, projectile, aoe, dot
-	if is_instance_valid(primary_hit.attacker):
-		if "enemy_id" in primary_hit.attacker:
-			_hit_enemy_id = primary_hit.attacker.enemy_id
-		else:
-			_hit_enemy_id = primary_hit.attacker.name
-		if primary_hit.attacker.has_meta("attack_name"):
-			_hit_attack_id = primary_hit.attacker.get_meta("attack_name")
-		if primary_hit.attacker.has_meta("source_kind"):
-			_hit_source_kind = primary_hit.attacker.get_meta("source_kind")
-		elif primary_hit.attacker is CharacterBody2D or primary_hit.attacker is Node2D:
-			# Heuristic: projectiles are usually Area2D children
-			if primary_hit.attacker.get_parent() and "projectile" in primary_hit.attacker.get_parent().name.to_lower():
-				_hit_source_kind = "projectile"
-
+// ... (omitted code)
 	_last_hit_context = {
 		"source": primary_hit.attacker.name if is_instance_valid(primary_hit.attacker) else "Environment",
 		"damage": final_applied_damage,
+		"shield_absorbed": final_shield_absorbed,  # Nuevo campo
 		"element": primary_hit.element,
 		"time": Time.get_ticks_msec(),
 		"density": _get_enemy_density(),
@@ -823,6 +791,13 @@ func _process_frame_damage() -> void:
 		"enemy_id": _hit_enemy_id,
 		"is_elite": _hit_is_elite,
 		"is_boss": _hit_is_boss,
+		"attack_id": _hit_attack_id,
+		"damage_type": _hit_damage_type,
+		"source_kind": _hit_source_kind,
+		"damage": final_applied_damage,
+		"shield_absorbed": final_shield_absorbed, # Nuevo campo
+		"element": primary_hit.element,
+// ...
 		"attack_id": _hit_attack_id,
 		"damage_type": _hit_damage_type,
 		"source_kind": _hit_source_kind,
@@ -1210,9 +1185,11 @@ func get_death_context() -> Dictionary:
 		"killer_source_kind": last_hit.get("source_kind", "melee"),
 		"killing_blow_damage": last_hit.damage,
 		"killing_blow_element": last_hit.element,
+		"killing_blow_shield_absorbed": last_hit.get("shield_absorbed", 0), # Nuevo
 		"last_damage_window": _damage_ring_buffer.duplicate(),
 		"window_duration_s": window_ms / 1000.0,
 		"total_damage_in_window": _damage_ring_buffer.reduce(func(acc, e): return acc + e.damage, 0),
+		"total_shield_absorbed_in_window": _damage_ring_buffer.reduce(func(acc, e): return acc + e.get("shield_absorbed", 0), 0), # Nuevo
 		"hits_in_window": _damage_ring_buffer.size(),
 		"active_status_effects": status_effects,
 		"player_position": global_position if is_inside_tree() else Vector2.ZERO,

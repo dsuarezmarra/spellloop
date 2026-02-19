@@ -132,7 +132,14 @@ static func _section_death_summary(context: Dictionary) -> String:
 		md.append("| \u2694\uFE0F Ataque | `%s` |" % attack_label)
 		md.append("| \uD83C\uDF0A Tipo de Da\u00f1o | `%s` |" % damage_type)
 		md.append("| \uD83C\uDFAF Fuente | `%s` |" % source_kind)
-		md.append("| \uD83D\uDCA5 Golpe Final | %d da\u00f1o |" % damage)
+		
+		# Shield Breakdown
+		var shield_abs = death_ctx.get("killing_blow_shield_absorbed", death_ctx.get("shield_absorbed", 0))
+		if shield_abs > 0:
+			md.append("| \uD83D\uDCA5 Golpe Final | **%d** (HP: -%d | \uD83D\uDEE1\uFE0F: -%d) |" % [damage + shield_abs, damage, shield_abs])
+		else:
+			md.append("| \uD83D\uDCA5 Golpe Final | %d da\u00f1o |" % damage)
+			
 		md.append("| \u23F1\uFE0F Ventana | %.1fs (%d hits, %s da\u00f1o total) |" % [window_s, hits, _format_number(total_dmg)])
 		md.append("| \uD83D\uDC7E Densidad | %d enemigos cerca |" % density)
 		md.append("")
