@@ -441,7 +441,11 @@ func create_chest_popup():
 			popup_instance.skipped.connect(_on_chest_skipped)
 
 		# Emitir ui_closed cuando se cierre el popup
-		popup_instance.tree_exited.connect(func(): ui_closed.emit())
+		popup_instance.tree_exited.connect(func():
+			# FIX-P0: Guard contra freed instance
+			if is_instance_valid(self):
+				ui_closed.emit()
+		)
 
 func _on_chest_skipped():
 	"""Callback cuando se salta el cofre"""
@@ -582,10 +586,19 @@ func _create_shop_popup():
 	# Conectar señales
 	popup.item_purchased.connect(_on_shop_item_purchased)
 	popup.popup_closed.connect(_on_shop_popup_closed)
-	popup.tree_exited.connect(func(): ui_closed.emit())
+	popup.tree_exited.connect(func():
+		# FIX-P0: Guard contra freed instance
+		if is_instance_valid(self):
+			ui_closed.emit()
+	)
 
 func _on_shop_item_purchased(item: Dictionary, price: int):
 	"""Callback cuando se compra un item de la tienda"""
+	# FIX-P0: Guard contra double-free (popup emite item_purchased + popup_closed)
+	if is_opened:
+		return
+	is_opened = true
+
 	# Descontar monedas
 	var exp_mgr = get_tree().current_scene.get_node_or_null("ExperienceManager")
 	if exp_mgr and exp_mgr.has_method("spend_coins"):
@@ -597,25 +610,35 @@ func _on_shop_item_purchased(item: Dictionary, price: int):
 	_apply_item(item)
 
 	# Finalizar apertura
-	is_opened = true
 	create_opening_effect()
 	chest_opened.emit(self, [item])
 
-	# Destruir cofre después de un delay
-	await get_tree().create_timer(1.0).timeout
-	queue_free()
+	# Destruir cofre después de un delay (Timer hijo: seguro contra freed instance)
+	var timer = Timer.new()
+	add_child(timer)
+	timer.wait_time = 1.0
+	timer.one_shot = true
+	timer.timeout.connect(func(): queue_free())
+	timer.start()
 
 func _on_shop_popup_closed(purchased: bool):
 	"""Callback cuando se cierra el popup de tienda"""
+	# FIX-P0: Guard contra double-free (ya procesado por _on_shop_item_purchased)
+	if is_opened:
+		return
 	is_opened = true
 
 	if not purchased:
 		# No compró nada, igual destruir
 		create_opening_effect()
 
-	# Destruir cofre
-	await get_tree().create_timer(0.5).timeout
-	queue_free()
+	# Destruir cofre (Timer hijo: seguro contra freed instance)
+	var timer = Timer.new()
+	add_child(timer)
+	timer.wait_time = 0.5
+	timer.one_shot = true
+	timer.timeout.connect(func(): queue_free())
+	timer.start()
 
 func _apply_item(item: Dictionary):
 	"""Aplicar item al jugador (usado tanto para compras como para loot normal)"""

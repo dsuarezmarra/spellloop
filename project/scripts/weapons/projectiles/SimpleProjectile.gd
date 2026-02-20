@@ -674,28 +674,34 @@ func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
 	"""Aplicar daño encadenado a enemigos cercanos"""
 	var enemies_hit = [first_target]
 	var current_pos = first_target.global_position
-	var chain_damage = damage * 0.6  # Daño reducido para chains
+	var chain_reduction = 0.6  # Factor de reducción para chains
+
+	# FIX-P1: Obtener datos para DamageCalculator (antes usaba damage crudo)
+	var player = get_tree().get_first_node_in_group("player")
+	var crit_chance = get_meta("crit_chance", 0.0)
+	var crit_damage_mult = get_meta("crit_damage", 2.0)
 
 	for i in range(chain_count):
 		var next_target = _find_chain_target(current_pos, enemies_hit)
 		if next_target == null:
 			break
 
-		# Aplicar daño al siguiente objetivo
-		if next_target.has_method("take_damage"):
-			next_target.take_damage(int(chain_damage), "physical", self)
-			# Aplicar life steal y execute para chains
-			ProjectileFactory.apply_life_steal(get_tree(), chain_damage)
-			ProjectileFactory.check_execute(get_tree(), next_target)
-			# Aplicar efectos de estado por probabilidad
-			ProjectileFactory.apply_status_effects_chance(get_tree(), next_target)
+		# FIX-P1: Chain hits ahora pasan por DamageCalculator (antes era damage crudo)
+		var chain_base_damage = damage * chain_reduction
+		var chain_result = DamageCalculator.calculate_final_damage(
+			chain_base_damage, next_target, player, crit_chance, crit_damage_mult, self
+		)
+		var element = element_type if element_type != "" else "physical"
+		DamageCalculator.apply_damage_with_effects(
+			get_tree(), next_target, chain_result, Vector2.ZERO, 0.0, self, element
+		)
 
 		# Crear efecto visual de rayo entre objetivos
 		_spawn_chain_lightning_visual(current_pos, next_target.global_position)
 
 		enemies_hit.append(next_target)
 		current_pos = next_target.global_position
-		chain_damage *= 0.8  # Reducir daño progresivamente
+		chain_reduction *= 0.8  # Reducir daño progresivamente
 
 func _find_chain_target(from_pos: Vector2, exclude: Array) -> Node:
 	"""Buscar siguiente objetivo para chain"""

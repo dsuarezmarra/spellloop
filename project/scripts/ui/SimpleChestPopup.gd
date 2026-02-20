@@ -1390,6 +1390,10 @@ func _process_item_selection(item: Dictionary, button_index: int):
 	# Pequeño delay para ver la selección
 	await get_tree().create_timer(0.2).timeout
 
+	# FIX-P0: Guard contra freed instance (scene change durante el await)
+	if not is_instance_valid(self):
+		return
+
 	item_selected.emit(item)
 
 	# get_tree().paused = false (Manejado por _exit_tree)

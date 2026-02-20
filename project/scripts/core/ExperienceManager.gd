@@ -468,7 +468,10 @@ func _get_player_coin_mult() -> float:
 	# Prioridad: PlayerStats (grupo global) -> Player methods -> 1.0
 	var player_stats = get_tree().get_first_node_in_group("player_stats")
 	if player_stats and player_stats.has_method("get_stat"):
-		return player_stats.get_stat("coin_value_mult")
+		var coin_mult = player_stats.get_stat("coin_value_mult")
+		# FIX-P1: Incorporar gold_mult (10+ upgrades lo modifican pero nunca se leía)
+		var gold_mult = player_stats.get_stat("gold_mult")
+		return coin_mult * gold_mult
 
 	# Fallback a métodos antiguos del player
 	var player = _find_player()
@@ -672,11 +675,13 @@ func generate_upgrade_options() -> Array:
 	options.append({
 		"id": "cooldown_reduction",
 		"name": "Recarga Rápida",
-		"description": "Reduce el tiempo de recarga de armas en un 5%",
+		"description": "Aumenta la velocidad de ataque de armas en un 5%",
 		"icon": "⏰",
 		"type": "PLAYER_UPGRADE",
 		"rarity": "uncommon",
-		"effects": [{"stat": "cooldown_reduction", "value": 0.05, "operation": "add"}]
+		# FIX-P1: cooldown_reduction no existía en BASE_STATS. Usar attack_speed_mult
+		# que sí es consumido por BaseWeapon.start_cooldown() (cooldown / attack_speed_mult)
+		"effects": [{"stat": "attack_speed_mult", "value": 0.05, "operation": "add"}]
 	})
 
 	# Shuffle y devolver 3-4 opciones aleatorias

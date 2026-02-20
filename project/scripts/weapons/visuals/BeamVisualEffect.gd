@@ -374,6 +374,9 @@ func _update_beam_points(current_length: float) -> void:
 
 func dissipate() -> void:
 	"""Desvanecer el rayo"""
+	# FIX-P0: Guard contra doble llamada (timeout + recarga simultánea)
+	if current_state == State.DISSIPATING:
+		return
 	current_state = State.DISSIPATING
 	
 	var tween = create_tween()

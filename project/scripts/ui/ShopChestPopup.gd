@@ -557,6 +557,10 @@ func _on_item_pressed(index: int, item: Dictionary):
 	
 	await get_tree().create_timer(0.4).timeout
 	
+	# FIX-P0: Guard contra freed instance (scene change durante el await)
+	if not is_instance_valid(self):
+		return
+	
 	item_purchased.emit(item, price)
 	_close_popup(true)
 

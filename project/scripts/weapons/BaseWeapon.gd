@@ -734,6 +734,7 @@ func _build_projectile_data(dmg: float, crit: float) -> Dictionary:
 	var speed_mult = global_stats.get("projectile_speed_mult", 1.0)
 	var duration_mult = global_stats.get("duration_mult", 1.0)
 	var knockback_mult = global_stats.get("knockback_mult", 1.0)
+	var range_mult = global_stats.get("range_mult", 1.0)  # FIX-P1: Aplicar range_mult al proyectil
 	var crit_dmg = global_stats.get("crit_damage", 2.0)
 	var extra_pierce = int(global_stats.get("extra_pierce", 0))
 
@@ -744,7 +745,7 @@ func _build_projectile_data(dmg: float, crit: float) -> Dictionary:
 		"crit_damage": crit_dmg,
 		"speed": projectile_speed * speed_mult,
 		"pierce": pierce + extra_pierce,
-		"range": weapon_range,
+		"range": weapon_range * range_mult,  # FIX-P1: range escalado con range_mult
 		"area": area * area_mult,
 		"duration": duration * duration_mult,
 		"knockback": knockback * knockback_mult,
