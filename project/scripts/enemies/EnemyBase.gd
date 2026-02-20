@@ -372,6 +372,23 @@ func initialize_from_database(data: Dictionary, player) -> void:
 	_generation_id += 1
 	_reset_status_effects()
 
+	# FIX-R5: Reset de estado de arquetipo para pool reuse
+	# Sin esto, un enemigo que murió mid-phase queda permanentemente intangible
+	if is_phased:
+		set_collision_layer_value(2, true)
+	is_phased = false
+	phase_cooldown_timer = 0.0
+	is_charging = false
+	charge_target = Vector2.ZERO
+	charge_cooldown_timer = 0.0
+	teleport_cooldown_timer = 0.0
+	ability_cooldown_timer = 0.0
+	trail_timer = 0.0
+	zigzag_timer = 0.0
+	zigzag_direction = 1.0
+	_burn_aura_accumulator = 0.0
+	_receiving_overkill_damage = false
+
 	enemy_data = data.duplicate(true)
 
 	# Datos básicos
@@ -514,6 +531,8 @@ func _setup_archetype_behavior() -> void:
 			teleport_cooldown_timer = modifiers.get("teleport_cooldown", 5.0)
 		"agile":
 			zigzag_timer = 0.0
+		"trail":
+			trail_timer = 0.0  # FIX-R5: Asegurar reset del trail timer
 		"tank":
 			# Los tanks tienen reducción de daño
 			pass
@@ -1219,7 +1238,8 @@ func _spawn_fire_trail() -> void:
 	)
 
 	# Fade out visual
-	var tween = create_tween()
+	# FIX-R5: Crear tween en el trail (no en self) para que persista si el enemigo muere
+	var tween = trail.create_tween()
 	tween.tween_interval(trail_duration * 0.7)
 	tween.tween_property(visual, "modulate:a", 0.0, trail_duration * 0.3)
 

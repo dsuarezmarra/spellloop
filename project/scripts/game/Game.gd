@@ -1634,7 +1634,7 @@ func _collect_complete_run_data() -> Dictionary:
 	# ═══════════════════════════════════════════════════════════════════════════
 	# Usar PlayerStats como fuente de verdad (remaining_rerolls/remaining_banishes son legacy)
 	if player_stats and player_stats.has_method("get_stat"):
-		var total_rerolls = int(player_stats.get_stat("reroll_count")) + 3  # base 3 + extras
+		var total_rerolls = int(player_stats.get_stat("reroll_count")) + 2  # FIX-R5: base es 2, no 3
 		var total_banishes = int(player_stats.get_stat("banish_count")) + 2  # base 2 + extras
 		run_data["rerolls_used"] = maxi(0, total_rerolls - int(player_stats.get("current_rerolls") if "current_rerolls" in player_stats else total_rerolls))
 		run_data["banishes_used"] = maxi(0, total_banishes - int(player_stats.get("current_banishes") if "current_banishes" in player_stats else total_banishes))

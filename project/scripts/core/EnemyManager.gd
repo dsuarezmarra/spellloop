@@ -98,7 +98,16 @@ func initialize(player_ref: Node2D, _world_ref: Node = null) -> void:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _process(delta: float) -> void:
-	if not spawning_enabled or player == null:
+	if player == null:
+		return
+
+	# FIX-R5: Cleanup, despawn y zombie sweep SIEMPRE deben correr,
+	# incluso cuando spawning está deshabilitado (WaveManager activo).
+	_cleanup_dead_enemies()
+	_process_enemy_despawn(delta)
+	_process_zombie_sweep(delta)
+
+	if not spawning_enabled:
 		return
 
 	game_time_seconds += delta
@@ -109,9 +118,6 @@ func _process(delta: float) -> void:
 	_update_spawn_timer(delta)
 	_check_boss_spawn()
 	_check_elite_spawn(delta)
-	_cleanup_dead_enemies()
-	_process_enemy_despawn(delta)  # Sistema de despawn para rendimiento
-	_process_zombie_sweep(delta)   # Safety net para leaks
 
 func _process_spawn_queue() -> void:
 	"""Procesar spawns que fueron demorados por el budget del frame anterior"""
