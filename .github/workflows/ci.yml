@@ -36,7 +36,8 @@ jobs:
 
       - name: Verify Godot version
         shell: bash
-        run: "$GODOT_BIN" --version
+        run: |
+          "$GODOT_BIN" --version
 
       # Import inicial: genera .godot/imported/ para que los tests puedan cargar recursos
       - name: Import project (headless)
