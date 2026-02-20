@@ -4704,7 +4704,9 @@ func _spawn_meteor_impact(pos: Vector2, radius: float, damage: int) -> void:
 	var dist = pos.distance_to(player.global_position)
 	if dist <= radius:
 		if player.has_method("take_damage"):
-			player.take_damage(damage, "fire", enemy)
+			# FIX-R14: Guard contra enemy freed (llamado desde timer en _boss_meteor_call)
+			var source = enemy if is_instance_valid(enemy) else null
+			player.take_damage(damage, "fire", source)
 		if player.has_method("apply_burn"):
 			player.apply_burn(damage * 0.3, 3.0)
 

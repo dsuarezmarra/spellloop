@@ -24,7 +24,8 @@
 | R11 | 3 | `e416d0cc` | 1× P1, 2× P2 |
 | R12 | 3 | `a6be276c` | 1× P0, 2× P1 |
 | R13 | 3 | `a4d22e04` | 2× P1, 1× P2 |
-| **Total** | **58** | **15 commits** | **9× P0, 24× P1, 19× P2** |
+| R14 | 1 | *(pending)* | 1× P1 |
+| **Total** | **59** | **15 commits** | **9× P0, 25× P1, 19× P2** |
 
 ---
 
@@ -391,3 +392,25 @@ Tweens creados con `create_tween()` en `self` que animaban nodos hijos → persi
 - **Archivo:** `scripts/core/UIManager.gd`
 - **Bug:** `modal_stack` podía contener nodos liberados; acceso a `.name` sin guard → crash
 - **Fix:** Guard `is_instance_valid(modal)` con cleanup de estado y procesamiento de cola
+
+---
+
+## Ronda 14 — Deep Scan de archivos grandes
+
+> Archivos escaneados en profundidad:
+> - EnemyAttackSystem.gd (4805 líneas, COMPLETO — 20+ timer callbacks verificados)
+> - PauseMenu.gd (2825 líneas, COMPLETO — UI only, sin bugs lógicos)
+> - RankingScreen.gd (2526 líneas, COMPLETO — UI only, sin bugs lógicos)
+> - CharacterSelectScreen.gd (878 líneas, COMPLETO — UI only)
+> - ProjectileVisualManager.gd (1597 líneas, COMPLETO — config data + functions)
+> - ArenaManager.gd (1480 líneas, COMPLETO — zone/barrier management)
+> - EnemyAbility_*.gd (8 archivos, guards verificados)
+> - EnemyProjectile.gd (415 líneas, guards verificados)
+> - ChestSpawner.gd, EnemyPool.gd, VFXPool.gd, PickupPool.gd (guards verificados)
+> - DifficultyManager.gd, SpawnBudgetManager.gd, GlobalWeaponStats.gd, GameCamera.gd (sin timers)
+
+### R14-1 (P1): _spawn_meteor_impact() usa enemy sin is_instance_valid en timer callback
+- **Archivo:** `scripts/enemies/EnemyAttackSystem.gd`
+- **Línea:** 4707
+- **Bug:** `_spawn_meteor_impact()` usa `enemy` directamente en `player.take_damage(damage, "fire", enemy)` sin verificar `is_instance_valid(enemy)`. Esta función es llamada desde un timer callback en `_boss_meteor_call()` (línea 2786) via `create_timer(delay + i * 0.2)`, por lo que `enemy` puede estar freed cuando el timer se dispara. Todos los demás 20+ timer callbacks en el archivo ya tienen guards correctos.
+- **Fix:** `var source = enemy if is_instance_valid(enemy) else null; player.take_damage(damage, "fire", source)` — patrón ya establecido en `_spawn_damage_zone()` línea 3999
