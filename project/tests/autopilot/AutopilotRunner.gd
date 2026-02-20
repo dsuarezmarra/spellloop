@@ -46,6 +46,10 @@ var _waiting_for_game: bool = false
 var _game_scene_loaded: bool = false
 var _quit_requested: bool = false
 var _phase: String = "init"  # init, loading, playing, reporting, done
+var _global_timer: float = 0.0  # Safety timeout global
+var _max_global_time: float = 600.0  # 10 min máximo absoluto
+var _waiting_for_ready_timer: float = 0.0
+const MAX_WAIT_FOR_READY := 30.0  # 30s máximo esperando que el juego cargue
 
 # Monitorización de leaks
 var _last_object_count: int = 0
@@ -141,14 +145,15 @@ func _load_game_scene() -> void:
 		return
 
 	root.add_child(_game_node)
-	change_scene_to_packed(packed)
 	_game_scene_loaded = true
 	_phase = "waiting_for_ready"
-	_log("   ✅ Game scene loaded")
+	_waiting_for_ready_timer = 0.0
+	_log("   ✅ Game scene added to tree")
 
-	# Esperar un frame para que _ready() corra
-	await _wait_frames(10)
-	_on_game_ready()
+	# Esperar frames para que _ready() corra
+	await _wait_frames(15)
+	if _phase == "waiting_for_ready":
+		_on_game_ready()
 
 func _on_game_ready() -> void:
 	# Buscar el player
@@ -172,12 +177,24 @@ func _on_game_ready() -> void:
 	_log("   ▶️  Playing started (monitoring for %ds)" % int(_run_duration))
 
 func _process(delta: float) -> bool:
+	# Safety timeout global — NUNCA colgarse más de _max_global_time
+	_global_timer += delta
+	if _global_timer > _max_global_time:
+		_log("   🛑 GLOBAL SAFETY TIMEOUT (%.0fs) — forcing exit" % _global_timer)
+		_total_errors += 1
+		_finalize_all()
+		return false
+
 	# SceneTree override
 	match _phase:
 		"playing":
 			_process_gameplay(delta)
 		"waiting_for_ready":
-			pass  # await en _load_game_scene lo maneja
+			_waiting_for_ready_timer += delta
+			if _waiting_for_ready_timer > MAX_WAIT_FOR_READY:
+				_log("   ❌ Game failed to become ready in %.0fs" % MAX_WAIT_FOR_READY)
+				_record_error("LOAD_TIMEOUT", "Game not ready after %.0fs" % MAX_WAIT_FOR_READY)
+				_end_current_run("load_timeout")
 		"done":
 			if not _quit_requested:
 				_quit_requested = true
@@ -555,7 +572,5 @@ func _log(msg: String) -> void:
 	print(msg)
 
 func _find_nodes_in_group(group: String) -> Array:
-	if root and root.has_method("get_tree"):
-		return root.get_tree().get_nodes_in_group(group) if root.get_tree() else []
-	# Fallback
-	return []
+	# self ES el SceneTree, llamar al método nativo directamente
+	return get_nodes_in_group(group)
