@@ -201,6 +201,8 @@ func _enter_phase(phase_num: int) -> void:
 	# Reiniciar secuencia de oleadas
 	wave_sequence = SpawnConfig.get_wave_sequence_for_phase(phase_num)
 	current_wave_index = 0
+	wave_in_progress = false  # FIX-R11: Reset mid-wave state to prevent stale data on phase transition
+	enemies_to_spawn_in_wave = 0
 	
 	# Actualizar EnemyManager
 	if enemy_manager:

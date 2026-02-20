@@ -29,6 +29,7 @@ var _current_boss: Node = null
 func _ready():
 	# Inicializar estado
 	boss_bar.visible = false
+	set_process(false)  # FIX-R11: Only process when boss bar is active
 
 	# Verificar nodos críticos
 	_verify_nodes()
@@ -518,6 +519,7 @@ func show_boss_bar(boss_node: Node, boss_name: String):
 func hide_boss_bar():
 	boss_bar.visible = false
 	_current_boss = null
+	set_process(false)  # FIX-R11: Stop processing when no boss is active
 
 func _process(_delta):
 	# Actualizar boss bar

@@ -302,7 +302,7 @@ func _get_beam_color(beam_type: String) -> Color:
 # VFX DEBUG MODE
 # ══════════════════════════════════════════════════════════════════════════════
 ## Activar con: VFXManager.DEBUG_VFX = true  (desde consola o código)
-var DEBUG_VFX: bool = true # ENABLED FOR DIAGNOSTICS
+var DEBUG_VFX: bool = false # FIX-R11: Disabled — was left on, causing print() spam every VFX spawn
 var _vfx_log: Array = []  # Historial de spawns recientes
 const MAX_VFX_LOG: int = 50
 
