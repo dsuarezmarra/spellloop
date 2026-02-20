@@ -90,6 +90,7 @@ func _exit_tree() -> void:
 
 func initialize(pos: Vector2, value: int = 1, player: Node2D = null, type: CoinType = CoinType.BRONZE) -> void:
 	"""Inicializar la moneda con posición, tipo y referencia al player"""
+	_is_collected = false  # Reset guard para reutilización desde pool
 	global_position = pos
 	coin_type = type
 	coin_value = COIN_VALUES.get(type, value)
