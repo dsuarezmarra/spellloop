@@ -18,7 +18,9 @@
 | R5 | 5 | `67d57e80` | 1× P0, 1× P1, 3× P2 |
 | R6 | 2 | `f53a1cb1` | 1× P1, 1× P2 |
 | R7 | 6 | `7c5abd62` | 2× P1, 4× P2 |
-| **Total** | **37** | **8 commits** | **7× P0, 14× P1, 10× P2** |
+| R8 | 6 | `e286590e` | 3× P1, 3× P2 |
+| R9 | 3 | `78d0e2b4` | 1× P1, 2× P2 |
+| **Total** | **46** | **11 commits** | **7× P0, 18× P1, 15× P2** |
 
 ---
 
@@ -236,6 +238,59 @@
 - **Archivo:** `scripts/core/SaveManager.gd`
 - **Bug:** `set_active_slot()` con slot vacío → `current_save_data = {}` + `is_data_loaded = true` → accesos posteriores fallan
 - **Fix:** Inicializar con `DEFAULT_SAVE_DATA.duplicate(true)` si empty
+
+---
+
+## Round 8 — Commit `e286590e`
+
+### R8-1 (P1): Boss orbitals usan `orbital.position` con `top_level=true`
+- **Archivo:** `scripts/enemies/EnemyAttackSystem.gd`
+- **Bug:** Orbitales de boss posicionados con `.position` relativo, pero `top_level=true` → se colocan relativos al mundo, no al boss
+- **Fix:** Usar `orbital.global_position = enemy.global_position + offset`
+
+### R8-2 (P1): Damage zone timer sin guard de enemy freed
+- **Archivo:** `scripts/enemies/EnemyAttackSystem.gd`
+- **Bug:** Timer lambda de damage zone usa `enemy` como source sin verificar `is_instance_valid(enemy)`
+- **Fix:** `var source = enemy if is_instance_valid(enemy) else null`
+
+### R8-3 (P1): Elite rage inflación permanente de stats
+- **Archivo:** `scripts/enemies/EnemyAttackSystem.gd`
+- **Bug:** Rage re-aplicaba multiplicador sobre stats ya enragidos → inflación acumulativa permanente
+- **Fix:** Restaurar `pre_rage_damage` antes de re-aplicar; verificar meta existente
+
+### R8-4 (P2): ProjectilePool element_type por defecto "ice" en vez de "physical"
+- **Archivo:** `scripts/weapons/projectiles/ProjectilePool.gd`
+- **Bug:** `_reset_projectile()` seteaba `element_type = "ice"` como default
+- **Fix:** Cambiar a `element_type = "physical"`
+
+### R8-5 (P2): MainMenu format fallback
+- **Archivo:** `scripts/ui/MainMenu.gd`
+- **Bug:** `_format_time()` sin fallback en else → crash potencial
+- **Fix:** Añadir fallback format en bloque else (ya estaba corregido por scan)
+
+### R8-8 (P2): FloatingText call_deferred race condition
+- **Archivo:** `scripts/ui/FloatingText.gd`
+- **Bug:** `root.call_deferred("add_child", instance)` causaba timing issues con textos flotantes
+- **Fix:** Usar `root.add_child(instance)` directamente
+
+---
+
+## Round 9 — Commit `78d0e2b4`
+
+### R9-1 (P1): cleanup_boss() no reseteaba estado de boss en pool
+- **Archivo:** `scripts/enemies/EnemyAttackSystem.gd`
+- **Bug:** Al reciclar un boss, `cleanup_boss()` solo limpiaba orbitales/efectos y seteaba `is_boss_enemy = false`, pero dejaba 17+ variables de estado (phase, cooldowns, scaling, enraged, timers, etc.) con valores del boss anterior
+- **Fix:** Resetear todos: `boss_scaling_config={}`, `boss_current_phase=1`, `boss_ability_cooldowns={}`, `boss_enraged=false`, `boss_fire_trail_active=false`, `boss_damage_aura_timer=0.0`, `_boss_aura_damage_accumulator=0.0`, `boss_unlocked_abilities=[]`, `boss_combo_count=0`, `boss_combo_timer=0.0`, `boss_global_cooldown=0.0`, `boss_homing_projectile_timer=0.0`, `boss_random_aoe_timer=0.0`, `boss_spread_shot_timer=0.0`, `boss_orbital_spawned=false`, `elite_rage_active=false`
+
+### R9-2 (P2): SimpleProjectile + ChainProjectile ignoran status_duration_mult
+- **Archivos:** `scripts/weapons/projectiles/SimpleProjectile.gd`, `scripts/weapons/projectiles/ChainProjectile.gd`
+- **Bug:** `_apply_effect()` y `_apply_chain_effect()` usaban `effect_duration` crudo sin aplicar el multiplicador de duración de status del jugador
+- **Fix:** Llamar `ProjectileFactory.get_modified_effect_duration(tree, effect_duration)` al inicio de ambas funciones; actualizado las 12 ramas de match en ChainProjectile para usar `mod_duration`
+
+### R9-3 (P2): Boss AOE timer lambda sin guard de enemy freed/reciclado
+- **Archivo:** `scripts/enemies/EnemyAttackSystem.gd`
+- **Bug:** `_boss_spawn_random_aoe()` crea timer de 1.8s cuya lambda solo verificaba `is_instance_valid(player)`, no el enemy — si el boss moría/reciclaba durante el delay, la lambda usaba el enemy reciclado como source del daño
+- **Fix:** Capturar `_aoe_enemy_ref`, añadir guards `is_instance_valid(_aoe_enemy_ref)` y `is_boss_enemy`
 
 ---
 
