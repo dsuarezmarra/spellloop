@@ -207,6 +207,9 @@ func destroy_projectile():
 
 func create_destruction_effect():
 	"""Crear efecto visual de destrucción y liberar al terminar"""
+	if glow_tween:
+		glow_tween.kill()
+		glow_tween = null
 	if sprite:
 		set_physics_process(false)
 		var destroy_tween = create_tween()

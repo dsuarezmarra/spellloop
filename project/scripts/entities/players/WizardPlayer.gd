@@ -157,13 +157,17 @@ func _equip_starting_weapons() -> void:
 
 func cast_spell(spell_name: String) -> void:
 	"""Lanzar un hechizo"""
+	var cost: int = 0
 	match spell_name:
 		"fireball":
-			mana -= 10
+			cost = 10
 		"frost_bolt":
-			mana -= 8
+			cost = 8
 		_:
-			pass
+			return
+	if mana < cost:
+		return
+	mana -= cost
 
 func get_stats() -> Dictionary:
 	"""Obtener estadísticas específicas del Wizard"""

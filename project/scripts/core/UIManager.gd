@@ -268,6 +268,10 @@ func close_current_modal() -> void:
 		return
 
 	var modal = modal_stack.pop_back()
+	if not is_instance_valid(modal):
+		is_modal_open = not modal_stack.is_empty()
+		_process_popup_queue()
+		return
 	var modal_name = modal.name
 
 	modal.queue_free()
