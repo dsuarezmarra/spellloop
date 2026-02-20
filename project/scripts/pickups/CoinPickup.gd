@@ -75,6 +75,9 @@ func _ready() -> void:
 
 	# Añadir al grupo para fácil acceso
 	add_to_group("coins")
+
+	# FIX-R7: Z-index para que esté sobre el suelo pero debajo de entidades
+	z_index = 5
 	
 	if PerfTracker:
 		PerfTracker.track_pickup_spawned()

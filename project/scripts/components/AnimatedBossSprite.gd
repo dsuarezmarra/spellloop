@@ -372,6 +372,13 @@ func set_aura_width(width: float) -> void:
 
 # === SISTEMA DE PARTÍCULAS FLOTANTES ===
 
+func _exit_tree() -> void:
+	# FIX-R7: Limpiar partículas huérfanas al destruirse el boss
+	for particle in particles:
+		if is_instance_valid(particle):
+			particle.queue_free()
+	particles.clear()
+
 func _setup_particles() -> void:
 	"""Crear partículas que orbitan alrededor del boss"""
 	for i in range(particle_count):

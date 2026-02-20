@@ -753,8 +753,8 @@ func _create_elite_warning_visual(pos: Vector2, duration: float) -> Node2D:
 		
 		warning.add_child(anim_sprite)
 		
-		# Animación de aparición y desaparición
-		var tween = create_tween()
+		# FIX-R7: Crear tweens en warning (no en self) para que mueran con el nodo
+		var tween = warning.create_tween()
 		tween.set_parallel(true)
 		
 		# Fade in rápido
@@ -762,24 +762,17 @@ func _create_elite_warning_visual(pos: Vector2, duration: float) -> Node2D:
 		tween.tween_property(anim_sprite, "modulate:a", 1.0, 0.3)
 		
 		# Escala pulsante durante la duración
-		var pulse_tween = create_tween()
+		var pulse_tween = warning.create_tween()
 		pulse_tween.set_loops(int(duration / 0.5))  # Pulsar varias veces
 		pulse_tween.tween_property(anim_sprite, "scale", Vector2(scale_factor * 1.15, scale_factor * 1.15), 0.25).set_trans(Tween.TRANS_SINE)
 		pulse_tween.tween_property(anim_sprite, "scale", Vector2(scale_factor, scale_factor), 0.25).set_trans(Tween.TRANS_SINE)
 		
 		# Rotación lenta
-		var rotation_tween = create_tween()
+		var rotation_tween = warning.create_tween()
 		rotation_tween.set_loops()
 		rotation_tween.tween_property(anim_sprite, "rotation_degrees", 360.0, 3.0).from(0.0)
 		
-		# Timer para cleanup
-		var cleanup_timer = Timer.new()
-		cleanup_timer.wait_time = duration
-		cleanup_timer.one_shot = true
-		cleanup_timer.autostart = true
-		warning.add_child(cleanup_timer)
-		
-		cleanup_timer.timeout.connect(_on_warning_cleanup.bind(warning, anim_sprite))
+		# Nota: cleanup del warning lo maneja _complete_elite_spawn via create_timer
 	else:
 		# Fallback: dibujo por código si no hay spritesheet
 		push_warning("Missing elite spawn spritesheet, using fallback")

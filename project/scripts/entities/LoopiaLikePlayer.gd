@@ -596,24 +596,14 @@ func _update_orbital_overheat(delta: float) -> void:
 
 func _has_active_orbitals() -> bool:
 	"""Check if player has any orbital weapons equipped"""
-	if not wizard_player:
+	# FIX-R7: Usar AttackManager (nodo 'WeaponManager' no existe)
+	var attack_mgr = get_tree().get_first_node_in_group("attack_manager") if is_inside_tree() else null
+	if not attack_mgr or not attack_mgr.has_method("get_weapons"):
 		return false
 
-	# Get WeaponManager from wizard_player
-	var weapon_mgr = wizard_player.get_node_or_null("WeaponManager")
-	if not weapon_mgr:
-		return false
-
-	# Check if any equipped weapon has "orbital" tag
-	if not weapon_mgr.has_method("get_equipped_weapons"):
-		return false
-
-	var equipped = weapon_mgr.get_equipped_weapons()
-	for weapon_id in equipped:
-		var weapon_data = WeaponDatabase.get_weapon_data(weapon_id)
-		if weapon_data and "tags" in weapon_data:
-			if "orbital" in weapon_data["tags"]:
-				return true
+	for weapon in attack_mgr.get_weapons():
+		if "target_type" in weapon and weapon.target_type == WeaponDatabase.TargetType.ORBIT:
+			return true
 
 	return false
 

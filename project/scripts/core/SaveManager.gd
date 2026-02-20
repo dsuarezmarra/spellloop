@@ -646,6 +646,9 @@ func set_active_slot(slot_index: int) -> void:
 
 	# Cargar datos del slot
 	current_save_data = _load_slot_data(slot_index)
+	# FIX-R7: Slot vacío devuelve {} — inicializar con datos por defecto
+	if current_save_data.is_empty():
+		current_save_data = DEFAULT_SAVE_DATA.duplicate(true)
 	is_data_loaded = true
 
 	slot_changed.emit(slot_index)
