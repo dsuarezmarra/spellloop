@@ -1,0 +1,34 @@
+﻿commit bfdf9e55242d9f37686f4e66f2221f9230b5ea21
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 21:03:31 2026 +0100
+
+    fix(autopilot): remove double instantiation, add safety timeouts, simplify group lookup
+    
+    - Remove change_scene_to_packed() that created duplicate Game.tscn instance
+    - Add global 10min safety timeout to guarantee process always exits
+    - Add 30s timeout for waiting_for_ready phase to catch load failures
+    - Simplify _find_nodes_in_group to call native SceneTree method directly
+
+ project/tests/autopilot/AutopilotRunner.gd | 35 +++++++++++++++++++++---------
+ 1 file changed, 25 insertions(+), 10 deletions(-)
+
+commit 513ddf18c867564847b105a1c37c6d668cfa9c03
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 20:40:12 2026 +0100
+
+    fix(ci): YAML syntax error on line 36 ÔÇö use block scalar for quoted var
+
+ .github/workflows/ci.yml | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+commit cdfbd49602e21c831f6b0aafa11255a9e6e4ccd1
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 20:25:35 2026 +0100
+
+    feat: agregar archivos de prueba para integraci├│n, matem├íticas y humo
+
+ project/tests/autopilot/AutopilotRunner.gd.uid | 1 +
+ project/tests/test_gameplay_integration.gd.uid | 1 +
+ project/tests/test_math_sanity.gd.uid          | 1 +
+ project/tests/test_smoke.gd.uid                | 1 +
+ 4 files changed, 4 insertions(+)

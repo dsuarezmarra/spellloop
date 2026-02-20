@@ -234,6 +234,9 @@ func _process_gameplay(delta: float) -> void:
 	# ─── Auto-handle level-up panels ───
 	_check_and_handle_level_up()
 
+	# ─── Auto-handle chest popups ───
+	_check_and_handle_chest_popup()
+
 func _update_movement_direction() -> void:
 	# Patrón de movimiento: zigzag con tendencia a alejarse de bordes
 	var patterns := [
@@ -293,17 +296,23 @@ func _check_and_handle_level_up() -> void:
 		_upgrade_pending = false
 		return
 
-	# Intentar seleccionar directamente si hay método
-	if level_panel.has_method("_on_option_selected"):
-		# Seleccionar opción aleatoria (0, 1, o 2)
-		var option_index = randi() % 3
-		level_panel.call("_on_option_selected", option_index)
-		_log("   🎰 Auto-selected upgrade option #%d (level-up #%d)" %
-			[option_index, _level_ups_handled])
+	# Intentar interactuar con el LevelUpPanel específico del juego
+	if level_panel.has_method("_confirm_selection") and "option_index" in level_panel and "options" in level_panel:
+		if level_panel.options.size() > 0:
+			level_panel.option_index = randi() % level_panel.options.size()
+			level_panel.current_row = 0 # Asegurar que estemos en fila opciones (Row.OPTIONS)
+			level_panel._confirm_selection()
+			_log("   🎰 Auto-selected upgrade option #%d (level-up #%d)" % [level_panel.option_index, _level_ups_handled])
+	elif level_panel.has_method("_on_option_selected"):
+		# Fallback genérico 1
+		var option_idx = randi() % 3
+		level_panel.call("_on_option_selected", option_idx)
+		_log("   🎰 Auto-selected upgrade option #%d (level-up #%d)" % [option_idx, _level_ups_handled])
 	elif level_panel.has_method("select_option"):
+		# Fallback genérico 2
 		level_panel.select_option(randi() % 3)
 	else:
-		# Fallback: buscar botones
+		# Fallback: buscar botones genéricos
 		var buttons = _find_children_of_type(level_panel, "Button")
 		if buttons.size() > 0:
 			var btn = buttons[randi() % buttons.size()]
@@ -312,6 +321,28 @@ func _check_and_handle_level_up() -> void:
 				_log("   🎰 Auto-pressed upgrade button (level-up #%d)" % _level_ups_handled)
 
 	_upgrade_pending = false
+
+func _check_and_handle_chest_popup() -> void:
+	var chest_panel = _find_node_by_class_hint("SimpleChestPopup")
+	if chest_panel != null and chest_panel.visible:
+		# Añadir un delay corto tal como en level_up
+		if not chest_panel.has_meta("autopilot_handling"):
+			chest_panel.set_meta("autopilot_handling", true)
+			await _wait_frames(30)
+			if not is_instance_valid(chest_panel) or not chest_panel.visible:
+				return
+			
+			if chest_panel.is_jackpot_mode:
+				if chest_panel.has_method("_on_claim_all_pressed"):
+					chest_panel.call("_on_claim_all_pressed")
+					_log("   🎁 Auto-claimed jackpot chest")
+			else:
+				if chest_panel.has_method("_select_item_at_index"):
+					chest_panel.call("_select_item_at_index", 0)
+					_log("   🎁 Auto-claimed standard chest")
+			
+			if is_instance_valid(chest_panel) and chest_panel.has_method("queue_free") and chest_panel.visible:
+				chest_panel.queue_free()
 
 func _check_game_over_screen() -> void:
 	var go_screen = _find_node_by_class_hint("GameOverScreen")

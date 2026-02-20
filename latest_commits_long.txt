@@ -1,0 +1,476 @@
+﻿commit bfdf9e55242d9f37686f4e66f2221f9230b5ea21
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 21:03:31 2026 +0100
+
+    fix(autopilot): remove double instantiation, add safety timeouts, simplify group lookup
+    
+    - Remove change_scene_to_packed() that created duplicate Game.tscn instance
+    - Add global 10min safety timeout to guarantee process always exits
+    - Add 30s timeout for waiting_for_ready phase to catch load failures
+    - Simplify _find_nodes_in_group to call native SceneTree method directly
+
+ project/tests/autopilot/AutopilotRunner.gd | 35 +++++++++++++++++++++---------
+ 1 file changed, 25 insertions(+), 10 deletions(-)
+
+commit 513ddf18c867564847b105a1c37c6d668cfa9c03
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 20:40:12 2026 +0100
+
+    fix(ci): YAML syntax error on line 36 ÔÇö use block scalar for quoted var
+
+ .github/workflows/ci.yml | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+commit cdfbd49602e21c831f6b0aafa11255a9e6e4ccd1
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 20:25:35 2026 +0100
+
+    feat: agregar archivos de prueba para integraci├│n, matem├íticas y humo
+
+ project/tests/autopilot/AutopilotRunner.gd.uid | 1 +
+ project/tests/test_gameplay_integration.gd.uid | 1 +
+ project/tests/test_math_sanity.gd.uid          | 1 +
+ project/tests/test_smoke.gd.uid                | 1 +
+ 4 files changed, 4 insertions(+)
+
+commit dffa222a0b1f2d089b0a7ce38c13e14b1adde726
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 20:24:45 2026 +0100
+
+    fix: rename get_nodes_in_group to avoid SceneTree override conflict
+
+ project/tests/autopilot/AutopilotRunner.gd | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+commit 98ae7ed2cbf9952cab0883340bcfe9dbd12c46fc
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 20:14:07 2026 +0100
+
+    feat: CI pipeline + GUT tests + autopilot gameplay bot
+    
+    - GitHub Actions workflow (.github/workflows/ci.yml)
+      Godot 4.5.1 headless, runs GUT tests + smoke + autopilot on push/PR
+    - GUT addon installed (project/addons/gut/)
+    - Shell scripts for CI (scripts/ci/): run_gut, smoke, autopilot
+    - Smoke tests (test_smoke.gd): 11 tests ÔÇö autoloads, scenes, data files
+    - Sanity tests (test_math_sanity.gd): DamageCalc, JSON parsing, scenes
+    - Integration tests (test_gameplay_integration.gd): GameManager state,
+      pools, databases, save system, input actions, orphan count
+    - AutopilotRunner.gd: headless bot that simulates full game runs,
+      monitors orphan nodes, object growth, enemy overflow, negative HP,
+      auto-handles level-ups, generates JSON report
+    - .gutconfig.json + tests/README.md documentation
+
+ .github/workflows/ci.yml                           |   76 +
+ project/.gutconfig.json                            |    9 +
+ project/addons/gut/GutScene.gd                     |  132 +
+ project/addons/gut/GutScene.gd.uid                 |    1 +
+ project/addons/gut/GutScene.tscn                   |   16 +
+ project/addons/gut/LICENSE.md                      |   22 +
+ project/addons/gut/UserFileViewer.gd               |   52 +
+ project/addons/gut/UserFileViewer.gd.uid           |    1 +
+ project/addons/gut/UserFileViewer.tscn             |   92 +
+ project/addons/gut/autofree.gd                     |   86 +
+ project/addons/gut/autofree.gd.uid                 |    1 +
+ project/addons/gut/awaiter.gd                      |  201 ++
+ project/addons/gut/awaiter.gd.uid                  |    1 +
+ project/addons/gut/cli/change_project_warnings.gd  |  239 ++
+ .../addons/gut/cli/change_project_warnings.gd.uid  |    1 +
+ project/addons/gut/cli/gut_cli.gd                  |  315 +++
+ project/addons/gut/cli/gut_cli.gd.uid              |    1 +
+ project/addons/gut/cli/optparse.gd                 |  678 +++++
+ project/addons/gut/cli/optparse.gd.uid             |    1 +
+ project/addons/gut/collected_script.gd             |  208 ++
+ project/addons/gut/collected_script.gd.uid         |    1 +
+ project/addons/gut/collected_test.gd               |  120 +
+ project/addons/gut/collected_test.gd.uid           |    1 +
+ project/addons/gut/comparator.gd                   |  125 +
+ project/addons/gut/comparator.gd.uid               |    1 +
+ project/addons/gut/compare_result.gd               |   70 +
+ project/addons/gut/compare_result.gd.uid           |    1 +
+ project/addons/gut/diff_formatter.gd               |   63 +
+ project/addons/gut/diff_formatter.gd.uid           |    1 +
+ project/addons/gut/diff_tool.gd                    |  156 ++
+ project/addons/gut/diff_tool.gd.uid                |    1 +
+ .../gut/double_templates/double_data_template.txt  |   22 +
+ .../gut/double_templates/function_template.txt     |    9 +
+ .../addons/gut/double_templates/init_template.txt  |    4 +
+ .../gut/double_templates/script_template.txt       |   13 +
+ .../gut/double_templates/singleton_template.txt    |   16 +
+ project/addons/gut/double_tools.gd                 |   83 +
+ project/addons/gut/double_tools.gd.uid             |    1 +
+ project/addons/gut/doubler.gd                      |  396 +++
+ project/addons/gut/doubler.gd.uid                  |    1 +
+ project/addons/gut/dynamic_gdscript.gd             |   33 +
+ project/addons/gut/dynamic_gdscript.gd.uid         |    1 +
+ .../addons/gut/editor_caret_context_notifier.gd    |  212 ++
+ .../gut/editor_caret_context_notifier.gd.uid       |    1 +
+ project/addons/gut/error_tracker.gd                |  192 ++
+ project/addons/gut/error_tracker.gd.uid            |    1 +
+ project/addons/gut/fonts/AnonymousPro-Bold.ttf     |  Bin 0 -> 107624 bytes
+ .../addons/gut/fonts/AnonymousPro-Bold.ttf.import  |   36 +
+ .../addons/gut/fonts/AnonymousPro-BoldItalic.ttf   |  Bin 0 -> 95872 bytes
+ .../gut/fonts/AnonymousPro-BoldItalic.ttf.import   |   36 +
+ project/addons/gut/fonts/AnonymousPro-Italic.ttf   |  Bin 0 -> 98424 bytes
+ .../gut/fonts/AnonymousPro-Italic.ttf.import       |   36 +
+ project/addons/gut/fonts/AnonymousPro-Regular.ttf  |  Bin 0 -> 112072 bytes
+ .../gut/fonts/AnonymousPro-Regular.ttf.import      |   36 +
+ project/addons/gut/fonts/CourierPrime-Bold.ttf     |  Bin 0 -> 69768 bytes
+ .../addons/gut/fonts/CourierPrime-Bold.ttf.import  |   36 +
+ .../addons/gut/fonts/CourierPrime-BoldItalic.ttf   |  Bin 0 -> 77384 bytes
+ .../gut/fonts/CourierPrime-BoldItalic.ttf.import   |   36 +
+ project/addons/gut/fonts/CourierPrime-Italic.ttf   |  Bin 0 -> 76496 bytes
+ .../gut/fonts/CourierPrime-Italic.ttf.import       |   36 +
+ project/addons/gut/fonts/CourierPrime-Regular.ttf  |  Bin 0 -> 68128 bytes
+ .../gut/fonts/CourierPrime-Regular.ttf.import      |   36 +
+ project/addons/gut/fonts/LobsterTwo-Bold.ttf       |  Bin 0 -> 222040 bytes
+ .../addons/gut/fonts/LobsterTwo-Bold.ttf.import    |   36 +
+ project/addons/gut/fonts/LobsterTwo-BoldItalic.ttf |  Bin 0 -> 216036 bytes
+ .../gut/fonts/LobsterTwo-BoldItalic.ttf.import     |   36 +
+ project/addons/gut/fonts/LobsterTwo-Italic.ttf     |  Bin 0 -> 229404 bytes
+ .../addons/gut/fonts/LobsterTwo-Italic.ttf.import  |   36 +
+ project/addons/gut/fonts/LobsterTwo-Regular.ttf    |  Bin 0 -> 234956 bytes
+ .../addons/gut/fonts/LobsterTwo-Regular.ttf.import |   36 +
+ project/addons/gut/fonts/OFL.txt                   |   94 +
+ project/addons/gut/get_editor_interface.gd         |    6 +
+ project/addons/gut/get_editor_interface.gd.uid     |    1 +
+ project/addons/gut/godot_singletons.gd             |   48 +
+ project/addons/gut/godot_singletons.gd.uid         |    1 +
+ project/addons/gut/gui/EditorRadioButton.tres      |   13 +
+ project/addons/gut/gui/GutBottomPanel.gd           |  556 ++++
+ project/addons/gut/gui/GutBottomPanel.gd.uid       |    1 +
+ project/addons/gut/gui/GutBottomPanel.tscn         |  319 +++
+ project/addons/gut/gui/GutControl.gd               |  326 +++
+ project/addons/gut/gui/GutControl.gd.uid           |    1 +
+ project/addons/gut/gui/GutControl.tscn             |   63 +
+ project/addons/gut/gui/GutLogo.tscn                |   36 +
+ project/addons/gut/gui/GutRunner.gd                |  247 ++
+ project/addons/gut/gui/GutRunner.gd.uid            |    1 +
+ project/addons/gut/gui/GutRunner.tscn              |   12 +
+ project/addons/gut/gui/GutSceneTheme.tres          |    7 +
+ project/addons/gut/gui/MinGui.tscn                 |  161 ++
+ project/addons/gut/gui/NormalGui.tscn              |  215 ++
+ project/addons/gut/gui/OutputText.gd               |  352 +++
+ project/addons/gut/gui/OutputText.gd.uid           |    1 +
+ project/addons/gut/gui/OutputText.tscn             |  121 +
+ project/addons/gut/gui/ResizeHandle.gd             |  107 +
+ project/addons/gut/gui/ResizeHandle.gd.uid         |    1 +
+ project/addons/gut/gui/ResizeHandle.tscn           |    8 +
+ project/addons/gut/gui/ResultsTree.gd              |  368 +++
+ project/addons/gut/gui/ResultsTree.gd.uid          |    1 +
+ project/addons/gut/gui/ResultsTree.tscn            |   34 +
+ project/addons/gut/gui/RunAtCursor.gd              |  171 ++
+ project/addons/gut/gui/RunAtCursor.gd.uid          |    1 +
+ project/addons/gut/gui/RunAtCursor.tscn            |   60 +
+ project/addons/gut/gui/RunExternally.gd            |  216 ++
+ project/addons/gut/gui/RunExternally.gd.uid        |    1 +
+ project/addons/gut/gui/RunExternally.tscn          |   65 +
+ project/addons/gut/gui/RunResults.gd               |  250 ++
+ project/addons/gut/gui/RunResults.gd.uid           |    1 +
+ project/addons/gut/gui/RunResults.tscn             |  109 +
+ project/addons/gut/gui/Settings.tscn               |    7 +
+ project/addons/gut/gui/ShellOutOptions.gd          |  321 +++
+ project/addons/gut/gui/ShellOutOptions.gd.uid      |    1 +
+ project/addons/gut/gui/ShellOutOptions.tscn        |   34 +
+ project/addons/gut/gui/ShortcutButton.gd           |  154 ++
+ project/addons/gut/gui/ShortcutButton.gd.uid       |    1 +
+ project/addons/gut/gui/ShortcutButton.tscn         |   55 +
+ project/addons/gut/gui/ShortcutDialog.gd           |  120 +
+ project/addons/gut/gui/ShortcutDialog.gd.uid       |    1 +
+ project/addons/gut/gui/ShortcutDialog.tscn         |  209 ++
+ project/addons/gut/gui/about.gd                    |  125 +
+ project/addons/gut/gui/about.gd.uid                |    1 +
+ project/addons/gut/gui/about.tscn                  |   56 +
+ project/addons/gut/gui/arrow.png                   |  Bin 0 -> 122 bytes
+ project/addons/gut/gui/arrow.png.import            |   40 +
+ project/addons/gut/gui/editor_globals.gd           |   68 +
+ project/addons/gut/gui/editor_globals.gd.uid       |    1 +
+ project/addons/gut/gui/gut_config_gui.gd           |  282 ++
+ project/addons/gut/gui/gut_config_gui.gd.uid       |    1 +
+ project/addons/gut/gui/gut_dock.gd                 |   37 +
+ project/addons/gut/gui/gut_dock.gd.uid             |    1 +
+ project/addons/gut/gui/gut_gui.gd                  |  239 ++
+ project/addons/gut/gui/gut_gui.gd.uid              |    1 +
+ project/addons/gut/gui/gut_logo.gd                 |  225 ++
+ project/addons/gut/gui/gut_logo.gd.uid             |    1 +
+ project/addons/gut/gui/gut_user_preferences.gd     |   79 +
+ project/addons/gut/gui/gut_user_preferences.gd.uid |    1 +
+ project/addons/gut/gui/option_maker.gd             |  124 +
+ project/addons/gut/gui/option_maker.gd.uid         |    1 +
+ project/addons/gut/gui/panel_controls.gd           |  484 ++++
+ project/addons/gut/gui/panel_controls.gd.uid       |    1 +
+ project/addons/gut/gui/play.png                    |  Bin 0 -> 143 bytes
+ project/addons/gut/gui/play.png.import             |   40 +
+ project/addons/gut/gui/run_from_editor.gd          |   22 +
+ project/addons/gut/gui/run_from_editor.gd.uid      |    1 +
+ project/addons/gut/gui/run_from_editor.tscn        |    6 +
+ project/addons/gut/gut.gd                          | 1261 +++++++++
+ project/addons/gut/gut.gd.uid                      |    1 +
+ project/addons/gut/gut_cmdln.gd                    |   70 +
+ project/addons/gut/gut_cmdln.gd.uid                |    1 +
+ project/addons/gut/gut_config.gd                   |  236 ++
+ project/addons/gut/gut_config.gd.uid               |    1 +
+ project/addons/gut/gut_fonts.gd                    |   94 +
+ project/addons/gut/gut_fonts.gd.uid                |    1 +
+ project/addons/gut/gut_loader.gd                   |   75 +
+ project/addons/gut/gut_loader.gd.uid               |    1 +
+ project/addons/gut/gut_loader_the_scene.tscn       |    7 +
+ project/addons/gut/gut_menu.gd                     |  104 +
+ project/addons/gut/gut_menu.gd.uid                 |    1 +
+ project/addons/gut/gut_plugin.gd                   |  113 +
+ project/addons/gut/gut_plugin.gd.uid               |    1 +
+ project/addons/gut/gut_to_move.gd                  |   92 +
+ project/addons/gut/gut_to_move.gd.uid              |    1 +
+ project/addons/gut/gut_tracked_error.gd            |   93 +
+ project/addons/gut/gut_tracked_error.gd.uid        |    1 +
+ project/addons/gut/gut_vscode_debugger.gd          |   43 +
+ project/addons/gut/gut_vscode_debugger.gd.uid      |    1 +
+ project/addons/gut/hook_script.gd                  |   58 +
+ project/addons/gut/hook_script.gd.uid              |    1 +
+ project/addons/gut/icon.png                        |  Bin 0 -> 129 bytes
+ project/addons/gut/icon.png.import                 |   40 +
+ project/addons/gut/images/Folder.svg               |    1 +
+ project/addons/gut/images/Folder.svg.import        |   43 +
+ project/addons/gut/images/GutIconV2_base.png       |  Bin 0 -> 135150 bytes
+ .../addons/gut/images/GutIconV2_base.png.import    |   40 +
+ project/addons/gut/images/GutIconV2_no_shine.png   |  Bin 0 -> 48913 bytes
+ .../gut/images/GutIconV2_no_shine.png.import       |   40 +
+ project/addons/gut/images/HSplitContainer.svg      |   39 +
+ .../addons/gut/images/HSplitContainer.svg.import   |   44 +
+ project/addons/gut/images/Script.svg               |    1 +
+ project/addons/gut/images/Script.svg.import        |   43 +
+ project/addons/gut/images/VSplitContainer.svg      |   39 +
+ .../addons/gut/images/VSplitContainer.svg.import   |   44 +
+ project/addons/gut/images/eyey.png                 |  Bin 0 -> 3721 bytes
+ project/addons/gut/images/eyey.png.import          |   40 +
+ project/addons/gut/images/green.png                |  Bin 0 -> 213 bytes
+ project/addons/gut/images/green.png.import         |   40 +
+ project/addons/gut/images/red.png                  |  Bin 0 -> 213 bytes
+ project/addons/gut/images/red.png.import           |   40 +
+ project/addons/gut/images/yellow.png               |  Bin 0 -> 213 bytes
+ project/addons/gut/images/yellow.png.import        |   40 +
+ project/addons/gut/inner_class_registry.gd         |   67 +
+ project/addons/gut/inner_class_registry.gd.uid     |    1 +
+ project/addons/gut/input_factory.gd                |  159 ++
+ project/addons/gut/input_factory.gd.uid            |    1 +
+ project/addons/gut/input_sender.gd                 |  651 +++++
+ project/addons/gut/input_sender.gd.uid             |    1 +
+ project/addons/gut/junit_xml_export.gd             |  111 +
+ project/addons/gut/junit_xml_export.gd.uid         |    1 +
+ project/addons/gut/lazy_loader.gd                  |   39 +
+ project/addons/gut/lazy_loader.gd.uid              |    1 +
+ project/addons/gut/logger.gd                       |  431 +++
+ project/addons/gut/logger.gd.uid                   |    1 +
+ project/addons/gut/menu_manager.gd.uid             |    1 +
+ project/addons/gut/method_maker.gd                 |  266 ++
+ project/addons/gut/method_maker.gd.uid             |    1 +
+ project/addons/gut/one_to_many.gd                  |   46 +
+ project/addons/gut/one_to_many.gd.uid              |    1 +
+ project/addons/gut/orphan_counter.gd               |  221 ++
+ project/addons/gut/orphan_counter.gd.uid           |    1 +
+ project/addons/gut/parameter_factory.gd            |   91 +
+ project/addons/gut/parameter_factory.gd.uid        |    1 +
+ project/addons/gut/parameter_handler.gd            |   36 +
+ project/addons/gut/parameter_handler.gd.uid        |    1 +
+ project/addons/gut/plugin.cfg                      |    7 +
+ project/addons/gut/printers.gd                     |  184 ++
+ project/addons/gut/printers.gd.uid                 |    1 +
+ project/addons/gut/result_exporter.gd              |  125 +
+ project/addons/gut/result_exporter.gd.uid          |    1 +
+ project/addons/gut/script_parser.gd                |  319 +++
+ project/addons/gut/script_parser.gd.uid            |    1 +
+ project/addons/gut/signal_watcher.gd               |  218 ++
+ project/addons/gut/signal_watcher.gd.uid           |    1 +
+ project/addons/gut/singleton_parser.gd             |   87 +
+ project/addons/gut/singleton_parser.gd.uid         |    1 +
+ project/addons/gut/source_code_pro.fnt             |  Bin 0 -> 42799 bytes
+ project/addons/gut/source_code_pro.fnt.import      |   17 +
+ project/addons/gut/spy.gd                          |  116 +
+ project/addons/gut/spy.gd.uid                      |    1 +
+ project/addons/gut/strutils.gd                     |  175 ++
+ project/addons/gut/strutils.gd.uid                 |    1 +
+ project/addons/gut/stub_params.gd                  |  208 ++
+ project/addons/gut/stub_params.gd.uid              |    1 +
+ project/addons/gut/stubber.gd                      |  200 ++
+ project/addons/gut/stubber.gd.uid                  |    1 +
+ project/addons/gut/stubs.gd                        |   96 +
+ project/addons/gut/stubs.gd.uid                    |    1 +
+ project/addons/gut/summary.gd                      |  210 ++
+ project/addons/gut/summary.gd.uid                  |    1 +
+ project/addons/gut/test.gd                         | 2922 ++++++++++++++++++++
+ project/addons/gut/test.gd.uid                     |    1 +
+ project/addons/gut/test_collector.gd               |  276 ++
+ project/addons/gut/test_collector.gd.uid           |    1 +
+ project/addons/gut/thing_counter.gd                |   55 +
+ project/addons/gut/thing_counter.gd.uid            |    1 +
+ project/addons/gut/utils.gd                        |  698 +++++
+ project/addons/gut/utils.gd.uid                    |    1 +
+ project/addons/gut/version_conversion.gd           |  120 +
+ project/addons/gut/version_conversion.gd.uid       |    1 +
+ project/addons/gut/version_numbers.gd              |  122 +
+ project/addons/gut/version_numbers.gd.uid          |    1 +
+ project/addons/gut/warnings_manager.gd             |  176 ++
+ project/addons/gut/warnings_manager.gd.uid         |    1 +
+ project/tests/README.md                            |   82 +
+ project/tests/autopilot/AutopilotRunner.gd         |  561 ++++
+ project/tests/test_gameplay_integration.gd         |  110 +
+ project/tests/test_math_sanity.gd                  |  102 +
+ project/tests/test_smoke.gd                        |   81 +
+ scripts/ci/autopilot_headless.sh                   |   62 +
+ scripts/ci/run_gut_headless.sh                     |   43 +
+ scripts/ci/smoke_headless.sh                       |   35 +
+ 258 files changed, 23151 insertions(+)
+
+commit 3dff701fb38049f3f161da2765fa5d8db32f5782
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 20:00:49 2026 +0100
+
+    docs: finalize audit log R14 entry (59 total bugs)
+
+ docs/bug_audit_log.md | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 3a288926454ee91afbac0a342c32803afede5056
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 20:00:00 2026 +0100
+
+    fix(R14): guard enemy in _spawn_meteor_impact timer callback (bug #59)
+
+ docs/bug_audit_log.md                        | 25 ++++++++++++++++++++++++-
+ project/scripts/enemies/EnemyAttackSystem.gd |  4 +++-
+ 2 files changed, 27 insertions(+), 2 deletions(-)
+
+commit 2a7cb7a07b0de4bc01e6fa99ee1342c37d115fdd
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 19:50:25 2026 +0100
+
+    docs: update audit log with R13 entries (58 total bugs)
+
+ docs/bug_audit_log.md | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
+
+commit a4d22e04fece21806e3868c66e9ab7cd5e202101
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 19:49:57 2026 +0100
+
+    Round 13: 3 bugs fixed (negative mana, tween conflict, UIManager crash)
+    
+    R13-1 (P1): WizardPlayer cast_spell() allowed negative mana
+      - Mana subtracted without checking if sufficient
+      - Fix: calculate cost first, return if mana < cost
+    
+    R13-2 (P2): LoopiaLikeMagicProjectile glow_tween conflicts with destroy tween
+      - Infinite glow_tween loop animated sprite.modulate while destruction
+        tween tried to fade the same property simultaneously
+      - Fix: kill glow_tween before creating destruction tween
+    
+    R13-3 (P1): UIManager close_current_modal() crash on freed modal
+      - modal_stack could contain freed nodes; accessed .name without guard
+      - _process_popup_queue() already filters invalids, proving it happens
+      - Fix: is_instance_valid guard with proper state cleanup
+
+ project/scripts/core/UIManager.gd                  |  4 ++++
+ project/scripts/entities/players/WizardPlayer.gd   | 10 +++++++---
+ project/scripts/magic/LoopiaLikeMagicProjectile.gd |  3 +++
+ 3 files changed, 14 insertions(+), 3 deletions(-)
+
+commit e3b2f0153a6b7e0c459ac18f8ae90fabeaf582df
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 19:41:47 2026 +0100
+
+    docs: update audit log with R11 and R12 entries (55 total bugs)
+
+ docs/bug_audit_log.md | 42 +++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 41 insertions(+), 1 deletion(-)
+
+commit a6be276c822a1bfdcac05aaa55b1b12b2d5dfaec
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 19:41:19 2026 +0100
+
+    Round 12: 3 bugs fixed (confetti crash, game over damage, reroll cost)
+    
+    R12-1 (P0): UIVisualHelper confetti particles.queue_free crash
+      - Timer callback invoked queue_free on potentially freed particles node
+      - Fix: wrap in lambda with is_instance_valid guard
+    
+    R12-2 (P1): GameOverScreen total damage never uses audit data
+      - _get_total_damage_dealt() checked _run_active which is false by game over
+      - Weapon stats (from _get_weapon_audit_stats) didn't match total shown
+      - Fix: remove _run_active check, align with weapon stats method
+    
+    R12-3 (P1): LevelUpPanel reroll cost includes free rerolls in exponent
+      - With 2 free rerolls used, first paid reroll cost 10*2^2=40 instead of 10*2^0=10
+      - Fix: capture _initial_free_rerolls at panel open, subtract in all 3 cost calculations
+
+ project/scripts/ui/GameOverScreen.gd | 2 +-
+ project/scripts/ui/LevelUpPanel.gd   | 8 +++++---
+ project/scripts/ui/UIVisualHelper.gd | 2 +-
+ 3 files changed, 7 insertions(+), 5 deletions(-)
+
+commit e416d0cce56b9761ffdbdfbd79e630960a2aebad
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 19:28:34 2026 +0100
+
+    Round 11: 3 bugs fixed (VFX debug spam, HUD process leak, wave state reset)
+    
+    R11-1 (P1): VFXManager DEBUG_VFX left enabled in production
+      - Caused print() spam on every VFX spawn (hundreds per second)
+      - Fix: set DEBUG_VFX = false
+    
+    R11-2 (P2): GameHUD _process running every frame even without boss
+      - show_boss_bar() enabled set_process(true) but never disabled
+      - Fix: set_process(false) in _ready() and hide_boss_bar()
+    
+    R11-3 (P2): WaveManager phase transition leaves stale wave state
+      - _enter_phase() reset wave_sequence/index but not wave_in_progress/enemies_to_spawn
+      - Fix: reset both flags on phase transition
+
+ docs/R11-N_GAME_CODE_AUDIT.md           | 145 ++++++++++++++++++++++++++++++++
+ project/scripts/core/VFXManager.gd      |   2 +-
+ project/scripts/managers/WaveManager.gd |   2 +
+ project/scripts/ui/GameHUD.gd           |   2 +
+ 4 files changed, 150 insertions(+), 1 deletion(-)
+
+commit 6287251e4ac61da2fda78e46bd1011a399c08411
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 19:09:29 2026 +0100
+
+    docs: update audit log with R10 entries (49 total bugs)
+
+ docs/bug_audit_log.md | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
+
+commit 6613d35d383126d0d35b8a3897389b6de658b379
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 19:09:06 2026 +0100
+
+    Round 10: 3 bugs fixed (LootManager crash, AOE leak, weapon rarity)
+    
+    R10-1 (P0): LootManager.gd current_scene.get_tree() crash during transitions
+      - Engine.get_main_loop() IS the SceneTree already
+      - current_scene can be null during scene transitions
+      - Fix: cast Engine.get_main_loop() as SceneTree directly (2 call sites)
+    
+    R10-2 (P1): ProjectileFactory AOEEffect resource leak with VFXManager
+      - _use_enhanced=true skipped the normal _process() queue_free() path
+      - AOE nodes persisted indefinitely in the scene tree
+      - Fix: await timer + queue_free() with is_instance_valid guard
+    
+    R10-3 (P2): BaseWeapon missing rarity property propagation
+      - All weapons showed as Common in Pause Menu regardless of DB rarity
+      - Fix: added rarity var, extract from WeaponDatabase, override to legendary for fusions
+
+ docs/R10-N_GAME_CODE_AUDIT.md                | 176 +++++++++++++++++++++++++++
+ project/scripts/managers/LootManager.gd      |   7 +-
+ project/scripts/weapons/BaseWeapon.gd        |   8 +-
+ project/scripts/weapons/ProjectileFactory.gd |   6 +
+ 4 files changed, 193 insertions(+), 4 deletions(-)
+
+commit 2fd619752019a49f61bbf10a11c0b712d0205db0
+Author: dsuarezmarra <dsuarezmarra@gmail.com>
+Date:   Fri Feb 20 18:39:13 2026 +0100
+
+    docs: update audit log with R8 and R9 entries (46 total bugs)
+
+ docs/bug_audit_log.md | 57 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 56 insertions(+), 1 deletion(-)
