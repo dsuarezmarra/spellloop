@@ -654,10 +654,13 @@ func _on_reroll() -> void:
 			# No tiene rerolls ni monedas suficientes
 			FloatingText.spawn_text(get_viewport().get_visible_rect().size / 2, Localization.L("ui.level_up.need_coins").replace("{cost}", str(reroll_cost)), Color.RED)
 			return
-		# Pagar con monedas
-		exp_mgr.total_coins -= reroll_cost
-		if exp_mgr.has_signal("coin_collected"):
-			exp_mgr.coin_collected.emit(-reroll_cost, exp_mgr.total_coins)
+		# FIX-R2: Usar spend_coins() para deducción centralizada
+		if exp_mgr.has_method("spend_coins"):
+			exp_mgr.spend_coins(reroll_cost)
+		else:
+			exp_mgr.total_coins -= reroll_cost
+			if exp_mgr.has_signal("coin_collected"):
+				exp_mgr.coin_collected.emit(-reroll_cost, exp_mgr.total_coins)
 
 	AudioManager.play_fixed("sfx_ui_click")
 	rerolls_used_this_level += 1  # Track for next cost calculation
@@ -683,8 +686,9 @@ func _on_reroll() -> void:
 		if xp_fraction > 0 and exp_mgr_node:
 			# Obtener xp_to_next_level desde el manager
 			var needed_xp = 100 # Fallback
-			if "experience_required" in exp_mgr_node:
-				needed_xp = exp_mgr_node.experience_required
+			# FIX-R2: Propiedad correcta es exp_to_next_level, no experience_required
+			if "exp_to_next_level" in exp_mgr_node:
+				needed_xp = exp_mgr_node.exp_to_next_level
 
 			var xp_amount = needed_xp * xp_fraction
 			# Otorgar XP a través del manager o directamente

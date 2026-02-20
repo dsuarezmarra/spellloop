@@ -31,6 +31,7 @@ var ambient_atmosphere: Node = null # Sistema de partículas ambientales
 # Estado del juego
 var game_running: bool = false
 var game_time: float = 0.0
+var _boundary_damage_accumulator: float = 0.0  # FIX-R2: acumula daño fraccionario del borde
 var session_start_time: float = 0.0 # Tiempo de juego al iniciar/resumir esta sesión
 var is_paused: bool = false
 
@@ -973,7 +974,8 @@ func _clear_saved_state_deferred() -> void:
 func _process(delta: float) -> void:
 	# Sistema de prioridad de popups:
 	# Si ya no estamos pausados (ej. cofre cerrado) y hay level ups pendientes, mostrarlos
-	if not get_tree().paused and not level_up_panel_active and not pending_level_ups.is_empty():
+	# FIX-R2: No procesar level-ups si game_running es false (post-mortem)
+	if game_running and not get_tree().paused and not level_up_panel_active and not pending_level_ups.is_empty():
 		_process_next_level_up()
 
 	# Si el juego está pausado (por menú o por popups externos), no avanzar tiempo
@@ -1302,6 +1304,9 @@ func _on_exp_gained(_amount: int, total: int) -> void:
 	run_stats["xp_total"] = total
 
 func _on_level_up(new_level: int, _upgrades: Array) -> void:
+	# FIX-R2: No encolar level-ups si la partida ya terminó
+	if not game_running:
+		return
 	run_stats["level"] = new_level
 
 	# STEAM ACHIEVEMENTS: Notificar level up
@@ -1482,8 +1487,14 @@ func _update_atmosphere_biome(zone_id: int, zone_name: String) -> void:
 
 func _on_player_hit_boundary(damage: float) -> void:
 	## Callback cuando el player toca el borde de la arena
-	if player and player.has_method("take_damage"):
-		player.take_damage(damage)
+	# FIX-R2: Acumular daño fraccionario para evitar truncamiento a 0
+	# (10 dmg/s * 0.016 delta = 0.16 por frame, int(0.16) = 0)
+	_boundary_damage_accumulator += damage
+	if _boundary_damage_accumulator >= 1.0:
+		var int_damage = int(_boundary_damage_accumulator)
+		_boundary_damage_accumulator -= int_damage
+		if player and player.has_method("take_damage"):
+			player.take_damage(int_damage)
 
 func _on_player_died() -> void:
 	"""Callback cuando el player muere - después de la animación de muerte"""

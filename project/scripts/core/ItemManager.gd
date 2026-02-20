@@ -304,9 +304,10 @@ func apply_item_effect(item_type: String, item_data: Dictionary):
 		"gold":
 			var amount = item_data.get("amount", 0)
 			var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
-			if exp_mgr and "total_coins" in exp_mgr:
-				exp_mgr.total_coins += amount
-				print("[ItemManager] 💰 +%d oro" % amount)
+			# FIX-R2: Usar add_coins() para aplicar gold_mult y emitir señal
+			if exp_mgr and exp_mgr.has_method("add_coins"):
+				exp_mgr.add_coins(amount)
+				print("[ItemManager] 💰 +%d oro (con multiplicador)" % amount)
 		"new_weapon":
 			# Debug desactivado: print("⚔️ Nueva arma desbloqueada")
 			# NUEVO SISTEMA: Usar AttackManager y BaseWeapon

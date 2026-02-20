@@ -9,6 +9,7 @@ signal coin_collected(value: int)
 
 # === CONFIGURACIÓN ===
 @export var coin_value: int = 1
+var _is_collected: bool = false  # FIX-R2: Guard contra doble recolección
 @export var lifetime: float = 45.0  # Segundos antes de desaparecer
 @export var attraction_speed: float = 400.0  # Velocidad cuando es atraída
 @export var base_attraction_range: float = 120.0  # Rango base de atracción
@@ -354,6 +355,11 @@ func _on_body_entered(body: Node2D) -> void:
 
 func _collect(collector: Node2D) -> void:
 	"""Recolectar la moneda"""
+	# FIX-R2: Guard contra doble recolección (_process proximity + _on_body_entered físico)
+	if _is_collected:
+		return
+	_is_collected = true
+
 	# Emitir señal (ExperienceManager ya está conectado via coin_collected signal)
 	coin_collected.emit(coin_value)
 
