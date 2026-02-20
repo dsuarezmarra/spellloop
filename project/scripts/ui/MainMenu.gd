@@ -324,8 +324,9 @@ func _setup_ui() -> void:
 					elif header[0] == 0x52 and header[1] == 0x49: # 'R', 'I'
 						debug_msg += "Format: WebP detected (renamed?)\n"
 						err = img.load_webp_from_buffer(bytes)
-						
+					
 					# 4. Fallback: Try all in order
+					else:
 						debug_msg += "Format: Unknown. Trying brute force...\n"
 						err = img.load_png_from_buffer(bytes)
 						if err != OK: err = img.load_jpg_from_buffer(bytes)

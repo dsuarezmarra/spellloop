@@ -272,7 +272,7 @@ func _reset_projectile(projectile) -> void:
 	projectile.lifetime = 3.0
 	projectile.knockback_force = 150.0
 	projectile.pierce_count = 0
-	projectile.element_type = "ice"
+	projectile.element_type = "physical"  # FIX-R8: era "ice" incorrectamente
 	
 	# Estado
 	projectile.direction = Vector2.RIGHT

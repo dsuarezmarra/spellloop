@@ -1827,7 +1827,11 @@ func _update_boss_orbitals(delta: float) -> void:
 
 		# Posicionar
 		var radius = base_radius
-		orbital.position = Vector2(cos(angle), sin(angle)) * radius
+		# FIX-R8: Con top_level=true, usar global_position relativo al enemigo
+		if is_instance_valid(enemy):
+			orbital.global_position = enemy.global_position + Vector2(cos(angle), sin(angle)) * radius
+		else:
+			orbital.position = Vector2(cos(angle), sin(angle)) * radius
 
 		# Check daÃƒÂ±o al jugador
 		if is_instance_valid(player):
@@ -3969,7 +3973,9 @@ func _spawn_damage_zone(pos: Vector2, radius: float, dps: int, duration: float, 
 		if dist <= radius:
 			damage_accumulator += dps * 0.1
 			if damage_accumulator >= 1 and player_ref.has_method("take_damage"):
-				player_ref.take_damage(int(damage_accumulator), element, enemy)
+				# FIX-R8: Guard contra enemy freed (la zona persiste independientemente)
+				var source = enemy if is_instance_valid(enemy) else null
+				player_ref.take_damage(int(damage_accumulator), element, source)
 				damage_accumulator = fmod(damage_accumulator, 1.0)
 	)
 

@@ -294,7 +294,8 @@ static func _spawn_text(pos: Vector2, txt: String, col: Color, size: int, dur: f
 			else:
 				instance = FloatingText.new()
 				instance.name = "FloatingTextManager"
-				root.call_deferred("add_child", instance)
+				# FIX-R8: add_child directo para que esté en el tree en este mismo frame
+				root.add_child(instance)
 
 	if not instance or not instance.is_inside_tree():
 		# Fallback de emergencia
