@@ -1,0 +1,76 @@
+name: CI — Loopialike
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      # Descarga Godot 4.5.1 headless (misma versión que el proyecto)
+      - name: Setup Godot 4.5.1 (headless)
+        shell: bash
+        run: |
+          set -euo pipefail
+          GODOT_VERSION="4.5.1"
+          GODOT_FLAVOR="linux.x86_64"
+          URL="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_${GODOT_FLAVOR}.zip"
+          echo "::group::Downloading Godot ${GODOT_VERSION}"
+          curl -L "$URL" -o godot.zip
+          unzip -q godot.zip -d godot_bin
+          chmod +x godot_bin/Godot_v${GODOT_VERSION}-stable_${GODOT_FLAVOR}
+          echo "$(pwd)/godot_bin" >> $GITHUB_PATH
+          echo "GODOT_BIN=$(pwd)/godot_bin/Godot_v${GODOT_VERSION}-stable_${GODOT_FLAVOR}" >> $GITHUB_ENV
+          echo "::endgroup::"
+
+      - name: Verify Godot version
+        shell: bash
+        run: "$GODOT_BIN" --version
+
+      # Import inicial: genera .godot/imported/ para que los tests puedan cargar recursos
+      - name: Import project (headless)
+        shell: bash
+        working-directory: project
+        run: |
+          set -euo pipefail
+          echo "::group::Importing project resources"
+          timeout 120 "$GODOT_BIN" --headless --editor --quit 2>&1 || true
+          echo "::endgroup::"
+
+      # Tests unitarios con GUT
+      - name: Run GUT unit tests
+        shell: bash
+        working-directory: project
+        run: |
+          set -euo pipefail
+          chmod +x ../scripts/ci/run_gut_headless.sh
+          ../scripts/ci/run_gut_headless.sh
+
+      # Smoke test rápido
+      - name: Run smoke tests
+        shell: bash
+        working-directory: project
+        run: |
+          set -euo pipefail
+          chmod +x ../scripts/ci/smoke_headless.sh
+          ../scripts/ci/smoke_headless.sh
+
+      # Autopiloto: simula partidas reales durante 3 minutos y monitoriza errores
+      - name: Run autopilot gameplay test
+        shell: bash
+        working-directory: project
+        run: |
+          set -euo pipefail
+          chmod +x ../scripts/ci/autopilot_headless.sh
+          ../scripts/ci/autopilot_headless.sh
