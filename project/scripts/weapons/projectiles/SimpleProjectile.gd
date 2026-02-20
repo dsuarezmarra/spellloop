@@ -587,6 +587,11 @@ func _apply_effect(target: Node) -> void:
 	if effect == "none":
 		return
 
+	# FIX-R9: Aplicar status_duration_mult del player
+	var tree = get_tree()
+	if tree:
+		effect_duration = ProjectileFactory.get_modified_effect_duration(tree, effect_duration)
+
 	match effect:
 		"slow":
 			if target.has_method("apply_slow"):

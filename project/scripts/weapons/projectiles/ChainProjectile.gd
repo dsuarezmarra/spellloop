@@ -152,15 +152,21 @@ func _apply_chain_effect(target: Node2D) -> void:
 	if effect == "none" or effect == "chain":
 		return
 
+	# FIX-R9: Aplicar status_duration_mult del player
+	var mod_duration = effect_duration
+	var tree = get_tree()
+	if tree:
+		mod_duration = ProjectileFactory.get_modified_effect_duration(tree, effect_duration)
+
 	match effect:
 		"freeze_chain":
 			if target.has_method("apply_freeze"):
-				target.apply_freeze(effect_value, effect_duration)
+				target.apply_freeze(effect_value, mod_duration)
 			elif target.has_method("apply_slow"):
-				target.apply_slow(effect_value, effect_duration)
+				target.apply_slow(effect_value, mod_duration)
 		"burn_chain":
 			if target.has_method("apply_burn"):
-				target.apply_burn(effect_value, effect_duration)
+				target.apply_burn(effect_value, mod_duration)
 		"lifesteal_chain":
 			var player = _get_player()
 			if player and player.has_method("heal"):
@@ -175,24 +181,24 @@ func _apply_chain_effect(target: Node2D) -> void:
 				target.apply_stun(effect_value)
 		"slow":
 			if target.has_method("apply_slow"):
-				target.apply_slow(effect_value, effect_duration)
+				target.apply_slow(effect_value, mod_duration)
 		"burn":
 			if target.has_method("apply_burn"):
-				target.apply_burn(effect_value, effect_duration)
+				target.apply_burn(effect_value, mod_duration)
 		"freeze":
 			if target.has_method("apply_freeze"):
-				target.apply_freeze(effect_value, effect_duration)
+				target.apply_freeze(effect_value, mod_duration)
 			elif target.has_method("apply_slow"):
-				target.apply_slow(effect_value, effect_duration)
+				target.apply_slow(effect_value, mod_duration)
 		"pull":
 			if target.has_method("apply_pull"):
-				target.apply_pull(global_position, effect_value, effect_duration)
+				target.apply_pull(global_position, effect_value, mod_duration)
 		"bleed":
 			if target.has_method("apply_bleed"):
-				target.apply_bleed(effect_value, effect_duration)
+				target.apply_bleed(effect_value, mod_duration)
 		"shadow_mark":
 			if target.has_method("apply_shadow_mark"):
-				target.apply_shadow_mark(effect_value, effect_duration)
+				target.apply_shadow_mark(effect_value, mod_duration)
 
 func _get_player() -> Node:
 	"""Obtener referencia al jugador"""

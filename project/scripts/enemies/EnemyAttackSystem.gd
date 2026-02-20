@@ -1429,7 +1429,25 @@ func cleanup_boss() -> void:
 				node.queue_free()
 
 	is_boss_enemy = false
-	# print("[Boss] ðÅ¸Â§Â¹ Limpieza completada")
+
+	# FIX-R9: Resetear TODAS las variables de estado de boss para pool reuse
+	boss_scaling_config = {}
+	boss_current_phase = 1
+	boss_ability_cooldowns = {}
+	boss_enraged = false
+	boss_fire_trail_active = false
+	boss_damage_aura_timer = 0.0
+	_boss_aura_damage_accumulator = 0.0
+	boss_unlocked_abilities = []
+	boss_combo_count = 0
+	boss_combo_timer = 0.0
+	boss_global_cooldown = 0.0
+	boss_homing_projectile_timer = 0.0
+	boss_random_aoe_timer = 0.0
+	boss_spread_shot_timer = 0.0
+	boss_orbital_spawned = false
+	elite_rage_active = false
+	# print("[Boss] Limpieza completada")
 
 func _track_boss_effect(effect: Node) -> void:
 	"""AÃƒÂ±adir un efecto a la lista de tracking para limpieza posterior"""
@@ -1532,14 +1550,19 @@ func _boss_spawn_random_aoe() -> void:
 	_spawn_aoe_warning(target_pos, 80.0, 1.8)  # Aumentado de 1.0 a 1.8s
 
 	# DespuÃƒÂ©s del warning, hacer daÃƒÂ±o
+	# R9-3: Capturar referencia al enemy para validar en el timer
+	var _aoe_enemy_ref = enemy
 	get_tree().create_timer(1.8).timeout.connect(func():
+		# R9-3: Guard contra enemy freed/reciclado o ya no es boss
+		if not is_instance_valid(_aoe_enemy_ref) or not is_boss_enemy:
+			return
 		if is_instance_valid(player):
 			var dist = target_pos.distance_to(player.global_position)
 			if dist < 80:
 				var damage = int(attack_damage * 0.7)
 				if player.has_method("take_damage"):
 					var elem = _get_enemy_element()
-					player.call("take_damage", damage, elem, enemy)
+					player.call("take_damage", damage, elem, _aoe_enemy_ref)
 					# print("[Boss] ðÅ¸â€™Â¥ AOE RANDOM impactÃƒÂ³! %d daÃƒÂ±o" % damage)
 		# Visual de explosiÃƒÂ³n
 		_spawn_aoe_explosion(target_pos, 80.0)
