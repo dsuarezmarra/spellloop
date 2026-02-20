@@ -227,7 +227,7 @@ func _display_stats() -> void:
 
 func _get_total_damage_dealt() -> int:
 	"""Obtener daño total: prefiere datos de RunAuditTracker (más precisos)"""
-	if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT and RunAuditTracker._run_active:
+	if RunAuditTracker and RunAuditTracker.ENABLE_AUDIT:
 		var total: int = 0
 		for weapon_id in RunAuditTracker._weapon_stats:
 			total += RunAuditTracker._weapon_stats[weapon_id].damage_total

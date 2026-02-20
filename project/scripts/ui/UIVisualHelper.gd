@@ -108,7 +108,7 @@ static func spawn_confetti(parent: Node, position: Vector2, color: Color = Color
 	
 	# Auto-borrado
 	var timer = parent.get_tree().create_timer(2.0)
-	timer.timeout.connect(particles.queue_free)
+	timer.timeout.connect(func(): if is_instance_valid(particles): particles.queue_free())
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ICONOS

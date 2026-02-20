@@ -77,6 +77,7 @@ var reroll_count: int = 3
 var banish_count: int = 2
 var locked: bool = false
 var rerolls_used_this_level: int = 0  # BALANCE: Track rerolls used to calculate cost
+var _initial_free_rerolls: int = 0    # Free rerolls available when panel opened
 
 # Reroll cost constants (BALANCE — EXPONENTIAL PRICING)
 const REROLL_BASE_COST: int = 10     # First paid reroll costs 10 coins
@@ -641,7 +642,7 @@ func _on_reroll() -> void:
 
 	# BALANCE: Exponential reroll cost — first free rerolls are free, then 10, 20, 40, 80...
 	var has_free_rerolls = reroll_count > 0
-	var paid_rerolls = maxi(0, rerolls_used_this_level - (reroll_count if has_free_rerolls else 0))
+	var paid_rerolls = maxi(0, rerolls_used_this_level - _initial_free_rerolls)
 	var reroll_cost: int = 0
 
 	if not has_free_rerolls:
@@ -1054,7 +1055,7 @@ func _is_button_disabled(index: int) -> bool:
 			if reroll_count > 0:
 				return false
 			# Sin rerolls gratuitos: verificar si puede pagar con monedas (exponencial)
-			var paid_so_far = maxi(0, rerolls_used_this_level)
+			var paid_so_far = maxi(0, rerolls_used_this_level - _initial_free_rerolls)
 			var next_cost = int(REROLL_BASE_COST * pow(REROLL_COST_MULT, paid_so_far))
 			var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
 			if exp_mgr and "total_coins" in exp_mgr and exp_mgr.total_coins >= next_cost:
@@ -1067,7 +1068,7 @@ func _update_button_counts() -> void:
 	# Actualizar contador de Reroll (with cost if applicable)
 	var reroll_count_label = button_panels[0].find_child("Count", true, false) as Label
 	if reroll_count_label:
-		var paid_so_far = maxi(0, rerolls_used_this_level)
+		var paid_so_far = maxi(0, rerolls_used_this_level - _initial_free_rerolls)
 		var next_cost = int(REROLL_BASE_COST * pow(REROLL_COST_MULT, paid_so_far))
 		if reroll_count <= 0:
 			# Sin rerolls gratuitos: mostrar solo costo en monedas (exponencial)
@@ -2281,6 +2282,7 @@ func show_panel() -> void:
 
 	# Sincronizar contadores con PlayerStats al abrir el panel
 	_sync_counts_from_player_stats()
+	_initial_free_rerolls = reroll_count
 
 	generate_options()
 
