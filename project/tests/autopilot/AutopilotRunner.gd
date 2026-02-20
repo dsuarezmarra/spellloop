@@ -327,7 +327,7 @@ func _monitor_health_check() -> void:
 					[rate, obj_count, growth])
 
 	# ─── Enemy count sanity ───
-	var enemies = get_nodes_in_group("enemies")
+	var enemies = _find_nodes_in_group("enemies")
 	var enemy_count = enemies.size() if enemies else 0
 	if enemy_count > 500:
 		_record_warning("ENEMY_OVERFLOW",
@@ -473,7 +473,7 @@ func _write_report() -> void:
 # UTILIDADES
 # ═════════════════════════════════════════════════════════════════
 func _find_player() -> Node:
-	var players = get_nodes_in_group("player")
+	var players = _find_nodes_in_group("player")
 	if players.size() > 0:
 		return players[0]
 
@@ -554,7 +554,7 @@ func _on_run_ended(_reason: String, _stats: Dictionary) -> void:
 func _log(msg: String) -> void:
 	print(msg)
 
-func get_nodes_in_group(group: String) -> Array:
+func _find_nodes_in_group(group: String) -> Array:
 	if root and root.has_method("get_tree"):
 		return root.get_tree().get_nodes_in_group(group) if root.get_tree() else []
 	# Fallback
