@@ -335,7 +335,9 @@ static func _generate_upgrade_loot(chest_type: int, luck: float, min_tier_overri
 		if chest_type == ChestType.BOSS and min_tier < 3: min_tier = 3
 
 		# Obtener PlayerStats para filtrado inteligente
-		var player_stats = _get_player_stats(context, Engine.get_main_loop().current_scene.get_tree() if Engine.get_main_loop() else null)
+		# FIX: Engine.get_main_loop() ya ES el SceneTree, no necesita .current_scene.get_tree()
+		# El patrón anterior crasheaba si current_scene era null durante transiciones
+		var player_stats = _get_player_stats(context, Engine.get_main_loop() as SceneTree)
 
 		var valid_upgrades = []
 		for up in all_upgrades:
@@ -701,7 +703,8 @@ static func _generate_shop_upgrade(base_tier: int, time_bonus: int, luck: float,
 	)
 
 	# FILTRO DE UPGRADES SHOP
-	var player_stats = _get_player_stats(context, Engine.get_main_loop().current_scene.get_tree() if Engine.get_main_loop() else null)
+	# FIX: Engine.get_main_loop() ya ES el SceneTree
+	var player_stats = _get_player_stats(context, Engine.get_main_loop() as SceneTree)
 	if player_stats:
 		var filtered = []
 		for up in eligible:

@@ -1051,6 +1051,12 @@ class AOEEffect extends Node2D:
 				# El VFXManager gestiona la vida del nodo visual
 				# Nosotros gestionamos la lógica de daño en _process
 				_use_enhanced = true # Para evitar que se intente dibujar algo más
+				# FIX: Programar auto-destrucción del AOEEffect después de la duración
+				# Sin esto, _use_enhanced=true impide que _process llame queue_free(),
+				# causando que el nodo AOEEffect persista indefinidamente (resource leak)
+				await get_tree().create_timer(duration + 0.5).timeout
+				if is_instance_valid(self):
+					queue_free()
 				return
 
 		# Si falla todo, usar círculo debug muy simple (solo editor/debug)

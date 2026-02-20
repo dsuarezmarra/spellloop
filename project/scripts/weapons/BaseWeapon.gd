@@ -23,6 +23,7 @@ var weapon_name_es: String = ""
 var description: String = ""
 var icon: String = ""
 var tags: Array = []
+var rarity: String = "common"  # FIX: Propagar rarity de WeaponDatabase para UI (Pause Menu tier styling)
 
 # Sistema de niveles
 var level: int = 1
@@ -84,8 +85,10 @@ func _init(weapon_id: String = "", from_fusion: bool = false) -> void:
 	_initialize_from_data(data)
 	is_fused = from_fusion
 
-	if is_fused and data.has("components"):
-		fusion_components = data.components.duplicate()
+	if is_fused:
+		rarity = "legendary"  # Fusiones siempre son legendarias
+		if data.has("components"):
+			fusion_components = data.components.duplicate()
 
 func _initialize_from_data(data: Dictionary) -> void:
 	"""Inicializar el arma con datos del diccionario"""
@@ -95,6 +98,7 @@ func _initialize_from_data(data: Dictionary) -> void:
 	description = data.get("description", "")
 	icon = data.get("icon", "🔮")
 	tags = data.get("tags", [])
+	rarity = data.get("rarity", "common")
 
 	# Guardar stats base
 	base_stats = {
