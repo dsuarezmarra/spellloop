@@ -23,7 +23,8 @@
 | R10 | 3 | `6613d35d` | 1× P0, 1× P1, 1× P2 |
 | R11 | 3 | `e416d0cc` | 1× P1, 2× P2 |
 | R12 | 3 | `a6be276c` | 1× P0, 2× P1 |
-| **Total** | **55** | **14 commits** | **9× P0, 22× P1, 18× P2** |
+| R13 | 3 | `a4d22e04` | 2× P1, 1× P2 |
+| **Total** | **58** | **15 commits** | **9× P0, 24× P1, 19× P2** |
 
 ---
 
@@ -371,3 +372,22 @@ Tweens creados con `create_tween()` en `self` que animaban nodos hijos → persi
 - **Archivo:** `scripts/ui/LevelUpPanel.gd`
 - **Bug:** Con 2 rerolls gratis usados, primer reroll de pago costaba `10×2²=40` en vez de `10×2⁰=10` — free rerolls inflaban el exponente
 - **Fix:** Capturar `_initial_free_rerolls` al abrir panel; restar en 3 puntos de cálculo de coste
+
+---
+
+## Round 13 — Commit `a4d22e04`
+
+### R13-1 (P1): WizardPlayer cast_spell() permite mana negativo
+- **Archivo:** `scripts/entities/players/WizardPlayer.gd`
+- **Bug:** `cast_spell()` restaba mana sin verificar si hay suficiente → mana negativo
+- **Fix:** Calcular coste primero, return si `mana < cost`, luego restar
+
+### R13-2 (P2): MagicProjectile glow_tween conflicto con destroy tween
+- **Archivo:** `scripts/magic/LoopiaLikeMagicProjectile.gd`
+- **Bug:** `glow_tween` (loop infinito) animaba `sprite.modulate` mientras destroy tween intentaba fade de la misma propiedad
+- **Fix:** `glow_tween.kill()` antes de crear el tween de destrucción
+
+### R13-3 (P1): UIManager close_current_modal() crash en modal freed
+- **Archivo:** `scripts/core/UIManager.gd`
+- **Bug:** `modal_stack` podía contener nodos liberados; acceso a `.name` sin guard → crash
+- **Fix:** Guard `is_instance_valid(modal)` con cleanup de estado y procesamiento de cola
