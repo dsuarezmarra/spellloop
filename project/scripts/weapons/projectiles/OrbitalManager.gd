@@ -252,9 +252,19 @@ func _damage_enemy(enemy: Node) -> void:
 
 	if enemy.has_method("take_damage"):
 		enemy.take_damage(damage_result.get_int_damage(), "physical", self)
+		# FIX-R6: Propagar is_crit para feedback visual (texto flotante crit)
+		set_meta("last_hit_was_crit", damage_result.is_crit)
 		ProjectileFactory.apply_life_steal(get_tree(), damage_result.final_damage)
 		ProjectileFactory.check_execute(get_tree(), enemy)
 		ProjectileFactory.apply_status_effects_chance(get_tree(), enemy)
+		# FIX-R6: Bleed on Hit (upgrade de jugador)
+		var ps = get_tree().get_first_node_in_group("player_stats")
+		if ps and ps.has_method("get_stat"):
+			var bleed_chance = ps.get_stat("bleed_on_hit_chance")
+			if bleed_chance > 0 and randf() < bleed_chance:
+				if is_instance_valid(enemy) and enemy.has_method("apply_bleed"):
+					var bleed_dmg = max(1, damage_result.base_damage * 0.2)
+					enemy.apply_bleed(bleed_dmg, 3.0)
 		
 		# Feedback auditivo distintivo según arma (Fake SevenLabs)
 		# Feedback auditivo distintivo según arma
@@ -338,23 +348,29 @@ func _apply_chain_damage(first_target: Node, chain_count: int) -> void:
 	"""Aplicar daño encadenado a enemigos cercanos"""
 	var enemies_hit = [first_target]
 	var current_pos = first_target.global_position
-	var chain_damage = orbital_damage * 0.6
-	
+	var chain_reduction = 0.6
+
+	# FIX-R6: Chain hits pasan por DamageCalculator (antes era daño crudo)
+	var player = _get_orbital_player()
+
 	for i in range(chain_count):
 		var next_target = _find_chain_target(current_pos, enemies_hit)
 		if next_target == null:
 			break
-		
-		if next_target.has_method("take_damage"):
-			next_target.take_damage(int(chain_damage), "physical", self)
-			ProjectileFactory.apply_life_steal(get_tree(), chain_damage)
-			ProjectileFactory.check_execute(get_tree(), next_target)
-		
+
+		var chain_base_damage = orbital_damage * chain_reduction
+		var chain_result = DamageCalculator.calculate_final_damage(
+			chain_base_damage, next_target, player, crit_chance, crit_damage, self
+		)
+		DamageCalculator.apply_damage_with_effects(
+			get_tree(), next_target, chain_result, Vector2.ZERO, 0.0, self, "physical"
+		)
+
 		_spawn_chain_lightning_visual(current_pos, next_target.global_position)
-		
+
 		enemies_hit.append(next_target)
 		current_pos = next_target.global_position
-		chain_damage *= 0.8
+		chain_reduction *= 0.8
 
 func _find_chain_target(from_pos: Vector2, exclude: Array) -> Node:
 	"""Buscar siguiente objetivo para chain"""
