@@ -21,7 +21,9 @@
 | R8 | 6 | `e286590e` | 3× P1, 3× P2 |
 | R9 | 3 | `78d0e2b4` | 1× P1, 2× P2 |
 | R10 | 3 | `6613d35d` | 1× P0, 1× P1, 1× P2 |
-| **Total** | **49** | **12 commits** | **8× P0, 19× P1, 16× P2** |
+| R11 | 3 | `e416d0cc` | 1× P1, 2× P2 |
+| R12 | 3 | `a6be276c` | 1× P0, 2× P1 |
+| **Total** | **55** | **14 commits** | **9× P0, 22× P1, 18× P2** |
 
 ---
 
@@ -331,3 +333,41 @@ Tweens creados con `create_tween()` en `self` que animaban nodos hijos → persi
 - **Archivo:** `scripts/weapons/BaseWeapon.gd`
 - **Bug:** No se propagaba `rarity` de WeaponDatabase → todas las armas mostraban "Common" en Pause Menu
 - **Fix:** Añadir `var rarity = "common"`, extraer de datos de WeaponDatabase, override `"legendary"` para fusiones
+
+---
+
+## Round 11 — Commit `e416d0cc`
+
+### R11-1 (P1): VFXManager DEBUG_VFX left enabled
+- **Archivo:** `scripts/core/VFXManager.gd`
+- **Bug:** `DEBUG_VFX = true` dejado activo → print() spam en cada VFX spawn (cientos/segundo)
+- **Fix:** `DEBUG_VFX = false`
+
+### R11-2 (P2): GameHUD _process running without boss
+- **Archivo:** `scripts/ui/GameHUD.gd`
+- **Bug:** `show_boss_bar()` activa `set_process(true)` pero nunca se desactiva → _process corre cada frame innecesariamente
+- **Fix:** `set_process(false)` en `_ready()` y `hide_boss_bar()`
+
+### R11-3 (P2): WaveManager phase transition stale wave state
+- **Archivo:** `scripts/managers/WaveManager.gd`
+- **Bug:** `_enter_phase()` reseteaba wave_sequence/index pero no wave_in_progress ni enemies_to_spawn_in_wave
+- **Fix:** Resetear ambos en transición de fase
+
+---
+
+## Round 12 — Commit `a6be276c`
+
+### R12-1 (P0): UIVisualHelper confetti crash
+- **Archivo:** `scripts/ui/UIVisualHelper.gd`
+- **Bug:** `timer.timeout.connect(particles.queue_free)` — particles puede liberarse antes del timer → crash
+- **Fix:** Lambda con `is_instance_valid(particles)` guard
+
+### R12-2 (P1): GameOverScreen total damage ignora audit data
+- **Archivo:** `scripts/ui/GameOverScreen.gd`
+- **Bug:** `_get_total_damage_dealt()` verificaba `_run_active` que es `false` al llegar a Game Over → siempre usaba fallback; porcentajes por arma no coincidían con total
+- **Fix:** Eliminar check de `_run_active`, alinear con `_get_weapon_audit_stats()`
+
+### R12-3 (P1): Reroll cost exponencial incluye rerolls gratuitos
+- **Archivo:** `scripts/ui/LevelUpPanel.gd`
+- **Bug:** Con 2 rerolls gratis usados, primer reroll de pago costaba `10×2²=40` en vez de `10×2⁰=10` — free rerolls inflaban el exponente
+- **Fix:** Capturar `_initial_free_rerolls` al abrir panel; restar en 3 puntos de cálculo de coste
