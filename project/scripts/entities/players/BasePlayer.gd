@@ -1703,7 +1703,8 @@ func _apply_burn_tick() -> void:
 		return
 	if health_component:
 		var dmg = int(_burn_damage)
-		health_component.take_damage(dmg)
+		# FIX-R4: Pasar is_pre_mitigated=true para evitar dodge/armor/shield sobre DoT
+		health_component.take_damage(dmg, "fire", true)
 		# FIX-G6: DoT también resetea delay de regeneración de escudo
 		var _ps = get_tree().get_first_node_in_group("player_stats")
 		if _ps and _ps.has_method("on_damage_taken"):
@@ -1765,7 +1766,8 @@ func _apply_poison_tick() -> void:
 		return
 	if health_component:
 		var dmg = int(_poison_damage)
-		health_component.take_damage(dmg)
+		# FIX-R4: Pasar is_pre_mitigated=true para evitar dodge/armor/shield sobre DoT
+		health_component.take_damage(dmg, "poison", true)
 		# FIX-G6: DoT también resetea delay de regeneración de escudo
 		var _ps = get_tree().get_first_node_in_group("player_stats")
 		if _ps and _ps.has_method("on_damage_taken"):

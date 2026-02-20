@@ -50,7 +50,8 @@ func take_damage(amount: int, element_type: String = "physical", is_pre_mitigate
 	current_health = max(current_health, 0)
 	
 	
-	damaged.emit(amount, element_type)
+	# FIX-R4: Emitir daño post-mitigación, no pre-mitigación
+	damaged.emit(final_damage, element_type)
 	health_changed.emit(current_health, max_health)
 	
 	# AUDIT HOOK
@@ -62,8 +63,9 @@ func take_damage(amount: int, element_type: String = "physical", is_pre_mitigate
 			owner_node.remove_meta("last_damage_event_id") # Clean up
 	
 	# Visualizar daño - FloatingText handles headless/diagnostics logic
-	if owner_node is Node2D:
-		FloatingText.spawn_damage(owner_node.global_position, amount)
+	# FIX-R4: Excluir player (BasePlayer ya genera su propio floating text)
+	if owner_node is Node2D and not owner_node.is_in_group("player"):
+		FloatingText.spawn_damage(owner_node.global_position, final_damage)
 	
 	# Debug (comentado para producción)
 	# if current_health > 0:

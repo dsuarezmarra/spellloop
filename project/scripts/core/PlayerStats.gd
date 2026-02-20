@@ -1276,6 +1276,17 @@ func remove_temp_modifiers_by_source(source: String) -> void:
 			func(mod): return mod.source != source
 		)
 
+func get_growth_weapon_bonuses() -> Dictionary:
+	"""FIX-R4: Retorna los bonuses de growth para stats de armas (usados por AttackManager)"""
+	var weapon_stats = ["damage_mult", "attack_speed_mult", "area_mult", "projectile_speed_mult", "duration_mult", "crit_chance", "crit_damage"]
+	var result := {}
+	for stat_name in weapon_stats:
+		if temp_modifiers.has(stat_name):
+			for mod in temp_modifiers[stat_name]:
+				if mod.source == "growth_bonus":
+					result[stat_name] = result.get(stat_name, 0.0) + mod.amount
+	return result
+
 func set_on_path(on_path: bool) -> void:
 	"""Actualizar estado de estar sobre un camino (para bonus de velocidad)"""
 	_is_on_path = on_path

@@ -171,6 +171,17 @@ func _get_combined_global_stats() -> Dictionary:
 			if dynamic_bonus > 0:
 				combined["damage_mult"] = combined.get("damage_mult", 1.0) + dynamic_bonus
 		
+		# FIX-R4: Inyectar bonuses de Turret Mode (attack_speed_mult + damage_mult)
+		if ps and "is_turret_mode" in ps and ps.is_turret_mode:
+			combined["damage_mult"] = combined.get("damage_mult", 1.0) + 0.25
+			combined["attack_speed_mult"] = combined.get("attack_speed_mult", 1.0) + 0.5
+		
+		# FIX-R4: Inyectar bonuses de Growth para stats de armas
+		if ps and ps.has_method("get_growth_weapon_bonuses"):
+			var growth_bonuses = ps.get_growth_weapon_bonuses()
+			for stat_name in growth_bonuses:
+				combined[stat_name] = combined.get(stat_name, 1.0) + growth_bonuses[stat_name]
+		
 		return combined
 	return _legacy_player_stats.duplicate()
 
