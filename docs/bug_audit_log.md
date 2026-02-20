@@ -20,7 +20,8 @@
 | R7 | 6 | `7c5abd62` | 2× P1, 4× P2 |
 | R8 | 6 | `e286590e` | 3× P1, 3× P2 |
 | R9 | 3 | `78d0e2b4` | 1× P1, 2× P2 |
-| **Total** | **46** | **11 commits** | **7× P0, 18× P1, 15× P2** |
+| R10 | 3 | `6613d35d` | 1× P0, 1× P1, 1× P2 |
+| **Total** | **49** | **12 commits** | **8× P0, 19× P1, 16× P2** |
 
 ---
 
@@ -311,3 +312,22 @@ Múltiples rutas de daño (chain, orbital, DoT) aplicaban daño crudo sin pasar 
 
 ### 4. Tweens/Timers vinculados al nodo incorrecto
 Tweens creados con `create_tween()` en `self` que animaban nodos hijos → persistían después de la destrucción del hijo.
+
+---
+
+## Round 10 — Commit `6613d35d`
+
+### R10-1 (P0): LootManager current_scene.get_tree() crash
+- **Archivo:** `scripts/managers/LootManager.gd`
+- **Bug:** `Engine.get_main_loop().current_scene.get_tree()` — `Engine.get_main_loop()` ya ES el SceneTree; `.current_scene` puede ser `null` durante transiciones → crash
+- **Fix:** Usar `Engine.get_main_loop() as SceneTree` directamente (2 call sites)
+
+### R10-2 (P1): ProjectileFactory AOEEffect resource leak
+- **Archivo:** `scripts/weapons/ProjectileFactory.gd`
+- **Bug:** AOEEffect con `_use_enhanced=true` (ruta VFXManager) nunca ejecuta `queue_free()` — `_process()` sale antes del check de lifetime cuando se usa visual enhanced
+- **Fix:** Añadir `await create_timer(duration + 0.5).timeout` + `queue_free()` con guard `is_instance_valid`
+
+### R10-3 (P2): BaseWeapon sin propiedad rarity
+- **Archivo:** `scripts/weapons/BaseWeapon.gd`
+- **Bug:** No se propagaba `rarity` de WeaponDatabase → todas las armas mostraban "Common" en Pause Menu
+- **Fix:** Añadir `var rarity = "common"`, extraer de datos de WeaponDatabase, override `"legendary"` para fusiones
