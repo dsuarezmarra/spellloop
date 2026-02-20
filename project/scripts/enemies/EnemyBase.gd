@@ -12,6 +12,7 @@ var aura_sprite = null      # Sprite para élites
 
 var enemy_id: String = "generic"
 var enemy_tier: int = 1  # Tier del enemigo (1-4 normal, 5 boss)
+var _generation_id: int = 0  # FIX-R3: Incrementa en cada initialize, invalida timers de vida anterior
 var max_hp: int = 10
 var hp: int = 10
 var speed: float = 30.0  # Base reducida a 50% (era ~60, ahora 30)
@@ -366,6 +367,11 @@ func initialize(data: Dictionary, player):
 
 func initialize_from_database(data: Dictionary, player) -> void:
 	"""Inicializar desde EnemyDatabase con todos los datos completos"""
+	# FIX-R3: Reset crítico para reutilización desde pool
+	_is_dead = false
+	_generation_id += 1
+	_reset_status_effects()
+
 	enemy_data = data.duplicate(true)
 
 	# Datos básicos
@@ -1042,8 +1048,10 @@ func _start_phase() -> void:
 
 	# Timer para terminar fase (con verificación de validez)
 	var phase_duration = modifiers.get("phase_duration", 1.5)
+	# FIX-R3: Usar generation_id para que el timer no afecte a un enemigo reciclado
+	var gen = _generation_id
 	get_tree().create_timer(phase_duration).timeout.connect(func():
-		if is_instance_valid(self):
+		if is_instance_valid(self) and _generation_id == gen:
 			_end_phase()
 	)
 
@@ -1240,8 +1248,10 @@ func apply_speed_buff(amount: float, duration: float) -> void:
 		status_icon_display.add_effect("speed_buff", duration)
 
 	# Timer para quitar el buff (con verificación de validez)
+	# FIX-R3: Usar generation_id para que el timer no afecte a un enemigo reciclado
+	var gen = _generation_id
 	get_tree().create_timer(duration).timeout.connect(func():
-		if not is_instance_valid(self):
+		if not is_instance_valid(self) or _generation_id != gen:
 			return
 		if _base_speed > 0:
 			speed = _base_speed * (1.0 - _slow_amount if _is_slowed else 1.0)
@@ -1637,6 +1647,24 @@ var _knockback_tween: Tween = null # Tween dedicado para efectos visuales de kno
 var _current_status_color: Color = Color.WHITE
 
 const BURN_TICK_INTERVAL: float = 0.5  # Daño de quemadura cada 0.5s
+
+func _reset_status_effects() -> void:
+	"""FIX-R3: Limpiar todos los efectos de estado para reutilización desde pool"""
+	_is_stunned = false; _stun_timer = 0.0; _stun_flash_timer = 0.0
+	_is_slowed = false; _slow_timer = 0.0; _slow_amount = 0.0
+	_is_burning = false; _burn_timer = 0.0; _burn_damage = 0.0; _burn_tick_timer = 0.0
+	_is_blinded = false; _blind_timer = 0.0
+	_is_frozen = false; _freeze_timer = 0.0
+	_is_pulled = false; _pull_timer = 0.0; _pull_force = 0.0
+	_is_bleeding = false; _bleed_timer = 0.0; _bleed_damage = 0.0; _bleed_tick_timer = 0.0
+	_is_shadow_marked = false; _shadow_mark_timer = 0.0; _shadow_mark_bonus = 0.0
+	_current_status_color = Color.WHITE
+	if _status_tween and _status_tween.is_valid():
+		_status_tween.kill()
+	_status_tween = null
+	if _knockback_tween and _knockback_tween.is_valid():
+		_knockback_tween.kill()
+	_knockback_tween = null
 
 func apply_slow(amount: float, duration: float) -> void:
 	"""Aplicar efecto de ralentización

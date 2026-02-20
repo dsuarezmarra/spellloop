@@ -17,6 +17,7 @@ signal item_collected(item_type: String, item_data: Dictionary)
 
 # Referencias
 var player: CharacterBody2D
+var _chest_scene: PackedScene = preload("res://scenes/interactables/TreasureChest.tscn")  # FIX-R3
 
 # Configuración de spawn en chunks
 var chest_spawn_chance: float = 0.3  # Probabilidad de que un chunk tenga cofre (30%)
@@ -146,7 +147,8 @@ func spawn_chest_at_position(_chunk_pos: Vector2i, world_position: Vector2):
 	"""Generar un cofre en una posición específica"""
 	# Crear el cofre
 	var rarity = compute_normal_chest_rarity()
-	var chest = TreasureChest.new()
+	# FIX-R3: Usar instantiate() en vez de .new() para tener hijos de escena (sprite, collision)
+	var chest = _chest_scene.instantiate()
 	chest.initialize(world_position, TreasureChest.ChestType.NORMAL, player, rarity)
 	chest.chest_opened.connect(_on_chest_opened)
 
@@ -228,14 +230,16 @@ func apply_item_effect(item_type: String, item_data: Dictionary):
 			# Debug desactivado: print("⚡ Daño de armas aumentado")
 			var attack_manager = get_tree().get_first_node_in_group("attack_manager")
 			if attack_manager and attack_manager.global_weapon_stats:
-				attack_manager.global_weapon_stats.modify_stat("damage_mult", 0.1, "add")
+				# FIX-R3: modify_stat no existe en GlobalWeaponStats, usar add_stat
+				attack_manager.global_weapon_stats.add_stat("damage_mult", 0.1)
 				print("[ItemManager] ⚔️ Daño global aumentado +10%")
 
 		"weapon_speed":
 			# Debug desactivado: print("⚡ Velocidad de ataque aumentada")
 			var attack_manager = get_tree().get_first_node_in_group("attack_manager")
 			if attack_manager and attack_manager.global_weapon_stats:
-				attack_manager.global_weapon_stats.modify_stat("attack_speed_mult", 0.1, "add")
+				# FIX-R3: modify_stat no existe en GlobalWeaponStats, usar add_stat
+				attack_manager.global_weapon_stats.add_stat("attack_speed_mult", 0.1)
 				print("[ItemManager] ⚡ Velocidad de ataque global aumentada +10%")
 
 		"health_boost":
@@ -342,7 +346,8 @@ func create_boss_drop(position: Vector2, _boss_type: String):
 	"""Crear drop especial de boss"""
 	# Determine chest rarity influenced by meta luck
 	var chest_rarity = compute_boss_chest_rarity()
-	var chest = TreasureChest.new()
+	# FIX-R3: Usar instantiate() en vez de .new() para tener hijos de escena (sprite, collision)
+	var chest = _chest_scene.instantiate()
 	# Use type BOSS so UI/popup can adapt (TreasureChest handles visuals itself)
 	chest.initialize(position, TreasureChest.ChestType.BOSS, player, chest_rarity)
 	chest.chest_opened.connect(_on_chest_opened)
