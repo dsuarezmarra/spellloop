@@ -65,9 +65,10 @@ func _initialize() -> void:
 	_log("═══════════════════════════════════════════════════════")
 
 	if _is_headless:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
+		# OPTIMIZACIÓN EN HEADLESS: Correr al 2000% de velocidad para testing rápido
 		Engine.time_scale = 20.0
-		_log("   ⚡ Engine time_scale set to 20.0x for fast fuzzer")
-
+		AudioServer.set_bus_mute(AudioServer.get_bus_index("Master"), true)
 	# Capturar errores de GDScript
 	# En Godot 4.x no hay signal de error global, pero monitorizamos el log
 	_phase = "loading"
@@ -284,6 +285,47 @@ func _apply_movement(player: Node) -> void:
 			player.current_health = 999999
 		elif player.has_method("heal"):
 			player.heal(999999)
+
+		# CHEAT: Equip all base weapons so the fuzzer tests all weapons
+		if not player.has_meta("fuzzer_weapons_added"):
+			# Mirror BasePlayer._find_global_managers() exactly
+			var tree = player.get_tree()
+			var attack_mgr = tree.root.get_node_or_null("AttackManager")
+			if not attack_mgr:
+				var gm = tree.root.get_node_or_null("GameManager")
+				if not gm:
+					gm = tree.root.get_node_or_null("LoopiaLikeGame/GameManager")
+				if gm:
+					attack_mgr = gm.get_node_or_null("AttackManager")
+			if not attack_mgr:
+				attack_mgr = tree.get_first_node_in_group("attack_manager")
+			if not attack_mgr:
+				# Try player.attack_manager using get() which works on object properties
+				attack_mgr = player.get("attack_manager")
+			
+			if not attack_mgr:
+				# Still not found — dump root for diagnosis
+				push_warning("[FUZZER] AttackManager NOT found! Root: %s" % str(tree.root.get_children().map(func(c): return c.name)))
+			else:
+				player.set_meta("fuzzer_weapons_added", true)
+				# Override slot limit so all 10 fit
+				if attack_mgr.has_method("get") and attack_mgr.get("fusion_manager"):
+					var fm = attack_mgr.get("fusion_manager")
+					if fm and "slots_lost" in fm:
+						fm.slots_lost = -4  # Effectively STARTING_MAX_SLOTS becomes 10
+				
+				var all_weapons = ["ice_wand", "fire_wand", "nature_staff", "wind_blade",
+					"lightning_wand", "arcane_orb", "shadow_dagger", "earth_spike",
+					"light_beam", "void_pulse"]
+				for w in all_weapons:
+					if attack_mgr.has_method("add_weapon_by_id"):
+						attack_mgr.add_weapon_by_id(w)
+				
+				var weapon_names = []
+				if "weapons" in attack_mgr:
+					for w in attack_mgr.weapons:
+						weapon_names.append(str(w.get("id", "?")) if w != null else "null")
+				push_warning("[FUZZER] Weapons equipped (%d): %s" % [weapon_names.size(), str(weapon_names)])
 
 		# CHEAT: Continuous XP gain so the fuzzer levels up and tests 90% of upgrades
 		if player.is_inside_tree():
