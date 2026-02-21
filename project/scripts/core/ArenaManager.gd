@@ -193,24 +193,12 @@ func _load_biome_textures() -> void:
 		var biome_lower = biome_name.to_lower()
 		var base_path = "res://assets/textures/biomes/%s/base/%s_base_seamless.png" % [biome_name, biome_lower]
 		
-		# Primero intentar carga manual directa con Image (evita problemas de .import corruptos)
-		var abs_path = ProjectSettings.globalize_path(base_path)
-		
-		var img = Image.new()
-		var load_err = img.load(abs_path)
-		if load_err == OK:
-			base_texture = ImageTexture.create_from_image(img)
-			if base_texture:
-				pass
-			else:
-				push_warning("[ArenaManager] ImageTexture.create_from_image falló para %s" % biome_name)
+		if FileAccess.file_exists(base_path) or FileAccess.file_exists(base_path + ".import"):
+			base_texture = load(base_path)
+			if base_texture == null:
+				push_warning("[ArenaManager] Error cargando textura (es null): %s" % base_path)
 		else:
-			push_warning("[ArenaManager] Image.load() falló para %s (error: %d)" % [biome_name, load_err])
-			# Fallback: intentar con ResourceLoader (texturas ya importadas correctamente)
-			if ResourceLoader.exists(base_path):
-				base_texture = load(base_path)
-				if base_texture:
-					pass
+			push_warning("[ArenaManager] No existe el archivo base: %s" % base_path)
 		
 		# === CARGAR DECORACIONES ANIMADAS ===
 		var decor_paths: Array[String] = []
@@ -218,7 +206,7 @@ func _load_biome_textures() -> void:
 		# Guardar paths COMPLETOS de los spritesheets de decoraciones
 		for i in range(1, 12):  # decor1 a decor11
 			var decor_path = "res://assets/textures/biomes/%s/decor/%s_decor%d_sheet_f8_256.png" % [biome_name, biome_lower, i]
-			if ResourceLoader.exists(decor_path):
+			if FileAccess.file_exists(decor_path) or FileAccess.file_exists(decor_path + ".import"):
 				# BLACKLIST: Excluir decoraciones sospechosas de ser "fake chests" (forest/decor5)
 				# Reportado como cofres estáticos en la misma posición
 				if "decor5" in decor_path:
@@ -277,32 +265,13 @@ func _generate_paths(parent: Node2D) -> void:
 	noise.fractal_octaves = 2
 	
 	# Función local para carga robusta (resuelve importaciones pendientes)
-	# Función local para carga robusta (resuelve importaciones pendientes)
 	var _load_robusta = func(path: String) -> Texture2D:
-		# 1. Intentar carga estándar
-		if ResourceLoader.exists(path):
+		if FileAccess.file_exists(path) or FileAccess.file_exists(path + ".import"):
 			var res = load(path)
 			if res: return res
 		
-		# 2. Fallback: Carga manual
-		var global_path = ProjectSettings.globalize_path(path)
-		var img = Image.new()
-		var err = img.load(global_path)
-		
-		if err != OK:
-			# 3. Nuclear fallback: Leer bytes directamente
-			# Sometimes img.load() fails on locked files, reading bytes avoids some locks
-			if FileAccess.file_exists(path):
-				var buffer = FileAccess.get_file_as_bytes(path)
-				var err_buf = img.load_png_from_buffer(buffer) # Asumimos PNG
-				if err_buf != OK:
-					err_buf = img.load_jpg_from_buffer(buffer) # Try JPG
-				err = err_buf
-		
-		if err == OK:
-			return ImageTexture.create_from_image(img)
-			
-		push_warning("⚠️ [ArenaManager] FAIL LOAD: " + path + " | Global: " + global_path)
+		# Solo usar push_warning si realmente no está
+		push_warning("⚠️ [ArenaManager] FAIL LOAD: " + path)
 		return null
 	
 	# Cargar texturas de caminos por bioma
