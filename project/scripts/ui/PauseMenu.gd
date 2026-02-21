@@ -303,18 +303,10 @@ func show_pause_menu(current_time: float = 0.0) -> void:
 	_show_tab_content()
 	_update_navigation_visuals()
 
-	# Animacion
-	modulate.a = 0
-	var tween = create_tween()
-	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	tween.tween_property(self, "modulate:a", 1.0, 0.2)
+	# Mostrar instantáneamente para evitar problemas de Tween en pausa (Godot 4 Export Bug)
+	modulate.a = 1.0
 
 func hide_pause_menu() -> void:
-	var tween = create_tween()
-	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	tween.tween_property(self, "modulate:a", 0.0, 0.15)
-	await tween.finished
-	
 	visible = false
 	
 	# Verificar si hay otros menús bloqueantes antes de quitar la pausa

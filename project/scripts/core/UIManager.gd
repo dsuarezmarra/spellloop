@@ -363,7 +363,8 @@ func _on_game_state_changed(_old_state, new_state) -> void:
 
 func _on_game_paused() -> void:
 	"""Handle game pause"""
-	show_pause_menu()
+	pass
+	# El menú de pausa es manejado de forma local por Game.gd para evitar problemas de focos y sobreescrituras en exports
 
 func _on_game_resumed() -> void:
 	"""Handle game resume"""

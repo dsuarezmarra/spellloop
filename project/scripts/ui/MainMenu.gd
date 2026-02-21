@@ -276,93 +276,17 @@ func _setup_ui() -> void:
 	# Cargar Background
 	# Usar el nuevo fondo procesado
 	var bg_path = "res://assets/ui/backgrounds/main_menu_bg_new.png"
-	if not FileAccess.file_exists(bg_path):
+	if not (FileAccess.file_exists(bg_path) or FileAccess.file_exists(bg_path + ".import")):
 		bg_path = "res://assets/ui/backgrounds/main_menu_bg.jpg"
 		
 	var bg_tex = load(bg_path)
 	
-	var debug_msg = "Path: " + bg_path + "\n"
-	
-	# Fallback: Carga directa del sistema de archivos (Correcto para Godot 4.x)
-	var final_path = bg_path
-	if not bg_tex:
-		debug_msg += "Resource Load: FAILED\n"
-		
-		# Intentar convertir res:// a ruta absoluta del sistema
-		final_path = ProjectSettings.globalize_path(bg_path)
-		debug_msg += "Global Path: " + final_path + "\n"
-		
-		# Intentar cargar via Image.load_from_file
-		var img = Image.load_from_file(final_path)
-
-		# Fallback Nuclear: Leer bytes crudos (si load_from_file falla)
-		if not img:
-
-			debug_msg += "Image.load_from_file: NULL. Trying Byte Read...\n"
-			if FileAccess.file_exists(final_path):
-				var bytes = FileAccess.get_file_as_bytes(final_path)
-				if bytes.size() > 0:
-					img = Image.new()
-					
-					# --- FORMAT DETECTIVE ---
-					var header = bytes.slice(0, 4)
-					debug_msg += "Header: %02X %02X %02X %02X\n" % [header[0], header[1], header[2], header[3]]
-					
-					var err = ERR_FILE_UNRECOGNIZED
-					
-					# 1. Try PNG (89 50 4E 47)
-					if header[0] == 0x89 and header[1] == 0x50:
-						debug_msg += "Format: PNG detected\n"
-						err = img.load_png_from_buffer(bytes)
-					
-					# 2. Try JPG (FF D8)
-					elif header[0] == 0xFF and header[1] == 0xD8:
-						debug_msg += "Format: Jpeg detected (renamed?)\n"
-						err = img.load_jpg_from_buffer(bytes)
-						
-					# 3. Try WebP (RIFF....WEBP)
-					elif header[0] == 0x52 and header[1] == 0x49: # 'R', 'I'
-						debug_msg += "Format: WebP detected (renamed?)\n"
-						err = img.load_webp_from_buffer(bytes)
-					
-					# 4. Fallback: Try all in order
-					else:
-						debug_msg += "Format: Unknown. Trying brute force...\n"
-						err = img.load_png_from_buffer(bytes)
-						if err != OK: err = img.load_jpg_from_buffer(bytes)
-						if err != OK: err = img.load_webp_from_buffer(bytes)
-					
-					if err != OK:
-						debug_msg += "Buffer Load: FAILED (Err " + str(err) + ")\n"
-						img = null 
-					else:
-						# SUCCESS! Ocultar debug
-						if debug_label: debug_label.visible = false
-						debug_msg += "Buffer Load: SUCCESS\n"
-				else:
-					debug_msg += "FileAccess: ERROR (0 bytes read)\n"
-			else:
-				debug_msg += "FileAccess: EXISTANCE CHECK FAILED\n"
-		
-		if img:
-			# Confirmar success final
-			if debug_label: debug_label.visible = false
-			bg_tex = ImageTexture.create_from_image(img)
-		else:
-			debug_msg += "FATAL: Could not load image in any way.\n"
-			if debug_label: 
-				debug_label.visible = true
-				debug_label.text = debug_msg
-	else:
-		if debug_label: debug_label.visible = false
-		debug_msg += "Resource Load: SUCCESS\n"
-		
 	if bg_tex and background_rect:
 		background_rect.texture = bg_tex
 		background_rect.visible = true
 	
 	if debug_label:
-		debug_label.text = debug_msg
+		debug_label.visible = false
 
 	# Animación de entrada
 	modulate.a = 0

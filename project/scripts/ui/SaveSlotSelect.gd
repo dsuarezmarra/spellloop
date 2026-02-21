@@ -59,40 +59,10 @@ func _ready() -> void:
 
 	# Añadir fondo - Usar el mismo que MainMenu (nuevo)
 	var bg_path = "res://assets/ui/backgrounds/main_menu_bg_new.png"
-	if not FileAccess.file_exists(bg_path):
+	if not (FileAccess.file_exists(bg_path) or FileAccess.file_exists(bg_path + ".import")):
 		bg_path = "res://assets/ui/backgrounds/main_menu_bg.jpg"
 		
 	var bg_tex = load(bg_path)
-	
-	# Fallback de carga directa
-	if not bg_tex:
-		var global_path = ProjectSettings.globalize_path(bg_path)
-		var img = Image.load_from_file(global_path)
-		# Fallback bytes
-		if not img and FileAccess.file_exists(global_path):
-			var bytes = FileAccess.get_file_as_bytes(global_path)
-			if bytes.size() > 0:
-				img = Image.new()
-				# Deteccion automatica
-				var h = bytes.slice(0, 4)
-				var err = ERR_FILE_UNRECOGNIZED
-				
-				if h[0] == 0xFF and h[1] == 0xD8: # JPG
-					err = img.load_jpg_from_buffer(bytes)
-				elif h[0] == 0x89 and h[1] == 0x50: # PNG
-					err = img.load_png_from_buffer(bytes)
-				elif h[0] == 0x52: # WebP (RIFF)
-					err = img.load_webp_from_buffer(bytes)
-				else:
-					# Brute force
-					err = img.load_png_from_buffer(bytes)
-					if err != OK: err = img.load_jpg_from_buffer(bytes)
-					if err != OK: err = img.load_webp_from_buffer(bytes)
-				
-				if err != OK: img = null
-				
-		if img:
-			bg_tex = ImageTexture.create_from_image(img)
 	
 	if bg_tex and not has_node("BackgroundRect"):
 		var bg = TextureRect.new()

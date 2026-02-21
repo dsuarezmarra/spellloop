@@ -105,12 +105,11 @@ func _ready() -> void:
 	if SessionState and SessionState.can_resume():
 		_is_resuming = true
 		_saved_state = SessionState.get_saved_state()
-		# CRÍTICO: Restaurar personaje ANTES de _setup_game() para que
-		# _create_player_stats() y _configure_player_character() usen el correcto
 		if _saved_state.has("character_id") and not _saved_state["character_id"].is_empty():
 			SessionState.set_character(_saved_state["character_id"])
 
 	_setup_game()
+
 
 func _notification(what: int) -> void:
 	# Pausar automáticamente cuando el juego pierde el foco
