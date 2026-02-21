@@ -1126,8 +1126,7 @@ func _spawn_fire_trail() -> void:
 	var trail_duration = modifiers.get("trail_duration", 2.0)
 	var trail_radius = modifiers.get("trail_radius", 30.0)
 
-
-	# Crear nodo de trail
+	# Crear nodo de trail (colisión + lógica de daño)
 	var trail = Area2D.new()
 	trail.name = "FireTrail"
 	trail.global_position = global_position
@@ -1145,48 +1144,84 @@ func _spawn_fire_trail() -> void:
 	collision.shape = shape
 	trail.add_child(collision)
 
-	# Visual mejorado del trail - Múltiples capas para efecto de fuego
+	# Añadir al mundo primero (VFXManager necesita un árbol activo)
+	var parent = get_parent()
+	if parent:
+		parent.add_child(trail)
+
+	# VISUAL: Intentar spritesheet via VFXManager primero
+	var vfx_mgr = get_node_or_null("/root/VFXManager")
+	if vfx_mgr and vfx_mgr.has_method("spawn_aoe"):
+		# damage_zone_fire: zona de fuego persistente (loop de frames)
+		var vfx_node = vfx_mgr.spawn_aoe("damage_zone_fire", global_position, trail_radius, trail_duration)
+		if vfx_node:
+			# No hacemos nada más con visual — VFXManager lo gestiona y lo destruye
+			pass
+		else:
+			_spawn_fire_trail_fallback_visual(trail, trail_radius, trail_duration)
+	else:
+		_spawn_fire_trail_fallback_visual(trail, trail_radius, trail_duration)
+
+	# Timer de daño periódico
+	var damage_interval = 0.5
+	var damage_timer = Timer.new()
+	damage_timer.wait_time = damage_interval
+	damage_timer.autostart = true
+	trail.add_child(damage_timer)
+
+	# Cachear referencia al player para evitar lookup cada 0.5s
+	var _trail_player_ref = get_tree().get_first_node_in_group("player")
+	damage_timer.timeout.connect(func():
+		if not is_instance_valid(trail):
+			return
+		# Verificar player cacheado
+		if not is_instance_valid(_trail_player_ref):
+			_trail_player_ref = get_tree().get_first_node_in_group("player")
+		if _trail_player_ref:
+			var dist = _trail_player_ref.global_position.distance_to(trail.global_position)
+			if dist <= trail_radius:
+				if _trail_player_ref.has_method("take_damage"):
+					_trail_player_ref.call("take_damage", trail_damage, "fire")
+	)
+
+	# Auto-destruir después de duration
+	get_tree().create_timer(trail_duration).timeout.connect(func():
+		if is_instance_valid(trail):
+			trail.queue_free()
+	)
+
+func _spawn_fire_trail_fallback_visual(trail: Node, trail_radius: float, trail_duration: float) -> void:
+	"""Fallback procedural para fire trail cuando VFXManager no está disponible"""
 	var visual = Node2D.new()
 	visual.name = "Visual"
 	trail.add_child(visual)
 
-	# Variables para animación
 	var time_offset = randf() * TAU
 	var flame_count = 6
 
 	visual.draw.connect(func():
 		var time = Time.get_ticks_msec() * 0.004 + time_offset
 
-		# Capa base - núcleo amarillo
+		# Capas de fuego
 		visual.draw_circle(Vector2.ZERO, trail_radius * 0.3, Color(1, 0.9, 0.3, 0.8))
-
-		# Capa media - naranja pulsante
 		var pulse = 0.9 + sin(time * 3) * 0.1
 		visual.draw_circle(Vector2.ZERO, trail_radius * 0.6 * pulse, Color(1, 0.5, 0.1, 0.5))
-
-		# Capa exterior - rojo translúcido
 		visual.draw_circle(Vector2.ZERO, trail_radius * 0.9, Color(1, 0.2, 0.0, 0.3))
 
-		# Llamas individuales animadas
+		# Llamas individuales
 		for i in range(flame_count):
 			var angle = (TAU / flame_count) * i + time * 0.5
 			var flame_dist = trail_radius * (0.4 + sin(time * 2 + i) * 0.2)
 			var flame_pos = Vector2(cos(angle), sin(angle)) * flame_dist
 			var flame_size = trail_radius * (0.15 + sin(time * 4 + i * 2) * 0.05)
-
-			# Dibujar llama como triángulo hacia arriba
 			var flame_tip = flame_pos + Vector2(0, -flame_size * 2)
 			var flame_left = flame_pos + Vector2(-flame_size, flame_size * 0.5)
 			var flame_right = flame_pos + Vector2(flame_size, flame_size * 0.5)
-			var flame_points = PackedVector2Array([flame_tip, flame_left, flame_right])
-			visual.draw_colored_polygon(flame_points, Color(1, 0.6, 0.1, 0.7))
-
-		# Borde exterior brillante
+			visual.draw_colored_polygon(PackedVector2Array([flame_tip, flame_left, flame_right]), Color(1, 0.6, 0.1, 0.7))
 		visual.draw_arc(Vector2.ZERO, trail_radius, 0, TAU, 24, Color(1, 0.4, 0.0, 0.9), 3.0)
 	)
 	visual.queue_redraw()
 
-	# Timer para actualizar animación (150ms = 6.7 FPS, suficiente para fuego ambiental)
 	var anim_timer = Timer.new()
 	anim_timer.wait_time = 0.15
 	anim_timer.autostart = true
@@ -1196,10 +1231,10 @@ func _spawn_fire_trail() -> void:
 			visual.queue_redraw()
 	)
 
-	# Añadir al mundo
-	var parent = get_parent()
-	if parent:
-		parent.add_child(trail)
+	# Fade out
+	var tween = trail.create_tween()
+	tween.tween_interval(trail_duration * 0.7)
+	tween.tween_property(visual, "modulate:a", 0.0, trail_duration * 0.3)
 
 	# Timer de daño periódico
 	var damage_interval = 0.5

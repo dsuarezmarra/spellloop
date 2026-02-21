@@ -294,7 +294,7 @@ func _get_beam_color(beam_type: String) -> Color:
 		"void_beam", "void", "dark": return Color(0.5, 0.25, 0.7)  # Púrpura suave
 		"ice", "frost": return Color(0.2, 0.75, 1.0)
 		"lightning": return Color(1.0, 1.0, 0.25)
-		"arcane": return Color.GREEN # DIAGNOSTIC: CHANGED FROM PURPLE TO GREEN
+		"arcane": return Color(0.6, 0.2, 1.0)  # Púrpura arcano
 		"poison", "nature": return Color(0.25, 0.9, 0.2)
 		_: return Color(0.85, 0.85, 0.9)
 
