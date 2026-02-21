@@ -1355,7 +1355,7 @@ func _attempt_attack() -> void:
 
 	# BLOCKER: Chance de contraataque
 	if archetype == "blocker":
-		var counter_damage = modifiers.get("counter_damage", 1.5)
+		var _counter_damage = modifiers.get("counter_damage", 1.5)
 		# El contraataque se aplicaría aquí si el jugador acaba de atacar
 
 	# Determinar elemento del ataque
@@ -1371,11 +1371,11 @@ func _attempt_attack() -> void:
 func take_damage(amount: int, _element: String = "physical", _attacker: Node = null) -> void:
 	"""Recibir daño del enemigo"""
 	var final_damage = amount
-	var is_blocked = false
+	var _is_blocked = false
 
 	# Debug para bosses
 	if is_boss:
-		var current_hp = health_component.current_health if health_component else hp
+		var _current_hp = health_component.current_health if health_component else hp
 
 	# BLOCKER: Chance de bloquear
 	if archetype == "blocker":
@@ -1383,7 +1383,7 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 		if randf() < block_chance:
 			var block_reduction = modifiers.get("block_reduction", 0.7)
 			final_damage = int(amount * (1.0 - block_reduction))
-			is_blocked = true
+			_is_blocked = true
 			# Visual de bloqueo
 			_flash_block()
 
@@ -1392,7 +1392,8 @@ func take_damage(amount: int, _element: String = "physical", _attacker: Node = n
 		var evasion_chance = get_meta("evasion_chance")
 		if randf() < evasion_chance:
 			# Esquivó el ataque
-			FloatingText.spawn_damage(global_position + Vector2(0, -20), 0, false) if FloatingText else null
+			if FloatingText:
+				FloatingText.spawn_damage(global_position + Vector2(0, -20), 0, false)
 			return
 
 	# FIX FASE 3: Shield charges (boss rune_shield y elite_shield)
