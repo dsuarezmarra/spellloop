@@ -46,16 +46,24 @@ func _ready() -> void:
 	set_collision_mask_value(5, true)    # Pickups
 	set_collision_mask_value(8, true)    # Barreras de zona
 
-	var wizard_script = load("res://scripts/entities/players/WizardPlayer.gd")
-	if not wizard_script:
-		push_warning("[LoopiaLikePlayer] ERROR: No se pudo cargar WizardPlayer.gd")
+	# Instanciar BasePlayer directamente (WizardPlayer era un stub vacío)
+	var player_script = load("res://scripts/entities/players/BasePlayer.gd")
+	if not player_script:
+		push_warning("[LoopiaLikePlayer] ERROR: No se pudo cargar BasePlayer.gd")
 		return
 
-
-	wizard_player = wizard_script.new()
+	wizard_player = player_script.new()
 	if not wizard_player:
-		push_warning("[LoopiaLikePlayer] ERROR: No se pudo instanciar WizardPlayer")
+		push_warning("[LoopiaLikePlayer] ERROR: No se pudo instanciar BasePlayer")
 		return
+
+	# Leer personaje seleccionado desde SessionState para configurar sprites ANTES de _ready()
+	wizard_player.character_class = "Player"
+	wizard_player.character_sprites_key = "frost_mage"  # default
+	if SessionState and SessionState.has_method("get_character"):
+		var char_id = SessionState.get_character()
+		if not char_id.is_empty():
+			wizard_player.character_sprites_key = char_id
 
 	# Pasar referencia al AnimatedSprite2D ANTES de add_child() para que _ready() la tenga disponible
 	wizard_player.animated_sprite = get_node_or_null("AnimatedSprite2D")
@@ -63,11 +71,10 @@ func _ready() -> void:
 		push_warning("[LoopiaLikePlayer] ERROR: No se pudo encontrar AnimatedSprite2D")
 		return
 
-	# CRÍTICO: Anexar WizardPlayer como nodo hijo
+	# CRÍTICO: Anexar como nodo hijo con nombre "WizardPlayer" (compatibilidad con otros scripts)
 	# add_child() automáticamente llamará a _ready() del nodo hijo
-	# NO llamar explícitamente a wizard_player._ready() para evitar inicialización duplicada
 	add_child(wizard_player)
-	wizard_player.name = "WizardPlayer"
+	wizard_player.name = "WizardPlayer"  # Nombre mantenido para compatibilidad
 
 	wizard_player.global_position = global_position
 
