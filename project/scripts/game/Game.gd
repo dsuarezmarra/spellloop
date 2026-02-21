@@ -4,6 +4,25 @@ class_name Game
 ## Escena principal del juego
 ## Coordina todos los sistemas durante una partida
 
+# ─── Recursos pre-cargados (detecta errores de path en compilación) ───────────
+const _PLAYER_SCENE         = preload("res://scenes/player/LoopiaLikePlayer.tscn")
+const _ARENA_MANAGER_SCRIPT = preload("res://scripts/core/ArenaManager.gd")
+const _PLAYER_STATS_SCRIPT  = preload("res://scripts/core/PlayerStats.gd")
+const _ENEMY_MANAGER_SCRIPT = preload("res://scripts/core/EnemyManager.gd")
+const _WAVE_MANAGER_SCRIPT  = preload("res://scripts/managers/WaveManager.gd")
+const _EXP_MANAGER_SCRIPT   = preload("res://scripts/core/ExperienceManager.gd")
+const _CHEST_SPAWNER_SCRIPT = preload("res://scripts/managers/ChestSpawner.gd")
+const _PICKUP_POOL_SCRIPT   = preload("res://scripts/managers/PickupPool.gd")
+const _RESOURCE_MANAGER_SCRIPT = preload("res://scripts/managers/ResourceManager.gd")
+const _VFX_POOL_SCRIPT      = preload("res://scripts/managers/VFXPool.gd")
+const _SPAWN_BUDGET_SCRIPT  = preload("res://scripts/managers/SpawnBudgetManager.gd")
+const _HUD_SCENE            = preload("res://scenes/ui/GameHUD.tscn")
+const _PAUSE_MENU_SCENE     = preload("res://scenes/ui/PauseMenu.tscn")
+const _GAME_OVER_SCENE      = preload("res://scenes/ui/GameOverScreen.tscn")
+const _DAMAGE_VIGNETTE_SCRIPT  = preload("res://scripts/ui/DamageVignette.gd")
+const _AMBIENT_ATMO_SCRIPT  = preload("res://scripts/visuals/AmbientAtmosphere.gd")
+# ─────────────────────────────────────────────────────────────────────────────
+
 # Nodos principales
 @onready var world_root: Node2D = $WorldRoot
 @onready var arena_root: Node2D = $WorldRoot/ArenaRoot
@@ -192,7 +211,7 @@ func _verify_runtime_integrity() -> void:
 		_start_game()
 
 func _create_player() -> void:
-	var player_scene = load("res://scenes/player/LoopiaLikePlayer.tscn")
+	var player_scene = _PLAYER_SCENE
 	if player_scene:
 		player = player_scene.instantiate()
 		player_container.add_child(player)
@@ -214,7 +233,7 @@ func _create_player() -> void:
 		_configure_player_character()
 
 	else:
-		push_error("[Game] No se pudo cargar SpellloopPlayer.tscn")
+		push_error("[Game] No se pudo instanciar el player desde _PLAYER_SCENE")
 
 func _configure_player_character() -> void:
 	"""Configurar el player segun el personaje seleccionado"""
@@ -249,7 +268,7 @@ func _configure_player_character() -> void:
 		player.character_id = character_id
 
 func _create_arena_manager() -> void:
-	var am_script = load("res://scripts/core/ArenaManager.gd")
+	var am_script = _ARENA_MANAGER_SCRIPT
 	if am_script:
 		arena_manager = am_script.new()
 		arena_manager.name = "ArenaManager"
@@ -275,7 +294,7 @@ func _create_arena_manager() -> void:
 		push_error("[Game] No se pudo cargar ArenaManager.gd")
 
 func _create_player_stats() -> void:
-	var ps_script = load("res://scripts/core/PlayerStats.gd")
+	var ps_script = _PLAYER_STATS_SCRIPT
 	if ps_script:
 		player_stats = ps_script.new()
 		player_stats.name = "PlayerStats"
@@ -298,7 +317,7 @@ func _create_player_stats() -> void:
 		push_error("[Game] No se pudo cargar PlayerStats.gd")
 
 func _create_enemy_manager() -> void:
-	var em_script = load("res://scripts/core/EnemyManager.gd")
+	var em_script = _ENEMY_MANAGER_SCRIPT
 	if em_script:
 		enemy_manager = em_script.new()
 		enemy_manager.name = "EnemyManager"
@@ -309,7 +328,7 @@ func _create_enemy_manager() -> void:
 			enemy_manager.enemy_died.connect(_on_enemy_died)
 
 func _create_wave_manager() -> void:
-	var wm_script = load("res://scripts/managers/WaveManager.gd")
+	var wm_script = _WAVE_MANAGER_SCRIPT
 	if wm_script:
 		wave_manager = wm_script.new()
 		wave_manager.name = "WaveManager"
@@ -344,7 +363,7 @@ func _create_wave_manager() -> void:
 		push_warning("[Game] No se pudo cargar WaveManager.gd - usando spawn básico")
 
 func _create_experience_manager() -> void:
-	var em_script = load("res://scripts/core/ExperienceManager.gd")
+	var em_script = _EXP_MANAGER_SCRIPT
 	if em_script:
 		experience_manager = em_script.new()
 		experience_manager.name = "ExperienceManager"
@@ -359,7 +378,7 @@ func _create_experience_manager() -> void:
 			experience_manager.coin_collected.connect(_on_coin_collected)
 
 func _create_chest_spawner() -> void:
-	var cs_script = load("res://scripts/managers/ChestSpawner.gd")
+	var cs_script = _CHEST_SPAWNER_SCRIPT
 	if cs_script:
 		chest_spawner = cs_script.new()
 		chest_spawner.name = "ChestSpawner"
@@ -370,7 +389,7 @@ func _create_chest_spawner() -> void:
 			chest_spawner.initialize(player, arena_manager, pickups_root)
 
 func _create_pickup_pool() -> void:
-	var pp_script = load("res://scripts/managers/PickupPool.gd")
+	var pp_script = _PICKUP_POOL_SCRIPT
 	if pp_script:
 		var pickup_pool = pp_script.new()
 		pickup_pool.name = "PickupPool"
@@ -379,7 +398,7 @@ func _create_pickup_pool() -> void:
 		push_error("[Game] No se pudo cargar PickupPool.gd")
 
 func _create_resource_manager() -> void:
-	var rm_script = load("res://scripts/managers/ResourceManager.gd")
+	var rm_script = _RESOURCE_MANAGER_SCRIPT
 	if rm_script:
 		var resource_manager = rm_script.new()
 		resource_manager.name = "ResourceManager"
@@ -389,7 +408,7 @@ func _create_resource_manager() -> void:
 
 func _create_vfx_pool() -> void:
 	"""Crear pool de VFX para evitar stutters por partículas"""
-	var vfx_script = load("res://scripts/managers/VFXPool.gd")
+	var vfx_script = _VFX_POOL_SCRIPT
 	if vfx_script:
 		var vfx_pool = vfx_script.new()
 		vfx_pool.name = "VFXPool"
@@ -399,7 +418,7 @@ func _create_vfx_pool() -> void:
 
 func _create_spawn_budget_manager() -> void:
 	"""Crear gestor de budget de spawn para limitar instanciación por frame"""
-	var sbm_script = load("res://scripts/managers/SpawnBudgetManager.gd")
+	var sbm_script = _SPAWN_BUDGET_SCRIPT
 	if sbm_script:
 		var spawn_budget = sbm_script.new()
 		spawn_budget.name = "SpawnBudgetManager"
@@ -409,7 +428,7 @@ func _create_spawn_budget_manager() -> void:
 
 func _create_ui() -> void:
 	# HUD
-	var hud_scene = load("res://scenes/ui/GameHUD.tscn")
+	var hud_scene = _HUD_SCENE
 	if hud_scene:
 		hud = hud_scene.instantiate()
 		ui_layer.add_child(hud)
@@ -418,7 +437,7 @@ func _create_ui() -> void:
 			UIManager.game_hud = hud
 
 	# Menú de pausa
-	var pause_scene = load("res://scenes/ui/PauseMenu.tscn")
+	var pause_scene = _PAUSE_MENU_SCENE
 	if pause_scene:
 		pause_menu = pause_scene.instantiate()
 		ui_layer.add_child(pause_menu)
@@ -427,7 +446,7 @@ func _create_ui() -> void:
 		# Las referencias se inicializarán después en _initialize_systems()
 
 	# Pantalla de Game Over
-	var gameover_scene = load("res://scenes/ui/GameOverScreen.tscn")
+	var gameover_scene = _GAME_OVER_SCENE
 	if gameover_scene:
 		game_over_screen = gameover_scene.instantiate()
 		ui_layer.add_child(game_over_screen)
@@ -447,14 +466,14 @@ func _setup_camera() -> void:
 func _setup_damage_feedback() -> void:
 	"""Configurar el sistema de feedback visual de daño estilo Binding of Isaac"""
 	# Cargar y crear DamageVignette
-	var DamageVignetteScript = load("res://scripts/ui/DamageVignette.gd")
+	var DamageVignetteScript = _DAMAGE_VIGNETTE_SCRIPT
 	if DamageVignetteScript:
 		damage_vignette = DamageVignetteScript.new()
 		damage_vignette.name = "DamageVignette"
 		add_child(damage_vignette)
 
 	# Cargar y crear AmbientAtmosphere
-	var atmosphere_script = load("res://scripts/visuals/AmbientAtmosphere.gd")
+	var atmosphere_script = _AMBIENT_ATMO_SCRIPT
 	if atmosphere_script:
 		ambient_atmosphere = atmosphere_script.new()
 		ambient_atmosphere.name = "AmbientAtmosphere"
