@@ -205,7 +205,8 @@ func _get_stream(path: String) -> AudioStream:
 	if stream_cache.has(path):
 		return stream_cache[path]
 
-	if not FileAccess.file_exists(path):
+	# En modo Export, los archivos estáticos desaparecen y se usan por sus punteros .import o cachés
+	if not (FileAccess.file_exists(path) or FileAccess.file_exists(path + ".import") or ResourceLoader.exists(path)):
 		if debug_audio:
 			push_warning("[AudioManager] File not found: " + path)
 		return null

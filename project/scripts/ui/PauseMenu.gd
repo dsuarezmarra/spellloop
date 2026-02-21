@@ -2635,6 +2635,12 @@ func _on_quit_pressed() -> void:
 	_save_game_state_for_resume()
 
 	get_tree().paused = false
+	
+	# Prevenir que al volver al Main Menu esta nos rebote al video intro si no se generó (ej direct boot a run)
+	if ClassDB.class_exists("CinematicIntro") or load("res://scripts/ui/CinematicIntro.gd"):
+		var cinematic = load("res://scripts/ui/CinematicIntro.gd")
+		if cinematic: cinematic.intro_shown = true
+		
 	get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
 
 func _save_game_state_for_resume() -> void:

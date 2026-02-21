@@ -276,10 +276,10 @@ func _generate_paths(parent: Node2D) -> void:
 	
 	# Cargar texturas de caminos por bioma
 	var path_textures = {
-		"Grassland": _load_robusta.call("res://assets/textures/paths/path_dirt.png"),
-		"Forest": _load_robusta.call("res://assets/textures/paths/path_dirt.png"),
-		"Snow": _load_robusta.call("res://assets/textures/paths/path_snow.png"),
-		"Desert": _load_robusta.call("res://assets/textures/paths/path_desert.png"),
+		"Grassland": _load_robusta.call("res://assets/textures/paths/path_dirt.jpg"),
+		"Forest": _load_robusta.call("res://assets/textures/paths/path_dirt.jpg"),
+		"Snow": _load_robusta.call("res://assets/textures/paths/path_snow.jpg"),
+		"Desert": _load_robusta.call("res://assets/textures/paths/path_desert.jpg"),
 		"Lava": _load_robusta.call("res://assets/textures/paths/path_lava.jpg"),
 		"ArcaneWastes": _load_robusta.call("res://assets/textures/paths/path_arcane.jpg"),
 		"Death": _load_robusta.call("res://assets/textures/paths/path_death.jpg")
