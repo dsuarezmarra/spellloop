@@ -123,6 +123,15 @@ func _setup_sprite_visual() -> void:
 
 	visual_node = sprite
 	add_child(visual_node)
+	
+	# Orientación del sprite: flip_h si va hacia la izquierda, sin rotation
+	# Los spritesheets apuntan hacia la derecha por convención
+	if direction.x < 0:
+		sprite.flip_h = true
+	# Flip vertical si va hacia arriba para que no se vea al revés
+	# (sólo si la componente vertical domina)
+	if direction.y < -0.8 and absf(direction.x) < 0.6:
+		sprite.flip_v = true
 
 func _start_projectile_animation(sprite: Sprite2D, total_frames: int) -> void:
 	"""Animar el sprite del proyectil en loop"""
@@ -190,8 +199,11 @@ func initialize(p_direction: Vector2, p_speed: float, p_damage: int, p_lifetime:
 	_setup_sprite_visual()
 	_setup_trail()
 
-	if direction != Vector2.ZERO:
-		rotation = direction.angle()
+	# Orientar SOLO el nodo raíz — el sprite hijo NO hereda la rotación
+	# para que no se vea distorsionado (se gestiona via flip_h en _setup_sprite_visual)
+	# Solo activamos rotation en el Area2D para que la hitbox apunte bien,
+	# pero el sprite usa flip_h/flip_v para verse correcto visualmente.
+	rotation = 0.0  # El sprite se mantiene upright siempre
 
 func _physics_process(delta: float) -> void:
 	_time += delta
@@ -305,7 +317,7 @@ func _get_element_color() -> Color:
 		"dark", "shadow", "void":
 			return Color(0.5, 0.3, 0.7)  # Púrpura suave
 		"arcane":
-			return Color.GREEN # DIAGNOSTIC: CHANGED FROM PURPLE TO GREEN
+			return Color(0.6, 0.2, 1.0)  # Púrpura arcano
 		"poison", "nature":
 			return Color(0.25, 0.9, 0.2)
 		"lightning":
