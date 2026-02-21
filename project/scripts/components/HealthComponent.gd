@@ -19,14 +19,12 @@ var owner_node: Node = null
 func _ready() -> void:
 	owner_node = get_parent()
 	current_health = max_health
-	# print("[HealthComponent] Inicializado para %s: HP %d/%d" % [owner_node.name, current_health, max_health])
 
 func initialize(max_hp: int) -> void:
 	"""Inicializar el componente con HP máximo"""
 	max_health = max_hp
 	current_health = max_hp
 	is_alive = true
-	# print("[HealthComponent] Inicializado: %s HP" % max_health)
 
 func take_damage(amount: int, element_type: String = "physical", is_pre_mitigated: bool = false) -> void:
 	"""Recibir daño y emitir señales"""
@@ -82,12 +80,10 @@ func heal(amount: int) -> void:
 	
 	current_health = min(current_health + amount, max_health)
 	health_changed.emit(current_health, max_health)
-	# print("[HealthComponent] %s sanado %d HP. HP: %d/%d" % [owner_node.name, amount, current_health, max_health])
 
 func die() -> void:
 	"""Procesar la muerte"""
 	is_alive = false
-	# print("[HealthComponent] %s ha muerto" % owner_node.name)
 	died.emit()
 	# No eliminar el nodo automáticamente; dejar que el propietario lo maneje
 

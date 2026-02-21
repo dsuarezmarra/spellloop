@@ -117,7 +117,6 @@ func _ready() -> void:
 	# CRÍTICO: Respetar la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 
-	# Debug desactivado: print("[%s] Inicializando %s en posición: %s" % [character_class, character_class, global_position])
 
 	# Añadir al grupo "player" para que otros sistemas puedan encontrarnos
 	add_to_group("player")
@@ -147,7 +146,6 @@ func _ready() -> void:
 		_update_pickup_area_size()
 
 	z_index = 50
-	# Debug desactivado: print("[%s] ✓ Inicialización completada" % character_class)
 
 func _initialize_health_component() -> void:
 	"""Crear e inicializar componente de salud"""
@@ -174,15 +172,9 @@ func _initialize_health_component() -> void:
 			if stats_max > 0 and stats_max != max_hp:
 				max_hp = maxi(1, int(stats_max))
 				health_component.set_max_health(max_hp)
-				# Debug desactivado: print("[%s] Sincronizado Max HP con PlayerStats: %d" % [character_class, max_hp])
 
-		# Debug desactivado: print("[%s] ✓ Health component inicializado (HP: %d/%d)" % [character_class, hp, max_hp])
 	else:
 		push_warning("[%s] No se pudo cargar HealthComponent" % character_class)
-
-
-
-
 
 
 func _initialize_visual() -> void:
@@ -216,13 +208,11 @@ func _initialize_visual() -> void:
 		if animated_sprite.sprite_frames:
 			animated_sprite.play()
 
-		# Debug desactivado: print("[%s] ✓ Sprite configurado: escala=%.3f" % [character_class, scale_to_apply])
 
 func _setup_animations() -> void:
 	"""Configurar animaciones del personaje - SOBRESCRIBIR EN SUBCLASES"""
 	# Implementación por defecto vacía
 	# Las subclases deben sobrescribir este método
-	# Debug desactivado: print("[%s] ⚠️ _setup_animations() no implementado en subclase" % character_class)
 
 func _initialize_physics() -> void:
 	"""Configurar física del personaje"""
@@ -241,9 +231,7 @@ func _initialize_physics() -> void:
 		elif col_shape.shape is CapsuleShape2D:
 			col_shape.shape.radius = 15.0
 			col_shape.shape.height = 42.0
-		# print("[Player] Hitbox size increased")
 
-	# Debug desactivado: print("[%s] ✓ Física configurada" % character_class)
 
 func _find_global_managers() -> void:
 	"""Encontrar referencias a managers globales"""
@@ -268,7 +256,6 @@ func _find_global_managers() -> void:
 		if not _player_stats_ref.stat_changed.is_connected(_on_stats_changed_signal):
 			_player_stats_ref.stat_changed.connect(_on_stats_changed_signal)
 
-	# Debug desactivado: print("[%s] GameManager: %s | AttackManager: %s" % [character_class, "✓" if game_manager else "✗", "✓" if attack_manager else "✗"])
 
 func _on_stats_changed_signal(stat_name, _old, new_val):
 	if stat_name == "max_health" and health_component:
@@ -305,7 +292,6 @@ func _setup_weapons_deferred() -> void:
 
 	if attack_manager:
 		attack_manager.initialize(self)
-		# Debug desactivado: print("[%s] ✓ AttackManager inicializado" % character_class)
 
 		# Las subclases deben sobrescribir _equip_starting_weapons()
 		_equip_starting_weapons()
@@ -315,7 +301,6 @@ func _setup_weapons_deferred() -> void:
 func _equip_starting_weapons() -> void:
 	"""Equipar armas iniciales - SOBRESCRIBIR EN SUBCLASES"""
 	# Implementación por defecto vacía
-	# Debug desactivado: print("[%s] ⚠️ _equip_starting_weapons() no implementado en subclase" % character_class)
 
 # ========== MOVIMIENTO ==========
 
@@ -338,7 +323,6 @@ func _process(delta: float) -> void:
 	if _slow_aura_timer <= 0:
 		_apply_enemy_slow_aura()
 		_slow_aura_timer = 0.5  # Revisar cada 0.5s
-
 
 
 	# === LÓGICA TORRETA (Item 19) ===
@@ -405,8 +389,6 @@ func _process(delta: float) -> void:
 			animated_sprite.play()
 
 	"""Actualizar física y debuffs"""
-	# Debug LOGS
-	# print("DEBUG: _revive_immunity_timer=", _revive_immunity_timer, " type=", typeof(_revive_immunity_timer))
 
 	# Procesar timers de inmunidad (solo _invulnerability_timer aquí,
 	# _revive_immunity_timer se gestiona en _update_revive_immunity)
@@ -423,15 +405,10 @@ func _process(delta: float) -> void:
 	update_health_bar()
 
 
-
-
-
 func _get_player_stats() -> Node:
 	if game_manager and game_manager.player_stats:
 		return game_manager.player_stats
 	return get_tree().get_first_node_in_group("player_stats")
-
-
 
 
 func _process_debuffs(delta: float) -> void:
@@ -644,9 +621,7 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 		var dodge_chance = player_stats.get_stat("dodge_chance")  # Already capped in STAT_LIMITS
 		if dodge_chance > 0 and randf() < dodge_chance:  # BALANCE: Removed redundant minf() - cap is in STAT_LIMITS
 			# ¡Esquivó el daño!
-			# Debug desactivado: print("[%s] ✨ ¡ESQUIVADO! (%.0f%% chance)" % [character_class, dodge_chance * 100])
 			FloatingText.spawn_text(global_position + Vector2(0, -35), "DODGE!", Color(0.3, 0.9, 1.0))
-			# Balance Debug: Log dodge
 			# FIX-BT2b: Siempre recopilar datos
 			if BalanceDebugger:
 				BalanceDebugger.log_damage_taken(amount, 0, true)
@@ -682,13 +657,10 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 	var effective_armor = armor  # Usar armor local primero
 	if player_stats and player_stats.has_method("get_stat"):
 		effective_armor = player_stats.get_stat("armor")
-		# PRINT DEBUG
-		# print("🛡️ Armor Check: StatsNode=%s | Armor=%.1f" % [player_stats.name, effective_armor])
 
 	if effective_armor > 0:
 		var pre_armor = final_damage
 		final_damage = maxi(1, final_damage - int(effective_armor))  # Mínimo 1 de daño
-		# print("🛡️ ARMOR APPLIED: %d -> %d (Armor: %d)" % [pre_armor, final_damage, effective_armor])
 
 	# 4. Aplicar damage_taken_mult si existe
 	if player_stats and player_stats.has_method("get_stat"):
@@ -731,7 +703,6 @@ func take_damage(amount: int, element: String = "physical", attacker: Node = nul
 		# Pero el feedback de HP (flash, texto final) se mueve a _process_frame_damage
 
 	var armor_text = " [ARMOR: -%d]" % (amount - final_damage) if effective_armor > 0 and amount > final_damage else ""
-	# Debug desactivado: print("[%s] 💥 Daño recibido: %d → %d (%s) (HP: %d/%d)%s%s" % [character_class, amount, final_damage, element, health_component.current_health, max_hp, " [WEAKENED]" if _is_weakened else "", armor_text])
 
 func _process_frame_damage() -> void:
 	"""Procesa todo el daño acumulado en este frame (Anti-Shotgun)"""
@@ -962,7 +933,6 @@ func _apply_thorns_damage(attacker: Node, damage_received: int, player_stats: No
 	# Aplicar daño al atacante
 	if attacker.has_method("take_damage"):
 		attacker.take_damage(thorns_damage)
-		# Debug desactivado: print("[%s] 🌵 THORNS: Reflejado %d daño a %s" % [character_class, thorns_damage, attacker.name])
 
 		# Mostrar texto flotante sobre el enemigo
 		if "global_position" in attacker:
@@ -1081,7 +1051,6 @@ func heal(amount: int) -> int:
 		# No re-emitir para evitar doble actualización de UI
 
 		# Debug explícito desactivado por spam:
-		# print("[%s] HEAL() llamado. Amount: %.1f -> Healed: %.1f. HP Now: %d/%d" % [character_class, float(amount), float(healed), health_component.current_health, max_hp])
 
 		# Mostrar texto flotante de curación si realmente curó algo
 		if healed > 0:
@@ -1094,7 +1063,6 @@ func heal(amount: int) -> int:
 			if game_node and game_node.has_method("add_healing_stat"):
 				game_node.add_healing_stat(healed)
 
-		# Debug desactivado: print("[%s] Curación: +%d (HP: %d/%d)%s" % [character_class, healed, health_component.current_health, max_hp, " [CURSED]" if _is_cursed else ""])
 
 		return healed
 	return 0
@@ -1313,7 +1281,6 @@ func _play_revive_effects() -> void:
 		audio_manager.play_sfx("phoenix_resurrection")
 
 
-
 func _grant_revive_immunity(duration: float) -> void:
 	"""Otorgar inmunidad temporal tras revivir"""
 	_revive_immunity_timer = duration
@@ -1325,7 +1292,6 @@ func _update_revive_immunity(delta: float) -> void:
 		# Efecto visual de parpadeo durante inmunidad
 		if animated_sprite:
 			animated_sprite.modulate.a = 0.5 + 0.5 * sin(_revive_immunity_timer * 10.0)
-
 
 
 func _apply_enemy_slow_aura() -> void:
@@ -1450,7 +1416,6 @@ func equip_weapon(weapon) -> bool:
 
 	attack_manager.add_weapon(weapon)
 	weapon_equipped.emit(weapon)
-	# Debug desactivado: print("[%s] ⚔️ Arma equipada: %s" % [character_class, weapon.name])
 	return true
 
 func unequip_weapon(weapon) -> bool:
@@ -1663,7 +1628,6 @@ func apply_slow(amount: float, duration: float) -> void:
 				_slow_vfx.queue_free()
 			_slow_vfx = vfx_mgr.spawn_slow_vfx(self)
 
-	# Debug desactivado: print("[%s] ❄️ Ralentizado %.0f%% por %.1fs" % [character_class, _slow_amount * 100, duration])
 
 func _clear_slow() -> void:
 	_is_slowed = false
@@ -1678,7 +1642,6 @@ func _clear_slow() -> void:
 	# Eliminar icono
 	if status_icon_display:
 		status_icon_display.remove_effect("slow")
-	# Debug desactivado: print("[%s] ❄️ Slow terminado" % character_class)
 
 func apply_burn(damage_per_tick: float, duration: float) -> void:
 	"""Aplicar burn al jugador (DoT de fuego)"""
@@ -1695,7 +1658,6 @@ func apply_burn(damage_per_tick: float, duration: float) -> void:
 	if not was_burning:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "burn")
 
-	# Debug desactivado: print("[%s] 🔥 Quemándose por %.1f daño/tick durante %.1fs" % [character_class, damage_per_tick, duration])
 
 func _apply_burn_tick() -> void:
 	# FIX-G4: No aplicar DoT durante inmunidad de revive o i-frames
@@ -1721,7 +1683,6 @@ func _clear_burn() -> void:
 	# Eliminar icono
 	if status_icon_display:
 		status_icon_display.remove_effect("burn")
-	# Debug desactivado: print("[%s] 🔥 Burn terminado" % character_class)
 
 func _spawn_burn_particle() -> void:
 	"""Partícula de fuego cuando está quemándose"""
@@ -1758,7 +1719,6 @@ func apply_poison(damage_per_tick: float, duration: float) -> void:
 	if not was_poisoned:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "poison")
 
-	# Debug desactivado: print("[%s] ☠️ Envenenado por %.1f daño/tick durante %.1fs" % [character_class, damage_per_tick, duration])
 
 func _apply_poison_tick() -> void:
 	# FIX-G4: No aplicar DoT durante inmunidad de revive o i-frames
@@ -1783,7 +1743,6 @@ func _clear_poison() -> void:
 	# Eliminar icono
 	if status_icon_display:
 		status_icon_display.remove_effect("poison")
-	# Debug desactivado: print("[%s] ☠️ Poison terminado" % character_class)
 
 func _spawn_poison_particle() -> void:
 	"""Partícula de veneno"""
@@ -1865,7 +1824,6 @@ func apply_stun(duration: float) -> void:
 				_stun_vfx.queue_free()
 			_stun_vfx = vfx_mgr.spawn_stun_vfx(self)
 
-	# Debug desactivado: print("[%s] ⚡ Aturdido por %.1fs" % [character_class, duration])
 
 func _clear_stun() -> void:
 	_is_stunned = false
@@ -1878,7 +1836,6 @@ func _clear_stun() -> void:
 	# Eliminar icono
 	if status_icon_display:
 		status_icon_display.remove_effect("stun")
-	# Debug desactivado: print("[%s] ⚡ Stun terminado" % character_class)
 
 func apply_weakness(amount: float, duration: float) -> void:
 	"""Aplicar weakness al jugador (recibe más daño)"""
@@ -1896,7 +1853,6 @@ func apply_weakness(amount: float, duration: float) -> void:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "weakness")
 		_spawn_weakness_particle()
 
-	# Debug desactivado: print("[%s] 💀 Debilitado +%.0f%% daño recibido por %.1fs" % [character_class, _weakness_amount * 100, duration])
 
 func _clear_weakness() -> void:
 	_is_weakened = false
@@ -1906,7 +1862,6 @@ func _clear_weakness() -> void:
 	# Eliminar icono
 	if status_icon_display:
 		status_icon_display.remove_effect("weakness")
-	# Debug desactivado: print("[%s] 💀 Weakness terminado" % character_class)
 
 func apply_curse(amount: float, duration: float) -> void:
 	"""Aplicar curse al jugador (reduce curación)"""
@@ -1924,7 +1879,6 @@ func apply_curse(amount: float, duration: float) -> void:
 		FloatingText.spawn_status_applied(global_position + Vector2(0, -40), "curse")
 		_spawn_curse_particle()
 
-	# Debug desactivado: print("[%s] 👻 Maldito -%.0f%% curación por %.1fs" % [character_class, _curse_amount * 100, duration])
 
 func _clear_curse() -> void:
 	_is_cursed = false
@@ -1934,7 +1888,6 @@ func _clear_curse() -> void:
 	# Eliminar icono
 	if status_icon_display:
 		status_icon_display.remove_effect("curse")
-	# Debug desactivado: print("[%s] 👻 Curse terminado" % character_class)
 
 func is_stunned() -> bool:
 	return _is_stunned

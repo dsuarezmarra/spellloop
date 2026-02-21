@@ -36,12 +36,10 @@ var min_chest_distance: float = 300.0  # Distancia mínima entre cofres
 var item_types: Dictionary = {}
 
 func _ready():
-	# Debug desactivado: print("📦 ItemManager inicializado")
 	setup_item_types()
 
 func initialize(player_ref: CharacterBody2D):
 	"""Inicializar sistema de items"""
-	# Debug desactivado: print("📦 Inicializando ItemManager...")
 	player = player_ref
 	last_player_position = player.global_position
 
@@ -50,7 +48,6 @@ func initialize(player_ref: CharacterBody2D):
 	# Crear cofres iniciales de prueba
 	create_initial_test_chests()
 
-	# Debug desactivado: print("📦 Sistema de items inicializado")
 
 func setup_item_types():
 	"""Configurar tipos de items disponibles"""
@@ -106,7 +103,6 @@ func setup_item_types():
 		"icon": "🧪"
 	}
 
-	# Debug desactivado: print("📦 ", item_types.size(), " tipos de items configurados")
 
 func _process(_delta):
 	"""Actualizar sistema de cofres"""
@@ -118,7 +114,6 @@ func _process(_delta):
 
 func create_initial_test_chests():
 	"""Crear cofres de prueba cerca del centro del mapa"""
-	# Debug desactivado: print("📦 Creando cofres de prueba...")
 
 	# Crear 3 cofres de prueba en posiciones específicas cerca del origen
 	var chunk_pos = Vector2i(0, 0)
@@ -133,7 +128,6 @@ func create_initial_test_chests():
 	for pos in test_positions:
 		spawn_chest_at_position(chunk_pos, pos)
 
-	# Debug desactivado: print("📦 Cofres de prueba creados: ", test_positions.size())
 
 func _on_chunk_generated(_chunk_pos: Vector2i):
 	"""DEPRECATED: Manejar generación de nuevo chunk - Será reemplazado por ArenaManager"""
@@ -166,7 +160,6 @@ func spawn_chest_at_position(_chunk_pos: Vector2i, world_position: Vector2):
 	# Emitir señal
 	chest_spawned.emit(chest)
 
-	# Debug desactivado: print("📦 Cofre generado en posición: ", world_position)
 
 func _on_chest_opened(chest: Node2D, items: Array):
 	"""Manejar apertura de cofre"""
@@ -182,7 +175,6 @@ func _on_chest_opened(chest: Node2D, items: Array):
 	for item_data in items:
 		process_item_collected(item_data)
 
-	# Debug desactivado: print("📦 Cofre abierto - Items obtenidos: ", items.size())
 
 func process_item_collected(item_data: Dictionary):
 	"""Procesar item recolectado"""
@@ -227,7 +219,6 @@ func apply_item_effect(item_type: String, item_data: Dictionary):
 				_apply_upgrade_effects(item_data, player_stats)
 		
 		"weapon_damage":
-			# Debug desactivado: print("⚡ Daño de armas aumentado")
 			var attack_manager = get_tree().get_first_node_in_group("attack_manager")
 			if attack_manager and attack_manager.global_weapon_stats:
 				# FIX-R3: modify_stat no existe en GlobalWeaponStats, usar add_stat
@@ -235,7 +226,6 @@ func apply_item_effect(item_type: String, item_data: Dictionary):
 				print("[ItemManager] ⚔️ Daño global aumentado +10%")
 
 		"weapon_speed":
-			# Debug desactivado: print("⚡ Velocidad de ataque aumentada")
 			var attack_manager = get_tree().get_first_node_in_group("attack_manager")
 			if attack_manager and attack_manager.global_weapon_stats:
 				# FIX-R3: modify_stat no existe en GlobalWeaponStats, usar add_stat
@@ -304,7 +294,6 @@ func apply_item_effect(item_type: String, item_data: Dictionary):
 		"heal_full":
 			if player and player.has_method("heal"):
 				player.heal(999)
-			# Debug desactivado: print("🧪 Vida completamente restaurada")
 		"gold":
 			var amount = item_data.get("amount", 0)
 			var exp_mgr = get_tree().get_first_node_in_group("experience_manager")
@@ -313,7 +302,6 @@ func apply_item_effect(item_type: String, item_data: Dictionary):
 				exp_mgr.add_coins(amount)
 				print("[ItemManager] 💰 +%d oro (con multiplicador)" % amount)
 		"new_weapon":
-			# Debug desactivado: print("⚔️ Nueva arma desbloqueada")
 			# NUEVO SISTEMA: Usar AttackManager y BaseWeapon
 			var weapon_id = item_data.get("id", "nature_staff") # Default fallback
 			if weapon_id == "": weapon_id = "nature_staff"
@@ -365,8 +353,6 @@ func create_boss_drop(position: Vector2, _boss_type: String):
 
 	# Emitir señal para que otros sistemas (minimap/UI) sepan del cofre
 	chest_spawned.emit(chest)
-
-	# Debug desactivado: print("👑 Cofre de boss creado en: ", position, " rarity:", chest_rarity)
 
 
 func compute_boss_chest_rarity() -> int:

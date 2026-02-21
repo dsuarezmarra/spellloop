@@ -25,7 +25,6 @@ func load_index():
 		push_warning("[SpriteDB] Error parseando JSON: %s" % json.get_error_message())
 		return
 	sprites_index = json.get_data()
-	# print("[SpriteDB] sprites_index cargado, llaves: ", sprites_index.keys())
 
 func get_player_sprites() -> Dictionary:
 	if sprites_index.has("players/frost_mage"):

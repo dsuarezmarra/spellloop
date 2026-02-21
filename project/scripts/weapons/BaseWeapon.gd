@@ -157,7 +157,6 @@ func override_stats(new_stats: Dictionary) -> void:
 	base_stats = merged
 	level = 1  # Reiniciar nivel siempre
 	_apply_base_stats()
-	# print("[BaseWeapon] Stats sobrescritos dinámicamente. Nuevo Daño Base: %s" % damage)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SISTEMA DE NIVELES
@@ -176,7 +175,6 @@ func level_up() -> bool:
 	_recalculate_stats()
 	weapon_leveled_up.emit(id, level)
 
-	# print("[BaseWeapon] %s subió a nivel %d" % [weapon_name, level])
 	return true
 
 func _recalculate_stats() -> void:
@@ -371,7 +369,6 @@ func perform_attack(player: Node2D, player_stats: Dictionary = {}) -> bool:
 	# Log de disparo
 	# Log de disparo
 	# var target_info = "posición player" if targets.is_empty() else str(targets[0].global_position)
-	# print("[%s] ⚡ Disparando (%s) → %s" % [weapon_name, WeaponDatabase.ProjectileType.keys()[projectile_type], target_info])
 
 	# --------------------------------------------------------------------------
 	# LÓGICA MULTICAST (Item Idea: "Doble o Nada", "Echo")
@@ -819,7 +816,6 @@ func _get_modified_effect_duration(base_duration: float) -> float:
 	return base_duration
 
 
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # APLICACIÓN DE EFECTOS
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -939,7 +935,6 @@ func _apply_execute(target: Node2D) -> void:
 	if hp_percent <= effect_value:
 		if target.has_method("take_damage"):
 			target.take_damage(hp, "physical", self)  # Daño letal
-			# print("[BaseWeapon] ⚔️ EXECUTE! Enemigo eliminado (%.0f%% HP)" % [hp_percent * 100])
 
 func _apply_bleed(target: Node2D) -> void:
 	"""Aplicar sangrado al objetivo (DoT)"""

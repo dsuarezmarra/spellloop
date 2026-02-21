@@ -83,7 +83,6 @@ func _ready() -> void:
 	enemy = get_parent()
 	# Precargar script de proyectil
 	EnemyProjectileScript = load("res://scripts/enemies/EnemyProjectile.gd")
-	# print("[EnemyAttackSystem] Inicializado para: %s" % enemy.name)
 
 func initialize(p_attack_cooldown: float, p_attack_range: float, p_damage: int, p_is_ranged: bool = false, p_projectile_scene: PackedScene = null) -> void:
 	"""Configurar parÃƒÂ¡metros de ataque"""
@@ -92,7 +91,6 @@ func initialize(p_attack_cooldown: float, p_attack_range: float, p_damage: int, 
 	attack_damage = p_damage
 	is_ranged = p_is_ranged
 	projectile_scene = p_projectile_scene
-	# print("[EnemyAttackSystem] Configurado: cooldown=%.2f, range=%.0f, damage=%d, ranged=%s" % [attack_cooldown, attack_range, attack_damage, is_ranged])
 
 func initialize_full(config: Dictionary) -> void:
 	"""InicializaciÃƒÂ³n completa con todos los parÃƒÂ¡metros"""
@@ -116,7 +114,6 @@ func initialize_full(config: Dictionary) -> void:
 		"multi":
 			multi_attack_count = modifiers.get("attack_count", 3)
 
-	# print("[EnemyAttackSystem] Full config: %s (arch=%s, elem=%s)" % [enemy.name, archetype, element_type])
 
 	# Phase 1 Migration: Setup Ability Objects
 	_setup_modular_abilities()
@@ -155,7 +152,6 @@ func _setup_modular_abilities() -> void:
 		ability.cooldown = attack_cooldown
 		ability.range_max = attack_range
 		abilities.append(ability)
-		# print("[EnemyAttackSystem] Migrada habilidad: %s" % ability.id)
 
 	# Phase 2: Map special_abilities strings to active Ability objects
 	for ab_name in special_abilities:
@@ -277,7 +273,6 @@ func _setup_modular_abilities() -> void:
 		if extra_ability:
 			extra_ability.id = ab_name
 			abilities.append(extra_ability)
-			# print("[EnemyAttackSystem] Added extra ability: %s" % ab_name)
 
 # Variables para el sistema de boss agresivo
 var is_boss_enemy: bool = false
@@ -298,7 +293,6 @@ func _process(delta: float) -> void:
 			# Solo debug una vez cada 60 frames para no saturar
 			if Engine.get_process_frames() % 60 == 0:
 				pass  # Debug
-			# print("[EnemyAttackSystem] âÅ¡Â ïÂ¸Â No se encontrÃƒÂ³ player para %s" % enemy.name)
 			return
 
 	# Detectar si es boss
@@ -540,7 +534,6 @@ func _perform_elite_slam() -> void:
 
 	# Aplicar cooldown
 	elite_slam_cooldown = modifiers.get("elite_slam_cooldown", 5.0)
-	# print("[Elite] ðÅ¸â€˜â€˜ðÅ¸â€™Â¥ %s usÃƒÂ³ Elite Slam! (daÃƒÂ±o: %d, radio: %.0f)" % [enemy.name, slam_damage, slam_radius])
 
 func _activate_elite_rage() -> void:
 	"""Activar modo rage de ÃƒÂ©lite"""
@@ -562,7 +555,6 @@ func _activate_elite_rage() -> void:
 
 	# Visual ÃƒÂ©pico
 	_spawn_elite_rage_visual()
-	# print("[Elite] ðÅ¸â€˜â€˜ðÅ¸â€Â¥ %s entrÃƒÂ³ en RAGE! (+%.0f%% daÃƒÂ±o, +%.0f%% velocidad)" % [enemy.name, damage_bonus * 100, speed_bonus * 100])
 
 func _activate_elite_shield() -> void:
 	"""Activar escudo ÃƒÂ©lite"""
@@ -571,7 +563,6 @@ func _activate_elite_shield() -> void:
 
 	# Visual de escudo
 	_spawn_elite_shield_visual()
-	# print("[Elite] ðÅ¸â€˜â€˜ðÅ¸â€ºÂ¡ïÂ¸Â %s activÃƒÂ³ Elite Shield! (%d cargas)" % [enemy.name, elite_shield_charges])
 
 func _spawn_elite_slam_visual(center: Vector2, radius: float) -> void:
 	"""Visual Ã‰PICO de slam élite - Usa VFXManager si disponible"""
@@ -824,14 +815,12 @@ func _perform_elite_dash() -> void:
 						var elem = _get_enemy_element()
 						player.call("take_damage", dash_damage, elem, enemy)
 						attacked_player.emit(dash_damage, true)
-						# print("[Elite] ðÅ¸â€˜â€˜ðÅ¸â€™Â¨ %s DASH IMPACTO! %d daÃƒÂ±o" % [enemy.name, dash_damage])
 					if player.has_method("apply_knockback"):
 						player.apply_knockback(direction * 200)
 		)
 	)
 
 	elite_dash_cooldown = modifiers.get("elite_dash_cooldown", 3.0)
-	# print("[Elite] ðÅ¸â€˜â€˜ðÅ¸â€™Â¨ %s prepara DASH hacia el jugador!" % enemy.name)
 
 func _spawn_elite_dash_visual_start() -> void:
 	"""Visual de preparaciÃƒÂ³n de dash"""
@@ -960,7 +949,6 @@ func _perform_elite_nova() -> void:
 			var direction = Vector2(cos(angle), sin(angle))
 			_spawn_elite_nova_projectile(enemy.global_position, direction, nova_damage)
 
-		# print("[Elite] ðÅ¸â€˜â€˜ðÅ¸â€™Â« %s dispara NOVA! %d proyectiles" % [enemy.name, projectile_count])
 	)
 
 	elite_nova_cooldown = modifiers.get("elite_nova_cooldown", 6.0)
@@ -1049,7 +1037,6 @@ func _perform_elite_summon() -> void:
 		# Buscar el EnemyManager
 		var enemy_manager = _find_enemy_manager()
 		if not enemy_manager:
-			# print("[Elite] âÅ¡Â ïÂ¸Â No se encontrÃƒÂ³ EnemyManager para summon")
 			return
 
 		for i in range(summon_count):
@@ -1068,7 +1055,6 @@ func _perform_elite_summon() -> void:
 							minion.queue_free()
 					)
 
-		# print("[Elite] ðÅ¸â€˜â€˜ðÅ¸â€˜Â¥ %s invocÃƒÂ³ %d minions!" % [enemy.name, summon_count])
 	)
 
 	elite_summon_cooldown = modifiers.get("elite_summon_cooldown", 10.0)
@@ -1159,7 +1145,6 @@ func _perform_melee_attack() -> void:
 	var elem = _get_enemy_element()
 	# Pasar referencia del enemigo para sistema de thorns
 	player.call("take_damage", attack_damage, elem, enemy)
-	# print("[EnemyAttackSystem] âÅ¡â€ïÂ¸Â %s atacÃƒÂ³ melee a player por %d daÃƒÂ±o (%s)" % [enemy.name, attack_damage, elem])
 
 	# Aplicar efectos segÃƒÂºn arquetipo y elemento
 	_apply_melee_effects()
@@ -1215,7 +1200,6 @@ func _perform_ranged_attack() -> void:
 		return
 
 	if not projectile_scene:
-		# print("[EnemyAttackSystem] Warning: %s no tiene projectile_scene ni script" % enemy.name)
 		# Fallback a melee
 		_perform_melee_attack()
 		return
@@ -1273,7 +1257,6 @@ func _create_dynamic_projectile() -> void:
 	if projectile.has_method("initialize"):
 		projectile.initialize(direction, projectile_speed, attack_damage, 5.0, elem)
 
-	# print("[EnemyAttackSystem] ðÅ¸Å½Â¯ %s disparÃƒÂ³ proyectil dinÃƒÂ¡mico (%s)" % [enemy.name, elem])
 	attacked_player.emit(attack_damage, false)
 
 func _perform_aoe_attack() -> void:
@@ -1307,17 +1290,14 @@ func _apply_aoe_effects() -> void:
 	if elem == "fire":
 		if player.has_method("apply_burn"):
 			player.apply_burn(5.0, 3.0)  # 5 daÃƒÂ±o/tick por 3s
-			# print("[EnemyAttackSystem] ðÅ¸â€Â¥ AoE aplica Burn!")
 	# Reina del Hielo - Slow/Freeze
 	elif elem == "ice":
 		if player.has_method("apply_slow"):
 			player.apply_slow(0.4, 3.0)  # 40% slow por 3s
-			# print("[EnemyAttackSystem] âÂâ€žïÂ¸Â AoE aplica Slow!")
 	# TitÃƒÂ¡n Arcano - Stun
 	elif "arcane" in enemy.name.to_lower() or "titan" in enemy.name.to_lower():
 		if player.has_method("apply_stun"):
 			player.apply_stun(0.5)  # 0.5s stun
-			# print("[EnemyAttackSystem] âÅ¡Â¡ AoE aplica Stun!")
 
 func _perform_breath_attack() -> void:
 	"""Ataque de aliento: cono de fuego en la direccion de encaramiento del enemigo.
@@ -1359,7 +1339,6 @@ func _apply_breath_effects() -> void:
 	# Aplicar burn siempre en breath de dragÃƒÂ³n
 	if player.has_method("apply_burn"):
 		player.apply_burn(6.0, 2.5)  # 6 daÃƒÂ±o/tick por 2.5s
-		# print("[EnemyAttackSystem] ðÅ¸â€Â¥ Breath aplica Burn!")
 
 func _perform_multi_attack() -> void:
 	"""Ataque mÃƒÂºltiple: varios proyectiles o ataques en secuencia"""
@@ -1375,7 +1354,6 @@ func _perform_multi_attack() -> void:
 		# Crear proyectil con delay visual
 		_spawn_multi_projectile(direction, i * 0.1)
 
-	# print("[EnemyAttackSystem] ðÅ¸â€Â¥ %s Multi-attack: %d proyectiles" % [enemy.name, count])
 	attacked_player.emit(attack_damage, false)
 
 # ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
@@ -1407,7 +1385,6 @@ var boss_active_effects: Array = []  # Track de TODOS los efectos del boss (AOE,
 
 func cleanup_boss() -> void:
 	"""Limpiar todos los nodos del boss (orbitales, trails, AOE warnings, etc.)"""
-	# print("[Boss] ðÅ¸Â§Â¹ Limpiando orbitales y efectos del boss...")
 
 	# Limpiar orbitales
 	for orbital in boss_orbitals:
@@ -1447,7 +1424,6 @@ func cleanup_boss() -> void:
 	boss_spread_shot_timer = 0.0
 	boss_orbital_spawned = false
 	elite_rage_active = false
-	# print("[Boss] Limpieza completada")
 
 func _track_boss_effect(effect: Node) -> void:
 	"""AÃƒÂ±adir un efecto a la lista de tracking para limpieza posterior"""
@@ -1463,7 +1439,6 @@ func _init_boss_aggressive_mode() -> void:
 	var orbital_count = boss_scaling_config.get("orbital_count", 2)
 	_spawn_boss_orbitals(orbital_count)
 
-	# print("[Boss] ðÅ¸â€˜Â¹ðÅ¸â€Â¥ MODO AGRESIVO ACTIVADO - Orbitales: %d" % orbital_count)
 
 func _process_boss_aggressive_attacks(delta: float) -> void:
 	"""Procesar ataques constantes del boss - NO depende del rango"""
@@ -1563,7 +1538,6 @@ func _boss_spawn_random_aoe() -> void:
 				if player.has_method("take_damage"):
 					var elem = _get_enemy_element()
 					player.call("take_damage", damage, elem, _aoe_enemy_ref)
-					# print("[Boss] ðÅ¸â€™Â¥ AOE RANDOM impactÃƒÂ³! %d daÃƒÂ±o" % damage)
 		# Visual de explosiÃƒÂ³n
 		_spawn_aoe_explosion(target_pos, 80.0)
 	)
@@ -1582,7 +1556,6 @@ func _boss_spawn_homing_projectile() -> void:
 
 		_create_homing_projectile(spawn_pos)
 
-	# print("[Boss] ðÅ¸Å½Â¯ %d proyectiles HOMING lanzados!" % count)
 
 func _create_homing_projectile(spawn_pos: Vector2) -> void:
 	"""Crear un proyectil que persigue al jugador"""
@@ -1701,7 +1674,6 @@ func _boss_spread_shot() -> void:
 		var direction = base_direction.rotated(angle_offset)
 		_spawn_boss_projectile(enemy.global_position, direction, damage, 280.0)
 
-	# print("[Boss] ðÅ¸â€Â¥ SPREAD SHOT: %d proyectiles!" % count)
 
 func _boss_leave_damage_trail() -> void:
 	"""Dejar trail de daÃƒÂ±o donde pasa el boss"""
@@ -2016,7 +1988,6 @@ func _process_boss_special_abilities(delta: float) -> void:
 	boss_combo_timer = 4.0
 	boss_global_cooldown = combo_delay
 
-	# print("[Boss] debug")
 
 func _init_boss_system() -> void:
 	"""Inicializar sistema de boss con configuraciÃƒÂ³n de escalado"""
@@ -2041,8 +2012,6 @@ func _init_boss_system() -> void:
 	for ability in boss_unlocked_abilities:
 		boss_ability_cooldowns[ability] = 0.0
 
-	# print("[Boss] debug")
-	# print("[Boss] ðÅ¸â€˜Â¹ Habilidades: %s" % str(boss_unlocked_abilities))
 
 func _get_prioritized_abilities(max_count: int) -> Array:
 	"""Obtener las habilidades priorizadas para desbloquear"""
@@ -2156,7 +2125,6 @@ func _update_boss_phase() -> void:
 
 func _on_boss_phase_change(_old_phase: int, new_phase: int) -> void:
 	"""Evento cuando el boss cambia de fase"""
-	# print("[EnemyAttackSystem] ðÅ¸â€˜Â¹ðÅ¸â€™â‚¬ %s CAMBIÃƒâ€œ A FASE %d!" % [enemy.name, new_phase])
 
 	# Efecto visual de cambio de fase
 	_spawn_phase_change_effect()
@@ -2393,7 +2361,6 @@ func _boss_arcane_barrage() -> void:
 		var proj_dir = direction.rotated(angle_offset)
 		_spawn_boss_projectile_delayed(proj_dir, damage, "arcane", 0.05 * i)
 
-	# print("[EnemyAttackSystem] âÅ“Â¨ Arcane Barrage: %d proyectiles" % count)
 
 func _boss_summon_minions() -> void:
 	"""Invocar enemigos menores"""
@@ -2412,10 +2379,8 @@ func _boss_summon_minions() -> void:
 	var spawner = _get_enemy_spawner()
 	if spawner and spawner.has_method("spawn_minions_around"):
 		spawner.spawn_minions_around(enemy.global_position, count, tier)
-		# print("[EnemyAttackSystem] ðÅ¸â€˜Â¹ Summon: %d minions tier %d" % [count, tier])
 	else:
 		pass
-		# print("[EnemyAttackSystem] âÅ¡Â ïÂ¸Â No se encontrÃƒÂ³ spawner para summon")
 
 func _boss_teleport_strike() -> void:
 	"""Teleport hacia el jugador + ataque tras telegraph"""
@@ -2482,7 +2447,6 @@ func _boss_curse_aura() -> void:
 	if dist <= radius:
 		if player.has_method("apply_curse"):
 			player.apply_curse(reduction, duration)
-			# print("[EnemyAttackSystem] âËœÂ ïÂ¸Â Curse Aura: -%.0f%% curaciÃƒÂ³n por %.1fs" % [reduction * 100, duration])
 
 	# Visual
 	_spawn_curse_aura_visual(enemy.global_position, radius)
@@ -2505,7 +2469,6 @@ func _boss_void_pull() -> void:
 		# Aplicar efecto de pull al jugador
 		if player.has_method("apply_pull"):
 			player.apply_pull(enemy.global_position, pull_force, pull_duration)
-			# print("[EnemyAttackSystem] ðÅ¸Å’â‚¬ Void Pull activado")
 		else:
 			pass  # Bloque else
 			# Fallback: mover directamente al jugador
@@ -2530,7 +2493,6 @@ func _boss_void_orbs() -> void:
 		var spawn_offset = Vector2(cos(angle), sin(angle)) * 30
 		_spawn_homing_orb(enemy.global_position + spawn_offset, damage, speed, duration, "dark")
 
-	# print("[EnemyAttackSystem] ðÅ¸â€™Å“ Void Orbs: %d orbes perseguidores" % count)
 
 func _boss_reality_tear() -> void:
 	"""Crear zona de daÃƒÂ±o persistente"""
@@ -2540,7 +2502,6 @@ func _boss_reality_tear() -> void:
 
 	# _spawn_damage_zone ya invoca VFXManager internamente, no duplicar
 	_spawn_damage_zone(player.global_position, radius, damage, duration, "dark")
-	# print("[EnemyAttackSystem] ðÅ¸Å’Å’ Reality Tear creado")
 
 func _boss_void_beam() -> void:
 	"""Rayo canalizado de alto daÃƒÂ±o"""
@@ -2648,7 +2609,6 @@ func _boss_counter_stance() -> void:
 
 	# Visual
 	_spawn_counter_stance_visual()
-	# print("[EnemyAttackSystem] âÅ¡â€ïÂ¸Â Counter Stance: %.1fs window, x%.1f daÃƒÂ±o" % [window, damage_mult])
 
 func _boss_rune_barrage() -> void:
 	"""MÃƒÂºltiples runas disparadas"""
@@ -2663,7 +2623,6 @@ func _boss_rune_barrage() -> void:
 		var proj_dir = direction.rotated(angle_offset)
 		_spawn_boss_projectile_delayed(proj_dir, damage, "arcane", 0.08 * i)
 
-	# print("[EnemyAttackSystem] âÅ“Â¨ Rune Barrage: %d proyectiles" % count)
 
 func _boss_ground_slam() -> void:
 	"""Golpe de tierra con ondas expansivas y telegraph"""
@@ -2762,7 +2721,6 @@ func _boss_flame_breath() -> void:
 
 	# Visual
 	_spawn_flame_breath_visual(enemy.global_position, direction, range_dist)
-	# print("[EnemyAttackSystem] ðÅ¸â€Â¥ Flame Breath: %d daÃƒÂ±o en cono" % damage)
 
 func _boss_meteor_call() -> void:
 	"""Invocar meteoros del cielo"""
@@ -2787,7 +2745,6 @@ func _boss_meteor_call() -> void:
 			_spawn_meteor_impact(target_pos, radius, damage)
 		)
 
-	# print("[EnemyAttackSystem] âËœâ€žïÂ¸Â Meteor Call: %d meteoros" % count)
 
 func _activate_boss_enrage() -> void:
 	"""Activar estado de furia del boss"""
@@ -2811,7 +2768,6 @@ func _activate_boss_enrage() -> void:
 
 	# Visual
 	_spawn_enrage_visual()
-	# print("[EnemyAttackSystem] ðÅ¸â€Â¥ðÅ¸â€™Â¢ BOSS ENRAGED! +%.0f%% daÃƒÂ±o, +%.0f%% velocidad" % [damage_bonus * 100, speed_bonus * 100])
 
 func _spawn_fire_trail() -> void:
 	"""Dejar rastro de fuego al caminar"""
@@ -2836,7 +2792,6 @@ func _perform_boss_melee_attack() -> void:
 
 	var boss_damage = int(attack_damage * 1.2)  # Bosses hacen mÃƒÂ¡s daÃƒÂ±o
 	player.take_damage(boss_damage, "physical", enemy)
-	# print("[EnemyAttackSystem] ðÅ¸â€˜Â¹ %s (Boss) melee devastador por %d daÃƒÂ±o" % [enemy.name, boss_damage])
 
 	# Aplicar efecto segÃƒÂºn el boss
 	_apply_boss_melee_effects()

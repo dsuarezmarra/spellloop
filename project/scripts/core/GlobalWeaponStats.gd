@@ -331,7 +331,6 @@ func apply_upgrade(upgrade: Dictionary) -> bool:
 	applied_upgrades.append(upgrade.duplicate(true))
 	global_upgrade_applied.emit(upgrade.get("id", "unknown"))
 	
-	# Debug desactivado: print("[GlobalWeaponStats] Mejora global aplicada")
 	return true
 
 func get_upgrades() -> Array:

@@ -251,7 +251,6 @@ func _hit_player(player_body: Node2D) -> void:
 	if player_body.has_method("take_damage"):
 		# Intentar pasar el elemento, si falla usar la versión simple
 		player_body.call("take_damage", damage, element_type)
-		# print("[EnemyProjectile] 🎯 Impacto en player: %d daño (%s)" % [damage, element_type])
 
 	# Aplicar efectos según elemento
 	_apply_element_effect(player_body)
@@ -274,29 +273,23 @@ func _apply_element_effect(target: Node) -> void:
 		"fire":
 			if target.has_method("apply_burn"):
 				target.apply_burn(3.0, 2.5)  # 3 daño/tick por 2.5s
-				# print("[EnemyProjectile] 🔥 Aplica Burn!")
 		"ice":
 			if target.has_method("apply_slow"):
 				target.apply_slow(0.3, 2.5)  # 30% slow por 2.5s
-				# print("[EnemyProjectile] ❄️ Aplica Slow!")
 		"dark", "void":
 			if target.has_method("apply_weakness"):
 				target.apply_weakness(0.2, 3.0)  # +20% daño recibido por 3s
-				# print("[EnemyProjectile] 💀 Aplica Weakness!")
 		"arcane":
 			# Arcane tiene chance de aplicar curse
 			if randf() < 0.3 and target.has_method("apply_curse"):
 				target.apply_curse(0.25, 4.0)  # 30% chance, -25% curación por 4s
-				# print("[EnemyProjectile] ✨ Aplica Curse!")
 		"poison", "nature":
 			if target.has_method("apply_poison"):
 				target.apply_poison(2.0, 4.0)  # 2 daño/tick por 4s
-				# print("[EnemyProjectile] ☠️ Aplica Poison!")
 		"lightning":
 			# Lightning tiene chance de aplicar stun breve
 			if randf() < 0.2 and target.has_method("apply_stun"):
 				target.apply_stun(0.8)  # 20% chance, 0.8s stun
-				# print("[EnemyProjectile] ⚡ Aplica Stun!")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # VISUAL UTILITIES

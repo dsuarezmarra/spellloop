@@ -23,7 +23,6 @@ var fire_wand = null  # Future
 
 func _ready() -> void:
 	"""Inicialización del jugador"""
-	# print("\n[WizardPlayer] ===== INICIALIZANDO PLAYER =====")
 
 	# Asignar valores por defecto ANTES de llamar a super
 	character_class = "FrostMage"
@@ -32,7 +31,6 @@ func _ready() -> void:
 	# Llamar a inicialización base
 	super._ready()
 
-	# print("[WizardPlayer] ===== PLAYER INICIALIZADO =====\n")
 
 func set_character_sprites(sprite_folder: String) -> void:
 	"""Change the character's sprite folder and reload animations"""
@@ -136,7 +134,6 @@ func _equip_starting_weapons() -> void:
 	if SessionState:
 		var character_id = SessionState.get_character()
 		weapon_id = CharacterDatabase.get_starting_weapon(character_id)
-		# Debug desactivado: print("[WizardPlayer] Character: %s, Starting weapon: %s" % [character_id, weapon_id])
 
 	# Usar el sistema de BaseWeapon + WeaponDatabase (igual que test_weapons)
 	if attack_manager.has_method("add_weapon_by_id"):

@@ -22,7 +22,6 @@ extends Node
 class_name PlayerStats
 
 
-
 # ========== SEÑALES ==========
 
 signal stat_changed(stat_name: String, old_value: float, new_value: float)
@@ -722,7 +721,6 @@ func _apply_character_passive(character_id: String) -> void:
 		return
 
 	var passive_id = passive.get("id", "")
-	# Debug desactivado: print("[PlayerStats] Applying passive: %s (%s)" % [passive.get("name", "Unknown"), passive_id])
 
 	# Obtener GlobalWeaponStats para los WEAPON_STATS
 	var gws = _get_global_weapon_stats()
@@ -886,11 +884,6 @@ func initialize_from_character(character_id: String) -> void:
 	# Aplicar pasiva del personaje
 	_apply_character_passive(character_id)
 
-	# Debug desactivado:
-	# print("[PlayerStats] Initialized from character: %s" % character_id)
-	# print("  - Max HP: %d" % stats.max_health)
-	# print("  - Move Speed: %.0f" % stats.move_speed)
-	# print("  - Passive: %s" % _current_character_id)
 
 func _ready() -> void:
 	# Asegurar que PlayerStats respete la pausa del juego
@@ -914,7 +907,6 @@ func initialize(attack_mgr: AttackManager = null, player: Node = null) -> void:
 	# Conectar a la señal de salud del player para mantener sincronizado
 	_connect_to_player_health()
 
-	# print("[PlayerStats] Inicializado - Nivel %d, Player: %s" % [level, player_ref != null])
 
 func _connect_to_player_health() -> void:
 	"""Conectar a la señal de salud del player para sincronizar current_health"""
@@ -928,7 +920,6 @@ func _connect_to_player_health() -> void:
 			# Sincronizar HP inicial
 			if "current_health" in hc:
 				current_health = hc.current_health
-			# print("[PlayerStats] Conectado a HealthComponent del player")
 
 func _on_player_health_changed(new_health: int, max_health: int) -> void:
 	"""Callback cuando la salud del player cambia - mantener sincronizado"""
@@ -1053,7 +1044,6 @@ func get_stat(stat_name: String) -> float:
 	var final_value = base_value + temp_bonus
 
 
-
 	# Lógica especial para damage_mult (Investor / Momentum)
 	if stat_name == "damage_mult":
 		# Investor: +1% daño por cada 100 de oro
@@ -1156,7 +1146,6 @@ func _get_temp_modifier_total(stat_name: String) -> float:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-
 func is_weapon_stat(stat_name: String) -> bool:
 	return stat_name in ["extra_pierce", "chain_count", "crit_damage", "crit_chance", "projectile_count_add"]
 
@@ -1173,7 +1162,6 @@ func _apply_weapon_stat_upgrade(stat_name: String, value: float, operation: Stri
 			gws.add_stat(stat_name, diff)
 	else:
 		push_warning("[PlayerStats] Cannot apply weapon stat %s: GlobalWeaponStats missing" % stat_name)
-
 
 
 func add_stat(stat_name: String, amount: float) -> void:
@@ -1201,7 +1189,6 @@ func add_stat(stat_name: String, amount: float) -> void:
 		elif stat_name == "banish_count":
 			current_banishes += int(amount)
 
-	# print("[PlayerStats] %s: %.2f → %.2f (+%.2f)" % [stat_name, old_value, new_value, amount])
 
 func set_stat(stat_name: String, value: float) -> void:
 	"""Establecer valor exacto de un stat"""
@@ -1265,7 +1252,6 @@ func add_temp_modifier(stat_name: String, amount: float, duration: float, source
 		"time_added": Time.get_ticks_msec() / 1000.0
 	})
 
-	# print("[PlayerStats] Buff temporal: %s +%.2f por %.1fs (%s)" % [
 	#	stat_name, amount, duration, source
 	# ])
 
@@ -1440,8 +1426,6 @@ func _get_player_current_health() -> float:
 	return current_health
 
 
-
-
 func _update_shield_regen(delta: float) -> void:
 	"""
 	Regenerar escudo con el tiempo.
@@ -1573,7 +1557,6 @@ func take_damage(amount: float) -> float:
 	# Verificar esquiva primero
 	var dodge = get_stat("dodge_chance")
 	if dodge > 0 and randf() < minf(dodge, 0.6):  # Máximo 60% de esquiva
-		# print("[PlayerStats] ¡ESQUIVADO! (%.0f%% chance)" % (dodge * 100))
 		# Emitir señal de esquiva (la UI puede mostrar "DODGE!")
 		return 0.0
 
@@ -1605,9 +1588,6 @@ func take_damage(amount: float) -> float:
 	_time_since_damage = 0.0
 
 	return effective_damage
-
-
-
 
 
 func heal(amount: float) -> float:
@@ -1702,7 +1682,6 @@ func gain_xp(amount: float) -> int:
 		# Calcular XP para siguiente nivel
 		xp_to_next_level = BASE_XP_TO_LEVEL * pow(XP_SCALING, level - 1)
 
-		# print("[PlayerStats] ⬆️ ¡Nivel %d alcanzado!" % level)
 		level_changed.emit(level)
 
 	return levels_gained
@@ -1724,7 +1703,6 @@ const WEAPON_STATS = [
 	"extra_pierce", "knockback_mult", "range_mult", "crit_chance", "crit_damage",
 	"chain_count", "life_steal"  # life_steal es de combate, va a GlobalWeaponStats
 ]
-
 
 
 func apply_upgrade(upgrade_data) -> bool:
@@ -1818,12 +1796,10 @@ func _apply_weapon_effects_to_global(effects: Array, upgrade_dict: Dictionary) -
 	# 1. Usar referencia directa si existe
 	if global_weapon_stats != null:
 		gws = global_weapon_stats
-		# print("🟢 [PlayerStats] Usando global_weapon_stats directo")
 
 	# 2. Intentar a través de attack_manager
 	if gws == null and attack_manager and attack_manager.has_method("get_global_weapon_stats"):
 		gws = attack_manager.get_global_weapon_stats()
-		# print("🟡 [PlayerStats] Usando attack_manager.get_global_weapon_stats()")
 
 	# 3. Buscar en grupos si estamos en el árbol
 	if gws == null and is_inside_tree():
@@ -1960,7 +1936,6 @@ func track_collected_item(item_data: Dictionary) -> void:
 		data["id"] = "tracked_item_%d" % collected_upgrades.size()
 
 	add_upgrade(data)
-	# print("[PlayerStats] Mejora añadida: %s" % upgrade_data.get("name", "???"))
 
 func get_collected_upgrades() -> Array:
 	"""Obtener lista de mejoras recolectadas"""
@@ -1972,7 +1947,6 @@ func register_unique_upgrade(upgrade_id: String) -> void:
 		return
 	if upgrade_id not in owned_unique_ids:
 		owned_unique_ids.append(upgrade_id)
-		# print("[PlayerStats] 🔴 Mejora única registrada: %s" % upgrade_id)
 
 func get_owned_unique_ids() -> Array:
 	"""Obtener IDs de mejoras únicas obtenidas"""
@@ -2079,7 +2053,6 @@ func consume_reroll() -> bool:
 	"""Consumir un reroll si quedan disponibles"""
 	if current_rerolls > 0:
 		current_rerolls -= 1
-		# print("[PlayerStats] Reroll consumido. Quedan: %d" % current_rerolls)
 		return true
 	return false
 
@@ -2087,7 +2060,6 @@ func consume_banish() -> bool:
 	"""Consumir un banish si quedan disponibles"""
 	if current_banishes > 0:
 		current_banishes -= 1
-		# print("[PlayerStats] Banish consumido. Quedan: %d" % current_banishes)
 		return true
 	return false
 

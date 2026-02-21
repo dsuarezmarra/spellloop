@@ -108,7 +108,6 @@ func load_spritesheet(path: String) -> bool:
 	
 	if not cached_regions.is_empty():
 		sprite_regions = cached_regions
-		# Debug desactivado: print("⚡ [AnimatedEnemySprite] Usando regiones en caché para %s" % path)
 	else:
 		# CALCULO COSTOSO (Solo la primera vez)
 		var img = spritesheet_texture.get_image()
@@ -154,7 +153,6 @@ func load_spritesheet(path: String) -> bool:
 	flip_h = false
 	_update_frame()
 	
-	# print("[AnimatedEnemySprite] ✓ Cargado: %s (3 sprites detectados)" % path)
 	return true
 
 func _detect_sprite_regions(img: Image) -> Array[Rect2]:

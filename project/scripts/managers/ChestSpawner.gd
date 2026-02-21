@@ -184,7 +184,6 @@ func _spawn_shop_chest(pos: Vector2) -> void:
 	active_chests.append(chest)
 	chest_spawned.emit(chest, pos)
 	
-	# Debug desactivado: print("[ChestSpawner] Cofre SHOP spawneado en %s (Tier efectivo: %d)" % [pos, effective_tier])
 
 func _get_zone_tier_at_position(pos: Vector2) -> int:
 	"""Obtener tier de zona en una posición"""

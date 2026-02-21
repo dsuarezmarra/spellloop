@@ -396,7 +396,6 @@ func _spawn_elite() -> void:
 	if elite:
 		elites_spawned_this_run += 1
 		elite_spawned.emit(elite)
-		# print("⭐ [EnemyManager] ¡ÉLITE SPAWNEADO: %s!" % elite_data.name)
 
 		# BALANCE TELEMETRY: Log elite spawn
 		if BalanceTelemetry:
@@ -518,12 +517,10 @@ func spawn_enemy(enemy_data: Dictionary, world_pos: Vector2, force: bool = false
 	# Emitir señal de boss si aplica
 	if enemy_data.get("is_boss", false) or type_id.find("boss") != -1:
 		boss_spawned.emit(enemy)
-		# Balance Debug: Log boss spawn for TTK tracking
 		# FIX-BT2b: Siempre recopilar datos
 		if BalanceDebugger:
 			BalanceDebugger.log_elite_spawn(enemy.get_instance_id(), true)
 	elif enemy_data.get("is_elite", false):
-		# Balance Debug: Log elite spawn for TTK tracking
 		# FIX-BT2b: Siempre recopilar datos
 		if BalanceDebugger:
 			BalanceDebugger.log_elite_spawn(enemy.get_instance_id(), false)
@@ -549,7 +546,6 @@ func _on_enemy_died(enemy: Node, type_id: String = "", exp_value: int = 0, enemy
 	if enemy in active_enemies:
 		active_enemies.erase(enemy)
 
-	# Balance Debug: Log elite/boss death for TTK tracking
 	# FIX-BT2b: Siempre recopilar datos
 	if BalanceDebugger:
 		if is_boss:
@@ -812,7 +808,6 @@ func spawn_boss(boss_id: String, world_pos: Vector2, multipliers: Dictionary = {
 
 	if boss:
 		boss_spawned.emit(boss)
-		# Debug desactivado: print("[EnemyManager] BOSS SPAWNEADO")
 
 	return boss
 
@@ -848,7 +843,6 @@ func spawn_elite(enemy_id: String, world_pos: Vector2, multipliers: Dictionary =
 	if elite:
 		elites_spawned_this_run += 1
 		elite_spawned.emit(elite)
-		# Debug desactivado: print("[EnemyManager] ÉLITE SPAWNEADO")
 
 		# BALANCE TELEMETRY: Log elite spawn (WaveManager path)
 		if BalanceTelemetry:

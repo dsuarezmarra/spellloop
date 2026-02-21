@@ -40,7 +40,6 @@ func _load_from_disk() -> void:
 
 	var file = FileAccess.open(SAVE_FILE, FileAccess.READ)
 	if file == null:
-		# Debug desactivado: print("[SessionState] No se pudo abrir archivo de sesión")
 		return
 
 	var json = JSON.new()
@@ -48,7 +47,6 @@ func _load_from_disk() -> void:
 	file.close()
 
 	if parse_result != OK:
-		# Debug desactivado: print("[SessionState] Error parseando JSON de sesión")
 		return
 
 	var data = json.data
@@ -66,10 +64,6 @@ func _load_from_disk() -> void:
 		selected_character_id = saved_char
 
 	if has_active_game:
-		# Debug desactivado: print("[SessionState] ✅ Partida guardada encontrada en disco:")
-		# Debug desactivado: print("  - Tiempo: %.1f segundos" % paused_game_time)
-		# Debug desactivado: print("  - Nivel: %d" % saved_game_state.get("player_level", 1))
-		# Debug desactivado: print("  - Monedas: %d" % saved_game_state.get("coins", 0))
 		pass
 
 func _save_to_disk() -> void:
@@ -89,13 +83,11 @@ func _save_to_disk() -> void:
 
 	file.store_string(JSON.stringify(data))
 	file.close()
-	# Debug desactivado: print("[SessionState] 💾 Estado guardado a disco")
 
 func set_active_game(time: float, player_data: Dictionary = {}) -> void:
 	has_active_game = true
 	paused_game_time = time
 	saved_player_data = player_data
-	# Debug desactivado: print("[SessionState] Partida marcada como activa - Tiempo: %.1f" % time)
 	_save_to_disk()
 
 func save_full_game_state(game_state: Dictionary) -> void:
@@ -103,23 +95,11 @@ func save_full_game_state(game_state: Dictionary) -> void:
 	has_active_game = true
 	saved_game_state = game_state.duplicate(true)  # Deep copy
 	paused_game_time = game_state.get("game_time", 0.0)
-	# Debug desactivado: print("[SessionState] Estado completo guardado:")
-	# Debug desactivado: print("  - Tiempo: %.1f" % paused_game_time)
-	# Debug desactivado: print("  - Nivel: %d" % game_state.get("player_level", 1))
-	# Debug desactivado: print("  - HP: %d/%d" % [game_state.get("player_hp", 100), game_state.get("player_max_hp", 100)])
-	# Debug desactivado: print("  - Armas: %d" % game_state.get("weapons", []).size())
-	# Debug desactivado: print("  - Monedas: %d" % game_state.get("coins", 0))
-	# Debug desactivado: print("  - XP: %d/%d" % [game_state.get("current_exp", 0), game_state.get("exp_to_next_level", 10)])
 	# Persistir a disco automáticamente
 	_save_to_disk()
 
 func get_saved_state() -> Dictionary:
 	"""Obtener el estado guardado - retorna una copia para evitar modificaciones"""
-	# Debug desactivado: print("[SessionState] get_saved_state() llamado - has_active_game: %s, state size: %d" % [has_active_game, saved_game_state.size()])
-	# Debug desactivado: if not saved_game_state.is_empty():
-	# Debug desactivado: 	print("  - Nivel guardado: %d" % saved_game_state.get("player_level", 1))
-	# Debug desactivado: 	print("  - Tiempo guardado: %.1f" % saved_game_state.get("game_time", 0.0))
-	# Debug desactivado: 	print("  - Monedas guardadas: %d" % saved_game_state.get("coins", 0))
 	return saved_game_state.duplicate(true)  # Retornar copia profunda para evitar problemas
 
 func clear_game_state() -> void:
@@ -127,11 +107,9 @@ func clear_game_state() -> void:
 	paused_game_time = 0.0
 	saved_player_data = {}
 	saved_game_state = {}
-	# Debug desactivado: print("[SessionState] Estado de partida limpiado")
 	# Eliminar archivo de disco
 	if FileAccess.file_exists(SAVE_FILE):
 		DirAccess.remove_absolute(SAVE_FILE)
-		# Debug desactivado: print("[SessionState] 🗑️ Archivo de sesión eliminado")
 
 func can_resume() -> bool:
 	return has_active_game and not saved_game_state.is_empty()

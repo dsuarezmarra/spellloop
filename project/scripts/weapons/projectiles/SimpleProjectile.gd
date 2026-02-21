@@ -67,7 +67,6 @@ func _ready() -> void:
 	var _effect_dur = get_meta("effect_duration", 0.0)
 	var _wid = get_meta("weapon_id", "")
 	if _effect != "none":
-		# Debug desactivado: print("[SimpleProjectile] 🆕 Creado - weapon: %s, effect: %s (val=%.2f, dur=%.2f)" % [_wid, _effect, _effect_value, _effect_dur])
 		pass
 
 	# Obtener color: priorizar color del arma sobre color del elemento
@@ -87,9 +86,6 @@ func _ready() -> void:
 		body_entered.connect(_on_body_entered)
 	if not area_entered.is_connected(_on_area_entered):
 		area_entered.connect(_on_area_entered)
-
-
-
 
 
 func initialize_visuals() -> void:
@@ -513,7 +509,6 @@ func _on_body_entered(body: Node2D) -> void:
 
 func _on_area_entered(area: Area2D) -> void:
 	# DEBUG: Ver qué entra
-	# print("Proj hit area: ", area.name, " Parent: ", area.get_parent().name)
 
 	# Si el área tiene un parent que es enemigo
 	if area.get_parent() and area.get_parent().is_in_group("enemies"):
@@ -670,7 +665,6 @@ func _apply_effect(target: Node) -> void:
 func _play_roulette_sound() -> void:
 	"""Reproducir sonido de jackpot para Russian Roulette"""
 	# Placeholder: Si existe AudioManager usarlo, sino solo log/visual
-	# print("💰 JACKPOT SOUND!")
 	if ClassDB.class_exists("AudioManager"):
 		# AudioManager.play_sfx("jackpot")
 		pass

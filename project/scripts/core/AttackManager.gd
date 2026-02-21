@@ -229,7 +229,6 @@ func _ready() -> void:
 	add_child(global_weapon_stats)
 	global_weapon_stats.global_stat_changed.connect(_on_global_stats_changed)
 
-	# Debug desactivado: print("[AttackManager] Inicializado con sistema de fusiones y GlobalWeaponStats")
 
 func _on_global_stats_changed(stat_name: String, _old_value: float, _new_value: float) -> void:
 	"""Callback cuando cambian los stats globales"""
@@ -290,8 +289,6 @@ func _exit_tree() -> void:
 func initialize(player_ref: CharacterBody2D) -> void:
 	"""Inicializar con referencia al jugador"""
 	player = player_ref
-	# Debug desactivado: print("[AttackManager] Inicializado para player: %s" % player.name)
-	# Debug desactivado: print("[AttackManager] Slots disponibles: %d/%d" % [current_weapon_count, max_weapon_slots])
 
 	# Activar el sistema de ataque
 	is_active = true
@@ -315,7 +312,6 @@ func add_weapon(weapon) -> bool:
 
 	# Verificar si hay slots disponibles
 	if not has_available_slot:
-		# Debug desactivado: print("[AttackManager] ❌ No hay slots disponibles (%d/%d)" % [current_weapon_count, max_weapon_slots])
 		return false
 
 	# Obtener ID del arma (compatible con ambos sistemas)
@@ -325,9 +321,7 @@ func add_weapon(weapon) -> bool:
 	# Verificar si ya tenemos esta arma
 	for existing in weapons:
 		if _get_weapon_id(existing) == weapon_id:
-			# Debug desactivado: print("[AttackManager] ℹ️ Ya tienes %s, subiendo de nivel..." % weapon_display_name)
 			var lvl_result = level_up_weapon_by_id(weapon_id)
-			# Debug desactivado: print("[AttackManager] ⬆️ Level up result for %s: %s" % [weapon_id, lvl_result])
 			return lvl_result
 
 	# Añadir a la lista
@@ -341,7 +335,6 @@ func add_weapon(weapon) -> bool:
 	if weapon is BaseWeapon and weapon.has_signal("weapon_leveled_up"):
 		weapon.weapon_leveled_up.connect(_on_weapon_leveled_up)
 
-	# Debug desactivado: print("[AttackManager] ⚔️ Arma equipada: %s [Slot %d] (total: %d/%d)" % [
 	#	weapon_display_name, slot_index, current_weapon_count, max_weapon_slots
 	# ])
 
@@ -381,7 +374,6 @@ func remove_weapon(weapon) -> bool:
 		if weapon.weapon_leveled_up.is_connected(_on_weapon_leveled_up):
 			weapon.weapon_leveled_up.disconnect(_on_weapon_leveled_up)
 
-	# Debug desactivado: print("[AttackManager] ⚔️ Arma removida: %s (total: %d/%d)" % [
 	#	_get_weapon_name(weapon), current_weapon_count, max_weapon_slots
 	# ])
 
@@ -396,7 +388,6 @@ func remove_weapon(weapon) -> bool:
 			var orbital_mgr = player.get_node_or_null("OrbitalManager_" + wid)
 			if orbital_mgr:
 				orbital_mgr.queue_free()
-				# Debug desactivado: print("[AttackManager] 🧹 Limpiado OrbitalManager para: ", wid)
 
 			# 2. Borrar proyectiles sueltos en el grupo especifico (proyectiles de vuelo libre)
 			# Usamos call_deferred para asegurar limpieza segura physics-safe
@@ -430,7 +421,6 @@ func replace_weapon(old_weapon, new_weapon) -> bool:
 	if new_weapon is BaseWeapon and new_weapon.has_signal("weapon_leveled_up"):
 		new_weapon.weapon_leveled_up.connect(_on_weapon_leveled_up)
 
-	# Debug desactivado: print("[AttackManager] ⚔️ Arma reemplazada: %s -> %s" % [
 	#	_get_weapon_name(old_weapon), _get_weapon_name(new_weapon)
 	# ])
 	return true
@@ -483,7 +473,6 @@ func level_up_weapon(weapon) -> bool:
 		return success
 
 	# Armas legacy no tienen sistema de niveles
-	# Debug desactivado: print("[AttackManager] %s es un arma legacy sin sistema de niveles" % _get_weapon_name(weapon))
 	return false
 
 func level_up_weapon_by_id(weapon_id: String) -> bool:
@@ -587,18 +576,14 @@ func _on_weapon_leveled_up(weapon_id: String, new_level: int) -> void:
 	var weapon = get_weapon_by_id(weapon_id)
 	if weapon:
 		weapon_leveled_up.emit(weapon, new_level)
-		# Debug desactivado: print("[AttackManager] ⬆️ %s subió a nivel %d" % [_get_weapon_name(weapon), new_level])
 
 func _on_fusion_completed(fused_weapon, lost_slot: bool) -> void:
 	"""Callback cuando se completa una fusión"""
-	# Debug desactivado: print("[AttackManager] 🔥 Fusión completada: %s" % _get_weapon_name(fused_weapon))
 	if lost_slot:
-		# Debug desactivado: print("[AttackManager] ⚠️ Slots reducidos: %d/%d" % [current_weapon_count, max_weapon_slots])
 		pass
 
 func _on_fusion_failed(reason: String) -> void:
 	"""Callback cuando falla una fusión"""
-	# Debug desactivado: print("[AttackManager] ❌ Fusión fallida: %s" % reason)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PROCESAMIENTO
@@ -617,7 +602,6 @@ func _process(delta: float) -> void:
 	for weapon in weapons:
 		if weapon == null:
 			continue
-
 
 
 		# Decrementar cooldown
@@ -657,7 +641,6 @@ func _process(delta: float) -> void:
 				weapon_fired.emit(weapon, player.global_position)
 
 
-
 func _should_play_cast_animation(weapon) -> bool:
 	"""Determinar si el arma debe activar la animación de cast al disparar"""
 	# Las armas orbitales no requieren animación de cast (orbitan automáticamente)
@@ -666,7 +649,6 @@ func _should_play_cast_animation(weapon) -> bool:
 			return false
 		if weapon.target_type == WeaponDatabase.TargetType.ORBIT:
 			return false
-
 
 
 	# También excluir armas de aura/pasivas si las hay
@@ -686,7 +668,6 @@ func _trigger_cast_animation() -> void:
 			wizard.play_cast_animation()
 
 
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONTROL
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -695,13 +676,11 @@ func enable() -> void:
 	"""Activar ataque automático"""
 	is_active = true
 	set_process(true)
-	# Debug desactivado: print("[AttackManager] Ataque activado")
 
 func disable() -> void:
 	"""Desactivar ataque automático"""
 	is_active = false
 	set_process(false)
-	# Debug desactivado: print("[AttackManager] Ataque desactivado")
 
 func clear_weapons() -> void:
 	"""Remover todas las armas y limpiar orbitales activos"""
@@ -718,7 +697,6 @@ func clear_weapons() -> void:
 				child.queue_free()
 				# Debug: print("[AttackManager] OrbitalManager eliminado: %s" % child.name)
 
-	# Debug desactivado: print("[AttackManager] Todas las armas removidas")
 
 func reset_for_new_game() -> void:
 	"""
@@ -726,7 +704,6 @@ func reset_for_new_game() -> void:
 	Debe llamarse al iniciar una nueva partida para evitar que el estado
 	de la partida anterior persista.
 	"""
-	# Debug desactivado: print("[AttackManager] 🔄 Reseteando estado para nueva partida...")
 
 	# 1. Limpiar todas las armas
 	clear_weapons()
@@ -765,7 +742,6 @@ func reset_for_new_game() -> void:
 	# 8. Desactivar temporalmente hasta que se reinicialice
 	is_active = false
 
-	# Debug desactivado: print("[AttackManager] ✓ Estado reseteado completamente")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STATS GLOBALES DE ARMAS (Nuevo sistema)
@@ -778,7 +754,6 @@ func apply_global_upgrade(upgrade_data: Dictionary) -> void:
 	"""
 	if global_weapon_stats:
 		global_weapon_stats.apply_upgrade(upgrade_data)
-		# Debug desactivado: print("[AttackManager] ⬆️ Mejora global aplicada: %s" % upgrade_data.get("id", "unknown"))
 
 func get_global_weapon_stats() -> GlobalWeaponStats:
 	"""Obtener referencia a los stats globales"""
@@ -809,7 +784,6 @@ func apply_weapon_upgrade(weapon_id: String, upgrade_data: Dictionary) -> bool:
 
 	var ws: WeaponStats = weapon_stats_map[weapon_id]
 	ws.apply_upgrade(upgrade_data)
-	# Debug desactivado: print("[AttackManager] ⬆️ Mejora específica aplicada a %s: %s" % [weapon_id, upgrade_data.get("id", "unknown")])
 	return true
 
 func _create_weapon_stats_for(weapon) -> void:
@@ -845,7 +819,6 @@ func _create_weapon_stats_for(weapon) -> void:
 	ws._recalculate_stats()
 
 	weapon_stats_map[weapon_id] = ws
-	# Debug desactivado: print("[AttackManager] WeaponStats creado para: %s" % weapon_id)
 
 func _remove_weapon_stats_for(weapon) -> void:
 	"""Remover WeaponStats de un arma al quitarla"""
@@ -881,7 +854,6 @@ func _sync_weapon_stats_after_levelup(weapon) -> void:
 
 	# Recalcular modified_stats
 	ws._recalculate_stats()
-	# print("[AttackManager] WeaponStats sincronizado para %s nivel %d" % [weapon_id, weapon.level])
 
 func _update_weapon_original_metas(weapon) -> void:
 	"""Actualizar los valores originales guardados en meta cuando el arma sube de nivel"""
@@ -918,7 +890,6 @@ func set_player_stat(stat_name: String, value: float) -> void:
 		global_weapon_stats.set_stat(stat_name, value)
 	else:
 		_legacy_player_stats[stat_name] = value
-	# Debug desactivado: print("[AttackManager] Stat actualizado: %s = %.2f" % [stat_name, value])
 
 func modify_player_stat(stat_name: String, delta: float) -> void:
 	"""Modificar stat del jugador (sumar/restar)"""
@@ -930,7 +901,6 @@ func modify_player_stat(stat_name: String, delta: float) -> void:
 		if not _legacy_player_stats.has(stat_name):
 			_legacy_player_stats[stat_name] = 0.0
 		_legacy_player_stats[stat_name] += delta
-	# Debug desactivado: print("[AttackManager] Stat modificado: %s += %.2f" % [stat_name, delta])
 
 func get_player_stat(stat_name: String) -> float:
 	"""Obtener stat del jugador o de armas desde GlobalWeaponStats"""
@@ -999,7 +969,6 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	if original_data.is_empty() and weapon is BaseWeapon and weapon.base_stats:
 		# Fallback solo si no existe en DB (armas custom/fusiones)
 		original_data = weapon.base_stats.duplicate()  # Copiar para seguridad
-		# Debug desactivado: print("[DEBUG] get_weapon_full_stats: Usando base_stats como fallback para %s" % weapon_id)
 
 	var original_damage = original_data.get("damage", 10)
 	var original_cooldown = original_data.get("cooldown", 1.0)
@@ -1013,7 +982,6 @@ func get_weapon_full_stats(weapon) -> Dictionary:
 	var original_duration = original_data.get("duration", 0.0)
 
 	# DEBUG: Verificar valores de velocidad de ataque
-	# print("[DEBUG] %s: original_cooldown=%.2f, original_attack_speed=%.4f" % [weapon_id, original_cooldown, original_attack_speed])
 
 	# ═══════════════════════════════════════════════════════════════════════════
 	# VALORES ACTUALES DEL ARMA (con mejoras de nivel ya aplicadas)
@@ -1357,8 +1325,6 @@ func get_debug_info() -> String:
 		lines.append("")
 		lines.append("🔥 Fusiones disponibles: %d" % fusions.size())
 	return "\n".join(lines)
-
-
 
 
 func set_active(active: bool) -> void:

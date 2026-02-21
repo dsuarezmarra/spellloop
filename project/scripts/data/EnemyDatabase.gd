@@ -914,7 +914,6 @@ static func get_boss_for_minute(minute: int) -> Dictionary:
 	boss["spawn_minute"] = minute
 	boss["scaling_applied"] = minute_scaling
 	
-	# print("[EnemyDatabase] 👹 Boss seleccionado: %s para minuto %d (HP: %d, DMG: %d)" % [
 	#	boss.name, minute, boss.base_hp, boss.base_damage
 	# ])
 	

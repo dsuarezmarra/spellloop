@@ -30,7 +30,6 @@ var _footstep_timer: float = 0.0
 const FOOTSTEP_INTERVAL: float = 0.35
 
 func _ready() -> void:
-	# print("\n[LoopiaLikePlayer] ===== INICIANDO LOOPIALIKE PLAYER =====")
 
 	# CRÍTICO: Respetar la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -52,7 +51,6 @@ func _ready() -> void:
 		push_warning("[LoopiaLikePlayer] ERROR: No se pudo cargar WizardPlayer.gd")
 		return
 
-	# print("[LoopiaLikePlayer] OK: WizardPlayer.gd cargado")
 
 	wizard_player = wizard_script.new()
 	if not wizard_player:
@@ -94,7 +92,6 @@ func _ready() -> void:
 	# Forzar actualización inicial de la barra de vida
 	update_health_bar()
 
-	# print("[LoopiaLikePlayer] ===== OK: LOOPIALIKE PLAYER LISTO =====\n")
 
 	# === P0.1: ORBITAL OVERHEAT SYSTEM ===
 	_init_orbital_overheat()
@@ -225,7 +222,6 @@ func _enforce_zone_barriers() -> void:
 		# Feedback visual/sonoro opcional
 		if not _barrier_hit_cooldown:
 			_barrier_hit_cooldown = true
-			# print("🚧 [Player] Barrera de zona! Radio actual: %.0f, máximo permitido: %.0f" % [dist_from_center, max_allowed_radius])
 			# Pequeño efecto de rebote
 			velocity = direction_to_center * 100.0
 			# Reset cooldown después de 0.5s
@@ -371,7 +367,6 @@ func set_character_sprites(sprite_folder: String) -> void:
 	"""Proxy method to set character sprites on the actual WizardPlayer"""
 	if wizard_player and wizard_player.has_method("set_character_sprites"):
 		wizard_player.set_character_sprites(sprite_folder)
-		# Debug desactivado: print("[LoopiaLikePlayer] Sprites changed to: %s" % sprite_folder)
 
 func _play_damage_animation() -> void:
 	# Ya no es necesario aquí, el WizardPlayer maneja los efectos visuales
@@ -487,19 +482,16 @@ func add_pickup_range(amount: float) -> void:
 	"""Añade rango de recolección base en píxeles"""
 	pickup_radius += amount
 	pickup_range_changed.emit(get_pickup_range())
-	# print("🧲 [Player] Pickup range: %.0f (base: %.0f, mult: %.2fx, flat: +%.0f)" % [get_pickup_range(), pickup_radius, magnet, pickup_range_flat])
 
 func multiply_pickup_range(multiplier: float) -> void:
 	"""Multiplica el rango de recolección"""
 	magnet *= multiplier
 	pickup_range_changed.emit(get_pickup_range())
-	# print("🧲 [Player] Pickup range: %.0f (base: %.0f, mult: %.2fx, flat: +%.0f)" % [get_pickup_range(), pickup_radius, magnet, pickup_range_flat])
 
 func add_pickup_range_flat(amount: float) -> void:
 	"""Añade bonus plano de rango de recolección"""
 	pickup_range_flat += amount
 	pickup_range_changed.emit(get_pickup_range())
-	# print("🧲 [Player] Pickup range: %.0f (base: %.0f, mult: %.2fx, flat: +%.0f)" % [get_pickup_range(), pickup_radius, magnet, pickup_range_flat])
 
 func get_magnet_strength() -> float:
 	"""Retorna la fuerza de imán (velocidad de atracción) desde PlayerStats"""

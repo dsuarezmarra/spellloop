@@ -53,7 +53,6 @@ func initialize(start_pos: Vector2, target_pos: Vector2, dmg: int, speed: float)
 	# Calcular dirección inicial
 	direction = (target_position - start_pos).normalized()
 
-	# print("🔮 Proyectil mágico creado - Daño: ", damage, " Velocidad: ", speed)
 
 func setup_projectile():
 	"""Configurar propiedades básicas del proyectil"""
@@ -197,7 +196,6 @@ func hit_target(target: Node2D):
 	if pierce_count == 0 or hits_made > pierce_count:
 		destroy_projectile()
 
-	# print("🎯 Proyectil impactó objetivo - Daño: ", damage)
 
 func destroy_projectile():
 	"""Destruir proyectil con efecto visual"""

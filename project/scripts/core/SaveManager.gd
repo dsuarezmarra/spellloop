@@ -106,7 +106,6 @@ var current_settings: Dictionary = {}
 var is_data_loaded: bool = false
 
 func _ready() -> void:
-	# Debug desactivado: print("[SaveManager] Initializing SaveManager...")
 
 	# Create save directory if it doesn't exist
 	_ensure_save_directory()
@@ -123,13 +122,11 @@ func _ready() -> void:
 	# Load settings
 	current_settings = load_settings()
 
-	# Debug desactivado: print("[SaveManager] SaveManager initialized successfully")
 
 func _ensure_save_directory() -> void:
 	"""Ensure the save directory exists"""
 	if not DirAccess.dir_exists_absolute(SAVE_DIR):
 		DirAccess.open("user://").make_dir_recursive("saves")
-		# Debug desactivado: print("[SaveManager] Created save directory: ", SAVE_DIR)
 
 func _load_all_data() -> void:
 	"""Load all game data on startup - DEPRECATED, usar set_active_slot"""
@@ -247,7 +244,6 @@ func load_game_data() -> Dictionary:
 
 func save_run_data(run_data: Dictionary) -> void:
 	"""Save completed run data for progression"""
-	# Debug desactivado: print("[SaveManager] Saving run data...")
 
 	# Update player progression based on run
 	_process_run_progression(run_data)
@@ -308,7 +304,6 @@ func add_playtime(seconds: float) -> void:
 	player_data["total_playtime"] = current_time + seconds
 
 	save_game_data()
-	# Debug desactivado: print("[SaveManager] Playtime updated: +%.1fs (Total: %.1fh)" % [seconds, player_data["total_playtime"]/3600.0])
 
 	# Emit player data changed so UI can update immediately
 	player_data_changed.emit(player_data.duplicate(true))
@@ -361,7 +356,6 @@ func _save_run_history(run_data: Dictionary) -> void:
 
 func save_settings(settings: Dictionary) -> bool:
 	"""Save game settings"""
-	# Debug desactivado: print("[SaveManager] Saving settings...")
 
 	current_settings = settings
 
@@ -375,22 +369,18 @@ func save_settings(settings: Dictionary) -> bool:
 	settings_file.store_string(json_string)
 	settings_file.close()
 
-	# Debug desactivado: print("[SaveManager] Settings saved successfully")
 	return true
 
 func load_settings() -> Dictionary:
 	"""Load game settings"""
-	# Debug desactivado: print("[SaveManager] Loading settings...")
 
 	if not FileAccess.file_exists(SETTINGS_FILE):
-		# Debug desactivado: print("[SaveManager] No settings file found, using defaults")
 		current_settings = DEFAULT_SETTINGS.duplicate(true)
 		save_settings(current_settings)
 		return current_settings
 
 	var file = FileAccess.open(SETTINGS_FILE, FileAccess.READ)
 	if file == null:
-		# Debug desactivado: print("[SaveManager] Failed to open settings file, using defaults")
 		return DEFAULT_SETTINGS.duplicate(true)
 
 	var json_string = file.get_as_text()
@@ -400,11 +390,9 @@ func load_settings() -> Dictionary:
 	var parse_result = json.parse(json_string)
 
 	if parse_result != OK:
-		# Debug desactivado: print("[SaveManager] Failed to parse settings JSON, using defaults")
 		return DEFAULT_SETTINGS.duplicate(true)
 
 	current_settings = _validate_settings(json.data)
-	# Debug desactivado: print("[SaveManager] Settings loaded successfully")
 
 	return current_settings
 
@@ -423,7 +411,6 @@ func unlock_mage(mage_id: String) -> void:
 		# STEAM ACHIEVEMENTS: Notificar desbloqueo de mago
 		if SteamAchievements:
 			SteamAchievements.on_mage_unlocked(player_data["unlocked_mages"].size())
-		# Debug desactivado: print("[SaveManager] Unlocked mage: ", mage_id)
 
 func unlock_spell(spell_id: String) -> void:
 	"""Unlock a new spell"""
@@ -431,7 +418,6 @@ func unlock_spell(spell_id: String) -> void:
 	if spell_id not in player_data["unlocked_spells"]:
 		player_data["unlocked_spells"].append(spell_id)
 		save_game_data()
-		# Debug desactivado: print("[SaveManager] Unlocked spell: ", spell_id)
 
 func spend_meta_currency(amount: int) -> bool:
 	"""Spend meta currency if available"""
@@ -444,7 +430,6 @@ func spend_meta_currency(amount: int) -> bool:
 
 func save_dungeon_completion(dungeon_seed: int, rewards: Dictionary, duration: float = 0.0) -> void:
 	"""Save dungeon completion data"""
-	# Debug desactivado: print("[SaveManager] Saving dungeon completion...")
 
 	var ts = null
 	# Try dynamic Time.get_unix_time_from_system() if available

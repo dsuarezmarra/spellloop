@@ -126,7 +126,6 @@ static func check_execute(tree: SceneTree, enemy: Node) -> bool:
 			enemy.take_damage(current_hp, "physical")  # Hacer daño igual al HP restante
 			# Mostrar texto de ejecución (usar class_name FloatingText)
 			FloatingText.spawn_damage(enemy.global_position + Vector2(0, -30), current_hp, true)
-			# Debug desactivado: print("[Execute] ☠️ Enemigo ejecutado")
 		return true
 
 	return false
@@ -234,14 +233,12 @@ static func apply_status_effects_chance(tree: SceneTree, enemy: Node) -> void:
 			if burn_dmg <= 0:
 				burn_dmg = 3.0
 			enemy.apply_burn(burn_dmg, 3.0 * status_duration_mult)  # 3s base duration
-			# print("[StatusEffect] 🔥 Burn aplicado! (chance: %.0f%%)" % (burn_chance * 100))
 
 	# === FREEZE CHANCE ===
 	var freeze_chance = float(player_stats.get_stat("freeze_chance"))
 	if freeze_chance > 0 and randf() < freeze_chance:
 		if enemy.has_method("apply_freeze"):
 			enemy.apply_freeze(1.0, 1.0 * status_duration_mult)  # 1s freeze
-			# print("[StatusEffect] ❄️ Freeze aplicado! (chance: %.0f%%)" % (freeze_chance * 100))
 		elif enemy.has_method("apply_slow"):
 			enemy.apply_slow(0.5, 2.0 * status_duration_mult)  # Fallback: 50% slow 2s
 
@@ -250,7 +247,6 @@ static func apply_status_effects_chance(tree: SceneTree, enemy: Node) -> void:
 	if bleed_chance > 0 and randf() < bleed_chance:
 		if enemy.has_method("apply_bleed"):
 			enemy.apply_bleed(2.0, 4.0 * status_duration_mult)  # 2 dmg/s for 4s
-			# print("[StatusEffect] 🩸 Bleed aplicado! (chance: %.0f%%)" % (bleed_chance * 100))
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # HELPER: CONDITIONAL DAMAGE MULTIPLIER
@@ -710,7 +706,6 @@ class AOEEffect extends Node2D:
 			damage_per_tick = damage / float(total_ticks)
 
 		# Debug de tick config (desactivado en producción)
-		# print("[AOE] Tick config para %s: %d daño/tick, %.2fs intervalo, %d ticks (total: %d)" % [
 		#	weapon_id if weapon_id != "" else "default",
 		#	int(damage_per_tick),
 		#	tick_interval,
@@ -731,7 +726,6 @@ class AOEEffect extends Node2D:
 			return
 		_activated = true
 
-		# print("[AOE] Activado en posición: %s, radio: %.1f" % [global_position, aoe_radius])
 
 		# Crear área de detección física (OPTIMIZACION PERFORMANCE)
 		var area = Area2D.new()
@@ -956,7 +950,6 @@ class AOEEffect extends Node2D:
 					if hp_percent <= effect_value:  # effect_value es el umbral (ej: 0.2 = 20%)
 						if enemy.has_method("take_damage"):
 							enemy.take_damage(hp, "physical", self)  # Matar instantáneamente
-							# Debug desactivado: print("[AOE] EXECUTE!")
 			"knockback_bonus":
 				# Ya se maneja el knockback en otro lugar, esto solo incrementa
 				pass

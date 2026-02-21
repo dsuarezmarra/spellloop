@@ -42,7 +42,6 @@ var current_scene_node: Node
 var modal_container: Control
 
 func _ready() -> void:
-	# Debug desactivado: print("[UIManager] Initializing UIManager...")
 
 	# Create UI canvas layer
 	_setup_ui_canvas()
@@ -50,7 +49,6 @@ func _ready() -> void:
 	# Connect to game state changes
 	_connect_game_signals()
 
-	# Debug desactivado: print("[UIManager] UIManager initialized successfully")
 
 func _setup_ui_canvas() -> void:
 	"""Setup the main UI canvas layer"""
@@ -173,7 +171,6 @@ func request_popup(popup_node: Node) -> void:
 
 	if is_modal_open:
 		popup_queue.append(popup_node)
-		# Debug desactivado: print("[UIManager] Popup queued. Queue size: ", popup_queue.size())
 		return
 
 	_show_popup_instance(popup_node)
@@ -260,7 +257,6 @@ func show_modal(modal_scene: PackedScene, data: Dictionary = {}) -> void:
 	is_modal_open = true
 	modal_opened.emit(modal_instance.name)
 
-	# Debug desactivado: print("[UIManager] Opened modal: ", modal_instance.name)
 
 func close_current_modal() -> void:
 	"""Close the topmost modal"""
@@ -279,7 +275,6 @@ func close_current_modal() -> void:
 	is_modal_open = not modal_stack.is_empty()
 	modal_closed.emit(modal_name)
 
-	# Debug desactivado: print("[UIManager] Closed modal: ", modal_name)
 
 	# Trigger queue check
 	_process_popup_queue()
@@ -315,7 +310,6 @@ func _change_scene(scene_path: String, scene_name: String) -> void:
 	current_scene_name = scene_name
 
 	scene_changed.emit(old_scene, scene_name)
-	# Debug desactivado: print("[UIManager] Changed scene from '", old_scene, "' to '", scene_name, "'")
 
 func get_current_scene_name() -> String:
 	"""Get the name of the current scene"""
@@ -333,17 +327,14 @@ func get_modal_count() -> int:
 func show_notification(message: String, _duration: float = 3.0) -> void:
 	"""Show a temporary notification"""
 	# TODO: Implement notification system
-	# Debug desactivado: print("[UIManager] Notification: ", message)
 
 func show_confirmation_dialog(title: String, message: String, _callback: Callable) -> void:
 	"""Show a confirmation dialog"""
 	# TODO: Implement confirmation dialog
-	# Debug desactivado: print("[UIManager] Confirmation needed: ", title, " - ", message)
 
 func update_loading_progress(progress: float, message: String = "") -> void:
 	"""Update loading screen progress"""
 	# TODO: Implement loading screen
-	# Debug desactivado: print("[UIManager] Loading progress: ", progress * 100, "% - ", message)
 
 # Signal handlers
 func _on_game_state_changed(_old_state, new_state) -> void:

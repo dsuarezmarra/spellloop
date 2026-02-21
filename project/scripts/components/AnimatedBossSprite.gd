@@ -221,7 +221,6 @@ func load_spritesheet(path: String) -> bool:
 	flip_h = false
 	_update_frame()
 	
-	# print("[AnimatedBossSprite] ✓ Boss cargado: %s (aura: %s)" % [path, enable_aura])
 	return true
 
 func _detect_sprite_regions(img: Image) -> Array[Rect2]:

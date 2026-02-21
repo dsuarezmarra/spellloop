@@ -144,7 +144,6 @@ func _sync_counts_from_player_stats() -> void:
 			banish_count = player_stats.current_banishes
 
 		# Debug
-		# print("[LevelUpPanel] Sincronizado: Rerolls=%d, Banishes=%d" % [reroll_count, banish_count])
 
 func _get_max_options() -> int:
 	"""Obtener número máximo de opciones (base + mejoras)"""
@@ -2194,13 +2193,10 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 
 	# Log especial para mejoras especiales
 	if is_unique:
-		# print("[LevelUpPanel] 🔴 MEJORA ÚNICA obtenida: %s" % upgrade_name)
 		pass
 	if is_cursed:
-		# print("[LevelUpPanel] 💜 Mejora CURSED aplicada: %s" % upgrade_name)
 		pass
 	if is_consumable:
-		# print("[LevelUpPanel] 🟡 Mejora CONSUMIBLE usada: %s" % upgrade_name)
 		pass
 
 	# Stats que van a GlobalWeaponStats (armas)
@@ -2250,7 +2246,6 @@ func _apply_player_upgrade(option: Dictionary) -> void:
 			player_option["effects"] = player_effects
 			var success = player_stats.apply_upgrade(player_option)
 			if success:
-				# print("[LevelUpPanel] 🛡️ Efectos de jugador aplicados (%d): %s" % [player_effects.size(), upgrade_name])
 				pass
 			else:
 				push_warning("[LevelUpPanel] No se pudo aplicar mejora: %s" % upgrade_name)

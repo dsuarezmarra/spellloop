@@ -213,7 +213,6 @@ func _create_player() -> void:
 		# Configurar el personaje seleccionado (sprites, etc.)
 		_configure_player_character()
 
-		# Debug desactivado: print("🧙 [Game] Player creado")
 	else:
 		push_error("[Game] No se pudo cargar SpellloopPlayer.tscn")
 
@@ -225,14 +224,11 @@ func _configure_player_character() -> void:
 	var character_id = "frost_mage"  # Default
 	if SessionState:
 		character_id = SessionState.get_character()
-		# Debug desactivado: print("[Game] SessionState.get_character() returned: '%s'" % character_id)
 
 	# Si esta vacio, usar default
 	if character_id.is_empty():
 		character_id = "frost_mage"
-		# Debug desactivado: print("[Game] Character ID was empty, using default: frost_mage")
 
-	# Debug desactivado: print("[Game] Configuring player with character: %s" % character_id)
 
 	# Obtener datos del personaje
 	var char_data = CharacterDatabase.get_character(character_id)
@@ -241,11 +237,9 @@ func _configure_player_character() -> void:
 		return
 
 	var sprite_folder = char_data.get("sprite_folder", "frost_mage")
-	# Debug desactivado: print("[Game] Sprite folder for %s: %s" % [character_id, sprite_folder])
 
 	# Configurar la carpeta de sprites si el player tiene el metodo
 	if player.has_method("set_character_sprites"):
-		# Debug desactivado: print("[Game] Calling player.set_character_sprites('%s')" % sprite_folder)
 		player.set_character_sprites(sprite_folder)
 	else:
 		push_warning("[Game] Player does not have set_character_sprites method!")
@@ -563,7 +557,6 @@ func _initialize_systems() -> void:
 
 		if player_stats.has_method("initialize"):
 			player_stats.initialize(attack_mgr, player)  # Pasar player para que health_regen funcione
-		# Debug desactivado: print("📊 [Game] PlayerStats inicializado")
 
 	# Inicializar con referencias
 	if enemy_manager and player:
@@ -585,7 +578,6 @@ func _initialize_systems() -> void:
 	# Conectar HUD con el player
 	_connect_hud_to_player()
 
-	# Debug desactivado: print("✅ [Game] Sistemas inicializados")
 
 func _connect_hud_to_player() -> void:
 	## Conectar el HUD para que reciba actualizaciones del player
@@ -625,7 +617,6 @@ func _connect_hud_to_player() -> void:
 	if hud.has_method("update_exp") and experience_manager:
 		hud.update_exp(experience_manager.current_exp, experience_manager.exp_to_next_level)
 
-	# Debug desactivado: print("📊 [Game] HUD conectado al player")
 
 func _start_game() -> void:
 	game_running = true
@@ -665,7 +656,6 @@ func _start_game() -> void:
 	if SteamAchievements:
 		SteamAchievements.on_run_started()
 
-	# Debug desactivado: print("🚀 [Game] ¡Partida iniciada!")
 
 	# Forzar actualización del HUD de armas después de que todo esté inicializado
 	call_deferred("_deferred_weapon_hud_update")
@@ -722,14 +712,12 @@ func _resume_saved_game() -> void:
 		# Usar from_dict() si está disponible (método preferido)
 		if player_stats.has_method("from_dict"):
 			player_stats.from_dict(saved_stats)
-			# Debug desactivado: print("🎒 [Game] PlayerStats restaurado via from_dict()")
 		else:
 			pass  # Bloque else
 			# Fallback: restaurar manualmente
 			# Restaurar historial de mejoras PRIMERO
 			if saved_stats.has("collected_upgrades") and "collected_upgrades" in player_stats:
 				player_stats.collected_upgrades = saved_stats.get("collected_upgrades", []).duplicate(true)
-				# Debug desactivado: print("🎒 [Game] Mejoras coleccionadas restauradas: %d items" % player_stats.collected_upgrades.size())
 
 			# Restaurar stats desde el sub-diccionario "stats" si existe
 			var actual_stats = saved_stats.get("stats", saved_stats)
@@ -760,7 +748,6 @@ func _resume_saved_game() -> void:
 		var saved_coins = _saved_state.get("coins", 0)
 		if "total_coins" in experience_manager:
 			experience_manager.total_coins = saved_coins
-			# Debug desactivado: print("🪙 [Game] Monedas restauradas: %d" % saved_coins)
 
 	# ═══════════════════════════════════════════════════════════════════════════════
 	# Restaurar armas y mejoras globales — AttackManager completo
@@ -800,7 +787,6 @@ func _resume_saved_game() -> void:
 	if enemy_manager and _saved_state.has("enemy_manager_state"):
 		if enemy_manager.has_method("from_save_data"):
 			enemy_manager.from_save_data(_saved_state.get("enemy_manager_state", {}))
-			# Debug desactivado: print("👹 [Game] Estado de EnemyManager restaurado")
 		else:
 			push_warning("[Game] EnemyManager no tiene método from_save_data")
 
@@ -811,7 +797,6 @@ func _resume_saved_game() -> void:
 	if wave_manager and _saved_state.has("wave_manager_state"):
 		if wave_manager.has_method("from_save_data"):
 			wave_manager.from_save_data(_saved_state.get("wave_manager_state", {}))
-			# Debug desactivado: print("🌊 [Game] Estado de WaveManager restaurado")
 		else:
 			push_warning("[Game] WaveManager no tiene método from_save_data")
 
@@ -821,7 +806,6 @@ func _resume_saved_game() -> void:
 	if arena_manager and _saved_state.has("arena_manager_state"):
 		if arena_manager.has_method("from_save_data"):
 			arena_manager.from_save_data(_saved_state.get("arena_manager_state", {}))
-			# Debug desactivado: print("🏟️ [Game] Estado de ArenaManager restaurado")
 		else:
 			push_warning("[Game] ArenaManager no tiene método from_save_data")
 
@@ -832,7 +816,6 @@ func _resume_saved_game() -> void:
 		remaining_rerolls = _saved_state.get("remaining_rerolls", 3)
 	if _saved_state.has("remaining_banishes"):
 		remaining_banishes = _saved_state.get("remaining_banishes", 2)
-	# Debug desactivado: print("🎲 [Game] Rerolls/Banishes restaurados: %d/%d" % [remaining_rerolls, remaining_banishes])
 
 	# Actualizar HUD con los valores restaurados
 	call_deferred("_update_hud_after_restore")
@@ -841,12 +824,6 @@ func _resume_saved_game() -> void:
 	# No lo limpiamos aquí porque _restore_player_hp_deferred necesita _saved_state
 	call_deferred("_clear_saved_state_deferred")
 
-	# Debug desactivado: print("🔄 [Game] ¡Partida reanudada!")
-	# Debug desactivado: print("   - Tiempo: %.1f segundos" % game_time)
-	# Debug desactivado: print("   - Nivel: %d" % _saved_state.get("player_level", 1))
-	# Debug desactivado: print("   - HP: %d/%d" % [_saved_state.get("player_hp", 100), _saved_state.get("player_max_hp", 100)])
-	# Debug desactivado: print("   - Monedas: %d" % _saved_state.get("coins", 0))
-	# Debug desactivado: print("   - XP: %d/%d" % [_saved_state.get("current_exp", 0), _saved_state.get("exp_to_next_level", 10)])
 
 func _restore_player_hp_deferred() -> void:
 	"""
@@ -862,7 +839,6 @@ func _restore_player_hp_deferred() -> void:
 	var saved_hp = _saved_state.get("player_hp", 100)
 	var saved_max_hp = _saved_state.get("player_max_hp", 100)
 
-	# Debug desactivado: print("🔄 [Game] _restore_player_hp_deferred() - Restaurando HP: %d/%d" % [saved_hp, saved_max_hp])
 
 	# Buscar HealthComponent en las ubicaciones posibles
 	var health_component = null
@@ -907,7 +883,6 @@ func _restore_player_hp_deferred() -> void:
 		if health_component.has_signal("health_changed"):
 			health_component.health_changed.emit(saved_hp, saved_max_hp)
 
-		# Debug desactivado: print("✅ [Game] HP restaurado correctamente: %d/%d" % [health_component.current_health, health_component.max_health])
 	else:
 		push_warning("[Game] WARNING - No se pudo encontrar HealthComponent para restaurar HP")
 
@@ -965,7 +940,6 @@ func _update_hud_after_restore() -> void:
 			kill_count = enemy_manager.get_kill_count()
 		hud.update_kills(kill_count)
 
-	# Debug desactivado: print("📊 [Game] HUD actualizado después de restaurar")
 
 func _clear_saved_state_deferred() -> void:
 	"""Limpiar estado guardado después de que todo se haya restaurado"""
@@ -1001,7 +975,6 @@ func _pause_game() -> void:
 	is_paused = true
 	get_tree().paused = true  # Pausar el árbol del juego
 	AudioManager.pause_music(true)
-	# Debug desactivado: print("⏸️ [Game] Juego pausado - is_paused=%s, tree.paused=%s" % [is_paused, get_tree().paused])
 	if pause_menu and not _paused_by_focus_loss:
 		pause_menu.show_pause_menu(game_time)
 
@@ -1020,7 +993,6 @@ func _on_resume_game() -> void:
 	is_paused = false
 	get_tree().paused = false  # Reanudar el árbol del juego
 	AudioManager.pause_music(false)
-	# Debug desactivado: print("▶️ [Game] Juego reanudado - is_paused=%s, tree.paused=%s" % [is_paused, get_tree().paused])
 
 func _on_quit_to_menu() -> void:
 	"""Finalizar telemetría cuando el jugador sale al menú desde pausa."""
@@ -1384,17 +1356,14 @@ func _show_level_up_panel(_level: int) -> void:
 	if panel.has_method("show_panel"):
 		panel.show_panel()
 
-	# Debug desactivado: print("🆙 [Game] Panel de level up mostrado (nivel %d)" % level)
 
 func _on_level_up_option_selected(_option: Dictionary) -> void:
 	"""Callback cuando se selecciona una mejora en el level up"""
-	# Debug desactivado: print("🆙 [Game] Mejora seleccionada: %s" % option.get("name", "???"))
 	# Nota: La mejora ya se aplica en LevelUpPanel._apply_option()
 	pass
 
 func _on_level_up_panel_closed() -> void:
 	"""Callback cuando se cierra el panel de level up"""
-	# Debug desactivado: print("🆙 [Game] Panel de level up cerrado")
 
 	# Procesar el siguiente level up de la cola (si hay)
 	# Esto también reanudará el juego si no hay más pendientes
@@ -1402,7 +1371,6 @@ func _on_level_up_panel_closed() -> void:
 
 func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> void:
 	"""Callback cuando cambia un stat del jugador - propagar al player"""
-	# Debug desactivado: print("📊 [Game] Stat cambiado: %s = %.2f" % [stat_name, new_value])
 
 	# Manejar mejoras de reroll/banish - PlayerStats ya maneja esto internamente
 	# Solo logueamos si es necesario
@@ -1410,14 +1378,12 @@ func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> 
 		var diff = int(new_value) - int(old_value)
 		if diff > 0:
 			# PlayerStats.apply_upgrade_effect() ya incrementa current_rerolls
-			# Debug desactivado: print("🎲 [Game] +%d rerolls por mejora" % diff)
 			pass
 		return
 	elif stat_name == "banish_count":
 		var diff = int(new_value) - int(old_value)
 		if diff > 0:
 			# PlayerStats.apply_upgrade_effect() ya incrementa current_banishes
-			# Debug desactivado: print("🚫 [Game] +%d banishes por mejora" % diff)
 			pass
 		return
 
@@ -1429,7 +1395,6 @@ func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> 
 				var base_speed = 220.0
 				player.wizard_player.move_speed = base_speed * new_value
 				player.move_speed = player.wizard_player.move_speed
-				# Debug desactivado: print("📊 [Game] Velocidad del player actualizada: %.1f" % player.move_speed)
 			"max_health":
 				if player.has_method("increase_max_health"):
 					var diff = new_value - player.wizard_player.max_hp
@@ -1449,7 +1414,6 @@ func _on_stat_changed(stat_name: String, old_value: float, new_value: float) -> 
 func _on_player_level_changed(new_level: int) -> void:
 	"""Callback cuando sube el nivel del jugador (desde PlayerStats)"""
 	run_stats["level"] = new_level
-	# Debug desactivado: print("📊 [Game] Nivel del jugador: %d" % new_level)
 
 func _on_reroll_used() -> void:
 	"""Callback cuando se usa un reroll - PlayerStats ya lo decrementó"""
@@ -1471,7 +1435,6 @@ func _on_coin_collected(value: int, total: int) -> void:
 
 func _on_player_zone_changed(_zone_id: int, zone_name: String) -> void:
 	## Callback cuando el player cambia de zona
-	# Debug desactivado: print("🏟️ [Game] Player cambió a zona: %s (id=%d)" % [zone_name, zone_id])
 
 	# Actualizar UI si es necesario
 	if hud and hud.has_method("update_zone"):
@@ -2179,7 +2142,6 @@ func _get_current_phase() -> int:
 func _on_phase_changed(phase_num: int, phase_config: Dictionary) -> void:
 	"""Callback cuando cambia la fase del juego"""
 	var _phase_name = phase_config.get("name", "Fase %d" % phase_num)
-	# Debug desactivado: print("🌊 [Game] Fase cambiada: %s" % phase_name)
 
 	# DESACTIVADO: Ya no mostramos mensajes de fase, solo eventos importantes
 	# if hud and hud.has_method("show_wave_message"):
@@ -2195,7 +2157,6 @@ func _on_wave_started(_wave_type: String, wave_config: Dictionary) -> void:
 
 func _on_boss_incoming(boss_id: String, _seconds_until: float) -> void:
 	"""Callback de advertencia de boss"""
-	# Debug desactivado: print("⚠️ [Game] ¡Boss %s llegando en %.1f segundos!" % [boss_id, seconds_until])
 
 	if hud and hud.has_method("show_wave_message"):
 		var boss_name = _get_boss_display_name(boss_id)
@@ -2203,7 +2164,6 @@ func _on_boss_incoming(boss_id: String, _seconds_until: float) -> void:
 
 func _on_boss_spawned(boss_id: String) -> void:
 	"""Callback cuando aparece un boss"""
-	# Debug desactivado: print("👹 [Game] ¡BOSS SPAWNEADO: %s!" % boss_id)
 
 	# STEAM ACHIEVEMENTS: Notificar spawn de boss (inicia timer para fast kill / no-hit)
 	if SteamAchievements:
@@ -2222,7 +2182,6 @@ func _on_boss_spawned(boss_id: String) -> void:
 
 func _on_boss_defeated(boss_id: String) -> void:
 	"""Callback cuando se derrota a un boss"""
-	# Debug desactivado: print("🏆 [Game] ¡BOSS DERROTADO: %s!" % boss_id)
 
 	var boss_name = _get_boss_display_name(boss_id)
 
@@ -2234,14 +2193,12 @@ func _on_boss_defeated(boss_id: String) -> void:
 
 func _on_elite_spawned(_enemy_id: String) -> void:
 	"""Callback cuando aparece un élite"""
-	# Debug desactivado: print("⭐ [Game] ¡ÉLITE SPAWNEADO: %s!" % enemy_id)
 
 	if hud and hud.has_method("show_wave_message"):
 		hud.show_wave_message("⭐ ¡ENEMIGO LEGENDARIO!", 3.0)
 
 func _on_special_event_started(_event_name: String, event_config: Dictionary) -> void:
 	"""Callback cuando inicia un evento especial"""
-	# Debug desactivado: print("🎪 [Game] Evento especial: %s" % event_name)
 
 	var announcement = event_config.get("announcement", "")
 	if announcement != "" and hud and hud.has_method("show_wave_message"):
@@ -2249,11 +2206,9 @@ func _on_special_event_started(_event_name: String, event_config: Dictionary) ->
 
 func _on_special_event_ended(_event_name: String) -> void:
 	"""Callback cuando termina un evento especial"""
-	# Debug desactivado: print("🎪 [Game] Evento terminado: %s" % event_name)
 
 func _on_game_phase_infinite() -> void:
 	"""Callback cuando entramos en fase infinita"""
-	# Debug desactivado: print("♾️ [Game] ¡MODO INFINITO ACTIVADO!")
 
 	if hud and hud.has_method("show_wave_message"):
 		hud.show_wave_message("♾️ ═══ MODO INFINITO ═══ ♾️\n¡Sobrevive todo lo que puedas!", 6.0)

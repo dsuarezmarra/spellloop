@@ -127,7 +127,6 @@ func _ready() -> void:
 	add_to_group("arena_manager")
 	# Asegurar que ArenaManager respete la pausa del juego
 	process_mode = Node.PROCESS_MODE_PAUSABLE
-	# Debug desactivado: print("🏟️ [ArenaManager] Inicializando...")
 
 func initialize(player: Node2D, root: Node2D, resume_seed: int = -1) -> void:
 	"""Inicializar la arena con un player y nodo raíz
@@ -144,7 +143,6 @@ func initialize(player: Node2D, root: Node2D, resume_seed: int = -1) -> void:
 	if resume_seed >= 0:
 		# Usar seed de partida guardada
 		arena_seed = resume_seed
-		# Debug desactivado: print("🏟️ [ArenaManager] Usando seed de partida guardada: %d" % arena_seed)
 	elif use_random_seed:
 		randomize()
 		arena_seed = randi()
@@ -152,11 +150,9 @@ func initialize(player: Node2D, root: Node2D, resume_seed: int = -1) -> void:
 		arena_seed = fixed_seed
 	
 	rng.seed = arena_seed
-	# Debug desactivado: print("🏟️ [ArenaManager] Seed: %d" % arena_seed)
 	
 	# Seleccionar biomas aleatorios para cada zona
 	_select_random_biomes()
-	# Debug desactivado: print("DEBUG: BIOMES_BY_ZONE keys: ", BIOMES_BY_ZONE.keys())
 	
 	# Cargar texturas de biomas
 	_load_biome_textures()
@@ -174,12 +170,6 @@ func initialize(player: Node2D, root: Node2D, resume_seed: int = -1) -> void:
 	var arena_data = get_arena_info()
 	arena_ready.emit(arena_data)
 	
-	# Debug desactivado: print("🏟️ [ArenaManager] ✅ Arena generada")
-	# Debug desactivado: print("   - Safe Zone: %s (r=%.0f)" % [selected_biomes[ZoneType.SAFE], safe_zone_radius])
-	# Debug desactivado: print("   - Medium Zone: %s (r=%.0f)" % [selected_biomes[ZoneType.MEDIUM], medium_zone_radius])
-	# Debug desactivado: print("   - Danger Zone: %s (r=%.0f)" % [selected_biomes[ZoneType.DANGER], danger_zone_radius])
-	# Debug desactivado: print("   - Death Zone: %s (r=%.0f)" % [selected_biomes[ZoneType.DEATH], arena_radius])
-	# Debug desactivado: print("   - 🚧 Barreras creadas: MEDIUM, DANGER, DEATH (bloqueadas)")
 
 func _select_random_biomes() -> void:
 	"""Seleccionar un bioma aleatorio para cada zona"""
@@ -188,9 +178,7 @@ func _select_random_biomes() -> void:
 		var selected_index = rng.randi() % possible_biomes.size()
 		selected_biomes[zone_type] = possible_biomes[selected_index]
 	
-	# Debug desactivado: print("🎲 [ArenaManager] Biomas seleccionados:")
 	for zone_type in selected_biomes.keys():
-		# Debug desactivado: print("   - Zone %d: %s" % [zone_type, selected_biomes[zone_type]])
 		pass
 
 func _load_biome_textures() -> void:
@@ -207,15 +195,12 @@ func _load_biome_textures() -> void:
 		
 		# Primero intentar carga manual directa con Image (evita problemas de .import corruptos)
 		var abs_path = ProjectSettings.globalize_path(base_path)
-		# Debug desactivado: print("🔍 [ArenaManager] Intentando cargar %s desde: %s" % [biome_name, abs_path])
 		
 		var img = Image.new()
 		var load_err = img.load(abs_path)
 		if load_err == OK:
-			# Debug desactivado: print("🔍 [ArenaManager] Image.load() OK para %s (size: %dx%d)" % [biome_name, img.get_width(), img.get_height()])
 			base_texture = ImageTexture.create_from_image(img)
 			if base_texture:
-				# Debug desactivado: print("✅ [ArenaManager] Textura cargada desde archivo: %s" % biome_name)
 				pass
 			else:
 				push_warning("[ArenaManager] ImageTexture.create_from_image falló para %s" % biome_name)
@@ -225,7 +210,6 @@ func _load_biome_textures() -> void:
 			if ResourceLoader.exists(base_path):
 				base_texture = load(base_path)
 				if base_texture:
-					# Debug desactivado: print("📦 [ArenaManager] Textura cargada desde recursos: %s" % biome_name)
 					pass
 		
 		# === CARGAR DECORACIONES ANIMADAS ===
@@ -238,7 +222,6 @@ func _load_biome_textures() -> void:
 				# BLACKLIST: Excluir decoraciones sospechosas de ser "fake chests" (forest/decor5)
 				# Reportado como cofres estáticos en la misma posición
 				if "decor5" in decor_path:
-					# print("🚫 [ArenaManager] Omitiendo decoración sospechosa: ", decor_path)
 					continue
 					
 				decor_paths.append(decor_path)
@@ -249,7 +232,6 @@ func _load_biome_textures() -> void:
 		}
 		
 		if base_texture:
-			# Debug desactivado: print("🖼️ [ArenaManager] Textura seamless: %s (%dx%d, %d decoraciones)" % [biome_name, base_texture.get_width(), base_texture.get_height(), decor_paths.size()])
 			pass
 		else:
 			push_warning("[ArenaManager] Sin textura para: %s (usando color)" % biome_name)
@@ -368,7 +350,6 @@ func _generate_paths(parent: Node2D) -> void:
 			# Ramificaciones
 			if rng.randf() > 0.4:
 				_create_branch_path(path_container, full_points, noise, i, path_textures)
-
 
 
 func _generate_path_geometry(base_angle: float, noise: FastNoiseLite, seed_idx: int) -> PackedVector2Array:
@@ -589,7 +570,6 @@ func _create_branch_path(container: Node2D, parent_points: PackedVector2Array, n
 	_split_and_draw_path(container, smoothed, textures, branch_width)
 
 
-
 func _create_zone(parent: Node2D, zone_type: ZoneType, radius: float) -> void:
 	"""Crear una zona circular con su bioma usando textura seamless + shader"""
 	var biome_name = selected_biomes[zone_type]
@@ -722,7 +702,6 @@ func _create_circular_tiled_zone(zone_node: Node2D, texture: Texture2D, outer_ra
 	sprite.material = mat
 	zone_node.add_child(sprite)
 	
-	# Debug desactivado: print("   🎨 [Zone %s] Círculo perfecto (r=%.0f-%.0f, 1 sprite, tiles=%.1f)" % [ZoneType.keys()[zone_type], inner_radius, outer_radius, tile_count])
 
 # Las funciones _create_sprite_frames_from_sheet y _apply_circular_shader_mask
 # fueron eliminadas - ahora usamos shaders externos
@@ -789,7 +768,6 @@ func _add_animated_decorations(zone_node: Node2D, radius: float, zone_type: Zone
 	var decor_paths = biome_data.get("decor_paths", [])
 	
 	if decor_paths.size() == 0:
-		# Debug desactivado: print("   🌿 [Zone %s] Sin decoraciones disponibles" % ZoneType.keys()[zone_type])
 		return
 	
 	var decor_container = Node2D.new()
@@ -858,7 +836,6 @@ func _add_animated_decorations(zone_node: Node2D, radius: float, zone_type: Zone
 		
 		decor_created += 1
 	
-	# Debug desactivado: print("   🌿 [Zone %s] %d decoraciones" % [ZoneType.keys()[zone_type], decor_created])
 
 func _get_inner_radius(zone_type: ZoneType) -> float:
 	"""Obtener el radio interior de una zona"""
@@ -939,7 +916,6 @@ func _create_boundary() -> void:
 	sprite.material = mat
 	boundary_node.add_child(sprite)
 	
-	# Debug desactivado: print("🎨 [ArenaManager] Void Border shader aplicado. R_norm: %.3f" % radius_normalized)
 
 func _physics_process(delta: float) -> void:
 	"""Actualizar estado del player respecto a la arena"""
@@ -955,7 +931,6 @@ func _physics_process(delta: float) -> void:
 		player_current_zone = new_zone
 		var zone_name = ZoneType.keys()[new_zone]
 		player_zone_changed.emit(new_zone, zone_name)
-		# Debug desactivado: print("🏟️ [ArenaManager] Player entró en zona: %s (%s)" % [zone_name, selected_biomes[new_zone]])
 	
 	# Verificar si está fuera del arena
 	if distance_from_center > arena_radius:
@@ -1129,13 +1104,11 @@ func _create_zone_barriers() -> void:
 	barriers_container.name = "ZoneBarriers"
 	game_node.add_child(barriers_container)
 	
-	# Debug desactivado: print("🚧 [ArenaManager] Contenedor de barreras creado en: %s" % barriers_container.get_path())
 	
 	# Barrera entre SAFE y MEDIUM (en safe_zone_radius)
 	var barrier_medium = _create_circular_barrier(safe_zone_radius, ZoneType.MEDIUM, "BarrierToMedium")
 	barriers_container.add_child(barrier_medium)
 	zone_barriers[ZoneType.MEDIUM] = barrier_medium
-	# Debug desactivado: print("🚧 [ArenaManager] BarrierToMedium path: %s, children: %d" % [barrier_medium.get_path(), barrier_medium.get_child_count()])
 	
 	# Barrera entre MEDIUM y DANGER (en medium_zone_radius)
 	var barrier_danger = _create_circular_barrier(medium_zone_radius, ZoneType.DANGER, "BarrierToDanger")
@@ -1152,9 +1125,7 @@ func _create_zone_barriers() -> void:
 	var barrier_perimeter = _create_circular_barrier(arena_radius, ZoneType.SAFE, "BarrierPerimeter")
 	barriers_container.add_child(barrier_perimeter)
 	# Nota: No añadimos esta barrera a zone_barriers porque nunca se desbloquea
-	# Debug desactivado: print("🚧 [ArenaManager] Barrera perimetral permanente creada: r=%.0f" % arena_radius)
 	
-	# Debug desactivado: print("🚧 [ArenaManager] Barreras de zona creadas")
 
 func _create_circular_barrier(radius: float, zone_type: ZoneType, barrier_name: String) -> StaticBody2D:
 	"""Crear una barrera circular física en el radio especificado"""
@@ -1198,7 +1169,6 @@ func _create_circular_barrier(radius: float, zone_type: ZoneType, barrier_name: 
 	var first_collision = barrier.get_child(0) as CollisionShape2D
 	if first_collision and first_collision.shape:
 		var s = first_collision.shape as RectangleShape2D
-		# Debug desactivado: print("🚧 [ArenaManager] %s primer segmento: pos=%s, size=%s, layer=%d" % [
 		#	barrier_name, first_collision.position, s.size, barrier.collision_layer
 		# ])
 	
@@ -1206,7 +1176,6 @@ func _create_circular_barrier(radius: float, zone_type: ZoneType, barrier_name: 
 	var visual = _create_barrier_visual(radius, zone_type)
 	barrier.add_child(visual)
 	
-	# Debug desactivado: print("🚧 [ArenaManager] Barrera %s creada: r=%.0f, %d segmentos, grosor=%.0f" % [barrier_name, radius, segments, barrier_thickness])
 	
 	return barrier
 
@@ -1300,7 +1269,6 @@ func unlock_zone(zone_type: ZoneType) -> void:
 	
 	var zone_name = ZoneType.keys()[zone_type]
 	zone_unlocked.emit(zone_type, zone_name)
-	# Debug desactivado: print("🔓 [ArenaManager] ¡Zona %s DESBLOQUEADA!" % zone_name)
 
 func check_zone_unlocks(game_time_seconds: float) -> void:
 	"""Verificar si alguna zona debe desbloquearse basándose en el tiempo de juego"""
@@ -1381,7 +1349,6 @@ func from_save_data(data: Dictionary) -> void:
 	if data.is_empty():
 		return
 	
-	# Debug desactivado: print("🏟️ [ArenaManager] Restaurando desde save data...")
 	
 	# Restaurar zonas desbloqueadas
 	if data.has("unlocked_zones"):
@@ -1403,7 +1370,6 @@ func from_save_data(data: Dictionary) -> void:
 		# Usar call_deferred para asegurar que el fog ya esté creado
 		call_deferred("_restore_fog_radius", saved_fog_radius)
 	
-	# Debug desactivado: print("🏟️ [ArenaManager] Estado restaurado:")
 
 func _restore_fog_radius(radius: float) -> void:
 	"""Restaurar el radio del fog inmediatamente (sin animación)"""
@@ -1414,8 +1380,6 @@ func _restore_fog_radius(radius: float) -> void:
 	if fog and fog.material is ShaderMaterial:
 		fog.material.set_shader_parameter("unlocked_radius", radius)
 		print("🌫️ [ArenaManager] Fog restaurado a radio: %.1f" % radius)
-	# Debug desactivado: print("   - Seed: %d" % arena_seed)
-	# Debug desactivado: print("   - Zonas desbloqueadas: SAFE=%s, MEDIUM=%s, DANGER=%s, DEATH=%s" % [
 	#	unlocked_zones.get(ZoneType.SAFE, false),
 	#	unlocked_zones.get(ZoneType.MEDIUM, false),
 	#	unlocked_zones.get(ZoneType.DANGER, false),
@@ -1429,7 +1393,6 @@ func _unlock_zone_barrier(zone_type: int) -> void:
 		if is_instance_valid(barrier):
 			barrier.queue_free()
 			zone_barriers.erase(zone_type)
-			# Debug desactivado: print("🏟️ [ArenaManager] Barrera de zona %d removida" % zone_type)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DETECCIÓN DE CAMINOS (SPEED BUFF)

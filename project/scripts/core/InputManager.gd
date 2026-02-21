@@ -36,7 +36,6 @@ var custom_bindings: Dictionary = {}
 var default_bindings: Dictionary = {}
 
 func _ready() -> void:
-	# Debug desactivado: print("[InputManager] Initializing InputManager...")
 
 	# Store default bindings
 	_store_default_bindings()
@@ -73,9 +72,7 @@ func _ready() -> void:
 	set_process_unhandled_input(true)
 	# Ensure _process is called to update movement_vector
 	set_process(true)
-	# Debug desactivado: print("[InputManager] set_process(true) called - will update movement_vector each frame")
 
-	# Debug desactivado: print("[InputManager] InputManager initialized successfully")
 
 func _store_default_bindings() -> void:
 	"""Store the default input map for reset functionality"""
@@ -126,7 +123,6 @@ func _detect_device_change(event: InputEvent) -> void:
 		last_used_device = new_device
 		current_device_type = new_device
 		input_device_changed.emit(new_device)
-		# Debug desactivado: print("[InputManager] Input device changed to: ", new_device)
 
 # Dedup de pause: evitar emitir pause_requested múltiples veces en el mismo frame
 var _pause_emitted_this_frame: bool = false
@@ -206,7 +202,6 @@ func remap_action(action: String, new_event: InputEvent) -> bool:
 	# Save to settings
 	_save_custom_bindings()
 
-	# Debug desactivado: print("[InputManager] Remapped action '", action, "' to new input")
 	return true
 
 func add_action_event(action: String, new_event: InputEvent) -> bool:
@@ -227,7 +222,6 @@ func add_action_event(action: String, new_event: InputEvent) -> bool:
 	# Save to settings
 	_save_custom_bindings()
 
-	# Debug desactivado: print("[InputManager] Added input event to action: ", action)
 	return true
 
 func reset_action_to_default(action: String) -> bool:
@@ -250,7 +244,6 @@ func reset_action_to_default(action: String) -> bool:
 	# Save settings
 	_save_custom_bindings()
 
-	# Debug desactivado: print("[InputManager] Reset action to default: ", action)
 	return true
 
 func reset_to_defaults() -> void:
@@ -258,7 +251,6 @@ func reset_to_defaults() -> void:
 	for action in default_bindings:
 		reset_action_to_default(action)
 
-	# Debug desactivado: print("[InputManager] All input actions reset to defaults")
 
 func get_action_events(action: String) -> Array:
 	"""Get all input events for an action"""

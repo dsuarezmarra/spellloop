@@ -53,7 +53,6 @@ const STEAM_APP_ID = "PLACEHOLDER_STEAM_APPID"  # Replace with real Steam AppID
 var steam_initialized: bool = false
 
 func _ready() -> void:
-	# Debug desactivado: print("[GameManager] Initializing GameManager...")
 
 	# Initialize Steam if available
 	_initialize_steam()
@@ -61,13 +60,11 @@ func _ready() -> void:
 	# Connect to other managers
 	_setup_manager_connections()
 
-	# print("[GameManager] GameManager initialized successfully")
 
 func _initialize_steam() -> void:
 	"""Initialize Steam API if available"""
 	# TODO: Implement actual Steam initialization
 	# This is a placeholder for Steam integration
-	# Debug desactivado: print("[GameManager] Steam initialization placeholder - AppID: ", STEAM_APP_ID)
 	steam_initialized = false  # Will be true when real Steam integration is added
 
 func _setup_manager_connections() -> void:
@@ -98,20 +95,16 @@ func _initialize_dungeon_system() -> void:
 		attack_manager = am_script.new()
 		attack_manager.name = "AttackManager"
 		add_child(attack_manager)
-		# Debug desactivado: print("[GameManager] ⚔️ AttackManager creado")
 
 	# Crear ProjectileVisualManager para efectos visuales de proyectiles
 	projectile_visual_manager = ProjectileVisualManager.new()
 	projectile_visual_manager.name = "ProjectileVisualManager"
 	add_child(projectile_visual_manager)
-	# Debug desactivado: print("[GameManager] 🎨 ProjectileVisualManager creado")
 
 	# Sistema de mazmorra desactivado temporalmente
-	# Debug desactivado: print("[GameManager] Sistema básico inicializado")
 
 func start_new_run() -> void:
 	"""Start a new game run"""
-	# Debug desactivado: print("[GameManager] Starting new run...")
 
 	var old_state = current_state
 	current_state = GameState.IN_RUN
@@ -171,7 +164,6 @@ func start_new_run() -> void:
 			if not player_stats:
 				player_stats = get_tree().get_first_node_in_group("player_stats")
 
-			# Debug desactivado: print("[GameManager] ✓ AttackManager inicializado con player")
 			# NOTA: Las armas iniciales las equipa el propio Player (_equip_starting_weapons)
 			# No duplicar aquí para evitar armas duplicadas
 			# equip_initial_weapons()  # DESACTIVADO - ver WizardPlayer._equip_starting_weapons()
@@ -182,7 +174,6 @@ func start_new_run() -> void:
 	run_started.emit()
 
 	# Sistema de mazmorra desactivado temporalmente
-	# Debug desactivado: print("[GameManager] Nueva partida iniciada")
 
 func end_current_run(reason: String) -> void:
 	"""End the current game run with a given reason"""
@@ -190,7 +181,6 @@ func end_current_run(reason: String) -> void:
 		push_warning("[GameManager] Warning: Attempted to end run but no run is active")
 		return
 
-	# Debug desactivado: print("[GameManager] Ending run. Reason: ", reason)
 
 	var old_state = current_state
 	current_state = GameState.GAME_OVER
@@ -353,7 +343,6 @@ func increment_run_stat(stat_name: String, amount: int = 1) -> void:
 
 # Signal handlers
 func _on_save_completed() -> void:
-	# Debug desactivado: print("[GameManager] Save completed successfully")
 	pass
 
 func _on_save_failed(error: String) -> void:

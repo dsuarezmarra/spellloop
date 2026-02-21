@@ -468,7 +468,6 @@ func apply_upgrade(upgrade: Dictionary) -> bool:
 	_recalculate_stats()
 	
 	upgrade_applied.emit(weapon_id, upgrade.get("id", "unknown"))
-	# Debug desactivado: print("[WeaponStats] Mejora aplicada")
 	return true
 
 func remove_upgrade(upgrade_id: String) -> bool:
@@ -519,7 +518,6 @@ static func create_fusion(weapon1: WeaponStats, weapon2: WeaponStats, fusion_dat
 	
 	fused._recalculate_stats()
 	
-	# print("[WeaponStats] Fusión creada: %s (de %s + %s) con multiplicador %.1fx" % [
 	# 	fused.weapon_id, weapon1.weapon_id, weapon2.weapon_id, fused.fusion_multiplier
 	# ])
 	

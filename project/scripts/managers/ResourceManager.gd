@@ -73,7 +73,6 @@ func _ready() -> void:
 	_preload_assets.call_deferred()
 
 func _preload_assets() -> void:
-	# Debug desactivado: print("📦 [ResourceManager] Iniciando pre-carga de assets...")
 	var start_time = Time.get_ticks_msec()
 	
 	for path in PRELOAD_PATHS:
@@ -88,7 +87,6 @@ func _preload_assets() -> void:
 	
 	var time = Time.get_ticks_msec() - start_time
 	precache_stats["total_time_ms"] = time
-	# Debug desactivado: print("📦 [ResourceManager] Pre-carga completada en %dms (%d sprites procesados)" % [time, precache_stats["sprites_processed"]])
 
 func _preload_common_enemies() -> void:
 	"""

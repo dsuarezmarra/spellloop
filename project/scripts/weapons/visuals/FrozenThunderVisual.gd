@@ -96,7 +96,6 @@ func _try_load_custom_sprites() -> void:
 
 		if _bolt_spritesheet and _zap_spritesheet:
 			_use_custom_sprites = true
-			# print("[FrozenThunderVisual] ❄️⚡ Sprites personalizados cargados")
 
 func _create_bolt_lines() -> void:
 	"""Crear las líneas del rayo de hielo (modo procedural)"""
