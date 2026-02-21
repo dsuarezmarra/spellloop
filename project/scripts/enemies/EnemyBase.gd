@@ -1264,11 +1264,6 @@ func _spawn_fire_trail_fallback_visual(trail: Node, trail_radius: float, trail_d
 			trail.queue_free()
 	)
 
-	# Fade out visual
-	# FIX-R5: Crear tween en el trail (no en self) para que persista si el enemigo muere
-	var tween = trail.create_tween()
-	tween.tween_interval(trail_duration * 0.7)
-	tween.tween_property(visual, "modulate:a", 0.0, trail_duration * 0.3)
 
 func _buff_nearby_allies() -> void:
 	"""Buffear aliados cercanos"""
