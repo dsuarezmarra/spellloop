@@ -95,23 +95,24 @@ func _get_localized_field(data: Dictionary, field_base: String, fallback: String
 	return fallback
 
 func _load_characters() -> void:
-	"""Load all characters from database, filtered by EA content"""
+	"""Load all characters from database. EA-enabled are unlocked, the rest show as locked."""
 	var all_db_characters = CharacterDatabase.get_all_characters()
 
-	# Filter by EA content availability
-	all_characters = []
-	for char_data in all_db_characters:
-		if EAContentManager.is_character_enabled(char_data.id):
-			all_characters.append(char_data)
+	# Show ALL characters in the carousel
+	all_characters = all_db_characters
 
-	# Unlock all EA-enabled characters for now
+	# Only EA-enabled characters are selectable
 	unlocked_character_ids = []
 	for char_data in all_characters:
-		unlocked_character_ids.append(char_data.id)
+		if EAContentManager.is_character_enabled(char_data.id):
+			unlocked_character_ids.append(char_data.id)
 
-	# Set initial selection
-	if all_characters.size() > 0:
-		selected_character_id = all_characters[0].id
+	# Set initial selection to the first unlocked character
+	for char_data in all_characters:
+		if char_data.id in unlocked_character_ids:
+			selected_character_id = char_data.id
+			current_index = all_characters.find(char_data)
+			break
 
 func _build_ui() -> void:
 	"""Build the UI programmatically"""
@@ -349,6 +350,7 @@ func _create_carousel() -> void:
 
 	for i in range(all_characters.size()):
 		var char_data = all_characters[i]
+		var is_locked = not (char_data.id in unlocked_character_ids)
 
 		# Container for each character
 		var char_container = Control.new()
@@ -361,7 +363,7 @@ func _create_carousel() -> void:
 		sprite.name = "Sprite"
 		sprite.centered = true
 
-		# Load walk_down animation
+		# Load frames (black silhouette if locked)
 		var frames = _create_character_frames(char_data)
 		sprite.sprite_frames = frames
 		sprite.animation = "idle"
@@ -369,52 +371,70 @@ func _create_carousel() -> void:
 
 		char_container.add_child(sprite)
 
+		# Lock icon for locked characters
+		if is_locked:
+			var lock_label = Label.new()
+			lock_label.name = "LockIcon"
+			lock_label.text = "🔒"
+			lock_label.add_theme_font_size_override("font_size", 28)
+			lock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			lock_label.set_anchors_preset(Control.PRESET_CENTER)
+			lock_label.position = Vector2(-20, -80)  # Slightly above center
+			lock_label.z_index = 2
+			char_container.add_child(lock_label)
+
 		# Glow effect for selected (initially invisible)
-		var glow = Sprite2D.new()
-		glow.name = "Glow"
-		glow.modulate = Color(char_data.color_primary.r, char_data.color_primary.g, char_data.color_primary.b, 0)
-		glow.z_index = -1
-		char_container.add_child(glow)
+		if not is_locked:
+			var glow = Sprite2D.new()
+			glow.name = "Glow"
+			glow.modulate = Color(char_data.color_primary.r, char_data.color_primary.g, char_data.color_primary.b, 0)
+			glow.z_index = -1
+			char_container.add_child(glow)
 
 		character_nodes.append(char_container)
 		character_sprites.append(sprite)
 
 func _create_character_frames(char_data: Dictionary) -> SpriteFrames:
-	"""Create SpriteFrames for a character with idle and walk animations"""
+	"""Create SpriteFrames for a character with idle and walk animations.
+	For locked characters, produces a black silhouette using their own sprite."""
 	var frames = SpriteFrames.new()
 	var sprite_folder = char_data.get("sprite_folder", "frost_mage")
 	var base_path = "res://assets/sprites/players/" + sprite_folder
 	const FRAME_SIZE = 208  # Each frame is 208x208
+	var is_locked = not (char_data.id in unlocked_character_ids)
 
-	# Load the walk_down strip
+	# Load the walk_down strip (use own sprite, fallback to frost_mage)
 	var strip_path = "%s/walk/walk_down_strip.png" % base_path
 	var strip_tex = load(strip_path) as Texture2D
-
 	if not strip_tex:
-		# Fallback to frost_mage
 		strip_path = "res://assets/sprites/players/frost_mage/walk/walk_down_strip.png"
 		strip_tex = load(strip_path) as Texture2D
 
 	if strip_tex:
 		var strip_image = strip_tex.get_image()
 
+		# For locked characters: convert to black silhouette
+		if is_locked:
+			strip_image.convert(Image.FORMAT_RGBA8)
+			for y in range(strip_image.get_height()):
+				for x in range(strip_image.get_width()):
+					var pixel = strip_image.get_pixel(x, y)
+					if pixel.a > 0.05:
+						strip_image.set_pixel(x, y, Color(0, 0, 0, pixel.a))
+
 		# IDLE animation (first frame from strip)
 		frames.add_animation("idle")
 		frames.set_animation_speed("idle", 1.0)
 		frames.set_animation_loop("idle", true)
-
-		var idle_region = Rect2i(0, 0, FRAME_SIZE, FRAME_SIZE)
-		var idle_image = strip_image.get_region(idle_region)
+		var idle_image = strip_image.get_region(Rect2i(0, 0, FRAME_SIZE, FRAME_SIZE))
 		frames.add_frame("idle", ImageTexture.create_from_image(idle_image))
 
 		# WALK animation (3 frames from strip)
 		frames.add_animation("walk")
 		frames.set_animation_speed("walk", 6.0)
 		frames.set_animation_loop("walk", true)
-
 		for i in range(3):
-			var frame_region = Rect2i(i * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE)
-			var frame_image = strip_image.get_region(frame_region)
+			var frame_image = strip_image.get_region(Rect2i(i * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE))
 			frames.add_frame("walk", ImageTexture.create_from_image(frame_image))
 
 	return frames
@@ -520,7 +540,7 @@ func _on_transition_complete() -> void:
 	is_transitioning = false
 
 func _navigate(direction: int) -> void:
-	"""Navigate carousel left or right"""
+	"""Navigate carousel left or right (can browse locked characters too)"""
 	if is_transitioning:
 		return
 
@@ -528,18 +548,12 @@ func _navigate(direction: int) -> void:
 	if total == 0:
 		return
 
-	# Find next unlocked character
-	var new_index = current_index
-	var attempts = 0
-
-	while attempts < total:
-		new_index = (new_index + direction + total) % total
-		if all_characters[new_index].id in unlocked_character_ids:
-			break
-		attempts += 1
+	# Allow navigating to all characters, including locked ones
+	var new_index = (current_index + direction + total) % total
 
 	if new_index != current_index:
 		current_index = new_index
+		selected_character_id = all_characters[current_index].id
 		_update_carousel_positions(true)
 		_play_navigate_sound()
 
@@ -551,13 +565,14 @@ func _update_stats_display() -> void:
 	var char_data = all_characters[current_index]
 	var is_unlocked = char_data.id in unlocked_character_ids
 
-	# Update name and title (use localized versions)
+	# Update name and title
 	if character_name_label:
 		character_name_label.text = L("characters.%s.name" % char_data.id) if is_unlocked else "???"
+		character_name_label.add_theme_color_override("font_color", Color(1, 1, 1) if is_unlocked else Color(0.5, 0.5, 0.5))
 
 	if character_title_label:
-		character_title_label.text = L("characters.%s.title" % char_data.id) if is_unlocked else L("ui.character_select.locked")
-		character_title_label.add_theme_color_override("font_color", char_data.color_primary if is_unlocked else Color(0.5, 0.5, 0.5))
+		character_title_label.text = L("characters.%s.title" % char_data.id) if is_unlocked else "🔒  " + L("ui.character_select.locked")
+		character_title_label.add_theme_color_override("font_color", char_data.color_primary if is_unlocked else Color(0.45, 0.45, 0.5))
 
 	# Update stats panel
 	if not stats_panel:
@@ -580,11 +595,58 @@ func _update_stats_display() -> void:
 		child.queue_free()
 
 	if not is_unlocked:
-		var locked_label = Label.new()
-		locked_label.text = L("ui.character_select.unlock_hint")
-		locked_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		locked_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
-		vbox.add_child(locked_label)
+		# Description row
+		var desc_label = Label.new()
+		desc_label.text = "???"
+		desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc_label.add_theme_font_size_override("font_size", 13)
+		desc_label.add_theme_color_override("font_color", Color(0.45, 0.45, 0.5))
+		vbox.add_child(desc_label)
+
+		var sep = HSeparator.new()
+		sep.add_theme_constant_override("separation", 4)
+		vbox.add_child(sep)
+
+		# Weapon + passive row
+		var wp_hbox = HBoxContainer.new()
+		wp_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		wp_hbox.add_theme_constant_override("separation", 30)
+		vbox.add_child(wp_hbox)
+
+		var weapon_lbl = Label.new()
+		weapon_lbl.text = L("ui.character_select.weapon") + ": ???"
+		weapon_lbl.add_theme_font_size_override("font_size", 13)
+		weapon_lbl.add_theme_color_override("font_color", Color(0.5, 0.45, 0.35))
+		wp_hbox.add_child(weapon_lbl)
+
+		var passive_lbl = Label.new()
+		passive_lbl.text = L("ui.character_select.passive") + ": ???"
+		passive_lbl.add_theme_font_size_override("font_size", 13)
+		passive_lbl.add_theme_color_override("font_color", Color(0.35, 0.5, 0.5))
+		wp_hbox.add_child(passive_lbl)
+
+		var sep2 = HSeparator.new()
+		sep2.add_theme_constant_override("separation", 4)
+		vbox.add_child(sep2)
+
+		# Stats grid with ???
+		var stats_center = HBoxContainer.new()
+		stats_center.alignment = BoxContainer.ALIGNMENT_CENTER
+		vbox.add_child(stats_center)
+		var stats_grid = GridContainer.new()
+		stats_grid.columns = 3
+		stats_grid.add_theme_constant_override("h_separation", 40)
+		stats_grid.add_theme_constant_override("v_separation", 4)
+		stats_center.add_child(stats_grid)
+		var stat_names = ["HP", "SPD", "ARM", "DMG", "SPD", "AREA", "RNG", "REGEN", "LUCK"]
+		for stat_name in stat_names:
+			var sl = Label.new()
+			sl.text = stat_name + ": ?"
+			sl.add_theme_font_size_override("font_size", 13)
+			sl.custom_minimum_size = Vector2(100, 0)
+			sl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			sl.add_theme_color_override("font_color", Color(0.4, 0.4, 0.45))
+			stats_grid.add_child(sl)
 		return
 
 	# Description (localized) - Texto más compacto
