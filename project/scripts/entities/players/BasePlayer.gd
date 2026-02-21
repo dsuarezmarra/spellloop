@@ -395,10 +395,6 @@ func _setup_weapons_deferred() -> void:
 	else:
 		push_warning("[%s] AttackManager no disponible" % character_class)
 
-func _equip_starting_weapons() -> void:
-	"""Equipar armas iniciales - SOBRESCRIBIR EN SUBCLASES"""
-	# Implementación por defecto vacía
-
 # ========== MOVIMIENTO ==========
 
 var _is_moving: bool = false
