@@ -19,7 +19,7 @@ const _SPAWN_BUDGET_SCRIPT  = preload("res://scripts/managers/SpawnBudgetManager
 const _HUD_SCENE            = preload("res://scenes/ui/GameHUD.tscn")
 const _PAUSE_MENU_SCENE     = preload("res://scenes/ui/PauseMenu.tscn")
 const _GAME_OVER_SCENE      = preload("res://scenes/ui/GameOverScreen.tscn")
-const _DAMAGE_VIGNETTE_SCRIPT  = preload("res://scripts/ui/DamageVignette.gd")
+# NOTE: DamageVignette.gd no existe — implementar o eliminar _setup_damage_feedback
 const _AMBIENT_ATMO_SCRIPT  = preload("res://scripts/visuals/AmbientAtmosphere.gd")
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -465,8 +465,8 @@ func _setup_camera() -> void:
 
 func _setup_damage_feedback() -> void:
 	"""Configurar el sistema de feedback visual de daño estilo Binding of Isaac"""
-	# Cargar y crear DamageVignette
-	var DamageVignetteScript = _DAMAGE_VIGNETTE_SCRIPT
+	# DamageVignette.gd no existe aún — load() silencioso como fallback
+	var DamageVignetteScript = load("res://scripts/ui/DamageVignette.gd")
 	if DamageVignetteScript:
 		damage_vignette = DamageVignetteScript.new()
 		damage_vignette.name = "DamageVignette"
