@@ -19,6 +19,7 @@ const _SPAWN_BUDGET_SCRIPT  = preload("res://scripts/managers/SpawnBudgetManager
 const _HUD_SCENE            = preload("res://scenes/ui/GameHUD.tscn")
 const _PAUSE_MENU_SCENE     = preload("res://scenes/ui/PauseMenu.tscn")
 const _GAME_OVER_SCENE      = preload("res://scenes/ui/GameOverScreen.tscn")
+const _LEVEL_UP_PANEL_SCENE = preload("res://scenes/ui/LevelUpPanel.tscn")
 # NOTE: DamageVignette.gd no existe — implementar o eliminar _setup_damage_feedback
 const _AMBIENT_ATMO_SCRIPT  = preload("res://scripts/visuals/AmbientAtmosphere.gd")
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1327,7 +1328,7 @@ func _process_next_level_up() -> void:
 
 func _show_level_up_panel(_level: int) -> void:
 	"""Mostrar el panel de selección de mejoras al subir nivel"""
-	var panel_scene = load("res://scenes/ui/LevelUpPanel.tscn")
+	var panel_scene = _LEVEL_UP_PANEL_SCENE
 	if not panel_scene:
 		push_error("[Game] No se pudo cargar LevelUpPanel.tscn")
 		return
