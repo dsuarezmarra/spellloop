@@ -486,7 +486,7 @@ func _setup_damage_feedback() -> void:
 
 	# Conectar señal de daño del player
 	if player:
-		# Buscar el BasePlayer dentro de SpellloopPlayer
+		# Buscar el BasePlayer dentro de LoopiaLikePlayer
 		var base_player = _get_base_player()
 		if base_player and base_player.has_signal("player_took_damage"):
 			base_player.player_took_damage.connect(_on_player_took_damage)
@@ -495,9 +495,9 @@ func _setup_damage_feedback() -> void:
 			base_player.player_died.connect(_on_player_died)
 
 func _get_base_player() -> Node:
-	"""Obtener referencia al BasePlayer (puede estar dentro de SpellloopPlayer)"""
+	"""Obtener referencia al BasePlayer (puede estar dentro de LoopiaLikePlayer)"""
 	if player:
-		# Si es SpellloopPlayer, el wizard_player es el BasePlayer
+		# Si es LoopiaLikePlayer, el wizard_player es el BasePlayer
 		if "wizard_player" in player and player.wizard_player:
 			return player.wizard_player
 		# Si ya es BasePlayer
@@ -863,7 +863,7 @@ func _restore_player_hp_deferred() -> void:
 	# Buscar HealthComponent en las ubicaciones posibles
 	var health_component = null
 
-	# 1. En SpellloopPlayer.health_component (referencia directa)
+	# 1. En LoopiaLikePlayer.health_component (referencia directa)
 	if "health_component" in player and player.health_component:
 		health_component = player.health_component
 

@@ -210,9 +210,106 @@ func _initialize_visual() -> void:
 
 
 func _setup_animations() -> void:
-	"""Configurar animaciones del personaje - SOBRESCRIBIR EN SUBCLASES"""
-	# Implementación por defecto vacía
-	# Las subclases deben sobrescribir este método
+	"""Configure animations using strip spritesheets (3 frames per strip, 208x208 each)"""
+	if not animated_sprite:
+		return
+
+	var frames = SpriteFrames.new()
+	var dirs = ["down", "up", "left", "right"]
+	var base_path = "res://assets/sprites/players/" + character_sprites_key
+	const FRAME_SIZE = 208  # Each frame is 208x208
+
+	# Walk + Idle animations (3 frames per direction from strip)
+	for dir in dirs:
+		var walk_anim = "walk_%s" % dir
+		var idle_anim = "idle_%s" % dir
+
+		frames.add_animation(walk_anim)
+		frames.add_animation(idle_anim)
+		frames.set_animation_speed(walk_anim, 1.5)
+		frames.set_animation_speed(idle_anim, 1.0)
+		frames.set_animation_loop(walk_anim, true)
+		frames.set_animation_loop(idle_anim, true)
+
+		var strip_path = "%s/walk/walk_%s_strip.png" % [base_path, dir]
+		var strip_tex = load(strip_path) as Texture2D
+		if strip_tex:
+			var strip_image = strip_tex.get_image()
+			for i in range(3):
+				var frame_region = Rect2i(i * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE)
+				var frame_image = strip_image.get_region(frame_region)
+				var frame_tex = ImageTexture.create_from_image(frame_image)
+				frames.add_frame(walk_anim, frame_tex)
+				if i == 0:
+					frames.add_frame(idle_anim, frame_tex)
+		else:
+			push_warning("[%s] Strip not found: %s" % [character_class, strip_path])
+
+	# Cast animation
+	frames.add_animation("cast")
+	frames.set_animation_speed("cast", 1.5)
+	frames.set_animation_loop("cast", false)
+	var cast_strip = load("%s/cast/cast_strip.png" % base_path) as Texture2D
+	if cast_strip:
+		var cast_image = cast_strip.get_image()
+		for i in range(3):
+			frames.add_frame("cast", ImageTexture.create_from_image(cast_image.get_region(Rect2i(i * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE))))
+
+	# Hit animation
+	frames.add_animation("hit")
+	frames.set_animation_speed("hit", 1.5)
+	frames.set_animation_loop("hit", false)
+	var hit_strip = load("%s/hit/hit_strip.png" % base_path) as Texture2D
+	if hit_strip:
+		var hit_image = hit_strip.get_image()
+		for i in range(3):
+			frames.add_frame("hit", ImageTexture.create_from_image(hit_image.get_region(Rect2i(i * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE))))
+
+	# Death animation
+	frames.add_animation("death")
+	frames.set_animation_speed("death", 5.0)
+	frames.set_animation_loop("death", false)
+	var death_strip = load("%s/death/death_strip.png" % base_path) as Texture2D
+	if death_strip:
+		var death_image = death_strip.get_image()
+		for i in range(3):
+			frames.add_frame("death", ImageTexture.create_from_image(death_image.get_region(Rect2i(i * FRAME_SIZE, 0, FRAME_SIZE, FRAME_SIZE))))
+
+	# Assign to sprite
+	animated_sprite.sprite_frames = frames
+	if frames.has_animation("idle_down"):
+		animated_sprite.animation = "idle_down"
+	animated_sprite.centered = true
+	animated_sprite.play()
+
+func set_character_sprites(sprite_folder: String) -> void:
+	"""Change the character's sprite folder and reload animations"""
+	character_sprites_key = sprite_folder
+	_setup_animations()
+
+func _equip_starting_weapons() -> void:
+	"""Equip starting weapon based on selected character"""
+	if not attack_manager:
+		return
+
+	var weapon_id = "ice_wand"  # Default
+	if SessionState:
+		var character_id = SessionState.get_character()
+		weapon_id = CharacterDatabase.get_starting_weapon(character_id)
+
+	if attack_manager.has_method("add_weapon_by_id"):
+		var result = attack_manager.add_weapon_by_id(weapon_id)
+		if not result:
+			push_warning("[%s] Error al equipar arma: %s" % [character_class, weapon_id])
+	else:
+		var weapon = BaseWeapon.new(weapon_id)
+		if weapon.id.is_empty():
+			push_warning("[%s] Arma no encontrada: %s" % [character_class, weapon_id])
+			return
+		var result = equip_weapon(weapon)
+		if not result:
+			push_warning("[%s] Error al equipar arma: %s" % [character_class, weapon_id])
+
 
 func _initialize_physics() -> void:
 	"""Configurar física del personaje"""

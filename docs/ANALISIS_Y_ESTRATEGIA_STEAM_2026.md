@@ -1,4 +1,4 @@
-# SPELLLOOP (Loopialike) ? Análisis Exhaustivo del Juego y Estrategia de Publicación en Steam
+# LoopiaLike (Loopialike) ? Análisis Exhaustivo del Juego y Estrategia de Publicación en Steam
 
 **Fecha**: 18 de febrero de 2026
 **Versión actual**: 0.1.0-alpha
@@ -29,7 +29,7 @@
 | Pantallas UI | **10** | Menú, selección, HUD, pausa, opciones, game over, ranking |
 | Slots de guardado | **3** | Con meta-progresión persistente |
 
-**Veredicto de contenido**: Para un Early Access, este volumen es **sólido y competitivo**. Vampire Survivors lanzó su EA con ~6 personajes y ~20 armas. Spellloop ya tiene más contenido que muchos roguelites al momento de su EA.
+**Veredicto de contenido**: Para un Early Access, este volumen es **sólido y competitivo**. Vampire Survivors lanzó su EA con ~6 personajes y ~20 armas. LoopiaLike ya tiene más contenido que muchos roguelites al momento de su EA.
 
 ---
 
@@ -156,7 +156,7 @@
 **Qué comunicar en la página de EA de Steam:**
 
 1. **"¿Por qué acceso anticipado?"**
-   > Spellloop tiene una base jugable sólida con 10 personajes, 55 armas, 7 biomas y cientos de mejoras. Queremos que la comunidad participe activamente en el desarrollo del juego: qué armas son divertidas, qué builds necesitan amor, y qué mecánicas añadir. El EA nos permite iterar rápido con feedback real.
+   > LoopiaLike tiene una base jugable sólida con 10 personajes, 55 armas, 7 biomas y cientos de mejoras. Queremos que la comunidad participe activamente en el desarrollo del juego: qué armas son divertidas, qué builds necesitan amor, y qué mecánicas añadir. El EA nos permite iterar rápido con feedback real.
 
 2. **"¿Cuánto durará el acceso anticipado?"**
    > Estimamos 6-12 meses. Publicaremos un roadmap visible y actualizaciones regulares.
@@ -190,7 +190,7 @@
 - `Controller Support`, `Steam Deck Verified`, `Early Access`
 - `Atmospheric`, `Replay Value`, `Difficult`
 
-**Nombre del juego**: "Spellloop" es corto, memorable, y busca bien. Mantenerlo.
+**Nombre del juego**: "LoopiaLike" es corto, memorable, y busca bien. Mantenerlo.
 
 **Descripción corta** (la que aparece en búsquedas):
 > "Sobrevive oleadas infinitas de enemigos con 55 armas mágicas fusionables. 10 magos, 7 biomas, builds infinitas. ¿Cuánto puedes aguantar?"
@@ -199,7 +199,7 @@
 - Primer párrafo: GANCHO ? qué hace único al juego (sistema de fusión de 55 armas)
 - Segundo párrafo: Sistema de juego (roguelite, arena, supervivencia)
 - Bullets de features con emojis ? (lista clara de contenido)
-- Comparaciones: "Si te gusta Vampire Survivors, Brotato o Magic Survival, Spellloop es para ti"
+- Comparaciones: "Si te gusta Vampire Survivors, Brotato o Magic Survival, LoopiaLike es para ti"
 - Call to action: "Únete a la comunidad en Discord"
 - Sección de EA bien redactada
 
@@ -315,7 +315,7 @@ Steam organiza eventos regulares donde puedes participar **gratis**:
   - Canales de 10K-50K subs: Menos probable que respondan, pero alto impacto
   - Canales de 50K+: Enviar key pero sin expectativas
 - **Email template**:
-  > Hi [Name], I'm [dev name], solo developer of Spellloop ? a roguelite with 55 fusable magic weapons, launching in Early Access on Steam. I'd love for you to try it! Here's a free Steam key: [KEY]. No obligations ? play it, stream it, review it, or pass if it's not your thing. Trailer: [link]. Thanks for your time!
+  > Hi [Name], I'm [dev name], solo developer of LoopiaLike ? a roguelite with 55 fusable magic weapons, launching in Early Access on Steam. I'd love for you to try it! Here's a free Steam key: [KEY]. No obligations ? play it, stream it, review it, or pass if it's not your thing. Trailer: [link]. Thanks for your time!
 
 #### 2.4.6 Prensa Indie (BAJA PRIORIDAD pero gratis)
 
@@ -450,7 +450,7 @@ Razones:
 
 ### 3.5 Resumen Ejecutivo
 
-**Spellloop está en una posición sólida para un lanzamiento en Early Access.** El juego tiene más contenido que muchos roguelites exitosos al momento de su EA (55 armas, 10 personajes, 160+ upgrades). El rendimiento es impecable, la integración Steam está lista, y soporta 10 idiomas.
+**LoopiaLike está en una posición sólida para un lanzamiento en Early Access.** El juego tiene más contenido que muchos roguelites exitosos al momento de su EA (55 armas, 10 personajes, 160+ upgrades). El rendimiento es impecable, la integración Steam está lista, y soporta 10 idiomas.
 
 **Los obstáculos principales son de balance**, no técnicos: el early game es demasiado letal, una fusión domina el juego, y falta testear 9 de 10 personajes. Estos son fixeables en 2-4 semanas de trabajo enfocado.
 

@@ -1,4 +1,4 @@
-# Bug Report ? Spellloop (Non-Core)
+# Bug Report ? LoopiaLike (Non-Core)
 ## Categorías: Combat & Weapons, UI Scripts, Data & Managers
 ### Bugs #15 ? #32 (core/ ya escaneado, #1?#14)
 
