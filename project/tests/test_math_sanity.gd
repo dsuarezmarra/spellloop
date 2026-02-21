@@ -6,11 +6,11 @@ extends "res://addons/gut/test.gd"
 # 1. Matemáticas básicas del DamageCalculator
 # ─────────────────────────────────────────────────────────────
 func test_damage_calculator_loads() -> void:
-	var script = load("res://scripts/core/DamageCalculator.gd")
+	var script = load("res://scripts/weapons/projectiles/DamageCalculator.gd")
 	assert_not_null(script, "DamageCalculator should load")
 
 func test_damage_calculator_has_calculate_method() -> void:
-	var script = load("res://scripts/core/DamageCalculator.gd")
+	var script = load("res://scripts/weapons/projectiles/DamageCalculator.gd")
 	if script == null:
 		pending("DamageCalculator not found")
 		return

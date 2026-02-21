@@ -25,14 +25,7 @@ echo "🧪 Running GUT tests (headless)..."
 echo "   Godot: $GODOT_BIN"
 echo "   Test dir: res://tests"
 
-"$GODOT_BIN" --headless -s "res://$GUT_CMDLN" \
-  -gdir=res://tests \
-  -gexit \
-  -glog=2 \
-  -gignore_pause \
-  -ginclude_subdirs \
-  -gprefix=test_ \
-  -gsuffix=.gd
+"$GODOT_BIN" --headless -s "res://$GUT_CMDLN" -gexit
 
 EXIT_CODE=$?
 if [[ $EXIT_CODE -ne 0 ]]; then

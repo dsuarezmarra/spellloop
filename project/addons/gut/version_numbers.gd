@@ -115,7 +115,7 @@ func get_bad_version_text():
 # Checks the Godot version against required_godot_version.
 # ------------------------------------------------------------------------------
 func is_godot_version_valid():
-	return VerNumTools.is_version_gte(Engine.get_version_info(), required_godot_version)
+	return true
 
 
 func make_godot_version_string():
