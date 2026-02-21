@@ -1236,33 +1236,6 @@ func _spawn_fire_trail_fallback_visual(trail: Node, trail_radius: float, trail_d
 	tween.tween_interval(trail_duration * 0.7)
 	tween.tween_property(visual, "modulate:a", 0.0, trail_duration * 0.3)
 
-	# Timer de daño periódico
-	var damage_interval = 0.5
-	var damage_timer = Timer.new()
-	damage_timer.wait_time = damage_interval
-	damage_timer.autostart = true
-	trail.add_child(damage_timer)
-
-	# Cachear referencia al player para evitar lookup cada 0.5s
-	var _trail_player_ref = get_tree().get_first_node_in_group("player")
-	damage_timer.timeout.connect(func():
-		if not is_instance_valid(trail):
-			return
-		# Verificar player cacheado
-		if not is_instance_valid(_trail_player_ref):
-			_trail_player_ref = get_tree().get_first_node_in_group("player")
-		if _trail_player_ref:
-			var dist = _trail_player_ref.global_position.distance_to(trail.global_position)
-			if dist <= trail_radius:
-				if _trail_player_ref.has_method("take_damage"):
-					_trail_player_ref.call("take_damage", trail_damage, "fire")
-	)
-
-	# Auto-destruir después de duration
-	get_tree().create_timer(trail_duration).timeout.connect(func():
-		if is_instance_valid(trail):
-			trail.queue_free()
-	)
 
 
 func _buff_nearby_allies() -> void:
