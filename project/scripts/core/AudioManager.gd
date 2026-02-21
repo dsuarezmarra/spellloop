@@ -45,8 +45,19 @@ func _ready():
 		validate_manifest()
 
 func _init_audio_system():
-	# Load manifest
-	manifest = AudioLoader.load_manifest()
+	# Load manifest directly from JSON (audio_loader.gd was removed)
+	var manifest_path = "res://audio_manifest.json"
+	if FileAccess.file_exists(manifest_path):
+		var file = FileAccess.open(manifest_path, FileAccess.READ)
+		if file:
+			var json = JSON.new()
+			if json.parse(file.get_as_text()) == OK:
+				manifest = json.data
+			else:
+				push_error("[AudioManager] Failed to parse audio_manifest.json")
+			file.close()
+	else:
+		push_error("[AudioManager] audio_manifest.json not found at: " + manifest_path)
 	print("[AudioManager] Loaded %d audio definitions" % manifest.size())
 
 	# Setup music player
