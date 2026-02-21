@@ -178,12 +178,6 @@ text = "SALIR"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DebugButton" type="Button" parent="UILayer/UIContainer/VBoxContainer"]
-custom_minimum_size = Vector2(240, 50)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
-theme_override_font_sizes/font_size = 20
-text = "DEBUG TESTS"
 
 [node name="VersionLabel" type="Label" parent="UILayer/UIContainer"]
 layout_mode = 1
@@ -220,11 +214,3 @@ theme_override_font_sizes/font_size = 14
 text = "WASD: Mover | Ataques automáticos | ESC: Pausa"
 horizontal_alignment = 1
 
-[node name="DebugLabel" type="Label" parent="UILayer"]
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 420.0
-offset_bottom = 120.0
-theme_override_colors/font_color = Color(1, 0, 0, 1)
-theme_override_font_sizes/font_size = 32
-text = "DEBUG: LOADING..."
