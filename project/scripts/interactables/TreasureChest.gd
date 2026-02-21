@@ -410,9 +410,9 @@ func create_chest_popup():
 		scene_root.add_child(popup_instance)
 	else:
 		get_tree().root.add_child(popup_instance)
-	# Asegurar pausa (el popup debería pausar en _enter_tree, pero por seguridad)
-	if not get_tree().paused:
-		get_tree().paused = true
+	# Nota: SimpleChestPopup gestiona su propia pausa en _enter_tree.
+	# NO pausar aquí manualmente — causaba freeze cuando el popup hacía
+	# su unpause antes de llegar a esta línea.
 
 	var items_with_names = []
 	for i in range(items_inside.size()):
@@ -511,6 +511,10 @@ func _finalize_opening(items: Array):
 		_apply_item(item)
 
 	chest_opened.emit(self, items)
+
+	# Safety net: asegurar que el árbol no quede pausado si algo falló
+	if get_tree().paused:
+		get_tree().paused = false
 
 	var timer = Timer.new()
 	add_child(timer)
