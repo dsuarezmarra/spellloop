@@ -1,23 +1,9 @@
 # WizardPlayer.gd
-# Clase base del jugador - Mantiene el nombre por compatibilidad
-# Extiende BasePlayer con características y armas específicas del mago
+# Clase del jugador - Extiende BasePlayer
+# Gestiona: animaciones de sprite, arma inicial según personaje seleccionado.
 
 extends BasePlayer
 class_name WizardPlayer
-
-# ========== CARACTERÍSTICAS DEL JUGADOR ==========
-
-# Estadísticas específicas (más magia, menos defensa)
-# Nota: move_speed, hp, max_hp, armor se heredan de BasePlayer
-
-# Bono de magia
-var spell_power: float = 1.2  # 20% más daño en hechizos
-var mana: int = 50
-var max_mana: int = 50
-
-# ========== ARMAS ==========
-var ice_wand = null
-var fire_wand = null  # Future
 
 # ========== CICLO DE VIDA ==========
 
@@ -150,26 +136,3 @@ func _equip_starting_weapons() -> void:
 		if not result:
 			push_warning("[WizardPlayer] ⚠️ Error al equipar arma: %s" % weapon_id)
 
-# ========== HABILIDADES DEL WIZARD ==========
-
-func cast_spell(spell_name: String) -> void:
-	"""Lanzar un hechizo"""
-	var cost: int = 0
-	match spell_name:
-		"fireball":
-			cost = 10
-		"frost_bolt":
-			cost = 8
-		_:
-			return
-	if mana < cost:
-		return
-	mana -= cost
-
-func get_stats() -> Dictionary:
-	"""Obtener estadísticas específicas del Wizard"""
-	var base_stats = super.get_stats()
-	base_stats["spell_power"] = spell_power
-	base_stats["mana"] = mana
-	base_stats["max_mana"] = max_mana
-	return base_stats
