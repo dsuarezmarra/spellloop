@@ -13,7 +13,7 @@ if [[ -z "${GODOT_BIN:-}" ]]; then
 fi
 
 # Duración del autopiloto (segundos de wall-clock)
-AUTOPILOT_TIMEOUT="${AUTOPILOT_TIMEOUT:-180}"  # 3 minutos por defecto
+AUTOPILOT_TIMEOUT="${AUTOPILOT_TIMEOUT:-400}"  # 400 segundos por defecto
 # Cuántos runs simular
 AUTOPILOT_RUNS="${AUTOPILOT_RUNS:-2}"
 

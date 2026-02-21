@@ -64,6 +64,10 @@ func _initialize() -> void:
 	_log("   Headless: %s" % str(_is_headless))
 	_log("═══════════════════════════════════════════════════════")
 
+	if _is_headless:
+		Engine.time_scale = 20.0
+		_log("   ⚡ Engine time_scale set to 20.0x for fast fuzzer")
+
 	# Capturar errores de GDScript
 	# En Godot 4.x no hay signal de error global, pero monitorizamos el log
 	_phase = "loading"
@@ -265,15 +269,28 @@ func _update_movement_direction() -> void:
 		_current_direction = patterns[randi() % patterns.size()]
 
 func _apply_movement(player: Node) -> void:
-	# Simular input de movimiento inyectando directamente la velocity
-	# El player usa CharacterBody2D con move_and_slide
 	if "velocity" in player:
-		var speed := 200.0  # Velocidad base razonable
+		var speed := 200.0
 		if player.has_method("get_speed"):
 			speed = player.get_speed()
 		elif "move_speed" in player:
 			speed = player.move_speed
 		player.velocity = _current_direction * speed
+
+		# CHEAT: Full God Mode every frame so the fuzzer survives to late game
+		if "max_health" in player:
+			player.max_health = 999999
+		if "current_health" in player:
+			player.current_health = 999999
+		elif player.has_method("heal"):
+			player.heal(999999)
+
+		# CHEAT: Continuous XP gain so the fuzzer levels up and tests 90% of upgrades
+		if player.is_inside_tree():
+			var exp_mgr = player.get_tree().get_first_node_in_group("experience_manager")
+			if exp_mgr and exp_mgr.has_method("gain_experience"):
+				if randf() < 0.1: # Smooth the calls to prevent spamming popups too densely
+					exp_mgr.gain_experience(150)
 
 func _check_and_handle_level_up() -> void:
 	# Buscar LevelUpPanel activo
