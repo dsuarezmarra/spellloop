@@ -492,6 +492,11 @@ func _setup_damage_feedback() -> void:
 	else:
 		push_warning("[Game] No se encontró AmbientAtmosphere.gd")
 
+	# ESCUCHAR SEÑAL DE PAUSA GLOBAL (FIX-P1)
+	var gm = get_tree().root.get_node_or_null("GameManager")
+	if gm and gm.has_signal("game_paused"):
+		gm.game_paused.connect(func(): if not is_paused: _pause_game())
+
 	# Conectar señal de daño del player
 	if player:
 		# Buscar el BasePlayer dentro de LoopiaLikePlayer
@@ -1065,6 +1070,8 @@ func _update_hud() -> void:
 		hud.update_health(health_data.current, health_data.max)
 
 func _on_enemy_died(death_position: Vector2, enemy_type: String, exp_value: int, enemy_tier: int = 1, is_elite: bool = false, is_boss: bool = false) -> void:
+	if OS.is_debug_build():
+		print("[Game] Enemy died: %s, XP: %d, Tier: %d, Elite: %s, Boss: %s" % [enemy_type, exp_value, enemy_tier, str(is_elite), str(is_boss)])
 	run_stats["kills"] += 1
 
 	# Trackear elites y bosses por separado
@@ -1172,7 +1179,14 @@ func _grant_exp_delayed(exp_value: int) -> void:
 	timer.timeout.connect(
 		func():
 			if experience_manager and is_instance_valid(experience_manager):
-				experience_manager.grant_exp_from_kill(exp_value)
+				var final_amount = exp_value
+				if player_stats and player_stats.has_method("get_stat"):
+					var xp_mult = player_stats.get_stat("xp_mult")
+					if xp_mult > 0:
+						final_amount = int(exp_value * xp_mult)
+				if OS.is_debug_build():
+					print("[Game] Granting delayed XP: %d (original: %d)" % [final_amount, exp_value])
+				experience_manager.grant_exp_from_kill(final_amount)
 	)
 
 func _spawn_reward_chest(pos: Vector2, rewards_config: Dictionary) -> void:

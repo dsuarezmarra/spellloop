@@ -57,6 +57,9 @@ func _ready() -> void:
 	# Initialize Steam if available
 	_initialize_steam()
 
+	# Ensure randomness for all systems
+	randomize()
+
 	# Connect to other managers
 	_setup_manager_connections()
 

@@ -519,6 +519,8 @@ func gain_experience(amount: int):
 			final_amount = int(amount * xp_mult)
 
 	current_exp += final_amount
+	if OS.is_debug_build():
+		print("[ExperienceManager] XP gained: %d (Source: %d). Total: %d/%d" % [final_amount, amount, current_exp, exp_to_next_level])
 
 	# BALANCE PASS 2: Log XP para BalanceDebugger
 	if BalanceDebugger:

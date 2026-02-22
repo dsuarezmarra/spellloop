@@ -32,6 +32,9 @@ func _ready():
 
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
+	# Ensure randomness for variations
+	randomize()
+
 	# Registrar en grupo para compatibilidad con scripts legacy que usan get_nodes_in_group
 	add_to_group("audio_manager")
 
