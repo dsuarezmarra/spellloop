@@ -16,7 +16,7 @@ extends Node
 # =============================================================================
 
 ## Si es true, el sistema EA filtra contenido. Si es false, todo está disponible.
-var ea_mode: bool = true
+var ea_mode: bool = false
 
 ## Versión del contenido EA (incrementar con cada wave de contenido)
 var ea_content_version: String = "0.1.0"
