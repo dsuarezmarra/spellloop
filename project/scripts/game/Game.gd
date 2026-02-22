@@ -98,12 +98,14 @@ func _ready() -> void:
 	# Game debe procesar siempre para manejar input de pausa
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
-	# SALVAVIDAS EXPORTACIÓN: Si se ha ejecutado Game.tscn directamente como escena principal
-	# en una build compilada (no en el editor), redirigir inmediatamente a la introducción
-	if not OS.has_feature("editor") and get_tree().current_scene == self:
-		push_warning("[Game] Ejecutado como escena principal en Release. Redirigiendo a Intro...")
-		get_tree().change_scene_to_file("res://scenes/ui/CinematicIntro.tscn")
-		return
+	# SALVAVIDAS EXPORTACIÓN: Si se ha ejecutado Game.tscn directamente al abrir el ejecutable
+	# Redirigimos a la introducción si es el instante inicial de ejecución del juego
+	if not OS.has_feature("editor"):
+		var time_ms = Time.get_ticks_msec()
+		if time_ms < 3000 and get_tree().current_scene == self:
+			push_warning("[Game] Ejecución de Release arrancó en Game.tscn. Redirigiendo a Intro...")
+			get_tree().change_scene_to_file("res://scenes/ui/CinematicIntro.tscn")
+			return
 
 	if OS.is_debug_build():
 		pass # _security_scan_tree() # Function not defined - Disabled
