@@ -154,7 +154,7 @@ func _ready():
 
 func _input(event: InputEvent) -> void:
 	"""Manejar input manual para navegación robusta (WASD/Flechas) - Soporta Jackpot y Standard"""
-	if not is_inside_tree() or popup_locked:
+	if not is_inside_tree() or popup_locked or not visible:
 		return
 
 	# 1. Logic para Modal de Skip (Legacy)
