@@ -41,7 +41,7 @@ func _ready():
 
 func _input(event: InputEvent) -> void:
 	"""Manejar input de teclado para navegación WASD y bloqueo de ESC"""
-	if not is_inside_tree():
+	if not is_inside_tree() or not visible:
 		return
 	
 	if popup_locked:

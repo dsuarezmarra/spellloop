@@ -484,6 +484,9 @@ func _update_tab_styles() -> void:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 func _input(event: InputEvent) -> void:
+	if not visible:
+		return
+	
 	# IMPORTANTE: Consumir TODOS los eventos de navegación para que no lleguen al MainMenu
 	var consumed = false
 	

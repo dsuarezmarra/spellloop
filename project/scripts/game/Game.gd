@@ -98,6 +98,15 @@ func _ready() -> void:
 	# Game debe procesar siempre para manejar input de pausa
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
+	# SALVAVIDAS EXPORTACIÓN: Si se ha ejecutado Game.tscn directamente al abrir el ejecutable
+	# Redirigimos a la introducción si es el instante inicial de ejecución del juego
+	if not OS.has_feature("editor"):
+		var time_ms = Time.get_ticks_msec()
+		if time_ms < 3000 and get_tree().current_scene == self:
+			push_warning("[Game] Ejecución de Release arrancó en Game.tscn. Redirigiendo a Intro...")
+			get_tree().change_scene_to_file("res://scenes/ui/CinematicIntro.tscn")
+			return
+
 	if OS.is_debug_build():
 		pass # _security_scan_tree() # Function not defined - Disabled
 
@@ -648,7 +657,8 @@ func _start_game() -> void:
 	if game_manager and game_manager.has_method("start_new_run"):
 		game_manager.start_new_run()
 
-	# Iniciar música de gameplay
+	# Iniciar música de gameplay, forzando la detención limpia del loop de menús
+	AudioManager.stop_music()
 	AudioManager.play_music("music_gameplay_loop")
 
 	# CRÍTICO: Resetear AttackManager para nueva partida
@@ -988,6 +998,8 @@ func _process(delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel"):
 		if game_running and not is_paused:
+			# Consumir el evento para que los sub-hijos UIs no lo traguen y aborten propagación
+			get_viewport().set_input_as_handled()
 			_pause_game()
 
 func _pause_game() -> void:
