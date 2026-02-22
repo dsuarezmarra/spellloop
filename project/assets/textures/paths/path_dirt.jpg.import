@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c31olflqfnj83"
-path="res://.godot/imported/path_death.jpg-aa0091375d2841023f884c60c1130d2c.ctex"
+uid="uid://capv32bjhh1dc"
+path="res://.godot/imported/path_dirt.jpg-6c371e458275a6c9c300e8395e73d01d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/paths/path_death.jpg"
-dest_files=["res://.godot/imported/path_death.jpg-aa0091375d2841023f884c60c1130d2c.ctex"]
+source_file="res://assets/textures/paths/path_dirt.jpg"
+dest_files=["res://.godot/imported/path_dirt.jpg-6c371e458275a6c9c300e8395e73d01d.ctex"]
 
 [params]
 
